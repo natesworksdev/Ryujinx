@@ -169,6 +169,12 @@ namespace ChocolArm64.Instruction
             Context.MarkLabel(LblNotNaN);
         }
 
+        public static void Fcmpe_S(AILEmitterCtx Context)
+        {
+            //TODO: Raise exception if value is NaN, how to handle exceptions?
+            Fcmp_S(Context);
+        }
+
         public static void Fcsel_S(AILEmitterCtx Context)
         {
             AOpCodeSimdFcond Op = (AOpCodeSimdFcond)Context.CurrOp;
@@ -252,6 +258,20 @@ namespace ChocolArm64.Instruction
 
         public static void Fdiv_S(AILEmitterCtx Context) => EmitScalarOp(Context, OpCodes.Div);
 
+        public static void Fmadd_S(AILEmitterCtx Context)
+        {
+            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+
+            Context.EmitLdvecsf(Op.Ra);
+            Context.EmitLdvecsf(Op.Rn);
+            Context.EmitLdvecsf(Op.Rm);
+
+            Context.Emit(OpCodes.Mul);
+            Context.Emit(OpCodes.Add);
+
+            Context.EmitStvecsf(Op.Rd);
+        }
+
         public static void Fmax_S(AILEmitterCtx Context) => EmitMathOp3(Context, nameof(Math.Max));
         public static void Fmin_S(AILEmitterCtx Context) => EmitMathOp3(Context, nameof(Math.Min));
 
@@ -259,6 +279,14 @@ namespace ChocolArm64.Instruction
         public static void Fminnm_S(AILEmitterCtx Context) => EmitMathOp3(Context, nameof(Math.Min));
 
         public static void Fmov_S(AILEmitterCtx Context)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            Context.EmitLdvecsf(Op.Rn);
+            Context.EmitStvecsf(Op.Rd);
+        }
+
+        public static void Fmov_Si(AILEmitterCtx Context)
         {
             AOpCodeSimdFmov Op = (AOpCodeSimdFmov)Context.CurrOp;
 
@@ -311,6 +339,23 @@ namespace ChocolArm64.Instruction
             ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Fmov_S));
 
             Context.EmitStvec(Op.Rd);
+        }
+
+        public static void Fmsub_S(AILEmitterCtx Context)
+        {
+            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+
+            Context.EmitLdvecsf(Op.Ra);
+            Context.EmitLdvecsf(Op.Rn);
+
+            Context.Emit(OpCodes.Neg);
+
+            Context.EmitLdvecsf(Op.Rm);
+
+            Context.Emit(OpCodes.Mul);
+            Context.Emit(OpCodes.Sub);
+
+            Context.EmitStvecsf(Op.Rd);
         }
 
         public static void Fmul_S(AILEmitterCtx Context) => EmitScalarOp(Context, OpCodes.Mul);
@@ -498,7 +543,22 @@ namespace ChocolArm64.Instruction
             Context.EmitLdvecsf(Op.Rn);
             Context.EmitLdvecsf(Op.Rm);
 
-            EmitMathOpCall(Context, Name);
+            MethodInfo MthdInfo;
+
+            if (Op.Size == 0)
+            {
+                MthdInfo = typeof(MathF).GetMethod(Name, new Type[] { typeof(float), typeof(float) });
+            }
+            else if (Op.Size == 1)
+            {
+                MthdInfo = typeof(Math).GetMethod(Name, new Type[] { typeof(double), typeof(double) });
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+
+            Context.EmitCall(MthdInfo);
 
             Context.EmitStvecsf(Op.Rd);
         }
