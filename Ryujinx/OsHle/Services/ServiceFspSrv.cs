@@ -1,4 +1,3 @@
-using Ryujinx.OsHle.Objects;
 using Ryujinx.OsHle.Objects.FspSrv;
 
 using static Ryujinx.OsHle.Objects.ObjHelper;
@@ -28,14 +27,14 @@ namespace Ryujinx.OsHle.Services
 
         public static long FspSrvOpenDataStorageByCurrentProcess(ServiceCtx Context)
         {
-            MakeObject(Context, new FspSrvIStorage(Context.Ns.VFs.RomFs));
+            MakeObject(Context, new IStorage(Context.Ns.VFs.RomFs));
 
             return 0;
         }
 
         public static long FspSrvOpenRomStorage(ServiceCtx Context)
         {
-            MakeObject(Context, new FspSrvIStorage(Context.Ns.VFs.RomFs));
+            MakeObject(Context, new IStorage(Context.Ns.VFs.RomFs));
 
             return 0;
         }

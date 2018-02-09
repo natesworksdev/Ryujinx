@@ -1,31 +1,43 @@
 using ChocolArm64.Memory;
+using Ryujinx.OsHle.Ipc;
 using System;
+using System.Collections.Generic;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.Am
 {
-    class AmIStorageAccessor
+    class IStorageAccessor : IIpcInterface
     {
-        public AmIStorage Storage { get; private set; }
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public AmIStorageAccessor(AmIStorage Storage)
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        public IStorage Storage { get; private set; }
+
+        public IStorageAccessor(IStorage Storage)
         {
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                {  0, GetSize },
+                { 11, Read    }
+            };
+
             this.Storage = Storage;
         }
 
-        public static long GetSize(ServiceCtx Context)
+        public long GetSize(ServiceCtx Context)
         {
-            AmIStorageAccessor Accessor = Context.GetObject<AmIStorageAccessor>();
+            IStorageAccessor Accessor = Context.GetObject<IStorageAccessor>();
 
             Context.ResponseData.Write((long)Accessor.Storage.Data.Length);
 
             return 0;
         }
 
-        public static long Read(ServiceCtx Context)
+        public long Read(ServiceCtx Context)
         {
-            AmIStorageAccessor Accessor = Context.GetObject<AmIStorageAccessor>();
+            IStorageAccessor Accessor = Context.GetObject<IStorageAccessor>();
 
-            AmIStorage Storage = Accessor.Storage;
+            IStorage Storage = Accessor.Storage;
 
             long ReadPosition = Context.RequestData.ReadInt64();
 

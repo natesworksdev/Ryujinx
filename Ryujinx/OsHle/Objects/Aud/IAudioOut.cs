@@ -1,16 +1,36 @@
 ﻿using ChocolArm64.Memory;
-using OpenTK.Audio;
-using OpenTK.Audio.OpenAL;
 using Ryujinx.OsHle.Handles;
 using Ryujinx.OsHle.Ipc;
+using OpenTK.Audio;
+using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.Aud
 {
-    class AudIAudioOut
+    class IAudioOut : IIpcInterface
     {
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
+
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        public IAudioOut()
+        {
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                { 0, GetAudioOutState             },
+                { 1, StartAudioOut                },
+                { 2, StopAudioOut                 },
+                { 3, AppendAudioOutBuffer         },
+                { 4, RegisterBufferEvent          },
+                { 5, GetReleasedAudioOutBuffer    },
+                { 6, ContainsAudioOutBuffer       },
+                { 7, AppendAudioOutBuffer_ex      },
+                { 8, GetReleasedAudioOutBuffer_ex }
+            };
+        }
+
         enum AudioOutState
         {
             Started,
@@ -18,24 +38,24 @@ namespace Ryujinx.OsHle.Objects
         };
 
         //IAudioOut
-        private static AudioOutState State = AudioOutState.Stopped;
-        private static Queue<long> KeysQueue = new Queue<long>();
+        private AudioOutState State = AudioOutState.Stopped;
+        private Queue<long> KeysQueue = new Queue<long>();
 
         //OpenAL
-        private static bool OpenALInstalled = true;
-        private static AudioContext AudioCtx;
-        private static int Source;
-        private static int Buffer;
+        private bool OpenALInstalled = true;
+        private AudioContext AudioCtx;
+        private int Source;
+        private int Buffer;
 
         //Return State of IAudioOut
-        public static long GetAudioOutState(ServiceCtx Context)
+        public long GetAudioOutState(ServiceCtx Context)
         {
             Context.ResponseData.Write((int)State);
 
             return 0;
         }
 
-        public static long StartAudioOut(ServiceCtx Context)
+        public long StartAudioOut(ServiceCtx Context)
         {
             if (State == AudioOutState.Stopped)
             {
@@ -57,7 +77,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long StopAudioOut(ServiceCtx Context)
+        public long StopAudioOut(ServiceCtx Context)
         {
             if (State == AudioOutState.Started)
             {
@@ -75,7 +95,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long AppendAudioOutBuffer(ServiceCtx Context)
+        public long AppendAudioOutBuffer(ServiceCtx Context)
         {
             long BufferId = Context.RequestData.ReadInt64();
 
@@ -109,7 +129,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long RegisterBufferEvent(ServiceCtx Context)
+        public long RegisterBufferEvent(ServiceCtx Context)
         {
             int Handle = Context.Ns.Os.Handles.GenerateId(new HEvent());
 
@@ -118,7 +138,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long GetReleasedAudioOutBuffer(ServiceCtx Context)
+        public long GetReleasedAudioOutBuffer(ServiceCtx Context)
         {
             long TempKey = 0;
 
@@ -141,17 +161,17 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long ContainsAudioOutBuffer(ServiceCtx Context)
+        public long ContainsAudioOutBuffer(ServiceCtx Context)
         {
             return 0;
         }
 
-        public static long AppendAudioOutBuffer_ex(ServiceCtx Context)
+        public long AppendAudioOutBuffer_ex(ServiceCtx Context)
         {
             return 0;
         }
 
-        public static long GetReleasedAudioOutBuffer_ex(ServiceCtx Context)
+        public long GetReleasedAudioOutBuffer_ex(ServiceCtx Context)
         {
             return 0;
         }

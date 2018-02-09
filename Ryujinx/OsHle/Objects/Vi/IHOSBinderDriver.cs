@@ -9,14 +9,18 @@ using System.Text;
 
 using static Ryujinx.OsHle.Objects.Android.Parcel;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.Vi
 {
-    class ViIHOSBinderDriver
+    class IHOSBinderDriver : IIpcInterface
     {
-        private delegate long ServiceProcessRequest(ServiceCtx Context, byte[] ParcelData);
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        private static Dictionary<(string, int), ServiceProcessRequest> InterfaceMthd =
-                   new Dictionary<(string, int), ServiceProcessRequest>()
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        private delegate long ServiceProcessRequest2(ServiceCtx Context, byte[] ParcelData);
+
+        private Dictionary<(string, int), ServiceProcessRequest2> InterfaceMthd =
+            new Dictionary<(string, int), ServiceProcessRequest2>()
         {
             { ("android.gui.IGraphicBufferProducer", 0x1), GraphicBufferProducerRequestBuffer },
             { ("android.gui.IGraphicBufferProducer", 0x3), GraphicBufferProducerDequeueBuffer },
@@ -36,12 +40,19 @@ namespace Ryujinx.OsHle.Objects
 
         public byte[] Gbfr;
 
-        public ViIHOSBinderDriver()
+        public IHOSBinderDriver()
         {
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                { 0, TransactParcel  },
+                { 1, AdjustRefcount  },
+                { 2, GetNativeHandle }
+            };
+
             BufferSlots = new IdPoolWithObj();
         }
 
-        public static long TransactParcel(ServiceCtx Context)
+        public long TransactParcel(ServiceCtx Context)
         {
             int Id   = Context.RequestData.ReadInt32();
             int Code = Context.RequestData.ReadInt32();
@@ -63,7 +74,7 @@ namespace Ryujinx.OsHle.Objects
 
                 string InterfaceName = Encoding.Unicode.GetString(Data, 8, StrSize * 2);
 
-                if (InterfaceMthd.TryGetValue((InterfaceName, Code), out ServiceProcessRequest ProcReq))
+                if (InterfaceMthd.TryGetValue((InterfaceName, Code), out ServiceProcessRequest2 ProcReq))
                 {
                     return ProcReq(Context, Data);
                 }
@@ -76,7 +87,7 @@ namespace Ryujinx.OsHle.Objects
 
         private static long GraphicBufferProducerRequestBuffer(ServiceCtx Context, byte[] ParcelData)
         {
-            ViIHOSBinderDriver BinderDriver = Context.GetObject<ViIHOSBinderDriver>();
+            IHOSBinderDriver BinderDriver = Context.GetObject<IHOSBinderDriver>();
 
             int GbfrSize = BinderDriver.Gbfr?.Length ?? 0;
 
@@ -92,7 +103,7 @@ namespace Ryujinx.OsHle.Objects
 
         private static long GraphicBufferProducerDequeueBuffer(ServiceCtx Context, byte[] ParcelData)
         {
-            ViIHOSBinderDriver BinderDriver = Context.GetObject<ViIHOSBinderDriver>();
+            IHOSBinderDriver BinderDriver = Context.GetObject<IHOSBinderDriver>();
 
             //Note: It seems that the maximum number of slots is 64, because if we return
             //a Slot number > 63, it seems to cause a buffer overrun and it reads garbage.
@@ -109,7 +120,7 @@ namespace Ryujinx.OsHle.Objects
 
         private static long GraphicBufferProducerCancelBuffer(ServiceCtx Context, byte[] ParcelData)
         {
-            ViIHOSBinderDriver BinderDriver = Context.GetObject<ViIHOSBinderDriver>();
+            IHOSBinderDriver BinderDriver = Context.GetObject<IHOSBinderDriver>();
 
             using (MemoryStream MS = new MemoryStream(ParcelData))
             {
@@ -137,7 +148,7 @@ namespace Ryujinx.OsHle.Objects
 
         private static long GraphicBufferPreallocateBuffer(ServiceCtx Context, byte[] ParcelData)
         {
-            ViIHOSBinderDriver BinderDriver = Context.GetObject<ViIHOSBinderDriver>();
+            IHOSBinderDriver BinderDriver = Context.GetObject<IHOSBinderDriver>();
 
             int GbfrSize = ParcelData.Length - 0x54;
 
@@ -188,7 +199,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long AdjustRefcount(ServiceCtx Context)
+        public long AdjustRefcount(ServiceCtx Context)
         {
             int Id     = Context.RequestData.ReadInt32();
             int AddVal = Context.RequestData.ReadInt32();
@@ -197,7 +208,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long GetNativeHandle(ServiceCtx Context)
+        public long GetNativeHandle(ServiceCtx Context)
         {
             int  Id  = Context.RequestData.ReadInt32();
             uint Unk = Context.RequestData.ReadUInt32();

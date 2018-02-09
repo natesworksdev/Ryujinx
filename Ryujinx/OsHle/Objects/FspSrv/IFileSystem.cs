@@ -21,7 +21,7 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             {
                 {  7, GetEntryType },
                 {  8, OpenFile     },
-                { 10, Commit       },
+                { 10, Commit       }
             };
 
             this.Path = Path;
