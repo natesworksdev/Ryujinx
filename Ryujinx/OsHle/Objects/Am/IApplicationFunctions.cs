@@ -1,22 +1,39 @@
+using Ryujinx.OsHle.Ipc;
+using System.Collections.Generic;
 using System.IO;
 
 using static Ryujinx.OsHle.Objects.ObjHelper;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.Am
 {
-    class AmIApplicationFunctions
+    class IApplicationFunctions : IIpcInterface
     {
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
+
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        public IApplicationFunctions()
+        {
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                {  1, PopLaunchParameter },
+                { 20, EnsureSaveData     },
+                { 21, GetDesiredLanguage },
+                { 40, NotifyRunning      }
+            };
+        }
+
         private const uint LaunchParamsMagic = 0xc79497ca;
 
-        public static long PopLaunchParameter(ServiceCtx Context)
+        public long PopLaunchParameter(ServiceCtx Context)
         {
             //Only the first 0x18 bytes of the Data seems to be actually used.
-            MakeObject(Context, new AmIStorage(MakeLaunchParams()));
+            MakeObject(Context, new IStorage(MakeLaunchParams()));
 
             return 0;
         }
 
-        public static long EnsureSaveData(ServiceCtx Context)
+        public long EnsureSaveData(ServiceCtx Context)
         {
             long UIdLow  = Context.RequestData.ReadInt64();
             long UIdHigh = Context.RequestData.ReadInt64();
@@ -26,7 +43,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long GetDesiredLanguage(ServiceCtx Context)
+        public long GetDesiredLanguage(ServiceCtx Context)
         {
             //This is an enumerator where each number is a differnet language.
             //0 is Japanese and 1 is English, need to figure out the other codes.
@@ -35,14 +52,14 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long NotifyRunning(ServiceCtx Context)
+        public long NotifyRunning(ServiceCtx Context)
         {
             Context.ResponseData.Write(1);
 
             return 0;
         }
 
-        private static byte[] MakeLaunchParams()
+        private byte[] MakeLaunchParams()
         {
             //Size needs to be at least 0x88 bytes otherwise application errors.
             using (MemoryStream MS = new MemoryStream())

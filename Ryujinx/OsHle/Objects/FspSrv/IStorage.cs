@@ -1,21 +1,31 @@
 using ChocolArm64.Memory;
 using Ryujinx.OsHle.Ipc;
+using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.FspSrv
 {
-    class FspSrvIStorage
+    class IStorage : IIpcInterface
     {
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
+
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
         public Stream BaseStream { get; private set; }
 
-        public FspSrvIStorage(Stream BaseStream)
+        public IStorage(Stream BaseStream)
         {
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                { 0, Read }
+            };
+
             this.BaseStream = BaseStream;
         }
 
         public static long Read(ServiceCtx Context)
         {
-            FspSrvIStorage Storage = Context.GetObject<FspSrvIStorage>();
+            IStorage Storage = Context.GetObject<IStorage>();
 
             long Offset = Context.RequestData.ReadInt64();
             long Size   = Context.RequestData.ReadInt64();

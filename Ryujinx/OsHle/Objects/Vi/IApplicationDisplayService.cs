@@ -1,44 +1,65 @@
 using ChocolArm64.Memory;
 using Ryujinx.OsHle.Handles;
 using Ryujinx.OsHle.Ipc;
+using System.Collections.Generic;
 using System.IO;
 
 using static Ryujinx.OsHle.Objects.Android.Parcel;
 using static Ryujinx.OsHle.Objects.ObjHelper;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.Vi
 {
-    class ViIApplicationDisplayService
+    class IApplicationDisplayService : IIpcInterface
     {
-        public static long GetRelayService(ServiceCtx Context)
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
+
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        public IApplicationDisplayService()
         {
-            MakeObject(Context, new ViIHOSBinderDriver());
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                {  100, GetRelayService                      },
+                {  101, GetSystemDisplayService              },
+                {  102, GetManagerDisplayService             },
+                {  103, GetIndirectDisplayTransactionService },
+                { 1010, OpenDisplay                          },
+                { 2020, OpenLayer                            },
+                { 2030, CreateStrayLayer                     },
+                { 2101, SetLayerScalingMode                  },
+                { 5202, GetDisplayVSyncEvent                 }
+            };
+        }
+
+        public long GetRelayService(ServiceCtx Context)
+        {
+            MakeObject(Context, new IHOSBinderDriver());
 
             return 0;
         }
 
-        public static long GetSystemDisplayService(ServiceCtx Context)
+        public long GetSystemDisplayService(ServiceCtx Context)
         {
-            MakeObject(Context, new ViISystemDisplayService());
+            MakeObject(Context, new ISystemDisplayService());
 
             return 0;
         }
 
-        public static long GetManagerDisplayService(ServiceCtx Context)
+        public long GetManagerDisplayService(ServiceCtx Context)
         {
-            MakeObject(Context, new ViIManagerDisplayService());
+            MakeObject(Context, new IManagerDisplayService());
 
             return 0;
         }
 
-        public static long GetIndirectDisplayTransactionService(ServiceCtx Context)
+        public long GetIndirectDisplayTransactionService(ServiceCtx Context)
         {
-            MakeObject(Context, new ViIHOSBinderDriver());
+            MakeObject(Context, new IHOSBinderDriver());
 
             return 0;
         }
 
-        public static long OpenDisplay(ServiceCtx Context)
+        public long OpenDisplay(ServiceCtx Context)
         {
             string Name = GetDisplayName(Context);
 
@@ -49,7 +70,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long OpenLayer(ServiceCtx Context)
+        public long OpenLayer(ServiceCtx Context)
         {
             long LayerId = Context.RequestData.ReadInt64();
             long UserId  = Context.RequestData.ReadInt64();
@@ -65,7 +86,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long CreateStrayLayer(ServiceCtx Context)
+        public long CreateStrayLayer(ServiceCtx Context)
         {
             long LayerFlags = Context.RequestData.ReadInt64();
             long DisplayId  = Context.RequestData.ReadInt64();
@@ -84,7 +105,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long SetLayerScalingMode(ServiceCtx Context)
+        public long SetLayerScalingMode(ServiceCtx Context)
         {
             int  ScalingMode = Context.RequestData.ReadInt32();
             long Unknown     = Context.RequestData.ReadInt64();
@@ -92,7 +113,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long GetDisplayVSyncEvent(ServiceCtx Context)
+        public long GetDisplayVSyncEvent(ServiceCtx Context)
         {
             string Name = GetDisplayName(Context);
 
@@ -103,7 +124,7 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        private static byte[] MakeIGraphicsBufferProducer(long BasePtr)
+        private byte[] MakeIGraphicsBufferProducer(long BasePtr)
         {
             long Id        = 0x20;
             long CookiePtr = 0L;
@@ -133,7 +154,7 @@ namespace Ryujinx.OsHle.Objects
             }
         }
 
-        private static string GetDisplayName(ServiceCtx Context)
+        private string GetDisplayName(ServiceCtx Context)
         {
             string Name = string.Empty;
 

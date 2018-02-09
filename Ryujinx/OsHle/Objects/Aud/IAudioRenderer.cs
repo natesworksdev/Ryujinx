@@ -1,13 +1,29 @@
 using Ryujinx.OsHle.Handles;
 using Ryujinx.OsHle.Ipc;
+using System.Collections.Generic;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.Aud
 {
-    class AudIAudioRenderer
+    class IAudioRenderer : IIpcInterface
     {
-        public static long RequestUpdateAudioRenderer(ServiceCtx Context)
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
+
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        public IAudioRenderer()
         {
-            //buffer < unknown, 5, 0 >) -> (buffer < unknown, 6, 0 >, buffer < unknown, 6, 0 >
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                { 4, RequestUpdateAudioRenderer },
+                { 5, StartAudioRenderer         },
+                { 6, StopAudioRenderer          },
+                { 7, QuerySystemEvent           }
+            };
+        }
+
+        public long RequestUpdateAudioRenderer(ServiceCtx Context)
+        {
+            //(buffer<unknown, 5, 0>) -> (buffer<unknown, 6, 0>, buffer<unknown, 6, 0>)
 
             long Position = Context.Request.ReceiveBuff[0].Position;
 
@@ -28,17 +44,17 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long StartAudioRenderer(ServiceCtx Context)
+        public long StartAudioRenderer(ServiceCtx Context)
         {
             return 0;
         }
 
-        public static long StopAudioRenderer(ServiceCtx Context)
+        public long StopAudioRenderer(ServiceCtx Context)
         {
             return 0;
         }
 
-        public static long QuerySystemEvent(ServiceCtx Context)
+        public long QuerySystemEvent(ServiceCtx Context)
         {
             int Handle = Context.Ns.Os.Handles.GenerateId(new HEvent());
 
