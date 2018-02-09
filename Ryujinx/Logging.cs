@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 
 namespace Ryujinx
@@ -59,7 +60,7 @@ namespace Ryujinx
         {
             if (EnableTrace)
             {
-                string Text = $"{GetExecutionTime()} | TRACE > {Message}";
+                string Text = $"{GetExecutionTime()} | TRACE > {WhoCalledMe()} - {Message}";
 
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine(Text.PadLeft(Text.Length + 1, ' '));
@@ -123,6 +124,11 @@ namespace Ryujinx
 
                 LogFile(Text);
             }
+        }
+
+        private static string WhoCalledMe()
+        {
+            return new StackTrace().GetFrame(2).GetMethod().Name;
         }
     }
 }
