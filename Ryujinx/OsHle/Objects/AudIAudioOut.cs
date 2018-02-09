@@ -1,14 +1,11 @@
 ﻿using ChocolArm64.Memory;
+using OpenTK.Audio;
+using OpenTK.Audio.OpenAL;
 using Ryujinx.OsHle.Handles;
 using Ryujinx.OsHle.Ipc;
-using static Ryujinx.OsHle.Objects.ObjHelper;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
-
-using OpenTK.Audio;
-using OpenTK.Audio.OpenAL;
 
 namespace Ryujinx.OsHle.Objects
 {
@@ -22,7 +19,7 @@ namespace Ryujinx.OsHle.Objects
 
         //IAudioOut
         private static AudioOutState State = AudioOutState.Stopped;
-        private static List<long> KeysQueue = new List<long>();
+        private static Queue<long> KeysQueue = new Queue<long>();
 
         //OpenAL
         private static bool OpenALInstalled = true;
@@ -48,9 +45,9 @@ namespace Ryujinx.OsHle.Objects
                 { 
                     AudioCtx = new AudioContext(); //Create the audio context
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Console.WriteLine("OpenAL Error! PS: Install OpenAL Core SDK!");
+                    Logging.Warn("OpenAL Error! PS: Install OpenAL Core SDK!");
                     OpenALInstalled = false;
                 }
 
@@ -82,7 +79,7 @@ namespace Ryujinx.OsHle.Objects
         {
             long BufferId = Context.RequestData.ReadInt64();
 
-            KeysQueue.Insert(0, BufferId);
+            KeysQueue.Enqueue(BufferId);
 
             byte[] AudioOutBuffer = AMemoryHelper.ReadBytes(Context.Memory, Context.Request.SendBuff[0].Position, 0x28);
             using (MemoryStream MS = new MemoryStream(AudioOutBuffer))
@@ -125,13 +122,9 @@ namespace Ryujinx.OsHle.Objects
         {
             long TempKey = 0;
 
-            if (KeysQueue.Count > 0)
-            {
-                TempKey = KeysQueue[KeysQueue.Count - 1];
-                KeysQueue.Remove(KeysQueue[KeysQueue.Count - 1]);
-            }
+            if (KeysQueue.Count > 0) TempKey = KeysQueue.Dequeue();
 
-            AMemoryHelper.WriteBytes(Context.Memory, Context.Request.ReceiveBuff[0].Position, System.BitConverter.GetBytes(TempKey));
+            AMemoryHelper.WriteBytes(Context.Memory, Context.Request.ReceiveBuff[0].Position, BitConverter.GetBytes(TempKey));
 
             Context.ResponseData.Write((int)TempKey);
 
