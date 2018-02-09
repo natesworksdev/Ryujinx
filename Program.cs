@@ -9,8 +9,6 @@ namespace Ryujinx
     {
         static void Main(string[] args)
         {
-            Console.Title = "RyujiNX";
-
             IGalRenderer Renderer = new OpenGLRenderer();
 
             Switch Ns = new Switch(Renderer);
@@ -23,30 +21,27 @@ namespace Ryujinx
 
                     if (RomFsFiles.Length > 0)
                     {
-                        Logging.Info("Loading as cart with RomFS.");
+                        Console.WriteLine("Loading as cart with RomFS.");
 
-                        Console.Title += " - Cart (with RomFS) - " + args[0];
                         Ns.Os.LoadCart(args[0], RomFsFiles[0]);
                     }
                     else
                     {
-                        Logging.Info("Loading as cart WITHOUT RomFS.");
+                        Console.WriteLine("Loading as cart WITHOUT RomFS.");
 
-                        Console.Title += " - Cart (without RomFS) - " + args[0];
                         Ns.Os.LoadCart(args[0]);
                     }
                 }
                 else if (File.Exists(args[0]))
                 {
-                    Logging.Info("Loading as homebrew.");
+                    Console.WriteLine("Loading as homebrew.");
 
-                    Console.Title += " - Homebrew - " + args[0];
                     Ns.Os.LoadProgram(args[0]);
                 }
             }
             else
             {
-                Logging.Error("Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
+                Console.WriteLine("Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
             }
 
             using (GLScreen Screen = new GLScreen(Ns, Renderer))

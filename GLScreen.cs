@@ -341,9 +341,7 @@ void main(void) {
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             GL.Viewport(0, 0, 1280, 720);
-
-            Title = $"Ryujinx Screen - (Vsync: {VSync} - FPS: {1f / e.Time:0})";
-
+            
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             RenderFb();

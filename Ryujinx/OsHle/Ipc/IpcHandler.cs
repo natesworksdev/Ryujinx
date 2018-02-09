@@ -262,8 +262,6 @@ namespace Ryujinx.OsHle.Ipc
                         }
                     }
 
-                    Logging.Debug($"IpcMessage: {DbgServiceName}");
-
                     if (ProcReq != null)
                     {
                         using (MemoryStream ResMS = new MemoryStream())

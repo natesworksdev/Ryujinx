@@ -121,7 +121,7 @@ namespace Ryujinx.OsHle.Svc
 
             string Str = AMemoryHelper.ReadAsciiString(Memory, Position, (int)Size);
 
-            Logging.Info($"SvcOutputDebugString: {Str}");
+            Console.WriteLine($"SvcOutputDebugString: {Str}");
 
             Registers.X0 = (int)SvcResult.Success;
         }

@@ -1,6 +1,5 @@
 using ChocolArm64.Exceptions;
-using Ryujinx;
-
+using System;
 using System.Runtime.CompilerServices;
 
 namespace ChocolArm64.Memory
@@ -262,7 +261,7 @@ namespace ChocolArm64.Memory
             {
                 if (Position < 0x08000000)
                 {
-                    Logging.Warn($"HACK: Ignoring bad access at {Position:x16}");
+                    Console.WriteLine($"HACK: Ignoring bad access at {Position:x16}");
 
                     return 0;
                 }
