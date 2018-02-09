@@ -563,7 +563,7 @@ namespace Ryujinx.OsHle.Services
                 NvMap.Kind    = Kind;
             }
 
-            Console.WriteLine($"NvMapIocAlloc at {NvMap.Address:x16}");
+            Logging.Info($"NvMapIocAlloc at {NvMap.Address:x16}");
 
             return 0;
         }
