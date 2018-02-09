@@ -1,28 +1,39 @@
 using ChocolArm64.Memory;
+using Ryujinx.OsHle.Ipc;
+using System.Collections.Generic;
 using System.IO;
 
 using static Ryujinx.OsHle.Objects.ObjHelper;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.FspSrv
 {
-    class FspSrvIFileSystem
+    class IFileSystem : IIpcInterface
     {
-        public string FilePath { get; private set; }
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public FspSrvIFileSystem(string Path)
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        private string Path;
+
+        public IFileSystem(string Path)
         {
-            this.FilePath = Path;
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                {  7, GetEntryType },
+                {  8, OpenFile     },
+                { 10, Commit       },
+            };
+
+            this.Path = Path;
         }
 
-        public static long GetEntryType(ServiceCtx Context)
+        public long GetEntryType(ServiceCtx Context)
         {
-            FspSrvIFileSystem FileSystem = Context.GetObject<FspSrvIFileSystem>();
-
             long Position = Context.Request.PtrBuff[0].Position;
 
             string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position);
 
-            string FileName = Context.Ns.VFs.GetFullPath(FileSystem.FilePath, Name);
+            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
 
             if (FileName == null)
             {
@@ -37,17 +48,15 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long OpenFile(ServiceCtx Context)
+        public long OpenFile(ServiceCtx Context)
         {
-            FspSrvIFileSystem FileSystem = Context.GetObject<FspSrvIFileSystem>();
-
             long Position = Context.Request.PtrBuff[0].Position;
 
             int FilterFlags = Context.RequestData.ReadInt32();
 
             string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position);
 
-            string FileName = Context.Ns.VFs.GetFullPath(FileSystem.FilePath, Name);
+            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
 
             if (FileName == null)
             {
@@ -57,12 +66,12 @@ namespace Ryujinx.OsHle.Objects
 
             FileStream Stream = new FileStream(FileName, FileMode.OpenOrCreate);
 
-            MakeObject(Context, new FspSrvIFile(Stream));
+            MakeObject(Context, new IFile(Stream));
 
             return 0;
         }
 
-        public static long Commit(ServiceCtx Context)
+        public long Commit(ServiceCtx Context)
         {
             return 0;
         }

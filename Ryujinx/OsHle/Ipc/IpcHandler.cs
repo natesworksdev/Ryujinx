@@ -10,8 +10,6 @@ namespace Ryujinx.OsHle.Ipc
 {
     static class IpcHandler
     {
-        private delegate long ServiceProcessRequest(ServiceCtx Context);
-
         private static Dictionary<(string, int), ServiceProcessRequest> ServiceCmds =
                    new Dictionary<(string, int), ServiceProcessRequest>()
         {
@@ -141,15 +139,6 @@ namespace Ryujinx.OsHle.Ipc
             { (typeof(AudIAudioOut), 7), AudIAudioOut.AppendAudioOutBuffer_ex      },
             { (typeof(AudIAudioOut), 8), AudIAudioOut.GetReleasedAudioOutBuffer_ex },
 
-            //IFile
-            { (typeof(FspSrvIFile), 0), FspSrvIFile.Read  },
-            { (typeof(FspSrvIFile), 1), FspSrvIFile.Write },
-
-            //IFileSystem
-            { (typeof(FspSrvIFileSystem),  7), FspSrvIFileSystem.GetEntryType },
-            { (typeof(FspSrvIFileSystem),  8), FspSrvIFileSystem.OpenFile     },
-            { (typeof(FspSrvIFileSystem), 10), FspSrvIFileSystem.Commit       },
-
             //IStorage
             { (typeof(FspSrvIStorage), 0), FspSrvIStorage.Read },
 
@@ -221,15 +210,24 @@ namespace Ryujinx.OsHle.Ipc
 
                             if (Obj is HDomain)
                             {
-                                DbgServiceName = $"{ServiceName} {CmdId}";
-
                                 ServiceCmds.TryGetValue((ServiceName, CmdId), out ProcReq);
+
+                                DbgServiceName = $"{ServiceName} {ProcReq?.Method.Name ?? CmdId.ToString()}";
                             }
                             else if (Obj != null)
                             {
-                                DbgServiceName = $"{ServiceName} {Obj.GetType().Name} {CmdId}";
+                                if (Obj is IIpcInterface IpcObj)
+                                {
+                                    IpcObj.Commands.TryGetValue(CmdId, out ProcReq);
+                                }
+                                else
+                                {
+                                    //Note: Once all objects starts implementing IIpcInterface,
+                                    //ObjectCmds can be removed completely.
+                                    ObjectCmds.TryGetValue((Obj.GetType(), CmdId), out ProcReq);
+                                }
 
-                                ObjectCmds.TryGetValue((Obj.GetType(), CmdId), out ProcReq);
+                                DbgServiceName = $"{ServiceName} {Obj.GetType().Name} {ProcReq?.Method.Name ?? CmdId.ToString()}";
                             }
                         }
                         else if (Request.DomCmd == IpcDomCmd.DeleteObj)
@@ -248,17 +246,26 @@ namespace Ryujinx.OsHle.Ipc
 
                         if (Session is HSessionObj)
                         {
-                            object Obj = ((HSessionObj)Session).Obj;
+                            object Obj = ((HSessionObj)Session).Obj;                            
 
-                            DbgServiceName = $"{ServiceName} {Obj.GetType().Name} {CmdId}";
+                            if (Obj is IIpcInterface IpcObj)
+                            {
+                                IpcObj.Commands.TryGetValue(CmdId, out ProcReq);
+                            }
+                            else
+                            {
+                                //Note: Once all objects starts implementing IIpcInterface,
+                                //ObjectCmds can be removed completely.
+                                ObjectCmds.TryGetValue((Obj.GetType(), CmdId), out ProcReq);
+                            }
 
-                            ObjectCmds.TryGetValue((Obj.GetType(), CmdId), out ProcReq);
+                            DbgServiceName = $"{ServiceName} {Obj.GetType().Name} {ProcReq?.Method.Name ?? CmdId.ToString()}";
                         }
                         else
                         {
-                            DbgServiceName = $"{ServiceName} {CmdId}";
-
                             ServiceCmds.TryGetValue((ServiceName, CmdId), out ProcReq);
+
+                            DbgServiceName = $"{ServiceName} {ProcReq?.Method.Name ?? CmdId.ToString()}";
                         }
                     }
 

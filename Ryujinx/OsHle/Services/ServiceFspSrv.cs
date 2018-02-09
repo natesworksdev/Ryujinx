@@ -1,4 +1,5 @@
 using Ryujinx.OsHle.Objects;
+using Ryujinx.OsHle.Objects.FspSrv;
 
 using static Ryujinx.OsHle.Objects.ObjHelper;
 
@@ -13,14 +14,14 @@ namespace Ryujinx.OsHle.Services
 
         public static long FspSrvMountSdCard(ServiceCtx Context)
         {
-            MakeObject(Context, new FspSrvIFileSystem(Context.Ns.VFs.GetSdCardPath()));
+            MakeObject(Context, new IFileSystem(Context.Ns.VFs.GetSdCardPath()));
 
             return 0;
         }
 
         public static long FspSrvMountSaveData(ServiceCtx Context)
         {
-            MakeObject(Context, new FspSrvIFileSystem(Context.Ns.VFs.GetGameSavesPath()));
+            MakeObject(Context, new IFileSystem(Context.Ns.VFs.GetGameSavesPath()));
 
             return 0;
         }

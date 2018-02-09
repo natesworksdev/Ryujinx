@@ -1,23 +1,32 @@
 using ChocolArm64.Memory;
+using Ryujinx.OsHle.Ipc;
 using System;
-
+using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.OsHle.Objects
+namespace Ryujinx.OsHle.Objects.FspSrv
 {
-    class FspSrvIFile : IDisposable
+    class IFile : IIpcInterface, IDisposable
     {
-        public Stream BaseStream { get; private set; }
+        private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public FspSrvIFile(Stream BaseStream)
+        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        private Stream BaseStream;
+
+        public IFile(Stream BaseStream)
         {
+            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            {
+                { 0, Read  },
+                { 1, Write }
+            };
+
             this.BaseStream = BaseStream;
         }
 
-        public static long Read(ServiceCtx Context)
+        public long Read(ServiceCtx Context)
         {
-            FspSrvIFile File = Context.GetObject<FspSrvIFile>();
-
             long Position = Context.Request.ReceiveBuff[0].Position;
 
             long Zero   = Context.RequestData.ReadInt64();
@@ -26,7 +35,7 @@ namespace Ryujinx.OsHle.Objects
 
             byte[] Data = new byte[Size];
 
-            int ReadSize = File.BaseStream.Read(Data, 0, (int)Size);
+            int ReadSize = BaseStream.Read(Data, 0, (int)Size);
 
             AMemoryHelper.WriteBytes(Context.Memory, Position, Data);
 
@@ -38,10 +47,8 @@ namespace Ryujinx.OsHle.Objects
             return 0;
         }
 
-        public static long Write(ServiceCtx Context)
+        public long Write(ServiceCtx Context)
         {
-            FspSrvIFile File = Context.GetObject<FspSrvIFile>();
-
             long Position = Context.Request.SendBuff[0].Position;
 
             long Zero   = Context.RequestData.ReadInt64();
@@ -50,8 +57,8 @@ namespace Ryujinx.OsHle.Objects
 
             byte[] Data = AMemoryHelper.ReadBytes(Context.Memory, Position, (int)Size);
 
-            File.BaseStream.Seek(Offset, SeekOrigin.Begin);
-            File.BaseStream.Write(Data, 0, (int)Size);
+            BaseStream.Seek(Offset, SeekOrigin.Begin);
+            BaseStream.Write(Data, 0, (int)Size);
 
             return 0;
         }
