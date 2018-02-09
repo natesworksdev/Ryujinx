@@ -50,7 +50,7 @@ namespace Ryujinx.OsHle.Objects
                 }
                 catch (Exception)
                 {
-                    Logging.Error("OpenAL Error! PS: Install OpenAL Core SDK!");
+                    Logging.Warning("OpenAL Error! PS: Install OpenAL Core SDK!");
                     OpenALInstalled = false;
                 }
 
