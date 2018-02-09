@@ -18,7 +18,7 @@ namespace Ryujinx.OsHle.Objects.Am
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
                 {  0, GetSize },
-                { 11, Read }
+                { 11, Read    }
             };
 
             this.Storage = Storage;
