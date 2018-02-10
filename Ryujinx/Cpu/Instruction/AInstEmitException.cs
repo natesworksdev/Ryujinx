@@ -7,7 +7,17 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
+        public static void Brk(AILEmitterCtx Context)
+        {
+            EmitExceptionCall(Context, nameof(ARegisters.OnBreak));
+        }
+
         public static void Svc(AILEmitterCtx Context)
+        {
+            EmitExceptionCall(Context, nameof(ARegisters.OnSvcCall));
+        }
+
+        private static void EmitExceptionCall(AILEmitterCtx Context, string MthdName)
         {
             AOpCodeException Op = (AOpCodeException)Context.CurrOp;
 
@@ -17,7 +27,7 @@ namespace ChocolArm64.Instruction
 
             Context.EmitLdc_I4(Op.Id);
 
-            Context.EmitCall(typeof(ARegisters), nameof(ARegisters.OnSvcCall));
+            Context.EmitCall(typeof(ARegisters), MthdName);
 
             if (Context.CurrBlock.Next != null)
             {
@@ -27,7 +37,21 @@ namespace ChocolArm64.Instruction
 
         public static void Und(AILEmitterCtx Context)
         {
-            throw new NotImplementedException($"Undefined instruction at {Context.CurrOp.Position:x16}");
+            AOpCode Op = Context.CurrOp;
+
+            Context.EmitStoreState();
+
+            Context.EmitLdarg(ATranslatedSub.RegistersArgIdx);
+
+            Context.EmitLdc_I8(Op.Position);
+            Context.EmitLdc_I4(Op.RawOpCode);
+
+            Context.EmitCall(typeof(ARegisters), nameof(ARegisters.OnUndefined));
+
+            if (Context.CurrBlock.Next != null)
+            {
+                Context.EmitLoadState(Context.CurrBlock.Next);
+            }
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Ryujinx.OsHle
 {
     class ServiceCtx
     {
-        public Switch       Ns         { get; private set; }
+        public Switch       Ns           { get; private set; }
         public AMemory      Memory       { get; private set; }
         public HSession     Session      { get; private set; }
         public IpcMessage   Request      { get; private set; }
@@ -31,22 +31,6 @@ namespace Ryujinx.OsHle
             this.Response     = Response;
             this.RequestData  = RequestData;
             this.ResponseData = ResponseData;
-        }
-
-        public T GetObject<T>()
-        {
-            object Obj = null;
-    
-            if (Session is HSessionObj SessionObj)
-            {
-                Obj = SessionObj.Obj; 
-            }
-            if (Session is HDomain Dom)
-            {
-                Obj = Dom.GetObject(Request.DomObjId);
-            }
-
-            return Obj is T ? (T)Obj : default(T);
         }
     }
 }

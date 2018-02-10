@@ -1,4 +1,4 @@
-using Ryujinx.OsHle.Objects;
+using Ryujinx.OsHle.Objects.Am;
 
 using static Ryujinx.OsHle.Objects.ObjHelper;
 
@@ -8,7 +8,7 @@ namespace Ryujinx.OsHle.Services
     {
         public static long AppletOpenApplicationProxy(ServiceCtx Context)
         {
-            MakeObject(Context, new AmIApplicationProxy());
+            MakeObject(Context, new IApplicationProxy());
 
             return 0;
         }
