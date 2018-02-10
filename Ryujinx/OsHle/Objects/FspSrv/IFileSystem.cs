@@ -22,14 +22,14 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             {
                 {  0, CreateFile   },
                 {  1, DeleteFile   },
-                //{  2, CreateDirectory },
-                //{  3, DeleteDirectory },
-                //{  4, DeleteDirectoryRecursively },
-                //{  5, RenameFile },
-                //{  6, GetEntryType },
+                {  2, CreateDirectory },
+                {  3, DeleteDirectory },
+                {  4, DeleteDirectoryRecursively },
+                {  5, RenameFile },
+                {  6, RenameDirectory },
                 {  7, GetEntryType },
                 {  8, OpenFile     },
-                //{  9, OpenDirectory },
+                {  9, OpenDirectory },
                 { 10, Commit       },
                 //{ 11, GetFreeSpaceSize },
                 //{ 12, GetTotalSpaceSize },
@@ -73,6 +73,88 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             }
 
             //TODO: Correct error code.
+            return -1;
+        }
+
+        public long CreateDirectory(ServiceCtx Context)
+        {
+            long Position = Context.Request.PtrBuff[0].Position;
+            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position);
+            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+
+            if (FileName != null)
+            {
+                Directory.CreateDirectory(FileName);
+                return 0;
+            }
+
+            //TODO: Correct error code.
+            return -1;
+        }
+
+        public long DeleteDirectory(ServiceCtx Context)
+        {
+            long Position = Context.Request.PtrBuff[0].Position;
+            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position);
+            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+
+            if (FileName != null)
+            {
+                Directory.Delete(FileName);
+                return 0;
+            }
+
+            return -1;
+        }
+
+        public long DeleteDirectoryRecursively(ServiceCtx Context)
+        {
+            long Position = Context.Request.PtrBuff[0].Position;
+            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position);
+            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+
+            if (FileName != null)
+            {
+                Directory.Delete(FileName, true); // recursive = true
+                return 0;
+            }
+
+            return -1;
+        }
+
+        public long RenameFile(ServiceCtx Context)
+        {
+            long OldPosition = Context.Request.PtrBuff[0].Position;
+            long NewPosition = Context.Request.PtrBuff[0].Position;
+            string OldName = AMemoryHelper.ReadAsciiString(Context.Memory, OldPosition);
+            string NewName = AMemoryHelper.ReadAsciiString(Context.Memory, NewPosition);
+            string OldFileName = Context.Ns.VFs.GetFullPath(Path, OldName);
+            string NewFileName = Context.Ns.VFs.GetFullPath(Path, NewName);
+
+            if (OldFileName != null && NewFileName != null)
+            {
+                File.Move(OldFileName, NewFileName);
+                return 0;
+            }
+
+            return -1;
+        }
+
+        public long RenameDirectory(ServiceCtx Context)
+        {
+            long OldPosition = Context.Request.PtrBuff[0].Position;
+            long NewPosition = Context.Request.PtrBuff[0].Position;
+            string OldName = AMemoryHelper.ReadAsciiString(Context.Memory, OldPosition);
+            string NewName = AMemoryHelper.ReadAsciiString(Context.Memory, NewPosition);
+            string OldDirName = Context.Ns.VFs.GetFullPath(Path, OldName);
+            string NewDirName = Context.Ns.VFs.GetFullPath(Path, NewName);
+
+            if (OldDirName != null && NewDirName != null)
+            {
+                Directory.Move(OldDirName, NewDirName);
+                return 0;
+            }
+
             return -1;
         }
 
@@ -122,6 +204,26 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             }
 
             //TODO: Correct error code.
+            return -1;
+        }
+
+        public long OpenDirectory(ServiceCtx Context)
+        {
+            long Position = Context.Request.PtrBuff[0].Position;
+
+            int FilterFlags = Context.RequestData.ReadInt32();
+
+            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position);
+
+            string DirName = Context.Ns.VFs.GetFullPath(Path, Name);
+
+            if(DirName != null)
+            {
+                MakeObject(Context, new IDirectory(DirName, FilterFlags));
+                return 0;
+            }
+
+            // TODO: Correct error code.
             return -1;
         }
 
