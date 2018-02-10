@@ -104,6 +104,7 @@ namespace Ryujinx.OsHle.Objects.FspSrv
                 return 0;
             }
 
+            // TODO: Correct error code.
             return -1;
         }
 
@@ -119,6 +120,7 @@ namespace Ryujinx.OsHle.Objects.FspSrv
                 return 0;
             }
 
+            // TODO: Correct error code.
             return -1;
         }
 
@@ -137,6 +139,7 @@ namespace Ryujinx.OsHle.Objects.FspSrv
                 return 0;
             }
 
+            // TODO: Correct error code.
             return -1;
         }
 
@@ -155,6 +158,7 @@ namespace Ryujinx.OsHle.Objects.FspSrv
                 return 0;
             }
 
+            // TODO: Correct error code.
             return -1;
         }
 
