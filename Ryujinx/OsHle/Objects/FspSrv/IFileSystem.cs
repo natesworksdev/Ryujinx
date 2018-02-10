@@ -17,14 +17,63 @@ namespace Ryujinx.OsHle.Objects.FspSrv
 
         public IFileSystem(string Path)
         {
+            //TODO: implement.
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
+                {  0, CreateFile   },
+                {  1, DeleteFile   },
+                //{  2, CreateDirectory },
+                //{  3, DeleteDirectory },
+                //{  4, DeleteDirectoryRecursively },
+                //{  5, RenameFile },
+                //{  6, GetEntryType },
                 {  7, GetEntryType },
                 {  8, OpenFile     },
-                { 10, Commit       }
+                //{  9, OpenDirectory },
+                { 10, Commit       },
+                //{ 11, GetFreeSpaceSize },
+                //{ 12, GetTotalSpaceSize },
+                //{ 13, CleanDirectoryRecursively },
+                //{ 14, GetFileTimeStampRaw }
             };
 
             this.Path = Path;
+        }
+
+        public long CreateFile(ServiceCtx Context)
+        {
+            long Position = Context.Request.PtrBuff[0].Position;
+            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position);
+            ulong Mode = Context.RequestData.ReadUInt64();
+            uint Size = Context.RequestData.ReadUInt32();
+            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+
+            if (FileName != null)
+            {
+                FileStream NewFile = File.Create(FileName);
+                NewFile.SetLength(Size);
+                NewFile.Close();
+                return 0;
+            }
+
+            //TODO: Correct error code.
+            return -1;
+        }
+
+        public long DeleteFile(ServiceCtx Context)
+        {
+            long Position = Context.Request.PtrBuff[0].Position;
+            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position);
+            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+
+            if (FileName != null)
+            {
+                File.Delete(FileName);
+                return 0;
+            }
+
+            //TODO: Correct error code.
+            return -1;
         }
 
         public long GetEntryType(ServiceCtx Context)
@@ -64,11 +113,16 @@ namespace Ryujinx.OsHle.Objects.FspSrv
                 return -1;
             }
 
-            FileStream Stream = new FileStream(FileName, FileMode.OpenOrCreate);
+            if (File.Exists(FileName))
+            {
+                FileStream Stream = new FileStream(FileName, FileMode.OpenOrCreate);
+                MakeObject(Context, new IFile(Stream));
 
-            MakeObject(Context, new IFile(Stream));
+                return 0;
+            }
 
-            return 0;
+            //TODO: Correct error code.
+            return -1;
         }
 
         public long Commit(ServiceCtx Context)
