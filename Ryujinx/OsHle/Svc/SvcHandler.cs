@@ -15,6 +15,7 @@ namespace Ryujinx.OsHle.Svc
             { 0x03, SvcSetMemoryAttribute            },
             { 0x04, SvcMapMemory                     },
             { 0x06, SvcQueryMemory                   },
+            { 0x07, SvcExitProcess                   },
             { 0x08, SvcCreateThread                  },
             { 0x09, SvcStartThread                   },
             { 0x0b, SvcSleepThread                   },
