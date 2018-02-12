@@ -21,8 +21,8 @@ namespace Ryujinx.OsHle.Objects.FspSrv
                 { 0, Read  },
                 { 1, Write },
                 // { 2, Flush },
-                { 3, GetSize },
-                { 4, SetSize }
+                { 3, SetSize },
+                { 4, GetSize }
             };
 
             this.BaseStream = BaseStream;
