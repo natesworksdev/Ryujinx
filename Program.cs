@@ -57,7 +57,7 @@ namespace Ryujinx
                 Screen.Run(60.0);
             }
 
-            Ns.Os.StopAllProcesses();
+            Ns.Os.FinalizeAllProcesses();
 
             Ns.Dispose();
         }
