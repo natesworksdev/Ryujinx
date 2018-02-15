@@ -24,6 +24,12 @@ namespace Ryujinx.Tests.Cpu
             Memory.Manager.MapPhys(0x1000, 0x1000, 2, AMemoryPerm.Read | AMemoryPerm.Write | AMemoryPerm.Execute);
         }
 
+        [TearDown]
+        public void Teardown()
+        {
+            Marshal.FreeHGlobal(Ram);
+        }
+
         private void Execute(AThread Thread)
         {
             AutoResetEvent Wait = new AutoResetEvent(false);
