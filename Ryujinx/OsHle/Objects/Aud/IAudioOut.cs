@@ -145,8 +145,9 @@ namespace Ryujinx.OsHle.Objects.Aud
             if (KeysQueue.Count > 0) TempKey = KeysQueue.Dequeue();
 
             AMemoryHelper.WriteBytes(Context.Memory, Context.Request.ReceiveBuff[0].Position, BitConverter.GetBytes(TempKey));
-
-            Context.ResponseData.Write(1);
+            
+            int ReleasedBuffersCount = 1;
+            Context.ResponseData.Write(ReleasedBuffersCount);
 
             if (OpenALInstalled)
             {
