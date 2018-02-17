@@ -198,12 +198,5 @@ namespace Ryujinx.OsHle
                 Ns.Hid.Init(Position);
             }
         }
-
-        public long GetVirtHidOffset()
-        {
-            HidSharedMem.TryGetLastVirtualPosition(out long Position);
-
-            return Position;
-        }
     }
 }
