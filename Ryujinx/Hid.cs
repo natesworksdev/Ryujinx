@@ -35,6 +35,7 @@ namespace Ryujinx
 
         private const int Hid_Num_Entries = 16;
         private Switch Ns;
+        private long SharedMemOffset;
 
         public Hid(Switch Ns)
         {
@@ -50,9 +51,11 @@ namespace Ryujinx
                     return;
                 }
 
+                SharedMemOffset = HidOffset;
+
                 uint InnerOffset = (uint)Marshal.SizeOf(typeof(HidSharedMemHeader));
 
-                IntPtr HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)HidOffset + InnerOffset);
+                IntPtr HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)SharedMemOffset + InnerOffset);
 
                 HidTouchScreen TouchScreen = new HidTouchScreen();
                 TouchScreen.Header.TimestampTicks = (ulong)Environment.TickCount;
@@ -61,11 +64,11 @@ namespace Ryujinx
                 TouchScreen.Header.MaxEntryIndex = (ulong)Hid_Num_Entries - 1;
                 TouchScreen.Header.Timestamp = (ulong)Environment.TickCount;
 
-                //Don't need to write it right now.
+                //TODO: Write this structure when the input is implemented
                 //Marshal.StructureToPtr(TouchScreen, HidPtr, false);
 
                 InnerOffset += (uint)Marshal.SizeOf(typeof(HidTouchScreen));
-                HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)HidOffset + InnerOffset);
+                HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)SharedMemOffset + InnerOffset);
 
                 HidMouse Mouse = new HidMouse();
                 Mouse.Header.TimestampTicks = (ulong)Environment.TickCount;
@@ -73,11 +76,11 @@ namespace Ryujinx
                 Mouse.Header.LatestEntry = 0;
                 Mouse.Header.MaxEntryIndex = (ulong)Hid_Num_Entries - 1;
 
-                //Don't need to write it right now.
+                //TODO: Write this structure when the input is implemented
                 //Marshal.StructureToPtr(Mouse, HidPtr, false);
 
                 InnerOffset += (uint)Marshal.SizeOf(typeof(HidMouse));
-                HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)HidOffset + InnerOffset);
+                HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)SharedMemOffset + InnerOffset);
 
                 HidKeyboard Keyboard = new HidKeyboard();
                 Keyboard.Header.TimestampTicks = (ulong)Environment.TickCount;
@@ -85,20 +88,24 @@ namespace Ryujinx
                 Keyboard.Header.LatestEntry = 0;
                 Keyboard.Header.MaxEntryIndex = (ulong)Hid_Num_Entries - 1;
 
-                //Don't need to write it right now.
+                //TODO: Write this structure when the input is implemented
                 //Marshal.StructureToPtr(Keyboard, HidPtr, false);
 
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidKeyboard));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidUnknownSection1)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection2)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection3)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection4));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidUnknownSection5)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection6)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection7));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidUnknownSection8)) + (uint)Marshal.SizeOf(typeof(HidControllerSerials));
+                InnerOffset += (uint)Marshal.SizeOf(typeof(HidKeyboard)) +
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection1)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection2)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection3)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection4)) +
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection5)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection6)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection7)) +
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection8)) + 
+                               (uint)Marshal.SizeOf(typeof(HidControllerSerials));
 
-                Console.WriteLine(InnerOffset);
-
-                //Increase the loop to Init more controller.
-                for (int i = 8; i < Enum.GetNames(typeof(HidControllerID)).Length - 2; i++)
+                //Increase the loop to initialize more controller.
+                for (int i = 8; i < Enum.GetNames(typeof(HidControllerID)).Length - 1; i++)
                 {
-                    HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)HidOffset + InnerOffset + (uint)(Marshal.SizeOf(typeof(HidController)) * i));
+                    HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)SharedMemOffset + InnerOffset + (uint)(Marshal.SizeOf(typeof(HidController)) * i));
 
                     HidController Controller = new HidController();
                     Controller.Header.Type = (uint)(HidControllerType.ControllerType_Handheld | HidControllerType.ControllerType_JoyconPair);
@@ -123,55 +130,56 @@ namespace Ryujinx
             }
         }
 
-        public void SendControllerButtons(HidControllerID ControllerId, HidControllerLayouts Layout, HidControllerKeys Buttons, JoystickPosition LeftJoystick, JoystickPosition RightJoystick)
+        public void SendControllerButtons(HidControllerID ControllerId, 
+                                          HidControllerLayouts Layout, 
+                                          HidControllerKeys Buttons, 
+                                          JoystickPosition LeftJoystick, 
+                                          JoystickPosition RightJoystick)
         {
-            unsafe
+            uint InnerOffset = (uint)Marshal.SizeOf(typeof(HidSharedMemHeader)) +
+                               (uint)Marshal.SizeOf(typeof(HidTouchScreen)) +
+                               (uint)Marshal.SizeOf(typeof(HidMouse)) +
+                               (uint)Marshal.SizeOf(typeof(HidKeyboard)) +
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection1)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection2)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection3)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection4)) +
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection5)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection6)) + 
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection7)) +
+                               (uint)Marshal.SizeOf(typeof(HidUnknownSection8)) + 
+                               (uint)Marshal.SizeOf(typeof(HidControllerSerials)) +
+                               ((uint)(Marshal.SizeOf(typeof(HidController)) * (int)ControllerId)) +
+                               (uint)Marshal.SizeOf(typeof(HidControllerHeader)) +
+                               (uint)Layout * (uint)Marshal.SizeOf(typeof(HidControllerLayout));
+
+            IntPtr HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)SharedMemOffset + InnerOffset);
+
+            HidControllerLayoutHeader OldControllerHeaderLayout = (HidControllerLayoutHeader)Marshal.PtrToStructure(HidPtr, typeof(HidControllerLayoutHeader));
+
+            HidControllerLayoutHeader ControllerLayoutHeader = new HidControllerLayoutHeader
             {
-                long HidOffset = Ns.Os.GetVirtHidOffset();
+                TimestampTicks = (ulong)Environment.TickCount,
+                NumEntries = (ulong)Hid_Num_Entries,
+                MaxEntryIndex = (ulong)Hid_Num_Entries - 1,
+                LatestEntry = (OldControllerHeaderLayout.LatestEntry < (ulong)Hid_Num_Entries ? OldControllerHeaderLayout.LatestEntry + 1 : 0)
+            };
 
-                if (HidOffset == 0 || HidOffset + Horizon.HidSize > uint.MaxValue)
-                {
-                    return;
-                }
+            Marshal.StructureToPtr(ControllerLayoutHeader, HidPtr, false);
 
-                uint InnerOffset = (uint)Marshal.SizeOf(typeof(HidSharedMemHeader));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidTouchScreen));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidMouse));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidKeyboard));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidUnknownSection1)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection2)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection3)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection4));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidUnknownSection5)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection6)) + (uint)Marshal.SizeOf(typeof(HidUnknownSection7));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidUnknownSection8)) + (uint)Marshal.SizeOf(typeof(HidControllerSerials));
-                InnerOffset += ((uint)(Marshal.SizeOf(typeof(HidController)) * (int)ControllerId));
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidControllerHeader));
-                InnerOffset += (uint)Layout * (uint)Marshal.SizeOf(typeof(HidControllerLayout));
-                IntPtr HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)HidOffset + InnerOffset);
+            InnerOffset += (uint)Marshal.SizeOf(typeof(HidControllerLayoutHeader)) + (uint)((uint)(ControllerLayoutHeader.LatestEntry) * Marshal.SizeOf(typeof(HidControllerInputEntry)));
+            HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)SharedMemOffset + InnerOffset);
 
-                HidControllerLayoutHeader OldControllerHeaderLayout = (HidControllerLayoutHeader)Marshal.PtrToStructure(HidPtr, typeof(HidControllerLayoutHeader));
+            HidControllerInputEntry ControllerInputEntry = new HidControllerInputEntry();
+            ControllerInputEntry.Timestamp = (ulong)Environment.TickCount;
+            ControllerInputEntry.Timestamp_2 = (ulong)Environment.TickCount;
+            ControllerInputEntry.Buttons = (ulong)Buttons;
+            ControllerInputEntry.Joysticks = new JoystickPosition[(int)HidControllerJoystick.Joystick_Num_Sticks];
+            ControllerInputEntry.Joysticks[(int)HidControllerJoystick.Joystick_Left] = LeftJoystick;
+            ControllerInputEntry.Joysticks[(int)HidControllerJoystick.Joystick_Right] = RightJoystick;
+            ControllerInputEntry.ConnectionState = (ulong)(HidControllerConnectionState.Controller_State_Connected | HidControllerConnectionState.Controller_State_Wired);
 
-                HidControllerLayoutHeader ControllerLayoutHeader = new HidControllerLayoutHeader
-                {
-                    TimestampTicks = (ulong)Environment.TickCount,
-                    NumEntries = (ulong)Hid_Num_Entries,
-                    MaxEntryIndex = (ulong)Hid_Num_Entries - 1,
-                    LatestEntry = (OldControllerHeaderLayout.LatestEntry < (ulong)Hid_Num_Entries ? OldControllerHeaderLayout.LatestEntry + 1 : 0)
-                };
-
-                Marshal.StructureToPtr(ControllerLayoutHeader, HidPtr, false);
-
-                InnerOffset += (uint)Marshal.SizeOf(typeof(HidControllerLayoutHeader)) + (uint)((uint)(ControllerLayoutHeader.LatestEntry) * Marshal.SizeOf(typeof(HidControllerInputEntry)));
-                HidPtr = new IntPtr(Ns.Ram.ToInt64() + (uint)HidOffset + InnerOffset);
-
-                HidControllerInputEntry ControllerInputEntry = new HidControllerInputEntry();
-                ControllerInputEntry.Timestamp = (ulong)Environment.TickCount;
-                ControllerInputEntry.Timestamp_2 = (ulong)Environment.TickCount;
-                ControllerInputEntry.Buttons = (ulong)Buttons;
-                ControllerInputEntry.Joysticks = new JoystickPosition[(int)HidControllerJoystick.Joystick_Num_Sticks];
-                ControllerInputEntry.Joysticks[(int)HidControllerJoystick.Joystick_Left] = LeftJoystick;
-                ControllerInputEntry.Joysticks[(int)HidControllerJoystick.Joystick_Right] = RightJoystick;
-                ControllerInputEntry.ConnectionState = (ulong)(HidControllerConnectionState.Controller_State_Connected | HidControllerConnectionState.Controller_State_Wired);
-
-                Marshal.StructureToPtr(ControllerInputEntry, HidPtr, false);
-            }
+            Marshal.StructureToPtr(ControllerInputEntry, HidPtr, false);
         }
     }
 }

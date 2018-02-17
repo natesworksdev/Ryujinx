@@ -330,7 +330,7 @@ void main(void) {
                 DY = RightJoystickDY
             };
 
-            //We just need one pair of JoyCon for because it's a faked one :P.
+            //We just need one pair of JoyCon because it's emulate by the keyboard.
             Ns.Hid.SendControllerButtons(HidControllerID.CONTROLLER_HANDHELD, HidControllerLayouts.Main, CurrentButton, LeftJoystick, RightJoystick);
         }
 

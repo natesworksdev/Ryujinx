@@ -2,7 +2,8 @@
 
 namespace Ryujinx
 {
-    public struct HidKeyboardHeader //Size: 0x20
+    [StructLayout(LayoutKind.Sequential, Size = 0x20)]
+    public struct HidKeyboardHeader
     {
         public ulong TimestampTicks;
         public ulong NumEntries;
@@ -10,8 +11,8 @@ namespace Ryujinx
         public ulong MaxEntryIndex;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct HidKeyboardEntry //Size: 0x38
+    [StructLayout(LayoutKind.Sequential, Size = 0x38)]
+    public struct HidKeyboardEntry
     {
         public ulong Timestamp;
         public ulong Timestamp_2;
@@ -20,8 +21,8 @@ namespace Ryujinx
         public uint[] Keys;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct HidKeyboard //Size: 0x400
+    [StructLayout(LayoutKind.Sequential, Size = 0x400)]
+    public struct HidKeyboard
     {
         public HidKeyboardHeader Header;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 17)]

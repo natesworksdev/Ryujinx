@@ -2,7 +2,8 @@
 
 namespace Ryujinx
 {
-    public struct HidMouseHeader //Size: 0x20
+    [StructLayout(LayoutKind.Sequential, Size = 0x20)]
+    public struct HidMouseHeader
     {
         public ulong TimestampTicks;
         public ulong NumEntries;
@@ -10,7 +11,8 @@ namespace Ryujinx
         public ulong MaxEntryIndex;
     }
 
-    public struct HidMouseEntry //Size: 0x30
+    [StructLayout(LayoutKind.Sequential, Size = 0x30)]
+    public struct HidMouseEntry
     {
         public ulong Timestamp;
         public ulong Timestamp_2;
@@ -23,8 +25,8 @@ namespace Ryujinx
         public ulong Buttons;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct HidMouse //Size: 0x400
+    [StructLayout(LayoutKind.Sequential, Size = 0x400)]
+    public struct HidMouse
     {
         public HidMouseHeader Header;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 17)]
