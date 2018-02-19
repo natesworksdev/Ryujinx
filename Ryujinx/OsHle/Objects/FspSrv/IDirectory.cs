@@ -78,12 +78,17 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             long BufferLen      = Context.Request.ReceiveBuff[0].Size;
             long MaxDirectories = BufferLen / DirectoryEntrySize;
 
-            if (MaxDirectories >= DirectoryEntries.Count) MaxDirectories = DirectoryEntries.Count;
-
-            int CurrentIndex, CurrentItem;
-            byte[] DirectoryEntry = new byte[DirectoryEntrySize];
-            for (CurrentIndex = 0, CurrentItem = LastItem; CurrentIndex < MaxDirectories; CurrentIndex++, CurrentItem++)
+            if (MaxDirectories > DirectoryEntries.Count - LastItem)
             {
+                MaxDirectories = DirectoryEntries.Count - LastItem;
+            }
+
+            int CurrentIndex;
+            byte[] DirectoryEntry = new byte[DirectoryEntrySize];
+            for (CurrentIndex = 0; CurrentIndex < MaxDirectories; CurrentIndex++)
+            {
+                int CurrentItem = LastItem + CurrentIndex;
+
                 MemoryStream MemStream = new MemoryStream();
                 BinaryWriter Writer    = new BinaryWriter(MemStream);
                 
@@ -100,7 +105,7 @@ namespace Ryujinx.OsHle.Objects.FspSrv
 
             if (LastItem < DirectoryEntries.Count)
             {
-                LastItem = CurrentItem;
+                LastItem += CurrentIndex;
                 Context.ResponseData.Write((long)CurrentIndex); // index = number of entries written this call.
             }
             else
