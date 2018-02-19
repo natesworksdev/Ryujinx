@@ -21,37 +21,23 @@ https://openal.org/downloads/OpenAL11CoreSDK.zip
    - Arrows.
    - Enter > "Start" & Tab > "Select"
    - Qwerty: 
-     - A > "A"
+     - A > "A" (QWERTY) / Q > "A" (AZERTY)
      - S > "B"
-     - Z > "X"
+     - Z > "X" (QWERTY) / W > "X" (AZERTY)
      - X > "Y"
-   - Azerty:
-     - Q > "A"
-     - S > "B"
-     - W > "X"
-     - X > "Y" 
+     - Key_Up > "Right Stick Up"
+     - Key_Down > "Right Stick Down"
+     - Key_Left > "Right Stick Left"
+     - Key_Right > "Right Stick Right"
+     - I > "Left Stick Up"
+     - K > "Left Stick Down"
+     - J > "Left Stick Left"
+     - L > "Left Stick Right"
+     - Tab > "Minus"
+     - Enter > "Plus"
 
- - Config File: `Ryujinx.conf` should be present on executable folder.
-   - Logging_Enable_Info (bool)
-   Enable the Informations Logging.
-
-   - Logging_Enable_Trace (bool)
-   Enable the Trace Logging (Enabled in Debug recommanded).
-
-   - Logging_Enable_Debug (bool)
-   Enable the Debug Logging (Enabled in Debug recommanded).
-
-   - Logging_Enable_Warn (bool)
-   Enable the Warning Logging (Enabled in Debug recommanded).
-
-   - Logging_Enable_Error (bool)
-   Enable the Error Logging (Enabled in Debug recommanded).
-
-   - Logging_Enable_Fatal (bool)
-   Enable the Fatal Logging (Enabled in Debug recommanded).
-
-   - Logging_Enable_LogFile (bool)
-   Enable writing the logging inside a Ryujinx.log file.
+ - Config File: `Ryujinx.conf` should be present in executable folder.
+   For more informations [you can go here](CONFIG.md).
 
 **Help**
 
@@ -68,7 +54,7 @@ To run this emulator, you need the .NET Core 2.0 (or higher) SDK.
 Run `dotnet run -c Release -- path\to\homebrew.nro` inside the Ryujinx solution folder to run homebrew apps.
 Run `dotnet run -c Release -- path\to\game_exefs_and_romfs_folder` to run official games (they need to be decrypted and extracted first!).
 
-Audio is partially supported (glitched) on Windows, you need to install the OpenAL Core SDK:
+Audio is partially supported (glitched) on Linux and macOS, for Windows you need to install the OpenAL Core SDK:
 https://openal.org/downloads/OpenAL11CoreSDK.zip
 
 **Lastest build**

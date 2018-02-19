@@ -7,7 +7,7 @@ namespace Ryujinx.OsHle.Svc
 {
     partial class SvcHandler
     {
-        private delegate void SvcFunc(ARegisters Registers);
+        private delegate void SvcFunc(AThreadState ThreadState);
 
         private Dictionary<int, SvcFunc> SvcFuncs;
 
@@ -25,6 +25,7 @@ namespace Ryujinx.OsHle.Svc
                 { 0x03, SvcSetMemoryAttribute            },
                 { 0x04, SvcMapMemory                     },
                 { 0x06, SvcQueryMemory                   },
+                { 0x07, SvcExitProcess                   },
                 { 0x08, SvcCreateThread                  },
                 { 0x09, SvcStartThread                   },
                 { 0x0b, SvcSleepThread                   },
@@ -60,15 +61,15 @@ namespace Ryujinx.OsHle.Svc
 
         public void SvcCall(object sender, AInstExceptEventArgs e)
         {
-            ARegisters Registers = (ARegisters)sender;
+            AThreadState ThreadState = (AThreadState)sender;
 
             if (SvcFuncs.TryGetValue(e.Id, out SvcFunc Func))
             {
-                Logging.Trace($"(Thread {Registers.ThreadId}) {Func.Method.Name} called.");
+                Logging.Trace($"(Thread {ThreadState.ThreadId}) {Func.Method.Name} called.");
 
-                Func(Registers);
+                Func(ThreadState);
 
-                Logging.Trace($"(Thread {Registers.ThreadId}) {Func.Method.Name} ended.");
+                Logging.Trace($"(Thread {ThreadState.ThreadId}) {Func.Method.Name} ended.");
             }
             else
             {

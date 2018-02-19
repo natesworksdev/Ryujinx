@@ -70,6 +70,8 @@ namespace Ryujinx.OsHle
 
         public void LoadProgram(IExecutable Program)
         {
+            Logging.Info($"Image base at 0x{ImageBase:x16}.");
+
             Executable Executable = new Executable(Program, Memory, ImageBase);
 
             Executables.Add(Executable);
@@ -174,19 +176,19 @@ namespace Ryujinx.OsHle
                 return -1;
             }
 
-            Thread.Registers.Break     += BreakHandler;
-            Thread.Registers.SvcCall   += SvcHandler.SvcCall;
-            Thread.Registers.Undefined += UndefinedHandler;
-            Thread.Registers.ProcessId  = ProcessId;
-            Thread.Registers.ThreadId   = Ns.Os.IdGen.GenerateId();
-            Thread.Registers.Tpidr      = TlsPageAddr + TlsSlot * TlsSize;
-            Thread.Registers.X0         = (ulong)ArgsPtr;
-            Thread.Registers.X1         = (ulong)Handle;
-            Thread.Registers.X31        = (ulong)StackTop;
+            Thread.ThreadState.Break     += BreakHandler;
+            Thread.ThreadState.SvcCall   += SvcHandler.SvcCall;
+            Thread.ThreadState.Undefined += UndefinedHandler;
+            Thread.ThreadState.ProcessId  = ProcessId;
+            Thread.ThreadState.ThreadId   = Ns.Os.IdGen.GenerateId();
+            Thread.ThreadState.Tpidr      = TlsPageAddr + TlsSlot * TlsSize;
+            Thread.ThreadState.X0         = (ulong)ArgsPtr;
+            Thread.ThreadState.X1         = (ulong)Handle;
+            Thread.ThreadState.X31        = (ulong)StackTop;
 
             Thread.WorkFinished += ThreadFinished;
 
-            ThreadsByTpidr.TryAdd(Thread.Registers.Tpidr, ThreadHnd);
+            ThreadsByTpidr.TryAdd(Thread.ThreadState.Tpidr, ThreadHnd);
 
             return Handle;
         }
@@ -218,7 +220,7 @@ namespace Ryujinx.OsHle
         {
             if (sender is AThread Thread)
             {
-                TlsSlots.TryRemove(GetTlsSlot(Thread.Registers.Tpidr), out _);
+                TlsSlots.TryRemove(GetTlsSlot(Thread.ThreadState.Tpidr), out _);
 
                 Ns.Os.IdGen.DeleteId(Thread.ThreadId);
             }
@@ -229,9 +231,14 @@ namespace Ryujinx.OsHle
             return (int)((Position - TlsPageAddr) / TlsSize);
         }
 
-        public bool TryGetThread(long Tpidr, out HThread Thread)
+        public HThread GetThread(long Tpidr)
         {
-            return ThreadsByTpidr.TryGetValue(Tpidr, out Thread);
+            if (!ThreadsByTpidr.TryGetValue(Tpidr, out HThread Thread))
+            {
+                Logging.Error($"Thread with TPIDR 0x{Tpidr:x16} not found!");
+            }
+
+            return Thread;
         }
 
         public void Dispose()

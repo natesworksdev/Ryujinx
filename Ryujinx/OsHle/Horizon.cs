@@ -4,6 +4,7 @@ using Ryujinx.OsHle.Handles;
 using Ryujinx.OsHle.Utilities;
 using System.Collections.Concurrent;
 using System.IO;
+using System;
 
 namespace Ryujinx.OsHle
 {
@@ -30,6 +31,8 @@ namespace Ryujinx.OsHle
 
         private ConcurrentDictionary<int, Process> Processes;
 
+        private HSharedMem HidSharedMem;
+
         private AMemoryAlloc Allocator;
 
         private Switch Ns;
@@ -55,7 +58,12 @@ namespace Ryujinx.OsHle
             HidOffset  = Allocator.Alloc(HidSize);
             FontOffset = Allocator.Alloc(FontSize);
 
-            HidHandle  = Handles.GenerateId(new HSharedMem(HidOffset));
+            HidSharedMem = new HSharedMem(HidOffset);
+
+            HidSharedMem.MemoryMapped += HidInit;
+
+            HidHandle = Handles.GenerateId(HidSharedMem);
+
             FontHandle = Handles.GenerateId(new HSharedMem(FontOffset));
         }
 
@@ -78,6 +86,8 @@ namespace Ryujinx.OsHle
                     {
                         continue;
                     }
+
+                    Logging.Info($"Loading {Path.GetFileNameWithoutExtension(File)}...");
 
                     using (FileStream Input = new FileStream(File, FileMode.Open))
                     {
@@ -102,7 +112,7 @@ namespace Ryujinx.OsHle
             Processes.TryAdd(ProcessId, MainProcess);
         }
 
-         public void LoadProgram(string FileName)
+        public void LoadProgram(string FileName)
         {
             int ProcessId = IdGen.GenerateId();
 
@@ -136,6 +146,23 @@ namespace Ryujinx.OsHle
             }
         }
 
+        internal bool ExitProcess(int ProcessId)
+        {
+            bool Success = Processes.TryRemove(ProcessId, out Process Process);
+            
+            if (Success)
+            {
+                Process.StopAllThreads();
+            }
+
+            if (Processes.Count == 0)
+            {
+                Ns.OnFinish(EventArgs.Empty);
+            }
+
+            return Success;
+        }
+
         internal bool TryGetProcess(int ProcessId, out Process Process)
         {
             if (!Processes.TryGetValue(ProcessId, out Process))
@@ -161,11 +188,15 @@ namespace Ryujinx.OsHle
             Handles.Delete(Handle);
         }
 
-        public long GetVirtHidOffset()
+        private void HidInit(object sender, EventArgs e)
         {
-            HSharedMem HidSharedMem = Handles.GetData<HSharedMem>(HidHandle);
+            HSharedMem SharedMem = (HSharedMem)sender;
 
-            return HidSharedMem.VirtPos;
+            if (SharedMem.TryGetLastVirtualPosition(out long Position))
+            {
+                Logging.Info($"HID shared memory successfully mapped to {Position:x16}!");
+                Ns.Hid.Init(Position);
+            }
         }
     }
 }

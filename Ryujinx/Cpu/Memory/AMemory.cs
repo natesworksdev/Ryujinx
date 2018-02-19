@@ -2,12 +2,13 @@ using ChocolArm64.Exceptions;
 using ChocolArm64.State;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ChocolArm64.Memory
 {
     public unsafe class AMemory
     {
-        private const long ErgMask = (4 << ARegisters.ErgSizeLog2) - 1;
+        private const long ErgMask = (4 << AThreadState.ErgSizeLog2) - 1;
 
         public AMemoryMgr Manager { get; private set; }
 
@@ -64,13 +65,13 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public void SetExclusive(ARegisters Registers, long Position)
+        public void SetExclusive(AThreadState ThreadState, long Position)
         {
             Position &= ~ErgMask;
 
             lock (Monitors)
             {
-                if (Monitors.TryGetValue(Registers.ThreadId, out ExMonitor Monitor))
+                if (Monitors.TryGetValue(ThreadState.ThreadId, out ExMonitor Monitor))
                 {
                     ExAddrs.Remove(Monitor.Position);
                 }
@@ -79,20 +80,20 @@ namespace ChocolArm64.Memory
 
                 Monitor = new ExMonitor(Position, ExState);
 
-                if (!Monitors.TryAdd(Registers.ThreadId, Monitor))
+                if (!Monitors.TryAdd(ThreadState.ThreadId, Monitor))
                 {
-                    Monitors[Registers.ThreadId] = Monitor;
+                    Monitors[ThreadState.ThreadId] = Monitor;
                 }
             }
         }
 
-        public bool TestExclusive(ARegisters Registers, long Position)
+        public bool TestExclusive(AThreadState ThreadState, long Position)
         {
             Position &= ~ErgMask;
 
             lock (Monitors)
             {
-                if (!Monitors.TryGetValue(Registers.ThreadId, out ExMonitor Monitor))
+                if (!Monitors.TryGetValue(ThreadState.ThreadId, out ExMonitor Monitor))
                 {
                     return false;
                 }
@@ -101,11 +102,11 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public void ClearExclusive(ARegisters Registers)
+        public void ClearExclusive(AThreadState ThreadState)
         {
             lock (Monitors)
             {
-                if (Monitors.TryGetValue(Registers.ThreadId, out ExMonitor Monitor))
+                if (Monitors.TryGetValue(ThreadState.ThreadId, out ExMonitor Monitor))
                 {
                     Monitor.Reset();
                     ExAddrs.Remove(Monitor.Position);
@@ -138,6 +139,7 @@ namespace ChocolArm64.Memory
         public int   ReadInt32(long Position) =>   (int)ReadUInt32(Position);
         public long  ReadInt64(long Position) =>  (long)ReadUInt64(Position);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(long Position)
         {
 #if DEBUG
@@ -147,6 +149,7 @@ namespace ChocolArm64.Memory
             return *((byte*)(RamPtr + (uint)Position));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort ReadUInt16(long Position)
         {
 #if DEBUG
@@ -156,6 +159,7 @@ namespace ChocolArm64.Memory
             return *((ushort*)(RamPtr + (uint)Position));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint ReadUInt32(long Position)
         {
 #if DEBUG
@@ -165,6 +169,7 @@ namespace ChocolArm64.Memory
             return *((uint*)(RamPtr + (uint)Position));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong ReadUInt64(long Position)
         {
 #if DEBUG
@@ -174,6 +179,47 @@ namespace ChocolArm64.Memory
             return *((ulong*)(RamPtr + (uint)Position));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AVec ReadVector8(long Position)
+        {
+#if DEBUG
+            EnsureAccessIsValid(Position, AMemoryPerm.Read);
+#endif
+
+            return new AVec() { B0 = ReadByte(Position) };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AVec ReadVector16(long Position)
+        {
+#if DEBUG
+            EnsureAccessIsValid(Position, AMemoryPerm.Read);
+#endif
+
+            return new AVec() { H0 = ReadUInt16(Position) };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AVec ReadVector32(long Position)
+        {
+#if DEBUG
+            EnsureAccessIsValid(Position, AMemoryPerm.Read);
+#endif
+
+            return new AVec() { W0 = ReadUInt32(Position) };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AVec ReadVector64(long Position)
+        {
+#if DEBUG
+            EnsureAccessIsValid(Position, AMemoryPerm.Read);
+#endif
+
+            return new AVec() { X0 = ReadUInt64(Position) };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector128(long Position)
         {
 #if DEBUG
@@ -192,6 +238,7 @@ namespace ChocolArm64.Memory
         public void WriteInt32(long Position, int   Value) => WriteUInt32(Position,   (uint)Value);
         public void WriteInt64(long Position, long  Value) => WriteUInt64(Position,  (ulong)Value);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteByte(long Position, byte Value)
         {
 #if DEBUG
@@ -201,6 +248,7 @@ namespace ChocolArm64.Memory
             *((byte*)(RamPtr + (uint)Position)) = Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt16(long Position, ushort Value)
         {
 #if DEBUG
@@ -210,6 +258,7 @@ namespace ChocolArm64.Memory
             *((ushort*)(RamPtr + (uint)Position)) = Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt32(long Position, uint Value)
         {
 #if DEBUG
@@ -219,6 +268,7 @@ namespace ChocolArm64.Memory
             *((uint*)(RamPtr + (uint)Position)) = Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt64(long Position, ulong Value)
         {
 #if DEBUG
@@ -228,6 +278,47 @@ namespace ChocolArm64.Memory
             *((ulong*)(RamPtr + (uint)Position)) = Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteVector8(long Position, AVec Value)
+        {
+#if DEBUG
+            EnsureAccessIsValid(Position, AMemoryPerm.Write);
+#endif
+
+            WriteByte(Position, Value.B0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteVector16(long Position, AVec Value)
+        {
+#if DEBUG
+            EnsureAccessIsValid(Position, AMemoryPerm.Write);
+#endif
+
+            WriteUInt16(Position, Value.H0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteVector32(long Position, AVec Value)
+        {
+#if DEBUG
+            EnsureAccessIsValid(Position, AMemoryPerm.Write);
+#endif
+
+            WriteUInt32(Position, Value.W0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteVector64(long Position, AVec Value)
+        {
+#if DEBUG
+            EnsureAccessIsValid(Position, AMemoryPerm.Write);
+#endif
+
+            WriteUInt64(Position, Value.X0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector128(long Position, AVec Value)
         {
 #if DEBUG

@@ -3,12 +3,8 @@ using ChocolArm64.State;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeSimdMemSs : AOpCode, IAOpCodeSimd
+    class AOpCodeSimdMemSs : AOpCodeMemReg, IAOpCodeSimd
     {
-        public int  Rt        { get; private set; }
-        public int  Rn        { get; private set; }
-        public int  Size      { get; private set; }
-        public int  Rm        { get; private set; }
         public int  SElems    { get; private set; }
         public int  Index     { get; private set; }
         public bool Replicate { get; private set; }
@@ -31,11 +27,9 @@ namespace ChocolArm64.Decoder
 
             switch (Scale)
             {
-                case 0: Index >>= 0; break;
-
                 case 1:
                 {
-                    if ((Index & 1) != 0)
+                    if ((Size & 1) != 0)
                     {
                         Inst = AInst.Undefined;
 
@@ -49,23 +43,23 @@ namespace ChocolArm64.Decoder
 
                 case 2:
                 {
-                    if ((Index & 2) != 0 ||
-                       ((Index & 1) != 0 && S != 0))
+                    if ((Size & 2) != 0 ||
+                       ((Size & 1) != 0 && S != 0))
                     {
                         Inst = AInst.Undefined;
 
                         return;
                     }
 
-                    if ((Index & 1) != 0)
+                    if ((Size & 1) != 0)
                     {
                         Index >>= 3;
+
+                        Scale = 3;
                     }
                     else
                     {
                         Index >>= 2;
-
-                        Scale = 3;
                     }
 
                     break;
@@ -91,9 +85,8 @@ namespace ChocolArm64.Decoder
             this.SElems = SElems;
             this.Size   = Scale;
 
-            Rt    =  (OpCode >>  0) & 0x1f;
-            Rn    =  (OpCode >>  5) & 0x1f;
-            Rm    =  (OpCode >> 16) & 0x1f;
+            Extend64 = false;
+
             WBack = ((OpCode >> 23) & 0x1) != 0;
 
             RegisterSize = Q != 0

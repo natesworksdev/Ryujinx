@@ -8,9 +8,9 @@ namespace ChocolArm64
 {
     class ATranslator
     {
-        private Dictionary<long, ATranslatedSub> CachedSubs;
-
         public AThread Thread { get; private set; }
+
+        private Dictionary<long, ATranslatedSub> CachedSubs;
 
         private bool KeepRunning;
 
@@ -31,11 +31,11 @@ namespace ChocolArm64
             {
                 if (CachedSubs.TryGetValue(Position, out ATranslatedSub Sub) && !Sub.NeedsReJit)
                 {
-                    Position = Sub.Execute(Thread.Registers, Thread.Memory);
+                    Position = Sub.Execute(Thread.ThreadState, Thread.Memory);
                 }
                 else
                 {
-                    Position = TranslateSubroutine(Position).Execute(Thread.Registers, Thread.Memory);
+                    Position = TranslateSubroutine(Position).Execute(Thread.ThreadState, Thread.Memory);
                 }
             }
             while (Position != 0 && KeepRunning);

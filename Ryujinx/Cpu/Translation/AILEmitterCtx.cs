@@ -37,6 +37,7 @@ namespace ChocolArm64.Translation
         private const int Tmp2Index = -2;
         private const int Tmp3Index = -3;
         private const int Tmp4Index = -4;
+        private const int Tmp5Index = -5;
 
         public AILEmitterCtx(ATranslator Translator, ABlock[] Graph, ABlock Root)
         {
@@ -91,7 +92,7 @@ namespace ChocolArm64.Translation
         }
 
         public bool TryOptEmitSubroutineCall()
-        {           
+        {
             if (!Translator.TryGetCachedSub(CurrOp, out ATranslatedSub Sub))
             {
                 return false;
@@ -149,8 +150,8 @@ namespace ChocolArm64.Translation
 
             if (LastCmpOp != null && LastFlagOp == LastCmpOp && BranchOps.ContainsKey(Cond))
             {
-                Ldloc(Tmp3Index, AIoType.Int, GetIntType(LastCmpOp));
-                Ldloc(Tmp4Index, AIoType.Int, GetIntType(LastCmpOp));
+                Ldloc(Tmp3Index, AIoType.Int, LastCmpOp.RegisterSize);
+                Ldloc(Tmp4Index, AIoType.Int, LastCmpOp.RegisterSize);
 
                 if (LastCmpOp.Emitter == AInstEmit.Adds)
                 {
@@ -308,7 +309,7 @@ namespace ChocolArm64.Translation
 
         public void EmitLdintzr(int Index)
         {
-            if (Index != ARegisters.ZRIndex)
+            if (Index != AThreadState.ZRIndex)
             {
                 EmitLdint(Index);
             }
@@ -320,7 +321,7 @@ namespace ChocolArm64.Translation
 
         public void EmitStintzr(int Index)
         {
-            if (Index != ARegisters.ZRIndex)
+            if (Index != AThreadState.ZRIndex)
             {
                 EmitStint(Index);
             }
@@ -343,17 +344,14 @@ namespace ChocolArm64.Translation
         public void EmitLdtmp() => EmitLdint(Tmp1Index);
         public void EmitSttmp() => EmitStint(Tmp1Index);
 
+        public void EmitLdvectmp() => EmitLdvec(Tmp5Index);
+        public void EmitStvectmp() => EmitStvec(Tmp5Index);
+
         public void EmitLdint(int Index) => Ldloc(Index, AIoType.Int);
         public void EmitStint(int Index) => Stloc(Index, AIoType.Int);
 
         public void EmitLdvec(int Index) => Ldloc(Index, AIoType.Vector);
         public void EmitStvec(int Index) => Stloc(Index, AIoType.Vector);
-
-        public void EmitLdvecsi(int Index) => Ldloc(Index, AIoType.VectorI);
-        public void EmitStvecsi(int Index) => Stloc(Index, AIoType.VectorI);
-
-        public void EmitLdvecsf(int Index) => Ldloc(Index, AIoType.VectorF);
-        public void EmitStvecsf(int Index) => Stloc(Index, AIoType.VectorF);
 
         public void EmitLdflg(int Index) => Ldloc(Index, AIoType.Flag);
         public void EmitStflg(int Index)
@@ -365,106 +363,17 @@ namespace ChocolArm64.Translation
 
         private void Ldloc(int Index, AIoType IoType)
         {
-            ILBlock.Add(new AILOpCodeLoad(Index, IoType, GetOperType(IoType)));
+            ILBlock.Add(new AILOpCodeLoad(Index, IoType, CurrOp.RegisterSize));
         }
 
-        private void Ldloc(int Index, AIoType IoType, Type Type)
+        private void Ldloc(int Index, AIoType IoType, ARegisterSize RegisterSize)
         {
-            ILBlock.Add(new AILOpCodeLoad(Index, IoType, Type));
+            ILBlock.Add(new AILOpCodeLoad(Index, IoType, RegisterSize));
         }
 
         private void Stloc(int Index, AIoType IoType)
         {
-            ILBlock.Add(new AILOpCodeStore(Index, IoType, GetOutOperType(IoType)));
-        }
-
-        private Type GetOutOperType(AIoType IoType)
-        {
-            //This instruction is used to convert between floating point
-            //types, so the input and output types are different.
-            if (CurrOp.Emitter == AInstEmit.Fcvt_S)
-            {
-                return GetFloatType(((AOpCodeSimd)CurrOp).Opc);
-            }
-            else
-            {
-                return GetOperType(IoType);
-            }
-        }
-
-        private Type GetOperType(AIoType IoType)
-        {
-            switch (IoType & AIoType.Mask)
-            {
-                case AIoType.Flag:   return typeof(bool);
-                case AIoType.Int:    return GetIntType(CurrOp);
-                case AIoType.Vector: return GetVecType(CurrOp, IoType);
-            }
-
-            throw new ArgumentException(nameof(IoType));
-        }
-
-        private Type GetIntType(AOpCode OpCode)
-        {
-            //Always default to 64-bits.
-            return OpCode.RegisterSize == ARegisterSize.Int32
-                ? typeof(uint)
-                : typeof(ulong);
-        }
-
-        private Type GetVecType(AOpCode OpCode, AIoType IoType)
-        {
-            if (!(OpCode is IAOpCodeSimd Op))
-            {
-                return typeof(AVec);
-            }
-
-            int Size = Op.Size;
-
-            if (Op.Emitter == AInstEmit.Fmov_Ftoi ||
-                Op.Emitter == AInstEmit.Fmov_Itof)
-            {
-                Size |= 2;
-            }
-
-            if (Op is AOpCodeMem || Op is IAOpCodeLit)
-            {
-                return Size < 4 ? typeof(ulong) : typeof(AVec);
-            }
-            else if (IoType == AIoType.VectorI)
-            {
-                return GetIntType(Size);
-            }
-            else if (IoType == AIoType.VectorF)
-            {
-                return GetFloatType(Size);
-            }
-
-            return typeof(AVec);
-        }
-
-        private static Type GetIntType(int Size)
-        {
-            switch (Size)
-            {
-                case 0: return typeof(byte);
-                case 1: return typeof(ushort);
-                case 2: return typeof(uint);
-                case 3: return typeof(ulong);
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(Size));
-        }
-
-        private static Type GetFloatType(int Size)
-        {
-            switch (Size)
-            {
-                case 0: return typeof(float);
-                case 1: return typeof(double);
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(Size));
+            ILBlock.Add(new AILOpCodeStore(Index, IoType, CurrOp.RegisterSize));
         }
 
         public void EmitCallPropGet(Type ObjType, string PropName)
