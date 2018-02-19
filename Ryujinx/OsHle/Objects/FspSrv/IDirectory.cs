@@ -70,7 +70,7 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             }
         }
 
-        private int ReadedItem = 0;
+        private int LastItem = 0;
         const   int DirectoryEntrySize = 0x310;
         public long Read(ServiceCtx Context)
         {
@@ -80,9 +80,9 @@ namespace Ryujinx.OsHle.Objects.FspSrv
 
             if (MaxDirectories >= DirectoryEntries.Count) MaxDirectories = DirectoryEntries.Count;
 
-            int CurrentItem;
+            int CurrentIndex, CurrentItem;
             byte[] DirectoryEntry = new byte[DirectoryEntrySize];
-            for (CurrentItem = 0; CurrentItem < MaxDirectories; CurrentItem++)
+            for (CurrentIndex = 0, CurrentItem = LastItem; CurrentItem < MaxDirectories; CurrentIndex++, CurrentItem++)
             {
                 MemoryStream MemStream = new MemoryStream();
                 BinaryWriter Writer    = new BinaryWriter(MemStream);
@@ -95,15 +95,18 @@ namespace Ryujinx.OsHle.Objects.FspSrv
 
                 MemStream.Seek(0, SeekOrigin.Begin);
                 MemStream.Read(DirectoryEntry, 0, 0x310);
-                AMemoryHelper.WriteBytes(Context.Memory, BufferPosition + DirectoryEntrySize * CurrentItem, DirectoryEntry);
+                AMemoryHelper.WriteBytes(Context.Memory, BufferPosition + DirectoryEntrySize * CurrentIndex, DirectoryEntry);
             }
 
-            if (ReadedItem == 0)
+            if (LastItem < DirectoryEntries.Count)
             {
-                ReadedItem = CurrentItem;
-                Context.ResponseData.Write((long)CurrentItem);
+                LastItem = CurrentItem;
+                Context.ResponseData.Write((long)CurrentIndex); // index = number of entries written this call.
             }
-            else Context.ResponseData.Write((long)0);
+            else
+            {
+                Context.ResponseData.Write((long)0);
+            }
 
             return 0;
         }

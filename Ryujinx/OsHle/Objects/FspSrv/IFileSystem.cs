@@ -223,8 +223,16 @@ namespace Ryujinx.OsHle.Objects.FspSrv
 
             if(DirName != null)
             {
-                MakeObject(Context, new IDirectory(DirName, FilterFlags));
-                return 0;
+                if (Directory.Exists(DirName))
+                {
+                    MakeObject(Context, new IDirectory(DirName, FilterFlags));
+                    return 0;
+                }
+                else
+                {
+                    // TODO: correct error code.
+                    return -1;
+                }
             }
 
             // TODO: Correct error code.
