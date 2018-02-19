@@ -2,6 +2,7 @@ using ChocolArm64.Memory;
 using Ryujinx.OsHle.Ipc;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Ryujinx.OsHle.Objects.FspSrv
@@ -9,14 +10,13 @@ namespace Ryujinx.OsHle.Objects.FspSrv
     struct DirectoryEntry
     {
         public string Name;
-        public byte Type;
-        public long Size;
+        public byte   Type;
+        public long   Size;
     }
 
     class IDirectory : IIpcInterface
     {
-        private List<DirectoryEntry> DirectoryEntries;
-        private int CurrentItem;
+        private List<DirectoryEntry> DirectoryEntries = new List<DirectoryEntry>();
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
         public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
@@ -24,62 +24,69 @@ namespace Ryujinx.OsHle.Objects.FspSrv
         private string HostPath;
 
         const int DirectoryEntryType_Directory = 0;
-        const int DirectoryEntryType_File = 0;
+        const int DirectoryEntryType_File      = 1;
         public IDirectory(string HostPath, int flags)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                {  0, Read   },
-                {  1, GetEntryCount   }
+                {  0, Read          },
+                {  1, GetEntryCount }
             };
 
             this.HostPath = HostPath;
 
-            if((flags & 1) == 1)
+            if ((flags & 1) == 1)
             {
-                string[] Directories = Directory.GetDirectories(HostPath, "*", SearchOption.TopDirectoryOnly);
-                foreach(string Directory in Directories)
+                string[] Directories = Directory.GetDirectories(HostPath, "*", SearchOption.TopDirectoryOnly).
+                             Where(x => (new FileInfo(x).Attributes & FileAttributes.Hidden) == 0).ToArray();
+                             
+                foreach (string Directory in Directories)
                 {
-                    DirectoryEntry Info = new DirectoryEntry();
-                    Info.Name = Directory;
-                    Info.Type = DirectoryEntryType_Directory;
-                    Info.Size = 0;
+                    DirectoryEntry Info = new DirectoryEntry
+                    {
+                        Name = Directory,
+                        Type = DirectoryEntryType_Directory,
+                        Size = 0
+                    };
                     DirectoryEntries.Add(Info);
                 }
             }
 
-            if((flags & 2) == 2)
+            if ((flags & 2) == 2)
             {
-                string[] Files = Directory.GetFiles(HostPath, "*", SearchOption.TopDirectoryOnly);
+                string[] Files = Directory.GetFiles(HostPath, "*", SearchOption.TopDirectoryOnly).
+                       Where(x => (new FileInfo(x).Attributes & FileAttributes.Hidden) == 0).ToArray();
+                       
                 foreach (string FileName in Files)
                 {
-                    DirectoryEntry Info = new DirectoryEntry();
-                    Info.Name = FileName;
-                    Info.Type = DirectoryEntryType_File;
-                    Info.Size = new FileInfo(FileName).Length;
+                    DirectoryEntry Info = new DirectoryEntry
+                    {
+                        Name = Path.GetFileName(FileName),
+                        Type = DirectoryEntryType_File,
+                        Size = new FileInfo(Path.Combine(HostPath, FileName)).Length
+                    };
                     DirectoryEntries.Add(Info);
                 }
             }
         }
 
-        const int DirectoryEntrySize = 0x310;
+        private int ReadedItem = 0;
+        const   int DirectoryEntrySize = 0x310;
         public long Read(ServiceCtx Context)
         {
-            long BufferPosition = Context.Request.PtrBuff[0].Position;
-            long BufferLen = Context.Request.PtrBuff[0].Size;
+            long BufferPosition = Context.Request.ReceiveBuff[0].Position;
+            long BufferLen      = Context.Request.ReceiveBuff[0].Size;
             long MaxDirectories = BufferLen / DirectoryEntrySize;
 
-            if(MaxDirectories == DirectoryEntries.Count)
-            {
-                MaxDirectories = DirectoryEntries.Count;
-            }
+            if (MaxDirectories >= DirectoryEntries.Count) MaxDirectories = DirectoryEntries.Count;
 
-            int CurrentIndex = 0;
+            int CurrentItem;
             byte[] DirectoryEntry = new byte[DirectoryEntrySize];
-            for(; CurrentItem < MaxDirectories; CurrentItem++)
+            for (CurrentItem = 0; CurrentItem < MaxDirectories; CurrentItem++)
             {
                 MemoryStream MemStream = new MemoryStream();
-                BinaryWriter Writer = new BinaryWriter(MemStream);
+                BinaryWriter Writer    = new BinaryWriter(MemStream);
+                
                 Writer.Write(Encoding.UTF8.GetBytes(DirectoryEntries[CurrentItem].Name));
                 Writer.Seek(0x304, SeekOrigin.Begin);
                 Writer.Write(DirectoryEntries[CurrentItem].Type);
@@ -88,11 +95,16 @@ namespace Ryujinx.OsHle.Objects.FspSrv
 
                 MemStream.Seek(0, SeekOrigin.Begin);
                 MemStream.Read(DirectoryEntry, 0, 0x310);
-                AMemoryHelper.WriteBytes(Context.Memory, BufferPosition + DirectoryEntrySize * CurrentIndex, DirectoryEntry);
-                CurrentIndex++;
+                AMemoryHelper.WriteBytes(Context.Memory, BufferPosition + DirectoryEntrySize * CurrentItem, DirectoryEntry);
             }
 
-            Context.ResponseData.Write(CurrentIndex + 1);
+            if (ReadedItem == 0)
+            {
+                ReadedItem = CurrentItem;
+                Context.ResponseData.Write((long)CurrentItem);
+            }
+            else Context.ResponseData.Write((long)0);
+
             return 0;
         }
 
