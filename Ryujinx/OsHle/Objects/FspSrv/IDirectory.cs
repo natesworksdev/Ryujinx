@@ -1,17 +1,30 @@
 using ChocolArm64.Memory;
 using Ryujinx.OsHle.Ipc;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ryujinx.OsHle.Objects.FspSrv
 {
+    [StructLayout(LayoutKind.Sequential, Size = 0x310)]
     struct DirectoryEntry
     {
-        public string Name;
-        public byte   Type;
-        public long   Size;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x300)]
+        public byte[] Name;
+        public int Unknown;
+        public byte Type;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x3)]
+        public byte[] Padding;
+        public long Size;
+    }
+
+    enum DirectoryEntryType
+    {
+        Directory,
+        File
     }
 
     class IDirectory : IIpcInterface
@@ -23,8 +36,6 @@ namespace Ryujinx.OsHle.Objects.FspSrv
 
         private string HostPath;
 
-        const int DirectoryEntryType_Directory = 0;
-        const int DirectoryEntryType_File      = 1;
         public IDirectory(string HostPath, int flags)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
@@ -39,15 +50,17 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             {
                 string[] Directories = Directory.GetDirectories(HostPath, "*", SearchOption.TopDirectoryOnly).
                              Where(x => (new FileInfo(x).Attributes & FileAttributes.Hidden) == 0).ToArray();
-                             
+
                 foreach (string Directory in Directories)
                 {
                     DirectoryEntry Info = new DirectoryEntry
                     {
-                        Name = Directory,
-                        Type = DirectoryEntryType_Directory,
+                        Name = Encoding.UTF8.GetBytes(Directory),
+                        Type = (byte)DirectoryEntryType.Directory,
                         Size = 0
                     };
+
+                    Array.Resize(ref Info.Name, 0x300);
                     DirectoryEntries.Add(Info);
                 }
             }
@@ -56,27 +69,28 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             {
                 string[] Files = Directory.GetFiles(HostPath, "*", SearchOption.TopDirectoryOnly).
                        Where(x => (new FileInfo(x).Attributes & FileAttributes.Hidden) == 0).ToArray();
-                       
+
                 foreach (string FileName in Files)
                 {
                     DirectoryEntry Info = new DirectoryEntry
                     {
-                        Name = Path.GetFileName(FileName),
-                        Type = DirectoryEntryType_File,
+                        Name = Encoding.UTF8.GetBytes(Path.GetFileName(FileName)),
+                        Type = (byte)DirectoryEntryType.File,
                         Size = new FileInfo(Path.Combine(HostPath, FileName)).Length
                     };
+
+                    Array.Resize(ref Info.Name, 0x300);
                     DirectoryEntries.Add(Info);
                 }
             }
         }
 
         private int LastItem = 0;
-        const   int DirectoryEntrySize = 0x310;
         public long Read(ServiceCtx Context)
         {
             long BufferPosition = Context.Request.ReceiveBuff[0].Position;
-            long BufferLen      = Context.Request.ReceiveBuff[0].Size;
-            long MaxDirectories = BufferLen / DirectoryEntrySize;
+            long BufferLen = Context.Request.ReceiveBuff[0].Size;
+            long MaxDirectories = BufferLen / Marshal.SizeOf(typeof(DirectoryEntry));
 
             if (MaxDirectories > DirectoryEntries.Count - LastItem)
             {
@@ -84,23 +98,17 @@ namespace Ryujinx.OsHle.Objects.FspSrv
             }
 
             int CurrentIndex;
-            byte[] DirectoryEntry = new byte[DirectoryEntrySize];
             for (CurrentIndex = 0; CurrentIndex < MaxDirectories; CurrentIndex++)
             {
                 int CurrentItem = LastItem + CurrentIndex;
 
-                MemoryStream MemStream = new MemoryStream();
-                BinaryWriter Writer    = new BinaryWriter(MemStream);
-                
-                Writer.Write(Encoding.UTF8.GetBytes(DirectoryEntries[CurrentItem].Name));
-                Writer.Seek(0x304, SeekOrigin.Begin);
-                Writer.Write(DirectoryEntries[CurrentItem].Type);
-                Writer.Seek(0x308, SeekOrigin.Begin);
-                Writer.Write(DirectoryEntries[CurrentItem].Size);
+                byte[] DirectoryEntry = new byte[Marshal.SizeOf(typeof(DirectoryEntry))];
+                IntPtr Ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(DirectoryEntry)));
+                Marshal.StructureToPtr(DirectoryEntries[CurrentItem], Ptr, true);
+                Marshal.Copy(Ptr, DirectoryEntry, 0, Marshal.SizeOf(typeof(DirectoryEntry)));
+                Marshal.FreeHGlobal(Ptr);
 
-                MemStream.Seek(0, SeekOrigin.Begin);
-                MemStream.Read(DirectoryEntry, 0, 0x310);
-                AMemoryHelper.WriteBytes(Context.Memory, BufferPosition + DirectoryEntrySize * CurrentIndex, DirectoryEntry);
+                AMemoryHelper.WriteBytes(Context.Memory, BufferPosition + Marshal.SizeOf(typeof(DirectoryEntry)) * CurrentIndex, DirectoryEntry);
             }
 
             if (LastItem < DirectoryEntries.Count)
