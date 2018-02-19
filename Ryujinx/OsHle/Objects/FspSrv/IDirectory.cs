@@ -82,7 +82,7 @@ namespace Ryujinx.OsHle.Objects.FspSrv
 
             int CurrentIndex, CurrentItem;
             byte[] DirectoryEntry = new byte[DirectoryEntrySize];
-            for (CurrentIndex = 0, CurrentItem = LastItem; CurrentItem < MaxDirectories; CurrentIndex++, CurrentItem++)
+            for (CurrentIndex = 0, CurrentItem = LastItem; CurrentIndex < MaxDirectories; CurrentIndex++, CurrentItem++)
             {
                 MemoryStream MemStream = new MemoryStream();
                 BinaryWriter Writer    = new BinaryWriter(MemStream);
