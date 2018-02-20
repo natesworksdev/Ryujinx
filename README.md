@@ -57,7 +57,7 @@ Run `dotnet run -c Release -- path\to\game_exefs_and_romfs_folder` to run offici
 Audio is partially supported (glitched) on Linux and macOS, for Windows you need to install the OpenAL Core SDK:
 https://openal.org/downloads/OpenAL11CoreSDK.zip
 
-**Lastest build**
+**Latest build**
 
 Those builds are compiled automatically for each commit on the master branch. They may be unstable or not work at all.
-To download the lastest automatic build for Windows (64-bits), [Click Here](https://ci.appveyor.com/api/projects/gdkchan/ryujinx/artifacts/ryujinx_lastest_unstable.zip).
+To download the latest automatic build for Windows (64-bits), [Click Here](https://ci.appveyor.com/api/projects/gdkchan/ryujinx/artifacts/ryujinx_lastest_unstable.zip).
