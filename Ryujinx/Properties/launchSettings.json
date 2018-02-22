@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Ryujinx": {
+      "commandName": "Project",
+      "commandLineArgs": "\"I:\\roms\\nso\\test_hid.nro\""
+    }
+  }
+}
