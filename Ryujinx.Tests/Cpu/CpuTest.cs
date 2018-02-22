@@ -1,4 +1,4 @@
-﻿using ChocolArm64;
+using ChocolArm64;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
 using NUnit.Framework;
@@ -9,11 +9,24 @@ using System.Threading;
 namespace Ryujinx.Tests.Cpu
 {
     [TestFixture]
-    public partial class CpuTest
+    public class CpuTest
     {
-        IntPtr Ram;
-        AMemoryAlloc Allocator;
-        AMemory Memory;
+        private const long Position = 0x0;
+        private const long Size = 0x1000;
+
+        private const long EntryPoint = Position;
+
+        private IntPtr Ram;
+        private AMemoryAlloc Allocator;
+        private AMemory Memory;
+        private AThread Thread;
+
+        private long Pc;
+
+        private bool BrkRetOpcodesControl;
+        private bool SetThreadStateControl;
+        private bool ExecuteOpcodesControl;
+        private bool SingleOpcodeControl;
 
         [SetUp]
         public void Setup()
@@ -21,7 +34,15 @@ namespace Ryujinx.Tests.Cpu
             Ram = Marshal.AllocHGlobal((IntPtr)AMemoryMgr.RamSize);
             Allocator = new AMemoryAlloc();
             Memory = new AMemory(Ram, Allocator);
-            Memory.Manager.MapPhys(0x1000, 0x1000, 2, AMemoryPerm.Read | AMemoryPerm.Write | AMemoryPerm.Execute);
+            Memory.Manager.MapPhys(Position, Size, 2, AMemoryPerm.Read | AMemoryPerm.Write | AMemoryPerm.Execute);
+            Thread = new AThread(Memory, ThreadPriority.Normal, EntryPoint);
+
+            Pc = EntryPoint - 4;
+
+            BrkRetOpcodesControl = false;
+            SetThreadStateControl = false;
+            ExecuteOpcodesControl = false;
+            SingleOpcodeControl = false;
         }
 
         [TearDown]
@@ -30,44 +51,116 @@ namespace Ryujinx.Tests.Cpu
             Marshal.FreeHGlobal(Ram);
         }
 
-        private void Execute(AThread Thread)
+        protected void Opcode(uint Opcode)
         {
-            AutoResetEvent Wait = new AutoResetEvent(false);
-            Thread.ThreadState.Break += (sender, e) => Thread.StopExecution();
-            Thread.WorkFinished += (sender, e) => Wait.Set();
-
-            Wait.Reset();
-            Thread.Execute();
-            Wait.WaitOne();
+            if ((Opcode & 0xFFE0001F) != 0xD4200000 && // BRK #<imm>
+                (Opcode & 0xFFE0FC00) != 0xD6400000) // RET {<Xn>}
+            {
+                Pc += 4;
+                Thread.Memory.WriteUInt32(Pc, Opcode);
+            }
+            else
+            {
+                Assert.Ignore();
+            }
         }
 
-        private AThreadState SingleOpcode(uint Opcode, 
-                                          ulong X0 = 0, ulong X1 = 0, ulong X2 = 0, 
-                                          AVec V0 = new AVec(), AVec V1 = new AVec(), AVec V2 = new AVec())
+        protected void BrkRetOpcodes()
         {
-            Memory.WriteUInt32(0x1000, Opcode);
-            Memory.WriteUInt32(0x1004, 0xD4200000); // BRK #0
-            Memory.WriteUInt32(0x1008, 0xD65F03C0); // RET
+            BrkRetOpcodesControl = true;
 
-            AThread Thread = new AThread(Memory, ThreadPriority.Normal, 0x1000);
-            Thread.ThreadState.X0 = X0;
-            Thread.ThreadState.X1 = X1;
-            Thread.ThreadState.X2 = X2;
-            Thread.ThreadState.V0 = V0;
-            Thread.ThreadState.V1 = V1;
-            Thread.ThreadState.V2 = V2;
-            Execute(Thread);
-            return Thread.ThreadState;
+            Pc += 4;
+            Thread.Memory.WriteUInt32(Pc, 0xD4200000); // BRK #0
+            Pc += 4;
+            Thread.Memory.WriteUInt32(Pc, 0xD65F03C0); // RET
         }
 
-        [Test]
-        public void SanityCheck()
+        protected void SetThreadState(ulong X0 = 0, ulong X1 = 0, ulong X2 = 0,
+                                      AVec V0 = default(AVec), AVec V1 = default(AVec), AVec V2 = default(AVec))
         {
-            uint Opcode = 0xD503201F; // NOP
-            Assert.AreEqual(SingleOpcode(Opcode, X0: 0).X0, 0);
-            Assert.AreEqual(SingleOpcode(Opcode, X0: 1).X0, 1);
-            Assert.AreEqual(SingleOpcode(Opcode, X0: 2).X0, 2);
-            Assert.AreEqual(SingleOpcode(Opcode, X0: 42).X0, 42);
+            if (!SetThreadStateControl)
+            {
+                SetThreadStateControl = true;
+
+                Thread.ThreadState.X0 = X0;
+                Thread.ThreadState.X1 = X1;
+                Thread.ThreadState.X2 = X2;
+                Thread.ThreadState.V0 = V0;
+                Thread.ThreadState.V1 = V1;
+                Thread.ThreadState.V2 = V2;
+            }
+            else
+            {
+                Assert.Ignore();
+            }
+        }
+
+        protected void ExecuteOpcodes()
+        {
+            if (!ExecuteOpcodesControl)
+            {
+                ExecuteOpcodesControl = true;
+
+                if (!BrkRetOpcodesControl)
+                {
+                    BrkRetOpcodes();
+                }
+
+                if (!SetThreadStateControl)
+                {
+                    SetThreadState();
+                }
+
+                ManualResetEvent Wait = new ManualResetEvent(false);
+
+                Thread.ThreadState.Break += (sender, e) => Thread.StopExecution();
+                Thread.WorkFinished += (sender, e) => Wait.Set();
+
+                Wait.Reset();
+                Thread.Execute();
+                Wait.WaitOne();
+            }
+            else
+            {
+                Assert.Ignore();
+            }
+        }
+
+        protected AThreadState GetThreadState()
+        {
+            if (ExecuteOpcodesControl)
+            {
+                return Thread.ThreadState;
+            }
+            else
+            {
+                Assert.Ignore();
+
+                return null;
+            }
+        }
+
+        protected AThreadState SingleOpcode(uint Opcode,
+                                            ulong X0 = 0, ulong X1 = 0, ulong X2 = 0,
+                                            AVec V0 = default(AVec), AVec V1 = default(AVec), AVec V2 = default(AVec))
+        {
+            if (!SingleOpcodeControl)
+            {
+                SingleOpcodeControl = true;
+
+                this.Opcode(Opcode);
+                BrkRetOpcodes();
+                SetThreadState(X0, X1, X2, V0, V1, V2);
+                ExecuteOpcodes();
+
+                return GetThreadState();
+            }
+            else
+            {
+                Assert.Ignore();
+
+                return null;
+            }
         }
     }
 }
