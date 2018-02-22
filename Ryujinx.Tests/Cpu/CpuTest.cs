@@ -11,17 +11,15 @@ namespace Ryujinx.Tests.Cpu
     [TestFixture]
     public class CpuTest
     {
-        private const long Position = 0x0;
-        private const long Size = 0x1000;
+        protected long Position { get; private set; }
+        private long Size;
 
-        private const long EntryPoint = Position;
+        private long EntryPoint;
 
         private IntPtr Ram;
         private AMemoryAlloc Allocator;
         private AMemory Memory;
         private AThread Thread;
-
-        private long Pc;
 
         private bool BrkRetOpcodesControl;
         private bool SetThreadStateControl;
@@ -31,13 +29,16 @@ namespace Ryujinx.Tests.Cpu
         [SetUp]
         public void Setup()
         {
+            Position = 0x0;
+            Size = 0x1000;
+
+            EntryPoint = Position;
+
             Ram = Marshal.AllocHGlobal((IntPtr)AMemoryMgr.RamSize);
             Allocator = new AMemoryAlloc();
             Memory = new AMemory(Ram, Allocator);
             Memory.Manager.MapPhys(Position, Size, 2, AMemoryPerm.Read | AMemoryPerm.Write | AMemoryPerm.Execute);
             Thread = new AThread(Memory, ThreadPriority.Normal, EntryPoint);
-
-            Pc = EntryPoint - 4;
 
             BrkRetOpcodesControl = false;
             SetThreadStateControl = false;
@@ -48,6 +49,9 @@ namespace Ryujinx.Tests.Cpu
         [TearDown]
         public void Teardown()
         {
+            Thread = null;
+            Memory = null;
+            Allocator = null;
             Marshal.FreeHGlobal(Ram);
         }
 
@@ -56,8 +60,8 @@ namespace Ryujinx.Tests.Cpu
             if ((Opcode & 0xFFE0001F) != 0xD4200000 && // BRK #<imm>
                 (Opcode & 0xFFE0FC00) != 0xD6400000) // RET {<Xn>}
             {
-                Pc += 4;
-                Thread.Memory.WriteUInt32(Pc, Opcode);
+                Thread.Memory.WriteUInt32(Position, Opcode);
+                Position += 4;
             }
             else
             {
@@ -69,10 +73,10 @@ namespace Ryujinx.Tests.Cpu
         {
             BrkRetOpcodesControl = true;
 
-            Pc += 4;
-            Thread.Memory.WriteUInt32(Pc, 0xD4200000); // BRK #0
-            Pc += 4;
-            Thread.Memory.WriteUInt32(Pc, 0xD65F03C0); // RET
+            Thread.Memory.WriteUInt32(Position, 0xD4200000); // BRK #0
+            Position += 4;
+            Thread.Memory.WriteUInt32(Position, 0xD65F03C0); // RET
+            Position += 4;
         }
 
         protected void SetThreadState(ulong X0 = 0, ulong X1 = 0, ulong X2 = 0,
@@ -111,14 +115,14 @@ namespace Ryujinx.Tests.Cpu
                     SetThreadState();
                 }
 
-                ManualResetEvent Wait = new ManualResetEvent(false);
+                using (ManualResetEvent Wait = new ManualResetEvent(false))
+                {
+                    Thread.ThreadState.Break += (sender, e) => Thread.StopExecution();
+                    Thread.WorkFinished += (sender, e) => Wait.Set();
 
-                Thread.ThreadState.Break += (sender, e) => Thread.StopExecution();
-                Thread.WorkFinished += (sender, e) => Wait.Set();
-
-                Wait.Reset();
-                Thread.Execute();
-                Wait.WaitOne();
+                    Thread.Execute();
+                    Wait.WaitOne();
+                }
             }
             else
             {
