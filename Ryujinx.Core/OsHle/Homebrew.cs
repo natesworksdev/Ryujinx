@@ -4,13 +4,11 @@ namespace Ryujinx.Core.OsHle
 {
     public class Homebrew
     {
-        public long Size { get; private set; }
-
         //http://switchbrew.org/index.php?title=Homebrew_ABI
         public Homebrew(AMemory Memory, long Position, long MainThreadHandle)
         {
             //(NbrKeys * LoaderConfigEntrySize) + 2 buffers for Key2
-            Size = (4 * 0x18) + 0x1000;
+            long Size = (4 * 0x18) + 0x1000;
             Memory.Manager.MapPhys(Position, Size, (int)MemoryType.Normal, AMemoryPerm.RW);
 
             //MainThreadHandle
