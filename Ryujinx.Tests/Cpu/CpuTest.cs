@@ -43,7 +43,8 @@ namespace Ryujinx.Tests.Cpu
 
         private AThreadState SingleOpcode(uint Opcode, 
                                           ulong X0 = 0, ulong X1 = 0, ulong X2 = 0, 
-                                          AVec V0 = new AVec(), AVec V1 = new AVec(), AVec V2 = new AVec())
+                                          AVec V0 = new AVec(), AVec V1 = new AVec(), AVec V2 = new AVec(),
+                                          bool Overflow = false, bool Carry = false, bool Zero = false, bool Negative = false)
         {
             Memory.WriteUInt32(0x1000, Opcode);
             Memory.WriteUInt32(0x1004, 0xD4200000); // BRK #0
@@ -56,6 +57,10 @@ namespace Ryujinx.Tests.Cpu
             Thread.ThreadState.V0 = V0;
             Thread.ThreadState.V1 = V1;
             Thread.ThreadState.V2 = V2;
+            Thread.ThreadState.Overflow = Overflow;
+            Thread.ThreadState.Carry = Carry;
+            Thread.ThreadState.Zero = Zero;
+            Thread.ThreadState.Negative = Negative;
             Execute(Thread);
             return Thread.ThreadState;
         }

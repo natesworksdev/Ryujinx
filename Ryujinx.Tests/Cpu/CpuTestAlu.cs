@@ -15,6 +15,14 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test]
+        public void Adc()
+        {
+            // ADC X0, X1, X2
+            AThreadState ThreadState = SingleOpcode(0x9A020020, X1: 2, X2: 3, Carry: true);
+            Assert.AreEqual(6, ThreadState.X0);
+        }
+
+        [Test]
         public void Ands()
         {
             // ANDS W0, W1, W2
