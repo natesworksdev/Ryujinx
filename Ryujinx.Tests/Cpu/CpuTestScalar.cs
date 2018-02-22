@@ -20,8 +20,7 @@ namespace Ryujinx.Tests.Cpu
         public void Fmax_S(uint A, uint B, uint Result)
         {
             // FMAX S0, S1, S2
-            uint Opcode = 0x1E224820;
-            AThreadState ThreadState = SingleOpcode(Opcode, V1: new AVec { W0 = A }, V2: new AVec { W0 = B });
+            AThreadState ThreadState = SingleOpcode(0x1E224820, V1: new AVec { W0 = A }, V2: new AVec { W0 = B });
             Assert.AreEqual(Result, ThreadState.V0.W0);
         }
     }
