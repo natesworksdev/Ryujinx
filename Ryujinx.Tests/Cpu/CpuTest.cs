@@ -21,11 +21,6 @@ namespace Ryujinx.Tests.Cpu
         private AMemory Memory;
         private AThread Thread;
 
-        private bool BrkRetOpcodesControl;
-        private bool SetThreadStateControl;
-        private bool ExecuteOpcodesControl;
-        private bool SingleOpcodeControl;
-
         [SetUp]
         public void Setup()
         {
@@ -39,11 +34,6 @@ namespace Ryujinx.Tests.Cpu
             Memory = new AMemory(Ram, Allocator);
             Memory.Manager.MapPhys(Position, Size, 2, AMemoryPerm.Read | AMemoryPerm.Write | AMemoryPerm.Execute);
             Thread = new AThread(Memory, ThreadPriority.Normal, EntryPoint);
-
-            BrkRetOpcodesControl = false;
-            SetThreadStateControl = false;
-            ExecuteOpcodesControl = false;
-            SingleOpcodeControl = false;
         }
 
         [TearDown]
@@ -55,116 +45,57 @@ namespace Ryujinx.Tests.Cpu
             Marshal.FreeHGlobal(Ram);
         }
 
-        protected void Opcode(uint Opcode)
+        protected void Reset()
         {
-            if ((Opcode & 0xFFE0001F) != 0xD4200000 && // BRK #<imm>
-                (Opcode & 0xFFE0FC00) != 0xD6400000) // RET {<Xn>}
-            {
-                Thread.Memory.WriteUInt32(Position, Opcode);
-                Position += 4;
-            }
-            else
-            {
-                Assert.Ignore();
-            }
+            Teardown();
+            Setup();
         }
 
-        protected void BrkRetOpcodes()
+        protected void Opcode(uint Opcode)
         {
-            BrkRetOpcodesControl = true;
-
-            Thread.Memory.WriteUInt32(Position, 0xD4200000); // BRK #0
-            Position += 4;
-            Thread.Memory.WriteUInt32(Position, 0xD65F03C0); // RET
+            Thread.Memory.WriteUInt32(Position, Opcode);
             Position += 4;
         }
 
         protected void SetThreadState(ulong X0 = 0, ulong X1 = 0, ulong X2 = 0,
                                       AVec V0 = default(AVec), AVec V1 = default(AVec), AVec V2 = default(AVec))
         {
-            if (!SetThreadStateControl)
-            {
-                SetThreadStateControl = true;
-
-                Thread.ThreadState.X0 = X0;
-                Thread.ThreadState.X1 = X1;
-                Thread.ThreadState.X2 = X2;
-                Thread.ThreadState.V0 = V0;
-                Thread.ThreadState.V1 = V1;
-                Thread.ThreadState.V2 = V2;
-            }
-            else
-            {
-                Assert.Ignore();
-            }
+            Thread.ThreadState.X0 = X0;
+            Thread.ThreadState.X1 = X1;
+            Thread.ThreadState.X2 = X2;
+            Thread.ThreadState.V0 = V0;
+            Thread.ThreadState.V1 = V1;
+            Thread.ThreadState.V2 = V2;
         }
 
         protected void ExecuteOpcodes()
         {
-            if (!ExecuteOpcodesControl)
+            using (ManualResetEvent Wait = new ManualResetEvent(false))
             {
-                ExecuteOpcodesControl = true;
+                Thread.ThreadState.Break += (sender, e) => Thread.StopExecution();
+                Thread.WorkFinished += (sender, e) => Wait.Set();
 
-                if (!BrkRetOpcodesControl)
-                {
-                    BrkRetOpcodes();
-                }
-
-                if (!SetThreadStateControl)
-                {
-                    SetThreadState();
-                }
-
-                using (ManualResetEvent Wait = new ManualResetEvent(false))
-                {
-                    Thread.ThreadState.Break += (sender, e) => Thread.StopExecution();
-                    Thread.WorkFinished += (sender, e) => Wait.Set();
-
-                    Thread.Execute();
-                    Wait.WaitOne();
-                }
-            }
-            else
-            {
-                Assert.Ignore();
+                Thread.Execute();
+                Wait.WaitOne();
             }
         }
 
         protected AThreadState GetThreadState()
         {
-            if (ExecuteOpcodesControl)
-            {
-                return Thread.ThreadState;
-            }
-            else
-            {
-                Assert.Ignore();
-
-                return null;
-            }
+            return Thread.ThreadState;
         }
 
         protected AThreadState SingleOpcode(uint Opcode,
                                             ulong X0 = 0, ulong X1 = 0, ulong X2 = 0,
                                             AVec V0 = default(AVec), AVec V1 = default(AVec), AVec V2 = default(AVec))
         {
-            if (!SingleOpcodeControl)
-            {
-                SingleOpcodeControl = true;
+            this.Opcode(Opcode);
+            this.Opcode(0xD4200000); // BRK #0
+            this.Opcode(0xD65F03C0); // RET
+            SetThreadState(X0, X1, X2, V0, V1, V2);
+            ExecuteOpcodes();
 
-                this.Opcode(Opcode);
-                BrkRetOpcodes();
-                SetThreadState(X0, X1, X2, V0, V1, V2);
-                ExecuteOpcodes();
-
-                return GetThreadState();
-            }
-            else
-            {
-                Assert.Ignore();
-
-                return null;
-            }
+            return GetThreadState();
         }
     }
 }
