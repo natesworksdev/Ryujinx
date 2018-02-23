@@ -5,7 +5,6 @@ namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestAlu : CpuTest
     {
-    
         [Test]
         public void Adc()
         {
@@ -14,6 +13,8 @@ namespace Ryujinx.Tests.Cpu
             
             AThreadState ThreadState = SingleOpcode(Opcode, X1: 2, X2: 3, Carry: true);
             Assert.AreEqual(6, ThreadState.X0);
+            
+            Reset();
             
             ThreadState = SingleOpcode(Opcode, X1: 2, X2: 3, Carry: false);
             Assert.AreEqual(5, ThreadState.X0);
