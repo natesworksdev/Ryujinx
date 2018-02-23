@@ -5,19 +5,13 @@ namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestAlu : CpuTest
     {
-        [Test]
-        public void Adc()
+        [TestCase(2, 3, 6, true)]
+        [testCase(2, 3, 5, false)]
+        public void Adc(uint A, uint B, ulong Result, bool CarryTest)
         {
             // ADC X0, X1, X2
-            uint Opcode = 0x9A020020;
-            
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: 2, X2: 3, Carry: true);
-            Assert.AreEqual(6, ThreadState.X0);
-            
-            Reset();
-            
-            ThreadState = SingleOpcode(Opcode, X1: 2, X2: 3, Carry: false);
-            Assert.AreEqual(5, ThreadState.X0);
+            AThreadState ThreadState = SingleOpcode(0x9A020020, X1: A, X2: B, Carry: CarryTest);
+            Assert.AreEqual(Result, ThreadState.X0);
         }
     
         [Test]
