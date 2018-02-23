@@ -7,7 +7,7 @@ namespace Ryujinx.Tests.Cpu
     {
         public void Adc()
         {
-            // ADC X0, X1, X2 64bit
+            // ADC X0, X1, X2
             AThreadState ThreadState = SingleOpcode(0x9A020020, X1: 2, X2: 3, Carry: true);
             Assert.AreEqual(6, ThreadState.X0);
 
@@ -18,7 +18,7 @@ namespace Ryujinx.Tests.Cpu
 
             Reset();
 
-            // ADC W0, W1, W2 32bit
+            // ADC W0, W1, W2
             ThreadState = SingleOpcode(0x1A020020, X1: 2, X2: 3, Carry: true);
             Assert.AreEqual(6, ThreadState.X0);
 
@@ -32,10 +32,7 @@ namespace Ryujinx.Tests.Cpu
             // ADC Overflow
             ThreadState = SingleOpcode(0x1A020020, X1: 0xFFFFFFFF, X2: 0x2, Carry: false);
             Assert.AreEqual(0x1, ThreadState.X0);
-            Assert.AreEqual(true, ThreadState.Carry);
-
-            Reset();
-
+            Assert.IsTrue(ThreadState.Carry);
         }
     
         [Test]
@@ -44,6 +41,36 @@ namespace Ryujinx.Tests.Cpu
             // ADD X0, X1, X2
             AThreadState ThreadState = SingleOpcode(0x8B020020, X1: 1, X2: 2);
             Assert.AreEqual(3, ThreadState.X0);
+        }
+
+        [TestCase(2u)]
+        [TestCase(5u)]
+        [TestCase(7u)]
+        [TestCase(0xFFFFFFFFu)]
+        [TestCase(0xFFFFFFFBu)]
+        public void Adds(uint A)
+        {
+            //ADDS WZR, WSP, #5
+            AThreadState ThreadState = SingleOpcode(0x310017FF, X31: A);
+            Assert.IsFalse(ThreadState.Negative);
+            if(A == 0xFFFFFFFB)
+            {
+                Assert.IsTrue(ThreadState.Zero);
+            }
+            else
+            {
+                Assert.IsFalse(ThreadState.Zero);
+            }
+            if(A == 0xFFFFFFFF || A == 0xFFFFFFFB)
+            {
+                Assert.IsTrue(ThreadState.Carry);
+            }
+            else
+            {
+                Assert.IsFalse(ThreadState.Carry);    
+            }
+            Assert.IsFalse(ThreadState.Overflow);
+            Assert.AreEqual(A, ThreadState.X31);
         }
 
         [TestCase(0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFul, true, false)]
