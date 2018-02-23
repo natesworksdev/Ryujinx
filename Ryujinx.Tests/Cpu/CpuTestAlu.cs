@@ -27,27 +27,20 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test]
-        public void OrrBitmaskW0()
+        public void OrrBitmasks()
         {
             // ORR W0, WZR, #0x01010101
-            AThreadState ThreadState = SingleOpcode(0x3200C3E0);
-            Assert.AreEqual(0x01010101, ThreadState.X0);
-        }
+            Assert.AreEqual(0x01010101, SingleOpcode(0x3200C3E0).X0);
 
-        [Test]
-        public void OrrBitmaskW1()
-        {
+            Reset();
+
             // ORR W1, WZR, #0x00F000F0
-            AThreadState ThreadState = SingleOpcode(0x320C8FE1);
-            Assert.AreEqual(0x00F000F0, ThreadState.X1);
-        }
+            Assert.AreEqual(0x00F000F0, SingleOpcode(0x320C8FE1).X1);
 
-        [Test]
-        public void OrrBitmaskW2()
-        {
+            Reset();
+
             // ORR W2, WZR, #1
-            AThreadState ThreadState = SingleOpcode(0x320003E2);
-            Assert.AreEqual(0x00000001, ThreadState.X2);
+            Assert.AreEqual(0x00000001, SingleOpcode(0x320003E2).X2);
         }
 
         [Test]
