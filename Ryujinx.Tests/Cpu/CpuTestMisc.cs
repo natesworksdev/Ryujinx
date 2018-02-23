@@ -31,6 +31,8 @@ namespace Ryujinx.Tests.Cpu
             SUB W0, W0, #3
             MUL W0, W1, W0
             SDIV W0, W2, W0
+            BRK #0
+            RET
             */
 
             SetThreadState(X0: A);
@@ -41,6 +43,8 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0x51000C00);
             Opcode(0x1B007C20);
             Opcode(0x1AC00C40);
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
             ExecuteOpcodes();
             Assert.AreEqual(0, GetThreadState().X0);
         }
@@ -74,6 +78,8 @@ namespace Ryujinx.Tests.Cpu
             FADD S0, S0, S1
             FDIV S0, S2, S0
             FMUL S0, S0, S0
+            BRK #0
+            RET
             */
 
             SetThreadState(V0: new AVec { S0 = A }, V1: new AVec { S0 = B });
@@ -83,6 +89,8 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0x1E212800);
             Opcode(0x1E201840);
             Opcode(0x1E200800);
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
             ExecuteOpcodes();
             Assert.AreEqual(16f, GetThreadState().V0.S0);
         }
@@ -116,6 +124,8 @@ namespace Ryujinx.Tests.Cpu
             FADD D0, D0, D1
             FDIV D0, D2, D0
             FMUL D0, D0, D0
+            BRK #0
+            RET
             */
 
             SetThreadState(V0: new AVec { D0 = A }, V1: new AVec { D0 = B });
@@ -125,35 +135,67 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0x1E612800);
             Opcode(0x1E601840);
             Opcode(0x1E600800);
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
             ExecuteOpcodes();
             Assert.AreEqual(16d, GetThreadState().V0.D0);
         }
 
         [Test]
-        public void Misc4()
+        public void MiscR()
         {
+            ulong Result = 5;
+
             /*
-            MOV X0, #2
-            MOV X1, #3
-            ADD X0, X0, X1
+            0x0000000000000000: MOV X0, #2
+            0x0000000000000004: MOV X1, #3
+            0x0000000000000008: ADD X0, X0, X1
+            0x000000000000000C: BRK #0
+            0x0000000000000010: RET
             */
 
             Opcode(0xD2800040);
             Opcode(0xD2800061);
             Opcode(0x8B010000);
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
             ExecuteOpcodes();
-            Assert.AreEqual(5, GetThreadState().X0);
+            Assert.AreEqual(Result, GetThreadState().X0);
+
+            Reset();
+
+            /*
+            0x0000000000000000: MOV X0, #3
+            0x0000000000000004: MOV X1, #2
+            0x0000000000000008: ADD X0, X0, X1
+            0x000000000000000C: BRK #0
+            0x0000000000000010: RET
+            */
+
+            Opcode(0xD2800060);
+            Opcode(0xD2800041);
+            Opcode(0x8B010000);
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
+            ExecuteOpcodes();
+            Assert.AreEqual(Result, GetThreadState().X0);
         }
 
         [Test, Explicit]
         public void Misc5()
         {
-            // 0x0000000000000000: SUBS X0, X0, #1
-            // 0x0000000000000004: B.NE #0
+            /*
+            0x0000000000000000: SUBS X0, X0, #1
+            0x0000000000000004: B.NE #0
+            0x0000000000000008: BRK #0
+            0x000000000000000C: RET
+            */
 
             SetThreadState(X0: 0x100000000);
             Opcode(0xF1000400);
             Opcode(0x54FFFFE1);
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
             ExecuteOpcodes();
             Assert.AreEqual(0, GetThreadState().X0);
             Assert.IsTrue(GetThreadState().Zero);
@@ -185,23 +227,23 @@ namespace Ryujinx.Tests.Cpu
             0x0000000000000000: MOV W4, W0
             0x0000000000000004: CBZ W0, #0x3C
             0x0000000000000008: CMP W0, #1
-            0x000000000000000c: B.LS #0x48
+            0x000000000000000C: B.LS #0x48
             0x0000000000000010: MOVZ W2, #0x2
             0x0000000000000014: MOVZ X1, #0x1
             0x0000000000000018: MOVZ X3, #0
-            0x000000000000001c: ADD X0, X3, X1
+            0x000000000000001C: ADD X0, X3, X1
             0x0000000000000020: ADD W2, W2, #1
             0x0000000000000024: MOV X3, X1
             0x0000000000000028: MOV X1, X0
-            0x000000000000002c: CMP W4, W2
+            0x000000000000002C: CMP W4, W2
             0x0000000000000030: B.HS #0x1C
             0x0000000000000034: BRK #0
             0x0000000000000038: RET
-            0x000000000000003c: MOVZ X0, #0
+            0x000000000000003C: MOVZ X0, #0
             0x0000000000000040: BRK #0
             0x0000000000000044: RET
             0x0000000000000048: MOVZ X0, #0x1
-            0x000000000000004c: BRK #0
+            0x000000000000004C: BRK #0
             0x0000000000000050: RET
             */
 
@@ -219,11 +261,14 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xAA0003E1);
             Opcode(0x6B02009F);
             Opcode(0x54FFFF62);
-            BrkRetOpcodes();
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
             Opcode(0xD2800000);
-            BrkRetOpcodes();
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
             Opcode(0xD2800020);
-            BrkRetOpcodes();
+            Opcode(0xD4200000);
+            Opcode(0xD65F03C0);
             ExecuteOpcodes();
             Assert.AreEqual(F_n((uint)A), GetThreadState().X0);
         }
