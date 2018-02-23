@@ -5,8 +5,8 @@ namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestAlu : CpuTest
     {
-        [TestCase(2, 3, 6, true)]
-        [TestCase(2, 3, 5, false)]
+        [TestCase(2u, 3u, 6ul, true)]
+        [TestCase(2u, 3u, 5ul, false)]
         public void Adc(uint A, uint B, ulong Result, bool CarryTest)
         {
             // ADC X0, X1, X2
