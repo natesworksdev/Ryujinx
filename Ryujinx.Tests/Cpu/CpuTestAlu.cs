@@ -5,13 +5,37 @@ namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestAlu : CpuTest
     {
-        [TestCase(2u, 3u, 6ul, true)]
-        [TestCase(2u, 3u, 5ul, false)]
-        public void Adc(uint A, uint B, ulong Result, bool CarryTest)
+        public void Adc()
         {
-            // ADC X0, X1, X2
-            AThreadState ThreadState = SingleOpcode(0x9A020020, X1: A, X2: B, Carry: CarryTest);
-            Assert.AreEqual(Result, ThreadState.X0);
+            // ADC X0, X1, X2 64bit
+            AThreadState ThreadState = SingleOpcode(0x9A020020, X1: 2, X2: 3, Carry: true);
+            Assert.AreEqual(6, ThreadState.X0);
+
+            Reset();
+
+            ThreadState = SingleOpcode(0x9A020020, X1: 2, X2: 3, Carry: false);
+            Assert.AreEqual(5, ThreadState.X0);
+
+            Reset();
+
+            // ADC W0, W1, W2 32bit
+            ThreadState = SingleOpcode(0x1A020020, X1: 2, X2: 3, Carry: true);
+            Assert.AreEqual(6, ThreadState.X0);
+
+            Reset();
+
+            ThreadState = SingleOpcode(0x1A020020, X1: 2, X2: 3, Carry: false);
+            Assert.AreEqual(5, ThreadState.X0);
+
+            Reset();
+
+            // ADC Overflow
+            ThreadState = SingleOpcode(0x1A020020, X1: 0xFFFFFFFF, X2: 0x2, Carry: false);
+            Assert.AreEqual(0x1, ThreadState.X0);
+            Assert.AreEqual(true, ThreadState.Carry);
+
+            Reset();
+
         }
     
         [Test]
