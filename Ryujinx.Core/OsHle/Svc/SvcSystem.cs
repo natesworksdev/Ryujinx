@@ -161,6 +161,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             switch (InfoType)
             {
+                case 0:  ThreadState.X1 = 0xF;                             break;
                 case 2:  ThreadState.X1 = GetMapRegionBaseAddr();          break;
                 case 3:  ThreadState.X1 = GetMapRegionSize();              break;
                 case 4:  ThreadState.X1 = GetHeapRegionBaseAddr();         break;
