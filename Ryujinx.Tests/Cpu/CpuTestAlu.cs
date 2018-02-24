@@ -12,8 +12,24 @@ namespace Ryujinx.Tests.Cpu
         [TestCase(0x1A020020u, 0xFFFFFFFFu, 0x2u, false, 0x1u)]
         public void Adc(uint Opcode, uint A, uint B, bool CarryState, uint Result)
         {
-            // ADC (X0/W0), (X1/W0), (X2/W2)
+            // ADC (X0/W0), (X1/W1), (X2/W2)
             AThreadState ThreadState = SingleOpcode(Opcode, X1: A, X2: B, Carry: CarryState);
+            Assert.AreEqual(Result, ThreadState.X0);
+        }
+
+        [TestCase(0x3A020020u, 2u, 3u, false, false, false, 5u)]    //32bit CarryState: False
+        [TestCase(0x3A020020u, 2u, 3u, true, false, false, 6u)]     //32bit CarryState: True
+        [TestCase(0xBA020020u, 2u, 3u, false, false, false, 5u)]    //64bit CarryState: False
+        [TestCase(0xBA020020u, 2u, 3u, true, false, false, 6u)]     //64bit CarryState: True
+        [TestCase(0x3A020020u, 0xFFFFFFFEu, 0x1u, true, true, true, 0x0u)]            //Test Carry + Zero
+        public void Adcs(uint Opcode, uint A, uint B, bool CarryState, bool Zero, bool Carry, uint Result)
+        {
+            //ADCS (X0/W0), (X1, W1), (X2/W2)
+            AThreadState ThreadState = SingleOpcode(Opcode, X1: A, X2: B, Carry: CarryState);
+            Assert.IsFalse(ThreadState.Negative);
+            Assert.IsFalse(ThreadState.Overflow);
+            Assert.AreEqual(Zero, ThreadState.Zero);
+            Assert.AreEqual(Carry, ThreadState.Carry);
             Assert.AreEqual(Result, ThreadState.X0);
         }
     
