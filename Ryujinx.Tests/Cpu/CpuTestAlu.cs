@@ -5,34 +5,16 @@ namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestAlu : CpuTest
     {
-        public void Adc()
+        [TestCase(0x9A020020u, 2u, 3u, true, 6u)]
+        [TestCase(0x9A020020u, 2u, 3u, false, 5u)]
+        [TestCase(0x1A020020u, 2u, 3u, true, 6u)]
+        [TestCase(0x1A020020u, 2u, 3u, false, 5u)]
+        [TestCase(0x1A020020u, 0xFFFFFFFFu, 0x2u, false, 0x1u)]
+        public void Adc(uint Opcode, uint A, uint B, bool CarryState, uint Result)
         {
-            // ADC X0, X1, X2
-            AThreadState ThreadState = SingleOpcode(0x9A020020, X1: 2, X2: 3, Carry: true);
-            Assert.AreEqual(6, ThreadState.X0);
-
-            Reset();
-
-            ThreadState = SingleOpcode(0x9A020020, X1: 2, X2: 3, Carry: false);
-            Assert.AreEqual(5, ThreadState.X0);
-
-            Reset();
-
-            // ADC W0, W1, W2
-            ThreadState = SingleOpcode(0x1A020020, X1: 2, X2: 3, Carry: true);
-            Assert.AreEqual(6, ThreadState.X0);
-
-            Reset();
-
-            ThreadState = SingleOpcode(0x1A020020, X1: 2, X2: 3, Carry: false);
-            Assert.AreEqual(5, ThreadState.X0);
-
-            Reset();
-
-            // ADC Overflow
-            ThreadState = SingleOpcode(0x1A020020, X1: 0xFFFFFFFF, X2: 0x2, Carry: false);
-            Assert.AreEqual(0x1, ThreadState.X0);
-            Assert.IsTrue(ThreadState.Carry);
+            // ADC (X0/W0), (X1/W0), (X2/W2)
+            AThreadState ThreadState = SingleOpcode(Opcode, X1: A, X2: B, Carry: CarryState);
+            Assert.AreEqual(Result, ThreadState.X0);
         }
     
         [Test]
@@ -43,32 +25,18 @@ namespace Ryujinx.Tests.Cpu
             Assert.AreEqual(3, ThreadState.X0);
         }
 
-        [TestCase(2u)]
-        [TestCase(5u)]
-        [TestCase(7u)]
-        [TestCase(0xFFFFFFFFu)]
-        [TestCase(0xFFFFFFFBu)]
-        public void Adds(uint A)
+        [TestCase(2u, false, false)]
+        [TestCase(5u, false, false)]
+        [TestCase(7u, false, false)]
+        [TestCase(0xFFFFFFFFu, false, true )]
+        [TestCase(0xFFFFFFFBu, true,  true )]
+        public void Adds(uint A, bool Zero, bool Carry)
         {
             //ADDS WZR, WSP, #5
             AThreadState ThreadState = SingleOpcode(0x310017FF, X31: A);
             Assert.IsFalse(ThreadState.Negative);
-            if(A == 0xFFFFFFFB)
-            {
-                Assert.IsTrue(ThreadState.Zero);
-            }
-            else
-            {
-                Assert.IsFalse(ThreadState.Zero);
-            }
-            if(A == 0xFFFFFFFF || A == 0xFFFFFFFB)
-            {
-                Assert.IsTrue(ThreadState.Carry);
-            }
-            else
-            {
-                Assert.IsFalse(ThreadState.Carry);    
-            }
+            Assert.AreEqual(Zero, ThreadState.Zero);
+            Assert.AreEqual(Carry, ThreadState.Carry);
             Assert.IsFalse(ThreadState.Overflow);
             Assert.AreEqual(A, ThreadState.X31);
         }
