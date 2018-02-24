@@ -101,6 +101,16 @@ namespace ChocolArm64.Instruction
             }
         }
 
+        public static void Fabd_S(AILEmitterCtx Context)
+        {
+            EmitScalarBinaryOpF(Context, () =>
+            {
+                Context.Emit(OpCodes.Sub);
+
+                EmitUnaryMathCall(Context, nameof(Math.Abs));
+            });
+        }
+
         public static void Fabs_S(AILEmitterCtx Context)
         {
             EmitScalarUnaryOpF(Context, () =>
@@ -262,6 +272,31 @@ namespace ChocolArm64.Instruction
             EmitScalarUnaryOpF(Context, () =>
             {
                 EmitUnaryMathCall(Context, nameof(Math.Ceiling));
+            });
+        }
+
+        public static void Frintx_S(AILEmitterCtx Context)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            EmitScalarUnaryOpF(Context, () =>
+            {
+                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+
+                Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpcr));
+
+                if (Op.Size == 0)
+                {
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.RoundF));
+                }
+                else if (Op.Size == 1)
+                {
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Round));
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
             });
         }
 

@@ -1,3 +1,4 @@
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private Queue<Action> ActionsQueue;
 
-        public long FrameBufferPtr { get; set; }
+        private FrameBuffer FbRenderer;
 
         public OpenGLRenderer()
         {
@@ -36,6 +37,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue = new Queue<Action>();
         }
 
+        public void InitializeFrameBuffer()
+        {
+            FbRenderer = new FrameBuffer(1280, 720);
+        }
+
         public void QueueAction(Action ActionMthd)
         {
             ActionsQueue.Enqueue(ActionMthd);
@@ -43,7 +49,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void RunActions()
         {
-            while (ActionsQueue.Count > 0)
+            int Count = ActionsQueue.Count;
+
+            while (Count-- > 0)
             {
                 ActionsQueue.Dequeue()();
             }
@@ -51,6 +59,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Render()
         {
+            FbRenderer.Render();
+
             for (int Index = 0; Index < VertexBuffers.Count; Index++)
             {
                 VertexBuffer Vb = VertexBuffers[Index];
@@ -62,7 +72,28 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     GL.DrawArrays(PrimitiveType.TriangleStrip, 0, Vb.PrimCount);
                 }
             }
-            
+        }
+
+        public void SetWindowSize(int Width, int Height)
+        {
+            FbRenderer.WindowWidth  = Width;
+            FbRenderer.WindowHeight = Height;
+        }
+
+        public unsafe void SetFrameBuffer(
+            byte* Fb,
+            int   Width,
+            int   Height,
+            float ScaleX,
+            float ScaleY,
+            float Rotate)
+        {
+            Matrix2 Transform;
+
+            Transform  = Matrix2.CreateScale(ScaleX, ScaleY);
+            Transform *= Matrix2.CreateRotation(Rotate);
+
+            FbRenderer.Set(Fb, Width, Height, Transform);
         }
 
         public void SendVertexBuffer(int Index, byte[] Buffer, int Stride, GalVertexAttrib[] Attribs)
