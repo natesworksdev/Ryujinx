@@ -20,7 +20,7 @@ namespace Ryujinx.Tests.Cpu
         [TestCase(0x3A020020u, 2u,          3u,   false,   false, false, 5u)]   
         [TestCase(0x3A020020u, 2u,          3u,   true,    false, false, 6u)]     
         [TestCase(0xBA020020u, 2u,          3u,   false,   false, false, 5u)]    
-        [TestCase(0xBA020020u, 2u,          3u,   true,    false, false, 6u)]     /
+        [TestCase(0xBA020020u, 2u,          3u,   true,    false, false, 6u)]
         [TestCase(0x3A020020u, 0xFFFFFFFEu, 0x1u, true,    true,  true,  0x0u)]            
         public void Adcs(uint Opcode, uint A, uint B, bool CarryState, bool Zero, bool Carry, uint Result)
         {
