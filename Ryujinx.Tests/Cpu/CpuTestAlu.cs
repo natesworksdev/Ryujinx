@@ -5,10 +5,10 @@ namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestAlu : CpuTest
     {
-        [TestCase(0x9A020020u, 2u, 3u, true, 6u)]
-        [TestCase(0x9A020020u, 2u, 3u, false, 5u)]
-        [TestCase(0x1A020020u, 2u, 3u, true, 6u)]
-        [TestCase(0x1A020020u, 2u, 3u, false, 5u)]
+        [TestCase(0x9A020020u, 2u,          3u,   true,  6u)]
+        [TestCase(0x9A020020u, 2u,          3u,   false, 5u)]
+        [TestCase(0x1A020020u, 2u,          3u,   true,  6u)]
+        [TestCase(0x1A020020u, 2u,          3u,   false, 5u)]
         [TestCase(0x1A020020u, 0xFFFFFFFFu, 0x2u, false, 0x1u)]
         public void Adc(uint Opcode, uint A, uint B, bool CarryState, uint Result)
         {
@@ -17,11 +17,11 @@ namespace Ryujinx.Tests.Cpu
             Assert.AreEqual(Result, ThreadState.X0);
         }
 
-        [TestCase(0x3A020020u, 2u, 3u, false, false, false, 5u)]    //32bit CarryState: False
-        [TestCase(0x3A020020u, 2u, 3u, true, false, false, 6u)]     //32bit CarryState: True
-        [TestCase(0xBA020020u, 2u, 3u, false, false, false, 5u)]    //64bit CarryState: False
-        [TestCase(0xBA020020u, 2u, 3u, true, false, false, 6u)]     //64bit CarryState: True
-        [TestCase(0x3A020020u, 0xFFFFFFFEu, 0x1u, true, true, true, 0x0u)]            //Test Carry + Zero
+        [TestCase(0x3A020020u, 2u,          3u,   false,   false, false, 5u)]   
+        [TestCase(0x3A020020u, 2u,          3u,   true,    false, false, 6u)]     
+        [TestCase(0xBA020020u, 2u,          3u,   false,   false, false, 5u)]    
+        [TestCase(0xBA020020u, 2u,          3u,   true,    false, false, 6u)]     /
+        [TestCase(0x3A020020u, 0xFFFFFFFEu, 0x1u, true,    true,  true,  0x0u)]            
         public void Adcs(uint Opcode, uint A, uint B, bool CarryState, bool Zero, bool Carry, uint Result)
         {
             //ADCS (X0/W0), (X1, W1), (X2/W2)
@@ -41,9 +41,9 @@ namespace Ryujinx.Tests.Cpu
             Assert.AreEqual(3, ThreadState.X0);
         }
 
-        [TestCase(2u, false, false)]
-        [TestCase(5u, false, false)]
-        [TestCase(7u, false, false)]
+        [TestCase(2u,          false, false)]
+        [TestCase(5u,          false, false)]
+        [TestCase(7u,          false, false)]
         [TestCase(0xFFFFFFFFu, false, true )]
         [TestCase(0xFFFFFFFBu, true,  true )]
         public void Adds(uint A, bool Zero, bool Carry)
@@ -57,7 +57,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.AreEqual(A, ThreadState.X31);
         }
 
-        [TestCase(0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFul, true, false)]
+        [TestCase(0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFul, true,  false)]
         [TestCase(0xFFFFFFFFu, 0x00000000u, 0x00000000ul, false, true)]
         [TestCase(0x12345678u, 0x7324A993u, 0x12240010ul, false, false)]
         public void Ands(uint A, uint B, ulong Result, bool Negative, bool Zero)
@@ -103,12 +103,12 @@ namespace Ryujinx.Tests.Cpu
             Assert.AreEqual(0x78563412, ThreadState.X1);
         }
 
-        [TestCase(0x7A020020u, 4u, 2u, false, false, false, true, 1u)]
-        [TestCase(0x7A020020u, 4u, 2u, true, false, false, true, 2u)]
-        [TestCase(0xFA020020u, 4u, 2u, false, false, false, true, 1u)]
-        [TestCase(0xFA020020u, 4u, 2u, true, false, false, true, 2u)]
-        [TestCase(0x7A020020u, 4u, 4u, false, true, false, false, 0xFFFFFFFFu)]
-        [TestCase(0x7A020020u, 4u, 4u, true, false, true, true, 0x0u)]
+        [TestCase(0x7A020020u, 4u, 2u, false, false, false, true,  1u)]
+        [TestCase(0x7A020020u, 4u, 2u, true,  false, false, true,  2u)]
+        [TestCase(0xFA020020u, 4u, 2u, false, false, false, true,  1u)]
+        [TestCase(0xFA020020u, 4u, 2u, true,  false, false, true,  2u)]
+        [TestCase(0x7A020020u, 4u, 4u, false, true,  false, false, 0xFFFFFFFFu)]
+        [TestCase(0x7A020020u, 4u, 4u, true,  false, true,  true,  0x0u)]
         public void Sbcs(uint Opcode, uint A, uint B, bool CarryState, bool Negative, bool Zero, bool Carry, uint Result)
         {
             //SBCS (X0/W0), (X1, W1), (X2/W2)
