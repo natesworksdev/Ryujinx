@@ -10,12 +10,16 @@ namespace Ryujinx.Core.OsHle.IpcServices.Time
 
         public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
-        public ITimeZoneService()
+        private DateTime Epoch;
+
+        public ITimeZoneService(DateTime Epoch)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 101,  ToCalendarTimeWithMyRule }
             };
+
+            this.Epoch = Epoch;
         }
 
         //(nn::time::PosixTime)-> (nn::time::CalendarTime, nn::time::sf::CalendarAdditionalInfo)
@@ -23,7 +27,6 @@ namespace Ryujinx.Core.OsHle.IpcServices.Time
         {
             long PosixTime = Context.RequestData.ReadInt64();
 
-            DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Local);
             Epoch = Epoch.AddSeconds(PosixTime).ToLocalTime();
 
             /*

@@ -1,4 +1,5 @@
 using Ryujinx.Core.OsHle.Ipc;
+using System;
 using System.Collections.Generic;
 
 using static Ryujinx.Core.OsHle.IpcServices.ObjHelper;
@@ -10,6 +11,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Time
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
         public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        private static DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Local);
 
         public ServiceTime()
         {
@@ -25,14 +28,14 @@ namespace Ryujinx.Core.OsHle.IpcServices.Time
 
         public long GetStandardUserSystemClock(ServiceCtx Context)
         {
-            MakeObject(Context, new ISystemClock(SystemClockType.User));
+            MakeObject(Context, new ISystemClock(Epoch, SystemClockType.User));
 
             return 0;
         }
 
         public long GetStandardNetworkSystemClock(ServiceCtx Context)
         {
-            MakeObject(Context, new ISystemClock(SystemClockType.Network));
+            MakeObject(Context, new ISystemClock(Epoch, SystemClockType.Network));
 
             return 0;
         }
@@ -46,14 +49,14 @@ namespace Ryujinx.Core.OsHle.IpcServices.Time
 
         public long GetTimeZoneService(ServiceCtx Context)
         {
-            MakeObject(Context, new ITimeZoneService());
+            MakeObject(Context, new ITimeZoneService(Epoch));
 
             return 0;
         }
 
         public long GetStandardLocalSystemClock(ServiceCtx Context)
         {
-            MakeObject(Context, new ISystemClock(SystemClockType.Local));
+            MakeObject(Context, new ISystemClock(Epoch, SystemClockType.Local));
 
             return 0;
         }

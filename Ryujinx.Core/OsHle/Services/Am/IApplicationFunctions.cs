@@ -61,7 +61,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Am
             int Module = ErrorCode & 0xFF;
             int Description = (ErrorCode >> 9) & 0xFFF;
 
-            Logging.Info($"({Enum.GetName(typeof(ErrorModule), Module)}){2000 + Module}-{Description}");
+            Logging.Info($"({(ErrorModule)Module}){2000 + Module}-{Description}");
 
             return 0;
         }
