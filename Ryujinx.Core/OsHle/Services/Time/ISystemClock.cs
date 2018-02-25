@@ -10,18 +10,17 @@ namespace Ryujinx.Core.OsHle.IpcServices.Time
 
         public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
-        private DateTime Epoch;
+        private static DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Local);
 
         private SystemClockType ClockType;
 
-        public ISystemClock(DateTime Epoch, SystemClockType ClockType)
+        public ISystemClock(SystemClockType ClockType)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, GetCurrentTime }
             };
 
-            this.Epoch     = Epoch;
             this.ClockType = ClockType;
         }
 
