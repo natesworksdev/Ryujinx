@@ -102,5 +102,22 @@ namespace Ryujinx.Tests.Cpu
             AThreadState ThreadState = SingleOpcode(0x5AC00821, X1: 0x12345678);
             Assert.AreEqual(0x78563412, ThreadState.X1);
         }
+
+        [TestCase(0x7A020020u, 4u, 2u, false, false, false, true, 1u)]
+        [TestCase(0x7A020020u, 4u, 2u, true, false, false, true, 2u)]
+        [TestCase(0xFA020020u, 4u, 2u, false, false, false, true, 1u)]
+        [TestCase(0xFA020020u, 4u, 2u, true, false, false, true, 2u)]
+        [TestCase(0x7A020020u, 4u, 4u, false, true, false, false, 0xFFFFFFFFu)]
+        [TestCase(0x7A020020u, 4u, 4u, true, false, true, true, 0x0u)]
+        public void Sbcs(uint Opcode, uint A, uint B, bool CarryState, bool Negative, bool Zero, bool Carry, uint Result)
+        {
+            //SBCS (X0/W0), (X1, W1), (X2/W2)
+            AThreadState ThreadState = SingleOpcode(Opcode, X1: A, X2: B, Carry: CarryState);
+            Assert.AreEqual(Negative, ThreadState.Negative);
+            Assert.IsFalse(ThreadState.Overflow);
+            Assert.AreEqual(Zero, ThreadState.Zero);
+            Assert.AreEqual(Carry, ThreadState.Carry);
+            Assert.AreEqual(Result, ThreadState.X0);
+        }
     }
 }
