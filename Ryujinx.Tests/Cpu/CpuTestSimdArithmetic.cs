@@ -13,7 +13,6 @@ namespace Ryujinx.Tests.Cpu
     	[TestCase(0x40733333u, 'M', false, 0x40400000u)]
     	[TestCase(0x3F99999Au, 'Z', false, 0x3F800000u)]
     	[TestCase(0x3FE66666u, 'Z', false, 0x3F800000u)]
-    	//+/-0
     	[TestCase(0x00000000u, 'N', false, 0x00000000u)]
     	[TestCase(0x00000000u, 'P', false, 0x00000000u)]
     	[TestCase(0x00000000u, 'M', false, 0x00000000u)]
@@ -22,17 +21,14 @@ namespace Ryujinx.Tests.Cpu
     	[TestCase(0x80000000u, 'P', false, 0x80000000u)]
     	[TestCase(0x80000000u, 'M', false, 0x80000000u)]
     	[TestCase(0x80000000u, 'Z', false, 0x80000000u)]
-    	//+inf
     	[TestCase(0x7F800000u, 'N', false, 0x7F800000u)]
     	[TestCase(0x7F800000u, 'P', false, 0x7F800000u)]
     	[TestCase(0x7F800000u, 'M', false, 0x7F800000u)]
     	[TestCase(0x7F800000u, 'Z', false, 0x7F800000u)]
-    	//-inf
     	[TestCase(0xFF800000u, 'N', false, 0xFF800000u)]
     	[TestCase(0xFF800000u, 'P', false, 0xFF800000u)]
     	[TestCase(0xFF800000u, 'M', false, 0xFF800000u)]
     	[TestCase(0xFF800000u, 'Z', false, 0xFF800000u)]
-    	//SNaN
     	[TestCase(0xFF800001u, 'N', false, 0xFFC00001u)]
     	[TestCase(0xFF800001u, 'P', false, 0xFFC00001u)]
     	[TestCase(0xFF800001u, 'M', false, 0xFFC00001u)]
@@ -41,7 +37,6 @@ namespace Ryujinx.Tests.Cpu
     	[TestCase(0xFF800001u, 'P', true,  0x7FC00000u)]
     	[TestCase(0xFF800001u, 'M', true,  0x7FC00000u)]
     	[TestCase(0xFF800001u, 'Z', true,  0x7FC00000u)]
-    	//QNaN
     	[TestCase(0x7FC00002u, 'N', false, 0x7FC00002u)]
     	[TestCase(0x7FC00002u, 'P', false, 0x7FC00002u)]
     	[TestCase(0x7FC00002u, 'M', false, 0x7FC00002u)]
