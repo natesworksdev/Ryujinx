@@ -13,6 +13,14 @@ namespace Ryujinx.Tests.Cpu
     	[TestCase(0x40733333u, 'M', 0x40400000u)]
     	[TestCase(0x3F99999Au, 'Z', 0x3F800000u)]
     	[TestCase(0x3FE66666u, 'Z', 0x3F800000u)]
+    	[TestCase(0x7F800002u, 'N', 0x7F800002u)]
+    	[TestCase(0x7F800002u, 'P', 0x7F800002u)]
+    	[TestCase(0x7F800002u, 'M', 0x7F800002u)]
+    	[TestCase(0x7F800002u, 'Z', 0x7F800002u)]
+    	[TestCase(0x7FC00002u, 'N', 0x7FC00002u)]
+    	[TestCase(0x7FC00002u, 'P', 0x7FC00002u)]
+    	[TestCase(0x7FC00002u, 'M', 0x7FC00002u)]
+    	[TestCase(0x7FC00002u, 'Z', 0x7FC00002u)]
     	public void Frintx_S(uint A, char RoundType, uint Result)
         {
         	int FpcrTemp = 0x0;

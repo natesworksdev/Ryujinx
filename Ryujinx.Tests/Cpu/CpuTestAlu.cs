@@ -17,16 +17,17 @@ namespace Ryujinx.Tests.Cpu
             Assert.AreEqual(Result, ThreadState.X0);
         }
 
-        [TestCase(0x3A020020u, 2u,          3u,   false, false, false, 5u)]
-        [TestCase(0x3A020020u, 2u,          3u,   true,  false, false, 6u)]
-        [TestCase(0xBA020020u, 2u,          3u,   false, false, false, 5u)]
-        [TestCase(0xBA020020u, 2u,          3u,   true,  false, false, 6u)]
-        [TestCase(0x3A020020u, 0xFFFFFFFEu, 0x1u, true,  true,  true,  0x0u)]
-        public void Adcs(uint Opcode, uint A, uint B, bool CarryState, bool Zero, bool Carry, uint Result)
+        [TestCase(0x3A020020u, 2u,          3u,          false, false, false, false, 5u)]
+        [TestCase(0x3A020020u, 2u,          3u,          true,  false, false, false, 6u)]
+        [TestCase(0xBA020020u, 2u,          3u,          false, false, false, false, 5u)]
+        [TestCase(0xBA020020u, 2u,          3u,          true,  false, false, false, 6u)]
+        [TestCase(0x3A020020u, 0xFFFFFFFEu, 0x1u,        true,  false, true,  true,  0x0u)]
+        [TestCase(0x3A020020u, 0xFFFFFFFFu, 0xFFFFFFFFu, true,  true, false, true,  0xFFFFFFFFu)]
+        public void Adcs(uint Opcode, uint A, uint B, bool CarryState, bool Negative, bool Zero, bool Carry, uint Result)
         {
             //ADCS (X0/W0), (X1, W1), (X2/W2)
             AThreadState ThreadState = SingleOpcode(Opcode, X1: A, X2: B, Carry: CarryState);
-            Assert.IsFalse(ThreadState.Negative);
+            Assert.AreEqual(Negative, ThreadState.Negative);
             Assert.IsFalse(ThreadState.Overflow);
             Assert.AreEqual(Zero, ThreadState.Zero);
             Assert.AreEqual(Carry, ThreadState.Carry);
