@@ -114,35 +114,35 @@ namespace Ryujinx.Core.Input
             HidJoystickPosition  LeftStick,
             HidJoystickPosition  RightStick)
         {
-            long BaseControllerOffset = HidControllersOffset + (int)ControllerId * HidControllerSize;
+            long ControllerOffset = HidControllersOffset + (int)ControllerId * HidControllerSize;
 
-            long LayoutHeaderOffset = BaseControllerOffset + HidControllerHeaderSize;
+            ControllerOffset += HidControllerHeaderSize;
 
-            LayoutHeaderOffset += (int)ControllerLayout * HidControllerLayoutsSize;
+            ControllerOffset += (int)ControllerLayout * HidControllerLayoutsSize;
 
-            long LastEntry = ReadInt64(LayoutHeaderOffset + 0x10);
+            long LastEntry = ReadInt64(ControllerOffset + 0x10);
 
             long CurrEntry = (LastEntry + 1) % HidEntryCount;
 
             long Timestamp = Stopwatch.GetTimestamp();
 
-            WriteInt64(LayoutHeaderOffset + 0x0,  Timestamp);
-            WriteInt64(LayoutHeaderOffset + 0x8,  HidEntryCount);
-            WriteInt64(LayoutHeaderOffset + 0x10, CurrEntry);
-            WriteInt64(LayoutHeaderOffset + 0x18, HidEntryCount - 1);
+            WriteInt64(ControllerOffset + 0x0,  Timestamp);
+            WriteInt64(ControllerOffset + 0x8,  HidEntryCount);
+            WriteInt64(ControllerOffset + 0x10, CurrEntry);
+            WriteInt64(ControllerOffset + 0x18, HidEntryCount - 1);
 
-            long InputEntryOffset = LayoutHeaderOffset + HidControllersLayoutHeaderSize;
+            ControllerOffset += HidControllersLayoutHeaderSize;
 
-            InputEntryOffset += CurrEntry * HidControllersInputEntrySize;
+            ControllerOffset += CurrEntry * HidControllersInputEntrySize;
 
-            WriteInt64(InputEntryOffset + 0x0,  Timestamp);
-            WriteInt64(InputEntryOffset + 0x8,  Timestamp);
-            WriteInt64(InputEntryOffset + 0x10, (uint)Buttons);
-            WriteInt32(InputEntryOffset + 0x18, LeftStick.DX);
-            WriteInt32(InputEntryOffset + 0x1c, LeftStick.DY);
-            WriteInt64(InputEntryOffset + 0x20, RightStick.DX);
-            WriteInt64(InputEntryOffset + 0x24, RightStick.DY);
-            WriteInt64(InputEntryOffset + 0x28, 3);
+            WriteInt64(ControllerOffset + 0x0,  Timestamp);
+            WriteInt64(ControllerOffset + 0x8,  Timestamp);
+            WriteInt64(ControllerOffset + 0x10, (uint)Buttons);
+            WriteInt32(ControllerOffset + 0x18, LeftStick.DX);
+            WriteInt32(ControllerOffset + 0x1c, LeftStick.DY);
+            WriteInt64(ControllerOffset + 0x20, RightStick.DX);
+            WriteInt64(ControllerOffset + 0x24, RightStick.DY);
+            WriteInt64(ControllerOffset + 0x28, 3);
         }
 
         public void SetTouchPoints(params HidTouchPoint[] Points)
@@ -159,7 +159,7 @@ namespace Ryujinx.Core.Input
             WriteInt64(HidTouchScreenOffset + 0x18, HidEntryCount - 1);
             WriteInt64(HidTouchScreenOffset + 0x20, Timestamp);            
 
-            long TouchEntryOffset = HidTouchHeaderSize;
+            long TouchEntryOffset = HidTouchScreenOffset + HidTouchHeaderSize;
 
             TouchEntryOffset += CurrEntry * HidTouchEntrySize;
 
