@@ -142,7 +142,9 @@ namespace Ryujinx.Core.Input
             WriteInt32(ControllerOffset + 0x1c, LeftStick.DY);
             WriteInt64(ControllerOffset + 0x20, RightStick.DX);
             WriteInt64(ControllerOffset + 0x24, RightStick.DY);
-            WriteInt64(ControllerOffset + 0x28, 3);
+            WriteInt64(ControllerOffset + 0x28,
+                (uint)HidControllerConnState.Controller_State_Connected |
+                (uint)HidControllerConnState.Controller_State_Wired);
         }
 
         public void SetTouchPoints(params HidTouchPoint[] Points)
