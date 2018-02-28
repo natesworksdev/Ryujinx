@@ -13,15 +13,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Sfdnsres
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                //{ 0, GetLoadState }
+                //{ 0, Function }
             };
-        }
-
-        public static long GetLoadState(ServiceCtx Context)
-        {
-            Context.ResponseData.Write(1);
-
-            return 0;
         }
     }
 }
