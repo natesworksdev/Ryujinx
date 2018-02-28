@@ -17,7 +17,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Bsd
                 {  1, StartMonitoring },
                 {  2, Socket          },
                 { 10, Send            },
-                { 14, Connect         },
+                { 14, Connect         }
             };
         }
 
