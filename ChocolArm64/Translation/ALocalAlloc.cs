@@ -71,21 +71,6 @@ namespace ChocolArm64.Translation
 
         public ALocalAlloc(AILBlock[] Graph, AILBlock Root)
         {
-            IntPaths = new Dictionary<AILBlock, PathIo>();
-            VecPaths = new Dictionary<AILBlock, PathIo>();
-
-            if (Graph.Length < MaxOptGraphLength)
-            {
-                InitializeOptimal(Graph, Root);
-            }
-            else
-            {
-                InitializeFast(Graph);
-            }
-        }
-
-        private void InitializeOptimal(AILBlock[] Graph, AILBlock Root)
-        {
             //This will go through all possible paths on the graph,
             //and store all inputs/outputs for each block. A register
             //that was previously written to already is not considered an input.
@@ -95,6 +80,9 @@ namespace ChocolArm64.Translation
             //when doing input elimination. Each block chain have a root, that's where
             //the code starts executing. They are present on the subroutine start point,
             //and on call return points too (address written to X30 by BL).
+            IntPaths = new Dictionary<AILBlock, PathIo>();
+            VecPaths = new Dictionary<AILBlock, PathIo>();
+
             HashSet<BlockIo> Visited = new HashSet<BlockIo>();
 
             Queue<BlockIo> Unvisited = new Queue<BlockIo>();
@@ -172,37 +160,6 @@ namespace ChocolArm64.Translation
                 {
                     EnqueueFromCurrent(Current.Block.Branch, false);
                 }
-            }
-        }
-
-        private void InitializeFast(AILBlock[] Graph)
-        {
-            //This is WAY faster than InitializeOptimal, but results in
-            //uneeded loads and stores, so the resulting code will be slower.
-            long IntInputs  = 0;
-            long IntOutputs = 0;
-            long VecInputs  = 0;
-            long VecOutputs = 0;
-
-            foreach (AILBlock Block in Graph)
-            {
-                IntInputs  |= Block.IntInputs;
-                IntOutputs |= Block.IntOutputs;
-                VecInputs  |= Block.VecInputs;
-                VecOutputs |= Block.VecOutputs;
-            }
-
-            //It's possible that not all code paths writes to those output registers,
-            //in those cases if we attempt to write an output registers that was
-            //not written, we will be just writing zero and messing up the old register value.
-            //So we just need to ensure that all outputs are loaded.
-            IntInputs |= IntOutputs;
-            VecInputs |= VecOutputs;
-
-            foreach (AILBlock Block in Graph)
-            {
-                IntPaths.Add(Block, new PathIo(Block, IntInputs, IntOutputs));
-                VecPaths.Add(Block, new PathIo(Block, VecInputs, VecOutputs));
             }
         }
 

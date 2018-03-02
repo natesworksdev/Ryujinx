@@ -7,11 +7,20 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using System.Threading;
 
 namespace ChocolArm64
 {
     public class ATranslator
     {
+        private Thread AsyncTranslation;
+
+        private HashSet<long> DoNotReJit;
+
+        private HashSet<long> WaitingForTranslation;
+
+        private ConcurrentQueue<long> TranslationQueue;
+
         private ConcurrentDictionary<long, ATranslatedSub> CachedSubs;
 
         private ConcurrentDictionary<long, string> SymbolTable;
@@ -24,6 +33,12 @@ namespace ChocolArm64
 
         public ATranslator(IReadOnlyDictionary<long, string> SymbolTable = null)
         {
+            DoNotReJit = new HashSet<long>();
+
+            WaitingForTranslation = new HashSet<long>();
+
+            TranslationQueue = new ConcurrentQueue<long>();
+
             CachedSubs = new ConcurrentDictionary<long, ATranslatedSub>();
 
             if (SymbolTable != null)
@@ -38,9 +53,9 @@ namespace ChocolArm64
             KeepRunning = true;
         }
 
-        public void StopExecution() => KeepRunning = false;
+        internal void StopExecution() => KeepRunning = false;
 
-        public void ExecuteSubroutine(AThread Thread, long Position)
+        internal void ExecuteSubroutine(AThread Thread, long Position)
         {
             do
             {
@@ -54,9 +69,14 @@ namespace ChocolArm64
                     CpuTrace?.Invoke(this, new ACpuTraceEventArgs(Position, SubName));
                 }
 
-                if (!CachedSubs.TryGetValue(Position, out ATranslatedSub Sub) || Sub.NeedsReJit)
+                if (!CachedSubs.TryGetValue(Position, out ATranslatedSub Sub))
                 {
-                    Sub = TranslateSubroutine(Thread.Memory, Position);
+                    Sub = Translate(Thread.Memory, Position);
+                }
+
+                if (Sub.NeedsReJit)
+                {
+                    TranslateAsync(Thread.Memory, Position);
                 }
 
                 Position = Sub.Execute(Thread.ThreadState, Thread.Memory);
@@ -86,24 +106,15 @@ namespace ChocolArm64
             return CachedSubs.ContainsKey(Position);
         }
 
-        private ATranslatedSub TranslateSubroutine(AMemory Memory, long Position)
+        private ATranslatedSub Translate(AMemory Memory, long Position)
         {
-            (ABlock[] Graph, ABlock Root) Cfg = ADecoder.DecodeSubroutine(this, Memory, Position);
+            ABlock Block = ADecoder.DecodeBasicBlock(this, Memory, Position);
 
-            string SubName = SymbolTable.GetOrAdd(Position, $"Sub{Position:x16}");
+            ABlock[] Graph = new ABlock[] { Block };
 
-            PropagateName(Cfg.Graph, SubName);
+            string SubName = GetSubName(Position);
 
-            AILEmitterCtx Context = new AILEmitterCtx(
-                this,
-                Cfg.Graph,
-                Cfg.Root,
-                SubName);
-
-            if (Context.CurrBlock.Position != Position)
-            {
-                Context.Emit(OpCodes.Br, Context.GetLabel(Position));
-            }
+            AILEmitterCtx Context = new AILEmitterCtx(this, Graph, Block, SubName);
 
             do
             {
@@ -111,21 +122,95 @@ namespace ChocolArm64
             }
             while (Context.AdvanceOpCode());
 
-            //Mark all methods that calls this method for ReJiting,
-            //since we can now call it directly which is faster.
-            foreach (ATranslatedSub TS in CachedSubs.Values)
-            {
-                if (TS.SubCalls.Contains(Position))
-                {
-                    TS.MarkForReJit();
-                }
-            }
-
             ATranslatedSub Subroutine = Context.GetSubroutine();
 
             CachedSubs.AddOrUpdate(Position, Subroutine, (Key, OldVal) => Subroutine);
 
+            if (!DoNotReJit.Contains(Position))
+            {
+                TranslateAsync(Memory, Position);
+            }
+
+            AOpCode LastOp = Block.GetLastOp();
+
+            if (LastOp.Emitter != AInstEmit.Ret &&
+                LastOp.Emitter != AInstEmit.Br)
+            {
+                DoNotReJit.Add(LastOp.Position + 4);
+            }
+
             return Subroutine;
+        }
+
+        private void TranslateAsync(AMemory Memory, long Position)
+        {
+            lock (WaitingForTranslation)
+            {
+                if (!WaitingForTranslation.Add(Position))
+                {
+                    return;
+                }
+            }
+
+            TranslationQueue.Enqueue(Position);
+
+            if (AsyncTranslation == null || !AsyncTranslation.IsAlive)
+            {
+                AsyncTranslation = new Thread(() => TranslateAsyncWork(Memory));
+
+                AsyncTranslation.Priority = ThreadPriority.Lowest;
+
+                AsyncTranslation.Start();
+            }
+        }
+
+        private void TranslateAsyncWork(AMemory Memory)
+        {
+            while (TranslationQueue.TryDequeue(out long Position))
+            {
+                (ABlock[] Graph, ABlock Root) Cfg = ADecoder.DecodeSubroutine(this, Memory, Position);
+
+                string SubName = GetSubName(Position);
+
+                PropagateName(Cfg.Graph, SubName);
+
+                AILEmitterCtx Context = new AILEmitterCtx(this, Cfg.Graph, Cfg.Root, SubName);
+
+                if (Context.CurrBlock.Position != Position)
+                {
+                    Context.Emit(OpCodes.Br, Context.GetLabel(Position));
+                }
+
+                do
+                {
+                    Context.EmitOpCode();
+                }
+                while (Context.AdvanceOpCode());
+
+                //Mark all methods that calls this method for ReJiting,
+                //since we can now call it directly which is faster.
+                foreach (ATranslatedSub TS in CachedSubs.Values)
+                {
+                    if (TS.HasCallee(Position))
+                    {
+                        TS.MarkForReJit();
+                    }
+                }
+
+                ATranslatedSub Subroutine = Context.GetSubroutine();
+
+                CachedSubs.AddOrUpdate(Position, Subroutine, (Key, OldVal) => Subroutine);
+
+                lock (WaitingForTranslation)
+                {
+                    WaitingForTranslation.Remove(Position);
+                }
+            }
+        }
+
+        private string GetSubName(long Position)
+        {
+            return SymbolTable.GetOrAdd(Position, $"Sub{Position:x16}");
         }
 
         private void PropagateName(ABlock[] Graph, string Name)

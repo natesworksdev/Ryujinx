@@ -2,6 +2,7 @@ using ChocolArm64.Memory;
 using ChocolArm64.State;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -15,33 +16,39 @@ namespace ChocolArm64
 
         private bool HasDelegate;
 
-        public static Type[] FixedArgTypes { get; private set; }
-
         public static int StateArgIdx  { get; private set; }
         public static int MemoryArgIdx { get; private set; }
 
+        public static Type[] FixedArgTypes { get; private set; }
+
         public DynamicMethod Method { get; private set; }
 
-        public HashSet<long> SubCalls { get; private set; }
+        public ReadOnlyCollection<ARegister> Params { get; private set; }
 
-        public List<ARegister> Params { get; private set; }
+        private HashSet<long> Callees;
 
         public bool NeedsReJit { get; private set; }
 
-        public ATranslatedSub()
+        public ATranslatedSub(DynamicMethod Method, List<ARegister> Params, HashSet<long> Callees)
         {
-            SubCalls = new HashSet<long>();
-        }
+            if (Method == null)
+            {
+                throw new ArgumentNullException(nameof(Method));
+            }
 
-        public ATranslatedSub(DynamicMethod Method, List<ARegister> Params) : this()
-        {
             if (Params == null)
             {
                 throw new ArgumentNullException(nameof(Params));
             }
 
-            this.Method = Method;
-            this.Params = Params;
+            if (Callees == null)
+            {
+                throw new ArgumentNullException(nameof(Callees));
+            }
+
+            this.Method  = Method;
+            this.Params  = Params.AsReadOnly();
+            this.Callees = Callees;
         }
 
         static ATranslatedSub()
@@ -98,6 +105,8 @@ namespace ChocolArm64
 
             return ExecDelegate(ThreadState, Memory);
         }
+
+        public bool HasCallee(long Position) => Callees.Contains(Position);
 
         public void MarkForReJit() => NeedsReJit = true;
     }

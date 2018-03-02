@@ -11,14 +11,41 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeBImmAl Op = (AOpCodeBImmAl)Context.CurrOp;
 
-            Context.Emit(OpCodes.Br, Context.GetLabel(Op.Imm));
+            if (Context.CurrBlock.Branch != null)
+            {
+                Context.Emit(OpCodes.Br, Context.GetLabel(Op.Imm));
+            }
+            else
+            {
+                Context.EmitStoreState();
+                Context.EmitLdc_I8(Op.Imm);
+
+                Context.Emit(OpCodes.Br, Context.ExitLabel);
+            }
         }
 
         public static void B_Cond(AILEmitterCtx Context)
         {
             AOpCodeBImmCond Op = (AOpCodeBImmCond)Context.CurrOp;
 
-            Context.EmitCondBranch(Context.GetLabel(Op.Imm), Op.Cond);
+            AILLabel LblTaken;
+
+            if (Context.CurrBlock.Branch != null)
+            {
+                LblTaken = Context.GetLabel(Op.Imm);
+            }
+            else
+            {
+                LblTaken = new AILLabel();
+            }
+
+            Context.EmitCondBranch(LblTaken, Op.Cond);
+
+            if (Context.CurrBlock.Next   == null ||
+                Context.CurrBlock.Branch == null)
+            {
+                EmitBranchPaths(Context, LblTaken);
+            }
         }
 
         public static void Bl(AILEmitterCtx Context)
@@ -48,10 +75,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                if (Context.CurrBlock.Next != null)
-                {
-                    Context.EmitLoadState(Context.CurrBlock.Next);
-                }
+                Context.EmitLoadState(Context.CurrBlock.Next);
             }
             else
             {
@@ -93,7 +117,7 @@ namespace ChocolArm64.Instruction
             Context.EmitLdintzr(Op.Rt);
             Context.EmitLdc_I(0);
 
-            Context.Emit(ILOp, Context.GetLabel(Op.Imm));
+            EmitBranch(Context, ILOp);
         }
 
         public static void Ret(AILEmitterCtx Context)
@@ -118,7 +142,69 @@ namespace ChocolArm64.Instruction
 
             Context.EmitLdc_I(0);
 
-            Context.Emit(ILOp, Context.GetLabel(Op.Imm));
+            EmitBranch(Context, ILOp);
+        }
+
+        private static void EmitBranch(AILEmitterCtx Context, OpCode ILOp)
+        {
+            AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
+
+            AILLabel LblTaken;
+
+            if (Context.CurrBlock.Branch != null)
+            {
+                LblTaken = Context.GetLabel(Op.Imm);
+            }
+            else
+            {
+                LblTaken = new AILLabel();
+            }
+
+            Context.Emit(ILOp, LblTaken);
+
+            if (Context.CurrBlock.Next   == null ||
+                Context.CurrBlock.Branch == null)
+            {
+                EmitBranchPaths(Context, LblTaken);
+            }
+        }
+
+        private static void EmitBranchPaths(AILEmitterCtx Context, AILLabel LblTaken)
+        {
+            AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
+
+            AILLabel LblEnd = null;
+
+            if (Context.CurrBlock.Next == null)
+            {
+                EmitBranchExit(Context, Op.Position + 4);
+            }
+            else
+            {
+                LblEnd = new AILLabel();
+
+                Context.Emit(OpCodes.Br, LblEnd);
+            }
+
+            if (Context.CurrBlock.Branch == null)
+            {
+                Context.MarkLabel(LblTaken);
+
+                EmitBranchExit(Context, Op.Imm);
+            }
+
+            if (LblEnd != null)
+            {
+                Context.MarkLabel(LblEnd);
+            }
+        }
+
+        private static void EmitBranchExit(AILEmitterCtx Context, long Imm)
+        {
+            Context.EmitStoreState();
+            Context.EmitLdc_I8(Imm);
+
+            Context.Emit(OpCodes.Br, Context.ExitLabel);
         }
     }
 }
