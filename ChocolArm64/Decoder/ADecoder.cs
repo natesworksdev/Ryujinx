@@ -13,8 +13,6 @@ namespace ChocolArm64.Decoder
 
         private static ConcurrentDictionary<Type, OpActivator> OpActivators;
 
-        private const int MaxGraphLength = 40;
-
         static ADecoder()
         {
             OpActivators = new ConcurrentDictionary<Type, OpActivator>();
@@ -46,11 +44,6 @@ namespace ChocolArm64.Decoder
             {
                 if (!Visited.TryGetValue(Position, out ABlock Output))
                 {
-                    if (Visited.Count >= MaxGraphLength)
-                    {
-                        return null;
-                    }
-
                     Output = new ABlock(Position);
 
                     Blocks.Enqueue(Output);
@@ -91,8 +84,8 @@ namespace ChocolArm64.Decoder
                         }
                     }
 
-                    if ((!(LastOp is AOpCodeBImmAl) &&
-                         !(LastOp is AOpCodeBReg)) || HasCachedSub)
+                    if (!((LastOp is AOpCodeBImmAl) ||
+                          (LastOp is AOpCodeBReg)) || HasCachedSub)
                     {
                         Current.Next = Enqueue(Current.EndPosition);
                     }

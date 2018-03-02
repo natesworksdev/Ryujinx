@@ -16,10 +16,6 @@ namespace ChocolArm64.Translation
 
         private Dictionary<long, AILLabel> Labels;
 
-        public AILLabel ExitLabel { get; private set; }
-
-        private bool HasExit;
-
         private int BlkIndex;
         private int OpcIndex;
 
@@ -74,8 +70,6 @@ namespace ChocolArm64.Translation
 
             Labels = new Dictionary<long, AILLabel>();
 
-            ExitLabel = new AILLabel();
-
             Emitter = new AILEmitter(Graph, Root, SubName);
 
             ILBlock = Emitter.GetILBlock(0);          
@@ -98,15 +92,6 @@ namespace ChocolArm64.Translation
             if (OpcIndex + 1 == CurrBlock.OpCodes.Count &&
                 BlkIndex + 1 == Graph.Length)
             {
-                if (!HasExit)
-                {
-                    MarkLabel(ExitLabel);
-
-                    Emit(OpCodes.Ret);
-                    
-                    HasExit = true;
-                }
-
                 return false;
             }
 

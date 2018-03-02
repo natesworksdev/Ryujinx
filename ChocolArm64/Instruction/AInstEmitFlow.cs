@@ -20,7 +20,7 @@ namespace ChocolArm64.Instruction
                 Context.EmitStoreState();
                 Context.EmitLdc_I8(Op.Imm);
 
-                Context.Emit(OpCodes.Br, Context.ExitLabel);
+                Context.Emit(OpCodes.Ret);
             }
         }
 
@@ -28,24 +28,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeBImmCond Op = (AOpCodeBImmCond)Context.CurrOp;
 
-            AILLabel LblTaken;
-
-            if (Context.CurrBlock.Branch != null)
-            {
-                LblTaken = Context.GetLabel(Op.Imm);
-            }
-            else
-            {
-                LblTaken = new AILLabel();
-            }
-
-            Context.EmitCondBranch(LblTaken, Op.Cond);
-
-            if (Context.CurrBlock.Next   == null ||
-                Context.CurrBlock.Branch == null)
-            {
-                EmitBranchPaths(Context, LblTaken);
-            }
+            EmitBranch(Context, Op.Cond);
         }
 
         public static void Bl(AILEmitterCtx Context)
@@ -145,66 +128,62 @@ namespace ChocolArm64.Instruction
             EmitBranch(Context, ILOp);
         }
 
+        private static void EmitBranch(AILEmitterCtx Context, ACond Cond)
+        {
+            AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
+
+            if (Context.CurrBlock.Next   != null &&
+                Context.CurrBlock.Branch != null)
+            {
+                Context.EmitCondBranch(Context.GetLabel(Op.Imm), Cond);
+            }
+            else
+            {
+                Context.EmitStoreState();
+
+                AILLabel LblTaken = new AILLabel();
+
+                Context.EmitCondBranch(LblTaken, Cond);
+
+                Context.EmitLdc_I8(Op.Position + 4);
+
+                Context.Emit(OpCodes.Ret);
+
+                Context.MarkLabel(LblTaken);
+
+                Context.EmitLdc_I8(Op.Imm);
+
+                Context.Emit(OpCodes.Ret);
+            }
+        }
+
         private static void EmitBranch(AILEmitterCtx Context, OpCode ILOp)
         {
             AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
 
-            AILLabel LblTaken;
-
-            if (Context.CurrBlock.Branch != null)
+            if (Context.CurrBlock.Next   != null &&
+                Context.CurrBlock.Branch != null)
             {
-                LblTaken = Context.GetLabel(Op.Imm);
+                Context.Emit(ILOp, Context.GetLabel(Op.Imm));
             }
             else
             {
-                LblTaken = new AILLabel();
-            }
+                Context.EmitStoreState();
 
-            Context.Emit(ILOp, LblTaken);
+                AILLabel LblTaken = new AILLabel();
 
-            if (Context.CurrBlock.Next   == null ||
-                Context.CurrBlock.Branch == null)
-            {
-                EmitBranchPaths(Context, LblTaken);
-            }
-        }
+                Context.Emit(ILOp, LblTaken);
 
-        private static void EmitBranchPaths(AILEmitterCtx Context, AILLabel LblTaken)
-        {
-            AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
+                Context.EmitLdc_I8(Op.Position + 4);
 
-            AILLabel LblEnd = null;
+                Context.Emit(OpCodes.Ret);
 
-            if (Context.CurrBlock.Next == null)
-            {
-                EmitBranchExit(Context, Op.Position + 4);
-            }
-            else
-            {
-                LblEnd = new AILLabel();
-
-                Context.Emit(OpCodes.Br, LblEnd);
-            }
-
-            if (Context.CurrBlock.Branch == null)
-            {
                 Context.MarkLabel(LblTaken);
 
-                EmitBranchExit(Context, Op.Imm);
+                Context.EmitLdc_I8(Op.Imm);
+
+                Context.Emit(OpCodes.Ret);
             }
-
-            if (LblEnd != null)
-            {
-                Context.MarkLabel(LblEnd);
-            }
-        }
-
-        private static void EmitBranchExit(AILEmitterCtx Context, long Imm)
-        {
-            Context.EmitStoreState();
-            Context.EmitLdc_I8(Imm);
-
-            Context.Emit(OpCodes.Br, Context.ExitLabel);
         }
     }
 }

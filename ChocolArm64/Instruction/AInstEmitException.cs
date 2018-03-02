@@ -42,7 +42,7 @@ namespace ChocolArm64.Instruction
             {
                 Context.EmitLdc_I8(Op.Position + 4);
 
-                Context.Emit(OpCodes.Br, Context.ExitLabel);
+                Context.Emit(OpCodes.Ret);
             }
         }
 
@@ -71,7 +71,7 @@ namespace ChocolArm64.Instruction
             {
                 Context.EmitLdc_I8(Op.Position + 4);
 
-                Context.Emit(OpCodes.Br, Context.ExitLabel);
+                Context.Emit(OpCodes.Ret);
             }
         }
     }
