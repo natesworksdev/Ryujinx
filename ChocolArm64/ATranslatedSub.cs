@@ -31,7 +31,7 @@ namespace ChocolArm64
 
         private bool NeedsReJit;
 
-        private int MinCallCountForReJit = 5000;
+        private int MinCallCountForReJit = 250;
 
         public ATranslatedSub(DynamicMethod Method, List<ARegister> Params, HashSet<long> Callees)
         {
