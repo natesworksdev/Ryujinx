@@ -92,19 +92,30 @@ namespace Ryujinx.Core.Input
                 HidControllerType.ControllerType_Handheld |
                 HidControllerType.ControllerType_JoyconPair;
 
-            HidControllerColorDesc ColorDesc =
+            bool IsHalf = false;
+
+            HidControllerColorDesc SingleColorDesc =
                 HidControllerColorDesc.ColorDesc_ColorsNonexistent;
 
+            JoyConColor SingleColorBody    = JoyConColor.Black;
+            JoyConColor SingleColorButtons = JoyConColor.Black;
+
+            HidControllerColorDesc SplitColorDesc = 0;
+
             WriteInt32(BaseControllerOffset + 0x0,  (int)Type);
-            WriteInt32(BaseControllerOffset + 0x4,  0);
-            WriteInt32(BaseControllerOffset + 0x8,  (int)ColorDesc);
-            WriteInt32(BaseControllerOffset + 0xc,  0);
-            WriteInt32(BaseControllerOffset + 0x10, 0);
-            WriteInt32(BaseControllerOffset + 0x14, 0);
+
+            WriteInt32(BaseControllerOffset + 0x4,  IsHalf ? 1 : 0);
+
+            WriteInt32(BaseControllerOffset + 0x8,  (int)SingleColorDesc);
+            WriteInt32(BaseControllerOffset + 0xc,  (int)SingleColorBody);
+            WriteInt32(BaseControllerOffset + 0x10, (int)SingleColorButtons);
+            WriteInt32(BaseControllerOffset + 0x14, (int)SplitColorDesc);
+
             WriteInt32(BaseControllerOffset + 0x18, (int)LeftColorBody);
             WriteInt32(BaseControllerOffset + 0x1c, (int)LeftColorButtons);
+
             WriteInt32(BaseControllerOffset + 0x20, (int)RightColorBody);
-            WriteInt32(BaseControllerOffset + 0x24, (int)RightColorBody);
+            WriteInt32(BaseControllerOffset + 0x24, (int)RightColorButtons);
         }
 
         public void SetJoyconButton(
@@ -137,11 +148,15 @@ namespace Ryujinx.Core.Input
 
             WriteInt64(ControllerOffset + 0x0,  Timestamp);
             WriteInt64(ControllerOffset + 0x8,  Timestamp);
+
             WriteInt64(ControllerOffset + 0x10, (uint)Buttons);
+
             WriteInt32(ControllerOffset + 0x18, LeftStick.DX);
             WriteInt32(ControllerOffset + 0x1c, LeftStick.DY);
+
             WriteInt64(ControllerOffset + 0x20, RightStick.DX);
             WriteInt64(ControllerOffset + 0x24, RightStick.DY);
+
             WriteInt64(ControllerOffset + 0x28,
                 (uint)HidControllerConnState.Controller_State_Connected |
                 (uint)HidControllerConnState.Controller_State_Wired);
@@ -170,19 +185,21 @@ namespace Ryujinx.Core.Input
 
             TouchEntryOffset += HidTouchEntryHeaderSize;
 
+            const int Padding = 0;
+
             int Index = 0;
 
             foreach (HidTouchPoint Point in Points)
             {
                 WriteInt64(TouchEntryOffset + 0x0,  Timestamp);
-                WriteInt32(TouchEntryOffset + 0x8,  0);
+                WriteInt32(TouchEntryOffset + 0x8,  Padding);
                 WriteInt32(TouchEntryOffset + 0xc,  Index++);
                 WriteInt32(TouchEntryOffset + 0x10, Point.X);
                 WriteInt32(TouchEntryOffset + 0x14, Point.Y);
                 WriteInt32(TouchEntryOffset + 0x18, Point.DiameterX);
                 WriteInt32(TouchEntryOffset + 0x1c, Point.DiameterY);
                 WriteInt32(TouchEntryOffset + 0x20, Point.Angle);
-                WriteInt32(TouchEntryOffset + 0x24, 0);
+                WriteInt32(TouchEntryOffset + 0x24, Padding);
 
                 TouchEntryOffset += HidTouchEntryTouchSize;
             }

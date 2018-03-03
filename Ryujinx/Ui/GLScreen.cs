@@ -11,6 +11,12 @@ namespace Ryujinx
 {
     public class GLScreen : GameWindow
     {
+        private const int TouchScreenWidth  = 1280;
+        private const int TouchScreenHeight = 720;
+
+        private const float TouchScreenRatioX = (float)TouchScreenWidth  / TouchScreenHeight;
+        private const float TouchScreenRatioY = (float)TouchScreenHeight / TouchScreenWidth;
+
         private Switch Ns;
 
         private IGalRenderer Renderer;
@@ -89,15 +95,45 @@ namespace Ryujinx
                 DY = RightJoystickDY
             };
 
+            bool HasTouch = false;
+
             //Get screen touch position from left mouse click
-            //Opentk always captures mouse events, even if out of focus, so check if window is focused.
-            if (Mouse != null && Focused)
-                if (Mouse.GetState().LeftButton == OpenTK.Input.ButtonState.Pressed)
+            //OpenTK always captures mouse events, even if out of focus, so check if window is focused.
+            if (Focused && Mouse?.GetState().LeftButton == OpenTK.Input.ButtonState.Pressed)
+            {
+                int ScrnWidth  = Width;
+                int ScrnHeight = Height;
+
+                if (Width > Height * TouchScreenRatioX)
                 {
+                    ScrnWidth = (int)(Height * TouchScreenRatioX);
+                }
+                else
+                {
+                    ScrnHeight = (int)(Width * TouchScreenRatioY);
+                }
+
+                int StartX = (Width  - ScrnWidth)  >> 1;
+                int StartY = (Height - ScrnHeight) >> 1;
+
+                int EndX = StartX + ScrnWidth;
+                int EndY = StartY + ScrnHeight;
+
+                if (Mouse.X >= StartX &&
+                    Mouse.Y >= StartY &&
+                    Mouse.X <  EndX   &&
+                    Mouse.Y <  EndY)
+                {
+                    int ScrnMouseX = Mouse.X - StartX;
+                    int ScrnMouseY = Mouse.Y - StartY;
+
+                    int MX = (int)(((float)ScrnMouseX / ScrnWidth)  * TouchScreenWidth);
+                    int MY = (int)(((float)ScrnMouseY / ScrnHeight) * TouchScreenHeight);
+
                     HidTouchPoint CurrentPoint = new HidTouchPoint
                     {
-                        X = Mouse.X,
-                        Y = Mouse.Y,
+                        X = MX,
+                        Y = MY,
 
                         //Placeholder values till more data is acquired
                         DiameterX = 10,
@@ -105,12 +141,16 @@ namespace Ryujinx
                         Angle     = 90
                     };
 
+                    HasTouch = true;
+
                     Ns.Hid.SetTouchPoints(CurrentPoint);
                 }
-                else
-                {
-                    Ns.Hid.SetTouchPoints();
-                }
+            }
+
+            if (!HasTouch)
+            {
+                Ns.Hid.SetTouchPoints();
+            }
 
             Ns.Hid.SetJoyconButton(
                 HidControllerId.CONTROLLER_HANDHELD,

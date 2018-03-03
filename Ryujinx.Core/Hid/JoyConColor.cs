@@ -2,6 +2,8 @@ namespace Ryujinx.Core.Input
 {
     public enum JoyConColor //Thanks to CTCaer
     {
+        Black = 0,
+
         Body_Grey           = 0x828282,
         Body_Neon_Blue      = 0x0AB9E6,
         Body_Neon_Red       = 0xFF3C28,
