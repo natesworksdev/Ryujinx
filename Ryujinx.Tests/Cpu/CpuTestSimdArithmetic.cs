@@ -46,7 +46,7 @@ namespace Ryujinx.Tests.Cpu
     	[TestCase(0x7FC00002u, 'M', true,  0x7FC00000u)]
     	[TestCase(0x7FC00002u, 'Z', true,  0x7FC00000u)]
     	public void Frintx_S(uint A, char RoundType, bool DefaultNaN, uint Result)
-        {
+    	{
         	int FpcrTemp = 0x0;
         	switch(RoundType)
         	{
