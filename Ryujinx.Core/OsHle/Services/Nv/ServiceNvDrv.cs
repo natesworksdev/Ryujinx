@@ -532,6 +532,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.NvServices
 
             Context.Memory.WriteInt32(Position + 4, Handle);
 
+            Logging.Info($"NvMap {Id} created with size {Size:x8}!");
+
             return 0;
         }
 
@@ -579,8 +581,6 @@ namespace Ryujinx.Core.OsHle.IpcServices.NvServices
                 NvMap.Align   = Align;
                 NvMap.Kind    = Kind;
             }
-
-            Logging.Debug($"NvMapIocAlloc at {NvMap.Address:x16}");
 
             return 0;
         }

@@ -1,3 +1,5 @@
+using ChocolArm64.Decoder;
+using ChocolArm64.State;
 using ChocolArm64.Translation;
 using System.Reflection.Emit;
 
@@ -64,6 +66,29 @@ namespace ChocolArm64.Instruction
         public static void Orr_Vi(AILEmitterCtx Context)
         {
             EmitVectorImmBinaryOp(Context, () => Context.Emit(OpCodes.Or));
+        }
+
+        public static void Rev64_V(AILEmitterCtx Context)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+
+            int Elems = Bytes >> Op.Size;
+
+            int RevIndex = Elems - 1;
+
+            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            {
+                EmitVectorExtractZx(Context, Op.Rn, RevIndex--, Op.Size);
+
+                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+            }
+
+            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            {
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }
         }
     }
 }
