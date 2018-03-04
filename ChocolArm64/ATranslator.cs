@@ -13,8 +13,6 @@ namespace ChocolArm64
 {
     public class ATranslator
     {
-        private Thread AsyncTranslation;
-
         private HashSet<long> SubBlocks;
 
         private ConcurrentDictionary<long, ATranslatedSub> CachedSubs;
