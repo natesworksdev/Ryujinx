@@ -154,7 +154,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
 
         private long GbpQueueBuffer(ServiceCtx Context, BinaryReader ParcelReader)
         {
-            PerformanceStatistics.RecordGameFrameTime();
+            Context.Ns.Statistics.RecordGameFrameTime();
 
             //TODO: Errors.
             int Slot            = ParcelReader.ReadInt32();

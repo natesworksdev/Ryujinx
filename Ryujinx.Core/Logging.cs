@@ -8,6 +8,7 @@ namespace Ryujinx.Core
 {
     public static class Logging
     {
+        private static Stopwatch ExecutionTime = new Stopwatch();
         private const string LogFileName = "Ryujinx.log";
 
         private static bool EnableInfo    = Config.LoggingEnableInfo;
@@ -26,7 +27,7 @@ namespace Ryujinx.Core
 
         public static string GetExecutionTime()
         {
-            return PerformanceStatistics.ElapsedMilliseconds.ToString().PadLeft(8, '0') + "ms";
+            return ExecutionTime.ElapsedMilliseconds.ToString().PadLeft(8, '0') + "ms";
         }
 
         private static string WhoCalledMe()

@@ -166,12 +166,12 @@ namespace Ryujinx
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
-            PerformanceStatistics.StartSystemFrame();
+            Ns.Statistics.StartSystemFrame();
 
             GL.Viewport(0, 0, Width, Height);
 
-            Title = $"Ryujinx Screen - (Vsync: {VSync} - FPS: {PerformanceStatistics.SystemFrameRate:0} - Guest FPS: " +
-                $"{PerformanceStatistics.GameFrameRate:0})";
+            Title = $"Ryujinx Screen - (Vsync: {VSync} - FPS: {Ns.Statistics.SystemFrameRate:0} - Guest FPS: " +
+                $"{Ns.Statistics.GameFrameRate:0})";
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -180,7 +180,7 @@ namespace Ryujinx
 
             SwapBuffers();
 
-            PerformanceStatistics.EndSystemFrame();
+            Ns.Statistics.EndSystemFrame();
         }
 
         protected override void OnResize(EventArgs e)

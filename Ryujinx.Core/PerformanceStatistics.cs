@@ -5,50 +5,50 @@ using System.Text;
 
 namespace Ryujinx.Core
 {
-    public static class PerformanceStatistics
+    public class PerformanceStatistics
     {
-        static Stopwatch ExecutionTime = new Stopwatch();
+        Stopwatch ExecutionTime = new Stopwatch();
 
-        static long CurrentGameFrameEnded;
-        static long CurrentSystemFrameEnded;
-        static long CurrentSystemFrameStart;
-        static long LastGameFrameEnded;
-        static long LastSystemFrameEnded;
+        long CurrentGameFrameEnded;
+        long CurrentSystemFrameEnded;
+        long CurrentSystemFrameStart;
+        long LastGameFrameEnded;
+        long LastSystemFrameEnded;
 
-        public static double CurrentGameFrameTime;
-        public static double CurrentSystemFrameTime;
-        public static double PreviousGameFrameTime;
-        public static double PreviousSystemFrameTime;
-        public static double GameFrameRate => 1000f / (CurrentSystemFrameTime / 1000); 
-        public static double SystemFrameRate => 1000f/(CurrentSystemFrameTime/1000);
-        public static long SystemFramesRendered;
-        public static long GameFramesRendered;
-        public static long ElapsedMilliseconds { get => ExecutionTime.ElapsedMilliseconds; }
-        public static long ElapsedMicroseconds { get => (long)
+        public double CurrentGameFrameTime;
+        public double CurrentSystemFrameTime;
+        public double PreviousGameFrameTime;
+        public double PreviousSystemFrameTime;
+        public double GameFrameRate => 1000f / (CurrentSystemFrameTime / 1000); 
+        public double SystemFrameRate => 1000f/(CurrentSystemFrameTime/1000);
+        public long SystemFramesRendered;
+        public long GameFramesRendered;
+        public long ElapsedMilliseconds { get => ExecutionTime.ElapsedMilliseconds; }
+        public long ElapsedMicroseconds { get => (long)
                 (((double)ExecutionTime.ElapsedTicks / Stopwatch.Frequency) * 1000000); }
-        public static long ElapsedNanoseconds  { get => (long)
+        public long ElapsedNanoseconds  { get => (long)
                 (((double)ExecutionTime.ElapsedTicks / Stopwatch.Frequency) * 1000000000); }
 
-        static PerformanceStatistics()
+        public PerformanceStatistics()
         {
             ExecutionTime.Start();
         }
         
-        public static void StartSystemFrame()
+        public void StartSystemFrame()
         {
             PreviousSystemFrameTime = CurrentSystemFrameTime;
             LastSystemFrameEnded = CurrentSystemFrameEnded;
             CurrentSystemFrameStart = ElapsedMicroseconds;
         }
 
-        public static void EndSystemFrame()
+        public void EndSystemFrame()
         {
             CurrentSystemFrameEnded = ElapsedMicroseconds;
             CurrentSystemFrameTime = CurrentSystemFrameEnded - CurrentSystemFrameStart;
             SystemFramesRendered++;
         }
 
-        public static void RecordGameFrameTime()
+        public void RecordGameFrameTime()
         {
             CurrentGameFrameEnded = ElapsedMicroseconds;
             CurrentGameFrameTime = CurrentGameFrameEnded - LastGameFrameEnded;
