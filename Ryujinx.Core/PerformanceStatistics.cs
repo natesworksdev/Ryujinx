@@ -9,14 +9,20 @@ namespace Ryujinx.Core
     {
         static Stopwatch ExecutionTime = new Stopwatch();
 
-        static long LastFrameEnded;
-        static long CurrentFrameEnded;
-        static long CurrentFrameStart;
+        static long CurrentGameFrameEnded;
+        static long CurrentSystemFrameEnded;
+        static long CurrentSystemFrameStart;
+        static long LastGameFrameEnded;
+        static long LastSystemFrameEnded;
 
-        public static double PreviousFrameTime;
-        public static double CurrentFrameTime;
-        public static double FrameRate { get => 1000f/(CurrentFrameTime/1000);}
-        public static long RenderedFrames;
+        public static double CurrentGameFrameTime;
+        public static double CurrentSystemFrameTime;
+        public static double PreviousGameFrameTime;
+        public static double PreviousSystemFrameTime;
+        public static double GameFrameRate => 1000f / (CurrentSystemFrameTime / 1000); 
+        public static double SystemFrameRate => 1000f/(CurrentSystemFrameTime/1000);
+        public static long SystemFramesRendered;
+        public static long GameFramesRendered;
         public static long ElapsedMilliseconds { get => ExecutionTime.ElapsedMilliseconds; }
         public static long ElapsedMicroseconds { get => (long)
                 (((double)ExecutionTime.ElapsedTicks / Stopwatch.Frequency) * 1000000); }
@@ -28,18 +34,27 @@ namespace Ryujinx.Core
             ExecutionTime.Start();
         }
         
-        public static void StartFrame()
+        public static void StartSystemFrame()
         {
-            PreviousFrameTime = CurrentFrameTime;
-            LastFrameEnded = CurrentFrameEnded;
-            CurrentFrameStart = ElapsedMicroseconds;
+            PreviousSystemFrameTime = CurrentSystemFrameTime;
+            LastSystemFrameEnded = CurrentSystemFrameEnded;
+            CurrentSystemFrameStart = ElapsedMicroseconds;
         }
 
-        public static void EndFrame()
+        public static void EndSystemFrame()
         {
-            CurrentFrameEnded = ElapsedMicroseconds;
-            CurrentFrameTime = CurrentFrameEnded - CurrentFrameStart;
-            RenderedFrames++;
+            CurrentSystemFrameEnded = ElapsedMicroseconds;
+            CurrentSystemFrameTime = CurrentSystemFrameEnded - CurrentSystemFrameStart;
+            SystemFramesRendered++;
+        }
+
+        public static void RecordGameFrameTime()
+        {
+            CurrentGameFrameEnded = ElapsedMicroseconds;
+            CurrentGameFrameTime = CurrentGameFrameEnded - LastGameFrameEnded;
+            PreviousGameFrameTime = CurrentGameFrameTime;
+            LastGameFrameEnded = CurrentGameFrameEnded;
+            GameFramesRendered++;
         }
     }
 }
