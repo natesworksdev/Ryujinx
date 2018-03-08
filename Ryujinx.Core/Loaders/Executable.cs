@@ -28,13 +28,17 @@ namespace Ryujinx.Core.Loaders
             this.ImageBase = ImageBase;
             this.ImageEnd  = ImageBase;
 
-            WriteData(ImageBase + Exe.TextOffset, Exe.Text, MemoryType.CodeStatic, AMemoryPerm.RX);
-            WriteData(ImageBase + Exe.ROOffset,   Exe.RO,   MemoryType.Normal,     AMemoryPerm.Read);
-            WriteData(ImageBase + Exe.DataOffset, Exe.Data, MemoryType.Normal,     AMemoryPerm.RW);
+            Memory.Manager.MapDirectRX(ImageBase + Exe.TextOffset, Exe.Text.Length, (int)MemoryType.CodeStatic);
+            Memory.Manager.MapDirectRO(ImageBase + Exe.ROOffset,   Exe.RO.Length,   (int)MemoryType.Normal);
+            Memory.Manager.MapDirectRW(ImageBase + Exe.DataOffset, Exe.Data.Length, (int)MemoryType.Normal);
+
+            Memory.WriteDirectUnchecked(ImageBase + Exe.TextOffset, Exe.Text);
+            Memory.WriteDirectUnchecked(ImageBase + Exe.ROOffset,   Exe.RO);
+            Memory.WriteDirectUnchecked(ImageBase + Exe.DataOffset, Exe.Data);
 
             if (Exe.Mod0Offset == 0)
             {
-                int BssOffset = Exe.DataOffset + Exe.Data.Count;
+                int BssOffset = Exe.DataOffset + Exe.Data.Length;
                 int BssSize   = Exe.BssSize;
 
                 MapBss(ImageBase + BssOffset, BssSize);
@@ -90,25 +94,9 @@ namespace Ryujinx.Core.Loaders
             }
         }
 
-        private void WriteData(
-            long        Position,
-            IList<byte> Data,
-            MemoryType  Type,
-            AMemoryPerm Perm)
-        {
-            Memory.Manager.Map(Position, Data.Count, (int)Type, AMemoryPerm.Write);
-
-            for (int Index = 0; Index < Data.Count; Index++)
-            {
-                Memory.WriteByte(Position + Index, Data[Index]);
-            }
-
-            Memory.Manager.Reprotect(Position, Data.Count, Perm);
-        }
-
         private void MapBss(long Position, long Size)
         {
-            Memory.Manager.Map(Position, Size, (int)MemoryType.Normal, AMemoryPerm.RW);
+            Memory.Manager.MapDirectRW(Position, Size, (int)MemoryType.Normal);
         }
 
         private ElfRel GetRelocation(long Position)

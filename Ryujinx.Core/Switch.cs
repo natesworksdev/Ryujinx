@@ -1,4 +1,3 @@
-using ChocolArm64.Memory;
 using Ryujinx.Core.Input;
 using Ryujinx.Core.OsHle;
 using Ryujinx.Core.Settings;
@@ -25,20 +24,17 @@ namespace Ryujinx.Core
 
         public Switch(IGalRenderer Renderer)
         {
-            Ram = Marshal.AllocHGlobal((IntPtr)AMemoryMgr.RamSize);
+            Ram = Marshal.AllocHGlobal((IntPtr)MemoryRegions.RamSize);
 
             Gpu = new NsGpu(Renderer);
 
             VFs = new VirtualFs();
 
-            Hid = new Hid(Ram);
+            Hid = new Hid(Ram, 0);
 
             Statistics = new PerformanceStatistics();
 
             Os = new Horizon(this);
-
-            Os.HidSharedMem.MemoryMapped   += Hid.ShMemMap;
-            Os.HidSharedMem.MemoryUnmapped += Hid.ShMemUnmap;
 
             Settings = new SetSys();
         }

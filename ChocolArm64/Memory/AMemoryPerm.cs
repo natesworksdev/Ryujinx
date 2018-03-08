@@ -3,7 +3,7 @@ using System;
 namespace ChocolArm64.Memory
 {
     [Flags]
-    public enum AMemoryPerm
+    public enum AMemoryPerm : byte
     {
         None    = 0,
         Read    = 1 << 0,

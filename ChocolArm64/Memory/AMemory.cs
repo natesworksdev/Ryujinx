@@ -41,9 +41,9 @@ namespace ChocolArm64.Memory
 
         private byte* RamPtr;
 
-        public AMemory(IntPtr Ram)
+        public AMemory(IntPtr Ram, long RamSize, int AddressSpaceBits)
         {
-            Manager = new AMemoryMgr();
+            Manager = new AMemoryMgr(RamSize, AddressSpaceBits);
 
             Monitors = new Dictionary<int, ExMonitor>();
 
@@ -142,90 +142,121 @@ namespace ChocolArm64.Memory
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
+            byte* Ptr = RamPtr + Position;
 
-            return *((byte*)(RamPtr + (uint)Position));
+            if (Manager.IsDirectRead(Position))
+            {
+                return *Ptr;
+            }
+
+            return ReadByteSlow(Position);
+        }
+
+        private byte ReadByteSlow(long Position)
+        {
+            EnsureAccessIsValid(Position, AMemoryPerm.Read);
+
+            long PA = Manager.TranslatePosition(Position);
+
+            return *(RamPtr + PA);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort ReadUInt16(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
+            ushort* Ptr = (ushort*)(RamPtr + Position);
 
-            return *((ushort*)(RamPtr + (uint)Position));
+            if (Manager.IsDirectRead(Position))
+            {
+                return *Ptr;
+            }
+
+            throw new VmmPageFaultException(Position);
+        }
+
+        private ushort ReadUInt16Slow(long Position)
+        {
+            EnsureAccessIsValid(Position,     AMemoryPerm.Read);
+            EnsureAccessIsValid(Position + 1, AMemoryPerm.Read);
+
+            long PA = Manager.TranslatePosition(Position);
+
+            return *((ushort*)(RamPtr + PA));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint ReadUInt32(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
+            uint* Ptr = (uint*)(RamPtr + Position);
 
-            return *((uint*)(RamPtr + (uint)Position));
+            if (Manager.IsDirectRead(Position))
+            {
+                return *Ptr;
+            }
+
+            return ReadUInt32Slow(Position);
+        }
+
+        private uint ReadUInt32Slow(long Position)
+        {
+            EnsureAccessIsValid(Position,     AMemoryPerm.Read);
+            EnsureAccessIsValid(Position + 3, AMemoryPerm.Read);
+
+            long PA = Manager.TranslatePosition(Position);
+
+            return *((uint*)(RamPtr + PA));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong ReadUInt64(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
+            ulong* Ptr = (ulong*)(RamPtr + Position);
 
-            return *((ulong*)(RamPtr + (uint)Position));
+            if (Manager.IsDirectRead(Position))
+            {
+                return *Ptr;
+            }
+
+            return ReadUInt64Slow(Position);
+        }
+
+        private ulong ReadUInt64Slow(long Position)
+        {
+            EnsureAccessIsValid(Position,     AMemoryPerm.Read);
+            EnsureAccessIsValid(Position + 7, AMemoryPerm.Read);
+
+            long PA = Manager.TranslatePosition(Position);
+
+            return *((ulong*)(RamPtr + PA));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector8(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
-
             return new AVec() { B0 = ReadByte(Position) };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector16(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
-
             return new AVec() { H0 = ReadUInt16(Position) };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector32(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
-
             return new AVec() { W0 = ReadUInt32(Position) };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector64(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
-
             return new AVec() { X0 = ReadUInt64(Position) };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector128(long Position)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Read);
-#endif
-
             return new AVec()
             {
                 X0 = ReadUInt64(Position + 0),
@@ -241,92 +272,159 @@ namespace ChocolArm64.Memory
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteByte(long Position, byte Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
+            byte* Ptr = RamPtr + Position;
 
-            *((byte*)(RamPtr + (uint)Position)) = Value;
+            if (Manager.IsDirectWrite(Position))
+            {
+                *Ptr = Value;
+
+                return;
+            }
+
+            WriteByteSlow(Position, Value);
+        }
+
+        private void WriteByteSlow(long Position, byte Value)
+        {
+            EnsureAccessIsValid(Position, AMemoryPerm.Write);
+
+            long PA = Manager.TranslatePosition(Position);
+
+            *(RamPtr + PA) = Value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt16(long Position, ushort Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
+            ushort* Ptr = (ushort*)(RamPtr + Position);
 
-            *((ushort*)(RamPtr + (uint)Position)) = Value;
+            if (Manager.IsDirectWrite(Position))
+            {
+                *Ptr = Value;
+
+                return;
+            }
+
+            WriteUInt16Slow(Position, Value);
+        }
+
+        private void WriteUInt16Slow(long Position, ushort Value)
+        {
+            EnsureAccessIsValid(Position,     AMemoryPerm.Write);
+            EnsureAccessIsValid(Position + 1, AMemoryPerm.Write);
+
+            long PA = Manager.TranslatePosition(Position);
+
+            *((ushort*)(RamPtr + PA)) = Value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt32(long Position, uint Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
+            uint* Ptr = (uint*)(RamPtr + Position);
 
-            *((uint*)(RamPtr + (uint)Position)) = Value;
+            if (Manager.IsDirectWrite(Position))
+            {
+                *Ptr = Value;
+
+                return;
+            }
+
+            WriteUInt32Slow(Position, Value);
+        }
+
+        private void WriteUInt32Slow(long Position, uint Value)
+        {
+            EnsureAccessIsValid(Position,     AMemoryPerm.Write);
+            EnsureAccessIsValid(Position + 3, AMemoryPerm.Write);
+
+            long PA = Manager.TranslatePosition(Position);
+
+            *((uint*)(RamPtr + PA)) = Value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt64(long Position, ulong Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
+            ulong* Ptr = (ulong*)(RamPtr + Position);
 
-            *((ulong*)(RamPtr + (uint)Position)) = Value;
+            if (Manager.IsDirectWrite(Position))
+            {
+                *Ptr = Value;
+
+                return;
+            }
+
+            WriteUInt64Slow(Position, Value);
+        }
+
+        private void WriteUInt64Slow(long Position, ulong Value)
+        {
+            EnsureAccessIsValid(Position,     AMemoryPerm.Write);
+            EnsureAccessIsValid(Position + 7, AMemoryPerm.Write);
+
+            long PA = Manager.TranslatePosition(Position);
+
+            *((ulong*)(RamPtr + PA)) = Value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector8(long Position, AVec Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
-
             WriteByte(Position, Value.B0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector16(long Position, AVec Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
-
             WriteUInt16(Position, Value.H0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector32(long Position, AVec Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
-
             WriteUInt32(Position, Value.W0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector64(long Position, AVec Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
-
             WriteUInt64(Position, Value.X0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector128(long Position, AVec Value)
         {
-#if DEBUG
-            EnsureAccessIsValid(Position, AMemoryPerm.Write);
-#endif
-
             WriteUInt64(Position + 0, Value.X0);
             WriteUInt64(Position + 8, Value.X1);
+        }
+
+        public void WriteDirectUnchecked(long Position, byte[] Data)
+        {
+            byte* Ptr = (byte*)(RamPtr + Position);
+
+            int Pages = (Data.Length + AMemoryMgr.PageMask) / AMemoryMgr.PageSize;
+
+            int RemSize = Data.Length;
+
+            for (int Page = 0; Page < Pages; Page++)
+            {
+                int Offset = Page * AMemoryMgr.PageSize;
+
+                if (!Manager.IsMapped(Position + Offset))
+                {
+                    throw new VmmPageFaultException(Position + Offset);
+                }
+
+                int ToCopy = Math.Min(AMemoryMgr.PageSize, RemSize);
+
+                for (; Offset < Page * AMemoryMgr.PageSize + ToCopy; Offset++)
+                {
+                    *Ptr++ = Data[Offset];
+                }
+
+                RemSize -= AMemoryMgr.PageSize;
+            }
         }
 
         private void EnsureAccessIsValid(long Position, AMemoryPerm Perm)

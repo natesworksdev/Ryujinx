@@ -45,7 +45,7 @@ namespace Ryujinx.Core.OsHle
             this.Ns        = Ns;
             this.ProcessId = ProcessId;
 
-            Memory = new AMemory(Ns.Ram);
+            Memory = new AMemory(Ns.Ram, MemoryRegions.RamSize, MemoryRegions.AddrSpaceBits);
 
             Scheduler = new KProcessScheduler();
 
@@ -59,10 +59,10 @@ namespace Ryujinx.Core.OsHle
 
             ImageBase = MemoryRegions.AddrSpaceStart;
 
-            MapRWMemRegion(
+            Memory.Manager.MapDirectRW(
                 MemoryRegions.TlsPagesAddress,
                 MemoryRegions.TlsPagesSize,
-                MemoryType.ThreadLocal);
+                (int)MemoryType.ThreadLocal);
         }
 
         public void LoadProgram(IExecutable Program)
@@ -88,10 +88,10 @@ namespace Ryujinx.Core.OsHle
                 return false;
             }
 
-            MapRWMemRegion(
+            Memory.Manager.MapDirectRW(
                 MemoryRegions.MainStackAddress,
                 MemoryRegions.MainStackSize,
-                MemoryType.Normal);
+                (int)MemoryType.Normal);
             
             long StackTop = MemoryRegions.MainStackAddress + MemoryRegions.MainStackSize;
 
@@ -117,11 +117,6 @@ namespace Ryujinx.Core.OsHle
             Scheduler.StartThread(MainThread);
 
             return true;
-        }
-
-        private void MapRWMemRegion(long Position, long Size, MemoryType Type)
-        {
-            Memory.Manager.Map(Position, Size, (int)Type, AMemoryPerm.RW);
         }
 
         public void StopAllThreads()

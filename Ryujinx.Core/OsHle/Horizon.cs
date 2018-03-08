@@ -47,11 +47,11 @@ namespace Ryujinx.Core.OsHle
 
             Processes = new ConcurrentDictionary<int, Process>();
 
-            HidSharedMem = new HSharedMem();
+            HidSharedMem = new HSharedMem(Ns.Hid.PA);
 
             HidHandle = Handles.GenerateId(HidSharedMem);
 
-            FontHandle = Handles.GenerateId(new HSharedMem());
+            FontHandle = Handles.GenerateId(new HSharedMem(0x5000));
         }
 
         public void LoadCart(string ExeFsDir, string RomFsFile = null)

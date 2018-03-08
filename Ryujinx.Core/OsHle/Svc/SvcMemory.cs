@@ -16,7 +16,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             if (Size > CurrentHeapSize)
             {
-                Memory.Manager.Map(Position, Size, (int)MemoryType.Heap, AMemoryPerm.RW);
+                Memory.Manager.MapDirectRW(Position, Size, (int)MemoryType.Heap);
             }
             else
             {
@@ -57,7 +57,9 @@ namespace Ryujinx.Core.OsHle.Svc
 
             AMemoryMapInfo SrcInfo = Memory.Manager.GetMapInfo(Src);
 
-            Memory.Manager.Map(Dst, Size, (int)MemoryType.MappedMemory, SrcInfo.Perm);
+            long PA = Memory.Manager.TranslatePosition(Src);
+
+            Memory.Manager.Map(Dst, PA, Size, (int)MemoryType.MappedMemory, SrcInfo.Perm);
 
             Memory.Manager.Reprotect(Src, Size, AMemoryPerm.None);
 
@@ -122,11 +124,9 @@ namespace Ryujinx.Core.OsHle.Svc
 
             if (SharedMem != null)
             {
-                AMemoryHelper.FillWithZeros(Memory, Src, (int)Size);
+                long PA = SharedMem.PA;
 
-                SharedMem.AddVirtualPosition(Src);
-
-                Memory.Manager.Map(Src, Size, (int)MemoryType.SharedMemory, (AMemoryPerm)Perm);
+                Memory.Manager.Map(Src, PA, Size, (int)MemoryType.SharedMemory, (AMemoryPerm)Perm);
 
                 ThreadState.X0 = 0;
             }

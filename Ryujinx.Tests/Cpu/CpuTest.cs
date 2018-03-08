@@ -28,10 +28,12 @@ namespace Ryujinx.Tests.Cpu
 
             EntryPoint = Position;
 
-            Ram = Marshal.AllocHGlobal((IntPtr)AMemoryMgr.RamSize);
+            long RamSize = 32 * 1024 * 1024;
+
+            Ram = Marshal.AllocHGlobal((IntPtr)RamSize);
             ATranslator Translator = new ATranslator();
-            Memory = new AMemory(Ram);
-            Memory.Manager.Map(Position, Size, 2, AMemoryPerm.Read | AMemoryPerm.Write | AMemoryPerm.Execute);
+            Memory = new AMemory(Ram, RamSize, 32);
+            Memory.Manager.MapDirectRW(Position, Size, 2);
             Thread = new AThread(Translator, Memory, ThreadPriority.Normal, EntryPoint);
         }
 

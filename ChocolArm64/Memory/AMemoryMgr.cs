@@ -4,28 +4,41 @@ namespace ChocolArm64.Memory
 {
     public class AMemoryMgr
     {
-        public const long AddrSize = RamSize;
-        public const long RamSize  = 4L * 1024 * 1024 * 1024;
+        private ulong RamSize;
 
-        private const int PTLvl0Bits = 10;
-        private const int PTLvl1Bits = 10;
+        private ulong AddressSpaceSize;
+
+        private int PTLvl0Bits;
+        private int PTLvl1Bits;
+
+        private int PTLvl0Size;
+        private int PTLvl1Size;
+
+        private int PTLvl0Mask;
+        private int PTLvl1Mask;
+
+        private int PTLvl0Bit;
+
         private const int PTPageBits = 12;
 
-        private const int PTLvl0Size = 1 << PTLvl0Bits;
-        private const int PTLvl1Size = 1 << PTLvl1Bits;
-        public  const int PageSize   = 1 << PTPageBits;
+        public  const int PageSize = 1 << PTPageBits;
 
-        private const int PTLvl0Mask = PTLvl0Size - 1;
-        private const int PTLvl1Mask = PTLvl1Size - 1;
-        public  const int PageMask   = PageSize   - 1;
+        public  const int PageMask = PageSize - 1;
 
-        private const int PTLvl0Bit  = PTPageBits + PTLvl1Bits;
-        private const int PTLvl1Bit  = PTPageBits;
+        private const int PTLvl1Bit = PTPageBits;
 
-        private enum PTMap
+        private enum PTMap : byte
         {
-            Unmapped,
-            Mapped
+            Unmapped  = 0,
+            Mapped    = 1,
+
+            Direct      = 1 << 5,
+            DirectRead  = Direct | 1 << 6,
+            DirectWrite = Direct | 1 << 7,
+
+            DirectRW =
+                DirectRead |
+                DirectWrite
         }
 
         private struct PTEntry
@@ -33,38 +46,121 @@ namespace ChocolArm64.Memory
             public PTMap       Map;
             public AMemoryPerm Perm;
 
+            public long Position;
             public int Type;
             public int Attr;
 
-            public PTEntry(PTMap Map, AMemoryPerm Perm, int Type, int Attr)
+            public PTEntry(PTMap Map, long Position, AMemoryPerm Perm, int Type, int Attr)
             {
                 this.Map  = Map;
+                this.Position = Position;
                 this.Perm = Perm;
                 this.Type = Type;
                 this.Attr = Attr;
             }
         }
 
+        private PTMap[] MapTypes;
+
         private PTEntry[][] PageTable;
 
-        public AMemoryMgr()
+        public AMemoryMgr(long RamSize, int AddressSpaceBits)
         {
+            this.RamSize = (ulong)RamSize;
+
+            AddressSpaceSize = 1UL << AddressSpaceBits;
+
+            int RemBits = AddressSpaceBits - PTPageBits;
+
+            PTLvl0Bits = RemBits >> 1;
+            PTLvl1Bits = RemBits - PTLvl0Bits;
+
+            PTLvl0Size = 1 << PTLvl0Bits;
+            PTLvl1Size = 1 << PTLvl1Bits;
+
+            PTLvl0Mask = PTLvl0Size - 1;
+            PTLvl1Mask = PTLvl1Size - 1;
+
+            PTLvl0Bit = PTPageBits + PTLvl1Bits;
+
+            MapTypes = new PTMap[1 << RemBits];
+
             PageTable = new PTEntry[PTLvl0Size][];
         }
 
-        public void Map(long Position, long Size, int Type, AMemoryPerm Perm)
+        public void MapDirectRX(long Position, long Size, int Type)
         {
-            SetPTEntry(Position, Size, new PTEntry(PTMap.Mapped, Perm, Type, 0));
+            if ((ulong)Position >= RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Position));
+            }
+
+            if ((ulong)(Position + Size) > RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Size));
+            }
+
+            SetPTEntry(Position, Size, new PTEntry(PTMap.DirectRead, 0, AMemoryPerm.RX, Type, 0));
+        }
+
+        public void MapDirectRO(long Position, long Size, int Type)
+        {
+            if ((ulong)Position >= RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Position));
+            }
+
+            if ((ulong)(Position + Size) > RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Size));
+            }
+
+            SetPTEntry(Position, Size, new PTEntry(PTMap.DirectRead, 0, AMemoryPerm.Read, Type, 0));
+        }
+
+        public void MapDirectRW(long Position, long Size, int Type)
+        {
+            if ((ulong)Position >= RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Position));
+            }
+
+            if ((ulong)(Position + Size) > RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Size));
+            }
+
+            SetPTEntry(Position, Size, new PTEntry(PTMap.DirectRW, 0, AMemoryPerm.RW, Type, 0));
+        }
+
+        public void Map(long VA, long PA, long Size, int Type, AMemoryPerm Perm)
+        {
+            if ((ulong)VA >= AddressSpaceSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(VA));
+            }
+
+            if ((ulong)PA >= RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(PA));
+            }
+
+            if ((ulong)(PA + Size) > RamSize || (ulong)(VA + Size) > AddressSpaceSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Size));
+            }
+
+            SetPTEntry(VA, Size, new PTEntry(PTMap.Mapped, PA, Perm, Type, 0));
         }
 
         public void Unmap(long Position, long Size)
         {
-            SetPTEntry(Position, Size, new PTEntry(PTMap.Unmapped, 0, 0, 0));
+            SetPTEntry(Position, Size, new PTEntry(PTMap.Unmapped, 0, 0, 0, 0));
         }
 
         public void Unmap(long Position, long Size, int Type)
         {
-            SetPTEntry(Position, Size, Type, new PTEntry(PTMap.Unmapped, 0, 0, 0));
+            SetPTEntry(Position, Size, Type, new PTEntry(PTMap.Unmapped, 0, 0, 0, 0));
         }
 
         public void Reprotect(long Position, long Size, AMemoryPerm Perm)
@@ -121,7 +217,7 @@ namespace ChocolArm64.Memory
                 Start -= PageSize;
             }
 
-            while (End < AddrSize && IsSameSegment(End))
+            while ((ulong)End < AddressSpaceSize && IsSameSegment(End))
             {
                 End += PageSize;
             }
@@ -199,6 +295,35 @@ namespace ChocolArm64.Memory
             return PageTable[L0][L1].Map != PTMap.Unmapped;
         }
 
+        public long TranslatePosition(long Position)
+        {
+            if (IsDirect(Position))
+            {
+                return Position;
+            }
+            else
+            {
+                long BasePosition = GetPTEntry(Position).Position;
+
+                return BasePosition + (Position & AMemoryMgr.PageMask);
+            }
+        }
+
+        public bool IsDirect(long Position)
+        {
+            return (MapTypes[(ulong)Position >> PTPageBits] & PTMap.Direct) != 0;
+        }
+
+        public bool IsDirectRead(long Position)
+        {
+            return (MapTypes[(ulong)Position >> PTPageBits] & PTMap.DirectRead) != 0;
+        }
+
+        public bool IsDirectWrite(long Position)
+        {
+            return (MapTypes[(ulong)Position >> PTPageBits] & PTMap.DirectWrite) != 0;
+        }
+
         private PTEntry GetPTEntry(long Position)
         {
             long L0 = (Position >> PTLvl0Bit) & PTLvl0Mask;
@@ -214,9 +339,13 @@ namespace ChocolArm64.Memory
 
         private void SetPTEntry(long Position, long Size, PTEntry Entry)
         {
+            Entry.Position &= ~PageMask;
+
             while (Size > 0)
             {
                 SetPTEntry(Position, Entry);
+
+                Entry.Position += PageSize;
 
                 Position += PageSize;
                 Size     -= PageSize;
@@ -225,12 +354,13 @@ namespace ChocolArm64.Memory
 
         private void SetPTEntry(long Position, long Size, int Type, PTEntry Entry)
         {
-            while (Size > 0)
+            Entry.Position &= ~PageMask;
+
+            while (Size > 0 && GetPTEntry(Position).Type == Type)
             {
-                if (GetPTEntry(Position).Type == Type)
-                {
-                    SetPTEntry(Position, Entry);
-                }
+                SetPTEntry(Position, Entry);
+
+                Entry.Position += PageSize;
 
                 Position += PageSize;
                 Size     -= PageSize;
@@ -253,6 +383,8 @@ namespace ChocolArm64.Memory
             }
 
             PageTable[L0][L1] = Entry;
+
+            MapTypes[Position >> PTPageBits] = Entry.Map;
         }
     }
 }
