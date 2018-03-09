@@ -28,13 +28,9 @@ namespace Ryujinx.Core.Loaders
             this.ImageBase = ImageBase;
             this.ImageEnd  = ImageBase;
 
-            Memory.Manager.MapDirectRX(ImageBase + Exe.TextOffset, Exe.Text.Length, (int)MemoryType.CodeStatic);
-            Memory.Manager.MapDirectRO(ImageBase + Exe.ROOffset,   Exe.RO.Length,   (int)MemoryType.Normal);
-            Memory.Manager.MapDirectRW(ImageBase + Exe.DataOffset, Exe.Data.Length, (int)MemoryType.Normal);
-
-            Memory.WriteDirectUnchecked(ImageBase + Exe.TextOffset, Exe.Text);
-            Memory.WriteDirectUnchecked(ImageBase + Exe.ROOffset,   Exe.RO);
-            Memory.WriteDirectUnchecked(ImageBase + Exe.DataOffset, Exe.Data);
+            MapAndWrite(Exe.TextOffset, Exe.Text, MemoryType.CodeStatic, AMemoryPerm.RX);
+            MapAndWrite(Exe.ROOffset,   Exe.RO,   MemoryType.Normal,     AMemoryPerm.Read);
+            MapAndWrite(Exe.DataOffset, Exe.Data, MemoryType.Normal,     AMemoryPerm.RW);
 
             if (Exe.Mod0Offset == 0)
             {
@@ -94,9 +90,16 @@ namespace Ryujinx.Core.Loaders
             }
         }
 
+        private void MapAndWrite(long Offset, byte[] Data, MemoryType Type, AMemoryPerm Perm)
+        {
+            Memory.Manager.MapDirect(ImageBase + Offset, Data.Length, (int)Type, Perm);
+
+            Memory.WriteDirectUnchecked(ImageBase + Offset, Data);
+        }
+
         private void MapBss(long Position, long Size)
         {
-            Memory.Manager.MapDirectRW(Position, Size, (int)MemoryType.Normal);
+            Memory.Manager.MapDirect(Position, Size, (int)MemoryType.Normal, AMemoryPerm.RW);
         }
 
         private ElfRel GetRelocation(long Position)

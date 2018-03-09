@@ -33,7 +33,7 @@ namespace Ryujinx.Tests.Cpu
             Ram = Marshal.AllocHGlobal((IntPtr)RamSize);
             ATranslator Translator = new ATranslator();
             Memory = new AMemory(Ram, RamSize, 32);
-            Memory.Manager.MapDirectRW(Position, Size, 2);
+            Memory.Manager.MapDirect(Position, Size, 2, AMemoryPerm.RW);
             Thread = new AThread(Translator, Memory, ThreadPriority.Normal, EntryPoint);
         }
 

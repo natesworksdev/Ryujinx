@@ -16,7 +16,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             if (Size > CurrentHeapSize)
             {
-                Memory.Manager.MapDirectRW(Position, Size, (int)MemoryType.Heap);
+                Memory.Manager.MapDirect(Position, Size, (int)MemoryType.Heap, AMemoryPerm.RW);
             }
             else
             {

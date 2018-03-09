@@ -59,10 +59,11 @@ namespace Ryujinx.Core.OsHle
 
             ImageBase = MemoryRegions.AddrSpaceStart;
 
-            Memory.Manager.MapDirectRW(
+            Memory.Manager.MapDirect(
                 MemoryRegions.TlsPagesAddress,
                 MemoryRegions.TlsPagesSize,
-                (int)MemoryType.ThreadLocal);
+                (int)MemoryType.ThreadLocal,
+                AMemoryPerm.RW);
         }
 
         public void LoadProgram(IExecutable Program)
@@ -88,10 +89,11 @@ namespace Ryujinx.Core.OsHle
                 return false;
             }
 
-            Memory.Manager.MapDirectRW(
+            Memory.Manager.MapDirect(
                 MemoryRegions.MainStackAddress,
                 MemoryRegions.MainStackSize,
-                (int)MemoryType.Normal);
+                (int)MemoryType.Normal,
+                AMemoryPerm.RW);
             
             long StackTop = MemoryRegions.MainStackAddress + MemoryRegions.MainStackSize;
 

@@ -139,7 +139,6 @@ namespace ChocolArm64.Memory
         public int   ReadInt32(long Position) =>   (int)ReadUInt32(Position);
         public long  ReadInt64(long Position) =>  (long)ReadUInt64(Position);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(long Position)
         {
             byte* Ptr = RamPtr + Position;
@@ -161,17 +160,17 @@ namespace ChocolArm64.Memory
             return *(RamPtr + PA);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort ReadUInt16(long Position)
         {
             ushort* Ptr = (ushort*)(RamPtr + Position);
 
-            if (Manager.IsDirectRead(Position))
+            if (Manager.IsDirectRead(Position) &&
+                Manager.IsDirectRead(Position + 1))
             {
                 return *Ptr;
             }
 
-            throw new VmmPageFaultException(Position);
+            return ReadUInt16Slow(Position);
         }
 
         private ushort ReadUInt16Slow(long Position)
@@ -184,12 +183,12 @@ namespace ChocolArm64.Memory
             return *((ushort*)(RamPtr + PA));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint ReadUInt32(long Position)
         {
             uint* Ptr = (uint*)(RamPtr + Position);
 
-            if (Manager.IsDirectRead(Position))
+            if (Manager.IsDirectRead(Position) &&
+                Manager.IsDirectRead(Position + 3))
             {
                 return *Ptr;
             }
@@ -207,12 +206,12 @@ namespace ChocolArm64.Memory
             return *((uint*)(RamPtr + PA));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong ReadUInt64(long Position)
         {
             ulong* Ptr = (ulong*)(RamPtr + Position);
 
-            if (Manager.IsDirectRead(Position))
+            if (Manager.IsDirectRead(Position) &&
+                Manager.IsDirectRead(Position + 7))
             {
                 return *Ptr;
             }
@@ -230,31 +229,26 @@ namespace ChocolArm64.Memory
             return *((ulong*)(RamPtr + PA));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector8(long Position)
         {
             return new AVec() { B0 = ReadByte(Position) };
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector16(long Position)
         {
             return new AVec() { H0 = ReadUInt16(Position) };
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector32(long Position)
         {
             return new AVec() { W0 = ReadUInt32(Position) };
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector64(long Position)
         {
             return new AVec() { X0 = ReadUInt64(Position) };
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AVec ReadVector128(long Position)
         {
             return new AVec()
@@ -269,7 +263,6 @@ namespace ChocolArm64.Memory
         public void WriteInt32(long Position, int   Value) => WriteUInt32(Position,   (uint)Value);
         public void WriteInt64(long Position, long  Value) => WriteUInt64(Position,  (ulong)Value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteByte(long Position, byte Value)
         {
             byte* Ptr = RamPtr + Position;
@@ -293,12 +286,12 @@ namespace ChocolArm64.Memory
             *(RamPtr + PA) = Value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt16(long Position, ushort Value)
         {
             ushort* Ptr = (ushort*)(RamPtr + Position);
 
-            if (Manager.IsDirectWrite(Position))
+            if (Manager.IsDirectWrite(Position) &&
+                Manager.IsDirectWrite(Position + 1))
             {
                 *Ptr = Value;
 
@@ -318,12 +311,12 @@ namespace ChocolArm64.Memory
             *((ushort*)(RamPtr + PA)) = Value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt32(long Position, uint Value)
         {
             uint* Ptr = (uint*)(RamPtr + Position);
 
-            if (Manager.IsDirectWrite(Position))
+            if (Manager.IsDirectWrite(Position) &&
+                Manager.IsDirectWrite(Position + 3))
             {
                 *Ptr = Value;
 
@@ -343,12 +336,12 @@ namespace ChocolArm64.Memory
             *((uint*)(RamPtr + PA)) = Value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt64(long Position, ulong Value)
         {
             ulong* Ptr = (ulong*)(RamPtr + Position);
 
-            if (Manager.IsDirectWrite(Position))
+            if (Manager.IsDirectWrite(Position) &&
+                Manager.IsDirectWrite(Position + 7))
             {
                 *Ptr = Value;
 
@@ -368,31 +361,26 @@ namespace ChocolArm64.Memory
             *((ulong*)(RamPtr + PA)) = Value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector8(long Position, AVec Value)
         {
             WriteByte(Position, Value.B0);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector16(long Position, AVec Value)
         {
             WriteUInt16(Position, Value.H0);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector32(long Position, AVec Value)
         {
             WriteUInt32(Position, Value.W0);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector64(long Position, AVec Value)
         {
             WriteUInt64(Position, Value.X0);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector128(long Position, AVec Value)
         {
             WriteUInt64(Position + 0, Value.X0);
