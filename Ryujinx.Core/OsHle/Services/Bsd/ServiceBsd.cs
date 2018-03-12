@@ -15,30 +15,30 @@ namespace Ryujinx.Core.OsHle.IpcServices.Bsd
     //https://github.com/freebsd/freebsd/blob/master/sys/sys/errno.h
     public enum BsdError
     {
-        ENOTSOCK = 38, /* Socket operation on non-socket */
-        EDESTADDRREQ = 39, /* Destination address required */
-        EMSGSIZE = 40, /* Message too long */
-        EPROTOTYPE = 41, /* Protocol wrong type for socket */
-        ENOPROTOOPT = 42, /* Protocol not available */
+        ENOTSOCK        = 38, /* Socket operation on non-socket */
+        EDESTADDRREQ    = 39, /* Destination address required */
+        EMSGSIZE        = 40, /* Message too long */
+        EPROTOTYPE      = 41, /* Protocol wrong type for socket */
+        ENOPROTOOPT     = 42, /* Protocol not available */
         EPROTONOSUPPORT = 43, /* Protocol not supported */
         ESOCKTNOSUPPORT = 44, /* Socket type not supported */
-        EOPNOTSUPP = 45, /* Operation not supported */
-        EPFNOSUPPORT = 46, /* Protocol family not supported */
-        EAFNOSUPPORT = 47, /* Address family not supported by protocol family */
-        EADDRINUSE = 48, /* Address already in use */
-        EADDRNOTAVAIL = 49, /* Can't assign requested address */
-        ENETDOWN = 50, /* Network is down */
-        ENETUNREACH = 51, /* Network is unreachable */
-        ENETRESET = 52, /* Network dropped connection on reset */
-        ECONNABORTED = 53, /* Software caused connection abort */
-        ECONNRESET = 54, /* Connection reset by peer */
-        ENOBUFS = 55, /* No buffer space available */
-        EISCONN = 56, /* Socket is already connected */
-        ENOTCONN = 57, /* Socket is not connected */
-        ESHUTDOWN = 58, /* Can't send after socket shutdown */
-        ETOOMANYREFS = 59, /* Too many references: can't splice */
-        ETIMEDOUT = 60, /* Operation timed out */
-        ECONNREFUSED = 61, /* Connection refused */
+        EOPNOTSUPP      = 45, /* Operation not supported */
+        EPFNOSUPPORT    = 46, /* Protocol family not supported */
+        EAFNOSUPPORT    = 47, /* Address family not supported by protocol family */
+        EADDRINUSE      = 48, /* Address already in use */
+        EADDRNOTAVAIL   = 49, /* Can't assign requested address */
+        ENETDOWN        = 50, /* Network is down */
+        ENETUNREACH     = 51, /* Network is unreachable */
+        ENETRESET       = 52, /* Network dropped connection on reset */
+        ECONNABORTED    = 53, /* Software caused connection abort */
+        ECONNRESET      = 54, /* Connection reset by peer */
+        ENOBUFS         = 55, /* No buffer space available */
+        EISCONN         = 56, /* Socket is already connected */
+        ENOTCONN        = 57, /* Socket is not connected */
+        ESHUTDOWN       = 58, /* Can't send after socket shutdown */
+        ETOOMANYREFS    = 59, /* Too many references: can't splice */
+        ETIMEDOUT       = 60, /* Operation timed out */
+        ECONNREFUSED    = 61  /* Connection refused */
     }
 
     class SocketBsd
