@@ -13,11 +13,17 @@ namespace Ryujinx.Core.OsHle.IpcServices.Pl
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
+                { 0, RequestLoad                  },
                 { 1, GetLoadState                 },
                 { 2, GetFontSize                  },
                 { 3, GetSharedMemoryAddressOffset },
                 { 4, GetSharedMemoryNativeHandle  }
             };
+        }
+
+        public long RequestLoad(ServiceCtx Context)
+        {
+            return 0;
         }
 
         public long GetLoadState(ServiceCtx Context)
