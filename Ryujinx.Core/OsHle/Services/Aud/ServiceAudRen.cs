@@ -15,9 +15,9 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, OpenAudioRenderer                    },
-                { 1, GetAudioRendererWorkBufferSize       },
-                { 2, GetAudioRenderersProcessMasterVolume }
+                { 0, OpenAudioRenderer              },
+                { 1, GetAudioRendererWorkBufferSize },
+                { 2, GetAudioDevice                 }
             };
         }
 
@@ -49,9 +49,11 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
             return 0;
         }
 
-        public long GetAudioRenderersProcessMasterVolume(ServiceCtx Context)
+        public long GetAudioDevice(ServiceCtx Context)
         {
-            Context.ResponseData.Write(0);
+            long UserId = Context.RequestData.ReadInt64();
+
+            MakeObject(Context, new IAudioDevice());
 
             return 0;
         }
