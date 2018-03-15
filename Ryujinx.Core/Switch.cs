@@ -11,13 +11,18 @@ namespace Ryujinx.Core
     public class Switch : IDisposable
     {
         internal IAalOutput AudioOut { get; private set; }
-        internal NsGpu     Gpu { get; private set; }
-        internal Horizon   Os  { get; private set; }
-        internal VirtualFs VFs { get; private set; }
 
-        public Hid    Hid                       { get; private set; }        
-        public SetSys Settings                  { get; private set; }
+        internal NsGpu Gpu { get; private set; }
+
+        internal Horizon Os { get; private set; }
+
+        internal VirtualFileSystem VFs { get; private set; }
+
+        public SystemSettings Settings { get; private set; }
+
         public PerformanceStatistics Statistics { get; private set; }
+
+        public Hid Hid { get; private set; }
 
         public event EventHandler Finish;
 
@@ -37,18 +42,18 @@ namespace Ryujinx.Core
 
             Gpu = new NsGpu(Renderer);
 
-            VFs = new VirtualFs();
+            Os = new Horizon(this);
 
-            Hid = new Hid();
+            VFs = new VirtualFileSystem();
+
+            Settings = new SystemSettings();
 
             Statistics = new PerformanceStatistics();
 
-            Os = new Horizon(this);
+            Hid = new Hid();
 
             Os.HidSharedMem.MemoryMapped   += Hid.ShMemMap;
             Os.HidSharedMem.MemoryUnmapped += Hid.ShMemUnmap;
-
-            Settings = new SetSys();
         }
 
         public void LoadCart(string ExeFsDir, string RomFsFile = null)

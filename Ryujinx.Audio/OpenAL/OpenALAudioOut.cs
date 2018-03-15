@@ -24,8 +24,7 @@ namespace Ryujinx.Audio.OpenAL
 
             private ConcurrentDictionary<long, int> Buffers;
 
-            private HashSet<long> QueuedTagsHash;
-            private Queue<long>   QueuedTagsQueue;
+            private Queue<long> QueuedTagsQueue;
 
             private bool Disposed;
 
@@ -40,7 +39,6 @@ namespace Ryujinx.Audio.OpenAL
 
                 Buffers = new ConcurrentDictionary<long, int>();
 
-                QueuedTagsHash  = new HashSet<long>();
                 QueuedTagsQueue = new Queue<long>();
             }
 
@@ -60,7 +58,6 @@ namespace Ryujinx.Audio.OpenAL
                     return Id;
                 });
 
-                QueuedTagsHash.Add(Tag);
                 QueuedTagsQueue.Enqueue(Tag);
 
                 return Id;
@@ -68,15 +65,13 @@ namespace Ryujinx.Audio.OpenAL
 
             public long[] GetReleasedBuffers()
             {
-                SyncQueuedTags();
-
-                ClearQueue();
+                ClearReleased();
 
                 List<long> Tags = new List<long>();
 
                 foreach (long Tag in Buffers.Keys)
                 {
-                    if (!QueuedTagsHash.Contains(Tag))
+                    if (!ContainsBuffer(Tag))
                     {
                         Tags.Add(Tag);
                     }
@@ -85,15 +80,10 @@ namespace Ryujinx.Audio.OpenAL
                 return Tags.ToArray();
             }
 
-            public bool ContainsBuffer(long Tag)
+            public void ClearReleased()
             {
                 SyncQueuedTags();
 
-                return QueuedTagsHash.Contains(Tag);
-            }
-
-            public void ClearQueue()
-            {
                 AL.GetSource(SourceId, ALGetSourcei.BuffersProcessed, out int ReleasedCount);
 
                 if (ReleasedCount > 0)
@@ -102,6 +92,21 @@ namespace Ryujinx.Audio.OpenAL
                 }
             }
 
+            public bool ContainsBuffer(long Tag)
+            {
+                SyncQueuedTags();
+
+                foreach (long QueuedTag in QueuedTagsQueue)
+                {
+                    if (QueuedTag == Tag)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            
             private void SyncQueuedTags()
             {
                 AL.GetSource(SourceId, ALGetSourcei.BuffersQueued,    out int QueuedCount);
@@ -111,7 +116,7 @@ namespace Ryujinx.Audio.OpenAL
 
                 while (QueuedTagsQueue.Count > QueuedCount)
                 {
-                    QueuedTagsHash.Remove(QueuedTagsQueue.Dequeue());
+                    QueuedTagsQueue.Dequeue();
                 }
             }
 
@@ -205,8 +210,6 @@ namespace Ryujinx.Audio.OpenAL
 
                 AL.BufferData(BufferId, Td.Format, Buffer, Buffer.Length, Td.SampleRate);
 
-                Td.ClearQueue();
-
                 AL.SourceQueueBuffer(Td.SourceId, BufferId);
 
                 StartPlaybackIfNeeded(Td);
@@ -246,16 +249,16 @@ namespace Ryujinx.Audio.OpenAL
         private void StartPlaybackIfNeeded(Track Td)
         {
             AL.GetSource(Td.SourceId, ALGetSourcei.SourceState, out int StateInt);
-                
+
             ALSourceState State = (ALSourceState)StateInt;
 
             if (State != ALSourceState.Playing && Td.State == PlaybackState.Playing)
             {
-                Td.ClearQueue();
+                Td.ClearReleased();
 
                 AL.SourcePlay(Td.SourceId);
             }
-        }        
+        }
 
         public void Stop(int Track)
         {

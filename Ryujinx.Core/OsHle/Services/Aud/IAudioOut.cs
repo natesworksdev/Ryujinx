@@ -87,14 +87,22 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
         public long GetReleasedAudioOutBuffer(ServiceCtx Context)
         {
             long Position = Context.Request.ReceiveBuff[0].Position;
+            long Size     = Context.Request.ReceiveBuff[0].Size;
+
+            int Count = (int)(Size >> 3);
 
             long[] ReleasedBuffers = AudioOut.GetReleasedBuffers(Track);
 
-            foreach (long Tag in ReleasedBuffers)
+            for (int Index = 0; Index < Count; Index++)
             {
-                Context.Memory.WriteInt64(Position, Tag);
+                long Tag = 0;
 
-                Position += 8;
+                if (Index < ReleasedBuffers.Length)
+                {
+                    Tag = ReleasedBuffers[Index];
+                }
+
+                Context.Memory.WriteInt64(Position + Index * 8, Tag);
             }
 
             Context.ResponseData.Write(ReleasedBuffers.Length);
