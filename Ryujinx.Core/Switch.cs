@@ -1,3 +1,4 @@
+using Ryujinx.Audio;
 using Ryujinx.Core.Input;
 using Ryujinx.Core.OsHle;
 using Ryujinx.Core.Settings;
@@ -9,6 +10,7 @@ namespace Ryujinx.Core
 {
     public class Switch : IDisposable
     {
+        internal IAalOutput AudioOut { get; private set; }
         internal NsGpu     Gpu { get; private set; }
         internal Horizon   Os  { get; private set; }
         internal VirtualFs VFs { get; private set; }
@@ -19,8 +21,20 @@ namespace Ryujinx.Core
 
         public event EventHandler Finish;
 
-        public Switch(IGalRenderer Renderer)
+        public Switch(IGalRenderer Renderer, IAalOutput AudioOut)
         {
+            if (Renderer == null)
+            {
+                throw new ArgumentNullException(nameof(Renderer));
+            }
+
+            if (AudioOut == null)
+            {
+                throw new ArgumentNullException(nameof(AudioOut));
+            }
+
+            this.AudioOut = AudioOut;
+
             Gpu = new NsGpu(Renderer);
 
             VFs = new VirtualFs();
