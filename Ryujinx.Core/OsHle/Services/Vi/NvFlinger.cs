@@ -1,5 +1,6 @@
 using ChocolArm64.Memory;
-using Ryujinx.Core.OsHle.Handles;
+using Ryujinx.Core.OsHle.IpcServices.NvServices;
+using Ryujinx.Graphics.Gal;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -54,28 +55,42 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
             public GbpBuffer Data;
         }
 
+        private IGalRenderer Renderer;
+
         private BufferEntry[] BufferQueue;
 
         private ManualResetEvent WaitBufferFree;
+        
+        private object RenderQueueLock;
+
+        private int RenderQueueCount;
+
+        private bool NvFlingerDisposed;
 
         private bool KeepRunning;
 
-        public NvFlinger()
+        public NvFlinger(IGalRenderer Renderer)
         {
             Commands = new Dictionary<(string, int), ServiceProcessParcel>()
             {
                 { ("android.gui.IGraphicBufferProducer", 0x1), GbpRequestBuffer  },
                 { ("android.gui.IGraphicBufferProducer", 0x3), GbpDequeueBuffer  },
+                { ("android.gui.IGraphicBufferProducer", 0x4), GbpDetachBuffer   },
                 { ("android.gui.IGraphicBufferProducer", 0x7), GbpQueueBuffer    },
                 { ("android.gui.IGraphicBufferProducer", 0x8), GbpCancelBuffer   },
                 { ("android.gui.IGraphicBufferProducer", 0x9), GbpQuery          },
                 { ("android.gui.IGraphicBufferProducer", 0xa), GbpConnect        },
+                { ("android.gui.IGraphicBufferProducer", 0xb), GbpDisconnect     },
                 { ("android.gui.IGraphicBufferProducer", 0xe), GbpPreallocBuffer }
             };
+
+            this.Renderer = Renderer;
 
             BufferQueue = new BufferEntry[0x40];
 
             WaitBufferFree = new ManualResetEvent(false);
+
+            RenderQueueLock = new object();
 
             KeepRunning = true;
         }
@@ -154,6 +169,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
 
         private long GbpQueueBuffer(ServiceCtx Context, BinaryReader ParcelReader)
         {
+            Context.Ns.Statistics.RecordGameFrameTime();
+
             //TODO: Errors.
             int Slot            = ParcelReader.ReadInt32();
             int Unknown4        = ParcelReader.ReadInt32();
@@ -190,6 +207,11 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
             return MakeReplyParcel(Context, 1280, 720, 0, 0, 0);
         }
 
+        private long GbpDetachBuffer(ServiceCtx Context, BinaryReader ParcelReader)
+        {
+            return MakeReplyParcel(Context, 0);
+        }
+
         private long GbpCancelBuffer(ServiceCtx Context, BinaryReader ParcelReader)
         {
             //TODO: Errors.
@@ -208,6 +230,11 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
         private long GbpConnect(ServiceCtx Context, BinaryReader ParcelReader)
         {
             return MakeReplyParcel(Context, 1280, 720, 0, 0, 0);
+        }
+
+        private long GbpDisconnect(ServiceCtx Context, BinaryReader ParcelReader)
+        {
+            return MakeReplyParcel(Context, 0);
         }
 
         private long GbpPreallocBuffer(ServiceCtx Context, BinaryReader ParcelReader)
@@ -256,11 +283,11 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
             int FbWidth  = BufferQueue[Slot].Data.Width;
             int FbHeight = BufferQueue[Slot].Data.Height;
 
-            int FbSize = FbWidth * FbHeight * 4;
+            long FbSize = (uint)FbWidth * FbHeight * 4;
 
-            HNvMap NvMap = GetNvMap(Context, Slot);
+            NvMap NvMap = GetNvMap(Context, Slot);
 
-            if (FbSize < 0 || NvMap.Address < 0 || NvMap.Address + FbSize > AMemoryMgr.AddrSize)
+            if ((ulong)(NvMap.Address + FbSize) > AMemoryMgr.AddrSize)
             {
                 Logging.Error($"Frame buffer address {NvMap.Address:x16} is invalid!");
 
@@ -278,45 +305,61 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
             int RealWidth  = FbWidth;
             int RealHeight = FbHeight;
 
+            float XSign = BufferQueue[Slot].Transform.HasFlag(HalTransform.FlipX) ? -1 : 1;
+            float YSign = BufferQueue[Slot].Transform.HasFlag(HalTransform.FlipY) ? -1 : 1;
+
             float ScaleX = 1;
             float ScaleY = 1;
+
             float OffsX = 0;
             float OffsY = 0;
 
             if (Crop.Right  != 0 &&
                 Crop.Bottom != 0)
             {
+                //Who knows if this is right, I was never good with math...
                 RealWidth  = Crop.Right  - Crop.Left;
                 RealHeight = Crop.Bottom - Crop.Top;
 
-                ScaleX = (float)FbWidth  / RealWidth;
-                ScaleY = (float)FbHeight / RealHeight;
+                if (BufferQueue[Slot].Transform.HasFlag(HalTransform.Rotate90))
+                {
+                    ScaleY = (float)FbHeight / RealHeight;
+                    ScaleX = (float)FbWidth  / RealWidth;
 
-                OffsX = -(float)Crop.Left / Crop.Right;
-                OffsY = -(float)Crop.Top  / Crop.Bottom;
+                    OffsY = ((-(float)Crop.Left / Crop.Right)  + ScaleX - 1) * -XSign;
+                    OffsX = ((-(float)Crop.Top  / Crop.Bottom) + ScaleY - 1) * -YSign;
+                }
+                else
+                {
+                    ScaleX = (float)FbWidth  / RealWidth;
+                    ScaleY = (float)FbHeight / RealHeight;
 
-                OffsX += ScaleX - 1;
-                OffsY += ScaleY - 1;
+                    OffsX = ((-(float)Crop.Left / Crop.Right)  + ScaleX - 1) *  XSign;
+                    OffsY = ((-(float)Crop.Top  / Crop.Bottom) + ScaleY - 1) * -YSign;
+                }
             }
+
+            ScaleX *= XSign;
+            ScaleY *= YSign;
 
             float Rotate = 0;
-
-            if (BufferQueue[Slot].Transform.HasFlag(HalTransform.FlipX))
-            {
-                ScaleX = -ScaleX;
-            }
-
-            if (BufferQueue[Slot].Transform.HasFlag(HalTransform.FlipY))
-            {
-                ScaleY = -ScaleY;
-            }
 
             if (BufferQueue[Slot].Transform.HasFlag(HalTransform.Rotate90))
             {
                 Rotate = -MathF.PI * 0.5f;
             }
 
-            byte* Fb = (byte*)Context.Ns.Ram + NvMap.Address;
+            lock (RenderQueueLock)
+            {
+                if (NvFlingerDisposed)
+                {
+                    return;
+                }
+
+                Interlocked.Increment(ref RenderQueueCount);
+            }
+
+            byte* Fb = (byte*)Context.Memory.Ram + NvMap.Address;
 
             Context.Ns.Gpu.Renderer.QueueAction(delegate()
             {
@@ -332,6 +375,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
 
                 BufferQueue[Slot].State = BufferState.Free;
 
+                Interlocked.Decrement(ref RenderQueueCount);
+
                 lock (WaitBufferFree)
                 {
                     WaitBufferFree.Set();
@@ -339,7 +384,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
             });
         }
 
-        private HNvMap GetNvMap(ServiceCtx Context, int Slot)
+        private NvMap GetNvMap(ServiceCtx Context, int Slot)
         {
             int NvMapHandle = BitConverter.ToInt32(BufferQueue[Slot].Data.RawData, 0x4c);
 
@@ -352,7 +397,9 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
                 NvMapHandle = BitConverter.ToInt32(RawValue, 0);
             }
 
-            return Context.Ns.Os.Handles.GetData<HNvMap>(NvMapHandle);
+            ServiceNvDrv NvDrv = (ServiceNvDrv)Context.Process.Services.GetService("nvdrv");
+
+            return NvDrv.GetNvMap(NvMapHandle);
         }
 
         private int GetFreeSlotBlocking(int Width, int Height)
@@ -418,10 +465,24 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool Disposing)
         {
-            if (disposing)
+            if (Disposing && !NvFlingerDisposed)
             {
+                lock (RenderQueueLock)
+                {
+                    NvFlingerDisposed = true;
+                }
+
+                //Ensure that all pending actions was sent before
+                //we can safely assume that the class was disposed.
+                while (RenderQueueCount > 0)
+                {
+                    Thread.Yield();
+                }
+
+                Renderer.ResetFrameBuffer();
+
                 lock (WaitBufferFree)
                 {
                     KeepRunning = false;

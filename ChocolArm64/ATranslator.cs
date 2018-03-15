@@ -7,7 +7,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using System.Threading;
 
 namespace ChocolArm64
 {
@@ -23,8 +22,6 @@ namespace ChocolArm64
 
         public bool EnableCpuTrace { get; set; }
 
-        private bool KeepRunning;
-
         public ATranslator(IReadOnlyDictionary<long, string> SymbolTable = null)
         {
             SubBlocks = new HashSet<long>();
@@ -39,11 +36,7 @@ namespace ChocolArm64
             {
                 this.SymbolTable = new ConcurrentDictionary<long, string>();
             }
-
-            KeepRunning = true;
         }
-
-        internal void StopExecution() => KeepRunning = false;
 
         internal void ExecuteSubroutine(AThread Thread, long Position)
         {
@@ -71,7 +64,7 @@ namespace ChocolArm64
 
                 Position = Sub.Execute(Thread.ThreadState, Thread.Memory);
             }
-            while (Position != 0 && KeepRunning);
+            while (Position != 0 && Thread.ThreadState.Running);
         }
 
         internal bool TryGetCachedSub(AOpCode OpCode, out ATranslatedSub Sub)

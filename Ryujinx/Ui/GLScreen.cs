@@ -29,6 +29,10 @@ namespace Ryujinx
         {
             this.Ns       = Ns;
             this.Renderer = Renderer;
+
+            Location = new Point(
+                (DisplayDevice.Default.Width  / 2) - (Width  / 2),
+                (DisplayDevice.Default.Height / 2) - (Height / 2));
         }
 
         protected override void OnLoad(EventArgs e)
@@ -162,9 +166,12 @@ namespace Ryujinx
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
+            Ns.Statistics.StartSystemFrame();
+
             GL.Viewport(0, 0, Width, Height);
 
-            Title = $"Ryujinx Screen - (Vsync: {VSync} - FPS: {1f / e.Time:0})";
+            Title = $"Ryujinx Screen - (Vsync: {VSync} - FPS: {Ns.Statistics.SystemFrameRate:0} - Guest FPS: " +
+                $"{Ns.Statistics.GameFrameRate:0})";
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -172,6 +179,8 @@ namespace Ryujinx
             Renderer.Render();
 
             SwapBuffers();
+
+            Ns.Statistics.EndSystemFrame();
         }
 
         protected override void OnResize(EventArgs e)

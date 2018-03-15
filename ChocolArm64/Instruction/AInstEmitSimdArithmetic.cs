@@ -267,6 +267,14 @@ namespace ChocolArm64.Instruction
             });
         }
 
+        public static void Frintm_V(AILEmitterCtx Context)
+        {
+            EmitVectorUnaryOpF(Context, () =>
+            {
+                EmitUnaryMathCall(Context, nameof(Math.Floor));
+            });
+        }
+
         public static void Frintp_S(AILEmitterCtx Context)
         {
             EmitScalarUnaryOpF(Context, () =>
@@ -341,6 +349,11 @@ namespace ChocolArm64.Instruction
             EmitVectorBinaryOpZx(Context, () => Context.Emit(OpCodes.Mul));
         }
 
+        public static void Mul_Ve(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpByElemZx(Context, () => Context.Emit(OpCodes.Mul));
+        }
+
         public static void Neg_V(AILEmitterCtx Context)
         {
             EmitVectorUnaryOpSx(Context, () => Context.Emit(OpCodes.Neg));
@@ -367,6 +380,15 @@ namespace ChocolArm64.Instruction
             MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Min), Types);
 
             EmitVectorBinaryOpSx(Context, () => Context.EmitCall(MthdInfo));
+        }
+
+        public static void Smlal_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmTernaryOpSx(Context, () =>
+            {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Add);
+            });
         }
 
         public static void Smull_V(AILEmitterCtx Context)

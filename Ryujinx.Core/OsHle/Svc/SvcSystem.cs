@@ -3,9 +3,10 @@ using ChocolArm64.State;
 using Ryujinx.Core.OsHle.Exceptions;
 using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Ipc;
-using Ryujinx.Core.OsHle.IpcServices;
 using System;
 using System.Threading;
+
+using static Ryujinx.Core.OsHle.ErrorCode;
 
 namespace Ryujinx.Core.OsHle.Svc
 {
@@ -20,13 +21,22 @@ namespace Ryujinx.Core.OsHle.Svc
             Ns.Os.ExitProcess(ThreadState.ProcessId);
         }
 
+        private void SvcClearEvent(AThreadState ThreadState)
+        {
+            int Handle = (int)ThreadState.X0;
+
+            //TODO: Implement events.
+
+            ThreadState.X0 = 0;
+        }
+
         private void SvcCloseHandle(AThreadState ThreadState)
         {
             int Handle = (int)ThreadState.X0;
 
-            Ns.Os.CloseHandle(Handle);
+            Process.HandleTable.CloseHandle(Handle);
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcResetSignal(AThreadState ThreadState)
@@ -35,7 +45,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             //TODO: Implement events.
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcWaitSynchronization(AThreadState ThreadState)
@@ -51,12 +61,12 @@ namespace Ryujinx.Core.OsHle.Svc
             Process.Scheduler.Suspend(CurrThread.ProcessorId);
             Process.Scheduler.Resume(CurrThread);
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcGetSystemTick(AThreadState ThreadState)
         {
-            ThreadState.X0 = (ulong)ThreadState.CntpctEl0;
+            ThreadState.X0 = ThreadState.CntpctEl0;
         }
 
         private void SvcConnectToNamedPort(AThreadState ThreadState)
@@ -69,10 +79,12 @@ namespace Ryujinx.Core.OsHle.Svc
             //TODO: Validate that app has perms to access the service, and that the service
             //actually exists, return error codes otherwise.
 
-            HSession Session = new HSession(ServiceFactory.MakeService(Name));
+            HSession Session = new HSession(Process.Services.GetService(Name));
 
-            ThreadState.X1 = (ulong)Ns.Os.Handles.GenerateId(Session);
-            ThreadState.X0 = (int)SvcResult.Success;
+            ulong Handle = (ulong)Process.HandleTable.OpenHandle(Session);
+            
+            ThreadState.X0 = 0;
+            ThreadState.X1 = Handle;
         }
 
         private void SvcSendSyncRequest(AThreadState ThreadState)
@@ -108,21 +120,29 @@ namespace Ryujinx.Core.OsHle.Svc
 
             byte[] CmdData = AMemoryHelper.ReadBytes(Memory, CmdPtr, (int)Size);
 
-            HSession Session = Ns.Os.Handles.GetData<HSession>(Handle);
+            HSession Session = Process.HandleTable.GetData<HSession>(Handle);
 
             IpcMessage Cmd = new IpcMessage(CmdData, CmdPtr, Session is HDomain);
 
             if (Session != null)
             {
-                IpcHandler.IpcCall(Ns, Memory, Session, Cmd, ThreadState.ThreadId, CmdPtr, Handle);
+                IpcHandler.IpcCall(
+                    Ns,
+                    Process,
+                    Memory,
+                    Session,
+                    Cmd,
+                    ThreadState.ThreadId,
+                    CmdPtr,
+                    Handle);
 
                 byte[] Response = AMemoryHelper.ReadBytes(Memory, CmdPtr, (int)Size);
 
-                ThreadState.X0 = (int)SvcResult.Success;
+                ThreadState.X0 = 0;
             }
             else
             {
-                ThreadState.X0 = (int)SvcResult.ErrBadIpcReq;
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidIpcReq);
             }
 
             Thread.Yield();
@@ -148,7 +168,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             Logging.Info($"SvcOutputDebugString: {Str}");
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcGetInfo(AThreadState ThreadState)
@@ -162,7 +182,7 @@ namespace Ryujinx.Core.OsHle.Svc
             if (InfoType == 18 ||
                 InfoType == 19)
             {
-                ThreadState.X0 = (int)SvcResult.ErrBadInfo;
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidInfo);
 
                 return;
             }
@@ -186,7 +206,7 @@ namespace Ryujinx.Core.OsHle.Svc
                     break;
 
                 case 5:
-                    ThreadState.X1 = CurrentHeapSize;
+                    ThreadState.X1 = MemoryRegions.HeapRegionSize;
                     break;
 
                 case 6:
@@ -224,7 +244,7 @@ namespace Ryujinx.Core.OsHle.Svc
                 default: throw new NotImplementedException($"SvcGetInfo: {InfoType} {Handle} {InfoId}");
             }
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
     }
 }

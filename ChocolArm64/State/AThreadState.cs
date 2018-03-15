@@ -1,5 +1,6 @@
 using ChocolArm64.Events;
 using System;
+using System.Diagnostics;
 
 namespace ChocolArm64.State
 {
@@ -29,6 +30,8 @@ namespace ChocolArm64.State
         public int ProcessId;
         public int ThreadId;
 
+        public bool Running { get; set; }
+
         public long TpidrEl0 { get; set; }
         public long Tpidr    { get; set; }
 
@@ -38,14 +41,33 @@ namespace ChocolArm64.State
         public uint CtrEl0   => 0x8444c004;
         public uint DczidEl0 => 0x00000004;
 
-        private const long TicksPerS  = 19_200_000;
-        private const long TicksPerMS = TicksPerS / 1_000;
+        public ulong CntfrqEl0 { get; set; }
+        public ulong CntpctEl0
+        {
+            get
+            {
+                double Ticks = TickCounter.ElapsedTicks * HostTickFreq;
 
-        public long CntpctEl0 => Environment.TickCount * TicksPerMS;
+                return (ulong)(Ticks * CntfrqEl0);
+            }
+        }
 
         public event EventHandler<AInstExceptionEventArgs> Break;
         public event EventHandler<AInstExceptionEventArgs> SvcCall;
         public event EventHandler<AInstUndefinedEventArgs> Undefined;
+
+        private static Stopwatch TickCounter;
+
+        private static double HostTickFreq;
+
+        static AThreadState()
+        {
+            HostTickFreq = 1.0 / Stopwatch.Frequency;
+
+            TickCounter = new Stopwatch();
+
+            TickCounter.Start();
+        }
 
         internal void OnBreak(int Imm)
         {

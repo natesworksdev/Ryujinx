@@ -1,3 +1,4 @@
+using ChocolArm64.Memory;
 using System;
 using System.Collections.Generic;
 
@@ -5,66 +6,39 @@ namespace Ryujinx.Core.OsHle.Handles
 {
     class HSharedMem
     {
-        private List<long> Positions;
-
-        public int PositionsCount => Positions.Count;
+        private List<(AMemory, long)> Positions;
 
         public EventHandler<EventArgs> MemoryMapped;
         public EventHandler<EventArgs> MemoryUnmapped;
 
         public HSharedMem()
         {
-            Positions = new List<long>();
+            Positions = new List<(AMemory, long)>();
         }
 
-        public void AddVirtualPosition(long Position)
+        public void AddVirtualPosition(AMemory Memory, long Position)
         {
             lock (Positions)
             {
-                Positions.Add(Position);
+                Positions.Add((Memory, Position));
 
                 MemoryMapped?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        public void RemoveVirtualPosition(long Position)
+        public void RemoveVirtualPosition(AMemory Memory, long Position)
         {
             lock (Positions)
             {
-                Positions.Remove(Position);
+                Positions.Remove((Memory, Position));
 
                 MemoryUnmapped?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        public long GetVirtualPosition(int Index)
+        public (AMemory, long)[] GetVirtualPositions()
         {
-            lock (Positions)
-            {
-                if (Index < 0 || Index >= Positions.Count)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(Index));
-                }
-
-                return Positions[Index];
-            }
-        }
-
-        public bool TryGetLastVirtualPosition(out long Position)
-        {
-            lock (Positions)
-            {
-                if (Positions.Count > 0)
-                {
-                    Position = Positions[Positions.Count - 1];
-
-                    return true;
-                }
-
-                Position = 0;
-
-                return false;
-            }
+            return Positions.ToArray();
         }
     }
 }

@@ -1,6 +1,8 @@
 using ChocolArm64.State;
 using Ryujinx.Core.OsHle.Handles;
 
+using static Ryujinx.Core.OsHle.ErrorCode;
+
 namespace Ryujinx.Core.OsHle.Svc
 {
     partial class SvcHandler
@@ -11,7 +13,7 @@ namespace Ryujinx.Core.OsHle.Svc
             long MutexAddress           = (long)ThreadState.X1;
             int  RequestingThreadHandle =  (int)ThreadState.X2;
 
-            HThread RequestingThread = Ns.Os.Handles.GetData<HThread>(RequestingThreadHandle);
+            HThread RequestingThread = Process.HandleTable.GetData<HThread>(RequestingThreadHandle);
 
             Mutex M = new Mutex(Process, MutexAddress, OwnerThreadHandle);
 
@@ -19,7 +21,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             M.WaitForLock(RequestingThread, RequestingThreadHandle);
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcArbitrateUnlock(AThreadState ThreadState)
@@ -31,7 +33,7 @@ namespace Ryujinx.Core.OsHle.Svc
                 M.Unlock();
             }
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcWaitProcessWideKeyAtomic(AThreadState ThreadState)
@@ -41,7 +43,7 @@ namespace Ryujinx.Core.OsHle.Svc
             int  ThreadHandle   =  (int)ThreadState.X2;
             long Timeout        = (long)ThreadState.X3;
 
-            HThread Thread = Ns.Os.Handles.GetData<HThread>(ThreadHandle);
+            HThread Thread = Process.HandleTable.GetData<HThread>(ThreadHandle);
 
             Mutex M = new Mutex(Process, MutexAddress, ThreadHandle);
 
@@ -53,11 +55,16 @@ namespace Ryujinx.Core.OsHle.Svc
 
             Cv = Ns.Os.CondVars.GetOrAdd(CondVarAddress, Cv);
 
-            Cv.WaitForSignal(Thread);
+            if (!Cv.WaitForSignal(Thread))
+            {
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+
+                return;
+            }
 
             M.WaitForLock(Thread, ThreadHandle);
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcSignalProcessWideKey(AThreadState ThreadState)
@@ -72,7 +79,7 @@ namespace Ryujinx.Core.OsHle.Svc
                 Cv.SetSignal(CurrThread, Count);
             }
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
     }
 }

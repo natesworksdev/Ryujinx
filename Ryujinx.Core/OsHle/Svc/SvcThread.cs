@@ -28,7 +28,7 @@ namespace Ryujinx.Core.OsHle.Svc
                     Priority,
                     ProcessorId);
 
-                ThreadState.X0 = (int)SvcResult.Success;
+                ThreadState.X0 = 0;
                 ThreadState.X1 = (ulong)Handle;
             }
 
@@ -39,16 +39,23 @@ namespace Ryujinx.Core.OsHle.Svc
         {
             int Handle = (int)ThreadState.X0;
 
-            HThread Thread = Ns.Os.Handles.GetData<HThread>(Handle);
+            HThread Thread = Process.HandleTable.GetData<HThread>(Handle);
 
             if (Thread != null)
             {
                 Process.Scheduler.StartThread(Thread);
 
-                ThreadState.X0 = (int)SvcResult.Success;
+                ThreadState.X0 = 0;
             }
 
             //TODO: Error codes.
+        }
+
+        private void SvcExitThread(AThreadState ThreadState)
+        {
+            HThread CurrThread = Process.GetThread(ThreadState.Tpidr);
+            
+            CurrThread.Thread.StopExecution();
         }
 
         private void SvcSleepThread(AThreadState ThreadState)
@@ -71,12 +78,12 @@ namespace Ryujinx.Core.OsHle.Svc
         {
             int Handle = (int)ThreadState.X1;
 
-            HThread Thread = Ns.Os.Handles.GetData<HThread>(Handle);
+            HThread Thread = Process.HandleTable.GetData<HThread>(Handle);
 
             if (Thread != null)
             {
+                ThreadState.X0 = 0;
                 ThreadState.X1 = (ulong)Thread.Priority;
-                ThreadState.X0 = (int)SvcResult.Success;
             }
 
             //TODO: Error codes.
@@ -87,13 +94,13 @@ namespace Ryujinx.Core.OsHle.Svc
             int Handle = (int)ThreadState.X1;
             int Prio = (int)ThreadState.X0;
 
-            HThread Thread = Ns.Os.Handles.GetData<HThread>(Handle);
+            HThread Thread = Process.HandleTable.GetData<HThread>(Handle);
 
             if (Thread != null)
             {
                 Thread.Priority = Prio;
 
-                ThreadState.X0 = (int)SvcResult.Success;
+                ThreadState.X0 = 0;
             }
 
             //TODO: Error codes.
@@ -101,7 +108,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
         private void SvcSetThreadCoreMask(AThreadState ThreadState)
         {
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
 
             //TODO: Error codes.
         }
@@ -110,12 +117,12 @@ namespace Ryujinx.Core.OsHle.Svc
         {
             int Handle = (int)ThreadState.X0;
 
-            HThread Thread = Ns.Os.Handles.GetData<HThread>(Handle);
+            HThread Thread = Process.HandleTable.GetData<HThread>(Handle);
 
             if (Thread != null)
             {
+                ThreadState.X0 = 0;
                 ThreadState.X1 = (ulong)Thread.ThreadId;
-                ThreadState.X0 = (int)SvcResult.Success;
             }
 
             //TODO: Error codes.

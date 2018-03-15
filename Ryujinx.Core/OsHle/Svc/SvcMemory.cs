@@ -2,6 +2,8 @@ using ChocolArm64.Memory;
 using ChocolArm64.State;
 using Ryujinx.Core.OsHle.Handles;
 
+using static Ryujinx.Core.OsHle.ErrorCode;
+
 namespace Ryujinx.Core.OsHle.Svc
 {
     partial class SvcHandler
@@ -23,7 +25,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             CurrentHeapSize = Size;
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
             ThreadState.X1 = (ulong)Position;
         }
 
@@ -44,7 +46,7 @@ namespace Ryujinx.Core.OsHle.Svc
                 Memory.Manager.SetAttrBit(Position, Size, 3);
             }
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcMapMemory(AThreadState ThreadState)
@@ -52,6 +54,24 @@ namespace Ryujinx.Core.OsHle.Svc
             long Dst  = (long)ThreadState.X0;
             long Src  = (long)ThreadState.X1;
             long Size = (long)ThreadState.X2;
+
+            if (!IsValidPosition(Src))
+            {
+                Logging.Warn($"Tried to map Memory at invalid src address {Src:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+
+                return;
+            }
+
+            if (!IsValidMapPosition(Dst))
+            {
+                Logging.Warn($"Tried to map Memory at invalid dst address {Dst:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+
+                return;
+            }
 
             AMemoryMapInfo SrcInfo = Memory.Manager.GetMapInfo(Src);
 
@@ -61,7 +81,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             Memory.Manager.SetAttrBit(Src, Size, 0);
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcUnmapMemory(AThreadState ThreadState)
@@ -69,6 +89,24 @@ namespace Ryujinx.Core.OsHle.Svc
             long Dst  = (long)ThreadState.X0;
             long Src  = (long)ThreadState.X1;
             long Size = (long)ThreadState.X2;
+
+            if (!IsValidPosition(Src))
+            {
+                Logging.Warn($"Tried to unmap Memory at invalid src address {Src:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+
+                return;
+            }
+
+            if (!IsValidMapPosition(Dst))
+            {
+                Logging.Warn($"Tried to unmap Memory at invalid dst address {Dst:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+
+                return;
+            }
 
             AMemoryMapInfo DstInfo = Memory.Manager.GetMapInfo(Dst);
 
@@ -78,7 +116,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             Memory.Manager.ClearAttrBit(Src, Size, 0);
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
         }
 
         private void SvcQueryMemory(AThreadState ThreadState)
@@ -90,10 +128,11 @@ namespace Ryujinx.Core.OsHle.Svc
 
             if (MapInfo == null)
             {
-                //TODO: Correct error code.
-                ThreadState.X0 = ulong.MaxValue;
+                long AddrSpaceEnd = MemoryRegions.AddrSpaceStart + MemoryRegions.AddrSpaceSize;
 
-                return;
+                long ReservedSize = (long)(ulong.MaxValue - (ulong)AddrSpaceEnd) + 1;
+
+                MapInfo = new AMemoryMapInfo(AddrSpaceEnd, ReservedSize, (int)MemoryType.Reserved, 0, AMemoryPerm.None);
             }
 
             Memory.WriteInt64(InfoPtr + 0x00, MapInfo.Position);
@@ -106,7 +145,7 @@ namespace Ryujinx.Core.OsHle.Svc
             Memory.WriteInt32(InfoPtr + 0x24, 0);
             //TODO: X1.
 
-            ThreadState.X0 = (int)SvcResult.Success;
+            ThreadState.X0 = 0;
             ThreadState.X1 = 0;
         }
 
@@ -117,17 +156,33 @@ namespace Ryujinx.Core.OsHle.Svc
             long Size   = (long)ThreadState.X2;
             int  Perm   =  (int)ThreadState.X3;
 
-            HSharedMem SharedMem = Ns.Os.Handles.GetData<HSharedMem>(Handle);
+            if (!IsValidPosition(Src))
+            {
+                Logging.Warn($"Tried to map SharedMemory at invalid address {Src:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+
+                return;
+            }
+
+            HSharedMem SharedMem = Process.HandleTable.GetData<HSharedMem>(Handle);
 
             if (SharedMem != null)
             {
+                Memory.Manager.Map(Src, Size, (int)MemoryType.SharedMemory, AMemoryPerm.Write);
+
                 AMemoryHelper.FillWithZeros(Memory, Src, (int)Size);
 
-                SharedMem.AddVirtualPosition(Src);
+                Memory.Manager.Reprotect(Src, Size, (AMemoryPerm)Perm);
 
-                Memory.Manager.Map(Src, Size, (int)MemoryType.SharedMemory, (AMemoryPerm)Perm);
+                lock (MappedSharedMems)
+                {
+                    MappedSharedMems.Add((SharedMem, Src));
+                }
 
-                ThreadState.X0 = (int)SvcResult.Success;
+                SharedMem.AddVirtualPosition(Memory, Src);
+
+                ThreadState.X0 = 0;
             }
 
             //TODO: Error codes.
@@ -135,15 +190,33 @@ namespace Ryujinx.Core.OsHle.Svc
 
         private void SvcUnmapSharedMemory(AThreadState ThreadState)
         {
-            int  Handle   =  (int)ThreadState.X0;
-            long Position = (long)ThreadState.X1;
-            long Size     = (long)ThreadState.X2;
+            int  Handle =  (int)ThreadState.X0;
+            long Src    = (long)ThreadState.X1;
+            long Size   = (long)ThreadState.X2;
 
-            HSharedMem HndData = Ns.Os.Handles.GetData<HSharedMem>(Handle);
-
-            if (HndData != null)
+            if (!IsValidPosition(Src))
             {
-                ThreadState.X0 = (int)SvcResult.Success;
+                Logging.Warn($"Tried to unmap SharedMemory at invalid address {Src:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+
+                return;
+            }
+
+            HSharedMem SharedMem = Process.HandleTable.GetData<HSharedMem>(Handle);
+
+            if (SharedMem != null)
+            {
+                Memory.Manager.Unmap(Src, Size, (int)MemoryType.SharedMemory);
+
+                SharedMem.RemoveVirtualPosition(Memory, Src);
+
+                lock (MappedSharedMems)
+                {
+                    MappedSharedMems.Remove((SharedMem, Src));
+                }
+
+                ThreadState.X0 = 0;
             }
 
             //TODO: Error codes.
@@ -151,20 +224,41 @@ namespace Ryujinx.Core.OsHle.Svc
 
         private void SvcCreateTransferMemory(AThreadState ThreadState)
         {
-            long Position = (long)ThreadState.X1;
-            long Size     = (long)ThreadState.X2;
-            int  Perm     =  (int)ThreadState.X3;
+            long Src  = (long)ThreadState.X1;
+            long Size = (long)ThreadState.X2;
+            int  Perm =  (int)ThreadState.X3;
 
-            AMemoryMapInfo MapInfo = Memory.Manager.GetMapInfo(Position);
+            if (!IsValidPosition(Src))
+            {
+                Logging.Warn($"Tried to create TransferMemory at invalid address {Src:x16}!");
 
-            Memory.Manager.Reprotect(Position, Size, (AMemoryPerm)Perm);
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
 
-            HTransferMem HndData = new HTransferMem(Memory, MapInfo.Perm, Position, Size);
+                return;
+            }
 
-            int Handle = Ns.Os.Handles.GenerateId(HndData);
+            AMemoryMapInfo MapInfo = Memory.Manager.GetMapInfo(Src);
 
-            ThreadState.X1 = (ulong)Handle;
-            ThreadState.X0 = (int)SvcResult.Success;
+            Memory.Manager.Reprotect(Src, Size, (AMemoryPerm)Perm);
+
+            HTransferMem TMem = new HTransferMem(Memory, MapInfo.Perm, Src, Size);
+
+            ulong Handle = (ulong)Process.HandleTable.OpenHandle(TMem);
+            
+            ThreadState.X0 = 0;
+            ThreadState.X1 = Handle;
+        }
+
+        private static bool IsValidPosition(long Position)
+        {
+            return Position >= MemoryRegions.AddrSpaceStart &&
+                   Position <  MemoryRegions.AddrSpaceStart + MemoryRegions.AddrSpaceSize; 
+        }
+
+        private static bool IsValidMapPosition(long Position)
+        {
+            return Position >= MemoryRegions.MapRegionAddress &&
+                   Position <  MemoryRegions.MapRegionAddress + MemoryRegions.MapRegionSize; 
         }
     }
 }

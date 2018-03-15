@@ -17,6 +17,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
             {
                 { 0, OpenAudioRenderer              },
                 { 1, GetAudioRendererWorkBufferSize },
+                { 2, GetAudioDevice                 }
             };
         }
 
@@ -44,6 +45,15 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
             int Rev1Magic  = Context.RequestData.ReadInt32();
 
             Context.ResponseData.Write(0x400L);
+
+            return 0;
+        }
+
+        public long GetAudioDevice(ServiceCtx Context)
+        {
+            long UserId = Context.RequestData.ReadInt64();
+
+            MakeObject(Context, new IAudioDevice());
 
             return 0;
         }

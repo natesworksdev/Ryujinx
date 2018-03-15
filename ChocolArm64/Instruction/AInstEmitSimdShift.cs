@@ -32,6 +32,15 @@ namespace ChocolArm64.Instruction
             EmitVectorShImmBinaryZx(Context, () => Context.Emit(OpCodes.Shl), Shift);
         }
 
+        public static void Shll_V(AILEmitterCtx Context)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            int Shift = 8 << Op.Size;
+
+            EmitVectorShImmWidenBinaryZx(Context, () => Context.Emit(OpCodes.Shl), Shift);
+        }
+
         public static void Shrn_V(AILEmitterCtx Context)
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
@@ -39,6 +48,40 @@ namespace ChocolArm64.Instruction
             int Shift = (8 << (Op.Size + 1)) - Op.Imm;
 
             EmitVectorShImmNarrowBinaryZx(Context, () => Context.Emit(OpCodes.Shr_Un), Shift);
+        }
+
+        public static void Sli_V(AILEmitterCtx Context)
+        {
+            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+
+            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+
+            int Shift = Op.Imm - (8 << Op.Size);
+
+            ulong Mask = Shift != 0 ? ulong.MaxValue >> (64 - Shift) : 0;            
+
+            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            {
+                EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
+
+                Context.EmitLdc_I4(Shift);
+
+                Context.Emit(OpCodes.Shl);
+
+                EmitVectorExtractZx(Context, Op.Rd, Index, Op.Size);
+
+                Context.EmitLdc_I8((long)Mask);
+
+                Context.Emit(OpCodes.And);
+                Context.Emit(OpCodes.Or);
+
+                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+            }
+
+            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            {
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }
         }
 
         public static void Sshl_V(AILEmitterCtx Context)
@@ -75,6 +118,21 @@ namespace ChocolArm64.Instruction
             int Shift = (8 << (Op.Size + 1)) - Op.Imm;
 
             EmitVectorShImmBinarySx(Context, () => Context.Emit(OpCodes.Shr), Shift);
+        }
+
+        public static void Ssra_V(AILEmitterCtx Context)
+        {
+            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+
+            int Shift = (8 << (Op.Size + 1)) - Op.Imm;
+
+            Action Emit = () =>
+            {
+                Context.Emit(OpCodes.Shr);
+                Context.Emit(OpCodes.Add);
+            };
+
+            EmitVectorShImmTernarySx(Context, Emit, Shift);
         }
 
         public static void Ushl_V(AILEmitterCtx Context)
@@ -195,22 +253,32 @@ namespace ChocolArm64.Instruction
 
         private static void EmitVectorShImmBinarySx(AILEmitterCtx Context, Action Emit, int Imm)
         {
-            EmitVectorShImmBinaryOp(Context, Emit, Imm, true);
+            EmitVectorShImmOp(Context, Emit, Imm, false, true);
+        }
+
+        private static void EmitVectorShImmTernarySx(AILEmitterCtx Context, Action Emit, int Imm)
+        {
+            EmitVectorShImmOp(Context, Emit, Imm, true, true);
         }
 
         private static void EmitVectorShImmBinaryZx(AILEmitterCtx Context, Action Emit, int Imm)
         {
-            EmitVectorShImmBinaryOp(Context, Emit, Imm, false);
+            EmitVectorShImmOp(Context, Emit, Imm, false, false);
         }
 
-        private static void EmitVectorShImmBinaryOp(AILEmitterCtx Context, Action Emit, int Imm, bool Signed)
+        private static void EmitVectorShImmOp(AILEmitterCtx Context, Action Emit, int Imm, bool Ternary, bool Signed)
         {
-            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
 
             for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
             {
+                if (Ternary)
+                {
+                    EmitVectorExtract(Context, Op.Rd, Index, Op.Size, Signed);
+                }
+
                 EmitVectorExtract(Context, Op.Rn, Index, Op.Size, Signed);
 
                 Context.EmitLdc_I4(Imm);
@@ -238,7 +306,7 @@ namespace ChocolArm64.Instruction
 
         private static void EmitVectorShImmNarrowBinaryOp(AILEmitterCtx Context, Action Emit, int Imm, bool Signed)
         {
-            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Elems = 8 >> Op.Size;
 
@@ -273,7 +341,7 @@ namespace ChocolArm64.Instruction
 
         private static void EmitVectorShImmWidenBinaryOp(AILEmitterCtx Context, Action Emit, int Imm, bool Signed)
         {
-            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Elems = 8 >> Op.Size;
 

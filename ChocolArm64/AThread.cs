@@ -10,11 +10,9 @@ namespace ChocolArm64
         public AThreadState ThreadState { get; private set; }
         public AMemory      Memory      { get; private set; }
 
-        public long EntryPoint { get; private set; }
+        private long EntryPoint;
 
         private ATranslator Translator;
-
-        private ThreadPriority Priority;
 
         private Thread Work;
 
@@ -22,35 +20,24 @@ namespace ChocolArm64
 
         public int ThreadId => ThreadState.ThreadId;
 
-        public bool IsAlive => Work.IsAlive;
+        private int IsExecuting;
 
-        private bool IsExecuting;
-
-        private object ExecuteLock;
-
-        public AThread(ATranslator Translator, AMemory Memory, ThreadPriority Priority, long EntryPoint)
+        public AThread(ATranslator Translator, AMemory Memory, long EntryPoint)
         {
             this.Translator = Translator;
             this.Memory     = Memory;
-            this.Priority   = Priority;
             this.EntryPoint = EntryPoint;
 
             ThreadState = new AThreadState();
-            ExecuteLock = new object();
-        }
 
-        public void StopExecution() => Translator.StopExecution();
+            ThreadState.Running = true;
+        }
 
         public bool Execute()
         {
-            lock (ExecuteLock)
+            if (Interlocked.Exchange(ref IsExecuting, 1) == 1)
             {
-                if (IsExecuting)
-                {
-                    return false;
-                }
-
-                IsExecuting = true;
+                return false;
             }
 
             Work = new Thread(delegate()
@@ -62,11 +49,11 @@ namespace ChocolArm64
                 WorkFinished?.Invoke(this, EventArgs.Empty);
             });
 
-            Work.Priority = Priority;
-
             Work.Start();
 
             return true;
         }
+
+        public void StopExecution() => ThreadState.Running = false;
     }
 }

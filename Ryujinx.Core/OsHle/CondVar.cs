@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Ryujinx.Core.OsHle
 {
-    public class CondVar
+    class CondVar
     {
         private Process Process;
 
@@ -24,7 +24,7 @@ namespace Ryujinx.Core.OsHle
             WaitingThreads = new List<HThread>();
         }
 
-        public void WaitForSignal(HThread Thread)
+        public bool WaitForSignal(HThread Thread)
         {
             int Count = Process.Memory.ReadInt32(CondVarAddress);
 
@@ -41,12 +41,14 @@ namespace Ryujinx.Core.OsHle
                 }
                 else
                 {
-                    Process.Scheduler.WaitForSignal(Thread, (int)(Timeout / 1000000));
+                    bool Result = Process.Scheduler.WaitForSignal(Thread, (int)(Timeout / 1000000));
 
                     lock (WaitingThreads)
                     {
                         WaitingThreads.Remove(Thread);
                     }
+
+                    return Result;
                 }
             }
 
@@ -60,6 +62,8 @@ namespace Ryujinx.Core.OsHle
             }
 
             ReleaseCondVarValue();
+
+            return true;
         }
 
         public void SetSignal(HThread Thread, int Count)
