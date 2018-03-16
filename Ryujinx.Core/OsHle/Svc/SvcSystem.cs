@@ -164,7 +164,7 @@ namespace Ryujinx.Core.OsHle.Svc
             long Position = (long)ThreadState.X0;
             long Size     = (long)ThreadState.X1;
 
-            string Str = AMemoryHelper.ReadAsciiString(Memory, Position, (int)Size);
+            string Str = AMemoryHelper.ReadAsciiString(Memory, Position, Size);
 
             Logging.Info($"SvcOutputDebugString: {Str}");
 

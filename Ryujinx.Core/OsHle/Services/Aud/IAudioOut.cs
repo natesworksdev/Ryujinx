@@ -89,11 +89,11 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
             long Position = Context.Request.ReceiveBuff[0].Position;
             long Size     = Context.Request.ReceiveBuff[0].Size;
 
-            int Count = (int)(Size >> 3);
+            uint Count = (uint)((ulong)Size >> 3);
 
             long[] ReleasedBuffers = AudioOut.GetReleasedBuffers(Track);
 
-            for (int Index = 0; Index < Count; Index++)
+            for (uint Index = 0; Index < Count; Index++)
             {
                 long Tag = 0;
 

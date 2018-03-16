@@ -70,11 +70,11 @@ namespace ChocolArm64.Memory
             Marshal.StructureToPtr<T>(Value, Ptr, false);
         }
 
-        public static string ReadAsciiString(AMemory Memory, long Position, int MaxSize = -1)
+        public static string ReadAsciiString(AMemory Memory, long Position, long MaxSize = -1)
         {
             using (MemoryStream MS = new MemoryStream())
             {
-                for (int Offs = 0; Offs < MaxSize || MaxSize == -1; Offs++)
+                for (long Offs = 0; Offs < MaxSize || MaxSize == -1; Offs++)
                 {
                     byte Value = (byte)Memory.ReadByte(Position + Offs);
 

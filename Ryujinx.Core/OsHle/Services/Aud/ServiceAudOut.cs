@@ -41,7 +41,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
             string DeviceName = AMemoryHelper.ReadAsciiString(
                 Context.Memory,
                 Context.Request.SendBuff[0].Position,
-                (int)Context.Request.SendBuff[0].Size);
+                Context.Request.SendBuff[0].Size);
 
             if (DeviceName == string.Empty)
             {

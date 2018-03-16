@@ -190,7 +190,7 @@ namespace Ryujinx.Audio.OpenAL
                     case AudioFormat.PcmInt16: return ALFormat.Stereo16;
                 }
             }
-            
+
             throw new ArgumentException(nameof(Format));
         }
 
