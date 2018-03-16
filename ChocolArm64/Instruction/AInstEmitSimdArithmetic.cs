@@ -285,9 +285,36 @@ namespace ChocolArm64.Instruction
 
         public static void Frintx_S(AILEmitterCtx Context)
         {
+            Console.WriteLine("Frintx_S");
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             EmitScalarUnaryOpF(Context, () =>
+            {
+                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+
+                Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpcr));
+
+                if (Op.Size == 0)
+                {
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.RoundF));
+                }
+                else if (Op.Size == 1)
+                {
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Round));
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
+            });
+        }
+
+        public static void Frintx_V(AILEmitterCtx Context)
+        {
+            Console.WriteLine("Frintx_V");
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            EmitVectorUnaryOpF(Context, () =>
             {
                 Context.EmitLdarg(ATranslatedSub.StateArgIdx);
 

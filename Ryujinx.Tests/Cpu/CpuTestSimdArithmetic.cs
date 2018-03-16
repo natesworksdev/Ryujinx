@@ -127,5 +127,63 @@ namespace Ryujinx.Tests.Cpu
         	AThreadState ThreadState = SingleOpcode(0x1E274020, V1: V1, Fpcr: FpcrTemp);
         	Assert.AreEqual(Result, ThreadState.V0.X0);
         }
+
+        [TestCase(0x3FE66666u, 0x3FE66666u, 'N', false, 0x40000000u, 0x40000000u)]
+        [TestCase(0x3F99999Au, 0x3F99999Au, 'N', false, 0x3F800000u, 0x3F800000u)]
+        [TestCase(0x404CCCCDu, 0x404CCCCDu, 'P', false, 0x40800000u, 0x40800000u)]
+        [TestCase(0x40733333u, 0x40733333u, 'P', false, 0x40800000u, 0x40800000u)]
+        [TestCase(0x404CCCCDu, 0x404CCCCDu, 'M', false, 0x40400000u, 0x40400000u)]
+        [TestCase(0x40733333u, 0x40733333u, 'M', false, 0x40400000u, 0x40400000u)]
+        [TestCase(0x3F99999Au, 0x3F99999Au, 'Z', false, 0x3F800000u, 0x3F800000u)]
+        [TestCase(0x3FE66666u, 0x3FE66666u, 'Z', false, 0x3F800000u, 0x3F800000u)]
+        [TestCase(0x00000000u, 0x00000000u, 'N', false, 0x00000000u, 0x00000000u)]
+        [TestCase(0x00000000u, 0x00000000u, 'P', false, 0x00000000u, 0x00000000u)]
+        [TestCase(0x00000000u, 0x00000000u, 'M', false, 0x00000000u, 0x00000000u)]
+        [TestCase(0x00000000u, 0x00000000u, 'Z', false, 0x00000000u, 0x00000000u)]
+        [TestCase(0x80000000u, 0x80000000u, 'N', false, 0x80000000u, 0x80000000u)]
+        [TestCase(0x80000000u, 0x80000000u, 'P', false, 0x80000000u, 0x80000000u)]
+        [TestCase(0x80000000u, 0x80000000u, 'M', false, 0x80000000u, 0x80000000u)]
+        [TestCase(0x80000000u, 0x80000000u, 'Z', false, 0x80000000u, 0x80000000u)]
+        [TestCase(0x7F800000u, 0x7F800000u, 'N', false, 0x7F800000u, 0x7F800000u)]
+        [TestCase(0x7F800000u, 0x7F800000u, 'P', false, 0x7F800000u, 0x7F800000u)]
+        [TestCase(0x7F800000u, 0x7F800000u, 'M', false, 0x7F800000u, 0x7F800000u)]
+        [TestCase(0x7F800000u, 0x7F800000u, 'Z', false, 0x7F800000u, 0x7F800000u)]
+        [TestCase(0xFF800000u, 0xFF800000u, 'N', false, 0xFF800000u, 0xFF800000u)]
+        [TestCase(0xFF800000u, 0xFF800000u, 'P', false, 0xFF800000u, 0xFF800000u)]
+        [TestCase(0xFF800000u, 0xFF800000u, 'M', false, 0xFF800000u, 0xFF800000u)]
+        [TestCase(0xFF800000u, 0xFF800000u, 'Z', false, 0xFF800000u, 0xFF800000u)]
+        public void Frintx_V(uint A, uint B, char RoundType, bool DefaultNaN, uint Result0, uint Result1)
+        {
+            int FpcrTemp = 0x0;
+            switch(RoundType)
+            {
+                case 'N':
+                FpcrTemp = 0x0;
+                break;
+
+                case 'P':
+                FpcrTemp = 0x400000;
+                break;
+
+                case 'M':
+                FpcrTemp = 0x800000;
+                break;
+
+                case 'Z':
+                FpcrTemp = 0xC00000;
+                break;
+            }
+            if(DefaultNaN)
+            {
+                FpcrTemp |= 1 << 25;
+            }
+            AVec V1 = new AVec { X0 = A, X1 = B };
+            AThreadState ThreadState = SingleOpcode(0x6E619820, V1: V1, Fpcr: FpcrTemp);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(Result0, ThreadState.V0.X0);
+                Assert.AreEqual(Result1, ThreadState.V0.X1);
+            });
+        }
     }
 }
