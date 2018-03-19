@@ -397,9 +397,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
                 NvMapHandle = BitConverter.ToInt32(RawValue, 0);
             }
 
-            ServiceNvDrv NvDrv = (ServiceNvDrv)Context.Process.Services.GetService("nvdrv");
-
-            return NvDrv.GetNvMap(NvMapHandle);
+            return ServiceNvDrv.NvMaps.GetData<NvMap>(Context.Process, NvMapHandle);
         }
 
         private int GetFreeSlotBlocking(int Width, int Height)

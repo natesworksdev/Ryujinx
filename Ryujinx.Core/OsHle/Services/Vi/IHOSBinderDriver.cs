@@ -7,11 +7,11 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Core.OsHle.IpcServices.Vi
 {
-    class IHOSBinderDriver : IIpcService, IDisposable
+    class IHOSBinderDriver : IpcService, IDisposable
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private NvFlinger Flinger;
 

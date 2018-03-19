@@ -1,3 +1,4 @@
+using Ryujinx.Core.OsHle.Handles;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -39,18 +40,6 @@ namespace Ryujinx.Core.OsHle
             throw new InvalidOperationException();
         }
 
-        public bool ReplaceData(int Id, object Data)
-        {
-            if (Objs.ContainsKey(Id))
-            {
-                Objs[Id] = Data;
-
-                return true;
-            }
-
-            return false;
-        }
-
         public object GetData(int Id)
         {
             if (Objs.TryGetValue(Id, out object Data))
@@ -75,7 +64,7 @@ namespace Ryujinx.Core.OsHle
         {
             if (Objs.TryRemove(Id, out object Obj))
             {
-                if (Obj is IDisposable DisposableObj)
+                if (Obj is IDisposable DisposableObj && !(Obj is KEvent))
                 {
                     DisposableObj.Dispose();
                 }

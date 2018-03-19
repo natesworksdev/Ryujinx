@@ -31,11 +31,11 @@ namespace Ryujinx.Core.OsHle
 
         public AMemory Memory { get; private set; }
 
-        public ServiceMgr Services { get; private set; }
-
         public KProcessScheduler Scheduler { get; private set; }
 
         public KProcessHandleTable HandleTable { get; private set; }
+
+        public AppletStateMgr AppletState { get; private set; }
 
         private SvcHandler SvcHandler;
 
@@ -60,11 +60,11 @@ namespace Ryujinx.Core.OsHle
 
             Memory = new AMemory();
 
-            Services = new ServiceMgr();
-
             HandleTable = new KProcessHandleTable();
 
-            Scheduler = new KProcessScheduler();            
+            Scheduler = new KProcessScheduler();
+
+            AppletState = new AppletStateMgr();
 
             SvcHandler = new SvcHandler(Ns, this);
 
@@ -345,10 +345,14 @@ namespace Ryujinx.Core.OsHle
 
                 Disposed = true;
                 
-                Services.Dispose();
                 HandleTable.Dispose();
+
                 Scheduler.Dispose();
+
+                AppletState.Dispose();
+
                 SvcHandler.Dispose();
+
                 Memory.Dispose();
 
                 Logging.Info($"Process {ProcessId} exiting...");

@@ -13,17 +13,19 @@ namespace Ryujinx.Core.OsHle.Handles
 
         public int OpenHandle(object Obj)
         {
-            return Handles.Add(Obj);
+            int h = Handles.Add(Obj);
+
+            /*if (h == 0x1d)
+            {
+                throw new System.Exception("bad handle");
+            }*/
+
+            return h;
         }
 
         public T GetData<T>(int Handle)
         {
             return Handles.GetData<T>(Handle);
-        }
-
-        public bool ReplaceData(int Id, object Data)
-        {
-            return Handles.ReplaceData(Id, Data);
         }
 
         public bool CloseHandle(int Handle)
