@@ -35,7 +35,28 @@ namespace Ryujinx.Core.OsHle.Svc
         {
             int Handle = (int)ThreadState.X0;
 
-            Process.HandleTable.CloseHandle(Handle);
+            object Obj = Process.HandleTable.CloseHandle(Handle);
+
+            if (Obj == null)
+            {
+                Logging.Warn($"Tried to CloseHandle on invalid handle 0x{Handle:x8}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+
+                return;
+            }
+
+            if (Obj is KSession Session)
+            {
+                Session.Dispose();
+            }
+            else if (Obj is HTransferMem TMem)
+            {
+                TMem.Memory.Manager.Reprotect(
+                    TMem.Position,
+                    TMem.Size,
+                    TMem.Perm);
+            }
 
             ThreadState.X0 = 0;
         }
@@ -66,7 +87,7 @@ namespace Ryujinx.Core.OsHle.Svc
             int  HandlesCount =  (int)ThreadState.X2;
             long Timeout      = (long)ThreadState.X3;
 
-            HThread CurrThread = Process.GetThread(ThreadState.Tpidr);
+            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
 
             WaitHandle[] Handles = new WaitHandle[HandlesCount];
 
@@ -142,32 +163,21 @@ namespace Ryujinx.Core.OsHle.Svc
 
         private void SvcSendSyncRequest(AThreadState ThreadState)
         {
-            SendSyncRequest(ThreadState, false);
+            SendSyncRequest(ThreadState, ThreadState.Tpidr, 0x100, (int)ThreadState.X0);
         }
 
         private void SvcSendSyncRequestWithUserBuffer(AThreadState ThreadState)
         {
-            SendSyncRequest(ThreadState, true);
+            SendSyncRequest(
+                      ThreadState,
+                (long)ThreadState.X0,
+                (long)ThreadState.X1,
+                 (int)ThreadState.X2);
         }
 
-        private void SendSyncRequest(AThreadState ThreadState, bool UserBuffer)
+        private void SendSyncRequest(AThreadState ThreadState, long CmdPtr, long Size, int Handle)
         {
-            long CmdPtr = ThreadState.Tpidr;
-            long Size   = 0x100;
-            int  Handle = 0;
-
-            if (UserBuffer)
-            {
-                CmdPtr = (long)ThreadState.X0;
-                Size   = (long)ThreadState.X1;
-                Handle =  (int)ThreadState.X2;
-            }
-            else
-            {
-                Handle = (int)ThreadState.X0;
-            }
-
-            HThread CurrThread = Process.GetThread(ThreadState.Tpidr);
+            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
 
             byte[] CmdData = AMemoryHelper.ReadBytes(Memory, CmdPtr, Size);
 
@@ -179,14 +189,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
                 IpcMessage Cmd = new IpcMessage(CmdData, CmdPtr);
 
-                IpcHandler.IpcCall(
-                    Ns,
-                    Process,
-                    Memory,
-                    Session,
-                    Cmd,
-                    CmdPtr,
-                    Handle);
+                IpcHandler.IpcCall(Ns, Process, Memory, Session, Cmd, CmdPtr);
 
                 Thread.Yield();
 

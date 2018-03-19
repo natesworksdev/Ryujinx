@@ -13,8 +13,7 @@ namespace Ryujinx.Core.OsHle.Ipc
             AMemory    Memory,
             KSession   Session,
             IpcMessage Request,
-            long       CmdPtr,
-            int        HndId)
+            long       CmdPtr)
         {
             IpcMessage Response = new IpcMessage();
 

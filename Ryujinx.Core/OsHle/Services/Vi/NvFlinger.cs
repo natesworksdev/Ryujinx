@@ -1,4 +1,5 @@
 using ChocolArm64.Memory;
+using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.IpcServices.NvServices;
 using Ryujinx.Graphics.Gal;
 using System;
@@ -16,6 +17,10 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
         private delegate long ServiceProcessParcel(ServiceCtx Context, BinaryReader ParcelReader);
 
         private Dictionary<(string, int), ServiceProcessParcel> Commands;
+
+        private KEvent ReleaseEvent;
+
+        private IGalRenderer Renderer;
 
         private const int BufferQueueCount = 0x40;
         private const int BufferQueueMask  = BufferQueueCount - 1;
@@ -55,8 +60,6 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
             public GbpBuffer Data;
         }
 
-        private IGalRenderer Renderer;
-
         private BufferEntry[] BufferQueue;
 
         private ManualResetEvent WaitBufferFree;
@@ -69,7 +72,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
 
         private bool KeepRunning;
 
-        public NvFlinger(IGalRenderer Renderer)
+        public NvFlinger(IGalRenderer Renderer, KEvent ReleaseEvent)
         {
             Commands = new Dictionary<(string, int), ServiceProcessParcel>()
             {
@@ -83,8 +86,9 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
                 { ("android.gui.IGraphicBufferProducer", 0xb), GbpDisconnect     },
                 { ("android.gui.IGraphicBufferProducer", 0xe), GbpPreallocBuffer }
             };
-
-            this.Renderer = Renderer;
+            
+            this.Renderer     = Renderer;
+            this.ReleaseEvent = ReleaseEvent;
 
             BufferQueue = new BufferEntry[0x40];
 
@@ -293,6 +297,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
 
                 BufferQueue[Slot].State = BufferState.Free;
 
+                ReleaseEvent.Handle.Set();
+
                 WaitBufferFree.Set();
 
                 return;
@@ -376,6 +382,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
                 BufferQueue[Slot].State = BufferState.Free;
 
                 Interlocked.Decrement(ref RenderQueueCount);
+
+                ReleaseEvent.Handle.Set();
 
                 lock (WaitBufferFree)
                 {

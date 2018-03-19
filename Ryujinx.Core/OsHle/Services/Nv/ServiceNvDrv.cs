@@ -18,7 +18,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.NvServices
 
         private Dictionary<(string, int), ServiceProcessIoctl> IoctlCmds;
 
-        private static GlobalStateTable Fds;
+        public static GlobalStateTable Fds { get; private set; }
 
         public static GlobalStateTable NvMaps     { get; private set; }
         public static GlobalStateTable NvMapsById { get; private set; }

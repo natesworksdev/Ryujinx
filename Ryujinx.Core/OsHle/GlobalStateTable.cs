@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Ryujinx.Core.OsHle
 {
@@ -38,14 +39,24 @@ namespace Ryujinx.Core.OsHle
             return default(T);
         }
 
-        public bool Delete(Process Process, int Id)
+        public object Delete(Process Process, int Id)
         {
             if (DictByProcess.TryGetValue(Process, out IdDictionary Dict))
             {
                 return Dict.Delete(Id);
             }
 
-            return false;
+            return null;
+        }
+
+        public ICollection<object> DeleteProcess(Process Process)
+        {
+            if (DictByProcess.TryRemove(Process, out IdDictionary Dict))
+            {
+                return Dict.Clear();
+            }
+
+            return null;
         }
     }
 }

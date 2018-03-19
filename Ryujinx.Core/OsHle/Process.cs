@@ -5,6 +5,7 @@ using Ryujinx.Core.Loaders;
 using Ryujinx.Core.Loaders.Executables;
 using Ryujinx.Core.OsHle.Exceptions;
 using Ryujinx.Core.OsHle.Handles;
+using Ryujinx.Core.OsHle.IpcServices.NvServices;
 using Ryujinx.Core.OsHle.Svc;
 using System;
 using System.Collections.Concurrent;
@@ -41,11 +42,11 @@ namespace Ryujinx.Core.OsHle
 
         private ConcurrentDictionary<int, AThread> TlsSlots;
 
-        private ConcurrentDictionary<long, HThread> ThreadsByTpidr;
+        private ConcurrentDictionary<long, KThread> ThreadsByTpidr;
 
         private List<Executable> Executables;
 
-        private HThread MainThread;
+        private KThread MainThread;
 
         private long ImageBase;
 
@@ -70,7 +71,7 @@ namespace Ryujinx.Core.OsHle
 
             TlsSlots = new ConcurrentDictionary<int, AThread>();
 
-            ThreadsByTpidr = new ConcurrentDictionary<long, HThread>();
+            ThreadsByTpidr = new ConcurrentDictionary<long, KThread>();
 
             Executables = new List<Executable>();
 
@@ -132,7 +133,7 @@ namespace Ryujinx.Core.OsHle
                 return false;
             }
 
-            MainThread = HandleTable.GetData<HThread>(Handle);
+            MainThread = HandleTable.GetData<KThread>(Handle);
 
             if (NeedsHbAbi)
             {
@@ -186,7 +187,7 @@ namespace Ryujinx.Core.OsHle
 
             AThread Thread = new AThread(GetTranslator(), Memory, EntryPoint);
 
-            HThread ThreadHnd = new HThread(Thread, ProcessorId, Priority);
+            KThread ThreadHnd = new KThread(Thread, ProcessorId, Priority);
 
             int Handle = HandleTable.OpenHandle(ThreadHnd);
 
@@ -311,9 +312,9 @@ namespace Ryujinx.Core.OsHle
             return (int)((Position - MemoryRegions.TlsPagesAddress) / TlsSize);
         }
 
-        public HThread GetThread(long Tpidr)
+        public KThread GetThread(long Tpidr)
         {
-            if (!ThreadsByTpidr.TryGetValue(Tpidr, out HThread Thread))
+            if (!ThreadsByTpidr.TryGetValue(Tpidr, out KThread Thread))
             {
                 Logging.Error($"Thread with TPIDR 0x{Tpidr:x16} not found!");
             }
@@ -344,8 +345,20 @@ namespace Ryujinx.Core.OsHle
                 }
 
                 Disposed = true;
-                
-                HandleTable.Dispose();
+
+                foreach (object Obj in HandleTable.Clear())
+                {
+                    if (Obj is KSession Session)
+                    {
+                        Session.Dispose();
+                    }
+                }
+
+                ServiceNvDrv.Fds.DeleteProcess(this);
+
+                ServiceNvDrv.NvMaps.DeleteProcess(this);
+
+                ServiceNvDrv.NvMapsById.DeleteProcess(this);
 
                 Scheduler.Dispose();
 

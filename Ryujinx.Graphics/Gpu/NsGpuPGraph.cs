@@ -1,7 +1,6 @@
 using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Ryujinx.Graphics.Gpu
 {
@@ -44,24 +43,6 @@ namespace Ryujinx.Graphics.Gpu
                         {
                             SubChannels[Entry.SubChannel] = (NsGpuEngine)Entry.Arguments[0];
                         }
-                        break;
-
-                    case (NsGpuRegister)0x114:
-                        uint BindId = GetRegister((NsGpuRegister)0x11c);
-
-                        if (BindId == 0xd)
-                        {
-                            using (FileStream FS = new FileStream("D:\\macro.bin", FileMode.Create))
-                            {
-                                BinaryWriter Writer = new BinaryWriter(FS);
-
-                                foreach (int arg in Entry.Arguments)
-                                {
-                                    Writer.Write(arg);
-                                }
-                            }
-                        }
-                        //System.Console.WriteLine("macro bind " + Entry.Arguments[0].ToString("x8"));
                         break;
 
                     case NsGpuRegister._3dVertexArray0Fetch:

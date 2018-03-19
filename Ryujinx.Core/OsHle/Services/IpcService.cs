@@ -40,21 +40,6 @@ namespace Ryujinx.Core.OsHle.IpcServices
             IsDomain = false;
         }
 
-        private int Add(IIpcService Obj)
-        {
-            return DomainObjects.Add(Obj);
-        }
-
-        private bool Delete(int Id)
-        {
-            return DomainObjects.Delete(Id);
-        }
-
-        private IIpcService GetObject(int Id)
-        {
-            return DomainObjects.GetData<IIpcService>(Id);
-        }
-
         public void CallMethod(ServiceCtx Context)
         {
             IIpcService Service = this;
@@ -139,6 +124,28 @@ namespace Ryujinx.Core.OsHle.IpcServices
 
                 Context.Response.HandleDesc = IpcHandleDesc.MakeMove(Handle);
             }
+        }
+
+        private int Add(IIpcService Obj)
+        {
+            return DomainObjects.Add(Obj);
+        }
+
+        private bool Delete(int Id)
+        {
+            object Obj = DomainObjects.Delete(Id);
+
+            if (Obj is IDisposable DisposableObj)
+            {
+                DisposableObj.Dispose();
+            }
+
+            return Obj != null;
+        }
+
+        private IIpcService GetObject(int Id)
+        {
+            return DomainObjects.GetData<IIpcService>(Id);
         }
     }
 }
