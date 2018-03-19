@@ -47,7 +47,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Nifm
             //FIXME: Is this supposed to return 2 events?
             int Handle = Context.Process.HandleTable.OpenHandle(Event);
 
-            Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
+            Context.Response.HandleDesc = IpcHandleDesc.MakeMove(Handle);
 
             return 0;
         }
