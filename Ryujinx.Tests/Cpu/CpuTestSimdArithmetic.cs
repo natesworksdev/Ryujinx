@@ -1,5 +1,6 @@
 using ChocolArm64.State;
 using NUnit.Framework;
+using System;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -58,7 +59,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-    	[TestCase(0x3FE66666u, 'N', false, 0x40000000u)]
+    	/*[TestCase(0x3FE66666u, 'N', false, 0x40000000u)]
     	[TestCase(0x3F99999Au, 'N', false, 0x3F800000u)]
     	[TestCase(0x404CCCCDu, 'P', false, 0x40800000u)]
     	[TestCase(0x40733333u, 'P', false, 0x40800000u)]
@@ -126,33 +127,32 @@ namespace Ryujinx.Tests.Cpu
         	AVec V1 = new AVec { X0 = A };
         	AThreadState ThreadState = SingleOpcode(0x1E274020, V1: V1, Fpcr: FpcrTemp);
         	Assert.AreEqual(Result, ThreadState.V0.X0);
-        }
+        }*/
 
-        [TestCase(0x3FE66666u, 0x3FE66666u, 'N', false, 0x40000000u, 0x40000000u)]
-        [TestCase(0x3F99999Au, 0x3F99999Au, 'N', false, 0x3F800000u, 0x3F800000u)]
-        [TestCase(0x404CCCCDu, 0x404CCCCDu, 'P', false, 0x40800000u, 0x40800000u)]
-        [TestCase(0x40733333u, 0x40733333u, 'P', false, 0x40800000u, 0x40800000u)]
-        [TestCase(0x404CCCCDu, 0x404CCCCDu, 'M', false, 0x40400000u, 0x40400000u)]
-        [TestCase(0x40733333u, 0x40733333u, 'M', false, 0x40400000u, 0x40400000u)]
-        [TestCase(0x3F99999Au, 0x3F99999Au, 'Z', false, 0x3F800000u, 0x3F800000u)]
-        [TestCase(0x3FE66666u, 0x3FE66666u, 'Z', false, 0x3F800000u, 0x3F800000u)]
-        [TestCase(0x00000000u, 0x00000000u, 'N', false, 0x00000000u, 0x00000000u)]
-        [TestCase(0x00000000u, 0x00000000u, 'P', false, 0x00000000u, 0x00000000u)]
-        [TestCase(0x00000000u, 0x00000000u, 'M', false, 0x00000000u, 0x00000000u)]
-        [TestCase(0x00000000u, 0x00000000u, 'Z', false, 0x00000000u, 0x00000000u)]
-        [TestCase(0x80000000u, 0x80000000u, 'N', false, 0x80000000u, 0x80000000u)]
-        [TestCase(0x80000000u, 0x80000000u, 'P', false, 0x80000000u, 0x80000000u)]
-        [TestCase(0x80000000u, 0x80000000u, 'M', false, 0x80000000u, 0x80000000u)]
-        [TestCase(0x80000000u, 0x80000000u, 'Z', false, 0x80000000u, 0x80000000u)]
-        [TestCase(0x7F800000u, 0x7F800000u, 'N', false, 0x7F800000u, 0x7F800000u)]
-        [TestCase(0x7F800000u, 0x7F800000u, 'P', false, 0x7F800000u, 0x7F800000u)]
-        [TestCase(0x7F800000u, 0x7F800000u, 'M', false, 0x7F800000u, 0x7F800000u)]
-        [TestCase(0x7F800000u, 0x7F800000u, 'Z', false, 0x7F800000u, 0x7F800000u)]
-        [TestCase(0xFF800000u, 0xFF800000u, 'N', false, 0xFF800000u, 0xFF800000u)]
-        [TestCase(0xFF800000u, 0xFF800000u, 'P', false, 0xFF800000u, 0xFF800000u)]
-        [TestCase(0xFF800000u, 0xFF800000u, 'M', false, 0xFF800000u, 0xFF800000u)]
-        [TestCase(0xFF800000u, 0xFF800000u, 'Z', false, 0xFF800000u, 0xFF800000u)]
-        public void Frintx_V(uint A, uint B, char RoundType, bool DefaultNaN, uint Result0, uint Result1)
+
+        //2D
+        [TestCase(0x6E619820u, 0x3FF3333333333333ul, 0x3FF3333333333333ul, 'N', false, 0x3FF0000000000000ul, 0x3FF0000000000000ul)]
+        [TestCase(0x6E619820u, 0x3FFCCCCCCCCCCCCDul, 0x3FFCCCCCCCCCCCCDul, 'N', false, 0x4000000000000000ul, 0x4000000000000000ul)]
+        [TestCase(0x6E619820u, 0x3FF3333333333333ul, 0x3FF3333333333333ul, 'P', false, 0x4000000000000000ul, 0x4000000000000000ul)]
+        [TestCase(0x6E619820u, 0x3FFCCCCCCCCCCCCDul, 0x3FFCCCCCCCCCCCCDul, 'P', false, 0x4000000000000000ul, 0x4000000000000000ul)]
+        [TestCase(0x6E619820u, 0x3FF3333333333333ul, 0x3FF3333333333333ul, 'M', false, 0x3FF0000000000000ul, 0x3FF0000000000000ul)]
+        [TestCase(0x6E619820u, 0x3FFCCCCCCCCCCCCDul, 0x3FFCCCCCCCCCCCCDul, 'M', false, 0x3FF0000000000000ul, 0x3FF0000000000000ul)]
+        [TestCase(0x6E619820u, 0x3FF3333333333333ul, 0x3FF3333333333333ul, 'Z', false, 0x3FF0000000000000ul, 0x3FF0000000000000ul)]
+        [TestCase(0x6E619820u, 0x3FFCCCCCCCCCCCCDul, 0x3FFCCCCCCCCCCCCDul, 'Z', false, 0x3FF0000000000000ul, 0x3FF0000000000000ul)]
+
+        //4S
+        [TestCase(0x6E219820u, 0x3f99999a3fe66666ul, 0x3f99999a3fe66666ul, 'N', false, 0x3f80000040000000ul, 0x3f80000040000000ul)]
+        [TestCase(0x6E219820u, 0x3f99999a3fe66666ul, 0x3f99999a3fe66666ul, 'P', false, 0x4000000040000000ul, 0x4000000040000000ul)]    
+        [TestCase(0x6E219820u, 0x3f99999a3fe66666ul, 0x3f99999a3fe66666ul, 'M', false, 0x3f8000003f800000ul, 0x3f8000003f800000ul)]
+        [TestCase(0x6E219820u, 0x3f99999a3fe66666ul, 0x3f99999a3fe66666ul, 'Z', false, 0x3f8000003f800000ul, 0x3f8000003f800000ul)]
+
+        //2S
+        [TestCase(0x2E219820u, 0x3f99999a3fe66666ul, 0x3f99999a3fe66666ul, 'N', false, 0x3f80000040000000ul, 0x0000000000000000ul)]
+        [TestCase(0x2E219820u, 0x3f99999a3fe66666ul, 0x3f99999a3fe66666ul, 'P', false, 0x4000000040000000ul, 0x0000000000000000ul)]    
+        [TestCase(0x2E219820u, 0x3f99999a3fe66666ul, 0x3f99999a3fe66666ul, 'M', false, 0x3f8000003f800000ul, 0x0000000000000000ul)]
+        [TestCase(0x2E219820u, 0x3f99999a3fe66666ul, 0x3f99999a3fe66666ul, 'Z', false, 0x3f8000003f800000ul, 0x0000000000000000ul)]
+
+        public void Frintx_V(uint Opcode, ulong A, ulong B, char RoundType, bool DefaultNaN, ulong Result0, ulong Result1)
         {
             int FpcrTemp = 0x0;
             switch(RoundType)
@@ -178,7 +178,7 @@ namespace Ryujinx.Tests.Cpu
                 FpcrTemp |= 1 << 25;
             }
             AVec V1 = new AVec { X0 = A, X1 = B };
-            AThreadState ThreadState = SingleOpcode(0x6E619820, V1: V1, Fpcr: FpcrTemp);
+            AThreadState ThreadState = SingleOpcode(Opcode, V1: V1, Fpcr: FpcrTemp);
             Assert.Multiple(() =>
             {
                 Assert.AreEqual(Result0, ThreadState.V0.X0);
