@@ -266,10 +266,10 @@ namespace ChocolArm64.Instruction
             Console.Write("Value : {0}", Value);
             switch ((ARoundMode)((Fpcr >> 22) & 3))
             {
-                case ARoundMode.ToNearest:            Console.Write("Result ToNearest: {0}\n", Math.Round   (Value)); return Math.Round   (Value);
-                case ARoundMode.TowardsPlusInfinity:  Console.Write("Result PlusInf: {0}\n", Math.Ceiling (Value)); return Math.Ceiling (Value);
-                case ARoundMode.TowardsMinusInfinity: Console.Write("Result MinusInf: {0}\n", Math.Floor   (Value)); return Math.Floor   (Value);
-                case ARoundMode.TowardsZero:          Console.Write("Result TowardsZero: {0}\n", Math.Truncate(Value)); return Math.Truncate(Value);
+                case ARoundMode.ToNearest:            return Math.Round   (Value);
+                case ARoundMode.TowardsPlusInfinity:  return Math.Ceiling (Value);
+                case ARoundMode.TowardsMinusInfinity: return Math.Floor   (Value);
+                case ARoundMode.TowardsZero:          return Math.Truncate(Value);
             }
 
             throw new InvalidOperationException();
