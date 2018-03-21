@@ -276,6 +276,7 @@ namespace ChocolArm64.Instruction
         public static void Frinti_V(AILEmitterCtx Context)
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            
             EmitVectorUnaryOpF(Context, () =>
             {
                 Context.EmitLdarg(ATranslatedSub.StateArgIdx);
