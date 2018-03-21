@@ -1,4 +1,6 @@
-﻿using Ryujinx.Core;
+﻿using Ryujinx.Audio;
+using Ryujinx.Audio.OpenAL;
+using Ryujinx.Core;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
 using System;
@@ -10,15 +12,17 @@ namespace Ryujinx
     {
         static void Main(string[] args)
         {
-            AOptimizations.DisableMemoryChecks = true;
-
             Config.Read();
+
+            AOptimizations.DisableMemoryChecks = !Config.EnableMemoryChecks;
 
             Console.Title = "Ryujinx Console";
 
             IGalRenderer Renderer = new OpenGLRenderer();
 
-            Switch Ns = new Switch(Renderer);
+            IAalOutput AudioOut = new OpenALAudioOut();
+
+            Switch Ns = new Switch(Renderer, AudioOut);
 
             if (args.Length == 1)
             {

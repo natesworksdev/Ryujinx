@@ -1,17 +1,20 @@
 using ChocolArm64.Memory;
+using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Ipc;
-using Ryujinx.Core.OsHle.IpcServices.Android;
+using Ryujinx.Core.OsHle.Services.Android;
 using Ryujinx.Graphics.Gal;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Vi
+namespace Ryujinx.Core.OsHle.Services.Vi
 {
-    class IHOSBinderDriver : IIpcService, IDisposable
+    class IHOSBinderDriver : IpcService, IDisposable
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+
+        private KEvent ReleaseEvent;
 
         private NvFlinger Flinger;
 
@@ -24,7 +27,9 @@ namespace Ryujinx.Core.OsHle.IpcServices.Vi
                 { 2, GetNativeHandle }
             };
 
-            Flinger = new NvFlinger(Renderer);
+            ReleaseEvent = new KEvent();
+
+            Flinger = new NvFlinger(Renderer, ReleaseEvent);
         }
 
         public long TransactParcel(ServiceCtx Context)
@@ -35,7 +40,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Vi
             long DataPos  = Context.Request.SendBuff[0].Position;
             long DataSize = Context.Request.SendBuff[0].Size;
 
-            byte[] Data = AMemoryHelper.ReadBytes(Context.Memory, DataPos, (int)DataSize);
+            byte[] Data = AMemoryHelper.ReadBytes(Context.Memory, DataPos, DataSize);
 
             Data = Parcel.GetParcelData(Data);
 
@@ -56,7 +61,9 @@ namespace Ryujinx.Core.OsHle.IpcServices.Vi
             int  Id  = Context.RequestData.ReadInt32();
             uint Unk = Context.RequestData.ReadUInt32();
 
-            Context.Response.HandleDesc = IpcHandleDesc.MakeMove(0xbadcafe);
+            int Handle = Context.Process.HandleTable.OpenHandle(ReleaseEvent);
+
+            Context.Response.HandleDesc = IpcHandleDesc.MakeMove(Handle);
 
             return 0;
         }
@@ -66,10 +73,12 @@ namespace Ryujinx.Core.OsHle.IpcServices.Vi
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool Disposing)
         {
-            if (disposing)
+            if (Disposing)
             {
+                ReleaseEvent.Dispose();
+
                 Flinger.Dispose();
             }
         }

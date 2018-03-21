@@ -3,13 +3,13 @@ using Ryujinx.Core.OsHle.Ipc;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Set
+namespace Ryujinx.Core.OsHle.Services.Set
 {
-    class ServiceSet : IIpcService
+    class ServiceSet : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public ServiceSet()
         {

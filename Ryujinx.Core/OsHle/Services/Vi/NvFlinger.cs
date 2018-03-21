@@ -1,21 +1,25 @@
 using ChocolArm64.Memory;
-using Ryujinx.Core.OsHle.IpcServices.NvServices;
+using Ryujinx.Core.OsHle.Handles;
+using Ryujinx.Core.OsHle.Services.Nv;
 using Ryujinx.Graphics.Gal;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
+using static Ryujinx.Core.OsHle.Services.Android.Parcel;
 
-using static Ryujinx.Core.OsHle.IpcServices.Android.Parcel;
-
-namespace Ryujinx.Core.OsHle.IpcServices.Android
+namespace Ryujinx.Core.OsHle.Services.Android
 {
     class NvFlinger : IDisposable
     {
         private delegate long ServiceProcessParcel(ServiceCtx Context, BinaryReader ParcelReader);
 
         private Dictionary<(string, int), ServiceProcessParcel> Commands;
+
+        private KEvent ReleaseEvent;
+
+        private IGalRenderer Renderer;
 
         private const int BufferQueueCount = 0x40;
         private const int BufferQueueMask  = BufferQueueCount - 1;
@@ -55,8 +59,6 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
             public GbpBuffer Data;
         }
 
-        private IGalRenderer Renderer;
-
         private BufferEntry[] BufferQueue;
 
         private ManualResetEvent WaitBufferFree;
@@ -69,7 +71,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
 
         private bool KeepRunning;
 
-        public NvFlinger(IGalRenderer Renderer)
+        public NvFlinger(IGalRenderer Renderer, KEvent ReleaseEvent)
         {
             Commands = new Dictionary<(string, int), ServiceProcessParcel>()
             {
@@ -83,8 +85,9 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
                 { ("android.gui.IGraphicBufferProducer", 0xb), GbpDisconnect     },
                 { ("android.gui.IGraphicBufferProducer", 0xe), GbpPreallocBuffer }
             };
-
-            this.Renderer = Renderer;
+            
+            this.Renderer     = Renderer;
+            this.ReleaseEvent = ReleaseEvent;
 
             BufferQueue = new BufferEntry[0x40];
 
@@ -285,13 +288,24 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
 
             long FbSize = (uint)FbWidth * FbHeight * 4;
 
-            NvMap NvMap = GetNvMap(Context, Slot);
+            NvMap Map = GetNvMap(Context, Slot);
 
-            if ((ulong)(NvMap.Address + FbSize) > AMemoryMgr.AddrSize)
+            NvMapFb MapFb = (NvMapFb)ServiceNvDrv.NvMapsFb.GetData(Context.Process, 0);
+
+            long Address = Map.CpuAddress;
+            
+            if (MapFb.HasBufferOffset(Slot))
             {
-                Logging.Error($"Frame buffer address {NvMap.Address:x16} is invalid!");
+                Address += MapFb.GetBufferOffset(Slot);
+            }
+
+            if ((ulong)(Address + FbSize) > AMemoryMgr.AddrSize)
+            {
+                Logging.Error($"Frame buffer address {Address:x16} is invalid!");
 
                 BufferQueue[Slot].State = BufferState.Free;
+
+                ReleaseEvent.Handle.Set();
 
                 WaitBufferFree.Set();
 
@@ -359,7 +373,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
                 Interlocked.Increment(ref RenderQueueCount);
             }
 
-            byte* Fb = (byte*)Context.Memory.Ram + NvMap.Address;
+            byte* Fb = (byte*)Context.Memory.Ram + Address;
 
             Context.Ns.Gpu.Renderer.QueueAction(delegate()
             {
@@ -376,6 +390,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
                 BufferQueue[Slot].State = BufferState.Free;
 
                 Interlocked.Decrement(ref RenderQueueCount);
+
+                ReleaseEvent.Handle.Set();
 
                 lock (WaitBufferFree)
                 {
@@ -397,9 +413,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Android
                 NvMapHandle = BitConverter.ToInt32(RawValue, 0);
             }
 
-            ServiceNvDrv NvDrv = (ServiceNvDrv)Context.Process.Services.GetService("nvdrv");
-
-            return NvDrv.GetNvMap(NvMapHandle);
+            return ServiceNvDrv.NvMaps.GetData<NvMap>(Context.Process, NvMapHandle);
         }
 
         private int GetFreeSlotBlocking(int Width, int Height)

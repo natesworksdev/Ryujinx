@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Lm
+namespace Ryujinx.Core.OsHle.Services.Lm
 {
-    class ILogger : IIpcService
+    class ILogger : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public ILogger()
         {
@@ -54,7 +54,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Lm
             long BufferPosition = Context.Request.PtrBuff[0].Position;
             long BufferLen      = Context.Request.PtrBuff[0].Size;
 
-            byte[] LogBuffer = AMemoryHelper.ReadBytes(Context.Memory, BufferPosition, (int)BufferLen);
+            byte[] LogBuffer = AMemoryHelper.ReadBytes(Context.Memory, BufferPosition, BufferLen);
 
             MemoryStream LogMessage = new MemoryStream(LogBuffer);
             BinaryReader bReader = new BinaryReader(LogMessage);

@@ -3,13 +3,13 @@ using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Aud
+namespace Ryujinx.Core.OsHle.Services.Aud
 {
-    class IAudioDevice : IIpcService
+    class IAudioDevice : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public IAudioDevice()
         {
@@ -55,7 +55,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
             long Position = Context.Request.SendBuff[0].Position;
             long Size     = Context.Request.SendBuff[0].Size;
 
-            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position, (int)Size);
+            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, Position, Size);
 
             return 0;
         }

@@ -1,24 +1,24 @@
 using ChocolArm64.Memory;
+using Ryujinx.Audio;
+using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 using System.Text;
 
-using static Ryujinx.Core.OsHle.IpcServices.ObjHelper;
-
-namespace Ryujinx.Core.OsHle.IpcServices.Aud
+namespace Ryujinx.Core.OsHle.Services.Aud
 {
-    class ServiceAudOut : IIpcService
+    class ServiceAudOut : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public ServiceAudOut()
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, ListAudioOuts },
-                { 1, OpenAudioOut  },
+                { 1, OpenAudioOut  }
             };
         }
 
@@ -35,21 +35,58 @@ namespace Ryujinx.Core.OsHle.IpcServices.Aud
 
         public long OpenAudioOut(ServiceCtx Context)
         {
-            MakeObject(Context, new IAudioOut());
+            IAalOutput AudioOut = Context.Ns.AudioOut;
 
-            Context.ResponseData.Write(48000); //Sample Rate
-            Context.ResponseData.Write(2); //Channel Count
-            Context.ResponseData.Write(2); //PCM Format
-            /*  
-                0 - Invalid
-                1 - INT8
-                2 - INT16
-                3 - INT24
-                4 - INT32
-                5 - PCM Float
-                6 - ADPCM
-            */
-            Context.ResponseData.Write(0); //Unknown
+            string DeviceName = AMemoryHelper.ReadAsciiString(
+                Context.Memory,
+                Context.Request.SendBuff[0].Position,
+                Context.Request.SendBuff[0].Size);
+
+            if (DeviceName == string.Empty)
+            {
+                DeviceName = "FIXME";
+            }
+
+            long DeviceNamePosition = Context.Request.ReceiveBuff[0].Position;
+            long DeviceNameSize     = Context.Request.ReceiveBuff[0].Size;
+
+            byte[] DeviceNameBuffer = Encoding.ASCII.GetBytes(DeviceName);
+
+            if (DeviceName.Length <= DeviceNameSize)
+            {
+                AMemoryHelper.WriteBytes(Context.Memory, DeviceNamePosition, DeviceNameBuffer);
+            }
+
+            int SampleRate = Context.RequestData.ReadInt32();
+            int Channels   = Context.RequestData.ReadInt32();
+
+            Channels = (ushort)(Channels >> 16);
+
+            if (SampleRate == 0)
+            {
+                SampleRate = 48000;
+            }
+
+            if (Channels < 1 || Channels > 2)
+            {
+                Channels = 2;
+            }
+
+            KEvent ReleaseEvent = new KEvent();
+
+            ReleaseCallback Callback = () =>
+            {
+                ReleaseEvent.Handle.Set();
+            };
+
+            int Track = AudioOut.OpenTrack(SampleRate, Channels, Callback, out AudioFormat Format);
+
+            MakeObject(Context, new IAudioOut(AudioOut, ReleaseEvent, Track));
+
+            Context.ResponseData.Write(SampleRate);
+            Context.ResponseData.Write(Channels);
+            Context.ResponseData.Write((int)Format);
+            Context.ResponseData.Write((int)PlaybackState.Stopped);
 
             return 0;
         }

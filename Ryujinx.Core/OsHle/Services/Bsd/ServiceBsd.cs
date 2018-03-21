@@ -8,7 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Bsd
+namespace Ryujinx.Core.OsHle.Services.Bsd
 {
 
     //bsd_errno == (SocketException.ErrorCode - 10000)
@@ -51,11 +51,11 @@ namespace Ryujinx.Core.OsHle.IpcServices.Bsd
         public Socket Handle;
     }
 
-    class ServiceBsd : IIpcService
+    class ServiceBsd : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private List<SocketBsd> Sockets = new List<SocketBsd>();
 
@@ -151,7 +151,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Bsd
 
             byte[] SentBuffer     = AMemoryHelper.ReadBytes(Context.Memory, 
                                                             Context.Request.SendBuff[0].Position, 
-                                                            (int)Context.Request.SendBuff[0].Size);
+                                                            Context.Request.SendBuff[0].Size);
             int SocketId          = Get32(SentBuffer, 0);
             short RequestedEvents = (short)Get16(SentBuffer, 4);
             short ReturnedEvents  = (short)Get16(SentBuffer, 6);
@@ -197,7 +197,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Bsd
             int SocketFlags   = Context.RequestData.ReadInt32();
             byte[] SentBuffer = AMemoryHelper.ReadBytes(Context.Memory, 
                                                         Context.Request.SendBuff[0].Position, 
-                                                        (int)Context.Request.SendBuff[0].Size);
+                                                        Context.Request.SendBuff[0].Size);
 
             try
             {
@@ -224,10 +224,10 @@ namespace Ryujinx.Core.OsHle.IpcServices.Bsd
             int SocketFlags      = Context.RequestData.ReadInt32();
             byte[] SentBuffer    = AMemoryHelper.ReadBytes(Context.Memory, 
                                                            Context.Request.SendBuff[0].Position, 
-                                                           (int)Context.Request.SendBuff[0].Size);
+                                                           Context.Request.SendBuff[0].Size);
             byte[] AddressBuffer = AMemoryHelper.ReadBytes(Context.Memory, 
                                                            Context.Request.SendBuff[1].Position, 
-                                                           (int)Context.Request.SendBuff[1].Size);
+                                                           Context.Request.SendBuff[1].Size);
 
             if (!Sockets[SocketId].Handle.Connected)
             {
@@ -333,7 +333,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Bsd
 
             byte[] AddressBuffer = AMemoryHelper.ReadBytes(Context.Memory, 
                                                            Context.Request.SendBuff[0].Position, 
-                                                           (int)Context.Request.SendBuff[0].Size);
+                                                           Context.Request.SendBuff[0].Size);
 
             try
             {
@@ -358,7 +358,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Bsd
 
             byte[] AddressBuffer = AMemoryHelper.ReadBytes(Context.Memory, 
                                                            Context.Request.SendBuff[0].Position, 
-                                                           (int)Context.Request.SendBuff[0].Size);
+                                                           Context.Request.SendBuff[0].Size);
 
             try
             {
