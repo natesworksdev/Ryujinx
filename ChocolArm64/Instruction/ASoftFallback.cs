@@ -263,7 +263,6 @@ namespace ChocolArm64.Instruction
 
         public static double Round(double Value, int Fpcr)
         {
-            Console.Write("Value : {0}", Value);
             switch ((ARoundMode)((Fpcr >> 22) & 3))
             {
                 case ARoundMode.ToNearest:            return Math.Round   (Value);
