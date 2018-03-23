@@ -1,5 +1,7 @@
 using System;
 
+using static Ryujinx.Graphics.Gal.Shader.ShaderDecodeHelper;
+
 namespace Ryujinx.Graphics.Gal.Shader
 {
     static partial class ShaderDecode
@@ -74,29 +76,28 @@ namespace Ryujinx.Graphics.Gal.Shader
             bool Ab = ((OpCode >> 49) & 1) != 0;
             bool Ad = ((OpCode >> 50) & 1) != 0;
 
-            EmitAluOperANode(Block, OpCode);
+            ShaderIrOper OperA = GetAluOperANode_R(OpCode);
+            ShaderIrOper OperB;
 
             if (Inst == ShaderIrInst.Fadd)
             {
-                EmitAluAbsNeg(Block, Aa, Na);
+                OperA = GetAluAbsNeg(OperA, Aa, Na);
             }
 
             switch (Oper)
             {
-                case ShaderOper.RR:  EmitAluOperBNode_RR (Block, OpCode); break;
-                case ShaderOper.CR:  EmitAluOperBCNode_C (Block, OpCode); break;
-                case ShaderOper.Imm: EmitAluOperBNode_Imm(Block, OpCode); break;
+                case ShaderOper.RR:  OperB = GetAluOperBNode_RR (OpCode); break;
+                case ShaderOper.CR:  OperB = GetAluOperBCNode_C (OpCode); break;
+                case ShaderOper.Imm: OperB = GetAluOperBNode_Imm(OpCode); break;
 
                 default: throw new ArgumentException(nameof(Oper));
             }
 
-            EmitAluAbsNeg(Block, Ab, Nb);
+            OperB = GetAluAbsNeg(OperB, Ab, Nb);
 
-            Block.AddNode(new ShaderIrNode(Inst));
+            ShaderIrOper Op = GetAluAbs(new ShaderIrOperOp(Inst, OperA, OperB), Ad);
 
-            EmitAluAbs(Block, Ad);
-
-            EmitAluStrResult(Block, OpCode);
+            Block.AddNode(new ShaderIrNode(GetAluOperDNode(OpCode), Op));
         }
 
         private static void EmitAluFfma(ShaderIrBlock Block, long OpCode, ShaderOper Oper)
@@ -104,88 +105,49 @@ namespace Ryujinx.Graphics.Gal.Shader
             bool Nb = ((OpCode >> 48) & 1) != 0;
             bool Nc = ((OpCode >> 49) & 1) != 0;
 
-            EmitAluOperANode(Block, OpCode);
+            ShaderIrOper OperA = GetAluOperANode_R(OpCode);
+            ShaderIrOper OperB;
+            ShaderIrOper OperC;
 
             switch (Oper)
             {
-                case ShaderOper.RR:  EmitAluOperBNode_RR (Block, OpCode); break;
-                case ShaderOper.CR:  EmitAluOperBCNode_C (Block, OpCode); break;
-                case ShaderOper.RC:  EmitAluOperBCNode_R (Block, OpCode); break;
-                case ShaderOper.Imm: EmitAluOperBNode_Imm(Block, OpCode); break;
+                case ShaderOper.RR:  OperB = GetAluOperBNode_RR (OpCode); break;
+                case ShaderOper.CR:  OperB = GetAluOperBCNode_C (OpCode); break;
+                case ShaderOper.RC:  OperB = GetAluOperBCNode_R (OpCode); break;
+                case ShaderOper.Imm: OperB = GetAluOperBNode_Imm(OpCode); break;
+
+                default: throw new ArgumentException(nameof(Oper));
             }
 
-            EmitAluNeg(Block, Nb);
-
-            Block.AddNode(new ShaderIrNode(ShaderIrInst.Fmul));
+            OperB = GetAluNeg(OperB, Nb);
 
             if (Oper == ShaderOper.RC)
             {
-                EmitAluOperBCNode_C(Block, OpCode);
+                OperC = GetAluNeg(GetAluOperBCNode_C(OpCode), Nc);
             }
             else
             {
-                EmitAluOperBCNode_R(Block, OpCode);
+                OperC = GetAluNeg(GetAluOperBCNode_R(OpCode), Nc);
             }
 
-            EmitAluNeg(Block, Nc);
+            ShaderIrOper Op = new ShaderIrOperOp(ShaderIrInst.Ffma, OperA, OperB, OperC);
 
-            Block.AddNode(new ShaderIrNode(ShaderIrInst.Fadd));
-
-            EmitAluStrResult(Block, OpCode);
+            Block.AddNode(new ShaderIrNode(GetAluOperDNode(OpCode), Op));
         }
 
-        private static void EmitAluAbsNeg(ShaderIrBlock Block, bool Abs, bool Neg)
+        private static ShaderIrOper GetAluAbsNeg(ShaderIrOper Node, bool Abs, bool Neg)
         {
-            EmitAluAbs(Block, Abs);
-            EmitAluNeg(Block, Neg);
+            return GetAluNeg(GetAluAbs(Node, Abs), Neg);
         }
 
-        private static void EmitAluAbs(ShaderIrBlock Block, bool Abs)
+        private static ShaderIrOper GetAluAbs(ShaderIrOper Node, bool Abs)
         {
-            if (Abs)
-            {
-                Block.AddNode(new ShaderIrNode(ShaderIrInst.Fabs));
-            }
+            return Abs ? new ShaderIrOperOp(ShaderIrInst.Fabs, Node) : Node;
         }
 
-        private static void EmitAluNeg(ShaderIrBlock Block, bool Neg)
+        private static ShaderIrOper GetAluNeg(ShaderIrOper Node, bool Neg)
         {
-            if (Neg)
-            {
-                Block.AddNode(new ShaderIrNode(ShaderIrInst.Fneg));
-            }
-        }
-
-        private static void EmitAluOperANode(ShaderIrBlock Block, long OpCode)
-        {
-            Block.AddNode(new ShaderIrNodeLdr((int)(OpCode >> 8) & 0xff));
-        }
-
-        private static void EmitAluOperBNode_RR(ShaderIrBlock Block, long OpCode)
-        {
-            Block.AddNode(new ShaderIrNodeLdr((int)(OpCode >> 20) & 0xff));
-        }
-
-        private static void EmitAluOperBCNode_R(ShaderIrBlock Block, long OpCode)
-        {
-            Block.AddNode(new ShaderIrNodeLdr((int)(OpCode >> 39) & 0xff));
-        }
-
-        private static void EmitAluOperBCNode_C(ShaderIrBlock Block, long OpCode)
-        {
-            Block.AddNode(new ShaderIrNodeLdb(
-                (int)(OpCode >> 34) & 0x1f,
-                (int)(OpCode >> 20) & 0x3fff));
-        }
-
-        private static void EmitAluOperBNode_Imm(ShaderIrBlock Block, long OpCode)
-        {
-            //TODO
-        }
-
-        private static void EmitAluStrResult(ShaderIrBlock Block, long OpCode)
-        {
-            Block.AddNode(new ShaderIrNodeStr((int)(OpCode >>  0) & 0xff));
+            return Neg ? new ShaderIrOperOp(ShaderIrInst.Fneg, Node) : Node;
         }
     }
 }
