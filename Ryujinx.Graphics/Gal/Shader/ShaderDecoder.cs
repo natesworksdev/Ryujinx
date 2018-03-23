@@ -23,6 +23,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                 Decode(Block, OpCode);
             }
 
+            Block.RunOptimizationPasses();
+
             return Block;
         }
     }

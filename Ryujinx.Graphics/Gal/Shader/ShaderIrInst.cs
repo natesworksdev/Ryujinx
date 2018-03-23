@@ -4,9 +4,8 @@ namespace Ryujinx.Graphics.Gal.Shader
     {
         Fabs,
         Fadd,
+        Ffma,
         Fmul,
         Fneg,
-        Ld,
-        St
     }
 }

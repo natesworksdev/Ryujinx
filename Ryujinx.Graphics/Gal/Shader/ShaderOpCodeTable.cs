@@ -23,6 +23,8 @@ namespace Ryujinx.Graphics.Gal.Shader
             Set("0101110001101x", ShaderDecode.Fmul_R);
             Set("0100110001101x", ShaderDecode.Fmul_C);
             Set("0011100x01101x", ShaderDecode.Fmul_Imm);
+            Set("1110111111011x", ShaderDecode.Ld_A);
+            Set("1110111111110x", ShaderDecode.St_A);
 #endregion
         }
         
