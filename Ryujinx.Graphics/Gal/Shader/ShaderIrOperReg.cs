@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Gal.Shader
     {
         public const int ZRIndex = 0xff;
 
-        public int GprIndex { get; private set; }
+        public int GprIndex { get; set; }
 
         public ShaderIrOperReg(int GprIndex)
         {

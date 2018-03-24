@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private const string GprName = "gpr";
 
-        private string IdentationStr = "\t";
+        private const string IdentationStr = "\t";
 
         private int GprsCount;
 
