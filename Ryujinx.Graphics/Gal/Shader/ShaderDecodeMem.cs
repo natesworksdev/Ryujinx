@@ -7,10 +7,15 @@ namespace Ryujinx.Graphics.Gal.Shader
         public static void Ld_A(ShaderIrBlock Block, long OpCode)
         {
             ShaderIrOper[] Opers = GetAluOperANode_A(OpCode);
-            ShaderIrOper   OperD = GetAluOperDNode(OpCode);
+
+            int Index = 0;
 
             foreach (ShaderIrOper OperA in Opers)
             {
+                ShaderIrOperReg OperD = GetAluOperDNode(OpCode);
+
+                OperD.GprIndex += Index++;
+
                 Block.AddNode(new ShaderIrNode(OperD, OperA));
             }
         }
@@ -18,10 +23,15 @@ namespace Ryujinx.Graphics.Gal.Shader
         public static void St_A(ShaderIrBlock Block, long OpCode)
         {
             ShaderIrOper[] Opers = GetAluOperANode_A(OpCode);
-            ShaderIrOper   OperD = GetAluOperDNode(OpCode);
+
+            int Index = 0;
 
             foreach (ShaderIrOper OperA in Opers)
             {
+                ShaderIrOperReg OperD = GetAluOperDNode(OpCode);
+
+                OperD.GprIndex += Index++;
+
                 Block.AddNode(new ShaderIrNode(OperA, OperD));
             }
         }
