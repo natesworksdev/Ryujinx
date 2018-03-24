@@ -77,7 +77,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             StringBuilder SB = new StringBuilder();
 
-            PrintDeclUBOs(SB);
+            SB.AppendLine("#version 430");
+
+            PrintDeclSSBOs(SB);
             PrintDeclInAttributes(SB);
             PrintDeclOutAttributes(SB);
 
@@ -94,12 +96,12 @@ namespace Ryujinx.Graphics.Gal.Shader
             return SB.ToString();
         }
 
-        private void PrintDeclUBOs(StringBuilder SB)
+        private void PrintDeclSSBOs(StringBuilder SB)
         {
             foreach (int Cbuf in UsedCbufs)
             {
                 SB.AppendLine($"layout(std430, binding = {Cbuf}) buffer {CbufBuffPrefix}{Cbuf} {{");
-                SB.AppendLine($"{IdentationStr}float[] {CbufDataName};");
+                SB.AppendLine($"{IdentationStr}float {CbufDataName}[];");
                 SB.AppendLine("};");
                 SB.AppendLine(string.Empty);
             }

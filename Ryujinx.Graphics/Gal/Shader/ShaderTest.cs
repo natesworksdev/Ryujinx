@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Ryujinx.Graphics.Gal.Shader
 {
     public static class ShaderTest
