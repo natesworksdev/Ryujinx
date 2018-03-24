@@ -106,7 +106,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     TryAddRegUse(Op, Op.OperandB, 1);
                     TryAddRegUse(Op, Op.OperandC, 2);
                 }
-                else if (Oper is ShaderIrOperReg Reg && Reg.GprIndex != 0xff)
+                else if (Oper is ShaderIrOperReg Reg && Reg.GprIndex != ShaderIrOperReg.ZRIndex)
                 {
                     GetRegUse(Reg.GprIndex).AddUseSite(new UseSite(Parent, OperIndex));
                 }
@@ -125,7 +125,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     TryAddRegUse(Node, Node.Src);
                 }
 
-                if (Node.Dst is ShaderIrOperReg Reg && Reg.GprIndex != 0xff)
+                if (Node.Dst is ShaderIrOperReg Reg && Reg.GprIndex != ShaderIrOperReg.ZRIndex)
                 {
                     RegUse Use = GetRegUse(Reg.GprIndex);
 
@@ -140,6 +140,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
             }
 
+            //TODO: On the fragment shader, we should keep the values on r0-r3,
+            //because they are the fragment shader color output.
             foreach (RegUse Use in Uses.Values)
             {
                 if (Use.TryPropagate())
