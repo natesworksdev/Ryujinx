@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    class ShaderIrOperCbuf : ShaderIrOper
+    class ShaderIrOperCbuf : ShaderIrNode
     {
         public int Index { get; private set; }
         public int Offs  { get; private set; }
