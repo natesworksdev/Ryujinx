@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             System.Collections.Generic.List<int> CodeList = new System.Collections.Generic.List<int>();
 
-            using (System.IO.FileStream FS = new System.IO.FileStream("D:\\puyo_vsh.bin", System.IO.FileMode.Open))
+            using (System.IO.FileStream FS = new System.IO.FileStream("D:\\puyo_fsh.bin", System.IO.FileMode.Open))
             {
                 System.IO.BinaryReader Reader = new System.IO.BinaryReader(FS);
 
@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             GlslDecompiler Decompiler = new GlslDecompiler();
 
-            System.Console.WriteLine(Decompiler.Decompile(Code));
+            System.Console.WriteLine(Decompiler.Decompile(Code, ShaderType.Fragment));
 
             System.Console.WriteLine("Done!");
         }

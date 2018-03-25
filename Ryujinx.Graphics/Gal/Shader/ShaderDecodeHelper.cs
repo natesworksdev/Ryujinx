@@ -1,8 +1,10 @@
+using System;
+
 namespace Ryujinx.Graphics.Gal.Shader
 {
     static class ShaderDecodeHelper
     {
-        public static ShaderIrOperAbuf[] GetAluOperANode_A(long OpCode)
+        public static ShaderIrOperAbuf[] GetOperAbuf20(long OpCode)
         {
             int Abuf = (int)(OpCode >> 20) & 0x3ff;
             int Reg  = (int)(OpCode >> 39) & 0xff;
@@ -18,37 +20,141 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Opers;
         }
 
-        public static ShaderIrOperReg GetAluOperANode_R(long OpCode)
+        public static ShaderIrOperAbuf GetOperAbuf28(long OpCode)
         {
-            return new ShaderIrOperReg((int)(OpCode >> 8) & 0xff);
+            int Abuf = (int)(OpCode >> 28) & 0x3ff;
+            int Reg  = (int)(OpCode >> 39) & 0xff;
+
+            return new ShaderIrOperAbuf(Abuf, Reg);
         }
 
-        public static ShaderIrOperReg GetAluOperBNode_RR(long OpCode)
-        {
-            return new ShaderIrOperReg((int)(OpCode >> 20) & 0xff);
-        }
-
-        public static ShaderIrOperReg GetAluOperBCNode_R(long OpCode)
-        {
-            return new ShaderIrOperReg((int)(OpCode >> 39) & 0xff);
-        }
-
-        public static ShaderIrOperCbuf GetAluOperBCNode_C(long OpCode)
+        public static ShaderIrOperCbuf GetOperCbuf34(long OpCode)
         {
             return new ShaderIrOperCbuf(
                 (int)(OpCode >> 34) & 0x1f,
                 (int)(OpCode >> 20) & 0x3fff);
         }
 
-        public static ShaderIrOperReg GetAluOperDNode(long OpCode)
+        public static ShaderIrOperGpr GetOperGpr8(long OpCode)
         {
-            return new ShaderIrOperReg((int)(OpCode >>  0) & 0xff);
+            return new ShaderIrOperGpr((int)(OpCode >> 8) & 0xff);
         }
 
-        public static ShaderIrOper GetAluOperBNode_Imm(long OpCode)
+        public static ShaderIrOperGpr GetOperGpr20(long OpCode)
+        {
+            return new ShaderIrOperGpr((int)(OpCode >> 20) & 0xff);
+        }
+
+        public static ShaderIrOperGpr GetOperGpr39(long OpCode)
+        {
+            return new ShaderIrOperGpr((int)(OpCode >> 39) & 0xff);
+        }        
+
+        public static ShaderIrOperGpr GetOperGpr0(long OpCode)
+        {
+            return new ShaderIrOperGpr((int)(OpCode >> 0) & 0xff);
+        }
+
+        public static ShaderIrOperGpr GetOperGpr28(long OpCode)
+        {
+            return new ShaderIrOperGpr((int)(OpCode >> 28) & 0xff);
+        }
+
+        public static ShaderIrNode GetOperImmf19_20(long OpCode)
         {
             //TODO
-            return new ShaderIrOper();
+            return new ShaderIrNode();
+        }
+
+        public static ShaderIrOperImm GetOperImm13_36(long OpCode)
+        {
+            return new ShaderIrOperImm((int)(OpCode >> 36) & 0x1fff);
+        }
+
+        public static ShaderIrOperPred GetOperPred3(long OpCode)
+        {
+            return new ShaderIrOperPred((int)(OpCode >> 3) & 7);
+        }
+
+        public static ShaderIrOperPred GetOperPred0(long OpCode)
+        {
+            return new ShaderIrOperPred((int)(OpCode >> 0) & 7);
+        }
+
+        public static ShaderIrNode GetOperPred39N(long OpCode)
+        {
+            ShaderIrNode Node = GetOperPred39(OpCode);
+
+            if (((OpCode >> 42) & 1) != 0)
+            {
+                Node = new ShaderIrOp(ShaderIrInst.Bnot, Node);
+            }
+
+            return Node;
+        }
+
+        public static ShaderIrOperPred GetOperPred39(long OpCode)
+        {
+            return new ShaderIrOperPred((int)(OpCode >> 39) & 7);
+        }
+
+        public static ShaderIrInst GetCmp(long OpCode)
+        {
+            switch ((int)(OpCode >> 48) & 0xf)
+            {
+                case 0x1: return ShaderIrInst.Clt;
+                case 0x2: return ShaderIrInst.Ceq;
+                case 0x3: return ShaderIrInst.Cle;
+                case 0x4: return ShaderIrInst.Cgt;
+                case 0x5: return ShaderIrInst.Cne;
+                case 0x6: return ShaderIrInst.Cge;
+                case 0x7: return ShaderIrInst.Cnum;
+                case 0x8: return ShaderIrInst.Cnan;
+                case 0x9: return ShaderIrInst.Cltu;
+                case 0xa: return ShaderIrInst.Cequ;
+                case 0xb: return ShaderIrInst.Cleu;
+                case 0xc: return ShaderIrInst.Cgtu;
+                case 0xd: return ShaderIrInst.Cneu;
+                case 0xe: return ShaderIrInst.Cgeu;
+            }
+
+            throw new ArgumentException(nameof(OpCode));
+        }
+
+        public static ShaderIrInst GetBLop(long OpCode)
+        {
+            switch ((int)(OpCode >> 45) & 3)
+            {
+                case 0: return ShaderIrInst.Band;
+                case 1: return ShaderIrInst.Bor;
+                case 2: return ShaderIrInst.Bxor;
+            }
+
+            throw new ArgumentException(nameof(OpCode));
+        }
+
+        public static ShaderIrNode GetPredNode(ShaderIrNode Node, long OpCode)
+        {
+            ShaderIrOperPred Pred = GetPredNode(OpCode);
+            
+            if (Pred.Index != ShaderIrOperPred.UnusedIndex)
+            {
+                Node = new ShaderIrCond(Pred, Node);
+            }
+
+            return Node;
+        }
+
+        private static ShaderIrOperPred GetPredNode(long OpCode)
+        {
+            int Pred = (int)(OpCode >> 16) & 0xf;
+
+            if (Pred != 0xf)
+            {
+                Pred &= 7;
+            }
+
+            return new ShaderIrOperPred(Pred);
         }
     }
 }
