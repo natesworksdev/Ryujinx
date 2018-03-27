@@ -25,6 +25,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private Texture[] Textures;
 
+        private OGLShader Shader;
+
         private ConcurrentQueue<Action> ActionsQueue;
 
         private FrameBuffer FbRenderer;
@@ -34,6 +36,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             VertexBuffers = new List<VertexBuffer>();
 
             Textures = new Texture[8];
+
+            Shader = new OGLShader();
 
             ActionsQueue = new ConcurrentQueue<Action>();
         }
@@ -284,6 +288,31 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.ActiveTexture(TextureUnit.Texture0 + Index);
 
             GL.BindTexture(TextureTarget.Texture2D, Textures[Index].Handle);            
+        }
+
+        public void CreateShader(long Tag, byte[] Data, GalShaderType Type)
+        {
+            if (Data == null)
+            {
+                throw new ArgumentNullException(nameof(Data));
+            }
+
+            ActionsQueue.Enqueue(() => Shader.Create(Tag, Data, Type));
+        }
+
+        public void SetShaderCb(int Cbuf, byte[] Data)
+        {
+            if (Data == null)
+            {
+                throw new ArgumentNullException(nameof(Data));
+            }
+
+            ActionsQueue.Enqueue(() => Shader.SetConstBuffer(Cbuf, Data));
+        }
+
+        public void BindShader(long Tag)
+        {
+            ActionsQueue.Enqueue(() => Shader.Bind(Tag));
         }
 
         private void EnsureVbInitialized(int VbIndex)

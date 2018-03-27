@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Ryujinx.Graphics.Gal.Shader
@@ -14,20 +15,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static string[] ElemTypes = new string[] { "float", "vec2", "vec3", "vec4" };
 
-        private class Attrib
-        {
-            public string Name;
-            public int    Elems;
-
-            public Attrib(string Name, int Elems)
-            {
-                this.Name  = Name;
-                this.Elems = Elems;
-            }
-        }       
-
-        private SortedDictionary<int, Attrib> InputAttributes;
-        private SortedDictionary<int, Attrib> OutputAttributes;
+        private SortedDictionary<int, GlslDeclInfo> InputAttributes;
+        private SortedDictionary<int, GlslDeclInfo> OutputAttributes;
 
         private HashSet<int> UsedCbufs;
 
@@ -82,23 +71,23 @@ namespace Ryujinx.Graphics.Gal.Shader
             };
         }
 
-        public string Decompile(int[] Code, ShaderType Type)
+        public GlslProgram Decompile(int[] Code, GalShaderType Type)
         {
-            InputAttributes  = new SortedDictionary<int, Attrib>();
-            OutputAttributes = new SortedDictionary<int, Attrib>();
+            InputAttributes  = new SortedDictionary<int, GlslDeclInfo>();
+            OutputAttributes = new SortedDictionary<int, GlslDeclInfo>();
 
             UsedCbufs = new HashSet<int>();
 
             BodySB = new StringBuilder();
 
             //FIXME: Only valid for vertex shaders.
-            if (Type == ShaderType.Fragment)
+            if (Type == GalShaderType.Fragment)
             {
-                OutputAttributes.Add(7, new Attrib("FragColor", 4));
+                OutputAttributes.Add(7, new GlslDeclInfo("FragColor", -1, 4));
             }
             else
             {
-                OutputAttributes.Add(7, new Attrib("gl_Position", 4));
+                OutputAttributes.Add(7, new GlslDeclInfo("gl_Position", -1, 4));
             }
 
             ShaderIrBlock Block = ShaderDecoder.DecodeBasicBlock(Code, 0, Type);
@@ -111,11 +100,11 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             SB.AppendLine("#version 430");
 
-            PrintDeclSSBOs(SB);
+            PrintDeclUBOs(SB);
             PrintDeclInAttributes(SB);
             PrintDeclOutAttributes(SB);
 
-            if (Type == ShaderType.Fragment)
+            if (Type == GalShaderType.Fragment)
             {
                 SB.AppendLine($"out vec4 {OutputAttributes[7].Name};");
                 SB.AppendLine();
@@ -129,16 +118,22 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             BodySB.Clear();
 
-            return SB.ToString();
+            GlslProgram Program = new GlslProgram();
+
+            Program.Code = SB.ToString();
+
+            Program.Attributes = InputAttributes.Values.ToArray();
+
+            return Program;
         }
 
-        private void PrintDeclSSBOs(StringBuilder SB)
+        private void PrintDeclUBOs(StringBuilder SB)
         {
             foreach (int Cbuf in UsedCbufs)
             {
-                SB.AppendLine($"layout(std430, binding = {Cbuf}) buffer {CbufBuffPrefix}{Cbuf} {{");
+                SB.AppendLine($"uniform _{CbufBuffPrefix}{Cbuf} {{");
                 SB.AppendLine($"{IdentationStr}float {CbufDataName}[];");
-                SB.AppendLine("};");
+                SB.AppendLine($"}} {CbufBuffPrefix}{Cbuf};");
                 SB.AppendLine();
             }
         }
@@ -147,15 +142,15 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             bool PrintNl = false;
 
-            foreach (KeyValuePair<int, Attrib> KV in InputAttributes)
+            foreach (KeyValuePair<int, GlslDeclInfo> KV in InputAttributes)
             {
                 int Index = KV.Key - AttrStartIndex;
 
                 if (Index >= 0)
                 {
-                    string Type = ElemTypes[KV.Value.Elems];
+                    string Type = ElemTypes[KV.Value.Size];
 
-                    SB.AppendLine($"layout(location = {Index}) in {Type} {KV.Value.Name};");
+                    SB.AppendLine($"layout (location = {Index}) in {Type} {KV.Value.Name};");
 
                     PrintNl = true;
                 }
@@ -171,15 +166,15 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             bool PrintNl = false;
 
-            foreach (KeyValuePair<int, Attrib> KV in OutputAttributes)
+            foreach (KeyValuePair<int, GlslDeclInfo> KV in OutputAttributes)
             {
                 int Index = KV.Key - AttrStartIndex;
 
                 if (Index >= 0)
                 {
-                    string Type = ElemTypes[KV.Value.Elems];
+                    string Type = ElemTypes[KV.Value.Size];
 
-                    SB.AppendLine($"layout(location = {Index}) out {Type} {KV.Value.Name};");
+                    SB.AppendLine($"layout (location = {Index}) out {Type} {KV.Value.Name};");
 
                     PrintNl = true;
                 }
@@ -357,44 +352,42 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetOutAbufName(ShaderIrOperAbuf Abuf)
         {
-            int AttrIndex = Abuf.Offs >> 4;
+            int Index = Abuf.Offs >> 4;
 
             int Elem = (Abuf.Offs >> 2) & 3;
 
-            if (!OutputAttributes.TryGetValue(AttrIndex, out Attrib Attr))
+            if (!OutputAttributes.TryGetValue(Index, out GlslDeclInfo Attr))
             {
-                Attr = new Attrib(OutputAttrPrefix + (AttrIndex - AttrStartIndex), Elem);
+                int GlslIndex = Index - AttrStartIndex;
 
-                OutputAttributes.Add(AttrIndex, Attr);
+                Attr = new GlslDeclInfo(OutputAttrPrefix + GlslIndex, GlslIndex, Elem);
+
+                OutputAttributes.Add(Index, Attr);
             }
 
-            if (Attr.Elems < Elem)
-            {
-                Attr.Elems = Elem;
-            }
+            Attr.Enlarge(Elem);
 
             return $"{Attr.Name}.{GetAttrSwizzle(Elem)}";
         }
 
         private string GetName(ShaderIrOperAbuf Abuf, bool Swizzle = true)
         {
-            int AttrIndex = Abuf.Offs >> 4;
+            int Index = Abuf.Offs >> 4;
 
             int Elem = (Abuf.Offs >> 2) & 3;
 
-            if (!InputAttributes.TryGetValue(AttrIndex, out Attrib Attr))
+            if (!InputAttributes.TryGetValue(Index, out GlslDeclInfo Attr))
             {
-                Attr = new Attrib(InputAttrPrefix + (AttrIndex - AttrStartIndex), Elem);
+                int GlslIndex = Index - AttrStartIndex;
 
-                InputAttributes.Add(AttrIndex, Attr);
+                Attr = new GlslDeclInfo(InputAttrPrefix + GlslIndex, GlslIndex, Elem);
+
+                InputAttributes.Add(Index, Attr);
             }
 
-            if (Attr.Elems < Elem)
-            {
-                Attr.Elems = Elem;
-            }
+            Attr.Enlarge(Elem);
 
-            return Attr.Name + (Swizzle ? $".{GetAttrSwizzle(Elem)}" : string.Empty);
+            return Swizzle ? $"{Attr.Name}.{GetAttrSwizzle(Elem)}" : Attr.Name;
         }
 
         private string GetName(ShaderIrOperCbuf Cbuf)
@@ -583,12 +576,10 @@ namespace Ryujinx.Graphics.Gal.Shader
                     BAbuf.GprIndex == ShaderIrOperGpr.ZRIndex &&
                     (AAbuf.Offs >> 4) == (BAbuf.Offs >> 4))
                 {
-                    string AttrName = GetName(AAbuf, Swizzle: false);
-
                     //Needs to call this to ensure it registers all elements used.
                     GetName(BAbuf);
 
-                    return $"{AttrName}." +
+                    return $"{GetName(AAbuf, Swizzle: false)}." +
                         $"{GetAttrSwizzle((AAbuf.Offs >> 2) & 3)}" +
                         $"{GetAttrSwizzle((BAbuf.Offs >> 2) & 3)}";
                 }
