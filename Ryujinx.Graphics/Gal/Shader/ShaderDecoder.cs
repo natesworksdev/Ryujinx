@@ -2,7 +2,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 {
     static class ShaderDecoder
     {
-        public static ShaderIrBlock DecodeBasicBlock(int[] Code, int Offset, ShaderType Type)
+        public static ShaderIrBlock DecodeBasicBlock(int[] Code, int Offset, GalShaderType Type)
         {
             ShaderIrBlock Block = new ShaderIrBlock();
 
@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 Decode(Block, OpCode);
             }
 
-            if (Type == ShaderType.Fragment)
+            if (Type == GalShaderType.Fragment)
             {
                 Block.AddNode(new ShaderIrAsg(new ShaderIrOperAbuf(0x70, 0), new ShaderIrOperGpr(0)));
                 Block.AddNode(new ShaderIrAsg(new ShaderIrOperAbuf(0x74, 0), new ShaderIrOperGpr(1)));
