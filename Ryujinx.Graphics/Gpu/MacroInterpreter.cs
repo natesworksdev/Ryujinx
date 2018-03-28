@@ -6,6 +6,7 @@ namespace Ryujinx.Graphics.Gpu
 {
     class MacroInterpreter
     {
+        private NvGpuFifo    PFifo;
         private INvGpuEngine Engine;
 
         public Queue<int> Fifo { get; private set; }
@@ -19,11 +20,12 @@ namespace Ryujinx.Graphics.Gpu
 
         private long Pc;
 
-        public MacroInterpreter(INvGpuEngine Engine)
+        public MacroInterpreter(NvGpuFifo PFifo, INvGpuEngine Engine)
         {
+            this.PFifo  = PFifo;
             this.Engine = Engine;
 
-            Fifo = new Queue<int>();    
+            Fifo = new Queue<int>();
 
             Gprs = new int[8];
         }
@@ -60,7 +62,7 @@ namespace Ryujinx.Graphics.Gpu
 
             Pc += 4;
 
-            int Op = (OpCode >> 0) & 7;
+            int Op = OpCode & 7;
 
             if (Op < 7)
             {
@@ -107,8 +109,14 @@ namespace Ryujinx.Graphics.Gpu
 
                 if (Taken)
                 {
-                    //Execute one more instruction due to delay slot.
-                    bool KeepExecuting = Step(Memory);
+                    bool KeepExecuting = true;
+
+                    //When bit 5 is set, branches executes as if delay slots didn't exist.
+                    if ((OpCode & 0x20) == 0)
+                    {
+                        //Execute one more instruction due to delay slot.
+                        KeepExecuting = Step(Memory);
+                    }
 
                     Pc = BaseAddr + (GetImm(OpCode) << 2);
 
@@ -166,7 +174,7 @@ namespace Ryujinx.Graphics.Gpu
                         //Bitfield move.
                         case 2:
                         {
-                            Src = (Src >> BfSrcBit) & BfMask;
+                            Src = (int)((uint)Src >> BfSrcBit) & BfMask;
 
                             Dst &= ~(BfMask << BfDstBit);
 
@@ -174,11 +182,11 @@ namespace Ryujinx.Graphics.Gpu
 
                             return Dst;
                         }
-                        
+
                         //Bitfield extract with left shift by immediate.
                         case 3:
                         {
-                            Src = (Src >> Dst) & BfMask;
+                            Src = (int)((uint)Src >> Dst) & BfMask;
 
                             return Src << BfDstBit;
                         }
@@ -186,7 +194,7 @@ namespace Ryujinx.Graphics.Gpu
                         //Bitfield extract with left shift by register.
                         case 4:
                         {
-                            Src = (Src >> BfSrcBit) & BfMask;
+                            Src = (int)((uint)Src >> BfSrcBit) & BfMask;
 
                             return Src << Dst;
                         }
@@ -204,9 +212,9 @@ namespace Ryujinx.Graphics.Gpu
             throw new ArgumentException(nameof(OpCode));
         }
 
-        private int GetAluResult(int SubOp, int A, int B)
+        private int GetAluResult(int AluOp, int A, int B)
         {
-            switch (SubOp)
+            switch (AluOp)
             {
                 //Add.
                 case 0: return A + B;
@@ -254,7 +262,7 @@ namespace Ryujinx.Graphics.Gpu
                 case 12: return ~(A & B);
             }
 
-            throw new ArgumentOutOfRangeException(nameof(SubOp));
+            throw new ArgumentOutOfRangeException(nameof(AluOp));
         }
 
         private int GetImm(int OpCode)
@@ -291,7 +299,17 @@ namespace Ryujinx.Graphics.Gpu
 
         private int FetchParam()
         {
-            Fifo.TryDequeue(out int Value);
+            int Value;
+
+            //If we don't have any parameters in the FIFO,
+            //keep running the PFIFO engine until it writes the parameters.
+            while (!Fifo.TryDequeue(out Value))
+            {
+                if (!PFifo.Step())
+                {
+                    return 0;
+                }
+            }
 
             return Value;
         }

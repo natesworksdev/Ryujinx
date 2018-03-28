@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu
 
         private NsGpu Gpu;
 
-        private ConcurrentQueue<(AMemory, NsGpuPBEntry[])> BufferQueue;
+        private ConcurrentQueue<(AMemory, NsGpuPBEntry)> BufferQueue;
 
         private NvGpuEngine[] SubChannels;
 
@@ -21,11 +21,11 @@ namespace Ryujinx.Graphics.Gpu
 
             private MacroInterpreter Interpreter;
 
-            public CachedMacro(INvGpuEngine Engine, long Position)
+            public CachedMacro(NvGpuFifo PFifo, INvGpuEngine Engine, long Position)
             {
                 this.Position = Position;
 
-                Interpreter = new MacroInterpreter(Engine);
+                Interpreter = new MacroInterpreter(PFifo, Engine);
             }
 
             public void PushParam(int Param)
@@ -39,50 +39,45 @@ namespace Ryujinx.Graphics.Gpu
             }
         }
 
-        private long CurrentMacroPosition;
-        private int  CurrentMacroBindIndex;
+        private long CurrMacroPosition;
+        private int  CurrMacroBindIndex;
 
         private CachedMacro[] Macros;
-
-        private Queue<(int, int)> MacroQueue;
 
         public NvGpuFifo(NsGpu Gpu)
         {
             this.Gpu = Gpu;
 
-            BufferQueue = new ConcurrentQueue<(AMemory, NsGpuPBEntry[])>();
+            BufferQueue = new ConcurrentQueue<(AMemory, NsGpuPBEntry)>();
 
             SubChannels = new NvGpuEngine[8];
 
             Macros = new CachedMacro[MacrosCount];
-
-            MacroQueue = new Queue<(int, int)>();
         }
 
         public void PushBuffer(AMemory Memory, NsGpuPBEntry[] Buffer)
         {
-            BufferQueue.Enqueue((Memory, Buffer));
+            foreach (NsGpuPBEntry PBEntry in Buffer)
+            {
+                BufferQueue.Enqueue((Memory, PBEntry));
+            }
         }
 
         public void DispatchCalls()
         {
-            while (BufferQueue.TryDequeue(out (AMemory Memory, NsGpuPBEntry[] Buffer) Tuple))
-            {
-                foreach (NsGpuPBEntry PBEntry in Tuple.Buffer)
-                {
-                    CallMethod(Tuple.Memory, PBEntry);
-                }
-
-                ExecuteMacros(Tuple.Memory);
-            }
+            while (Step());
         }
 
-        private void ExecuteMacros(AMemory Memory)
+        public bool Step()
         {
-            while (MacroQueue.TryDequeue(out (int Index, int Param) Tuple))
+            if (BufferQueue.TryDequeue(out (AMemory Memory, NsGpuPBEntry PBEntry) Tuple))
             {
-                Macros[Tuple.Index].Execute(Memory, Tuple.Param);
+                CallMethod(Tuple.Memory, Tuple.PBEntry);
+
+                return true;
             }
+
+            return false;
         }
 
         private void CallMethod(AMemory Memory, NsGpuPBEntry PBEntry)
@@ -102,20 +97,20 @@ namespace Ryujinx.Graphics.Gpu
 
                     case NvGpuFifoMeth.SetMacroUploadAddress:
                     {
-                        CurrentMacroPosition = (long)((ulong)PBEntry.Arguments[0] << 2);
+                        CurrMacroPosition = (long)((ulong)PBEntry.Arguments[0] << 2);
 
                         break;
                     }
 
                     case NvGpuFifoMeth.SendMacroCodeData:
                     {
-                        long Position = Gpu.GetCpuAddr(CurrentMacroPosition);
+                        long Position = Gpu.GetCpuAddr(CurrMacroPosition);
 
                         foreach (int Arg in PBEntry.Arguments)
                         {
                             Memory.WriteInt32(Position, Arg);
 
-                            CurrentMacroPosition += 4;
+                            CurrMacroPosition += 4;
 
                             Position += 4;
                         }
@@ -124,7 +119,7 @@ namespace Ryujinx.Graphics.Gpu
 
                     case NvGpuFifoMeth.SetMacroBindingIndex:
                     {
-                        CurrentMacroBindIndex = PBEntry.Arguments[0];
+                        CurrMacroBindIndex = PBEntry.Arguments[0];
 
                         break;
                     }
@@ -135,7 +130,7 @@ namespace Ryujinx.Graphics.Gpu
 
                         Position = Gpu.GetCpuAddr(Position);
 
-                        Macros[CurrentMacroBindIndex] = new CachedMacro(Gpu.Engine3d, Position);
+                        Macros[CurrMacroBindIndex] = new CachedMacro(this, Gpu.Engine3d, Position);
 
                         break;
                     }
@@ -169,7 +164,7 @@ namespace Ryujinx.Graphics.Gpu
                 }
                 else
                 {
-                    MacroQueue.Enqueue((MacroIndex, PBEntry.Arguments[0]));
+                    Macros[MacroIndex].Execute(Memory, PBEntry.Arguments[0]);
                 }
             }
         }

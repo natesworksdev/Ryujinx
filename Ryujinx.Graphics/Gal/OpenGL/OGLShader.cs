@@ -72,21 +72,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Stages.Add(Tag, Stage);
 
                 CompileAndCheck(Stage.Handle, Glsl);
-            }            
+            }
         }
 
         public void SetConstBuffer(int Cbuf, byte[] Data)
         {
-            if (Cbuf != 3) return;
 
-            Console.WriteLine("cb: " + Cbuf);
-
-            foreach (byte b in Data)
-            {
-                Console.Write(b.ToString("x2") + " ");
-            }
-
-            Console.WriteLine();
         }
 
         public void Bind(long Tag)
