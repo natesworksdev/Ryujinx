@@ -5,12 +5,14 @@ namespace Ryujinx.Graphics.Gal.Shader
         public string Name { get; private set; }
 
         public int Index { get; private set; }
+        public int Cbuf  { get; private set; }
         public int Size  { get; private set; }
 
-        public GlslDeclInfo(string Name, int Index, int Size)
+        public GlslDeclInfo(string Name, int Index, int Cbuf = 0, int Size = 1)
         {
             this.Name  = Name;
             this.Index = Index;
+            this.Cbuf  = Cbuf;
             this.Size  = Size;
         }
 

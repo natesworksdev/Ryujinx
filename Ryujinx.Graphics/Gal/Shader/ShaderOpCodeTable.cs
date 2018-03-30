@@ -13,6 +13,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             OpCodes = new ShaderDecodeFunc[1 << EncodingBits];
 
 #region Instructions
+            Set("111000110000xx", ShaderDecode.Exit);
             Set("0101110001011x", ShaderDecode.Fadd_R);
             Set("0100110001011x", ShaderDecode.Fadd_C);
             Set("0011100x01011x", ShaderDecode.Fadd_Imm);

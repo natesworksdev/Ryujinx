@@ -16,14 +16,24 @@ namespace Ryujinx.Graphics.Gal.Shader
             Nodes.Add(Node);
         }
 
-        public void RunOptimizationPasses()
+        public void RunOptimizationPasses(GalShaderType ShaderType)
         {
-            ShaderOptExprProp.Optimize(Nodes);
+            ShaderOptExprProp.Optimize(Nodes, ShaderType);
         }
 
         public ShaderIrNode[] GetNodes()
         {
             return Nodes.ToArray();
+        }
+
+        public ShaderIrNode GetLastNode()
+        {
+            if (Nodes.Count > 0)
+            {
+                return Nodes[Nodes.Count - 1];
+            }
+
+            return null;
         }
     }
 }

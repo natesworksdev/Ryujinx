@@ -1,6 +1,5 @@
 using ChocolArm64.Memory;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu
 {

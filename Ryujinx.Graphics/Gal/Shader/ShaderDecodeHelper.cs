@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         public static ShaderIrOperGpr GetOperGpr39(long OpCode)
         {
             return new ShaderIrOperGpr((int)(OpCode >> 39) & 0xff);
-        }        
+        }
 
         public static ShaderIrOperGpr GetOperGpr0(long OpCode)
         {
@@ -62,8 +62,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static ShaderIrNode GetOperImmf19_20(long OpCode)
         {
-            //TODO
-            return new ShaderIrNode();
+            //TODO: This should be a float immediate.
+             return new ShaderIrOperImm((int)(OpCode >> 36) & 0x1fff);
         }
 
         public static ShaderIrOperImm GetOperImm13_36(long OpCode)
@@ -136,7 +136,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         public static ShaderIrNode GetPredNode(ShaderIrNode Node, long OpCode)
         {
             ShaderIrOperPred Pred = GetPredNode(OpCode);
-            
+
             if (Pred.Index != ShaderIrOperPred.UnusedIndex)
             {
                 Node = new ShaderIrCond(Pred, Node);
