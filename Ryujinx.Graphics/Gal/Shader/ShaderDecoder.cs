@@ -2,7 +2,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 {
     static class ShaderDecoder
     {
-        public static ShaderIrBlock DecodeBasicBlock(int[] Code, int Offset, GalShaderType Type)
+        public static ShaderIrBlock DecodeBasicBlock(int[] Code, int Offset, GalShaderType ShaderType)
         {
             ShaderIrBlock Block = new ShaderIrBlock();
 
@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 uint Word0 = (uint)Code[Offset++];
                 uint Word1 = (uint)Code[Offset++];
 
-                long OpCode = Word0 | (long)Word1 << 32;                
+                long OpCode = Word0 | (long)Word1 << 32;
 
                 ShaderDecodeFunc Decode = ShaderOpCodeTable.GetDecoder(OpCode);
 
@@ -21,19 +21,21 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
 
                 Decode(Block, OpCode);
+
+                if (Block.GetLastNode() is ShaderIrOp Op && IsFlowChange(Op.Inst))
+                {
+                    break;
+                }
             }
 
-            if (Type == GalShaderType.Fragment)
-            {
-                Block.AddNode(new ShaderIrAsg(new ShaderIrOperAbuf(0x70, 0), new ShaderIrOperGpr(0)));
-                Block.AddNode(new ShaderIrAsg(new ShaderIrOperAbuf(0x74, 0), new ShaderIrOperGpr(1)));
-                Block.AddNode(new ShaderIrAsg(new ShaderIrOperAbuf(0x78, 0), new ShaderIrOperGpr(2)));
-                Block.AddNode(new ShaderIrAsg(new ShaderIrOperAbuf(0x7c, 0), new ShaderIrOperGpr(3)));
-            }
-
-            Block.RunOptimizationPasses();
+            Block.RunOptimizationPasses(ShaderType);
 
             return Block;
+        }
+
+        private static bool IsFlowChange(ShaderIrInst Inst)
+        {
+            return Inst == ShaderIrInst.Exit;
         }
     }
 }

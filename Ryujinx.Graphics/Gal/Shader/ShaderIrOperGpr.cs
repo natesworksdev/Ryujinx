@@ -4,6 +4,8 @@ namespace Ryujinx.Graphics.Gal.Shader
     {
         public const int ZRIndex = 0xff;
 
+        public bool IsConst => Index == ZRIndex;
+
         public int Index { get; set; }
 
         public ShaderIrOperGpr(int Index)

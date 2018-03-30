@@ -6,6 +6,41 @@ namespace Ryujinx.Graphics.Gpu
 {
     class MacroInterpreter
     {
+        private enum AssignmentOperation
+        {
+            IgnoreAndFetch                  = 0,
+            Move                            = 1,
+            MoveAndSetMaddr                 = 2,
+            FetchAndSend                    = 3,
+            MoveAndSend                     = 4,
+            FetchAndSetMaddr                = 5,
+            MoveAndSetMaddrThenFetchAndSend = 6,
+            MoveAndSetMaddrThenSendHigh     = 7
+        }
+
+        private enum AluOperation
+        {
+            AluReg                = 0,
+            AddImmediate          = 1,
+            BitfieldReplace       = 2,
+            BitfieldExtractLslImm = 3,
+            BitfieldExtractLslReg = 4,
+            ReadImmediate         = 5
+        }
+
+        private enum AluRegOperation
+        {
+            Add                = 0,
+            AddWithCarry       = 1,
+            Subtract           = 2,
+            SubtractWithBorrow = 3,
+            BitwiseExclusiveOr = 8,
+            BitwiseOr          = 9,
+            BitwiseAnd         = 10,
+            BitwiseAndNot      = 11,
+            BitwiseNotAnd      = 12
+        }
+
         private NvGpuFifo    PFifo;
         private INvGpuEngine Engine;
 
@@ -17,6 +52,10 @@ namespace Ryujinx.Graphics.Gpu
         private int MethIncr;
 
         private bool Carry;
+
+        private int OpCode;
+
+        private int PipeOp;
 
         private long Pc;
 
@@ -34,11 +73,17 @@ namespace Ryujinx.Graphics.Gpu
         {
             Reset();
 
-            Pc = Position;
-
             Gprs[1] = Param;
 
+            Pc = Position;
+
+            FetchOpCode(Memory);
+
             while (Step(Memory));
+
+            //Due to the delay slot, we still need to execute
+            //one more instruction before we actually exit.
+            Step(Memory);
         }
 
         private void Reset()
@@ -56,46 +101,98 @@ namespace Ryujinx.Graphics.Gpu
 
         private bool Step(AMemory Memory)
         {
-            long BaseAddr = Pc;
+            long BaseAddr = Pc - 4;
 
-            int OpCode = Memory.ReadInt32(Pc);
+            FetchOpCode(Memory);
 
-            Pc += 4;
-
-            int Op = OpCode & 7;
-
-            if (Op < 7)
+            if ((OpCode & 7) < 7)
             {
                 //Operation produces a value.
-                int AsgOp = (OpCode >> 4) & 7;
+                AssignmentOperation AsgOp = (AssignmentOperation)((OpCode >> 4) & 7);
 
-                int Result = GetInstResult(OpCode);
+                int Result = GetAluResult();
 
                 switch (AsgOp)
                 {
                     //Fetch parameter and ignore result.
-                    case 0: SetDstGpr(OpCode, FetchParam()); break;
+                    case AssignmentOperation.IgnoreAndFetch:
+                    {
+                        SetDstGpr(FetchParam());
+
+                        break;
+                    }
 
                     //Move result.
-                    case 1: SetDstGpr(OpCode, Result); break;
+                    case AssignmentOperation.Move:
+                    {
+                        SetDstGpr(Result);
+
+                        break;
+                    }
 
                     //Move result and use as Method Address.
-                    case 2: SetDstGpr(OpCode, Result); SetMethAddr(Result); break;
+                    case AssignmentOperation.MoveAndSetMaddr:
+                    {
+                        SetDstGpr(Result);
+
+                        SetMethAddr(Result);
+
+                        break;
+                    }
 
                     //Fetch parameter and send result.
-                    case 3: SetDstGpr(OpCode, FetchParam()); Send(Memory, Result); break;
+                    case AssignmentOperation.FetchAndSend:
+                    {
+                        SetDstGpr(FetchParam());
+
+                        Send(Memory, Result);
+
+                        break;
+                    }
 
                     //Move and send result.
-                    case 4: SetDstGpr(OpCode, Result); Send(Memory, Result); break;
+                    case AssignmentOperation.MoveAndSend:
+                    {
+                        SetDstGpr(Result);
+
+                        Send(Memory, Result);
+
+                        break;
+                    }
 
                     //Fetch parameter and use result as Method Address.
-                    case 5: SetDstGpr(OpCode, FetchParam()); SetMethAddr(Result); break;
+                    case AssignmentOperation.FetchAndSetMaddr:
+                    {
+                        SetDstGpr(FetchParam());
+
+                        SetMethAddr(Result);
+
+                        break;
+                    }
 
                     //Move result and use as Method Address, then fetch and send paramter.
-                    case 6: SetDstGpr(OpCode, Result); SetMethAddr(Result); Send(Memory, FetchParam()); break;
+                    case AssignmentOperation.MoveAndSetMaddrThenFetchAndSend:
+                    {
+                        SetDstGpr(Result);
+
+                        SetMethAddr(Result);
+
+                        Send(Memory, FetchParam());
+
+                        break;
+                    }
 
                     //Move result and use as Method Address, then send bits 17:12 of result.
-                    case 7: SetDstGpr(OpCode, Result); SetMethAddr(Result); Send(Memory, (Result >> 12) & 0x3f); break;
+                    case AssignmentOperation.MoveAndSetMaddrThenSendHigh:
+                    {
+                        SetDstGpr(Result);
+
+                        SetMethAddr(Result);
+
+                        Send(Memory, (Result >> 12) & 0x3f);
+
+                        break;
+                    }
                 }
             }
             else
@@ -104,61 +201,59 @@ namespace Ryujinx.Graphics.Gpu
                 bool OnNotZero = ((OpCode >> 4) & 1) != 0;
 
                 bool Taken = OnNotZero
-                    ? GetGprA(OpCode) != 0
-                    : GetGprA(OpCode) == 0;
+                    ? GetGprA() != 0
+                    : GetGprA() == 0;
 
                 if (Taken)
                 {
-                    bool KeepExecuting = true;
+                    Pc = BaseAddr + (GetImm() << 2);
 
-                    //When bit 5 is set, branches executes as if delay slots didn't exist.
-                    if ((OpCode & 0x20) == 0)
+                    bool NoDelays = (OpCode & 0x20) != 0;
+
+                    if (NoDelays)
                     {
-                        //Execute one more instruction due to delay slot.
-                        KeepExecuting = Step(Memory);
+                        FetchOpCode(Memory);
                     }
 
-                    Pc = BaseAddr + (GetImm(OpCode) << 2);
-
-                    return KeepExecuting;
+                    return true;
                 }
             }
 
-            if ((OpCode & 0x80) != 0)
-            {
-                //Exit (with a delay slot).
-                Step(Memory);
+            bool Exit = (OpCode & 0x80) != 0;
 
-                return false;
-            }
-
-            return true;
+            return !Exit;
         }
 
-        private int GetInstResult(int OpCode)
+        private void FetchOpCode(AMemory Memory)
         {
-            int Low = OpCode & 7;
+            OpCode = PipeOp;
 
-            switch (Low)
+            PipeOp = Memory.ReadInt32(Pc);
+
+            Pc += 4;
+        }
+
+        private int GetAluResult()
+        {
+            AluOperation Op = (AluOperation)(OpCode & 7);
+
+            switch (Op)
             {
-                //Arithmetic or Logical operation.
-                case 0:
+                case AluOperation.AluReg:
                 {
-                    int AluOp = (OpCode >> 17) & 0x1f;
+                    AluRegOperation AluOp = (AluRegOperation)((OpCode >> 17) & 0x1f);
 
-                    return GetAluResult(AluOp, GetGprA(OpCode), GetGprB(OpCode));
+                    return GetAluResult(AluOp, GetGprA(), GetGprB());
                 }
 
-                //Add Immediate.
-                case 1:
+                case AluOperation.AddImmediate:
                 {
-                    return GetGprA(OpCode) + GetImm(OpCode);
+                    return GetGprA() + GetImm();
                 }
 
-                //Bitfield.
-                case 2:
-                case 3:
-                case 4:
+                case AluOperation.BitfieldReplace:
+                case AluOperation.BitfieldExtractLslImm:
+                case AluOperation.BitfieldExtractLslReg:
                 {
                     int BfSrcBit = (OpCode >> 17) & 0x1f;
                     int BfSize   = (OpCode >> 22) & 0x1f;
@@ -166,13 +261,12 @@ namespace Ryujinx.Graphics.Gpu
 
                     int BfMask = (1 << BfSize) - 1;
 
-                    int Dst = GetGprA(OpCode);
-                    int Src = GetGprB(OpCode);
+                    int Dst = GetGprA();
+                    int Src = GetGprB();
 
-                    switch (Low)
+                    switch (Op)
                     {
-                        //Bitfield move.
-                        case 2:
+                        case AluOperation.BitfieldReplace:
                         {
                             Src = (int)((uint)Src >> BfSrcBit) & BfMask;
 
@@ -183,16 +277,14 @@ namespace Ryujinx.Graphics.Gpu
                             return Dst;
                         }
 
-                        //Bitfield extract with left shift by immediate.
-                        case 3:
+                        case AluOperation.BitfieldExtractLslImm:
                         {
                             Src = (int)((uint)Src >> Dst) & BfMask;
 
                             return Src << BfDstBit;
                         }
 
-                        //Bitfield extract with left shift by register.
-                        case 4:
+                        case AluOperation.BitfieldExtractLslReg:
                         {
                             Src = (int)((uint)Src >> BfSrcBit) & BfMask;
 
@@ -203,69 +295,66 @@ namespace Ryujinx.Graphics.Gpu
                     break;
                 }
 
-                case 5:
+                case AluOperation.ReadImmediate:
                 {
-                    return Read(GetGprA(OpCode) + GetImm(OpCode));
+                    return Read(GetGprA() + GetImm());
                 }
             }
 
             throw new ArgumentException(nameof(OpCode));
         }
 
-        private int GetAluResult(int AluOp, int A, int B)
+        private int GetAluResult(AluRegOperation AluOp, int A, int B)
         {
             switch (AluOp)
             {
-                //Add.
-                case 0: return A + B;
-
-                //Add with Carry.
-                case 1:
+                case AluRegOperation.Add:
                 {
-                    ulong C = Carry ? 1UL : 0UL;
-
-                    ulong Result = (ulong)A + (ulong)B + C;
+                    ulong Result = (ulong)A + (ulong)B;
 
                     Carry = Result > 0xffffffff;
 
                     return (int)Result;
                 }
 
-                //Subtract.
-                case 2: return A - B;
-
-                //Subtract with Borrow.
-                case 3:
+                case AluRegOperation.AddWithCarry:
                 {
-                    ulong C = Carry ? 0UL : 1UL;
+                    ulong Result = (ulong)A + (ulong)B + (Carry ? 1UL : 0UL);
 
-                    ulong Result = (ulong)A - (ulong)B - C;
+                    Carry = Result > 0xffffffff;
+
+                    return (int)Result;
+                }
+
+                case AluRegOperation.Subtract:
+                {
+                    ulong Result = (ulong)A - (ulong)B;
 
                     Carry = Result < 0x100000000;
 
                     return (int)Result;
                 }
 
-                //Exclusive Or.
-                case 8: return A ^ B;
+                case AluRegOperation.SubtractWithBorrow:
+                {
+                    ulong Result = (ulong)A - (ulong)B - (Carry ? 0UL : 1UL);
 
-                //Or.
-                case 9: return A | B;
+                    Carry = Result < 0x100000000;
 
-                //And.
-                case 10: return A & B;
+                    return (int)Result;
+                }
 
-                //And Not.
-                case 11: return A & ~B;
-
-                //Not And.
-                case 12: return ~(A & B);
+                case AluRegOperation.BitwiseExclusiveOr: return   A ^  B;
+                case AluRegOperation.BitwiseOr:          return   A |  B;
+                case AluRegOperation.BitwiseAnd:         return   A &  B;
+                case AluRegOperation.BitwiseAndNot:      return   A & ~B;
+                case AluRegOperation.BitwiseNotAnd:      return ~(A &  B);
             }
 
             throw new ArgumentOutOfRangeException(nameof(AluOp));
         }
 
-        private int GetImm(int OpCode)
+        private int GetImm()
         {
             //Note: The immediate is signed, the sign-extension is intended here.
             return OpCode >> 14;
@@ -277,17 +366,17 @@ namespace Ryujinx.Graphics.Gpu
             MethIncr = (Value >> 12) & 0x3f;
         }
 
-        private void SetDstGpr(int OpCode, int Value)
+        private void SetDstGpr(int Value)
         {
             Gprs[(OpCode >> 8) & 7] = Value;
         }
 
-        private int GetGprA(int OpCode)
+        private int GetGprA()
         {
             return GetGprValue((OpCode >> 11) & 7);
         }
 
-        private int GetGprB(int OpCode)
+        private int GetGprB()
         {
             return GetGprValue((OpCode >> 14) & 7);
         }

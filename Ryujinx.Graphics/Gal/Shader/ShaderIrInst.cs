@@ -20,6 +20,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         Cgtu,
         Cneu,
         Cgeu,
+        Exit,
         Fabs,
         Fadd,
         Fcos,

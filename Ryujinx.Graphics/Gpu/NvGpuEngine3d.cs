@@ -1,4 +1,6 @@
 using ChocolArm64.Memory;
+using Ryujinx.Graphics.Gal;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu
@@ -63,11 +65,52 @@ namespace Ryujinx.Graphics.Gpu
             int TexCbuf = ReadRegister(NvGpuEngine3dReg.TextureCbIndex);
 
             int TexHandle = ReadCb(Memory, TexCbuf, 0x20);
+
+            long BasePosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
+
+            for (int Index = 0; Index < 6; Index++)
+            {
+                int Offset  = ReadRegister(NvGpuEngine3dReg.ShaderOffset + Index * 0x10);
+
+                if (Offset == 0)
+                {
+                    continue;
+                }
+
+                long Position = Gpu.GetCpuAddr(BasePosition + (uint)Offset);
+
+                if (Position == -1)
+                {
+                    continue;
+                }
+
+                //TODO: Find a better way to calculate the size.
+                int Size = 0x20000;
+
+                byte[] Code = AMemoryHelper.ReadBytes(Memory, Position, (uint)Size);
+
+                Gpu.Renderer.CreateShader(Position, Code, GetTypeFromProgram(Index));
+            }
+        }
+
+        private static GalShaderType GetTypeFromProgram(int Program)
+        {
+            switch (Program)
+            {
+                case 0:
+                case 1: return GalShaderType.Vertex;
+                case 2: return GalShaderType.TessControl;
+                case 3: return GalShaderType.TessEvaluation;
+                case 4: return GalShaderType.Geometry;
+                case 5: return GalShaderType.Fragment;
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(Program));
         }
 
         private void QueryControl(AMemory Memory, NsGpuPBEntry PBEntry)
         {
-            if (TryGetCpuAddr(NvGpuEngine3dReg.QueryAddr, out long Position))
+            if (TryGetCpuAddr(NvGpuEngine3dReg.QueryAddress, out long Position))
             {
                 int Seq  = Registers[(int)NvGpuEngine3dReg.QuerySequence];
                 int Ctrl = Registers[(int)NvGpuEngine3dReg.QueryControl];

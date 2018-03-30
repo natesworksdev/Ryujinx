@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        public static void Optimize(List<ShaderIrNode> Nodes)
+        public static void Optimize(List<ShaderIrNode> Nodes, GalShaderType ShaderType)
         {
             Dictionary<int, RegUse> Uses = new Dictionary<int, RegUse>();
 
@@ -183,6 +183,11 @@ namespace Ryujinx.Graphics.Gal.Shader
                 //to a register took place. We traverse the expression tree to find
                 //all registers being used, if any of those registers was assigned
                 //after the assignment to be propagated, then we can't propagate.
+                if (Use?.Asg == null)
+                {
+                    return false;
+                }
+
                 List<(int, UseSite)> UseList = new List<(int, UseSite)>();
 
                 FindRegUses(UseList, Use.Asg, Use.Asg.Src);
@@ -227,7 +232,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     Use = GetPredUse(Pred.Index);
                 }
 
-                if (Use?.Asg != null && !IsConditional && TryPropagate(Use))
+                if (!IsConditional && TryPropagate(Use))
                 {
                     Nodes.Remove(Use.Asg);
 
@@ -241,6 +246,16 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             foreach (RegUse Use in Uses.Values)
             {
+                //Gprs 0-3 are the color output on fragment shaders,
+                //so we can't remove the last assignments to those registers.
+                if (ShaderType == GalShaderType.Fragment)
+                {
+                    if (Use.Asg?.Dst is ShaderIrOperGpr Gpr && Gpr.Index < 4)
+                    {
+                        continue;
+                    }
+                }
+
                 if (TryPropagate(Use))
                 {
                     Nodes.Remove(Use.Asg);
