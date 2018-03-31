@@ -1,6 +1,6 @@
-namespace Ryujinx.Graphics.Gal.Shader
+namespace Ryujinx.Graphics.Gal
 {
-    public class GlslDeclInfo
+    public class ShaderDeclInfo
     {
         public string Name { get; private set; }
 
@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         public int Cbuf  { get; private set; }
         public int Size  { get; private set; }
 
-        public GlslDeclInfo(string Name, int Index, int Cbuf = 0, int Size = 1)
+        public ShaderDeclInfo(string Name, int Index, int Cbuf = 0, int Size = 1)
         {
             this.Name  = Name;
             this.Index = Index;
@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             this.Size  = Size;
         }
 
-        public void Enlarge(int NewSize)
+        internal void Enlarge(int NewSize)
         {
             if (Size < NewSize)
             {

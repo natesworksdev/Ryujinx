@@ -197,7 +197,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     case GalVertexAttribType.Sint:
                     case GalVertexAttribType.Uint:
                     case GalVertexAttribType.Uscaled:
-                    case GalVertexAttribType.Sscaled:                    
+                    case GalVertexAttribType.Sscaled:
                     {
                         switch (Attrib.Size)
                         {
@@ -287,7 +287,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             GL.ActiveTexture(TextureUnit.Texture0 + Index);
 
-            GL.BindTexture(TextureTarget.Texture2D, Textures[Index].Handle);            
+            GL.BindTexture(TextureTarget.Texture2D, Textures[Index].Handle);
         }
 
         public void CreateShader(long Tag, byte[] Data, GalShaderType Type)
@@ -300,14 +300,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue.Enqueue(() => Shader.Create(Tag, Data, Type));
         }
 
-        public void SetShaderCb(int Cbuf, byte[] Data)
+        public void SetShaderCb(long Tag, int Cbuf, byte[] Data)
         {
             if (Data == null)
             {
                 throw new ArgumentNullException(nameof(Data));
             }
 
-            ActionsQueue.Enqueue(() => Shader.SetConstBuffer(Cbuf, Data));
+            ActionsQueue.Enqueue(() => Shader.SetConstBuffer(Tag, Cbuf, Data));
         }
 
         public void BindShader(long Tag)

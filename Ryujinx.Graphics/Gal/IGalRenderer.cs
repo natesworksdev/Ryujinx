@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Gal
 
         //Shader
         void CreateShader(long Tag, byte[] Data, GalShaderType Type);
-        void SetShaderCb(int Cbuf, byte[] Data);
+        void SetShaderCb(long Tag, int Cbuf, byte[] Data);
         void BindShader(long Tag);
 
         void SendVertexBuffer(int Index, byte[] Buffer, int Stride, GalVertexAttrib[] Attribs);

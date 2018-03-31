@@ -16,15 +16,15 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static string[] ElemTypes = new string[] { "float", "vec2", "vec3", "vec4" };
 
-        private Dictionary<int, GlslDeclInfo> Textures;
+        private Dictionary<int, ShaderDeclInfo> Textures;
 
-        private Dictionary<(int, int), GlslDeclInfo> Uniforms;
+        private Dictionary<(int, int), ShaderDeclInfo> Uniforms;
 
-        private Dictionary<int, GlslDeclInfo> InputAttributes;
-        private Dictionary<int, GlslDeclInfo> OutputAttributes;
+        private Dictionary<int, ShaderDeclInfo> InAttributes;
+        private Dictionary<int, ShaderDeclInfo> OutAttributes;
 
-        private Dictionary<int, GlslDeclInfo> Gprs;
-        private Dictionary<int, GlslDeclInfo> Preds;
+        private Dictionary<int, ShaderDeclInfo> Gprs;
+        private Dictionary<int, ShaderDeclInfo> Preds;
 
         private const int AttrStartIndex = 8;
         private const int TexStartIndex = 8;
@@ -74,26 +74,26 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public GlslProgram Decompile(int[] Code, GalShaderType Type)
         {
-            Uniforms = new Dictionary<(int, int), GlslDeclInfo>();
+            Uniforms = new Dictionary<(int, int), ShaderDeclInfo>();
 
-            Textures = new Dictionary<int, GlslDeclInfo>();
+            Textures = new Dictionary<int, ShaderDeclInfo>();
 
-            InputAttributes  = new Dictionary<int, GlslDeclInfo>();
-            OutputAttributes = new Dictionary<int, GlslDeclInfo>();
+            InAttributes  = new Dictionary<int, ShaderDeclInfo>();
+            OutAttributes = new Dictionary<int, ShaderDeclInfo>();
 
-            Gprs  = new Dictionary<int, GlslDeclInfo>();
-            Preds = new Dictionary<int, GlslDeclInfo>();
+            Gprs  = new Dictionary<int, ShaderDeclInfo>();
+            Preds = new Dictionary<int, ShaderDeclInfo>();
 
             SB = new StringBuilder();
 
             //FIXME: Only valid for vertex shaders.
             if (Type == GalShaderType.Fragment)
             {
-                Gprs.Add(0, new GlslDeclInfo("FragColor", 0, 0, 4));
+                Gprs.Add(0, new ShaderDeclInfo("FragColor", 0, 0, 4));
             }
             else
             {
-                OutputAttributes.Add(7, new GlslDeclInfo("gl_Position", -1, 0, 4));
+                OutAttributes.Add(7, new ShaderDeclInfo("gl_Position", -1, 0, 4));
             }
 
             ShaderIrBlock Block = ShaderDecoder.DecodeBasicBlock(Code, 0, Type);
@@ -116,15 +116,12 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             PrintBlockScope("void main()", 1, Nodes);
 
-            GlslProgram Program = new GlslProgram();
+            string GlslCode = SB.ToString();
 
-            Program.Code = SB.ToString();
-
-            Program.Attributes = InputAttributes.Values.ToArray();
-
-            SB.Clear();
-
-            return Program;
+            return new GlslProgram(
+                GlslCode,
+                Textures.Values,
+                Uniforms.Values);
         }
 
         private void Traverse(ShaderIrNode Parent, ShaderIrNode Node)
@@ -164,7 +161,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         string Name = $"{TextureName}{Index}";
 
-                        Textures.TryAdd(Handle, new GlslDeclInfo(Name, Index));
+                        Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Index));
                     }
                     break;
                 }
@@ -173,7 +170,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     string Name = $"{UniformName}{Cbuf.Index}_{Cbuf.Offs}";
 
-                    GlslDeclInfo DeclInfo = new GlslDeclInfo(Name, Cbuf.Offs, Cbuf.Index);
+                    ShaderDeclInfo DeclInfo = new ShaderDeclInfo(Name, Cbuf.Offs, Cbuf.Index);
 
                     Uniforms.TryAdd((Cbuf.Index, Cbuf.Offs), DeclInfo);
 
@@ -187,24 +184,24 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                     int GlslIndex = Index - AttrStartIndex;
 
-                    GlslDeclInfo DeclInfo;
+                    ShaderDeclInfo DeclInfo;
 
                     if (Parent is ShaderIrAsg Asg && Asg.Dst == Node)
                     {
-                        if (!OutputAttributes.TryGetValue(Index, out DeclInfo))
+                        if (!OutAttributes.TryGetValue(Index, out DeclInfo))
                         {
-                            DeclInfo = new GlslDeclInfo(OutputName + GlslIndex, GlslIndex);
+                            DeclInfo = new ShaderDeclInfo(OutputName + GlslIndex, GlslIndex);
 
-                            OutputAttributes.Add(Index, DeclInfo);
+                            OutAttributes.Add(Index, DeclInfo);
                         }
                     }
                     else
                     {
-                        if (!InputAttributes.TryGetValue(Index, out DeclInfo))
+                        if (!InAttributes.TryGetValue(Index, out DeclInfo))
                         {
-                            DeclInfo = new GlslDeclInfo(InputAttrName + GlslIndex, GlslIndex);
+                            DeclInfo = new ShaderDeclInfo(InputAttrName + GlslIndex, GlslIndex);
 
-                            InputAttributes.Add(Index, DeclInfo);
+                            InAttributes.Add(Index, DeclInfo);
                         }
                     }
 
@@ -219,7 +216,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         string Name = $"{GprName}{Gpr.Index}";
 
-                        Gprs.TryAdd(Gpr.Index, new GlslDeclInfo(Name, Gpr.Index));
+                        Gprs.TryAdd(Gpr.Index, new ShaderDeclInfo(Name, Gpr.Index));
                     }
                     break;
                 }
@@ -230,7 +227,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         string Name = $"{PredName}{Pred.Index}";
 
-                        Preds.TryAdd(Pred.Index, new GlslDeclInfo(Name, Pred.Index));
+                        Preds.TryAdd(Pred.Index, new ShaderDeclInfo(Name, Pred.Index));
                     }
                     break;
                 }
@@ -244,7 +241,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private void PrintDeclUniforms()
         {
-            foreach (GlslDeclInfo DeclInfo in Uniforms.Values.OrderBy(DeclKeySelector))
+            foreach (ShaderDeclInfo DeclInfo in Uniforms.Values.OrderBy(DeclKeySelector))
             {
                 SB.AppendLine($"uniform {GetDecl(DeclInfo)};");
             }
@@ -257,19 +254,19 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private void PrintDeclInAttributes()
         {
-            PrintDeclAttributes(InputAttributes.Values, "in");
+            PrintDeclAttributes(InAttributes.Values, "in");
         }
 
         private void PrintDeclOutAttributes()
         {
-            PrintDeclAttributes(OutputAttributes.Values, "out");
+            PrintDeclAttributes(OutAttributes.Values, "out");
         }
 
-        private void PrintDeclAttributes(ICollection<GlslDeclInfo> Decls, string InOut)
+        private void PrintDeclAttributes(ICollection<ShaderDeclInfo> Decls, string InOut)
         {
             bool PrintNl = false;
 
-            foreach (GlslDeclInfo DeclInfo in Decls.OrderBy(DeclKeySelector))
+            foreach (ShaderDeclInfo DeclInfo in Decls.OrderBy(DeclKeySelector))
             {
                 if (DeclInfo.Index >= 0)
                 {
@@ -295,9 +292,9 @@ namespace Ryujinx.Graphics.Gal.Shader
             PrintDecls(Preds.Values, "bool");
         }
 
-        private void PrintDecls(ICollection<GlslDeclInfo> Decls, string CustomType = null)
+        private void PrintDecls(ICollection<ShaderDeclInfo> Decls, string CustomType = null)
         {
-            foreach (GlslDeclInfo DeclInfo in Decls.OrderBy(DeclKeySelector))
+            foreach (ShaderDeclInfo DeclInfo in Decls.OrderBy(DeclKeySelector))
             {
                 string Name;
 
@@ -319,12 +316,12 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        private int DeclKeySelector(GlslDeclInfo DeclInfo)
+        private int DeclKeySelector(ShaderDeclInfo DeclInfo)
         {
             return DeclInfo.Cbuf << 24 | DeclInfo.Index;
         }
 
-        private string GetDecl(GlslDeclInfo DeclInfo)
+        private string GetDecl(ShaderDeclInfo DeclInfo)
         {
             return $"{ElemTypes[DeclInfo.Size - 1]} {DeclInfo.Name}";
         }
@@ -362,14 +359,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                     PrintBlockScope(SubScopeName, IdentationLevel + 1, Cond.Child);
                 }
-                else if (Node is ShaderIrAsg Asg)
+                else if (Node is ShaderIrAsg Asg && IsValidOutOper(Asg.Dst))
                 {
-                    if (IsValidOutOper(Asg.Dst))
-                    {
-                        SB.AppendLine(Identation +
-                            $"{GetOutOperName(Asg.Dst)} = " +
-                            $"{GetInOperName (Asg.Src, true)};");
-                    }
+                    SB.AppendLine($"{Identation}{GetOutOperName(Asg.Dst)} = {GetInOperName(Asg.Src, true)};");
                 }
                 else if (Node is ShaderIrOp Op)
                 {
@@ -469,7 +461,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetName(ShaderIrOperCbuf Cbuf)
         {
-            if (!Uniforms.TryGetValue((Cbuf.Index, Cbuf.Offs), out GlslDeclInfo DeclInfo))
+            if (!Uniforms.TryGetValue((Cbuf.Index, Cbuf.Offs), out ShaderDeclInfo DeclInfo))
             {
                 throw new InvalidOperationException();
             }
@@ -479,20 +471,20 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetOutAbufName(ShaderIrOperAbuf Abuf)
         {
-            return GetName(OutputAttributes, Abuf, Swizzle: true);
+            return GetName(OutAttributes, Abuf, Swizzle: true);
         }
 
         private string GetName(ShaderIrOperAbuf Abuf, bool Swizzle = true)
         {
-            return GetName(InputAttributes, Abuf, Swizzle);
+            return GetName(InAttributes, Abuf, Swizzle);
         }
 
-        private string GetName(Dictionary<int, GlslDeclInfo> Decls, ShaderIrOperAbuf Abuf, bool Swizzle)
+        private string GetName(Dictionary<int, ShaderDeclInfo> Decls, ShaderIrOperAbuf Abuf, bool Swizzle)
         {
             int Index =  Abuf.Offs >> 4;
             int Elem  = (Abuf.Offs >> 2) & 3;
 
-            if (!Decls.TryGetValue(Index, out GlslDeclInfo DeclInfo))
+            if (!Decls.TryGetValue(Index, out ShaderDeclInfo DeclInfo))
             {
                 throw new InvalidOperationException();
             }
@@ -517,11 +509,11 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Pred.IsConst ? "true" : GetNameWithSwizzle(Preds, Pred.Index);
         }
 
-        private string GetNameWithSwizzle(Dictionary<int, GlslDeclInfo> Decls, int Index)
+        private string GetNameWithSwizzle(Dictionary<int, ShaderDeclInfo> Decls, int Index)
         {
             int VecIndex = Index >> 2;
 
-            if (Decls.TryGetValue(VecIndex, out GlslDeclInfo DeclInfo))
+            if (Decls.TryGetValue(VecIndex, out ShaderDeclInfo DeclInfo))
             {
                 if (DeclInfo.Size > 1 && Index < VecIndex + DeclInfo.Size)
                 {
@@ -674,7 +666,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             int Handle = ((ShaderIrOperImm)Op.OperandC).Imm;
 
-            if (!Textures.TryGetValue(Handle, out GlslDeclInfo DeclInfo))
+            if (!Textures.TryGetValue(Handle, out ShaderDeclInfo DeclInfo))
             {
                 throw new InvalidOperationException();
             }

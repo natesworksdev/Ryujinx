@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu
 {
     public class NvGpuFifo
     {
-        private const int MacrosCount    = 32;
+        private const int MacrosCount    = 0x80;
         private const int MacroIndexMask = MacrosCount - 1;
 
         private NsGpu Gpu;
