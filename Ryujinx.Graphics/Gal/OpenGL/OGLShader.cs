@@ -3,6 +3,7 @@ using Ryujinx.Graphics.Gal.Shader;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
@@ -14,11 +15,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             public GalShaderType Type { get; private set; }
 
-            public ShaderStage(GalShaderType Type)
+            public ICollection<ShaderDeclInfo> TextureUsage { get; private set; }
+            public ICollection<ShaderDeclInfo> UniformUsage { get; private set; }
+
+            public ShaderStage(
+                GalShaderType               Type,
+                ICollection<ShaderDeclInfo> TextureUsage,
+                ICollection<ShaderDeclInfo> UniformUsage)
             {
                 Handle = GL.CreateShader(OGLEnumConverter.GetShaderType(Type));
 
-                this.Type = Type;
+                this.Type         = Type;
+                this.TextureUsage = TextureUsage;
+                this.UniformUsage = UniformUsage;
             }
 
             public void Dispose()
@@ -63,21 +72,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (!Stages.ContainsKey(Tag))
             {
-                string Glsl = GetGlslCode(Data, Type);
+                GlslProgram Program = GetGlslProgram(Data, Type);
 
-                System.Console.WriteLine(Glsl);
+                System.Console.WriteLine(Program.Code);
 
-                ShaderStage Stage = new ShaderStage(Type);
+                ShaderStage Stage = new ShaderStage(
+                    Type,
+                    Program.Textures,
+                    Program.Uniforms);
 
                 Stages.Add(Tag, Stage);
 
-                CompileAndCheck(Stage.Handle, Glsl);
+                CompileAndCheck(Stage.Handle, Program.Code);
             }
         }
 
-        public void SetConstBuffer(int Cbuf, byte[] Data)
+        public void SetConstBuffer(long Tag, int Cbuf, byte[] Data)
         {
-
+            if (Stages.TryGetValue(Tag, out ShaderStage Stage))
+            {
+                foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage.Where(x => x.Cbuf == Cbuf))
+                {
+                    float Value = BitConverter.ToSingle(Data, DeclInfo.Index * 4);
+                }
+            }
         }
 
         public void Bind(long Tag)
@@ -138,7 +156,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        private string GetGlslCode(byte[] Data, GalShaderType Type)
+        private GlslProgram GetGlslProgram(byte[] Data, GalShaderType Type)
         {
             int[] Code = new int[(Data.Length - 0x50) >> 2];
 
@@ -156,7 +174,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GlslDecompiler Decompiler = new GlslDecompiler();
 
-            return Decompiler.Decompile(Code, Type).Code;
+            return Decompiler.Decompile(Code, Type);
         }
 
         private static void CompileAndCheck(int Handle, string Code)

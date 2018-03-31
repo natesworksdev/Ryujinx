@@ -89,7 +89,23 @@ namespace Ryujinx.Graphics.Gpu
 
                 byte[] Code = AMemoryHelper.ReadBytes(Memory, Position, (uint)Size);
 
-                Gpu.Renderer.CreateShader(Position, Code, GetTypeFromProgram(Index));
+                GalShaderType ShaderType = GetTypeFromProgram(Index);
+
+                Gpu.Renderer.CreateShader(Position, Code, ShaderType);
+
+                for (int Cbuf = 0; Cbuf < Cbs.Length; Cbuf++)
+                {
+                    ConstBuffer Cb = Cbs[Cbuf];
+
+                    if (Cb.Enabled)
+                    {
+                        long CbPosition = Cb.Position + (int)ShaderType * Cb.Size;
+
+                        byte[] Data = AMemoryHelper.ReadBytes(Memory, CbPosition, (uint)Cb.Size);
+
+                        Gpu.Renderer.SetShaderCb(Position, Cbuf, Data);
+                    }
+                }
             }
         }
 
@@ -155,10 +171,9 @@ namespace Ryujinx.Graphics.Gpu
             if (TryGetCpuAddr(NvGpuEngine3dReg.CbAddress, out long Position))
             {
                 Cbs[Index].Position = Position;
+                Cbs[Index].Enabled  = Enabled;
+                Cbs[Index].Size     = ReadRegister(NvGpuEngine3dReg.CbSize);
             }
-
-            Cbs[Index].Enabled = Enabled;
-            Cbs[Index].Size    = ReadRegister(NvGpuEngine3dReg.CbSize);
         }
 
         private int ReadCb(AMemory Memory, int Cbuf, int Offset)
