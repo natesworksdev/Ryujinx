@@ -15,13 +15,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             public GalShaderType Type { get; private set; }
 
-            public ICollection<ShaderDeclInfo> TextureUsage { get; private set; }
-            public ICollection<ShaderDeclInfo> UniformUsage { get; private set; }
+            public IEnumerable<ShaderDeclInfo> TextureUsage { get; private set; }
+            public IEnumerable<ShaderDeclInfo> UniformUsage { get; private set; }
 
             public ShaderStage(
                 GalShaderType               Type,
-                ICollection<ShaderDeclInfo> TextureUsage,
-                ICollection<ShaderDeclInfo> UniformUsage)
+                IEnumerable<ShaderDeclInfo> TextureUsage,
+                IEnumerable<ShaderDeclInfo> UniformUsage)
             {
                 Handle = GL.CreateShader(OGLEnumConverter.GetShaderType(Type));
 
@@ -61,6 +61,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private Dictionary<ShaderProgram, int> Programs;
 
+        public int CurrentProgramHandle { get; private set; }
+
         public OGLShader()
         {
             Stages = new Dictionary<long, ShaderStage>();
@@ -68,13 +70,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Programs = new Dictionary<ShaderProgram, int>();
         }
 
-        public void Create(long Tag, byte[] Data, GalShaderType Type)
+        public void Create(long Tag, GalShaderType Type, byte[] Data)
         {
             if (!Stages.ContainsKey(Tag))
             {
                 GlslProgram Program = GetGlslProgram(Data, Type);
-
-                System.Console.WriteLine(Program.Code);
 
                 ShaderStage Stage = new ShaderStage(
                     Type,
@@ -94,6 +94,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage.Where(x => x.Cbuf == Cbuf))
                 {
                     float Value = BitConverter.ToSingle(Data, DeclInfo.Index * 4);
+
+                    int Location = GL.GetUniformLocation(CurrentProgramHandle, DeclInfo.Name);
+
+                    GL.Uniform1(Location, Value);
                 }
             }
         }
@@ -113,21 +117,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public bool BindCurrentProgram()
+        public void BindProgram()
         {
             if (Current.Vertex   == null ||
                 Current.Fragment == null)
             {
-                return false;
+                return;
             }
 
-            GL.UseProgram(GetCurrentProgramHandle());
-
-            return true;
-        }
-
-        private int GetCurrentProgramHandle()
-        {
             if (!Programs.TryGetValue(Current, out int Handle))
             {
                 Handle = GL.CreateProgram();
@@ -145,7 +142,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Programs.Add(Current, Handle);
             }
 
-            return Handle;
+            GL.UseProgram(Handle);
+
+            CurrentProgramHandle = Handle;
         }
 
         private void AttachIfNotNull(int ProgramHandle, ShaderStage Stage)
