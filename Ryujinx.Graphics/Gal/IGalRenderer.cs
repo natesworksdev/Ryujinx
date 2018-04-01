@@ -21,12 +21,17 @@ namespace Ryujinx.Graphics.Gal
             float OffsY,
             float Rotate);
 
+        //Rasterizer
+        void ClearBuffers(int RtIndex, GalClearBufferFlags Flags);
+
+        void SetVertexArray(int VbIndex, int Stride, byte[] Buffer, GalVertexAttrib[] Attribs);
+        void RenderVertexArray(int VbIndex);
+
         //Shader
-        void CreateShader(long Tag, byte[] Data, GalShaderType Type);
+        void CreateShader(long Tag, GalShaderType Type, byte[] Data);
         void SetShaderCb(long Tag, int Cbuf, byte[] Data);
         void BindShader(long Tag);
-
-        void SendVertexBuffer(int Index, byte[] Buffer, int Stride, GalVertexAttrib[] Attribs);
+        void BindProgram();
 
         void SendR8G8B8A8Texture(int Index, byte[] Buffer, int Width, int Height);
 

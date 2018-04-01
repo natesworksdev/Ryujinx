@@ -2,28 +2,19 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     public class OpenGLRenderer : IGalRenderer
     {
-        private struct VertexBuffer
-        {
-            public int VaoHandle;
-            public int VboHandle;
-
-            public int PrimCount;
-        }
-
         private struct Texture
         {
             public int Handle;
         }
 
-        private List<VertexBuffer> VertexBuffers;
-
         private Texture[] Textures;
+
+        private OGLRasterizer Rasterizer;
 
         private OGLShader Shader;
 
@@ -33,9 +24,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OpenGLRenderer()
         {
-            VertexBuffers = new List<VertexBuffer>();
-
             Textures = new Texture[8];
+
+            Rasterizer = new OGLRasterizer();
 
             Shader = new OGLShader();
 
@@ -70,18 +61,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public void Render()
         {
             FbRenderer.Render();
-
-            for (int Index = 0; Index < VertexBuffers.Count; Index++)
-            {
-                VertexBuffer Vb = VertexBuffers[Index];
-
-                if (Vb.VaoHandle != 0 &&
-                    Vb.PrimCount != 0)
-                {
-                    GL.BindVertexArray(Vb.VaoHandle);
-                    GL.DrawArrays(PrimitiveType.TriangleStrip, 0, Vb.PrimCount);
-                }
-            }
         }
 
         public void SetWindowSize(int Width, int Height)
@@ -110,157 +89,31 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             FbRenderer.Set(Fb, Width, Height, Transform, Offs);
         }
 
-        public void SendVertexBuffer(int Index, byte[] Buffer, int Stride, GalVertexAttrib[] Attribs)
+        public void ClearBuffers(int RtIndex, GalClearBufferFlags Flags)
         {
-            if (Index < 0)
+            ActionsQueue.Enqueue(() => Rasterizer.ClearBuffers(RtIndex, Flags));
+        }
+
+        public void SetVertexArray(int VbIndex, int Stride, byte[] Buffer, GalVertexAttrib[] Attribs)
+        {
+            if ((uint)VbIndex > 31)
             {
-                throw new ArgumentOutOfRangeException(nameof(Index));
+                throw new ArgumentOutOfRangeException(nameof(VbIndex));
             }
 
-            if (Buffer.Length == 0 || Stride == 0)
+            ActionsQueue.Enqueue(() => Rasterizer.SetVertexArray(VbIndex, Stride,
+                Buffer  ?? throw new ArgumentNullException(nameof(Buffer)),
+                Attribs ?? throw new ArgumentNullException(nameof(Attribs))));
+        }
+
+        public void RenderVertexArray(int VbIndex)
+        {
+            if ((uint)VbIndex > 31)
             {
-                return;
+                throw new ArgumentOutOfRangeException(nameof(VbIndex));
             }
 
-            EnsureVbInitialized(Index);
-
-            VertexBuffer Vb = VertexBuffers[Index];
-
-            Vb.PrimCount = Buffer.Length / Stride;
-
-            VertexBuffers[Index] = Vb;
-
-            IntPtr Length = new IntPtr(Buffer.Length);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, Vb.VboHandle);
-            GL.BufferData(BufferTarget.ArrayBuffer, Length, Buffer, BufferUsageHint.StreamDraw);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-
-            GL.BindVertexArray(Vb.VaoHandle);
-
-            for (int Attr = 0; Attr < 16; Attr++)
-            {
-                GL.DisableVertexAttribArray(Attr);
-            }
-
-            foreach (GalVertexAttrib Attrib in Attribs)
-            {
-                if (Attrib.Index >= 3) break;
-
-                GL.EnableVertexAttribArray(Attrib.Index);
-
-                GL.BindBuffer(BufferTarget.ArrayBuffer, Vb.VboHandle);
-
-                int Size = 0;
-
-                switch (Attrib.Size)
-                {
-                    case GalVertexAttribSize._8:
-                    case GalVertexAttribSize._16:
-                    case GalVertexAttribSize._32:
-                        Size = 1;
-                        break;
-                    case GalVertexAttribSize._8_8:
-                    case GalVertexAttribSize._16_16:
-                    case GalVertexAttribSize._32_32:
-                        Size = 2;
-                        break;
-                    case GalVertexAttribSize._8_8_8:
-                    case GalVertexAttribSize._11_11_10:
-                    case GalVertexAttribSize._16_16_16:
-                    case GalVertexAttribSize._32_32_32:
-                        Size = 3;
-                        break;
-                    case GalVertexAttribSize._8_8_8_8:
-                    case GalVertexAttribSize._10_10_10_2:
-                    case GalVertexAttribSize._16_16_16_16:
-                    case GalVertexAttribSize._32_32_32_32:
-                        Size = 4;
-                        break;
-                }
-
-                bool Signed =
-                    Attrib.Type == GalVertexAttribType.Snorm ||
-                    Attrib.Type == GalVertexAttribType.Sint  ||
-                    Attrib.Type == GalVertexAttribType.Sscaled;
-
-                bool Normalize =
-                    Attrib.Type == GalVertexAttribType.Snorm ||
-                    Attrib.Type == GalVertexAttribType.Unorm;
-
-                VertexAttribPointerType Type = 0;
-
-                switch (Attrib.Type)
-                {
-                    case GalVertexAttribType.Snorm:
-                    case GalVertexAttribType.Unorm:
-                    case GalVertexAttribType.Sint:
-                    case GalVertexAttribType.Uint:
-                    case GalVertexAttribType.Uscaled:
-                    case GalVertexAttribType.Sscaled:
-                    {
-                        switch (Attrib.Size)
-                        {
-                            case GalVertexAttribSize._8:
-                            case GalVertexAttribSize._8_8:
-                            case GalVertexAttribSize._8_8_8:
-                            case GalVertexAttribSize._8_8_8_8:
-                            {
-                                Type = Signed
-                                    ? VertexAttribPointerType.Byte
-                                    : VertexAttribPointerType.UnsignedByte;
-
-                                break;
-                            }
-
-                            case GalVertexAttribSize._16:
-                            case GalVertexAttribSize._16_16:
-                            case GalVertexAttribSize._16_16_16:
-                            case GalVertexAttribSize._16_16_16_16:
-                            {
-                                Type = Signed
-                                    ? VertexAttribPointerType.Short
-                                    : VertexAttribPointerType.UnsignedShort;
-
-                                break;
-                            }
-
-                            case GalVertexAttribSize._10_10_10_2:
-                            case GalVertexAttribSize._11_11_10:
-                            case GalVertexAttribSize._32:
-                            case GalVertexAttribSize._32_32:
-                            case GalVertexAttribSize._32_32_32:
-                            case GalVertexAttribSize._32_32_32_32:
-                            {
-                                Type = Signed
-                                    ? VertexAttribPointerType.Int
-                                    : VertexAttribPointerType.UnsignedInt;
-
-                                break;
-                            }
-                        }
-
-                        break;
-                    }
-
-                    case GalVertexAttribType.Float:
-                    {
-                        Type = VertexAttribPointerType.Float;
-
-                        break;
-                    }
-                }
-
-                GL.VertexAttribPointer(
-                    Attrib.Index,
-                    Size,
-                    Type,
-                    Normalize,
-                    Stride,
-                    Attrib.Offset);
-            }
-
-            GL.BindVertexArray(0);
+            ActionsQueue.Enqueue(() => Rasterizer.RenderVertexArray(VbIndex));
         }
 
         public void SendR8G8B8A8Texture(int Index, byte[] Buffer, int Width, int Height)
@@ -290,14 +143,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BindTexture(TextureTarget.Texture2D, Textures[Index].Handle);
         }
 
-        public void CreateShader(long Tag, byte[] Data, GalShaderType Type)
+        public void CreateShader(long Tag, GalShaderType Type, byte[] Data)
         {
             if (Data == null)
             {
                 throw new ArgumentNullException(nameof(Data));
             }
 
-            ActionsQueue.Enqueue(() => Shader.Create(Tag, Data, Type));
+            ActionsQueue.Enqueue(() => Shader.Create(Tag, Type, Data));
         }
 
         public void SetShaderCb(long Tag, int Cbuf, byte[] Data)
@@ -315,26 +168,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue.Enqueue(() => Shader.Bind(Tag));
         }
 
-        private void EnsureVbInitialized(int VbIndex)
+        public void BindProgram()
         {
-            while (VbIndex >= VertexBuffers.Count)
-            {
-                VertexBuffers.Add(new VertexBuffer());
-            }
-
-            VertexBuffer Vb = VertexBuffers[VbIndex];
-
-            if (Vb.VaoHandle == 0)
-            {
-                Vb.VaoHandle = GL.GenVertexArray();
-            }
-
-            if (Vb.VboHandle == 0)
-            {
-                Vb.VboHandle = GL.GenBuffer();
-            }
-
-            VertexBuffers[VbIndex] = Vb;
+            ActionsQueue.Enqueue(() => Shader.BindProgram());
         }
 
         private void EnsureTexInitialized(int TexIndex)
