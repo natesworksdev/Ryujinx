@@ -87,6 +87,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
+        public IEnumerable<ShaderDeclInfo> GetTextureUsage(GalShaderType ShaderType)
+        {
+            switch (ShaderType)
+            {
+                case GalShaderType.Vertex:         return GetTextureUsage(Current.Vertex);
+                case GalShaderType.TessControl:    return GetTextureUsage(Current.TessControl);
+                case GalShaderType.TessEvaluation: return GetTextureUsage(Current.TessEvaluation);
+                case GalShaderType.Geometry:       return GetTextureUsage(Current.Geometry);
+                case GalShaderType.Fragment:       return GetTextureUsage(Current.Fragment);
+            }
+
+            return null;
+        }
+
+        private IEnumerable<ShaderDeclInfo> GetTextureUsage(ShaderStage Stage)
+        {
+            return Stage?.TextureUsage ?? Enumerable.Empty<ShaderDeclInfo>();
+        }
+
         public void SetConstBuffer(long Tag, int Cbuf, byte[] Data)
         {
             if (Stages.TryGetValue(Tag, out ShaderStage Stage))

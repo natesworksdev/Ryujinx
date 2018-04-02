@@ -282,7 +282,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                         throw new NotImplementedException(Op.Inst.ToString());
                     }
 
-                    if (!(Entry || IsUnary(Op.Inst)))
+                    if (!Entry && (Op.OperandB != null ||
+                                   Op.OperandC != null))
                     {
                         Expr = "(" + Expr + ")";
                     }
@@ -291,24 +292,6 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 default: throw new ArgumentException(nameof(Node));
             }
-        }
-
-        private bool IsUnary(ShaderIrInst Inst)
-        {
-            return Inst == ShaderIrInst.Bnot ||
-                   Inst == ShaderIrInst.Fabs ||
-                   Inst == ShaderIrInst.Fcos ||
-                   Inst == ShaderIrInst.Fex2 ||
-                   Inst == ShaderIrInst.Flg2 ||
-                   Inst == ShaderIrInst.Fneg ||
-                   Inst == ShaderIrInst.Frcp ||
-                   Inst == ShaderIrInst.Frsq ||
-                   Inst == ShaderIrInst.Fsin ||
-                   Inst == ShaderIrInst.Ipa  ||
-                   Inst == ShaderIrInst.Texr ||
-                   Inst == ShaderIrInst.Texg ||
-                   Inst == ShaderIrInst.Texb ||
-                   Inst == ShaderIrInst.Texa;
         }
 
         private string GetName(ShaderIrOperCbuf Cbuf)
@@ -331,12 +314,12 @@ namespace Ryujinx.Graphics.Gal.Shader
             return GetName(Decl.InAttributes, Abuf);
         }
 
-        private string GetName(IReadOnlyDictionary<int, ShaderDeclInfo> Decls, ShaderIrOperAbuf Abuf)
+        private string GetName(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, ShaderIrOperAbuf Abuf)
         {
             int Index =  Abuf.Offs >> 4;
             int Elem  = (Abuf.Offs >> 2) & 3;
 
-            if (!Decls.TryGetValue(Index, out ShaderDeclInfo DeclInfo))
+            if (!Dict.TryGetValue(Index, out ShaderDeclInfo DeclInfo))
             {
                 throw new InvalidOperationException();
             }
@@ -359,11 +342,11 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Pred.IsConst ? "true" : GetNameWithSwizzle(Decl.Preds, Pred.Index);
         }
 
-        private string GetNameWithSwizzle(IReadOnlyDictionary<int, ShaderDeclInfo> Decls, int Index)
+        private string GetNameWithSwizzle(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, int Index)
         {
             int VecIndex = Index >> 2;
 
-            if (Decls.TryGetValue(VecIndex, out ShaderDeclInfo DeclInfo))
+            if (Dict.TryGetValue(VecIndex, out ShaderDeclInfo DeclInfo))
             {
                 if (DeclInfo.Size > 1 && Index < VecIndex + DeclInfo.Size)
                 {
@@ -371,7 +354,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
             }
 
-            if (!Decls.TryGetValue(Index, out DeclInfo))
+            if (!Dict.TryGetValue(Index, out DeclInfo))
             {
                 throw new InvalidOperationException();
             }
@@ -385,6 +368,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         }
 
         private string GetBandExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "&&");
+
         private string GetBnotExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "!");
 
         private string GetCltExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "<");
@@ -471,9 +455,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetTexSamplerCoords(ShaderIrOp Op)
         {
-            return "vec2(" +
-                GetInOperName(Op.OperandA) + ", " +
-                GetInOperName(Op.OperandB) + ")";
+            return "vec2(" + GetInOperName(Op.OperandA, Entry: true) + ", " +
+                             GetInOperName(Op.OperandB, Entry: true) + ")";
         }
     }
 }

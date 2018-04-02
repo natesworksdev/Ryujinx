@@ -71,6 +71,7 @@ namespace Ryujinx.Graphics.Gpu
 
             Gpu.Renderer.BindProgram();
 
+            UploadTextures(Memory);
             UploadUniforms(Memory);
             UploadVertexArrays(Memory);
         }
@@ -95,7 +96,10 @@ namespace Ryujinx.Graphics.Gpu
                 int Control = ReadRegister(NvGpuEngine3dReg.ShaderNControl + Index * 0x10);
                 int Offset  = ReadRegister(NvGpuEngine3dReg.ShaderNOffset  + Index * 0x10);
 
-                if (Offset == 0 || (Index != 1 && Index != 5))
+                //Note: Vertex Program (B) is always enabled.
+                bool Enable = (Control & 1) != 0 || Index == 1;
+
+                if (!Enable)
                 {
                     continue;
                 }
@@ -103,11 +107,6 @@ namespace Ryujinx.Graphics.Gpu
                 long Tag = BasePosition + (uint)Offset;
 
                 long Position = Gpu.GetCpuAddr(Tag);
-
-                if (Position == -1)
-                {
-                    continue;
-                }
 
                 //TODO: Find a better way to calculate the size.
                 int Size = 0x20000;
@@ -127,11 +126,13 @@ namespace Ryujinx.Graphics.Gpu
 
             for (int Index = 0; Index < 5; Index++)
             {
-                int Offset = ReadRegister(NvGpuEngine3dReg.ShaderNOffset + (Index + 1) * 0x10);
+                int Control = ReadRegister(NvGpuEngine3dReg.ShaderNControl + (Index + 1) * 0x10);
+                int Offset  = ReadRegister(NvGpuEngine3dReg.ShaderNOffset  + (Index + 1) * 0x10);
 
-                long Tag = BasePosition + (uint)Offset;
+                //Note: Vertex Program (B) is always enabled.
+                bool Enable = (Control & 1) != 0 || Index == 0;
 
-                if (Offset == 0 || (Index != 0 && Index != 4))
+                if (!Enable)
                 {
                     continue;
                 }
@@ -146,7 +147,7 @@ namespace Ryujinx.Graphics.Gpu
 
                         byte[] Data = AMemoryHelper.ReadBytes(Memory, CbPosition, (uint)Cb.Size);
 
-                        Gpu.Renderer.SetShaderCb(Tag, Cbuf, Data);
+                        Gpu.Renderer.SetShaderConstBuffer(BasePosition + (uint)Offset, Cbuf, Data);
                     }
                 }
             }
@@ -202,6 +203,78 @@ namespace Ryujinx.Graphics.Gpu
                 Gpu.Renderer.SetVertexArray(Index, Stride, Data, AttribArray);
                 Gpu.Renderer.RenderVertexArray(Index);
             }
+        }
+
+        private void UploadTextures(AMemory Memory)
+        {
+            int TextureCbIndex = ReadRegister(NvGpuEngine3dReg.TextureCbIndex);
+
+            long BasePosition = Cbs[TextureCbIndex].Position;
+
+            long Size = (uint)Cbs[TextureCbIndex].Size;
+
+            Gpu.Renderer.UpdateTextures((int Index, GalShaderType ShaderType) =>
+            {
+                long Position = BasePosition + (int)ShaderType * Size;
+
+                return TextureRequestHandler(Memory, Position, Index);
+            });
+        }
+
+        private GalTexture TextureRequestHandler(AMemory Memory, long BasePosition, int Index)
+        {
+            long Position = BasePosition + Index * 4;
+
+            int TextureHandle = Memory.ReadInt32(Position);
+
+            int TicIndex = (TextureHandle >>  0) & 0xfffff;
+            int TscIndex = (TextureHandle >> 20) & 0xfff;
+
+            TryGetCpuAddr(NvGpuEngine3dReg.TexHeaderPoolOffset, out long TicPosition);
+
+            int[] Tic = ReadWords(Memory, TicPosition + TicIndex * 0x20, 8);
+
+            GalTextureFormat Format = (GalTextureFormat)(Tic[0] & 0x7f);
+
+            long TextureAddress = (uint)Tic[1];
+
+            TextureAddress |= (long)((ushort)Tic[2]) << 32;
+
+            TextureAddress = Gpu.GetCpuAddr(TextureAddress);
+
+            int Width  = (Tic[4] & 0xffff) + 1;
+            int Height = (Tic[5] & 0xffff) + 1;
+
+            long TextureSize = GetTextureSize(Width, Height, Format);
+
+            byte[] Data = AMemoryHelper.ReadBytes(Memory, TextureAddress, TextureSize);
+
+            return new GalTexture(Data, Width, Height, Format);
+        }
+
+        private long GetTextureSize(int Width, int Height, GalTextureFormat Format)
+        {
+            switch (Format)
+            {
+                case GalTextureFormat.A8B8G8R8: return (Width * Height) << 2;
+                case GalTextureFormat.BC1:      return (Width * Height) >> 1;
+                case GalTextureFormat.BC2:      return  Width * Height;
+                case GalTextureFormat.BC3:      return  Width * Height;
+            }
+
+            throw new NotImplementedException(Format.ToString());
+        }
+
+        private int[] ReadWords(AMemory Memory, long Position, int Count)
+        {
+            int[] Words = new int[Count];
+
+            for (int Index = 0; Index < Count; Index++, Position += 4)
+            {
+                Words[Index] = Memory.ReadInt32(Position);
+            }
+
+            return Words;
         }
 
         private static GalShaderType GetTypeFromProgram(int Program)
@@ -267,7 +340,8 @@ namespace Ryujinx.Graphics.Gpu
             {
                 Cbs[Index].Position = Position;
                 Cbs[Index].Enabled  = Enabled;
-                Cbs[Index].Size     = ReadRegister(NvGpuEngine3dReg.ConstBufferNSize);
+
+                Cbs[Index].Size = ReadRegister(NvGpuEngine3dReg.ConstBufferNSize);
             }
         }
 
