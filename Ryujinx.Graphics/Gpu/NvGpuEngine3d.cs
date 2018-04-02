@@ -232,37 +232,9 @@ namespace Ryujinx.Graphics.Gpu
 
             TryGetCpuAddr(NvGpuEngine3dReg.TexHeaderPoolOffset, out long TicPosition);
 
-            int[] Tic = ReadWords(Memory, TicPosition + TicIndex * 0x20, 8);
+            TicPosition += TicIndex * 0x20;
 
-            GalTextureFormat Format = (GalTextureFormat)(Tic[0] & 0x7f);
-
-            long TextureAddress = (uint)Tic[1];
-
-            TextureAddress |= (long)((ushort)Tic[2]) << 32;
-
-            TextureAddress = Gpu.GetCpuAddr(TextureAddress);
-
-            int Width  = (Tic[4] & 0xffff) + 1;
-            int Height = (Tic[5] & 0xffff) + 1;
-
-            long TextureSize = GetTextureSize(Width, Height, Format);
-
-            byte[] Data = AMemoryHelper.ReadBytes(Memory, TextureAddress, TextureSize);
-
-            return new GalTexture(Data, Width, Height, Format);
-        }
-
-        private long GetTextureSize(int Width, int Height, GalTextureFormat Format)
-        {
-            switch (Format)
-            {
-                case GalTextureFormat.A8B8G8R8: return (Width * Height) << 2;
-                case GalTextureFormat.BC1:      return (Width * Height) >> 1;
-                case GalTextureFormat.BC2:      return  Width * Height;
-                case GalTextureFormat.BC3:      return  Width * Height;
-            }
-
-            throw new NotImplementedException(Format.ToString());
+            return TextureFactory.MakeTexture(Gpu, Memory, TicPosition);
         }
 
         private int[] ReadWords(AMemory Memory, long Position, int Count)
