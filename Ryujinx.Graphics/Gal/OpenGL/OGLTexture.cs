@@ -1,5 +1,4 @@
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Graphics.Gal.Texture;
 using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
@@ -58,18 +57,37 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-            const PixelInternalFormat Pif = PixelInternalFormat.Rgba;
-
             int W = Texture.Width;
             int H = Texture.Height;
 
-            const PixelFormat Pf = PixelFormat.Rgba;
+            byte[] Data = Texture.Data;
 
-            const PixelType Pt = PixelType.UnsignedByte;
+            int Length = Data.Length;
 
-            byte[] Buffer = TextureDecoder.Decode(Texture);
+            if (IsCompressedTextureFormat(Texture.Format))
+            {
+                PixelInternalFormat Pif = OGLEnumConverter.GetCompressedTextureFormat(Texture.Format);
 
-            GL.TexImage2D(TextureTarget.Texture2D, 0, Pif, W, H, 0, Pf, Pt, Buffer);
+                GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, Pif, W, H, 0, Length, Data);
+            }
+            else
+            {
+                //TODO: Get those from Texture format.
+                const PixelInternalFormat Pif = PixelInternalFormat.Rgba;
+
+                const PixelFormat Pf = PixelFormat.Rgba;
+
+                const PixelType Pt = PixelType.UnsignedByte;
+
+                GL.TexImage2D(TextureTarget.Texture2D, 0, Pif, W, H, 0, Pf, Pt, Data);
+            }
+        }
+
+        private static bool IsCompressedTextureFormat(GalTextureFormat Format)
+        {
+            return Format == GalTextureFormat.BC1 ||
+                   Format == GalTextureFormat.BC2 ||
+                   Format == GalTextureFormat.BC3;
         }
 
         private int EnsureTextureInitialized(int TextureIndex)

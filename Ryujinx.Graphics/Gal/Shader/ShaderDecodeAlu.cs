@@ -64,45 +64,14 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitAluBinary(Block, OpCode, ShaderOper.Imm, ShaderIrInst.Fmul);
         }
 
+        public static void Fsetp_R(ShaderIrBlock Block, long OpCode)
+        {
+            EmitFsetp(Block, OpCode, ShaderOper.RR);
+        }
+
         public static void Fsetp_C(ShaderIrBlock Block, long OpCode)
         {
-            bool Aa = ((OpCode >>  7) & 1) != 0;
-            bool Na = ((OpCode >> 43) & 1) != 0;
-            bool Ab = ((OpCode >> 44) & 1) != 0;
-
-            ShaderIrNode OperA = GetOperGpr8  (OpCode);
-            ShaderIrNode OperB = GetOperCbuf34(OpCode);
-
-            ShaderIrInst CmpInst = GetCmp(OpCode);
-
-            ShaderIrOp Op = new ShaderIrOp(CmpInst,
-                GetAluAbsNeg(OperA, Aa, Na),
-                GetAluAbs   (OperB, Ab));
-
-            ShaderIrOperPred P0Node = GetOperPred3 (OpCode);
-            ShaderIrOperPred P1Node = GetOperPred0 (OpCode);
-            ShaderIrOperPred P2Node = GetOperPred39(OpCode);
-
-            Block.AddNode(GetPredNode(new ShaderIrAsg(P0Node, Op), OpCode));
-
-            ShaderIrInst LopInst = GetBLop(OpCode);
-
-            if (LopInst      == ShaderIrInst.Band &&
-                P1Node.Index == ShaderIrOperPred.UnusedIndex &&
-                P2Node.Index == ShaderIrOperPred.UnusedIndex)
-            {
-                return;
-            }
-
-            ShaderIrNode P2NNode = GetOperPred39N(OpCode);
-
-            Op = new ShaderIrOp(LopInst, new ShaderIrOp(ShaderIrInst.Bnot, P0Node), P2NNode);
-
-            Block.AddNode(GetPredNode(new ShaderIrAsg(P1Node, Op), OpCode));
-
-            Op = new ShaderIrOp(LopInst, P0Node, P2NNode);
-
-            Block.AddNode(GetPredNode(new ShaderIrAsg(P0Node, Op), OpCode));
+            EmitFsetp(Block, OpCode, ShaderOper.CR);
         }
 
         public static void Ipa(ShaderIrBlock Block, long OpCode)
@@ -209,6 +178,61 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrOp Op = new ShaderIrOp(ShaderIrInst.Ffma, OperA, OperB, OperC);
 
             Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), Op), OpCode));
+        }
+
+        private static void EmitFsetp(ShaderIrBlock Block, long OpCode, ShaderOper Oper)
+        {
+            bool Aa = ((OpCode >>  7) & 1) != 0;
+            bool Np = ((OpCode >> 42) & 1) != 0;
+            bool Na = ((OpCode >> 43) & 1) != 0;
+            bool Ab = ((OpCode >> 44) & 1) != 0;
+
+            ShaderIrNode OperA = GetOperGpr8(OpCode), OperB;
+
+            switch (Oper)
+            {
+                case ShaderOper.RR:  OperB = GetOperGpr20    (OpCode); break;
+                case ShaderOper.CR:  OperB = GetOperCbuf34   (OpCode); break;
+                case ShaderOper.Imm: OperB = GetOperImmf19_20(OpCode); break;
+
+                default: throw new ArgumentException(nameof(Oper));
+            }
+
+            ShaderIrInst CmpInst = GetCmp(OpCode);
+
+            ShaderIrOp Op = new ShaderIrOp(CmpInst,
+                GetAluAbsNeg(OperA, Aa, Na),
+                GetAluAbs   (OperB, Ab));
+
+            ShaderIrOperPred P0Node = GetOperPred3 (OpCode);
+            ShaderIrOperPred P1Node = GetOperPred0 (OpCode);
+            ShaderIrOperPred P2Node = GetOperPred39(OpCode);
+
+            Block.AddNode(GetPredNode(new ShaderIrAsg(P0Node, Op), OpCode));
+
+            ShaderIrInst LopInst = GetBLop(OpCode);
+
+            if (LopInst == ShaderIrInst.Band && P1Node.IsConst && P2Node.IsConst)
+            {
+                return;
+            }
+
+            ShaderIrNode P2NNode = P2Node;
+
+            if (Np)
+            {
+                P2NNode = new ShaderIrOp(ShaderIrInst.Bnot, P2NNode);
+            }
+
+            Op = new ShaderIrOp(ShaderIrInst.Bnot, P0Node);
+
+            Op = new ShaderIrOp(LopInst, Op, P2NNode);
+
+            Block.AddNode(GetPredNode(new ShaderIrAsg(P1Node, Op), OpCode));
+
+            Op = new ShaderIrOp(LopInst, P0Node, P2NNode);
+
+            Block.AddNode(GetPredNode(new ShaderIrAsg(P0Node, Op), OpCode));
         }
 
         private static ShaderIrNode GetAluAbsNeg(ShaderIrNode Node, bool Abs, bool Neg)
