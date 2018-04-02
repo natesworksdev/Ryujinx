@@ -141,6 +141,11 @@ namespace Ryujinx.Graphics.Gpu
                 {
                     case NvGpuEngine._3d: Call3dMethod(Memory, PBEntry); break;
                 }
+
+                if (PBEntry.SubChannel > 4)
+                {
+                    throw new System.Exception("bad subch");
+                }
             }
         }
 

@@ -3,6 +3,7 @@ namespace Ryujinx.Graphics.Gpu
     enum NvGpuEngine3dReg
     {
         VertexAttribNFormat = 0x458,
+        TexHeaderPoolOffset = 0x55d,
         ShaderAddress       = 0x582,
         QueryAddress        = 0x6c0,
         QuerySequence       = 0x6c2,

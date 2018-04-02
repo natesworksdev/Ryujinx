@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         string Name = StagePrefix + TextureName + Index;
 
-                        m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Index));
+                        m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Handle));
                     }
                     break;
                 }
