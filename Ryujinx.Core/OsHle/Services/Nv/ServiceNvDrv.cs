@@ -98,7 +98,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
         {
             int Fd  = Context.RequestData.ReadInt32();
             int Cmd = Context.RequestData.ReadInt32() & 0xffff;
-            
+
             NvFd FdData = Fds.GetData<NvFd>(Context.Process, Fd);
 
             long Position = Context.Request.GetSendBuffPtr();
@@ -206,7 +206,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             int  Flags    = Reader.ReadInt32();
             int  Kind     = Reader.ReadInt32();
             int  Handle   = Reader.ReadInt32();
-            int  PageSize = Reader.ReadInt32();            
+            int  PageSize = Reader.ReadInt32();
             long BuffAddr = Reader.ReadInt64();
             long MapSize  = Reader.ReadInt64();
             long Offset   = Reader.ReadInt64();
@@ -226,7 +226,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             if (Map == null)
             {
                 Logging.Warn($"Trying to use invalid NvMap Handle {Handle}!");
-                
+
                 return -1; //TODO: Corrent error code.
             }
 
@@ -590,7 +590,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             if (Map == null)
             {
                 Logging.Warn($"Trying to use invalid NvMap Id {Id}!");
-                
+
                 return -1; //TODO: Corrent error code.
             }
 
@@ -617,13 +617,13 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             if (Map == null)
             {
                 Logging.Warn($"Trying to use invalid NvMap Handle {Handle}!");
-                
+
                 return -1; //TODO: Corrent error code.
             }
 
             Map.CpuAddress = Addr;
-            Map.Align   = Align;
-            Map.Kind    = Kind;
+            Map.Align      = Align;
+            Map.Kind       = Kind;
 
             return 0;
         }
@@ -643,7 +643,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             if (Map == null)
             {
                 Logging.Warn($"Trying to use invalid NvMap Handle {Handle}!");
-                
+
                 return -1; //TODO: Corrent error code.
             }
 
@@ -668,7 +668,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             if (Map == null)
             {
                 Logging.Warn($"Trying to use invalid NvMap Handle {Handle}!");
-                
+
                 return -1; //TODO: Corrent error code.
             }
 
@@ -698,7 +698,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             if (Map == null)
             {
                 Logging.Warn($"Trying to use invalid NvMap Handle {Handle}!");
-                
+
                 return -1; //TODO: Corrent error code.
             }
 

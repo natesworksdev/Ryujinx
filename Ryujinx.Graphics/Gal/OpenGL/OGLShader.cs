@@ -1,6 +1,7 @@
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.Gal.Shader;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,21 +14,35 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             public int Handle { get; private set; }
 
+            public bool IsCompiled { get; private set; }
+
             public GalShaderType Type { get; private set; }
+
+            public string Code { get; private set; }
 
             public IEnumerable<ShaderDeclInfo> TextureUsage { get; private set; }
             public IEnumerable<ShaderDeclInfo> UniformUsage { get; private set; }
 
             public ShaderStage(
                 GalShaderType               Type,
+                string                      Code,
                 IEnumerable<ShaderDeclInfo> TextureUsage,
                 IEnumerable<ShaderDeclInfo> UniformUsage)
             {
-                Handle = GL.CreateShader(OGLEnumConverter.GetShaderType(Type));
-
                 this.Type         = Type;
+                this.Code         = Code;
                 this.TextureUsage = TextureUsage;
                 this.UniformUsage = UniformUsage;
+            }
+
+            public void Compile()
+            {
+                if (Handle == 0)
+                {
+                    Handle = GL.CreateShader(OGLEnumConverter.GetShaderType(Type));
+
+                    CompileAndCheck(Handle, Code);
+                }
             }
 
             public void Dispose()
@@ -57,7 +72,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private ShaderProgram Current;
 
-        private Dictionary<long, ShaderStage> Stages;
+        private ConcurrentDictionary<long, ShaderStage> Stages;
 
         private Dictionary<ShaderProgram, int> Programs;
 
@@ -65,49 +80,62 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLShader()
         {
-            Stages = new Dictionary<long, ShaderStage>();
+            Stages = new ConcurrentDictionary<long, ShaderStage>();
 
             Programs = new Dictionary<ShaderProgram, int>();
         }
 
         public void Create(long Tag, GalShaderType Type, byte[] Data)
         {
-            if (!Stages.ContainsKey(Tag))
-            {
-                GlslProgram Program = GetGlslProgram(Data, Type);
-
-                ShaderStage Stage = new ShaderStage(
-                    Type,
-                    Program.Textures,
-                    Program.Uniforms);
-
-                Stages.Add(Tag, Stage);
-
-                CompileAndCheck(Stage.Handle, Program.Code);
-            }
+            Stages.GetOrAdd(Tag, (Key) => ShaderStageFactory(Type, Data));
         }
 
-        public IEnumerable<ShaderDeclInfo> GetTextureUsage(GalShaderType ShaderType)
+        private ShaderStage ShaderStageFactory(GalShaderType Type, byte[] Data)
         {
-            switch (ShaderType)
-            {
-                case GalShaderType.Vertex:         return GetTextureUsage(Current.Vertex);
-                case GalShaderType.TessControl:    return GetTextureUsage(Current.TessControl);
-                case GalShaderType.TessEvaluation: return GetTextureUsage(Current.TessEvaluation);
-                case GalShaderType.Geometry:       return GetTextureUsage(Current.Geometry);
-                case GalShaderType.Fragment:       return GetTextureUsage(Current.Fragment);
-            }
+            GlslProgram Program = GetGlslProgram(Data, Type);
 
-            return null;
+            return new ShaderStage(
+                Type,
+                Program.Code,
+                Program.Textures,
+                Program.Uniforms);
         }
 
-        private IEnumerable<ShaderDeclInfo> GetTextureUsage(ShaderStage Stage)
+        private GlslProgram GetGlslProgram(byte[] Data, GalShaderType Type)
         {
-            return Stage?.TextureUsage ?? Enumerable.Empty<ShaderDeclInfo>();
+            int[] Code = new int[(Data.Length - 0x50) >> 2];
+
+            using (MemoryStream MS = new MemoryStream(Data))
+            {
+                MS.Seek(0x50, SeekOrigin.Begin);
+
+                BinaryReader Reader = new BinaryReader(MS);
+
+                for (int Index = 0; Index < Code.Length; Index++)
+                {
+                    Code[Index] = Reader.ReadInt32();
+                }
+            }
+
+            GlslDecompiler Decompiler = new GlslDecompiler();
+
+            return Decompiler.Decompile(Code, Type);
+        }
+
+        public IEnumerable<ShaderDeclInfo> GetTextureUsage(long Tag)
+        {
+            if (Stages.TryGetValue(Tag, out ShaderStage Stage))
+            {
+                return Stage.TextureUsage;
+            }
+
+            return Enumerable.Empty<ShaderDeclInfo>();
         }
 
         public void SetConstBuffer(long Tag, int Cbuf, byte[] Data)
         {
+            BindProgram();
+
             if (Stages.TryGetValue(Tag, out ShaderStage Stage))
             {
                 foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage.Where(x => x.Cbuf == Cbuf))
@@ -121,18 +149,32 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
+        public void SetUniform1(string UniformName, int Value)
+        {
+            BindProgram();
+
+            int Location = GL.GetUniformLocation(CurrentProgramHandle, UniformName);
+
+            GL.Uniform1(Location, Value);
+        }
+
         public void Bind(long Tag)
         {
             if (Stages.TryGetValue(Tag, out ShaderStage Stage))
             {
-                switch (Stage.Type)
-                {
-                    case GalShaderType.Vertex:         Current.Vertex         = Stage; break;
-                    case GalShaderType.TessControl:    Current.TessControl    = Stage; break;
-                    case GalShaderType.TessEvaluation: Current.TessEvaluation = Stage; break;
-                    case GalShaderType.Geometry:       Current.Geometry       = Stage; break;
-                    case GalShaderType.Fragment:       Current.Fragment       = Stage; break;
-                }
+                Bind(Stage);
+            }
+        }
+
+        private void Bind(ShaderStage Stage)
+        {
+            switch (Stage.Type)
+            {
+                case GalShaderType.Vertex:         Current.Vertex         = Stage; break;
+                case GalShaderType.TessControl:    Current.TessControl    = Stage; break;
+                case GalShaderType.TessEvaluation: Current.TessEvaluation = Stage; break;
+                case GalShaderType.Geometry:       Current.Geometry       = Stage; break;
+                case GalShaderType.Fragment:       Current.Fragment       = Stage; break;
             }
         }
 
@@ -170,32 +212,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (Stage != null)
             {
+                Stage.Compile();
+
                 GL.AttachShader(ProgramHandle, Stage.Handle);
             }
         }
 
-        private GlslProgram GetGlslProgram(byte[] Data, GalShaderType Type)
-        {
-            int[] Code = new int[(Data.Length - 0x50) >> 2];
-
-            using (MemoryStream MS = new MemoryStream(Data))
-            {
-                MS.Seek(0x50, SeekOrigin.Begin);
-
-                BinaryReader Reader = new BinaryReader(MS);
-
-                for (int Index = 0; Index < Code.Length; Index++)
-                {
-                    Code[Index] = Reader.ReadInt32();
-                }
-            }
-
-            GlslDecompiler Decompiler = new GlslDecompiler();
-
-            return Decompiler.Decompile(Code, Type);
-        }
-
-        private static void CompileAndCheck(int Handle, string Code)
+        public static void CompileAndCheck(int Handle, string Code)
         {
             GL.ShaderSource(Handle, Code);
             GL.CompileShader(Handle);

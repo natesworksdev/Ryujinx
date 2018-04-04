@@ -1,5 +1,6 @@
 using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
+using System;
 
 namespace Ryujinx.Graphics.Gpu
 {
@@ -37,6 +38,34 @@ namespace Ryujinx.Graphics.Gpu
             byte[] Data = TextureReader.Read(Memory, Texture);
 
             return new GalTexture(Data, Width, Height, Format);
+        }
+
+        public static GalTextureSampler MakeSampler(NsGpu Gpu, AMemory Memory, long TscPosition)
+        {
+            int[] Tsc = ReadWords(Memory, TscPosition, 8);
+
+            GalTextureWrap AddressU = (GalTextureWrap)((Tsc[0] >> 0) & 7);
+            GalTextureWrap AddressV = (GalTextureWrap)((Tsc[0] >> 3) & 7);
+            GalTextureWrap AddressP = (GalTextureWrap)((Tsc[0] >> 6) & 7);
+
+            GalTextureFilter    MagFilter = (GalTextureFilter)   ((Tsc[1] >> 0) & 3);
+            GalTextureFilter    MinFilter = (GalTextureFilter)   ((Tsc[1] >> 4) & 3);
+            GalTextureMipFilter MipFilter = (GalTextureMipFilter)((Tsc[1] >> 6) & 3);
+
+            GalColorF BorderColor = new GalColorF(
+                BitConverter.Int32BitsToSingle(Tsc[4]),
+                BitConverter.Int32BitsToSingle(Tsc[5]),
+                BitConverter.Int32BitsToSingle(Tsc[6]),
+                BitConverter.Int32BitsToSingle(Tsc[7]));
+
+            return new GalTextureSampler(
+                AddressU,
+                AddressV,
+                AddressP,
+                MinFilter,
+                MagFilter,
+                MipFilter,
+                BorderColor);
         }
 
         private static int[] ReadWords(AMemory Memory, long Position, int Count)

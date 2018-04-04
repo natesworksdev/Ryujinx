@@ -1,11 +1,16 @@
 using OpenTK;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     public class OpenGLRenderer : IGalRenderer
     {
+        private OGLBlend Blend;
+
+        private OGLFrameBuffer FrameBuffer;
+
         private OGLRasterizer Rasterizer;
 
         private OGLShader Shader;
@@ -18,11 +23,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OpenGLRenderer()
         {
+            Blend = new OGLBlend();
+
+            FrameBuffer = new OGLFrameBuffer();
+
             Rasterizer = new OGLRasterizer();
 
             Shader = new OGLShader();
 
-            Texture = new OGLTexture(Shader);
+            Texture = new OGLTexture();
 
             ActionsQueue = new ConcurrentQueue<Action>();
         }
@@ -83,6 +92,61 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             FbRenderer.Set(Fb, Width, Height, Transform, Offs);
         }
 
+        public void SetBlendEnable(bool Enable)
+        {
+            if (Enable)
+            {
+                ActionsQueue.Enqueue(() => Blend.Enable());
+            }
+            else
+            {
+                ActionsQueue.Enqueue(() => Blend.Disable());
+            }
+        }
+
+        public void SetBlend(
+            GalBlendEquation Equation,
+            GalBlendFactor   FuncSrc,
+            GalBlendFactor   FuncDst)
+        {
+            ActionsQueue.Enqueue(() => Blend.Set(Equation, FuncSrc, FuncDst));
+        }
+
+        public void SetBlendSeparate(
+            GalBlendEquation EquationRgb,
+            GalBlendEquation EquationAlpha,
+            GalBlendFactor   FuncSrcRgb,
+            GalBlendFactor   FuncDstRgb,
+            GalBlendFactor   FuncSrcAlpha,
+            GalBlendFactor   FuncDstAlpha)
+        {
+            ActionsQueue.Enqueue(() =>
+            {
+                Blend.SetSeparate(
+                    EquationRgb,
+                    EquationAlpha,
+                    FuncSrcRgb,
+                    FuncDstRgb,
+                    FuncSrcAlpha,
+                    FuncDstAlpha);
+            });
+        }
+
+        public void SetFb(int FbIndex, int Width, int Height)
+        {
+            ActionsQueue.Enqueue(() => FrameBuffer.Set(FbIndex, Width, Height));
+        }
+
+        public void BindFrameBuffer(int FbIndex)
+        {
+            ActionsQueue.Enqueue(() => FrameBuffer.Bind(FbIndex));
+        }
+
+        public void DrawFrameBuffer(int FbIndex)
+        {
+            ActionsQueue.Enqueue(() => FrameBuffer.Draw(FbIndex));
+        }
+
         public void ClearBuffers(int RtIndex, GalClearBufferFlags Flags)
         {
             ActionsQueue.Enqueue(() => Rasterizer.ClearBuffers(RtIndex, Flags));
@@ -100,14 +164,34 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Attribs ?? throw new ArgumentNullException(nameof(Attribs))));
         }
 
-        public void RenderVertexArray(int VbIndex)
+        public void SetIndexArray(byte[] Buffer, GalIndexFormat Format)
+        {
+            if (Buffer == null)
+            {
+                throw new ArgumentNullException(nameof(Buffer));
+            }
+
+            ActionsQueue.Enqueue(() => Rasterizer.SetIndexArray(Buffer, Format));
+        }
+
+        public void DrawArrays(int VbIndex, GalPrimitiveType PrimType)
         {
             if ((uint)VbIndex > 31)
             {
                 throw new ArgumentOutOfRangeException(nameof(VbIndex));
             }
 
-            ActionsQueue.Enqueue(() => Rasterizer.RenderVertexArray(VbIndex));
+            ActionsQueue.Enqueue(() => Rasterizer.DrawArrays(VbIndex, PrimType));
+        }
+
+        public void DrawElements(int VbIndex, int First, GalPrimitiveType PrimType)
+        {
+            if ((uint)VbIndex > 31)
+            {
+                throw new ArgumentOutOfRangeException(nameof(VbIndex));
+            }
+
+            ActionsQueue.Enqueue(() => Rasterizer.DrawElements(VbIndex, First, PrimType));
         }
 
         public void CreateShader(long Tag, GalShaderType Type, byte[] Data)
@@ -117,10 +201,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 throw new ArgumentNullException(nameof(Data));
             }
 
-            ActionsQueue.Enqueue(() => Shader.Create(Tag, Type, Data));
+            Shader.Create(Tag, Type, Data);
         }
 
-        public void SetShaderConstBuffer(long Tag, int Cbuf, byte[] Data)
+        public void SetConstBuffer(long Tag, int Cbuf, byte[] Data)
         {
             if (Data == null)
             {
@@ -128,6 +212,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
 
             ActionsQueue.Enqueue(() => Shader.SetConstBuffer(Tag, Cbuf, Data));
+        }
+
+        public void SetUniform1(string UniformName, int Value)
+        {
+            if (UniformName == null)
+            {
+                throw new ArgumentNullException(nameof(UniformName));
+            }
+
+            ActionsQueue.Enqueue(() => Shader.SetUniform1(UniformName, Value));
+        }
+
+        public IEnumerable<ShaderDeclInfo> GetTextureUsage(long Tag)
+        {
+            return Shader.GetTextureUsage(Tag);
         }
 
         public void BindShader(long Tag)
@@ -140,9 +239,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue.Enqueue(() => Shader.BindProgram());
         }
 
-        public void UpdateTextures(Func<int, GalShaderType, GalTexture> RequestTextureCallback)
+        public void SetTexture(int Index, GalTexture Tex)
         {
-            ActionsQueue.Enqueue(() => Texture.UpdateTextures(RequestTextureCallback));
+            ActionsQueue.Enqueue(() => Texture.Set(Index, Tex));
+        }
+
+        public void SetSampler(int Index, GalTextureSampler Sampler)
+        {
+            ActionsQueue.Enqueue(() => Texture.Set(Index, Sampler));
         }
     }
 }

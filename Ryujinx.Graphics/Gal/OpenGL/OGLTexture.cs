@@ -1,72 +1,34 @@
 using OpenTK.Graphics.OpenGL;
-using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLTexture
     {
-        private OGLShader Shader;
-
         private int[] Textures;
 
-        private int CurrentTextureIndex;
-
-        public OGLTexture(OGLShader Shader)
+        public OGLTexture()
         {
-            this.Shader = Shader;
-
             Textures = new int[80];
         }
 
-        public void UpdateTextures(Func<int, GalShaderType, GalTexture> RequestTextureCallback)
+        public void Set(int Index, GalTexture Tex)
         {
-            CurrentTextureIndex = 0;
+            GL.ActiveTexture(TextureUnit.Texture0 + Index);
 
-            UpdateTextures(RequestTextureCallback, GalShaderType.Vertex);
-            UpdateTextures(RequestTextureCallback, GalShaderType.TessControl);
-            UpdateTextures(RequestTextureCallback, GalShaderType.TessEvaluation);
-            UpdateTextures(RequestTextureCallback, GalShaderType.Geometry);
-            UpdateTextures(RequestTextureCallback, GalShaderType.Fragment);
-        }
-
-        private void UpdateTextures(Func<int, GalShaderType, GalTexture> RequestTextureCallback, GalShaderType ShaderType)
-        {
-            foreach (ShaderDeclInfo DeclInfo in Shader.GetTextureUsage(ShaderType))
-            {
-                GalTexture Texture = RequestTextureCallback(DeclInfo.Index, ShaderType);
-
-                GL.ActiveTexture(TextureUnit.Texture0 + CurrentTextureIndex);
-
-                UploadTexture(Texture);
-
-                int Location = GL.GetUniformLocation(Shader.CurrentProgramHandle, DeclInfo.Name);
-
-                GL.Uniform1(Location, CurrentTextureIndex++);
-            }
-        }
-
-        private void UploadTexture(GalTexture Texture)
-        {
-            int Handle = EnsureTextureInitialized(CurrentTextureIndex);
+            int Handle = EnsureTextureInitialized(Index);
 
             GL.BindTexture(TextureTarget.Texture2D, Handle);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            int W = Tex.Width;
+            int H = Tex.Height;
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
-            int W = Texture.Width;
-            int H = Texture.Height;
-
-            byte[] Data = Texture.Data;
+            byte[] Data = Tex.Data;
 
             int Length = Data.Length;
 
-            if (IsCompressedTextureFormat(Texture.Format))
+            if (IsCompressedTextureFormat(Tex.Format))
             {
-                PixelInternalFormat Pif = OGLEnumConverter.GetCompressedTextureFormat(Texture.Format);
+                PixelInternalFormat Pif = OGLEnumConverter.GetCompressedTextureFormat(Tex.Format);
 
                 GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, Pif, W, H, 0, Length, Data);
             }
@@ -83,6 +45,35 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
+        public void Set(int Index, GalTextureSampler Sampler)
+        {
+            int Handle = EnsureTextureInitialized(Index);
+
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+
+            int WrapS = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressU);
+            int WrapT = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressV);
+
+            int MinFilter = (int)OGLEnumConverter.GetTextureMinFilter(Sampler.MinFilter, Sampler.MipFilter);
+            int MagFilter = (int)OGLEnumConverter.GetTextureMagFilter(Sampler.MagFilter);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, WrapS);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, WrapT);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, MinFilter);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, MagFilter);
+
+            float[] Color = new float[]
+            {
+                Sampler.BorderColor.Red,
+                Sampler.BorderColor.Green,
+                Sampler.BorderColor.Blue,
+                Sampler.BorderColor.Alpha
+            };
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, Color);
+        }
+
         private static bool IsCompressedTextureFormat(GalTextureFormat Format)
         {
             return Format == GalTextureFormat.BC1 ||
@@ -90,13 +81,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                    Format == GalTextureFormat.BC3;
         }
 
-        private int EnsureTextureInitialized(int TextureIndex)
+        private int EnsureTextureInitialized(int TexIndex)
         {
-            int Handle = Textures[TextureIndex];
+            int Handle = Textures[TexIndex];
 
             if (Handle == 0)
             {
-                Handle = Textures[TextureIndex] = GL.GenTexture();
+                Handle = Textures[TexIndex] = GL.GenTexture();
             }
 
             return Handle;
