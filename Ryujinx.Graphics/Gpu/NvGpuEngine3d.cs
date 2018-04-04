@@ -22,6 +22,8 @@ namespace Ryujinx.Graphics.Gpu
 
         private ConstBuffer[] Cbs;
 
+        private bool HasDataToRender;
+
         public NvGpuEngine3d(NsGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -61,34 +63,60 @@ namespace Ryujinx.Graphics.Gpu
             }
         }
 
+        private const long GoodFbAddress = 0x1615b2a00;
+
         private void VertexEndGl(AMemory Memory, NsGpuPBEntry PBEntry)
         {
-            int TexCbuf = ReadRegister(NvGpuEngine3dReg.TextureCbIndex);
+            SetFrameBuffer(0);
 
-            int TexHandle = ReadCb(Memory, TexCbuf, 0x20);
-
-            UploadShaders(Memory);
+            long[] Tags = UploadShaders(Memory);
 
             Gpu.Renderer.BindProgram();
 
-            UploadTextures(Memory);
+            SetAlphaBlending();
+
+            UploadTextures(Memory, Tags);
             UploadUniforms(Memory);
             UploadVertexArrays(Memory);
+
+            HasDataToRender = true;
         }
 
         private void ClearBuffers(AMemory Memory, NsGpuPBEntry PBEntry)
         {
+            if (HasDataToRender)
+            {
+                HasDataToRender = false;
+
+                Gpu.Renderer.DrawFrameBuffer(0);
+            }
+
             int Arg0 = PBEntry.Arguments[0];
 
-            int Rt = (Arg0 >> 6) & 0xf;
+            int FbIndex = (Arg0 >> 6) & 0xf;
+
+            int Layer = (Arg0 >> 10) & 0x3ff;
 
             GalClearBufferFlags Flags = (GalClearBufferFlags)(Arg0 & 0x3f);
 
-            Gpu.Renderer.ClearBuffers(Rt, Flags);
+            SetFrameBuffer(0);
+
+            Gpu.Renderer.ClearBuffers(Layer, Flags);
         }
 
-        private void UploadShaders(AMemory Memory)
+        private void SetFrameBuffer(int FbIndex)
         {
+            int Width   = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
+            int Height  = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
+
+            Gpu.Renderer.SetFb(FbIndex, Width, Height);
+            Gpu.Renderer.BindFrameBuffer(FbIndex);
+        }
+
+        private long[] UploadShaders(AMemory Memory)
+        {
+            long[] Tags = new long[5];
+
             long BasePosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
 
             for (int Index = 0; Index < 6; Index++)
@@ -115,9 +143,108 @@ namespace Ryujinx.Graphics.Gpu
 
                 GalShaderType ShaderType = GetTypeFromProgram(Index);
 
+                Tags[(int)ShaderType] = Tag;
+
                 Gpu.Renderer.CreateShader(Tag, ShaderType, Code);
                 Gpu.Renderer.BindShader(Tag);
             }
+
+            return Tags;
+        }
+
+        private static GalShaderType GetTypeFromProgram(int Program)
+        {
+            switch (Program)
+            {
+                case 0:
+                case 1: return GalShaderType.Vertex;
+                case 2: return GalShaderType.TessControl;
+                case 3: return GalShaderType.TessEvaluation;
+                case 4: return GalShaderType.Geometry;
+                case 5: return GalShaderType.Fragment;
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(Program));
+        }
+
+        private void SetAlphaBlending()
+        {
+            bool BlendEnableMaster = (ReadRegister(NvGpuEngine3dReg.BlendEnableMaster) & 1) != 0;
+
+            Gpu.Renderer.SetBlendEnable(BlendEnableMaster);
+
+            bool BlendSeparateAlpha = (ReadRegister(NvGpuEngine3dReg.BlendSeparateAlpha) & 1) != 0;
+
+            GalBlendEquation EquationRgb = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.BlendEquationRgb);
+
+            GalBlendFactor FuncSrcRgb = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendFuncSrcRgb);
+            GalBlendFactor FuncDstRgb = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendFuncDstRgb);
+
+            if (BlendSeparateAlpha)
+            {
+                GalBlendEquation EquationAlpha = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.BlendEquationAlpha);
+
+                GalBlendFactor FuncSrcAlpha = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendFuncSrcAlpha);
+                GalBlendFactor FuncDstAlpha = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendFuncDstAlpha);
+
+                Gpu.Renderer.SetBlendSeparate(
+                    EquationRgb,
+                    EquationAlpha,
+                    FuncSrcRgb,
+                    FuncDstRgb,
+                    FuncSrcAlpha,
+                    FuncDstAlpha);
+            }
+            else
+            {
+                Gpu.Renderer.SetBlend(EquationRgb, FuncSrcRgb, FuncDstRgb);
+            }
+        }
+
+        private void UploadTextures(AMemory Memory, long[] Tags)
+        {
+            long BaseShPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
+
+            int TextureCbIndex = ReadRegister(NvGpuEngine3dReg.TextureCbIndex);
+
+            long BasePosition = Cbs[TextureCbIndex].Position;
+
+            long Size = (uint)Cbs[TextureCbIndex].Size;
+
+            int TexIndex = 0;
+
+            for (int Index = 0; Index < Tags.Length; Index++)
+            {
+                foreach (ShaderDeclInfo DeclInfo in Gpu.Renderer.GetTextureUsage(Tags[Index]))
+                {
+                    long Position = BasePosition + Index * Size;
+
+                    UploadTexture(Memory, Position, TexIndex, DeclInfo.Index);
+
+                    Gpu.Renderer.SetUniform1(DeclInfo.Name, TexIndex);
+
+                    TexIndex++;
+                }
+            }
+        }
+
+        private void UploadTexture(AMemory Memory, long BasePosition, int TexIndex, int HndIndex)
+        {
+            long Position = BasePosition + HndIndex * 4;
+
+            int TextureHandle = Memory.ReadInt32(Position);
+
+            int TicIndex = (TextureHandle >>  0) & 0xfffff;
+            int TscIndex = (TextureHandle >> 20) & 0xfff;
+
+            TryGetCpuAddr(NvGpuEngine3dReg.TexHeaderPoolOffset,  out long TicPosition);
+            TryGetCpuAddr(NvGpuEngine3dReg.TexSamplerPoolOffset, out long TscPosition);
+
+            TicPosition += TicIndex * 0x20;
+            TscPosition += TscIndex * 0x20;
+
+            Gpu.Renderer.SetTexture(TexIndex, TextureFactory.MakeTexture(Gpu, Memory, TicPosition));
+            Gpu.Renderer.SetSampler(TexIndex, TextureFactory.MakeSampler(Gpu, Memory, TscPosition));
         }
 
         private void UploadUniforms(AMemory Memory)
@@ -147,7 +274,7 @@ namespace Ryujinx.Graphics.Gpu
 
                         byte[] Data = AMemoryHelper.ReadBytes(Memory, CbPosition, (uint)Cb.Size);
 
-                        Gpu.Renderer.SetShaderConstBuffer(BasePosition + (uint)Offset, Cbuf, Data);
+                        Gpu.Renderer.SetConstBuffer(BasePosition + (uint)Offset, Cbuf, Data);
                     }
                 }
             }
@@ -155,6 +282,32 @@ namespace Ryujinx.Graphics.Gpu
 
         private void UploadVertexArrays(AMemory Memory)
         {
+            long IndexPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.IndexArrayAddress);
+
+            int IndexSize  = ReadRegister(NvGpuEngine3dReg.IndexArrayFormat);
+            int IndexFirst = ReadRegister(NvGpuEngine3dReg.IndexBatchFirst);
+            int IndexCount = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
+
+            GalIndexFormat IndexFormat = (GalIndexFormat)IndexSize;
+
+            IndexSize = 1 << IndexSize;
+
+            if (IndexSize > 4)
+            {
+                throw new InvalidOperationException();
+            }
+
+            if (IndexSize != 0)
+            {
+                IndexPosition = Gpu.GetCpuAddr(IndexPosition);
+
+                int BufferSize = IndexCount * IndexSize;
+
+                byte[] Data = AMemoryHelper.ReadBytes(Memory, IndexPosition, BufferSize);
+
+                Gpu.Renderer.SetIndexArray(Data, IndexFormat);
+            }
+
             List<GalVertexAttrib>[] Attribs = new List<GalVertexAttrib>[32];
 
             for (int Attr = 0; Attr < 16; Attr++)
@@ -187,81 +340,34 @@ namespace Ryujinx.Graphics.Gpu
                     continue;
                 }
 
-                long Position = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNAddress + Index * 4);
-                long EndPos   = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNEndAddr + Index * 4);
+                long VertexPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNAddress + Index * 4);
+                long VertexEndPos   = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNEndAddr + Index * 4);
 
-                long Size = (EndPos - Position) + 1;
+                long Size = (VertexEndPos - VertexPosition) + 1;
 
                 int Stride = Control & 0xfff;
 
-                Position = Gpu.GetCpuAddr(Position);
+                VertexPosition = Gpu.GetCpuAddr(VertexPosition);
 
-                byte[] Data = AMemoryHelper.ReadBytes(Memory, Position, Size);
+                byte[] Data = AMemoryHelper.ReadBytes(Memory, VertexPosition, Size);
 
                 GalVertexAttrib[] AttribArray = Attribs[Index]?.ToArray() ?? new GalVertexAttrib[0];
 
                 Gpu.Renderer.SetVertexArray(Index, Stride, Data, AttribArray);
-                Gpu.Renderer.RenderVertexArray(Index);
+
+                int PrimCtrl = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
+
+                GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
+
+                if (IndexCount != 0)
+                {
+                    Gpu.Renderer.DrawElements(Index, IndexFirst, PrimType);
+                }
+                else
+                {
+                    Gpu.Renderer.DrawArrays(Index, PrimType);
+                }
             }
-        }
-
-        private void UploadTextures(AMemory Memory)
-        {
-            int TextureCbIndex = ReadRegister(NvGpuEngine3dReg.TextureCbIndex);
-
-            long BasePosition = Cbs[TextureCbIndex].Position;
-
-            long Size = (uint)Cbs[TextureCbIndex].Size;
-
-            Gpu.Renderer.UpdateTextures((int Index, GalShaderType ShaderType) =>
-            {
-                long Position = BasePosition + (int)ShaderType * Size;
-
-                return TextureRequestHandler(Memory, Position, Index);
-            });
-        }
-
-        private GalTexture TextureRequestHandler(AMemory Memory, long BasePosition, int Index)
-        {
-            long Position = BasePosition + Index * 4;
-
-            int TextureHandle = Memory.ReadInt32(Position);
-
-            int TicIndex = (TextureHandle >>  0) & 0xfffff;
-            int TscIndex = (TextureHandle >> 20) & 0xfff;
-
-            TryGetCpuAddr(NvGpuEngine3dReg.TexHeaderPoolOffset, out long TicPosition);
-
-            TicPosition += TicIndex * 0x20;
-
-            return TextureFactory.MakeTexture(Gpu, Memory, TicPosition);
-        }
-
-        private int[] ReadWords(AMemory Memory, long Position, int Count)
-        {
-            int[] Words = new int[Count];
-
-            for (int Index = 0; Index < Count; Index++, Position += 4)
-            {
-                Words[Index] = Memory.ReadInt32(Position);
-            }
-
-            return Words;
-        }
-
-        private static GalShaderType GetTypeFromProgram(int Program)
-        {
-            switch (Program)
-            {
-                case 0:
-                case 1: return GalShaderType.Vertex;
-                case 2: return GalShaderType.TessControl;
-                case 3: return GalShaderType.TessEvaluation;
-                case 4: return GalShaderType.Geometry;
-                case 5: return GalShaderType.Fragment;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(Program));
         }
 
         private void QueryControl(AMemory Memory, NsGpuPBEntry PBEntry)

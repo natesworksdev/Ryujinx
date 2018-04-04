@@ -152,7 +152,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
                 else if (DeclInfo.Name == GlslDecl.FragmentOutputName)
                 {
-                    Name = "out " + GetDecl(DeclInfo) + ";";
+                    Name = "layout (location = 0) out " + GetDecl(DeclInfo) + ";";
                 }
                 else
                 {

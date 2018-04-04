@@ -680,8 +680,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             }
 
             Map.CpuAddress = Addr;
-            Map.Align   = Align;
-            Map.Kind    = Kind;
+            Map.Align      = Align;
+            Map.Kind       = Kind;
 
             return 0;
         }
