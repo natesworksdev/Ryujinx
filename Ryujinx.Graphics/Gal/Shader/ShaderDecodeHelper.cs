@@ -62,8 +62,20 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static ShaderIrNode GetOperImmf19_20(long OpCode)
         {
-            //TODO: This should be a float immediate.
-             return new ShaderIrOperImm((int)(OpCode >> 36) & 0x1fff);
+            uint Imm = (uint)(OpCode >> 20) & 0x7ffff;
+
+            bool Neg = ((OpCode >> 56) & 1) != 0;
+
+            Imm <<= 12;
+
+            if (Neg)
+            {
+                Imm |= 0x80000000;
+            }
+
+            float Value = BitConverter.Int32BitsToSingle((int)Imm);
+
+            return new ShaderIrOperImmf(Value);
         }
 
         public static ShaderIrOperImm GetOperImm13_36(long OpCode)

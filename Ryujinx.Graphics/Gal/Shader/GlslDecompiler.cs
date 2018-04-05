@@ -264,11 +264,12 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             switch (Node)
             {
-                case ShaderIrOperAbuf Abuf: return GetName(Abuf);
-                case ShaderIrOperCbuf Cbuf: return GetName(Cbuf);
-                case ShaderIrOperGpr  Gpr:  return GetName(Gpr);
-                case ShaderIrOperImm  Imm:  return GetName(Imm);
-                case ShaderIrOperPred Pred: return GetName(Pred);
+                case ShaderIrOperAbuf Abuf: return GetName (Abuf);
+                case ShaderIrOperCbuf Cbuf: return GetName (Cbuf);
+                case ShaderIrOperGpr  Gpr:  return GetName (Gpr);
+                case ShaderIrOperImm  Imm:  return GetValue(Imm);
+                case ShaderIrOperImmf Immf: return GetValue(Immf);
+                case ShaderIrOperPred Pred: return GetName (Pred);
 
                 case ShaderIrOp Op:
                     string Expr;
@@ -332,9 +333,14 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Gpr.IsConst ? "0" : GetNameWithSwizzle(Decl.Gprs, Gpr.Index);
         }
 
-        private string GetName(ShaderIrOperImm Imm)
+        private string GetValue(ShaderIrOperImm Imm)
         {
-            return Imm.Imm.ToString(CultureInfo.InvariantCulture);
+            return Imm.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private string GetValue(ShaderIrOperImmf Immf)
+        {
+            return Immf.Value.ToString(CultureInfo.InvariantCulture);
         }
 
         private string GetName(ShaderIrOperPred Pred)
@@ -443,7 +449,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             ShaderIrOperImm Node = (ShaderIrOperImm)Op.OperandC;
 
-            int Handle = ((ShaderIrOperImm)Op.OperandC).Imm;
+            int Handle = ((ShaderIrOperImm)Op.OperandC).Value;
 
             if (!Decl.Textures.TryGetValue(Handle, out ShaderDeclInfo DeclInfo))
             {

@@ -106,7 +106,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         Op.Inst == ShaderIrInst.Texb ||
                         Op.Inst == ShaderIrInst.Texa)
                     {
-                        int Handle = ((ShaderIrOperImm)Op.OperandC).Imm;
+                        int Handle = ((ShaderIrOperImm)Op.OperandC).Value;
 
                         int Index = Handle - TexStartIndex;
 

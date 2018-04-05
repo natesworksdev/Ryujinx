@@ -14,18 +14,19 @@ namespace Ryujinx.Graphics.Gal.Shader
 
 #region Instructions
             Set("111000110000xx", ShaderDecode.Exit);
-            Set("0101110001011x", ShaderDecode.Fadd_R);
             Set("0100110001011x", ShaderDecode.Fadd_C);
-            Set("0011100x01011x", ShaderDecode.Fadd_Imm);
-            Set("010110011xxxxx", ShaderDecode.Ffma_RR);
-            Set("010100011xxxxx", ShaderDecode.Ffma_RC);
+            Set("0011100x01011x", ShaderDecode.Fadd_I);
+            Set("0101110001011x", ShaderDecode.Fadd_R);
             Set("010010011xxxxx", ShaderDecode.Ffma_CR);
-            Set("001100101xxxxx", ShaderDecode.Ffma_Imm);
-            Set("0101110001101x", ShaderDecode.Fmul_R);
+            Set("001100101xxxxx", ShaderDecode.Ffma_I);
+            Set("010100011xxxxx", ShaderDecode.Ffma_RC);
+            Set("010110011xxxxx", ShaderDecode.Ffma_RR);
             Set("0100110001101x", ShaderDecode.Fmul_C);
-            Set("0011100x01101x", ShaderDecode.Fmul_Imm);
-            Set("010110111011xx", ShaderDecode.Fsetp_R);
+            Set("0011100x01101x", ShaderDecode.Fmul_I);
+            Set("0101110001101x", ShaderDecode.Fmul_R);
             Set("010010111011xx", ShaderDecode.Fsetp_C);
+            Set("0011011x1011xx", ShaderDecode.Fsetp_I);
+            Set("010110111011xx", ShaderDecode.Fsetp_R);
             Set("11100000xxxxxx", ShaderDecode.Ipa);
             Set("111000110011xx", ShaderDecode.Kil);
             Set("1110111111011x", ShaderDecode.Ld_A);

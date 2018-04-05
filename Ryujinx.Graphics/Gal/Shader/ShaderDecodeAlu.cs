@@ -8,15 +8,10 @@ namespace Ryujinx.Graphics.Gal.Shader
     {
         private enum ShaderOper
         {
+            CR,
             RR,
             RC,
-            CR,
             Imm
-        }
-
-        public static void Fadd_R(ShaderIrBlock Block, long OpCode)
-        {
-            EmitAluBinary(Block, OpCode, ShaderOper.RR, ShaderIrInst.Fadd);
         }
 
         public static void Fadd_C(ShaderIrBlock Block, long OpCode)
@@ -24,14 +19,14 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitAluBinary(Block, OpCode, ShaderOper.CR, ShaderIrInst.Fadd);
         }
 
-        public static void Fadd_Imm(ShaderIrBlock Block, long OpCode)
+        public static void Fadd_I(ShaderIrBlock Block, long OpCode)
         {
             EmitAluBinary(Block, OpCode, ShaderOper.Imm, ShaderIrInst.Fadd);
         }
 
-        public static void Ffma_RR(ShaderIrBlock Block, long OpCode)
+        public static void Fadd_R(ShaderIrBlock Block, long OpCode)
         {
-            EmitAluFfma(Block, OpCode, ShaderOper.RR);
+            EmitAluBinary(Block, OpCode, ShaderOper.RR, ShaderIrInst.Fadd);
         }
 
         public static void Ffma_CR(ShaderIrBlock Block, long OpCode)
@@ -39,19 +34,19 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitAluFfma(Block, OpCode, ShaderOper.CR);
         }
 
+        public static void Ffma_I(ShaderIrBlock Block, long OpCode)
+        {
+            EmitAluFfma(Block, OpCode, ShaderOper.Imm);
+        }
+
         public static void Ffma_RC(ShaderIrBlock Block, long OpCode)
         {
             EmitAluFfma(Block, OpCode, ShaderOper.RC);
         }
 
-        public static void Ffma_Imm(ShaderIrBlock Block, long OpCode)
+        public static void Ffma_RR(ShaderIrBlock Block, long OpCode)
         {
-            EmitAluFfma(Block, OpCode, ShaderOper.Imm);
-        }
-
-        public static void Fmul_R(ShaderIrBlock Block, long OpCode)
-        {
-            EmitAluBinary(Block, OpCode, ShaderOper.RR, ShaderIrInst.Fmul);
+            EmitAluFfma(Block, OpCode, ShaderOper.RR);
         }
 
         public static void Fmul_C(ShaderIrBlock Block, long OpCode)
@@ -59,19 +54,29 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitAluBinary(Block, OpCode, ShaderOper.CR, ShaderIrInst.Fmul);
         }
 
-        public static void Fmul_Imm(ShaderIrBlock Block, long OpCode)
+        public static void Fmul_I(ShaderIrBlock Block, long OpCode)
         {
             EmitAluBinary(Block, OpCode, ShaderOper.Imm, ShaderIrInst.Fmul);
         }
 
-        public static void Fsetp_R(ShaderIrBlock Block, long OpCode)
+        public static void Fmul_R(ShaderIrBlock Block, long OpCode)
         {
-            EmitFsetp(Block, OpCode, ShaderOper.RR);
+            EmitAluBinary(Block, OpCode, ShaderOper.RR, ShaderIrInst.Fmul);
         }
 
         public static void Fsetp_C(ShaderIrBlock Block, long OpCode)
         {
             EmitFsetp(Block, OpCode, ShaderOper.CR);
+        }
+
+        public static void Fsetp_I(ShaderIrBlock Block, long OpCode)
+        {
+            EmitFsetp(Block, OpCode, ShaderOper.Imm);
+        }
+
+        public static void Fsetp_R(ShaderIrBlock Block, long OpCode)
+        {
+            EmitFsetp(Block, OpCode, ShaderOper.RR);
         }
 
         public static void Ipa(ShaderIrBlock Block, long OpCode)
@@ -101,6 +106,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case 3: Inst = ShaderIrInst.Flg2; break;
                 case 4: Inst = ShaderIrInst.Frcp; break;
                 case 5: Inst = ShaderIrInst.Frsq; break;
+
+                default: throw new NotImplementedException(SubOp.ToString());
             }
 
             ShaderIrNode OperA = GetOperGpr8(OpCode);
@@ -131,9 +138,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             switch (Oper)
             {
-                case ShaderOper.RR:  OperB = GetOperGpr20    (OpCode); break;
                 case ShaderOper.CR:  OperB = GetOperCbuf34   (OpCode); break;
                 case ShaderOper.Imm: OperB = GetOperImmf19_20(OpCode); break;
+                case ShaderOper.RR:  OperB = GetOperGpr20    (OpCode); break;
 
                 default: throw new ArgumentException(nameof(Oper));
             }
@@ -156,10 +163,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             switch (Oper)
             {
-                case ShaderOper.RR:  OperB = GetOperGpr20    (OpCode); break;
                 case ShaderOper.CR:  OperB = GetOperCbuf34   (OpCode); break;
-                case ShaderOper.RC:  OperB = GetOperGpr39    (OpCode); break;
                 case ShaderOper.Imm: OperB = GetOperImmf19_20(OpCode); break;
+                case ShaderOper.RC:  OperB = GetOperGpr39    (OpCode); break;
+                case ShaderOper.RR:  OperB = GetOperGpr20    (OpCode); break;
 
                 default: throw new ArgumentException(nameof(Oper));
             }
@@ -191,9 +198,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             switch (Oper)
             {
-                case ShaderOper.RR:  OperB = GetOperGpr20    (OpCode); break;
                 case ShaderOper.CR:  OperB = GetOperCbuf34   (OpCode); break;
                 case ShaderOper.Imm: OperB = GetOperImmf19_20(OpCode); break;
+                case ShaderOper.RR:  OperB = GetOperGpr20    (OpCode); break;
 
                 default: throw new ArgumentException(nameof(Oper));
             }

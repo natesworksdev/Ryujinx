@@ -2,11 +2,11 @@ namespace Ryujinx.Graphics.Gal.Shader
 {
     class ShaderIrOperImmf : ShaderIrNode
     {
-        public float Imm { get; private set; }
+        public float Value { get; private set; }
 
-        public ShaderIrOperImmf(float Imm)
+        public ShaderIrOperImmf(float Value)
         {
-            this.Imm = Imm;
+            this.Value = Value;
         }
     }
 }
