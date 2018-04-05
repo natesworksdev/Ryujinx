@@ -297,10 +297,6 @@ namespace Ryujinx.Core.OsHle.Svc
                     ThreadState.X1 = MemoryRegions.MapRegionSize;
                     break;
 
-                case 16:
-                    ThreadState.X1 = 0;
-                    break;
-
                 default: throw new NotImplementedException($"SvcGetInfo: {InfoType} {Handle} {InfoId}");
             }
 
