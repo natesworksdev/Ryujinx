@@ -133,23 +133,21 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
-            int SizeF = Op.Size & 1;
-
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
 
-            int Elems = Bytes >> SizeF + 2;
+            int Elems = Bytes >> Op.Size;
             int Half  = Elems >> 1;
 
             for (int Index = 0; Index < Elems; Index++)
             {
                 int Elem = (Index & (Half - 1)) << 1;
 
-                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 0, SizeF);
-                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 1, SizeF);
+                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 0, Op.Size);
+                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 1, Op.Size);
 
                 Context.Emit(OpCodes.Add);
 
-                EmitVectorInsertTmpF(Context, Index, SizeF);
+                EmitVectorInsertTmpF(Context, Index, Op.Size);
             }
 
             Context.EmitLdvectmp();
