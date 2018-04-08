@@ -2,6 +2,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 {
     enum ShaderIrInst
     {
+        B_Start,
         Band,
         Bnot,
         Bor,
@@ -20,7 +21,9 @@ namespace Ryujinx.Graphics.Gal.Shader
         Cgtu,
         Cneu,
         Cgeu,
-        Exit,
+        B_End,
+
+        F_Start,
         Fabs,
         Fadd,
         Fcos,
@@ -33,10 +36,24 @@ namespace Ryujinx.Graphics.Gal.Shader
         Frsq,
         Fsin,
         Ipa,
-        Kil,
         Texr,
         Texg,
         Texb,
-        Texa
+        Texa,
+        F_End,
+
+        I_Start,
+        And,
+        Asr,
+        Lsr,
+        Not,
+        Or,
+        Stof,
+        Utof,
+        Xor,
+        I_End,
+
+        Exit,
+        Kil
     }
 }

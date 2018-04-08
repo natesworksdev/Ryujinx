@@ -60,6 +60,20 @@ namespace Ryujinx.Graphics.Gal.Shader
             return new ShaderIrOperGpr((int)(OpCode >> 28) & 0xff);
         }
 
+        public static ShaderIrNode GetOperImm19_20(long OpCode)
+        {
+            uint Value = (uint)(OpCode >> 20) & 0x7ffff;
+
+            bool Neg = ((OpCode >> 56) & 1) != 0;
+
+            if (Neg)
+            {
+                Value |= 0x80000000;
+            }
+
+            return new ShaderIrOperImm((int)Value);
+        }
+
         public static ShaderIrNode GetOperImmf19_20(long OpCode)
         {
             uint Imm = (uint)(OpCode >> 20) & 0x7ffff;
@@ -81,6 +95,11 @@ namespace Ryujinx.Graphics.Gal.Shader
         public static ShaderIrOperImm GetOperImm13_36(long OpCode)
         {
             return new ShaderIrOperImm((int)(OpCode >> 36) & 0x1fff);
+        }
+
+        public static ShaderIrOperImm GetOperImm32_20(long OpCode)
+        {
+            return new ShaderIrOperImm((int)(OpCode >> 20));
         }
 
         public static ShaderIrOperPred GetOperPred3(long OpCode)
@@ -167,6 +186,26 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             return new ShaderIrOperPred(Pred);
+        }
+
+        public static ShaderIrNode GetAluAbsNeg(ShaderIrNode Node, bool Abs, bool Neg)
+        {
+            return GetAluNeg(GetAluAbs(Node, Abs), Neg);
+        }
+
+        public static ShaderIrNode GetAluAbs(ShaderIrNode Node, bool Abs)
+        {
+            return Abs ? new ShaderIrOp(ShaderIrInst.Fabs, Node) : Node;
+        }
+
+        public static ShaderIrNode GetAluNeg(ShaderIrNode Node, bool Neg)
+        {
+            return Neg ? new ShaderIrOp(ShaderIrInst.Fneg, Node) : Node;
+        }
+
+        public static ShaderIrNode GetAluNot(ShaderIrNode Node, bool Not)
+        {
+            return Not ? new ShaderIrOp(ShaderIrInst.Not, Node) : Node;
         }
     }
 }

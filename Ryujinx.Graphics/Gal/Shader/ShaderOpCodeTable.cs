@@ -27,10 +27,18 @@ namespace Ryujinx.Graphics.Gal.Shader
             Set("010010111011xx", ShaderDecode.Fsetp_C);
             Set("0011011x1011xx", ShaderDecode.Fsetp_I);
             Set("010110111011xx", ShaderDecode.Fsetp_R);
+            Set("0100110010111x", ShaderDecode.I2f_C);
+            Set("0011100x10111x", ShaderDecode.I2f_I);
+            Set("0101110010111x", ShaderDecode.I2f_R);
             Set("11100000xxxxxx", ShaderDecode.Ipa);
             Set("111000110011xx", ShaderDecode.Kil);
             Set("1110111111011x", ShaderDecode.Ld_A);
+            Set("000001xxxxxxxx", ShaderDecode.Lop32i);
+            Set("000000010000xx", ShaderDecode.Mov32i);
             Set("0101000010000x", ShaderDecode.Mufu);
+            Set("0100110000101x", ShaderDecode.Shr_C);
+            Set("0011100x00101x", ShaderDecode.Shr_I);
+            Set("0101110000101x", ShaderDecode.Shr_R);
             Set("1110111111110x", ShaderDecode.St_A);
             Set("1101100xxxxxxx", ShaderDecode.Texs);
 #endregion

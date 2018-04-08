@@ -4,6 +4,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 {
     class GlslDecl
     {
+        public const int VertexIdAttr = 0x2fc;
+
         private const int AttrStartIndex = 8;
         private const int TexStartIndex = 8;
 
@@ -130,6 +132,12 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 case ShaderIrOperAbuf Abuf:
                 {
+                    //This is a built-in input variable.
+                    if (Abuf.Offs == VertexIdAttr)
+                    {
+                        break;
+                    }
+
                     int Index =  Abuf.Offs >> 4;
                     int Elem  = (Abuf.Offs >> 2) & 3;
 
