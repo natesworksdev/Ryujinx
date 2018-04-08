@@ -256,14 +256,14 @@ namespace ChocolArm64.Instruction
             EmitScalarBinaryOpF(Context, () => Context.Emit(OpCodes.Mul));
         }
 
-        public static void Fmul_V(AILEmitterCtx Context)
-        {
-            EmitVectorBinaryOpF(Context, () => Context.Emit(OpCodes.Mul));
-        }
-
         public static void Fmul_Se(AILEmitterCtx Context)
         {
             EmitScalarBinaryOpByElemF(Context, () => Context.Emit(OpCodes.Mul));
+        }
+
+        public static void Fmul_V(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpF(Context, () => Context.Emit(OpCodes.Mul));
         }
 
         public static void Fmul_Ve(AILEmitterCtx Context)
