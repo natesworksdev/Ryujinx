@@ -62,13 +62,13 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static ShaderIrNode GetOperImm19_20(long OpCode)
         {
-            uint Value = (uint)(OpCode >> 20) & 0x7ffff;
+            int Value = (int)(OpCode >> 20) & 0x7ffff;
 
             bool Neg = ((OpCode >> 56) & 1) != 0;
 
             if (Neg)
             {
-                Value |= 0x80000000;
+                Value = -Value;
             }
 
             return new ShaderIrOperImm((int)Value);
