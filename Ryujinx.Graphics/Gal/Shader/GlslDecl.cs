@@ -4,7 +4,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 {
     class GlslDecl
     {
-        public const int VertexIdAttr = 0x2fc;
+        public const int VertexIdAttr    = 0x2fc;
+        public const int GlPositionWAttr = 0x7c;
 
         private const int AttrStartIndex = 8;
         private const int TexStartIndex = 8;

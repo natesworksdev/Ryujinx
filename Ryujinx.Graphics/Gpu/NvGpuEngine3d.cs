@@ -63,8 +63,6 @@ namespace Ryujinx.Graphics.Gpu
             }
         }
 
-        private const long GoodFbAddress = 0x1615b2a00;
-
         private void VertexEndGl(AMemory Memory, NsGpuPBEntry PBEntry)
         {
             SetFrameBuffer(0);

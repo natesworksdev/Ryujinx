@@ -12,6 +12,8 @@ namespace Ryujinx
     {
         static void Main(string[] args)
         {
+            //Ryujinx.Graphics.Gal.Shader.ShaderTest.PrintGlslProgram(File.ReadAllBytes("D:\\shbh_000000000048ba30.bin"));
+
             Config.Read();
 
             AOptimizations.DisableMemoryChecks = !Config.EnableMemoryChecks;

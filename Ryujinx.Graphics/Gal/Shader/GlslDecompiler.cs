@@ -302,8 +302,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         throw new NotImplementedException(Op.Inst.ToString());
                     }
 
-                    if (!Entry && (Op.OperandB != null ||
-                                   Op.OperandC != null))
+                    if (!Entry && NeedsParentheses(Op))
                     {
                         Expr = "(" + Expr + ")";
                     }
@@ -312,6 +311,25 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 default: throw new ArgumentException(nameof(Node));
             }
+        }
+
+        private static bool NeedsParentheses(ShaderIrOp Op)
+        {
+            switch (Op.Inst)
+            {
+                case ShaderIrInst.Frcp:
+                    return true;
+
+                case ShaderIrInst.Ipa:
+                case ShaderIrInst.Texr:
+                case ShaderIrInst.Texg:
+                case ShaderIrInst.Texb:
+                case ShaderIrInst.Texa:
+                    return false;
+            }
+
+            return Op.OperandB != null ||
+                   Op.OperandC != null;
         }
 
         private string GetName(ShaderIrOperCbuf Cbuf)
@@ -331,16 +349,21 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetName(ShaderIrOperAbuf Abuf)
         {
-            return GetName(Decl.InAttributes, Abuf);
-        }
+            if (Abuf.Offs == GlslDecl.GlPositionWAttr && Decl.ShaderType == GalShaderType.Fragment)
+            {
+                return "(1f / gl_FragCoord.w)";
+            }
 
-        private string GetName(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, ShaderIrOperAbuf Abuf)
-        {
             if (Abuf.Offs == GlslDecl.VertexIdAttr)
             {
                 return "gl_VertexID";
             }
 
+            return GetName(Decl.InAttributes, Abuf);
+        }
+
+        private string GetName(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, ShaderIrOperAbuf Abuf)
+        {
             int Index =  Abuf.Offs >> 4;
             int Elem  = (Abuf.Offs >> 2) & 3;
 
@@ -439,7 +462,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetFnegExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "-");
 
-        private string GetFrcpExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "1 / ");
+        private string GetFrcpExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "1f / ");
 
         private string GetFrsqExpr(ShaderIrOp Op) => GetUnaryCall(Op, "inversesqrt");
 
@@ -451,16 +474,23 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetLsrExpr(ShaderIrOp Op)
         {
-            return "(int)((uint)" + GetOperExpr(Op, Op.OperandA) + " >> " +
-                                    GetOperExpr(Op, Op.OperandB) + ")";
+            return "int(uint(" + GetOperExpr(Op, Op.OperandA) + ") >> " +
+                                 GetOperExpr(Op, Op.OperandB) + ")";
         }
 
         private string GetNotExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "~");
 
         private string GetOrExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "|");
 
-        private string GetStofExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "(float)");
-        private string GetUtofExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "(float)(uint)");
+        private string GetStofExpr(ShaderIrOp Op)
+        {
+            return "float(" + GetOperExpr(Op, Op.OperandA) + ")";
+        }
+
+        private string GetUtofExpr(ShaderIrOp Op)
+        {
+            return "float(uint(" + GetOperExpr(Op, Op.OperandA) + "))";
+        }
 
         private string GetXorExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "^");
 
