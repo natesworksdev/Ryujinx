@@ -335,7 +335,7 @@ namespace ChocolArm64.Instruction
 
             for (int Index = 0; Index < Elems; Index++)
             {
-                int Elem = Index - (Index & 1) + Part;
+                int Elem = (Index & ~1) + Part;
 
                 EmitVectorExtractZx(Context, (Index & 1) == 0 ? Op.Rn : Op.Rm, Elem, Op.Size);
 
