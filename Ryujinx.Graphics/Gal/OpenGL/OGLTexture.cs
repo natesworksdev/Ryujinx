@@ -15,9 +15,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             GL.ActiveTexture(TextureUnit.Texture0 + Index);
 
-            int Handle = EnsureTextureInitialized(Index);
-
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            Bind(Index);
 
             const int Border = 0;
 
@@ -54,12 +52,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public void Set(int Index, GalTextureSampler Sampler)
+        public void Bind(int Index)
         {
             int Handle = EnsureTextureInitialized(Index);
 
             GL.BindTexture(TextureTarget.Texture2D, Handle);
+        }
 
+        public void Set(GalTextureSampler Sampler)
+        {
             int WrapS = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressU);
             int WrapT = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressV);
 

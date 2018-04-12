@@ -296,6 +296,8 @@ namespace Ryujinx.Core.OsHle.Services.Android
 
             NvMapFb MapFb = (NvMapFb)INvDrvServices.NvMapsFb.GetData(Context.Process, 0);
 
+            Renderer.SetFrameBuffer(Map.GpuAddress);
+
             long Address = Map.CpuAddress;
 
             if (MapFb.HasBufferOffset(Slot))

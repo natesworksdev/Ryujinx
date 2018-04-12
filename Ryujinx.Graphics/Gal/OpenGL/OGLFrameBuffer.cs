@@ -1,6 +1,7 @@
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
@@ -8,7 +9,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
     {
         private struct FrameBuffer
         {
-            public int FbHandle;
+            public int Handle;
             public int RbHandle;
             public int TexHandle;
         }
@@ -20,83 +21,121 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             public int FpHandle;
         }
 
-        private FrameBuffer[] Fbs;
+        private Dictionary<long, FrameBuffer> Fbs;
+
+        private FrameBuffer CurrentFb;
 
         private ShaderProgram Shader;
 
         private bool IsInitialized;
 
+        private int FbHandle;
         private int VaoHandle;
         private int VboHandle;
 
         public OGLFrameBuffer()
         {
-            Fbs = new FrameBuffer[16];
+            Fbs = new Dictionary<long, FrameBuffer>();
 
             Shader = new ShaderProgram();
         }
 
-        public void Set(int Index, int Width, int Height)
+        public void Create(long Tag, int Width, int Height)
         {
-            if (Fbs[Index].FbHandle != 0)
+            if (Fbs.ContainsKey(Tag))
             {
                 return;
             }
 
-            Fbs[Index].FbHandle  = GL.GenFramebuffer();
-            Fbs[Index].RbHandle  = GL.GenRenderbuffer();
-            Fbs[Index].TexHandle = GL.GenTexture();
+            FrameBuffer Fb = new FrameBuffer();
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Fbs[Index].FbHandle);
+            Fb.Handle  = GL.GenFramebuffer();
+            Fb.RbHandle  = GL.GenRenderbuffer();
+            Fb.TexHandle = GL.GenTexture();
 
-            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, Fbs[Index].RbHandle);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Fb.Handle);
 
-            GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.Depth24Stencil8, 1280, 720);
+            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, Fb.RbHandle);
 
-            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthStencilAttachment, RenderbufferTarget.Renderbuffer, Fbs[Index].RbHandle);
+            GL.RenderbufferStorage(
+                RenderbufferTarget.Renderbuffer,
+                RenderbufferStorage.Depth24Stencil8,
+                1280,
+                720);
 
-            GL.BindTexture(TextureTarget.Texture2D, Fbs[Index].TexHandle);
+            GL.FramebufferRenderbuffer(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.DepthStencilAttachment,
+                RenderbufferTarget.Renderbuffer,
+                Fb.RbHandle);
+
+            GL.BindTexture(TextureTarget.Texture2D, Fb.TexHandle);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 1280, 720, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
 
-            GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, Fbs[Index].TexHandle, 0);
+            GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, Fb.TexHandle, 0);
 
             GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
+
+            Fbs.Add(Tag, Fb);
         }
 
-        public void Bind(int Index)
+        public void Bind(long Tag)
         {
-            if (Fbs[Index].FbHandle == 0)
+            if (Fbs.TryGetValue(Tag, out FrameBuffer Fb))
             {
-                return;
-            }
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, Fb.Handle);
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Fbs[Index].FbHandle);
+                FbHandle = Fb.Handle;
+            }
         }
 
-        public void Draw(int Index)
+        public void BindTexture(long Tag, int Index)
         {
-            if (Fbs[Index].FbHandle == 0)
+            if (Fbs.TryGetValue(Tag, out FrameBuffer Fb))
             {
-                return;
+                GL.ActiveTexture(TextureUnit.Texture0 + Index);
+
+                GL.BindTexture(TextureTarget.Texture2D, Fb.TexHandle);
             }
+        }
 
-            EnsureInitialized();
+        public void Set(long Tag)
+        {
+            if (Fbs.TryGetValue(Tag, out FrameBuffer Fb))
+            {
+                CurrentFb = Fb;
+            }
+        }
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        public void Render()
+        {
+            if (CurrentFb.TexHandle != 0)
+            {
+                EnsureInitialized();
 
-            GL.BindTexture(TextureTarget.Texture2D, Fbs[Index].TexHandle);
+                int CurrentProgram = GL.GetInteger(GetPName.CurrentProgram);
 
-            GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-            GL.BindVertexArray(VaoHandle);
+                GL.ActiveTexture(TextureUnit.Texture0);
 
-            GL.UseProgram(Shader.Handle);
+                GL.BindTexture(TextureTarget.Texture2D, CurrentFb.TexHandle);
 
-            GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
+                GL.BindVertexArray(VaoHandle);
+
+                GL.UseProgram(Shader.Handle);
+
+                GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
+
+                //Restore the original state.
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, FbHandle);
+
+                GL.UseProgram(CurrentProgram);
+            }
         }
 
         private void EnsureInitialized()

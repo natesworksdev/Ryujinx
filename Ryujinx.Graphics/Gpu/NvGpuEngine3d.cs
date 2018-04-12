@@ -20,7 +20,9 @@ namespace Ryujinx.Graphics.Gpu
             public int  Size;
         }
 
-        private ConstBuffer[] Cbs;
+        private ConstBuffer[] ConstBuffers;
+
+        private HashSet<long> FrameBuffers;
 
         private bool HasDataToRender;
 
@@ -48,7 +50,9 @@ namespace Ryujinx.Graphics.Gpu
             AddMethod(0x8e4, 16, 1, CbData);
             AddMethod(0x904,  1, 1, CbBind);
 
-            Cbs = new ConstBuffer[18];
+            ConstBuffers = new ConstBuffer[18];
+
+            FrameBuffers = new HashSet<long>();
         }
 
         public void CallMethod(AMemory Memory, NsGpuPBEntry PBEntry)
@@ -85,8 +89,6 @@ namespace Ryujinx.Graphics.Gpu
             if (HasDataToRender)
             {
                 HasDataToRender = false;
-
-                Gpu.Renderer.DrawFrameBuffer(0);
             }
 
             int Arg0 = PBEntry.Arguments[0];
@@ -99,16 +101,20 @@ namespace Ryujinx.Graphics.Gpu
 
             SetFrameBuffer(0);
 
-            Gpu.Renderer.ClearBuffers(Layer, Flags);
+            //Gpu.Renderer.ClearBuffers(Layer, Flags);
         }
 
         private void SetFrameBuffer(int FbIndex)
         {
-            int Width   = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
-            int Height  = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
+            long Address = MakeInt64From2xInt32(NvGpuEngine3dReg.FrameBufferNAddress + FbIndex * 0x10);
 
-            Gpu.Renderer.SetFb(FbIndex, Width, Height);
-            Gpu.Renderer.BindFrameBuffer(FbIndex);
+            FrameBuffers.Add(Address);
+
+            int Width  = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
+            int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
+
+            Gpu.Renderer.CreateFrameBuffer(Address, Width, Height);
+            Gpu.Renderer.BindFrameBuffer(Address);
         }
 
         private long[] UploadShaders(AMemory Memory)
@@ -205,11 +211,13 @@ namespace Ryujinx.Graphics.Gpu
 
             int TextureCbIndex = ReadRegister(NvGpuEngine3dReg.TextureCbIndex);
 
-            long BasePosition = Cbs[TextureCbIndex].Position;
+            long BasePosition = ConstBuffers[TextureCbIndex].Position;
 
-            long Size = (uint)Cbs[TextureCbIndex].Size;
+            long Size = (uint)ConstBuffers[TextureCbIndex].Size;
 
-            int TexIndex = 0;
+            //Note: On the emulator renderer, Texture Unit 0 is
+            //reserved for drawing the frame buffer.
+            int TexIndex = 1;
 
             for (int Index = 0; Index < Tags.Length; Index++)
             {
@@ -241,8 +249,23 @@ namespace Ryujinx.Graphics.Gpu
             TicPosition += TicIndex * 0x20;
             TscPosition += TscIndex * 0x20;
 
-            Gpu.Renderer.SetTexture(TexIndex, TextureFactory.MakeTexture(Gpu, Memory, TicPosition));
-            Gpu.Renderer.SetSampler(TexIndex, TextureFactory.MakeSampler(Gpu, Memory, TscPosition));
+            long TextureAddress = Memory.ReadInt64(TicPosition + 4) & 0xffffffffffff;
+
+            if (FrameBuffers.Contains(TextureAddress))
+            {
+                //This texture is a frame buffer texture,
+                //we shouldn't read anything from memory and bind
+                //the frame buffer texture instead, since we're not
+                //really writing anything to memory.
+                Gpu.Renderer.BindFrameBufferTexture(TextureAddress, TexIndex);
+            }
+            else
+            {
+                Gpu.Renderer.SetTexture(TexIndex, TextureFactory.MakeTexture(Gpu, Memory, TicPosition));
+                Gpu.Renderer.BindTexture(TexIndex);
+            }
+
+            Gpu.Renderer.SetSampler(TextureFactory.MakeSampler(Gpu, Memory, TscPosition));
         }
 
         private void UploadUniforms(AMemory Memory)
@@ -262,9 +285,9 @@ namespace Ryujinx.Graphics.Gpu
                     continue;
                 }
 
-                for (int Cbuf = 0; Cbuf < Cbs.Length; Cbuf++)
+                for (int Cbuf = 0; Cbuf < ConstBuffers.Length; Cbuf++)
                 {
-                    ConstBuffer Cb = Cbs[Cbuf];
+                    ConstBuffer Cb = ConstBuffers[Cbuf];
 
                     if (Cb.Enabled)
                     {
@@ -414,16 +437,16 @@ namespace Ryujinx.Graphics.Gpu
 
             if (TryGetCpuAddr(NvGpuEngine3dReg.ConstBufferNAddress, out long Position))
             {
-                Cbs[Index].Position = Position;
-                Cbs[Index].Enabled  = Enabled;
+                ConstBuffers[Index].Position = Position;
+                ConstBuffers[Index].Enabled  = Enabled;
 
-                Cbs[Index].Size = ReadRegister(NvGpuEngine3dReg.ConstBufferNSize);
+                ConstBuffers[Index].Size = ReadRegister(NvGpuEngine3dReg.ConstBufferNSize);
             }
         }
 
         private int ReadCb(AMemory Memory, int Cbuf, int Offset)
         {
-            long Position = Cbs[Cbuf].Position;
+            long Position = ConstBuffers[Cbuf].Position;
 
             int Value = Memory.ReadInt32(Position + Offset);
 

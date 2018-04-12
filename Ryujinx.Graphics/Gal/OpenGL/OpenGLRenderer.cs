@@ -63,7 +63,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Render()
         {
-            FbRenderer.Render();
+            //FbRenderer.Render();
+            FrameBuffer.Render();
         }
 
         public void SetWindowSize(int Width, int Height)
@@ -132,19 +133,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             });
         }
 
-        public void SetFb(int FbIndex, int Width, int Height)
+        public void CreateFrameBuffer(long Tag, int Width, int Height)
         {
-            ActionsQueue.Enqueue(() => FrameBuffer.Set(FbIndex, Width, Height));
+            ActionsQueue.Enqueue(() => FrameBuffer.Create(Tag, Width, Height));
         }
 
-        public void BindFrameBuffer(int FbIndex)
+        public void BindFrameBuffer(long Tag)
         {
-            ActionsQueue.Enqueue(() => FrameBuffer.Bind(FbIndex));
+            ActionsQueue.Enqueue(() => FrameBuffer.Bind(Tag));
         }
 
-        public void DrawFrameBuffer(int FbIndex)
+        public void BindFrameBufferTexture(long Tag, int Index)
         {
-            ActionsQueue.Enqueue(() => FrameBuffer.Draw(FbIndex));
+            ActionsQueue.Enqueue(() => FrameBuffer.BindTexture(Tag, Index));
+        }
+
+        public void SetFrameBuffer(long Tag)
+        {
+            ActionsQueue.Enqueue(() => FrameBuffer.Set(Tag));
         }
 
         public void ClearBuffers(int RtIndex, GalClearBufferFlags Flags)
@@ -239,14 +245,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue.Enqueue(() => Shader.BindProgram());
         }
 
-        public void SetTexture(int Index, GalTexture Tex)
+        public void SetTexture(int Index, GalTexture Texture)
         {
-            ActionsQueue.Enqueue(() => Texture.Set(Index, Tex));
+            ActionsQueue.Enqueue(() => this.Texture.Set(Index, Texture));
         }
 
-        public void SetSampler(int Index, GalTextureSampler Sampler)
+        public void BindTexture(int Index)
         {
-            ActionsQueue.Enqueue(() => Texture.Set(Index, Sampler));
+            ActionsQueue.Enqueue(() => Texture.Bind(Index));
+        }
+
+        public void SetSampler(GalTextureSampler Sampler)
+        {
+            ActionsQueue.Enqueue(() => Texture.Set(Sampler));
         }
     }
 }

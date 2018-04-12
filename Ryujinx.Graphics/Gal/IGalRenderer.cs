@@ -39,11 +39,13 @@ namespace Ryujinx.Graphics.Gal
             GalBlendFactor   FuncDstAlpha);
 
         //Frame Buffer
-        void SetFb(int FbIndex, int Width, int Height);
+        void CreateFrameBuffer(long Tag, int Width, int Height);
 
-        void BindFrameBuffer(int FbIndex);
+        void BindFrameBuffer(long Tag);
 
-        void DrawFrameBuffer(int FbIndex);
+        void BindFrameBufferTexture(long Tag, int Index);
+
+        void SetFrameBuffer(long Tag);
 
         //Rasterizer
         void ClearBuffers(int RtIndex, GalClearBufferFlags Flags);
@@ -72,6 +74,8 @@ namespace Ryujinx.Graphics.Gal
         //Texture
         void SetTexture(int Index, GalTexture Tex);
 
-        void SetSampler(int Index, GalTextureSampler Sampler);
+        void BindTexture(int Index);
+
+        void SetSampler(GalTextureSampler Sampler);
     }
 }
