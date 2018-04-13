@@ -276,35 +276,24 @@ namespace Ryujinx.Core.OsHle.Services.Android
             return 0;
         }
 
-        private unsafe void SendFrameBuffer(ServiceCtx Context, int Slot)
+        private void SendFrameBuffer(ServiceCtx Context, int Slot)
         {
-            int FbWidth  = BufferQueue[Slot].Data.Width;
-            int FbHeight = BufferQueue[Slot].Data.Height;
-
-            long FbSize = (uint)FbWidth * FbHeight * 4;
+            int FbWidth  = 1280;
+            int FbHeight = 720;
 
             NvMap Map = GetNvMap(Context, Slot);
 
             NvMapFb MapFb = (NvMapFb)INvDrvServices.NvMapsFb.GetData(Context.Process, 0);
 
-            long Address = Map.CpuAddress;
+            long CpuAddr = Map.CpuAddress;
+            long GpuAddr = Map.GpuAddress;
 
             if (MapFb.HasBufferOffset(Slot))
             {
-                Address += MapFb.GetBufferOffset(Slot);
-            }
+                CpuAddr += MapFb.GetBufferOffset(Slot);
 
-            if ((ulong)(Address + FbSize) > AMemoryMgr.AddrSize)
-            {
-                Logging.Error($"Frame buffer address {Address:x16} is invalid!");
-
-                BufferQueue[Slot].State = BufferState.Free;
-
-                ReleaseEvent.Handle.Set();
-
-                WaitBufferFree.Set();
-
-                return;
+                //TODO: Enable once the frame buffers problems are fixed.
+                //GpuAddr += MapFb.GetBufferOffset(Slot);
             }
 
             BufferQueue[Slot].State = BufferState.Acquired;
@@ -358,17 +347,21 @@ namespace Ryujinx.Core.OsHle.Services.Android
                 Rotate = -MathF.PI * 0.5f;
             }
 
-            if (Context.Ns.Gpu.Engine3d.IsFrameBufferPosition(Map.GpuAddress))
+            Renderer.SetFrameBufferTransform(ScaleX, ScaleY, Rotate, OffsX, OffsY);
+
+            //TODO: Support double buffering here aswell, it is broken for GPU
+            //frame buffers because it seems to be completely out of sync.
+            if (Context.Ns.Gpu.Engine3d.IsFrameBufferPosition(GpuAddr))
             {
                 //Frame buffer is rendered to by the GPU, we can just
                 //bind the frame buffer texture, it's not necessary to read anything.
-                Renderer.SetFrameBuffer(Map.GpuAddress);
+                Renderer.SetFrameBuffer(GpuAddr);
             }
             else
             {
                 //Frame buffer is not set on the GPU registers, in this case
                 //assume that the app is manually writing to it.
-                Texture Texture = new Texture(Address, FbWidth, FbHeight);
+                Texture Texture = new Texture(CpuAddr, FbWidth, FbHeight);
 
                 byte[] Data = TextureReader.Read(Context.Memory, Texture);
 

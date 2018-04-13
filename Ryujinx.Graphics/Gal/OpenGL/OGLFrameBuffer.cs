@@ -7,11 +7,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLFrameBuffer
     {
-        private struct FrameBuffer
+        private class FrameBuffer
         {
-            public int Handle;
-            public int RbHandle;
-            public int TexHandle;
+            public int Width  { get; set; }
+            public int Height { get; set; }
+
+            public int Handle    { get; private set; }
+            public int RbHandle  { get; private set; }
+            public int TexHandle { get; private set; }
+
+            public FrameBuffer(int Width, int Height)
+            {
+                this.Width  = Width;
+                this.Height = Height;
+
+                Handle    = GL.GenFramebuffer();
+                RbHandle  = GL.GenRenderbuffer();
+                TexHandle = GL.GenTexture();
+            }
         }
 
         private struct ShaderProgram
@@ -27,9 +40,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private bool IsInitialized;
 
+        private int RawFbTexWidth;
+        private int RawFbTexHeight;
+        private int RawFbTexHandle;
+
         private int CurrFbHandle;
         private int CurrTexHandle;
-        private int RawFbTexHandle;
+
         private int VaoHandle;
         private int VboHandle;
 
@@ -42,19 +59,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Create(long Tag, int Width, int Height)
         {
-            if (Fbs.ContainsKey(Tag))
+            if (Fbs.TryGetValue(Tag, out FrameBuffer Fb))
             {
+                if (Fb.Width  != Width ||
+                    Fb.Height != Height)
+                {
+                    SetupTexture(Fb.TexHandle, Width, Height);
+
+                    Fb.Width  = Width;
+                    Fb.Height = Height;
+                }
+
                 return;
             }
 
-            Width  = 1280;
-            Height = 720;
-
-            FrameBuffer Fb = new FrameBuffer();
-
-            Fb.Handle    = GL.GenFramebuffer();
-            Fb.RbHandle  = GL.GenRenderbuffer();
-            Fb.TexHandle = GL.GenTexture();
+            Fb = new FrameBuffer(Width, Height);
 
             SetupTexture(Fb.TexHandle, Width, Height);
 
@@ -115,7 +134,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Set(byte[] Data, int Width, int Height)
         {
-            EnsureInitialized();
+            if (RawFbTexHandle == 0)
+            {
+                RawFbTexHandle = GL.GenTexture();
+            }
+
+            if (RawFbTexWidth  != Width ||
+                RawFbTexHeight != Height)
+            {
+                SetupTexture(RawFbTexHandle, Width, Height);
+
+                RawFbTexWidth  = Width;
+                RawFbTexHeight = Height;
+            }
 
             GL.ActiveTexture(TextureUnit.Texture0);
 
@@ -126,6 +157,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, Format, Type, Data);
 
             CurrTexHandle = RawFbTexHandle;
+        }
+
+        public void SetTransform(Matrix2 Transform, Vector2 Offs)
+        {
+            EnsureInitialized();
+
+            int CurrentProgram = GL.GetInteger(GetPName.CurrentProgram);
+
+            GL.UseProgram(Shader.Handle);
+
+            int TransformUniformLocation = GL.GetUniformLocation(Shader.Handle, "transform");
+
+            GL.UniformMatrix2(TransformUniformLocation, false, ref Transform);
+
+            int OffsetUniformLocation = GL.GetUniformLocation(Shader.Handle, "offset");
+
+            GL.Uniform2(OffsetUniformLocation, ref Offs);
+
+            GL.UseProgram(CurrentProgram);
         }
 
         public void Render()
@@ -163,10 +213,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 SetupShader();
                 SetupVertex();
-
-                RawFbTexHandle = GL.GenTexture();
-
-                SetupTexture(RawFbTexHandle, 1280, 720);
             }
         }
 
@@ -190,7 +236,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.LinkProgram(Shader.Handle);
             GL.UseProgram(Shader.Handle);
 
-            Matrix2 Transform = Matrix2.CreateScale(1, -1);
+            Matrix2 Transform = Matrix2.Identity;
 
             int TexUniformLocation = GL.GetUniformLocation(Shader.Handle, "tex");
 

@@ -24,8 +24,6 @@ namespace Ryujinx.Graphics.Gpu
 
         private HashSet<long> FrameBuffers;
 
-        private bool HasDataToRender;
-
         public NvGpuEngine3d(NsGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -80,17 +78,10 @@ namespace Ryujinx.Graphics.Gpu
             UploadTextures(Memory, Tags);
             UploadUniforms(Memory);
             UploadVertexArrays(Memory);
-
-            HasDataToRender = true;
         }
 
         private void ClearBuffers(AMemory Memory, NsGpuPBEntry PBEntry)
         {
-            if (HasDataToRender)
-            {
-                HasDataToRender = false;
-            }
-
             int Arg0 = PBEntry.Arguments[0];
 
             int FbIndex = (Arg0 >> 6) & 0xf;
@@ -101,6 +92,7 @@ namespace Ryujinx.Graphics.Gpu
 
             SetFrameBuffer(0);
 
+            //TODO: Enable this once the frame buffer problems are fixed.
             //Gpu.Renderer.ClearBuffers(Layer, Flags);
         }
 
@@ -113,7 +105,9 @@ namespace Ryujinx.Graphics.Gpu
             int Width  = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
             int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
 
-            Gpu.Renderer.CreateFrameBuffer(Address, Width, Height);
+            //Note: Using the Width/Height results seems to give incorrect results.
+            //Maybe the size of all frame buffers is hardcoded to screen size? This seems unlikely.
+            Gpu.Renderer.CreateFrameBuffer(Address, 1280, 720);
             Gpu.Renderer.BindFrameBuffer(Address);
         }
 
@@ -405,7 +399,7 @@ namespace Ryujinx.Graphics.Gpu
 
                 if (Mode == 0)
                 {
-                    //Write.
+                    //Write mode.
                     Memory.WriteInt32(Position, Seq);
                 }
             }

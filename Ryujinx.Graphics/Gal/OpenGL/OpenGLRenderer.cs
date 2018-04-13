@@ -1,3 +1,4 @@
+using OpenTK;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -126,6 +127,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public void SetFrameBuffer(byte[] Data, int Width, int Height)
         {
             ActionsQueue.Enqueue(() => FrameBuffer.Set(Data, Width, Height));
+        }
+
+        public void SetFrameBufferTransform(float SX, float SY, float Rotate, float TX, float TY)
+        {
+            Matrix2 Transform;
+
+            Transform  = Matrix2.CreateScale(SX, SY);
+            Transform *= Matrix2.CreateRotation(Rotate);
+
+            Vector2 Offs = new Vector2(TX, TY);
+
+            ActionsQueue.Enqueue(() => FrameBuffer.SetTransform(Transform, Offs));
         }
 
         public void ClearBuffers(int RtIndex, GalClearBufferFlags Flags)

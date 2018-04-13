@@ -40,6 +40,8 @@ namespace Ryujinx.Graphics.Gal
 
         void SetFrameBuffer(byte[] Data, int Width, int Height);
 
+        void SetFrameBufferTransform(float SX, float SY, float Rotate, float TX, float TY);
+
         //Rasterizer
         void ClearBuffers(int RtIndex, GalClearBufferFlags Flags);
 
