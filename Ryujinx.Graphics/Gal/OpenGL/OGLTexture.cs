@@ -17,6 +17,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             Bind(Index);
 
+            const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
 
             if (IsCompressedTextureFormat(Texture.Format))
@@ -25,7 +26,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 GL.CompressedTexImage2D(
                     TextureTarget.Texture2D,
-                    0,
+                    Level,
                     InternalFmt,
                     Texture.Width,
                     Texture.Height,
@@ -37,17 +38,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 const PixelInternalFormat InternalFmt = PixelInternalFormat.Rgba;
 
-                (PixelFormat, PixelType) Format = OGLEnumConverter.GetTextureFormat(Texture.Format);
+                (PixelFormat Format, PixelType Type) = OGLEnumConverter.GetTextureFormat(Texture.Format);
 
                 GL.TexImage2D(
                     TextureTarget.Texture2D,
-                    0,
+                    Level,
                     InternalFmt,
                     Texture.Width,
                     Texture.Height,
                     Border,
-                    Format.Item1,
-                    Format.Item2,
+                    Format,
+                    Type,
                     Texture.Data);
             }
         }
@@ -59,7 +60,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BindTexture(TextureTarget.Texture2D, Handle);
         }
 
-        public void Set(GalTextureSampler Sampler)
+        public static void Set(GalTextureSampler Sampler)
         {
             int WrapS = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressU);
             int WrapT = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressV);

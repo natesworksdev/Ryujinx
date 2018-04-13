@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu
 {
-    class NvGpuEngine3d : INvGpuEngine
+    public class NvGpuEngine3d : INvGpuEngine
     {
         public int[] Registers { get; private set; }
 
@@ -249,6 +249,8 @@ namespace Ryujinx.Graphics.Gpu
             TicPosition += TicIndex * 0x20;
             TscPosition += TscIndex * 0x20;
 
+            GalTextureSampler Sampler = TextureFactory.MakeSampler(Gpu, Memory, TscPosition);
+
             long TextureAddress = Memory.ReadInt64(TicPosition + 4) & 0xffffffffffff;
 
             if (FrameBuffers.Contains(TextureAddress))
@@ -257,15 +259,15 @@ namespace Ryujinx.Graphics.Gpu
                 //we shouldn't read anything from memory and bind
                 //the frame buffer texture instead, since we're not
                 //really writing anything to memory.
-                Gpu.Renderer.BindFrameBufferTexture(TextureAddress, TexIndex);
+                Gpu.Renderer.BindFrameBufferTexture(TextureAddress, TexIndex, Sampler);
             }
             else
             {
-                Gpu.Renderer.SetTexture(TexIndex, TextureFactory.MakeTexture(Gpu, Memory, TicPosition));
+                GalTexture Texture = TextureFactory.MakeTexture(Gpu, Memory, TicPosition);
+
+                Gpu.Renderer.SetTextureAndSampler(TexIndex, Texture, Sampler);
                 Gpu.Renderer.BindTexture(TexIndex);
             }
-
-            Gpu.Renderer.SetSampler(TextureFactory.MakeSampler(Gpu, Memory, TscPosition));
         }
 
         private void UploadUniforms(AMemory Memory)
@@ -487,6 +489,11 @@ namespace Ryujinx.Graphics.Gpu
         private void WriteRegister(NvGpuEngine3dReg Reg, int Value)
         {
             Registers[(int)Reg] = Value;
+        }
+
+        public bool IsFrameBufferPosition(long Position)
+        {
+            return FrameBuffers.Contains(Position);
         }
     }
 }

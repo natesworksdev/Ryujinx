@@ -6,21 +6,12 @@ namespace Ryujinx.Graphics.Gal
     public unsafe interface IGalRenderer
     {
         void QueueAction(Action ActionMthd);
+
         void RunActions();
 
-        void InitializeFrameBuffer();
-        void ResetFrameBuffer();
         void Render();
+
         void SetWindowSize(int Width, int Height);
-        void SetFrameBuffer(
-            byte* Fb,
-            int   Width,
-            int   Height,
-            float ScaleX,
-            float ScaleY,
-            float OffsX,
-            float OffsY,
-            float Rotate);
 
         //Blend
         void SetBlendEnable(bool Enable);
@@ -43,9 +34,11 @@ namespace Ryujinx.Graphics.Gal
 
         void BindFrameBuffer(long Tag);
 
-        void BindFrameBufferTexture(long Tag, int Index);
+        void BindFrameBufferTexture(long Tag, int Index, GalTextureSampler Sampler);
 
         void SetFrameBuffer(long Tag);
+
+        void SetFrameBuffer(byte[] Data, int Width, int Height);
 
         //Rasterizer
         void ClearBuffers(int RtIndex, GalClearBufferFlags Flags);
@@ -72,10 +65,8 @@ namespace Ryujinx.Graphics.Gal
         void BindProgram();
 
         //Texture
-        void SetTexture(int Index, GalTexture Tex);
+        void SetTextureAndSampler(int Index, GalTexture Texture, GalTextureSampler Sampler);
 
         void BindTexture(int Index);
-
-        void SetSampler(GalTextureSampler Sampler);
     }
 }
