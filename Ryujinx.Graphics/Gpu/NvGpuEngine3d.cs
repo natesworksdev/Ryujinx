@@ -173,23 +173,24 @@ namespace Ryujinx.Graphics.Gpu
 
         private void SetAlphaBlending()
         {
-            bool BlendEnableMaster = (ReadRegister(NvGpuEngine3dReg.BlendEnableMaster) & 1) != 0;
+            //TODO: Support independent blend properly.
+            bool Enable = (ReadRegister(NvGpuEngine3dReg.IBlendEnable) & 1) != 0;
 
-            Gpu.Renderer.SetBlendEnable(BlendEnableMaster);
+            Gpu.Renderer.SetBlendEnable(Enable);
 
-            bool BlendSeparateAlpha = (ReadRegister(NvGpuEngine3dReg.BlendSeparateAlpha) & 1) != 0;
+            bool BlendSeparateAlpha = (ReadRegister(NvGpuEngine3dReg.IBlendNSeparateAlpha) & 1) != 0;
 
-            GalBlendEquation EquationRgb = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.BlendEquationRgb);
+            GalBlendEquation EquationRgb = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.IBlendNEquationRgb);
 
-            GalBlendFactor FuncSrcRgb = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendFuncSrcRgb);
-            GalBlendFactor FuncDstRgb = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendFuncDstRgb);
+            GalBlendFactor FuncSrcRgb = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncSrcRgb);
+            GalBlendFactor FuncDstRgb = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncDstRgb);
 
             if (BlendSeparateAlpha)
             {
-                GalBlendEquation EquationAlpha = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.BlendEquationAlpha);
+                GalBlendEquation EquationAlpha = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.IBlendNEquationAlpha);
 
-                GalBlendFactor FuncSrcAlpha = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendFuncSrcAlpha);
-                GalBlendFactor FuncDstAlpha = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendFuncDstAlpha);
+                GalBlendFactor FuncSrcAlpha = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncSrcAlpha);
+                GalBlendFactor FuncDstAlpha = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncDstAlpha);
 
                 Gpu.Renderer.SetBlendSeparate(
                     EquationRgb,
