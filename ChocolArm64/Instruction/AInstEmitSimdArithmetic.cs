@@ -254,6 +254,7 @@ namespace ChocolArm64.Instruction
         public static void Fmin_S(AILEmitterCtx Context)
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
             EmitScalarBinaryOpF(Context, () =>
             {
                 if (Op.Size == 0)
@@ -275,13 +276,15 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
+            int SizeF = Op.Size & 1;
+
             EmitVectorBinaryOpF(Context, () =>
             {
-                if (Op.Size == 2)
+                if (SizeF == 0)
                 {
                     ASoftFallback.EmitCall(Context, nameof(ASoftFallback.MinF));
                 }
-                else if (Op.Size == 3)
+                else if (SizeF == 1)
                 {
                     ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Min));
                 }
@@ -577,17 +580,19 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
+            int SizeF = Op.Size & 1;
+
             EmitVectorUnaryOpF(Context, () =>
             {
                 Context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
                 Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpcr));
 
-                if (Op.Size == 2)
+                if (SizeF == 0)
                 {
                     ASoftFallback.EmitCall(Context, nameof(ASoftFallback.RoundF));
                 }
-                else if (Op.Size == 3)
+                else if (SizeF == 1)
                 {
                     ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Round));
                 }
