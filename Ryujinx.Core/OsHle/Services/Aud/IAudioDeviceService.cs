@@ -68,8 +68,6 @@ namespace Ryujinx.Core.OsHle.Services.Aud
 
             Logging.Stub(LogClass.ServiceAudio, $"Volume = {Volume}, Position = {Position}, Size = {Size}");
 
-<<<<<<< HEAD:Ryujinx.Core/OsHle/Services/Aud/IAudioDeviceService.cs
-=======
             return 0;
         }
 
@@ -90,7 +88,6 @@ namespace Ryujinx.Core.OsHle.Services.Aud
 
             Logging.Stub(LogClass.ServiceAudio, "Stubbed");
 
->>>>>>> upstream/master:Ryujinx.Core/OsHle/Services/Aud/IAudioDeviceService.cs
             return 0;
         }
     }
