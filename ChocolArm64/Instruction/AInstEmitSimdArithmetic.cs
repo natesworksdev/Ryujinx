@@ -217,11 +217,11 @@ namespace ChocolArm64.Instruction
             {
                 if (Op.Size == 0)
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CustomMaxF));
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.MaxF));
                 }
                 else if (Op.Size == 1)
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CustomMax));
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Max));
                 }
                 else
                 {
@@ -238,11 +238,11 @@ namespace ChocolArm64.Instruction
             {
                 if (Op.Size == 0)
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CustomMaxF));
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.MaxF));
                 }
                 else if (Op.Size == 1)
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CustomMax));
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Max));
                 }
                 else
                 {
@@ -258,11 +258,11 @@ namespace ChocolArm64.Instruction
             {
                 if (Op.Size == 0)
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CustomMinF));
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.MinF));
                 }
                 else if (Op.Size == 1)
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CustomMin));
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Min));
                 }
                 else
                 {
@@ -279,11 +279,11 @@ namespace ChocolArm64.Instruction
             {
                 if (Op.Size == 2)
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CustomMinF));
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.MinF));
                 }
                 else if (Op.Size == 3)
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CustomMin));
+                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Min));
                 }
                 else
                 {
