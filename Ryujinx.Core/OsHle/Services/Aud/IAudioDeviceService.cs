@@ -13,6 +13,8 @@ namespace Ryujinx.Core.OsHle.Services.Aud
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private KEvent SystemEvent;
+        //TODO: We shouldn't be signaling this here.
+        SystemEvent.Handle.Set();
 
         public IAudioDeviceService()
         {
@@ -51,9 +53,6 @@ namespace Ryujinx.Core.OsHle.Services.Aud
 
                 Position += Buffer.Length;
             }
-
-            //TODO: We shouldn't be signaling this here.
-            SystemEvent.Handle.Set();
 
             return 0;
         }
