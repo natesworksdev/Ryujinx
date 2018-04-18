@@ -14,7 +14,7 @@ namespace Ryujinx.Core.OsHle.Services
 
         private int SelfId;
 
-        private bool IsDomain;       
+        private bool IsDomain;
 
         public IpcService()
         {
@@ -81,7 +81,7 @@ namespace Ryujinx.Core.OsHle.Services
             {
                 Context.ResponseData.BaseStream.Seek(IsDomain ? 0x20 : 0x10, SeekOrigin.Begin);
 
-                Logging.Trace($"{Service.GetType().Name}: {ProcessRequest.Method.Name}");
+                Logging.Trace(LogClass.KernelIpc, $"{Service.GetType().Name}: {ProcessRequest.Method.Name}");
 
                 long Result = ProcessRequest(Context);
 
@@ -104,7 +104,9 @@ namespace Ryujinx.Core.OsHle.Services
             }
             else
             {
-                throw new NotImplementedException($"{Service.GetType().Name}: {CommandId}");
+                string DbgMessage = $"{Context.Session.ServiceName} {Service.GetType().Name}: {CommandId}";
+
+                throw new NotImplementedException(DbgMessage);
             }
         }
 
@@ -118,7 +120,7 @@ namespace Ryujinx.Core.OsHle.Services
             }
             else
             {
-                KSession Session = new KSession(Obj);
+                KSession Session = new KSession(Obj, Context.Session.ServiceName);
 
                 int Handle = Context.Process.HandleTable.OpenHandle(Session);
 

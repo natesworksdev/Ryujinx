@@ -40,6 +40,7 @@ namespace Ryujinx.Core.OsHle.Svc
                 { 0x0c, SvcGetThreadPriority             },
                 { 0x0d, SvcSetThreadPriority             },
                 { 0x0f, SvcSetThreadCoreMask             },
+                { 0x10, SvcGetCurrentProcessorNumber     },
                 { 0x12, SvcClearEvent                    },
                 { 0x13, SvcMapSharedMemory               },
                 { 0x14, SvcUnmapSharedMemory             },
@@ -79,11 +80,11 @@ namespace Ryujinx.Core.OsHle.Svc
 
             if (SvcFuncs.TryGetValue(e.Id, out SvcFunc Func))
             {
-                Logging.Trace($"(Thread {ThreadState.ThreadId}) {Func.Method.Name} called.");
+                Logging.Trace(LogClass.KernelSvc, $"(Thread {ThreadState.ThreadId}) {Func.Method.Name} called.");
 
                 Func(ThreadState);
 
-                Logging.Trace($"(Thread {ThreadState.ThreadId}) {Func.Method.Name} ended.");
+                Logging.Trace(LogClass.KernelSvc, $"(Thread {ThreadState.ThreadId}) {Func.Method.Name} ended.");
             }
             else
             {

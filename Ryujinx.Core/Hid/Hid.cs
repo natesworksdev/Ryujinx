@@ -82,7 +82,7 @@ namespace Ryujinx.Core.Input
 
                 (AMemory Memory, long Position) ShMem = ShMemPositions[ShMemPositions.Length - 1];
 
-                Logging.Info($"HID shared memory successfully mapped to 0x{ShMem.Position:x16}!");
+                Logging.Info(LogClass.ServiceHid, $"HID shared memory successfully mapped to 0x{ShMem.Position:x16}!");
 
                 Init(ShMem.Memory, ShMem.Position);
             }
@@ -219,7 +219,7 @@ namespace Ryujinx.Core.Input
                     Memory.WriteInt64Unchecked(TouchScreenOffset + 0x8,  HidEntryCount);
                     Memory.WriteInt64Unchecked(TouchScreenOffset + 0x10, CurrEntry);
                     Memory.WriteInt64Unchecked(TouchScreenOffset + 0x18, HidEntryCount - 1);
-                    Memory.WriteInt64Unchecked(TouchScreenOffset + 0x20, Timestamp);            
+                    Memory.WriteInt64Unchecked(TouchScreenOffset + 0x20, Timestamp);
 
                     long TouchEntryOffset = TouchScreenOffset + HidTouchHeaderSize;
 

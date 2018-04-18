@@ -107,25 +107,31 @@ namespace ChocolArm64
 
             ATranslatedSub Subroutine = Context.GetSubroutine();
 
-            if (SubBlocks.Contains(Position))
+            lock (SubBlocks)
             {
-                SubBlocks.Remove(Position);
+                if (SubBlocks.Contains(Position))
+                {
+                    SubBlocks.Remove(Position);
 
-                Subroutine.SetType(ATranslatedSubType.SubBlock);
-            }
-            else
-            {
-                Subroutine.SetType(ATranslatedSubType.SubTier0);
+                    Subroutine.SetType(ATranslatedSubType.SubBlock);
+                }
+                else
+                {
+                    Subroutine.SetType(ATranslatedSubType.SubTier0);
+                }
             }
 
             CachedSubs.AddOrUpdate(Position, Subroutine, (Key, OldVal) => Subroutine);
 
             AOpCode LastOp = Block.GetLastOp();
 
-            if (LastOp.Emitter != AInstEmit.Ret &&
-                LastOp.Emitter != AInstEmit.Br)
+            lock (SubBlocks)
             {
-                SubBlocks.Add(LastOp.Position + 4);
+                if (LastOp.Emitter != AInstEmit.Ret &&
+                    LastOp.Emitter != AInstEmit.Br)
+                {
+                    SubBlocks.Add(LastOp.Position + 4);
+                }
             }
 
             return Subroutine;
@@ -154,11 +160,14 @@ namespace ChocolArm64
 
             //Mark all methods that calls this method for ReJiting,
             //since we can now call it directly which is faster.
-            foreach (ATranslatedSub TS in CachedSubs.Values)
+            if (CachedSubs.TryGetValue(Position, out ATranslatedSub OldSub))
             {
-                if (TS.HasCallee(Position))
+                foreach (long CallerPos in OldSub.GetCallerPositions())
                 {
-                    TS.MarkForReJit();
+                    if (CachedSubs.TryGetValue(Position, out ATranslatedSub CallerSub))
+                    {
+                        CallerSub.MarkForReJit();
+                    }
                 }
             }
 

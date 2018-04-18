@@ -20,6 +20,14 @@ namespace ChocolArm64.Instruction
             Context.EmitCall(typeof(ASoftFallback), MthdName);
         }
 
+        public static uint  CountLeadingSigns32(uint Value)  => (uint)CountLeadingSigns(Value, 32);
+        public static ulong CountLeadingSigns64(ulong Value) => (ulong)CountLeadingSigns(Value, 64);
+
+        private static ulong CountLeadingSigns(ulong Value, int Size)
+        {
+            return CountLeadingZeros((Value >> 1) ^ Value, Size - 1);
+        }
+
         public static uint  CountLeadingZeros32(uint Value)  => (uint)CountLeadingZeros(Value, 32);
         public static ulong CountLeadingZeros64(ulong Value) => (ulong)CountLeadingZeros(Value, 64);
 
@@ -113,7 +121,7 @@ namespace ChocolArm64.Instruction
             Value = ((Value & 0xcccccccccccccccc) >>  2) | ((Value & 0x3333333333333333) <<  2);
             Value = ((Value & 0xf0f0f0f0f0f0f0f0) >>  4) | ((Value & 0x0f0f0f0f0f0f0f0f) <<  4);
             Value = ((Value & 0xff00ff00ff00ff00) >>  8) | ((Value & 0x00ff00ff00ff00ff) <<  8);
-            Value = ((Value & 0xffff0000ffff0000) >> 16) | ((Value & 0x0000ffff0000ffff) << 16);           
+            Value = ((Value & 0xffff0000ffff0000) >> 16) | ((Value & 0x0000ffff0000ffff) << 16);
 
             return (Value >> 32) | (Value << 32);
         }
@@ -242,10 +250,113 @@ namespace ChocolArm64.Instruction
 
         public static int CountSetBits8(byte Value)
         {
-            return (Value >> 0) & 1 + (Value >> 1) & 1 +
-                   (Value >> 2) & 1 + (Value >> 3) & 1 +
-                   (Value >> 4) & 1 + (Value >> 5) & 1 +
-                   (Value >> 6) & 1 + (Value >> 7);
+            return ((Value >> 0) & 1) + ((Value >> 1) & 1) +
+                   ((Value >> 2) & 1) + ((Value >> 3) & 1) +
+                   ((Value >> 4) & 1) + ((Value >> 5) & 1) +
+                   ((Value >> 6) & 1) +  (Value >> 7);
+        }
+
+        public static float CustomMaxF(float val1, float val2) {
+
+            if(val1 == 0.0 && val2 == 0.0)
+            {
+                
+                if(BitConverter.GetBytes(val1)[3] == 0x80 && BitConverter.GetBytes(val2)[3] == 0x80)
+                    return (float)-0.0;
+                
+                if(BitConverter.GetBytes(val1)[3] == 0x80 || BitConverter.GetBytes(val2)[3] == 0x80)
+                    return (float)0.0;
+                
+                return (float)0.0;
+            }
+
+            if(val1 > val2) 
+                return val1; 
+     
+            if(Single.IsNaN(val1)) 
+                return val1;
+     
+            return val2;
+        }
+
+        public static double CustomMax(double val1, double val2) {
+
+            if(val1 == 0.0 && val2 == 0.0)
+            {
+                if(BitConverter.GetBytes(val1)[7] == 0x80 && BitConverter.GetBytes(val2)[7] == 0x80)
+                    return -0.0;
+
+                if(BitConverter.GetBytes(val1)[7] == 0x80 || BitConverter.GetBytes(val2)[7] == 0x80)
+                    return 0.0;
+
+                return 0.0;
+            }
+
+            if(val1 > val2) 
+                return val1; 
+     
+            if(Double.IsNaN(val1)) 
+                return val1;
+     
+            return val2;
+        }
+
+        public static float CustomMinF(float val1, float val2) {
+
+            if((val1 == 0.0 && val2 >= 0.0) || (val1 >= 0.0 && val2 == 0.0))
+            {
+                if(BitConverter.GetBytes(val1)[3] == 0x80 || BitConverter.GetBytes(val2)[3] == 0x80)
+                    return (float)-0.0;
+            }
+
+            if(val1 == 0.0 && val2 == 0.0)
+            {
+                
+                if(BitConverter.GetBytes(val1)[3] == 0x80 && BitConverter.GetBytes(val2)[3] == 0x80)
+                    return (float)-0.0;
+                
+                if(BitConverter.GetBytes(val1)[3] == 0x80 || BitConverter.GetBytes(val2)[3] == 0x80)
+                    return (float)-0.0;
+                
+                return (float)0.0;
+            }
+
+            if(val1 < val2) 
+                return val1; 
+     
+            if(Single.IsNaN(val1)) 
+                return val1;
+     
+            return val2;
+        }
+
+        public static double CustomMin(double val1, double val2) {
+
+            if((val1 == 0.0 && val2 >= 0.0) || (val1 >= 0.0 && val2 == 0.0))
+            {
+                if(BitConverter.GetBytes(val1)[7] == 0x80 || BitConverter.GetBytes(val2)[7] == 0x80)
+                    return -0.0;
+            }
+
+            if(val1 == 0.0 && val2 == 0.0)
+            {
+                
+                if(BitConverter.GetBytes(val1)[7] == 0x80 && BitConverter.GetBytes(val2)[7] == 0x80)
+                    return -0.0;
+                
+                if(BitConverter.GetBytes(val1)[7] == 0x80 || BitConverter.GetBytes(val2)[7] == 0x80)
+                    return -0.0;
+                
+                return 0.0;
+            }
+
+            if(val1 < val2) 
+                return val1; 
+     
+            if(Double.IsNaN(val1)) 
+                return val1;
+     
+            return val2;
         }
 
         public static float RoundF(float Value, int Fpcr)

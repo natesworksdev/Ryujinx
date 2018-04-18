@@ -39,7 +39,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             if (Obj == null)
             {
-                Logging.Warn($"Tried to CloseHandle on invalid handle 0x{Handle:x8}!");
+                Logging.Warn(LogClass.KernelSvc, $"Tried to CloseHandle on invalid handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -75,7 +75,7 @@ namespace Ryujinx.Core.OsHle.Svc
             }
             else
             {
-                Logging.Warn($"Tried to ResetSignal on invalid event handle 0x{Handle:x8}!");
+                Logging.Warn(LogClass.KernelSvc, $"Tried to ResetSignal on invalid event handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -99,7 +99,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
                 if (SyncObj == null)
                 {
-                    Logging.Warn($"Tried to WaitSynchronization on invalid handle 0x{Handle:x8}!");
+                    Logging.Warn(LogClass.KernelSvc, $"Tried to WaitSynchronization on invalid handle 0x{Handle:x8}!");
 
                     ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -153,10 +153,10 @@ namespace Ryujinx.Core.OsHle.Svc
 
             //TODO: Validate that app has perms to access the service, and that the service
             //actually exists, return error codes otherwise.
-            KSession Session = new KSession(ServiceFactory.MakeService(Name));
+            KSession Session = new KSession(ServiceFactory.MakeService(Name), Name);
 
             ulong Handle = (ulong)Process.HandleTable.OpenHandle(Session);
-            
+
             ThreadState.X0 = 0;
             ThreadState.X1 = Handle;
         }
@@ -199,7 +199,7 @@ namespace Ryujinx.Core.OsHle.Svc
             }
             else
             {
-                Logging.Warn($"Tried to SendSyncRequest on invalid session handle 0x{Handle:x8}!");
+                Logging.Warn(LogClass.KernelSvc, $"Tried to SendSyncRequest on invalid session handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -221,7 +221,7 @@ namespace Ryujinx.Core.OsHle.Svc
 
             string Str = AMemoryHelper.ReadAsciiString(Memory, Position, Size);
 
-            Logging.Info($"SvcOutputDebugString: {Str}");
+            Logging.Info(LogClass.KernelSvc, Str);
 
             ThreadState.X0 = 0;
         }
@@ -235,7 +235,8 @@ namespace Ryujinx.Core.OsHle.Svc
 
             //Fail for info not available on older Kernel versions.
             if (InfoType == 18 ||
-                InfoType == 19)
+                InfoType == 19 ||
+                InfoType == 20)
             {
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidInfo);
 
@@ -267,7 +268,7 @@ namespace Ryujinx.Core.OsHle.Svc
                 case 6:
                     ThreadState.X1 = MemoryRegions.TotalMemoryAvailable;
                     break;
-    
+
                 case 7:
                     ThreadState.X1 = MemoryRegions.TotalMemoryUsed + CurrentHeapSize;
                     break;

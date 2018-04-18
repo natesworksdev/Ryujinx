@@ -1,6 +1,8 @@
 using ChocolArm64.State;
 using Ryujinx.Core.OsHle.Handles;
 
+using static Ryujinx.Core.OsHle.ErrorCode;
+
 namespace Ryujinx.Core.OsHle.Svc
 {
     partial class SvcHandler
@@ -61,11 +63,11 @@ namespace Ryujinx.Core.OsHle.Svc
         }
 
         private void SvcSleepThread(AThreadState ThreadState)
-        {           
+        {
             ulong NanoSecs = ThreadState.X0;
 
             KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
-            
+
             if (NanoSecs == 0)
             {
                 Process.Scheduler.Yield(CurrThread);
@@ -115,9 +117,16 @@ namespace Ryujinx.Core.OsHle.Svc
             //TODO: Error codes.
         }
 
+        private void SvcGetCurrentProcessorNumber(AThreadState ThreadState)
+        {
+            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
+
+            ThreadState.X0 = (ulong)CurrThread.ProcessorId;
+        }
+
         private void SvcGetThreadId(AThreadState ThreadState)
         {
-            int Handle = (int)ThreadState.X0;
+            int Handle = (int)ThreadState.X1;
 
             KThread Thread = Process.HandleTable.GetData<KThread>(Handle);
 
@@ -126,8 +135,12 @@ namespace Ryujinx.Core.OsHle.Svc
                 ThreadState.X0 = 0;
                 ThreadState.X1 = (ulong)Thread.ThreadId;
             }
+            else
+            {
+                Logging.Warn(LogClass.KernelSvc, $"Tried to GetThreadId on invalid thread handle 0x{Handle:x8}!");
 
-            //TODO: Error codes.
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+            }
         }
     }
 }

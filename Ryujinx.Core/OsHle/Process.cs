@@ -15,8 +15,9 @@ namespace Ryujinx.Core.OsHle
 {
     class Process : IDisposable
     {
-        private const int TlsSize       = 0x200;
-        private const int TotalTlsSlots = 32;
+        private const int TlsSize = 0x200;
+
+        private const int TotalTlsSlots = (int)MemoryRegions.TlsPagesSize / TlsSize;
 
         private const int TickFreq = 19_200_000;
 
@@ -90,7 +91,7 @@ namespace Ryujinx.Core.OsHle
                 throw new ObjectDisposedException(nameof(Process));
             }
 
-            Logging.Info($"Image base at 0x{ImageBase:x16}.");
+            Logging.Info(LogClass.Loader, $"Image base at 0x{ImageBase:x16}.");
 
             Executable Executable = new Executable(Program, Memory, ImageBase);
 
@@ -123,7 +124,7 @@ namespace Ryujinx.Core.OsHle
                 MemoryRegions.MainStackAddress,
                 MemoryRegions.MainStackSize,
                 MemoryType.Normal);
-            
+
             long StackTop = MemoryRegions.MainStackAddress + MemoryRegions.MainStackSize;
 
             int Handle = MakeThread(Executables[0].ImageBase, StackTop, 0, 0, 0);
@@ -254,12 +255,12 @@ namespace Ryujinx.Core.OsHle
                 if (e.Position >= Executables[Index].ImageBase)
                 {
                     NsoName = $"{(e.Position - Executables[Index].ImageBase):x16}";
-                    
+
                     break;
                 }
             }
 
-            Logging.Trace($"Executing at 0x{e.Position:x16} {e.SubName} {NsoName}");
+            Logging.Trace(LogClass.Loader, $"Executing at 0x{e.Position:x16} {e.SubName} {NsoName}");
         }
 
         public void EnableCpuTracing()
@@ -289,7 +290,7 @@ namespace Ryujinx.Core.OsHle
         {
             if (sender is AThread Thread)
             {
-                Logging.Info($"Thread {Thread.ThreadId} exiting...");
+                Logging.Info(LogClass.KernelScheduler, $"Thread {Thread.ThreadId} exiting...");
 
                 TlsSlots.TryRemove(GetTlsSlot(Thread.ThreadState.Tpidr), out _);
             }
@@ -301,7 +302,7 @@ namespace Ryujinx.Core.OsHle
                     Dispose();
                 }
 
-                Logging.Info($"No threads running, now exiting Process {ProcessId}...");
+                Logging.Info(LogClass.KernelScheduler, $"No threads running, now exiting Process {ProcessId}...");
 
                 Ns.Os.ExitProcess(ProcessId);
             }
@@ -316,7 +317,7 @@ namespace Ryujinx.Core.OsHle
         {
             if (!ThreadsByTpidr.TryGetValue(Tpidr, out KThread Thread))
             {
-                Logging.Error($"Thread with TPIDR 0x{Tpidr:x16} not found!");
+                Logging.Error(LogClass.KernelScheduler, $"Thread with TPIDR 0x{Tpidr:x16} not found!");
             }
 
             return Thread;
@@ -339,7 +340,7 @@ namespace Ryujinx.Core.OsHle
                 {
                     ShouldDispose = true;
 
-                    Logging.Info($"Process {ProcessId} waiting all threads terminate...");
+                    Logging.Info(LogClass.KernelScheduler, $"Process {ProcessId} waiting all threads terminate...");
 
                     return;
                 }
@@ -354,11 +355,11 @@ namespace Ryujinx.Core.OsHle
                     }
                 }
 
-                ServiceNvDrv.Fds.DeleteProcess(this);
+                INvDrvServices.Fds.DeleteProcess(this);
 
-                ServiceNvDrv.NvMaps    .DeleteProcess(this);
-                ServiceNvDrv.NvMapsById.DeleteProcess(this);
-                ServiceNvDrv.NvMapsFb  .DeleteProcess(this);
+                INvDrvServices.NvMaps    .DeleteProcess(this);
+                INvDrvServices.NvMapsById.DeleteProcess(this);
+                INvDrvServices.NvMapsFb  .DeleteProcess(this);
 
                 Scheduler.Dispose();
 
@@ -368,7 +369,7 @@ namespace Ryujinx.Core.OsHle
 
                 Memory.Dispose();
 
-                Logging.Info($"Process {ProcessId} exiting...");
+                Logging.Info(LogClass.KernelScheduler, $"Process {ProcessId} exiting...");
             }
         }
     }

@@ -19,7 +19,9 @@ namespace Ryujinx.Core.OsHle.Services.Nifm
             {
                 { 0, GetRequestState               },
                 { 1, GetResult                     },
-                { 2, GetSystemEventReadableHandles }
+                { 2, GetSystemEventReadableHandles },
+                { 3, Cancel                        },
+                { 4, Submit                        },
             };
 
             Event = new KEvent();
@@ -29,14 +31,14 @@ namespace Ryujinx.Core.OsHle.Services.Nifm
         {
             Context.ResponseData.Write(0);
 
-            //Todo: Stub
+            Logging.Stub(LogClass.ServiceNifm, "Stubbed");
 
             return 0;
         }
 
         public long GetResult(ServiceCtx Context)
         {
-            //Todo: Stub
+            Logging.Stub(LogClass.ServiceNifm, "Stubbed");
 
             return 0;
         }
@@ -48,6 +50,20 @@ namespace Ryujinx.Core.OsHle.Services.Nifm
             int Handle = Context.Process.HandleTable.OpenHandle(Event);
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeMove(Handle);
+
+            return 0;
+        }
+
+        public long Cancel(ServiceCtx Context)
+        {
+            Logging.Stub(LogClass.ServiceNifm, "Stubbed");
+
+            return 0;
+        }
+
+        public long Submit(ServiceCtx Context)
+        {
+            Logging.Stub(LogClass.ServiceNifm, "Stubbed");
 
             return 0;
         }
