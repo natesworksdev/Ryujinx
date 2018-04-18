@@ -13,8 +13,6 @@ namespace Ryujinx.Core.OsHle.Services.Aud
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private KEvent SystemEvent;
-        //TODO: We shouldn't be signaling this here.
-        SystemEvent.Handle.Set();
 
         public IAudioDeviceService()
         {
@@ -27,6 +25,8 @@ namespace Ryujinx.Core.OsHle.Services.Aud
             };
 
             SystemEvent = new KEvent();
+            //TODO: We shouldn't be signaling this here.
+            SystemEvent.Handle.Set();
         }
 
         public long ListAudioDeviceName(ServiceCtx Context)
