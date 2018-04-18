@@ -256,8 +256,8 @@ namespace ChocolArm64.Instruction
                    ((Value >> 6) & 1) +  (Value >> 7);
         }
 
-        public static float CustomMaxF(float val1, float val2) {
-
+        public static float CustomMaxF(float val1, float val2)
+        {
             if(val1 == 0.0 && val2 == 0.0)
             {
                 
@@ -279,8 +279,8 @@ namespace ChocolArm64.Instruction
             return val2;
         }
 
-        public static double CustomMax(double val1, double val2) {
-
+        public static double CustomMax(double val1, double val2)
+        {
             if(val1 == 0.0 && val2 == 0.0)
             {
                 if(BitConverter.GetBytes(val1)[7] == 0x80 && BitConverter.GetBytes(val2)[7] == 0x80)
@@ -301,8 +301,8 @@ namespace ChocolArm64.Instruction
             return val2;
         }
 
-        public static float CustomMinF(float val1, float val2) {
-
+        public static float CustomMinF(float val1, float val2)
+        {
             if((val1 == 0.0 && val2 >= 0.0) || (val1 >= 0.0 && val2 == 0.0))
             {
                 if(BitConverter.GetBytes(val1)[3] == 0x80 || BitConverter.GetBytes(val2)[3] == 0x80)
@@ -330,8 +330,8 @@ namespace ChocolArm64.Instruction
             return val2;
         }
 
-        public static double CustomMin(double val1, double val2) {
-
+        public static double CustomMin(double val1, double val2)
+        {
             if((val1 == 0.0 && val2 >= 0.0) || (val1 >= 0.0 && val2 == 0.0))
             {
                 if(BitConverter.GetBytes(val1)[7] == 0x80 || BitConverter.GetBytes(val2)[7] == 0x80)
