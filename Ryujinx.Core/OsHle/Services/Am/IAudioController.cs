@@ -33,7 +33,7 @@ namespace Ryujinx.Core.OsHle.Services.Am
 
         public long GetMainAppletExpectedMasterVolume(ServiceCtx Context)
         {
-            Context.ResponseData.Write(1);
+            Context.ResponseData.Write(1f);
 
             Logging.Stub(LogClass.ServiceAm, "Stubbed");
 
@@ -42,7 +42,7 @@ namespace Ryujinx.Core.OsHle.Services.Am
 
         public long GetLibraryAppletExpectedMasterVolume(ServiceCtx Context)
         {
-            Context.ResponseData.Write(1);
+            Context.ResponseData.Write(1f);
 
             Logging.Stub(LogClass.ServiceAm, "Stubbed");
 
