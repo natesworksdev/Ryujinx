@@ -20,6 +20,7 @@ namespace Ryujinx.Core.OsHle.Services.Am
                 { 22, SetTerminateResult          },
                 { 40, NotifyRunning               },
                 { 66, InitializeGameplayRecording },
+                { 67, SetGameplayRecordingState   },
             };
         }
 
@@ -76,6 +77,13 @@ namespace Ryujinx.Core.OsHle.Services.Am
         }
 
         public long InitializeGameplayRecording(ServiceCtx Context)
+        {
+            //TODO: Stubbed
+
+            return 0;
+        }
+
+        public long SetGameplayRecordingState(ServiceCtx Context)
         {
             //TODO: Stubbed
 
