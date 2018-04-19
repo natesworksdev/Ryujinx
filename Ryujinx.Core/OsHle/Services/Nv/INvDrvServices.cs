@@ -31,12 +31,13 @@ namespace Ryujinx.Core.OsHle.Services.Nv
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, Open         },
-                { 1, Ioctl        },
-                { 2, Close        },
-                { 3, Initialize   },
-                { 4, QueryEvent   },
-                { 8, SetClientPid },
+                { 0,  Open             },
+                { 1,  Ioctl            },
+                { 2,  Close            },
+                { 3,  Initialize       },
+                { 4,  QueryEvent       },
+                { 8,  SetClientPid     },
+                { 13, FinishInitialize },
             };
 
             IoctlCmds = new Dictionary<(string, int), ServiceProcessIoctl>()
@@ -161,6 +162,13 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             long Pid = Context.RequestData.ReadInt64();
 
             Context.ResponseData.Write(0);
+
+            return 0;
+        }
+
+        public long FinishInitialize(ServiceCtx Context)
+        {
+            //TODO: Stubbed
 
             return 0;
         }
