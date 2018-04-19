@@ -75,7 +75,7 @@ namespace Ryujinx.Core.OsHle.Services.Am
             return 0;
         }
 
-        public ulong InitializeGameplayRecording(ServiceCtx Context)
+        public long InitializeGameplayRecording(ServiceCtx Context)
         {
             //TODO: Stubbed
 
