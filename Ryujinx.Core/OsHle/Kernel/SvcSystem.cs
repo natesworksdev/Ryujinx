@@ -234,7 +234,9 @@ namespace Ryujinx.Core.OsHle.Kernel
             int  InfoId   =  (int)ThreadState.X3;
 
             //Fail for info not available on older Kernel versions.
-            if (InfoType == 18 ||
+            if (InfoType == 16 ||
+                InfoType == 17 ||
+                InfoType == 18 ||
                 InfoType == 19 ||
                 InfoType == 20)
             {
