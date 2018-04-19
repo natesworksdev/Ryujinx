@@ -14,6 +14,7 @@ namespace Ryujinx.Core.OsHle.Kernel
     partial class SvcHandler
     {
         private const int AllowedCpuIdBitmask = 0b1111;
+        private ulong IsVirtualAddressMemoryEnabled = 0;
 
         private const bool EnableProcessDebugging = false;
 
@@ -297,6 +298,9 @@ namespace Ryujinx.Core.OsHle.Kernel
                     ThreadState.X1 = MemoryRegions.MapRegionSize;
                     break;
 
+                case 16:
+                    ThreadState.X1 = IsVirtualAddressMemoryEnabled;
+                    break;
                 default: throw new NotImplementedException($"SvcGetInfo: {InfoType} {Handle} {InfoId}");
             }
 
