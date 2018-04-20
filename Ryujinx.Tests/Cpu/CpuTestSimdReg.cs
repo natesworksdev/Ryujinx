@@ -19,11 +19,42 @@ namespace Ryujinx.Tests.Cpu
             AArch64.TakeReset(false);
         }
 
+#region "ValueSource"
+        private static ulong[] _D_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
+
+        private static ulong[] _8B4H2S_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+                                 0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
+                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                                 0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
+
+        private static ulong[] _16B8H4S2D_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
+                                 0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
+                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                                 0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
+
+        private static ulong[] _8H4S2D_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
+                                 0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
+                                 0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
+#endregion
+
         [Test, Description("ADD <V><d>, <V><n>, <V><m>")]
-        public void Add_S_D([Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A,
-                            [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B)
+        public void Add_S_D([ValueSource("_D_")] [Random(1)] ulong A,
+                            [ValueSource("_D_")] [Random(1)] ulong B)
         {
             uint Opcode = 0x5EE28420; // ADD D0, D1, D2
             Bits Op = new Bits(Opcode);
@@ -42,14 +73,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Description("ADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
-        public void Add_V_8B_4H_2S([Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A,
-                                   [Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B,
+        public void Add_V_8B_4H_2S([ValueSource("_8B4H2S_")] [Random(1)] ulong A,
+                                   [ValueSource("_8B4H2S_")] [Random(1)] ulong B,
                                    [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B, 4H, 2S>
         {
             uint Opcode = 0x0E228420; // ADD V0.8B, V1.8B, V2.8B
@@ -70,26 +95,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("ADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
-        public void Add_V_16B_8H_4S_2D([Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                               0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                               0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                               0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                               0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                       [Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                               0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                               0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                               0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                               0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                       [Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                               0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                               0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                               0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                               0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                       [Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                               0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                               0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                               0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                               0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Add_V_16B_8H_4S_2D([ValueSource("_16B8H4S2D_")] [Random(1)] ulong A0,
+                                       [ValueSource("_16B8H4S2D_")] [Random(1)] ulong A1,
+                                       [ValueSource("_16B8H4S2D_")] [Random(1)] ulong B0,
+                                       [ValueSource("_16B8H4S2D_")] [Random(1)] ulong B1,
                                        [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <16B, 8H, 4S, 2D>
         {
             uint Opcode = 0x4E228420; // ADD V0.16B, V1.16B, V2.16B
@@ -114,22 +123,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("ADDHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
-        public void Addhn_V_8H8B_4S4H_2D2S([Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                   0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                   0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                   0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                           [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                   0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                   0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                   0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                           [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                   0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                   0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                   0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                           [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                   0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                   0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                   0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Addhn_V_8H8B_4S4H_2D2S([ValueSource("_8H4S2D_")] [Random(1)] ulong A0,
+                                           [ValueSource("_8H4S2D_")] [Random(1)] ulong A1,
+                                           [ValueSource("_8H4S2D_")] [Random(1)] ulong B0,
+                                           [ValueSource("_8H4S2D_")] [Random(1)] ulong B1,
                                            [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H8B, 4S4H, 2D2S>
         {
             uint Opcode = 0x0E224020; // ADDHN V0.8B, V1.8H, V2.8H
@@ -155,22 +152,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("ADDHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
-        public void Addhn_V_8H16B_4S8H_2D4S([Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Addhn_V_8H16B_4S8H_2D4S([ValueSource("_8H4S2D_")] [Random(1)] ulong A0,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong A1,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong B0,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong B1,
                                             [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H16B, 4S8H, 2D4S>
         {
             uint Opcode = 0x4E224020; // ADDHN2 V0.16B, V1.8H, V2.8H
@@ -197,22 +182,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("RADDHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
-        public void Raddhn_V_8H8B_4S4H_2D2S([Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Raddhn_V_8H8B_4S4H_2D2S([ValueSource("_8H4S2D_")] [Random(1)] ulong A0,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong A1,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong B0,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong B1,
                                             [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H8B, 4S4H, 2D2S>
         {
             uint Opcode = 0x2E224020; // RADDHN V0.8B, V1.8H, V2.8H
@@ -238,22 +211,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("RADDHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
-        public void Raddhn_V_8H16B_4S8H_2D4S([Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                     0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                     0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                     0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                             [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                     0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                     0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                     0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                             [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                     0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                     0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                     0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                             [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                     0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                     0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                     0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Raddhn_V_8H16B_4S8H_2D4S([ValueSource("_8H4S2D_")] [Random(1)] ulong A0,
+                                             [ValueSource("_8H4S2D_")] [Random(1)] ulong A1,
+                                             [ValueSource("_8H4S2D_")] [Random(1)] ulong B0,
+                                             [ValueSource("_8H4S2D_")] [Random(1)] ulong B1,
                                              [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H16B, 4S8H, 2D4S>
         {
             uint Opcode = 0x6E224020; // RADDHN2 V0.16B, V1.8H, V2.8H
@@ -280,22 +241,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("RSUBHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
-        public void Rsubhn_V_8H8B_4S4H_2D2S([Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Rsubhn_V_8H8B_4S4H_2D2S([ValueSource("_8H4S2D_")] [Random(1)] ulong A0,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong A1,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong B0,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong B1,
                                             [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H8B, 4S4H, 2D2S>
         {
             uint Opcode = 0x2E226020; // RSUBHN V0.8B, V1.8H, V2.8H
@@ -321,22 +270,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("RSUBHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
-        public void Rsubhn_V_8H16B_4S8H_2D4S([Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                     0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                     0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                     0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                             [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                     0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                     0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                     0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                             [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                     0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                     0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                     0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                             [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                     0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                     0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                     0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Rsubhn_V_8H16B_4S8H_2D4S([ValueSource("_8H4S2D_")] [Random(1)] ulong A0,
+                                             [ValueSource("_8H4S2D_")] [Random(1)] ulong A1,
+                                             [ValueSource("_8H4S2D_")] [Random(1)] ulong B0,
+                                             [ValueSource("_8H4S2D_")] [Random(1)] ulong B1,
                                              [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H16B, 4S8H, 2D4S>
         {
             uint Opcode = 0x6E226020; // RSUBHN2 V0.16B, V1.8H, V2.8H
@@ -363,10 +300,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Description("SUB <V><d>, <V><n>, <V><m>")]
-        public void Sub_S_D([Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A,
-                            [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B)
+        public void Sub_S_D([ValueSource("_D_")] [Random(1)] ulong A,
+                            [ValueSource("_D_")] [Random(1)] ulong B)
         {
             uint Opcode = 0x7EE28420; // SUB D0, D1, D2
             Bits Op = new Bits(Opcode);
@@ -385,14 +320,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Description("SUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
-        public void Sub_V_8B_4H_2S([Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A,
-                                   [Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                           0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                           0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                           0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B,
+        public void Sub_V_8B_4H_2S([ValueSource("_8B4H2S_")] [Random(1)] ulong A,
+                                   [ValueSource("_8B4H2S_")] [Random(1)] ulong B,
                                    [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B, 4H, 2S>
         {
             uint Opcode = 0x2E228420; // SUB V0.8B, V1.8B, V2.8B
@@ -413,26 +342,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
-        public void Sub_V_16B_8H_4S_2D([Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                               0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                               0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                               0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                               0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                       [Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                               0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                               0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                               0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                               0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                       [Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                               0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                               0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                               0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                               0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                       [Values(0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                               0x8080808080808080ul, 0x7FFF7FFF7FFF7FFFul,
-                                               0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                               0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                               0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Sub_V_16B_8H_4S_2D([ValueSource("_16B8H4S2D_")] [Random(1)] ulong A0,
+                                       [ValueSource("_16B8H4S2D_")] [Random(1)] ulong A1,
+                                       [ValueSource("_16B8H4S2D_")] [Random(1)] ulong B0,
+                                       [ValueSource("_16B8H4S2D_")] [Random(1)] ulong B1,
                                        [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <16B, 8H, 4S, 2D>
         {
             uint Opcode = 0x6E228420; // SUB V0.16B, V1.16B, V2.16B
@@ -457,22 +370,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SUBHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
-        public void Subhn_V_8H8B_4S4H_2D2S([Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                   0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                   0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                   0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                           [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                   0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                   0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                   0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                           [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                   0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                   0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                   0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                           [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                   0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                   0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                   0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Subhn_V_8H8B_4S4H_2D2S([ValueSource("_8H4S2D_")] [Random(1)] ulong A0,
+                                           [ValueSource("_8H4S2D_")] [Random(1)] ulong A1,
+                                           [ValueSource("_8H4S2D_")] [Random(1)] ulong B0,
+                                           [ValueSource("_8H4S2D_")] [Random(1)] ulong B1,
                                            [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H8B, 4S4H, 2D2S>
         {
             uint Opcode = 0x0E226020; // SUBHN V0.8B, V1.8H, V2.8H
@@ -498,22 +399,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("SUBHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
-        public void Subhn_V_8H16B_4S8H_2D4S([Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A0,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong A1,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B0,
-                                            [Values(0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
-                                                    0x8000800080008000ul, 0x7FFFFFFF7FFFFFFFul,
-                                                    0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                                    0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(1)] ulong B1,
+        public void Subhn_V_8H16B_4S8H_2D4S([ValueSource("_8H4S2D_")] [Random(1)] ulong A0,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong A1,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong B0,
+                                            [ValueSource("_8H4S2D_")] [Random(1)] ulong B1,
                                             [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H16B, 4S8H, 2D4S>
         {
             uint Opcode = 0x4E226020; // SUBHN2 V0.16B, V1.8H, V2.8H
