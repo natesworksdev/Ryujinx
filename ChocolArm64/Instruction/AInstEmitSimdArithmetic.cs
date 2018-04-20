@@ -46,7 +46,7 @@ namespace ChocolArm64.Instruction
 
         public static void Addhn_V(AILEmitterCtx Context)
         {
-            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Add), false);
+            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Add), Round: false);
         }
 
         public static void Addp_S(AILEmitterCtx Context)
@@ -152,9 +152,7 @@ namespace ChocolArm64.Instruction
 
                 if (Round)
                 {
-                    Context.EmitLdc_I8(1);
-
-                    Context.EmitLsl(ESize - 1);
+                    Context.EmitLdc_I8(1L << (ESize - 1));
 
                     Context.Emit(OpCodes.Add);
                 }
@@ -891,12 +889,12 @@ namespace ChocolArm64.Instruction
 
         public static void Raddhn_V(AILEmitterCtx Context)
         {
-            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Add), true);
+            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Add), Round: true);
         }
 
         public static void Rsubhn_V(AILEmitterCtx Context)
         {
-            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Sub), true);
+            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Sub), Round: true);
         }
 
         public static void Saddw_V(AILEmitterCtx Context)
@@ -948,7 +946,7 @@ namespace ChocolArm64.Instruction
 
         public static void Subhn_V(AILEmitterCtx Context)
         {
-            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Sub), false);
+            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Sub), Round: false);
         }
 
         public static void Uabd_V(AILEmitterCtx Context)
