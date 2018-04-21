@@ -386,9 +386,10 @@ namespace Ryujinx.Core.OsHle.Handles
         private void PrintDbgThreadInfo(KThread Thread, string Message)
         {
             Logging.Debug(LogClass.KernelScheduler, "(" +
-                "ThreadId: "    + Thread.ThreadId    + ", " +
-                "ProcessorId: " + Thread.ProcessorId + ", " +
-                "Priority: "    + Thread.ActualPriority    + ") " + Message);
+                "ThreadId: "       + Thread.ThreadId       + ", " +
+                "ProcessorId: "    + Thread.ProcessorId    + ", " +
+                "ActualPriority: " + Thread.ActualPriority + ", " +
+                "WantedPriority: " + Thread.WantedPriority + ") " + Message);
         }
 
         public void Dispose()
