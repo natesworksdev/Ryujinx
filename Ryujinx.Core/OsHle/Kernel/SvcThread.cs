@@ -110,7 +110,7 @@ namespace Ryujinx.Core.OsHle.Kernel
 
             if (CurrThread != null)
             {
-                CurrThread.SetPriority(Priority);
+                CurrThread.Priority = Priority;
 
                 ThreadState.X0 = 0;
             }
