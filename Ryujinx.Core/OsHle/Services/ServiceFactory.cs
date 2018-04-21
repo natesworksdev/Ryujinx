@@ -40,6 +40,9 @@ namespace Ryujinx.Core.OsHle.Services
 
                 case "appletOE":
                     return new IApplicationProxyService();
+                    
+                case "appletAE":
+                    return new IAllSystemAppletProxiesService();
 
                 case "audout:u":
                     return new IAudioOutManager();
