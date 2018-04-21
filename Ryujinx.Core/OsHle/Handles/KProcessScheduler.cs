@@ -78,9 +78,9 @@ namespace Ryujinx.Core.OsHle.Handles
                     {
                         SchedThread = Threads[Index];
 
-                        if (HighestPriority > SchedThread.Thread.Priority)
+                        if (HighestPriority > SchedThread.Thread.ActualPriority)
                         {
-                            HighestPriority = SchedThread.Thread.Priority;
+                            HighestPriority = SchedThread.Thread.ActualPriority;
 
                             HighestPrioIndex = Index;
                         }
@@ -289,7 +289,7 @@ namespace Ryujinx.Core.OsHle.Handles
 
             lock (SchedLock)
             {
-                SchedulerThread SchedThread = WaitingToRun[Thread.ProcessorId].Pop(Thread.Priority);
+                SchedulerThread SchedThread = WaitingToRun[Thread.ProcessorId].Pop(Thread.ActualPriority);
 
                 if (IsActive(Thread) && SchedThread == null)
                 {
@@ -388,7 +388,7 @@ namespace Ryujinx.Core.OsHle.Handles
             Logging.Debug(LogClass.KernelScheduler, "(" +
                 "ThreadId: "    + Thread.ThreadId    + ", " +
                 "ProcessorId: " + Thread.ProcessorId + ", " +
-                "Priority: "    + Thread.Priority    + ") " + Message);
+                "Priority: "    + Thread.ActualPriority    + ") " + Message);
         }
 
         public void Dispose()
