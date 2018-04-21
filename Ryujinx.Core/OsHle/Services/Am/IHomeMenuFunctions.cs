@@ -21,8 +21,7 @@ namespace Ryujinx.Core.OsHle.Services.Am
             };
 
             ChannelEvent = new KEvent();
-            //TODO: We shouldn't be signaling this here.
-            ChannelEvent.WaitEvent.Set();
+            //ToDo: Signal this Event somewhere in future.
         }
 
         public long RequestToGetForeground(ServiceCtx Context)
