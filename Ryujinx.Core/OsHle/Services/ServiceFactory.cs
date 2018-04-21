@@ -38,11 +38,11 @@ namespace Ryujinx.Core.OsHle.Services
                 case "apm:p":
                     return new IManager();
 
-                case "appletOE":
-                    return new IApplicationProxyService();
-                    
                 case "appletAE":
                     return new IAllSystemAppletProxiesService();
+                    
+                case "appletOE":
+                    return new IApplicationProxyService();
 
                 case "audout:u":
                     return new IAudioOutManager();
