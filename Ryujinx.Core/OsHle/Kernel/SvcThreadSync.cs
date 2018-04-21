@@ -187,31 +187,41 @@ namespace Ryujinx.Core.OsHle.Kernel
                 return false;
             }
 
-            KThread OwnerThread = CurrThread.NextMutexThread;
-
-            CurrThread.NextMutexThread = null;
-
-            if (OwnerThread != null)
+            lock (CurrThread)
             {
-                int HasListeners = OwnerThread.NextMutexThread != null ? MutexHasListenersMask : 0;
+                //This is the new thread that will not own the mutex.
+                //If no threads are waiting for the lock, then it should be null.
+                KThread OwnerThread = CurrThread.NextMutexThread;
 
-                Process.Memory.WriteInt32(MutexAddress, HasListeners | OwnerThread.WaitHandle);
+                while (OwnerThread?.NextMutexThread != null && OwnerThread.MutexAddress != MutexAddress)
+                {
+                    OwnerThread = OwnerThread.NextMutexThread;
+                }
 
-                OwnerThread.WaitHandle     = 0;
-                OwnerThread.MutexAddress   = 0;
-                OwnerThread.CondVarAddress = 0;
+                CurrThread.NextMutexThread = null;
 
-                OwnerThread.ResetPriority();
+                if (OwnerThread != null)
+                {
+                    int HasListeners = OwnerThread.NextMutexThread != null ? MutexHasListenersMask : 0;
 
-                Process.Scheduler.WakeUp(OwnerThread);
+                    Process.Memory.WriteInt32(MutexAddress, HasListeners | OwnerThread.WaitHandle);
 
-                return true;
-            }
-            else
-            {
-                Process.Memory.WriteInt32(MutexAddress, 0);
+                    OwnerThread.WaitHandle     = 0;
+                    OwnerThread.MutexAddress   = 0;
+                    OwnerThread.CondVarAddress = 0;
 
-                return false;
+                    OwnerThread.ResetPriority();
+
+                    Process.Scheduler.WakeUp(OwnerThread);
+
+                    return true;
+                }
+                else
+                {
+                    Process.Memory.WriteInt32(MutexAddress, 0);
+
+                    return false;
+                }
             }
         }
 
@@ -246,6 +256,8 @@ namespace Ryujinx.Core.OsHle.Kernel
                         DoInsert &= CurrThread != WaitThread;
                     }
 
+                    //Only insert if the node doesn't already exist in the list.
+                    //This prevents circular references.
                     if (DoInsert)
                     {
                         if (WaitThread.NextCondVarThread != null)
