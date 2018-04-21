@@ -29,12 +29,12 @@ namespace Ryujinx.Core.OsHle.Handles
             this.Thread      = Thread;
             this.ProcessorId = ProcessorId;
 
-            SetPriority(Priority);
+            ActualPriority = WantedPriority = Priority;
         }
 
         public void SetPriority(int Priority)
         {
-            ActualPriority = WantedPriority = Priority;
+            WantedPriority = Priority;
 
             UpdatePriority();
         }
