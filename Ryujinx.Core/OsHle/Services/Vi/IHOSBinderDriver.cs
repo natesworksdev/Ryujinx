@@ -24,7 +24,8 @@ namespace Ryujinx.Core.OsHle.Services.Vi
             {
                 { 0, TransactParcel  },
                 { 1, AdjustRefcount  },
-                { 2, GetNativeHandle }
+                { 2, GetNativeHandle },
+                { 3, TransactParcel  }, //TransactParcelAuto
             };
 
             ReleaseEvent = new KEvent();

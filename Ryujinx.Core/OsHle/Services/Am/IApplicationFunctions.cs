@@ -14,11 +14,13 @@ namespace Ryujinx.Core.OsHle.Services.Am
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                {  1, PopLaunchParameter },
-                { 20, EnsureSaveData     },
-                { 21, GetDesiredLanguage },
-                { 22, SetTerminateResult },
-                { 40, NotifyRunning      }
+                {  1, PopLaunchParameter          },
+                { 20, EnsureSaveData              },
+                { 21, GetDesiredLanguage          },
+                { 22, SetTerminateResult          },
+                { 40, NotifyRunning               },
+                { 66, InitializeGameplayRecording },
+                { 67, SetGameplayRecordingState   },
             };
         }
 
@@ -70,6 +72,20 @@ namespace Ryujinx.Core.OsHle.Services.Am
         public long NotifyRunning(ServiceCtx Context)
         {
             Context.ResponseData.Write(1);
+
+            return 0;
+        }
+
+        public long InitializeGameplayRecording(ServiceCtx Context)
+        {
+            //TODO: Stubbed
+
+            return 0;
+        }
+
+        public long SetGameplayRecordingState(ServiceCtx Context)
+        {
+            //TODO: Stubbed
 
             return 0;
         }
