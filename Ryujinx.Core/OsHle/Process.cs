@@ -10,7 +10,6 @@ using Ryujinx.Core.OsHle.Services.Nv;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ryujinx.Core.OsHle
 {
@@ -36,8 +35,6 @@ namespace Ryujinx.Core.OsHle
 
         public KProcessScheduler Scheduler { get; private set; }
 
-        public KThread ThreadArbiterList { get; set; }
-
         public KProcessHandleTable HandleTable { get; private set; }
 
         public AppletStateMgr AppletState { get; private set; }
@@ -46,7 +43,7 @@ namespace Ryujinx.Core.OsHle
 
         private ConcurrentDictionary<int, AThread> TlsSlots;
 
-        private ConcurrentDictionary<long, KThread> Threads;
+        private ConcurrentDictionary<long, KThread> ThreadsByTpidr;
 
         private List<Executable> Executables;
 
@@ -74,7 +71,7 @@ namespace Ryujinx.Core.OsHle
 
             TlsSlots = new ConcurrentDictionary<int, AThread>();
 
-            Threads = new ConcurrentDictionary<long, KThread>();
+            ThreadsByTpidr = new ConcurrentDictionary<long, KThread>();
 
             Executables = new List<Executable>();
 
@@ -188,34 +185,34 @@ namespace Ryujinx.Core.OsHle
                 throw new ObjectDisposedException(nameof(Process));
             }
 
-            AThread CpuThread = new AThread(GetTranslator(), Memory, EntryPoint);
+            AThread Thread = new AThread(GetTranslator(), Memory, EntryPoint);
 
-            KThread Thread = new KThread(CpuThread, ProcessorId, Priority);
+            KThread KernelThread = new KThread(Thread, ProcessorId, Priority);
 
-            int Handle = HandleTable.OpenHandle(Thread);
+            int Handle = HandleTable.OpenHandle(KernelThread);
 
-            Thread.Handle = Handle;
+            KernelThread.Handle = Handle;
 
-            int ThreadId = GetFreeTlsSlot(CpuThread);
+            int ThreadId = GetFreeTlsSlot(Thread);
 
             long Tpidr = MemoryRegions.TlsPagesAddress + ThreadId * TlsSize;
 
-            CpuThread.ThreadState.ProcessId = ProcessId;
-            CpuThread.ThreadState.ThreadId  = ThreadId;
-            CpuThread.ThreadState.CntfrqEl0 = TickFreq;
-            CpuThread.ThreadState.Tpidr     = Tpidr;
+            Thread.ThreadState.ProcessId = ProcessId;
+            Thread.ThreadState.ThreadId  = ThreadId;
+            Thread.ThreadState.CntfrqEl0 = TickFreq;
+            Thread.ThreadState.Tpidr     = Tpidr;
 
-            CpuThread.ThreadState.X0  = (ulong)ArgsPtr;
-            CpuThread.ThreadState.X1  = (ulong)Handle;
-            CpuThread.ThreadState.X31 = (ulong)StackTop;
+            Thread.ThreadState.X0  = (ulong)ArgsPtr;
+            Thread.ThreadState.X1  = (ulong)Handle;
+            Thread.ThreadState.X31 = (ulong)StackTop;
 
-            CpuThread.ThreadState.Break     += BreakHandler;
-            CpuThread.ThreadState.SvcCall   += SvcHandler.SvcCall;
-            CpuThread.ThreadState.Undefined += UndefinedHandler;
+            Thread.ThreadState.Break     += BreakHandler;
+            Thread.ThreadState.SvcCall   += SvcHandler.SvcCall;
+            Thread.ThreadState.Undefined += UndefinedHandler;
 
-            CpuThread.WorkFinished += ThreadFinished;
+            Thread.WorkFinished += ThreadFinished;
 
-            Threads.TryAdd(CpuThread.ThreadState.Tpidr, Thread);
+            ThreadsByTpidr.TryAdd(Thread.ThreadState.Tpidr, KernelThread);
 
             return Handle;
         }
@@ -327,34 +324,12 @@ namespace Ryujinx.Core.OsHle
 
         public KThread GetThread(long Tpidr)
         {
-            if (!Threads.TryGetValue(Tpidr, out KThread Thread))
+            if (!ThreadsByTpidr.TryGetValue(Tpidr, out KThread Thread))
             {
                 Logging.Error(LogClass.KernelScheduler, $"Thread with TPIDR 0x{Tpidr:x16} not found!");
             }
 
             return Thread;
-        }
-
-        public IEnumerable<KThread> EnumerateThreadsWithMutex(long MutexAddress)
-        {
-            foreach (KThread Thread in Threads.Values.OrderBy(x => x.Priority))
-            {
-                if (Thread.MutexAddress == MutexAddress)
-                {
-                    yield return Thread;
-                }
-            }
-        }
-
-        public IEnumerable<KThread> EnumerateThreadsWithCondVar(long CondVarAddress)
-        {
-            foreach (KThread Thread in Threads.Values.OrderBy(x => x.Priority))
-            {
-                if (Thread.CondVarAddress == CondVarAddress)
-                {
-                    yield return Thread;
-                }
-            }
         }
 
         public void Dispose()
