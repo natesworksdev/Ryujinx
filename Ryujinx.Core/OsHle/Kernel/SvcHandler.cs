@@ -3,7 +3,6 @@ using ChocolArm64.Memory;
 using ChocolArm64.State;
 using Ryujinx.Core.OsHle.Handles;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Ryujinx.Core.OsHle.Kernel
@@ -17,9 +16,6 @@ namespace Ryujinx.Core.OsHle.Kernel
         private Switch  Ns;
         private Process Process;
         private AMemory Memory;
-
-        private ConcurrentDictionary<long, MutualExclusion>   Mutexes;
-        private ConcurrentDictionary<long, ConditionVariable> CondVars;
 
         private HashSet<(HSharedMem, long)> MappedSharedMems;
 
@@ -70,9 +66,6 @@ namespace Ryujinx.Core.OsHle.Kernel
             this.Ns      = Ns;
             this.Process = Process;
             this.Memory  = Process.Memory;
-
-            Mutexes  = new ConcurrentDictionary<long, MutualExclusion>();
-            CondVars = new ConcurrentDictionary<long, ConditionVariable>();
 
             MappedSharedMems = new HashSet<(HSharedMem, long)>();
         }
