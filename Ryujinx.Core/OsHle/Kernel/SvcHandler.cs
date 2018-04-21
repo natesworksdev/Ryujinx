@@ -17,6 +17,8 @@ namespace Ryujinx.Core.OsHle.Kernel
         private Process Process;
         private AMemory Memory;
 
+        private object CondVarLock;
+
         private HashSet<(HSharedMem, long)> MappedSharedMems;
 
         private ulong CurrentHeapSize;
@@ -66,6 +68,8 @@ namespace Ryujinx.Core.OsHle.Kernel
             this.Ns      = Ns;
             this.Process = Process;
             this.Memory  = Process.Memory;
+
+            CondVarLock = new object();
 
             MappedSharedMems = new HashSet<(HSharedMem, long)>();
         }

@@ -18,7 +18,7 @@ namespace Ryujinx.Core.OsHle.Handles
 
         private int DesiredPriority;
 
-        public int Handle { get; set; }
+        public int WaitHandle { get; set; }
 
         public int ThreadId => Thread.ThreadId;
 

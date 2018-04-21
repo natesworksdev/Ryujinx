@@ -10,7 +10,6 @@ using Ryujinx.Core.OsHle.Services.Nv;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ryujinx.Core.OsHle
 {
@@ -194,8 +193,6 @@ namespace Ryujinx.Core.OsHle
 
             int Handle = HandleTable.OpenHandle(Thread);
 
-            Thread.Handle = Handle;
-
             int ThreadId = GetFreeTlsSlot(CpuThread);
 
             long Tpidr = MemoryRegions.TlsPagesAddress + ThreadId * TlsSize;
@@ -333,28 +330,6 @@ namespace Ryujinx.Core.OsHle
             }
 
             return Thread;
-        }
-
-        public IEnumerable<KThread> EnumerateThreadsWithMutex(long MutexAddress)
-        {
-            foreach (KThread Thread in Threads.Values.OrderBy(x => x.Priority))
-            {
-                if (Thread.MutexAddress == MutexAddress)
-                {
-                    yield return Thread;
-                }
-            }
-        }
-
-        public IEnumerable<KThread> EnumerateThreadsWithCondVar(long CondVarAddress)
-        {
-            foreach (KThread Thread in Threads.Values.OrderBy(x => x.Priority))
-            {
-                if (Thread.CondVarAddress == CondVarAddress)
-                {
-                    yield return Thread;
-                }
-            }
         }
 
         public void Dispose()

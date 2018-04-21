@@ -13,9 +13,9 @@ namespace Ryujinx.Core.OsHle.Kernel
 
         private void SvcArbitrateLock(AThreadState ThreadState)
         {
-            int  OwnerThreadHandle      =  (int)ThreadState.X0;
-            long MutexAddress           = (long)ThreadState.X1;
-            int  RequestingThreadHandle =  (int)ThreadState.X2;
+            int  OwnerThreadHandle =  (int)ThreadState.X0;
+            long MutexAddress      = (long)ThreadState.X1;
+            int  WaitThreadHandle  =  (int)ThreadState.X2;
 
             if (IsPointingInsideKernel(MutexAddress))
             {
@@ -46,18 +46,20 @@ namespace Ryujinx.Core.OsHle.Kernel
                 return;
             }
 
-            KThread RequestingThread = Process.HandleTable.GetData<KThread>(RequestingThreadHandle);
+            KThread WaitThread = Process.HandleTable.GetData<KThread>(WaitThreadHandle);
 
-            if (RequestingThread == null)
+            if (WaitThread == null)
             {
-                Logging.Warn(LogClass.KernelSvc, $"Invalid requesting thread handle 0x{RequestingThreadHandle:x8}!");
+                Logging.Warn(LogClass.KernelSvc, $"Invalid requesting thread handle 0x{WaitThreadHandle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
                 return;
             }
 
-            MutexLock(MutexAddress, RequestingThread, OwnerThreadHandle);
+            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
+
+            MutexLock(CurrThread, WaitThread, OwnerThreadHandle, WaitThreadHandle, MutexAddress);
 
             ThreadState.X0 = 0;
         }
@@ -128,9 +130,11 @@ namespace Ryujinx.Core.OsHle.Kernel
                 return;
             }
 
-            MutexUnlock(Process.GetThread(ThreadState.Tpidr), MutexAddress);
+            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
 
-            if (!CondVarWait(Thread, MutexAddress, CondVarAddress, Timeout))
+            MutexUnlock(CurrThread, MutexAddress);
+
+            if (!CondVarWait(CurrThread, ThreadHandle, MutexAddress, CondVarAddress, Timeout))
             {
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.Timeout);
 
@@ -152,7 +156,12 @@ namespace Ryujinx.Core.OsHle.Kernel
             ThreadState.X0 = 0;
         }
 
-        private void MutexLock(long MutexAddress, KThread RequestingThread, int OwnerThreadHandle)
+        private void MutexLock(
+            KThread CurrThread,
+            KThread WaitThread,
+            int     OwnerThreadHandle,
+            int     WaitThreadHandle,
+            long    MutexAddress)
         {
             int MutexValue = Process.Memory.ReadInt32(MutexAddress);
 
@@ -161,11 +170,12 @@ namespace Ryujinx.Core.OsHle.Kernel
                 return;
             }
 
-            InsertWaitingMutexThread(OwnerThreadHandle, RequestingThread);
+            CurrThread.WaitHandle   = WaitThreadHandle;
+            CurrThread.MutexAddress = MutexAddress;
 
-            RequestingThread.MutexAddress = MutexAddress;
+            InsertWaitingMutexThread(OwnerThreadHandle, WaitThread);
 
-            Process.Scheduler.EnterWait(RequestingThread);
+            Process.Scheduler.EnterWait(WaitThread);
         }
 
         private bool MutexUnlock(KThread CurrThread, long MutexAddress)
@@ -177,11 +187,6 @@ namespace Ryujinx.Core.OsHle.Kernel
                 return false;
             }
 
-            CurrThread.MutexAddress   = 0;
-            CurrThread.CondVarAddress = 0;
-
-            CurrThread.ResetPriority();
-
             KThread OwnerThread = CurrThread.NextMutexThread;
 
             CurrThread.NextMutexThread = null;
@@ -190,7 +195,13 @@ namespace Ryujinx.Core.OsHle.Kernel
             {
                 int HasListeners = OwnerThread.NextMutexThread != null ? MutexHasListenersMask : 0;
 
-                Process.Memory.WriteInt32(MutexAddress, HasListeners | OwnerThread.Handle);
+                Process.Memory.WriteInt32(MutexAddress, HasListeners | OwnerThread.WaitHandle);
+
+                OwnerThread.WaitHandle     = 0;
+                OwnerThread.MutexAddress   = 0;
+                OwnerThread.CondVarAddress = 0;
+
+                OwnerThread.ResetPriority();
 
                 Process.Scheduler.WakeUp(OwnerThread);
 
@@ -204,43 +215,52 @@ namespace Ryujinx.Core.OsHle.Kernel
             }
         }
 
-        private bool CondVarWait(KThread WaitThread, long MutexAddress, long CondVarAddress, ulong Timeout)
+        private bool CondVarWait(
+            KThread WaitThread,
+            int     WaitThreadHandle,
+            long    MutexAddress,
+            long    CondVarAddress,
+            ulong   Timeout)
         {
-            KThread CurrThread = Process.ThreadArbiterList;
+            WaitThread.WaitHandle     = WaitThreadHandle;
+            WaitThread.MutexAddress   = MutexAddress;
+            WaitThread.CondVarAddress = CondVarAddress;
 
-            if (CurrThread != null)
+            lock (CondVarLock)
             {
-                bool DoInsert = CurrThread != WaitThread;
+                KThread CurrThread = Process.ThreadArbiterList;
 
-                while (CurrThread.NextCondVarThread != null)
+                if (CurrThread != null)
                 {
-                    if (CurrThread.NextCondVarThread.Priority < WaitThread.Priority)
+                    bool DoInsert = CurrThread != WaitThread;
+
+                    while (CurrThread.NextCondVarThread != null)
                     {
-                        break;
+                        if (CurrThread.NextCondVarThread.Priority < WaitThread.Priority)
+                        {
+                            break;
+                        }
+
+                        CurrThread = CurrThread.NextCondVarThread;
+
+                        DoInsert &= CurrThread != WaitThread;
                     }
 
-                    CurrThread = CurrThread.NextCondVarThread;
-
-                    DoInsert &= CurrThread != WaitThread;
-                }
-
-                if (DoInsert)
-                {
-                    if (WaitThread.NextCondVarThread != null)
+                    if (DoInsert)
                     {
-                        throw new InvalidOperationException();
+                        if (WaitThread.NextCondVarThread != null)
+                        {
+                            throw new InvalidOperationException();
+                        }
+
+                        WaitThread.NextCondVarThread = CurrThread.NextCondVarThread;
+                        CurrThread.NextCondVarThread = WaitThread;
                     }
-
-                    WaitThread.NextCondVarThread = CurrThread.NextCondVarThread;
-                    CurrThread.NextCondVarThread = WaitThread;
                 }
-
-                CurrThread.MutexAddress   = MutexAddress;
-                CurrThread.CondVarAddress = CondVarAddress;
-            }
-            else
-            {
-                Process.ThreadArbiterList = WaitThread;
+                else
+                {
+                    Process.ThreadArbiterList = WaitThread;
+                }
             }
 
             if (Timeout != ulong.MaxValue)
@@ -255,95 +275,106 @@ namespace Ryujinx.Core.OsHle.Kernel
 
         private void CondVarSignal(long CondVarAddress, int Count)
         {
-            KThread PrevThread = null;
-            KThread CurrThread = Process.ThreadArbiterList;
-
-            while (CurrThread != null && (Count == -1 || Count-- > 0))
+            lock (CondVarLock)
             {
-                if (CurrThread.CondVarAddress == CondVarAddress)
+                KThread PrevThread = null;
+                KThread CurrThread = Process.ThreadArbiterList;
+
+                while (CurrThread != null && (Count == -1 || Count > 0))
                 {
-                    if (PrevThread != null)
+                    if (CurrThread.CondVarAddress == CondVarAddress)
                     {
-                        PrevThread.NextCondVarThread = CurrThread.NextCondVarThread;
+                        if (PrevThread != null)
+                        {
+                            PrevThread.NextCondVarThread = CurrThread.NextCondVarThread;
+                        }
+                        else
+                        {
+                            Process.ThreadArbiterList = CurrThread.NextCondVarThread;
+                        }
+
+                        CurrThread.NextCondVarThread = null;
+
+                        AcquireMutexValue(CurrThread.MutexAddress);
+
+                        int MutexValue = Process.Memory.ReadInt32(CurrThread.MutexAddress);
+
+                        MutexValue &= ~MutexHasListenersMask;
+
+                        if (MutexValue == 0)
+                        {
+                            Process.Memory.WriteInt32(CurrThread.MutexAddress, CurrThread.WaitHandle);
+
+                            CurrThread.WaitHandle     = 0;
+                            CurrThread.MutexAddress   = 0;
+                            CurrThread.CondVarAddress = 0;
+
+                            CurrThread.ResetPriority();
+
+                            Process.Scheduler.WakeUp(CurrThread);
+                        }
+                        else
+                        {
+                            InsertWaitingMutexThread(MutexValue, CurrThread);
+
+                            MutexValue |= MutexHasListenersMask;
+
+                            Process.Memory.WriteInt32(CurrThread.MutexAddress, MutexValue);
+                        }
+
+                        ReleaseMutexValue(CurrThread.MutexAddress);
+
+                        Count--;
                     }
-                    else
-                    {
-                        Process.ThreadArbiterList = CurrThread.NextCondVarThread;
-                    }
 
-                    CurrThread.NextCondVarThread = null;
-
-                    AcquireMutexValue(CurrThread.MutexAddress);
-
-                    int MutexValue = Process.Memory.ReadInt32(CurrThread.MutexAddress);
-
-                    MutexValue &= ~MutexHasListenersMask;
-
-                    if (MutexValue == 0)
-                    {
-                        Process.Memory.WriteInt32(CurrThread.MutexAddress, CurrThread.Handle);
-
-                        CurrThread.MutexAddress   = 0;
-                        CurrThread.CondVarAddress = 0;
-
-                        CurrThread.ResetPriority();
-
-                        Process.Scheduler.WakeUp(CurrThread);
-                    }
-                    else
-                    {
-                        InsertWaitingMutexThread(MutexValue, CurrThread);
-
-                        MutexValue |= MutexHasListenersMask;
-
-                        Process.Memory.WriteInt32(CurrThread.MutexAddress, MutexValue);
-                    }
-
-                    ReleaseMutexValue(CurrThread.MutexAddress);
+                    PrevThread = CurrThread;
+                    CurrThread = CurrThread.NextCondVarThread;
                 }
-
-                PrevThread = CurrThread;
-                CurrThread = CurrThread.NextCondVarThread;
             }
         }
 
         private void InsertWaitingMutexThread(int OwnerThreadHandle, KThread WaitThread)
         {
-            KThread CurrThread = Process.HandleTable.GetData<KThread>(OwnerThreadHandle);
+            KThread OwnerThread = Process.HandleTable.GetData<KThread>(OwnerThreadHandle);
 
-            if (CurrThread == null)
+            if (OwnerThread == null)
             {
                 Logging.Warn(LogClass.KernelSvc, $"Invalid thread handle 0x{OwnerThreadHandle:x8}!");
 
                 return;
             }
 
-            while (CurrThread.NextMutexThread != null)
+            lock (OwnerThread)
             {
-                if (CurrThread == WaitThread)
+                KThread CurrThread = OwnerThread;
+
+                while (CurrThread.NextMutexThread != null)
                 {
-                    return;
+                    if (CurrThread == WaitThread)
+                    {
+                        return;
+                    }
+
+                    if (CurrThread.NextMutexThread.Priority < WaitThread.Priority)
+                    {
+                        break;
+                    }
+
+                    CurrThread = CurrThread.NextMutexThread;
                 }
 
-                if (CurrThread.NextMutexThread.Priority < WaitThread.Priority)
+                if (CurrThread != WaitThread)
                 {
-                    break;
+                    if (WaitThread.NextCondVarThread != null)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    WaitThread.NextMutexThread = CurrThread.NextMutexThread;
+                    CurrThread.NextMutexThread = WaitThread;
+
+                    CurrThread.UpdatePriority();
                 }
-
-                CurrThread = CurrThread.NextMutexThread;
-            }
-
-            if (CurrThread != WaitThread)
-            {
-                if (WaitThread.NextCondVarThread != null)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                WaitThread.NextMutexThread = CurrThread.NextMutexThread;
-                CurrThread.NextMutexThread = WaitThread;
-
-                CurrThread.UpdatePriority();
             }
         }
 
