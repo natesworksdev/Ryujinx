@@ -28,28 +28,40 @@ namespace Ryujinx.Core.OsHle.Services.Set
             long ReplyPos  = Context.Request.RecvListBuff[0].Position;
             long ReplySize = Context.Request.RecvListBuff[0].Size;
 
+            byte MajorFWVersion = 0x03;
+            byte MinorFWVersion = 0x00;
+            byte MicroFWVersion = 0x00;
+            byte Unknown        = 0x00; //Build?
+
+            int RevisionNumber  = 0x0A;
+
+            string Platform     = "NX";
+            string UnknownHex   = "7fbde2b0bba4d14107bf836e4643043d9f6c8e47";
+            string Version      = "3.0.0";
+            string Build        = "NintendoSDK Firmware for NX 3.0.0-10.0";
+
             //http://switchbrew.org/index.php?title=System_Version_Title
             using (MemoryStream MS = new MemoryStream(0x100))
             {
                 BinaryWriter Writer = new BinaryWriter(MS);
 
-                Writer.Write((byte)0x3); //Major FW Version
-                Writer.Write((byte)0x0); //Minor FW Version
-                Writer.Write((byte)0x0); //Micro FW Version
-                Writer.Write((byte)0x0); //Unknown/Build?
+                Writer.Write(MajorFWVersion);
+                Writer.Write(MinorFWVersion);
+                Writer.Write(MicroFWVersion);
+                Writer.Write(Unknown);
 
-                Writer.Write(0x0A); //Revision Number
+                Writer.Write(RevisionNumber);
 
-                Writer.Write(Encoding.ASCII.GetBytes("NX"), 0, 0x02); //Platform String "NX"
+                Writer.Write(Encoding.ASCII.GetBytes(Platform));
 
                 MS.Seek(0x28, SeekOrigin.Begin);
-                Writer.Write(Encoding.ASCII.GetBytes("7fbde2b0bba4d14107bf836e4643043d9f6c8e47"), 0, 0x28); //Hex ASCII String
+                Writer.Write(Encoding.ASCII.GetBytes(UnknownHex));
 
                 MS.Seek(0x68, SeekOrigin.Begin);
-                Writer.Write(Encoding.ASCII.GetBytes("3.0.0"), 0, 0x05); //System-Version
+                Writer.Write(Encoding.ASCII.GetBytes(Version));
 
                 MS.Seek(0x80, SeekOrigin.Begin);
-                Writer.Write(Encoding.ASCII.GetBytes("NintendoSDK Firmware for NX 3.0.0-10.0"), 0, 0x26); //Build String
+                Writer.Write(Encoding.ASCII.GetBytes(Build));
 
                 AMemoryHelper.WriteBytes(Context.Memory, ReplyPos, MS.ToArray());
             }
