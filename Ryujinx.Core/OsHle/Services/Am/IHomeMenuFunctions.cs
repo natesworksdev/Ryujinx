@@ -20,8 +20,8 @@ namespace Ryujinx.Core.OsHle.Services.Am
                 { 21, GetPopFromGeneralChannelEvent }
             };
 
-            ChannelEvent = new KEvent();
             //ToDo: Signal this Event somewhere in future.
+            ChannelEvent = new KEvent();
         }
 
         public long RequestToGetForeground(ServiceCtx Context)
