@@ -3,7 +3,7 @@
 
 Experimental Switch emulator written in C#
 
-Don't expect much from this. Some homebrew apps work, Puyo Puyo Tetris shows the intro logo (sometimes), and a handful of games boot and work; but that's about it for now.
+Don't expect much from this. Some homebrew apps work, Puyo Puyo Tetris shows the intro logo (sometimes), and a handful of games boot / work; but that's about it for now.
 Contributions are always welcome.
 
 **Building**
