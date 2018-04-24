@@ -2,13 +2,13 @@ using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Hid
+namespace Ryujinx.Core.OsHle.Services.Hid
 {
-    class IAppletResource : IIpcService
+    class IAppletResource : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private HSharedMem HidSharedMem;
 

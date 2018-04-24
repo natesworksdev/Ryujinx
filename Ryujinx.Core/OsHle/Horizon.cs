@@ -11,13 +11,14 @@ namespace Ryujinx.Core.OsHle
         internal const int HidSize  = 0x40000;
         internal const int FontSize = 0x50;
 
-        internal ConcurrentDictionary<long, Mutex>   Mutexes  { get; private set; }
-        internal ConcurrentDictionary<long, CondVar> CondVars { get; private set; }
+        private KProcessScheduler Scheduler;
 
         private ConcurrentDictionary<int, Process> Processes;
 
-        internal HSharedMem HidSharedMem;
-        internal HSharedMem FontSharedMem;
+        internal HSharedMem HidSharedMem  { get; private set; }
+        internal HSharedMem FontSharedMem { get; private set; }
+
+        internal KEvent VsyncEvent { get; private set; }
 
         private Switch Ns;
 
@@ -25,13 +26,14 @@ namespace Ryujinx.Core.OsHle
         {
             this.Ns = Ns;
 
-            Mutexes  = new ConcurrentDictionary<long, Mutex>();
-            CondVars = new ConcurrentDictionary<long, CondVar>();
+            Scheduler = new KProcessScheduler();
 
             Processes = new ConcurrentDictionary<int, Process>();
 
             HidSharedMem  = new HSharedMem();
             FontSharedMem = new HSharedMem();
+
+            VsyncEvent = new KEvent();
         }
 
         public void LoadCart(string ExeFsDir, string RomFsFile = null)
@@ -52,11 +54,13 @@ namespace Ryujinx.Core.OsHle
                         continue;
                     }
 
-                    Logging.Info($"Loading {Path.GetFileNameWithoutExtension(File)}...");
+                    Logging.Info(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(File)}...");
 
                     using (FileStream Input = new FileStream(File, FileMode.Open))
                     {
-                        Nso Program = new Nso(Input);
+                        string Name = Path.GetFileNameWithoutExtension(File);
+
+                        Nso Program = new Nso(Input, Name);
 
                         MainProcess.LoadProgram(Program);
                     }
@@ -78,18 +82,22 @@ namespace Ryujinx.Core.OsHle
         {
             bool IsNro = Path.GetExtension(FileName).ToLower() == ".nro";
 
+            string Name = Path.GetFileNameWithoutExtension(FileName);
+
             Process MainProcess = MakeProcess();
 
             using (FileStream Input = new FileStream(FileName, FileMode.Open))
             {
                 MainProcess.LoadProgram(IsNro
-                    ? (IExecutable)new Nro(Input)
-                    : (IExecutable)new Nso(Input));
+                    ? (IExecutable)new Nro(Input, Name)
+                    : (IExecutable)new Nso(Input, Name));
             }
 
             MainProcess.SetEmptyArgs();
             MainProcess.Run(IsNro);
         }
+
+        public void SignalVsync() => VsyncEvent.WaitEvent.Set();
 
         private Process MakeProcess()
         {
@@ -104,12 +112,19 @@ namespace Ryujinx.Core.OsHle
                     ProcessId++;
                 }
 
-                Process = new Process(Ns, ProcessId);
+                Process = new Process(Ns, Scheduler, ProcessId);
 
                 Processes.TryAdd(ProcessId, Process);
             }
 
+            InitializeProcess(Process);
+
             return Process;
+        }
+
+        private void InitializeProcess(Process Process)
+        {
+            Process.AppletState.SetFocus(true);
         }
 
         internal void ExitProcess(int ProcessId)
@@ -118,7 +133,7 @@ namespace Ryujinx.Core.OsHle
             {
                 string NextNro = Homebrew.ReadHbAbiNextLoadPath(Process.Memory, Process.HbAbiDataPosition);
 
-                Logging.Info($"HbAbi NextLoadPath {NextNro}");
+                Logging.Info(LogClass.Loader, $"HbAbi NextLoadPath {NextNro}");
 
                 if (NextNro == string.Empty)
                 {
@@ -131,11 +146,6 @@ namespace Ryujinx.Core.OsHle
 
                 if (File.Exists(NextNro))
                 {
-                    //TODO: Those dictionaries shouldn't even exist,
-                    //the Mutex and CondVar helper classes should be static.
-                    Mutexes.Clear();
-                    CondVars.Clear();
-
                     LoadProgram(NextNro);
                 }
             }
@@ -171,6 +181,10 @@ namespace Ryujinx.Core.OsHle
                     Process.StopAllThreadsAsync();
                     Process.Dispose();
                 }
+
+                VsyncEvent.Dispose();
+
+                Scheduler.Dispose();
             }
         }
     }

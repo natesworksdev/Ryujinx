@@ -1,6 +1,5 @@
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using Ryujinx.Core;
 using Ryujinx.Core.Input;
@@ -39,7 +38,7 @@ namespace Ryujinx
         {
             VSync = VSyncMode.On;
 
-            Renderer.InitializeFrameBuffer();
+            Renderer.SetWindowSize(Width, Height);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
@@ -158,6 +157,13 @@ namespace Ryujinx
 
             Ns.Hid.SetJoyconButton(
                 HidControllerId.CONTROLLER_HANDHELD,
+                HidControllerLayouts.Handheld_Joined,
+                CurrentButton,
+                LeftJoystick,
+                RightJoystick);
+
+            Ns.Hid.SetJoyconButton(
+                HidControllerId.CONTROLLER_HANDHELD,
                 HidControllerLayouts.Main,
                 CurrentButton,
                 LeftJoystick,
@@ -168,12 +174,8 @@ namespace Ryujinx
         {
             Ns.Statistics.StartSystemFrame();
 
-            GL.Viewport(0, 0, Width, Height);
-
             Title = $"Ryujinx Screen - (Vsync: {VSync} - FPS: {Ns.Statistics.SystemFrameRate:0} - Guest FPS: " +
                 $"{Ns.Statistics.GameFrameRate:0})";
-
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             Renderer.RunActions();
             Renderer.Render();
@@ -181,6 +183,8 @@ namespace Ryujinx
             SwapBuffers();
 
             Ns.Statistics.EndSystemFrame();
+
+            Ns.Os.SignalVsync();
         }
 
         protected override void OnResize(EventArgs e)

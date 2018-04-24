@@ -1,0 +1,38 @@
+﻿namespace Ryujinx.Core
+{
+    public enum LogClass
+    {
+        Audio,
+        CPU,
+        GPU,
+        Kernel,
+        KernelIpc,
+        KernelScheduler,
+        KernelSvc,
+        Loader,
+        Service,
+        ServiceAcc,
+        ServiceAm,
+        ServiceApm,
+        ServiceAudio,
+        ServiceBsd,
+        ServiceCaps,
+        ServiceFriend,
+        ServiceFs,
+        ServiceHid,
+        ServiceLm,
+        ServiceNifm,
+        ServiceNs,
+        ServiceNv,
+        ServicePctl,
+        ServicePl,
+        ServicePrepo,
+        ServiceSet,
+        ServiceSfdnsres,
+        ServiceSm,
+        ServiceSss,
+        ServiceTime,
+        ServiceVi,
+        Count,
+    }
+}

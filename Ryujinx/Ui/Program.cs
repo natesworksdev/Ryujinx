@@ -1,4 +1,6 @@
-﻿using Ryujinx.Core;
+﻿using Ryujinx.Audio;
+using Ryujinx.Audio.OpenAL;
+using Ryujinx.Core;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
 using System;
@@ -10,15 +12,17 @@ namespace Ryujinx
     {
         static void Main(string[] args)
         {
-            AOptimizations.DisableMemoryChecks = true;
-
             Config.Read();
+
+            AOptimizations.DisableMemoryChecks = !Config.EnableMemoryChecks;
 
             Console.Title = "Ryujinx Console";
 
             IGalRenderer Renderer = new OpenGLRenderer();
 
-            Switch Ns = new Switch(Renderer);
+            IAalOutput AudioOut = new OpenALAudioOut();
+
+            Switch Ns = new Switch(Renderer, AudioOut);
 
             if (args.Length == 1)
             {
@@ -26,29 +30,34 @@ namespace Ryujinx
                 {
                     string[] RomFsFiles = Directory.GetFiles(args[0], "*.istorage");
 
+                    if (RomFsFiles.Length == 0)
+                    {
+                        RomFsFiles = Directory.GetFiles(args[0], "*.romfs");
+                    }
+
                     if (RomFsFiles.Length > 0)
                     {
-                        Logging.Info("Loading as cart with RomFS.");
+                        Logging.Info(LogClass.Loader, "Loading as cart with RomFS.");
 
                         Ns.LoadCart(args[0], RomFsFiles[0]);
                     }
                     else
                     {
-                        Logging.Info("Loading as cart WITHOUT RomFS.");
+                        Logging.Info(LogClass.Loader, "Loading as cart WITHOUT RomFS.");
 
                         Ns.LoadCart(args[0]);
                     }
                 }
                 else if (File.Exists(args[0]))
                 {
-                    Logging.Info("Loading as homebrew.");
+                    Logging.Info(LogClass.Loader, "Loading as homebrew.");
 
                     Ns.LoadProgram(args[0]);
                 }
             }
             else
             {
-                Logging.Error("Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
+                Logging.Error(LogClass.Loader, "Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
             }
 
             using (GLScreen Screen = new GLScreen(Ns, Renderer))

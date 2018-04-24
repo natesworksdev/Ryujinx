@@ -1,13 +1,16 @@
+using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Am
+using static Ryujinx.Core.OsHle.ErrorCode;
+
+namespace Ryujinx.Core.OsHle.Services.Am
 {
-    class ICommonStateGetter : IIpcService
+    class ICommonStateGetter : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public ICommonStateGetter()
         {
@@ -17,37 +20,32 @@ namespace Ryujinx.Core.OsHle.IpcServices.Am
                 { 1, ReceiveMessage       },
                 { 5, GetOperationMode     },
                 { 6, GetPerformanceMode   },
-                { 9, GetCurrentFocusState },
+                { 8, GetBootMode          },
+                { 9, GetCurrentFocusState }
             };
-        }
-
-        private enum FocusState
-        {
-            InFocus    = 1,
-            OutOfFocus = 2
-        }
-
-        private enum OperationMode
-        {
-            Handheld = 0,
-            Docked   = 1
         }
 
         public long GetEventHandle(ServiceCtx Context)
         {
-            Context.ResponseData.Write(0L);
+            KEvent Event = Context.Process.AppletState.MessageEvent;
+
+            int Handle = Context.Process.HandleTable.OpenHandle(Event);
+
+            Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
             return 0;
         }
 
         public long ReceiveMessage(ServiceCtx Context)
         {
-            //Program expects 0xF at 0x17ae70 on puyo sdk,
-            //otherwise runs on a infinite loop until it reads said value.
-            //What it means is still unknown.
-            Context.ResponseData.Write(0xfL);
+            if (!Context.Process.AppletState.TryDequeueMessage(out MessageInfo Message))
+            {
+                return MakeError(ErrorModule.Am, AmErr.NoMessages);
+            }
 
-            return 0; //0x680;
+            Context.ResponseData.Write((int)Message);
+
+            return 0;
         }
 
         public long GetOperationMode(ServiceCtx Context)
@@ -59,14 +57,23 @@ namespace Ryujinx.Core.OsHle.IpcServices.Am
 
         public long GetPerformanceMode(ServiceCtx Context)
         {
-            Context.ResponseData.Write((byte)0);
+            Context.ResponseData.Write((byte)Apm.PerformanceMode.Handheld);
+
+            return 0;
+        }
+
+        public long GetBootMode(ServiceCtx Context)
+        {
+            Context.ResponseData.Write((byte)0); //Unknown value.
+
+            Logging.Stub(LogClass.ServiceAm, "Stubbed");
 
             return 0;
         }
 
         public long GetCurrentFocusState(ServiceCtx Context)
         {
-            Context.ResponseData.Write((byte)FocusState.InFocus);
+            Context.ResponseData.Write((byte)Context.Process.AppletState.FocusState);
 
             return 0;
         }

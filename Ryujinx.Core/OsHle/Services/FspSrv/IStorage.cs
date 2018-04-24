@@ -3,13 +3,13 @@ using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.Core.OsHle.IpcServices.FspSrv
+namespace Ryujinx.Core.OsHle.Services.FspSrv
 {
-    class IStorage : IIpcService
+    class IStorage : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private Stream BaseStream;
 

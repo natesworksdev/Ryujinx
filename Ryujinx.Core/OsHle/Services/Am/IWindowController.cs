@@ -1,13 +1,13 @@
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Am
+namespace Ryujinx.Core.OsHle.Services.Am
 {
-    class IWindowController : IIpcService
+    class IWindowController : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public IWindowController()
         {
@@ -20,6 +20,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Am
 
         public long GetAppletResourceUserId(ServiceCtx Context)
         {
+            Logging.Stub(LogClass.ServiceAm, $"Applet Resource Id = 0");
+
             Context.ResponseData.Write(0L);
 
             return 0;
@@ -27,6 +29,8 @@ namespace Ryujinx.Core.OsHle.IpcServices.Am
 
         public long AcquireForegroundRights(ServiceCtx Context)
         {
+            Logging.Stub(LogClass.ServiceAm, "Stubbed");
+
             return 0;
         }
     }

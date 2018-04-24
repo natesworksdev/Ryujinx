@@ -1,4 +1,4 @@
-namespace Ryujinx.Core.OsHle.IpcServices.NvServices
+namespace Ryujinx.Core.OsHle.Services.Nv
 {
     class NvMap
     {
@@ -7,6 +7,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.NvServices
         public int  Size;
         public int  Align;
         public int  Kind;
-        public long Address;
+        public long CpuAddress;
+        public long GpuAddress;
     }
 }

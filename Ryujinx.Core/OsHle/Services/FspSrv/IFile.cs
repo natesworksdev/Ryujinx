@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.Core.OsHle.IpcServices.FspSrv
+namespace Ryujinx.Core.OsHle.Services.FspSrv
 {
-    class IFile : IIpcService, IDisposable
+    class IFile : IpcService, IDisposable
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private Stream BaseStream;
 
@@ -62,7 +62,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.FspSrv
             long Offset = Context.RequestData.ReadInt64();
             long Size   = Context.RequestData.ReadInt64();
 
-            byte[] Data = AMemoryHelper.ReadBytes(Context.Memory, Position, (int)Size);
+            byte[] Data = AMemoryHelper.ReadBytes(Context.Memory, Position, Size);
 
             BaseStream.Seek(Offset, SeekOrigin.Begin);
             BaseStream.Write(Data, 0, (int)Size);

@@ -1,26 +1,39 @@
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Apm
+namespace Ryujinx.Core.OsHle.Services.Apm
 {
-    class ISession : IIpcService
+    class ISession : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public ISession()
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, SetPerformanceConfiguration }
+                { 0, SetPerformanceConfiguration },
+                { 1, GetPerformanceConfiguration }
             };
         }
 
         public long SetPerformanceConfiguration(ServiceCtx Context)
         {
-            int PerfMode   = Context.RequestData.ReadInt32();
-            int PerfConfig = Context.RequestData.ReadInt32();
+            PerformanceMode          PerfMode   = (PerformanceMode)Context.RequestData.ReadInt32();
+            PerformanceConfiguration PerfConfig = (PerformanceConfiguration)Context.RequestData.ReadInt32();
+
+            return 0;
+        }
+
+        public long GetPerformanceConfiguration(ServiceCtx Context)
+        {
+            PerformanceMode PerfMode = (PerformanceMode)Context.RequestData.ReadInt32();
+
+            Context.ResponseData.Write((uint)PerformanceConfiguration.PerformanceConfiguration1);
+
+            Logging.Stub(LogClass.ServiceApm, $"PerformanceMode = {PerfMode}, PerformanceConfiguration =" +
+                $" {PerformanceConfiguration.PerformanceConfiguration1}");
 
             return 0;
         }

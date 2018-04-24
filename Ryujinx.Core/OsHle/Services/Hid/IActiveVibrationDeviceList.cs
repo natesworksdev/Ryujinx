@@ -1,13 +1,13 @@
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Hid
+namespace Ryujinx.Core.OsHle.Services.Hid
 {
-    class IActiveApplicationDeviceList : IIpcService
+    class IActiveApplicationDeviceList : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public IActiveApplicationDeviceList()
         {

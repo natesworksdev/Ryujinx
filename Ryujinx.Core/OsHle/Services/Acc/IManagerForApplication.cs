@@ -1,13 +1,13 @@
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Acc
+namespace Ryujinx.Core.OsHle.Services.Acc
 {
-    class IManagerForApplication : IIpcService
+    class IManagerForApplication : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public IManagerForApplication()
         {
@@ -19,12 +19,16 @@ namespace Ryujinx.Core.OsHle.IpcServices.Acc
         }
 
         public long CheckAvailability(ServiceCtx Context)
-        {           
+        {
+            Logging.Stub(LogClass.ServiceAcc, "Stubbed");
+
             return 0;
         }
 
         public long GetAccountId(ServiceCtx Context)
         {
+            Logging.Stub(LogClass.ServiceAcc, "AccountId = 0xcafeL");
+
             Context.ResponseData.Write(0xcafeL);
 
             return 0;

@@ -5,15 +5,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Ryujinx.Core.OsHle.IpcServices.FspSrv
+namespace Ryujinx.Core.OsHle.Services.FspSrv
 {
-    class IDirectory : IIpcService, IDisposable
+    class IDirectory : IpcService, IDisposable
     {
         private const int DirectoryEntrySize = 0x310;
 
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private List<string> DirectoryEntries;
 

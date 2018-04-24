@@ -1,15 +1,13 @@
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 
-using static Ryujinx.Core.OsHle.IpcServices.ObjHelper;
-
-namespace Ryujinx.Core.OsHle.IpcServices.Nifm
+namespace Ryujinx.Core.OsHle.Services.Nifm
 {
-    class IGeneralService : IIpcService
+    class IGeneralService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         public IGeneralService()
         {
@@ -26,7 +24,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Nifm
 
             MakeObject(Context, new IRequest());
 
-            //Todo: Stub
+            Logging.Stub(LogClass.ServiceNifm, "Stubbed");
 
             return 0;
         }

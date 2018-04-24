@@ -12,8 +12,6 @@ namespace ChocolArm64.Translation
     {
         private ATranslator Translator;
 
-        private HashSet<long> Callees;
-
         private Dictionary<long, AILLabel> Labels;
 
         private int BlkIndex;
@@ -66,13 +64,11 @@ namespace ChocolArm64.Translation
             this.Graph      = Graph;
             this.Root       = Root;
 
-            Callees = new HashSet<long>();
-
             Labels = new Dictionary<long, AILLabel>();
 
             Emitter = new AILEmitter(Graph, Root, SubName);
 
-            ILBlock = Emitter.GetILBlock(0);          
+            ILBlock = Emitter.GetILBlock(0);
 
             OpcIndex = -1;
 
@@ -84,7 +80,7 @@ namespace ChocolArm64.Translation
 
         public ATranslatedSub GetSubroutine()
         {
-            return Emitter.GetSubroutine(Callees);
+            return Emitter.GetSubroutine();
         }
 
         public bool AdvanceOpCode()
@@ -123,8 +119,6 @@ namespace ChocolArm64.Translation
 
         public bool TryOptEmitSubroutineCall()
         {
-            Callees.Add(((AOpCodeBImm)CurrOp).Imm);
-
             if (CurrBlock.Next == null)
             {
                 return false;
@@ -151,6 +145,8 @@ namespace ChocolArm64.Translation
             }
 
             EmitCall(Sub.Method);
+
+            Sub.AddCaller(Root.Position);
 
             return true;
         }
@@ -260,17 +256,23 @@ namespace ChocolArm64.Translation
                 case AIntType.Int64:  Emit(OpCodes.Conv_I8); break;
             }
 
-            if (IntType == AIntType.UInt64 ||
-                IntType == AIntType.Int64)
+            bool Sz64 = CurrOp.RegisterSize != ARegisterSize.Int32;
+
+            if (Sz64 == (IntType == AIntType.UInt64 ||
+                         IntType == AIntType.Int64))
             {
                 return;
             }
 
-            if (CurrOp.RegisterSize != ARegisterSize.Int32)
+            if (Sz64)
             {
                 Emit(IntType >= AIntType.Int8
                     ? OpCodes.Conv_I8
                     : OpCodes.Conv_U8);
+            }
+            else
+            {
+                Emit(OpCodes.Conv_U4);
             }
         }
 
@@ -298,7 +300,7 @@ namespace ChocolArm64.Translation
                 EmitLdc_I4(Amount);
 
                 Emit(OpCodes.Shr_Un);
-                
+
                 Ldloc(Tmp2Index, AIoType.Int);
 
                 EmitLdc_I4(CurrOp.GetBitsCount() - Amount);
@@ -457,6 +459,21 @@ namespace ChocolArm64.Translation
             }
 
             EmitCall(ObjType.GetMethod(MthdName));
+        }
+
+        public void EmitPrivateCall(Type ObjType, string MthdName)
+        {
+            if (ObjType == null)
+            {
+                throw new ArgumentNullException(nameof(ObjType));
+            }
+
+            if (MthdName == null)
+            {
+                throw new ArgumentNullException(nameof(MthdName));
+            }
+
+            EmitCall(ObjType.GetMethod(MthdName, BindingFlags.Instance | BindingFlags.NonPublic));
         }
 
         public void EmitCall(MethodInfo MthdInfo)

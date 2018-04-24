@@ -1,19 +1,17 @@
 using ChocolArm64.Memory;
-using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
 using System.IO;
 
-using static Ryujinx.Core.OsHle.IpcServices.Android.Parcel;
-using static Ryujinx.Core.OsHle.IpcServices.ObjHelper;
+using static Ryujinx.Core.OsHle.Services.Android.Parcel;
 
-namespace Ryujinx.Core.OsHle.IpcServices.Vi
+namespace Ryujinx.Core.OsHle.Services.Vi
 {
-    class IApplicationDisplayService : IIpcService
+    class IApplicationDisplayService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
-        public IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private IdDictionary Displays;
 
@@ -27,6 +25,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Vi
                 {  103, GetIndirectDisplayTransactionService },
                 { 1010, OpenDisplay                          },
                 { 1020, CloseDisplay                         },
+                { 1102, GetDisplayResolution                 },
                 { 2020, OpenLayer                            },
                 { 2021, CloseLayer                           },
                 { 2030, CreateStrayLayer                     },
@@ -82,6 +81,16 @@ namespace Ryujinx.Core.OsHle.IpcServices.Vi
             int DisplayId = Context.RequestData.ReadInt32();
 
             Displays.Delete(DisplayId);
+
+            return 0;
+        }
+
+        public long GetDisplayResolution(ServiceCtx Context)
+        {
+            long DisplayId = Context.RequestData.ReadInt32();
+
+            Context.ResponseData.Write(1280);
+            Context.ResponseData.Write(720);
 
             return 0;
         }
@@ -145,7 +154,7 @@ namespace Ryujinx.Core.OsHle.IpcServices.Vi
         {
             string Name = GetDisplayName(Context);
 
-            int Handle = Context.Process.HandleTable.OpenHandle(new HEvent());
+            int Handle = Context.Process.HandleTable.OpenHandle(Context.Ns.Os.VsyncEvent);
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 

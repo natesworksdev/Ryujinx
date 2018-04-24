@@ -110,13 +110,64 @@ namespace ChocolArm64.Instruction
             Fccmp_S(Context);
         }
 
+        public static void Fcmeq_S(AILEmitterCtx Context)
+        {
+            EmitScalarFcmp(Context, OpCodes.Beq_S);
+        }
+
+        public static void Fcmeq_V(AILEmitterCtx Context)
+        {
+            EmitVectorFcmp(Context, OpCodes.Beq_S);
+        }
+
+        public static void Fcmge_S(AILEmitterCtx Context)
+        {
+            EmitScalarFcmp(Context, OpCodes.Bge_S);
+        }
+
+        public static void Fcmge_V(AILEmitterCtx Context)
+        {
+            EmitVectorFcmp(Context, OpCodes.Bge_S);
+        }
+
+        public static void Fcmgt_S(AILEmitterCtx Context)
+        {
+            EmitScalarFcmp(Context, OpCodes.Bgt_S);
+        }
+
+        public static void Fcmgt_V(AILEmitterCtx Context)
+        {
+            EmitVectorFcmp(Context, OpCodes.Bgt_S);
+        }
+
+        public static void Fcmle_S(AILEmitterCtx Context)
+        {
+            EmitScalarFcmp(Context, OpCodes.Ble_S);
+        }
+
+        public static void Fcmle_V(AILEmitterCtx Context)
+        {
+            EmitVectorFcmp(Context, OpCodes.Ble_S);
+        }
+
+        public static void Fcmlt_S(AILEmitterCtx Context)
+        {
+            EmitScalarFcmp(Context, OpCodes.Blt_S);
+        }
+
+        public static void Fcmlt_V(AILEmitterCtx Context)
+        {
+            EmitVectorFcmp(Context, OpCodes.Blt_S);
+        }
+
         public static void Fcmp_S(AILEmitterCtx Context)
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
             bool CmpWithZero = !(Op is AOpCodeSimdFcond) ? Op.Bit3 : false;
 
-            //Handle NaN case. If any number is NaN, then NZCV = 0011.
+            //Handle NaN case.
+            //If any number is NaN, then NZCV = 0011.
             if (CmpWithZero)
             {
                 EmitNaNCheck(Context, Op.Rn);
@@ -140,7 +191,14 @@ namespace ChocolArm64.Instruction
 
                 if (CmpWithZero)
                 {
-                    EmitLdcImmF(Context, 0, Op.Size);
+                    if (Op.Size == 0)
+                    {
+                        Context.EmitLdc_R4(0);
+                    }
+                    else /* if (SizeF == 1) */
+                    {
+                        Context.EmitLdc_R8(0);
+                    }
                 }
                 else
                 {
@@ -188,22 +246,6 @@ namespace ChocolArm64.Instruction
         public static void Fcmpe_S(AILEmitterCtx Context)
         {
             Fcmp_S(Context);
-        }
-
-        private static void EmitLdcImmF(AILEmitterCtx Context, double ImmF, int Size)
-        {
-            if (Size == 0)
-            {
-                Context.EmitLdc_R4((float)ImmF);
-            }
-            else if (Size == 1)
-            {
-                Context.EmitLdc_R8(ImmF);
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(Size));
-            }
         }
 
         private static void EmitNaNCheck(AILEmitterCtx Context, int Reg)
@@ -267,6 +309,85 @@ namespace ChocolArm64.Instruction
             {
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
+        }
+
+        private static void EmitScalarFcmp(AILEmitterCtx Context, OpCode ILOp)
+        {
+            EmitFcmp(Context, ILOp, 0, Scalar: true);
+        }
+
+        private static void EmitVectorFcmp(AILEmitterCtx Context, OpCode ILOp)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            int SizeF = Op.Size & 1;
+
+            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+
+            for (int Index = 0; Index < Bytes >> SizeF + 2; Index++)
+            {
+                EmitFcmp(Context, ILOp, Index, Scalar: false);
+            }
+
+            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            {
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }
+        }
+
+        private static void EmitFcmp(AILEmitterCtx Context, OpCode ILOp, int Index, bool Scalar)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            int SizeF = Op.Size & 1;
+
+            ulong SzMask = ulong.MaxValue >> (64 - (32 << SizeF));
+
+            EmitVectorExtractF(Context, Op.Rn, Index, SizeF);
+
+            if (Op is AOpCodeSimdReg BinOp)
+            {
+                EmitVectorExtractF(Context, BinOp.Rm, Index, SizeF);
+            }
+            else if (SizeF == 0)
+            {
+                Context.EmitLdc_R4(0);
+            }
+            else /* if (SizeF == 1) */
+            {
+                Context.EmitLdc_R8(0);
+            }
+
+            AILLabel LblTrue = new AILLabel();
+            AILLabel LblEnd  = new AILLabel();
+
+            Context.Emit(ILOp, LblTrue);
+
+            if (Scalar)
+            {
+                EmitVectorZeroAll(Context, Op.Rd);
+            }
+            else
+            {
+                EmitVectorInsert(Context, Op.Rd, Index, SizeF + 2, 0);
+            }
+
+            Context.Emit(OpCodes.Br_S, LblEnd);
+
+            Context.MarkLabel(LblTrue);
+
+            if (Scalar)
+            {
+                EmitVectorInsert(Context, Op.Rd, Index, 3, (long)SzMask);
+
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }
+            else
+            {
+                EmitVectorInsert(Context, Op.Rd, Index, SizeF + 2, (long)SzMask);
+            }
+
+            Context.MarkLabel(LblEnd);
         }
     }
 }
