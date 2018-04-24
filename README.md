@@ -59,7 +59,7 @@ If you have some homebrew that currently doesn't work within the emulator, you c
 
 **Contact**
 
-For help, support, suggestions, or if you just want to get in touch with the tea; join our Discord server!
+For help, support, suggestions, or if you just want to get in touch with the team; join our Discord server!
 https://discord.gg/VkQYXAZ
 
 **Running**
