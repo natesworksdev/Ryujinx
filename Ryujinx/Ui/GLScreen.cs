@@ -12,7 +12,8 @@ namespace Ryujinx
     {
         private const int TouchScreenWidth  = 1280;
         private const int TouchScreenHeight = 720;
-
+        private const int TouchScreenWidth  = 1920;
+        private const int TouchScreenHeight = 1080;
         private const float TouchScreenRatioX = (float)TouchScreenWidth  / TouchScreenHeight;
         private const float TouchScreenRatioY = (float)TouchScreenHeight / TouchScreenWidth;
 
@@ -21,7 +22,7 @@ namespace Ryujinx
         private IGalRenderer Renderer;
 
         public GLScreen(Switch Ns, IGalRenderer Renderer)
-            : base(1280, 720,
+            : base(1280, 720,1920,1080
             new GraphicsMode(), "Ryujinx", 0,
             DisplayDevice.Default, 3, 3,
             GraphicsContextFlags.ForwardCompatible)
