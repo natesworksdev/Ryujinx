@@ -1,6 +1,7 @@
-﻿using ChocolArm64.Memory;
+using ChocolArm64.Memory;
 using Ryujinx.Core.OsHle.Ipc;
 using Ryujinx.Core.Settings;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
