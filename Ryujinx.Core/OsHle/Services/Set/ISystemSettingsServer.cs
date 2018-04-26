@@ -110,9 +110,14 @@ namespace Ryujinx.Core.OsHle.Services.Set
 
                 if (NxSetting is string StringValue)
                 {
-                    //Ain't be able to test, so we need to know what the size of ReplySize is...
-                    //Array.Resize(ref SettingBuffer, StringValue.Length);
-                    SettingBuffer = Encoding.ASCII.GetBytes(StringValue);
+                    if (StringValue.Length + 1 > ReplySize)
+                    { 
+                        Context.Ns.Log.PrintError(Logging.LogClass.ServiceSet, $"{AskedSetting} String value size is too big!");
+                    }
+                    else
+                    { 
+                        SettingBuffer = Encoding.ASCII.GetBytes(StringValue);
+                    }
                 }
                 if (NxSetting is int IntValue)
                 {
@@ -129,9 +134,12 @@ namespace Ryujinx.Core.OsHle.Services.Set
 
                 AMemoryHelper.WriteBytes(Context.Memory, ReplyPos, SettingBuffer);
 
-                Context.Ns.Log.PrintInfo(Logging.LogClass.ServiceSet, $"{AskedSetting} set value: {NxSetting} as {NxSetting.GetType()}");
+                Context.Ns.Log.PrintDebug(Logging.LogClass.ServiceSet, $"{AskedSetting} set value: {NxSetting} as {NxSetting.GetType()}");
             }
-            else Context.Ns.Log.PrintError(Logging.LogClass.ServiceSet, $"{AskedSetting} not found!");
+            else
+            {
+                Context.Ns.Log.PrintError(Logging.LogClass.ServiceSet, $"{AskedSetting} not found!");
+            }
 
             return 0;
         }
