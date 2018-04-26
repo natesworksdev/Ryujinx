@@ -116,7 +116,7 @@ namespace Ryujinx.Core.OsHle.Services.Set
                     }
                     else
                     { 
-                        SettingBuffer = Encoding.ASCII.GetBytes(StringValue);
+                        SettingBuffer = Encoding.ASCII.GetBytes(StringValue + "\0");
                     }
                 }
                 if (NxSetting is int IntValue)
