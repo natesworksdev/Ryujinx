@@ -205,6 +205,79 @@ namespace ChocolArm64.Instruction
             }
         }
 
+        private static void EmitQxtn(AILEmitterCtx Context, bool Signed, bool Scalar)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            int Elems = (!Scalar ? 8 >> Op.Size : 1);
+            int ESize = 8 << Op.Size;
+
+            int TMaxValue = (Signed ? (1 << (ESize - 1)) - 1 : (int)((1L << ESize) - 1L));
+            int TMinValue = (Signed ? -((1 << (ESize - 1))) : 0);
+
+            int Part = !Scalar & (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0;
+
+            Context.Emit(OpCodes.Ldc_I4_0);
+            Context.EmitStint(2); // Sat.
+
+            for (int Index = 0; Index < Elems; Index++)
+            {
+                AILLabel Lbl1 = new AILLabel();
+                AILLabel Lbl2 = new AILLabel();
+                AILLabel Lbl3 = new AILLabel();
+
+                EmitVectorExtract(Context, Op.Rn, Index, Op.Size + 1, Signed);
+                Context.EmitStint(0); // In.
+
+                Context.EmitLdint(0); // In.
+                Context.EmitLdc_I4(TMaxValue);
+                Context.Emit(OpCodes.Conv_U8);
+                Context.Emit(Signed ? OpCodes.Ble_S : OpCodes.Ble_Un_S, Lbl1);
+                Context.EmitLdc_I4(TMaxValue);
+                Context.EmitStint(1); // Out.
+                Context.EmitLdc_I4(0x8000000);
+                Context.EmitStint(2); // Sat.
+                Context.Emit(OpCodes.Br_S, Lbl3);
+
+                Context.MarkLabel(Lbl1);
+                Context.EmitLdint(0); // In.
+                Context.EmitLdc_I4(TMinValue);
+                Context.Emit(OpCodes.Conv_I8);
+                Context.Emit(Signed ? OpCodes.Bge_S : OpCodes.Bge_Un_S, Lbl2);
+                Context.EmitLdc_I4(TMinValue);
+                Context.EmitStint(1); // Out.
+                Context.EmitLdc_I4(0x8000000);
+                Context.EmitStint(2); // Sat.
+                Context.Emit(OpCodes.Br_S, Lbl3);
+
+                Context.MarkLabel(Lbl2);
+                Context.EmitLdint(0); // In.
+                Context.EmitStint(1); // Out.
+
+                Context.MarkLabel(Lbl3);
+
+                if (Scalar)
+                {
+                    EmitVectorZeroLower(Context, Op.Rd);
+                }
+
+                Context.EmitLdint(1); // Out.
+                EmitVectorInsert(Context, Op.Rd, Part + Index, Op.Size);
+            }
+
+            if (Part == 0)
+            {
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }
+
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpsr));
+            Context.EmitLdint(2); // Sat.
+            Context.Emit(OpCodes.Or);
+            Context.EmitCallPropSet(typeof(AThreadState), nameof(AThreadState.Fpsr));
+        }
+
         public static void Fabd_S(AILEmitterCtx Context)
         {
             EmitScalarBinaryOpF(Context, () =>
@@ -971,6 +1044,16 @@ namespace ChocolArm64.Instruction
             EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Mul));
         }
 
+        public static void Sqxtn_S(AILEmitterCtx Context)
+        {
+            EmitQxtn(Context, Signed: true, Scalar: true);
+        }
+
+        public static void Sqxtn_V(AILEmitterCtx Context)
+        {
+            EmitQxtn(Context, Signed: true, Scalar: false);
+        }
+
         public static void Sub_S(AILEmitterCtx Context)
         {
             EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
@@ -1048,6 +1131,16 @@ namespace ChocolArm64.Instruction
         public static void Umull_V(AILEmitterCtx Context)
         {
             EmitVectorWidenRnRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Mul));
+        }
+
+        public static void Uqxtn_S(AILEmitterCtx Context)
+        {
+            EmitQxtn(Context, Signed: false, Scalar: true);
+        }
+
+        public static void Uqxtn_V(AILEmitterCtx Context)
+        {
+            EmitQxtn(Context, Signed: false, Scalar: false);
         }
     }
 }
