@@ -215,53 +215,50 @@ namespace ChocolArm64.Instruction
             int TMaxValue = (Signed ? (1 << (ESize - 1)) - 1 : (int)((1L << ESize) - 1L));
             int TMinValue = (Signed ? -((1 << (ESize - 1))) : 0);
 
-            int Part = !Scalar & (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0;
-
-            Context.Emit(OpCodes.Ldc_I4_0);
-            Context.EmitStint(2); // Sat.
+            int Part = (!Scalar & (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0);
 
             for (int Index = 0; Index < Elems; Index++)
             {
-                AILLabel Lbl1 = new AILLabel();
-                AILLabel Lbl2 = new AILLabel();
-                AILLabel Lbl3 = new AILLabel();
+                AILLabel LblLe    = new AILLabel();
+                AILLabel LblGeEnd = new AILLabel();
 
                 EmitVectorExtract(Context, Op.Rn, Index, Op.Size + 1, Signed);
-                Context.EmitStint(0); // In.
 
-                Context.EmitLdint(0); // In.
+                Context.Emit(OpCodes.Dup);
+
                 Context.EmitLdc_I4(TMaxValue);
                 Context.Emit(OpCodes.Conv_U8);
-                Context.Emit(Signed ? OpCodes.Ble_S : OpCodes.Ble_Un_S, Lbl1);
-                Context.EmitLdc_I4(TMaxValue);
-                Context.EmitStint(1); // Out.
-                Context.EmitLdc_I4(0x8000000);
-                Context.EmitStint(2); // Sat.
-                Context.Emit(OpCodes.Br_S, Lbl3);
 
-                Context.MarkLabel(Lbl1);
-                Context.EmitLdint(0); // In.
+                Context.Emit(Signed ? OpCodes.Ble_S : OpCodes.Ble_Un_S, LblLe);
+
+                Context.Emit(OpCodes.Pop);
+
+                Context.EmitLdc_I4(TMaxValue);
+                SetQCFlag();
+
+                Context.Emit(OpCodes.Br_S, LblGeEnd);
+
+                Context.MarkLabel(LblLe);
+
+                Context.Emit(OpCodes.Dup);
+
                 Context.EmitLdc_I4(TMinValue);
                 Context.Emit(OpCodes.Conv_I8);
-                Context.Emit(Signed ? OpCodes.Bge_S : OpCodes.Bge_Un_S, Lbl2);
+
+                Context.Emit(Signed ? OpCodes.Bge_S : OpCodes.Bge_Un_S, LblGeEnd);
+
+                Context.Emit(OpCodes.Pop);
+
                 Context.EmitLdc_I4(TMinValue);
-                Context.EmitStint(1); // Out.
-                Context.EmitLdc_I4(0x8000000);
-                Context.EmitStint(2); // Sat.
-                Context.Emit(OpCodes.Br_S, Lbl3);
+                SetQCFlag();
 
-                Context.MarkLabel(Lbl2);
-                Context.EmitLdint(0); // In.
-                Context.EmitStint(1); // Out.
-
-                Context.MarkLabel(Lbl3);
+                Context.MarkLabel(LblGeEnd);
 
                 if (Scalar)
                 {
-                    EmitVectorZeroLower(Context, Op.Rd);
+	                EmitVectorZeroLower(Context, Op.Rd);
                 }
 
-                Context.EmitLdint(1); // Out.
                 EmitVectorInsert(Context, Op.Rd, Part + Index, Op.Size);
             }
 
@@ -270,12 +267,15 @@ namespace ChocolArm64.Instruction
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
 
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-            Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpsr));
-            Context.EmitLdint(2); // Sat.
-            Context.Emit(OpCodes.Or);
-            Context.EmitCallPropSet(typeof(AThreadState), nameof(AThreadState.Fpsr));
+            void SetQCFlag()
+            {
+                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+                Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpsr));
+                Context.EmitLdc_I4(0x8000000);
+                Context.Emit(OpCodes.Or);
+                Context.EmitCallPropSet(typeof(AThreadState), nameof(AThreadState.Fpsr));
+            }
         }
 
         public static void Fabd_S(AILEmitterCtx Context)
