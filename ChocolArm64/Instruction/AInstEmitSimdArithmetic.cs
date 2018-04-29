@@ -217,7 +217,7 @@ namespace ChocolArm64.Instruction
 
             int Part = (!Scalar & (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0);
 
-            Context.Emit(OpCodes.Ldc_I4_0);
+            Context.EmitLdc_I8(0L);
             Context.EmitSttmp();
 
             for (int Index = 0; Index < Elems; Index++)
@@ -238,7 +238,7 @@ namespace ChocolArm64.Instruction
 
                 Context.EmitLdc_I4(TMaxValue);
 
-                Context.EmitLdc_I4(0x8000000);
+                Context.EmitLdc_I8(0x8000000L);
                 Context.EmitSttmp();
 
                 Context.Emit(OpCodes.Br_S, LblGeEnd);
@@ -256,7 +256,7 @@ namespace ChocolArm64.Instruction
 
                 Context.EmitLdc_I4(TMinValue);
 
-                Context.EmitLdc_I4(0x8000000);
+                Context.EmitLdc_I8(0x8000000L);
                 Context.EmitSttmp();
 
                 Context.MarkLabel(LblGeEnd);
@@ -278,6 +278,7 @@ namespace ChocolArm64.Instruction
             Context.EmitLdarg(ATranslatedSub.StateArgIdx);
             Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpsr));
             Context.EmitLdtmp();
+            Context.Emit(OpCodes.Conv_I4);
             Context.Emit(OpCodes.Or);
             Context.EmitCallPropSet(typeof(AThreadState), nameof(AThreadState.Fpsr));
         }
