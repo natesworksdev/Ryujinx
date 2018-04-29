@@ -57,7 +57,7 @@ namespace Ryujinx
             }
             else
             {
-                Console.WriteLine("Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
+                Console.WriteLine("Please specify the folder with the NSOs/IStorage or a NSO/NRO/MAIN.");
             }
 
             using (GLScreen Screen = new GLScreen(Ns, Renderer))
