@@ -217,6 +217,9 @@ namespace ChocolArm64.Instruction
 
             int Part = (!Scalar & (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0);
 
+            Context.Emit(OpCodes.Ldc_I4_0);
+            Context.EmitSttmp();
+
             for (int Index = 0; Index < Elems; Index++)
             {
                 AILLabel LblLe    = new AILLabel();
@@ -234,7 +237,9 @@ namespace ChocolArm64.Instruction
                 Context.Emit(OpCodes.Pop);
 
                 Context.EmitLdc_I4(TMaxValue);
-                SetQCFlag();
+
+                Context.EmitLdc_I4(0x8000000);
+                Context.EmitSttmp();
 
                 Context.Emit(OpCodes.Br_S, LblGeEnd);
 
@@ -250,13 +255,15 @@ namespace ChocolArm64.Instruction
                 Context.Emit(OpCodes.Pop);
 
                 Context.EmitLdc_I4(TMinValue);
-                SetQCFlag();
+
+                Context.EmitLdc_I4(0x8000000);
+                Context.EmitSttmp();
 
                 Context.MarkLabel(LblGeEnd);
 
                 if (Scalar)
                 {
-	                EmitVectorZeroLower(Context, Op.Rd);
+                    EmitVectorZeroLower(Context, Op.Rd);
                 }
 
                 EmitVectorInsert(Context, Op.Rd, Part + Index, Op.Size);
@@ -267,15 +274,12 @@ namespace ChocolArm64.Instruction
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
 
-            void SetQCFlag()
-            {
-                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-                Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpsr));
-                Context.EmitLdc_I4(0x8000000);
-                Context.Emit(OpCodes.Or);
-                Context.EmitCallPropSet(typeof(AThreadState), nameof(AThreadState.Fpsr));
-            }
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpsr));
+            Context.EmitLdtmp();
+            Context.Emit(OpCodes.Or);
+            Context.EmitCallPropSet(typeof(AThreadState), nameof(AThreadState.Fpsr));
         }
 
         public static void Fabd_S(AILEmitterCtx Context)
