@@ -45,7 +45,7 @@ namespace Ryujinx.Core.OsHle.Services.Aud
 
             Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
-            Context.ResponseData.Write(0x400L);
+            Context.ResponseData.Write(0x800L);
 
             return 0;
         }
