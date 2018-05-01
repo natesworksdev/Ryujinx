@@ -47,7 +47,7 @@ namespace Ryujinx.Core.OsHle.Services.Aud
             {
                 long Size;
 
-		Size  = UnknownC * 0x400 + 0x50;
+                Size  = UnknownC * 0x400 + 0x50;
                 Size += RoundUp(Unknown8 * 4, 64);
                 Size += (UnknownC + 1) * 0x940;
                 Size += Unknown14 * 0x170;
