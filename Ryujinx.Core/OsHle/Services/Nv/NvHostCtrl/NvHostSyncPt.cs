@@ -5,42 +5,54 @@ using System.Threading;
 
 namespace Ryujinx.Core.OsHle.Services.Nv
 {
-    class NvSyncPt
+    class NvHostSyncPt
     {
-        private int m_CounterMin;
-        private int m_CounterMax;
+        public const int SyncPtsCount = 192;
 
-        public int CounterMin => m_CounterMin;
-        public int CounterMax => m_CounterMax;
+        public int[] CounterMin;
+        public int[] CounterMax;
 
-        public bool IsEvent { get; set; }
+        private long EventMask;
 
         private ConcurrentDictionary<EventWaitHandle, int> Waiters;
 
-        public NvSyncPt()
+        public NvHostSyncPt()
         {
+            CounterMin = new int[SyncPtsCount];
+            CounterMax = new int[SyncPtsCount];
+
             Waiters = new ConcurrentDictionary<EventWaitHandle, int>();
         }
 
-        public int Increment()
+        public int GetMin(int Id)
         {
-            Interlocked.Increment(ref m_CounterMax);
-
-            return IncrementMin();
+            return CounterMin[Id];
         }
 
-        public int IncrementMin()
+        public int GetMax(int Id)
         {
-            int Value = Interlocked.Increment(ref m_CounterMin);
+            return CounterMax[Id];
+        }
 
-            WakeUpWaiters(Value);
+        public int Increment(int Id)
+        {
+            Interlocked.Increment(ref CounterMax[Id]);
+
+            return IncrementMin(Id);
+        }
+
+        public int IncrementMin(int Id)
+        {
+            int Value = Interlocked.Increment(ref CounterMin[Id]);
+
+            WakeUpWaiters(Id, Value);
 
             return Value;
         }
 
-        public int IncrementMax()
+        public int IncrementMax(int Id)
         {
-            return Interlocked.Increment(ref m_CounterMax);
+            return Interlocked.Increment(ref CounterMax[Id]);
         }
 
         public void AddWaiter(int Threshold, EventWaitHandle WaitEvent)
@@ -56,11 +68,11 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             return Waiters.TryRemove(WaitEvent, out _);
         }
 
-        private void WakeUpWaiters(int NewValue)
+        private void WakeUpWaiters(int Id, int NewValue)
         {
             foreach (KeyValuePair<EventWaitHandle, int> KV in Waiters)
             {
-                if (MinCompare(NewValue, m_CounterMax, KV.Value))
+                if (MinCompare(Id, NewValue, CounterMax[Id], KV.Value))
                 {
                     KV.Key.Set();
 
@@ -69,17 +81,17 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             }
         }
 
-        public bool MinCompare(int Threshold)
+        public bool MinCompare(int Id, int Threshold)
         {
-            return MinCompare(m_CounterMin, m_CounterMax, Threshold);
+            return MinCompare(Id, CounterMin[Id], CounterMax[Id], Threshold);
         }
 
-        private bool MinCompare(int Min, int Max, int Threshold)
+        private bool MinCompare(int Id, int Min, int Max, int Threshold)
         {
             int MinDiff = Min - Threshold;
             int MaxDiff = Max - Threshold;
 
-            if (IsEvent)
+            if (((EventMask >> Id) & 1) != 0)
             {
                 return MinDiff >= 0;
             }
