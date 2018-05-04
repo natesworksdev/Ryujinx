@@ -1,6 +1,6 @@
+using Ryujinx.Core.Logging;
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
-using Ryujinx.Core.Logging;
 
 namespace Ryujinx.Core.OsHle.Services.Vi
 {
@@ -36,8 +36,8 @@ namespace Ryujinx.Core.OsHle.Services.Vi
         {
             Context.ResponseData.Write(1280);
             Context.ResponseData.Write(720);
-            Context.ResponseData.Write(16.0 / 9.0);
-            Context.ResponseData.Write(0L);
+            Context.ResponseData.Write(60.0f);
+            Context.ResponseData.Write(0);
             return 0;
         }
     }
