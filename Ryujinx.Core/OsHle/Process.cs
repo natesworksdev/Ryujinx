@@ -5,6 +5,7 @@ using ChocolArm64.State;
 using Ryujinx.Core.Loaders;
 using Ryujinx.Core.Loaders.Executables;
 using Ryujinx.Core.Logging;
+using Ryujinx.Core.OsHle.Diagnostics;
 using Ryujinx.Core.OsHle.Exceptions;
 using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Kernel;
@@ -290,57 +291,6 @@ namespace Ryujinx.Core.OsHle
             Ns.Log.PrintDebug(LogClass.Cpu, $"Executing at 0x{e.Position:x16} {e.SubName} {NsoName}");
         }
 
-        private string DemangleName(string mangled)
-        {
-            string result = null;
-            string charCountTemp = null;
-            int charCount = 0;
-            foreach(var chr in mangled)
-            {
-                if (charCount == 0)
-                {
-                    if (charCountTemp == null)
-                    {
-                        if (chr == 'r' || chr == 'V' || chr == 'K')
-                        {
-                            continue;
-                        }
-                        if (chr == 'E')
-                        {
-                            break;
-                        }
-                    }
-                    if (Char.IsDigit(chr))
-                    {
-                        charCountTemp += chr;
-                    }
-                    else
-                    {
-                        if (!int.TryParse(charCountTemp, out charCount))
-                        {
-                            return mangled;
-                        }
-                        result += chr;
-                        charCount--;
-                        charCountTemp = null;
-                    }
-                }
-                else
-                {
-                    result += chr;
-                    charCount--;
-                    if (charCount == 0)
-                    {
-                        result += "::";
-                    }
-                }
-            }
-            if (result == null)
-            {
-                return mangled;
-            }
-            return result.Substring(0, result.Length - 2);
-        }
         public void PrintStackTrace(AThreadState ThreadState)
         {
             long[] Positions = ThreadState.GetCallStack();
@@ -357,7 +307,7 @@ namespace Ryujinx.Core.OsHle
                 }
                 else if (SubName.StartsWith("_ZN"))
                 {
-                    SubName = DemangleName(SubName.Substring(3));
+                    SubName = Demangler.ReadName(SubName.Substring(3));
                 }
 
                 Trace.AppendLine(" " + SubName + " (" + GetNsoNameAndAddress(Position) + ")");
