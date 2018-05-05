@@ -1,13 +1,16 @@
 using System;
 
-namespace Ryujinx.Core.OsHle.Diagnostics {
-    static class Demangler {
+namespace Ryujinx.Core.OsHle.Diagnostics
+{
+    static class Demangle
+    {
         public static string ReadName(string mangled)
         {
             string result = null;
             string charCountTemp = null;
             int charCount = 0;
-            foreach(var chr in mangled)
+
+            foreach (var chr in mangled)
             {
                 if (charCount == 0)
                 {

@@ -307,7 +307,7 @@ namespace Ryujinx.Core.OsHle
                 }
                 else if (SubName.StartsWith("_ZN"))
                 {
-                    SubName = Demangler.ReadName(SubName.Substring(3));
+                    SubName = Demangle.ReadName(SubName.Substring(3));
                 }
 
                 Trace.AppendLine(" " + SubName + " (" + GetNsoNameAndAddress(Position) + ")");
