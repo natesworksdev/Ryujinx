@@ -1,4 +1,4 @@
-namespace Ryujinx.Core.OsHle.Services.Nv
+namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 {
     class NvHostEvent
     {

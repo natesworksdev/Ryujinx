@@ -7,6 +7,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
         public const int OutOfMemory  = -12;
         public const int InvalidInput = -22;
         public const int NotSupported = -25;
+        public const int Restart      = -85;
         public const int TimedOut     = -110;
     }
 }

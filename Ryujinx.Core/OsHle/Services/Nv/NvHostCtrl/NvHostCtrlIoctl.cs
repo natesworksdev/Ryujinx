@@ -1,37 +1,58 @@
 using ChocolArm64.Memory;
 using Ryujinx.Core.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace Ryujinx.Core.OsHle.Services.Nv
+namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 {
     class NvHostCtrlIoctl
     {
+        private const int LocksCount = 16;
+
         private const int EventsCount = 64;
 
         private static ConcurrentDictionary<Process, NvHostEvent[]> EventArrays;
 
-        private static ConcurrentDictionary<Process, NvHostSyncPt> NvSyncPts;
+        private static ConcurrentDictionary<Process, NvHostSyncpt> NvSyncPts;
 
         static NvHostCtrlIoctl()
         {
             EventArrays = new ConcurrentDictionary<Process, NvHostEvent[]>();
 
-            NvSyncPts = new ConcurrentDictionary<Process, NvHostSyncPt>();
+            NvSyncPts = new ConcurrentDictionary<Process, NvHostSyncpt>();
         }
 
-        private int SyncPtRead(ServiceCtx Context)
+        public static int ProcessIoctl(ServiceCtx Context, int Cmd)
         {
-            return SyncPtReadMinOrMax(Context, Max: false);
+            switch (Cmd & 0xffff)
+            {
+                case 0x0014: return SyncptRead    (Context);
+                case 0x0015: return SyncptIncr    (Context);
+                case 0x0016: return SyncptWait    (Context);
+                case 0x0019: return SyncptWaitEx  (Context);
+                case 0x001a: return SyncptReadMax (Context);
+                case 0x001b: return GetConfig     (Context);
+                case 0x001d: return EventWait     (Context);
+                case 0x001e: return EventWaitAsync(Context);
+                case 0x001f: return EventRegister (Context);
+            }
+
+            throw new NotImplementedException(Cmd.ToString("x8"));
         }
 
-        private int SyncPtIncr(ServiceCtx Context)
+        private static int SyncptRead(ServiceCtx Context)
+        {
+            return SyncptReadMinOrMax(Context, Max: false);
+        }
+
+        private static int SyncptIncr(ServiceCtx Context)
         {
             long InputPosition = Context.Request.GetBufferType0x21Position();
 
             int Id = Context.Memory.ReadInt32(InputPosition);
 
-            if ((uint)Id >= NvHostSyncPt.SyncPtsCount)
+            if ((uint)Id >= NvHostSyncpt.SyncPtsCount)
             {
                 return NvResult.InvalidInput;
             }
@@ -41,39 +62,68 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             return NvResult.Success;
         }
 
-        private int SyncPtWait(ServiceCtx Context)
+        private static int SyncptWait(ServiceCtx Context)
         {
-            return SyncPtWait(Context, Extended: false);
+            return SyncptWait(Context, Extended: false);
         }
 
-        private int SyncPtWaitEx(ServiceCtx Context)
+        private static int SyncptWaitEx(ServiceCtx Context)
         {
-            return SyncPtWait(Context, Extended: true);
+            return SyncptWait(Context, Extended: true);
         }
 
-        private int SyncPtReadMax(ServiceCtx Context)
+        private static int SyncptReadMax(ServiceCtx Context)
         {
-            return SyncPtReadMinOrMax(Context, Max: true);
+            return SyncptReadMinOrMax(Context, Max: true);
         }
 
-        private int EventWait(ServiceCtx Context)
-        {
-            return EventWait(Context, Async: false);
-        }
-
-        private int EventWaitAsync(ServiceCtx Context)
-        {
-            return EventWait(Context, Async: true);
-        }
-
-        private int SyncPtReadMinOrMax(ServiceCtx Context, bool Max)
+        private static int GetConfig(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
-            NvHostCtrlSyncPtRead Args = AMemoryHelper.Read<NvHostCtrlSyncPtRead>(Context.Memory, InputPosition);
+            string Nv   = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0,    0x41);
+            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0x41, 0x41);
 
-            if ((uint)Args.Id >= NvHostSyncPt.SyncPtsCount)
+            Context.Memory.WriteByte(OutputPosition + 0x82, 0);
+
+            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+
+            return NvResult.Success;
+        }
+
+        private static int EventWait(ServiceCtx Context)
+        {
+            return EventWait(Context, Async: false);
+        }
+
+        private static int EventWaitAsync(ServiceCtx Context)
+        {
+            return EventWait(Context, Async: true);
+        }
+
+        private static int EventRegister(ServiceCtx Context)
+        {
+            long InputPosition  = Context.Request.GetBufferType0x21Position();
+            long OutputPosition = Context.Request.GetBufferType0x22Position();
+
+            int EventId = Context.Memory.ReadInt32(InputPosition);
+
+            Context.Ns.Log.PrintInfo(LogClass.ServiceNv, EventId.ToString());
+
+            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+
+            return NvResult.Success;
+        }
+
+        private static int SyncptReadMinOrMax(ServiceCtx Context, bool Max)
+        {
+            long InputPosition  = Context.Request.GetBufferType0x21Position();
+            long OutputPosition = Context.Request.GetBufferType0x22Position();
+
+            NvHostCtrlSyncptRead Args = AMemoryHelper.Read<NvHostCtrlSyncptRead>(Context.Memory, InputPosition);
+
+            if ((uint)Args.Id >= NvHostSyncpt.SyncPtsCount)
             {
                 return NvResult.InvalidInput;
             }
@@ -92,16 +142,16 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             return NvResult.Success;
         }
 
-        private int SyncPtWait(ServiceCtx Context, bool Extended)
+        private static int SyncptWait(ServiceCtx Context, bool Extended)
         {
             long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
-            NvHostCtrlSyncPtWait Args = AMemoryHelper.Read<NvHostCtrlSyncPtWait>(Context.Memory, InputPosition);
+            NvHostCtrlSyncptWait Args = AMemoryHelper.Read<NvHostCtrlSyncptWait>(Context.Memory, InputPosition);
 
-            NvHostSyncPt SyncPt = GetSyncPt(Context);
+            NvHostSyncpt SyncPt = GetSyncPt(Context);
 
-            if ((uint)Args.Id >= NvHostSyncPt.SyncPtsCount)
+            if ((uint)Args.Id >= NvHostSyncpt.SyncPtsCount)
             {
                 return NvResult.InvalidInput;
             }
@@ -147,9 +197,9 @@ namespace Ryujinx.Core.OsHle.Services.Nv
                     {
                         Result = NvResult.TimedOut;
                     }
-
-                    Context.Ns.Log.PrintDebug(LogClass.ServiceNv, "Resuming...");
                 }
+
+                Context.Ns.Log.PrintDebug(LogClass.ServiceNv, "Resuming...");
             }
 
             if (Extended)
@@ -160,42 +210,49 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             return Result;
         }
 
-        private int EventWait(ServiceCtx Context, bool Async)
+        private static int EventWait(ServiceCtx Context, bool Async)
         {
             long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
-            int Result;
+            NvHostCtrlSyncptWaitEx Args = AMemoryHelper.Read<NvHostCtrlSyncptWaitEx>(Context.Memory, InputPosition);
 
-            NvHostCtrlSyncPtWaitEx Args = AMemoryHelper.Read<NvHostCtrlSyncPtWaitEx>(Context.Memory, InputPosition);
-
-            if ((uint)Args.Id >= NvHostSyncPt.SyncPtsCount)
+            if ((uint)Args.Id >= NvHostSyncpt.SyncPtsCount)
             {
                 return NvResult.InvalidInput;
             }
 
-            NvHostSyncPt SyncPt = GetSyncPt(Context);
+            void WriteArgs()
+            {
+                AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
+            }
+
+            NvHostSyncpt SyncPt = GetSyncPt(Context);
 
             if (SyncPt.MinCompare(Args.Id, Args.Thresh))
             {
                 Args.Value = SyncPt.GetMin(Args.Id);
 
+                WriteArgs();
+
                 return NvResult.Success;
+            }
+
+            if (!Async)
+            {
+                Args.Value = 0;
             }
 
             if (Args.Timeout == 0)
             {
-                if (!Async)
-                {
-                    Args.Value = 0;
-                }
+                WriteArgs();
 
                 return NvResult.TryAgain;
             }
 
             NvHostEvent Event;
 
-            int EventIndex;
+            int Result, EventIndex;
 
             if (Async)
             {
@@ -213,35 +270,43 @@ namespace Ryujinx.Core.OsHle.Services.Nv
                 Event = GetFreeEvent(Context, SyncPt, Args.Id, out EventIndex);
             }
 
-            if (Event == null)
+            if (Event != null &&
+               (Event.State == NvHostEventState.Registered ||
+                Event.State == NvHostEventState.Free))
             {
-                return NvResult.InvalidInput;
-            }
+                Event.Id     = Args.Id;
+                Event.Thresh = Args.Thresh;
 
-            Event.Id     = Args.Id;
-            Event.Thresh = Args.Thresh;
+                Event.State = NvHostEventState.Waiting;
 
-            Event.State = NvHostEventState.Waiting;
+                if (!Async)
+                {
+                    Args.Value = ((Args.Id & 0xfff) << 16) | 0x10000000;
+                }
+                else
+                {
+                    Args.Value = Args.Id << 4;
+                }
 
-            if (!Async)
-            {
-                Args.Value = ((Args.Id & 0xfff) << 16) | 0x10000000;
+                Args.Value |= EventIndex;
+
+                Result = NvResult.TryAgain;
             }
             else
             {
-                Args.Value = Args.Id << 4;
+                Result = NvResult.InvalidInput;
             }
 
-            Args.Value |= EventIndex;
-
-            Result = NvResult.TryAgain;
-
-            AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
+            WriteArgs();
 
             return Result;
         }
 
-        private NvHostEvent GetFreeEvent(ServiceCtx Context, NvHostSyncPt SyncPt, int Id, out int EventIndex)
+        private static NvHostEvent GetFreeEvent(
+            ServiceCtx   Context,
+            NvHostSyncpt SyncPt,
+            int          Id,
+            out int      EventIndex)
         {
             NvHostEvent[] Events = GetEvents(Context);
 
@@ -287,9 +352,9 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             return null;
         }
 
-        public static NvHostSyncPt GetSyncPt(ServiceCtx Context)
+        public static NvHostSyncpt GetSyncPt(ServiceCtx Context)
         {
-            return NvSyncPts.GetOrAdd(Context.Process, (Key) => new NvHostSyncPt());
+            return NvSyncPts.GetOrAdd(Context.Process, (Key) => new NvHostSyncpt());
         }
 
         private static NvHostEvent[] GetEvents(ServiceCtx Context)

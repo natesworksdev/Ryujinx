@@ -1,9 +1,9 @@
 using ChocolArm64.Memory;
+using Ryujinx.Core.Gpu;
 using Ryujinx.Core.Logging;
 using Ryujinx.Core.OsHle.Handles;
-using Ryujinx.Core.OsHle.Services.Nv;
+using Ryujinx.Core.OsHle.Services.Nv.NvMap;
 using Ryujinx.Graphics.Gal;
-using Ryujinx.Graphics.Gpu;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -282,20 +282,11 @@ namespace Ryujinx.Core.OsHle.Services.Android
             int FbWidth  = 1280;
             int FbHeight = 720;
 
-            NvMap Map = GetNvMap(Context, Slot);
+            NvMapHandle Map = GetNvMap(Context, Slot);
 
-            NvMapFb MapFb = (NvMapFb)INvDrvServices.NvMapsFb.GetData(Context.Process, 0);
+            NvMapHandle MapFb = NvMapIoctl.GetNvMapWithFb(Context, 0);
 
-            long CpuAddr = Map.CpuAddress;
-            long GpuAddr = Map.GpuAddress;
-
-            if (MapFb.HasBufferOffset(Slot))
-            {
-                CpuAddr += MapFb.GetBufferOffset(Slot);
-
-                //TODO: Enable once the frame buffers problems are fixed.
-                //GpuAddr += MapFb.GetBufferOffset(Slot);
-            }
+            long FbAddr = Map.Address + MapFb.Address;
 
             BufferQueue[Slot].State = BufferState.Acquired;
 
@@ -352,17 +343,17 @@ namespace Ryujinx.Core.OsHle.Services.Android
 
             //TODO: Support double buffering here aswell, it is broken for GPU
             //frame buffers because it seems to be completely out of sync.
-            if (Context.Ns.Gpu.Engine3d.IsFrameBufferPosition(GpuAddr))
+            if (Context.Ns.Gpu.Engine3d.IsFrameBufferPosition(FbAddr))
             {
                 //Frame buffer is rendered to by the GPU, we can just
                 //bind the frame buffer texture, it's not necessary to read anything.
-                Renderer.SetFrameBuffer(GpuAddr);
+                Renderer.SetFrameBuffer(FbAddr);
             }
             else
             {
                 //Frame buffer is not set on the GPU registers, in this case
                 //assume that the app is manually writing to it.
-                Texture Texture = new Texture(CpuAddr, FbWidth, FbHeight);
+                Texture Texture = new Texture(FbAddr, FbWidth, FbHeight);
 
                 byte[] Data = TextureReader.Read(Context.Memory, Texture);
 
@@ -372,7 +363,7 @@ namespace Ryujinx.Core.OsHle.Services.Android
             Context.Ns.Gpu.Renderer.QueueAction(() => ReleaseBuffer(Slot));
         }
 
-        private NvMap GetNvMap(ServiceCtx Context, int Slot)
+        private NvMapHandle GetNvMap(ServiceCtx Context, int Slot)
         {
             int NvMapHandle = BitConverter.ToInt32(BufferQueue[Slot].Data.RawData, 0x4c);
 
@@ -385,7 +376,7 @@ namespace Ryujinx.Core.OsHle.Services.Android
                 NvMapHandle = BitConverter.ToInt32(RawValue, 0);
             }
 
-            return INvDrvServices.NvMaps.GetData<NvMap>(Context.Process, NvMapHandle);
+            return NvMapIoctl.GetNvMap(Context, NvMapHandle);
         }
 
         private void ReleaseBuffer(int Slot)

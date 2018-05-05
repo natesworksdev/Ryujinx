@@ -3,20 +3,20 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Ryujinx.Core.OsHle.Services.Nv
+namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 {
-    class NvHostSyncPt
+    class NvHostSyncpt
     {
         public const int SyncPtsCount = 192;
 
-        public int[] CounterMin;
-        public int[] CounterMax;
+        private int[] CounterMin;
+        private int[] CounterMax;
 
         private long EventMask;
 
         private ConcurrentDictionary<EventWaitHandle, int> Waiters;
 
-        public NvHostSyncPt()
+        public NvHostSyncpt()
         {
             CounterMin = new int[SyncPtsCount];
             CounterMax = new int[SyncPtsCount];
@@ -36,7 +36,10 @@ namespace Ryujinx.Core.OsHle.Services.Nv
 
         public int Increment(int Id)
         {
-            Interlocked.Increment(ref CounterMax[Id]);
+            if (((EventMask >> Id) & 1) != 0)
+            {
+                Interlocked.Increment(ref CounterMax[Id]);
+            }
 
             return IncrementMin(Id);
         }

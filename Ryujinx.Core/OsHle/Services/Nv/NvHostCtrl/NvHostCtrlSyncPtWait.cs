@@ -1,6 +1,6 @@
-namespace Ryujinx.Core.OsHle.Services.Nv
+namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 {
-    struct NvHostCtrlSyncPtWait
+    struct NvHostCtrlSyncptWait
     {
         public int Id;
         public int Thresh;
