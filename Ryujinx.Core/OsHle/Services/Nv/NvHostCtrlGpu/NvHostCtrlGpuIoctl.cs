@@ -1,11 +1,25 @@
 using ChocolArm64.Memory;
 using Ryujinx.Core.Logging;
 using System;
+using System.Diagnostics;
 
 namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrlGpu
 {
     class NvHostCtrlGpuIoctl
     {
+        private static Stopwatch PTimer;
+
+        private static double TicksToNs;
+
+        static NvHostCtrlGpuIoctl()
+        {
+            PTimer = new Stopwatch();
+
+            PTimer.Start();
+
+            TicksToNs = (1.0 / Stopwatch.Frequency) * 1_000_000_000;
+        }
+
         public static int ProcessIoctl(ServiceCtx Context, int Cmd)
         {
             switch (Cmd & 0xffff)
@@ -16,6 +30,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrlGpu
                 case 0x4705: return GetCharacteristics(Context);
                 case 0x4706: return GetTpcMasks       (Context);
                 case 0x4714: return GetActiveSlotMask (Context);
+                case 0x471c: return GetGpuTime        (Context);
             }
 
             throw new NotImplementedException(Cmd.ToString("x8"));
@@ -119,6 +134,22 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrlGpu
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
+        }
+
+        private static int GetGpuTime(ServiceCtx Context)
+        {
+            long OutputPosition = Context.Request.GetBufferType0x22Position();
+
+            Context.Memory.WriteInt64(OutputPosition, GetPTimerNanoSeconds());
+
+            return NvResult.Success;
+        }
+
+        private static long GetPTimerNanoSeconds()
+        {
+            double Ticks = PTimer.ElapsedTicks;
+
+            return (long)(Ticks * TicksToNs) & 0xff_ffff_ffff_ffff;
         }
     }
 }

@@ -417,9 +417,9 @@ namespace Ryujinx.Core.Gpu
 
         private int GetVertexCountFromIndexBuffer(
             NvGpuVmm Vmm,
-            long       IndexPosition,
-            int        IndexCount,
-            int        IndexSize)
+            long     IndexPosition,
+            int      IndexCount,
+            int      IndexSize)
         {
             int MaxIndex = -1;
 
@@ -427,7 +427,7 @@ namespace Ryujinx.Core.Gpu
             {
                 while (IndexCount -- > 0)
                 {
-                    ushort Value = (ushort)Vmm.ReadInt16(IndexPosition);
+                    ushort Value = Vmm.ReadUInt16(IndexPosition);
 
                     IndexPosition += 2;
 
@@ -453,7 +453,7 @@ namespace Ryujinx.Core.Gpu
             {
                 while (IndexCount -- > 0)
                 {
-                    uint Value = (uint)Vmm.ReadInt32(IndexPosition);
+                    uint Value = Vmm.ReadUInt32(IndexPosition);
 
                     IndexPosition += 2;
 

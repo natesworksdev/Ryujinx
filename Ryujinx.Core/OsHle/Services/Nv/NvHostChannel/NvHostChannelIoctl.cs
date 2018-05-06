@@ -58,7 +58,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
             {
                 long Gpfifo = Context.Memory.ReadInt64(InputPosition + 0x18 + Index * 8);
 
-                long VA = Gpfifo & 0xffffffffff;
+                long VA = Gpfifo & 0xff_ffff_ffff;
 
                 int Size = (int)(Gpfifo >> 40) & 0x7ffffc;
 
@@ -68,6 +68,10 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
 
                 Context.Ns.Gpu.Fifo.PushBuffer(Vmm, PushBuffer);
             }
+
+            Args.SyncptId = 5;
+
+            AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
             return NvResult.Success;
         }

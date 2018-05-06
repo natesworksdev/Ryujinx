@@ -282,11 +282,12 @@ namespace Ryujinx.Core.OsHle.Services.Android
             int FbWidth  = 1280;
             int FbHeight = 720;
 
-            NvMapHandle Map = GetNvMap(Context, Slot);
+            int NvMapHandle  = BitConverter.ToInt32(BufferQueue[Slot].Data.RawData, 0x4c);
+            int BufferOffset = BitConverter.ToInt32(BufferQueue[Slot].Data.RawData, 0x50);
 
-            NvMapHandle MapFb = NvMapIoctl.GetNvMapWithFb(Context, 0);
+            NvMapHandle Map = NvMapIoctl.GetNvMap(Context, NvMapHandle);;
 
-            long FbAddr = Map.Address + MapFb.Address;
+            long FbAddr = Map.Address + BufferOffset;
 
             BufferQueue[Slot].State = BufferState.Acquired;
 
@@ -361,22 +362,6 @@ namespace Ryujinx.Core.OsHle.Services.Android
             }
 
             Context.Ns.Gpu.Renderer.QueueAction(() => ReleaseBuffer(Slot));
-        }
-
-        private NvMapHandle GetNvMap(ServiceCtx Context, int Slot)
-        {
-            int NvMapHandle = BitConverter.ToInt32(BufferQueue[Slot].Data.RawData, 0x4c);
-
-            if (!BitConverter.IsLittleEndian)
-            {
-                byte[] RawValue = BitConverter.GetBytes(NvMapHandle);
-
-                Array.Reverse(RawValue);
-
-                NvMapHandle = BitConverter.ToInt32(RawValue, 0);
-            }
-
-            return NvMapIoctl.GetNvMap(Context, NvMapHandle);
         }
 
         private void ReleaseBuffer(int Slot)

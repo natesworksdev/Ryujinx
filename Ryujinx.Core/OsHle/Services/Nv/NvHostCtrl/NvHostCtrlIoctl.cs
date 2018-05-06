@@ -229,6 +229,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
             NvHostSyncpt SyncPt = GetSyncPt(Context);
 
+            Context.Ns.Log.PrintInfo(LogClass.ServiceNv, Args.Id + " " + Args.Thresh + " " + Args.Timeout + " " + Args.Value + " " + Async + " " + SyncPt.GetMin(Args.Id));
+
             if (SyncPt.MinCompare(Args.Id, Args.Thresh))
             {
                 Args.Value = SyncPt.GetMin(Args.Id);
