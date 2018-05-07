@@ -86,6 +86,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
                 throw new NotImplementedException($"{FdData.Name} {Cmd:x4}");
             }
 
+            //TODO: Verify if the error codes needs to be translated.
             Context.ResponseData.Write(Result);
 
             return 0;
