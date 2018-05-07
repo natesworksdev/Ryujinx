@@ -10,11 +10,11 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
     {
         private const int FlagNotFreedYet = 1;
 
-        private static ConcurrentDictionary<Process, IdDictionary> NvMaps;
+        private static ConcurrentDictionary<Process, IdDictionary> Maps;
 
         static NvMapIoctl()
         {
-            NvMaps = new ConcurrentDictionary<Process, IdDictionary>();
+            Maps = new ConcurrentDictionary<Process, IdDictionary>();
         }
 
         public static int ProcessIoctl(ServiceCtx Context, int Cmd)
@@ -43,6 +43,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
             if (Args.Size == 0)
             {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid size 0x{Args.Size:x8}!");
+
                 return NvResult.InvalidInput;
             }
 
@@ -68,6 +70,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+
                 return NvResult.InvalidInput;
             }
 
@@ -91,11 +95,15 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+
                 return NvResult.InvalidInput;
             }
 
             if ((Args.Align & (Args.Align - 1)) != 0)
             {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid alignment 0x{Args.Align:x8}!");
+
                 return NvResult.InvalidInput;
             }
 
@@ -150,6 +158,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+
                 return NvResult.InvalidInput;
             }
 
@@ -187,6 +197,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+
                 return NvResult.InvalidInput;
             }
 
@@ -219,6 +231,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+
                 return NvResult.InvalidInput;
             }
 
@@ -231,23 +245,23 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
         private static int AddNvMap(ServiceCtx Context, NvMapHandle Map)
         {
-            IdDictionary Maps = NvMaps.GetOrAdd(Context.Process, (Key) =>
+            IdDictionary Dict = Maps.GetOrAdd(Context.Process, (Key) =>
             {
-                IdDictionary Dict = new IdDictionary();
+                IdDictionary NewDict = new IdDictionary();
 
-                Dict.Add(0, new NvMapHandle());
+                NewDict.Add(0, new NvMapHandle());
 
-                return Dict;
+                return NewDict;
             });
 
-            return Maps.Add(Map);
+            return Dict.Add(Map);
         }
 
         private static bool DeleteNvMap(ServiceCtx Context, int Handle)
         {
-            if (NvMaps.TryGetValue(Context.Process, out IdDictionary Maps))
+            if (Maps.TryGetValue(Context.Process, out IdDictionary Dict))
             {
-                return Maps.Delete(Handle) != null;
+                return Dict.Delete(Handle) != null;
             }
 
             return false;
@@ -255,16 +269,16 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
         public static void InitializeNvMap(ServiceCtx Context)
         {
-            IdDictionary Maps = NvMaps.GetOrAdd(Context.Process, (Key) =>new IdDictionary());
+            IdDictionary Dict = Maps.GetOrAdd(Context.Process, (Key) =>new IdDictionary());
 
-            Maps.Add(0, new NvMapHandle());
+            Dict.Add(0, new NvMapHandle());
         }
 
         public static NvMapHandle GetNvMapWithFb(ServiceCtx Context, int Handle)
         {
-            if (NvMaps.TryGetValue(Context.Process, out IdDictionary Maps))
+            if (Maps.TryGetValue(Context.Process, out IdDictionary Dict))
             {
-                return Maps.GetData<NvMapHandle>(Handle);
+                return Dict.GetData<NvMapHandle>(Handle);
             }
 
             return null;
@@ -272,12 +286,17 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvMap
 
         public static NvMapHandle GetNvMap(ServiceCtx Context, int Handle)
         {
-            if (Handle != 0 && NvMaps.TryGetValue(Context.Process, out IdDictionary Maps))
+            if (Handle != 0 && Maps.TryGetValue(Context.Process, out IdDictionary Dict))
             {
-                return Maps.GetData<NvMapHandle>(Handle);
+                return Dict.GetData<NvMapHandle>(Handle);
             }
 
             return null;
+        }
+
+        public static void UnloadProcess(Process Process)
+        {
+            Maps.TryRemove(Process, out _);
         }
     }
 }

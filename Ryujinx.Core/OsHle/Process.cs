@@ -410,7 +410,7 @@ namespace Ryujinx.Core.OsHle
                     }
                 }
 
-                INvDrvServices.Fds.DeleteProcess(this);
+                INvDrvServices.UnloadProcess(this);
 
                 AppletState.Dispose();
 

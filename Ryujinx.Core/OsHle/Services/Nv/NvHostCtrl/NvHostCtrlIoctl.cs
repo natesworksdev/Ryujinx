@@ -8,19 +8,11 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 {
     class NvHostCtrlIoctl
     {
-        private const int LocksCount = 16;
-
-        private const int EventsCount = 64;
-
-        private static ConcurrentDictionary<Process, NvHostEvent[]> EventArrays;
-
-        private static ConcurrentDictionary<Process, NvHostSyncpt> NvSyncPts;
+        private static ConcurrentDictionary<Process, NvHostCtrlUserCtx> UserCtxs;
 
         static NvHostCtrlIoctl()
         {
-            EventArrays = new ConcurrentDictionary<Process, NvHostEvent[]>();
-
-            NvSyncPts = new ConcurrentDictionary<Process, NvHostSyncpt>();
+            UserCtxs = new ConcurrentDictionary<Process, NvHostCtrlUserCtx>();
         }
 
         public static int ProcessIoctl(ServiceCtx Context, int Cmd)
@@ -52,12 +44,12 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
             int Id = Context.Memory.ReadInt32(InputPosition);
 
-            if ((uint)Id >= NvHostSyncpt.SyncPtsCount)
+            if ((uint)Id >= NvHostSyncpt.SyncptsCount)
             {
                 return NvResult.InvalidInput;
             }
 
-            GetSyncPt(Context).Increment(Id);
+            GetUserCtx(Context).Syncpt.Increment(Id);
 
             return NvResult.Success;
         }
@@ -109,8 +101,6 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
             int EventId = Context.Memory.ReadInt32(InputPosition);
 
-            Context.Ns.Log.PrintInfo(LogClass.ServiceNv, EventId.ToString());
-
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
@@ -123,18 +113,18 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
             NvHostCtrlSyncptRead Args = AMemoryHelper.Read<NvHostCtrlSyncptRead>(Context.Memory, InputPosition);
 
-            if ((uint)Args.Id >= NvHostSyncpt.SyncPtsCount)
+            if ((uint)Args.Id >= NvHostSyncpt.SyncptsCount)
             {
                 return NvResult.InvalidInput;
             }
 
             if (Max)
             {
-                Args.Value = GetSyncPt(Context).GetMax(Args.Id);
+                Args.Value = GetUserCtx(Context).Syncpt.GetMax(Args.Id);
             }
             else
             {
-                Args.Value = GetSyncPt(Context).GetMin(Args.Id);
+                Args.Value = GetUserCtx(Context).Syncpt.GetMin(Args.Id);
             }
 
             AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
@@ -149,16 +139,16 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
             NvHostCtrlSyncptWait Args = AMemoryHelper.Read<NvHostCtrlSyncptWait>(Context.Memory, InputPosition);
 
-            NvHostSyncpt SyncPt = GetSyncPt(Context);
+            NvHostSyncpt Syncpt = GetUserCtx(Context).Syncpt;
 
-            if ((uint)Args.Id >= NvHostSyncpt.SyncPtsCount)
+            if ((uint)Args.Id >= NvHostSyncpt.SyncptsCount)
             {
                 return NvResult.InvalidInput;
             }
 
             int Result;
 
-            if (SyncPt.MinCompare(Args.Id, Args.Thresh))
+            if (Syncpt.MinCompare(Args.Id, Args.Thresh))
             {
                 Result = NvResult.Success;
             }
@@ -172,7 +162,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
                 using (ManualResetEvent WaitEvent = new ManualResetEvent(false))
                 {
-                    SyncPt.AddWaiter(Args.Thresh, WaitEvent);
+                    Syncpt.AddWaiter(Args.Thresh, WaitEvent);
 
                     //Note: Negative (> INT_MAX) timeouts aren't valid on .NET,
                     //in this case we just use the maximum timeout possible.
@@ -204,7 +194,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
             if (Extended)
             {
-                Context.Memory.WriteInt32(OutputPosition + 0xc, SyncPt.GetMin(Args.Id));
+                Context.Memory.WriteInt32(OutputPosition + 0xc, Syncpt.GetMin(Args.Id));
             }
 
             return Result;
@@ -217,7 +207,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
             NvHostCtrlSyncptWaitEx Args = AMemoryHelper.Read<NvHostCtrlSyncptWaitEx>(Context.Memory, InputPosition);
 
-            if ((uint)Args.Id >= NvHostSyncpt.SyncPtsCount)
+            if ((uint)Args.Id >= NvHostSyncpt.SyncptsCount)
             {
                 return NvResult.InvalidInput;
             }
@@ -227,13 +217,11 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
                 AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
             }
 
-            NvHostSyncpt SyncPt = GetSyncPt(Context);
+            NvHostSyncpt Syncpt = GetUserCtx(Context).Syncpt;
 
-            Context.Ns.Log.PrintInfo(LogClass.ServiceNv, Args.Id + " " + Args.Thresh + " " + Args.Timeout + " " + Args.Value + " " + Async + " " + SyncPt.GetMin(Args.Id));
-
-            if (SyncPt.MinCompare(Args.Id, Args.Thresh))
+            if (Syncpt.MinCompare(Args.Id, Args.Thresh))
             {
-                Args.Value = SyncPt.GetMin(Args.Id);
+                Args.Value = Syncpt.GetMin(Args.Id);
 
                 WriteArgs();
 
@@ -260,16 +248,16 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
             {
                 EventIndex = Args.Value;
 
-                if ((uint)EventIndex >= EventsCount)
+                if ((uint)EventIndex >= NvHostCtrlUserCtx.EventsCount)
                 {
                     return NvResult.InvalidInput;
                 }
 
-                Event = GetEvents(Context)[EventIndex];
+                Event = GetUserCtx(Context).Events[EventIndex];
             }
             else
             {
-                Event = GetFreeEvent(Context, SyncPt, Args.Id, out EventIndex);
+                Event = GetFreeEvent(Context, Syncpt, Args.Id, out EventIndex);
             }
 
             if (Event != null &&
@@ -306,17 +294,17 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
         private static NvHostEvent GetFreeEvent(
             ServiceCtx   Context,
-            NvHostSyncpt SyncPt,
+            NvHostSyncpt Syncpt,
             int          Id,
             out int      EventIndex)
         {
-            NvHostEvent[] Events = GetEvents(Context);
+            NvHostEvent[] Events = GetUserCtx(Context).Events;
 
-            EventIndex = EventsCount;
+            EventIndex = NvHostCtrlUserCtx.EventsCount;
 
-            int NullIndex = EventsCount;
+            int NullIndex = NvHostCtrlUserCtx.EventsCount;
 
-            for (int Index = 0; Index < EventsCount; Index++)
+            for (int Index = 0; Index < NvHostCtrlUserCtx.EventsCount; Index++)
             {
                 NvHostEvent Event = Events[Index];
 
@@ -333,20 +321,20 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
                         }
                     }
                 }
-                else if (NullIndex == EventsCount)
+                else if (NullIndex == NvHostCtrlUserCtx.EventsCount)
                 {
                     NullIndex = Index;
                 }
             }
 
-            if (NullIndex < EventsCount)
+            if (NullIndex < NvHostCtrlUserCtx.EventsCount)
             {
                 EventIndex = NullIndex;
 
                 return Events[NullIndex] = new NvHostEvent();
             }
 
-            if (EventIndex < EventsCount)
+            if (EventIndex < NvHostCtrlUserCtx.EventsCount)
             {
                 return Events[EventIndex];
             }
@@ -354,14 +342,14 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
             return null;
         }
 
-        public static NvHostSyncpt GetSyncPt(ServiceCtx Context)
+        public static NvHostCtrlUserCtx GetUserCtx(ServiceCtx Context)
         {
-            return NvSyncPts.GetOrAdd(Context.Process, (Key) => new NvHostSyncpt());
+            return UserCtxs.GetOrAdd(Context.Process, (Key) => new NvHostCtrlUserCtx());
         }
 
-        private static NvHostEvent[] GetEvents(ServiceCtx Context)
+        public static void UnloadProcess(Process Process)
         {
-            return EventArrays.GetOrAdd(Context.Process, (Key) => new NvHostEvent[EventsCount]);
+            UserCtxs.TryRemove(Process, out _);
         }
     }
 }

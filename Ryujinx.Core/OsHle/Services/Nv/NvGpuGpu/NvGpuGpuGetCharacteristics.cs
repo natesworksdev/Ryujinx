@@ -1,6 +1,6 @@
-namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrlGpu
+namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuGpu
 {
-    struct NvHostCtrlGpuCharacteristics
+    struct NvGpuGpuGetCharacteristics
     {
         public long BufferSize;
         public long BufferAddress;

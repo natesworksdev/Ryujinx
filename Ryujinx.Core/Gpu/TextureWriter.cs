@@ -12,8 +12,7 @@ namespace Ryujinx.Core.Gpu
             {
                 case GalTextureFormat.A8B8G8R8: Write4Bpp(Memory, Texture, Data); break;
 
-                default:
-                    throw new NotImplementedException(Texture.Format.ToString());
+                default: throw new NotImplementedException(Texture.Format.ToString());
             }
         }
 
@@ -23,6 +22,10 @@ namespace Ryujinx.Core.Gpu
             int Height = Texture.Height;
 
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 4);
+
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
 
             fixed (byte* BuffPtr = Data)
             {
@@ -35,7 +38,7 @@ namespace Ryujinx.Core.Gpu
 
                     int Pixel = *(int*)(BuffPtr + InOffs);
 
-                    Memory.WriteInt32(Texture.Position + Offset, Pixel);
+                    CpuMem.WriteInt32Unchecked(Position + Offset, Pixel);
 
                     InOffs += 4;
                 }

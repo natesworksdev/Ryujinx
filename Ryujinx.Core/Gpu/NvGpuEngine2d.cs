@@ -75,7 +75,7 @@ namespace Ryujinx.Core.Gpu
 
             int DstBlockHeight = 1 << ((DstBlkDim >> 4) & 0xf);
 
-            long Tag = Vmm.GetCpuAddr(MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress));
+            long Tag = Vmm.GetPhysicalAddress(MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress));
 
             long SrcAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress);
             long DstAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.DstAddress);

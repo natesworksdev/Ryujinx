@@ -3,15 +3,15 @@ using Ryujinx.Core.Logging;
 using System;
 using System.Diagnostics;
 
-namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrlGpu
+namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuGpu
 {
-    class NvHostCtrlGpuIoctl
+    class NvGpuGpuIoctl
     {
         private static Stopwatch PTimer;
 
         private static double TicksToNs;
 
-        static NvHostCtrlGpuIoctl()
+        static NvGpuGpuIoctl()
         {
             PTimer = new Stopwatch();
 
@@ -71,7 +71,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrlGpu
             long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
-            NvHostCtrlGpuCharacteristics Args = AMemoryHelper.Read<NvHostCtrlGpuCharacteristics>(Context.Memory, InputPosition);
+            NvGpuGpuGetCharacteristics Args = AMemoryHelper.Read<NvGpuGpuGetCharacteristics>(Context.Memory, InputPosition);
 
             Args.BufferSize = 0xa0;
 

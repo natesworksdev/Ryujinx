@@ -40,7 +40,7 @@ namespace Ryujinx.Core.OsHle.Kernel
 
             if (Obj == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Tried to CloseHandle on invalid handle 0x{Handle:x8}!");
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -229,8 +229,6 @@ namespace Ryujinx.Core.OsHle.Kernel
 
         private void SendSyncRequest(AThreadState ThreadState, long CmdPtr, long Size, int Handle)
         {
-            //Process.PrintStackTrace(ThreadState);
-
             KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
 
             byte[] CmdData = AMemoryHelper.ReadBytes(Memory, CmdPtr, Size);

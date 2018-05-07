@@ -1,4 +1,5 @@
 using ChocolArm64.Memory;
+using System.Collections.Concurrent;
 
 namespace Ryujinx.Core.Gpu
 {
@@ -21,16 +22,30 @@ namespace Ryujinx.Core.Gpu
         private const int  PTLvl0Bit = PTPageBits + PTLvl1Bits;
         private const int  PTLvl1Bit = PTPageBits;
 
+        public AMemory Memory { get; private set; }
+
+        private struct MappedMemory
+        {
+            public long Size;
+
+            public MappedMemory(long Size)
+            {
+                this.Size = Size;
+            }
+        }
+
+        private ConcurrentDictionary<long, MappedMemory> Maps;
+
         private const long PteUnmapped = -1;
         private const long PteReserved = -2;
 
         private long[][] PageTable;
 
-        private AMemory Memory;
-
         public NvGpuVmm(AMemory Memory)
         {
             this.Memory = Memory;
+
+            Maps = new ConcurrentDictionary<long, MappedMemory>();
 
             PageTable = new long[PTLvl0Size][];
         }
@@ -60,18 +75,34 @@ namespace Ryujinx.Core.Gpu
         {
             lock (PageTable)
             {
-                long Position = GetFreePosition(Size);
+                long VA = GetFreePosition(Size);
 
-                if (Position != -1)
+                if (VA != -1)
                 {
+                    MappedMemory Map = new MappedMemory(Size);
+
+                    Maps.AddOrUpdate(VA, Map, (Key, Old) => Map);
+
                     for (long Offset = 0; Offset < Size; Offset += PageSize)
                     {
-                        SetPte(Position + Offset, PA + Offset);
+                        SetPte(VA + Offset, PA + Offset);
                     }
                 }
 
-                return Position;
+                return VA;
             }
+        }
+
+        public bool Unmap(long VA)
+        {
+            if (Maps.TryRemove(VA, out MappedMemory Map))
+            {
+                Free(VA, Map.Size);
+
+                return true;
+            }
+
+            return false;
         }
 
         public long Reserve(long VA, long Size, long Align)
@@ -164,7 +195,7 @@ namespace Ryujinx.Core.Gpu
             return -1;
         }
 
-        public long GetCpuAddr(long VA)
+        public long GetPhysicalAddress(long VA)
         {
             long BasePos = GetPte(VA);
 
@@ -240,126 +271,126 @@ namespace Ryujinx.Core.Gpu
 
         public byte ReadByte(long Position)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return Memory.ReadByte(Position);
         }
 
         public ushort ReadUInt16(long Position)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return Memory.ReadUInt16(Position);
         }
 
         public uint ReadUInt32(long Position)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return Memory.ReadUInt32(Position);
         }
 
         public ulong ReadUInt64(long Position)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return Memory.ReadUInt64(Position);
         }
 
         public sbyte ReadSByte(long Position)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return Memory.ReadSByte(Position);
         }
 
         public short ReadInt16(long Position)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return Memory.ReadInt16(Position);
         }
 
         public int ReadInt32(long Position)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return Memory.ReadInt32(Position);
         }
 
         public long ReadInt64(long Position)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return Memory.ReadInt64(Position);
         }
 
         public byte[] ReadBytes(long Position, long Size)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             return AMemoryHelper.ReadBytes(Memory, Position, Size);
         }
 
         public void WriteByte(long Position, byte Value)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             Memory.WriteByte(Position, Value);
         }
 
         public void WriteUInt16(long Position, ushort Value)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             Memory.WriteUInt16(Position, Value);
         }
 
         public void WriteUInt32(long Position, uint Value)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             Memory.WriteUInt32(Position, Value);
         }
 
         public void WriteUInt64(long Position, ulong Value)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             Memory.WriteUInt64(Position, Value);
         }
 
         public void WriteSByte(long Position, sbyte Value)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             Memory.WriteSByte(Position, Value);
         }
 
         public void WriteInt16(long Position, short Value)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             Memory.WriteInt16(Position, Value);
         }
 
         public void WriteInt32(long Position, int Value)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             Memory.WriteInt32(Position, Value);
         }
 
         public void WriteInt64(long Position, long Value)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             Memory.WriteInt64(Position, Value);
         }
 
         public void WriteBytes(long Position, byte[] Data)
         {
-            Position = GetCpuAddr(Position);
+            Position = GetPhysicalAddress(Position);
 
             AMemoryHelper.WriteBytes(Memory, Position, Data);
         }

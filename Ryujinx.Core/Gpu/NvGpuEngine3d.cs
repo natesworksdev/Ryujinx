@@ -104,7 +104,7 @@ namespace Ryujinx.Core.Gpu
         {
             long VA = MakeInt64From2xInt32(NvGpuEngine3dReg.FrameBufferNAddress + FbIndex * 0x10);
 
-            long PA = Vmm.GetCpuAddr(VA);
+            long PA = Vmm.GetPhysicalAddress(VA);
 
             FrameBuffers.Add(PA);
 
@@ -259,7 +259,7 @@ namespace Ryujinx.Core.Gpu
 
             long TextureAddress = Vmm.ReadInt64(TicPosition + 4) & 0xffffffffffff;
 
-            TextureAddress = Vmm.GetCpuAddr(TextureAddress);
+            TextureAddress = Vmm.GetPhysicalAddress(TextureAddress);
 
             if (IsFrameBufferPosition(TextureAddress))
             {

@@ -29,6 +29,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
                 case 0x4106: return MapBufferEx (Context);
                 case 0x4108: return GetVaRegions(Context);
                 case 0x4109: return InitializeEx(Context);
+                case 0x4114: return Remap       (Context);
             }
 
             throw new NotImplementedException(Cmd.ToString("x8"));
@@ -107,10 +108,10 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
 
             NvGpuVmm Vmm = GetVmm(Context);
 
-            /*if (!Vmm.Unmap(Args.Offset))
+            if (!Vmm.Unmap(Args.Offset))
             {
                 Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid buffer offset {Args.Offset:x16}!");
-            }*/
+            }
 
             return NvResult.Success;
         }
@@ -125,6 +126,13 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
             NvGpuVmm Vmm = GetVmm(Context);
 
             NvMapHandle Map = NvMapIoctl.GetNvMapWithFb(Context, Args.NvMapHandle);
+
+            if (Map == null)
+            {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{Args.NvMapHandle:x8}!");
+
+                return NvResult.InvalidInput;
+            }
 
             long PA = Map.Address + Args.BufferOffset;
 
@@ -200,9 +208,38 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
             return NvResult.Success;
         }
 
+        private static int Remap(ServiceCtx Context)
+        {
+            long InputPosition  = Context.Request.GetBufferType0x21Position();
+
+            NvGpuASRemap Args = AMemoryHelper.Read<NvGpuASRemap>(Context.Memory, InputPosition);
+
+            NvGpuVmm Vmm = GetVmm(Context);
+
+            NvMapHandle Map = NvMapIoctl.GetNvMapWithFb(Context, Args.NvMapHandle);
+
+            if (Map == null)
+            {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{Args.NvMapHandle:x8}!");
+
+                return NvResult.InvalidInput;
+            }
+
+            //FIXME: This is most likely wrong...
+            Vmm.Map(Map.Address, (long)(uint)Args.Offset << 16,
+                                 (long)(uint)Args.Pages  << 16);
+
+            return NvResult.Success;
+        }
+
         public static NvGpuVmm GetVmm(ServiceCtx Context)
         {
             return Vmms.GetOrAdd(Context.Process, (Key) => new NvGpuVmm(Context.Memory));
+        }
+
+        public static void UnloadProcess(Process Process)
+        {
+            Vmms.TryRemove(Process, out _);
         }
     }
 }

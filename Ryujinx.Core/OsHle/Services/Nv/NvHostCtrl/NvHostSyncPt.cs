@@ -7,7 +7,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 {
     class NvHostSyncpt
     {
-        public const int SyncPtsCount = 192;
+        public const int SyncptsCount = 192;
 
         private int[] CounterMin;
         private int[] CounterMax;
@@ -18,8 +18,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl
 
         public NvHostSyncpt()
         {
-            CounterMin = new int[SyncPtsCount];
-            CounterMax = new int[SyncPtsCount];
+            CounterMin = new int[SyncptsCount];
+            CounterMax = new int[SyncptsCount];
 
             Waiters = new ConcurrentDictionary<EventWaitHandle, int>();
         }

@@ -69,7 +69,8 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
                 Context.Ns.Gpu.Fifo.PushBuffer(Vmm, PushBuffer);
             }
 
-            Args.SyncptId = 5;
+            Args.SyncptId    = 0;
+            Args.SyncptValue = 0;
 
             AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
 

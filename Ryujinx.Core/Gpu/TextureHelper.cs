@@ -1,3 +1,4 @@
+using ChocolArm64.Memory;
 using System;
 
 namespace Ryujinx.Core.Gpu
@@ -18,6 +19,18 @@ namespace Ryujinx.Core.Gpu
             }
 
             throw new NotImplementedException(Texture.Swizzle.ToString());
+        }
+
+        public static (AMemory Memory, long Position) GetMemoryAndPosition(
+            IAMemory Memory,
+            long     Position)
+        {
+            if (Memory is NvGpuVmm Vmm)
+            {
+                return (Vmm.Memory, Vmm.GetPhysicalAddress(Position));
+            }
+
+            return ((AMemory)Memory, Position);
         }
     }
 }

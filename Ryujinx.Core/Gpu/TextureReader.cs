@@ -32,6 +32,10 @@ namespace Ryujinx.Core.Gpu
 
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 2);
 
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
             fixed (byte* BuffPtr = Output)
             {
                 long OutOffs = 0;
@@ -41,7 +45,7 @@ namespace Ryujinx.Core.Gpu
                 {
                     long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
 
-                    short Pixel = Memory.ReadInt16(Texture.Position + Offset);
+                    short Pixel = CpuMem.ReadInt16Unchecked(Position + Offset);
 
                     *(short*)(BuffPtr + OutOffs) = Pixel;
 
@@ -61,6 +65,10 @@ namespace Ryujinx.Core.Gpu
 
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 4);
 
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
             fixed (byte* BuffPtr = Output)
             {
                 long OutOffs = 0;
@@ -70,7 +78,7 @@ namespace Ryujinx.Core.Gpu
                 {
                     long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
 
-                    int Pixel = Memory.ReadInt32(Texture.Position + Offset);
+                    int Pixel = CpuMem.ReadInt32Unchecked(Position + Offset);
 
                     *(int*)(BuffPtr + OutOffs) = Pixel;
 
@@ -90,6 +98,10 @@ namespace Ryujinx.Core.Gpu
 
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 8);
 
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
             fixed (byte* BuffPtr = Output)
             {
                 long OutOffs = 0;
@@ -99,7 +111,7 @@ namespace Ryujinx.Core.Gpu
                 {
                     long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
 
-                    long Tile = Memory.ReadInt64(Texture.Position + Offset);
+                    long Tile = CpuMem.ReadInt64Unchecked(Position + Offset);
 
                     *(long*)(BuffPtr + OutOffs) = Tile;
 
@@ -119,6 +131,10 @@ namespace Ryujinx.Core.Gpu
 
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 16);
 
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
             fixed (byte* BuffPtr = Output)
             {
                 long OutOffs = 0;
@@ -128,8 +144,8 @@ namespace Ryujinx.Core.Gpu
                 {
                     long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
 
-                    long Tile0 = Memory.ReadInt64(Texture.Position + Offset + 0);
-                    long Tile1 = Memory.ReadInt64(Texture.Position + Offset + 8);
+                    long Tile0 = CpuMem.ReadInt64Unchecked(Position + Offset + 0);
+                    long Tile1 = CpuMem.ReadInt64Unchecked(Position + Offset + 8);
 
                     *(long*)(BuffPtr + OutOffs + 0) = Tile0;
                     *(long*)(BuffPtr + OutOffs + 8) = Tile1;

@@ -1,10 +1,11 @@
 using ChocolArm64.Memory;
+using Ryujinx.Core.Logging;
 using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Ipc;
 using Ryujinx.Core.OsHle.Services.Nv.NvGpuAS;
+using Ryujinx.Core.OsHle.Services.Nv.NvGpuGpu;
 using Ryujinx.Core.OsHle.Services.Nv.NvHostChannel;
 using Ryujinx.Core.OsHle.Services.Nv.NvHostCtrl;
-using Ryujinx.Core.OsHle.Services.Nv.NvHostCtrlGpu;
 using Ryujinx.Core.OsHle.Services.Nv.NvMap;
 using System;
 using System.Collections.Generic;
@@ -13,20 +14,20 @@ namespace Ryujinx.Core.OsHle.Services.Nv
 {
     class INvDrvServices : IpcService, IDisposable
     {
-        private delegate int ProcessIoctl(ServiceCtx Context, int Cmd);
+        private delegate int IoctlProcessor(ServiceCtx Context, int Cmd);
 
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
-        private static Dictionary<string, ProcessIoctl> IoctlProcessors =
-                   new Dictionary<string, ProcessIoctl>()
+        private static Dictionary<string, IoctlProcessor> IoctlProcessors =
+                   new Dictionary<string, IoctlProcessor>()
         {
-            { "/dev/nvhost-as-gpu",   NvGpuASIoctl      .ProcessIoctl },
-            { "/dev/nvhost-ctrl",     NvHostCtrlIoctl   .ProcessIoctl },
-            { "/dev/nvhost-ctrl-gpu", NvHostCtrlGpuIoctl.ProcessIoctl },
-            { "/dev/nvhost-gpu",      NvHostChannelIoctl.ProcessIoctl },
-            { "/dev/nvmap",           NvMapIoctl        .ProcessIoctl }
+            { "/dev/nvhost-as-gpu",   ProcessIoctlNvGpuAS       },
+            { "/dev/nvhost-ctrl",     ProcessIoctlNvHostCtrl    },
+            { "/dev/nvhost-ctrl-gpu", ProcessIoctlNvGpuGpu      },
+            { "/dev/nvhost-gpu",      ProcessIoctlNvHostChannel },
+            { "/dev/nvmap",           ProcessIoctlNvMap         }
         };
 
         public static GlobalStateTable Fds { get; private set; }
@@ -76,7 +77,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
 
             int Result;
 
-            if (IoctlProcessors.TryGetValue(FdData.Name, out ProcessIoctl Process))
+            if (IoctlProcessors.TryGetValue(FdData.Name, out IoctlProcessor Process))
             {
                 Result = Process(Context, Cmd);
             }
@@ -135,6 +136,71 @@ namespace Ryujinx.Core.OsHle.Services.Nv
             Context.ResponseData.Write(0);
 
             return 0;
+        }
+
+        private static int ProcessIoctlNvGpuAS(ServiceCtx Context, int Cmd)
+        {
+            return ProcessIoctl(Context, Cmd, NvGpuASIoctl.ProcessIoctl);
+        }
+
+        private static int ProcessIoctlNvHostCtrl(ServiceCtx Context, int Cmd)
+        {
+            return ProcessIoctl(Context, Cmd, NvHostCtrlIoctl.ProcessIoctl);
+        }
+
+        private static int ProcessIoctlNvGpuGpu(ServiceCtx Context, int Cmd)
+        {
+            return ProcessIoctl(Context, Cmd, NvGpuGpuIoctl.ProcessIoctl);
+        }
+
+        private static int ProcessIoctlNvHostChannel(ServiceCtx Context, int Cmd)
+        {
+            return ProcessIoctl(Context, Cmd, NvHostChannelIoctl.ProcessIoctl);
+        }
+
+        private static int ProcessIoctlNvMap(ServiceCtx Context, int Cmd)
+        {
+            return ProcessIoctl(Context, Cmd, NvMapIoctl.ProcessIoctl);
+        }
+
+        private static int ProcessIoctl(ServiceCtx Context, int Cmd, IoctlProcessor Processor)
+        {
+            if (CmdIn(Cmd) && Context.Request.GetBufferType0x21Position() == 0)
+            {
+                Context.Ns.Log.PrintError(LogClass.ServiceNv, "Input buffer is null!");
+
+                return NvResult.InvalidInput;
+            }
+
+            if (CmdOut(Cmd) && Context.Request.GetBufferType0x22Position() == 0)
+            {
+                Context.Ns.Log.PrintError(LogClass.ServiceNv, "Output buffer is null!");
+
+                return NvResult.InvalidInput;
+            }
+
+            return Processor(Context, Cmd);
+        }
+
+        private static bool CmdIn(int Cmd)
+        {
+            return ((Cmd >> 30) & 1) != 0;
+        }
+
+        private static bool CmdOut(int Cmd)
+        {
+            return ((Cmd >> 31) & 1) != 0;
+        }
+
+        public static void UnloadProcess(Process Process)
+        {
+            Fds.DeleteProcess(Process);
+
+            NvGpuASIoctl.UnloadProcess(Process);
+
+            NvHostCtrlIoctl.UnloadProcess(Process);
+
+            NvMapIoctl.UnloadProcess(Process);
         }
 
         public void Dispose()
