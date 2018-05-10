@@ -334,10 +334,10 @@ namespace ChocolArm64.Instruction
                 switch (Size)
                 {
                     case 0:
-                        return Sse41.Extract(Sse.StaticCast<float, sbyte>(Vector), Index);
+                        return ExtractSByte(Vector, Index);
 
                     case 1:
-                        return Sse2.Extract(Sse.StaticCast<float, short>(Vector), Index);
+                        return ExtractShort(Vector, Index);
 
                     case 2:
                         return Sse41.Extract(Sse.StaticCast<float, int>(Vector), Index);
@@ -350,6 +350,22 @@ namespace ChocolArm64.Instruction
             }
 
             throw new PlatformNotSupportedException();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static sbyte ExtractSByte(Vector128<float> Vector, byte Index)
+        {
+            //Workaround to JIT bug.
+            //https://github.com/dotnet/coreclr/issues/17957
+            return Sse41.Extract(Sse.StaticCast<float, sbyte>(Vector), Index);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static short ExtractShort(Vector128<float> Vector, byte Index)
+        {
+            //Workaround to JIT bug.
+            //https://github.com/dotnet/coreclr/issues/17957
+            return Sse2.Extract(Sse.StaticCast<float, short>(Vector), Index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -37,14 +37,7 @@ namespace ChocolArm64.Instruction
 
         public static void Add_S(AILEmitterCtx Context)
         {
-            if (AOptimizations.UseSse2)
-            {
-                EmitSse2Call(Context, nameof(Sse2.AddScalar));
-            }
-            else
-            {
-                EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Add));
-            }
+            EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Add));
         }
 
         public static void Add_V(AILEmitterCtx Context)
@@ -1132,14 +1125,7 @@ namespace ChocolArm64.Instruction
 
         public static void Sub_S(AILEmitterCtx Context)
         {
-            if (AOptimizations.UseSse2)
-            {
-                EmitSse2Call(Context, nameof(Sse2.SubtractScalar));
-            }
-            else
-            {
-                EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
-            }
+            EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
         }
 
         public static void Sub_V(AILEmitterCtx Context)
