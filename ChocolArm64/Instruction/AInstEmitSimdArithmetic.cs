@@ -10,34 +10,38 @@ using static ChocolArm64.Instruction.AInstEmitSimdHelper;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+     class Program
     {
-        public static void Abs_S(AILEmitterCtx Context)
+        unsafe static void Main(string[] args)
         {
-            EmitScalarUnaryOpSx(Context, () => EmitAbs(Context));
+            Vector128<short> test = Sse2.SetVector128(0, 0, 0, 0, 0, 0, 0, -1);
+
+            Console.WriteLine(ExtractShortLow(test));
+            Console.WriteLine(ExtractShortLow2(test));
         }
 
-        public static void Abs_V(AILEmitterCtx Context)
+        private static int ExtractShortLow(Vector128<short> Vector)
         {
-            EmitVectorUnaryOpSx(Context, () => EmitAbs(Context));
+            return Sse2.Extract(Vector, 0);
         }
 
-        private static void EmitAbs(AILEmitterCtx Context)
+        private static int ExtractShortLow2(Vector128<short> Vector)
         {
-            AILLabel LblTrue = new AILLabel();
-
-            Context.Emit(OpCodes.Dup);
-            Context.Emit(OpCodes.Ldc_I4_0);
-            Context.Emit(OpCodes.Bge_S, LblTrue);
-
-            Context.Emit(OpCodes.Neg);
-
-            Context.MarkLabel(LblTrue);
+            short tmp = Sse2.Extract(Vector, 0);
+            return tmp;
         }
-
+    }
+}
         public static void Add_S(AILEmitterCtx Context)
         {
-            EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Add));
+            if (AOptimizations.UseSse2)
+            {
+                EmitSse2Call(Context, nameof(Sse2.AddScalar));
+            }
+            else
+            {
+                EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Add));
+            }
         }
 
         public static void Add_V(AILEmitterCtx Context)
@@ -1125,7 +1129,14 @@ namespace ChocolArm64.Instruction
 
         public static void Sub_S(AILEmitterCtx Context)
         {
-            EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
+            if (AOptimizations.UseSse2)
+            {
+                EmitSse2Call(Context, nameof(Sse2.SubtractScalar));
+            }
+            else
+            {
+                EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
+            }
         }
 
         public static void Sub_V(AILEmitterCtx Context)
