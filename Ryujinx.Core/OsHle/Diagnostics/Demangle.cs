@@ -8,39 +8,6 @@ namespace Ryujinx.Core.OsHle.Diagnostics
 {
     public static class Demangle
     {
-        /*
-          <builtin-type> ::= v    # void
-         ::= w    # wchar_t
-         ::= b    # bool
-         ::= c    # char
-         ::= a    # signed char
-         ::= h    # unsigned char
-         ::= s    # short
-         ::= t    # unsigned short
-         ::= i    # int
-         ::= j    # unsigned int
-         ::= l    # long
-         ::= m    # unsigned long
-         ::= x    # long long, __int64
-         ::= y    # unsigned long long, __int64
-         ::= n    # __int128
-         ::= o    # unsigned __int128
-         ::= f    # float
-         ::= d    # double
-         ::= e    # long double, __float80
-         ::= g    # __float128
-         ::= z    # ellipsis
-                 ::= Dd # IEEE 754r decimal floating point (64 bits)
-                 ::= De # IEEE 754r decimal floating point (128 bits)
-                 ::= Df # IEEE 754r decimal floating point (32 bits)
-                 ::= Dh # IEEE 754r half-precision floating point (16 bits)
-                 ::= DF <number> _ # ISO/IEC TS 18661 binary floating point type _FloatN (N bits)
-                 ::= Di # char32_t
-                 ::= Ds # char16_t
-                 ::= Da # auto
-                 ::= Dc # decltype(auto)
-                 ::= Dn # std::nullptr_t (i.e., decltype(nullptr))
-         */
         private static readonly Dictionary<string, string> BuiltinTypes = new Dictionary<string, string>
         {
             { "v", "void" },
@@ -131,7 +98,6 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             }
             else
             {
-                // TODO: S<ref-id>_
                 int id = -1;
                 int underscorePos = compression.IndexOf('_');
                 if (underscorePos == -1)
@@ -152,7 +118,6 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             {
                 if (canHaveUnqualifiedName)
                 {
-                    // TODO: check that
                     int tempPos = -1;
                     List<string> type = ReadName(compression, compressionData, out tempPos);
                     if (tempPos != -1 && type != null)
@@ -306,6 +271,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 {
                     temp = temp2 + " " + temp;
                     compressionData.Add(temp);
+
                     // need more data
                     continue;
                 }
@@ -315,6 +281,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 {
                     temp = temp +  temp2;
                     compressionData.Add(temp);
+
                     // need more data
                     continue;
                 }
@@ -379,31 +346,8 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             return res;
         }
 
-        public static string ReadNameString(string mangled, out int pos)
-        {
-            List<string> name = ReadName(mangled, new List<string>(), out pos);
-            if (pos == -1 || name == null || name.Count == 0)
-            {
-                return mangled;
-            }
-            foreach (var entry in name)
-            {
-                Console.WriteLine(entry);
-            }
-
-            return name[name.Count - 1];
-        }
-
-        /**
-          <mangled-name> ::= _Z <encoding>
-            <encoding> ::= <function name> <bare-function-type>
-                   ::= <data name>
-                   ::= <special-name>
-         */
         public static string Parse(string originalMangled)
         {
-            Console.WriteLine("Mangled: " + originalMangled);
-
             string mangled = originalMangled;
             List<string> compressionData = new List<string>();
             string res = null;
@@ -416,7 +360,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 mangled = mangled.Substring(3);
                 compressionData = ReadName(mangled, compressionData, out pos);
                 if (pos == -1)
-                    return mangled;
+                    return originalMangled;
                 res = compressionData[compressionData.Count - 1];
 
                 compressionData.Remove(res);
