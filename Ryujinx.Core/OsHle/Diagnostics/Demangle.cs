@@ -30,7 +30,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             { "d", "double" },
             { "e", "long double, __float80" },
             { "g", "__float128" },
-            { "z", "ellipsis" },
+            { "z", "..." },
             { "Dd", "__iec559_double" },
             { "De", "__iec559_float128" },
             { "Df", "__iec559_float" },
@@ -75,8 +75,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             if (compressionData.Count == 0 || !compression.StartsWith("S"))
                 return null;
 
-            string temp = null;
-            if (compression.Length > 2 && BuiltinTypes.TryGetValue(compression.Substring(0, 2), out temp))
+            if (compression.Length > 2 && BuiltinTypes.TryGetValue(compression.Substring(0, 2), out string temp))
             {
                 pos = 2;
                 res = temp;
@@ -373,9 +372,8 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                     // parameters parsing error, we return the original data to avoid information loss.
                     if (pos == -1)
                         return originalMangled;
-                    res += "(";
-                    res += String.Join(", ", parameters);
-                    res += ")";
+                    parameters = parameters.Select(outer => outer.Trim()).ToList();
+                    res += "(" + String.Join(", ", parameters) + ")";
                 }
                 return res;
             }
