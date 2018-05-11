@@ -38,12 +38,11 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuGpu
 
         private static int ZcullGetCtxSize(ServiceCtx Context)
         {
-            long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
-            NvGpuGpuZcullGetCtxSize Args = AMemoryHelper.Read<NvGpuGpuZcullGetCtxSize>(Context.Memory, InputPosition);
+            NvGpuGpuZcullGetCtxSize Args = new NvGpuGpuZcullGetCtxSize();
 
-            Args.Size = 0x1;
+            Args.Size = 1;
 
             AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
@@ -57,7 +56,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuGpu
             long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
-            NvGpuGpuZcullGetInfo Args = AMemoryHelper.Read<NvGpuGpuZcullGetInfo>(Context.Memory, InputPosition);
+            NvGpuGpuZcullGetInfo Args = new NvGpuGpuZcullGetInfo();
 
             Args.WidthAlignPixels           = 0x20;
             Args.HeightAlignPixels          = 0x20;
@@ -142,12 +141,6 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuGpu
             long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
-            NvGpuGpuGetTpcMasks Args = AMemoryHelper.Read<NvGpuGpuGetTpcMasks>(Context.Memory, InputPosition);
-
-            Args.Unk = 0xcafe;
-
-            AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
-
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
@@ -155,10 +148,9 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuGpu
 
         private static int GetActiveSlotMask(ServiceCtx Context)
         {
-            long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
-            NvGpuGpuGetActiveSlotMask Args = AMemoryHelper.Read<NvGpuGpuGetActiveSlotMask>(Context.Memory, InputPosition);
+            NvGpuGpuGetActiveSlotMask Args = new NvGpuGpuGetActiveSlotMask();
 
             Args.Slot = 0x07;
             Args.Mask = 0x01;
