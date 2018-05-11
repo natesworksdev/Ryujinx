@@ -9,27 +9,27 @@ namespace Ryujinx.Core.OsHle.Diagnostics
     public static class Demangle
     {
         /*
-          <builtin-type> ::= v	# void
-		 ::= w	# wchar_t
-		 ::= b	# bool
-		 ::= c	# char
-		 ::= a	# signed char
-		 ::= h	# unsigned char
-		 ::= s	# short
-		 ::= t	# unsigned short
-		 ::= i	# int
-		 ::= j	# unsigned int
-		 ::= l	# long
-		 ::= m	# unsigned long
-		 ::= x	# long long, __int64
-		 ::= y	# unsigned long long, __int64
-		 ::= n	# __int128
-		 ::= o	# unsigned __int128
-		 ::= f	# float
-		 ::= d	# double
-		 ::= e	# long double, __float80
-		 ::= g	# __float128
-		 ::= z	# ellipsis
+          <builtin-type> ::= v    # void
+         ::= w    # wchar_t
+         ::= b    # bool
+         ::= c    # char
+         ::= a    # signed char
+         ::= h    # unsigned char
+         ::= s    # short
+         ::= t    # unsigned short
+         ::= i    # int
+         ::= j    # unsigned int
+         ::= l    # long
+         ::= m    # unsigned long
+         ::= x    # long long, __int64
+         ::= y    # unsigned long long, __int64
+         ::= n    # __int128
+         ::= o    # unsigned __int128
+         ::= f    # float
+         ::= d    # double
+         ::= e    # long double, __float80
+         ::= g    # __float128
+         ::= z    # ellipsis
                  ::= Dd # IEEE 754r decimal floating point (64 bits)
                  ::= De # IEEE 754r decimal floating point (128 bits)
                  ::= Df # IEEE 754r decimal floating point (32 bits)
@@ -74,6 +74,16 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             { "Dn", "std::nullptr_t" },
         };
 
+        private static readonly Dictionary<string, string> SubstitutionExtra = new Dictionary<string, string>
+        {
+            {"Sa", "std::allocator"},
+            {"Sb", "std::basic_string"},
+            {"Ss", "std::basic_string<char, ::std::char_traits<char>, ::std::allocator<char>>"},
+            {"Si", "std::basic_istream<char, ::std::char_traits<char>>"},
+            {"So", "std::basic_ostream<char, ::std::char_traits<char>>"},
+            {"Sd", "std::basic_iostream<char, ::std::char_traits<char>>"}
+        };
+
         private static int FromBase36(string encoded)
         {
             string base36 = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -97,8 +107,22 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             pos = -1;
             if (compressionData.Count == 0 || !compression.StartsWith("S"))
                 return null;
-            // TODO: special compression for std
-            if (compression.StartsWith("S_"))
+
+            string temp = null;
+            if (compression.Length > 2 && BuiltinTypes.TryGetValue(compression.Substring(0, 2), out temp))
+            {
+                pos = 2;
+                res = temp;
+                compression = compression.Substring(2);
+            }
+            else if (compression.StartsWith("St"))
+            {
+                pos = 2;
+                canHaveUnqualifiedName = true;
+                res = "std";
+                compression = compression.Substring(2);
+            }
+            else if (compression.StartsWith("S_"))
             {
                 pos = 2;
                 res = compressionData[0];
@@ -116,7 +140,9 @@ namespace Ryujinx.Core.OsHle.Diagnostics
 
                 id = FromBase36(partialId);
                 if (id == -1 || compressionData.Count <= (id + 1))
+                {
                     return null;
+                }
                 res = compressionData[id + 1];
                 pos = partialId.Length + 1;
                 canHaveUnqualifiedName= true;
@@ -168,6 +194,10 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                         else
                             res.Add(res[res.Count - 1] + "::" + data);
                         i += pos;
+                        if (mangled[i] == 'E')
+                        {
+                            break;
+                        }
                         continue;
                     }
                     else if (chr == 'E')
@@ -275,20 +305,26 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 if (temp2 != null)
                 {
                     temp = temp2 + " " + temp;
+                    compressionData.Add(temp);
+                    // need more data
                     continue;
                 }
 
                 temp2 = ReadRefQualifiers(chr);
                 if (temp2 != null)
                 {
-                    temp = temp + temp2;
+                    temp = temp +  temp2;
+                    compressionData.Add(temp);
+                    // need more data
                     continue;
                 }
 
                 temp2 = ReadSpecialQualifiers(chr);
                 if (temp2 != null)
                 {
-                    temp = temp+ temp2;
+                    temp = temp + temp2;
+
+                    // need more data
                     continue;
                 }
 
@@ -302,19 +338,23 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                         i += pos;
                         temp = temp2 + temp;
                         res.Add(temp);
+                        compressionData.Add(temp);
                         temp = null;
                         continue;
                     }
+                    pos = -1;
+                    return null;
                 }
                 else if (part.StartsWith("N"))
-                {                
+                {
                     part = part.Substring(1);
                     List<string> name = ReadName(part, compressionData, out pos);
                     if (pos != -1 && name != null)
                     {
                         i += pos + 1;
-                        temp = name[name.Count - 1] + temp;
+                        temp = name[name.Count - 1] + " " + temp;
                         res.Add(temp);
+                        compressionData.Add(temp);
                         temp = null;
                         continue;
                     }
@@ -324,7 +364,6 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 temp2 = ReadBuiltinType(part, out pos);
                 if (pos == -1)
                 {
-                    Console.WriteLine("Error: builtin part = " + part);
                     return null;
                 }
                 if (temp != null)
@@ -332,6 +371,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 else
                     temp = temp2;
                 res.Add(temp);
+                compressionData.Add(temp);
                 temp = null;
                 i = i + pos -1;
             }
@@ -360,9 +400,11 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                    ::= <data name>
                    ::= <special-name>
          */
-        public static string Parse(string mangled)
+        public static string Parse(string originalMangled)
         {
-            Console.WriteLine("Mangled: " + mangled);
+            Console.WriteLine("Mangled: " + originalMangled);
+
+            string mangled = originalMangled;
             List<string> compressionData = new List<string>();
             string res = null;
             int pos = 0;
@@ -386,14 +428,14 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                     List<string> parameters = ReadParameters(mangled, compressionData, out pos);
                     // parameters parsing error, we return the original data to avoid information loss.
                     if (pos == -1)
-                        return mangled;
+                        return originalMangled;
                     res += "(";
-                    res += String.Join(", ", parameters);                    
+                    res += String.Join(", ", parameters);
                     res += ")";
                 }
                 return res;
             }
-            return mangled;
+            return originalMangled;
         }
     }
 }
