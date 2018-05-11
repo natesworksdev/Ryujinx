@@ -419,7 +419,7 @@ namespace ChocolArm64.Memory
             }
             else if (Sse2.IsSupported)
             {
-                WriteByteUnchecked(Position, (byte)Sse2.Extract(Sse.StaticCast<float, ushort>(Value), 0));
+                WriteByte(Position, (byte)Sse2.Extract(Sse.StaticCast<float, ushort>(Value), 0));
             }
             else
             {
