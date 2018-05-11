@@ -193,9 +193,9 @@ namespace ChocolArm64.Memory
 
         public Vector128<float> ReadVector8(long Position)
         {
-            if (Sse41.IsSupported)
+            if (Sse2.IsSupported)
             {
-                return Sse.StaticCast<byte, float>(Sse41.Insert(new Vector128<byte>(), ReadByte(Position), 0));
+                return Sse.StaticCast<byte, float>(Sse2.SetVector128(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ReadByte(Position)));
             }
             else
             {
@@ -207,7 +207,7 @@ namespace ChocolArm64.Memory
         {
             if (Sse2.IsSupported)
             {
-                return Sse.StaticCast<ushort, float>(Sse2.Insert(new Vector128<ushort>(), ReadUInt16(Position), 0));
+                return Sse.StaticCast<ushort, float>(Sse2.Insert(Sse2.SetZeroVector128<ushort>(), ReadUInt16(Position), 0));
             }
             else
             {
@@ -302,9 +302,9 @@ namespace ChocolArm64.Memory
 
         public Vector128<float> ReadVector8Unchecked(long Position)
         {
-            if (Sse41.IsSupported)
+            if (Sse2.IsSupported)
             {
-                return Sse.StaticCast<byte, float>(Sse41.Insert(Sse2.SetZeroVector128<byte>(), ReadByteUnchecked(Position), 0));
+                return Sse.StaticCast<byte, float>(Sse2.SetVector128(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ReadByte(Position)));
             }
             else
             {
@@ -417,6 +417,10 @@ namespace ChocolArm64.Memory
             {
                 WriteByte(Position, Sse41.Extract(Sse.StaticCast<float, byte>(Value), 0));
             }
+            else if (Sse2.IsSupported)
+            {
+                WriteByteUnchecked(Position, (byte)Sse2.Extract(Sse.StaticCast<float, ushort>(Value), 0));
+            }
             else
             {
                 throw new PlatformNotSupportedException();
@@ -525,6 +529,10 @@ namespace ChocolArm64.Memory
             if (Sse41.IsSupported)
             {
                 WriteByteUnchecked(Position, Sse41.Extract(Sse.StaticCast<float, byte>(Value), 0));
+            }
+            else if (Sse2.IsSupported)
+            {
+                WriteByteUnchecked(Position, (byte)Sse2.Extract(Sse.StaticCast<float, ushort>(Value), 0));
             }
             else
             {

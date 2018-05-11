@@ -101,26 +101,6 @@ namespace ChocolArm64.Instruction
                    ((Value >> 6) & 1) +  (Value >> 7);
         }
 
-        public static float MaxF(float LHS, float RHS)
-        {
-            if (LHS == 0.0 && RHS == 0.0)
-            {
-                if (BitConverter.SingleToInt32Bits(LHS) < 0 &&
-                    BitConverter.SingleToInt32Bits(RHS) < 0)
-                    return -0.0f;
-
-                return 0.0f;
-            }
-
-            if (LHS > RHS)
-                return LHS;
-
-            if (float.IsNaN(LHS))
-                return LHS;
-
-            return RHS;
-        }
-
         public static double Max(double LHS, double RHS)
         {
             if (LHS == 0.0 && RHS == 0.0)
@@ -141,18 +121,18 @@ namespace ChocolArm64.Instruction
             return RHS;
         }
 
-        public static float MinF(float LHS, float RHS)
+        public static float MaxF(float LHS, float RHS)
         {
             if (LHS == 0.0 && RHS == 0.0)
             {
-                if (BitConverter.SingleToInt32Bits(LHS) < 0 ||
+                if (BitConverter.SingleToInt32Bits(LHS) < 0 &&
                     BitConverter.SingleToInt32Bits(RHS) < 0)
                     return -0.0f;
 
                 return 0.0f;
             }
 
-            if (LHS < RHS)
+            if (LHS > RHS)
                 return LHS;
 
             if (float.IsNaN(LHS))
@@ -181,17 +161,24 @@ namespace ChocolArm64.Instruction
             return RHS;
         }
 
-        public static float RoundF(float Value, int Fpcr)
+        public static float MinF(float LHS, float RHS)
         {
-            switch ((ARoundMode)((Fpcr >> 22) & 3))
+            if (LHS == 0.0 && RHS == 0.0)
             {
-                case ARoundMode.ToNearest:            return MathF.Round   (Value);
-                case ARoundMode.TowardsPlusInfinity:  return MathF.Ceiling (Value);
-                case ARoundMode.TowardsMinusInfinity: return MathF.Floor   (Value);
-                case ARoundMode.TowardsZero:          return MathF.Truncate(Value);
+                if (BitConverter.SingleToInt32Bits(LHS) < 0 ||
+                    BitConverter.SingleToInt32Bits(RHS) < 0)
+                    return -0.0f;
+
+                return 0.0f;
             }
 
-            throw new InvalidOperationException();
+            if (LHS < RHS)
+                return LHS;
+
+            if (float.IsNaN(LHS))
+                return LHS;
+
+            return RHS;
         }
 
         public static double Round(double Value, int Fpcr)
@@ -202,6 +189,19 @@ namespace ChocolArm64.Instruction
                 case ARoundMode.TowardsPlusInfinity:  return Math.Ceiling (Value);
                 case ARoundMode.TowardsMinusInfinity: return Math.Floor   (Value);
                 case ARoundMode.TowardsZero:          return Math.Truncate(Value);
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        public static float RoundF(float Value, int Fpcr)
+        {
+            switch ((ARoundMode)((Fpcr >> 22) & 3))
+            {
+                case ARoundMode.ToNearest:            return MathF.Round   (Value);
+                case ARoundMode.TowardsPlusInfinity:  return MathF.Ceiling (Value);
+                case ARoundMode.TowardsMinusInfinity: return MathF.Floor   (Value);
+                case ARoundMode.TowardsZero:          return MathF.Truncate(Value);
             }
 
             throw new InvalidOperationException();
@@ -301,6 +301,57 @@ namespace ChocolArm64.Instruction
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double VectorExtractDouble(Vector128<float> Vector, byte Index)
+        {
+            return BitConverter.Int64BitsToDouble(VectorExtractIntSx(Vector, Index, 3));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long VectorExtractIntSx(Vector128<float> Vector, byte Index, int Size)
+        {
+            if (Sse41.IsSupported)
+            {
+                switch (Size)
+                {
+                    case 0:
+                        return (sbyte)Sse41.Extract(Sse.StaticCast<float, byte>(Vector), Index);
+
+                    case 1:
+                        return (short)Sse2.Extract(Sse.StaticCast<float, ushort>(Vector), Index);
+
+                    case 2:
+                        return Sse41.Extract(Sse.StaticCast<float, int>(Vector), Index);
+
+                    case 3:
+                        return Sse41.Extract(Sse.StaticCast<float, long>(Vector), Index);
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(Size));
+            }
+            else if (Sse2.IsSupported)
+            {
+                switch (Size)
+                {
+                    case 0:
+                        return (sbyte)VectorExtractIntZx(Vector, Index, Size);
+
+                    case 1:
+                        return (short)VectorExtractIntZx(Vector, Index, Size);
+
+                    case 2:
+                        return (int)VectorExtractIntZx(Vector, Index, Size);
+
+                    case 3:
+                        return (long)VectorExtractIntZx(Vector, Index, Size);
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(Size));
+            }
+
+            throw new PlatformNotSupportedException();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong VectorExtractIntZx(Vector128<float> Vector, byte Index, int Size)
         {
             if (Sse41.IsSupported)
@@ -322,50 +373,46 @@ namespace ChocolArm64.Instruction
 
                 throw new ArgumentOutOfRangeException(nameof(Size));
             }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long VectorExtractIntSx(Vector128<float> Vector, byte Index, int Size)
-        {
-            if (Sse41.IsSupported)
+            else if (Sse2.IsSupported)
             {
+                int ShortIdx = Size == 0
+                    ? Index >> 1
+                    : Index << (Size - 1);
+
+                ushort Value = Sse2.Extract(Sse.StaticCast<float, ushort>(Vector), (byte)ShortIdx);
+
                 switch (Size)
                 {
                     case 0:
-                        return ExtractSByte(Vector, Index);
+                        return (byte)(Value >> (Index & 1) * 8);
 
                     case 1:
-                        return ExtractShort(Vector, Index);
+                        return Value;
 
                     case 2:
-                        return Sse41.Extract(Sse.StaticCast<float, int>(Vector), Index);
-
                     case 3:
-                        return Sse41.Extract(Sse.StaticCast<float, long>(Vector), Index);
+                    {
+                        ushort Value1 = Sse2.Extract(Sse.StaticCast<float, ushort>(Vector), (byte)(ShortIdx + 1));
+
+                        if (Size == 2)
+                        {
+                            return (uint)(Value | (Value1 << 16));
+                        }
+
+                        ushort Value2 = Sse2.Extract(Sse.StaticCast<float, ushort>(Vector), (byte)(ShortIdx + 2));
+                        ushort Value3 = Sse2.Extract(Sse.StaticCast<float, ushort>(Vector), (byte)(ShortIdx + 3));
+
+                        return ((ulong)Value  <<  0) |
+                               ((ulong)Value1 << 16) |
+                               ((ulong)Value2 << 32) |
+                               ((ulong)Value3 << 48);
+                    }
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(Size));
             }
 
             throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static sbyte ExtractSByte(Vector128<float> Vector, byte Index)
-        {
-            //Workaround to JIT bug.
-            //https://github.com/dotnet/coreclr/issues/17957
-            return Sse41.Extract(Sse.StaticCast<float, sbyte>(Vector), Index);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static short ExtractShort(Vector128<float> Vector, byte Index)
-        {
-            //Workaround to JIT bug.
-            //https://github.com/dotnet/coreclr/issues/17957
-            return Sse2.Extract(Sse.StaticCast<float, short>(Vector), Index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -380,53 +427,9 @@ namespace ChocolArm64.Instruction
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double VectorExtractDouble(Vector128<float> Vector, byte Index)
-        {
-            if (Sse41.IsSupported)
-            {
-                int FIdx = Index << 1;
-
-                int Low  = BitConverter.SingleToInt32Bits(Sse41.Extract(Vector, (byte)(FIdx + 0)));
-                int High = BitConverter.SingleToInt32Bits(Sse41.Extract(Vector, (byte)(FIdx + 1)));
-
-                return BitConverter.Int64BitsToDouble(
-                    ((long)(uint)Low  << 0) |
-                    ((long)(uint)High << 32));
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorInsertSingle(float Value, Vector128<float> Vector, byte Index)
-        {
-            if (Sse41.IsSupported)
-            {
-                return Sse41.Insert(Vector, Value, (byte)(Index << 4));
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorInsertDouble(double Value, Vector128<float> Vector, byte Index)
         {
-            if (Sse41.IsSupported)
-            {
-                int FIdx = Index << 5;
-
-                long Raw = BitConverter.DoubleToInt64Bits(Value);
-
-                float Low  = BitConverter.Int32BitsToSingle((int)((ulong)Raw >> 0));
-                float High = BitConverter.Int32BitsToSingle((int)((ulong)Raw >> 32));
-
-                Vector = Sse41.Insert(Vector, Low,  (byte)(FIdx + 0));
-                Vector = Sse41.Insert(Vector, High, (byte)(FIdx + 0x10));
-
-                return Vector;
-            }
-
-            throw new PlatformNotSupportedException();
+            return VectorInsertInt((ulong)BitConverter.DoubleToInt64Bits(Value), Vector, Index, 3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -450,6 +453,61 @@ namespace ChocolArm64.Instruction
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(Size));
+            }
+            else if (Sse2.IsSupported)
+            {
+                Vector128<ushort> ShortVector = Sse.StaticCast<float, ushort>(Vector);
+
+                int ShortIdx = Size == 0
+                    ? Index >> 1
+                    : Index << (Size - 1);
+
+                switch (Size)
+                {
+                    case 0:
+                    {
+                        ushort ShortVal = Sse2.Extract(Sse.StaticCast<float, ushort>(Vector), (byte)ShortIdx);
+
+                        int Shift = (Index & 1) * 8;
+
+                        ShortVal &= (ushort)(0xff00 >> Shift);
+
+                        ShortVal |= (ushort)((byte)Value << Shift);
+
+                        return Sse.StaticCast<ushort, float>(Sse2.Insert(ShortVector, ShortVal, (byte)ShortIdx));
+                    }
+
+                    case 1:
+                        return Sse.StaticCast<ushort, float>(Sse2.Insert(Sse.StaticCast<float, ushort>(Vector), (ushort)Value, Index));
+
+                    case 2:
+                    case 3:
+                    {
+                        ShortVector = Sse2.Insert(ShortVector, (ushort)(Value >>  0), (byte)(ShortIdx + 0));
+                        ShortVector = Sse2.Insert(ShortVector, (ushort)(Value >> 16), (byte)(ShortIdx + 1));
+
+                        if (Size == 3)
+                        {
+                            ShortVector = Sse2.Insert(ShortVector, (ushort)(Value >> 32), (byte)(ShortIdx + 2));
+                            ShortVector = Sse2.Insert(ShortVector, (ushort)(Value >> 48), (byte)(ShortIdx + 3));
+                        }
+
+                        return Sse.StaticCast<ushort, float>(ShortVector);
+                    }
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(Size));
+            }
+
+            throw new PlatformNotSupportedException();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<float> VectorInsertSingle(float Value, Vector128<float> Vector, byte Index)
+        {
+            if (Sse41.IsSupported)
+            {
+                return Sse41.Insert(Vector, Value, (byte)(Index << 4));
             }
 
             throw new PlatformNotSupportedException();
