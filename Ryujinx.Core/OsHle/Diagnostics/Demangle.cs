@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace Ryujinx.Core.OsHle.Diagnostics
 {
@@ -71,7 +73,73 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             { "Da", "decltype(auto)" },
             { "Dn", "std::nullptr_t" },
         };
-        public static List<string> ReadName(string mangled, out int pos, List<string> compressionData)
+
+        private static int FromBase36(string encoded)
+        {
+            string base36 = "0123456789abcdefghijklmnopqrstuvwxyz";
+            char[] reversedEncoded = encoded.ToLower().ToCharArray().Reverse().ToArray();
+            int result = 0;
+            for (int i = 0; i < reversedEncoded.Length; i++)
+            {
+                char c = reversedEncoded[i];
+                int value = base36.IndexOf(c);
+                if (value == -1)
+                    return -1;
+                result += value * (int)Math.Pow(36, i);
+            }
+            return result;
+        }
+
+        private static string GetCompressedValue(string compression, List<string> compressionData, out int pos)
+        {
+            string res = null;
+            bool canHaveUnqualifiedName = false;
+            pos = -1;
+            if (compressionData.Count == 0 || !compression.StartsWith("S"))
+                return null;
+            // TODO: special compression for std
+            if (compression.StartsWith("S_"))
+            {
+                pos = 2;
+                res = compressionData[0];
+                canHaveUnqualifiedName = true;
+                compression = compression.Substring(2);
+            }
+            else
+            {
+                // TODO: S<ref-id>_
+                int id = -1;
+                int underscorePos = compression.IndexOf('_');
+                if (underscorePos == -1)
+                    return null;
+                string partialId = compression.Substring(1, underscorePos - 1);
+
+                id = FromBase36(partialId);
+                if (id == -1 || compressionData.Count <= (id + 1))
+                    return null;
+                res = compressionData[id + 1];
+                pos = partialId.Length + 1;
+                canHaveUnqualifiedName= true;
+                compression = compression.Substring(pos);
+            }
+            if (res != null)
+            {
+                if (canHaveUnqualifiedName)
+                {
+                    // TODO: check that
+                    int tempPos = -1;
+                    List<string> type = ReadName(compression, compressionData, out tempPos);
+                    if (tempPos != -1 && type != null)
+                    {
+                        pos  += tempPos;
+                        res = res + "::" + type[type.Count - 1];
+                    }
+                }
+            }
+            return res;
+        }
+
+        public static List<string> ReadName(string mangled, List<string> compressionData, out int pos)
         {
             List<string> res = new List<string>();
             string charCountTemp = null;
@@ -88,7 +156,21 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                     {
                         continue;
                     }
-                    if (chr == 'E')
+                    if (chr == 'S')
+                    {
+                        string data = GetCompressedValue(mangled.Substring(i), compressionData, out pos);
+                        if (pos == -1)
+                        {
+                            return null;
+                        }
+                        if (res.Count == 0)
+                            res.Add(data);
+                        else
+                            res.Add(res[res.Count - 1] + "::" + data);
+                        i += pos;
+                        continue;
+                    }
+                    else if (chr == 'E')
                     {
                         break;
                     }
@@ -129,8 +211,11 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             temp = mangledType[0].ToString();
             if (!BuiltinTypes.TryGetValue(temp, out res))
             {
-                temp = mangledType.Substring(0, 2);
-                BuiltinTypes.TryGetValue(temp, out res);
+                if (mangledType.Length >= 2)
+                {
+                    temp = mangledType.Substring(0, 2);
+                    BuiltinTypes.TryGetValue(temp, out res);
+                }
             }
             if (res != null)
                 pos = temp.Length;
@@ -172,7 +257,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             return null;
         }
 
-        public static List<string> ReadParameters(string mangledParams, out int pos)
+        public static List<string> ReadParameters(string mangledParams, List<string> compressionData, out int pos)
         {
             List<string> res = new List<string>();
             int i = 0;
@@ -203,17 +288,43 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 temp2 = ReadSpecialQualifiers(chr);
                 if (temp2 != null)
                 {
-                    Console.WriteLine(temp);
-                    temp = temp + temp2;
+                    temp = temp+ temp2;
                     continue;
                 }
 
                 // TODO: extended-qualifier?
 
+                if (part.StartsWith("S"))
+                {
+                    temp2 = GetCompressedValue(part, compressionData, out pos);
+                    if (pos != -1 && temp2 != null)
+                    {
+                        i += pos;
+                        temp = temp2 + temp;
+                        res.Add(temp);
+                        temp = null;
+                        continue;
+                    }
+                }
+                else if (part.StartsWith("N"))
+                {                
+                    part = part.Substring(1);
+                    List<string> name = ReadName(part, compressionData, out pos);
+                    if (pos != -1 && name != null)
+                    {
+                        i += pos + 1;
+                        temp = name[name.Count - 1] + temp;
+                        res.Add(temp);
+                        temp = null;
+                        continue;
+                    }
+                }
+
                 // Try builting
                 temp2 = ReadBuiltinType(part, out pos);
                 if (pos == -1)
                 {
+                    Console.WriteLine("Error: builtin part = " + part);
                     return null;
                 }
                 if (temp != null)
@@ -230,7 +341,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
 
         public static string ReadNameString(string mangled, out int pos)
         {
-            List<string> name = ReadName(mangled, out pos, new List<string>());
+            List<string> name = ReadName(mangled, new List<string>(), out pos);
             if (pos == -1 || name == null || name.Count == 0)
             {
                 return mangled;
@@ -261,7 +372,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             if (mangled.StartsWith("_ZN"))
             {
                 mangled = mangled.Substring(3);
-                compressionData = ReadName(mangled, out pos, compressionData);
+                compressionData = ReadName(mangled, compressionData, out pos);
                 if (pos == -1)
                     return mangled;
                 res = compressionData[compressionData.Count - 1];
@@ -272,7 +383,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 // more data? maybe not a data name so...
                 if (mangled != String.Empty)
                 {
-                    List<string> parameters = ReadParameters(mangled, out pos);
+                    List<string> parameters = ReadParameters(mangled, compressionData, out pos);
                     // parameters parsing error, we return the original data to avoid information loss.
                     if (pos == -1)
                         return mangled;
