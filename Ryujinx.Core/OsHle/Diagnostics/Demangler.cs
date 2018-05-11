@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Ryujinx.Core.OsHle.Diagnostics
 {
-    public static class Demangle
+    static class Demangler
     {
         private static readonly Dictionary<string, string> BuiltinTypes = new Dictionary<string, string>
         {
@@ -129,7 +129,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             return res;
         }
 
-        public static List<string> ReadName(string mangled, List<string> compressionData, out int pos)
+        private static List<string> ReadName(string mangled, List<string> compressionData, out int pos)
         {
             List<string> res = new List<string>();
             string charCountTemp = null;
@@ -197,7 +197,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             return res;
         }
 
-        public static string ReadBuiltinType(string mangledType, out int pos)
+        private static string ReadBuiltinType(string mangledType, out int pos)
         {
             string res = null;
             string temp;
@@ -251,7 +251,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             return null;
         }
 
-        public static List<string> ReadParameters(string mangledParams, List<string> compressionData, out int pos)
+        private static List<string> ReadParameters(string mangledParams, List<string> compressionData, out int pos)
         {
             List<string> res = new List<string>();
             int i = 0;
