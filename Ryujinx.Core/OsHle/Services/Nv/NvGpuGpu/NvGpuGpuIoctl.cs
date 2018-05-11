@@ -53,7 +53,6 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuGpu
 
         private static int ZcullGetInfo(ServiceCtx Context)
         {
-            long InputPosition  = Context.Request.GetBufferType0x21Position();
             long OutputPosition = Context.Request.GetBufferType0x22Position();
 
             NvGpuGpuZcullGetInfo Args = new NvGpuGpuZcullGetInfo();
