@@ -22,13 +22,13 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             { "j", "unsigned int" },
             { "l", "long" },
             { "m", "unsigned long" },
-            { "x", "long long, __int64" },
-            { "y", "unsigned long long, __int64" },
+            { "x", "long long" },
+            { "y", "unsigned long long" },
             { "n", "__int128" },
             { "o", "unsigned __int128" },
             { "f", "float" },
             { "d", "double" },
-            { "e", "long double, __float80" },
+            { "e", "long double" },
             { "g", "__float128" },
             { "z", "..." },
             { "Dd", "__iec559_double" },
@@ -75,15 +75,15 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             if (compressionData.Count == 0 || !compression.StartsWith("S"))
                 return null;
 
-            if (compression.Length > 2 && BuiltinTypes.TryGetValue(compression.Substring(0, 2), out string temp))
+            if (compression.Length >= 2 && SubstitutionExtra.TryGetValue(compression.Substring(0, 2), out string substitutionValue))
             {
-                pos = 2;
-                res = temp;
+                pos = 1;
+                res = substitutionValue;
                 compression = compression.Substring(2);
             }
             else if (compression.StartsWith("St"))
             {
-                pos = 2;
+                pos = 1;
                 canHaveUnqualifiedName = true;
                 res = "std";
                 compression = compression.Substring(2);
@@ -117,11 +117,10 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             {
                 if (canHaveUnqualifiedName)
                 {
-                    int tempPos = -1;
-                    List<string> type = ReadName(compression, compressionData, out tempPos);
-                    if (tempPos != -1 && type != null)
+                    List<string> type = ReadName(compression, compressionData, out int endOfNameType);
+                    if (endOfNameType != -1 && type != null)
                     {
-                        pos  += tempPos;
+                        pos  += endOfNameType;
                         res = res + "::" + type[type.Count - 1];
                     }
                 }
@@ -132,7 +131,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
         private static List<string> ReadName(string mangled, List<string> compressionData, out int pos)
         {
             List<string> res = new List<string>();
-            string charCountTemp = null;
+            string charCountString = null;
             int charCount = 0;
             int i;
 
@@ -140,7 +139,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             for (i = 0; i < mangled.Length; i++)
             {
                 char chr = mangled[i];
-                if (charCountTemp == null)
+                if (charCountString == null)
                 {
                     if (ReadCVQualifiers(chr) != null)
                     {
@@ -158,7 +157,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                         else
                             res.Add(res[res.Count - 1] + "::" + data);
                         i += pos;
-                        if (mangled[i] == 'E')
+                        if (i < mangled.Length && mangled[i] == 'E')
                         {
                             break;
                         }
@@ -171,11 +170,11 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 }
                 if (Char.IsDigit(chr))
                 {
-                    charCountTemp += chr;
+                    charCountString += chr;
                 }
                 else
                 {
-                    if (!int.TryParse(charCountTemp, out charCount))
+                    if (!int.TryParse(charCountString, out charCount))
                     {
                         return null;
                     }
@@ -186,7 +185,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                         res.Add(res[res.Count - 1] + "::" + demangledPart);
                     i = i + charCount - 1;
                     charCount = 0;
-                    charCountTemp = null;
+                    charCountString = null;
                 }
             }
             if (res.Count == 0)
@@ -200,19 +199,20 @@ namespace Ryujinx.Core.OsHle.Diagnostics
         private static string ReadBuiltinType(string mangledType, out int pos)
         {
             string res = null;
-            string temp;
+            string possibleBuiltinType;
             pos = -1;
-            temp = mangledType[0].ToString();
-            if (!BuiltinTypes.TryGetValue(temp, out res))
+            possibleBuiltinType = mangledType[0].ToString();
+            if (!BuiltinTypes.TryGetValue(possibleBuiltinType, out res))
             {
                 if (mangledType.Length >= 2)
                 {
-                    temp = mangledType.Substring(0, 2);
-                    BuiltinTypes.TryGetValue(temp, out res);
+                    // Try to match the first 2 chars if the first call failed
+                    possibleBuiltinType = mangledType.Substring(0, 2);
+                    BuiltinTypes.TryGetValue(possibleBuiltinType, out res);
                 }
             }
             if (res != null)
-                pos = temp.Length;
+                pos = possibleBuiltinType.Length;
             return res;
         }
 
@@ -257,38 +257,38 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             int i = 0;
             pos = -1;
 
-            string temp = null;
-            string temp2 = null;
+            string typeBuffer = null;
+            string parsedTypePart = null;
             for (i = 0; i < mangledParams.Length; i++)
             {
                 char chr = mangledParams[i];
                 string part = mangledParams.Substring(i);
 
                 // Try to read qualifiers
-                temp2 = ReadCVQualifiers(chr);
-                if (temp2 != null)
+                parsedTypePart = ReadCVQualifiers(chr);
+                if (parsedTypePart != null)
                 {
-                    temp = temp2 + " " + temp;
-                    compressionData.Add(temp);
+                    typeBuffer = parsedTypePart + " " + typeBuffer;
+                    compressionData.Add(typeBuffer);
 
                     // need more data
                     continue;
                 }
 
-                temp2 = ReadRefQualifiers(chr);
-                if (temp2 != null)
+                parsedTypePart = ReadRefQualifiers(chr);
+                if (parsedTypePart != null)
                 {
-                    temp = temp +  temp2;
-                    compressionData.Add(temp);
+                    typeBuffer = typeBuffer +  parsedTypePart;
+                    compressionData.Add(typeBuffer);
 
                     // need more data
                     continue;
                 }
 
-                temp2 = ReadSpecialQualifiers(chr);
-                if (temp2 != null)
+                parsedTypePart = ReadSpecialQualifiers(chr);
+                if (parsedTypePart != null)
                 {
-                    temp = temp + temp2;
+                    typeBuffer = typeBuffer + parsedTypePart;
 
                     // need more data
                     continue;
@@ -298,14 +298,14 @@ namespace Ryujinx.Core.OsHle.Diagnostics
 
                 if (part.StartsWith("S"))
                 {
-                    temp2 = GetCompressedValue(part, compressionData, out pos);
-                    if (pos != -1 && temp2 != null)
+                    parsedTypePart = GetCompressedValue(part, compressionData, out pos);
+                    if (pos != -1 && parsedTypePart != null)
                     {
                         i += pos;
-                        temp = temp2 + temp;
-                        res.Add(temp);
-                        compressionData.Add(temp);
-                        temp = null;
+                        typeBuffer = parsedTypePart + typeBuffer;
+                        res.Add(typeBuffer);
+                        compressionData.Add(typeBuffer);
+                        typeBuffer = null;
                         continue;
                     }
                     pos = -1;
@@ -318,27 +318,27 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                     if (pos != -1 && name != null)
                     {
                         i += pos + 1;
-                        temp = name[name.Count - 1] + " " + temp;
-                        res.Add(temp);
-                        compressionData.Add(temp);
-                        temp = null;
+                        typeBuffer = name[name.Count - 1] + " " + typeBuffer;
+                        res.Add(typeBuffer);
+                        compressionData.Add(typeBuffer);
+                        typeBuffer = null;
                         continue;
                     }
                 }
 
                 // Try builting
-                temp2 = ReadBuiltinType(part, out pos);
+                parsedTypePart = ReadBuiltinType(part, out pos);
                 if (pos == -1)
                 {
                     return null;
                 }
-                if (temp != null)
-                    temp = temp2 + " " + temp;
+                if (typeBuffer != null)
+                    typeBuffer = parsedTypePart + " " + typeBuffer;
                 else
-                    temp = temp2;
-                res.Add(temp);
-                compressionData.Add(temp);
-                temp = null;
+                    typeBuffer = parsedTypePart;
+                res.Add(typeBuffer);
+                compressionData.Add(typeBuffer);
+                typeBuffer = null;
                 i = i + pos -1;
             }
             pos = i;
