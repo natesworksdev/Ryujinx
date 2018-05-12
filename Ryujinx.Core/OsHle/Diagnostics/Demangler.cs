@@ -90,7 +90,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             }
             else if (compression.StartsWith("S_"))
             {
-                pos = 2;
+                pos = 1;
                 res = compressionData[0];
                 canHaveUnqualifiedName = true;
                 compression = compression.Substring(2);
@@ -224,10 +224,6 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 return "volatile";
             else if (qualifier == 'K')
                 return "const";
-            else if (qualifier == 'R')
-                return "&";
-            else if (qualifier == 'O')
-                return "&&";
             return null;
         }
 
@@ -254,13 +250,44 @@ namespace Ryujinx.Core.OsHle.Diagnostics
         private static List<string> ReadParameters(string mangledParams, List<string> compressionData, out int pos)
         {
             List<string> res = new List<string>();
+            List<string> refQualifiers = new List<string>();
+            string parsedTypePart = null;
+            string currentRefQualifiers = null;
+            string currentBuiltinType = null;
+            string currentSpecialQualifiers = null;
+            string currentCompressedValue = null;
             int i = 0;
             pos = -1;
 
-            string typeBuffer = null;
-            string parsedTypePart = null;
             for (i = 0; i < mangledParams.Length; i++)
             {
+                if (currentBuiltinType != null)
+                {
+                    string currentCVQualifier = String.Join(" ", refQualifiers);
+                    // Try to mimic the compression indexing
+                    if (currentRefQualifiers != null)
+                    {
+                        compressionData.Add(currentBuiltinType + currentRefQualifiers);
+                    }
+                    if (refQualifiers.Count != 0)
+                    {
+                        compressionData.Add(currentBuiltinType + " " + currentCVQualifier + currentRefQualifiers);
+                    }
+                    if (currentSpecialQualifiers != null)
+                    {
+                        compressionData.Add(currentBuiltinType + " " + currentCVQualifier + currentRefQualifiers + currentSpecialQualifiers);
+                    }
+                    if (currentRefQualifiers == null && currentCVQualifier == null && currentSpecialQualifiers == null)
+                    {
+                        compressionData.Add(currentBuiltinType);
+                    }
+                    currentBuiltinType = null;
+                    currentCompressedValue = null;
+                    currentCVQualifier = null;
+                    currentRefQualifiers = null;
+                    refQualifiers.Clear();
+                    currentSpecialQualifiers = null;
+                }
                 char chr = mangledParams[i];
                 string part = mangledParams.Substring(i);
 
@@ -268,8 +295,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 parsedTypePart = ReadCVQualifiers(chr);
                 if (parsedTypePart != null)
                 {
-                    typeBuffer = parsedTypePart + " " + typeBuffer;
-                    compressionData.Add(typeBuffer);
+                    refQualifiers.Add(parsedTypePart);
 
                     // need more data
                     continue;
@@ -278,8 +304,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 parsedTypePart = ReadRefQualifiers(chr);
                 if (parsedTypePart != null)
                 {
-                    typeBuffer = typeBuffer +  parsedTypePart;
-                    compressionData.Add(typeBuffer);
+                    currentRefQualifiers = parsedTypePart;
 
                     // need more data
                     continue;
@@ -288,7 +313,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 parsedTypePart = ReadSpecialQualifiers(chr);
                 if (parsedTypePart != null)
                 {
-                    typeBuffer = typeBuffer + parsedTypePart;
+                    currentSpecialQualifiers = parsedTypePart;
 
                     // need more data
                     continue;
@@ -301,11 +326,14 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                     parsedTypePart = GetCompressedValue(part, compressionData, out pos);
                     if (pos != -1 && parsedTypePart != null)
                     {
+                        currentCompressedValue = parsedTypePart;
                         i += pos;
-                        typeBuffer = parsedTypePart + typeBuffer;
-                        res.Add(typeBuffer);
-                        compressionData.Add(typeBuffer);
-                        typeBuffer = null;
+                        res.Add(currentCompressedValue + " " + String.Join(" ", refQualifiers) + currentRefQualifiers + currentSpecialQualifiers);
+                        currentBuiltinType = null;
+                        currentCompressedValue = null;
+                        currentRefQualifiers = null;
+                        refQualifiers.Clear();
+                        currentSpecialQualifiers = null;
                         continue;
                     }
                     pos = -1;
@@ -318,10 +346,12 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                     if (pos != -1 && name != null)
                     {
                         i += pos + 1;
-                        typeBuffer = name[name.Count - 1] + " " + typeBuffer;
-                        res.Add(typeBuffer);
-                        compressionData.Add(typeBuffer);
-                        typeBuffer = null;
+                        res.Add(name[name.Count - 1]  + " " + String.Join(" ", refQualifiers) + currentRefQualifiers + currentSpecialQualifiers);
+                        currentBuiltinType = null;
+                        currentCompressedValue = null;
+                        currentRefQualifiers = null;
+                        refQualifiers.Clear();
+                        currentSpecialQualifiers = null;
                         continue;
                     }
                 }
@@ -332,13 +362,8 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                 {
                     return null;
                 }
-                if (typeBuffer != null)
-                    typeBuffer = parsedTypePart + " " + typeBuffer;
-                else
-                    typeBuffer = parsedTypePart;
-                res.Add(typeBuffer);
-                compressionData.Add(typeBuffer);
-                typeBuffer = null;
+                currentBuiltinType = parsedTypePart;
+                res.Add(currentBuiltinType + " " + String.Join(" ", refQualifiers) + currentRefQualifiers + currentSpecialQualifiers);
                 i = i + pos -1;
             }
             pos = i;
