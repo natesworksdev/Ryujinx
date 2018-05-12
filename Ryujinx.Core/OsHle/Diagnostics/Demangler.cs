@@ -128,7 +128,7 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             return res;
         }
 
-        private static List<string> ReadName(string mangled, List<string> compressionData, out int pos)
+        private static List<string> ReadName(string mangled, List<string> compressionData, out int pos, bool isNested = true)
         {
             List<string> res = new List<string>();
             string charCountString = null;
@@ -186,6 +186,8 @@ namespace Ryujinx.Core.OsHle.Diagnostics
                     i = i + charCount - 1;
                     charCount = 0;
                     charCountString = null;
+                    if (!isNested)
+                        break;
                 }
             }
             if (res.Count == 0)
@@ -370,36 +372,44 @@ namespace Ryujinx.Core.OsHle.Diagnostics
             return res;
         }
 
+        private static string ParseFunctionName(string mangled)
+        {
+            List<string> compressionData = new List<string>();
+            int pos = 0;
+            string res;
+            bool isNested = mangled.StartsWith("N");
+
+            // If it's start with "N" it must be a nested function name
+            if (isNested)
+                mangled = mangled.Substring(1);
+            compressionData = ReadName(mangled, compressionData, out pos, isNested);
+            if (pos == -1)
+                return null;
+            res = compressionData[compressionData.Count - 1];
+            compressionData.Remove(res);
+            mangled = mangled.Substring(pos + 1);
+
+            // more data? maybe not a data name so...
+            if (mangled != String.Empty)
+            {
+                List<string> parameters = ReadParameters(mangled, compressionData, out pos);
+                // parameters parsing error, we return the original data to avoid information loss.
+                if (pos == -1)
+                    return null;
+                parameters = parameters.Select(outer => outer.Trim()).ToList();
+                res += "(" + String.Join(", ", parameters) + ")";
+            }
+            return res;
+        }
+
         public static string Parse(string originalMangled)
         {
-            string mangled = originalMangled;
-            List<string> compressionData = new List<string>();
-            string res = null;
-            int pos = 0;
-
-            // We asume that we start with a function name
-            // TODO: support special names
-            if (mangled.StartsWith("_ZN"))
+            if (originalMangled.StartsWith("_Z"))
             {
-                mangled = mangled.Substring(3);
-                compressionData = ReadName(mangled, compressionData, out pos);
-                if (pos == -1)
+                // We assume that we have a name (TOOD: support special names)
+                string res = ParseFunctionName(originalMangled.Substring(2));
+                if (res == null)
                     return originalMangled;
-                res = compressionData[compressionData.Count - 1];
-
-                compressionData.Remove(res);
-                mangled = mangled.Substring(pos + 1);
-
-                // more data? maybe not a data name so...
-                if (mangled != String.Empty)
-                {
-                    List<string> parameters = ReadParameters(mangled, compressionData, out pos);
-                    // parameters parsing error, we return the original data to avoid information loss.
-                    if (pos == -1)
-                        return originalMangled;
-                    parameters = parameters.Select(outer => outer.Trim()).ToList();
-                    res += "(" + String.Join(", ", parameters) + ")";
-                }
                 return res;
             }
             return originalMangled;
