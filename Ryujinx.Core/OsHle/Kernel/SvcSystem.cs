@@ -18,6 +18,8 @@ namespace Ryujinx.Core.OsHle.Kernel
 
         private const bool EnableProcessDebugging = false;
 
+        private const bool IsVirtualMemoryEnabled = true; //This is always true(?)
+
         private void SvcExitProcess(AThreadState ThreadState)
         {
             Ns.Os.ExitProcess(ThreadState.ProcessId);
@@ -352,7 +354,7 @@ namespace Ryujinx.Core.OsHle.Kernel
                     break;
                     
                 case 16:
-                    ThreadState.X1 = 1; //This is always 1(?)
+                    ThreadState.X1 = IsVirtualMemoryEnabled ? 1 : 0;
                     break;
 
                 default:

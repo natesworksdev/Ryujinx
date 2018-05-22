@@ -253,7 +253,7 @@ namespace Ryujinx.Core.OsHle.Kernel
         private void SvcMapPhysicalMemory(AThreadState ThreadState)
         {
             long Position = (long)ThreadState.X0;
-            uint Size = (uint)ThreadState.X1;
+            uint Size     = (uint)ThreadState.X1;
 
             Memory.Manager.Map(Position, Size, (int)MemoryType.Heap, AMemoryPerm.RW);
 
@@ -263,7 +263,7 @@ namespace Ryujinx.Core.OsHle.Kernel
         private void SvcUnmapPhysicalMemory(AThreadState ThreadState)
         {
             long Position = (long)ThreadState.X0;
-            uint Size = (uint)ThreadState.X1;
+            uint Size     = (uint)ThreadState.X1;
 
             Memory.Manager.Unmap(Position, Size);
 
