@@ -350,6 +350,10 @@ namespace Ryujinx.Core.OsHle.Kernel
                 case 15:
                     ThreadState.X1 = MemoryRegions.MapRegionSize;
                     break;
+                    
+                case 16:
+                    ThreadState.X1 = 1; //This is always 1(?)
+                    break;
 
                 default:
                     Process.PrintStackTrace(ThreadState);
