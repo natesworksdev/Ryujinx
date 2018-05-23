@@ -43,7 +43,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
                 { 2,  Close            },
                 { 3,  Initialize       },
                 { 4,  QueryEvent       },
-                { 8,  SetClientPid     }
+                { 8,  SetClientPid     },
                 { 13, FinishInitialize }
             };
 
