@@ -15,13 +15,15 @@ namespace Ryujinx.Core.OsHle.Services.Am
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 1,  PopLaunchParameter },
-                { 20, EnsureSaveData     },
-                { 21, GetDesiredLanguage },
-                { 22, SetTerminateResult },
-                { 23, GetDisplayVersion  },
-                { 40, NotifyRunning      },
-                { 50, GetPseudoDeviceId  }
+                { 1,  PopLaunchParameter          },
+                { 20, EnsureSaveData              },
+                { 21, GetDesiredLanguage          },
+                { 22, SetTerminateResult          },
+                { 23, GetDisplayVersion           },
+                { 40, NotifyRunning               },
+                { 50, GetPseudoDeviceId           },
+                { 66, InitializeGamePlayRecording },
+                { 67, SetGamePlayRecordingState   }
             };
         }
 
@@ -95,6 +97,22 @@ namespace Ryujinx.Core.OsHle.Services.Am
             
             Context.ResponseData.Write(0L);
             Context.ResponseData.Write(0L);
+
+            return 0;
+        }
+
+        public long InitializeGamePlayRecording(ServiceCtx Context)
+        {
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+
+            return 0;
+        }
+
+        public long SetGamePlayRecordingState(ServiceCtx Context)
+        {
+            int State = Context.RequestData.ReadInt32();
+
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
