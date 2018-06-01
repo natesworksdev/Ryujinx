@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Gal.Texture
         public ASTCDecoderException(string ExMsg) : base(ExMsg) { }
     }
 
+    //https://github.com/GammaUNC/FasTC/blob/master/ASTCEncoder/src/Decompressor.cpp
     public static class ASTCDecoder
     {
         struct TexelWeightParams
