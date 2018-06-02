@@ -16,7 +16,7 @@ namespace Ryujinx.Core.OsHle.Services.FspSrv
             {
                 { 1,    SetCurrentProcess                    },
                 { 18,   OpenSdCardFileSystem                 },
-                { 22,   CreateSaveData                       },
+                { 22,   CreateSaveDataFileSystem             },
                 { 51,   OpenSaveDataFileSystem               },
                 { 200,  OpenDataStorageByCurrentProcess      },
                 { 203,  OpenPatchDataStorageByCurrentProcess },
@@ -36,7 +36,7 @@ namespace Ryujinx.Core.OsHle.Services.FspSrv
             return 0;
         }
 
-        public long CreateSaveData(ServiceCtx Context)
+        public long CreateSaveDataFileSystem(ServiceCtx Context)
         {
             Context.Ns.Log.PrintStub(LogClass.ServiceFs, "Stubbed.");
 

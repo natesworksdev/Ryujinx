@@ -131,8 +131,8 @@ namespace Ryujinx.Core.OsHle.Services.Aud
 
             Context.ResponseData.Write(DeviceNames.Length);
 
-            long Position = Context.Request.RecvListBuff[0].Position;
-            long Size = Context.Request.RecvListBuff[0].Size;
+            long Position = Context.Request.GetBufferType0x21().Position;
+            long Size     = Context.Request.GetBufferType0x21().Size;
 
             long BasePosition = Position;
 
@@ -160,7 +160,7 @@ namespace Ryujinx.Core.OsHle.Services.Aud
             float Volume = Context.RequestData.ReadSingle();
 
             long Position = Context.Request.SendBuff[0].Position;
-            long Size = Context.Request.SendBuff[0].Size;
+            long Size     = Context.Request.SendBuff[0].Size;
 
             byte[] DeviceNameBuffer = AMemoryHelper.ReadBytes(Context.Memory, Position, Size);
 
@@ -173,7 +173,7 @@ namespace Ryujinx.Core.OsHle.Services.Aud
 
         public long GetAudioDeviceOutputVolumeAuto(ServiceCtx Context)
         {
-            Context.ResponseData.Write(100);
+            Context.ResponseData.Write(1f);
 
             Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
@@ -185,7 +185,7 @@ namespace Ryujinx.Core.OsHle.Services.Aud
             string Name = Context.Ns.Os.SystemState.ActiveAudioOutput;
 
             long Position = Context.Request.RecvListBuff[0].Position;
-            long Size = Context.Request.RecvListBuff[0].Size;
+            long Size     = Context.Request.RecvListBuff[0].Size;
 
             byte[] DeviceNameBuffer = Encoding.UTF8.GetBytes(Name + '\0');
 

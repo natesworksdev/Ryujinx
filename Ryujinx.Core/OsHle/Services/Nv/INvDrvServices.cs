@@ -174,7 +174,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
 
         private static int ProcessIoctl(ServiceCtx Context, int Cmd, IoctlProcessor Processor)
         {
-            if (CmdIn(Cmd) && Context.Request.GetBufferType0x21Position() == 0)
+            if (CmdIn(Cmd) && Context.Request.GetBufferType0x21() == 0)
             {
                 Context.Ns.Log.PrintError(LogClass.ServiceNv, "Input buffer is null!");
 
