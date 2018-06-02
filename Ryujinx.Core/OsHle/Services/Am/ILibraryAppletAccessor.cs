@@ -2,7 +2,6 @@
 using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Ryujinx.Core.OsHle.Services.Am
 {

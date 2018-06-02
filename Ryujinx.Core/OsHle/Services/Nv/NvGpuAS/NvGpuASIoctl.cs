@@ -38,7 +38,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
         private static int BindChannel(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
@@ -48,7 +48,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
         private static int AllocSpace(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             NvGpuASAllocSpace Args = AMemoryHelper.Read<NvGpuASAllocSpace>(Context.Memory, InputPosition);
 
@@ -85,7 +85,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
         private static int FreeSpace(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             NvGpuASAllocSpace Args = AMemoryHelper.Read<NvGpuASAllocSpace>(Context.Memory, InputPosition);
 
@@ -102,7 +102,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
         private static int UnmapBuffer(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             NvGpuASUnmapBuffer Args = AMemoryHelper.Read<NvGpuASUnmapBuffer>(Context.Memory, InputPosition);
 
@@ -119,7 +119,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
         private static int MapBufferEx(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             NvGpuASMapBufferEx Args = AMemoryHelper.Read<NvGpuASMapBufferEx>(Context.Memory, InputPosition);
 
@@ -191,7 +191,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
         private static int GetVaRegions(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
@@ -201,7 +201,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvGpuAS
         private static int InitializeEx(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 

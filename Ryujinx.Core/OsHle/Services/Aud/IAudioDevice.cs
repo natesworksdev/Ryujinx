@@ -131,8 +131,7 @@ namespace Ryujinx.Core.OsHle.Services.Aud
 
             Context.ResponseData.Write(DeviceNames.Length);
 
-            long Position = Context.Request.GetBufferType0x21().Position;
-            long Size     = Context.Request.GetBufferType0x21().Size;
+            (long Position, long Size) = Context.Request.GetBufferType0x22();
 
             long BasePosition = Position;
 

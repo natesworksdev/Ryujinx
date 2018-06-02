@@ -28,7 +28,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
         private static int SetUserData(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
@@ -38,7 +38,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
         private static int SetNvMap(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
@@ -48,7 +48,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
         private static int SubmitGpfifo(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             NvHostChannelSubmitGpfifo Args = AMemoryHelper.Read<NvHostChannelSubmitGpfifo>(Context.Memory, InputPosition);
 
@@ -80,7 +80,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
         private static int AllocObjCtx(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
@@ -90,7 +90,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
         private static int ZcullBind(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
@@ -100,7 +100,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
         private static int SetErrorNotifier(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
@@ -110,7 +110,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
         private static int SetPriority(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
@@ -120,7 +120,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv.NvHostChannel
         private static int AllocGpfifoEx2(ServiceCtx Context)
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22Position();
+            long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 

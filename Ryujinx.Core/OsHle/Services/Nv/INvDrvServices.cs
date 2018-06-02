@@ -181,7 +181,7 @@ namespace Ryujinx.Core.OsHle.Services.Nv
                 return NvResult.InvalidInput;
             }
 
-            if (CmdOut(Cmd) && Context.Request.GetBufferType0x22Position() == 0)
+            if (CmdOut(Cmd) && Context.Request.GetBufferType0x22().Position == 0)
             {
                 Context.Ns.Log.PrintError(LogClass.ServiceNv, "Output buffer is null!");
 
