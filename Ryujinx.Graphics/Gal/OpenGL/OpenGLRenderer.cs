@@ -253,19 +253,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue.Enqueue(() => Shader.BindProgram());
         }
 
-        public void SetTextureAndSampler(int Index, GalTexture Texture, GalTextureSampler Sampler)
+        public void SetTextureAndSampler(long Tag, byte[] Data, GalTexture Texture, GalTextureSampler Sampler)
         {
             ActionsQueue.Enqueue(() =>
             {
-                this.Texture.Set(Index, Texture);
+                this.Texture.Create(Tag, Data, Texture);
 
                 OGLTexture.Set(Sampler);
             });
         }
 
-        public void BindTexture(int Index)
+        public bool TryGetCachedTexture(long Tag, out GalTexture Texture)
         {
-            ActionsQueue.Enqueue(() => Texture.Bind(Index));
+            return this.Texture.TryGetCachedTexture(Tag, out Texture);
+        }
+
+        public void BindTexture(long Tag, int Index)
+        {
+            ActionsQueue.Enqueue(() => Texture.Bind(Tag, Index));
         }
     }
 }

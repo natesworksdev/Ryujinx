@@ -23,6 +23,8 @@ namespace Ryujinx.Core.Gpu
 
         private HashSet<long> FrameBuffers;
 
+        private HashSet<long> ModifiedPages;
+
         public NvGpuEngine3d(NvGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -55,6 +57,8 @@ namespace Ryujinx.Core.Gpu
             }
 
             FrameBuffers = new HashSet<long>();
+
+            ModifiedPages = new HashSet<long>();
         }
 
         public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
@@ -261,6 +265,8 @@ namespace Ryujinx.Core.Gpu
 
             long TextureAddress = Vmm.ReadInt64(TicPosition + 4) & 0xffffffffffff;
 
+            long Tag = TextureAddress;
+
             TextureAddress = Vmm.GetPhysicalAddress(TextureAddress);
 
             if (IsFrameBufferPosition(TextureAddress))
@@ -273,10 +279,27 @@ namespace Ryujinx.Core.Gpu
             }
             else
             {
-                GalTexture Texture = TextureFactory.MakeTexture(Gpu, Vmm, TicPosition);
+                GalTexture NewTexture = TextureFactory.MakeTexture(Vmm, TicPosition);
 
-                Gpu.Renderer.SetTextureAndSampler(TexIndex, Texture, Sampler);
-                Gpu.Renderer.BindTexture(TexIndex);
+                if (Gpu.Renderer.TryGetCachedTexture(Tag, out GalTexture Texture))
+                {
+                    long Size = (uint)TextureHelper.GetTextureSize(NewTexture);
+
+                    if (NewTexture.Equals(Texture) && !Vmm.IsRegionModified(Tag, Size))
+                    {
+                        //System.Console.WriteLine("skip upload texture!");
+
+                        Gpu.Renderer.BindTexture(Tag, TexIndex);
+
+                        return;
+                    }
+                }
+
+                byte[] Data = TextureFactory.GetTextureData(Vmm, TicPosition);
+
+                Gpu.Renderer.SetTextureAndSampler(Tag, Data, NewTexture, Sampler);
+
+                Gpu.Renderer.BindTexture(Tag, TexIndex);
             }
         }
 
@@ -386,12 +409,8 @@ namespace Ryujinx.Core.Gpu
                 }
                 else
                 {
-                    Size = VertexCount;
+                    Size = VertexCount * Stride;
                 }
-
-                //TODO: Support cases where the Stride is 0.
-                //In this case, we need to use the size of the attribute.
-                Size *= Stride;
 
                 byte[] Data = Vmm.ReadBytes(VertexPosition, Size);
 

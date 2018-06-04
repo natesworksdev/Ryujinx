@@ -73,8 +73,10 @@ namespace Ryujinx.Graphics.Gal
         void BindProgram();
 
         //Texture
-        void SetTextureAndSampler(int Index, GalTexture Texture, GalTextureSampler Sampler);
+        void SetTextureAndSampler(long Tag, byte[] Data, GalTexture Texture, GalTextureSampler Sampler);
 
-        void BindTexture(int Index);
+        bool TryGetCachedTexture(long Tag, out GalTexture Texture);
+
+        void BindTexture(long Tag, int Index);
     }
 }

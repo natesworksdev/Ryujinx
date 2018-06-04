@@ -53,7 +53,14 @@ namespace ChocolArm64.Memory
 
             ExAddrs = new HashSet<long>();
 
-            Ram = Marshal.AllocHGlobal((IntPtr)AMemoryMgr.RamSize + AMemoryMgr.PageSize);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Ram = AMemoryWin32.Allocate((IntPtr)AMemoryMgr.RamSize + AMemoryMgr.PageSize);
+            }
+            else
+            {
+                Ram = Marshal.AllocHGlobal((IntPtr)AMemoryMgr.RamSize + AMemoryMgr.PageSize);
+            }
 
             RamPtr = (byte*)Ram;
         }
@@ -138,6 +145,31 @@ namespace ChocolArm64.Memory
             {
                 ExAddrs.Remove(Position);
             }
+        }
+
+        public bool IsRegionModified(long Position, long Size)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return true;
+            }
+
+            long EndPos = Position + Size;
+
+            if ((ulong)EndPos < (ulong)Position)
+            {
+                return false;
+            }
+
+            if ((ulong)EndPos > AMemoryMgr.RamSize)
+            {
+                return false;
+            }
+
+            IntPtr MemAddress = new IntPtr(RamPtr + Position);
+            IntPtr MemSize    = new IntPtr(Size);
+
+            return AMemoryWin32.IsRegionModified(MemAddress, MemSize);
         }
 
         public sbyte ReadSByte(long Position)
@@ -610,7 +642,14 @@ namespace ChocolArm64.Memory
         {
             if (Ram != IntPtr.Zero)
             {
-                Marshal.FreeHGlobal(Ram);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    AMemoryWin32.Free(Ram);
+                }
+                else
+                {
+                    Marshal.FreeHGlobal(Ram);
+                }
 
                 Ram = IntPtr.Zero;
             }

@@ -270,6 +270,13 @@ namespace Ryujinx.Core.Gpu
             PageTable[L0][L1] = TgtAddr;
         }
 
+        public bool IsRegionModified(long Position, long Size)
+        {
+            Position = GetPhysicalAddress(Position);
+
+            return Memory.IsRegionModified(Position, Size);
+        }
+
         public byte ReadByte(long Position)
         {
             Position = GetPhysicalAddress(Position);
