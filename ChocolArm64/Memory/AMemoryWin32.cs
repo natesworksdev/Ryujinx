@@ -68,6 +68,12 @@ namespace ChocolArm64.Memory
 
             if (Count != 0)
             {
+                //We shouldn't reset pages that aren't being fully used,
+                //to prevent missing modifications to other parts of the
+                //page that may be accessed later.
+                //This rounds the size down to the nearest page-aligned size.
+                Size = (IntPtr)((long)Size & ~(Granularity - 1));
+
                 ResetWriteWatch(Address, Size);
 
                 return true;

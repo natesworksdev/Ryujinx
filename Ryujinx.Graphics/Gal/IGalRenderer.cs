@@ -49,13 +49,17 @@ namespace Ryujinx.Graphics.Gal
         //Rasterizer
         void ClearBuffers(int RtIndex, GalClearBufferFlags Flags);
 
-        void SetVertexArray(int VbIndex, int Stride, byte[] Buffer, GalVertexAttrib[] Attribs);
+        void CreateVbo(long Tag, byte[] Buffer);
 
-        void SetIndexArray(byte[] Buffer, GalIndexFormat Format);
+        void CreateIbo(long Tag, byte[] Buffer);
 
-        void DrawArrays(int VbIndex, int First, int PrimCount, GalPrimitiveType PrimType);
+        void SetVertexArray(int VbIndex, int Stride, long VboTag, GalVertexAttrib[] Attribs);
 
-        void DrawElements(int VbIndex, int First, GalPrimitiveType PrimType);
+        void SetIndexArray(long Tag, int Size, GalIndexFormat Format);
+
+        void DrawArrays(int First, int PrimCount, GalPrimitiveType PrimType);
+
+        void DrawElements(long IboTag, int First, GalPrimitiveType PrimType);
 
         //Shader
         void CreateShader(IGalMemory Memory, long Tag, GalShaderType Type);

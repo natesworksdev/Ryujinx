@@ -156,46 +156,44 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue.Enqueue(() => Rasterizer.ClearBuffers(RtIndex, Flags));
         }
 
-        public void SetVertexArray(int VbIndex, int Stride, byte[] Buffer, GalVertexAttrib[] Attribs)
+        public void CreateVbo(long Tag, byte[] Buffer)
+        {
+            ActionsQueue.Enqueue(() => Rasterizer.CreateVbo(Tag, Buffer));
+        }
+
+        public void CreateIbo(long Tag, byte[] Buffer)
+        {
+            ActionsQueue.Enqueue(() => Rasterizer.CreateIbo(Tag, Buffer));
+        }
+
+        public void SetVertexArray(int VbIndex, int Stride, long VboTag, GalVertexAttrib[] Attribs)
         {
             if ((uint)VbIndex > 31)
             {
                 throw new ArgumentOutOfRangeException(nameof(VbIndex));
             }
 
-            ActionsQueue.Enqueue(() => Rasterizer.SetVertexArray(VbIndex, Stride,
-                Buffer  ?? throw new ArgumentNullException(nameof(Buffer)),
-                Attribs ?? throw new ArgumentNullException(nameof(Attribs))));
-        }
-
-        public void SetIndexArray(byte[] Buffer, GalIndexFormat Format)
-        {
-            if (Buffer == null)
+            if (Attribs == null)
             {
-                throw new ArgumentNullException(nameof(Buffer));
+                throw new ArgumentNullException(nameof(Attribs));
             }
 
-            ActionsQueue.Enqueue(() => Rasterizer.SetIndexArray(Buffer, Format));
+            ActionsQueue.Enqueue(() => Rasterizer.SetVertexArray(VbIndex, Stride, VboTag, Attribs));
         }
 
-        public void DrawArrays(int VbIndex, int First, int PrimCount, GalPrimitiveType PrimType)
+        public void SetIndexArray(long Tag, int Size, GalIndexFormat Format)
         {
-            if ((uint)VbIndex > 31)
-            {
-                throw new ArgumentOutOfRangeException(nameof(VbIndex));
-            }
-
-            ActionsQueue.Enqueue(() => Rasterizer.DrawArrays(VbIndex, First, PrimCount, PrimType));
+            ActionsQueue.Enqueue(() => Rasterizer.SetIndexArray(Tag, Size, Format));
         }
 
-        public void DrawElements(int VbIndex, int First, GalPrimitiveType PrimType)
+        public void DrawArrays(int First, int PrimCount, GalPrimitiveType PrimType)
         {
-            if ((uint)VbIndex > 31)
-            {
-                throw new ArgumentOutOfRangeException(nameof(VbIndex));
-            }
+            ActionsQueue.Enqueue(() => Rasterizer.DrawArrays(First, PrimCount, PrimType));
+        }
 
-            ActionsQueue.Enqueue(() => Rasterizer.DrawElements(VbIndex, First, PrimType));
+        public void DrawElements(long IboTag, int First, GalPrimitiveType PrimType)
+        {
+            ActionsQueue.Enqueue(() => Rasterizer.DrawElements(IboTag, First, PrimType));
         }
 
         public void CreateShader(IGalMemory Memory, long Tag, GalShaderType Type)

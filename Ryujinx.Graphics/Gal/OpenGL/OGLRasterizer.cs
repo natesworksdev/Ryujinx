@@ -46,7 +46,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private struct IbInfo
         {
-            public int IboHandle;
             public int Count;
 
             public DrawElementsType Type;
@@ -56,11 +55,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private int[] VertexBuffers;
 
+        private Dictionary<long, int> VboCache;
+        private Dictionary<long, int> IboCache;
+
         private IbInfo IndexBuffer;
 
         public OGLRasterizer()
         {
             VertexBuffers = new int[32];
+
+            VboCache = new Dictionary<long, int>();
+            IboCache = new Dictionary<long, int>();
 
             IndexBuffer = new IbInfo();
         }
@@ -92,15 +97,49 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.Clear(Mask);
         }
 
-        public void SetVertexArray(int VbIndex, int Stride, byte[] Buffer, GalVertexAttrib[] Attribs)
+        public void CreateVbo(long Tag, byte[] Buffer)
         {
-            EnsureVbInitialized(VbIndex);
+            if (!VboCache.TryGetValue(Tag, out int Handle))
+            {
+                Handle = GL.GenBuffer();
+
+                VboCache.Add(Tag, Handle);
+            }
 
             IntPtr Length = new IntPtr(Buffer.Length);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBuffers[VbIndex]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
             GL.BufferData(BufferTarget.ArrayBuffer, Length, Buffer, BufferUsageHint.StreamDraw);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+        }
+
+        public void CreateIbo(long Tag, byte[] Buffer)
+        {
+            if (!IboCache.TryGetValue(Tag, out int Handle))
+            {
+                Handle = GL.GenBuffer();
+
+                IboCache.Add(Tag, Handle);
+            }
+
+            IntPtr Length = new IntPtr(Buffer.Length);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Handle);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Length, Buffer, BufferUsageHint.StreamDraw);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+        }
+
+        public void SetVertexArray(int VbIndex, int Stride, long VboTag, GalVertexAttrib[] Attribs)
+        {
+            if (!VboCache.TryGetValue(VboTag, out int VboHandle))
+            {
+                return;
+            }
+
+            if (VaoHandle == 0)
+            {
+                VaoHandle = GL.GenVertexArray();
+            }
 
             GL.BindVertexArray(VaoHandle);
 
@@ -108,7 +147,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 GL.EnableVertexAttribArray(Attrib.Index);
 
-                GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBuffers[VbIndex]);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, VboHandle);
 
                 bool Unsigned =
                     Attrib.Type == GalVertexAttribType.Unorm ||
@@ -139,22 +178,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BindVertexArray(0);
         }
 
-        public void SetIndexArray(byte[] Buffer, GalIndexFormat Format)
+        public void SetIndexArray(long Tag, int Size, GalIndexFormat Format)
         {
-            EnsureIbInitialized();
-
             IndexBuffer.Type = OGLEnumConverter.GetDrawElementsType(Format);
 
-            IndexBuffer.Count = Buffer.Length >> (int)Format;
-
-            IntPtr Length = new IntPtr(Buffer.Length);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IndexBuffer.IboHandle);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, Length, Buffer, BufferUsageHint.StreamDraw);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+            IndexBuffer.Count = Size >> (int)Format;
         }
 
-        public void DrawArrays(int VbIndex, int First, int PrimCount, GalPrimitiveType PrimType)
+        public void DrawArrays(int First, int PrimCount, GalPrimitiveType PrimType)
         {
             if (PrimCount == 0)
             {
@@ -166,36 +197,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.DrawArrays(OGLEnumConverter.GetPrimitiveType(PrimType), First, PrimCount);
         }
 
-        public void DrawElements(int VbIndex, int First, GalPrimitiveType PrimType)
+        public void DrawElements(long IboTag, int First, GalPrimitiveType PrimType)
         {
+            if (!IboCache.TryGetValue(IboTag, out int IboHandle))
+            {
+                return;
+            }
+
             PrimitiveType Mode = OGLEnumConverter.GetPrimitiveType(PrimType);
 
             GL.BindVertexArray(VaoHandle);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IndexBuffer.IboHandle);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IboHandle);
 
             GL.DrawElements(Mode, IndexBuffer.Count, IndexBuffer.Type, First);
-        }
-
-        private void EnsureVbInitialized(int VbIndex)
-        {
-            if (VaoHandle == 0)
-            {
-                VaoHandle = GL.GenVertexArray();
-            }
-
-            if (VertexBuffers[VbIndex] == 0)
-            {
-                VertexBuffers[VbIndex] = GL.GenBuffer();
-            }
-        }
-
-        private void EnsureIbInitialized()
-        {
-            if (IndexBuffer.IboHandle == 0)
-            {
-                IndexBuffer.IboHandle = GL.GenBuffer();
-            }
         }
     }
 }

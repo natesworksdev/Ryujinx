@@ -23,8 +23,6 @@ namespace Ryujinx.Core.Gpu
 
         private HashSet<long> FrameBuffers;
 
-        private HashSet<long> ModifiedPages;
-
         public NvGpuEngine3d(NvGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -57,8 +55,6 @@ namespace Ryujinx.Core.Gpu
             }
 
             FrameBuffers = new HashSet<long>();
-
-            ModifiedPages = new HashSet<long>();
         }
 
         public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
@@ -287,8 +283,6 @@ namespace Ryujinx.Core.Gpu
 
                     if (NewTexture.Equals(Texture) && !Vmm.IsRegionModified(Tag, Size))
                     {
-                        //System.Console.WriteLine("skip upload texture!");
-
                         Gpu.Renderer.BindTexture(Tag, TexIndex);
 
                         return;
@@ -353,11 +347,16 @@ namespace Ryujinx.Core.Gpu
 
             if (IndexSize != 0)
             {
-                int BufferSize = IndexCount * IndexSize;
+                int IbSize = IndexCount * IndexSize;
 
-                byte[] Data = Vmm.ReadBytes(IndexPosition, BufferSize);
+                if (Vmm.IsRegionModified(IndexPosition, (uint)IbSize))
+                {
+                    byte[] Data = Vmm.ReadBytes(IndexPosition, IbSize);
 
-                Gpu.Renderer.SetIndexArray(Data, IndexFormat);
+                    Gpu.Renderer.CreateIbo(IndexPosition, Data);
+                }
+
+                Gpu.Renderer.SetIndexArray(IndexPosition, IbSize, IndexFormat);
             }
 
             List<GalVertexAttrib>[] Attribs = new List<GalVertexAttrib>[32];
@@ -382,10 +381,17 @@ namespace Ryujinx.Core.Gpu
                                          ((Packed >> 31) & 0x1) != 0));
             }
 
+            int VertexFirst = ReadRegister(NvGpuEngine3dReg.VertexArrayFirst);
+            int VertexCount = ReadRegister(NvGpuEngine3dReg.VertexArrayCount);
+
+            int PrimCtrl = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
+
             for (int Index = 0; Index < 32; Index++)
             {
-                int VertexFirst = ReadRegister(NvGpuEngine3dReg.VertexArrayFirst);
-                int VertexCount = ReadRegister(NvGpuEngine3dReg.VertexArrayCount);
+                if (Attribs[Index] == null)
+                {
+                    continue;
+                }
 
                 int Control = ReadRegister(NvGpuEngine3dReg.VertexArrayNControl + Index * 4);
 
@@ -401,35 +407,36 @@ namespace Ryujinx.Core.Gpu
 
                 int Stride = Control & 0xfff;
 
-                long Size = 0;
+                long VbSize = 0;
 
                 if (IndexCount != 0)
                 {
-                    Size = (VertexEndPos - VertexPosition) + 1;
+                    VbSize = (VertexEndPos - VertexPosition) + 1;
                 }
                 else
                 {
-                    Size = VertexCount * Stride;
+                    VbSize = VertexCount * Stride;
                 }
 
-                byte[] Data = Vmm.ReadBytes(VertexPosition, Size);
-
-                GalVertexAttrib[] AttribArray = Attribs[Index]?.ToArray() ?? new GalVertexAttrib[0];
-
-                Gpu.Renderer.SetVertexArray(Index, Stride, Data, AttribArray);
-
-                int PrimCtrl = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
-
-                GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
-
-                if (IndexCount != 0)
+                if (Vmm.IsRegionModified(VertexPosition, VbSize))
                 {
-                    Gpu.Renderer.DrawElements(Index, IndexFirst, PrimType);
+                    byte[] Data = Vmm.ReadBytes(VertexPosition, VbSize);
+
+                    Gpu.Renderer.CreateVbo(VertexPosition, Data);
                 }
-                else
-                {
-                    Gpu.Renderer.DrawArrays(Index, VertexFirst, VertexCount, PrimType);
-                }
+
+                Gpu.Renderer.SetVertexArray(Index, Stride, VertexPosition, Attribs[Index].ToArray());
+            }
+
+            GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
+
+            if (IndexCount != 0)
+            {
+                Gpu.Renderer.DrawElements(IndexPosition, IndexFirst, PrimType);
+            }
+            else
+            {
+                Gpu.Renderer.DrawArrays(VertexFirst, VertexCount, PrimType);
             }
         }
 
