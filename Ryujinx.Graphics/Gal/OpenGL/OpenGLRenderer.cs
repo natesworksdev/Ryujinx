@@ -156,6 +156,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue.Enqueue(() => Rasterizer.ClearBuffers(RtIndex, Flags));
         }
 
+        public bool IsVboCached(long Tag)
+        {
+            return Rasterizer.IsVboCached(Tag);
+        }
+
+        public bool IsIboCached(long Tag)
+        {
+            return Rasterizer.IsIboCached(Tag);
+        }
+
         public void CreateVbo(long Tag, byte[] Buffer)
         {
             ActionsQueue.Enqueue(() => Rasterizer.CreateVbo(Tag, Buffer));

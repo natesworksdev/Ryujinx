@@ -49,6 +49,10 @@ namespace Ryujinx.Graphics.Gal
         //Rasterizer
         void ClearBuffers(int RtIndex, GalClearBufferFlags Flags);
 
+        bool IsVboCached(long Tag);
+
+        bool IsIboCached(long Tag);
+
         void CreateVbo(long Tag, byte[] Buffer);
 
         void CreateIbo(long Tag, byte[] Buffer);

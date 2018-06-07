@@ -147,6 +147,26 @@ namespace ChocolArm64.Memory
             }
         }
 
+        public long GetHostPageSize()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return AMemoryMgr.PageSize;
+            }
+
+            IntPtr MemAddress = new IntPtr(RamPtr);
+            IntPtr MemSize    = new IntPtr(AMemoryMgr.RamSize);
+
+            long PageSize = AMemoryWin32.IsRegionModified(MemAddress, MemSize, Reset: false);
+
+            if (PageSize < 1)
+            {
+                throw new InvalidOperationException();
+            }
+
+            return PageSize;
+        }
+
         public bool IsRegionModified(long Position, long Size)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -169,7 +189,7 @@ namespace ChocolArm64.Memory
             IntPtr MemAddress = new IntPtr(RamPtr + Position);
             IntPtr MemSize    = new IntPtr(Size);
 
-            return AMemoryWin32.IsRegionModified(MemAddress, MemSize);
+            return AMemoryWin32.IsRegionModified(MemAddress, MemSize, Reset: true) != 0;
         }
 
         public sbyte ReadSByte(long Position)

@@ -13,6 +13,8 @@ namespace ChocolArm64.Memory
 
         private const int MEM_RELEASE = 0x8000;
 
+        private const int WRITE_WATCH_FLAG_RESET = 1;
+
         [DllImport("kernel32.dll")]
         private static extern IntPtr VirtualAlloc(IntPtr lpAddress, IntPtr dwSize, int flAllocationType, int flProtect);
 
@@ -27,9 +29,6 @@ namespace ChocolArm64.Memory
             IntPtr[] lpAddresses,
             long*    lpdwCount,
             long*    lpdwGranularity);
-
-        [DllImport("kernel32.dll")]
-        private unsafe static extern int ResetWriteWatch(IntPtr lpBaseAddress, IntPtr dwRegionSize);
 
         public static IntPtr Allocate(IntPtr Size)
         {
@@ -50,7 +49,7 @@ namespace ChocolArm64.Memory
             VirtualFree(Address, IntPtr.Zero, MEM_RELEASE);
         }
 
-        public unsafe static bool IsRegionModified(IntPtr Address, IntPtr Size)
+        public unsafe static long IsRegionModified(IntPtr Address, IntPtr Size, bool Reset)
         {
             IntPtr[] Addresses = new IntPtr[1];
 
@@ -58,28 +57,17 @@ namespace ChocolArm64.Memory
 
             long Granularity;
 
+            int Flags = Reset ? WRITE_WATCH_FLAG_RESET : 0;
+
             GetWriteWatch(
-                0,
+                Flags,
                 Address,
                 Size,
                 Addresses,
                 &Count,
                 &Granularity);
 
-            if (Count != 0)
-            {
-                //We shouldn't reset pages that aren't being fully used,
-                //to prevent missing modifications to other parts of the
-                //page that may be accessed later.
-                //This rounds the size down to the nearest page-aligned size.
-                Size = (IntPtr)((long)Size & ~(Granularity - 1));
-
-                ResetWriteWatch(Address, Size);
-
-                return true;
-            }
-
-            return false;
+            return Count != 0 ? Granularity : 0;
         }
     }
 }

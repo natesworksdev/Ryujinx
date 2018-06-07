@@ -97,6 +97,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.Clear(Mask);
         }
 
+        public bool IsVboCached(long Tag)
+        {
+            return VboCache.ContainsKey(Tag);
+        }
+
+        public bool IsIboCached(long Tag)
+        {
+            return IboCache.ContainsKey(Tag);
+        }
+
         public void CreateVbo(long Tag, byte[] Buffer)
         {
             if (!VboCache.TryGetValue(Tag, out int Handle))

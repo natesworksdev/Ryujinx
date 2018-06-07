@@ -349,9 +349,9 @@ namespace Ryujinx.Core.Gpu
             {
                 int IbSize = IndexCount * IndexSize;
 
-                if (Vmm.IsRegionModified(IndexPosition, (uint)IbSize))
+                if (!Gpu.Renderer.IsIboCached(IndexPosition) || Vmm.IsRegionModified(IndexPosition, (uint)IbSize))
                 {
-                    byte[] Data = Vmm.ReadBytes(IndexPosition, IbSize);
+                    byte[] Data = Vmm.ReadBytes(IndexPosition, (uint)IbSize);
 
                     Gpu.Renderer.CreateIbo(IndexPosition, Data);
                 }
@@ -418,7 +418,7 @@ namespace Ryujinx.Core.Gpu
                     VbSize = VertexCount * Stride;
                 }
 
-                if (Vmm.IsRegionModified(VertexPosition, VbSize))
+                if (!Gpu.Renderer.IsVboCached(VertexPosition) || Vmm.IsRegionModified(VertexPosition, VbSize))
                 {
                     byte[] Data = Vmm.ReadBytes(VertexPosition, VbSize);
 
