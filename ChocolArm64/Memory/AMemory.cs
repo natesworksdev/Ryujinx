@@ -301,6 +301,13 @@ namespace ChocolArm64.Memory
             return *((ulong*)(RamPtr + (uint)Position));
         }
 
+        public byte[] ReadByteArrayUnchecked(long Position, long Length)
+        {
+            byte[] Result = new byte[Length];
+            Marshal.Copy((IntPtr)(RamPtr + (uint)Position), Result, 0, (int)Length);
+            return Result;
+        }
+
         public Vector128<float> ReadVector8Unchecked(long Position)
         {
             if (Sse2.IsSupported)

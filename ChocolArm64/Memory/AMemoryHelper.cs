@@ -24,6 +24,7 @@ namespace ChocolArm64.Memory
 
         public static byte[] ReadBytes(AMemory Memory, long Position, long Size)
         {
+            if (AOptimizations.DisableMemoryChecks) return ReadBytesUnchecked(Memory, Position, Size);
             byte[] Data = new byte[Size];
 
             for (long Offs = 0; Offs < Size; Offs++)
@@ -32,6 +33,11 @@ namespace ChocolArm64.Memory
             }
 
             return Data;
+        }
+
+        public static byte[] ReadBytesUnchecked(AMemory Memory, long Position, long Size)
+        {
+            return Memory.ReadByteArrayUnchecked(Position, Size);
         }
 
         public static void WriteBytes(AMemory Memory, long Position, byte[] Data)
