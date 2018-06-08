@@ -1,9 +1,9 @@
-﻿using Ryujinx.Core.Logging;
-using Ryujinx.Core.OsHle.Ipc;
-using System.Collections.Generic;
-using Ryujinx.Core.Input;
+﻿using Ryujinx.Core.Input;
+using Ryujinx.Core.Logging;
 using Ryujinx.Core.OsHle.Handles;
+using Ryujinx.Core.OsHle.Ipc;
 using Ryujinx.Core.OsHle.Services.Hid;
+using System.Collections.Generic;
 
 namespace Ryujinx.Core.OsHle.Services.Nfp
 {
