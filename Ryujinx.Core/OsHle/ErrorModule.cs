@@ -93,8 +93,6 @@ namespace Ryujinx.Core.OsHle
         Grc                   = 212,
         Migration             = 216,
         Migration_Ldc_Server  = 217,
-        Homebrew_ABI          = 346,
-        Homebrew_Loader       = 347,
         General_Web_Applet    = 800,
         Wifi_Web_Auth_Applet  = 809,
         Whitelisted_Applet    = 810,
