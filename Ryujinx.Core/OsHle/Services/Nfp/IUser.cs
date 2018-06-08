@@ -14,7 +14,7 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private const HidControllerId NpadId = HidControllerId.CONTROLLER_PLAYER_1;
-        private State state = State.NonInitialized;
+        private State State = State.NonInitialized;
         private DeviceState DeviceState = DeviceState.Initialized;
         private KEvent ActivateEvent;
         private KEvent DeactivateEvent;
@@ -42,7 +42,7 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
         {
             Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
-            state = State.Initialized;
+            State = State.Initialized;
 
             return 0;
         }
@@ -71,7 +71,7 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
 
         public long GetState(ServiceCtx Context)
         {    
-            Context.ResponseData.Write((int)state);
+            Context.ResponseData.Write((int)State);
             
             Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");          
 
