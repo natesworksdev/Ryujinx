@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Core.Logging;
 using Ryujinx.Core.OsHle.Ipc;
 using System.Collections.Generic;
+using Ryujinx.Core.Input;
 using Ryujinx.Core.OsHle.Handles;
 using Ryujinx.Core.OsHle.Services.Hid;
 
@@ -12,10 +13,9 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
-        ulong device_handle = 0xDEAD;
-        ControllerID npad_id = ControllerID.ControllerPlayer1;
-        State state = State.NonInitialized;
-        DeviceState device_state = DeviceState.Initialized;
+        private const HidControllerId NpadId = HidControllerId.CONTROLLER_PLAYER_1;
+        private State state = State.NonInitialized;
+        private DeviceState DeviceState = DeviceState.Initialized;
         private KEvent ActivateEvent;
         private KEvent DeactivateEvent;
         private KEvent AvailabilityChangeEvent;
@@ -24,12 +24,12 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0,  Initialize },
-                { 17, AttachActivateEvent },
-                { 18, AttachDeactivateEvent },
-                { 19, GetState },
-                { 20, GetDeviceState },
-                { 21, GetNpadId },
+                { 0,  Initialize                    },
+                { 17, AttachActivateEvent           },
+                { 18, AttachDeactivateEvent         },
+                { 19, GetState                      },
+                { 20, GetDeviceState                },
+                { 21, GetNpadId                     },
                 { 23, AttachAvailabilityChangeEvent }
             };
 
@@ -80,7 +80,7 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
 
         public long GetDeviceState(ServiceCtx Context)
         {
-            Context.ResponseData.Write((int)device_state);
+            Context.ResponseData.Write((int)DeviceState);
             
             Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
@@ -89,7 +89,7 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
 
         public long GetNpadId(ServiceCtx Context)
         {
-            Context.ResponseData.Write((int)npad_id);
+            Context.ResponseData.Write((int)NpadId);
             
             Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
