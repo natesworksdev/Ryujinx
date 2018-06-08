@@ -156,14 +156,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue.Enqueue(() => Rasterizer.ClearBuffers(RtIndex, Flags));
         }
 
-        public bool IsVboCached(long Tag)
+        public bool IsVboCached(long Tag, long DataSize)
         {
-            return Rasterizer.IsVboCached(Tag);
+            return Rasterizer.IsVboCached(Tag, DataSize);
         }
 
-        public bool IsIboCached(long Tag)
+        public bool IsIboCached(long Tag, long DataSize)
         {
-            return Rasterizer.IsIboCached(Tag);
+            return Rasterizer.IsIboCached(Tag, DataSize);
         }
 
         public void CreateVbo(long Tag, byte[] Buffer)
@@ -271,9 +271,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             });
         }
 
-        public bool TryGetCachedTexture(long Tag, out GalTexture Texture)
+        public bool TryGetCachedTexture(long Tag, long DataSize, out GalTexture Texture)
         {
-            return this.Texture.TryGetCachedTexture(Tag, out Texture);
+            return this.Texture.TryGetCachedTexture(Tag, DataSize, out Texture);
         }
 
         public void BindTexture(long Tag, int Index)

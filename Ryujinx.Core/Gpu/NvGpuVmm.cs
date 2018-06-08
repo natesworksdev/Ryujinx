@@ -1,12 +1,10 @@
 using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace Ryujinx.Core.Gpu
 {
-    public class NvGpuVmm : IAMemory, IGalMemory
+    class NvGpuVmm : IAMemory, IGalMemory
     {
         public const long AddrSize = 1L << 40;
 
@@ -39,50 +37,7 @@ namespace Ryujinx.Core.Gpu
 
         private ConcurrentDictionary<long, MappedMemory> Maps;
 
-        private class CachedPage
-        {
-            private List<(long Start, long End)> Regions;
-
-            public CachedPage()
-            {
-                Regions = new List<(long, long)>();
-            }
-
-            public bool AddRange(long Start, long End)
-            {
-                for (int Index = 0; Index < Regions.Count; Index++)
-                {
-                    (long RgStart, long RgEnd) = Regions[Index];
-
-                    if (Start >= RgStart && End <= RgEnd)
-                    {
-                        return false;
-                    }
-
-                    if (Start <= RgEnd && RgStart <= End)
-                    {
-                        long MinStart = Math.Min(RgStart, Start);
-                        long MaxEnd   = Math.Max(RgEnd,   End);
-
-                        Regions[Index] = (MinStart, MaxEnd);
-
-                        return true;
-                    }
-                }
-
-                Regions.Add((Start, End));
-
-                return true;
-            }
-
-            private static bool InRange(long Start, long End, long Value)
-            {
-                return (ulong)Value >= (ulong)Start &&
-                       (ulong)Value <  (ulong)End;
-            }
-        }
-
-        private Dictionary<long, CachedPage> CachedPages;
+        private NvGpuVmmCache Cache;
 
         private const long PteUnmapped = -1;
         private const long PteReserved = -2;
@@ -95,7 +50,7 @@ namespace Ryujinx.Core.Gpu
 
             Maps = new ConcurrentDictionary<long, MappedMemory>();
 
-            CachedPages = new Dictionary<long, CachedPage>();
+            Cache = new NvGpuVmmCache();
 
             PageTable = new long[PTLvl0Size][];
         }
@@ -319,62 +274,11 @@ namespace Ryujinx.Core.Gpu
             PageTable[L0][L1] = TgtAddr;
         }
 
-        public bool IsRegionModified(long Position, long Size)
+        public bool IsRegionModified(long Position, long Size, NvGpuBufferType BufferType)
         {
-            Position = GetPhysicalAddress(Position);
+            long PA = GetPhysicalAddress(Position);
 
-            long PageSize = Memory.GetHostPageSize();
-
-            long Mask = PageSize - 1;
-
-            long EndPos = Position + Size;
-
-            bool RegMod = false;
-
-            while (Position < EndPos)
-            {
-                long Key = Position & ~Mask;
-
-                long PgEndPos = (Position + PageSize) & ~Mask;
-
-                if (PgEndPos > EndPos)
-                {
-                    PgEndPos = EndPos;
-                }
-
-                CachedPage Cp;
-
-                if (Memory.IsRegionModified(Position, PgEndPos - Position))
-                {
-                    Cp = new CachedPage();
-
-                    if (CachedPages.ContainsKey(Key))
-                    {
-                        CachedPages[Key] = Cp;
-                    }
-                    else
-                    {
-                        CachedPages.Add(Key, Cp);
-                    }
-
-                    RegMod = true;
-                }
-                else
-                {
-                    if (!CachedPages.TryGetValue(Key, out Cp))
-                    {
-                        Cp = new CachedPage();
-
-                        CachedPages.Add(Key, Cp);
-                    }
-                }
-
-                RegMod |= Cp.AddRange(Position, PgEndPos);
-
-                Position = PgEndPos;
-            }
-
-            return RegMod;
+            return Cache.IsRegionModified(Memory, BufferType, Position, PA, Size);
         }
 
         public byte ReadByte(long Position)

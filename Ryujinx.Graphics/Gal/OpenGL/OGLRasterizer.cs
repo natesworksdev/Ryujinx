@@ -44,6 +44,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             { GalVertexAttribSize._11_11_10,    VertexAttribPointerType.Int   }  //?
         };
 
+        private int VaoHandle;
+
+        private int[] VertexBuffers;
+
+        private OGLCachedResource<int> VboCache;
+        private OGLCachedResource<int> IboCache;
+
         private struct IbInfo
         {
             public int Count;
@@ -51,21 +58,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             public DrawElementsType Type;
         }
 
-        private int VaoHandle;
-
-        private int[] VertexBuffers;
-
-        private Dictionary<long, int> VboCache;
-        private Dictionary<long, int> IboCache;
-
         private IbInfo IndexBuffer;
 
         public OGLRasterizer()
         {
             VertexBuffers = new int[32];
 
-            VboCache = new Dictionary<long, int>();
-            IboCache = new Dictionary<long, int>();
+            VboCache = new OGLCachedResource<int>(GL.DeleteBuffer);
+            IboCache = new OGLCachedResource<int>(GL.DeleteBuffer);
 
             IndexBuffer = new IbInfo();
         }
@@ -97,24 +97,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.Clear(Mask);
         }
 
-        public bool IsVboCached(long Tag)
+        public bool IsVboCached(long Tag, long DataSize)
         {
-            return VboCache.ContainsKey(Tag);
+            return VboCache.TryGetSize(Tag, out long Size) && Size == DataSize;
         }
 
-        public bool IsIboCached(long Tag)
+        public bool IsIboCached(long Tag, long DataSize)
         {
-            return IboCache.ContainsKey(Tag);
+            return IboCache.TryGetSize(Tag, out long Size) && Size == DataSize;
         }
 
         public void CreateVbo(long Tag, byte[] Buffer)
         {
-            if (!VboCache.TryGetValue(Tag, out int Handle))
-            {
-                Handle = GL.GenBuffer();
+            int Handle = GL.GenBuffer();
 
-                VboCache.Add(Tag, Handle);
-            }
+            VboCache.AddOrUpdate(Tag, Handle, (uint)Buffer.Length);
 
             IntPtr Length = new IntPtr(Buffer.Length);
 
@@ -125,12 +122,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void CreateIbo(long Tag, byte[] Buffer)
         {
-            if (!IboCache.TryGetValue(Tag, out int Handle))
-            {
-                Handle = GL.GenBuffer();
+            int Handle = GL.GenBuffer();
 
-                IboCache.Add(Tag, Handle);
-            }
+            IboCache.AddOrUpdate(Tag, Handle, (uint)Buffer.Length);
 
             IntPtr Length = new IntPtr(Buffer.Length);
 

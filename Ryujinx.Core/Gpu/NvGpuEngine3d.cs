@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Core.Gpu
 {
-    public class NvGpuEngine3d : INvGpuEngine
+    class NvGpuEngine3d : INvGpuEngine
     {
         public int[] Registers { get; private set; }
 
@@ -277,11 +277,11 @@ namespace Ryujinx.Core.Gpu
             {
                 GalTexture NewTexture = TextureFactory.MakeTexture(Vmm, TicPosition);
 
-                if (Gpu.Renderer.TryGetCachedTexture(Tag, out GalTexture Texture))
-                {
-                    long Size = (uint)TextureHelper.GetTextureSize(NewTexture);
+                long Size = (uint)TextureHelper.GetTextureSize(NewTexture);
 
-                    if (NewTexture.Equals(Texture) && !Vmm.IsRegionModified(Tag, Size))
+                if (Gpu.Renderer.TryGetCachedTexture(Tag, Size, out GalTexture Texture))
+                {
+                    if (NewTexture.Equals(Texture) && !Vmm.IsRegionModified(Tag, Size, NvGpuBufferType.Texture))
                     {
                         Gpu.Renderer.BindTexture(Tag, TexIndex);
 
@@ -349,7 +349,9 @@ namespace Ryujinx.Core.Gpu
             {
                 int IbSize = IndexCount * IndexSize;
 
-                if (!Gpu.Renderer.IsIboCached(IndexPosition) || Vmm.IsRegionModified(IndexPosition, (uint)IbSize))
+                bool IboCached = Gpu.Renderer.IsIboCached(IndexPosition, (uint)IbSize);
+
+                if (!IboCached || Vmm.IsRegionModified(IndexPosition, (uint)IbSize, NvGpuBufferType.Index))
                 {
                     byte[] Data = Vmm.ReadBytes(IndexPosition, (uint)IbSize);
 
@@ -418,7 +420,9 @@ namespace Ryujinx.Core.Gpu
                     VbSize = VertexCount * Stride;
                 }
 
-                if (!Gpu.Renderer.IsVboCached(VertexPosition) || Vmm.IsRegionModified(VertexPosition, VbSize))
+                bool VboCached = Gpu.Renderer.IsVboCached(VertexPosition, VbSize);
+
+                if (!VboCached || Vmm.IsRegionModified(VertexPosition, VbSize, NvGpuBufferType.Vertex))
                 {
                     byte[] Data = Vmm.ReadBytes(VertexPosition, VbSize);
 

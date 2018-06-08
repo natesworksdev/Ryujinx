@@ -1,7 +1,6 @@
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.Gal.Texture;
 using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
@@ -20,29 +19,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        private Dictionary<long, TCE> TextureCache;
+        private OGLCachedResource<TCE> TextureCache;
 
         public OGLTexture()
         {
-            TextureCache = new Dictionary<long, TCE>();
+            TextureCache = new OGLCachedResource<TCE>(DeleteTexture);
+        }
+
+        private static void DeleteTexture(TCE CachedTexture)
+        {
+            GL.DeleteTexture(CachedTexture.Handle);
         }
 
         public void Create(long Tag, byte[] Data, GalTexture Texture)
         {
-            if (!TextureCache.TryGetValue(Tag, out TCE CachedTexture))
-            {
-                int Handle = GL.GenTexture();
+            int Handle = GL.GenTexture();
 
-                CachedTexture = new TCE(Handle, Texture);
+            TextureCache.AddOrUpdate(Tag, new TCE(Handle, Texture), (uint)Data.Length);
 
-                TextureCache.Add(Tag, CachedTexture);
-            }
-            else
-            {
-                CachedTexture.Texture = Texture;
-            }
-
-            GL.BindTexture(TextureTarget.Texture2D, CachedTexture.Handle);
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
 
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
@@ -151,13 +146,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             throw new ArgumentException(nameof(Format));
         }
 
-        public bool TryGetCachedTexture(long Tag, out GalTexture Texture)
+        public bool TryGetCachedTexture(long Tag, long DataSize, out GalTexture Texture)
         {
-            if (TextureCache.TryGetValue(Tag, out TCE CachedTexture))
+            if (TextureCache.TryGetSize(Tag, out long Size) && Size == DataSize)
             {
-                Texture = CachedTexture.Texture;
+                if (TextureCache.TryGetValue(Tag, out TCE CachedTexture))
+                {
+                    Texture = CachedTexture.Texture;
 
-                return true;
+                    return true;
+                }
             }
 
             Texture = default(GalTexture);

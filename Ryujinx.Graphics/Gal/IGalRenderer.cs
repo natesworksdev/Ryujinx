@@ -49,9 +49,9 @@ namespace Ryujinx.Graphics.Gal
         //Rasterizer
         void ClearBuffers(int RtIndex, GalClearBufferFlags Flags);
 
-        bool IsVboCached(long Tag);
+        bool IsVboCached(long Tag, long DataSize);
 
-        bool IsIboCached(long Tag);
+        bool IsIboCached(long Tag, long DataSize);
 
         void CreateVbo(long Tag, byte[] Buffer);
 
@@ -83,7 +83,7 @@ namespace Ryujinx.Graphics.Gal
         //Texture
         void SetTextureAndSampler(long Tag, byte[] Data, GalTexture Texture, GalTextureSampler Sampler);
 
-        bool TryGetCachedTexture(long Tag, out GalTexture Texture);
+        bool TryGetCachedTexture(long Tag, long DataSize, out GalTexture Texture);
 
         void BindTexture(long Tag, int Index);
     }
