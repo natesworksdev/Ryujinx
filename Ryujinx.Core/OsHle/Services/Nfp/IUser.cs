@@ -14,10 +14,15 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private const HidControllerId NpadId = HidControllerId.CONTROLLER_PLAYER_1;
+        
         private State State = State.NonInitialized;
+        
         private DeviceState DeviceState = DeviceState.Initialized;
+        
         private KEvent ActivateEvent;
+        
         private KEvent DeactivateEvent;
+        
         private KEvent AvailabilityChangeEvent;
         
         public IUser()
@@ -33,8 +38,8 @@ namespace Ryujinx.Core.OsHle.Services.Nfp
                 { 23, AttachAvailabilityChangeEvent }
             };
 
-            ActivateEvent = new KEvent();
-            DeactivateEvent = new KEvent();
+            ActivateEvent           = new KEvent();
+            DeactivateEvent         = new KEvent();
             AvailabilityChangeEvent = new KEvent();
         }
 
