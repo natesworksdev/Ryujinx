@@ -100,6 +100,9 @@ namespace Ryujinx.Core.OsHle.Services.Am
 
         public long InitializeGamePlayRecording(ServiceCtx Context)
         {
+            //TODO: add a TransferMemory Handle
+            long Size = Context.RequestData.ReadInt64();
+        
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
