@@ -25,6 +25,7 @@ namespace Ryujinx.Core.OsHle.Services.Am
                 { 13, SetFocusHandlingMode                  },
                 { 14, SetRestartMessageEnabled              },
                 { 16, SetOutOfFocusSuspendingEnabled        },
+                { 40, CreateManagedDisplayLayer             },
                 { 50, SetHandlesRequestToDisplay            }
             };
 
@@ -101,6 +102,15 @@ namespace Ryujinx.Core.OsHle.Services.Am
             bool Enable = Context.RequestData.ReadByte() != 0 ? true : false;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+
+            return 0;
+        }
+
+        public long CreateManagedDisplayLayer(ServiceCtx Context)
+        {
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+
+            Context.ResponseData.Write(1L);
 
             return 0;
         }
