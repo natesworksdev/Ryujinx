@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="OpenTK.NETCore" Version="1.1.2749.6433" />
+    <PackageReference Include="SharpDX.XInput" Version="4.1.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
