@@ -155,8 +155,7 @@ namespace Ryujinx.Core.OsHle.Services.Aud
                 DeviceName = DefaultAudioOutput;
             }
 
-            long Position = Context.Request.ReceiveBuff[0].Position;
-            long Size     = Context.Request.ReceiveBuff[0].Size;
+            (long Position, long Size) = Context.Request.GetBufferType0x22();
 
             byte[] DeviceNameBuffer = Encoding.ASCII.GetBytes(DeviceName + "\0");
 
@@ -168,21 +167,9 @@ namespace Ryujinx.Core.OsHle.Services.Aud
             {
                 Context.Ns.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
             }
-
-            int SampleRate = Context.RequestData.ReadInt32();
-            int Channels   = Context.RequestData.ReadInt32();
-
-            Channels = (ushort)(Channels >> 16);
-
-            if (SampleRate == 0)
-            {
-                SampleRate = 48000;
-            }
-
-            if (Channels < 1 || Channels > 2)
-            {
-                Channels = 2;
-            }
+            
+            long AudioParams1 = Context.RequestData.ReadInt64();
+			long AudioParams2 = Context.RequestData.ReadInt64();
 
             KEvent ReleaseEvent = new KEvent();
 
@@ -191,14 +178,10 @@ namespace Ryujinx.Core.OsHle.Services.Aud
                 ReleaseEvent.WaitEvent.Set();
             };
 
-            int Track = AudioOut.OpenTrack(SampleRate, Channels, Callback, out AudioFormat Format);
-
-            MakeObject(Context, new IAudioOut(AudioOut, ReleaseEvent, Track));
-
-            Context.ResponseData.Write(SampleRate);
-            Context.ResponseData.Write(Channels);
-            Context.ResponseData.Write((int)Format);
-            Context.ResponseData.Write((int)PlaybackState.Stopped);
+            //TODO: Add Makeobject (currently unknown object)
+            
+            Context.ResponseData.Write(AudioParams1);
+			Context.ResponseData.Write(AudioParams2);
 
             return 0;
         }        
