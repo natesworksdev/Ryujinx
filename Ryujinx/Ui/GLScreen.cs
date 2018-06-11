@@ -94,26 +94,26 @@ namespace Ryujinx
                 State CurrentState = InputController.GetState();
 
                 //Buttons
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.A)) CurrentButton |= HidControllerButtons.KEY_A;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.B)) CurrentButton |= HidControllerButtons.KEY_B;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.X)) CurrentButton |= HidControllerButtons.KEY_X;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Y)) CurrentButton |= HidControllerButtons.KEY_Y;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonA)) CurrentButton |= HidControllerButtons.KEY_A;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonB)) CurrentButton |= HidControllerButtons.KEY_B;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonX)) CurrentButton |= HidControllerButtons.KEY_X;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonY)) CurrentButton |= HidControllerButtons.KEY_Y;
 
                 //Plus/Minus
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Back))  CurrentButton |= HidControllerButtons.KEY_MINUS;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Start)) CurrentButton |= HidControllerButtons.KEY_PLUS;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonPlus))  CurrentButton |= HidControllerButtons.KEY_PLUS;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonMinus)) CurrentButton |= HidControllerButtons.KEY_MINUS;
 
                 //DPad
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadUp))    CurrentButton |= HidControllerButtons.KEY_DUP;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadDown))  CurrentButton |= HidControllerButtons.KEY_DDOWN;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadLeft))  CurrentButton |= HidControllerButtons.KEY_DLEFT;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadRight)) CurrentButton |= HidControllerButtons.KEY_DRIGHT;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.DPadUp))    CurrentButton |= HidControllerButtons.KEY_DUP;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.DPadDown))  CurrentButton |= HidControllerButtons.KEY_DDOWN;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.DPadLeft))  CurrentButton |= HidControllerButtons.KEY_DLEFT;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.DPadRight)) CurrentButton |= HidControllerButtons.KEY_DRIGHT;
 
                 //L/ZL/R/ZR
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.LeftThumb))     CurrentButton |= HidControllerButtons.KEY_L;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.LeftShoulder))  CurrentButton |= HidControllerButtons.KEY_ZL;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.RightThumb))    CurrentButton |= HidControllerButtons.KEY_R;
-                if (CurrentState.Gamepad.Buttons.HasFlag(GamepadButtonFlags.RightShoulder)) CurrentButton |= HidControllerButtons.KEY_ZR;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonL))  CurrentButton |= HidControllerButtons.KEY_L;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonZL)) CurrentButton |= HidControllerButtons.KEY_ZL;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonR))  CurrentButton |= HidControllerButtons.KEY_R;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonZR)) CurrentButton |= HidControllerButtons.KEY_ZR;
             }
 
             //LeftJoystick

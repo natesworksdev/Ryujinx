@@ -12,6 +12,8 @@ namespace Ryujinx
     {
         public static JoyCon FakeJoyCon { get; private set; }
 
+        public static XInputController XInput { get; private set; }
+
         public static void Read(Logger Log)
         {
             string IniFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -55,6 +57,24 @@ namespace Ryujinx
                     }
                 }
             }
+
+            XInput = new XInputController
+            {
+                ButtonA     = Convert.ToInt16(Parser.Value("Controls_XInput_Button_A")),
+                ButtonB     = Convert.ToInt16(Parser.Value("Controls_XInput_Button_B")),
+                ButtonX     = Convert.ToInt16(Parser.Value("Controls_XInput_Button_X")),
+                ButtonY     = Convert.ToInt16(Parser.Value("Controls_XInput_Button_Y")),
+                ButtonPlus  = Convert.ToInt16(Parser.Value("Controls_XInput_Button_A")),
+                ButtonMinus = Convert.ToInt16(Parser.Value("Controls_XInput_Button_A")),
+                DPadUp      = Convert.ToInt16(Parser.Value("Controls_XInput_DPad_Up")),
+                DPadDown    = Convert.ToInt16(Parser.Value("Controls_XInput_DPad_Down")),
+                DPadLeft    = Convert.ToInt16(Parser.Value("Controls_XInput_DPad_Left")),
+                DPadRight   = Convert.ToInt16(Parser.Value("Controls_XInput_DPad_Right")),
+                ButtonL     = Convert.ToInt16(Parser.Value("Controls_XInput_Button_L")),
+                ButtonZL    = Convert.ToInt16(Parser.Value("Controls_XInput_Button_ZL")),
+                ButtonR     = Convert.ToInt16(Parser.Value("Controls_XInput_Button_R")),
+                ButtonZR    = Convert.ToInt16(Parser.Value("Controls_XInput_Button_ZR"))
+            };
 
             FakeJoyCon = new JoyCon
             {
