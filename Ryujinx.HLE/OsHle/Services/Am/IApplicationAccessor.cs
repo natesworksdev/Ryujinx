@@ -1,5 +1,5 @@
-using Ryujinx.Core.Logging;
-using Ryujinx.Core.OsHle.Ipc;
+using Ryujinx.HLE.Logging;
+using Ryujinx.HLE.OsHle.Ipc;
 using System.Collections.Generic;
 
 namespace Ryujinx.Core.OsHle.Services.Am
