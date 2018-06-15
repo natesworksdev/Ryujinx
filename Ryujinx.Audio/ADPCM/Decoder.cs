@@ -40,7 +40,10 @@ namespace Ryujinx.Audio.ADPCM
 
                 for (int SampleIndex = 0; SampleIndex < SamplesToRead; SampleIndex++)
                 {
-                    int   ADPCMSample     = SampleIndex % 2 == 0 ? Helper.GetHighNibble(ADPCM[InIndex]) : Helper.GetLowNibble(ADPCM[InIndex++]);
+                    int ADPCMSample = SampleIndex % 2 == 0 ? Helper.GetHighNibble(ADPCM[InIndex]) : Helper.GetLowNibble(ADPCM[InIndex++]);
+                    ADPCMSample   <<= 28;
+                    ADPCMSample   >>= 28;
+
                     int   Distance        = Scale * ADPCMSample;
                     int   PredictedSample = Coef1 * Hist1 + Coef2 * Hist2;
                     int   CorrectedSample = PredictedSample + Distance;
