@@ -7,7 +7,7 @@ This emulator only boots a small selection of homebrew and commercial games. To 
 
 Contributions are always welcome.
 
-**Latest build**
+**Latest Build**
 
 The latest automatic build for Windows (64-bit) can be found on the [official website](https://ryujinx.org/#/Build).
 These builds are compiled automatically for each commit on the master branch. They may be unstable or might not work at all.  
