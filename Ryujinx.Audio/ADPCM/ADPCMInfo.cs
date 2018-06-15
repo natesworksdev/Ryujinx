@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Audio.ADPCM
 {
-    struct Info
+    struct ADPCMInfo
     {
         public short   History1;
         public short   History2;

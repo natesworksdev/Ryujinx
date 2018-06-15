@@ -25,7 +25,7 @@ namespace Ryujinx.Audio
 
         public int DivideByRoundUp(int Value, int Divisor)
         {
-            return (int)Math.Ceiling((double)Value / Divisor);
+            return (Value + (Divisor - 1)) / Divisor;
         }
     }
 }

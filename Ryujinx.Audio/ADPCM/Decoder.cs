@@ -13,13 +13,13 @@ namespace Ryujinx.Audio.ADPCM
             Helper = new AudioHelper();
         }
 
-        public short[] Decode(byte[] ADPCM, Info ADPCMInfo, int Samples)
+        public short[] Decode(byte[] ADPCM, ADPCMInfo Info, int Samples)
         {
             short[] PCM = new short[Samples];
 
-            short   Hist1        = ADPCMInfo.History1;
-            short   Hist2        = ADPCMInfo.History2;
-            short[] Coefficients = ADPCMInfo.Coefficients;
+            short   Hist1        = Info.History1;
+            short   Hist2        = Info.History2;
+            short[] Coefficients = Info.Coefficients;
 
             int FrameCount       = Helper.DivideByRoundUp(Samples, SamplesPerFrame);
             int SamplesRemaining = Samples;
@@ -33,8 +33,8 @@ namespace Ryujinx.Audio.ADPCM
                 int  Scale          = (1 << Helper.GetLowNibble(PredictorScale)) * 2048;
                 int  Predictor      = Helper.GetHighNibble(PredictorScale);
 
-                short Coef1 = ADPCMInfo.Coefficients[Predictor * 2];
-                short Coef2 = ADPCMInfo.Coefficients[Predictor * 2 + 1];
+                short Coef1 = Info.Coefficients[Predictor * 2];
+                short Coef2 = Info.Coefficients[Predictor * 2 + 1];
 
                 int SamplesToRead = Math.Min(SamplesPerFrame, SamplesRemaining);
 
