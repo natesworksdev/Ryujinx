@@ -21,7 +21,7 @@ In release builds, memory checks are disabled to improve performance.
 
  - Audio is partially supported on Windows, but you need to install the [OpenAL Core SDK.](https://openal.org/downloads/OpenAL11CoreSDK.zip)
 
- - Keyboard input is partially supported. The default controls are:
+ - Keyboard input and XInput are partially supported. The default controls are:
    - Left Joycon:
 	 - Stick Up = W
 	 - Stick Down = S
@@ -72,4 +72,4 @@ Run `dotnet run -c Release -- path\to\homebrew.nro` inside the Ryujinx solution 
 Run `dotnet run -c Release -- path\to\game_exefs_and_romfs_folder` to run official games (they need to be decrypted and extracted first!)
 
 **Compatibility**
-You can check out the [compatibility lis.t](https://ryujinx.org/#/Compatibility) Only a handful of games actually work.
+You can check out the [compatibility list](https://ryujinx.org/#/Compatibility) Only a handful of games actually work.
