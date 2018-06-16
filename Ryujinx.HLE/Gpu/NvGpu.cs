@@ -23,7 +23,6 @@ namespace Ryujinx.HLE.Gpu
 
             Fifo = new NvGpuFifo(this);
 
-
             Engine2d  = new NvGpuEngine2d(this);
             Engine3d  = new NvGpuEngine3d(this);
             EngineDma = new NvGpuEngineDma(this);
