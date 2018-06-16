@@ -171,6 +171,7 @@ namespace Ryujinx.HLE.Gpu
                 }
             }
         }
+        
         private void CallDmaMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
         {
             Gpu.EngineDma.CallMethod(Vmm, PBEntry);
