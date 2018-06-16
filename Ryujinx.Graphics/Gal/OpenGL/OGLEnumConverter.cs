@@ -66,6 +66,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalTextureFormat.A1B5G5R5:     return (PixelFormat.Rgba, PixelType.UnsignedShort5551);
                 case GalTextureFormat.B5G6R5:       return (PixelFormat.Rgb,  PixelType.UnsignedShort565);
                 case GalTextureFormat.G8R8:         return (PixelFormat.Rg,   PixelType.UnsignedByte);
+                case GalTextureFormat.R16:          return (PixelFormat.Red,  PixelType.HalfFloat);
                 case GalTextureFormat.R8:           return (PixelFormat.Red,  PixelType.UnsignedByte);
             }
 
@@ -76,11 +77,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Format)
             {
-                case GalTextureFormat.BC1: return PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
-                case GalTextureFormat.BC2: return PixelInternalFormat.CompressedRgbaS3tcDxt3Ext;
-                case GalTextureFormat.BC3: return PixelInternalFormat.CompressedRgbaS3tcDxt5Ext;
-                case GalTextureFormat.BC4: return PixelInternalFormat.CompressedRedRgtc1;
-                case GalTextureFormat.BC5: return PixelInternalFormat.CompressedRgRgtc2;
+                case GalTextureFormat.BC7U: return PixelInternalFormat.CompressedRgbaBptcUnorm;
+                case GalTextureFormat.BC1:  return PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
+                case GalTextureFormat.BC2:  return PixelInternalFormat.CompressedRgbaS3tcDxt3Ext;
+                case GalTextureFormat.BC3:  return PixelInternalFormat.CompressedRgbaS3tcDxt5Ext;
+                case GalTextureFormat.BC4:  return PixelInternalFormat.CompressedRedRgtc1;
+                case GalTextureFormat.BC5:  return PixelInternalFormat.CompressedRgRgtc2;
             }
 
             throw new NotImplementedException(Format.ToString());
