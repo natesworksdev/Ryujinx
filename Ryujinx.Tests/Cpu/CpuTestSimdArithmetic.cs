@@ -153,7 +153,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("fmul s6, s1, v0.s[2]")]
+        [Test, Description("FMUL S6, S1, V0.S[2]")]
         public void Fmul_Se([Random(10)] float A, [Random(10)] float B)
         {
             AThreadState ThreadState = SingleOpcode(0x5F809826,
@@ -163,7 +163,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(Sse41.Extract(ThreadState.V6, (byte)0), Is.EqualTo(A * B));
         }
 
-        [Test, Description("frecpe d0, d1")]
+        [Test, Description("FRECPE D0, D1")]
         public void Frecpe_S([Random(100)] double A)
         {
             AThreadState ThreadState = SingleOpcode(0x5EE1D820, V1: MakeVectorE0(A));
@@ -171,7 +171,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(VectorExtractDouble(ThreadState.V0, 0), Is.EqualTo(1 / A));
         }
 
-        [Test, Description("frecpe v2.4s, v0.4s")]
+        [Test, Description("FRECPE V2.4S, V0.4S")]
         public void Frecpe_V([Random(100)] float A)
         {
             AThreadState ThreadState = SingleOpcode(0x4EA1D802, V0: Sse.SetAllVector128(A));
@@ -182,7 +182,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(Sse41.Extract(ThreadState.V2, (byte)3), Is.EqualTo(1 / A));
         }
 
-        [Test, Description("frecps d0, d1, d2")]
+        [Test, Description("FRECPS D0, D1, D2")]
         public void Frecps_S([Random(10)] double A, [Random(10)] double B)
         {
             AThreadState ThreadState = SingleOpcode(0x5E62FC20,
@@ -192,7 +192,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(VectorExtractDouble(ThreadState.V0, 0), Is.EqualTo(2 - (A * B)));
         }
 
-        [Test, Description("frecps v4.4s, v2.4s, v0.4s")]
+        [Test, Description("FRECPS V4.4S, V2.4S, V0.4S")]
         public void Frecps_V([Random(10)] float A, [Random(10)] float B)
         {
             AThreadState ThreadState = SingleOpcode(0x4E20FC44,
