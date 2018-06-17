@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    enum FSPermissionsRW : ulong
+    enum FSPermissionRW : ulong
     {
         MountContentType2     = 0x8000000000000801,
         MountContentType5     = 0x8000000000000801,
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         HostAccess            = 0xC000000000400000
     };
 
-    enum FSPermissionsBool : ulong
+    enum FSPermissionBool : ulong
     {
         BisCache                  = 0x8000000000000080,
         EraseMmc                  = 0x8000000000000080,
@@ -74,14 +74,14 @@ namespace Ryujinx.HLE.Loaders.Npdm
         Unknown0x1A               = 0x8000000000004020
     }
 
-    enum NpdmApplicationTypes
+    enum NpdmApplicationType
     {
         SystemModule,
         Application,
         Applet
     }
 
-    enum SvcNames
+    enum SvcName
     {
         svcUnknown0,
         svcSetHeapSize,
