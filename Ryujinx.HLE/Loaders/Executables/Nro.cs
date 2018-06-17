@@ -1,4 +1,8 @@
+using System;
+using System.Drawing;
 using System.IO;
+using System.Text;
+using Ryujinx.HLE.Loaders.Archives;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
@@ -6,15 +10,22 @@ namespace Ryujinx.HLE.Loaders.Executables
     {
         public string Name { get; private set; }
 
-        public byte[] Text { get; private set; }
-        public byte[] RO   { get; private set; }
-        public byte[] Data { get; private set; }
+        public byte[] Text          { get; private set; }
+        public byte[] RO            { get; private set; }
+        public byte[] Data          { get; private set; }
+        public byte[] AssetRomfData { get; set; }
+        public byte[] IconData      { get; set; }
 
-        public int Mod0Offset { get; private set; }
-        public int TextOffset { get; private set; }
-        public int ROOffset   { get; private set; }
-        public int DataOffset { get; private set; }
-        public int BssSize    { get; private set; }
+        public int Mod0Offset  { get; private set; }
+        public int TextOffset  { get; private set; }
+        public int ROOffset    { get; private set; }
+        public int DataOffset  { get; private set; }
+        public int BssSize     { get; private set; }
+        public int AssetOffset { get; set; }
+
+        public ControlArchive ControlArchive { get; set; }
+
+        private byte[] NACPData { get; set; }
 
         public Nro(Stream Input, string Name)
         {
@@ -39,11 +50,12 @@ namespace Ryujinx.HLE.Loaders.Executables
             int DataSize   = Reader.ReadInt32();
             int BssSize    = Reader.ReadInt32();
 
-            this.Mod0Offset = Mod0Offset;
-            this.TextOffset = TextOffset;
-            this.ROOffset   = ROOffset;
-            this.DataOffset = DataOffset;
-            this.BssSize    = BssSize;
+            this.Mod0Offset  = Mod0Offset;
+            this.TextOffset  = TextOffset;
+            this.ROOffset    = ROOffset;
+            this.DataOffset  = DataOffset;
+            this.BssSize     = BssSize;
+            this.AssetOffset = FileSize;
 
             byte[] Read(long Position, int Size)
             {
@@ -55,6 +67,42 @@ namespace Ryujinx.HLE.Loaders.Executables
             Text = Read(TextOffset, TextSize);
             RO   = Read(ROOffset,   ROSize);
             Data = Read(DataOffset, DataSize);
+
+            if (Input.Length > FileSize)
+            {
+                string AssetMagic = Encoding.ASCII.GetString(Read(AssetOffset, 4));
+
+                if (AssetMagic == "ASET")
+                {
+                    Input.Seek(AssetOffset, SeekOrigin.Begin);
+                    int AssetMagic0             = Reader.ReadInt32();
+                    int AssetFormat             = Reader.ReadInt32();
+                    byte[] IconSectionInfo      = Reader.ReadBytes(0x10);
+                    byte[] NACPSectionInfo      = Reader.ReadBytes(0x10);
+                    byte[] AssetRomfSectionInfo = Reader.ReadBytes(0x10);
+
+                    long IconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
+                    long IconSize   = BitConverter.ToInt64(IconSectionInfo, 8);
+                    long NACPOffset = BitConverter.ToInt64(NACPSectionInfo, 0);
+                    long NACPSize   = BitConverter.ToInt64(NACPSectionInfo, 8);
+                    long RomfOffset = BitConverter.ToInt64(AssetRomfSectionInfo, 0);
+                    long RomfSize   = BitConverter.ToInt64(AssetRomfSectionInfo, 8);
+
+                    Input.Seek(AssetOffset + IconOffset, SeekOrigin.Begin);
+                    IconData = Reader.ReadBytes((int)IconSize);
+
+                    Input.Seek(AssetOffset + NACPOffset, SeekOrigin.Begin);
+                    NACPData = Reader.ReadBytes((int)NACPSize);
+
+                    Input.Seek(AssetOffset + RomfOffset, SeekOrigin.Begin);
+                    AssetRomfData = Reader.ReadBytes((int)RomfSize);
+                }
+            }
+
+            using(MemoryStream NACPStream = new MemoryStream(NACPData))
+            {
+                ControlArchive = new ControlArchive(NACPStream);
+            }
         }
     }
 }
