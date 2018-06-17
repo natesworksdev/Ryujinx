@@ -21,7 +21,7 @@ In release builds, memory checks are disabled to improve performance.
 
  - Audio is partially supported on Windows, but you need to install the [OpenAL Core SDK.](https://openal.org/downloads/OpenAL11CoreSDK.zip)
 
- - Keyboard input is partially supported. XInput is partially supported, but hardcoded and unfinished. The default controls are:
+ - Keyboard input is partially supported. The default controls are:
    - Left Joycon:
 	 - Stick Up = W
 	 - Stick Down = S
