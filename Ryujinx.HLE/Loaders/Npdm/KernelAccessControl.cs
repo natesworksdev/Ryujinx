@@ -82,128 +82,125 @@ namespace Ryujinx.HLE.Loaders.Npdm
                 switch (LowBits)
                 {
                     case 3: // Kernel flags
-                        {
-                            Items[i].HasKernelFlags        = true;
+                    {
+                        Items[i].HasKernelFlags        = true;
 
-                            Items[i].HighestThreadPriority = Descriptor & 0x3F;
-                            Descriptor >>= 6;
-                            Items[i].LowestThreadPriority  = Descriptor & 0x3F;
-                            Descriptor >>= 6;
-                            Items[i].LowestCpuId           = Descriptor & 0xFF;
-                            Descriptor >>= 8;
-                            Items[i].HighestCpuId          = Descriptor & 0xFF;
+                        Items[i].HighestThreadPriority = Descriptor & 0x3F;
+                        Items[i].LowestThreadPriority  = (Descriptor >> 6) & 0x3F;
+                        Items[i].LowestCpuId           = (Descriptor >> 12) & 0xFF;
+                        Items[i].HighestCpuId          = (Descriptor >> 20) & 0xFF;
 
-                            break;
-                        }
+                        break;
+                    }
 
                     case 4: // Syscall mask
+                    {
+                        Items[i].HasSVCFlags = true;
+
+                        Items[i].SVCsAllowed = new int[0x80];
+
+                        int SysCallBase = (int)(Descriptor >> 24) * 0x18;
+
+                        for (int SysCall = 0; SysCall < 0x18 && SysCallBase + SysCall < 0x80; SysCall++)
                         {
-                            Items[i].HasSVCFlags = true;
-
-                            Items[i].SVCsAllowed = new int[0x80];
-
-                            int SysCallBase = (int)(Descriptor >> 24) * 0x18;
-
-                            for (int SysCall = 0; SysCall < 0x18 && SysCallBase + SysCall < 0x80; SysCall++)
-                            {
-                                Items[i].SVCsAllowed[SysCallBase + SysCall] = (int)Descriptor & 1;
-                                Descriptor >>= 1;
-                            }
-
-                            break;
+                            Items[i].SVCsAllowed[SysCallBase + SysCall] = (int)Descriptor & 1;
+                            Descriptor >>= 1;
                         }
+
+                        break;
+                    }
 
                     case 6: // Map IO/Normal - Never tested.
+                    {
+                        KernelAccessControlMMIO TempNormalMMIO = new KernelAccessControlMMIO
                         {
-                            KernelAccessControlMMIO TempNormalMMIO = new KernelAccessControlMMIO
-                            {
-                                Address = (Descriptor & 0xFFFFFF) << 12,
-                                IsRO    = (Descriptor >> 24) != 0
-                            };
+                            Address = (Descriptor & 0xFFFFFF) << 12,
+                            IsRO    = (Descriptor >> 24) != 0
+                        };
 
-                            if (i == Size / 4 - 1)
-                            {
-                                throw new InvalidNpdmException("Invalid Kernel Access Control Descriptors!");
-                            }
-
-                            Descriptor = Reader.ReadUInt32();
-
-                            if ((Descriptor & 0x7F) != 0x3F)
-                            {
-                                throw new InvalidNpdmException("Invalid Kernel Access Control Descriptors!");
-                            }
-
-                            Descriptor >>= 7;
-                            TempNormalMMIO.Size     = (Descriptor & 0xFFFFFF) << 12;
-                            TempNormalMMIO.IsNormal = (Descriptor >> 24) != 0;
-
-                            Items[i].NormalMMIO.Add(TempNormalMMIO);
-                            i++;
-
-                            break;
+                        if (i == Size / 4 - 1)
+                        {
+                            throw new InvalidNpdmException("Invalid Kernel Access Control Descriptors!");
                         }
+
+                        Descriptor = Reader.ReadUInt32();
+
+                        if ((Descriptor & 0x7F) != 0x3F)
+                        {
+                            throw new InvalidNpdmException("Invalid Kernel Access Control Descriptors!");
+                        }
+
+                        Descriptor >>= 7;
+                        TempNormalMMIO.Size     = (Descriptor & 0xFFFFFF) << 12;
+                        TempNormalMMIO.IsNormal = (Descriptor >> 24) != 0;
+
+                        Items[i].NormalMMIO.Add(TempNormalMMIO);
+                        i++;
+
+                        break;
+                    }
 
                     case 7: // Map Normal Page - Never tested.
+                    {
+                        KernelAccessControlMMIO TempPageMMIO = new KernelAccessControlMMIO
                         {
-                            KernelAccessControlMMIO TempPageMMIO = new KernelAccessControlMMIO
-                            {
-                                Address  = Descriptor << 12,
-                                Size     = 0x1000,
-                                IsRO     = false,
-                                IsNormal = false
-                            };
+                            Address  = Descriptor << 12,
+                            Size     = 0x1000,
+                            IsRO     = false,
+                            IsNormal = false
+                        };
 
-                            Items[i].PageMMIO.Add(TempPageMMIO);
+                        Items[i].PageMMIO.Add(TempPageMMIO);
 
-                            break;
-                        }
+                        break;
+                    }
 
                     case 11: // IRQ Pair - Never tested.
+                    {
+                        KernelAccessControlIRQ TempIRQ = new KernelAccessControlIRQ
                         {
-                            KernelAccessControlIRQ TempIRQ = new KernelAccessControlIRQ
-                            {
-                                IRQ0 = Descriptor & 0x3FF,
-                                IRQ1 = (Descriptor >> 10) & 0x3FF
-                            };
+                            IRQ0 = Descriptor & 0x3FF,
+                            IRQ1 = (Descriptor >> 10) & 0x3FF
+                        };
 
-                            break;
-                        }
+                        break;
+                    }
 
                     case 13: // App Type
-                        {
-                            Items[i].HasApplicationType = true;
-                            Items[i].ApplicationType    = (int)Descriptor & 7;
+                    {
+                        Items[i].HasApplicationType = true;
+                        Items[i].ApplicationType    = (int)Descriptor & 7;
 
-                            break;
-                        }
+                        break;
+                    }
 
                     case 14: // Kernel Release Version
-                        {
-                            Items[i].HasKernelVersion     = true;
+                    {
+                        Items[i].HasKernelVersion     = true;
 
-                            Items[i].KernelVersionRelease = (int)Descriptor;
+                        Items[i].KernelVersionRelease = (int)Descriptor;
 
-                            break;
-                        }
+                        break;
+                    }
 
                     case 15: // Handle Table Size
-                        {
-                            Items[i].HasHandleTableSize = true;
+                    {
+                        Items[i].HasHandleTableSize = true;
 
-                            Items[i].HandleTableSize    = (int)Descriptor;
+                        Items[i].HandleTableSize    = (int)Descriptor;
 
-                            break;
-                        }
+                        break;
+                    }
 
                     case 16: // Debug Flags
-                        {
-                            Items[i].HasDebugFlags = true;
+                    {
+                        Items[i].HasDebugFlags = true;
 
-                            Items[i].AllowDebug    = (Descriptor & 1) != 0;
-                            Items[i].ForceDebug    = ((Descriptor >> 1) & 1) != 0;
+                        Items[i].AllowDebug    = (Descriptor & 1) != 0;
+                        Items[i].ForceDebug    = ((Descriptor >> 1) & 1) != 0;
 
-                            break;
-                        }
+                        break;
+                    }
                 }
             }
         }
