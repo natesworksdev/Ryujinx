@@ -1,4 +1,5 @@
-﻿using System;
+using Ryujinx.HLE.OsHle.Utilities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
