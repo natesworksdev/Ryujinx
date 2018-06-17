@@ -22,19 +22,21 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public byte[] ProductCode;
         public ulong  FSPerms;
 
-        private int   ACI0Offset;
-        private int   ACI0Size;
-        private int   ACIDOffset;
-        private int   ACIDSize;
+        private int ACI0Offset;
+        private int ACI0Size;
+        private int ACIDOffset;
+        private int ACIDSize;
 
-        public ACI0   ACI0;
-        public ACID   ACID;
+        public ACI0 ACI0;
+        public ACID ACID;
+        
+        public const long NpdmMagic = 'M' << 0 | 'E' << 8 | 'T' << 16 | 'A' << 24;
 
         public Npdm(Stream NPDMStream)
         {
             BinaryReader Reader = new BinaryReader(NPDMStream);
 
-            if (EndianSwap.Swap32(Reader.ReadInt32()) != 0x4D455441) // META
+            if (Reader.ReadInt32() != NpdmMagic)
             {
                 throw new InvalidNpdmException("NPDM Stream doesn't contain NPDM file!");
             }
