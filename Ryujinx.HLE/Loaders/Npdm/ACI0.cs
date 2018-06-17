@@ -1,4 +1,5 @@
-﻿using System;
+using Ryujinx.HLE.OsHle.Utilities;
+using System;
 using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Npdm
