@@ -4,28 +4,30 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    public class ACI0
+    class ACI0
     {
         public string TitleId;
 
-        private int   FSAccessHeaderOffset;
-        private int   FSAccessHeaderSize;
-        private int   ServiceAccessControlOffset;
-        private int   ServiceAccessControlSize;
-        private int   KernelAccessControlOffset;
-        private int   KernelAccessControlSize;
+        private int FSAccessHeaderOffset;
+        private int FSAccessHeaderSize;
+        private int ServiceAccessControlOffset;
+        private int ServiceAccessControlSize;
+        private int KernelAccessControlOffset;
+        private int KernelAccessControlSize;
 
         public FSAccessHeader       FSAccessHeader;
         public ServiceAccessControl ServiceAccessControl;
         public KernelAccessControl  KernelAccessControl;
 
+        public const long ACI0Magic = 'A' << 0 | 'C' << 8 | 'I' << 16 | '0' << 24;
+        
         public ACI0(Stream ACI0Stream, int Offset)
         {
             ACI0Stream.Seek(Offset, SeekOrigin.Begin);
 
             BinaryReader Reader = new BinaryReader(ACI0Stream);
 
-            if (EndianSwap.Swap32(Reader.ReadInt32()) != 0x41434930) // ACI0
+            if (Reader.ReadInt32() != ACI0Magic)
             {
                 throw new InvalidNpdmException("ACI0 Stream doesn't contain ACI0 section!");
             }
