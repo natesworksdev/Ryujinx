@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
 {
     public class ServiceAccessControl
     {
-        public List<Tuple<string, bool>> Services = new List<Tuple<string, bool>>();
+        public List<(string, bool)> Services = new List<(string, bool)>();
 
         public ServiceAccessControl(Stream ServiceAccessControlStream, int Offset, int Size)
         {
@@ -25,9 +25,8 @@ namespace Ryujinx.HLE.Loaders.Npdm
 
                 int Length             = ((ControlByte & 0x07)) + 1;
                 bool RegisterAllowed   = ((ControlByte & 0x80) != 0);
-                byte[] TempServiceName = Reader.ReadBytes(Length);
-
-                Services.Add(Tuple.Create(Encoding.ASCII.GetString(TempServiceName, 0, TempServiceName.Length), RegisterAllowed));
+                
+                Services.Add((Encoding.ASCII.GetString(Reader.ReadBytes(Length), 0, Length), RegisterAllowed));
 
                 ByteReaded += Length + 1;
             }
