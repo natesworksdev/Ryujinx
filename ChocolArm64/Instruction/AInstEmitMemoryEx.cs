@@ -48,6 +48,16 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeMemEx Op = (AOpCodeMemEx)Context.CurrOp;
 
+            if (AccType.HasFlag(AccessType.Ordered))
+            {
+                EmitBarrier(Context);
+            }
+
+            if (AccType.HasFlag(AccessType.Exclusive))
+            {
+                EmitMemoryCall(Context, nameof(AMemory.SetExclusive), Op.Rn);
+            }
+
             Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
             Context.EmitLdint(Op.Rn);
 
@@ -66,16 +76,6 @@ namespace ChocolArm64.Instruction
                 EmitReadZxCall(Context, Op.Size);
 
                 Context.EmitStintzr(Op.Rt2);
-            }
-
-            if (AccType.HasFlag(AccessType.Exclusive))
-            {
-                EmitMemoryCall(Context, nameof(AMemory.SetExclusive), Op.Rn);
-            }
-
-            if (AccType.HasFlag(AccessType.Ordered))
-            {
-                EmitBarrier(Context);
             }
         }
 
@@ -150,7 +150,7 @@ namespace ChocolArm64.Instruction
                 Context.EmitLdc_I8(0);
                 Context.EmitStintzr(Op.Rs);
 
-                Clrex(Context);
+                EmitMemoryCall(Context, nameof(AMemory.ClearExclusiveForStore));
             }
 
             Context.MarkLabel(LblEnd);
@@ -164,6 +164,11 @@ namespace ChocolArm64.Instruction
             if (Rn != -1)
             {
                 Context.EmitLdint(Rn);
+            }
+
+            if (Name == nameof(AMemory.SetExclusive))
+            {
+                Context.EmitLdc_I8(Context.CurrOp.Position);
             }
 
             Context.EmitCall(typeof(AMemory), Name);
