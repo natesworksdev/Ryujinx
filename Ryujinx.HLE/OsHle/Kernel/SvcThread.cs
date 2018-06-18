@@ -81,8 +81,6 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private void SvcSleepThread(AThreadState ThreadState)
         {
-            //Process.PrintStackTrace(ThreadState);
-
             ulong TimeoutNs = ThreadState.X0;
 
             Ns.Log.PrintDebug(LogClass.KernelSvc, "Timeout = " + TimeoutNs.ToString("x16"));

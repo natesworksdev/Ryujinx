@@ -166,11 +166,6 @@ namespace ChocolArm64.Instruction
                 Context.EmitLdint(Rn);
             }
 
-            if (Name == nameof(AMemory.SetExclusive))
-            {
-                Context.EmitLdc_I8(Context.CurrOp.Position);
-            }
-
             Context.EmitCall(typeof(AMemory), Name);
         }
 

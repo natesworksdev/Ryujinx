@@ -314,7 +314,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                     long MutexAddress = WaitThread.MutexAddress;
 
-                    Memory.SetExclusive(ThreadState, MutexAddress, 0);
+                    Memory.SetExclusive(ThreadState, MutexAddress);
 
                     int MutexValue = Process.Memory.ReadInt32(MutexAddress);
 
@@ -332,7 +332,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                             break;
                         }
 
-                        Memory.SetExclusive(ThreadState, MutexAddress, 0);
+                        Memory.SetExclusive(ThreadState, MutexAddress);
 
                         MutexValue = Process.Memory.ReadInt32(MutexAddress);
                     }

@@ -61,7 +61,7 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public void SetExclusive(AThreadState ThreadState, long Position, long oppos)
+        public void SetExclusive(AThreadState ThreadState, long Position)
         {
             Position &= ~ErgMask;
 
