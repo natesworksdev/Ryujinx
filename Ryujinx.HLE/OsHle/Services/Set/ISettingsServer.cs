@@ -13,10 +13,11 @@ namespace Ryujinx.HLE.OsHle.Services.Set
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, GetLanguageCode               },
-                { 1, GetAvailableLanguageCodes     },
-                { 3, GetAvailableLanguageCodeCount },
-                { 5, GetAvailableLanguageCodes2    }
+                { 0, GetLanguageCode                },
+                { 1, GetAvailableLanguageCodes      },
+                { 3, GetAvailableLanguageCodeCount  },
+                { 5, GetAvailableLanguageCodes2     },
+                { 6, GetAvailableLanguageCodeCount2 }
             };
         }
 
@@ -43,13 +44,20 @@ namespace Ryujinx.HLE.OsHle.Services.Set
         
         public static long GetAvailableLanguageCodes2(ServiceCtx Context)
         {
-	    GetAvailableLanguagesCodesMethod(Context, Context.Request.ReceiveBuff[0].Position, Context.Request.ReceiveBuff[0].Size);
+            GetAvailableLanguagesCodesMethod(Context, Context.Request.ReceiveBuff[0].Position, Context.Request.ReceiveBuff[0].Size);
 			
-	    return 0;
+            return 0;
         }
         
-	public static long GetAvailableLanguagesCodesMethod(ServiceCtx Context, long Position, long Size)
-	{
+        public static long GetAvailableLanguageCodeCount2(ServiceCtx Context)
+        {
+            Context.ResponseData.Write(SystemStateMgr.LanguageCodes.Length);
+	
+            return 0;
+        }
+	
+        public static long GetAvailableLanguagesCodesMethod(ServiceCtx Context, long Position, long Size)
+        {
             int Count = (int)(Size / 8);
 
             if (Count > SystemStateMgr.LanguageCodes.Length)
