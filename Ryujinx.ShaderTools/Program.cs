@@ -2,6 +2,7 @@
 using Ryujinx.Graphics.Gal.Shader;
 using System;
 using System.IO;
+using System.Text;
 
 namespace Ryujinx.ShaderTools
 {
@@ -9,13 +10,11 @@ namespace Ryujinx.ShaderTools
     {
         static void Main(string[] args)
         {
-            if (args.Length == 2)
+            if (args.Length == 4)
             {
-                GlslDecompiler Decompiler = new GlslDecompiler();
-
                 GalShaderType ShaderType = GalShaderType.Vertex;
 
-                switch (args[0].ToLower())
+                switch (args[1].ToLower())
                 {
                     case "v":  ShaderType = GalShaderType.Vertex;         break;
                     case "tc": ShaderType = GalShaderType.TessControl;    break;
@@ -24,18 +23,40 @@ namespace Ryujinx.ShaderTools
                     case "f":  ShaderType = GalShaderType.Fragment;       break;
                 }
 
-                using (FileStream FS = new FileStream(args[1], FileMode.Open, FileAccess.Read))
+                using (FileStream Output = new FileStream(args[3], FileMode.Create))
+                using (FileStream FS = new FileStream(args[2], FileMode.Open, FileAccess.Read))
                 {
                     Memory Mem = new Memory(FS);
 
-                    GlslProgram Program = Decompiler.Decompile(Mem, 0, ShaderType);
+                    switch (args[0].ToLower())
+                    {
+                        case "glsl":
+                        {
+                            GlslDecompiler GlslDecompiler = new GlslDecompiler();
 
-                    Console.WriteLine(Program.Code);
+                            GlslProgram Program = GlslDecompiler.Decompile(Mem, 0, ShaderType);
+
+                            Output.Write(System.Text.Encoding.UTF8.GetBytes(Program.Code));
+
+                            break;
+                        }
+
+                        case "spirv":
+                        {
+                            SpirvDecompiler SpirvDecompiler = new SpirvDecompiler();
+
+                            SpirvProgram Program = SpirvDecompiler.Decompile(Mem, 0, ShaderType);
+
+                            Output.Write(Program.Bytecode);
+
+                            break;
+                        }
+                    }
                 }
             }
             else
             {
-                Console.WriteLine("Usage: Ryujinx.ShaderTools [v|tc|te|g|f] shader.bin");
+                Console.WriteLine("Usage: Ryujinx.ShaderTools [spirv|glsl] [v|tc|te|g|f] shader.bin output.bin");
             }
         }
     }

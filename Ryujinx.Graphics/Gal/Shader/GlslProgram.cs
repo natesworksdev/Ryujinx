@@ -2,21 +2,17 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    public struct GlslProgram
+    public class GlslProgram : ShaderProgram
     {
         public string Code { get; private set; }
-
-        public IEnumerable<ShaderDeclInfo> Textures { get; private set; }
-        public IEnumerable<ShaderDeclInfo> Uniforms { get; private set; }
 
         public GlslProgram(
             string                      Code,
             IEnumerable<ShaderDeclInfo> Textures,
             IEnumerable<ShaderDeclInfo> Uniforms)
+            : base(Textures, Uniforms)
         {
-            this.Code     = Code;
-            this.Textures = Textures;
-            this.Uniforms = Uniforms;
+            this.Code = Code;
         }
     }
 }
