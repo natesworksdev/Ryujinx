@@ -1,6 +1,7 @@
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
+using SharpDX.XInput;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
@@ -20,6 +21,19 @@ namespace Ryujinx
 
         private IGalRenderer Renderer;
 
+        //Initialize XInput
+        private Controller[] InputControllers = new[]
+        {
+            new Controller(UserIndex.One),
+            new Controller(UserIndex.Two),
+            new Controller(UserIndex.Three),
+            new Controller(UserIndex.Four)
+        };
+
+        private Controller InputController = null;
+
+        private bool XInputEnabled = false;
+
         public GLScreen(Switch Ns, IGalRenderer Renderer)
             : base(1280, 720,
             new GraphicsMode(), "Ryujinx", 0,
@@ -28,6 +42,26 @@ namespace Ryujinx
         {
             this.Ns       = Ns;
             this.Renderer = Renderer;
+
+            //Get 1st controller detected
+            foreach (Controller SelectController in InputControllers)
+            {
+                if (SelectController.IsConnected)
+                {
+                    InputController = SelectController;
+                    break;
+                }
+            }
+
+            if (InputController != null)
+            {
+                XInputEnabled = true;
+                Console.WriteLine("XInput controller detected!");
+            }
+            else
+            {
+                Console.WriteLine("XInput controller not detected!");
+            }
 
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
@@ -54,7 +88,35 @@ namespace Ryujinx
             int RightJoystickDX = 0;
             int RightJoystickDY = 0;
 
-            //RightJoystick
+            //XInput
+            if (XInputEnabled)
+            {
+                State CurrentState = InputController.GetState();
+
+                //Buttons
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonA)) CurrentButton |= HidControllerButtons.KEY_A;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonB)) CurrentButton |= HidControllerButtons.KEY_B;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonX)) CurrentButton |= HidControllerButtons.KEY_X;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonY)) CurrentButton |= HidControllerButtons.KEY_Y;
+
+                //Plus/Minus
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonPlus))  CurrentButton |= HidControllerButtons.KEY_PLUS;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonMinus)) CurrentButton |= HidControllerButtons.KEY_MINUS;
+
+                //DPad
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.DPadUp))    CurrentButton |= HidControllerButtons.KEY_DUP;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.DPadDown))  CurrentButton |= HidControllerButtons.KEY_DDOWN;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.DPadLeft))  CurrentButton |= HidControllerButtons.KEY_DLEFT;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.DPadRight)) CurrentButton |= HidControllerButtons.KEY_DRIGHT;
+
+                //L/ZL/R/ZR
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonL))  CurrentButton |= HidControllerButtons.KEY_L;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonZL)) CurrentButton |= HidControllerButtons.KEY_ZL;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonR))  CurrentButton |= HidControllerButtons.KEY_R;
+                if (CurrentState.Gamepad.Buttons.HasFlag((GamepadButtonFlags)Config.XInput.ButtonZR)) CurrentButton |= HidControllerButtons.KEY_ZR;
+            }
+
+            //LeftJoystick
             if (Keyboard[(Key)Config.FakeJoyCon.Left.StickUp])    LeftJoystickDY = short.MaxValue;
             if (Keyboard[(Key)Config.FakeJoyCon.Left.StickDown])  LeftJoystickDY = -short.MaxValue;
             if (Keyboard[(Key)Config.FakeJoyCon.Left.StickLeft])  LeftJoystickDX = -short.MaxValue;
