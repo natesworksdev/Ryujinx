@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Ryujinx.HLE.Gpu
 {
@@ -10,6 +11,10 @@ namespace Ryujinx.HLE.Gpu
         //Note: The size of the macro memory is unknown, we just make
         //a guess here and use 256kb as the size. Increase if needed.
         private const int MmeWords = 256 * 256;
+
+        //This is used to prevent an unbounded growth of the FIFO queue.
+        //The game shouldn't send more commands than we are capable to process.
+        private const int FifoCapacity = 10000;
 
         private NvGpu Gpu;
 
@@ -48,6 +53,8 @@ namespace Ryujinx.HLE.Gpu
 
         private int[] Mme;
 
+        private ManualResetEvent FifoWait;
+
         public NvGpuFifo(NvGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -59,10 +66,19 @@ namespace Ryujinx.HLE.Gpu
             Macros = new CachedMacro[MacrosCount];
 
             Mme = new int[MmeWords];
+
+            FifoWait = new ManualResetEvent(true);
         }
 
         public void PushBuffer(NvGpuVmm Vmm, NvGpuPBEntry[] Buffer)
         {
+            if (BufferQueue.Count + Buffer.Length > FifoCapacity)
+            {
+                FifoWait.Reset();
+            }
+
+            FifoWait.WaitOne();
+
             foreach (NvGpuPBEntry PBEntry in Buffer)
             {
                 BufferQueue.Enqueue((Vmm, PBEntry));
@@ -72,6 +88,8 @@ namespace Ryujinx.HLE.Gpu
         public void DispatchCalls()
         {
             while (Step());
+
+            FifoWait.Set();
         }
 
         public bool Step()

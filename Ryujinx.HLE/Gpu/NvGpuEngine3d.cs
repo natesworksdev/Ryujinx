@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.Gpu
 
             long[] Tags = UploadShaders(Vmm);
 
-            Gpu.Renderer.BindProgram();
+            Gpu.Renderer.Shader.BindProgram();
 
             SetAlphaBlending();
 
@@ -113,8 +113,8 @@ namespace Ryujinx.HLE.Gpu
 
             //Note: Using the Width/Height results seems to give incorrect results.
             //Maybe the size of all frame buffers is hardcoded to screen size? This seems unlikely.
-            Gpu.Renderer.CreateFrameBuffer(PA, 1280, 720);
-            Gpu.Renderer.BindFrameBuffer(PA);
+            Gpu.Renderer.FrameBuffer.Create(PA, 1280, 720);
+            Gpu.Renderer.FrameBuffer.Bind(PA);
         }
 
         private long[] UploadShaders(NvGpuVmm Vmm)
@@ -142,8 +142,8 @@ namespace Ryujinx.HLE.Gpu
 
                 Tags[(int)ShaderType] = Tag;
 
-                Gpu.Renderer.CreateShader(Vmm, Tag, ShaderType);
-                Gpu.Renderer.BindShader(Tag);
+                Gpu.Renderer.Shader.Create(Vmm, Tag, ShaderType);
+                Gpu.Renderer.Shader.Bind(Tag);
             }
 
             int RawSX = ReadRegister(NvGpuEngine3dReg.ViewportScaleX);
@@ -155,7 +155,7 @@ namespace Ryujinx.HLE.Gpu
             float SignX = MathF.Sign(SX);
             float SignY = MathF.Sign(SY);
 
-            Gpu.Renderer.SetUniform2F(GalConsts.FlipUniformName, SignX, SignY);
+            Gpu.Renderer.Shader.SetUniform2F(GalConsts.FlipUniformName, SignX, SignY);
 
             return Tags;
         }
@@ -180,7 +180,14 @@ namespace Ryujinx.HLE.Gpu
             //TODO: Support independent blend properly.
             bool Enable = (ReadRegister(NvGpuEngine3dReg.IBlendNEnable) & 1) != 0;
 
-            Gpu.Renderer.SetBlendEnable(Enable);
+            if (Enable)
+            {
+                Gpu.Renderer.Blend.Enable();
+            }
+            else
+            {
+                Gpu.Renderer.Blend.Disable();
+            }
 
             if (!Enable)
             {
@@ -203,7 +210,7 @@ namespace Ryujinx.HLE.Gpu
                 GalBlendFactor FuncSrcAlpha = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncSrcAlpha);
                 GalBlendFactor FuncDstAlpha = (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncDstAlpha);
 
-                Gpu.Renderer.SetBlendSeparate(
+                Gpu.Renderer.Blend.SetSeparate(
                     EquationRgb,
                     EquationAlpha,
                     FuncSrcRgb,
@@ -213,7 +220,7 @@ namespace Ryujinx.HLE.Gpu
             }
             else
             {
-                Gpu.Renderer.SetBlend(EquationRgb, FuncSrcRgb, FuncDstRgb);
+                Gpu.Renderer.Blend.Set(EquationRgb, FuncSrcRgb, FuncDstRgb);
             }
         }
 
@@ -229,13 +236,13 @@ namespace Ryujinx.HLE.Gpu
 
             for (int Index = 0; Index < Tags.Length; Index++)
             {
-                foreach (ShaderDeclInfo DeclInfo in Gpu.Renderer.GetTextureUsage(Tags[Index]))
+                foreach (ShaderDeclInfo DeclInfo in Gpu.Renderer.Shader.GetTextureUsage(Tags[Index]))
                 {
                     long Position = ConstBuffers[Index][TextureCbIndex].Position;
 
                     UploadTexture(Vmm, Position, TexIndex, DeclInfo.Index);
 
-                    Gpu.Renderer.SetUniform1(DeclInfo.Name, TexIndex);
+                    Gpu.Renderer.Shader.SetUniform1(DeclInfo.Name, TexIndex);
 
                     TexIndex++;
                 }
@@ -280,7 +287,7 @@ namespace Ryujinx.HLE.Gpu
                 //we shouldn't read anything from memory and bind
                 //the frame buffer texture instead, since we're not
                 //really writing anything to memory.
-                Gpu.Renderer.BindFrameBufferTexture(TextureAddress, TexIndex, Sampler);
+                Gpu.Renderer.FrameBuffer.BindTexture(TextureAddress, TexIndex);
             }
             else
             {
@@ -288,22 +295,29 @@ namespace Ryujinx.HLE.Gpu
 
                 long Size = (uint)TextureHelper.GetTextureSize(NewTexture);
 
-                if (Gpu.Renderer.TryGetCachedTexture(Tag, Size, out GalTexture Texture))
+                bool HasCachedTexture = false;
+
+                if (Gpu.Renderer.Texture.TryGetCachedTexture(Tag, Size, out GalTexture Texture))
                 {
                     if (NewTexture.Equals(Texture) && !Vmm.IsRegionModified(Tag, Size, NvGpuBufferType.Texture))
                     {
-                        Gpu.Renderer.BindTexture(Tag, TexIndex);
+                        Gpu.Renderer.Texture.Bind(Tag, TexIndex);
 
-                        return;
+                        HasCachedTexture = true;
                     }
                 }
 
-                byte[] Data = TextureFactory.GetTextureData(Vmm, TicPosition);
+                if (!HasCachedTexture)
+                {
+                    byte[] Data = TextureFactory.GetTextureData(Vmm, TicPosition);
 
-                Gpu.Renderer.SetTextureAndSampler(Tag, Data, NewTexture, Sampler);
+                    Gpu.Renderer.Texture.Create(Tag, Data, NewTexture);
+                }
 
-                Gpu.Renderer.BindTexture(Tag, TexIndex);
+                Gpu.Renderer.Texture.Bind(Tag, TexIndex);
             }
+
+            Gpu.Renderer.Texture.SetSampler(Sampler);
         }
 
         private void UploadUniforms(NvGpuVmm Vmm)
@@ -331,7 +345,7 @@ namespace Ryujinx.HLE.Gpu
                     {
                         byte[] Data = Vmm.ReadBytes(Cb.Position, (uint)Cb.Size);
 
-                        Gpu.Renderer.SetConstBuffer(BasePosition + (uint)Offset, Cbuf, Data);
+                        Gpu.Renderer.Shader.SetConstBuffer(BasePosition + (uint)Offset, Cbuf, Data);
                     }
                 }
             }
@@ -341,33 +355,33 @@ namespace Ryujinx.HLE.Gpu
         {
             long IndexPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.IndexArrayAddress);
 
-            int IndexSize  = ReadRegister(NvGpuEngine3dReg.IndexArrayFormat);
-            int IndexFirst = ReadRegister(NvGpuEngine3dReg.IndexBatchFirst);
-            int IndexCount = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
+            int IndexEntryFmt = ReadRegister(NvGpuEngine3dReg.IndexArrayFormat);
+            int IndexFirst    = ReadRegister(NvGpuEngine3dReg.IndexBatchFirst);
+            int IndexCount    = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
 
-            GalIndexFormat IndexFormat = (GalIndexFormat)IndexSize;
+            GalIndexFormat IndexFormat = (GalIndexFormat)IndexEntryFmt;
 
-            IndexSize = 1 << IndexSize;
+            int IndexEntrySize = 1 << IndexEntryFmt;
 
-            if (IndexSize > 4)
+            if (IndexEntrySize > 4)
             {
                 throw new InvalidOperationException();
             }
 
             if (IndexCount != 0)
             {
-                int IbSize = IndexCount * IndexSize;
+                int IbSize = IndexCount * IndexEntrySize;
 
-                bool IboCached = Gpu.Renderer.IsIboCached(IndexPosition, (uint)IbSize);
+                bool IboCached = Gpu.Renderer.Rasterizer.IsIboCached(IndexPosition, (uint)IbSize);
 
                 if (!IboCached || Vmm.IsRegionModified(IndexPosition, (uint)IbSize, NvGpuBufferType.Index))
                 {
                     byte[] Data = Vmm.ReadBytes(IndexPosition, (uint)IbSize);
 
-                    Gpu.Renderer.CreateIbo(IndexPosition, Data);
+                    Gpu.Renderer.Rasterizer.CreateIbo(IndexPosition, Data);
                 }
 
-                Gpu.Renderer.SetIndexArray(IndexPosition, IbSize, IndexFormat);
+                Gpu.Renderer.Rasterizer.SetIndexArray(IndexPosition, IbSize, IndexFormat);
             }
 
             List<GalVertexAttrib>[] Attribs = new List<GalVertexAttrib>[32];
@@ -429,27 +443,27 @@ namespace Ryujinx.HLE.Gpu
                     VbSize = VertexCount * Stride;
                 }
 
-                bool VboCached = Gpu.Renderer.IsVboCached(VertexPosition, VbSize);
+                bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VertexPosition, VbSize);
 
                 if (!VboCached || Vmm.IsRegionModified(VertexPosition, VbSize, NvGpuBufferType.Vertex))
                 {
                     byte[] Data = Vmm.ReadBytes(VertexPosition, VbSize);
 
-                    Gpu.Renderer.CreateVbo(VertexPosition, Data);
+                    Gpu.Renderer.Rasterizer.CreateVbo(VertexPosition, Data);
                 }
 
-                Gpu.Renderer.SetVertexArray(Index, Stride, VertexPosition, Attribs[Index].ToArray());
+                Gpu.Renderer.Rasterizer.SetVertexArray(Index, Stride, VertexPosition, Attribs[Index].ToArray());
             }
 
             GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
 
             if (IndexCount != 0)
             {
-                Gpu.Renderer.DrawElements(IndexPosition, IndexFirst, PrimType);
+                Gpu.Renderer.Rasterizer.DrawElements(IndexPosition, IndexFirst, PrimType);
             }
             else
             {
-                Gpu.Renderer.DrawArrays(VertexFirst, VertexCount, PrimType);
+                Gpu.Renderer.Rasterizer.DrawArrays(VertexFirst, VertexCount, PrimType);
             }
         }
 

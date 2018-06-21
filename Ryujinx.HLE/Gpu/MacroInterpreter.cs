@@ -5,6 +5,10 @@ namespace Ryujinx.HLE.Gpu
 {
     class MacroInterpreter
     {
+        private const int MaxCallCountPerRun = 500;
+
+        private int CallCount;
+
         private enum AssignmentOperation
         {
             IgnoreAndFetch                  = 0,
@@ -96,6 +100,8 @@ namespace Ryujinx.HLE.Gpu
             MethIncr = 0;
 
             Carry = false;
+
+            CallCount = 0;
         }
 
         private bool Step(NvGpuVmm Vmm, int[] Mme)
@@ -407,6 +413,15 @@ namespace Ryujinx.HLE.Gpu
 
         private void Send(NvGpuVmm Vmm, int Value)
         {
+            //This is an artificial limit that prevents excessive calls
+            //to VertexEndGl since that triggers rendering, and in the
+            //case that something is bugged and causes an absurd amount of
+            //draw calls, this prevents the system from freezing (and throws instead).
+            if (MethAddr == 0x585 && ++CallCount > MaxCallCountPerRun)
+            {
+                throw new GpuMacroException(GpuMacroExceptionMsgs.CallCountExceeded);
+            }
+
             NvGpuPBEntry PBEntry = new NvGpuPBEntry(MethAddr, 0, Value);
 
             Engine.CallMethod(Vmm, PBEntry);

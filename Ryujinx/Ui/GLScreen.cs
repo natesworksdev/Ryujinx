@@ -42,7 +42,7 @@ namespace Ryujinx
         {
             VSync = VSyncMode.On;
 
-            Renderer.SetWindowSize(Width, Height);
+            Renderer.FrameBuffer.SetWindowSize(Width, Height);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
@@ -183,24 +183,29 @@ namespace Ryujinx
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
-            Ns.Statistics.StartSystemFrame();
-
-            Title = $"Ryujinx Screen - (Vsync: {VSync} - FPS: {Ns.Statistics.SystemFrameRate:0} - Guest FPS: " +
-                $"{Ns.Statistics.GameFrameRate:0})";
-
             Renderer.RunActions();
-            Renderer.Render();
+
+            Renderer.FrameBuffer.Render();
+
+            Ns.Statistics.EndSystemFrame();
+
+            double HostFps = Ns.Statistics.SystemFrameRate;
+            double GameFps = Ns.Statistics.GameFrameRate;
+
+            Title = $"Ryujinx | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0}";
 
             SwapBuffers();
 
-            Ns.Statistics.EndSystemFrame();
+            Ns.Statistics.StartSystemFrame();
+
+            Ns.ProcessFrame();
 
             Ns.Os.SignalVsync();
         }
 
         protected override void OnResize(EventArgs e)
         {
-            Renderer.SetWindowSize(Width, Height);
+            Renderer.FrameBuffer.SetWindowSize(Width, Height);
         }
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)

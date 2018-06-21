@@ -103,7 +103,7 @@ namespace Ryujinx.HLE.Gpu
                 SrcWidth  = 1280;
                 SrcHeight = 720;
 
-                Gpu.Renderer.GetFrameBufferData(Tag, (byte[] Buffer) =>
+                Gpu.Renderer.FrameBuffer.GetBufferData(Tag, (byte[] Buffer) =>
                 {
                     CopyTexture(
                         Vmm,

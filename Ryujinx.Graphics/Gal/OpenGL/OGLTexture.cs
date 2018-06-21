@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLTexture
+    public class OGLTexture : IGalTexture
     {
         private class TCE
         {
@@ -173,7 +173,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public static void Set(GalTextureSampler Sampler)
+        public void SetSampler(GalTextureSampler Sampler)
         {
             int WrapS = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressU);
             int WrapT = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressV);

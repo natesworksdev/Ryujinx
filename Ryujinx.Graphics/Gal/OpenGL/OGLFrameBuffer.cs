@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLFrameBuffer
+    public class OGLFrameBuffer : IGalFrameBuffer
     {
         private struct Rect
         {
@@ -16,9 +16,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             public Rect(int X, int Y, int Width, int Height)
             {
-                this.X     = X;
-                this.Y     = Y;
-                this.Width = Width;
+                this.X      = X;
+                this.Y      = Y;
+                this.Width  = Width;
                 this.Height = Height;
             }
         }
@@ -185,9 +185,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             CurrTexHandle = RawFbTexHandle;
         }
 
-        public void SetTransform(Matrix2 Transform, Vector2 Offs)
+        public void SetTransform(float SX, float SY, float Rotate, float TX, float TY)
         {
             EnsureInitialized();
+
+            Matrix2 Transform;
+
+            Transform  = Matrix2.CreateScale(SX, SY);
+            Transform *= Matrix2.CreateRotation(Rotate);
+
+            Vector2 Offs = new Vector2(TX, TY);
 
             int CurrentProgram = GL.GetInteger(GetPName.CurrentProgram);
 

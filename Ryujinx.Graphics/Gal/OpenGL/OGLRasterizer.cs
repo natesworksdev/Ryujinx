@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLRasterizer
+    public class OGLRasterizer : IGalRasterizer
     {
         private static Dictionary<GalVertexAttribSize, int> AttribElements =
                    new Dictionary<GalVertexAttribSize, int>()

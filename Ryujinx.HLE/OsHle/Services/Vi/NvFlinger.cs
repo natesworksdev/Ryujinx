@@ -339,7 +339,7 @@ namespace Ryujinx.HLE.OsHle.Services.Android
                 Rotate = -MathF.PI * 0.5f;
             }
 
-            Renderer.SetFrameBufferTransform(ScaleX, ScaleY, Rotate, OffsX, OffsY);
+            Renderer.QueueAction(() => Renderer.FrameBuffer.SetTransform(ScaleX, ScaleY, Rotate, OffsX, OffsY));
 
             //TODO: Support double buffering here aswell, it is broken for GPU
             //frame buffers because it seems to be completely out of sync.
@@ -347,7 +347,7 @@ namespace Ryujinx.HLE.OsHle.Services.Android
             {
                 //Frame buffer is rendered to by the GPU, we can just
                 //bind the frame buffer texture, it's not necessary to read anything.
-                Renderer.SetFrameBuffer(FbAddr);
+                Renderer.QueueAction(() => Renderer.FrameBuffer.Set(FbAddr));
             }
             else
             {
@@ -357,7 +357,7 @@ namespace Ryujinx.HLE.OsHle.Services.Android
 
                 byte[] Data = TextureReader.Read(Context.Memory, Texture);
 
-                Renderer.SetFrameBuffer(Data, FbWidth, FbHeight);
+                Renderer.QueueAction(() => Renderer.FrameBuffer.Set(Data, FbWidth, FbHeight));
             }
 
             Context.Ns.Gpu.Renderer.QueueAction(() => ReleaseBuffer(Slot));
