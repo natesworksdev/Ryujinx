@@ -179,26 +179,24 @@ namespace Ryujinx
                 CurrentButton,
                 LeftJoystick,
                 RightJoystick);
+
+            Ns.ProcessFrame();
+
+            Renderer.RunActions();
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
-            Renderer.RunActions();
-
             Renderer.FrameBuffer.Render();
 
-            Ns.Statistics.EndSystemFrame();
+            Ns.Statistics.RecordSystemFrameTime();
 
-            double HostFps = Ns.Statistics.SystemFrameRate;
-            double GameFps = Ns.Statistics.GameFrameRate;
+            double HostFps = Ns.Statistics.GetSystemFrameRate();
+            double GameFps = Ns.Statistics.GetGameFrameRate();
 
             Title = $"Ryujinx | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0}";
 
             SwapBuffers();
-
-            Ns.Statistics.StartSystemFrame();
-
-            Ns.ProcessFrame();
 
             Ns.Os.SignalVsync();
         }

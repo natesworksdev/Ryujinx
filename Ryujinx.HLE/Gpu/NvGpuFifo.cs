@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Threading;
 
 namespace Ryujinx.HLE.Gpu
 {
@@ -53,8 +52,6 @@ namespace Ryujinx.HLE.Gpu
 
         private int[] Mme;
 
-        private ManualResetEvent FifoWait;
-
         public NvGpuFifo(NvGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -66,19 +63,10 @@ namespace Ryujinx.HLE.Gpu
             Macros = new CachedMacro[MacrosCount];
 
             Mme = new int[MmeWords];
-
-            FifoWait = new ManualResetEvent(true);
         }
 
         public void PushBuffer(NvGpuVmm Vmm, NvGpuPBEntry[] Buffer)
         {
-            if (BufferQueue.Count + Buffer.Length > FifoCapacity)
-            {
-                FifoWait.Reset();
-            }
-
-            FifoWait.WaitOne();
-
             foreach (NvGpuPBEntry PBEntry in Buffer)
             {
                 BufferQueue.Enqueue((Vmm, PBEntry));
@@ -88,8 +76,6 @@ namespace Ryujinx.HLE.Gpu
         public void DispatchCalls()
         {
             while (Step());
-
-            FifoWait.Set();
         }
 
         public bool Step()

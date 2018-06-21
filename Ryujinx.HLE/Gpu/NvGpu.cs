@@ -1,5 +1,4 @@
 using Ryujinx.Graphics.Gal;
-using System.Threading;
 
 namespace Ryujinx.HLE.Gpu
 {
