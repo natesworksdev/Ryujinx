@@ -76,16 +76,6 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"SinksSize: {OutputResponse.SinksSize}");
             Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"MemoryPoolCount: {MemoryPoolCount}");
 
-            byte[] Output = new byte[OutputResponse.TotalSize];
-
-            IntPtr Ptr = Marshal.AllocHGlobal(Output.Length);
-
-            Marshal.StructureToPtr(OutputResponse, Ptr, true);
-
-            Marshal.Copy(Ptr, Output, 0, Output.Length);
-
-            Marshal.FreeHGlobal(Ptr);
-
             MemoryPoolEntry[] PoolEntry = new MemoryPoolEntry[MemoryPoolCount];
 
             for (int Index = 0; Index < PoolEntry.Length; Index++)
@@ -97,36 +87,6 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
                 else
                     PoolEntry[Index].State = PoolInfo[Index].PoolState;
             }
-
-            bool First = false;
-
-            byte[] PoolEntryArray = new byte[16 * MemoryPoolCount];
-
-            for (int Index = 0; Index < PoolEntry.Length; Index++)
-            {
-                if (!First)
-                {
-                    IntPtr PtrPool = Marshal.AllocHGlobal(PoolEntryArray.Length);
-                    Marshal.StructureToPtr(PoolEntry[Index], PtrPool, true);
-                    Marshal.Copy(PtrPool, PoolEntryArray, Index, PoolEntryArray.Length);
-                    Marshal.FreeHGlobal(PtrPool);
-                }
-                /*else
-                {
-                    IntPtr PtrPool = Marshal.AllocHGlobal(PoolEntryArray.Length);
-                    Marshal.StructureToPtr(PoolEntry[Index], PtrPool, true);
-                    Marshal.Copy(PtrPool, PoolEntryArray, Marshal.SizeOf(PoolEntry[Index]) * Index, PoolEntryArray.Length);
-                    Marshal.FreeHGlobal(PtrPool);
-                }*/
-
-                First = true;
-            }
-
-            File.WriteAllBytes("PoolTest.bin", PoolEntryArray);
-
-            Array.Copy(PoolEntryArray, 0, Output, Marshal.SizeOf(OutputResponse), PoolEntryArray.Length);
-
-            Context.Memory.WriteBytes(OutputPosition + 0x4, Output);
 
             //TODO: We shouldn't be signaling this here.
             UpdateEvent.WaitEvent.Set();
