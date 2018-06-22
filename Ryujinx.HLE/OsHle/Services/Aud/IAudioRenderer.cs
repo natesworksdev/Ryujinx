@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             return RequestUpdateAudioRendererMethod(Context, Context.Request.GetBufferType0x21().Position);
         }
         
-        public void RequestUpdateAudioRendererMethod(ServiceCtx Context, long Position)
+        public long RequestUpdateAudioRendererMethod(ServiceCtx Context, long Position)
         {
             //(buffer<unknown, 5, 0>) -> (buffer<unknown, 6, 0>, buffer<unknown, 6, 0>)
 
