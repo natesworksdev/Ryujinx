@@ -71,6 +71,9 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"TotalSize: {OutputResponse.TotalSize}");
             Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"MemoryPoolsSize: {OutputResponse.MemoryPoolsSize}");
+            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"VoicesSize: {OutputResponse.VoicesSize}");
+            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"EffectsSize: {OutputResponse.EffectsSize}");
+            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"SinksSize: {OutputResponse.SinksSize}");
             Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"MemoryPoolCount: {MemoryPoolCount}");
 
             byte[] Output = new byte[OutputResponse.TotalSize];
