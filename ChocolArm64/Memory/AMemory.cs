@@ -131,6 +131,24 @@ namespace ChocolArm64.Memory
             }
         }
 
+        public void WriteInt32ToSharedAddr(long Position, int Value)
+        {
+            long MaskedPosition = Position & ~ErgMask;
+
+            lock (Monitors)
+            {
+                foreach (ArmMonitor Mon in Monitors.Values)
+                {
+                    if (Mon.Position == MaskedPosition && Mon.ExState)
+                    {
+                        Mon.ExState = false;
+                    }
+                }
+
+                WriteInt32(Position, Value);
+            }
+        }
+
         public long GetHostPageSize()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

@@ -1,6 +1,7 @@
 using ChocolArm64.State;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Handles;
+using System;
 
 using static Ryujinx.HLE.OsHle.ErrorCode;
 
@@ -139,9 +140,9 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
-            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
+            KThread WaitThread = Process.GetThread(ThreadState.Tpidr);
 
-            if (!CondVarWait(CurrThread, ThreadHandle, MutexAddress, CondVarAddress, Timeout))
+            if (!CondVarWait(WaitThread, ThreadHandle, MutexAddress, CondVarAddress, Timeout))
             {
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.Timeout);
 
@@ -176,7 +177,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
         {
             lock (Process.ThreadSyncLock)
             {
-                int MutexValue = Process.Memory.ReadInt32(MutexAddress);
+                int MutexValue = Memory.ReadInt32(MutexAddress);
 
                 Ns.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = " + MutexValue.ToString("x8"));
 
@@ -204,6 +205,11 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 //If no threads are waiting for the lock, then it should be null.
                 (KThread OwnerThread, int Count) = PopMutexThreadUnsafe(CurrThread, MutexAddress);
 
+                if (OwnerThread == CurrThread)
+                {
+                    throw new InvalidOperationException();
+                }
+
                 if (OwnerThread != null)
                 {
                     //Remove all waiting mutex from the old owner,
@@ -214,13 +220,12 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                     int HasListeners = Count >= 2 ? MutexHasListenersMask : 0;
 
-                    Process.Memory.WriteInt32(MutexAddress, HasListeners | OwnerThread.WaitHandle);
+                    Memory.WriteInt32ToSharedAddr(MutexAddress, HasListeners | OwnerThread.WaitHandle);
 
                     OwnerThread.WaitHandle     = 0;
                     OwnerThread.MutexAddress   = 0;
                     OwnerThread.CondVarAddress = 0;
-
-                    OwnerThread.MutexOwner = null;
+                    OwnerThread.MutexOwner     = null;
 
                     OwnerThread.UpdatePriority();
 
@@ -230,7 +235,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 }
                 else
                 {
-                    Process.Memory.WriteInt32(MutexAddress, 0);
+                    Memory.WriteInt32ToSharedAddr(MutexAddress, 0);
 
                     Ns.Log.PrintDebug(LogClass.KernelSvc, "No threads waiting mutex!");
                 }
@@ -316,7 +321,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                     Memory.SetExclusive(ThreadState, MutexAddress);
 
-                    int MutexValue = Process.Memory.ReadInt32(MutexAddress);
+                    int MutexValue = Memory.ReadInt32(MutexAddress);
 
                     while (MutexValue != 0)
                     {
@@ -325,7 +330,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                             //Wait until the lock is released.
                             InsertWaitingMutexThreadUnsafe(MutexValue & ~MutexHasListenersMask, WaitThread);
 
-                            Process.Memory.WriteInt32(MutexAddress, MutexValue | MutexHasListenersMask);
+                            Memory.WriteInt32(MutexAddress, MutexValue | MutexHasListenersMask);
 
                             Memory.ClearExclusiveForStore(ThreadState);
 
@@ -334,7 +339,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                         Memory.SetExclusive(ThreadState, MutexAddress);
 
-                        MutexValue = Process.Memory.ReadInt32(MutexAddress);
+                        MutexValue = Memory.ReadInt32(MutexAddress);
                     }
 
                     Ns.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = " + MutexValue.ToString("x8"));
@@ -342,7 +347,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                     if (MutexValue == 0)
                     {
                         //Give the lock to this thread.
-                        Process.Memory.WriteInt32(MutexAddress, WaitThread.WaitHandle);
+                        Memory.WriteInt32ToSharedAddr(MutexAddress, WaitThread.WaitHandle);
 
                         WaitThread.WaitHandle     = 0;
                         WaitThread.MutexAddress   = 0;
