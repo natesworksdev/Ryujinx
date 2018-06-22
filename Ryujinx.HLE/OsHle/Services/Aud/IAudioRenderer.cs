@@ -18,10 +18,11 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 4, RequestUpdateAudioRenderer },
-                { 5, StartAudioRenderer         },
-                { 6, StopAudioRenderer          },
-                { 7, QuerySystemEvent           }
+                { 4,  RequestUpdateAudioRenderer     },
+                { 5,  StartAudioRenderer             },
+                { 6,  StopAudioRenderer              },
+                { 7,  QuerySystemEvent               },
+                { 10, RequestUpdateAudioRendererAuto }
             };
 
             UpdateEvent = new KEvent();
@@ -29,9 +30,21 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         public long RequestUpdateAudioRenderer(ServiceCtx Context)
         {
-            //(buffer<unknown, 5, 0>) -> (buffer<unknown, 6, 0>, buffer<unknown, 6, 0>)
+            RequestUpdateAudioRendererMethod(Context, Context.Request.ReceiveBuff[0].Position);
 
-            long Position = Context.Request.ReceiveBuff[0].Position;
+            return 0;
+        }
+        
+        public long RequestUpdateAudioRendererAuto(ServiceCtx Context)
+        {
+            RequestUpdateAudioRendererMethod(Context, Context.Request.GetBufferType0x21().Position);
+        
+            return 0;
+        }
+        
+        public void RequestUpdateAudioRendererMethod(ServiceCtx Context, long Position)
+        {
+            //(buffer<unknown, 5, 0>) -> (buffer<unknown, 6, 0>, buffer<unknown, 6, 0>)
 
             //0x40 bytes header
             Context.Memory.WriteInt32(Position + 0x4, 0xb0); //Behavior Out State Size? (note: this is the last section)
@@ -49,8 +62,6 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             //TODO: We shouldn't be signaling this here.
             UpdateEvent.WaitEvent.Set();
-
-            return 0;
         }
 
         public long StartAudioRenderer(ServiceCtx Context)
