@@ -88,6 +88,20 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
                     PoolEntry[Index].State = PoolInfo[Index].PoolState;
             }
 
+            //0x40 bytes header
+            Context.Memory.WriteInt32(OutputPosition + 0x4, OutputResponse.ErrorInfoSize); //Behavior Out State Size? (note: this is the last section)
+            Context.Memory.WriteInt32(OutputPosition + 0x8, OutputResponse.MemoryPoolsSize); //Memory Pool Out State Size?
+            Context.Memory.WriteInt32(OutputPosition + 0xc, OutputResponse.VoicesSize); //Voice Out State Size?
+            Context.Memory.WriteInt32(OutputPosition + 0x14, OutputResponse.EffectsSize); //Effect Out State Size?
+            Context.Memory.WriteInt32(OutputPosition + 0x1c, OutputResponse.SinksSize); //Sink Out State Size?
+            Context.Memory.WriteInt32(OutputPosition + 0x20, OutputResponse.PerformanceManagerSize); //Performance Out State Size?
+            Context.Memory.WriteInt32(OutputPosition + 0x3c, OutputResponse.TotalSize); //Total Size (including 0x40 bytes header)
+
+            for (int Offset = 0x40; Offset < 0x40 + (OutputResponse.TotalSize - 800); Offset += 0x10)
+            {
+                Context.Memory.WriteInt32(OutputPosition + Offset, 5);
+            }
+
             //TODO: We shouldn't be signaling this here.
             UpdateEvent.WaitEvent.Set();
 
