@@ -30,16 +30,12 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         public long RequestUpdateAudioRenderer(ServiceCtx Context)
         {
-            RequestUpdateAudioRendererMethod(Context, Context.Request.ReceiveBuff[0].Position);
-
-            return 0;
+            return RequestUpdateAudioRendererMethod(Context, Context.Request.ReceiveBuff[0].Position);
         }
         
         public long RequestUpdateAudioRendererAuto(ServiceCtx Context)
         {
-            RequestUpdateAudioRendererMethod(Context, Context.Request.GetBufferType0x21().Position);
-        
-            return 0;
+            return RequestUpdateAudioRendererMethod(Context, Context.Request.GetBufferType0x21().Position);
         }
         
         public void RequestUpdateAudioRendererMethod(ServiceCtx Context, long Position)
@@ -62,6 +58,8 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             //TODO: We shouldn't be signaling this here.
             UpdateEvent.WaitEvent.Set();
+            
+            return 0;
         }
 
         public long StartAudioRenderer(ServiceCtx Context)
