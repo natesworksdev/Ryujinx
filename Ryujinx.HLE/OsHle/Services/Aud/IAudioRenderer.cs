@@ -97,7 +97,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             Context.Memory.WriteInt32(OutputPosition + 0x20, OutputResponse.PerformanceManagerSize); //Performance Out State Size?
             Context.Memory.WriteInt32(OutputPosition + 0x3c, OutputResponse.TotalSize); //Total Size (including 0x40 bytes header)
 
-            for (int Offset = 0x40; Offset < 0x40 + (OutputResponse.TotalSize - 800); Offset += 0x10)
+            for (int Offset = 0x40; Offset < 0x40 + OutputResponse.MemoryPoolsSize; Offset += 0x10)
             {
                 Context.Memory.WriteInt32(OutputPosition + Offset, 5);
             }
