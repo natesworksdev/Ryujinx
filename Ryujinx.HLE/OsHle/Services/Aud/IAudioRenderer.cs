@@ -4,7 +4,6 @@ using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.OsHle.Services.Aud
@@ -17,7 +16,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         private KEvent UpdateEvent;
 
-        private AudioRendererParameters WorkerParams;
+        private AudioRendererParameters Params;
 
         public IAudioRenderer(AudioRendererParameters WorkerParams)
         {
@@ -29,9 +28,9 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
                 { 7, QuerySystemEvent           }
             };
 
-            UpdateEvent       = new KEvent();
+            UpdateEvent = new KEvent();
 
-            this.WorkerParams = WorkerParams;
+            this.Params = WorkerParams;
         }
 
         public long RequestUpdateAudioRenderer(ServiceCtx Context)
@@ -39,49 +38,39 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
 
-            AudioRendererConfig InputRequest = AMemoryHelper.Read<AudioRendererConfig>(Context.Memory, InputPosition);
+            AudioRendererConfig InputData = AMemoryHelper.Read<AudioRendererConfig>(Context.Memory, InputPosition);
 
-            int MemoryPoolOffset = Marshal.SizeOf(InputRequest) + InputRequest.BehaviourSize;
+            int MemoryPoolOffset = Marshal.SizeOf(InputData) + InputData.BehaviourSize;
 
-            GCHandle Handle = GCHandle.Alloc(WorkerParams, GCHandleType.Pinned);
+            AudioRendererOutput OutputData = new AudioRendererOutput();
 
-            AudioRendererResponse OutputResponse = (AudioRendererResponse)Marshal.PtrToStructure(Handle.AddrOfPinnedObject(), typeof(AudioRendererResponse));
+            OutputData.Revision               = Params.Revision;
+            OutputData.ErrorInfoSize          = 0xb0;
+            OutputData.MemoryPoolsSize        = (Params.EffectCount + (Params.VoiceCount * 4)) * 0x10;
+            OutputData.VoicesSize             = Params.VoiceCount  * 0x10;
+            OutputData.EffectsSize            = Params.EffectCount * 0x10;
+            OutputData.SinksSize              = Params.SinkCount   * 0x20;
+            OutputData.PerformanceManagerSize = 0x10;
+            OutputData.TotalSize              = Marshal.SizeOf(OutputData) + OutputData.ErrorInfoSize + OutputData.MemoryPoolsSize +
+                OutputData.VoicesSize + OutputData.EffectsSize + OutputData.SinksSize + OutputData.PerformanceManagerSize;
 
-            Handle.Free();
+            AMemoryHelper.Write(Context.Memory, OutputPosition, OutputData);
 
-            OutputResponse.Revision = WorkerParams.Magic;
-            OutputResponse.ErrorInfoSize = 0xb0;
-            OutputResponse.MemoryPoolsSize = (WorkerParams.EffectCount + (WorkerParams.VoiceCount * 4)) * 0x10;
-            OutputResponse.VoicesSize = WorkerParams.VoiceCount * 0x10;
-            OutputResponse.EffectsSize = WorkerParams.EffectCount * 0x10;
-            OutputResponse.SinksSize = WorkerParams.SinkCount * 0x20;
-            OutputResponse.PerformanceManagerSize = 0x10;
-            OutputResponse.TotalSize = Marshal.SizeOf(OutputResponse) + OutputResponse.ErrorInfoSize + OutputResponse.MemoryPoolsSize +
-                OutputResponse.VoicesSize + OutputResponse.EffectsSize + OutputResponse.SinksSize + OutputResponse.PerformanceManagerSize;
-
-            Context.Memory.WriteInt32(OutputPosition + 0x4,  OutputResponse.ErrorInfoSize);
-            Context.Memory.WriteInt32(OutputPosition + 0x8,  OutputResponse.MemoryPoolsSize);
-            Context.Memory.WriteInt32(OutputPosition + 0xc,  OutputResponse.VoicesSize);
-            Context.Memory.WriteInt32(OutputPosition + 0x14, OutputResponse.EffectsSize);
-            Context.Memory.WriteInt32(OutputPosition + 0x1c, OutputResponse.SinksSize);
-            Context.Memory.WriteInt32(OutputPosition + 0x20, OutputResponse.PerformanceManagerSize);
-            Context.Memory.WriteInt32(OutputPosition + 0x3c, OutputResponse.TotalSize - 4);
-
-            for (int Offset = 0x40; Offset < 0x40 + OutputResponse.MemoryPoolsSize; Offset += 0x10, MemoryPoolOffset += 0x20)
+            for (int Offset = 0x40; Offset < 0x40 + OutputData.MemoryPoolsSize; Offset += 0x10, MemoryPoolOffset += 0x20)
             {
-                int PoolState = Context.Memory.ReadInt32(InputPosition + MemoryPoolOffset + 0xC);
+                MemoryPoolStates PoolState = (MemoryPoolStates) Context.Memory.ReadInt32(InputPosition + MemoryPoolOffset + 0x10);
 
-                if (PoolState == 4)
+                if (PoolState == MemoryPoolStates.RequestAttach)
                 {
-                    Context.Memory.WriteInt32(OutputPosition + Offset, 5);
+                    Context.Memory.WriteInt32(OutputPosition + Offset, (int)MemoryPoolStates.Attached);
                 }
-                else if (PoolState == 2)
+                else if (PoolState == MemoryPoolStates.RequestDetach)
                 {
-                    Context.Memory.WriteInt32(OutputPosition + Offset, 3);
+                    Context.Memory.WriteInt32(OutputPosition + Offset, (int)MemoryPoolStates.Detached);
                 }
                 else
                 {
-                    Context.Memory.WriteInt32(OutputPosition + Offset, PoolState);
+                    Context.Memory.WriteInt32(OutputPosition + Offset, (int)PoolState);
                 }
             }
 
