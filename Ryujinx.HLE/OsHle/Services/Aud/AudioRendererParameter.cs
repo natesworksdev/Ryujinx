@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.OsHle.Services.Aud
 {
     [StructLayout(LayoutKind.Sequential)]
-    struct AudioRendererParameters
+    struct AudioRendererParameter
     {
         public int SampleRate;
         public int SampleCount;

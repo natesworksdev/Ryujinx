@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         {
             //Same buffer as GetAudioRendererWorkBufferSize is receive here.
 
-            AudioRendererParameters Params = new AudioRendererParameters();
+            AudioRendererParameter Params = new AudioRendererParameter();
 
             Params.SampleRate    = Context.RequestData.ReadInt32();
             Params.SampleCount   = Context.RequestData.ReadInt32();

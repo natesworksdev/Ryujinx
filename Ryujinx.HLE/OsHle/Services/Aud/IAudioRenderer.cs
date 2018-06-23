@@ -16,9 +16,9 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         private KEvent UpdateEvent;
 
-        private AudioRendererParameters Params;
+        private AudioRendererParameter Params;
 
-        public IAudioRenderer(AudioRendererParameters WorkerParams)
+        public IAudioRenderer(AudioRendererParameter Params)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             UpdateEvent = new KEvent();
 
-            this.Params = WorkerParams;
+            this.Params = Params;
         }
 
         public long RequestUpdateAudioRenderer(ServiceCtx Context)
@@ -38,25 +38,25 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
 
-            AudioRendererConfig InputData = AMemoryHelper.Read<AudioRendererConfig>(Context.Memory, InputPosition);
+            UpdateDataHeader InputDataHeader = AMemoryHelper.Read<UpdateDataHeader>(Context.Memory, InputPosition);
 
-            int MemoryPoolOffset = Marshal.SizeOf(InputData) + InputData.BehaviourSize;
+            int MemoryPoolOffset = Marshal.SizeOf(InputDataHeader) + InputDataHeader.BehaviorSize;
 
-            AudioRendererOutput OutputData = new AudioRendererOutput();
+            UpdateDataHeader OutputDataHeader = new UpdateDataHeader();
 
-            OutputData.Revision               = Params.Revision;
-            OutputData.ErrorInfoSize          = 0xb0;
-            OutputData.MemoryPoolsSize        = (Params.EffectCount + (Params.VoiceCount * 4)) * 0x10;
-            OutputData.VoicesSize             = Params.VoiceCount  * 0x10;
-            OutputData.EffectsSize            = Params.EffectCount * 0x10;
-            OutputData.SinksSize              = Params.SinkCount   * 0x20;
-            OutputData.PerformanceManagerSize = 0x10;
-            OutputData.TotalSize              = Marshal.SizeOf(OutputData) + OutputData.ErrorInfoSize + OutputData.MemoryPoolsSize +
-                OutputData.VoicesSize + OutputData.EffectsSize + OutputData.SinksSize + OutputData.PerformanceManagerSize;
+            OutputDataHeader.Revision               = Params.Revision;
+            OutputDataHeader.BehaviorSize          = 0xb0;
+            OutputDataHeader.MemoryPoolsSize        = (Params.EffectCount + (Params.VoiceCount * 4)) * 0x10;
+            OutputDataHeader.VoicesSize             = Params.VoiceCount  * 0x10;
+            OutputDataHeader.EffectsSize            = Params.EffectCount * 0x10;
+            OutputDataHeader.SinksSize              = Params.SinkCount   * 0x20;
+            OutputDataHeader.PerformanceManagerSize = 0x10;
+            OutputDataHeader.TotalSize              = Marshal.SizeOf(OutputDataHeader) + OutputDataHeader.BehaviorSize + OutputDataHeader.MemoryPoolsSize +
+                OutputDataHeader.VoicesSize + OutputDataHeader.EffectsSize + OutputDataHeader.SinksSize + OutputDataHeader.PerformanceManagerSize;
 
-            AMemoryHelper.Write(Context.Memory, OutputPosition, OutputData);
+            AMemoryHelper.Write(Context.Memory, OutputPosition, OutputDataHeader);
 
-            for (int Offset = 0x40; Offset < 0x40 + OutputData.MemoryPoolsSize; Offset += 0x10, MemoryPoolOffset += 0x20)
+            for (int Offset = 0x40; Offset < 0x40 + OutputDataHeader.MemoryPoolsSize; Offset += 0x10, MemoryPoolOffset += 0x20)
             {
                 MemoryPoolStates PoolState = (MemoryPoolStates) Context.Memory.ReadInt32(InputPosition + MemoryPoolOffset + 0x10);
 
