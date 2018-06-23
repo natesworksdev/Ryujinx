@@ -157,8 +157,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Prepare(bool TrySPIRV)
         {
-            Console.WriteLine(GL.GetInteger(GetPName.MaxUniformBufferBindings));
-            
             for (int Stage = 0; Stage < 5; Stage++)
             {
                 for (int Cbuf = 0; Cbuf < BuffersPerStage; Cbuf++)
@@ -405,32 +403,41 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 CheckProgramLink(Handle);
 
-                if (Language == ShadingLanguage.GLSL)
+                switch (Language)
                 {
-                    BindUniformBlocksIfNotNull(Handle, Current.Vertex);
-                    BindUniformBlocksIfNotNull(Handle, Current.TessControl);
-                    BindUniformBlocksIfNotNull(Handle, Current.TessEvaluation);
-                    BindUniformBlocksIfNotNull(Handle, Current.Geometry);
-                    BindUniformBlocksIfNotNull(Handle, Current.Fragment);
+                    case ShadingLanguage.GLSL:
+                    {
+                        int FreeBinding = 0;
+
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.Vertex);
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.TessControl);
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.TessEvaluation);
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.Geometry);
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.Fragment);
+                        break;
+                    }
+
+                    case ShadingLanguage.SPIRV:
+                    {
+                        for (int Stage = 0; Stage < 5; Stage++)
+                        {
+                            for (int Cbuf = 0; Cbuf < BuffersPerStage; Cbuf++)
+                            {
+                                OGLStreamBuffer Buffer = Buffers[Stage][Cbuf];
+
+                                int Binding = Shader.UniformBinding.Get((GalShaderType)Stage, Cbuf);
+
+                                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, Binding, Buffer.Handle);
+                            }
+                        }
+                        break;
+                    }
                 }
 
                 Programs.Add(Current, Handle);
             }
 
             GL.UseProgram(Handle);
-
-            //TODO: This could be done once, right?
-            for (int Stage = 0; Stage < 5; Stage++)
-            {
-                for (int Cbuf = 0; Cbuf < BuffersPerStage; Cbuf++)
-                {
-                    OGLStreamBuffer Buffer = Buffers[Stage][Cbuf];
-
-                    int Binding = Shader.UniformBinding.Get((GalShaderType)Stage, Cbuf);
-
-                    GL.BindBufferBase(BufferRangeTarget.UniformBuffer, Binding, Buffer.Handle);
-                }
-            }
 
             CurrentProgramHandle = Handle;
         }
@@ -445,7 +452,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        private void BindUniformBlocksIfNotNull(int ProgramHandle, ShaderStage Stage)
+        private int BindUniformBlocksIfNotNull(int ProgramHandle, int FreeBinding, ShaderStage Stage)
         {
             if (Stage != null)
             {
@@ -458,11 +465,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         throw new InvalidOperationException();
                     }
 
-                    int Binding = Shader.UniformBinding.Get(Stage.Type, DeclInfo.Cbuf);
+                    GL.UniformBlockBinding(ProgramHandle, BlockIndex, FreeBinding);
 
-                    GL.UniformBlockBinding(ProgramHandle, BlockIndex, Binding);
+                    OGLStreamBuffer Buffer = Buffers[(int)Stage.Type][DeclInfo.Cbuf];
+
+                    GL.BindBufferBase(BufferRangeTarget.UniformBuffer, FreeBinding, Buffer.Handle);
+
+                    FreeBinding++;
                 }
             }
+
+            return FreeBinding;
         }
 
         private static void CheckCompilation(int Handle)
