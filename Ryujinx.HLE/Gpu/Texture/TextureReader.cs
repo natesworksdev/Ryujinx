@@ -2,11 +2,11 @@ using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
 using System;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Texture
 {
     static class TextureReader
     {
-        public static byte[] Read(IAMemory Memory, Texture Texture)
+        public static byte[] Read(IAMemory Memory, TextureInfo Texture)
         {
             switch (Texture.Format)
             {
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.Gpu
             throw new NotImplementedException(Texture.Format.ToString());
         }
 
-        private unsafe static byte[] Read1Bpp(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read1Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.Gpu
             return Output;
         }
 
-        private unsafe static byte[] Read5551(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read5551(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.Gpu
             return Output;
         }
 
-        private unsafe static byte[] Read565(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read565(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -139,7 +139,7 @@ namespace Ryujinx.HLE.Gpu
             return Output;
         }
 
-        private unsafe static byte[] Read2Bpp(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read2Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -172,7 +172,7 @@ namespace Ryujinx.HLE.Gpu
             return Output;
         }
 
-        private unsafe static byte[] Read4Bpp(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read4Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.Gpu
             return Output;
         }
 
-        private unsafe static byte[] Read8Bpp(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read8Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -238,7 +238,7 @@ namespace Ryujinx.HLE.Gpu
             return Output;
         }
 
-        private unsafe static byte[] Read16Bpp(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read16Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -273,7 +273,7 @@ namespace Ryujinx.HLE.Gpu
             return Output;
         }
 
-        private unsafe static byte[] Read8Bpt4x4(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read8Bpt4x4(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = (Texture.Width  + 3) / 4;
             int Height = (Texture.Height + 3) / 4;
@@ -306,7 +306,7 @@ namespace Ryujinx.HLE.Gpu
             return Output;
         }
 
-        private unsafe static byte[] Read16Bpt4x4(IAMemory Memory, Texture Texture)
+        private unsafe static byte[] Read16Bpt4x4(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = (Texture.Width  + 3) / 4;
             int Height = (Texture.Height + 3) / 4;

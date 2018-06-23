@@ -14,7 +14,7 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
-            IGalRenderer Renderer = new OpenGLRenderer();
+            IGalRenderer Renderer = new OGLRenderer();
 
             IAalOutput AudioOut = new OpenALAudioOut();
 

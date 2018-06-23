@@ -4,20 +4,20 @@ namespace Ryujinx.Graphics.Gal
     {
         void ClearBuffers(int RtIndex, GalClearBufferFlags Flags);
 
-        bool IsVboCached(long Tag, long DataSize);
+        bool IsVboCached(long Key, long DataSize);
 
-        bool IsIboCached(long Tag, long DataSize);
+        bool IsIboCached(long Key, long DataSize);
 
-        void CreateVbo(long Tag, byte[] Buffer);
+        void CreateVbo(long Key, byte[] Buffer);
 
-        void CreateIbo(long Tag, byte[] Buffer);
+        void CreateIbo(long Key, byte[] Buffer);
 
-        void SetVertexArray(int VbIndex, int Stride, long VboTag, GalVertexAttrib[] Attribs);
+        void SetVertexArray(int VbIndex, int Stride, long VboKey, GalVertexAttrib[] Attribs);
 
-        void SetIndexArray(long Tag, int Size, GalIndexFormat Format);
+        void SetIndexArray(long Key, int Size, GalIndexFormat Format);
 
         void DrawArrays(int First, int PrimCount, GalPrimitiveType PrimType);
 
-        void DrawElements(long IboTag, int First, GalPrimitiveType PrimType);
+        void DrawElements(long IboKey, int First, GalPrimitiveType PrimType);
     }
 }

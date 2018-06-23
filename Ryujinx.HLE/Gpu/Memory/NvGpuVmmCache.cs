@@ -2,7 +2,7 @@ using ChocolArm64.Memory;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Memory
 {
     class NvGpuVmmCache
     {

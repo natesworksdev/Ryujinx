@@ -4,13 +4,13 @@ namespace Ryujinx.Graphics.Gal
 {
     public interface IGalFrameBuffer
     {
-        void Create(long Tag, int Width, int Height);
+        void Create(long Key, int Width, int Height);
 
-        void Bind(long Tag);
+        void Bind(long Key);
 
-        void BindTexture(long Tag, int Index);
+        void BindTexture(long Key, int Index);
 
-        void Set(long Tag);
+        void Set(long Key);
 
         void Set(byte[] Data, int Width, int Height);
 
@@ -22,6 +22,6 @@ namespace Ryujinx.Graphics.Gal
 
         void Render();
 
-        void GetBufferData(long Tag, Action<byte[]> Callback);
+        void GetBufferData(long Key, Action<byte[]> Callback);
     }
 }

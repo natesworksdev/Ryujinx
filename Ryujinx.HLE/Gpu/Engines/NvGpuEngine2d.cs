@@ -1,7 +1,9 @@
 using Ryujinx.Graphics.Gal;
+using Ryujinx.HLE.Gpu.Memory;
+using Ryujinx.HLE.Gpu.Texture;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Engines
 {
     class NvGpuEngine2d : INvGpuEngine
     {
@@ -75,19 +77,19 @@ namespace Ryujinx.HLE.Gpu
 
             int DstBlockHeight = 1 << ((DstBlkDim >> 4) & 0xf);
 
-            long Tag = Vmm.GetPhysicalAddress(MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress));
+            long Key = Vmm.GetPhysicalAddress(MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress));
 
             long SrcAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress);
             long DstAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.DstAddress);
 
-            bool IsFbTexture = Gpu.Engine3d.IsFrameBufferPosition(Tag);
+            bool IsFbTexture = Gpu.Engine3d.IsFrameBufferPosition(Key);
 
             if (IsFbTexture && DstLinear)
             {
                 DstSwizzle = TextureSwizzle.BlockLinear;
             }
 
-            Texture DstTexture = new Texture(
+            TextureInfo DstTexture = new TextureInfo(
                 DstAddress,
                 DstWidth,
                 DstHeight,
@@ -103,7 +105,7 @@ namespace Ryujinx.HLE.Gpu
                 SrcWidth  = 1280;
                 SrcHeight = 720;
 
-                Gpu.Renderer.FrameBuffer.GetBufferData(Tag, (byte[] Buffer) =>
+                Gpu.Renderer.FrameBuffer.GetBufferData(Key, (byte[] Buffer) =>
                 {
                     CopyTexture(
                         Vmm,
@@ -130,7 +132,7 @@ namespace Ryujinx.HLE.Gpu
 
         private void CopyTexture(
             NvGpuVmm Vmm,
-            Texture  Texture,
+            TextureInfo  Texture,
             byte[]   Buffer,
             int      Width,
             int      Height)

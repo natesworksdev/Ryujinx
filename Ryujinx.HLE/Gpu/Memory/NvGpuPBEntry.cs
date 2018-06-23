@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Memory
 {
     struct NvGpuPBEntry
     {

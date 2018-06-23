@@ -1,12 +1,13 @@
 using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
+using Ryujinx.HLE.Gpu.Memory;
 using System;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Texture
 {
     static class TextureHelper
     {
-        public static ISwizzle GetSwizzle(Texture Texture, int Width, int Bpp)
+        public static ISwizzle GetSwizzle(TextureInfo Texture, int Width, int Bpp)
         {
             switch (Texture.Swizzle)
             {

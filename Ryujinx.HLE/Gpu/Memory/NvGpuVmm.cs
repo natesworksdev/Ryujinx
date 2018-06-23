@@ -2,7 +2,7 @@ using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
 using System.Collections.Concurrent;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Memory
 {
     class NvGpuVmm : IAMemory, IGalMemory
     {

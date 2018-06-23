@@ -4,17 +4,17 @@ namespace Ryujinx.Graphics.Gal
 {
     public interface IGalShader
     {
-        void Create(IGalMemory Memory, long Tag, GalShaderType Type);
+        void Create(IGalMemory Memory, long Key, GalShaderType Type);
 
-        IEnumerable<ShaderDeclInfo> GetTextureUsage(long Tag);
+        IEnumerable<ShaderDeclInfo> GetTextureUsage(long Key);
 
-        void SetConstBuffer(long Tag, int Cbuf, byte[] Data);
+        void SetConstBuffer(long Key, int Cbuf, byte[] Data);
 
-        void SetUniform1(string UniformName, int Value);
+        void EnsureTextureBinding(string UniformName, int Value);
 
-        void SetUniform2F(string UniformName, float X, float Y);
+        void SetFlip(float X, float Y);
 
-        void Bind(long Tag);
+        void Bind(long Key);
 
         void BindProgram();
     }

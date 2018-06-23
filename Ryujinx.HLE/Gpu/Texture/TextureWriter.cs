@@ -2,16 +2,16 @@ using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
 using System;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Texture
 {
     static class TextureWriter
     {
         public static void Write(
-            IAMemory Memory,
-            Texture  Texture,
-            byte[]   Data,
-            int      Width,
-            int      Height)
+            IAMemory    Memory,
+            TextureInfo Texture,
+            byte[]      Data,
+            int         Width,
+            int         Height)
         {
             switch (Texture.Format)
             {
@@ -22,11 +22,11 @@ namespace Ryujinx.HLE.Gpu
         }
 
         private unsafe static void Write4Bpp(
-            IAMemory Memory,
-            Texture  Texture,
-            byte[]   Data,
-            int      Width,
-            int      Height)
+            IAMemory    Memory,
+            TextureInfo Texture,
+            byte[]      Data,
+            int         Width,
+            int         Height)
         {
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 4);
 

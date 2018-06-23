@@ -1,8 +1,10 @@
 using Ryujinx.Graphics.Gal;
+using Ryujinx.HLE.Gpu.Memory;
+using Ryujinx.HLE.Gpu.Texture;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Engines
 {
     class NvGpuEngine3d : INvGpuEngine
     {
@@ -73,13 +75,13 @@ namespace Ryujinx.HLE.Gpu
         {
             SetFrameBuffer(Vmm, 0);
 
-            long[] Tags = UploadShaders(Vmm);
+            long[] Keys = UploadShaders(Vmm);
 
             Gpu.Renderer.Shader.BindProgram();
 
             SetAlphaBlending();
 
-            UploadTextures(Vmm, Tags);
+            UploadTextures(Vmm, Keys);
             UploadUniforms(Vmm);
             UploadVertexArrays(Vmm);
         }
@@ -119,7 +121,7 @@ namespace Ryujinx.HLE.Gpu
 
         private long[] UploadShaders(NvGpuVmm Vmm)
         {
-            long[] Tags = new long[5];
+            long[] Keys = new long[5];
 
             long BasePosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
 
@@ -136,14 +138,14 @@ namespace Ryujinx.HLE.Gpu
                     continue;
                 }
 
-                long Tag = BasePosition + (uint)Offset;
+                long Key = BasePosition + (uint)Offset;
 
                 GalShaderType ShaderType = GetTypeFromProgram(Index);
 
-                Tags[(int)ShaderType] = Tag;
+                Keys[(int)ShaderType] = Key;
 
-                Gpu.Renderer.Shader.Create(Vmm, Tag, ShaderType);
-                Gpu.Renderer.Shader.Bind(Tag);
+                Gpu.Renderer.Shader.Create(Vmm, Key, ShaderType);
+                Gpu.Renderer.Shader.Bind(Key);
             }
 
             int RawSX = ReadRegister(NvGpuEngine3dReg.ViewportScaleX);
@@ -155,9 +157,9 @@ namespace Ryujinx.HLE.Gpu
             float SignX = MathF.Sign(SX);
             float SignY = MathF.Sign(SY);
 
-            Gpu.Renderer.Shader.SetUniform2F(GalConsts.FlipUniformName, SignX, SignY);
+            Gpu.Renderer.Shader.SetFlip(SignX, SignY);
 
-            return Tags;
+            return Keys;
         }
 
         private static GalShaderType GetTypeFromProgram(int Program)
@@ -224,7 +226,7 @@ namespace Ryujinx.HLE.Gpu
             }
         }
 
-        private void UploadTextures(NvGpuVmm Vmm, long[] Tags)
+        private void UploadTextures(NvGpuVmm Vmm, long[] Keys)
         {
             long BaseShPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
 
@@ -234,15 +236,15 @@ namespace Ryujinx.HLE.Gpu
             //reserved for drawing the frame buffer.
             int TexIndex = 1;
 
-            for (int Index = 0; Index < Tags.Length; Index++)
+            for (int Index = 0; Index < Keys.Length; Index++)
             {
-                foreach (ShaderDeclInfo DeclInfo in Gpu.Renderer.Shader.GetTextureUsage(Tags[Index]))
+                foreach (ShaderDeclInfo DeclInfo in Gpu.Renderer.Shader.GetTextureUsage(Keys[Index]))
                 {
                     long Position = ConstBuffers[Index][TextureCbIndex].Position;
 
                     UploadTexture(Vmm, Position, TexIndex, DeclInfo.Index);
 
-                    Gpu.Renderer.Shader.SetUniform1(DeclInfo.Name, TexIndex);
+                    Gpu.Renderer.Shader.EnsureTextureBinding(DeclInfo.Name, TexIndex);
 
                     TexIndex++;
                 }
@@ -277,7 +279,7 @@ namespace Ryujinx.HLE.Gpu
 
             long TextureAddress = Vmm.ReadInt64(TicPosition + 4) & 0xffffffffffff;
 
-            long Tag = TextureAddress;
+            long Key = TextureAddress;
 
             TextureAddress = Vmm.GetPhysicalAddress(TextureAddress);
 
@@ -297,11 +299,11 @@ namespace Ryujinx.HLE.Gpu
 
                 bool HasCachedTexture = false;
 
-                if (Gpu.Renderer.Texture.TryGetCachedTexture(Tag, Size, out GalTexture Texture))
+                if (Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalTexture Texture))
                 {
-                    if (NewTexture.Equals(Texture) && !Vmm.IsRegionModified(Tag, Size, NvGpuBufferType.Texture))
+                    if (NewTexture.Equals(Texture) && !Vmm.IsRegionModified(Key, Size, NvGpuBufferType.Texture))
                     {
-                        Gpu.Renderer.Texture.Bind(Tag, TexIndex);
+                        Gpu.Renderer.Texture.Bind(Key, TexIndex);
 
                         HasCachedTexture = true;
                     }
@@ -311,10 +313,10 @@ namespace Ryujinx.HLE.Gpu
                 {
                     byte[] Data = TextureFactory.GetTextureData(Vmm, TicPosition);
 
-                    Gpu.Renderer.Texture.Create(Tag, Data, NewTexture);
+                    Gpu.Renderer.Texture.Create(Key, Data, NewTexture);
                 }
 
-                Gpu.Renderer.Texture.Bind(Tag, TexIndex);
+                Gpu.Renderer.Texture.Bind(Key, TexIndex);
             }
 
             Gpu.Renderer.Texture.SetSampler(Sampler);

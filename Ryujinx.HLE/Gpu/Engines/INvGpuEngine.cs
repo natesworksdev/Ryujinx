@@ -1,4 +1,6 @@
-namespace Ryujinx.HLE.Gpu
+using Ryujinx.HLE.Gpu.Memory;
+
+namespace Ryujinx.HLE.Gpu.Engines
 {
     interface INvGpuEngine
     {

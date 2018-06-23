@@ -1,6 +1,8 @@
+using Ryujinx.HLE.Gpu.Memory;
+using Ryujinx.HLE.Gpu.Texture;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Engines
 {
     class NvGpuEngineDma : INvGpuEngine
     {

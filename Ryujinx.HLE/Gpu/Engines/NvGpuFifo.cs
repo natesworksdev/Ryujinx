@@ -1,6 +1,7 @@
+using Ryujinx.HLE.Gpu.Memory;
 using System.Collections.Concurrent;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Engines
 {
     class NvGpuFifo
     {

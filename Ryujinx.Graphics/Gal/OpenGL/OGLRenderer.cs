@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    public class OpenGLRenderer : IGalRenderer
+    public class OGLRenderer : IGalRenderer
     {
         public IGalBlend Blend { get; private set; }
 
@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private ConcurrentQueue<Action> ActionsQueue;
 
-        public OpenGLRenderer()
+        public OGLRenderer()
         {
             Blend = new OGLBlend();
 

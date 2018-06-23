@@ -1,8 +1,8 @@
 using Ryujinx.Graphics.Gal;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Texture
 {
-    struct Texture
+    struct TextureInfo
     {
         public long Position { get; private set; }
 
@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.Gpu
 
         public GalTextureFormat Format { get; private set; }
 
-        public Texture(
+        public TextureInfo(
             long Position,
             int  Width,
             int  Height)
@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.Gpu
             Format = GalTextureFormat.A8B8G8R8;
         }
 
-        public Texture(
+        public TextureInfo(
             long             Position,
             int              Width,
             int              Height,

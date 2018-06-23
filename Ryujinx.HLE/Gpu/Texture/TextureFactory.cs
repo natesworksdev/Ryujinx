@@ -1,7 +1,8 @@
 using Ryujinx.Graphics.Gal;
+using Ryujinx.HLE.Gpu.Memory;
 using System;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Texture
 {
     static class TextureFactory
     {
@@ -61,7 +62,7 @@ namespace Ryujinx.HLE.Gpu
             int Width  = (Tic[4] & 0xffff) + 1;
             int Height = (Tic[5] & 0xffff) + 1;
 
-            Texture Texture = new Texture(
+            TextureInfo Texture = new TextureInfo(
                 TextureAddress,
                 Width,
                 Height,

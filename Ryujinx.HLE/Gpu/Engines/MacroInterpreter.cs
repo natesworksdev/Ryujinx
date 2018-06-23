@@ -1,7 +1,9 @@
+using Ryujinx.HLE.Gpu.Exceptions;
+using Ryujinx.HLE.Gpu.Memory;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.HLE.Gpu.Engines
 {
     class MacroInterpreter
     {
@@ -419,7 +421,7 @@ namespace Ryujinx.HLE.Gpu
             //draw calls, this prevents the system from freezing (and throws instead).
             if (MethAddr == 0x585 && ++CallCount > MaxCallCountPerRun)
             {
-                throw new GpuMacroException(GpuMacroExceptionMsgs.CallCountExceeded);
+                GpuExceptionHelper.ThrowCallCoundExceeded();
             }
 
             NvGpuPBEntry PBEntry = new NvGpuPBEntry(MethAddr, 0, Value);
