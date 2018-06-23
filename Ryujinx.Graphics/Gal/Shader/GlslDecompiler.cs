@@ -6,18 +6,11 @@ using System.Text;
 
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    public class GlslDecompiler
+    public class GlslDecompiler : ShaderDecompiler
     {
         private delegate string GetInstExpr(ShaderIrOp Op);
 
         private Dictionary<ShaderIrInst, GetInstExpr> InstsExpr;
-
-        private enum OperType
-        {
-            Bool,
-            F32,
-            I32
-        }
 
         private const string IdentationStr = "    ";
 
@@ -145,7 +138,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             foreach (ShaderDeclInfo DeclInfo in Decl.Uniforms.Values.OrderBy(DeclKeySelector))
             {
-                SB.AppendLine($"uniform {GetDecl(DeclInfo)}[{DeclInfo.Index + 1}];");
+                SB.AppendLine($"layout (std140) uniform {DeclInfo.Name} {{");
+                SB.AppendLine($"    vec4 {DeclInfo.Name}_data[{DeclInfo.Index / 4 + 1}];");
+                SB.AppendLine($"}};");
             }
 
             if (Decl.Uniforms.Count > 0)
@@ -158,7 +153,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             if (Decl.ShaderType == GalShaderType.Fragment)
             {
-                SB.AppendLine("in vec4 " + GlslDecl.PositionOutAttrName + ";");
+                SB.AppendLine("layout (location = 0) in vec4 " + GlslDecl.PositionOutAttrName + ";");
             }
 
             PrintDeclAttributes(Decl.InAttributes.Values, "in");
@@ -168,7 +163,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             if (Decl.ShaderType == GalShaderType.Vertex)
             {
-                SB.AppendLine("out vec4 " + GlslDecl.PositionOutAttrName + ";");
+                SB.AppendLine("layout (location = 0) out vec4 " + GlslDecl.PositionOutAttrName + ";");
             }
 
             PrintDeclAttributes(Decl.OutAttributes.Values, "out");
@@ -182,7 +177,9 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 if (DeclInfo.Index >= 0)
                 {
-                    SB.AppendLine("layout (location = " + DeclInfo.Index + ") " + InOut + " " + GetDecl(DeclInfo) + ";");
+                    int Location = DeclInfo.Index + 1;
+
+                    SB.AppendLine("layout (location = " + Location + ") " + InOut + " " + GetDecl(DeclInfo) + ";");
 
                     Count++;
                 }
@@ -230,11 +227,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 SB.AppendLine();
             }
-        }
-
-        private int DeclKeySelector(ShaderDeclInfo DeclInfo)
-        {
-            return DeclInfo.Cbuf << 24 | DeclInfo.Index;
         }
 
         private string GetDecl(ShaderDeclInfo DeclInfo)
@@ -437,20 +429,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Tail;
         }
 
-        private bool IsValidOutOper(ShaderIrNode Node)
-        {
-            if (Node is ShaderIrOperGpr Gpr && Gpr.IsConst)
-            {
-                return false;
-            }
-            else if (Node is ShaderIrOperPred Pred && Pred.IsConst)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         private string GetDstOperName(ShaderIrNode Node)
         {
             if (Node is ShaderIrOperAbuf Abuf)
@@ -534,11 +512,13 @@ namespace Ryujinx.Graphics.Gal.Shader
                 //This may not be aways the case.
                 string Offset = "(floatBitsToInt(" + GetSrcExpr(Cbuf.Offs) + ") >> 2)";
 
-                return DeclInfo.Name + "[" + Cbuf.Pos + " + " + Offset + "]";
+                string Index = "(" + Cbuf.Pos + " + " + Offset + ")";
+
+                return $"{DeclInfo.Name}_data[{Index} / 4][{Index} % 4]";
             }
             else
             {
-                return DeclInfo.Name + "[" + Cbuf.Pos + "]";
+                return $"{DeclInfo.Name}_data[{Cbuf.Pos / 4}][{Cbuf.Pos % 4}]";
             }
         }
 
@@ -949,66 +929,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             return Expr;
-        }
-
-        private static OperType GetDstNodeType(ShaderIrNode Node)
-        {
-            //Special case instructions with the result type different
-            //from the input types (like integer <-> float conversion) here.
-            if (Node is ShaderIrOp Op)
-            {
-                switch (Op.Inst)
-                {
-                    case ShaderIrInst.Stof:
-                    case ShaderIrInst.Txlf:
-                    case ShaderIrInst.Utof:
-                        return OperType.F32;
-
-                    case ShaderIrInst.Ftos:
-                    case ShaderIrInst.Ftou:
-                        return OperType.I32;
-                }
-            }
-
-            return GetSrcNodeType(Node);
-        }
-
-        private static OperType GetSrcNodeType(ShaderIrNode Node)
-        {
-            switch (Node)
-            {
-                case ShaderIrOperAbuf Abuf:
-                    return Abuf.Offs == GlslDecl.VertexIdAttr ||
-                           Abuf.Offs == GlslDecl.InstanceIdAttr
-                        ? OperType.I32
-                        : OperType.F32;
-
-                case ShaderIrOperCbuf Cbuf: return OperType.F32;
-                case ShaderIrOperGpr  Gpr:  return OperType.F32;
-                case ShaderIrOperImm  Imm:  return OperType.I32;
-                case ShaderIrOperImmf Immf: return OperType.F32;
-                case ShaderIrOperPred Pred: return OperType.Bool;
-
-                case ShaderIrOp Op:
-                    if (Op.Inst > ShaderIrInst.B_Start &&
-                        Op.Inst < ShaderIrInst.B_End)
-                    {
-                        return OperType.Bool;
-                    }
-                    else if (Op.Inst > ShaderIrInst.F_Start &&
-                             Op.Inst < ShaderIrInst.F_End)
-                    {
-                        return OperType.F32;
-                    }
-                    else if (Op.Inst > ShaderIrInst.I_Start &&
-                             Op.Inst < ShaderIrInst.I_End)
-                    {
-                        return OperType.I32;
-                    }
-                    break;
-            }
-
-            throw new ArgumentException(nameof(Node));
         }
     }
 }

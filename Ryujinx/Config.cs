@@ -12,6 +12,8 @@ namespace Ryujinx
     {
         public static JoyCon FakeJoyCon { get; private set; }
 
+        public static bool EnableSPIRV { get; private set; }
+
         public static void Read(Logger Log)
         {
             string IniFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -21,6 +23,8 @@ namespace Ryujinx
             IniParser Parser = new IniParser(IniPath);
 
             AOptimizations.DisableMemoryChecks = !Convert.ToBoolean(Parser.Value("Enable_Memory_Checks"));
+
+            EnableSPIRV = Convert.ToBoolean(Parser.Value("Enable_SPIRV"));
 
             Log.SetEnable(LogLevel.Debug,   Convert.ToBoolean(Parser.Value("Logging_Enable_Debug")));
             Log.SetEnable(LogLevel.Stub,    Convert.ToBoolean(Parser.Value("Logging_Enable_Stub")));

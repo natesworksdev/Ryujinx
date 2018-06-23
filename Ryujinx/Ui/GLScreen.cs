@@ -2,6 +2,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
 using Ryujinx.Graphics.Gal;
+using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
 using System;
@@ -41,6 +42,11 @@ namespace Ryujinx
         protected override void OnLoad(EventArgs e)
         {
             VSync = VSyncMode.On;
+
+            if (Renderer is OpenGLRenderer OGL)
+            {
+                OGL.Initialize(Config.EnableSPIRV);
+            }
 
             Renderer.SetWindowSize(Width, Height);
         }

@@ -9,40 +9,33 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLShader
     {
-        private class ShaderStage : IDisposable
+        private enum ShadingLanguage
         {
-            public int Handle { get; private set; }
+            Unknown,
+            GLSL,
+            SPIRV
+        }
 
-            public bool IsCompiled { get; private set; }
+        private abstract class ShaderStage : IDisposable
+        {
+            public int Handle { get; protected set; }
 
             public GalShaderType Type { get; private set; }
-
-            public string Code { get; private set; }
 
             public IEnumerable<ShaderDeclInfo> TextureUsage { get; private set; }
             public IEnumerable<ShaderDeclInfo> UniformUsage { get; private set; }
 
             public ShaderStage(
                 GalShaderType               Type,
-                string                      Code,
                 IEnumerable<ShaderDeclInfo> TextureUsage,
                 IEnumerable<ShaderDeclInfo> UniformUsage)
             {
-                this.Type         = Type;
-                this.Code         = Code;
+                this.Type = Type;
                 this.TextureUsage = TextureUsage;
                 this.UniformUsage = UniformUsage;
             }
 
-            public void Compile()
-            {
-                if (Handle == 0)
-                {
-                    Handle = GL.CreateShader(OGLEnumConverter.GetShaderType(Type));
-
-                    CompileAndCheck(Handle, Code);
-                }
-            }
+            public abstract void Compile();
 
             public void Dispose()
             {
@@ -60,6 +53,69 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
+        private class GlslStage : ShaderStage
+        {
+            public string Code { get; private set; }
+
+            public GlslStage(
+                GalShaderType               Type,
+                string                      Code,
+                IEnumerable<ShaderDeclInfo> TextureUsage,
+                IEnumerable<ShaderDeclInfo> UniformUsage)
+                : base(Type, TextureUsage, UniformUsage)
+            {
+                this.Code = Code;
+            }
+
+            public override void Compile()
+            {
+                if (Handle == 0)
+                {
+                    Handle = GL.CreateShader(OGLEnumConverter.GetShaderType(Type));
+
+                    GL.ShaderSource(Handle, Code);
+                    GL.CompileShader(Handle);
+
+                    CheckCompilation(Handle);
+                }
+            }
+        }
+
+        private class SpirvStage : ShaderStage
+        {
+            public byte[] Bytecode { get; private set; }
+
+            public IDictionary<string, int> Locations { get; private set; }
+
+            public SpirvStage(
+                GalShaderType               Type,
+                byte[]                      Bytecode,
+                IEnumerable<ShaderDeclInfo> TextureUsage,
+                IEnumerable<ShaderDeclInfo> UniformUsage,
+                IDictionary<string, int>    Locations)
+                : base(Type, TextureUsage, UniformUsage)
+            {
+                this.Bytecode  = Bytecode;
+                this.Locations = Locations;
+            }
+
+            public override void Compile()
+            {
+                if (Handle == 0)
+                {
+                    Handle = GL.CreateShader(OGLEnumConverter.GetShaderType(Type));
+
+                    BinaryFormat SpirvFormat = (BinaryFormat)0x9551; 
+
+                    GL.ShaderBinary(1, new int[]{Handle}, SpirvFormat, Bytecode, Bytecode.Length);
+
+                    GL.SpecializeShader(Handle, "main", 0, new int[]{}, new int[]{});
+
+                    CheckCompilation(Handle);
+                }
+            }
+        }
+
         private struct ShaderProgram
         {
             public ShaderStage Vertex;
@@ -69,11 +125,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             public ShaderStage Fragment;
         }
 
+        private const int BuffersPerStage = Shader.UniformBinding.BuffersPerStage;
+
+        private const int BufferSize = 16 * 1024; //ARB_uniform_buffer, 16 KiB
+
         private ShaderProgram Current;
 
         private ConcurrentDictionary<long, ShaderStage> Stages;
 
         private Dictionary<ShaderProgram, int> Programs;
+
+        private ShadingLanguage Language = ShadingLanguage.Unknown;
+
+        private OGLStreamBuffer[][] Buffers;
 
         public int CurrentProgramHandle { get; private set; }
 
@@ -82,6 +146,46 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Stages = new ConcurrentDictionary<long, ShaderStage>();
 
             Programs = new Dictionary<ShaderProgram, int>();
+
+            Buffers = new OGLStreamBuffer[5][]; //one per stage
+
+            for (int Stage = 0; Stage < 5; Stage++)
+            {
+                Buffers[Stage] = new OGLStreamBuffer[BuffersPerStage];
+            }
+        }
+
+        public void Prepare(bool TrySPIRV)
+        {
+            for (int Stage = 0; Stage < 5; Stage++)
+            {
+                for (int Cbuf = 0; Cbuf < BuffersPerStage; Cbuf++)
+                {
+                    OGLStreamBuffer Buffer = OGLStreamBuffer.Create(BufferTarget.UniformBuffer, BufferSize);
+
+                    Buffer.Allocate();
+
+                    Buffers[Stage][Cbuf] = Buffer;
+                }
+            }
+
+            if (TrySPIRV)
+            {
+                if (HasSPIRV())
+                {
+                    Console.WriteLine("SPIR-V Shading Language");
+                    Language = ShadingLanguage.SPIRV;
+                }
+                else
+                {
+                    Console.WriteLine("GLSL fallback (SPIR-V not available)");
+                    Language = ShadingLanguage.GLSL;
+                }
+            }
+            else
+            {
+                Language = ShadingLanguage.GLSL;
+            }
         }
 
         public void Create(IGalMemory Memory, long Tag, GalShaderType Type)
@@ -91,18 +195,46 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private ShaderStage ShaderStageFactory(IGalMemory Memory, long Position, GalShaderType Type)
         {
-            GlslProgram Program = GetGlslProgram(Memory, Position, Type);
+            switch (Language)
+            {
+                case ShadingLanguage.SPIRV:
+                {
+                    SpirvProgram Program = GetSpirvProgram(Memory, Position, Type);
 
-            return new ShaderStage(
-                Type,
-                Program.Code,
-                Program.Textures,
-                Program.Uniforms);
+                    return new SpirvStage(
+                        Type,
+                        Program.Bytecode,
+                        Program.Textures,
+                        Program.Uniforms,
+                        Program.Locations);
+                }
+
+                case ShadingLanguage.GLSL:
+                {
+                    GlslProgram Program = GetGlslProgram(Memory, Position, Type);
+
+                    return new GlslStage(
+                        Type,
+                        Program.Code,
+                        Program.Textures,
+                        Program.Uniforms);
+                }
+                
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
         private GlslProgram GetGlslProgram(IGalMemory Memory, long Position, GalShaderType Type)
         {
             GlslDecompiler Decompiler = new GlslDecompiler();
+
+            return Decompiler.Decompile(Memory, Position + 0x50, Type);
+        }
+
+        private SpirvProgram GetSpirvProgram(IGalMemory Memory, long Position, GalShaderType Type)
+        {
+            SpirvDecompiler Decompiler = new SpirvDecompiler();
 
             return Decompiler.Decompile(Memory, Position + 0x50, Type);
         }
@@ -117,6 +249,73 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return Enumerable.Empty<ShaderDeclInfo>();
         }
 
+        private int GetUniformLocation(string Name, ShaderStage Stage)
+        {
+            switch (Language)
+            {
+                case ShadingLanguage.SPIRV:
+                {
+                    SpirvStage Spirv = (SpirvStage)Stage;
+
+                    if (Spirv.Locations.TryGetValue(Name, out int Location))
+                    {
+                        return Location;
+                    }
+                    break;
+                }
+                
+                case ShadingLanguage.GLSL:
+                {
+                    return GL.GetUniformLocation(CurrentProgramHandle, Name);
+                }
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        private bool TrySpirvStageLocation(string Name, ShaderStage Stage, out int Location)
+        {
+            if (Stage == null)
+            {
+                Location = -1;
+                return false;
+            }
+
+            SpirvStage Spirv = (SpirvStage)Stage;
+
+            return Spirv.Locations.TryGetValue(Name, out Location);
+        }
+
+        private int GetSpirvLocation(string Name)
+        {
+            int Location;
+
+            if (TrySpirvStageLocation(Name, Current.Vertex, out Location)
+                || TrySpirvStageLocation(Name, Current.TessControl, out Location)
+                || TrySpirvStageLocation(Name, Current.TessEvaluation, out Location)
+                || TrySpirvStageLocation(Name, Current.Geometry, out Location)
+                || TrySpirvStageLocation(Name, Current.Fragment, out Location))
+            {
+                return Location;
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        private int GetUniformLocation(string Name)
+        {
+            switch (Language)
+            {
+                case ShadingLanguage.SPIRV:
+                    return GetSpirvLocation(Name);
+
+                case ShadingLanguage.GLSL:
+                    return GL.GetUniformLocation(CurrentProgramHandle, Name);
+            }
+
+            throw new InvalidOperationException();
+        }
+
         public void SetConstBuffer(long Tag, int Cbuf, byte[] Data)
         {
             BindProgram();
@@ -125,21 +324,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage.Where(x => x.Cbuf == Cbuf))
                 {
-                    int Location = GL.GetUniformLocation(CurrentProgramHandle, DeclInfo.Name);
-
-                    int Count = Data.Length >> 2;
-
-                    //The Index is the index of the last element,
-                    //so we can add 1 to get the uniform array size.
-                    Count = Math.Min(Count, DeclInfo.Index + 1);
-
-                    unsafe
+                    if (Cbuf >= BuffersPerStage)
                     {
-                        fixed (byte* Ptr = Data)
-                        {
-                            GL.Uniform1(Location, Count, (float*)Ptr);
-                        }
+                        string Message = $"Game tried to write constant buffer #{Cbuf} but only 0-#{BuffersPerStage-1} are supported";
+                        throw new NotSupportedException(Message);
                     }
+                    
+                    OGLStreamBuffer Buffer = Buffers[(int)Stage.Type][Cbuf];
+
+                    int Size = Math.Min(Data.Length, BufferSize);
+
+                    byte[] Destiny = Buffer.Map(Size);
+
+                    Array.Copy(Data, Destiny, Size);
+
+                    Buffer.Unmap(Size);
                 }
             }
         }
@@ -148,7 +347,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             BindProgram();
 
-            int Location = GL.GetUniformLocation(CurrentProgramHandle, UniformName);
+            int Location = GetUniformLocation(UniformName);
 
             GL.Uniform1(Location, Value);
         }
@@ -157,7 +356,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             BindProgram();
 
-            int Location = GL.GetUniformLocation(CurrentProgramHandle, UniformName);
+            int Location = GetUniformLocation(UniformName);
 
             GL.Uniform2(Location, X, Y);
         }
@@ -204,6 +403,37 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 CheckProgramLink(Handle);
 
+                switch (Language)
+                {
+                    case ShadingLanguage.GLSL:
+                    {
+                        int FreeBinding = 0;
+
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.Vertex);
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.TessControl);
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.TessEvaluation);
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.Geometry);
+                        FreeBinding = BindUniformBlocksIfNotNull(Handle, FreeBinding, Current.Fragment);
+                        break;
+                    }
+
+                    case ShadingLanguage.SPIRV:
+                    {
+                        for (int Stage = 0; Stage < 5; Stage++)
+                        {
+                            for (int Cbuf = 0; Cbuf < BuffersPerStage; Cbuf++)
+                            {
+                                OGLStreamBuffer Buffer = Buffers[Stage][Cbuf];
+
+                                int Binding = Shader.UniformBinding.Get((GalShaderType)Stage, Cbuf);
+
+                                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, Binding, Buffer.Handle);
+                            }
+                        }
+                        break;
+                    }
+                }
+
                 Programs.Add(Current, Handle);
             }
 
@@ -222,12 +452,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public static void CompileAndCheck(int Handle, string Code)
+        private int BindUniformBlocksIfNotNull(int ProgramHandle, int FreeBinding, ShaderStage Stage)
         {
-            GL.ShaderSource(Handle, Code);
-            GL.CompileShader(Handle);
+            if (Stage != null)
+            {
+                foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage)
+                {
+                    int BlockIndex = GL.GetUniformBlockIndex(ProgramHandle, DeclInfo.Name);
 
-            CheckCompilation(Handle);
+                    if (BlockIndex < 0)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    GL.UniformBlockBinding(ProgramHandle, BlockIndex, FreeBinding);
+
+                    OGLStreamBuffer Buffer = Buffers[(int)Stage.Type][DeclInfo.Cbuf];
+
+                    GL.BindBufferBase(BufferRangeTarget.UniformBuffer, FreeBinding, Buffer.Handle);
+
+                    FreeBinding++;
+                }
+            }
+
+            return FreeBinding;
         }
 
         private static void CheckCompilation(int Handle)
@@ -252,6 +500,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 throw new ShaderException(GL.GetProgramInfoLog(Handle));
             }
+        }
+
+        private static bool HasSPIRV()
+        {
+            int ExtensionCount = GL.GetInteger(GetPName.NumExtensions);
+
+            for (int i = 0; i < ExtensionCount; i++)
+            {
+                if (GL.GetString(StringNameIndexed.Extensions, i) == "GL_ARB_gl_spirv")
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -173,10 +173,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     Type = AttribTypes[Attrib.Size] + (Unsigned ? 1 : 0);
                 }
 
-                int Size   = AttribElements[Attrib.Size];
-                int Offset = Attrib.Offset;
+                int Location = Attrib.Index + 1;
+                int Size     = AttribElements[Attrib.Size];
+                int Offset   = Attrib.Offset;
 
-                GL.VertexAttribPointer(Attrib.Index, Size, Type, Normalize, Stride, Offset);
+                GL.VertexAttribPointer(Location, Size, Type, Normalize, Stride, Offset);
             }
 
             GL.BindVertexArray(0);

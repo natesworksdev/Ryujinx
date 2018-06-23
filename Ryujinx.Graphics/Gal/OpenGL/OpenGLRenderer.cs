@@ -34,6 +34,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue = new ConcurrentQueue<Action>();
         }
 
+        public void Initialize(bool TrySPIRV = false)
+        {
+            ActionsQueue.Enqueue(() =>
+            {
+                Shader.Prepare(TrySPIRV);
+            });
+        }
+
         public void QueueAction(Action ActionMthd)
         {
             ActionsQueue.Enqueue(ActionMthd);
