@@ -129,6 +129,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 { ShaderIrInst.Frcp,   GetFrcpExpr   },
                 { ShaderIrInst.Frsq,   GetFrsqExpr   },
                 { ShaderIrInst.Fsin,   GetFsinExpr   },
+                { ShaderIrInst.Fsqrt,  GetFsqrtExpr  },
                 { ShaderIrInst.Ftos,   GetFtosExpr   },
                 { ShaderIrInst.Ftou,   GetFtouExpr   },
                 { ShaderIrInst.Kil,    GetKilExpr    },
@@ -1613,6 +1614,11 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private Instruction GetFsinExpr(ShaderIrOp Op)
             => Glsl450.Sin(
+                TypeFloat,
+                GetOperExpr(Op, Op.OperandA));
+
+        private Instruction GetFsqrtExpr(ShaderIrOp Op)
+            => Glsl450.Sqrt(
                 TypeFloat,
                 GetOperExpr(Op, Op.OperandA));
         
