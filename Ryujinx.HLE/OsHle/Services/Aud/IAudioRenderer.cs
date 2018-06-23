@@ -35,8 +35,9 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         public long RequestUpdateAudioRenderer(ServiceCtx Context)
         {
-            long OutputPosition = Context.Request.GetBufferType0x22().Position;
-            long InputPosition  = Context.Request.GetBufferType0x21().Position;
+            long OutputPosition = Context.Request.ReceiveBuff[0].Position;
+
+            long InputPosition = Context.Request.SendBuff[0].Position;
 
             UpdateDataHeader InputDataHeader = AMemoryHelper.Read<UpdateDataHeader>(Context.Memory, InputPosition);
 
