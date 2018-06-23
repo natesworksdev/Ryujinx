@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Timers;
 
+
 namespace Ryujinx.HLE
 {
     public class PerformanceStatistics
@@ -32,6 +33,8 @@ namespace Ryujinx.HLE
 
             FramesRendered = new long[2];
 
+            FrameLock = new object[] { new object(), new object() };
+
             ExecutionTime = new Stopwatch();
 
             ExecutionTime.Start();
@@ -62,14 +65,17 @@ namespace Ryujinx.HLE
                 FrameRate = FramesRendered[FrameType] / AccumulatedFrameTime[FrameType];
             }
 
-            AverageFrameRate[FrameType] = Mix(AverageFrameRate[FrameType], FrameRate);
+            lock (FrameLock[FrameType])
+            {
+                AverageFrameRate[FrameType] = LinearInterpolate(AverageFrameRate[FrameType], FrameRate);
 
-            FramesRendered[FrameType] = 0;
+                FramesRendered[FrameType] = 0;
 
-            AccumulatedFrameTime[FrameType] = 0;
+                AccumulatedFrameTime[FrameType] = 0;
+            }
         }
 
-        private double Mix(double Old, double New)
+        private double LinearInterpolate(double Old, double New)
         {
             return Old * (1.0 - FrameRateWeight) + New * FrameRateWeight;
         }
@@ -92,9 +98,12 @@ namespace Ryujinx.HLE
 
             PreviousFrameTime[FrameType] = CurrentFrameTime;
 
-            AccumulatedFrameTime[FrameType] += ElapsedFrameTime;
+            lock (FrameLock[FrameType])
+            {
+                AccumulatedFrameTime[FrameType] += ElapsedFrameTime;
 
-            FramesRendered[FrameType]++;
+                FramesRendered[FrameType]++;
+            }
         }
 
         public double GetSystemFrameRate()
