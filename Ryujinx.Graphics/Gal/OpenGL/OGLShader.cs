@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLShader
+    public class OGLShader
     {
         private class ShaderStage : IDisposable
         {
