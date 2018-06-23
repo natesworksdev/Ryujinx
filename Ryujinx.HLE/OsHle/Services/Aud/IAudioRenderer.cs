@@ -30,28 +30,18 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             };
 
             UpdateEvent       = new KEvent();
+
             this.WorkerParams = WorkerParams;
         }
 
         public long RequestUpdateAudioRenderer(ServiceCtx Context)
         {
-            //(buffer<unknown, 5, 0>) -> (buffer<unknown, 6, 0>, buffer<unknown, 6, 0>)
-
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
 
             AudioRendererConfig InputRequest = AMemoryHelper.Read<AudioRendererConfig>(Context.Memory, InputPosition);
 
-            int MemoryPoolCount = WorkerParams.EffectCount + (WorkerParams.VoiceCount * 4);
-
             int MemoryPoolOffset = Marshal.SizeOf(InputRequest) + InputRequest.BehaviourSize;
-
-            MemoryPoolInfo[] PoolInfo = new MemoryPoolInfo[MemoryPoolCount];
-
-            for (int Index = 0; Index < MemoryPoolCount; Index++)
-            {
-                PoolInfo[Index] = AMemoryHelper.Read<MemoryPoolInfo>(Context.Memory, InputPosition + MemoryPoolOffset + Index * 0x20);
-            }
 
             GCHandle Handle = GCHandle.Alloc(WorkerParams, GCHandleType.Pinned);
 
@@ -69,43 +59,34 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             OutputResponse.TotalSize = Marshal.SizeOf(OutputResponse) + OutputResponse.ErrorInfoSize + OutputResponse.MemoryPoolsSize +
                 OutputResponse.VoicesSize + OutputResponse.EffectsSize + OutputResponse.SinksSize + OutputResponse.PerformanceManagerSize;
 
-            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"TotalSize: {OutputResponse.TotalSize}");
-            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"MemoryPoolsSize: {OutputResponse.MemoryPoolsSize}");
-            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"VoicesSize: {OutputResponse.VoicesSize}");
-            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"EffectsSize: {OutputResponse.EffectsSize}");
-            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"SinksSize: {OutputResponse.SinksSize}");
-            Context.Ns.Log.PrintInfo(LogClass.ServiceAudio, $"MemoryPoolCount: {MemoryPoolCount}");
+            Context.Memory.WriteInt32(OutputPosition + 0x4,  OutputResponse.ErrorInfoSize);
+            Context.Memory.WriteInt32(OutputPosition + 0x8,  OutputResponse.MemoryPoolsSize);
+            Context.Memory.WriteInt32(OutputPosition + 0xc,  OutputResponse.VoicesSize);
+            Context.Memory.WriteInt32(OutputPosition + 0x14, OutputResponse.EffectsSize);
+            Context.Memory.WriteInt32(OutputPosition + 0x1c, OutputResponse.SinksSize);
+            Context.Memory.WriteInt32(OutputPosition + 0x20, OutputResponse.PerformanceManagerSize);
+            Context.Memory.WriteInt32(OutputPosition + 0x3c, OutputResponse.TotalSize - 4);
 
-            MemoryPoolEntry[] PoolEntry = new MemoryPoolEntry[MemoryPoolCount];
-
-            for (int Index = 0; Index < PoolEntry.Length; Index++)
+            for (int Offset = 0x40; Offset < 0x40 + OutputResponse.MemoryPoolsSize; Offset += 0x10, MemoryPoolOffset += 0x20)
             {
-                if (PoolInfo[Index].PoolState == (int)MemoryPoolStates.MPS_RequestAttach)
-                    PoolEntry[Index].State = (int)MemoryPoolStates.MPS_RequestAttach;
-                else if (PoolInfo[Index].PoolState == (int)MemoryPoolStates.MPS_RequestDetatch)
-                    PoolEntry[Index].State = (int)MemoryPoolStates.MPS_Detatched;
+                int PoolState = Context.Memory.ReadInt32(InputPosition + MemoryPoolOffset + 0xC);
+
+                if (PoolState == 4)
+                {
+                    Context.Memory.WriteInt32(OutputPosition + Offset, 5);
+                }
+                else if (PoolState == 2)
+                {
+                    Context.Memory.WriteInt32(OutputPosition + Offset, 3);
+                }
                 else
-                    PoolEntry[Index].State = PoolInfo[Index].PoolState;
-            }
-
-            //0x40 bytes header
-            Context.Memory.WriteInt32(OutputPosition + 0x4, OutputResponse.ErrorInfoSize); //Behavior Out State Size? (note: this is the last section)
-            Context.Memory.WriteInt32(OutputPosition + 0x8, OutputResponse.MemoryPoolsSize); //Memory Pool Out State Size?
-            Context.Memory.WriteInt32(OutputPosition + 0xc, OutputResponse.VoicesSize); //Voice Out State Size?
-            Context.Memory.WriteInt32(OutputPosition + 0x14, OutputResponse.EffectsSize); //Effect Out State Size?
-            Context.Memory.WriteInt32(OutputPosition + 0x1c, OutputResponse.SinksSize); //Sink Out State Size?
-            Context.Memory.WriteInt32(OutputPosition + 0x20, OutputResponse.PerformanceManagerSize); //Performance Out State Size?
-            Context.Memory.WriteInt32(OutputPosition + 0x3c, OutputResponse.TotalSize); //Total Size (including 0x40 bytes header)
-
-            for (int Offset = 0x40; Offset < 0x40 + OutputResponse.MemoryPoolsSize; Offset += 0x10)
-            {
-                Context.Memory.WriteInt32(OutputPosition + Offset, 5);
+                {
+                    Context.Memory.WriteInt32(OutputPosition + Offset, PoolState);
+                }
             }
 
             //TODO: We shouldn't be signaling this here.
             UpdateEvent.WaitEvent.Set();
-
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }
