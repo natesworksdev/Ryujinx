@@ -131,11 +131,11 @@ namespace Ryujinx.HLE.Gpu.Engines
         }
 
         private void CopyTexture(
-            NvGpuVmm Vmm,
-            TextureInfo  Texture,
-            byte[]   Buffer,
-            int      Width,
-            int      Height)
+            NvGpuVmm    Vmm,
+            TextureInfo Texture,
+            byte[]      Buffer,
+            int         Width,
+            int         Height)
         {
             TextureWriter.Write(Vmm, Texture, Buffer, Width, Height);
         }

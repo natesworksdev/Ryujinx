@@ -12,10 +12,6 @@ namespace Ryujinx.HLE.Gpu.Engines
         //a guess here and use 256kb as the size. Increase if needed.
         private const int MmeWords = 256 * 256;
 
-        //This is used to prevent an unbounded growth of the FIFO queue.
-        //The game shouldn't send more commands than we are capable to process.
-        private const int FifoCapacity = 10000;
-
         private NvGpu Gpu;
 
         private ConcurrentQueue<(NvGpuVmm, NvGpuPBEntry)> BufferQueue;
