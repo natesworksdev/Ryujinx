@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             UpdateDataHeader OutputDataHeader = new UpdateDataHeader();
 
             OutputDataHeader.Revision               = Params.Revision;
-            OutputDataHeader.BehaviorSize          = 0xb0;
+            OutputDataHeader.BehaviorSize           = 0xb0;
             OutputDataHeader.MemoryPoolsSize        = (Params.EffectCount + (Params.VoiceCount * 4)) * 0x10;
             OutputDataHeader.VoicesSize             = Params.VoiceCount  * 0x10;
             OutputDataHeader.EffectsSize            = Params.EffectCount * 0x10;
