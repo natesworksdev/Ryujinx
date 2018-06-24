@@ -23,7 +23,7 @@ namespace Ryujinx
         private KeyboardState? Keyboard = null;
 
         private MouseState? Mouse = null;
-        
+
         public GLScreen(Switch Ns, IGalRenderer Renderer)
             : base(1280, 720,
             new GraphicsMode(), "Ryujinx", 0,
@@ -55,7 +55,7 @@ namespace Ryujinx
             int LeftJoystickDY = 0;
             int RightJoystickDX = 0;
             int RightJoystickDY = 0;
-            
+
             if (Keyboard.HasValue)
             {
                 KeyboardState Keyboard = this.Keyboard.Value;
@@ -83,7 +83,7 @@ namespace Ryujinx
                 if (Keyboard[(Key)Config.FakeJoyCon.Right.StickDown])  RightJoystickDY = -short.MaxValue;
                 if (Keyboard[(Key)Config.FakeJoyCon.Right.StickLeft])  RightJoystickDX = -short.MaxValue;
                 if (Keyboard[(Key)Config.FakeJoyCon.Right.StickRight]) RightJoystickDX = short.MaxValue;
-            
+
                 //RightButtons
                 if (Keyboard[(Key)Config.FakeJoyCon.Right.StickButton]) CurrentButton |= HidControllerButtons.KEY_RSTICK;
                 if (Keyboard[(Key)Config.FakeJoyCon.Right.ButtonA])     CurrentButton |= HidControllerButtons.KEY_A;

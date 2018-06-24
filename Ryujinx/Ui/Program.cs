@@ -67,7 +67,7 @@ namespace Ryujinx
                     Screen.Exit();
                 };
 
-                Screen.Run(60.0);
+                Screen.Run(0.0, 60.0);
             }
 
             Environment.Exit(0);
