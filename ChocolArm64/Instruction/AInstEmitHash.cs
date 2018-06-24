@@ -33,14 +33,7 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.UseSse42)
             {
-                AOpCodeAluRs Op = (AOpCodeAluRs)Context.CurrOp;
-
-                Context.EmitLdintzr(Op.Rn);
-                Context.EmitLdintzr(Op.Rm);
-
-                Context.EmitCall(typeof(Sse42).GetMethod(nameof(Sse42.Crc32), new Type[] { typeof(uint), typeof(byte) }));
-
-                Context.EmitStintzr(Op.Rd);
+                EmitSse42Crc32(Context, typeof(uint), typeof(byte));
             }
             else
             {
@@ -52,14 +45,7 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.UseSse42)
             {
-                AOpCodeAluRs Op = (AOpCodeAluRs)Context.CurrOp;
-
-                Context.EmitLdintzr(Op.Rn);
-                Context.EmitLdintzr(Op.Rm);
-
-                Context.EmitCall(typeof(Sse42).GetMethod(nameof(Sse42.Crc32), new Type[] { typeof(uint), typeof(ushort) }));
-
-                Context.EmitStintzr(Op.Rd);
+                EmitSse42Crc32(Context, typeof(uint), typeof(ushort));
             }
             else
             {
@@ -71,14 +57,7 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.UseSse42)
             {
-                AOpCodeAluRs Op = (AOpCodeAluRs)Context.CurrOp;
-
-                Context.EmitLdintzr(Op.Rn);
-                Context.EmitLdintzr(Op.Rm);
-
-                Context.EmitCall(typeof(Sse42).GetMethod(nameof(Sse42.Crc32), new Type[] { typeof(uint), typeof(uint) }));
-
-                Context.EmitStintzr(Op.Rd);
+                EmitSse42Crc32(Context, typeof(uint), typeof(uint));
             }
             else
             {
@@ -90,19 +69,24 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.UseSse42)
             {
-                AOpCodeAluRs Op = (AOpCodeAluRs)Context.CurrOp;
-
-                Context.EmitLdintzr(Op.Rn);
-                Context.EmitLdintzr(Op.Rm);
-
-                Context.EmitCall(typeof(Sse42).GetMethod(nameof(Sse42.Crc32), new Type[] { typeof(ulong), typeof(ulong) }));
-
-                Context.EmitStintzr(Op.Rd);
+                EmitSse42Crc32(Context, typeof(ulong), typeof(ulong));
             }
             else
             {
                 EmitCrc32(Context, nameof(ASoftFallback.Crc32cx));
             }
+        }
+
+        private static void EmitSse42Crc32(AILEmitterCtx Context, Type TCrc, Type TData)
+        {
+            AOpCodeAluRs Op = (AOpCodeAluRs)Context.CurrOp;
+
+            Context.EmitLdintzr(Op.Rn);
+            Context.EmitLdintzr(Op.Rm);
+
+            Context.EmitCall(typeof(Sse42).GetMethod(nameof(Sse42.Crc32), new Type[] { TCrc, TData }));
+
+            Context.EmitStintzr(Op.Rd);
         }
 
         private static void EmitCrc32(AILEmitterCtx Context, string Name)
