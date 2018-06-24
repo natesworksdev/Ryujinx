@@ -228,7 +228,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            double Zero  = +0f;
+            float  Zero  = +0f;
             byte[] Exp   = default(byte[]);
             byte[] Ones  = new byte[] {0xFF, 0xFF, 0xFF, 0xFF};
             byte[] Zeros = new byte[] {0x00, 0x00, 0x00, 0x00};
@@ -305,7 +305,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            double Zero  = +0f;
+            float  Zero  = +0f;
             byte[] Exp   = default(byte[]);
             byte[] Ones  = new byte[] {0xFF, 0xFF, 0xFF, 0xFF};
             byte[] Zeros = new byte[] {0x00, 0x00, 0x00, 0x00};
@@ -344,7 +344,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V1: V1);
 
-            double Zero  = +0f;
+            float  Zero  = +0f;
             byte[] Exp   = default(byte[]);
             byte[] Ones  = new byte[] {0xFF, 0xFF, 0xFF, 0xFF};
             byte[] Zeros = new byte[] {0x00, 0x00, 0x00, 0x00};
