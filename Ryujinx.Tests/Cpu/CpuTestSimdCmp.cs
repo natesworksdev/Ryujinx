@@ -178,7 +178,6 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-
         [Test, Description("FCMGT D0, D1, #0.0 | FCMGE D0, D1, #0.0 | FCMEQ D0, D1, #0.0 | FCMLE D0, D1, #0.0 | FCMLT D0, D1, #0.0")]
         public void Fcmgt_Fcmge_Fcmeq_Fcmle_Fcmlt_Zero_S_D([ValueSource("_doubles_")] [Random(8)] double A,
                                                            [Values(0u, 1u, 2u, 3u)] uint opU, // GT, GE, EQ, LE
