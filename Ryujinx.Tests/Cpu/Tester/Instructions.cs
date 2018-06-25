@@ -2677,7 +2677,7 @@ namespace Ryujinx.Tests.Cpu.Tester
 
             for (int e = 0; e <= elements - 1; e++)
             {
-                count = BitCount(Elem(operand, e, esize));
+                count = (BigInteger)BitCount(Elem(operand, e, esize));
 
                 Elem(result, e, esize, count.SubBigInteger(esize - 1, 0));
             }
