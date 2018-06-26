@@ -27,6 +27,9 @@ namespace Ryujinx.HLE.OsHle.Services.Nv
             { "/dev/nvhost-ctrl",     ProcessIoctlNvHostCtrl    },
             { "/dev/nvhost-ctrl-gpu", ProcessIoctlNvGpuGpu      },
             { "/dev/nvhost-gpu",      ProcessIoctlNvHostChannel },
+            { "/dev/nvhost-vic",      ProcessIoctlNvHostChannel },
+            { "/dev/nvhost-nvdec",    ProcessIoctlNvHostChannel },
+            { "/dev/nvhost-nvjpg",    ProcessIoctlNvHostChannel },
             { "/dev/nvmap",           ProcessIoctlNvMap         }
         };
 
