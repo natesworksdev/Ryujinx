@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.OsHle.Services.Time
         public long GetSystemClockContext(ServiceCtx Context)
         {
             //Raw data dumped from real switch via pegaswitch
-            byte[] SystemClockContext = { 0x07, 0x00, 0x19, 0x00, 0x0d, 0xd2, 0xb2, 0x80};
+            byte[] SystemClockContext = { 0x07, 0x00, 0x19, 0x00, 0x0d, 0xd2, 0xb2, 0x80 };
             
             Array.Resize(ref SystemClockContext, 0x20);
             
