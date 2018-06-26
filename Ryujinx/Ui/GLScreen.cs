@@ -59,25 +59,25 @@ namespace Ryujinx
 
                 if (!IsExiting)
                 {
-                    UpdateFrame();
-
-                    Ticks += Chrono.ElapsedTicks;
-
-                    Chrono.Restart();
-
-                    if (Ticks > TicksPerFrame)
+                    while (Ticks < TicksPerFrame)
                     {
-                        RenderFrame();
+                        UpdateFrame();
 
-                        Ticks -= TicksPerFrame;
+                        Ticks += Chrono.ElapsedTicks;
+
+                        Chrono.Restart();
                     }
+
+                    RenderFrame();
+
+                    Ticks -= TicksPerFrame;
                 }
             }
         }
 
         private new void Load()
         {
-            //VSync = VSyncMode.On;
+            VSync = VSyncMode.Off;
 
             Renderer.FrameBuffer.SetWindowSize(Width, Height);
         }
