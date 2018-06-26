@@ -5,6 +5,9 @@ using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
 using System;
+using System.Threading;
+
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace Ryujinx
 {
@@ -16,6 +19,8 @@ namespace Ryujinx
         private const float TouchScreenRatioX = (float)TouchScreenWidth  / TouchScreenHeight;
         private const float TouchScreenRatioY = (float)TouchScreenHeight / TouchScreenWidth;
 
+        private const int TargetFPS = 60;
+
         private Switch Ns;
 
         private IGalRenderer Renderer;
@@ -23,6 +28,8 @@ namespace Ryujinx
         private KeyboardState? Keyboard = null;
 
         private MouseState? Mouse = null;
+
+        private Thread RenderThread;
 
         public GLScreen(Switch Ns, IGalRenderer Renderer)
             : base(1280, 720,
@@ -38,11 +45,66 @@ namespace Ryujinx
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
         }
 
-        protected override void OnLoad(EventArgs e)
+        private void RenderLoop()
         {
-            VSync = VSyncMode.On;
+            MakeCurrent();
+
+            Stopwatch Chrono = new Stopwatch();
+
+            Chrono.Start();
+
+            long TicksPerFrame = Stopwatch.Frequency / TargetFPS;
+
+            long Ticks = 0;
+
+            while (!IsExiting)
+            {
+                //Sleeping until Fifo event improves performance, but it deadlocks most games
+                //should not be uncommented until it's found why it happens
+                //if (Ns.WaitFifo())
+                {
+                    Ns.ProcessFrame();
+
+                    Renderer.RunActions();
+                }
+
+                Ticks += Chrono.ElapsedTicks;
+
+                Chrono.Restart();
+
+                if (Ticks >= TicksPerFrame)
+                {
+                    RenderFrame();
+
+                    Ticks -= TicksPerFrame;
+                }
+            }
+        }
+
+        public void MainLoop()
+        {
+            VSync = VSyncMode.Off;
+
+            Visible = true;
 
             Renderer.FrameBuffer.SetWindowSize(Width, Height);
+
+            Context.MakeCurrent(null);
+
+            //OpenTK doesn't like sleeps in its thread, to avoid these a renderer thread is created
+            RenderThread = new Thread(RenderLoop);
+
+            RenderThread.Start();
+
+            while (Exists && !IsExiting)
+            {
+                ProcessEvents();
+
+                if (!IsExiting)
+                {
+                    UpdateFrame();
+                }
+            }
         }
         
         private bool IsGamePadButtonPressedFromString(GamePadState GamePad, string Button)
@@ -99,7 +161,7 @@ namespace Ryujinx
             }
         }
 
-        protected override void OnUpdateFrame(FrameEventArgs e)
+        private new void UpdateFrame()
         {
             HidControllerButtons CurrentButton = 0;
             HidJoystickPosition  LeftJoystick;
@@ -278,13 +340,9 @@ namespace Ryujinx
                 CurrentButton,
                 LeftJoystick,
                 RightJoystick);
-
-            Ns.ProcessFrame();
-
-            Renderer.RunActions();
         }
 
-        protected override void OnRenderFrame(FrameEventArgs e)
+        private new void RenderFrame()
         {
             Renderer.FrameBuffer.Render();
 
@@ -298,6 +356,13 @@ namespace Ryujinx
             SwapBuffers();
 
             Ns.Os.SignalVsync();
+        }
+
+        protected override void OnUnload(EventArgs e)
+        {
+            RenderThread.Join();
+
+            base.OnUnload(e);
         }
 
         protected override void OnResize(EventArgs e)

@@ -71,9 +71,16 @@ namespace Ryujinx.HLE
             Os.LoadProgram(FileName);
         }
 
+        public bool WaitFifo()
+        {
+            return Gpu.Fifo.Event.WaitOne(1);
+        }
+
         public void ProcessFrame()
         {
             Gpu.Fifo.DispatchCalls();
+
+            Gpu.Fifo.Event.Reset();
         }
 
         internal virtual void OnFinish(EventArgs e)
