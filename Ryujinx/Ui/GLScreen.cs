@@ -51,19 +51,25 @@ namespace Ryujinx
 
             long TicksPerFrame = Stopwatch.Frequency / 60;
 
+            long Ticks = 0;
+
             while (Exists && !IsExiting)
             {
                 ProcessEvents();
 
                 if (!IsExiting)
                 {
-                    if (Chrono.ElapsedTicks > TicksPerFrame)
-                    {
-                        UpdateFrame();
+                    UpdateFrame();
 
+                    Ticks += Chrono.ElapsedTicks;
+
+                    Chrono.Restart();
+
+                    if (Ticks > TicksPerFrame)
+                    {
                         RenderFrame();
 
-                        Chrono.Restart();
+                        Ticks -= TicksPerFrame;
                     }
                 }
             }
