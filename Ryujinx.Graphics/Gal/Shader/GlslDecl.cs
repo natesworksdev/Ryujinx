@@ -28,12 +28,13 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public const string FlipUniformName = "flip";
 
+        public const string StageProgramBName = "program_b";
+
         private string[] StagePrefixes = new string[] { "vp", "tcp", "tep", "gp", "fp" };
 
         private string StagePrefix;
 
         private Dictionary<int, ShaderDeclInfo> m_Textures;
-
         private Dictionary<int, ShaderDeclInfo> m_Uniforms;
 
         private Dictionary<int, ShaderDeclInfo> m_InAttributes;
@@ -43,7 +44,6 @@ namespace Ryujinx.Graphics.Gal.Shader
         private Dictionary<int, ShaderDeclInfo> m_Preds;
 
         public IReadOnlyDictionary<int, ShaderDeclInfo> Textures => m_Textures;
-
         public IReadOnlyDictionary<int, ShaderDeclInfo> Uniforms => m_Uniforms;
 
         public IReadOnlyDictionary<int, ShaderDeclInfo> InAttributes  => m_InAttributes;
@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public GalShaderType ShaderType { get; private set; }
 
-        public GlslDecl(ShaderIrBlock[] Blocks, GalShaderType ShaderType)
+        public GlslDecl(GalShaderType ShaderType)
         {
             this.ShaderType = ShaderType;
 
@@ -80,7 +80,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 m_OutAttributes.Add(7, new ShaderDeclInfo("gl_Position", -1, 0, 4));
             }
+        }
 
+        public void Add(ShaderIrBlock[] Blocks)
+        {
             foreach (ShaderIrBlock Block in Blocks)
             {
                 foreach (ShaderIrNode Node in Block.GetNodes())
@@ -89,7 +92,6 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
             }
         }
-
         private void Traverse(ShaderIrNode Parent, ShaderIrNode Node)
         {
             switch (Node)

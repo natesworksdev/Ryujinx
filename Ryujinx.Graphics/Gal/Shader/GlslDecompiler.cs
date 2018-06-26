@@ -25,9 +25,11 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private GlslDecl Decl;
 
-        private ShaderIrBlock[] Blocks;
+        private ShaderIrBlock[] Blocks, BlocksB;
 
         private StringBuilder SB;
+
+        private bool NeedsProgramBCall;
 
         public GlslDecompiler()
         {
@@ -104,12 +106,37 @@ namespace Ryujinx.Graphics.Gal.Shader
             };
         }
 
+        public GlslProgram Decompile(
+            IGalMemory    Memory,
+            long          VpAPosition,
+            long          VpBPosition,
+            GalShaderType ShaderType)
+        {
+            Blocks  = ShaderDecoder.Decode(Memory, VpAPosition);
+            BlocksB = ShaderDecoder.Decode(Memory, VpBPosition);
+
+            Decl = new GlslDecl(ShaderType);
+
+            Decl.Add(Blocks);
+            Decl.Add(BlocksB);
+
+            return Decompile();
+        }
+
         public GlslProgram Decompile(IGalMemory Memory, long Position, GalShaderType ShaderType)
         {
-            Blocks = ShaderDecoder.Decode(Memory, Position);
+            Blocks  = ShaderDecoder.Decode(Memory, Position);
+            BlocksB = null;
 
-            Decl = new GlslDecl(Blocks, ShaderType);
+            Decl = new GlslDecl(ShaderType);
 
+            Decl.Add(Blocks);
+
+            return Decompile();
+        }
+
+        private GlslProgram Decompile()
+        {
             SB = new StringBuilder();
 
             SB.AppendLine("#version 410 core");
@@ -121,7 +148,20 @@ namespace Ryujinx.Graphics.Gal.Shader
             PrintDeclGprs();
             PrintDeclPreds();
 
+            if (BlocksB != null)
+            {
+                string SubName = "void " + GlslDecl.StageProgramBName + "()";
+
+                PrintBlockScope(BlocksB[0], null, null, SubName, IdentationStr);
+
+                SB.AppendLine();
+
+                NeedsProgramBCall = true;
+            }
+
             PrintBlockScope(Blocks[0], null, null, "void main()", IdentationStr);
+
+            NeedsProgramBCall = false;
 
             string GlslCode = SB.ToString();
 
@@ -146,8 +186,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             foreach (ShaderDeclInfo DeclInfo in Decl.Uniforms.Values.OrderBy(DeclKeySelector))
             {
                 SB.AppendLine($"layout (std140) uniform {DeclInfo.Name} {{");
+
                 SB.AppendLine($"{IdentationStr}vec4 {DeclInfo.Name}_data[{DeclInfo.Index / 4 + 1}];");
-                SB.AppendLine($"}};");
+
+                SB.AppendLine("};");
             }
 
             if (Decl.Uniforms.Count > 0)
@@ -389,6 +431,11 @@ namespace Ryujinx.Graphics.Gal.Shader
                         //the shader ends here.
                         if (Decl.ShaderType == GalShaderType.Vertex)
                         {
+                            if (NeedsProgramBCall)
+                            {
+                                SB.AppendLine(Identation + GlslDecl.StageProgramBName + "();");
+                            }
+
                             SB.AppendLine(Identation + "gl_Position.xy *= flip;");
 
                             SB.AppendLine(Identation + GlslDecl.PositionOutAttrName + " = gl_Position;");
