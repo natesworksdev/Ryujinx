@@ -280,5 +280,15 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
         }
+
+        private void SvcGetThreadContext3(AThreadState ThreadState)
+        {
+            int Handle = (int)ThreadState.X0;
+            long ThreadContext = (long)ThreadState.X1;
+
+            Ns.Log.PrintStub(LogClass.KernelSvc, "Stubbed. - " + ThreadContext);
+
+            ThreadState.X0 = 0;
+        }
     }
 }
