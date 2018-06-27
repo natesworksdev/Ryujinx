@@ -99,7 +99,7 @@ namespace Ryujinx
             {
                 //Mapping it relative to the positions of the buttons on the controller
 
-                GamePadState gamePad = GamePad.GetState(0);
+                GamePadState gamePad = GamePad.GetState(Config.GamePad_Index);
 
                 //RightButtons
                 if (gamePad.Buttons.B == ButtonState.Pressed)              CurrentButton |= HidControllerButtons.KEY_A;
