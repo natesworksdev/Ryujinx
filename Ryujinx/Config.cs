@@ -1,5 +1,4 @@
-﻿using OpenTK.Input;
-using Ryujinx.HLE.Input;
+﻿using Ryujinx.HLE.Input;
 using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,8 +13,6 @@ namespace Ryujinx
         public static JoyCon FakeJoyCon { get; private set; }
 
         public static float GamePad_Deadzone;
-        public static bool  GamePad_Enable;
-        public static int   GamePad_Index;
 
         public static void Read(Logger Log)
         {
@@ -33,9 +30,7 @@ namespace Ryujinx
             Log.SetEnable(LogLevel.Warning, Convert.ToBoolean(Parser.Value("Logging_Enable_Warn")));
             Log.SetEnable(LogLevel.Error,   Convert.ToBoolean(Parser.Value("Logging_Enable_Error")));
 
-            GamePad_Enable   =        Convert.ToBoolean(Parser.Value("GamePad_Enable"));
-            GamePad_Index    =        Convert.ToInt32  (Parser.Value("GamePad_Index"));
-            GamePad_Deadzone = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"));
+            GamePad_Deadzone = (float)Convert.ToDouble(Parser.Value("GamePad_Deadzone"));
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 
