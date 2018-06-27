@@ -21,6 +21,19 @@ namespace Ryujinx
         public static string Controls_Right_FakeJoycon_GamePadButton_B;
         public static string Controls_Right_FakeJoycon_GamePadButton_X;
         public static string Controls_Right_FakeJoycon_GamePadButton_Y;
+        public static string Controls_Right_FakeJoycon_GamePadButton_Plus;
+        public static string Controls_Right_FakeJoycon_GamePadButton_R;
+        public static string Controls_Right_FakeJoycon_GamePadStick_Button;
+        public static string Controls_Right_FakeJoycon_GamePadTrigger_ZR;
+
+        public static string Controls_Left_FakeJoycon_GamePadDPad_Up;
+        public static string Controls_Left_FakeJoycon_GamePadDPad_Down;
+        public static string Controls_Left_FakeJoycon_GamePadDPad_Left;
+        public static string Controls_Left_FakeJoycon_GamePadDPad_Right;
+        public static string Controls_Left_FakeJoycon_GamePadButton_Minus;
+        public static string Controls_Left_FakeJoycon_GamePadButton_L;
+        public static string Controls_Left_FakeJoycon_GamePadStick_Button;
+        public static string Controls_Left_FakeJoycon_GamePadTrigger_ZL;
 
         public static void Read(Logger Log)
         {
@@ -42,10 +55,23 @@ namespace Ryujinx
             GamePad_Index    =        Convert.ToInt32  (Parser.Value("GamePad_Index"));
             GamePad_Deadzone = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"));
 
-            Controls_Right_FakeJoycon_GamePadButton_A = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_A");
-            Controls_Right_FakeJoycon_GamePadButton_B = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_B");
-            Controls_Right_FakeJoycon_GamePadButton_X = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_X");
-            Controls_Right_FakeJoycon_GamePadButton_Y = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_Y");
+            Controls_Right_FakeJoycon_GamePadButton_A     = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_A");
+            Controls_Right_FakeJoycon_GamePadButton_B     = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_B");
+            Controls_Right_FakeJoycon_GamePadButton_X     = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_X");
+            Controls_Right_FakeJoycon_GamePadButton_Y     = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_Y");
+            Controls_Right_FakeJoycon_GamePadButton_Plus  = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_Plus");
+            Controls_Right_FakeJoycon_GamePadButton_R     = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_R");
+            Controls_Right_FakeJoycon_GamePadStick_Button = Parser.Value("Controls_Right_FakeJoycon_GamePadStick_Button");
+            Controls_Right_FakeJoycon_GamePadTrigger_ZR   = Parser.Value("Controls_Right_FakeJoycon_GamePadTrigger_ZR");
+
+            Controls_Left_FakeJoycon_GamePadDPad_Up       = Parser.Value("Controls_Left_FakeJoycon_GamePadDPad_Up");
+            Controls_Left_FakeJoycon_GamePadDPad_Down     = Parser.Value("Controls_Left_FakeJoycon_GamePadDPad_Down");
+            Controls_Left_FakeJoycon_GamePadDPad_Left     = Parser.Value("Controls_Left_FakeJoycon_GamePadDPad_Left");
+            Controls_Left_FakeJoycon_GamePadDPad_Right    = Parser.Value("Controls_Left_FakeJoycon_GamePadDPad_Right");
+            Controls_Left_FakeJoycon_GamePadButton_Minus  = Parser.Value("Controls_Left_FakeJoycon_GamePadButton_Minus");
+            Controls_Left_FakeJoycon_GamePadButton_L      = Parser.Value("Controls_Left_FakeJoycon_GamePadButton_L");
+            Controls_Left_FakeJoycon_GamePadStick_Button  = Parser.Value("Controls_Left_FakeJoycon_GamePadStick_Button");
+            Controls_Left_FakeJoycon_GamePadTrigger_ZL    = Parser.Value("Controls_Left_FakeJoycon_GamePadTrigger_ZL");
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 

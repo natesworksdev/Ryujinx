@@ -101,7 +101,8 @@ namespace Ryujinx
             return result;
         }
 
-        private float getGamePadTriggerFromString(GamePadState gamePad, string str) {
+        private float getGamePadTriggerFromString(GamePadState gamePad, string str)
+        {
             float result = 0;
 
             switch (str)
@@ -132,6 +133,7 @@ namespace Ryujinx
             int RightJoystickDY = 0;
             float deadzone = Config.GamePad_Deadzone;
 
+            //Keyboard Input
             if (Keyboard.HasValue)
             {
                 KeyboardState Keyboard = this.Keyboard.Value;
@@ -171,33 +173,45 @@ namespace Ryujinx
                 if (Keyboard[(Key)Config.FakeJoyCon.Right.ButtonZR])    CurrentButton |= HidControllerButtons.KEY_ZR;
             }
 
+            //Controller Input
             if (Config.GamePad_Enable)
             {
                 GamePadState gamePad = GamePad.GetState(Config.GamePad_Index);
 
                 //RightButtons
-                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_A) 
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_A)
                     == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_A;
                 if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_B)
                     == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_B;
-                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_X) 
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_X)
                     == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_X;
-                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_Y) 
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_Y)
                     == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_Y;
-                if (gamePad.Buttons.RightStick == ButtonState.Pressed)     CurrentButton |= HidControllerButtons.KEY_RSTICK;
-                if (gamePad.Buttons.Start == ButtonState.Pressed)          CurrentButton |= HidControllerButtons.KEY_PLUS;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadStick_Button) 
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_RSTICK;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_Plus) 
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_PLUS;
                 if (gamePad.Buttons.RightShoulder == ButtonState.Pressed)  CurrentButton |= HidControllerButtons.KEY_R;
-                if (gamePad.Triggers.Right >= 0.5)                         CurrentButton |= HidControllerButtons.KEY_ZR;
+                if (getGamePadTriggerFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadTrigger_ZR) 
+                                    >= 0.5) CurrentButton |= HidControllerButtons.KEY_ZR;
 
                 //LeftButtons
-                if (gamePad.Buttons.LeftStick == ButtonState.Pressed)    CurrentButton |= HidControllerButtons.KEY_LSTICK;
-                if (gamePad.DPad.IsUp)                                   CurrentButton |= HidControllerButtons.KEY_DUP;
-                if (gamePad.DPad.IsDown)                                 CurrentButton |= HidControllerButtons.KEY_DDOWN;
-                if (gamePad.DPad.IsLeft)                                 CurrentButton |= HidControllerButtons.KEY_DLEFT;
-                if (gamePad.DPad.IsRight)                                CurrentButton |= HidControllerButtons.KEY_DRIGHT;
-                if (gamePad.Buttons.Back == ButtonState.Pressed)         CurrentButton |= HidControllerButtons.KEY_MINUS;
-                if (gamePad.Buttons.LeftShoulder == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_L;
-                if (gamePad.Triggers.Left >= 0.5)                        CurrentButton |= HidControllerButtons.KEY_ZL;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadDPad_Up)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_DUP;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadDPad_Down)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_DDOWN;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadDPad_Left)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_DLEFT;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadDPad_Right)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_DRIGHT;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadStick_Button)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_LSTICK;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadButton_Minus)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_MINUS;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadButton_L)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_L;
+                if (getGamePadTriggerFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadTrigger_ZL)
+                                    >= 0.5) CurrentButton |= HidControllerButtons.KEY_ZL;
 
                 //RightJoystick
                 if (gamePad.ThumbSticks.Right.X >= deadzone || gamePad.ThumbSticks.Right.X <= -deadzone)
