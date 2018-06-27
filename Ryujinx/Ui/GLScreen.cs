@@ -45,6 +45,81 @@ namespace Ryujinx
             Renderer.FrameBuffer.SetWindowSize(Width, Height);
         }
 
+        private ButtonState getGamePadButtonFromString(GamePadState gamePad, string str) //Please make this prettier if you can.
+        {
+            ButtonState result = gamePad.Buttons.A;
+
+            switch (str)
+            {
+                case "A":
+                    result = gamePad.Buttons.A;
+                    break;
+                case "B":
+                    result = gamePad.Buttons.B;
+                    break;
+                case "X":
+                    result = gamePad.Buttons.X;
+                    break;
+                case "Y":
+                    result = gamePad.Buttons.Y;
+                    break;
+                case "LStick":
+                    result = gamePad.Buttons.LeftStick;
+                    break;
+                case "RStick":
+                    result = gamePad.Buttons.RightStick;
+                    break;
+                case "LShoulder":
+                    result = gamePad.Buttons.LeftShoulder;
+                    break;
+                case "RShoulder":
+                    result = gamePad.Buttons.RightShoulder;
+                    break;
+                case "DPadUp":
+                    result = gamePad.DPad.Up;
+                    break;
+                case "DPadDown":
+                    result = gamePad.DPad.Down;
+                    break;
+                case "DPadLeft":
+                    result = gamePad.DPad.Left;
+                    break;
+                case "DPadRight":
+                    result = gamePad.DPad.Right;
+                    break;
+                case "Start":
+                    result = gamePad.Buttons.Start;
+                    break;
+                case "Back":
+                    result = gamePad.Buttons.Back;
+                    break;
+                default:
+                    Console.Error.WriteLine("Invalid Button Mapping \"" + str + "\"!  Defaulting to Button A.");
+                    break;
+            }
+
+            return result;
+        }
+
+        private float getGamePadTriggerFromString(GamePadState gamePad, string str) {
+            float result = 0;
+
+            switch (str)
+            {
+                case "LTrigger":
+                    result = gamePad.Triggers.Left;
+                    break;
+                case "RTrigger":
+                    result = gamePad.Triggers.Right;
+                    break;
+                default:
+                    Console.Error.WriteLine("Invalid Trigger Mapping \"" + str + "\"!  Defaulting to 0.");
+                    break;
+            }
+
+            return result;
+        }
+
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             HidControllerButtons CurrentButton = 0;
@@ -95,17 +170,20 @@ namespace Ryujinx
                 if (Keyboard[(Key)Config.FakeJoyCon.Right.ButtonR])     CurrentButton |= HidControllerButtons.KEY_R;
                 if (Keyboard[(Key)Config.FakeJoyCon.Right.ButtonZR])    CurrentButton |= HidControllerButtons.KEY_ZR;
             }
+
             if (Config.GamePad_Enable)
             {
-                //Mapping it relative to the positions of the buttons on the controller
-
                 GamePadState gamePad = GamePad.GetState(Config.GamePad_Index);
 
                 //RightButtons
-                if (gamePad.Buttons.B == ButtonState.Pressed)              CurrentButton |= HidControllerButtons.KEY_A;
-                if (gamePad.Buttons.A == ButtonState.Pressed)              CurrentButton |= HidControllerButtons.KEY_B;
-                if (gamePad.Buttons.Y == ButtonState.Pressed)              CurrentButton |= HidControllerButtons.KEY_X;
-                if (gamePad.Buttons.X == ButtonState.Pressed)              CurrentButton |= HidControllerButtons.KEY_Y;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_A) 
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_A;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_B)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_B;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_X) 
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_X;
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_Y) 
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_Y;
                 if (gamePad.Buttons.RightStick == ButtonState.Pressed)     CurrentButton |= HidControllerButtons.KEY_RSTICK;
                 if (gamePad.Buttons.Start == ButtonState.Pressed)          CurrentButton |= HidControllerButtons.KEY_PLUS;
                 if (gamePad.Buttons.RightShoulder == ButtonState.Pressed)  CurrentButton |= HidControllerButtons.KEY_R;

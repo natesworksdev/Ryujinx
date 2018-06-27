@@ -17,6 +17,11 @@ namespace Ryujinx
         public static bool  GamePad_Enable;
         public static int   GamePad_Index;
 
+        public static string Controls_Right_FakeJoycon_GamePadButton_A;
+        public static string Controls_Right_FakeJoycon_GamePadButton_B;
+        public static string Controls_Right_FakeJoycon_GamePadButton_X;
+        public static string Controls_Right_FakeJoycon_GamePadButton_Y;
+
         public static void Read(Logger Log)
         {
             string IniFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -36,6 +41,11 @@ namespace Ryujinx
             GamePad_Enable   =        Convert.ToBoolean(Parser.Value("GamePad_Enable"));
             GamePad_Index    =        Convert.ToInt32  (Parser.Value("GamePad_Index"));
             GamePad_Deadzone = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"));
+
+            Controls_Right_FakeJoycon_GamePadButton_A = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_A");
+            Controls_Right_FakeJoycon_GamePadButton_B = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_B");
+            Controls_Right_FakeJoycon_GamePadButton_X = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_X");
+            Controls_Right_FakeJoycon_GamePadButton_Y = Parser.Value("Controls_Right_FakeJoycon_GamePadButton_Y");
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 
