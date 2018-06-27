@@ -14,6 +14,9 @@ namespace Ryujinx.Graphics.Gal.Shader
         private const int AttrStartIndex = 8;
         private const int TexStartIndex = 8;
 
+        public const string StageAFunctionName = "StageA";
+        public const string StageBFunctionName = "StageB";
+
         public const string PositionOutAttrName = "position";
 
         private const string InAttrName  = "in_attr";
