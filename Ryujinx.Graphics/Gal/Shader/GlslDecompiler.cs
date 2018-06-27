@@ -114,14 +114,25 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             SB.AppendLine("#version 410 core");
 
+            //TODO: Decide if Stage B has to be called
+            SB.AppendLine("#define HAS_STAGE_B 0" + Environment.NewLine);
+
             PrintDeclTextures();
             PrintDeclUniforms();
             PrintDeclInAttributes();
             PrintDeclOutAttributes();
+            PrintDeclInStruct();
+            PrintDeclOutStruct();
             PrintDeclGprs();
             PrintDeclPreds();
 
-            PrintBlockScope(Blocks[0], null, null, "void main()", IdentationStr);
+            //TODO: Build Stage B here
+
+            string StageAFunc = "void " + GlslDecl.StageAFunctionName + "(in Input IN, out Output OUT)";
+
+            PrintBlockScope(Blocks[0], null, null, StageAFunc, IdentationStr);
+
+            PrintMain();
 
             string GlslCode = SB.ToString();
 
@@ -196,6 +207,40 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
+        private void PrintDeclInStruct()
+        {
+            SB.AppendLine("struct Input {");
+
+            PrintDeclStructAttributes(Decl.InAttributes.Values);
+
+            SB.AppendLine("};" + Environment.NewLine);
+        }
+
+        private void PrintDeclOutStruct()
+        {
+            SB.AppendLine("struct Output {");
+
+            PrintDeclStructAttributes(Decl.OutAttributes.Values);
+
+            SB.AppendLine("};" + Environment.NewLine);
+        }
+
+        private void PrintDeclStructAttributes(IEnumerable<ShaderDeclInfo> Decls)
+        {
+            if (Decls.Count() > 0)
+            {
+                foreach (ShaderDeclInfo DeclInfo in Decls.OrderBy(DeclKeySelector))
+                {
+                    SB.AppendLine(IdentationStr + GetDecl(DeclInfo) + ";");
+                }
+            }
+            else
+            {
+                //Looks like GLSL doesn't like empty structs
+                SB.AppendLine(IdentationStr + "float dummy;");
+            }
+        }
+
         private void PrintDeclGprs()
         {
             PrintDecls(Decl.Gprs);
@@ -244,6 +289,63 @@ namespace Ryujinx.Graphics.Gal.Shader
             return ElemTypes[DeclInfo.Size - 1] + " " + DeclInfo.Name;
         }
 
+        private void PrintMain()
+        {
+            SB.AppendLine("void main() {");
+
+            //Build host input attributes
+            SB.AppendLine(IdentationStr + "Input in_B;");
+
+            foreach (ShaderDeclInfo DeclInfo in Decl.InAttributes.Values.OrderBy(DeclKeySelector))
+            {
+                SB.AppendLine(IdentationStr + "in_B." + DeclInfo.Name + " = " + DeclInfo.Name + ";");
+            }
+
+            SB.AppendLine();
+
+            //Build Stage A input (IN)
+            SB.AppendLine(IdentationStr + "Input in_A;");
+
+            SB.AppendLine("#if HAS_STAGE_B");
+
+            SB.AppendLine(IdentationStr + GlslDecl.StageBFunctionName + "(in_B, in_A);");
+
+            SB.AppendLine("#else");
+
+            SB.AppendLine(IdentationStr + "in_A = in_B;");
+
+            SB.AppendLine("#endif" + Environment.NewLine);
+
+            //Call Stage A
+            SB.AppendLine(IdentationStr + "Output out_host;");
+
+            SB.AppendLine(IdentationStr + GlslDecl.StageAFunctionName + "(in_A, out_host);");
+
+            //Write host output attributes
+            if (Decl.OutAttributes.Count > 0)
+            {
+                SB.AppendLine();
+
+                foreach (ShaderDeclInfo DeclInfo in Decl.OutAttributes.Values.OrderBy(DeclKeySelector))
+                {
+                    SB.AppendLine(IdentationStr + DeclInfo.Name + " = out_host." + DeclInfo.Name + ";");
+                }
+            }
+
+            //Do end-of-vertex stuff (host specific)
+            if (Decl.ShaderType == GalShaderType.Vertex)
+            {
+                SB.AppendLine();
+                
+                SB.AppendLine(IdentationStr + "gl_Position.xy *= " + GlslDecl.FlipUniformName + ";");
+
+                SB.AppendLine(IdentationStr + GlslDecl.PositionOutAttrName + " = out_host.gl_Position;");
+                SB.AppendLine(IdentationStr + GlslDecl.PositionOutAttrName + ".w = 1;");
+            }
+
+            SB.AppendLine("}");
+        }
+
         private void PrintBlockScope(
             ShaderIrBlock Block,
             ShaderIrBlock EndBlock,
@@ -277,6 +379,11 @@ namespace Ryujinx.Graphics.Gal.Shader
             else
             {
                 SB.AppendLine(UpIdent + "}");
+            }
+
+            if (EndBlock == null)
+            {
+                SB.AppendLine();
             }
         }
 
@@ -382,18 +489,6 @@ namespace Ryujinx.Graphics.Gal.Shader
                         }
 
                         continue;
-                    }
-                    else if (Op.Inst == ShaderIrInst.Exit)
-                    {
-                        //Do everything that needs to be done before
-                        //the shader ends here.
-                        if (Decl.ShaderType == GalShaderType.Vertex)
-                        {
-                            SB.AppendLine(Identation + "gl_Position.xy *= flip;");
-
-                            SB.AppendLine(Identation + GlslDecl.PositionOutAttrName + " = gl_Position;");
-                            SB.AppendLine(Identation + GlslDecl.PositionOutAttrName + ".w = 1;");
-                        }
                     }
 
                     SB.AppendLine(Identation + GetSrcExpr(Op, true) + ";");
@@ -546,7 +641,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetOutAbufName(ShaderIrOperAbuf Abuf)
         {
-            return GetName(Decl.OutAttributes, Abuf);
+            return "OUT." + GetName(Decl.OutAttributes, Abuf);
         }
 
         private string GetName(ShaderIrOperAbuf Abuf)
@@ -569,7 +664,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
             }
 
-            return GetName(Decl.InAttributes, Abuf);
+            return "IN." + GetName(Decl.InAttributes, Abuf);
         }
 
         private string GetName(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, ShaderIrOperAbuf Abuf)
