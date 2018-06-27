@@ -12,6 +12,8 @@ namespace Ryujinx
     {
         public static JoyCon FakeJoyCon { get; private set; }
 
+        public static float GamePad_Deadzone;
+
         public static void Read(Logger Log)
         {
             string IniFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -27,6 +29,8 @@ namespace Ryujinx
             Log.SetEnable(LogLevel.Info,    Convert.ToBoolean(Parser.Value("Logging_Enable_Info")));
             Log.SetEnable(LogLevel.Warning, Convert.ToBoolean(Parser.Value("Logging_Enable_Warn")));
             Log.SetEnable(LogLevel.Error,   Convert.ToBoolean(Parser.Value("Logging_Enable_Error")));
+
+            GamePad_Deadzone = (float)Convert.ToDouble(Parser.Value("GamePad_Deadzone"));
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 
