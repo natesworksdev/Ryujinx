@@ -184,6 +184,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                 SB.AppendLine("uniform vec2 " + GlslDecl.FlipUniformName + ";");
             }
 
+            SB.AppendLine();
+
             foreach (ShaderDeclInfo DeclInfo in Decl.Uniforms.Values.OrderBy(DeclKeySelector))
             {
                 SB.AppendLine($"layout (std140) uniform {DeclInfo.Name} {{");
