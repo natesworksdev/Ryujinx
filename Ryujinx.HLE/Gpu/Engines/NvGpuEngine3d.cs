@@ -94,30 +94,28 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             int FbIndex = (Arg0 >> 6) & 0xf;
 
-            int Layer = (Arg0 >> 10) & 0x3ff;
-
             GalClearBufferFlags Flags = (GalClearBufferFlags)(Arg0 & 0x3f);
 
-            SetFrameBuffer(Vmm, 0);
+            SetFrameBuffer(Vmm, FbIndex);
 
-            Gpu.Renderer.Rasterizer.ClearBuffers(Layer, Flags);
+            Gpu.Renderer.Rasterizer.ClearBuffers(Flags);
         }
 
         private void SetFrameBuffer(NvGpuVmm Vmm, int FbIndex)
         {
             long VA = MakeInt64From2xInt32(NvGpuEngine3dReg.FrameBufferNAddress + FbIndex * 0x10);
 
-            long PA = Vmm.GetPhysicalAddress(VA);
+            long Key = Vmm.GetPhysicalAddress(VA);
 
-            FrameBuffers.Add(PA);
+            FrameBuffers.Add(Key);
 
             int Width  = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
             int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
 
             //Note: Using the Width/Height results seems to give incorrect results.
             //Maybe the size of all frame buffers is hardcoded to screen size? This seems unlikely.
-            Gpu.Renderer.FrameBuffer.Create(PA, 1280, 720);
-            Gpu.Renderer.FrameBuffer.Bind(PA);
+            Gpu.Renderer.FrameBuffer.Create(Key, 1280, 720);
+            Gpu.Renderer.FrameBuffer.Bind(Key);
         }
 
         private long[] UploadShaders(NvGpuVmm Vmm)
@@ -126,7 +124,33 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             long BasePosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
 
-            for (int Index = 0; Index < 6; Index++)
+            int Index = 1;
+
+            int VpAControl = ReadRegister(NvGpuEngine3dReg.ShaderNControl);
+
+            bool VpAEnable = (VpAControl & 1) != 0;
+
+            if (VpAEnable)
+            {
+                //Note: The maxwell supports 2 vertex programs, usually
+                //only VP B is used, but in some cases VP A is also used.
+                //In this case, it seems to function as an extra vertex
+                //shader stage.
+                //The graphics abstraction layer has a special overload for this
+                //case, which should merge the two shaders into one vertex shader.
+                int VpAOffset = ReadRegister(NvGpuEngine3dReg.ShaderNOffset);
+                int VpBOffset = ReadRegister(NvGpuEngine3dReg.ShaderNOffset + 0x10);
+
+                long VpAPos = BasePosition + (uint)VpAOffset;
+                long VpBPos = BasePosition + (uint)VpBOffset;
+
+                Gpu.Renderer.Shader.Create(Vmm, VpAPos, VpBPos, GalShaderType.Vertex);
+                Gpu.Renderer.Shader.Bind(VpBPos);
+
+                Index = 2;
+            }
+
+            for (; Index < 6; Index++)
             {
                 int Control = ReadRegister(NvGpuEngine3dReg.ShaderNControl + Index * 0x10);
                 int Offset  = ReadRegister(NvGpuEngine3dReg.ShaderNOffset  + Index * 0x10);
