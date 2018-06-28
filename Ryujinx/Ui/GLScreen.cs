@@ -121,6 +121,26 @@ namespace Ryujinx
             return result;
         }
 
+        private Vector2 getJoystickAxisFromString(GamePadState gamePad, string str)
+        {
+            Vector2 result = new Vector2(0, 0);
+
+            switch (str)
+            {
+                case "LJoystick":
+                    result = gamePad.ThumbSticks.Left;
+                    break;
+                case "RJoystick":
+                    result = gamePad.ThumbSticks.Right;
+                    break;
+                default:
+                    Console.Error.WriteLine("Invalid Joystick Axis \"" + str + "\"!  Defaulting the Vector2 to 0, 0.");
+                    break;
+            }
+
+            return result;
+        }
+
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             HidControllerButtons CurrentButton = 0;
@@ -187,12 +207,13 @@ namespace Ryujinx
                     == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_X;
                 if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_Y)
                     == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_Y;
-                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadStick_Button) 
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadStick_Button)
                     == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_RSTICK;
-                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_Plus) 
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_Plus)
                     == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_PLUS;
-                if (gamePad.Buttons.RightShoulder == ButtonState.Pressed)  CurrentButton |= HidControllerButtons.KEY_R;
-                if (getGamePadTriggerFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadTrigger_ZR) 
+                if (getGamePadButtonFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadButton_R)
+                    == ButtonState.Pressed) CurrentButton |= HidControllerButtons.KEY_R;
+                if (getGamePadTriggerFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadTrigger_ZR)
                                     >= 0.5) CurrentButton |= HidControllerButtons.KEY_ZR;
 
                 //LeftButtons
@@ -214,18 +235,22 @@ namespace Ryujinx
                                     >= 0.5) CurrentButton |= HidControllerButtons.KEY_ZL;
 
                 //RightJoystick
-                if (gamePad.ThumbSticks.Right.X >= deadzone || gamePad.ThumbSticks.Right.X <= -deadzone)
-                    RightJoystickDY = (int)(-gamePad.ThumbSticks.Right.X * short.MaxValue);
+                if (getJoystickAxisFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadJoystick_R).X >= deadzone
+                 || getJoystickAxisFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadJoystick_R).X <= -deadzone)
+                    RightJoystickDY = (int)(-getJoystickAxisFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadJoystick_R).X * short.MaxValue);
 
-                if (gamePad.ThumbSticks.Right.Y >= deadzone || gamePad.ThumbSticks.Right.Y <= -deadzone)
-                    RightJoystickDX = (int)(-gamePad.ThumbSticks.Right.Y * short.MaxValue);
+                if (getJoystickAxisFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadJoystick_R).Y >= deadzone
+                 || getJoystickAxisFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadJoystick_R).Y <= -deadzone)
+                    RightJoystickDX = (int)(-getJoystickAxisFromString(gamePad, Config.Controls_Right_FakeJoycon_GamePadJoystick_R).Y * short.MaxValue);
 
                 //LeftJoystick
-                if (gamePad.ThumbSticks.Left.X >= deadzone || gamePad.ThumbSticks.Left.X <= -deadzone)
-                    LeftJoystickDX = (int)(gamePad.ThumbSticks.Left.X * short.MaxValue);
+                if (getJoystickAxisFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadJoystick_L).X >= deadzone
+                 || getJoystickAxisFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadJoystick_L).X <= -deadzone)
+                    LeftJoystickDX = (int)(getJoystickAxisFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadJoystick_L).X * short.MaxValue);
 
-                if (gamePad.ThumbSticks.Left.Y >= deadzone || gamePad.ThumbSticks.Left.Y <= -deadzone)
-                    LeftJoystickDY = (int)(gamePad.ThumbSticks.Left.Y * short.MaxValue);
+                if (getJoystickAxisFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadJoystick_L).Y >= deadzone
+                 || getJoystickAxisFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadJoystick_L).Y <= -deadzone)
+                    LeftJoystickDY = (int)(getJoystickAxisFromString(gamePad, Config.Controls_Left_FakeJoycon_GamePadJoystick_L).Y * short.MaxValue);
             }
 
             LeftJoystick = new HidJoystickPosition

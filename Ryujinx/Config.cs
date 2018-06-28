@@ -35,6 +35,9 @@ namespace Ryujinx
         public static string Controls_Left_FakeJoycon_GamePadStick_Button;
         public static string Controls_Left_FakeJoycon_GamePadTrigger_ZL;
 
+        public static string Controls_Right_FakeJoycon_GamePadJoystick_R;
+        public static string Controls_Left_FakeJoycon_GamePadJoystick_L;
+
         public static void Read(Logger Log)
         {
             string IniFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -72,6 +75,9 @@ namespace Ryujinx
             Controls_Left_FakeJoycon_GamePadButton_L      = Parser.Value("Controls_Left_FakeJoycon_GamePadButton_L");
             Controls_Left_FakeJoycon_GamePadStick_Button  = Parser.Value("Controls_Left_FakeJoycon_GamePadStick_Button");
             Controls_Left_FakeJoycon_GamePadTrigger_ZL    = Parser.Value("Controls_Left_FakeJoycon_GamePadTrigger_ZL");
+
+            Controls_Right_FakeJoycon_GamePadJoystick_R   = Parser.Value("Controls_Right_FakeJoycon_GamePadJoystick_R");
+            Controls_Left_FakeJoycon_GamePadJoystick_L    = Parser.Value("Controls_Left_FakeJoycon_GamePadJoystick_L");
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 
