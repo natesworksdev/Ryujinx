@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ryujinx.HLE.Input
+namespace Ryujinx.UI.Input
 {
     public struct JoyConControllerLeft
     {

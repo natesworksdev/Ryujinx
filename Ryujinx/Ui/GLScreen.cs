@@ -59,58 +59,58 @@ namespace Ryujinx
 
         private ButtonState GetGamePadButtonFromString(GamePadState GamePad, string Button) //Please make this prettier if you can.
         {
-            ButtonState result = GamePad.Buttons.A;
+            ButtonState Result = GamePad.Buttons.A;
 
             switch (Button)
             {
                 case "A":
-                    result = GamePad.Buttons.A;
+                    Result = GamePad.Buttons.A;
                     break;
                 case "B":
-                    result = GamePad.Buttons.B;
+                    Result = GamePad.Buttons.B;
                     break;
                 case "X":
-                    result = GamePad.Buttons.X;
+                    Result = GamePad.Buttons.X;
                     break;
                 case "Y":
-                    result = GamePad.Buttons.Y;
+                    Result = GamePad.Buttons.Y;
                     break;
                 case "LStick":
-                    result = GamePad.Buttons.LeftStick;
+                    Result = GamePad.Buttons.LeftStick;
                     break;
                 case "RStick":
-                    result = GamePad.Buttons.RightStick;
+                    Result = GamePad.Buttons.RightStick;
                     break;
                 case "LShoulder":
-                    result = GamePad.Buttons.LeftShoulder;
+                    Result = GamePad.Buttons.LeftShoulder;
                     break;
                 case "RShoulder":
-                    result = GamePad.Buttons.RightShoulder;
+                    Result = GamePad.Buttons.RightShoulder;
                     break;
                 case "DPadUp":
-                    result = GamePad.DPad.Up;
+                    Result = GamePad.DPad.Up;
                     break;
                 case "DPadDown":
-                    result = GamePad.DPad.Down;
+                    Result = GamePad.DPad.Down;
                     break;
                 case "DPadLeft":
-                    result = GamePad.DPad.Left;
+                    Result = GamePad.DPad.Left;
                     break;
                 case "DPadRight":
-                    result = GamePad.DPad.Right;
+                    Result = GamePad.DPad.Right;
                     break;
                 case "Start":
-                    result = GamePad.Buttons.Start;
+                    Result = GamePad.Buttons.Start;
                     break;
                 case "Back":
-                    result = GamePad.Buttons.Back;
+                    Result = GamePad.Buttons.Back;
                     break;
                 default:
                     Console.Error.WriteLine("Invalid Button Mapping \"" + Button + "\"!  Defaulting to Button A.");
                     break;
             }
 
-            return result;
+            return Result;
         }
 
         private float GetGamePadTriggerFromString(GamePadState GamePad, string Trigger)
