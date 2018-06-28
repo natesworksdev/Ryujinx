@@ -11,24 +11,32 @@ namespace Ryujinx.Graphics.Gal.Shader
         public const int VertexIdAttr    = 0x2fc;
         public const int GlPositionWAttr = 0x7c;
 
+        public const int MaxUboSize = 1024;
+
+        public const int GlPositionVec4Index = 7;
+
         private const int AttrStartIndex = 8;
         private const int TexStartIndex = 8;
 
         public const string PositionOutAttrName = "position";
 
-        private const string InAttrName  = "in_attr";
-        private const string OutAttrName = "out_attr";
+        private const string TextureName = "tex";
         private const string UniformName = "c";
 
-        private const string GprName     = "gpr";
-        private const string PredName    = "pred";
-        private const string TextureName = "tex";
+        private const string AttrName    = "attr";
+        private const string InAttrName  = "in_"  + AttrName;
+        private const string OutAttrName = "out_" + AttrName;
+
+        private const string GprName  = "gpr";
+        private const string PredName = "pred";
 
         public const string FragmentOutputName = "FragColor";
 
         public const string FlipUniformName = "flip";
 
-        public const string StageProgramBName = "program_b";
+        public const string ProgramName  = "program";
+        public const string ProgramAName = ProgramName + "_a";
+        public const string ProgramBName = ProgramName + "_b";
 
         private string[] StagePrefixes = new string[] { "vp", "tcp", "tep", "gp", "fp" };
 
@@ -37,6 +45,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         private Dictionary<int, ShaderDeclInfo> m_Textures;
         private Dictionary<int, ShaderDeclInfo> m_Uniforms;
 
+        private Dictionary<int, ShaderDeclInfo> m_Attributes;
         private Dictionary<int, ShaderDeclInfo> m_InAttributes;
         private Dictionary<int, ShaderDeclInfo> m_OutAttributes;
 
@@ -46,6 +55,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         public IReadOnlyDictionary<int, ShaderDeclInfo> Textures => m_Textures;
         public IReadOnlyDictionary<int, ShaderDeclInfo> Uniforms => m_Uniforms;
 
+        public IReadOnlyDictionary<int, ShaderDeclInfo> Attributes    => m_Attributes;
         public IReadOnlyDictionary<int, ShaderDeclInfo> InAttributes  => m_InAttributes;
         public IReadOnlyDictionary<int, ShaderDeclInfo> OutAttributes => m_OutAttributes;
 
@@ -64,6 +74,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             m_Textures = new Dictionary<int, ShaderDeclInfo>();
 
+            m_Attributes    = new Dictionary<int, ShaderDeclInfo>();
             m_InAttributes  = new Dictionary<int, ShaderDeclInfo>();
             m_OutAttributes = new Dictionary<int, ShaderDeclInfo>();
 
@@ -73,12 +84,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             if (ShaderType == GalShaderType.Fragment)
             {
                 m_Gprs.Add(0, new ShaderDeclInfo(FragmentOutputName, 0, 0, 4));
-
-                m_InAttributes.Add(7, new ShaderDeclInfo(PositionOutAttrName, -1, 0, 4));
-            }
-            else
-            {
-                m_OutAttributes.Add(7, new ShaderDeclInfo("gl_Position", -1, 0, 4));
             }
         }
 
@@ -135,28 +140,14 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 case ShaderIrOperCbuf Cbuf:
                 {
-                    if (m_Uniforms.TryGetValue(Cbuf.Index, out ShaderDeclInfo DeclInfo))
-                    {
-                        DeclInfo.SetCbufOffs(Cbuf.Pos);
-                    }
-                    else
+                    if (!m_Uniforms.ContainsKey(Cbuf.Index))
                     {
                         string Name = StagePrefix + UniformName + Cbuf.Index;
 
-                        DeclInfo = new ShaderDeclInfo(Name, Cbuf.Pos, Cbuf.Index);
+                        ShaderDeclInfo DeclInfo = new ShaderDeclInfo(Name, Cbuf.Pos, Cbuf.Index);
 
                         m_Uniforms.Add(Cbuf.Index, DeclInfo);
                     }
-
-                    if (Cbuf.Offs != null)
-                    {
-                        //The constant buffer is being accessed as an array,
-                        //we have no way to know the max element it may access in this case.
-                        //Here, we just assume the array size with arbitrary values.
-                        //TODO: Find a better solution for this.
-                        DeclInfo.SetCbufOffs(Cbuf.Pos + 15);
-                    }
-
                     break;
                 }
 
@@ -173,6 +164,11 @@ namespace Ryujinx.Graphics.Gal.Shader
                     int Elem  = (Abuf.Offs >> 2) & 3;
 
                     int GlslIndex = Index - AttrStartIndex;
+
+                    if (GlslIndex < 0)
+                    {
+                        return;
+                    }
 
                     ShaderDeclInfo DeclInfo;
 
@@ -197,6 +193,12 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                     DeclInfo.Enlarge(Elem + 1);
 
+                    if (!m_Attributes.ContainsKey(Index))
+                    {
+                        DeclInfo = new ShaderDeclInfo(AttrName + GlslIndex, GlslIndex, 0, 4);
+
+                        m_Attributes.Add(Index, DeclInfo);
+                    }
                     break;
                 }
 
