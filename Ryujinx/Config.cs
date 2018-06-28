@@ -1,5 +1,5 @@
 ﻿using OpenTK.Input;
-using Ryujinx.Input;
+using Ryujinx.HLE.Input;
 using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,10 +14,10 @@ namespace Ryujinx
         public static JoyConKeyboard   JoyConKeyboard   { get; private set; }
         public static JoyConController JoyConController { get; private set; }
 
-        public static float GamePad_Deadzone;
-        public static bool  GamePad_Enable;
-        public static int   GamePad_Index;
-        public static float GamePad_Trigger_Threshold;
+        public static float GamePadDeadzone;
+        public static bool  GamePadEnable;
+        public static int   GamePadIndex;
+        public static float GamePadTriggerThreshold;
 
         public static void Read(Logger Log)
         {
@@ -35,10 +35,10 @@ namespace Ryujinx
             Log.SetEnable(LogLevel.Warning, Convert.ToBoolean(Parser.Value("Logging_Enable_Warn")));
             Log.SetEnable(LogLevel.Error,   Convert.ToBoolean(Parser.Value("Logging_Enable_Error")));
 
-            GamePad_Enable            =        Convert.ToBoolean(Parser.Value("GamePad_Enable"));
-            GamePad_Index             =        Convert.ToInt32  (Parser.Value("GamePad_Index"));
-            GamePad_Deadzone          = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"));
-            GamePad_Trigger_Threshold = (float)Convert.ToDouble (Parser.Value("GamePad_Trigger_Threshold"));
+            GamePadEnable            =        Convert.ToBoolean(Parser.Value("GamePad_Enable"));
+            GamePadIndex             =        Convert.ToInt32  (Parser.Value("GamePad_Index"));
+            GamePadDeadzone          = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"));
+            GamePadTriggerThreshold  = (float)Convert.ToDouble (Parser.Value("GamePad_Trigger_Threshold"));
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 
