@@ -113,10 +113,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             Blocks  = ShaderDecoder.Decode(Memory, VpAPosition);
             BlocksB = ShaderDecoder.Decode(Memory, VpBPosition);
 
-            Decl = new GlslDecl(ShaderType);
+            GlslDecl DeclVpA = new GlslDecl(Blocks,  ShaderType);
+            GlslDecl DeclVpB = new GlslDecl(BlocksB, ShaderType);
 
-            Decl.Add(Blocks);
-            Decl.Add(BlocksB);
+            Decl = GlslDecl.Merge(DeclVpA, DeclVpB);
 
             return Decompile();
         }
@@ -126,9 +126,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             Blocks  = ShaderDecoder.Decode(Memory, Position);
             BlocksB = null;
 
-            Decl = new GlslDecl(ShaderType);
-
-            Decl.Add(Blocks);
+            Decl = new GlslDecl(Blocks, ShaderType);
 
             return Decompile();
         }

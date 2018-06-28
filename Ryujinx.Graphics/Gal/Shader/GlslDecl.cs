@@ -64,14 +64,11 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public GalShaderType ShaderType { get; private set; }
 
-        public GlslDecl(GalShaderType ShaderType)
+        private GlslDecl(GalShaderType ShaderType)
         {
             this.ShaderType = ShaderType;
 
-            StagePrefix = StagePrefixes[(int)ShaderType] + "_";
-
             m_Uniforms = new Dictionary<int, ShaderDeclInfo>();
-
             m_Textures = new Dictionary<int, ShaderDeclInfo>();
 
             m_Attributes    = new Dictionary<int, ShaderDeclInfo>();
@@ -80,15 +77,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             m_Gprs  = new Dictionary<int, ShaderDeclInfo>();
             m_Preds = new Dictionary<int, ShaderDeclInfo>();
+        }
+
+        public GlslDecl(ShaderIrBlock[] Blocks, GalShaderType ShaderType) : this(ShaderType)
+        {
+            StagePrefix = StagePrefixes[(int)ShaderType] + "_";
 
             if (ShaderType == GalShaderType.Fragment)
             {
                 m_Gprs.Add(0, new ShaderDeclInfo(FragmentOutputName, 0, 0, 4));
             }
-        }
 
-        public void Add(ShaderIrBlock[] Blocks)
-        {
             foreach (ShaderIrBlock Block in Blocks)
             {
                 foreach (ShaderIrNode Node in Block.GetNodes())
@@ -97,6 +96,58 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
             }
         }
+
+        public static GlslDecl Merge(GlslDecl VpA, GlslDecl VpB)
+        {
+            GlslDecl Combined = new GlslDecl(GalShaderType.Vertex);
+
+            Merge(Combined.m_Textures, VpA.m_Textures, VpB.m_Textures);
+            Merge(Combined.m_Uniforms, VpA.m_Uniforms, VpB.m_Uniforms);
+
+            Merge(Combined.m_Attributes,    VpA.m_Attributes,    VpB.m_Attributes);
+            Merge(Combined.m_OutAttributes, VpA.m_OutAttributes, VpB.m_OutAttributes);
+
+            Merge(Combined.m_Gprs,  VpA.m_Gprs,  VpB.m_Gprs);
+            Merge(Combined.m_Preds, VpA.m_Preds, VpB.m_Preds);
+
+            //Merge input attributes.
+            foreach (KeyValuePair<int, ShaderDeclInfo> KV in VpA.m_InAttributes)
+            {
+                Combined.m_InAttributes.TryAdd(KV.Key, KV.Value);
+            }
+
+            foreach (KeyValuePair<int, ShaderDeclInfo> KV in VpB.m_InAttributes)
+            {
+                //If Vertex Program A already writes to this attribute,
+                //then we don't need to add it as an input attribute since
+                //Vertex Program A will already have written to it anyway,
+                //and there's no guarantee that there is an input attribute
+                //for this slot.
+                if (!VpA.m_OutAttributes.ContainsKey(KV.Key))
+                {
+                    Combined.m_InAttributes.TryAdd(KV.Key, KV.Value);
+                }
+            }
+
+            return Combined;
+        }
+
+        private static void Merge(
+            Dictionary<int, ShaderDeclInfo> C,
+            Dictionary<int, ShaderDeclInfo> A,
+            Dictionary<int, ShaderDeclInfo> B)
+        {
+            foreach (KeyValuePair<int, ShaderDeclInfo> KV in A)
+            {
+                C.TryAdd(KV.Key, KV.Value);
+            }
+
+            foreach (KeyValuePair<int, ShaderDeclInfo> KV in B)
+            {
+                C.TryAdd(KV.Key, KV.Value);
+            }
+        }
+
         private void Traverse(ShaderIrNode Parent, ShaderIrNode Node)
         {
             switch (Node)
@@ -228,7 +279,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private bool HasName(Dictionary<int, ShaderDeclInfo> Decls, int Index)
         {
-            int VecIndex = Index >> 2;
+            //This is used to check if the dictionary already contains
+            //a entry for a vector at a given index position.
+            //Used to enable turning gprs into vectors.
+            int VecIndex = Index & ~3;
 
             if (Decls.TryGetValue(VecIndex, out ShaderDeclInfo DeclInfo))
             {
