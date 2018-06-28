@@ -37,8 +37,10 @@ namespace Ryujinx
 
             GamePadEnable            =        Convert.ToBoolean(Parser.Value("GamePad_Enable"));
             GamePadIndex             =        Convert.ToInt32  (Parser.Value("GamePad_Index"));
-            GamePadDeadzone          = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"));
-            GamePadTriggerThreshold  = (float)Convert.ToDouble (Parser.Value("GamePad_Trigger_Threshold"));
+            GamePadDeadzone          = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"), 
+                System.Globalization.CultureInfo.InvariantCulture); // Remember to use Invariant Culture when dealing with parsing doubles.
+            GamePadTriggerThreshold  = (float)Convert.ToDouble (Parser.Value("GamePad_Trigger_Threshold"), 
+                System.Globalization.CultureInfo.InvariantCulture);
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 
