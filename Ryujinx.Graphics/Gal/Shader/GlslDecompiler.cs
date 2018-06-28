@@ -334,6 +334,14 @@ namespace Ryujinx.Graphics.Gal.Shader
                 SB.AppendLine(IdentationStr + DeclInfo.Name + " = " + Attr.Name + Swizzle + ";");
             }
 
+            if (Decl.ShaderType == GalShaderType.Vertex)
+            {
+                SB.AppendLine(IdentationStr + "gl_Position.xy *= flip;");
+
+                SB.AppendLine(IdentationStr + GlslDecl.PositionOutAttrName + " = gl_Position;");
+                SB.AppendLine(IdentationStr + GlslDecl.PositionOutAttrName + ".w = 1;");
+            }
+
             SB.AppendLine("}");
         }
 
@@ -475,18 +483,6 @@ namespace Ryujinx.Graphics.Gal.Shader
                         }
 
                         continue;
-                    }
-                    else if (Op.Inst == ShaderIrInst.Exit)
-                    {
-                        //Do everything that needs to be done before
-                        //the shader ends here.
-                        if (Decl.ShaderType == GalShaderType.Vertex)
-                        {
-                            SB.AppendLine(Identation + "gl_Position.xy *= flip;");
-
-                            SB.AppendLine(Identation + GlslDecl.PositionOutAttrName + " = gl_Position;");
-                            SB.AppendLine(Identation + GlslDecl.PositionOutAttrName + ".w = 1;");
-                        }
                     }
 
                     SB.AppendLine(Identation + GetSrcExpr(Op, true) + ";");
