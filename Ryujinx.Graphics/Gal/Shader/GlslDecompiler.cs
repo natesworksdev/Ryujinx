@@ -336,7 +336,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (Decl.ShaderType == GalShaderType.Vertex)
             {
-                SB.AppendLine(IdentationStr + "gl_Position.xy *= flip;");
+                SB.AppendLine(IdentationStr + "gl_Position.xy *= " + GlslDecl.FlipUniformName + ";");
 
                 SB.AppendLine(IdentationStr + GlslDecl.PositionOutAttrName + " = gl_Position;");
                 SB.AppendLine(IdentationStr + GlslDecl.PositionOutAttrName + ".w = 1;");
