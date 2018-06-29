@@ -1,7 +1,7 @@
-﻿using OpenTK.Input;
-using Ryujinx.UI.Input;
+﻿using Ryujinx.UI.Input;
 using Ryujinx.HLE.Logging;
 using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,10 +14,10 @@ namespace Ryujinx
         public static JoyConKeyboard   JoyConKeyboard   { get; private set; }
         public static JoyConController JoyConController { get; private set; }
 
-        public static float GamePadDeadzone;
-        public static bool  GamePadEnable;
-        public static int   GamePadIndex;
-        public static float GamePadTriggerThreshold;
+        public static float GamePadDeadzone             { get; private set; }
+        public static bool  GamePadEnable               { get; private set; }
+        public static int   GamePadIndex                { get; private set; }
+        public static float GamePadTriggerThreshold     { get; private set; }
 
         public static void Read(Logger Log)
         {
@@ -37,10 +37,8 @@ namespace Ryujinx
 
             GamePadEnable            =        Convert.ToBoolean(Parser.Value("GamePad_Enable"));
             GamePadIndex             =        Convert.ToInt32  (Parser.Value("GamePad_Index"));
-            GamePadDeadzone          = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"), 
-                System.Globalization.CultureInfo.InvariantCulture); // Remember to use Invariant Culture when dealing with parsing doubles.
-            GamePadTriggerThreshold  = (float)Convert.ToDouble (Parser.Value("GamePad_Trigger_Threshold"), 
-                System.Globalization.CultureInfo.InvariantCulture);
+            GamePadDeadzone          = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"),          CultureInfo.InvariantCulture);
+            GamePadTriggerThreshold  = (float)Convert.ToDouble (Parser.Value("GamePad_Trigger_Threshold"), CultureInfo.InvariantCulture);
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 

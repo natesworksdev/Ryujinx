@@ -47,7 +47,7 @@ namespace Ryujinx
         
         private bool IsGamePadButtonPressedFromString(GamePadState GamePad, string Button)
         {
-            if (Button == "LTrigger" || Button == "RTrigger")
+            if (Button.ToUpper() == "LTRIGGER" || Button.ToUpper() == "RTRIGGER")
             {
                 return GetGamePadTriggerFromString(GamePad, Button) >= Config.GamePadTriggerThreshold;
             }
@@ -57,112 +57,58 @@ namespace Ryujinx
             }
         }
 
-        private ButtonState GetGamePadButtonFromString(GamePadState GamePad, string Button) //Please make this prettier if you can.
+        private ButtonState GetGamePadButtonFromString(GamePadState GamePad, string Button)
         {
-            ButtonState Result = GamePad.Buttons.A;
-
-            switch (Button)
+            switch (Button.ToUpper())
             {
-                case "A":
-                    Result = GamePad.Buttons.A;
-                    break;
-                case "B":
-                    Result = GamePad.Buttons.B;
-                    break;
-                case "X":
-                    Result = GamePad.Buttons.X;
-                    break;
-                case "Y":
-                    Result = GamePad.Buttons.Y;
-                    break;
-                case "LStick":
-                    Result = GamePad.Buttons.LeftStick;
-                    break;
-                case "RStick":
-                    Result = GamePad.Buttons.RightStick;
-                    break;
-                case "LShoulder":
-                    Result = GamePad.Buttons.LeftShoulder;
-                    break;
-                case "RShoulder":
-                    Result = GamePad.Buttons.RightShoulder;
-                    break;
-                case "DPadUp":
-                    Result = GamePad.DPad.Up;
-                    break;
-                case "DPadDown":
-                    Result = GamePad.DPad.Down;
-                    break;
-                case "DPadLeft":
-                    Result = GamePad.DPad.Left;
-                    break;
-                case "DPadRight":
-                    Result = GamePad.DPad.Right;
-                    break;
-                case "Start":
-                    Result = GamePad.Buttons.Start;
-                    break;
-                case "Back":
-                    Result = GamePad.Buttons.Back;
-                    break;
-                default:
-                    Console.Error.WriteLine("Invalid Button Mapping \"" + Button + "\"!  Defaulting to Button A.");
-                    break;
+                case "A":         return GamePad.Buttons.A;
+                case "B":         return GamePad.Buttons.B;
+                case "X":         return GamePad.Buttons.X;
+                case "Y":         return GamePad.Buttons.Y;
+                case "LSTICK":    return GamePad.Buttons.LeftStick;
+                case "RSTICK":    return GamePad.Buttons.RightStick;
+                case "LSHOULDER": return GamePad.Buttons.LeftShoulder;
+                case "RSHOULDER": return GamePad.Buttons.RightShoulder;
+                case "DPADUP":    return GamePad.DPad.Up;
+                case "DPADDOWN":  return GamePad.DPad.Down;
+                case "DPADLEFT":  return GamePad.DPad.Left;
+                case "DPADRIGHT": return GamePad.DPad.Right;
+                case "START":     return GamePad.Buttons.Start;
+                case "BACK":      return GamePad.Buttons.Back;
+                default:          throw  new ArgumentException();
             }
-
-            return Result;
         }
 
         private float GetGamePadTriggerFromString(GamePadState GamePad, string Trigger)
         {
-            float Result = 0;
-
-            switch (Trigger)
+            switch (Trigger.ToUpper())
             {
-                case "LTrigger":
-                    Result = GamePad.Triggers.Left;
-                    break;
-                case "RTrigger":
-                    Result = GamePad.Triggers.Right;
-                    break;
-                default:
-                    Console.Error.WriteLine("Invalid Trigger Mapping \"" + Trigger + "\"!  Defaulting to 0.");
-                    break;
+                case "LTRIGGER": return GamePad.Triggers.Left;
+                case "RTRIGGER": return GamePad.Triggers.Right;
+                default:         throw  new ArgumentException();
             }
-
-            return Result;
         }
 
         private Vector2 GetJoystickAxisFromString(GamePadState GamePad, string Joystick)
         {
-            Vector2 Result = new Vector2(0, 0);
-
-            switch (Joystick)
+            switch (Joystick.ToUpper())
             {
-                case "LJoystick":
-                    Result = GamePad.ThumbSticks.Left;
-                    break;
-                case "RJoystick":
-                    Result = new Vector2(-GamePad.ThumbSticks.Right.Y, -GamePad.ThumbSticks.Right.X);
-                    break;
-                default:
-                    Console.Error.WriteLine("Invalid Joystick Axis \"" + Joystick + "\"!  Defaulting the Vector2 to 0, 0.");
-                    break;
+                case "LJOYSTICK": return GamePad.ThumbSticks.Left;
+                case "RJOYSTICK": return new Vector2(-GamePad.ThumbSticks.Right.Y, -GamePad.ThumbSticks.Right.X);
+                default:          throw  new ArgumentException();
             }
-
-            return Result;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             HidControllerButtons CurrentButton = 0;
-            HidJoystickPosition LeftJoystick;
-            HidJoystickPosition RightJoystick;
+            HidJoystickPosition  LeftJoystick;
+            HidJoystickPosition  RightJoystick;
 
-            int LeftJoystickDX = 0;
-            int LeftJoystickDY = 0;
-            int RightJoystickDX = 0;
-            int RightJoystickDY = 0;
+            int LeftJoystickDX        = 0;
+            int LeftJoystickDY        = 0;
+            int RightJoystickDX       = 0;
+            int RightJoystickDY       = 0;
             float AnalogStickDeadzone = Config.GamePadDeadzone;
 
             //Keyboard Input
@@ -209,7 +155,6 @@ namespace Ryujinx
             if (Config.GamePadEnable)
             {
                 GamePadState GamePad = OpenTK.Input.GamePad.GetState(Config.GamePadIndex);
-
                 //LeftButtons
                 if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.DPadUp))       CurrentButton |= HidControllerButtons.KEY_DUP;
                 if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.DPadDown))     CurrentButton |= HidControllerButtons.KEY_DDOWN;
