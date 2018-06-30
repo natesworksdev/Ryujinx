@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
             for (int Index = 0; Index < ByteArr.Length; Index++)
             {
-                if (Index > CharArr.Length)
+                if (Index > CharArr.Length - 1)
                 {
                     ByteArr[Index] = 0x0;
                 }
