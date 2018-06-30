@@ -24,15 +24,15 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, GetAudioOutState            },
-                { 1, StartAudioOut               },
-                { 2, StopAudioOut                },
-                { 3, AppendAudioOutBuffer        },
-                { 4, RegisterBufferEvent         },
-                { 5, GetReleasedAudioOutBuffer   },
-                { 6, ContainsAudioOutBuffer      },
-                { 7, AppendAudioOutBufferEx      },
-                { 8, GetReleasedAudioOutBufferEx }
+                { 0, GetAudioOutState              },
+                { 1, StartAudioOut                 },
+                { 2, StopAudioOut                  },
+                { 3, AppendAudioOutBuffer          },
+                { 4, RegisterBufferEvent           },
+                { 5, GetReleasedAudioOutBuffer     },
+                { 6, ContainsAudioOutBuffer        },
+                { 7, AppendAudioOutBufferEx        },
+                { 8, GetReleasedAudioOutBufferAuto }
             };
 
             this.AudioOut     = AudioOut;
@@ -92,25 +92,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             long Position = Context.Request.ReceiveBuff[0].Position;
             long Size     = Context.Request.ReceiveBuff[0].Size;
 
-            uint Count = (uint)((ulong)Size >> 3);
-
-            long[] ReleasedBuffers = AudioOut.GetReleasedBuffers(Track, (int)Count);
-
-            for (uint Index = 0; Index < Count; Index++)
-            {
-                long Tag = 0;
-
-                if (Index < ReleasedBuffers.Length)
-                {
-                    Tag = ReleasedBuffers[Index];
-                }
-
-                Context.Memory.WriteInt64(Position + Index * 8, Tag);
-            }
-
-            Context.ResponseData.Write(ReleasedBuffers.Length);
-
-            return 0;
+            return GetReleasedAudioOutBufferImpl(Context, Position, Size);
         }
 
         public long ContainsAudioOutBuffer(ServiceCtx Context)
@@ -129,9 +111,32 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             return 0;
         }
 
-        public long GetReleasedAudioOutBufferEx(ServiceCtx Context)
+        public long GetReleasedAudioOutBufferAuto(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            (long Position, long Size) = Context.Request.GetBufferType0x22();
+
+            return GetReleasedAudioOutBufferImpl(Context, Position, Size);
+        }
+
+        public long GetReleasedAudioOutBufferImpl(ServiceCtx Context, long Position, long Size)
+        {
+            uint Count = (uint)((ulong)Size >> 3);
+
+            long[] ReleasedBuffers = AudioOut.GetReleasedBuffers(Track, (int)Count);
+
+            for (uint Index = 0; Index < Count; Index++)
+            {
+                long Tag = 0;
+
+                if (Index < ReleasedBuffers.Length)
+                {
+                    Tag = ReleasedBuffers[Index];
+                }
+
+                Context.Memory.WriteInt64(Position + Index * 8, Tag);
+            }
+
+            Context.ResponseData.Write(ReleasedBuffers.Length);
 
             return 0;
         }
