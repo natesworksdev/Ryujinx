@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
         {
             Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
-            Context.ResponseData.Write(0xcafeL);
+            Context.ResponseData.Write(1L);
 
             return 0;
         }

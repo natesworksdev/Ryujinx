@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long GetUserCount(ServiceCtx Context)
         {
-            Context.ResponseData.Write(0);
+            Context.ResponseData.Write(1);
 
             Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
