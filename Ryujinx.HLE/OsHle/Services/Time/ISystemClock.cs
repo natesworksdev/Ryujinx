@@ -18,7 +18,8 @@ namespace Ryujinx.HLE.OsHle.Services.Time
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, GetCurrentTime }
+                { 0, GetCurrentTime        },
+                { 2, GetSystemClockContext }
             };
 
             this.ClockType = ClockType;
@@ -36,6 +37,21 @@ namespace Ryujinx.HLE.OsHle.Services.Time
 
             Context.ResponseData.Write((long)(DateTime.Now - Epoch).TotalSeconds);
 
+            return 0;
+        }
+		
+        public long GetSystemClockContext(ServiceCtx Context)
+        {
+            //Raw data dumped from real switch via pegaswitch
+            byte[] SystemClockContext = { 0x07, 0x00, 0x19, 0x00, 0x0d, 0xd2, 0xb2, 0x80 };
+            
+            Array.Resize(ref SystemClockContext, 0x20);
+            
+            for (int Index = 0; Index < 0x20; Index++)
+            {
+                Context.ResponseData.Write(SystemClockContext[Index]);
+            }
+        
             return 0;
         }
     }
