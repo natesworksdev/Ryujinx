@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
                 { 4, RegisterBufferEvent           },
                 { 5, GetReleasedAudioOutBuffer     },
                 { 6, ContainsAudioOutBuffer        },
-                { 7, AppendAudioOutBufferEx        },
+                { 7, AppendAudioOutBufferAuto      },
                 { 8, GetReleasedAudioOutBufferAuto }
             };
 
@@ -63,19 +63,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         public long AppendAudioOutBuffer(ServiceCtx Context)
         {
-            long Tag = Context.RequestData.ReadInt64();
-
-            AudioOutData Data = AMemoryHelper.Read<AudioOutData>(
-                Context.Memory,
-                Context.Request.SendBuff[0].Position);
-
-            byte[] Buffer = Context.Memory.ReadBytes(
-                Data.SampleBufferPtr,
-                Data.SampleBufferSize);
-
-            AudioOut.AppendBuffer(Track, Tag, Buffer);
-
-            return 0;
+            return AppendAudioOutBufferImpl(Context, Context.Request.SendBuff[0].Position);
         }
 
         public long RegisterBufferEvent(ServiceCtx Context)
@@ -104,9 +92,26 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             return 0;
         }
 
-        public long AppendAudioOutBufferEx(ServiceCtx Context)
+        public long AppendAudioOutBufferAuto(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            (long Position, long Size) = Context.Request.GetBufferType0x21();
+
+            return AppendAudioOutBufferImpl(Context, Position);
+        }
+
+        public long AppendAudioOutBufferImpl(ServiceCtx Context, long Position)
+        {
+            long Tag = Context.RequestData.ReadInt64();
+
+            AudioOutData Data = AMemoryHelper.Read<AudioOutData>(
+                Context.Memory,
+                Position);
+
+            byte[] Buffer = Context.Memory.ReadBytes(
+                Data.SampleBufferPtr,
+                Data.SampleBufferSize);
+
+            AudioOut.AppendBuffer(Track, Tag, Buffer);
 
             return 0;
         }
