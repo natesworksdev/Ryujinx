@@ -1,7 +1,10 @@
 using ChocolArm64.Memory;
+using Ryujinx.Audio;
+using Ryujinx.Audio.Adpcm;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.OsHle.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -10,15 +13,36 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 {
     class IAudioRenderer : IpcService, IDisposable
     {
+        private const int DeviceChannelsCount = 2;
+
+        //This is the amount of samples that are going to be appended
+        //each time that RequestUpdateAudioRenderer is called. Ideally,
+        //this value shouldn't be neither too small (to avoid the player
+        //starving due to running out of samples) or too large (to avoid
+        //high latency).
+        //Additionally, due to ADPCM having 14 samples per frame, this value
+        //needs to be a multiple of 14.
+        private const int MixBufferSamplesCount = 770;
+
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private KEvent UpdateEvent;
 
+        private AMemory Memory;
+
+        private IAalOutput AudioOut;
+
         private AudioRendererParameter Params;
 
-        public IAudioRenderer(AudioRendererParameter Params)
+        private int Track;
+
+        private MemoryPoolContext[] MemoryPools;
+
+        private VoiceContext[] Voices;
+
+        public IAudioRenderer(AMemory Memory, IAalOutput AudioOut, AudioRendererParameter Params)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
@@ -30,7 +54,43 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             UpdateEvent = new KEvent();
 
-            this.Params = Params;
+            this.Memory   = Memory;
+            this.AudioOut = AudioOut;
+            this.Params   = Params;
+
+            Track = AudioOut.OpenTrack(48000, 2, AudioCallback, out _);
+
+            MemoryPools = CreateArray<MemoryPoolContext>(Params.EffectCount + Params.VoiceCount * 4);
+
+            Voices = CreateArray<VoiceContext>(Params.VoiceCount);
+
+            InitializeAudioOut();
+        }
+
+        private void AudioCallback()
+        {
+            UpdateEvent.WaitEvent.Set();
+        }
+
+        private static T[] CreateArray<T>(int Size) where T : new()
+        {
+            T[] Output = new T[Size];
+
+            for (int Index = 0; Index < Size; Index++)
+            {
+                Output[Index] = new T();
+            }
+
+            return Output;
+        }
+
+        private void InitializeAudioOut()
+        {
+            AppendMixedBuffer(0);
+            AppendMixedBuffer(1);
+            AppendMixedBuffer(2);
+
+            AudioOut.Start(Track);
         }
 
         public long RequestUpdateAudioRenderer(ServiceCtx Context)
@@ -42,57 +102,95 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             long InputPosition = Context.Request.SendBuff[0].Position;
 
-            UpdateDataHeader InputDataHeader = AMemoryHelper.Read<UpdateDataHeader>(Context.Memory, InputPosition);
+            StructReader Reader = new StructReader(Context.Memory, InputPosition);
+            StructWriter Writer = new StructWriter(Context.Memory, OutputPosition);
 
-            UpdateDataHeader OutputDataHeader = new UpdateDataHeader();
+            UpdateDataHeader InputHeader = Reader.Read<UpdateDataHeader>();
+
+            Reader.Read<BehaviorIn>(InputHeader.BehaviorSize);
+
+            MemoryPoolIn[] MemoryPoolsIn = Reader.Read<MemoryPoolIn>(InputHeader.MemoryPoolsSize);
+
+            for (int Index = 0; Index < MemoryPoolsIn.Length; Index++)
+            {
+                MemoryPoolIn MemoryPool = MemoryPoolsIn[Index];
+
+                if (MemoryPool.State == MemoryPoolState.RequestAttach)
+                {
+                    MemoryPools[Index].OutStatus.State = MemoryPoolState.Attached;
+                }
+                else if (MemoryPool.State == MemoryPoolState.RequestDetach)
+                {
+                    MemoryPools[Index].OutStatus.State = MemoryPoolState.Detached;
+                }
+            }
+
+            Reader.Read<VoiceChannelResourceIn>(InputHeader.VoiceResourceSize);
+
+            VoiceIn[] VoicesIn = Reader.Read<VoiceIn>(InputHeader.VoicesSize);
+
+            for (int Index = 0; Index < VoicesIn.Length; Index++)
+            {
+                VoiceIn Voice = VoicesIn[Index];
+
+                Voices[Index].SetAcquireState(Voice.Acquired != 0);
+
+                if (Voice.Acquired == 0)
+                {
+                    continue;
+                }
+
+                if (Voice.FirstUpdate != 0)
+                {
+                    Voices[Index].AdpcmCtx = GetAdpcmDecoderContext(
+                        Voice.AdpcmCoeffsPosition,
+                        Voice.AdpcmCoeffsSize);
+
+                    Voices[Index].SampleFormat  = Voice.SampleFormat;
+                    Voices[Index].ChannelsCount = Voice.ChannelsCount;
+                    Voices[Index].BufferIndex   = Voice.BaseWaveBufferIndex;
+                }
+
+                Voices[Index].WaveBuffers[0] = Voice.WaveBuffer0;
+                Voices[Index].WaveBuffers[1] = Voice.WaveBuffer1;
+                Voices[Index].WaveBuffers[2] = Voice.WaveBuffer2;
+                Voices[Index].WaveBuffers[3] = Voice.WaveBuffer3;
+                Voices[Index].Volume         = Voice.Volume;
+                Voices[Index].PlayState      = Voice.PlayState;
+            }
+
+            UpdateAudio();
+
+            UpdateDataHeader OutputHeader = new UpdateDataHeader();
 
             int UpdateHeaderSize = Marshal.SizeOf<UpdateDataHeader>();
 
-            OutputDataHeader.Revision               = Params.Revision;
-            OutputDataHeader.BehaviorSize           = 0xb0;
-            OutputDataHeader.MemoryPoolsSize        = (Params.EffectCount + Params.VoiceCount * 4) * 0x10;
-            OutputDataHeader.VoicesSize             = Params.VoiceCount  * 0x10;
-            OutputDataHeader.EffectsSize            = Params.EffectCount * 0x10;
-            OutputDataHeader.SinksSize              = Params.SinkCount   * 0x20;
-            OutputDataHeader.PerformanceManagerSize = 0x10;
-            OutputDataHeader.TotalSize              = UpdateHeaderSize                 +
-                                                      OutputDataHeader.BehaviorSize    +
-                                                      OutputDataHeader.MemoryPoolsSize +
-                                                      OutputDataHeader.VoicesSize      +
-                                                      OutputDataHeader.EffectsSize     +
-                                                      OutputDataHeader.SinksSize       +
-                                                      OutputDataHeader.PerformanceManagerSize;
+            OutputHeader.Revision               = Params.Revision;
+            OutputHeader.BehaviorSize           = 0xb0;
+            OutputHeader.MemoryPoolsSize        = (Params.EffectCount + Params.VoiceCount * 4) * 0x10;
+            OutputHeader.VoicesSize             = Params.VoiceCount  * 0x10;
+            OutputHeader.EffectsSize            = Params.EffectCount * 0x10;
+            OutputHeader.SinksSize              = Params.SinkCount   * 0x20;
+            OutputHeader.PerformanceManagerSize = 0x10;
+            OutputHeader.TotalSize              = UpdateHeaderSize             +
+                                                  OutputHeader.BehaviorSize    +
+                                                  OutputHeader.MemoryPoolsSize +
+                                                  OutputHeader.VoicesSize      +
+                                                  OutputHeader.EffectsSize     +
+                                                  OutputHeader.SinksSize       +
+                                                  OutputHeader.PerformanceManagerSize;
 
-            AMemoryHelper.Write(Context.Memory, OutputPosition, OutputDataHeader);
+            Writer.Write(OutputHeader);
 
-            int InMemoryPoolOffset = UpdateHeaderSize + InputDataHeader.BehaviorSize;
-
-            int OutMemoryPoolOffset = UpdateHeaderSize;
-
-            for (int Offset = 0; Offset < OutputDataHeader.MemoryPoolsSize; Offset += 0x10, InMemoryPoolOffset += 0x20)
+            foreach (MemoryPoolContext MemoryPool in MemoryPools)
             {
-                MemoryPoolState PoolState = (MemoryPoolState)Context.Memory.ReadInt32(InputPosition + InMemoryPoolOffset + 0x10);
-
-                //TODO: Figure out what the other values does.
-                if (PoolState == MemoryPoolState.RequestAttach)
-                {
-                    Context.Memory.WriteInt32(OutputPosition + OutMemoryPoolOffset + Offset, (int)MemoryPoolState.Attached);
-                }
-                else if (PoolState == MemoryPoolState.RequestDetach)
-                {
-                    Context.Memory.WriteInt32(OutputPosition + OutMemoryPoolOffset + Offset, (int)MemoryPoolState.Detached);
-                }
+                Writer.Write(MemoryPool.OutStatus);
             }
 
-            int OutVoicesOffset = OutMemoryPoolOffset + OutputDataHeader.MemoryPoolsSize;
-
-            for (int Offset = 0; Offset < OutputDataHeader.VoicesSize; Offset += 0x10)
+            foreach (VoiceContext Voice in Voices)
             {
-                Context.Memory.WriteInt32(OutputPosition + OutVoicesOffset + Offset + 8, (int)VoicePlaybackState.Finished);
+                Writer.Write(Voice.OutStatus);
             }
-
-            //TODO: We shouldn't be signaling this here.
-            UpdateEvent.WaitEvent.Set();
 
             return 0;
         }
@@ -118,6 +216,85 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
             return 0;
+        }
+
+        private AdpcmDecoderContext GetAdpcmDecoderContext(long Position, long Size)
+        {
+            if (Size == 0)
+            {
+                return null;
+            }
+
+            AdpcmDecoderContext Context = new AdpcmDecoderContext();
+
+            Context.Coefficients = new short[Size >> 1];
+
+            for (int Offset = 0; Offset < Size; Offset += 2)
+            {
+                Context.Coefficients[Offset >> 1] = Memory.ReadInt16(Position + Offset);
+            }
+
+            return Context;
+        }
+
+        private void UpdateAudio()
+        {
+            long[] Released = AudioOut.GetReleasedBuffers(Track, 2);
+
+            for (int Index = 0; Index < Released.Length; Index++)
+            {
+                AppendMixedBuffer(Released[Index]);
+            }
+        }
+
+        private void AppendMixedBuffer(long Tag)
+        {
+            int[] MixBuffer = new int[MixBufferSamplesCount * DeviceChannelsCount];
+
+            foreach (VoiceContext Voice in Voices)
+            {
+                if (!Voice.Playing)
+                {
+                    continue;
+                }
+
+                int OutOffset = 0;
+
+                int PendingSamples = MixBufferSamplesCount;
+
+                while (PendingSamples > 0)
+                {
+                    short[] Samples = Voice.GetBufferData(Memory, PendingSamples, out int ReturnedSamples);
+
+                    if (ReturnedSamples == 0)
+                    {
+                        break;
+                    }
+
+                    PendingSamples -= ReturnedSamples;
+
+                    for (int Offset = 0; Offset < Samples.Length; Offset++)
+                    {
+                        int Sample = (int)(Samples[Offset] * Voice.Volume);
+
+                        MixBuffer[OutOffset++] += Sample;
+                    }
+                }
+            }
+
+            AudioOut.AppendBuffer(Track, Tag, GetFinalBuffer(MixBuffer));
+        }
+
+        private static short[] GetFinalBuffer(int[] Buffer)
+        {
+            short[] Output = new short[Buffer.Length];
+
+            for (int Offset = 0; Offset < Buffer.Length; Offset++)
+            {
+                Output[Offset] = DspUtils.Saturate(Buffer[Offset]);
+            }
+
+            return Output;
         }
 
         public void Dispose()

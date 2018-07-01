@@ -1,7 +1,7 @@
+using Ryujinx.Audio;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Ipc;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.OsHle.Services.Aud
 {
@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         public long OpenAudioRenderer(ServiceCtx Context)
         {
-            //Same buffer as GetAudioRendererWorkBufferSize is receive here.
+            IAalOutput AudioOut = Context.Ns.AudioOut;
 
             AudioRendererParameter Params = new AudioRendererParameter();
 
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             Params.Unknown2C     = Context.RequestData.ReadInt32();
             Params.Revision      = Context.RequestData.ReadInt32();
 
-            MakeObject(Context, new IAudioRenderer(Params));
+            MakeObject(Context, new IAudioRenderer(Context.Memory, AudioOut, Params));
 
             return 0;
         }

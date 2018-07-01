@@ -14,7 +14,7 @@ namespace Ryujinx.Audio
 
         long[] GetReleasedBuffers(int Track, int MaxCount);
 
-        void AppendBuffer(int Track, long Tag, byte[] Buffer);
+        void AppendBuffer<T>(int Track, long Tag, T[] Buffer)  where T : struct;
 
         void Start(int Track);
         void Stop(int Track);
