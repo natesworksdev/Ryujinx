@@ -153,7 +153,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Conv_U1);
 
-                AVectorHelper.EmitCall(Context, nameof(AVectorHelper.CountSetBits8));
+                ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CountSetBits8));
 
                 Context.Emit(OpCodes.Conv_U8);
 
