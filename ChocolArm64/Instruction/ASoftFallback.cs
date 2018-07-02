@@ -30,12 +30,12 @@ namespace ChocolArm64.Instruction
             return (ulong)Size;
         }
 
-        public static int CountSetBits8(byte Value)
+        public static uint CountSetBits8(uint Value)
         {
-            return ((Value >> 0) & 1) + ((Value >> 1) & 1) +
-                   ((Value >> 2) & 1) + ((Value >> 3) & 1) +
-                   ((Value >> 4) & 1) + ((Value >> 5) & 1) +
-                   ((Value >> 6) & 1) +  (Value >> 7);
+            Value = ((Value >> 1) & 0x55) + (Value & 0x55);
+            Value = ((Value >> 2) & 0x33) + (Value & 0x33);
+
+            return (Value >> 4) + (Value & 0x0f);
         }
 
         private const uint Crc32RevPoly  = 0xedb88320;
