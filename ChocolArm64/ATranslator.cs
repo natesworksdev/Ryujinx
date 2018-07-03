@@ -1,8 +1,10 @@
 using ChocolArm64.Decoder;
+using ChocolArm64.Events;
 using ChocolArm64.Instruction;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
+using System;
 using System.Collections.Concurrent;
 using System.Reflection.Emit;
 
@@ -11,6 +13,10 @@ namespace ChocolArm64
     public class ATranslator
     {
         private ConcurrentDictionary<long, ATranslatedSub> CachedSubs;
+
+        public event EventHandler<ACpuTraceEventArgs> CpuTrace;
+
+        public bool EnableCpuTrace { get; set; }
 
         public ATranslator()
         {
@@ -50,6 +56,11 @@ namespace ChocolArm64
         {
             do
             {
+                if (EnableCpuTrace)
+                {
+                    CpuTrace?.Invoke(this, new ACpuTraceEventArgs(Position));
+                }
+
                 if (!CachedSubs.TryGetValue(Position, out ATranslatedSub Sub))
                 {
                     Sub = TranslateTier0(State, Memory, Position);
