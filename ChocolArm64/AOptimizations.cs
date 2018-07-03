@@ -4,8 +4,6 @@ public static class AOptimizations
 {
     public static bool DisableMemoryChecks = false;
 
-    public static bool GenerateCallStack = true;
-
     private static bool UseAllSseIfAvailable = true;
 
     private static bool UseSseIfAvailable   = true;

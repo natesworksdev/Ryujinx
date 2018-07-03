@@ -1,12 +1,9 @@
 using ChocolArm64.Decoder;
-using ChocolArm64.Events;
 using ChocolArm64.Instruction;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace ChocolArm64
@@ -15,24 +12,9 @@ namespace ChocolArm64
     {
         private ConcurrentDictionary<long, ATranslatedSub> CachedSubs;
 
-        private ConcurrentDictionary<long, string> SymbolTable;
-
-        public event EventHandler<ACpuTraceEventArgs> CpuTrace;
-
-        public bool EnableCpuTrace { get; set; }
-
-        public ATranslator(IReadOnlyDictionary<long, string> SymbolTable = null)
+        public ATranslator()
         {
             CachedSubs = new ConcurrentDictionary<long, ATranslatedSub>();
-
-            if (SymbolTable != null)
-            {
-                this.SymbolTable = new ConcurrentDictionary<long, string>(SymbolTable);
-            }
-            else
-            {
-                this.SymbolTable = new ConcurrentDictionary<long, string>();
-            }
         }
 
         internal void ExecuteSubroutine(AThread Thread, long Position)
@@ -68,16 +50,6 @@ namespace ChocolArm64
         {
             do
             {
-                if (EnableCpuTrace)
-                {
-                    if (!SymbolTable.TryGetValue(Position, out string SubName))
-                    {
-                        SubName = string.Empty;
-                    }
-
-                    CpuTrace?.Invoke(this, new ACpuTraceEventArgs(Position, SubName));
-                }
-
                 if (!CachedSubs.TryGetValue(Position, out ATranslatedSub Sub))
                 {
                     Sub = TranslateTier0(State, Memory, Position);
@@ -148,8 +120,6 @@ namespace ChocolArm64
 
             string SubName = GetSubName(Position);
 
-            PropagateName(Cfg.Graph, SubName);
-
             AILEmitterCtx Context = new AILEmitterCtx(this, Cfg.Graph, Cfg.Root, SubName);
 
             if (Context.CurrBlock.Position != Position)
@@ -185,22 +155,7 @@ namespace ChocolArm64
 
         private string GetSubName(long Position)
         {
-            return SymbolTable.GetOrAdd(Position, $"Sub{Position:x16}");
-        }
-
-        private void PropagateName(ABlock[] Graph, string Name)
-        {
-            foreach (ABlock Block in Graph)
-            {
-                AOpCode LastOp = Block.GetLastOp();
-
-                if (LastOp != null &&
-                   (LastOp.Emitter == AInstEmit.Bl ||
-                    LastOp.Emitter == AInstEmit.Blr))
-                {
-                    SymbolTable.TryAdd(LastOp.Position + 4, Name);
-                }
-            }
+            return $"Sub{Position:x16}";
         }
     }
 }

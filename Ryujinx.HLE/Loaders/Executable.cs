@@ -1,21 +1,22 @@
 using ChocolArm64.Memory;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.OsHle;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Ryujinx.HLE.Loaders
 {
     class Executable
     {
+        private AMemory Memory;
+
         private List<ElfDyn> Dynamic;
 
-        private Dictionary<long, string> m_SymbolTable;
-
-        public IReadOnlyDictionary<long, string> SymbolTable => m_SymbolTable;
+        public ReadOnlyCollection<ElfSym> SymbolTable;
 
         public string Name { get; private set; }
-
-        private AMemory Memory;
 
         public long ImageBase { get; private set; }
         public long ImageEnd  { get; private set; }
@@ -23,8 +24,6 @@ namespace Ryujinx.HLE.Loaders
         public Executable(IExecutable Exe, AMemory Memory, long ImageBase)
         {
             Dynamic = new List<ElfDyn>();
-
-            m_SymbolTable = new Dictionary<long, string>();
 
             Name = Exe.Name;
 
@@ -84,14 +83,18 @@ namespace Ryujinx.HLE.Loaders
 
             long SymEntSize = GetFirstValue(ElfDynTag.DT_SYMENT);
 
+            List<ElfSym> Symbols = new List<ElfSym>();
+
             while ((ulong)SymTblAddr < (ulong)StrTblAddr)
             {
                 ElfSym Sym = GetSymbol(SymTblAddr, StrTblAddr);
 
-                m_SymbolTable.TryAdd(Sym.Value, Sym.Name);
+                Symbols.Add(Sym);
 
                 SymTblAddr += SymEntSize;
             }
+
+            SymbolTable = Array.AsReadOnly(Symbols.OrderBy(x => x.Value).ToArray());
         }
 
         private void WriteData(
