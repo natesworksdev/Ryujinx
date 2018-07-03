@@ -7,10 +7,15 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
     class VoiceContext
     {
         private bool Acquired;
+        private bool BufferReload;
 
-        public int  ChannelsCount;
-        public int  BufferIndex;
-        public long Offset;
+        private int ResamplerFracPart;
+
+        private int BufferIndex;
+        private int Offset;
+
+        public int SampleRate;
+        public int ChannelsCount;
 
         public float Volume;
 
@@ -23,6 +28,8 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         public WaveBuffer[] WaveBuffers;
 
         public VoiceOut OutStatus;
+
+        private int[] Samples;
 
         public bool Playing => Acquired && PlayState == PlayState.Playing;
 
@@ -52,117 +59,116 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             OutStatus.VoiceDropsCount        = 0;
         }
 
-        public short[] GetBufferData(AMemory Memory, int MaxSamples, out int Samples)
+        public int[] GetBufferData(AMemory Memory, int MaxSamples, out int SamplesCount)
         {
+            if (BufferReload)
+            {
+                BufferReload = false;
+
+                UpdateBuffer(Memory);
+            }
+
             WaveBuffer Wb = WaveBuffers[BufferIndex];
 
-            long Position = Wb.Position + Offset;
+            int MaxSize = Samples.Length - Offset;
 
-            long MaxSize = Wb.Size - Offset;
-
-            long Size = GetSizeFromSamplesCount(MaxSamples);
+            int Size = MaxSamples * AudioConsts.HostChannelsCount;
 
             if (Size > MaxSize)
             {
                 Size = MaxSize;
             }
 
-            Samples = GetSamplesCountFromSize(Size);
+            int[] Output = new int[Size];
 
-            OutStatus.PlayedSamplesCount += Samples;
+            Array.Copy(Samples, Offset, Output, 0, Size);
+
+            SamplesCount = Size / AudioConsts.HostChannelsCount;
+
+            OutStatus.PlayedSamplesCount += SamplesCount;
 
             Offset += Size;
 
-            if (Offset == Wb.Size)
+            if (Offset == Samples.Length)
             {
                 Offset = 0;
 
                 if (Wb.Looping == 0)
                 {
-                    BufferIndex = (BufferIndex + 1) & 3;
+                    SetBufferIndex((BufferIndex + 1) & 3);
                 }
 
                 OutStatus.PlayedWaveBuffersCount++;
             }
 
-            return Decode(Memory.ReadBytes(Position, Size));
+            return Output;
         }
 
-        private long GetSizeFromSamplesCount(int SamplesCount)
+        private void UpdateBuffer(AMemory Memory)
         {
+            //TODO: Implement conversion for formats other
+            //than interleaved stereo (2 channels).
+            //As of now, it assumes that HostChannelsCount == 2.
+            WaveBuffer Wb = WaveBuffers[BufferIndex];
+
             if (SampleFormat == SampleFormat.PcmInt16)
             {
-                return SamplesCount * sizeof(short) * ChannelsCount;
-            }
-            else if (SampleFormat == SampleFormat.Adpcm)
-            {
-                return AdpcmDecoder.GetSizeFromSamplesCount(SamplesCount);
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
+                int SamplesCount = (int)(Wb.Size / (sizeof(short) * ChannelsCount));
 
-        private int GetSamplesCountFromSize(long Size)
-        {
-            if (SampleFormat == SampleFormat.PcmInt16)
-            {
-                return (int)(Size / (sizeof(short) * ChannelsCount));
-            }
-            else if (SampleFormat == SampleFormat.Adpcm)
-            {
-                return AdpcmDecoder.GetSamplesCountFromSize(Size);
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
-
-        private short[] Decode(byte[] Buffer)
-        {
-            if (SampleFormat == SampleFormat.PcmInt16)
-            {
-                int Samples = GetSamplesCountFromSize(Buffer.Length);
-
-                short[] Output = new short[Samples * 2];
+                Samples = new int[SamplesCount * AudioConsts.HostChannelsCount];
 
                 if (ChannelsCount == 1)
                 {
-                    //Duplicate samples to convert the mono stream to stereo.
-                    for (int Offset = 0; Offset < Buffer.Length; Offset += 2)
+                    for (int Index = 0; Index < SamplesCount; Index++)
                     {
-                        short Sample = GetShort(Buffer, Offset);
+                        short Sample = Memory.ReadInt16(Wb.Position + Index * 2);
 
-                        Output[Offset + 0] = Sample;
-                        Output[Offset + 1] = Sample;
+                        Samples[Index * 2 + 0] = Sample;
+                        Samples[Index * 2 + 1] = Sample;
                     }
                 }
                 else
                 {
-                    for (int Offset = 0; Offset < Buffer.Length; Offset += 2)
+                    for (int Index = 0; Index < SamplesCount * 2; Index++)
                     {
-                        Output[Offset >> 1] = GetShort(Buffer, Offset);
+                        Samples[Index] = Memory.ReadInt16(Wb.Position + Index * 2);
                     }
                 }
-
-                return Output;
             }
             else if (SampleFormat == SampleFormat.Adpcm)
             {
-                return AdpcmDecoder.Decode(Buffer, AdpcmCtx);
+                byte[] Buffer = Memory.ReadBytes(Wb.Position, Wb.Size);
+
+                Samples = AdpcmDecoder.Decode(Buffer, AdpcmCtx);
             }
             else
             {
                 throw new InvalidOperationException();
             }
+
+            if (SampleRate != AudioConsts.HostSampleRate)
+            {
+                //TODO: We should keep the frames being discarded (see the 4 below)
+                //on a buffer and include it on the next samples buffer, to allow
+                //the resampler to do seamless interpolation between wave buffers.
+                int SamplesCount = Samples.Length / AudioConsts.HostChannelsCount;
+
+                SamplesCount = Math.Max(SamplesCount - 4, 0);
+
+                Samples = Resampler.Resample2Ch(
+                    Samples,
+                    SampleRate,
+                    AudioConsts.HostSampleRate,
+                    SamplesCount,
+                    ref ResamplerFracPart);
+            }
         }
 
-        private static short GetShort(byte[] Buffer, int Offset)
+        public void SetBufferIndex(int Index)
         {
-            return (short)((Buffer[Offset + 0] << 0) |
-                           (Buffer[Offset + 1] << 8));
+            BufferIndex = Index;
+
+            BufferReload = true;
         }
     }
 }

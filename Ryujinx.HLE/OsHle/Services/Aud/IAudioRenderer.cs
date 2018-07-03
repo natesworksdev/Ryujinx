@@ -13,15 +13,11 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 {
     class IAudioRenderer : IpcService, IDisposable
     {
-        private const int DeviceChannelsCount = 2;
-
         //This is the amount of samples that are going to be appended
         //each time that RequestUpdateAudioRenderer is called. Ideally,
         //this value shouldn't be neither too small (to avoid the player
         //starving due to running out of samples) or too large (to avoid
         //high latency).
-        //Additionally, due to ADPCM having 14 samples per frame, this value
-        //needs to be a multiple of 14.
         private const int MixBufferSamplesCount = 770;
 
         private Dictionary<int, ServiceProcessRequest> m_Commands;
@@ -58,7 +54,10 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             this.AudioOut = AudioOut;
             this.Params   = Params;
 
-            Track = AudioOut.OpenTrack(48000, 2, AudioCallback, out _);
+            Track = AudioOut.OpenTrack(
+                AudioConsts.HostSampleRate,
+                AudioConsts.HostChannelsCount,
+                AudioCallback, out _);
 
             MemoryPools = CreateArray<MemoryPoolContext>(Params.EffectCount + Params.VoiceCount * 4);
 
@@ -133,7 +132,9 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             {
                 VoiceIn Voice = VoicesIn[Index];
 
-                Voices[Index].SetAcquireState(Voice.Acquired != 0);
+                VoiceContext VoiceCtx = Voices[Index];
+
+                VoiceCtx.SetAcquireState(Voice.Acquired != 0);
 
                 if (Voice.Acquired == 0)
                 {
@@ -142,21 +143,23 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
                 if (Voice.FirstUpdate != 0)
                 {
-                    Voices[Index].AdpcmCtx = GetAdpcmDecoderContext(
+                    VoiceCtx.AdpcmCtx = GetAdpcmDecoderContext(
                         Voice.AdpcmCoeffsPosition,
                         Voice.AdpcmCoeffsSize);
 
-                    Voices[Index].SampleFormat  = Voice.SampleFormat;
-                    Voices[Index].ChannelsCount = Voice.ChannelsCount;
-                    Voices[Index].BufferIndex   = Voice.BaseWaveBufferIndex;
+                    VoiceCtx.SampleFormat  = Voice.SampleFormat;
+                    VoiceCtx.SampleRate    = Voice.SampleRate;
+                    VoiceCtx.ChannelsCount = Voice.ChannelsCount;
+
+                    VoiceCtx.SetBufferIndex(Voice.BaseWaveBufferIndex);
                 }
 
-                Voices[Index].WaveBuffers[0] = Voice.WaveBuffer0;
-                Voices[Index].WaveBuffers[1] = Voice.WaveBuffer1;
-                Voices[Index].WaveBuffers[2] = Voice.WaveBuffer2;
-                Voices[Index].WaveBuffers[3] = Voice.WaveBuffer3;
-                Voices[Index].Volume         = Voice.Volume;
-                Voices[Index].PlayState      = Voice.PlayState;
+                VoiceCtx.WaveBuffers[0] = Voice.WaveBuffer0;
+                VoiceCtx.WaveBuffers[1] = Voice.WaveBuffer1;
+                VoiceCtx.WaveBuffers[2] = Voice.WaveBuffer2;
+                VoiceCtx.WaveBuffers[3] = Voice.WaveBuffer3;
+                VoiceCtx.Volume         = Voice.Volume;
+                VoiceCtx.PlayState      = Voice.PlayState;
             }
 
             UpdateAudio();
@@ -249,7 +252,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         private void AppendMixedBuffer(long Tag)
         {
-            int[] MixBuffer = new int[MixBufferSamplesCount * DeviceChannelsCount];
+            int[] MixBuffer = new int[MixBufferSamplesCount * AudioConsts.HostChannelsCount];
 
             foreach (VoiceContext Voice in Voices)
             {
@@ -264,7 +267,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
                 while (PendingSamples > 0)
                 {
-                    short[] Samples = Voice.GetBufferData(Memory, PendingSamples, out int ReturnedSamples);
+                    int[] Samples = Voice.GetBufferData(Memory, PendingSamples, out int ReturnedSamples);
 
                     if (ReturnedSamples == 0)
                     {

@@ -5,11 +5,11 @@ namespace Ryujinx.Audio.Adpcm
         private const int SamplesPerFrame = 14;
         private const int BytesPerFrame   = 8;
 
-        public static short[] Decode(byte[] Buffer, AdpcmDecoderContext Context)
+        public static int[] Decode(byte[] Buffer, AdpcmDecoderContext Context)
         {
             int Samples = GetSamplesCountFromSize(Buffer.Length);
 
-            short[] Pcm = new short[Samples * 2];
+            int[] Pcm = new int[Samples * 2];
 
             short History0 = Context.History0;
             short History1 = Context.History1;
@@ -23,7 +23,7 @@ namespace Ryujinx.Audio.Adpcm
 
                 int Scale = 0x800 << (Header & 0xf);
 
-                int CoeffIndex = Header >> 4;
+                int CoeffIndex = (Header >> 4) & 7;
 
                 short Coeff0 = Context.Coefficients[CoeffIndex * 2 + 0];
                 short Coeff1 = Context.Coefficients[CoeffIndex * 2 + 1];
