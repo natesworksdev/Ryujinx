@@ -10,11 +10,11 @@ namespace Ryujinx.HLE.Loaders
 {
     class Executable
     {
+        private AMemory Memory;
+
         private List<ElfDyn> Dynamic;
 
-        private Dictionary<long, string> m_SymbolTable;
-
-        public IReadOnlyDictionary<long, string> SymbolTable => m_SymbolTable;
+        public ReadOnlyCollection<ElfSym> SymbolTable;
 
         public string Name { get; private set; }
 
@@ -103,14 +103,18 @@ namespace Ryujinx.HLE.Loaders
 
             long SymEntSize = GetFirstValue(ElfDynTag.DT_SYMENT);
 
+            List<ElfSym> Symbols = new List<ElfSym>();
+
             while ((ulong)SymTblAddr < (ulong)StrTblAddr)
             {
                 ElfSym Sym = GetSymbol(SymTblAddr, StrTblAddr);
 
-                m_SymbolTable.TryAdd(Sym.Value, Sym.Name);
+                Symbols.Add(Sym);
 
                 SymTblAddr += SymEntSize;
             }
+
+            SymbolTable = Array.AsReadOnly(Symbols.OrderBy(x => x.Value).ToArray());
         }
 
         private ElfRel GetRelocation(long Position)
