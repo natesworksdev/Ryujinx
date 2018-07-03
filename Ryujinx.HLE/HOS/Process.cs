@@ -262,7 +262,7 @@ namespace Ryujinx.HLE.HOS
 
             void AppendTrace(long Position)
             {
-                Executable Exe = GetNsoExecutable(Position);
+                Executable Exe = GetExecutable(Position);
 
                 if (Exe == null)
                 {
@@ -336,7 +336,7 @@ namespace Ryujinx.HLE.HOS
             return false;
         }
 
-        private Executable GetNsoExecutable(long Position)
+        private Executable GetExecutable(long Position)
         {
             string Name = string.Empty;
 
