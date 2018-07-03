@@ -342,7 +342,7 @@ namespace Ryujinx.HLE.HOS
 
             for (int Index = Executables.Count - 1; Index >= 0; Index--)
             {
-                if (Position >= Executables[Index].ImageBase)
+                if ((ulong)Position >= (ulong)Executables[Index].ImageBase)
                 {
                     return Executables[Index];
                 }
