@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.HOS
                 throw new ObjectDisposedException(nameof(Process));
             }
 
-            AThread CpuThread = new AThread(new ATranslator(), Memory, EntryPoint);
+            AThread CpuThread = new AThread(GetTranslator(), Memory, EntryPoint);
 
             long Tpidr = GetFreeTls();
 
@@ -254,6 +254,49 @@ namespace Ryujinx.HLE.HOS
             throw new UndefinedInstructionException(e.Position, e.RawOpCode);
         }
 
+        public void EnableCpuTracing()
+        {
+            Translator.EnableCpuTrace = true;
+        }
+
+        public void DisableCpuTracing()
+        {
+            Translator.EnableCpuTrace = false;
+        }
+
+        private void CpuTraceHandler(object sender, ACpuTraceEventArgs e)
+        {
+            Executable Exe = GetExecutable(e.Position);
+
+            if (Exe == null)
+            {
+                return;
+            }
+
+            if (!TryGetSubName(Exe, e.Position, out string SubName))
+            {
+                SubName = string.Empty;
+            }
+
+            long Offset = e.Position - Exe.ImageBase;
+
+            string ExeNameWithAddr = $"{Exe.Name}:0x{Offset:x8}";
+
+            Ns.Log.PrintDebug(LogClass.Cpu, ExeNameWithAddr + " " + SubName);
+        }
+
+        private ATranslator GetTranslator()
+        {
+            if (Translator == null)
+            {
+                Translator = new ATranslator();
+
+                Translator.CpuTrace += CpuTraceHandler;
+            }
+
+            return Translator;
+        }
+
         public void PrintStackTrace(AThreadState ThreadState)
         {
             StringBuilder Trace = new StringBuilder();
@@ -280,9 +323,9 @@ namespace Ryujinx.HLE.HOS
 
                 long Offset = Position - Exe.ImageBase;
 
-                string ExeNameWithAddr = $"{Exe.Name}:{Offset:x8}";
+                string ExeNameWithAddr = $"{Exe.Name}:0x{Offset:x8}";
 
-                Trace.AppendLine(" " + SubName + " (" + ExeNameWithAddr + ")");
+                Trace.AppendLine(" " + ExeNameWithAddr + " " + SubName);
             }
 
             long FramePointer = (long)ThreadState.X29;
