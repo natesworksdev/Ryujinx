@@ -2,9 +2,11 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.OsHle.Services.Aud
 {
-    [StructLayout(LayoutKind.Sequential, Size = 0xc, Pack = 2)]
+    [StructLayout(LayoutKind.Sequential, Size = 0xc, Pack = 1)]
     struct BiquadFilter
     {
+        public byte  Enable;
+        public byte  Padding;
         public short B0;
         public short B1;
         public short B2;
