@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.OsHle.Services.Spl
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
-        private RNGCryptoServiceProvider CspRnd;
+        private RNGCryptoServiceProvider Rng;
 
         public IRandomInterface()
         {
@@ -19,18 +19,16 @@ namespace Ryujinx.HLE.OsHle.Services.Spl
                 { 0, GetRandomBytes }
             };
 
-            CspRnd = new RNGCryptoServiceProvider();
+            Rng = new RNGCryptoServiceProvider();
         }
 
         public long GetRandomBytes(ServiceCtx Context)
         {
-            (long Position, long Size) = Context.Request.GetBufferType0x21();
+            byte[] RandomBytes = new byte[Context.Request.ReceiveBuff[0].Size];
 
-            byte[] BytesBuffer = new byte[Size];
+            Rng.GetBytes(RandomBytes);
 
-            CspRnd.GetBytes(BytesBuffer);
-
-            Context.Memory.WriteBytes(Position, BytesBuffer);
+            Context.Memory.WriteBytes(Context.Request.ReceiveBuff[0].Position, RandomBytes);
 
             return 0;
         }
