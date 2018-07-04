@@ -1,10 +1,11 @@
 ﻿using Ryujinx.HLE.OsHle.Ipc;
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace Ryujinx.HLE.OsHle.Services.Spl
 {
-    class IRandomInterface : IpcService
+    class IRandomInterface : IpcService, IDisposable
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
@@ -31,6 +32,19 @@ namespace Ryujinx.HLE.OsHle.Services.Spl
             Context.Memory.WriteBytes(Context.Request.ReceiveBuff[0].Position, RandomBytes);
 
             return 0;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool Disposing)
+        {
+            if (Disposing)
+            {
+                Rng.Dispose();
+            }
         }
     }
 }
