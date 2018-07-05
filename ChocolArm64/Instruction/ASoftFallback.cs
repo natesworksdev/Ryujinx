@@ -12,21 +12,44 @@ namespace ChocolArm64.Instruction
 
         public static ulong CountLeadingSigns(ulong Value, int Size)
         {
-            return CountLeadingZeros((Value >> 1) ^ Value, Size - 1);
+            Value ^= Value >> 1;
+
+            Value <<= 64 - Size + 1;
+            Value = HighZeros(Value, Size);
+            Value >>= 64 - Size + 1;
+
+            return CountSetBits64(Value, Size);
         }
 
         public static ulong CountLeadingZeros(ulong Value, int Size)
         {
-            Value <<= 64 - Size;
+            Value = HighZeros(Value, Size);
 
+            return CountSetBits64(Value, Size);
+        }
+
+        private static ulong HighZeros(ulong Value, int Size)
+        {
             Value |= Value >> 1;
             Value |= Value >> 2;
             Value |= Value >> 4;
-            if (Size >= 15) Value |= Value >> 8 ;
-            if (Size >= 31) Value |= Value >> 16;
-            if (Size >= 63) Value |= Value >> 32;
+            if (Size >= 16) Value |= Value >> 8 ;
+            if (Size >= 32) Value |= Value >> 16;
+            if (Size == 64) Value |= Value >> 32;
 
-            return CountSetBits64(~Value >> (64 - Size), Size);
+            return ~Value;
+        }
+
+        private static ulong CountSetBits64(ulong Value, int Size)
+        {
+            Value = ((Value >> 1) & 0x5555555555555555) + (Value & 0x5555555555555555);
+            Value = ((Value >> 2) & 0x3333333333333333) + (Value & 0x3333333333333333);
+            Value = ((Value >> 4) + Value) & 0x0f0f0f0f0f0f0f0f;
+            if (Size >= 16) Value += Value >> 8 ;
+            if (Size >= 32) Value += Value >> 16;
+            if (Size == 64) Value += Value >> 32;
+
+            return Value & 0xff;
         }
 
         public static uint CountSetBits8(uint Value)
@@ -35,18 +58,6 @@ namespace ChocolArm64.Instruction
             Value = ((Value >> 2) & 0x33) + (Value & 0x33);
 
             return (Value >> 4) + (Value & 0x0f);
-        }
-
-        private static ulong CountSetBits64(ulong Value, int Size)
-        {
-            Value = ((Value >> 1 ) & 0x5555555555555555) + (Value & 0x5555555555555555);
-            Value = ((Value >> 2 ) & 0x3333333333333333) + (Value & 0x3333333333333333);
-            Value = ((Value >> 4 ) + Value) & 0x0f0f0f0f0f0f0f0f;
-            if (Size >= 15) Value += Value >> 8 ;
-            if (Size >= 31) Value += Value >> 16;
-            if (Size >= 63) Value += Value >> 32;
-
-            return Value & 0xff;
         }
 
         private const uint Crc32RevPoly  = 0xedb88320;
