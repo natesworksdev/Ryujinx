@@ -12,7 +12,7 @@ namespace ChocolArm64
 {
     public class ATranslator
     {
-        private ConcurrentDictionary<long, ATranslatedSub> CachedSubs;
+        private ATranslatorCache Cache;
 
         public event EventHandler<ACpuTraceEventArgs> CpuTrace;
 
@@ -20,7 +20,7 @@ namespace ChocolArm64
 
         public ATranslator()
         {
-            CachedSubs = new ConcurrentDictionary<long, ATranslatedSub>();
+            Cache = new ATranslatorCache();
         }
 
         internal void ExecuteSubroutine(AThread Thread, long Position)
@@ -61,7 +61,7 @@ namespace ChocolArm64
                     CpuTrace?.Invoke(this, new ACpuTraceEventArgs(Position));
                 }
 
-                if (!CachedSubs.TryGetValue(Position, out ATranslatedSub Sub))
+                if (!Cache.TryGetSubroutine(Position, out ATranslatedSub Sub))
                 {
                     Sub = TranslateTier0(State, Memory, Position);
                 }
@@ -90,12 +90,12 @@ namespace ChocolArm64
 
         internal bool TryGetCachedSub(long Position, out ATranslatedSub Sub)
         {
-            return CachedSubs.TryGetValue(Position, out Sub);
+            return Cache.TryGetSubroutine(Position, out Sub);
         }
 
         internal bool HasCachedSub(long Position)
         {
-            return CachedSubs.ContainsKey(Position);
+            return Cache.HasSubroutine(Position);
         }
 
         private ATranslatedSub TranslateTier0(AThreadState State, AMemory Memory, long Position)
@@ -118,7 +118,7 @@ namespace ChocolArm64
 
             Subroutine.SetType(ATranslatedSubType.SubTier0);
 
-            CachedSubs.AddOrUpdate(Position, Subroutine, (Key, OldVal) => Subroutine);
+            Cache.AddOrUpdate(Position, Subroutine, Block.OpCodes.Count);
 
             AOpCode LastOp = Block.GetLastOp();
 
@@ -127,11 +127,11 @@ namespace ChocolArm64
 
         private void TranslateTier1(AThreadState State, AMemory Memory, long Position)
         {
-            (ABlock[] Graph, ABlock Root) Cfg = ADecoder.DecodeSubroutine(State, this, Memory, Position);
+            (ABlock[] Graph, ABlock Root) = ADecoder.DecodeSubroutine(State, this, Memory, Position);
 
             string SubName = GetSubName(Position);
 
-            AILEmitterCtx Context = new AILEmitterCtx(this, Cfg.Graph, Cfg.Root, SubName);
+            AILEmitterCtx Context = new AILEmitterCtx(this, Graph, Root, SubName);
 
             if (Context.CurrBlock.Position != Position)
             {
@@ -146,11 +146,11 @@ namespace ChocolArm64
 
             //Mark all methods that calls this method for ReJiting,
             //since we can now call it directly which is faster.
-            if (CachedSubs.TryGetValue(Position, out ATranslatedSub OldSub))
+            if (Cache.TryGetSubroutine(Position, out ATranslatedSub OldSub))
             {
                 foreach (long CallerPos in OldSub.GetCallerPositions())
                 {
-                    if (CachedSubs.TryGetValue(Position, out ATranslatedSub CallerSub))
+                    if (Cache.TryGetSubroutine(Position, out ATranslatedSub CallerSub))
                     {
                         CallerSub.MarkForReJit();
                     }
@@ -161,12 +161,24 @@ namespace ChocolArm64
 
             Subroutine.SetType(ATranslatedSubType.SubTier1);
 
-            CachedSubs.AddOrUpdate(Position, Subroutine, (Key, OldVal) => Subroutine);
+            Cache.AddOrUpdate(Position, Subroutine, GetGraphInstCount(Graph));
         }
 
         private string GetSubName(long Position)
         {
             return $"Sub{Position:x16}";
+        }
+
+        private int GetGraphInstCount(ABlock[] Graph)
+        {
+            int Size = 0;
+
+            foreach (ABlock Block in Graph)
+            {
+                Size += Block.OpCodes.Count;
+            }
+
+            return Size;
         }
     }
 }
