@@ -58,7 +58,7 @@ namespace ChocolArm64.Instruction
 
             int Shift = Op.Imm - (8 << Op.Size);
 
-            ulong Mask = Shift != 0 ? ulong.MaxValue >> (64 - Shift) : 0;            
+            ulong Mask = Shift != 0 ? ulong.MaxValue >> (64 - Shift) : 0;
 
             for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
             {
@@ -82,6 +82,39 @@ namespace ChocolArm64.Instruction
             {
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
+        }
+
+        public static void Sqrshrn_V(AILEmitterCtx Context)
+        {
+            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+
+            int Shift = (8 << (Op.Size + 1)) - Op.Imm;
+
+            long RoundConst = 1L << (Shift - 1);
+
+            Action Emit = () =>
+            {
+                Context.EmitLdc_I8(RoundConst);
+
+                Context.Emit(OpCodes.Add);
+
+                Context.EmitLdc_I4(Shift);
+
+                Context.Emit(OpCodes.Shr);
+            };
+
+            EmitVectorSaturatingNarrowOpSxSx(Context, Emit);
+        }
+
+        public static void Srshr_V(AILEmitterCtx Context)
+        {
+            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+
+            int Shift = (8 << (Op.Size + 1)) - Op.Imm;
+
+            long RoundConst = 1L << (Shift - 1);
+
+            EmitVectorRoundShImmBinarySx(Context, () => Context.Emit(OpCodes.Shr), Shift, RoundConst);
         }
 
         public static void Sshl_V(AILEmitterCtx Context)
@@ -280,6 +313,38 @@ namespace ChocolArm64.Instruction
                 }
 
                 EmitVectorExtract(Context, Op.Rn, Index, Op.Size, Signed);
+
+                Context.EmitLdc_I4(Imm);
+
+                Emit();
+
+                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+            }
+
+            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            {
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }
+        }
+
+        private static void EmitVectorRoundShImmBinarySx(AILEmitterCtx Context, Action Emit, int Imm, long Rc)
+        {
+            EmitVectorRoundShImmOp(Context, Emit, Imm, Rc, true);
+        }
+
+        private static void EmitVectorRoundShImmOp(AILEmitterCtx Context, Action Emit, int Imm, long Rc, bool Signed)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+
+            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            {
+                EmitVectorExtract(Context, Op.Rn, Index, Op.Size, Signed);
+
+                Context.EmitLdc_I8(Rc);
+
+                Context.Emit(OpCodes.Add);
 
                 Context.EmitLdc_I4(Imm);
 
