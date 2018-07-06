@@ -79,8 +79,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             Gpu.Renderer.Shader.BindProgram();
 
-            SetFrontFace();
-            SetCullFace();
+            SetFaceCulling();
             SetDepth();
             SetStencil();
             SetAlphaBlending();
@@ -198,32 +197,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             throw new ArgumentOutOfRangeException(nameof(Program));
         }
 
-        private void SetFrontFace()
-        {
-            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportScaleX);
-            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportScaleY);
-
-            GalFrontFace FrontFace = (GalFrontFace)ReadRegister(NvGpuEngine3dReg.FrontFace);
-
-            //Flipping breaks facing. Flipping front facing too fixes it
-            if (SignX != SignY)
-            {
-                switch (FrontFace)
-                {
-                    case GalFrontFace.CW:
-                        FrontFace = GalFrontFace.CCW;
-                        break;
-
-                    case GalFrontFace.CCW:
-                        FrontFace = GalFrontFace.CW;
-                        break;
-                }
-            }
-
-            Gpu.Renderer.Rasterizer.SetFrontFace(FrontFace);
-        }
-
-        private void SetCullFace()
+        private void SetFaceCulling()
         {
             bool Enable = (ReadRegister(NvGpuEngine3dReg.CullFaceEnable) & 1) != 0;
 
@@ -240,6 +214,23 @@ namespace Ryujinx.HLE.Gpu.Engines
             {
                 return;
             }
+
+            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportScaleX);
+            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportScaleY);
+
+            GalFrontFace FrontFace = (GalFrontFace)ReadRegister(NvGpuEngine3dReg.FrontFace);
+
+            //Flipping breaks facing. Flipping front facing too fixes it
+            if (SignX != SignY)
+            {
+                switch (FrontFace)
+                {
+                    case GalFrontFace.Cw:  FrontFace = GalFrontFace.Ccw; break;
+                    case GalFrontFace.Ccw: FrontFace = GalFrontFace.Cw;  break;
+                }
+            }
+
+            Gpu.Renderer.Rasterizer.SetFrontFace(FrontFace);
 
             GalCullFace CullFace = (GalCullFace)ReadRegister(NvGpuEngine3dReg.CullFace);
 
