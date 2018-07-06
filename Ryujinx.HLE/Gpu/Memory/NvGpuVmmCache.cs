@@ -83,6 +83,13 @@ namespace Ryujinx.HLE.Gpu.Memory
             long            PA,
             long            Size)
         {
+            bool[] Modified = Memory.IsRegionModified(PA, Size);
+
+            if (Modified == null)
+            {
+                return true;
+            }
+
             ClearCachedPagesIfNeeded();
 
             long PageSize = Memory.GetHostPageSize();
@@ -93,6 +100,8 @@ namespace Ryujinx.HLE.Gpu.Memory
             long PAEnd = PA + Size;
 
             bool RegMod = false;
+
+            int Index = 0;
 
             while (VA < VAEnd)
             {
@@ -118,14 +127,13 @@ namespace Ryujinx.HLE.Gpu.Memory
 
                     SortedCache.Remove(Cp.Node);
 
-                    if (Cp.PABase     != PABase ||
-                        Cp.BufferType != BufferType)
+                    if (Cp.PABase != PABase || Cp.BufferType != BufferType)
                     {
                         PgReset = true;
                     }
                 }
 
-                PgReset |= Memory.IsRegionModified(PA, PAPgEnd - PA) && IsCached;
+                PgReset |= Modified[Index++] && IsCached;
 
                 if (PgReset)
                 {
