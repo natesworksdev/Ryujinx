@@ -127,24 +127,20 @@ namespace Ryujinx.HLE.Gpu.Memory
 
                 bool IsCached = Cache.TryGetValue(Key, out CachedPage Cp);
 
-                bool PgReset = false;
-
-                if (!IsCached)
-                {
-                    Cp = new CachedPage();
-
-                    Cache.Add(Key, Cp);
-                }
-                else
+                if (IsCached)
                 {
                     CpCount -= Cp.GetTotalCount();
 
                     SortedCache.Remove(Cp.Node);
                 }
+                else
+                {
+                    Cp = new CachedPage();
 
-                PgReset |= Modified[Index++] && IsCached;
+                    Cache.Add(Key, Cp);
+                }
 
-                if (PgReset)
+                if (Modified[Index++] && IsCached)
                 {
                     Cp = new CachedPage();
 
