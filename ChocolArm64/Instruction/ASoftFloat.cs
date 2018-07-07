@@ -7,8 +7,10 @@ namespace ChocolArm64.Instruction
         static ASoftFloat()
         {
             InvSqrtEstimateTable = BuildInvSqrtEstimateTable();
+            RecipEstimateTable = BuildRecipEstimateTable();
         }
 
+        private static readonly byte[] RecipEstimateTable;
         private static readonly byte[] InvSqrtEstimateTable;
 
         private static byte[] BuildInvSqrtEstimateTable()
@@ -31,6 +33,22 @@ namespace ChocolArm64.Instruction
                 {
                     b++;
                 }
+                b = (b + 1) >> 1;
+
+                Table[index] = (byte)(b & 0xFF);
+            }
+            return Table;
+        }
+
+        private static byte[] BuildRecipEstimateTable()
+        {
+            byte[] Table = new byte[256];
+            for (ulong index = 0; index < 256; index++)
+            {
+                ulong a = index | 0x100;
+
+                a = (a << 1) + 1;
+                ulong b = 0x80000 / a;
                 b = (b + 1) >> 1;
 
                 Table[index] = (byte)(b & 0xFF);
@@ -95,6 +113,73 @@ namespace ChocolArm64.Instruction
             ulong result_exp = ((ulong)(3068 - x_exp) / 2) & 0x7FF;
             ulong estimate = (ulong)InvSqrtEstimateTable[scaled];
             ulong fraction = estimate << 44;
+
+            ulong result = x_sign | (result_exp << 52) | fraction;
+            return BitConverter.Int64BitsToDouble((long)result);
+        }
+
+        public static float RecipEstimate(float x)
+        {
+            return (float)RecipEstimate((double)x);
+        }
+
+        public static double RecipEstimate(double x)
+        {
+            ulong x_bits = (ulong)BitConverter.DoubleToInt64Bits(x);
+            ulong x_sign = x_bits & 0x8000000000000000;
+            ulong x_exp = (x_bits >> 52) & 0x7FF;
+            ulong scaled = x_bits & ((1ul << 52) - 1);
+
+            if (x_exp >= 2045)
+            {
+                if (x_exp == 0x7ff && scaled != 0)
+                {
+                    // NaN
+                    return BitConverter.Int64BitsToDouble((long)(x_bits | 0x0008000000000000));
+                }
+
+                // Infinity, or Out of range -> Zero
+                return BitConverter.Int64BitsToDouble((long)x_sign);
+            }
+
+            if (x_exp == 0)
+            {
+                if (scaled == 0)
+                {
+                    // Zero -> Infinity
+                    return BitConverter.Int64BitsToDouble((long)(x_sign | 0x7ff0000000000000));
+                }
+
+                // Denormal
+                if ((scaled & (1ul << 51)) == 0)
+                {
+                    x_exp = ~0ul;
+                    scaled <<= 2;
+                }
+                else
+                {
+                    scaled <<= 1;
+                }
+            }
+
+            scaled >>= 44;
+            scaled &= 0xFF;
+
+            ulong result_exp = (2045 - x_exp) & 0x7FF;
+            ulong estimate = (ulong)RecipEstimateTable[scaled];
+            ulong fraction = estimate << 44;
+
+            if (result_exp == 0)
+            {
+                fraction >>= 1;
+                fraction |= 1ul << 51;
+            }
+            else if (result_exp == 0x7FF)
+            {
+                result_exp = 0;
+                fraction >>= 2;
+                fraction |= 1ul << 50;
+            }
 
             ulong result = x_sign | (result_exp << 52) | fraction;
             return BitConverter.Int64BitsToDouble((long)result);
