@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using static Ryujinx.HLE.OsHle.SystemStateMgr;
+
 namespace Ryujinx
 {
     public static class Config
@@ -34,6 +36,8 @@ namespace Ryujinx
             Log.SetEnable(LogLevel.Info,    Convert.ToBoolean(Parser.Value("Logging_Enable_Info")));
             Log.SetEnable(LogLevel.Warning, Convert.ToBoolean(Parser.Value("Logging_Enable_Warn")));
             Log.SetEnable(LogLevel.Error,   Convert.ToBoolean(Parser.Value("Logging_Enable_Error")));
+            
+            DockedMode = Convert.ToBoolean(Parser.Value("Docked_Mode"));
 
             GamePadEnable            =        Convert.ToBoolean(Parser.Value("GamePad_Enable"));
             GamePadIndex             =        Convert.ToInt32  (Parser.Value("GamePad_Index"));

@@ -3,6 +3,7 @@ using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
 using System.Collections.Generic;
 
+using static Ryujinx.HLE.OsHle.SystemStateMgr;
 using static Ryujinx.HLE.OsHle.ErrorCode;
 
 namespace Ryujinx.HLE.OsHle.Services.Am
@@ -57,14 +58,22 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long GetOperationMode(ServiceCtx Context)
         {
-            Context.ResponseData.Write((byte)OperationMode.Handheld);
+            if(DockedMode == false){
+                Context.ResponseData.Write((byte)OperationMode.Handheld);
+            }else{
+                Context.ResponseData.Write((byte)OperationMode.Docked);
+            }
 
             return 0;
         }
 
         public long GetPerformanceMode(ServiceCtx Context)
         {
-            Context.ResponseData.Write((byte)Apm.PerformanceMode.Handheld);
+            if(DockedMode == false){
+                Context.ResponseData.Write((byte)Apm.PerformanceMode.Handheld);
+            }else{
+                Context.ResponseData.Write((byte)Apm.PerformanceMode.Docked);
+            }
 
             return 0;
         }
