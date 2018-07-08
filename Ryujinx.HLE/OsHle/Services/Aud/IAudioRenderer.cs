@@ -22,10 +22,11 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 4, RequestUpdateAudioRenderer },
-                { 5, StartAudioRenderer         },
-                { 6, StopAudioRenderer          },
-                { 7, QuerySystemEvent           }
+                { 4,  RequestUpdateAudioRenderer     },
+                { 5,  StartAudioRenderer             },
+                { 6,  StopAudioRenderer              },
+                { 7,  QuerySystemEvent               },
+                { 10, RequestUpdateAudioRendererAuto }
             };
 
             UpdateEvent = new KEvent();
@@ -35,13 +36,18 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         public long RequestUpdateAudioRenderer(ServiceCtx Context)
         {
-            long OutputPosition = Context.Request.ReceiveBuff[0].Position;
-            long OutputSize     = Context.Request.ReceiveBuff[0].Size;
-
+            return RequestUpdateAudioRendererMethod(Context, Context.Request.ReceiveBuff[0].Position, Context.Request.ReceiveBuff[0].Size, Context.Request.SendBuff[0].Position);
+        }
+        
+        public long RequestUpdateAudioRendererAuto(ServiceCtx Context)
+        {
+            return RequestUpdateAudioRendererMethod(Context, Context.Request.GetBufferType0x22().Position, Context.Request.GetBufferType0x22().Size, Context.Request.GetBufferType0x21().Position);
+        }
+        
+        public long RequestUpdateAudioRendererMethod(ServiceCtx Context, long OutputPosition, long OutputSize, long InputPosition)
+        {
             AMemoryHelper.FillWithZeros(Context.Memory, OutputPosition, (int)OutputSize);
-
-            long InputPosition = Context.Request.SendBuff[0].Position;
-
+        
             UpdateDataHeader InputDataHeader = AMemoryHelper.Read<UpdateDataHeader>(Context.Memory, InputPosition);
 
             UpdateDataHeader OutputDataHeader = new UpdateDataHeader();
@@ -93,7 +99,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             //TODO: We shouldn't be signaling this here.
             UpdateEvent.WaitEvent.Set();
-
+            
             return 0;
         }
 
