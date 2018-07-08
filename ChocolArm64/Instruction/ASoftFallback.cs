@@ -14,42 +14,40 @@ namespace ChocolArm64.Instruction
         {
             Value ^= Value >> 1;
 
-            Value <<= 64 - Size + 1;
-            Value = HighZeros(Value, Size);
-            Value >>= 64 - Size + 1;
+            int HighBit = Size - 2;
 
-            return CountSetBits64(Value, Size);
+            for (int Bit = HighBit; Bit >= 0; Bit--)
+            {
+                if (((Value >> Bit) & 0b1) != 0)
+                {
+                    return (ulong)(HighBit - Bit);
+                }
+            }
+
+            return (ulong)(Size - 1);
         }
+
+        private static readonly byte[] ClzNibbleTbl = { 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         public static ulong CountLeadingZeros(ulong Value, int Size)
         {
-            Value = HighZeros(Value, Size);
+            if (Value == 0)
+            {
+                return (ulong)Size;
+            }
 
-            return CountSetBits64(Value, Size);
-        }
+            int NibbleIdx = Size;
+            int PreCount, Count = 0;
 
-        private static ulong HighZeros(ulong Value, int Size)
-        {
-            Value |= Value >> 1;
-            Value |= Value >> 2;
-            Value |= Value >> 4;
-            if (Size >= 16) Value |= Value >> 8 ;
-            if (Size >= 32) Value |= Value >> 16;
-            if (Size == 64) Value |= Value >> 32;
+            do
+            {
+                NibbleIdx -= 4;
+                PreCount = ClzNibbleTbl[(Value >> NibbleIdx) & 0b1111];
+                Count += PreCount;
+            }
+            while (PreCount == 4);
 
-            return ~Value;
-        }
-
-        private static ulong CountSetBits64(ulong Value, int Size)
-        {
-            Value = ((Value >> 1) & 0x5555555555555555) + (Value & 0x5555555555555555);
-            Value = ((Value >> 2) & 0x3333333333333333) + (Value & 0x3333333333333333);
-            Value = ((Value >> 4) + Value) & 0x0f0f0f0f0f0f0f0f;
-            if (Size >= 16) Value += Value >> 8 ;
-            if (Size >= 32) Value += Value >> 16;
-            if (Size == 64) Value += Value >> 32;
-
-            return Value & 0xff;
+            return (ulong)Count;
         }
 
         public static uint CountSetBits8(uint Value)
