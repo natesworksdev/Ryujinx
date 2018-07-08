@@ -220,6 +220,15 @@ namespace ChocolArm64.Instruction
         {
             EmitVectorImmUnaryOp(Context, () => Context.Emit(OpCodes.Not));
         }
+        
+        public static void Smov(AILEmitterCtx Context)
+        {
+            AOpCodeSimdIns Op = (AOpCodeSimdIns)Context.CurrOp;
+			
+            EmitVectorExtractSx(Context, Op.Rn, Op.DstIndex, Op.Size);
+
+            Context.EmitStintzr(Op.Rd);
+        }
 
         public static void Tbl_V(AILEmitterCtx Context)
         {
