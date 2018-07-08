@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
@@ -156,9 +157,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                     int Size = Math.Min(Data.Length, Buffer.Size);
 
-                    byte[] Destiny = Buffer.Map(Size);
+                    IntPtr Map = Buffer.Map(Size);
 
-                    Array.Copy(Data, Destiny, Size);
+                    Marshal.Copy(Data, 0, Map, Size);
 
                     Buffer.Unmap(Size);
                 }
@@ -251,7 +252,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int FreeBinding = 0;
 
-            int BindUniformBlocksIfNotNull(ShaderStage Stage)
+            void BindUniformBlocksIfNotNull(ShaderStage Stage)
             {
                 if (Stage != null)
                 {
@@ -270,8 +271,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         FreeBinding++;
                     }
                 }
-
-                return FreeBinding;
             }
 
             BindUniformBlocksIfNotNull(Current.Vertex);
@@ -285,7 +284,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int FreeBinding = 0;
 
-            int BindUniformBuffersIfNotNull(ShaderStage Stage)
+            void BindUniformBuffersIfNotNull(ShaderStage Stage)
             {
                 if (Stage != null)
                 {
@@ -293,13 +292,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     {
                         OGLStreamBuffer Buffer = GetConstBuffer(Stage.Type, DeclInfo.Cbuf);
 
-                        GL.BindBufferBase(BufferRangeTarget.UniformBuffer, FreeBinding, Buffer.Handle);
+                        Buffer.Bind(FreeBinding);
 
                         FreeBinding++;
                     }
                 }
-
-                return FreeBinding;
             }
 
             BindUniformBuffersIfNotNull(Current.Vertex);
