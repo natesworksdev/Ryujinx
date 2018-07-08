@@ -194,12 +194,13 @@ namespace Ryujinx.Tests.Cpu
                 V2: Sse.SetAllVector128(A),
                 V0: Sse.SetAllVector128(B));
 
+            float Result = (float)(2 - ((double)A * (double)B));
             Assert.Multiple(() =>
             {
-                Assert.That(Sse41.Extract(ThreadState.V4, (byte)0), Is.EqualTo(2 - (A * B)));
-                Assert.That(Sse41.Extract(ThreadState.V4, (byte)1), Is.EqualTo(2 - (A * B)));
-                Assert.That(Sse41.Extract(ThreadState.V4, (byte)2), Is.EqualTo(2 - (A * B)));
-                Assert.That(Sse41.Extract(ThreadState.V4, (byte)3), Is.EqualTo(2 - (A * B)));
+                Assert.That(Sse41.Extract(ThreadState.V4, (byte)0), Is.EqualTo(Result));
+                Assert.That(Sse41.Extract(ThreadState.V4, (byte)1), Is.EqualTo(Result));
+                Assert.That(Sse41.Extract(ThreadState.V4, (byte)2), Is.EqualTo(Result));
+                Assert.That(Sse41.Extract(ThreadState.V4, (byte)3), Is.EqualTo(Result));
             });
         }
 

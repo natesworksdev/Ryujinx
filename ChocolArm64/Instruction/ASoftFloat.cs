@@ -184,5 +184,40 @@ namespace ChocolArm64.Instruction
             ulong result = x_sign | (result_exp << 52) | fraction;
             return BitConverter.Int64BitsToDouble((long)result);
         }
+
+        public static float RecipStep(float op1, float op2)
+        {
+            return (float)RecipStep((double)op1, (double)op2);
+        }
+
+        public static double RecipStep(double op1, double op2)
+        {
+            op1 = -op1;
+
+            ulong op1_bits = (ulong)BitConverter.DoubleToInt64Bits(op1);
+            ulong op2_bits = (ulong)BitConverter.DoubleToInt64Bits(op2);
+
+            ulong op1_sign = op1_bits & 0x8000000000000000;
+            ulong op2_sign = op2_bits & 0x8000000000000000;
+            ulong op1_other = op1_bits & 0x7FFFFFFFFFFFFFFF;
+            ulong op2_other = op2_bits & 0x7FFFFFFFFFFFFFFF;
+
+            bool inf1 = op1_other == 0x7ff0000000000000;
+            bool inf2 = op2_other == 0x7ff0000000000000;
+            bool zero1 = op1_other == 0;
+            bool zero2 = op2_other == 0;
+
+            if ((inf1 && zero2) || (zero1 && inf2))
+            {
+                return 2.0;
+            }
+            else if (inf1 || inf2)
+            {
+                // Infinity
+                return BitConverter.Int64BitsToDouble((long)(0x7ff0000000000000 | (op1_sign ^ op2_sign)));
+            }
+
+            return 2.0 + op1 * op2;
+        }
     }
 }
