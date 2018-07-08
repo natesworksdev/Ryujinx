@@ -530,7 +530,7 @@ namespace ChocolArm64.Instruction
             EmitScalarTernaryOpByElemF(Context, () =>
             {
                 Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Add);
+                Context.Emit(OpCodes.Sub);
             });
         }
 
