@@ -221,7 +221,7 @@ namespace ChocolArm64.Instruction
             EmitVectorImmUnaryOp(Context, () => Context.Emit(OpCodes.Not));
         }
         
-        public static void Smov(AILEmitterCtx Context)
+        public static void Smov_S(AILEmitterCtx Context)
         {
             AOpCodeSimdIns Op = (AOpCodeSimdIns)Context.CurrOp;
 			
