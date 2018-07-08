@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
                 RecvSize);
         }
 
-        public long ListAudioOutsImpl(ServiceCtx Context, long Position, long Size)
+        private long ListAudioOutsImpl(ServiceCtx Context, long Position, long Size)
         {
             int NameCount = 0;
 
@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             return 0;
         }
 
-        public long OpenAudioOutImpl(ServiceCtx Context, long SendPosition, long SendSize, long ReceivePosition, long ReceiveSize)
+        private long OpenAudioOutImpl(ServiceCtx Context, long SendPosition, long SendSize, long ReceivePosition, long ReceiveSize)
         {
             string DeviceName = AMemoryHelper.ReadAsciiString(
                 Context.Memory,
