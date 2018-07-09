@@ -2,6 +2,9 @@ namespace Ryujinx.Graphics.Gal
 {
     public interface IGalRasterizer
     {
+        void LockCaches();
+        void UnlockCaches();
+
         void ClearBuffers(GalClearBufferFlags Flags);
 
         bool IsVboCached(long Key, long DataSize);

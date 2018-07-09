@@ -73,6 +73,8 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private void VertexEndGl(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
         {
+            LockCaches();
+
             SetFrameBuffer(Vmm, 0);
 
             long[] Keys = UploadShaders(Vmm);
@@ -90,6 +92,20 @@ namespace Ryujinx.HLE.Gpu.Engines
             UploadTextures(Vmm, Keys);
             UploadUniforms(Vmm);
             UploadVertexArrays(Vmm);
+
+            UnlockCaches();
+        }
+
+        private void LockCaches()
+        {
+            Gpu.Renderer.Rasterizer.LockCaches();
+            Gpu.Renderer.Texture.LockCache();
+        }
+
+        private void UnlockCaches()
+        {
+            Gpu.Renderer.Rasterizer.UnlockCaches();
+            Gpu.Renderer.Texture.UnlockCache();
         }
 
         private void ClearBuffers(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)

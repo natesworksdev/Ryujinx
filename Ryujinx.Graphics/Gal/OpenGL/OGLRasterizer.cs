@@ -71,6 +71,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             IndexBuffer = new IbInfo();
         }
 
+        public void LockCaches()
+        {
+            VboCache.Lock();
+            IboCache.Lock();
+        }
+
+        public void UnlockCaches()
+        {
+            VboCache.Unlock();
+            IboCache.Unlock();
+        }
+
         public void ClearBuffers(GalClearBufferFlags Flags)
         {
             ClearBufferMask Mask = ClearBufferMask.ColorBufferBit;
