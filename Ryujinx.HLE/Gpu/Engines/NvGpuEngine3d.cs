@@ -586,7 +586,7 @@ namespace Ryujinx.HLE.Gpu.Engines
                     Gpu.Renderer.Rasterizer.CreateIbo(IboKey, Data);
                 }
 
-                Gpu.Renderer.Rasterizer.SetIndexArray(IboKey, IbSize, IndexFormat);
+                Gpu.Renderer.Rasterizer.SetIndexArray(IbSize, IndexFormat);
             }
 
             List<GalVertexAttrib>[] Attribs = new List<GalVertexAttrib>[32];
@@ -650,7 +650,7 @@ namespace Ryujinx.HLE.Gpu.Engines
                     Gpu.Renderer.Rasterizer.CreateVbo(VboKey, Data);
                 }
 
-                Gpu.Renderer.Rasterizer.SetVertexArray(Index, Stride, VboKey, Attribs[Index].ToArray());
+                Gpu.Renderer.Rasterizer.SetVertexArray(Stride, VboKey, Attribs[Index].ToArray());
             }
 
             GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
