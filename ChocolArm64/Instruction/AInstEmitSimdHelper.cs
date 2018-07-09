@@ -509,8 +509,9 @@ namespace ChocolArm64.Instruction
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 if (Opers.HasFlag(OperFlags.Rd))
                 {
@@ -564,8 +565,9 @@ namespace ChocolArm64.Instruction
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 if (Ternary)
                 {
@@ -604,8 +606,9 @@ namespace ChocolArm64.Instruction
             AOpCodeSimdImm Op = (AOpCodeSimdImm)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 if (Binary)
                 {

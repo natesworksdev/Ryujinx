@@ -27,9 +27,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = Op.Imm - (8 << Op.Size);
-
-            EmitVectorShImmBinaryZx(Context, () => Context.Emit(OpCodes.Shl), Shift);
+            EmitVectorShImmBinaryZx(Context, () => Context.Emit(OpCodes.Shl), GetImmShl(Op));
         }
 
         public static void Shll_V(AILEmitterCtx Context)
@@ -45,9 +43,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = (8 << (Op.Size + 1)) - Op.Imm;
-
-            EmitVectorShImmNarrowBinaryZx(Context, () => Context.Emit(OpCodes.Shr_Un), Shift);
+            EmitVectorShImmNarrowBinaryZx(Context, () => Context.Emit(OpCodes.Shr_Un), GetImmShr(Op));
         }
 
         public static void Sli_V(AILEmitterCtx Context)
@@ -55,12 +51,13 @@ namespace ChocolArm64.Instruction
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            int Shift = Op.Imm - (8 << Op.Size);
+            int Shift = GetImmShl(Op);
 
             ulong Mask = Shift != 0 ? ulong.MaxValue >> (64 - Shift) : 0;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
 
@@ -88,7 +85,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = (8 << (Op.Size + 1)) - Op.Imm;
+            int Shift = GetImmShr(Op);
 
             long RoundConst = 1L << (Shift - 1);
 
@@ -110,7 +107,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = (8 << (Op.Size + 1)) - Op.Imm;
+            int Shift = GetImmShr(Op);
 
             long RoundConst = 1L << (Shift - 1);
 
@@ -126,9 +123,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = Op.Imm - (8 << Op.Size);
-
-            EmitVectorShImmWidenBinarySx(Context, () => Context.Emit(OpCodes.Shl), Shift);
+            EmitVectorShImmWidenBinarySx(Context, () => Context.Emit(OpCodes.Shl), GetImmShl(Op));
         }
 
         public static void Sshr_S(AILEmitterCtx Context)
@@ -148,7 +143,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = (8 << (Op.Size + 1)) - Op.Imm;
+            int Shift = GetImmShr(Op);
 
             EmitVectorShImmBinarySx(Context, () => Context.Emit(OpCodes.Shr), Shift);
         }
@@ -157,7 +152,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = (8 << (Op.Size + 1)) - Op.Imm;
+            int Shift = GetImmShr(Op);
 
             Action Emit = () =>
             {
@@ -177,9 +172,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = Op.Imm - (8 << Op.Size);
-
-            EmitVectorShImmWidenBinaryZx(Context, () => Context.Emit(OpCodes.Shl), Shift);
+            EmitVectorShImmWidenBinaryZx(Context, () => Context.Emit(OpCodes.Shl), GetImmShl(Op));
         }
 
         public static void Ushr_S(AILEmitterCtx Context)
@@ -304,8 +297,9 @@ namespace ChocolArm64.Instruction
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 if (Ternary)
                 {
@@ -337,8 +331,9 @@ namespace ChocolArm64.Instruction
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 EmitVectorExtract(Context, Op.Rn, Index, Op.Size, Signed);
 

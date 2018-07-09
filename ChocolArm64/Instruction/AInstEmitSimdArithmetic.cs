@@ -66,10 +66,11 @@ namespace ChocolArm64.Instruction
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
             EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
 
-            for (int Index = 1; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 1; Index < Elems; Index++)
             {
                 EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
 
@@ -98,8 +99,9 @@ namespace ChocolArm64.Instruction
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
 
@@ -1202,10 +1204,11 @@ namespace ChocolArm64.Instruction
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
             EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
 
-            for (int Index = 1; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 1; Index < Elems; Index++)
             {
                 EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
 
