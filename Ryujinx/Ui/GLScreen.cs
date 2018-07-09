@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
 using System;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace Ryujinx
 {
@@ -38,9 +39,45 @@ namespace Ryujinx
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
         }
 
-        protected override void OnLoad(EventArgs e)
+        public void MainLoop()
         {
-            VSync = VSyncMode.On;
+            Load();
+
+            Visible = true;
+
+            Stopwatch Chrono = new Stopwatch();
+
+            Chrono.Start();
+
+            long TicksPerFrame = Stopwatch.Frequency / 60;
+
+            long Ticks = 0;
+
+            while (Exists && !IsExiting)
+            {
+                ProcessEvents();
+
+                if (!IsExiting)
+                {
+                    while (Ticks < TicksPerFrame)
+                    {
+                        UpdateFrame();
+
+                        Ticks += Chrono.ElapsedTicks;
+
+                        Chrono.Restart();
+                    }
+
+                    RenderFrame();
+
+                    Ticks -= TicksPerFrame;
+                }
+            }
+        }
+
+        private new void Load()
+        {
+            VSync = VSyncMode.Off;
 
             Renderer.FrameBuffer.SetWindowSize(Width, Height);
         }
@@ -99,7 +136,7 @@ namespace Ryujinx
             }
         }
 
-        protected override void OnUpdateFrame(FrameEventArgs e)
+        private new void UpdateFrame()
         {
             HidControllerButtons CurrentButton = 0;
             HidJoystickPosition  LeftJoystick;
@@ -284,7 +321,7 @@ namespace Ryujinx
             Renderer.RunActions();
         }
 
-        protected override void OnRenderFrame(FrameEventArgs e)
+        private new void RenderFrame()
         {
             Renderer.FrameBuffer.Render();
 
