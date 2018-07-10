@@ -27,6 +27,11 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.BC5:          return Read16Bpt4x4(Memory, Texture);
                 case GalTextureFormat.ZF32:         return Read4Bpp    (Memory, Texture);
                 case GalTextureFormat.Astc2D4x4:    return Read16Bpt4x4(Memory, Texture);
+                case GalTextureFormat.Astc2D5x5:    return Read16Bpt5x5(Memory, Texture);
+                case GalTextureFormat.Astc2D6x6:    return Read16Bpt6x6(Memory, Texture);
+                case GalTextureFormat.Astc2D8x8:    return Read16Bpt8x8(Memory, Texture);
+                case GalTextureFormat.Astc2D10x10:    return Read16Bpt10x10(Memory, Texture); 
+                case GalTextureFormat.Astc2D12x12:    return Read16Bpt12x12(Memory, Texture);
             }
 
             throw new NotImplementedException(Texture.Format.ToString());
@@ -311,6 +316,181 @@ namespace Ryujinx.HLE.Gpu.Texture
         {
             int Width  = (Texture.Width  + 3) / 4;
             int Height = (Texture.Height + 3) / 4;
+
+            byte[] Output = new byte[Width * Height * 16];
+
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 16);
+
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
+            fixed (byte* BuffPtr = Output)
+            {
+                long OutOffs = 0;
+
+                for (int Y = 0; Y < Height; Y++)
+                for (int X = 0; X < Width;  X++)
+                {
+                    long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
+
+                    long Tile0 = CpuMem.ReadInt64Unchecked(Position + Offset + 0);
+                    long Tile1 = CpuMem.ReadInt64Unchecked(Position + Offset + 8);
+
+                    *(long*)(BuffPtr + OutOffs + 0) = Tile0;
+                    *(long*)(BuffPtr + OutOffs + 8) = Tile1;
+
+                    OutOffs += 16;
+                }
+            }
+
+            return Output;
+        }
+        
+        private unsafe static byte[] Read16Bpt5x5(IAMemory Memory, TextureInfo Texture)
+        {
+            int Width  = (Texture.Width  + 4) / 5;
+            int Height = (Texture.Height + 4) / 5;
+
+            byte[] Output = new byte[Width * Height * 16];
+
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 16);
+
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
+            fixed (byte* BuffPtr = Output)
+            {
+                long OutOffs = 0;
+
+                for (int Y = 0; Y < Height; Y++)
+                for (int X = 0; X < Width;  X++)
+                {
+                    long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
+
+                    long Tile0 = CpuMem.ReadInt64Unchecked(Position + Offset + 0);
+                    long Tile1 = CpuMem.ReadInt64Unchecked(Position + Offset + 8);
+
+                    *(long*)(BuffPtr + OutOffs + 0) = Tile0;
+                    *(long*)(BuffPtr + OutOffs + 8) = Tile1;
+
+                    OutOffs += 16;
+                }
+            }
+
+            return Output;
+        }
+        
+        private unsafe static byte[] Read16Bpt6x6(IAMemory Memory, TextureInfo Texture)
+        {
+            int Width  = (Texture.Width  + 5) / 6;
+            int Height = (Texture.Height + 5) / 6;
+
+            byte[] Output = new byte[Width * Height * 16];
+
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 16);
+
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
+            fixed (byte* BuffPtr = Output)
+            {
+                long OutOffs = 0;
+
+                for (int Y = 0; Y < Height; Y++)
+                for (int X = 0; X < Width;  X++)
+                {
+                    long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
+
+                    long Tile0 = CpuMem.ReadInt64Unchecked(Position + Offset + 0);
+                    long Tile1 = CpuMem.ReadInt64Unchecked(Position + Offset + 8);
+
+                    *(long*)(BuffPtr + OutOffs + 0) = Tile0;
+                    *(long*)(BuffPtr + OutOffs + 8) = Tile1;
+
+                    OutOffs += 16;
+                }
+            }
+
+            return Output;
+        }
+        
+        private unsafe static byte[] Read16Bpt8x8(IAMemory Memory, TextureInfo Texture)
+        {
+            int Width  = (Texture.Width  + 7) / 8;
+            int Height = (Texture.Height + 7) / 8;
+
+            byte[] Output = new byte[Width * Height * 16];
+
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 16);
+
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
+            fixed (byte* BuffPtr = Output)
+            {
+                long OutOffs = 0;
+
+                for (int Y = 0; Y < Height; Y++)
+                for (int X = 0; X < Width;  X++)
+                {
+                    long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
+
+                    long Tile0 = CpuMem.ReadInt64Unchecked(Position + Offset + 0);
+                    long Tile1 = CpuMem.ReadInt64Unchecked(Position + Offset + 8);
+
+                    *(long*)(BuffPtr + OutOffs + 0) = Tile0;
+                    *(long*)(BuffPtr + OutOffs + 8) = Tile1;
+
+                    OutOffs += 16;
+                }
+            }
+
+            return Output;
+        }
+        
+        private unsafe static byte[] Read16Bpt10x10(IAMemory Memory, TextureInfo Texture)
+        {
+            int Width  = (Texture.Width  + 9) / 10;
+            int Height = (Texture.Height + 9) / 10;
+
+            byte[] Output = new byte[Width * Height * 16];
+
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 16);
+
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+                Memory,
+                Texture.Position);
+
+            fixed (byte* BuffPtr = Output)
+            {
+                long OutOffs = 0;
+
+                for (int Y = 0; Y < Height; Y++)
+                for (int X = 0; X < Width;  X++)
+                {
+                    long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
+
+                    long Tile0 = CpuMem.ReadInt64Unchecked(Position + Offset + 0);
+                    long Tile1 = CpuMem.ReadInt64Unchecked(Position + Offset + 8);
+
+                    *(long*)(BuffPtr + OutOffs + 0) = Tile0;
+                    *(long*)(BuffPtr + OutOffs + 8) = Tile1;
+
+                    OutOffs += 16;
+                }
+            }
+
+            return Output;
+        }
+        
+        private unsafe static byte[] Read16Bpt12x12(IAMemory Memory, TextureInfo Texture)
+        {
+            int Width  = (Texture.Width  + 11) / 12;
+            int Height = (Texture.Height + 11) / 12;
 
             byte[] Output = new byte[Width * Height * 16];
 
