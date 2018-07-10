@@ -9,10 +9,15 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
     class NvHostCtrlIoctl
     {
         private static ConcurrentDictionary<Process, NvHostCtrlUserCtx> UserCtxs;
+        private static bool IsProductionMode = true;
 
         static NvHostCtrlIoctl()
         {
             UserCtxs = new ConcurrentDictionary<Process, NvHostCtrlUserCtx>();
+            if(Set.NxSettings.Settings.ContainsKey("nv!rmos_set_production_mode"))
+            {
+                IsProductionMode = Set.NxSettings.Settings["nv!rmos_set_production_mode"].ToString() != "0"; // Default value is ""
+            }
         }
 
         public static int ProcessIoctl(ServiceCtx Context, int Cmd)
@@ -71,6 +76,19 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
 
         private static int GetConfig(ServiceCtx Context)
         {
+            if (!IsProductionMode)
+            {
+                long InputPosition = Context.Request.GetBufferType0x21().Position;
+                long OutputPosition = Context.Request.GetBufferType0x22().Position;
+
+                string Nv = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0, 0x41);
+                string Name = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0x41, 0x41);
+
+                Context.Memory.WriteByte(OutputPosition + 0x82, (byte)'0');
+
+                Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+                return NvResult.Success;
+            }
             return NvResult.NotAvailableInProduction;
         }
 
