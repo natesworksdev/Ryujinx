@@ -16,10 +16,9 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
         {
             UserCtxs = new ConcurrentDictionary<Process, NvHostCtrlUserCtx>();
 
-            Set.NxSettings.Settings.TryGetValue("", out object ProductionModeSetting);
-            if (ProductionModeSetting != null)
+            if (Set.NxSettings.Settings.TryGetValue("", out object ProductionModeSetting))
             {
-                IsProductionMode = ProductionModeSetting.ToString() != "0"; // Default value is ""
+                IsProductionMode = ((string)ProductionModeSetting) != "0"; // Default value is ""
             }
         }
 
