@@ -71,17 +71,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
 
         private static int GetConfig(ServiceCtx Context)
         {
-            long InputPosition  = Context.Request.GetBufferType0x21().Position;
-            long OutputPosition = Context.Request.GetBufferType0x22().Position;
-
-            string Nv   = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0,    0x41);
-            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0x41, 0x41);
-
-            Context.Memory.WriteByte(OutputPosition + 0x82, 0);
-
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
-
-            return NvResult.Success;
+            return NvResult.NotAvailableInProduction;
         }
 
         private static int EventWait(ServiceCtx Context)
