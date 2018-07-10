@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
 
                     if (NvSetting is string StringValue)
                     {
-                        if(StringValue.Length > 0x100)
+                        if (StringValue.Length > 0x100)
                         {
                             Context.Ns.Log.PrintError(Logging.LogClass.ServiceNv, $"{Domain}!{Name} String value size is too big!");
                         }
