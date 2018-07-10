@@ -9,14 +9,17 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
     class NvHostCtrlIoctl
     {
         private static ConcurrentDictionary<Process, NvHostCtrlUserCtx> UserCtxs;
+
         private static bool IsProductionMode = true;
 
         static NvHostCtrlIoctl()
         {
             UserCtxs = new ConcurrentDictionary<Process, NvHostCtrlUserCtx>();
-            if(Set.NxSettings.Settings.ContainsKey("nv!rmos_set_production_mode"))
+
+            Set.NxSettings.Settings.TryGetValue("", out object ProductionModeSetting);
+            if (ProductionModeSetting != null)
             {
-                IsProductionMode = Set.NxSettings.Settings["nv!rmos_set_production_mode"].ToString() != "0"; // Default value is ""
+                IsProductionMode = ProductionModeSetting.ToString() != "0"; // Default value is ""
             }
         }
 
@@ -87,8 +90,10 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
                 Context.Memory.WriteByte(OutputPosition + 0x82, (byte)'0');
 
                 Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+                
                 return NvResult.Success;
             }
+
             return NvResult.NotAvailableInProduction;
         }
 
