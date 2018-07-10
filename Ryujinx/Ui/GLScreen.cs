@@ -31,7 +31,7 @@ namespace Ryujinx
 
         private Thread RenderThread;
 
-        private AutoResetEvent ResizeEvent;
+        private bool ResizeEvent;
 
         public GLScreen(Switch Ns, IGalRenderer Renderer)
             : base(1280, 720,
@@ -46,7 +46,7 @@ namespace Ryujinx
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
 
-            ResizeEvent = new AutoResetEvent(false);
+            ResizeEvent = false;
         }
 
         private void RenderLoop()
@@ -70,8 +70,10 @@ namespace Ryujinx
 
                 Renderer.RunActions();
 
-                if (ResizeEvent.WaitOne(0))
+                if (ResizeEvent)
                 {
+                    ResizeEvent = false;
+
                     Renderer.FrameBuffer.SetWindowSize(Width, Height);
                 }
 
@@ -374,7 +376,7 @@ namespace Ryujinx
 
         protected override void OnResize(EventArgs e)
         {
-            ResizeEvent.Set();
+            ResizeEvent = true;
         }
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
