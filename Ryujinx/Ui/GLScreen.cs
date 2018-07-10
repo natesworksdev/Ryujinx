@@ -31,6 +31,8 @@ namespace Ryujinx
 
         private Thread RenderThread;
 
+        private AutoResetEvent ResizeEvent;
+
         public GLScreen(Switch Ns, IGalRenderer Renderer)
             : base(1280, 720,
             new GraphicsMode(), "Ryujinx", 0,
@@ -43,6 +45,8 @@ namespace Ryujinx
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
+
+            ResizeEvent = new AutoResetEvent(false);
         }
 
         private void RenderLoop()
@@ -65,6 +69,11 @@ namespace Ryujinx
                 }
 
                 Renderer.RunActions();
+
+                if (ResizeEvent.WaitOne(0))
+                {
+                    Renderer.FrameBuffer.SetWindowSize(Width, Height);
+                }
 
                 Ticks += Chrono.ElapsedTicks;
 
@@ -365,7 +374,7 @@ namespace Ryujinx
 
         protected override void OnResize(EventArgs e)
         {
-            Renderer.FrameBuffer.SetWindowSize(Width, Height);
+            ResizeEvent.Set();
         }
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
