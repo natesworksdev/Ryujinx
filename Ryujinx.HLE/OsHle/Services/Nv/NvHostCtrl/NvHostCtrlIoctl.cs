@@ -74,12 +74,33 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            string Nv   = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0,    0x41);
-            string Name = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0x41, 0x41);
+            NvHostCtrlGetConfig Args = AMemoryHelper.Read<NvHostCtrlGetConfig>(Context.Memory, InputPosition);
 
-            Context.Memory.WriteByte(OutputPosition + 0x82, 0);
+            if (Args.DomainString == "nv")
+            {
+                if (Args.ParameterString == "NV_MEMORY_PROFILER")
+                {
+                    Args.ParameterString = "0";
+                }
+                else if (Args.ParameterString == "NVN_THROUGH_OPENGL")
+                {
+                    Args.ParameterString = "0";
+                }
+                else if (Args.ParameterString == "NVRM_GPU_PREVENT_USE")
+                {
+                    Args.ParameterString = "0";
+                }
+                else
+                {
+                    Args.ParameterString = "0";
+                }
+            }
+            else
+            {
+                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Unimplemented domain string! {Args.DomainString}");
+            }
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
             return NvResult.Success;
         }
