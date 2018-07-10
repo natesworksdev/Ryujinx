@@ -68,6 +68,46 @@ namespace Ryujinx.HLE.Gpu.Texture
 
                     return W * H * 16;
                 }
+                    
+                case GalTextureFormat.Astc2D5x5:
+                {
+                    int W = (Texture.Width  + 4) / 5;
+                    int H = (Texture.Height + 4) / 5;
+
+                    return W * H * 16;
+                }
+                            
+                case GalTextureFormat.Astc2D6x6:
+                {
+                    int W = (Texture.Width  + 5) / 6;
+                    int H = (Texture.Height + 5) / 6;
+
+                    return W * H * 16;
+                }
+                    
+                case GalTextureFormat.Astc2D8x8:
+                {
+                    int W = (Texture.Width  + 7) / 8;
+                    int H = (Texture.Height + 7) / 8;
+
+                    return W * H * 16;
+                }
+                    
+                case GalTextureFormat.Astc2D10x10:
+                {
+                    int W = (Texture.Width  + 9) / 10;
+                    int H = (Texture.Height + 9) / 10;
+
+                    return W * H * 16;
+                }
+                    
+                case GalTextureFormat.Astc2D12x12:
+                {
+                    int W = (Texture.Width  + 11) / 12;
+                    int H = (Texture.Height + 11) / 12;
+
+                    return W * H * 16;
+                }
             }
 
             throw new NotImplementedException(Texture.Format.ToString());
