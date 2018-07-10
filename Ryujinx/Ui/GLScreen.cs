@@ -59,14 +59,12 @@ namespace Ryujinx
 
             while (!IsExiting)
             {
-                //Sleeping until Fifo event improves performance, but it deadlocks most games
-                //should not be uncommented until it's found why it happens
-                //if (Ns.WaitFifo())
+                if (Ns.WaitFifo())
                 {
                     Ns.ProcessFrame();
-
-                    Renderer.RunActions();
                 }
+
+                Renderer.RunActions();
 
                 Ticks += Chrono.ElapsedTicks;
 

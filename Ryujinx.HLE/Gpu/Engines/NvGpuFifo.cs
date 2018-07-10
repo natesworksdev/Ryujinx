@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private NvGpuEngine[] SubChannels;
 
-        public ManualResetEvent Event { get; private set; }
+        public AutoResetEvent Event { get; private set; }
 
         private struct CachedMacro
         {
@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             Mme = new int[MmeWords];
 
-            Event = new ManualResetEvent(false);
+            Event = new AutoResetEvent(false);
         }
 
         public void PushBuffer(NvGpuVmm Vmm, NvGpuPBEntry[] Buffer)
