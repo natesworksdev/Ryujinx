@@ -78,22 +78,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
 
             if (Args.DomainString == "nv")
             {
-                if (Args.ParameterString == "NV_MEMORY_PROFILER")
-                {
-                    Args.ParameterString = "0";
-                }
-                else if (Args.ParameterString == "NVN_THROUGH_OPENGL")
-                {
-                    Args.ParameterString = "0";
-                }
-                else if (Args.ParameterString == "NVRM_GPU_PREVENT_USE")
-                {
-                    Args.ParameterString = "0";
-                }
-                else
-                {
-                    Args.ParameterString = "0";
-                }
+                Args.ConfigurationString = "0";
             }
             else
             {
@@ -101,6 +86,8 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
             }
 
             AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
+
+            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
