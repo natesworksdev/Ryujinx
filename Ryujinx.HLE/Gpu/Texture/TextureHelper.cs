@@ -51,10 +51,7 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.BC1:
                 case GalTextureFormat.BC4:
                 {
-                    int W = (Texture.Width  + 3) / 4;
-                    int H = (Texture.Height + 3) / 4;
-
-                    return W * H * 8;
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 4, 4);
                 }
 
                 case GalTextureFormat.BC7U:
@@ -63,56 +60,86 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.BC5:
                 case GalTextureFormat.Astc2D4x4:
                 {
-                    int W = (Texture.Width  + 3) / 4;
-                    int H = (Texture.Height + 3) / 4;
-
-                    return W * H * 16;
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 4, 4);
                 }
                     
                 case GalTextureFormat.Astc2D5x5:
                 {
-                    int W = (Texture.Width  + 4) / 5;
-                    int H = (Texture.Height + 4) / 5;
-
-                    return W * H * 16;
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 5, 5);
                 }
-                            
+                
                 case GalTextureFormat.Astc2D6x6:
                 {
-                    int W = (Texture.Width  + 5) / 6;
-                    int H = (Texture.Height + 5) / 6;
-
-                    return W * H * 16;
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 6, 6);
                 }
                     
                 case GalTextureFormat.Astc2D8x8:
                 {
-                    int W = (Texture.Width  + 7) / 8;
-                    int H = (Texture.Height + 7) / 8;
-
-                    return W * H * 16;
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 8, 8);
                 }
                     
                 case GalTextureFormat.Astc2D10x10:
                 {
-                    int W = (Texture.Width  + 9) / 10;
-                    int H = (Texture.Height + 9) / 10;
-
-                    return W * H * 16;
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 10, 10);
                 }
                     
                 case GalTextureFormat.Astc2D12x12:
                 {
-                    int W = (Texture.Width  + 11) / 12;
-                    int H = (Texture.Height + 11) / 12;
-
-                    return W * H * 16;
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 12, 12);
+                }
+                
+                case GalTextureFormat.Astc2D5x4:
+                {
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 5, 4);
+                }
+				
+                case GalTextureFormat.Astc2D6x5:
+                {
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 6, 5);
+                }
+				
+                case GalTextureFormat.Astc2D8x6:
+                {
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 8, 6);
+                }
+				
+                case GalTextureFormat.Astc2D10x8:
+                {
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 10, 8);
+                }
+				
+                case GalTextureFormat.Astc2D12x10:
+                {
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 12, 10);
+                }
+				
+                case GalTextureFormat.Astc2D8x5:
+                {
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 8, 5);
+                }
+				
+                case GalTextureFormat.Astc2D10x5:
+                {
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 10, 5);
+                }
+				
+                case GalTextureFormat.Astc2D10x6:
+                {
+                    return CompressedTextureSize(Texture.Width, Texture.Height, 10, 6);
                 }
             }
 
             throw new NotImplementedException(Texture.Format.ToString());
         }
 
+        public static int CompressedTextureSize(int TextureWidth, int TextureHeight, int BlockWidth, int BlockHeight)
+        {
+            int W = (TextureWidth  + (BlockWidth - 1)) / BlockWidth;
+            int H = (TextureHeight + (BlockHeight - 1)) / BlockHeight;
+
+            return W * H * 16;
+        }
+        
         public static (AMemory Memory, long Position) GetMemoryAndPosition(
             IAMemory Memory,
             long     Position)
