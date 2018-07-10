@@ -139,6 +139,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalTextureFormat.G8R8:         return (PixelFormat.Rg,        PixelType.UnsignedByte);
                 case GalTextureFormat.R16:          return (PixelFormat.Red,       PixelType.HalfFloat);
                 case GalTextureFormat.R8:           return (PixelFormat.Red,       PixelType.UnsignedByte);
+                case GalTextureFormat.ZF32:         return (PixelFormat.DepthComponent, PixelType.Float);
+
             }
 
             throw new NotImplementedException(Format.ToString());
