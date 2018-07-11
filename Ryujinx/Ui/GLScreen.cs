@@ -33,6 +33,8 @@ namespace Ryujinx
 
         private bool ResizeEvent;
 
+        private bool Quit;
+
         public GLScreen(Switch Ns, IGalRenderer Renderer)
             : base(1280, 720,
             new GraphicsMode(), "Ryujinx", 0,
@@ -47,6 +49,8 @@ namespace Ryujinx
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
 
             ResizeEvent = false;
+
+            Quit = false;
         }
 
         private void RenderLoop()
@@ -61,7 +65,7 @@ namespace Ryujinx
 
             long Ticks = 0;
 
-            while (!IsExiting)
+            while (!Quit && Exists && !IsExiting)
             {
                 if (Ns.WaitFifo())
                 {
@@ -369,6 +373,8 @@ namespace Ryujinx
 
         protected override void OnUnload(EventArgs e)
         {
+            Quit = true;
+
             RenderThread.Join();
 
             base.OnUnload(e);
