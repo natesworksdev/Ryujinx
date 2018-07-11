@@ -91,7 +91,8 @@ namespace Ryujinx
                 {
                     RenderFrame();
 
-                    Ticks -= TicksPerFrame;
+                    //Queue max. 1 vsync
+                    Ticks = Math.Min(Ticks - TicksPerFrame, TicksPerFrame);
                 }
             }
         }
