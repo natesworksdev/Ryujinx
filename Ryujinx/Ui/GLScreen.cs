@@ -33,7 +33,9 @@ namespace Ryujinx
 
         private bool ResizeEvent;
 
-        private bool Quit;
+        private bool TitleEvent;
+
+        private string NewTitle;
 
         public GLScreen(Switch Ns, IGalRenderer Renderer)
             : base(1280, 720,
@@ -50,7 +52,7 @@ namespace Ryujinx
 
             ResizeEvent = false;
 
-            Quit = false;
+            TitleEvent = false;
         }
 
         private void RenderLoop()
@@ -65,7 +67,7 @@ namespace Ryujinx
 
             long Ticks = 0;
 
-            while (!Quit && Exists && !IsExiting)
+            while (Exists && !IsExiting)
             {
                 if (Ns.WaitFifo())
                 {
@@ -104,7 +106,7 @@ namespace Ryujinx
 
             Context.MakeCurrent(null);
 
-            //OpenTK doesn't like sleeps in its thread, to avoid these a renderer thread is created
+            //OpenTK doesn't like sleeps in its thread, to avoid this a renderer thread is created
             RenderThread = new Thread(RenderLoop);
 
             RenderThread.Start();
@@ -116,6 +118,13 @@ namespace Ryujinx
                 if (!IsExiting)
                 {
                     UpdateFrame();
+
+                    if (TitleEvent)
+                    {
+                        TitleEvent = false;
+
+                        Title = NewTitle;
+                    }
                 }
             }
         }
@@ -364,7 +373,9 @@ namespace Ryujinx
             double HostFps = Ns.Statistics.GetSystemFrameRate();
             double GameFps = Ns.Statistics.GetGameFrameRate();
 
-            Title = $"Ryujinx | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0}";
+            NewTitle = $"Ryujinx | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0}";
+
+            TitleEvent = true;
 
             SwapBuffers();
 
@@ -373,8 +384,6 @@ namespace Ryujinx
 
         protected override void OnUnload(EventArgs e)
         {
-            Quit = true;
-
             RenderThread.Join();
 
             base.OnUnload(e);
