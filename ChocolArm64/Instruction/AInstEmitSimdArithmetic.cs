@@ -98,8 +98,8 @@ namespace ChocolArm64.Instruction
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
             int Bytes = Context.CurrOp.GetBitsCount() >> 3;
-
             int Elems = Bytes >> Op.Size;
+
             int ESize = 8 << Op.Size;
 
             for (int Index = 0; Index < Elems; Index++)
