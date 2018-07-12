@@ -173,6 +173,21 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitIadd(Block, OpCode, ShaderOper.RR);
         }
 
+        public static void Iadd3_C(ShaderIrBlock Block, long OpCode)
+        {
+            EmitIadd3(Block, OpCode, ShaderOper.CR);
+        }
+
+        public static void Iadd3_I(ShaderIrBlock Block, long OpCode)
+        {
+            EmitIadd3(Block, OpCode, ShaderOper.Imm);
+        }
+
+        public static void Iadd3_R(ShaderIrBlock Block, long OpCode)
+        {
+            EmitIadd3(Block, OpCode, ShaderOper.RR);
+        }
+
         public static void Imnmx_C(ShaderIrBlock Block, long OpCode)
         {
             EmitImnmx(Block, OpCode, ShaderOper.CR);
@@ -615,6 +630,66 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrOp Op = new ShaderIrOp(ShaderIrInst.Add, OperA, OperB);
 
             Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), Op), OpCode));
+        }
+
+        private static void EmitIadd3(ShaderIrBlock Block, long OpCode, ShaderOper Oper)
+        {
+            int Mode = (int)((OpCode >> 37) & 3);
+
+            bool Neg1 = ((OpCode >> 51) & 1) != 0;
+            bool Neg2 = ((OpCode >> 50) & 1) != 0;
+            bool Neg3 = ((OpCode >> 49) & 1) != 0;
+
+            int Height1 = (int)((OpCode >> 35) & 3);
+            int Height2 = (int)((OpCode >> 33) & 3);
+            int Height3 = (int)((OpCode >> 31) & 3);
+
+            ShaderIrNode OperB;
+
+            switch (Oper)
+            {
+                case ShaderOper.CR:  OperB = GetOperCbuf34  (OpCode); break;
+                case ShaderOper.Imm: OperB = GetOperImm19_20(OpCode); break;
+                case ShaderOper.RR:  OperB = GetOperGpr20   (OpCode); break;
+
+                default: throw new ArgumentException(nameof(Oper));
+            }
+
+            ShaderIrNode ApplyHeight(ShaderIrNode Src, int Height)
+            {
+                if (Oper != ShaderOper.RR)
+                {
+                    return Src;
+                }
+
+                switch (Height)
+                {
+                    case 0: return Src;
+                    case 1: return new ShaderIrOp(ShaderIrInst.And, Src, new ShaderIrOperImm(0xffff));
+                    case 2: return new ShaderIrOp(ShaderIrInst.Lsr, Src, new ShaderIrOperImm(16));
+
+                    default: throw new InvalidOperationException();
+                }
+            }
+
+            ShaderIrNode Src1 = GetAluIneg(ApplyHeight(GetOperGpr8(OpCode),  Height1), Neg1);
+            ShaderIrNode Src2 = GetAluIneg(ApplyHeight(OperB,                Height2), Neg2);
+            ShaderIrNode Src3 = GetAluIneg(ApplyHeight(GetOperGpr39(OpCode), Height3), Neg3);
+
+            ShaderIrOp Sum = new ShaderIrOp(ShaderIrInst.Add, Src1, Src2);
+
+            if (Oper == ShaderOper.RR)
+            {
+                switch (Mode)
+                {
+                    case 1: Sum = new ShaderIrOp(ShaderIrInst.Lsr, Sum, new ShaderIrOperImm(16)); break;
+                    case 2: Sum = new ShaderIrOp(ShaderIrInst.Lsl, Sum, new ShaderIrOperImm(16)); break;
+                }
+            }
+
+            //TODO: What would "add_with_carry" mean in this context? Just add Sum to Src3 for now
+
+            Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), new ShaderIrOp(ShaderIrInst.Add, Sum, Src3)), OpCode));
         }
 
         private static void EmitIscadd(ShaderIrBlock Block, long OpCode, ShaderOper Oper)
