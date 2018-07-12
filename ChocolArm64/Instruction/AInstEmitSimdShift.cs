@@ -313,18 +313,20 @@ namespace ChocolArm64.Instruction
             int Bytes = Op.GetBitsCount() >> 3;
             int Elems = Bytes >> Op.Size;
 
-            bool Signed = (Flags & ShImmFlags.Signed) != 0;
+            bool Signed  = (Flags & ShImmFlags.Signed)  != 0;
+            bool Ternary = (Flags & ShImmFlags.Ternary) != 0;
+            bool Rounded = (Flags & ShImmFlags.Rounded) != 0;
 
             for (int Index = 0; Index < Elems; Index++)
             {
-                if ((Flags & ShImmFlags.Ternary) != 0)
+                if (Ternary)
                 {
                     EmitVectorExtract(Context, Op.Rd, Index, Op.Size, Signed);
                 }
 
                 EmitVectorExtract(Context, Op.Rn, Index, Op.Size, Signed);
 
-                if ((Flags & ShImmFlags.Rounded) != 0)
+                if (Rounded)
                 {
                     Context.EmitLdc_I8(Rc);
 
