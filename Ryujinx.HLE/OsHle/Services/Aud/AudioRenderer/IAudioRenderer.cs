@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 {
     class IAudioRenderer : IpcService, IDisposable
     {
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             Track = AudioOut.OpenTrack(
                 AudioConsts.HostSampleRate,
                 AudioConsts.HostChannelsCount,
-                AudioCallback, out _);
+                AudioCallback);
 
             MemoryPools = CreateArray<MemoryPoolContext>(Params.EffectCount + Params.VoiceCount * 4);
 

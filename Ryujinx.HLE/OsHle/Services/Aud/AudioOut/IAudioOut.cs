@@ -6,7 +6,7 @@ using Ryujinx.HLE.OsHle.Ipc;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.OsHle.Services.Aud.AudioOut
 {
     class IAudioOut : IpcService, IDisposable
     {

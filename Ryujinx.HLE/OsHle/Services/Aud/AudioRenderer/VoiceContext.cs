@@ -2,7 +2,7 @@ using ChocolArm64.Memory;
 using Ryujinx.Audio.Adpcm;
 using System;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 {
     class VoiceContext
     {
@@ -51,6 +51,8 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         private void Reset()
         {
+            BufferReload = true;
+
             BufferIndex = 0;
             Offset      = 0;
 

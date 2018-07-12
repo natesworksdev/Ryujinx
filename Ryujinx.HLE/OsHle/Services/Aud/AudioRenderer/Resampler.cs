@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 {
     static class Resampler
     {
