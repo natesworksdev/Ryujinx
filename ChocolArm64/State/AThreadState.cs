@@ -1,6 +1,5 @@
 using ChocolArm64.Events;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Intrinsics;
 
@@ -80,16 +79,9 @@ namespace ChocolArm64.State
         public event EventHandler<AInstExceptionEventArgs> SvcCall;
         public event EventHandler<AInstUndefinedEventArgs> Undefined;
 
-        private Stack<long> CallStack;
-
         private static Stopwatch TickCounter;
 
         private static double HostTickFreq;
-
-        public AThreadState()
-        {
-            CallStack = new Stack<long>();
-        }
 
         static AThreadState()
         {
@@ -113,28 +105,6 @@ namespace ChocolArm64.State
         internal void OnUndefined(long Position, int RawOpCode)
         {
             Undefined?.Invoke(this, new AInstUndefinedEventArgs(Position, RawOpCode));
-        }
-
-        internal void EnterMethod(long Position)
-        {
-            CallStack.Push(Position);
-        }
-
-        internal void ExitMethod()
-        {
-            CallStack.TryPop(out _);
-        }
-
-        internal void JumpMethod(long Position)
-        {
-            CallStack.TryPop(out _);
-
-            CallStack.Push(Position);
-        }
-
-        public long[] GetCallStack()
-        {
-            return CallStack.ToArray();
         }
     }
 }
