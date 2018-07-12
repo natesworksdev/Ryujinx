@@ -75,6 +75,9 @@ namespace Ryujinx.Graphics.Gal.Shader
             Set("0100110000011x", ShaderDecode.Iscadd_C);
             Set("0011100x00011x", ShaderDecode.Iscadd_I);
             Set("0101110000011x", ShaderDecode.Iscadd_R);
+            Set("010010110101xx", ShaderDecode.Iset_C);
+            Set("001101100101xx", ShaderDecode.Iset_I);
+            Set("010110110101xx", ShaderDecode.Iset_R);
             Set("010010110110xx", ShaderDecode.Isetp_C);
             Set("0011011x0110xx", ShaderDecode.Isetp_I);
             Set("010110110110xx", ShaderDecode.Isetp_R);

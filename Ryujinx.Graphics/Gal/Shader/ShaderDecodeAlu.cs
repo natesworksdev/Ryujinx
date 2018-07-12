@@ -213,6 +213,21 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitIscadd(Block, OpCode, ShaderOper.RR);
         }
 
+        public static void Iset_C(ShaderIrBlock Block, long OpCode)
+        {
+            EmitIset(Block, OpCode, ShaderOper.CR);
+        }
+
+        public static void Iset_I(ShaderIrBlock Block, long OpCode)
+        {
+            EmitIset(Block, OpCode, ShaderOper.Imm);
+        }
+
+        public static void Iset_R(ShaderIrBlock Block, long OpCode)
+        {
+            EmitIset(Block, OpCode, ShaderOper.RR);
+        }
+
         public static void Isetp_C(ShaderIrBlock Block, long OpCode)
         {
             EmitIsetp(Block, OpCode, ShaderOper.CR);
