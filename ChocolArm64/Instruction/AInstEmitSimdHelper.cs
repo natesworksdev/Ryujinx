@@ -3,6 +3,7 @@ using ChocolArm64.State;
 using ChocolArm64.Translation;
 using System;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
