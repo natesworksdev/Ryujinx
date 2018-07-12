@@ -143,9 +143,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = GetImmShr(Op);
-
-            EmitVectorShImmBinarySx(Context, () => Context.Emit(OpCodes.Shr), Shift);
+            EmitVectorShImmBinarySx(Context, () => Context.Emit(OpCodes.Shr), GetImmShr(Op));
         }
 
         public static void Ssra_V(AILEmitterCtx Context)
@@ -277,69 +275,63 @@ namespace ChocolArm64.Instruction
             }
         }
 
+        [Flags]
+        private enum ShImmFlags
+        {
+            None    = 0,
+
+            Signed  = 1 << 0,
+            Ternary = 1 << 1,
+            Rounded = 1 << 2,
+
+            SignedTernary = Signed | Ternary,
+            SignedRounded = Signed | Rounded
+        }
+
         private static void EmitVectorShImmBinarySx(AILEmitterCtx Context, Action Emit, int Imm)
         {
-            EmitVectorShImmOp(Context, Emit, Imm, false, true);
+            EmitVectorShImmOp(Context, Emit, Imm, ShImmFlags.Signed);
         }
 
         private static void EmitVectorShImmTernarySx(AILEmitterCtx Context, Action Emit, int Imm)
         {
-            EmitVectorShImmOp(Context, Emit, Imm, true, true);
+            EmitVectorShImmOp(Context, Emit, Imm, ShImmFlags.SignedTernary);
         }
 
         private static void EmitVectorShImmBinaryZx(AILEmitterCtx Context, Action Emit, int Imm)
         {
-            EmitVectorShImmOp(Context, Emit, Imm, false, false);
+            EmitVectorShImmOp(Context, Emit, Imm, ShImmFlags.None);
         }
 
-        private static void EmitVectorShImmOp(AILEmitterCtx Context, Action Emit, int Imm, bool Ternary, bool Signed)
+        private static void EmitVectorRoundShImmBinarySx(AILEmitterCtx Context, Action Emit, int Imm, long Rc)
+        {
+            EmitVectorShImmOp(Context, Emit, Imm, ShImmFlags.SignedRounded, Rc);
+        }
+
+        private static void EmitVectorShImmOp(AILEmitterCtx Context, Action Emit, int Imm, ShImmFlags Flags, long Rc = 0)
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
             int Elems = Bytes >> Op.Size;
+
+            bool Signed = (Flags & ShImmFlags.Signed) != 0;
 
             for (int Index = 0; Index < Elems; Index++)
             {
-                if (Ternary)
+                if ((Flags & ShImmFlags.Ternary) != 0)
                 {
                     EmitVectorExtract(Context, Op.Rd, Index, Op.Size, Signed);
                 }
 
                 EmitVectorExtract(Context, Op.Rn, Index, Op.Size, Signed);
 
-                Context.EmitLdc_I4(Imm);
+                if ((Flags & ShImmFlags.Rounded) != 0)
+                {
+                    Context.EmitLdc_I8(Rc);
 
-                Emit();
-
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
-            }
-
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
-            {
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
-        }
-
-        private static void EmitVectorRoundShImmBinarySx(AILEmitterCtx Context, Action Emit, int Imm, long Rc)
-        {
-            EmitVectorRoundShImmOp(Context, Emit, Imm, Rc, true);
-        }
-
-        private static void EmitVectorRoundShImmOp(AILEmitterCtx Context, Action Emit, int Imm, long Rc, bool Signed)
-        {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
-            int Elems = Bytes >> Op.Size;
-
-            for (int Index = 0; Index < Elems; Index++)
-            {
-                EmitVectorExtract(Context, Op.Rn, Index, Op.Size, Signed);
-
-                Context.EmitLdc_I8(Rc);
-
-                Context.Emit(OpCodes.Add);
+                    Context.Emit(OpCodes.Add);
+                }
 
                 Context.EmitLdc_I4(Imm);
 
