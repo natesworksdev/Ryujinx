@@ -81,11 +81,11 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
         {
             if (!IsProductionMode)
             {
-                long InputPosition = Context.Request.GetBufferType0x21().Position;
+                long InputPosition  = Context.Request.GetBufferType0x21().Position;
                 long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
                 string Domain = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0, 0x41);
-                string Name = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0x41, 0x41);
+                string Name   = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0x41, 0x41);
 
                 if (Set.NxSettings.Settings.TryGetValue($"{Domain}!{Name}", out object NvSetting))
                 {
@@ -102,6 +102,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
                             SettingBuffer = Encoding.ASCII.GetBytes(StringValue + "\0");
                         }
                     }
+
                     if (NvSetting is int IntValue)
                     {
                         SettingBuffer = BitConverter.GetBytes(IntValue);
