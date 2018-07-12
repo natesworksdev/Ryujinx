@@ -150,15 +150,13 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
 
-            int Shift = GetImmShr(Op);
-
             Action Emit = () =>
             {
                 Context.Emit(OpCodes.Shr);
                 Context.Emit(OpCodes.Add);
             };
 
-            EmitVectorShImmTernarySx(Context, Emit, Shift);
+            EmitVectorShImmTernarySx(Context, Emit, GetImmShr(Op));
         }
 
         public static void Ushl_V(AILEmitterCtx Context)
