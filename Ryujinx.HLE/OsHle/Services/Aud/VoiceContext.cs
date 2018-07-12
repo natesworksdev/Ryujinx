@@ -61,6 +61,13 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         public int[] GetBufferData(AMemory Memory, int MaxSamples, out int SamplesCount)
         {
+            if (!Playing)
+            {
+                SamplesCount = 0;
+
+                return null;
+            }
+
             if (BufferReload)
             {
                 BufferReload = false;
@@ -99,6 +106,11 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
                 }
 
                 OutStatus.PlayedWaveBuffersCount++;
+
+                if (Wb.LastBuffer != 0)
+                {
+                    PlayState = PlayState.Paused;
+                }
             }
 
             return Output;
