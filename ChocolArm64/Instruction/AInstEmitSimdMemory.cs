@@ -105,7 +105,7 @@ namespace ChocolArm64.Instruction
                     throw new InvalidOperationException();
                 }
 
-                int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+                int Bytes = Op.GetBitsCount() >> 3;
                 int Elems = Bytes >> Op.Size;
 
                 for (int SElem = 0; SElem < Op.SElems; SElem++)

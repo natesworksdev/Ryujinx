@@ -65,7 +65,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
             int Elems = Bytes >> Op.Size;
 
             EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
@@ -98,7 +98,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
             int Elems = Bytes >> Op.Size;
 
             for (int Index = 0; Index < Elems; Index++)
@@ -262,7 +262,7 @@ namespace ChocolArm64.Instruction
 
             int SizeF = Op.Size & 1;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             int Elems = Bytes >> SizeF + 2;
             int Half  = Elems >> 1;
@@ -574,7 +574,7 @@ namespace ChocolArm64.Instruction
 
             int SizeF = Op.Size & 1;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             for (int Index = 0; Index < Bytes >> SizeF + 2; Index++)
             {
@@ -625,7 +625,7 @@ namespace ChocolArm64.Instruction
 
             int SizeF = Op.Size & 1;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             for (int Index = 0; Index < Bytes >> SizeF + 2; Index++)
             {
@@ -866,7 +866,7 @@ namespace ChocolArm64.Instruction
 
             int SizeF = Op.Size & 1;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             for (int Index = 0; Index < Bytes >> SizeF + 2; Index++)
             {
@@ -1203,7 +1203,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
             int Elems = Bytes >> Op.Size;
 
             EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
