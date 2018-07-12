@@ -276,7 +276,7 @@ namespace ChocolArm64.Instruction
         [Flags]
         private enum ShImmFlags
         {
-            None    = 0,
+            None = 0,
 
             Signed  = 1 << 0,
             Ternary = 1 << 1,
