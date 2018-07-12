@@ -1,11 +1,9 @@
 using ChocolArm64.Decoder;
 using ChocolArm64.Events;
-using ChocolArm64.Instruction;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
 using System;
-using System.Collections.Concurrent;
 using System.Reflection.Emit;
 
 namespace ChocolArm64
@@ -76,23 +74,6 @@ namespace ChocolArm64
             while (Position != 0 && State.Running);
         }
 
-        internal bool TryGetCachedSub(AOpCode OpCode, out ATranslatedSub Sub)
-        {
-            if (OpCode.Emitter != AInstEmit.Bl)
-            {
-                Sub = null;
-
-                return false;
-            }
-
-            return TryGetCachedSub(((AOpCodeBImmAl)OpCode).Imm, out Sub);
-        }
-
-        internal bool TryGetCachedSub(long Position, out ATranslatedSub Sub)
-        {
-            return Cache.TryGetSubroutine(Position, out Sub);
-        }
-
         internal bool HasCachedSub(long Position)
         {
             return Cache.HasSubroutine(Position);
@@ -100,13 +81,13 @@ namespace ChocolArm64
 
         private ATranslatedSub TranslateTier0(AThreadState State, AMemory Memory, long Position)
         {
-            ABlock Block = ADecoder.DecodeBasicBlock(State, this, Memory, Position);
+            ABlock Block = ADecoder.DecodeBasicBlock(State, Memory, Position);
 
             ABlock[] Graph = new ABlock[] { Block };
 
-            string SubName = GetSubName(Position);
+            string SubName = GetSubroutineName(Position);
 
-            AILEmitterCtx Context = new AILEmitterCtx(this, Graph, Block, SubName);
+            AILEmitterCtx Context = new AILEmitterCtx(Cache, Graph, Block, SubName);
 
             do
             {
@@ -127,11 +108,11 @@ namespace ChocolArm64
 
         private void TranslateTier1(AThreadState State, AMemory Memory, long Position)
         {
-            (ABlock[] Graph, ABlock Root) = ADecoder.DecodeSubroutine(State, this, Memory, Position);
+            (ABlock[] Graph, ABlock Root) = ADecoder.DecodeSubroutine(Cache, State, Memory, Position);
 
-            string SubName = GetSubName(Position);
+            string SubName = GetSubroutineName(Position);
 
-            AILEmitterCtx Context = new AILEmitterCtx(this, Graph, Root, SubName);
+            AILEmitterCtx Context = new AILEmitterCtx(Cache, Graph, Root, SubName);
 
             if (Context.CurrBlock.Position != Position)
             {
@@ -164,7 +145,7 @@ namespace ChocolArm64
             Cache.AddOrUpdate(Position, Subroutine, GetGraphInstCount(Graph));
         }
 
-        private string GetSubName(long Position)
+        private string GetSubroutineName(long Position)
         {
             return $"Sub{Position:x16}";
         }

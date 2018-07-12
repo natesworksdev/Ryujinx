@@ -2,14 +2,15 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace ChocolArm64
 {
     class ATranslatorCache
     {
-        private const int MaxTotalSize         = 2 * 1024 * 256;
-        private const int MaxTimeDelta         = 30000;
-        private const int MinCallCountForClear = 1000;
+        private const int MaxTotalSize          = 2 * 1024 * 256;
+        private const int MaxTimeDelta          = 30000;
+        private const int MinCallCountForUpdate = 1000;
 
         private class CacheBucket
         {
@@ -85,15 +86,22 @@ namespace ChocolArm64
         {
             if (Cache.TryGetValue(Position, out CacheBucket Bucket))
             {
-                if (Bucket.CallCount++ > MinCallCountForClear)
+                if (Bucket.CallCount++ > MinCallCountForUpdate)
                 {
-                    Bucket.CallCount = 0;
-
-                    lock (SortedCache)
+                    if (Monitor.TryEnter(SortedCache))
                     {
-                        SortedCache.Remove(Bucket.Node);
+                        try
+                        {
+                            Bucket.CallCount = 0;
 
-                        Bucket.UpdateNode(SortedCache.AddLast(Position));
+                            SortedCache.Remove(Bucket.Node);
+
+                            Bucket.UpdateNode(SortedCache.AddLast(Position));
+                        }
+                        finally
+                        {
+                            Monitor.Exit(SortedCache);
+                        }
                     }
                 }
 
