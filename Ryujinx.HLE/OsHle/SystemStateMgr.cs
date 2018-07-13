@@ -1,3 +1,4 @@
+using Ryujinx.HLE.Loaders.Npdm;
 using System;
 
 namespace Ryujinx.HLE.OsHle
@@ -35,6 +36,23 @@ namespace Ryujinx.HLE.OsHle
         internal long DesiredLanguageCode { get; private set; }
 
         internal string ActiveAudioOutput { get; private set; }
+
+        internal Npdm TitleMetadata { get; set; }
+
+        public string GetNpdmTitleName()
+        {
+            return TitleMetadata.TitleName;
+        }
+
+        public string GetNpdmTitleId()
+        {
+            return TitleMetadata.ACI0.TitleId;
+        }
+
+        public bool GetNpdmIs64Bit()
+        {
+            return TitleMetadata.Is64Bits;
+        }
 
         public SystemStateMgr()
         {
