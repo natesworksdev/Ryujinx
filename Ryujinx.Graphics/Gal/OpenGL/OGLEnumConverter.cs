@@ -142,7 +142,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalTextureFormat.ZF32:         return (PixelFormat.DepthComponent, PixelType.Float);
 
             }
-
             throw new NotImplementedException(Format.ToString());
         }
 
