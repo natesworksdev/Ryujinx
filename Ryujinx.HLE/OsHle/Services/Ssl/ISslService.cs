@@ -14,8 +14,18 @@ namespace Ryujinx.HLE.OsHle.Services.Ssl
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
+                { 0, CreateContext       },
                 { 5, SetInterfaceVersion }
             };
+        }
+		
+        public long CreateContext(ServiceCtx Context)
+        {
+            long Id = Context.RequestData.ReadInt64();
+			
+            MakeObject(Context, new ISslContext());
+			
+            return 0;
         }
 
         public long SetInterfaceVersion(ServiceCtx Context)
