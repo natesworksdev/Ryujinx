@@ -180,7 +180,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 
         public void SetBufferIndex(int Index)
         {
-            BufferIndex = Index;
+            BufferIndex = Index & 3;
 
             BufferReload = true;
         }
