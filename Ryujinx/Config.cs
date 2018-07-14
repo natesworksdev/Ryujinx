@@ -107,7 +107,8 @@ namespace Ryujinx
             {
                 Left = new JoyConControllerLeft
                 {
-                    Stick       = Parser.Value("Controls_Left_JoyConController_Stick"),
+                    Stick_AxisX = Parser.Value("Controls_Left_JoyConController_Stick_AxisX"),
+                    Stick_AxisY = Parser.Value("Controls_Left_JoyConController_Stick_AxisY"),
                     StickButton = Parser.Value("Controls_Left_JoyConController_Stick_Button"),
                     DPadUp      = Parser.Value("Controls_Left_JoyConController_DPad_Up"),
                     DPadDown    = Parser.Value("Controls_Left_JoyConController_DPad_Down"),
@@ -120,7 +121,8 @@ namespace Ryujinx
 
                 Right = new JoyConControllerRight
                 {
-                    Stick       = Parser.Value("Controls_Right_JoyConController_Stick"),
+                    Stick_AxisX = Parser.Value("Controls_Right_JoyConController_Stick_AxisX"),
+                    Stick_AxisY = Parser.Value("Controls_Right_JoyConController_Stick_AxisY"),
                     StickButton = Parser.Value("Controls_Right_JoyConController_Stick_Button"),
                     ButtonA     = Parser.Value("Controls_Right_JoyConController_Button_A"),
                     ButtonB     = Parser.Value("Controls_Right_JoyConController_Button_B"),
