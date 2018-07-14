@@ -14,9 +14,10 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdIns Op = (AOpCodeSimdIns)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 Context.EmitLdintzr(Op.Rn);
 
@@ -42,9 +43,10 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdIns Op = (AOpCodeSimdIns)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 0; Index < Elems; Index++)
             {
                 EmitVectorExtractZx(Context, Op.Rn, Op.DstIndex, Op.Size);
 
@@ -64,7 +66,7 @@ namespace ChocolArm64.Instruction
             Context.EmitLdvec(Op.Rd);
             Context.EmitStvectmp();
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             int Position = Op.Imm4;
 
@@ -329,7 +331,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             int Elems = Bytes >> Op.Size;
 
@@ -339,8 +341,11 @@ namespace ChocolArm64.Instruction
 
                 EmitVectorExtractZx(Context, (Index & 1) == 0 ? Op.Rn : Op.Rm, Elem, Op.Size);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                EmitVectorInsertTmp(Context, Index, Op.Size);
             }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
 
             if (Op.RegisterSize == ARegisterSize.SIMD64)
             {
@@ -352,7 +357,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             int Elems = Bytes >> Op.Size;
             int Half  = Elems >> 1;
@@ -363,8 +368,11 @@ namespace ChocolArm64.Instruction
 
                 EmitVectorExtractZx(Context, Index < Half ? Op.Rn : Op.Rm, Elem, Op.Size);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                EmitVectorInsertTmp(Context, Index, Op.Size);
             }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
 
             if (Op.RegisterSize == ARegisterSize.SIMD64)
             {
@@ -376,7 +384,7 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             int Elems = Bytes >> Op.Size;
             int Half  = Elems >> 1;
@@ -387,8 +395,11 @@ namespace ChocolArm64.Instruction
 
                 EmitVectorExtractZx(Context, (Index & 1) == 0 ? Op.Rn : Op.Rm, Elem, Op.Size);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                EmitVectorInsertTmp(Context, Index, Op.Size);
             }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
 
             if (Op.RegisterSize == ARegisterSize.SIMD64)
             {

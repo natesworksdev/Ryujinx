@@ -5,15 +5,74 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     static class OGLEnumConverter
     {
+        public static FrontFaceDirection GetFrontFace(GalFrontFace FrontFace)
+        {
+            switch (FrontFace)
+            {
+                case GalFrontFace.CW:  return FrontFaceDirection.Cw;
+                case GalFrontFace.CCW: return FrontFaceDirection.Ccw;
+            }
+
+            throw new ArgumentException(nameof(FrontFace));
+        }
+
+        public static CullFaceMode GetCullFace(GalCullFace CullFace)
+        {
+            switch (CullFace)
+            {
+                case GalCullFace.Front:        return CullFaceMode.Front;
+                case GalCullFace.Back:         return CullFaceMode.Back;
+                case GalCullFace.FrontAndBack: return CullFaceMode.FrontAndBack;
+            }
+
+            throw new ArgumentException(nameof(CullFace));
+        }
+
+        public static StencilOp GetStencilOp(GalStencilOp Op)
+        {
+            switch (Op)
+            {
+                case GalStencilOp.Keep:     return StencilOp.Keep;
+                case GalStencilOp.Zero:     return StencilOp.Zero;
+                case GalStencilOp.Replace:  return StencilOp.Replace;
+                case GalStencilOp.Incr:     return StencilOp.Incr;
+                case GalStencilOp.Decr:     return StencilOp.Decr;
+                case GalStencilOp.Invert:   return StencilOp.Invert;
+                case GalStencilOp.IncrWrap: return StencilOp.IncrWrap;
+                case GalStencilOp.DecrWrap: return StencilOp.DecrWrap;
+            }
+
+            throw new ArgumentException(nameof(Op));
+        }
+
         public static DepthFunction GetDepthFunc(GalComparisonOp Func)
         {
+            //Looks like the GPU can take it's own values (described in GalComparisonOp) and OpenGL values alike
             if ((int)Func >= (int)DepthFunction.Never &&
                 (int)Func <= (int)DepthFunction.Always)
             {
                 return (DepthFunction)Func;
             }
 
+            switch (Func)
+            {
+                case GalComparisonOp.Never:    return DepthFunction.Never;
+                case GalComparisonOp.Less:     return DepthFunction.Less;
+                case GalComparisonOp.Equal:    return DepthFunction.Equal;
+                case GalComparisonOp.Lequal:   return DepthFunction.Lequal;
+                case GalComparisonOp.Greater:  return DepthFunction.Greater;
+                case GalComparisonOp.NotEqual: return DepthFunction.Notequal;
+                case GalComparisonOp.Gequal:   return DepthFunction.Gequal;
+                case GalComparisonOp.Always:   return DepthFunction.Always;
+            }
+
             throw new ArgumentException(nameof(Func));
+        }
+
+        public static StencilFunction GetStencilFunc(GalComparisonOp Func)
+        {
+            //OGL comparison values match, it's just an enum cast
+            return (StencilFunction)GetDepthFunc(Func);
         }
 
         public static DrawElementsType GetDrawElementsType(GalIndexFormat Format)
@@ -70,15 +129,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Format)
             {
-                case GalTextureFormat.R32G32B32A32: return (PixelFormat.Rgba, PixelType.Float);
-                case GalTextureFormat.R16G16B16A16: return (PixelFormat.Rgba, PixelType.HalfFloat);
-                case GalTextureFormat.A8B8G8R8:     return (PixelFormat.Rgba, PixelType.UnsignedByte);
-                case GalTextureFormat.R32:          return (PixelFormat.Red,  PixelType.Float);
-                case GalTextureFormat.A1B5G5R5:     return (PixelFormat.Rgba, PixelType.UnsignedShort5551);
-                case GalTextureFormat.B5G6R5:       return (PixelFormat.Rgb,  PixelType.UnsignedShort565);
-                case GalTextureFormat.G8R8:         return (PixelFormat.Rg,   PixelType.UnsignedByte);
-                case GalTextureFormat.R16:          return (PixelFormat.Red,  PixelType.HalfFloat);
-                case GalTextureFormat.R8:           return (PixelFormat.Red,  PixelType.UnsignedByte);
+                case GalTextureFormat.R32G32B32A32: return (PixelFormat.Rgba,           PixelType.Float);
+                case GalTextureFormat.R16G16B16A16: return (PixelFormat.Rgba,           PixelType.HalfFloat);
+                case GalTextureFormat.A8B8G8R8:     return (PixelFormat.Rgba,           PixelType.UnsignedByte);
+                case GalTextureFormat.R32:          return (PixelFormat.Red,            PixelType.Float);
+                case GalTextureFormat.A1B5G5R5:     return (PixelFormat.Rgba,           PixelType.UnsignedShort5551);
+                case GalTextureFormat.B5G6R5:       return (PixelFormat.Rgb,            PixelType.UnsignedShort565);
+                case GalTextureFormat.G8R8:         return (PixelFormat.Rg,             PixelType.UnsignedByte);
+                case GalTextureFormat.R16:          return (PixelFormat.Red,            PixelType.HalfFloat);
+                case GalTextureFormat.R8:           return (PixelFormat.Red,            PixelType.UnsignedByte);
+                case GalTextureFormat.ZF32:         return (PixelFormat.DepthComponent, PixelType.Float);
             }
 
             throw new NotImplementedException(Format.ToString());

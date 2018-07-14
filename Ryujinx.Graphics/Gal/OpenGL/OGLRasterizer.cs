@@ -71,6 +71,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             IndexBuffer = new IbInfo();
         }
 
+        public void LockCaches()
+        {
+            VboCache.Lock();
+            IboCache.Lock();
+        }
+
+        public void UnlockCaches()
+        {
+            VboCache.Unlock();
+            IboCache.Unlock();
+        }
+
         public void ClearBuffers(GalClearBufferFlags Flags)
         {
             ClearBufferMask Mask = ClearBufferMask.ColorBufferBit;
@@ -106,6 +118,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return IboCache.TryGetSize(Key, out long Size) && Size == DataSize;
         }
 
+        public void SetFrontFace(GalFrontFace FrontFace)
+        {
+            GL.FrontFace(OGLEnumConverter.GetFrontFace(FrontFace));
+        }
+
         public void EnableCullFace()
         {
             GL.Enable(EnableCap.CullFace);
@@ -114,6 +131,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public void DisableCullFace()
         {
             GL.Disable(EnableCap.CullFace);
+        }
+
+        public void SetCullFace(GalCullFace CullFace)
+        {
+            GL.CullFace(OGLEnumConverter.GetCullFace(CullFace));
         }
 
         public void EnableDepthTest()
@@ -129,6 +151,64 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public void SetDepthFunction(GalComparisonOp Func)
         {
             GL.DepthFunc(OGLEnumConverter.GetDepthFunc(Func));
+        }
+
+        public void SetClearDepth(float Depth)
+        {
+            GL.ClearDepth(Depth);
+        }
+
+        public void EnableStencilTest()
+        {
+            GL.Enable(EnableCap.StencilTest);
+        }
+
+        public void DisableStencilTest()
+        {
+            GL.Disable(EnableCap.StencilTest);
+        }
+
+        public void SetStencilFunction(bool IsFrontFace, GalComparisonOp Func, int Ref, int Mask)
+        {
+            GL.StencilFuncSeparate(
+                IsFrontFace ? StencilFace.Front : StencilFace.Back,
+                OGLEnumConverter.GetStencilFunc(Func),
+                Ref,
+                Mask);
+        }
+
+        public void SetStencilOp(bool IsFrontFace, GalStencilOp Fail, GalStencilOp ZFail, GalStencilOp ZPass)
+        {
+            GL.StencilOpSeparate(
+                IsFrontFace ? StencilFace.Front : StencilFace.Back,
+                OGLEnumConverter.GetStencilOp(Fail),
+                OGLEnumConverter.GetStencilOp(ZFail),
+                OGLEnumConverter.GetStencilOp(ZPass));
+        }
+
+        public void SetStencilMask(bool IsFrontFace, int Mask)
+        {
+            GL.StencilMaskSeparate(IsFrontFace ? StencilFace.Front : StencilFace.Back, Mask);
+        }
+
+        public void SetClearStencil(int Stencil)
+        {
+            GL.ClearStencil(Stencil);
+        }
+
+        public void EnablePrimitiveRestart()
+        {
+            GL.Enable(EnableCap.PrimitiveRestart);
+        }
+
+        public void DisablePrimitiveRestart()
+        {
+            GL.Disable(EnableCap.PrimitiveRestart);
+        }
+
+        public void SetPrimitiveRestartIndex(uint Index)
+        {
+            GL.PrimitiveRestartIndex(Index);
         }
 
         public void CreateVbo(long Key, byte[] Buffer)
@@ -155,7 +235,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BufferData(BufferTarget.ElementArrayBuffer, Length, Buffer, BufferUsageHint.StreamDraw);
         }
 
-        public void SetVertexArray(int VbIndex, int Stride, long VboKey, GalVertexAttrib[] Attribs)
+        public void SetVertexArray(int Stride, long VboKey, GalVertexAttrib[] Attribs)
         {
             if (!VboCache.TryGetValue(VboKey, out int VboHandle))
             {
@@ -202,7 +282,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public void SetIndexArray(long Key, int Size, GalIndexFormat Format)
+        public void SetIndexArray(int Size, GalIndexFormat Format)
         {
             IndexBuffer.Type = OGLEnumConverter.GetDrawElementsType(Format);
 
