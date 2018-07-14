@@ -341,8 +341,11 @@ namespace ChocolArm64.Instruction
 
                 EmitVectorExtractZx(Context, (Index & 1) == 0 ? Op.Rn : Op.Rm, Elem, Op.Size);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                EmitVectorInsertTmp(Context, Index, Op.Size);
             }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
 
             if (Op.RegisterSize == ARegisterSize.SIMD64)
             {
@@ -365,8 +368,11 @@ namespace ChocolArm64.Instruction
 
                 EmitVectorExtractZx(Context, Index < Half ? Op.Rn : Op.Rm, Elem, Op.Size);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                EmitVectorInsertTmp(Context, Index, Op.Size);
             }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
 
             if (Op.RegisterSize == ARegisterSize.SIMD64)
             {
@@ -389,8 +395,11 @@ namespace ChocolArm64.Instruction
 
                 EmitVectorExtractZx(Context, (Index & 1) == 0 ? Op.Rn : Op.Rm, Elem, Op.Size);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                EmitVectorInsertTmp(Context, Index, Op.Size);
             }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
 
             if (Op.RegisterSize == ARegisterSize.SIMD64)
             {

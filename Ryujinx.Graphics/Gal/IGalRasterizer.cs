@@ -2,6 +2,9 @@ namespace Ryujinx.Graphics.Gal
 {
     public interface IGalRasterizer
     {
+        void LockCaches();
+        void UnlockCaches();
+
         void ClearBuffers(GalClearBufferFlags Flags);
 
         bool IsVboCached(long Key, long DataSize);
@@ -36,13 +39,19 @@ namespace Ryujinx.Graphics.Gal
 
         void SetClearStencil(int Stencil);
 
+        void EnablePrimitiveRestart();
+
+        void DisablePrimitiveRestart();
+
+        void SetPrimitiveRestartIndex(uint Index);
+
         void CreateVbo(long Key, byte[] Buffer);
 
         void CreateIbo(long Key, byte[] Buffer);
 
-        void SetVertexArray(int VbIndex, int Stride, long VboKey, GalVertexAttrib[] Attribs);
+        void SetVertexArray(int Stride, long VboKey, GalVertexAttrib[] Attribs);
 
-        void SetIndexArray(long Key, int Size, GalIndexFormat Format);
+        void SetIndexArray(int Size, GalIndexFormat Format);
 
         void DrawArrays(int First, int PrimCount, GalPrimitiveType PrimType);
 
