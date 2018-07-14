@@ -208,6 +208,8 @@ namespace Ryujinx.HLE.OsHle.Services.Nv
 
             NvGpuASIoctl.UnloadProcess(Process);
 
+            NvHostChannelIoctl.UnloadProcess(Process);
+
             NvHostCtrlIoctl.UnloadProcess(Process);
 
             NvMapIoctl.UnloadProcess(Process);
