@@ -14,7 +14,9 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 4, CreateRequest }
+                { 4,  CreateRequest            },
+                { 5,  GetCurrentNetworkProfile },
+                { 12, GetCurrentIpAddress      }
             };
         }
 
@@ -26,6 +28,29 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
             MakeObject(Context, new IRequest());
 
             Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+
+            return 0;
+        }
+
+        public long GetCurrentNetworkProfile(ServiceCtx Context)
+        {
+            (long Position, long Size) = Context.Request.GetBufferType0x21();
+
+            Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+
+            for (int Index = 0; Index < Size; Index++)
+            {
+                Context.Memory.WriteByte(Position + Index, 0);
+            }
+
+            return 0;
+        }
+
+        public long GetCurrentIpAddress(ServiceCtx Context)
+        {
+            Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+
+            Context.ResponseData.Write(0);
 
             return 0;
         }

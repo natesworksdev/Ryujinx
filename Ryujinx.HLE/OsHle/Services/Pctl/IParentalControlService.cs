@@ -18,7 +18,8 @@ namespace Ryujinx.HLE.OsHle.Services.Pctl
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 1, Initialize }
+                { 1,    Initialize                       },
+                { 1001, CheckFreeCommunicationPermission }
             };
 
             this.NeedInitialize = NeedInitialize;
@@ -34,6 +35,13 @@ namespace Ryujinx.HLE.OsHle.Services.Pctl
             {
                 Context.Ns.Log.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
             }
+
+            return 0;
+        }
+
+        public long CheckFreeCommunicationPermission(ServiceCtx Context)
+        {
+            Context.Ns.Log.PrintStub(LogClass.ServicePctl, "Stubbed.");
 
             return 0;
         }

@@ -19,6 +19,8 @@ namespace Ryujinx.HLE.OsHle.Services.Am
                 { 21, GetDesiredLanguage          },
                 { 22, SetTerminateResult          },
                 { 23, GetDisplayVersion           },
+                { 25, ExtendSaveData              },
+                { 26, GetSaveDataSize             },
                 { 40, NotifyRunning               },
                 { 50, GetPseudoDeviceId           },
                 { 66, InitializeGamePlayRecording },
@@ -77,6 +79,25 @@ namespace Ryujinx.HLE.OsHle.Services.Am
             //FIXME: Need to check correct version on a switch.
             Context.ResponseData.Write(1L);
             Context.ResponseData.Write(0L);
+
+            return 0;
+        }
+
+        public long ExtendSaveData(ServiceCtx Context)
+        {
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+
+            Context.ResponseData.Write(0x400L);
+
+            return 0;
+        }
+
+        public long GetSaveDataSize(ServiceCtx Context)
+        {
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+
+            Context.ResponseData.Write(0L);
+            Context.ResponseData.Write(0x200L);
 
             return 0;
         }
