@@ -29,7 +29,7 @@ namespace Ryujinx
 
             AOptimizations.DisableMemoryChecks = !Convert.ToBoolean(Parser.Value("Enable_Memory_Checks"));
 
-            AGraphicsConfig.ShadersDumpPath = Parser.Value("Graphics_Shaders_Dump_Path");
+            GraphicsConfig.ShadersDumpPath = Parser.Value("Graphics_Shaders_Dump_Path");
 
             Log.SetEnable(LogLevel.Debug,   Convert.ToBoolean(Parser.Value("Logging_Enable_Debug")));
             Log.SetEnable(LogLevel.Stub,    Convert.ToBoolean(Parser.Value("Logging_Enable_Stub")));

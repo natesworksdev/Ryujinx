@@ -5,22 +5,24 @@ namespace Ryujinx.Graphics.Gal
 {
     static class ShaderDumper
     {
-        private static string RuntimeDir = "";
+        private static string RuntimeDir;
 
         private static int DumpIndex = 1;
 
         public static void Dump(IGalMemory Memory, long Position, GalShaderType Type, string ExtSuffix = "")
         {
-            if (AGraphicsConfig.ShadersDumpPath == "")
+            if (string.IsNullOrWhiteSpace(GraphicsConfig.ShadersDumpPath))
             {
                 return;
             }
 
-            string Path = DumpDir() + "/Shader" + DumpIndex.ToString("d4") + "." + ShaderExtension(Type) + ExtSuffix + ".bin";
+            string FileName = "Shader" + DumpIndex.ToString("d4") + "." + ShaderExtension(Type) + ExtSuffix + ".bin";
+
+            string FilePath = Path.Combine(DumpDir(), FileName);
 
             DumpIndex++;
 
-            using (FileStream Output = File.Create(Path))
+            using (FileStream Output = File.Create(FilePath))
             using (BinaryWriter Writer = new BinaryWriter(Output))
             {
                 long Offset = 0;
@@ -28,12 +30,12 @@ namespace Ryujinx.Graphics.Gal
                 ulong Instruction = 0;
 
                 //Dump until a NOP instruction is found
-                while (Instruction >> 52 != 0x50b)
+                while ((Instruction >> 52 & 0xfff8) != 0x50b0)
                 {
                     uint Word0 = (uint)Memory.ReadInt32(Position + Offset + 0);
                     uint Word1 = (uint)Memory.ReadInt32(Position + Offset + 4);
 
-                    Instruction = Word0 | (ulong) Word1 << 32;
+                    Instruction = Word0 | (ulong)Word1 << 32;
 
                     //Zero instructions (other kind of NOP) stop immediatly,
                     //this is to avoid two rows of zeroes
@@ -59,13 +61,13 @@ namespace Ryujinx.Graphics.Gal
 
         private static string DumpDir()
         {
-            if (RuntimeDir == "")
+            if (string.IsNullOrEmpty(RuntimeDir))
             {
                 int Index = 1;
 
                 do
                 {
-                    RuntimeDir = AGraphicsConfig.ShadersDumpPath + "/Dumps" + Index.ToString("d2");
+                    RuntimeDir = Path.Combine(GraphicsConfig.ShadersDumpPath, "Dumps" + Index.ToString("d2"));
 
                     Index++;
                 }
