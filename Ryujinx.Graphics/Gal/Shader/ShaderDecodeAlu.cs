@@ -144,7 +144,17 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitFsetp(Block, OpCode, ShaderOper.RR);
         }
 
-        public static void Iadd_I32_1c0(ShaderIrBlock Block, long OpCode)
+        public static void Iadd_C(ShaderIrBlock Block, long OpCode)
+        {
+            EmitIadd(Block, OpCode, ShaderOper.CR);
+        }
+
+        public static void Iadd_I(ShaderIrBlock Block, long OpCode)
+        {
+            EmitIadd(Block, OpCode, ShaderOper.Imm);
+        }
+
+        public static void Iadd_I32(ShaderIrBlock Block, long OpCode)
         {
             ShaderIrNode OperA = GetOperGpr0    (OpCode);
             ShaderIrNode OperB = GetOperImm32_20(OpCode);
@@ -156,16 +166,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrOp Op = new ShaderIrOp(ShaderIrInst.Add, OperA, OperB);
 
             Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), Op), OpCode));
-        }
-
-        public static void Iadd_C(ShaderIrBlock Block, long OpCode)
-        {
-            EmitIadd(Block, OpCode, ShaderOper.CR);
-        }
-
-        public static void Iadd_I(ShaderIrBlock Block, long OpCode)
-        {
-            EmitIadd(Block, OpCode, ShaderOper.Imm);
         }
 
         public static void Iadd_R(ShaderIrBlock Block, long OpCode)
@@ -687,7 +687,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
             }
 
-            //TODO: What would "add_with_carry" mean in this context? Just add Sum to Src3 for now
+            //Note: Here there should be a "+ 1" when carry flag is set
+            //but since carry is mostly ignored by other instructions, it's excluded for now
 
             Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), new ShaderIrOp(ShaderIrInst.Add, Sum, Src3)), OpCode));
         }
