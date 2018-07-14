@@ -47,6 +47,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
+        private const int NativeWidth  = 1280;
+        private const int NativeHeight = 720;
+
         private Dictionary<long, FrameBuffer> Fbs;
 
         private Rect Viewport;
@@ -217,8 +220,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
                 else
                 {
-                    SrcX0 = (int)(CropLeft  * (Window.Width / 1280f));
-                    SrcX1 = (int)(CropRight * (Window.Width / 1280f));
+                    SrcX0 = (CropLeft  * Window.Width) / NativeWidth;
+                    SrcX1 = (CropRight * Window.Width) / NativeWidth;
                 }
 
                 if (CropTop == 0 && CropBottom == 0)
@@ -228,12 +231,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
                 else
                 {
-                    SrcY0 = (int)(CropTop    * (Window.Height / 720f));
-                    SrcY1 = (int)(CropBottom * (Window.Height / 720f));
+                    SrcY0 = (CropTop    * Window.Height) / NativeHeight;
+                    SrcY1 = (CropBottom * Window.Height) / NativeHeight;
                 }
 
-                float RatioX = MathF.Min(1f, (Window.Height * 1280f) / (720f  * Window.Width));
-                float RatioY = MathF.Min(1f, (Window.Width  * 720f)  / (1280f * Window.Height));
+                float RatioX = MathF.Min(1f, (Window.Height * (float)NativeWidth)  / ((float)NativeHeight * Window.Width));
+                float RatioY = MathF.Min(1f, (Window.Width  * (float)NativeHeight) / ((float)NativeWidth  * Window.Height));
 
                 int DstWidth  = (int)(Window.Width  * RatioX);
                 int DstHeight = (int)(Window.Height * RatioY);
