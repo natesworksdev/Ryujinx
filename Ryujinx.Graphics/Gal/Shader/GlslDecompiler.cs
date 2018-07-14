@@ -216,7 +216,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private void PrintDeclOutAttributes()
         {
-            if (Decl.ShaderType < GalShaderType.Fragment)
+            if (Decl.ShaderType != GalShaderType.Fragment)
             {
                 SB.AppendLine("layout (location = " + GlslDecl.PositionOutAttrLocation + ") out vec4 " + GlslDecl.PositionOutAttrName + ";");
             }
@@ -339,7 +339,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 SB.AppendLine(IdentationStr + "gl_Position.xy *= " + GlslDecl.FlipUniformName + ";");
             }
 
-            if (Decl.ShaderType < GalShaderType.Fragment)
+            if (Decl.ShaderType != GalShaderType.Fragment)
             {
                 SB.AppendLine(IdentationStr + GlslDecl.PositionOutAttrName + " = gl_Position;");
                 SB.AppendLine(IdentationStr + GlslDecl.PositionOutAttrName + ".w = 1;");
