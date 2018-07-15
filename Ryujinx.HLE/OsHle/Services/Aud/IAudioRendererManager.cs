@@ -11,8 +11,6 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 {
     class IAudioRendererManager : IpcService
     {
-
-
         private const int Rev0Magic = ('R' << 0)  |
                                       ('E' << 8)  |
                                       ('V' << 16) |
