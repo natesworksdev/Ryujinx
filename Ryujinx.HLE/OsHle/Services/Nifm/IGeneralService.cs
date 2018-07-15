@@ -48,7 +48,6 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
             IPHostEntry HostEntry = Dns.GetHostEntry(HostName);
             IPAddress[] Address = HostEntry.AddressList;
             var IP = Address.Where(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).FirstOrDefault();
-            Console.WriteLine(IP.ToString());
             string BEHexStr = string.Concat(IP.ToString().Split('.').Select(x => int.Parse(x).ToString("X2")));
             uint BENum = Convert.ToUInt32(BEHexStr, 16);
             byte[] Bytes = BitConverter.GetBytes(BENum);
