@@ -49,7 +49,6 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
             IPAddress[] Address = HostEntry.AddressList;
             var IP = Address.Where(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).FirstOrDefault();
             uint LocalIP = BitConverter.ToUInt32(IP.GetAddressBytes());
-            MakeObject(Context, new IRequest());
             Context.ResponseData.Write(LocalIP);
             return 0;
         }
