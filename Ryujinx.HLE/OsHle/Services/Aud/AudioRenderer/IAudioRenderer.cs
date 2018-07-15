@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
         //this value shouldn't be neither too small (to avoid the player
         //starving due to running out of samples) or too large (to avoid
         //high latency).
-        private const int MixBufferSamplesCount = 770;
+        private const int MixBufferSamplesCount = 960;
 
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
@@ -32,11 +32,11 @@ namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 
         private AudioRendererParameter Params;
 
-        private int Track;
-
         private MemoryPoolContext[] MemoryPools;
 
         private VoiceContext[] Voices;
+
+        private int Track;
 
         public IAudioRenderer(AMemory Memory, IAalOutput AudioOut, AudioRendererParameter Params)
         {
@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 
             Reader.Read<BehaviorIn>(InputHeader.BehaviorSize);
 
-            MemoryPoolIn[] MemoryPoolsIn = Reader.Read<MemoryPoolIn>(InputHeader.MemoryPoolsSize);
+            MemoryPoolIn[] MemoryPoolsIn = Reader.Read<MemoryPoolIn>(InputHeader.MemoryPoolSize);
 
             for (int Index = 0; Index < MemoryPoolsIn.Length; Index++)
             {
@@ -126,7 +126,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 
             Reader.Read<VoiceChannelResourceIn>(InputHeader.VoiceResourceSize);
 
-            VoiceIn[] VoicesIn = Reader.Read<VoiceIn>(InputHeader.VoicesSize);
+            VoiceIn[] VoicesIn = Reader.Read<VoiceIn>(InputHeader.VoiceSize);
 
             for (int Index = 0; Index < VoicesIn.Length; Index++)
             {
@@ -168,19 +168,19 @@ namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 
             int UpdateHeaderSize = Marshal.SizeOf<UpdateDataHeader>();
 
-            OutputHeader.Revision               = Params.Revision;
+            OutputHeader.Revision               = IAudioRendererManager.RevMagic;
             OutputHeader.BehaviorSize           = 0xb0;
-            OutputHeader.MemoryPoolsSize        = (Params.EffectCount + Params.VoiceCount * 4) * 0x10;
-            OutputHeader.VoicesSize             = Params.VoiceCount  * 0x10;
-            OutputHeader.EffectsSize            = Params.EffectCount * 0x10;
-            OutputHeader.SinksSize              = Params.SinkCount   * 0x20;
+            OutputHeader.MemoryPoolSize         = (Params.EffectCount + Params.VoiceCount * 4) * 0x10;
+            OutputHeader.VoiceSize              = Params.VoiceCount  * 0x10;
+            OutputHeader.EffectSize             = Params.EffectCount * 0x10;
+            OutputHeader.SinkSize               = Params.SinkCount   * 0x20;
             OutputHeader.PerformanceManagerSize = 0x10;
             OutputHeader.TotalSize              = UpdateHeaderSize             +
                                                   OutputHeader.BehaviorSize    +
-                                                  OutputHeader.MemoryPoolsSize +
-                                                  OutputHeader.VoicesSize      +
-                                                  OutputHeader.EffectsSize     +
-                                                  OutputHeader.SinksSize       +
+                                                  OutputHeader.MemoryPoolSize +
+                                                  OutputHeader.VoiceSize      +
+                                                  OutputHeader.EffectSize     +
+                                                  OutputHeader.SinkSize       +
                                                   OutputHeader.PerformanceManagerSize;
 
             Writer.Write(OutputHeader);

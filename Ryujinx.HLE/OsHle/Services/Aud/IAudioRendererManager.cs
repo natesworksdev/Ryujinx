@@ -11,10 +11,16 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 {
     class IAudioRendererManager : IpcService
     {
+
+
         private const int Rev0Magic = ('R' << 0)  |
                                       ('E' << 8)  |
                                       ('V' << 16) |
                                       ('0' << 24);
+
+        private const int Rev = 4;
+
+        public const int RevMagic = Rev0Magic + Rev;
 
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
@@ -47,33 +53,33 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             int Revision = (Params.Revision - Rev0Magic) >> 24;
 
-            if (Revision <= 3) //REV3 Max is supported
+            if (Revision <= Rev) //REV3 Max is supported
             {
                 bool IsSplitterSupported = Revision >= 3;
 
                 long Size;
 
                 Size  = IntUtils.AlignUp(Params.Unknown8 * 4, 64);
-                Size += Params.UnknownC * 0x400;
-                Size += (Params.UnknownC + 1) * 0x940;
+                Size += Params.MixCount * 0x400;
+                Size += (Params.MixCount + 1) * 0x940;
                 Size += Params.VoiceCount * 0x3F0;
-                Size += IntUtils.AlignUp((Params.UnknownC + 1) * 8, 16);
+                Size += IntUtils.AlignUp((Params.MixCount + 1) * 8, 16);
                 Size += IntUtils.AlignUp(Params.VoiceCount * 8, 16);
                 Size += IntUtils.AlignUp(
-                    ((Params.SinkCount + Params.UnknownC) * 0x3C0 + Params.SampleCount * 4) *
+                    ((Params.SinkCount + Params.MixCount) * 0x3C0 + Params.SampleCount * 4) *
                     (Params.Unknown8 + 6), 64);
-                Size += (Params.SinkCount + Params.UnknownC) * 0x2C0;
+                Size += (Params.SinkCount + Params.MixCount) * 0x2C0;
                 Size += (Params.EffectCount + 4 * Params.VoiceCount) * 0x30 + 0x50;
 
                 if (IsSplitterSupported)
                 {
                     Size += IntUtils.AlignUp((
-                        NodeStatesGetWorkBufferSize(Params.UnknownC + 1) +
-                        EdgeMatrixGetWorkBufferSize(Params.UnknownC + 1)), 16);
+                        NodeStatesGetWorkBufferSize(Params.MixCount + 1) +
+                        EdgeMatrixGetWorkBufferSize(Params.MixCount + 1)), 16);
 
-                    Size += Params.Unknown28 * 0xE0;
+                    Size += Params.SplitterDestinationDataCount * 0xE0;
                     Size += Params.SplitterCount * 0x20;
-                    Size += IntUtils.AlignUp(Params.Unknown28 * 4, 16);
+                    Size += IntUtils.AlignUp(Params.SplitterDestinationDataCount * 4, 16);
                 }
 
                 Size = Params.EffectCount * 0x4C0 +
@@ -81,13 +87,13 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
                        Params.VoiceCount * 0x100 +
                        IntUtils.AlignUp(Size, 64) + 0x40;
 
-                if (Params.Unknown1C >= 1)
+                if (Params.PerformanceManagerCount >= 1)
                 {
                     Size += (((Params.EffectCount +
                                Params.SinkCount +
                                Params.VoiceCount +
-                               Params.UnknownC + 1) * 16 + 0x658) *
-                               (Params.Unknown1C + 1) + 0x13F) & ~0x3FL;
+                               Params.MixCount + 1) * 16 + 0x658) *
+                               (Params.PerformanceManagerCount + 1) + 0x13F) & ~0x3FL;
                 }
 
                 Size = (Size + 0x1907D) & ~0xFFFL;
@@ -112,19 +118,19 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         {
             AudioRendererParameter Params = new AudioRendererParameter();
 
-            Params.SampleRate    = Context.RequestData.ReadInt32();
-            Params.SampleCount   = Context.RequestData.ReadInt32();
-            Params.Unknown8      = Context.RequestData.ReadInt32();
-            Params.UnknownC      = Context.RequestData.ReadInt32();
-            Params.VoiceCount    = Context.RequestData.ReadInt32();
-            Params.SinkCount     = Context.RequestData.ReadInt32();
-            Params.EffectCount   = Context.RequestData.ReadInt32();
-            Params.Unknown1C     = Context.RequestData.ReadInt32();
-            Params.Unknown20     = Context.RequestData.ReadInt32();
-            Params.SplitterCount = Context.RequestData.ReadInt32();
-            Params.Unknown28     = Context.RequestData.ReadInt32();
-            Params.Unknown2C     = Context.RequestData.ReadInt32();
-            Params.Revision      = Context.RequestData.ReadInt32();
+            Params.SampleRate                   = Context.RequestData.ReadInt32();
+            Params.SampleCount                  = Context.RequestData.ReadInt32();
+            Params.Unknown8                     = Context.RequestData.ReadInt32();
+            Params.MixCount                     = Context.RequestData.ReadInt32();
+            Params.VoiceCount                   = Context.RequestData.ReadInt32();
+            Params.SinkCount                    = Context.RequestData.ReadInt32();
+            Params.EffectCount                  = Context.RequestData.ReadInt32();
+            Params.PerformanceManagerCount      = Context.RequestData.ReadInt32();
+            Params.VoiceDropEnable              = Context.RequestData.ReadInt32();
+            Params.SplitterCount                = Context.RequestData.ReadInt32();
+            Params.SplitterDestinationDataCount = Context.RequestData.ReadInt32();
+            Params.Unknown2C                    = Context.RequestData.ReadInt32();
+            Params.Revision                     = Context.RequestData.ReadInt32();
 
             return Params;
         }
