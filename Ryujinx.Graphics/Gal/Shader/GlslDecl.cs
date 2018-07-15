@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         public const int VertexIdAttr    = 0x2fc;
         public const int FaceAttr        = 0x3fc;
         public const int GlPositionWAttr = 0x7c;
+        public const int LayerAttr       = 0x64;
 
         public const int MaxUboSize = 1024;
 
@@ -210,7 +211,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                     //This is a built-in input variable.
                     if (Abuf.Offs == VertexIdAttr ||
                         Abuf.Offs == InstanceIdAttr ||
-                        Abuf.Offs == FaceAttr)
+                        Abuf.Offs == FaceAttr ||
+                        Abuf.Offs == LayerAttr)
                     {
                         break;
                     }
@@ -254,6 +256,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         m_Attributes.Add(Index, DeclInfo);
                     }
+
+                    Traverse(Abuf, Abuf.Vertex);
                     break;
                 }
 
