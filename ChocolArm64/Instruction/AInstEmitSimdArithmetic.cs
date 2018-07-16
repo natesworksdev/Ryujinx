@@ -65,11 +65,12 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
             EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
 
-            for (int Index = 1; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 1; Index < Elems; Index++)
             {
                 EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
 
@@ -97,13 +98,16 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
-            for (int Index = 0; Index < (Bytes >> Op.Size); Index++)
+            int ESize = 8 << Op.Size;
+
+            for (int Index = 0; Index < Elems; Index++)
             {
                 EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
 
-                Context.EmitLdc_I4(8 << Op.Size);
+                Context.EmitLdc_I4(ESize);
 
                 Emit();
 
@@ -159,11 +163,18 @@ namespace ChocolArm64.Instruction
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
             int Elems = 8 >> Op.Size;
+
             int ESize = 8 << Op.Size;
 
             int Part = Op.RegisterSize == ARegisterSize.SIMD128 ? Elems : 0;
 
             long RoundConst = 1L << (ESize - 1);
+
+            if (Part != 0)
+            {
+                Context.EmitLdvec(Op.Rd);
+                Context.EmitStvectmp();
+            }
 
             for (int Index = 0; Index < Elems; Index++)
             {
@@ -181,91 +192,16 @@ namespace ChocolArm64.Instruction
 
                 Context.EmitLsr(ESize);
 
-                EmitVectorInsert(Context, Op.Rd, Part + Index, Op.Size);
+                EmitVectorInsertTmp(Context, Part + Index, Op.Size);
             }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
 
             if (Part == 0)
             {
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
-        }
-
-        private static void EmitSaturatingExtNarrow(AILEmitterCtx Context, bool SignedSrc, bool SignedDst, bool Scalar)
-        {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            int Elems = (!Scalar ? 8 >> Op.Size : 1);
-            int ESize = 8 << Op.Size;
-
-            int Part = (!Scalar & (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0);
-
-            int TMaxValue = (SignedDst ? (1 << (ESize - 1)) - 1 : (int)((1L << ESize) - 1L));
-            int TMinValue = (SignedDst ? -((1 << (ESize - 1))) : 0);
-
-            Context.EmitLdc_I8(0L);
-            Context.EmitSttmp();
-
-            for (int Index = 0; Index < Elems; Index++)
-            {
-                AILLabel LblLe    = new AILLabel();
-                AILLabel LblGeEnd = new AILLabel();
-
-                EmitVectorExtract(Context, Op.Rn, Index, Op.Size + 1, SignedSrc);
-
-                Context.Emit(OpCodes.Dup);
-
-                Context.EmitLdc_I4(TMaxValue);
-                Context.Emit(OpCodes.Conv_U8);
-
-                Context.Emit(SignedSrc ? OpCodes.Ble_S : OpCodes.Ble_Un_S, LblLe);
-
-                Context.Emit(OpCodes.Pop);
-
-                Context.EmitLdc_I4(TMaxValue);
-
-                Context.EmitLdc_I8(0x8000000L);
-                Context.EmitSttmp();
-
-                Context.Emit(OpCodes.Br_S, LblGeEnd);
-
-                Context.MarkLabel(LblLe);
-
-                Context.Emit(OpCodes.Dup);
-
-                Context.EmitLdc_I4(TMinValue);
-                Context.Emit(OpCodes.Conv_I8);
-
-                Context.Emit(SignedSrc ? OpCodes.Bge_S : OpCodes.Bge_Un_S, LblGeEnd);
-
-                Context.Emit(OpCodes.Pop);
-
-                Context.EmitLdc_I4(TMinValue);
-
-                Context.EmitLdc_I8(0x8000000L);
-                Context.EmitSttmp();
-
-                Context.MarkLabel(LblGeEnd);
-
-                if (Scalar)
-                {
-                    EmitVectorZeroLower(Context, Op.Rd);
-                }
-
-                EmitVectorInsert(Context, Op.Rd, Part + Index, Op.Size);
-            }
-
-            if (Part == 0)
-            {
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
-
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-            Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpsr));
-            Context.EmitLdtmp();
-            Context.Emit(OpCodes.Conv_I4);
-            Context.Emit(OpCodes.Or);
-            Context.EmitCallPropSet(typeof(AThreadState), nameof(AThreadState.Fpsr));
         }
 
         public static void Fabd_S(AILEmitterCtx Context)
@@ -338,7 +274,7 @@ namespace ChocolArm64.Instruction
 
             int SizeF = Op.Size & 1;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             int Elems = Bytes >> SizeF + 2;
             int Half  = Elems >> 1;
@@ -655,106 +591,34 @@ namespace ChocolArm64.Instruction
 
         public static void Frecpe_S(AILEmitterCtx Context)
         {
-            EmitFrecpe(Context, 0, Scalar: true);
+            EmitScalarUnaryOpF(Context, () =>
+            {
+                EmitUnarySoftFloatCall(Context, nameof(ASoftFloat.RecipEstimate));
+            });
         }
 
         public static void Frecpe_V(AILEmitterCtx Context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            int SizeF = Op.Size & 1;
-
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
-
-            for (int Index = 0; Index < Bytes >> SizeF + 2; Index++)
+            EmitVectorUnaryOpF(Context, () =>
             {
-                EmitFrecpe(Context, Index, Scalar: false);
-            }
-
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
-            {
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
-        }
-
-        private static void EmitFrecpe(AILEmitterCtx Context, int Index, bool Scalar)
-        {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            int SizeF = Op.Size & 1;
-
-            if (SizeF == 0)
-            {
-                Context.EmitLdc_R4(1);
-            }
-            else /* if (SizeF == 1) */
-            {
-                Context.EmitLdc_R8(1);
-            }
-
-            EmitVectorExtractF(Context, Op.Rn, Index, SizeF);
-
-            Context.Emit(OpCodes.Div);
-
-            if (Scalar)
-            {
-                EmitVectorZeroAll(Context, Op.Rd);
-            }
-
-            EmitVectorInsertF(Context, Op.Rd, Index, SizeF);
+                EmitUnarySoftFloatCall(Context, nameof(ASoftFloat.RecipEstimate));
+            });
         }
 
         public static void Frecps_S(AILEmitterCtx Context)
         {
-            EmitFrecps(Context, 0, Scalar: true);
+            EmitScalarBinaryOpF(Context, () =>
+            {
+                EmitBinarySoftFloatCall(Context, nameof(ASoftFloat.RecipStep));
+            });
         }
 
         public static void Frecps_V(AILEmitterCtx Context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            int SizeF = Op.Size & 1;
-
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
-
-            for (int Index = 0; Index < Bytes >> SizeF + 2; Index++)
+            EmitVectorBinaryOpF(Context, () =>
             {
-                EmitFrecps(Context, Index, Scalar: false);
-            }
-
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
-            {
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
-        }
-
-        private static void EmitFrecps(AILEmitterCtx Context, int Index, bool Scalar)
-        {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
-
-            int SizeF = Op.Size & 1;
-
-            if (SizeF == 0)
-            {
-                Context.EmitLdc_R4(2);
-            }
-            else /* if (SizeF == 1) */
-            {
-                Context.EmitLdc_R8(2);
-            }
-
-            EmitVectorExtractF(Context, Op.Rn, Index, SizeF);
-            EmitVectorExtractF(Context, Op.Rm, Index, SizeF);
-
-            Context.Emit(OpCodes.Mul);
-            Context.Emit(OpCodes.Sub);
-
-            if (Scalar)
-            {
-                EmitVectorZeroAll(Context, Op.Rd);
-            }
-
-            EmitVectorInsertF(Context, Op.Rd, Index, SizeF);
+                EmitBinarySoftFloatCall(Context, nameof(ASoftFloat.RecipStep));
+            });
         }
 
         public static void Frinta_S(AILEmitterCtx Context)
@@ -956,7 +820,7 @@ namespace ChocolArm64.Instruction
 
             int SizeF = Op.Size & 1;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
 
             for (int Index = 0; Index < Bytes >> SizeF + 2; Index++)
             {
@@ -1188,6 +1052,15 @@ namespace ChocolArm64.Instruction
             });
         }
 
+        public static void Smlsl_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmTernaryOpSx(Context, () =>
+            {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Sub);
+            });
+        }
+
         public static void Smull_V(AILEmitterCtx Context)
         {
             EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Mul));
@@ -1195,22 +1068,22 @@ namespace ChocolArm64.Instruction
 
         public static void Sqxtn_S(AILEmitterCtx Context)
         {
-            EmitSaturatingExtNarrow(Context, SignedSrc: true, SignedDst: true, Scalar: true);
+            EmitScalarSaturatingNarrowOpSxSx(Context, () => { });
         }
 
         public static void Sqxtn_V(AILEmitterCtx Context)
         {
-            EmitSaturatingExtNarrow(Context, SignedSrc: true, SignedDst: true, Scalar: false);
+            EmitVectorSaturatingNarrowOpSxSx(Context, () => { });
         }
 
         public static void Sqxtun_S(AILEmitterCtx Context)
         {
-            EmitSaturatingExtNarrow(Context, SignedSrc: true, SignedDst: false, Scalar: true);
+            EmitScalarSaturatingNarrowOpSxZx(Context, () => { });
         }
 
         public static void Sqxtun_V(AILEmitterCtx Context)
         {
-            EmitSaturatingExtNarrow(Context, SignedSrc: true, SignedDst: false, Scalar: false);
+            EmitVectorSaturatingNarrowOpSxZx(Context, () => { });
         }
 
         public static void Sub_S(AILEmitterCtx Context)
@@ -1284,11 +1157,12 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+            int Bytes = Op.GetBitsCount() >> 3;
+            int Elems = Bytes >> Op.Size;
 
             EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
 
-            for (int Index = 1; Index < (Bytes >> Op.Size); Index++)
+            for (int Index = 1; Index < Elems; Index++)
             {
                 EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
 
@@ -1358,12 +1232,12 @@ namespace ChocolArm64.Instruction
 
         public static void Uqxtn_S(AILEmitterCtx Context)
         {
-            EmitSaturatingExtNarrow(Context, SignedSrc: false, SignedDst: false, Scalar: true);
+            EmitScalarSaturatingNarrowOpZxZx(Context, () => { });
         }
 
         public static void Uqxtn_V(AILEmitterCtx Context)
         {
-            EmitSaturatingExtNarrow(Context, SignedSrc: false, SignedDst: false, Scalar: false);
+            EmitVectorSaturatingNarrowOpZxZx(Context, () => { });
         }
     }
 }

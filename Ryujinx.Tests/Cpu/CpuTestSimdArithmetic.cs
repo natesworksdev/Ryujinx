@@ -9,46 +9,6 @@ namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestSimdArithmetic : CpuTest
     {
-        [TestCase(0xE228420u,   0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0xE228420u,   0x00000000FFFFFFFFul, 0x00000000FFFFFFFFul, 0x0000000000000001ul, 0x0000000000000001ul, 0x00000000FFFFFF00ul, 0x0000000000000000ul)]
-        [TestCase(0xE228420u,   0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFEFEFEFEFEFEFEFEul, 0x0000000000000000ul)]
-        [TestCase(0xE228420u,   0x0102030405060708ul, 0xAAAAAAAAAAAAAAAAul, 0x0807060504030201ul, 0x2222222222222222ul, 0x0909090909090909ul, 0x0000000000000000ul)]
-        [TestCase(0x4E228420u,  0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0x4E228420u,  0x00000000FFFFFFFFul, 0x00000000FFFFFFFFul, 0x0000000000000001ul, 0x0000000000000001ul, 0x00000000FFFFFF00ul, 0x00000000FFFFFF00ul)]
-        [TestCase(0x4E228420u,  0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFEFEFEFEFEFEFEFEul, 0xFEFEFEFEFEFEFEFEul)]
-        [TestCase(0x4E228420u,  0x0102030405060708ul, 0xAAAAAAAAAAAAAAAAul, 0x0807060504030201ul, 0x2222222222222222ul, 0x0909090909090909ul, 0xCCCCCCCCCCCCCCCCul)]
-        [TestCase(0xE628420u,   0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0xE628420u,   0x00000000FFFFFFFFul, 0x00000000FFFFFFFFul, 0x0000000000000001ul, 0x0000000000000001ul, 0x00000000FFFF0000ul, 0x0000000000000000ul)]
-        [TestCase(0xE628420u,   0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFEFFFEFFFEFFFEul, 0x0000000000000000ul)]
-        [TestCase(0xE628420u,   0x0102030405060708ul, 0xAAAAAAAAAAAAAAAAul, 0x0807060504030201ul, 0x2222222222222222ul, 0x0909090909090909ul, 0x0000000000000000ul)]
-        [TestCase(0x4E628420u,  0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0x4E628420u,  0x00000000FFFFFFFFul, 0x00000000FFFFFFFFul, 0x0000000000000001ul, 0x0000000000000001ul, 0x00000000FFFF0000ul, 0x00000000FFFF0000ul)]
-        [TestCase(0x4E628420u,  0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFEFFFEFFFEFFFEul, 0xFFFEFFFEFFFEFFFEul)]
-        [TestCase(0x4E628420u,  0x0102030405060708ul, 0xAAAAAAAAAAAAAAAAul, 0x0807060504030201ul, 0x2222222222222222ul, 0x0909090909090909ul, 0xCCCCCCCCCCCCCCCCul)]
-        [TestCase(0xEA28420u,   0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0xEA28420u,   0x00000000FFFFFFFFul, 0x00000000FFFFFFFFul, 0x0000000000000001ul, 0x0000000000000001ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0xEA28420u,   0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFEFFFFFFFEul, 0x0000000000000000ul)]
-        [TestCase(0xEA28420u,   0x0102030405060708ul, 0xAAAAAAAAAAAAAAAAul, 0x0807060504030201ul, 0x2222222222222222ul, 0x0909090909090909ul, 0x0000000000000000ul)]
-        [TestCase(0x4EA28420u,  0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0x4EA28420u,  0x00000000FFFFFFFFul, 0x00000000FFFFFFFFul, 0x0000000000000001ul, 0x0000000000000001ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0x4EA28420u,  0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFEFFFFFFFEul, 0xFFFFFFFEFFFFFFFEul)]
-        [TestCase(0x4EA28420u,  0x0102030405060708ul, 0xAAAAAAAAAAAAAAAAul, 0x0807060504030201ul, 0x2222222222222222ul, 0x0909090909090909ul, 0xCCCCCCCCCCCCCCCCul)]
-        [TestCase(0x4EE28420u,  0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
-        [TestCase(0x4EE28420u,  0x00000000FFFFFFFFul, 0x00000000FFFFFFFFul, 0x0000000000000001ul, 0x0000000000000001ul, 0x0000000100000000ul, 0x0000000100000000ul)]
-        [TestCase(0x4EE28420u,  0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFFul, 0xFFFFFFFFFFFFFFFEul, 0xFFFFFFFFFFFFFFFEul)]
-        [TestCase(0x4EE28420u,  0x0102030405060708ul, 0xAAAAAAAAAAAAAAAAul, 0x0807060504030201ul, 0x2222222222222222ul, 0x0909090909090909ul, 0xCCCCCCCCCCCCCCCCul)]
-        public void Add_V(uint Opcode, ulong A0, ulong A1, ulong B0, ulong B1, ulong Result0, ulong Result1)
-        {
-            Vector128<float> V1 = MakeVectorE0E1(A0, A1);
-            Vector128<float> V2 = MakeVectorE0E1(B0, B1);
-            AThreadState ThreadState = SingleOpcode(Opcode, V1: V1, V2: V2);
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(Result0, GetVectorE0(ThreadState.V0));
-                Assert.AreEqual(Result1, GetVectorE1(ThreadState.V0));
-            });
-        }
-
         [TestCase(0x1E224820u, 0x0000000000000000ul, 0x0000000080000000ul, 0x0000000000000000ul)]
         [TestCase(0x1E224820u, 0x0000000080000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
         [TestCase(0x1E224820u, 0x0000000080000000ul, 0x0000000080000000ul, 0x0000000080000000ul)]
@@ -163,26 +123,18 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(Sse41.Extract(ThreadState.V6, (byte)0), Is.EqualTo(A * B));
         }
 
-        [Test, Description("FRECPE D0, D1")]
-        public void Frecpe_S([Random(100)] double A)
+        [TestCase(0x00000000u, 0x7F800000u)]
+        [TestCase(0x80000000u, 0xFF800000u)]
+        [TestCase(0x00FFF000u, 0x7E000000u)]
+        [TestCase(0x41200000u, 0x3DCC8000u)]
+        [TestCase(0xC1200000u, 0xBDCC8000u)]
+        [TestCase(0x001FFFFFu, 0x7F800000u)]
+        [TestCase(0x007FF000u, 0x7E800000u)]
+        public void Frecpe_S(uint A, uint Result)
         {
-            AThreadState ThreadState = SingleOpcode(0x5EE1D820, V1: MakeVectorE0(A));
-
-            Assert.That(VectorExtractDouble(ThreadState.V0, 0), Is.EqualTo(1 / A));
-        }
-
-        [Test, Description("FRECPE V2.4S, V0.4S")]
-        public void Frecpe_V([Random(100)] float A)
-        {
-            AThreadState ThreadState = SingleOpcode(0x4EA1D802, V0: Sse.SetAllVector128(A));
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(Sse41.Extract(ThreadState.V2, (byte)0), Is.EqualTo(1 / A));
-                Assert.That(Sse41.Extract(ThreadState.V2, (byte)1), Is.EqualTo(1 / A));
-                Assert.That(Sse41.Extract(ThreadState.V2, (byte)2), Is.EqualTo(1 / A));
-                Assert.That(Sse41.Extract(ThreadState.V2, (byte)3), Is.EqualTo(1 / A));
-            });
+            Vector128<float> V1 = MakeVectorE0(A);
+            AThreadState ThreadState = SingleOpcode(0x5EA1D820, V1: V1);
+            Assert.AreEqual(Result, GetVectorE0(ThreadState.V0));
         }
 
         [Test, Description("FRECPS D0, D1, D2")]
@@ -202,12 +154,14 @@ namespace Ryujinx.Tests.Cpu
                 V2: Sse.SetAllVector128(A),
                 V0: Sse.SetAllVector128(B));
 
+            float Result = (float)(2 - ((double)A * (double)B));
+
             Assert.Multiple(() =>
             {
-                Assert.That(Sse41.Extract(ThreadState.V4, (byte)0), Is.EqualTo(2 - (A * B)));
-                Assert.That(Sse41.Extract(ThreadState.V4, (byte)1), Is.EqualTo(2 - (A * B)));
-                Assert.That(Sse41.Extract(ThreadState.V4, (byte)2), Is.EqualTo(2 - (A * B)));
-                Assert.That(Sse41.Extract(ThreadState.V4, (byte)3), Is.EqualTo(2 - (A * B)));
+                Assert.That(Sse41.Extract(ThreadState.V4, (byte)0), Is.EqualTo(Result));
+                Assert.That(Sse41.Extract(ThreadState.V4, (byte)1), Is.EqualTo(Result));
+                Assert.That(Sse41.Extract(ThreadState.V4, (byte)2), Is.EqualTo(Result));
+                Assert.That(Sse41.Extract(ThreadState.V4, (byte)3), Is.EqualTo(Result));
             });
         }
 

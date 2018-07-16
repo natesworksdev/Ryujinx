@@ -3,6 +3,7 @@ using Ryujinx.Audio;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.OsHle.Services.Aud.AudioOut;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,6 +14,10 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
     class IAudioOutManager : IpcService
     {
         private const string DefaultAudioOutput = "DeviceOut";
+
+        private const int DefaultSampleRate = 48000;
+
+        private const int DefaultChannelsCount = 2;
 
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
@@ -122,7 +127,12 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             int SampleRate = Context.RequestData.ReadInt32();
             int Channels   = Context.RequestData.ReadInt32();
 
-            if (SampleRate != 48000)
+            if (SampleRate == 0)
+            {
+                SampleRate = DefaultSampleRate;
+            }
+
+            if (SampleRate != DefaultSampleRate)
             {
                 Context.Ns.Log.PrintWarning(LogClass.Audio, "Invalid sample rate!");
 
@@ -133,7 +143,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             if (Channels == 0)
             {
-                Channels = 2;
+                Channels = DefaultChannelsCount;
             }
 
             KEvent ReleaseEvent = new KEvent();
@@ -145,13 +155,13 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             IAalOutput AudioOut = Context.Ns.AudioOut;
 
-            int Track = AudioOut.OpenTrack(SampleRate, 2, Callback, out AudioFormat Format);
+            int Track = AudioOut.OpenTrack(SampleRate, Channels, Callback);
 
             MakeObject(Context, new IAudioOut(AudioOut, ReleaseEvent, Track));
 
             Context.ResponseData.Write(SampleRate);
             Context.ResponseData.Write(Channels);
-            Context.ResponseData.Write((int)Format);
+            Context.ResponseData.Write((int)SampleFormat.PcmInt16);
             Context.ResponseData.Write((int)PlaybackState.Stopped);
 
             return 0;
