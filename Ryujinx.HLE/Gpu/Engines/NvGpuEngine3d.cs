@@ -132,10 +132,17 @@ namespace Ryujinx.HLE.Gpu.Engines
             int Width  = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
             int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
 
-            //Note: Using the Width/Height results seems to give incorrect results.
-            //Maybe the size of all frame buffers is hardcoded to screen size? This seems unlikely.
-            Gpu.Renderer.FrameBuffer.Create(Key, 1280, 720);
+            int ViewportXW = ReadRegister(NvGpuEngine3dReg.ViewportNHoriz + FbIndex * 4);
+            int ViewportYH = ReadRegister(NvGpuEngine3dReg.ViewportNVert  + FbIndex * 4);
+
+            Gpu.Renderer.FrameBuffer.Create(Key, Width, Height);
             Gpu.Renderer.FrameBuffer.Bind(Key);
+
+            Gpu.Renderer.FrameBuffer.SetViewport(
+                (ushort)(ViewportXW >> 0),
+                (ushort)(ViewportYH >> 0),
+                (ushort)(ViewportXW >> 16),
+                (ushort)(ViewportYH >> 16));
         }
 
         private long[] UploadShaders(NvGpuVmm Vmm)
@@ -195,8 +202,8 @@ namespace Ryujinx.HLE.Gpu.Engines
                 Gpu.Renderer.Shader.Bind(Key);
             }
 
-            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportScaleX);
-            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportScaleY);
+            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
+            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
 
             Gpu.Renderer.Shader.SetFlip(SignX, SignY);
 
@@ -220,8 +227,8 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private void SetFrontFace()
         {
-            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportScaleX);
-            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportScaleY);
+            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
+            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
 
             GalFrontFace FrontFace = (GalFrontFace)ReadRegister(NvGpuEngine3dReg.FrontFace);
 
