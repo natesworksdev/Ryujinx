@@ -89,22 +89,25 @@ namespace Ryujinx.HLE.Gpu.Engines
                 DstSwizzle = TextureSwizzle.BlockLinear;
             }
 
-            TextureInfo DstTexture = new TextureInfo(
-                DstAddress,
-                DstWidth,
-                DstHeight,
-                DstBlockHeight,
-                DstBlockHeight,
-                DstSwizzle,
-                GalTextureFormat.A8B8G8R8);
-
             if (IsFbTexture)
             {
                 //TODO: Change this when the correct frame buffer resolution is used.
                 //Currently, the frame buffer size is hardcoded to 1280x720.
                 SrcWidth  = 1280;
                 SrcHeight = 720;
+            }
 
+            TextureInfo DstTexture = new TextureInfo(
+                DstAddress,
+                SrcWidth,
+                SrcHeight,
+                DstPitch,
+                DstBlockHeight, 1,
+                DstSwizzle,
+                GalTextureFormat.A8B8G8R8);
+
+            if (IsFbTexture)
+            {
                 Gpu.Renderer.FrameBuffer.GetBufferData(Key, (byte[] Buffer) =>
                 {
                     CopyTexture(

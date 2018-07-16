@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.Gpu.Texture
             int         Width,
             int         Height)
         {
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 4);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 1, 4);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
