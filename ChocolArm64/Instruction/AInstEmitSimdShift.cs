@@ -145,7 +145,7 @@ namespace ChocolArm64.Instruction
                 Context.Emit(OpCodes.Shr);
             };
 
-            EmitScalarSaturatingNarrowOpZxZx(Context, Emit);
+            EmitScalarSaturatingNarrowOpSxZx(Context, Emit);
         }
 		
         public static void Sqrshrun_V(AILEmitterCtx Context)
@@ -167,7 +167,7 @@ namespace ChocolArm64.Instruction
                 Context.Emit(OpCodes.Shr);
             };
 
-            EmitVectorSaturatingNarrowOpZxZx(Context, Emit);
+            EmitVectorSaturatingNarrowOpSxZx(Context, Emit);
         }
 
         public static void Srshr_V(AILEmitterCtx Context)
