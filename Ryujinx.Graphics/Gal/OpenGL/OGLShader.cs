@@ -118,6 +118,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             if (IsDualVp)
             {
+                ShaderDumper.Dump(Memory, Position  + 0x50, Type, "a");
+                ShaderDumper.Dump(Memory, PositionB + 0x50, Type, "b");
+
                 Program = Decompiler.Decompile(
                     Memory,
                     Position  + 0x50,
@@ -126,6 +129,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
             else
             {
+                ShaderDumper.Dump(Memory, Position + 0x50, Type);
+
                 Program = Decompiler.Decompile(Memory, Position + 0x50, Type);
             }
 
@@ -200,6 +205,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalShaderType.TessEvaluation: Current.TessEvaluation = Stage; break;
                 case GalShaderType.Geometry:       Current.Geometry       = Stage; break;
                 case GalShaderType.Fragment:       Current.Fragment       = Stage; break;
+            }
+        }
+
+        public void Unbind(GalShaderType Type)
+        {
+            switch (Type)
+            {
+                case GalShaderType.Vertex:         Current.Vertex         = null; break;
+                case GalShaderType.TessControl:    Current.TessControl    = null; break;
+                case GalShaderType.TessEvaluation: Current.TessEvaluation = null; break;
+                case GalShaderType.Geometry:       Current.Geometry       = null; break;
+                case GalShaderType.Fragment:       Current.Fragment       = null; break;
             }
         }
 
