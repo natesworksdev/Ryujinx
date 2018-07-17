@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.OsHle.Services.Bcat
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-
+                //...
             };
         }
 		
