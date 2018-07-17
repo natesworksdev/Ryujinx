@@ -9,11 +9,11 @@ namespace Ryujinx.HLE.Gpu.Texture
     {
         public static ISwizzle GetSwizzle(TextureInfo Texture, int BlockWidth, int Bpp)
         {
-            int AlignMask = Texture.TileWidth * 64 - 1;
+            int Width = (Texture.Width + (BlockWidth - 1)) / BlockWidth;
 
-            int WidthAligned = (Texture.Width + AlignMask) & ~AlignMask;
+            int AlignMask = Texture.TileWidth * (64 / Bpp) - 1;
 
-            WidthAligned = (WidthAligned + (BlockWidth - 1)) / BlockWidth;
+            Width = (Width + AlignMask) & ~AlignMask;
 
             switch (Texture.Swizzle)
             {
@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
                 case TextureSwizzle.BlockLinear:
                 case TextureSwizzle.BlockLinearColorKey:
-                    return new BlockLinearSwizzle(WidthAligned, Bpp, Texture.BlockHeight);
+                    return new BlockLinearSwizzle(Width, Bpp, Texture.BlockHeight);
             }
 
             throw new NotImplementedException(Texture.Swizzle.ToString());

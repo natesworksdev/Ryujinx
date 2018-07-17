@@ -93,11 +93,6 @@ namespace Ryujinx.HLE.Gpu.Engines
             bool IsSrcFb = Gpu.Engine3d.IsFrameBufferPosition(SrcKey);
             bool IsDstFb = Gpu.Engine3d.IsFrameBufferPosition(DstKey);
 
-            if (IsSrcFb && DstLinear)
-            {
-                DstSwizzle = TextureSwizzle.BlockLinear;
-            }
-
             TextureInfo SrcTexture = new TextureInfo(
                 SrcAddress,
                 SrcWidth,
