@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static void Iadd_I32(ShaderIrBlock Block, long OpCode)
         {
-            ShaderIrNode OperA = GetOperGpr0    (OpCode);
+            ShaderIrNode OperA = GetOperGpr8    (OpCode);
             ShaderIrNode OperB = GetOperImm32_20(OpCode);
 
             bool NegA = ((OpCode >> 56) & 1) != 0;
