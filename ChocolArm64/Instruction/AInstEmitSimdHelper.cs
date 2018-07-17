@@ -773,6 +773,115 @@ namespace ChocolArm64.Instruction
             }
         }
 
+        public static void EmitScalarSaturatingOpSxSx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, true, true, true);
+        }
+
+        public static void EmitScalarSaturatingOpSxZx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, true, false, true);
+        }
+
+        public static void EmitScalarSaturatingOpZxZx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, false, false, true);
+        }
+
+        public static void EmitVectorSaturatingOpSxSx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, true, true, false);
+        }
+
+        public static void EmitVectorSaturatingOpSxZx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, true, false, false);
+        }
+
+        public static void EmitVectorSaturatingOpZxZx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, false, false, false);
+        }
+
+        public static void EmitSaturatingOp(
+            AILEmitterCtx Context,
+            Action        Emit,
+            bool          SignedSrc,
+            bool          SignedDst,
+            bool          Scalar)
+        {
+            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+
+            int Elems = !Scalar ? 8 >> Op.Size : 1;
+
+            int ESize = 8 << Op.Size;
+
+            long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (1L << ESize) - 1L;
+            long TMinValue = SignedDst ? -((1 << (ESize - 1))) : 0;
+
+            Context.EmitLdc_I8(0L);
+            Context.EmitSttmp();
+
+            for (int Index = 0; Index < Elems; Index++)
+            {
+                AILLabel LblLe    = new AILLabel();
+                AILLabel LblGeEnd = new AILLabel();
+
+                EmitVectorExtract(Context, Op.Rn, Index, Op.Size + 1, SignedSrc);
+                EmitVectorExtract(Context, Op.Rm, Index, Op.Size + 1, SignedSrc);
+
+                Emit();
+
+                Context.Emit(OpCodes.Dup);
+
+                Context.EmitLdc_I8(TMaxValue);
+
+                Context.Emit(SignedSrc ? OpCodes.Ble_S : OpCodes.Ble_Un_S, LblLe);
+
+                Context.Emit(OpCodes.Pop);
+
+                Context.EmitLdc_I8(TMaxValue);
+                Context.EmitLdc_I8(0x8000000L);
+                Context.EmitSttmp();
+
+                Context.Emit(OpCodes.Br_S, LblGeEnd);
+
+                Context.MarkLabel(LblLe);
+
+                Context.Emit(OpCodes.Dup);
+
+                Context.EmitLdc_I8(TMinValue);
+
+                Context.Emit(SignedSrc ? OpCodes.Bge_S : OpCodes.Bge_Un_S, LblGeEnd);
+
+                Context.Emit(OpCodes.Pop);
+
+                Context.EmitLdc_I8(TMinValue);
+                Context.EmitLdc_I8(0x8000000L);
+                Context.EmitSttmp();
+
+                Context.MarkLabel(LblGeEnd);
+
+                if (Scalar)
+                {
+                    EmitVectorZeroLower(Context, Op.Rd);
+                }
+
+                EmitVectorInsertTmp(Context, Index, Op.Size);
+            }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
+
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Fpsr));
+            Context.EmitLdtmp();
+            Context.Emit(OpCodes.Conv_I4);
+            Context.Emit(OpCodes.Or);
+            Context.EmitCallPropSet(typeof(AThreadState), nameof(AThreadState.Fpsr));
+        }
+
         public static void EmitScalarSaturatingNarrowOpSxSx(AILEmitterCtx Context, Action Emit)
         {
             EmitSaturatingNarrowOp(Context, Emit, true, true, true);

@@ -1052,6 +1052,16 @@ namespace ChocolArm64.Instruction
             EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Mul));
         }
 
+        public static void Sqadd_S(AILEmitterCtx Context)
+        {
+            EmitScalarSaturatingOpSxSx(Context, () => Context.Emit(OpCodes.Add));
+        }
+
+        public static void Sqadd_V(AILEmitterCtx Context)
+        {
+            EmitVectorSaturatingOpSxSx(Context, () => Context.Emit(OpCodes.Add));
+        }
+
         public static void Sqxtn_S(AILEmitterCtx Context)
         {
             EmitScalarSaturatingNarrowOpSxSx(Context, () => { });
@@ -1214,6 +1224,16 @@ namespace ChocolArm64.Instruction
         public static void Umull_V(AILEmitterCtx Context)
         {
             EmitVectorWidenRnRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Mul));
+        }
+
+        public static void Uqadd_S(AILEmitterCtx Context)
+        {
+            EmitScalarSaturatingOpZxZx(Context, () => Context.Emit(OpCodes.Add));
+        }
+
+        public static void Uqadd_V(AILEmitterCtx Context)
+        {
+            EmitVectorSaturatingOpZxZx(Context, () => Context.Emit(OpCodes.Add));
         }
 
         public static void Uqxtn_S(AILEmitterCtx Context)
