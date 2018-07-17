@@ -18,6 +18,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 1,  LockExit                              },
+                { 2,  UnlockExit                            },
                 { 9,  GetLibraryAppletLaunchableEvent       },
                 { 10, SetScreenShotPermission               },
                 { 11, SetOperationModeChangedNotification   },
@@ -32,6 +33,11 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         }
 
         public long LockExit(ServiceCtx Context)
+        {
+            return 0;
+        }
+
+        public long UnlockExit(ServiceCtx Context)
         {
             return 0;
         }
