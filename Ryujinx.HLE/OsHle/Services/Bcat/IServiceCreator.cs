@@ -16,8 +16,8 @@ namespace Ryujinx.HLE.OsHle.Services.Bcat
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, CreateBcatService                                  },
-                { 1, CreateDeliveryCacheStorageService                  }
+                { 0, CreateBcatService                 },
+                { 1, CreateDeliveryCacheStorageService }
             };
         }
 
