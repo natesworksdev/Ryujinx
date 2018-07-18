@@ -12,6 +12,7 @@ namespace Ryujinx.HLE.Gpu.Texture
             {
                 case GalTextureFormat.R32G32B32A32: return Read16Bpp                 (Memory, Texture);
                 case GalTextureFormat.R16G16B16A16: return Read8Bpp                  (Memory, Texture);
+                case GalTextureFormat.R32_G32:      return Read8Bpp                  (Memory, Texture);
                 case GalTextureFormat.A8B8G8R8:     return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.R32:          return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.A1B5G5R5:     return Read5551                  (Memory, Texture);
