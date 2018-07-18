@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gal.Shader
     {
         public static void Out_R(ShaderIrBlock Block, long OpCode)
         {
-            //TODO: This registers have to be used for something
+            //TODO: Those registers have to be used for something
             ShaderIrOperGpr Gpr0  = GetOperGpr0(OpCode);
             ShaderIrOperGpr Gpr8  = GetOperGpr8(OpCode);
             ShaderIrOperGpr Gpr20 = GetOperGpr20(OpCode);
