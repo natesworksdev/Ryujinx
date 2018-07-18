@@ -186,29 +186,7 @@ namespace Ryujinx
                 case "-JOYSTICKAXIS1": return -GamePad.ThumbSticks.Left.Y;
                 case "-JOYSTICKAXIS2": return -GamePad.ThumbSticks.Right.X;
                 case "-JOYSTICKAXIS3": return -GamePad.ThumbSticks.Right.Y;
-                default:               throw  new ArgumentException();
-            }
-        }
-
-        private bool IsGamePadActive(int Index)
-        {
-            return IsGamePadActive(GamePad.GetState(Index));
-        }
-
-        private bool IsGamePadActive(GamePadState GamePad)
-        {
-            if (GamePad.IsConnected)
-            {
-                return GamePad.Buttons.IsAnyButtonPressed
-                    || (GamePad.Triggers.Left >= 0.8f        || GamePad.Triggers.Right >= 0.8f)
-                    || ((GamePad.ThumbSticks.Left.X >= 0.1f  || GamePad.ThumbSticks.Left.X  <= -0.1f)
-                    ||  (GamePad.ThumbSticks.Left.Y >= 0.1f  || GamePad.ThumbSticks.Left.Y  <= -0.1f)
-                    ||  (GamePad.ThumbSticks.Right.X >= 0.1f || GamePad.ThumbSticks.Right.X <= -0.1f)
-                    ||  (GamePad.ThumbSticks.Right.Y >= 0.1f || GamePad.ThumbSticks.Right.Y <= -0.1f));
-            }
-            else
-            {
-                return false;
+                default:               throw  new ArgumentException(nameof(Joystick));
             }
         }
 
@@ -224,7 +202,7 @@ namespace Ryujinx
             int RightJoystickDY       = 0;
 
             //Keyboard Input
-            if (Keyboard.HasValue && !IsGamePadActive(Config.GamePadIndex))
+            if (Keyboard.HasValue)
             {
                 KeyboardState Keyboard = this.Keyboard.Value;
 
@@ -264,7 +242,7 @@ namespace Ryujinx
             }
 
             //Controller Input
-            if (Config.GamePadEnable && !Keyboard.HasValue && IsGamePadActive(Config.GamePadIndex))
+            if (Config.GamePadEnable)
             {
                 GamePadState GamePad = OpenTK.Input.GamePad.GetState(Config.GamePadIndex);
                 float AnalogStickDeadzone = Config.GamePadDeadzone;
