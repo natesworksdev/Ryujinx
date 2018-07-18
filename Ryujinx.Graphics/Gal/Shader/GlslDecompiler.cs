@@ -1223,10 +1223,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             switch (Node)
             {
                 case ShaderIrOperAbuf Abuf:
-                    return Abuf.Offs == GlslDecl.VertexIdAttr ||
+                    return Abuf.Offs == GlslDecl.LayerAttr ||
                            Abuf.Offs == GlslDecl.InstanceIdAttr ||
-                           Abuf.Offs == GlslDecl.FaceAttr ||
-                           Abuf.Offs == GlslDecl.LayerAttr
+                           Abuf.Offs == GlslDecl.VertexIdAttr ||
+                           Abuf.Offs == GlslDecl.FaceAttr
                         ? OperType.I32
                         : OperType.F32;
 
