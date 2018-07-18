@@ -23,6 +23,8 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
             };
         }
 
+        public UInt32 NoInternetConnection = 0x2586e;
+
         //CreateRequest(i32)
         public long CreateRequest(ServiceCtx Context)
         {
@@ -37,12 +39,18 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
 
         public long GetCurrentIpAddress(ServiceCtx Context)
         {
-            string HostName = Dns.GetHostName();
-            IPHostEntry HostEntry = Dns.GetHostEntry(HostName);
-            IPAddress[] Address = HostEntry.AddressList;
-            IPAddress IP = Address.Where(x => x.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
-            uint LocalIP = BitConverter.ToUInt32(IP.GetAddressBytes());
-            Context.ResponseData.Write(LocalIP);
+            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            {
+                return NoInternetConnection;
+            }
+
+            IPHostEntry Host = Dns.GetHostEntry(Dns.GetHostName());
+            IPAddress Local = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
+
+            Context.ResponseData.Write(BitConverter.ToUInt32(Local.GetAddressBytes()));
+
+            Context.Ns.Log.PrintInfo(LogClass.ServiceNifm, "Console's local IP is " + Local.ToString());
+
             return 0;
         }
     }
