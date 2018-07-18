@@ -160,7 +160,7 @@ namespace Ryujinx
                 case "DPADRIGHT": return GamePad.DPad.Right;
                 case "START":     return GamePad.Buttons.Start;
                 case "BACK":      return GamePad.Buttons.Back;
-                default:          throw  new ArgumentException();
+                default:          throw new ArgumentException();
             }
         }
 
@@ -170,7 +170,7 @@ namespace Ryujinx
             {
                 case "LTRIGGER": return GamePad.Triggers.Left;
                 case "RTRIGGER": return GamePad.Triggers.Right;
-                default:         throw  new ArgumentException();
+                default:         throw new ArgumentException();
             }
         }
 
@@ -186,7 +186,7 @@ namespace Ryujinx
                 case "-JOYSTICKAXIS1": return -GamePad.ThumbSticks.Left.Y;
                 case "-JOYSTICKAXIS2": return -GamePad.ThumbSticks.Right.X;
                 case "-JOYSTICKAXIS3": return -GamePad.ThumbSticks.Right.Y;
-                default:               throw  new ArgumentException(nameof(Joystick));
+                default:               throw new ArgumentException(nameof(Joystick));
             }
         }
 
