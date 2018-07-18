@@ -38,6 +38,7 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.R32:
                 case GalTextureFormat.ZF32:
                 case GalTextureFormat.BF10GF11RF11:
+                case GalTextureFormat.Z24S8:
                     return Texture.Width * Texture.Height * 4;
 
                 case GalTextureFormat.A1B5G5R5:
@@ -55,6 +56,8 @@ namespace Ryujinx.HLE.Gpu.Texture
                     return CompressedTextureSize(Texture.Width, Texture.Height, 4, 4, 8);
                 }
 
+                case GalTextureFormat.BC6H_SF16:
+                case GalTextureFormat.BC6H_UF16:
                 case GalTextureFormat.BC7U:
                 case GalTextureFormat.BC2:
                 case GalTextureFormat.BC3:
@@ -63,67 +66,67 @@ namespace Ryujinx.HLE.Gpu.Texture
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 4, 4, 16);
                 }
-                    
+
                 case GalTextureFormat.Astc2D5x5:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 5, 5, 16);
                 }
-                
+
                 case GalTextureFormat.Astc2D6x6:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 6, 6, 16);
                 }
-                    
+
                 case GalTextureFormat.Astc2D8x8:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 8, 8, 16);
                 }
-                    
+
                 case GalTextureFormat.Astc2D10x10:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 10, 10, 16);
                 }
-                    
+
                 case GalTextureFormat.Astc2D12x12:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 12, 12, 16);
                 }
-                
+
                 case GalTextureFormat.Astc2D5x4:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 5, 4, 16);
                 }
-				
+
                 case GalTextureFormat.Astc2D6x5:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 6, 5, 16);
                 }
-				
+
                 case GalTextureFormat.Astc2D8x6:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 8, 6, 16);
                 }
-				
+
                 case GalTextureFormat.Astc2D10x8:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 10, 8, 16);
                 }
-				
+
                 case GalTextureFormat.Astc2D12x10:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 12, 10, 16);
                 }
-				
+
                 case GalTextureFormat.Astc2D8x5:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 8, 5, 16);
                 }
-				
+
                 case GalTextureFormat.Astc2D10x5:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 10, 5, 16);
                 }
-				
+
                 case GalTextureFormat.Astc2D10x6:
                 {
                     return CompressedTextureSize(Texture.Width, Texture.Height, 10, 6, 16);
@@ -140,7 +143,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             return W * H * Bpb;
         }
-        
+
         public static (AMemory Memory, long Position) GetMemoryAndPosition(
             IAMemory Memory,
             long     Position)
