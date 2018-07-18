@@ -132,17 +132,22 @@ namespace Ryujinx.HLE.Gpu.Engines
             int Width  = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
             int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
 
-            int ViewportXW = ReadRegister(NvGpuEngine3dReg.ViewportNHoriz + FbIndex * 4);
-            int ViewportYH = ReadRegister(NvGpuEngine3dReg.ViewportNVert  + FbIndex * 4);
+            float TX = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNTranslateX + FbIndex * 4);
+            float TY = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNTranslateY + FbIndex * 4);
+
+            float SX = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNScaleX + FbIndex * 4);
+            float SY = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNScaleY + FbIndex * 4);
+
+            int VpX = (int)MathF.Max(0, TX - MathF.Abs(SX));
+            int VpY = (int)MathF.Max(0, TY - MathF.Abs(SY));
+
+            int VpW = (int)(TX + MathF.Abs(SX)) - VpX;
+            int VpH = (int)(TY + MathF.Abs(SY)) - VpY;
 
             Gpu.Renderer.FrameBuffer.Create(Key, Width, Height);
             Gpu.Renderer.FrameBuffer.Bind(Key);
 
-            Gpu.Renderer.FrameBuffer.SetViewport(
-                (ushort)(ViewportXW >> 0),
-                (ushort)(ViewportYH >> 0),
-                (ushort)(ViewportXW >> 16),
-                (ushort)(ViewportYH >> 16));
+            Gpu.Renderer.FrameBuffer.SetViewport(VpX, VpY, VpW, VpH);
         }
 
         private long[] UploadShaders(NvGpuVmm Vmm)
