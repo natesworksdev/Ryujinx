@@ -245,14 +245,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Programs.Add(Current, Handle);
             }
 
-            if (Handle != CurrentProgramHandle)
-            {
-                GL.UseProgram(Handle);
+            GL.UseProgram(Handle);
 
-                BindUniformBuffers(Handle);
+            BindUniformBuffers(Handle);
 
-                CurrentProgramHandle = Handle;
-            }
+            CurrentProgramHandle = Handle;
         }
 
         private void AttachIfNotNull(int ProgramHandle, ShaderStage Stage)
