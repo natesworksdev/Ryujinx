@@ -245,11 +245,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Programs.Add(Current, Handle);
             }
 
-            GL.UseProgram(Handle);
+            if (Handle != CurrentProgramHandle)
+            {
+                GL.UseProgram(Handle);
 
-            BindUniformBuffers(Handle);
+                BindUniformBuffers(Handle);
 
-            CurrentProgramHandle = Handle;
+                CurrentProgramHandle = Handle;
+            }
         }
 
         private void AttachIfNotNull(int ProgramHandle, ShaderStage Stage)
@@ -266,7 +269,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int FreeBinding = 0;
 
-            int BindUniformBlocksIfNotNull(ShaderStage Stage)
+            void BindUniformBlocksIfNotNull(ShaderStage Stage)
             {
                 if (Stage != null)
                 {
@@ -285,8 +288,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         FreeBinding++;
                     }
                 }
-
-                return FreeBinding;
             }
 
             BindUniformBlocksIfNotNull(Current.Vertex);
@@ -300,7 +301,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int FreeBinding = 0;
 
-            int BindUniformBuffersIfNotNull(ShaderStage Stage)
+            void BindUniformBuffersIfNotNull(ShaderStage Stage)
             {
                 if (Stage != null)
                 {
@@ -313,8 +314,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         FreeBinding++;
                     }
                 }
-
-                return FreeBinding;
             }
 
             BindUniformBuffersIfNotNull(Current.Vertex);
