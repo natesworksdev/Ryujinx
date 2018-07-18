@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
+using Buffer = System.Buffer;
+
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     public class OGLShader : IGalShader
@@ -151,7 +153,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return Enumerable.Empty<ShaderDeclInfo>();
         }
 
-        public void SetConstBuffer(long Key, int Cbuf, byte[] Data)
+        public void SetConstBuffer(long Key, int Cbuf, int DataSize, IntPtr HostAddress)
         {
             if (Stages.TryGetValue(Key, out ShaderStage Stage))
             {
@@ -159,13 +161,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 {
                     OGLStreamBuffer Buffer = GetConstBuffer(Stage.Type, Cbuf);
 
-                    int Size = Math.Min(Data.Length, Buffer.Size);
+                    int Size = Math.Min(DataSize, Buffer.Size);
 
-                    byte[] Destiny = Buffer.Map(Size);
-
-                    Array.Copy(Data, Destiny, Size);
-
-                    Buffer.Unmap(Size);
+                    Buffer.SetData(Size, HostAddress);
                 }
             }
         }
@@ -337,7 +335,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 //Allocate a maximum of 64 KiB
                 int Size = Math.Min(GL.GetInteger(GetPName.MaxUniformBlockSize), 64 * 1024);
 
-                Buffer = OGLStreamBuffer.Create(BufferTarget.UniformBuffer, Size);
+                Buffer = new OGLStreamBuffer(BufferTarget.UniformBuffer, Size);
 
                 ConstBuffers[StageIndex][Cbuf] = Buffer;
             }

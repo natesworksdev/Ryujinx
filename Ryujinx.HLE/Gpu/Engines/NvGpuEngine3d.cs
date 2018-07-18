@@ -548,9 +548,9 @@ namespace Ryujinx.HLE.Gpu.Engines
 
                     if (Cb.Enabled)
                     {
-                        byte[] Data = Vmm.ReadBytes(Cb.Position, (uint)Cb.Size);
+                        IntPtr DataAddress = Vmm.GetHostAddress(Cb.Position);
 
-                        Gpu.Renderer.Shader.SetConstBuffer(BasePosition + (uint)Offset, Cbuf, Data);
+                        Gpu.Renderer.Shader.SetConstBuffer(BasePosition + (uint)Offset, Cbuf, Cb.Size, DataAddress);
                     }
                 }
             }
