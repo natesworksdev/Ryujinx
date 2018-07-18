@@ -87,14 +87,8 @@ namespace ChocolArm64.Instruction
 
             int Shift = GetImmShr(Op);
 
-            long RoundConst = 1L << (Shift - 1);
-
             Action Emit = () =>
             {
-                Context.EmitLdc_I8(RoundConst);
-
-                Context.Emit(OpCodes.Add);
-
                 Context.EmitLdc_I4(Shift);
 
                 Context.Emit(OpCodes.Shr);
@@ -109,14 +103,8 @@ namespace ChocolArm64.Instruction
 
             int Shift = GetImmShr(Op);
 
-            long RoundConst = 1L << (Shift - 1);
-
             Action Emit = () =>
             {
-                Context.EmitLdc_I8(RoundConst);
-
-                Context.Emit(OpCodes.Add);
-
                 Context.EmitLdc_I4(Shift);
 
                 Context.Emit(OpCodes.Shr);
