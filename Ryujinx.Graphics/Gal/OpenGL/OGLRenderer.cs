@@ -5,13 +5,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     public class OGLRenderer : IGalRenderer
     {
-        public IGalBlend Blend { get; private set; }
-
         public IGalFrameBuffer FrameBuffer { get; private set; }
 
         public IGalRasterizer Rasterizer { get; private set; }
 
         public IGalShader Shader { get; private set; }
+
+        public IGalPipeline Pipeline { get; private set; }
 
         public IGalTexture Texture { get; private set; }
 
@@ -19,13 +19,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLRenderer()
         {
-            Blend = new OGLBlend();
-
             FrameBuffer = new OGLFrameBuffer();
 
             Rasterizer = new OGLRasterizer();
 
             Shader = new OGLShader();
+
+            Pipeline = new OGLPipeline();
 
             Texture = new OGLTexture();
 
