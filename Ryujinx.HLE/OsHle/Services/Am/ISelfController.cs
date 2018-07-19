@@ -12,8 +12,6 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
         private KEvent LaunchableEvent;
-        
-        private const bool IsExitLocked = false;
 
         public ISelfController()
         {
@@ -37,15 +35,13 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long Exit(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, $"Stubbed. Applet requested exit (IsExitLocked = {IsExitLocked})");
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
             
             return 0;
         }
 
         public long LockExit(ServiceCtx Context)
         {
-            IsExitLocked = true;
-            
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
             
             return 0;
@@ -53,8 +49,6 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long UnlockExit(ServiceCtx Context)
         {
-            IsExitLocked = false;
-            
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
             
             return 0;
