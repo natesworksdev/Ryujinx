@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.NetworkInformation;
 
 namespace Ryujinx.HLE.OsHle.Services.Nifm
 {
@@ -39,7 +40,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
 
         public long GetCurrentIpAddress(ServiceCtx Context)
         {
-            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            if (!NetworkInterface.GetIsNetworkAvailable())
             {
                 return NoInternetConnection;
             }
