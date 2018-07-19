@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long GetUserCount(ServiceCtx Context)
         {
-            Context.ResponseData.Write(0);
+            Context.ResponseData.Write(1);
 
             Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
@@ -45,6 +45,11 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long ListAllUsers(ServiceCtx Context)
         {
+            long Position = Context.Request.RecvListBuff[0].Position;
+
+            Context.Memory.WriteInt64(Position,     1L);
+            Context.Memory.WriteInt64(Position + 8, 0L);
+
             Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
             return 0;
@@ -52,6 +57,11 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long ListOpenUsers(ServiceCtx Context)
         {
+            long Position = Context.Request.RecvListBuff[0].Position;
+
+            Context.Memory.WriteInt64(Position,     1L);
+            Context.Memory.WriteInt64(Position + 8, 0L);
+
             Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
             return 0;
