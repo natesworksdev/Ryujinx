@@ -220,8 +220,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
                 else
                 {
-                    SrcX0 = (CropLeft  * Window.Width) / NativeWidth;
-                    SrcX1 = (CropRight * Window.Width) / NativeWidth;
+                    SrcX0 = CropLeft;
+                    SrcX1 = CropRight;
                 }
 
                 if (CropTop == 0 && CropBottom == 0)
@@ -231,8 +231,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
                 else
                 {
-                    SrcY0 = (CropTop    * Window.Height) / NativeHeight;
-                    SrcY1 = (CropBottom * Window.Height) / NativeHeight;
+                    SrcY0 = CropTop;
+                    SrcY1 = CropBottom;
                 }
 
                 float RatioX = MathF.Min(1f, (Window.Height * (float)NativeWidth)  / ((float)NativeHeight * Window.Width));
@@ -261,9 +261,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 GL.BlitFramebuffer(
                     SrcX0, SrcY0, SrcX1, SrcY1,
                     DstX0, DstY0, DstX1, DstY1,
-                    ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Nearest);
-
-                SetViewport(Viewport);
+                    ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear);
 
                 BindCurrentFramebuffer();
             }
