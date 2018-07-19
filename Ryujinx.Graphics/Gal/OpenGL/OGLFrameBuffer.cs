@@ -306,6 +306,34 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
+        public void Copy(
+            long SrcKey,
+            long DstKey,
+            int  SrcX0,
+            int  SrcY0,
+            int  SrcX1,
+            int  SrcY1,
+            int  DstX0,
+            int  DstY0,
+            int  DstX1,
+            int  DstY1)
+        {
+            if (Fbs.TryGetValue(SrcKey, out FrameBuffer SrcFb) &&
+                Fbs.TryGetValue(DstKey, out FrameBuffer DstFb))
+            {
+                GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, SrcFb.Handle);
+                GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, DstFb.Handle);
+
+                GL.Clear(ClearBufferMask.ColorBufferBit);
+
+                GL.BlitFramebuffer(
+                    SrcX0, SrcY0, SrcX1, SrcY1,
+                    DstX0, DstY0, DstX1, DstY1,
+                    ClearBufferMask.ColorBufferBit,
+                    BlitFramebufferFilter.Linear);
+            }
+}
+
         public void GetBufferData(long Key, Action<byte[]> Callback)
         {
             if (Fbs.TryGetValue(Key, out FrameBuffer Fb))
@@ -328,6 +356,37 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Callback(Data);
 
                 GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, CurrFbHandle);
+            }
+        }
+
+        public void SetBufferData(
+            long             Key,
+            int              Width,
+            int              Height,
+            GalTextureFormat Format,
+            byte[]           Buffer)
+        {
+            if (Fbs.TryGetValue(Key, out FrameBuffer Fb))
+            {
+                GL.BindTexture(TextureTarget.Texture2D, Fb.TexHandle);
+
+                const int Level  = 0;
+                const int Border = 0;
+
+                const PixelInternalFormat InternalFmt = PixelInternalFormat.Rgba;
+
+                (PixelFormat GlFormat, PixelType Type) = OGLEnumConverter.GetTextureFormat(Format);
+
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,
+                    Level,
+                    InternalFmt,
+                    Width,
+                    Height,
+                    Border,
+                    GlFormat,
+                    Type,
+                    Buffer);
             }
         }
 
