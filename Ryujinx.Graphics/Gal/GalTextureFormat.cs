@@ -3,6 +3,7 @@ namespace Ryujinx.Graphics.Gal
     public enum GalTextureFormat
     {
         R32G32B32A32 = 0x1,
+        R32G32B32    = 0x2,
         R16G16B16A16 = 0x3,
         A8B8G8R8     = 0x8,
         R32          = 0xf,

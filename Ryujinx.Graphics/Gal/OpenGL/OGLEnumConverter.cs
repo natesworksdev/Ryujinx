@@ -130,6 +130,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             switch (Format)
             {
                 case GalTextureFormat.R32G32B32A32: return (PixelFormat.Rgba,           PixelType.Float);
+                case GalTextureFormat.R32G32B32:    return (PixelFormat.Rgb,            PixelType.Float);
                 case GalTextureFormat.R16G16B16A16: return (PixelFormat.Rgba,           PixelType.HalfFloat);
                 case GalTextureFormat.A8B8G8R8:     return (PixelFormat.Rgba,           PixelType.UnsignedByte);
                 case GalTextureFormat.R32:          return (PixelFormat.Red,            PixelType.Float);
