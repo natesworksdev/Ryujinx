@@ -37,31 +37,21 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long Exit(ServiceCtx Context)
         {
-            if(IsExitLocked == false)
-            {
-                Context.Ns.Log.PrintInfo("Applet requested exit (IsExitLocked = false)");
-                //Exit the applet
-            }
-            else
-            {
-                Context.Ns.Log.PrintInfo("Applet requested exit, but not allowed (IsExitLocked = true)");
-            }
-        
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, $"Stubbed. Applet requested exit (IsExitLocked = {IsExitLocked})");
             return 0;
         }
 
         public long LockExit(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
             IsExitLocked = true;
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
             return 0;
         }
 
         public long UnlockExit(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
             IsExitLocked = false;
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
             return 0;
         }
 
