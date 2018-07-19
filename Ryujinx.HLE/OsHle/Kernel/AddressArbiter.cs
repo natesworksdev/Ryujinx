@@ -35,18 +35,36 @@ namespace Ryujinx.HLE.OsHle.Kernel
                                                      ulong        Timeout, 
                                                      bool         ShouldDecrement)
         {
+            Memory.SetExclusive(ThreadState, Address);
+
             int CurrentValue = Memory.ReadInt32(Address);
 
-            if (CurrentValue < Value)
+            while (true)
             {
-                if (ShouldDecrement)
+                if (Memory.TestExclusive(ThreadState, Address))
                 {
-                    Memory.WriteInt32(Address, CurrentValue - 1);
+                    if (CurrentValue < Value)
+                    {
+                        if (ShouldDecrement)
+                        {
+                            Memory.WriteInt32(Address, CurrentValue - 1);
+                        }
+
+                        Memory.ClearExclusiveForStore(ThreadState);
+                    }
+                    else
+                    {
+                        Memory.ClearExclusiveForStore(ThreadState);
+
+                        return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+                    }
+
+                    break;
                 }
-            }
-            else
-            {
-                return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+
+                Memory.SetExclusive(ThreadState, Address);
+
+                CurrentValue = Memory.ReadInt32(Address);
             }
 
             if (Timeout == 0)
