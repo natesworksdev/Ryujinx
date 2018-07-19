@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         private KEvent LaunchableEvent;
         
-        public bool IsExitLocked = false;
+        private const bool IsExitLocked = false;
 
         public ISelfController()
         {
