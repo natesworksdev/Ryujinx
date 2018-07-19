@@ -77,14 +77,16 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             int DstBlockHeight = 1 << ((DstBlkDim >> 4) & 0xf);
 
-            long Key = Vmm.GetPhysicalAddress(MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress));
-
             long SrcAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress);
             long DstAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.DstAddress);
 
-            bool IsFbTexture = Gpu.Engine3d.IsFrameBufferPosition(Key);
+            long SrcKey = Vmm.GetPhysicalAddress(SrcAddress);
+            long DstKey = Vmm.GetPhysicalAddress(DstAddress);
 
-            if (IsFbTexture && DstLinear)
+            bool IsSrcFb = Gpu.Engine3d.IsFrameBufferPosition(SrcKey);
+            bool IsDstFb = Gpu.Engine3d.IsFrameBufferPosition(DstKey);
+
+            if (IsSrcFb && DstLinear)
             {
                 DstSwizzle = TextureSwizzle.BlockLinear;
             }
@@ -93,26 +95,40 @@ namespace Ryujinx.HLE.Gpu.Engines
                 DstAddress,
                 DstWidth,
                 DstHeight,
-                DstBlockHeight,
+                DstPitch,
                 DstBlockHeight,
                 DstSwizzle,
                 GalTextureFormat.A8B8G8R8);
 
-            if (IsFbTexture)
+            if (IsSrcFb && IsDstFb)
+            {
+                //TODO: Change this when the correct frame buffer resolution is used.
+                //Currently, the frame buffer size is hardcoded to 1280x720.
+                DstWidth  = 1280;
+                DstHeight = 720;
+
+                Gpu.Renderer.FrameBuffer.Copy(
+                    SrcKey,
+                    DstKey,
+                    0,
+                    0,
+                    SrcWidth,
+                    SrcHeight,
+                    0,
+                    0,
+                    DstWidth,
+                    DstHeight);
+            }
+            else if (IsSrcFb)
             {
                 //TODO: Change this when the correct frame buffer resolution is used.
                 //Currently, the frame buffer size is hardcoded to 1280x720.
                 SrcWidth  = 1280;
                 SrcHeight = 720;
 
-                Gpu.Renderer.FrameBuffer.GetBufferData(Key, (byte[] Buffer) =>
+                Gpu.Renderer.FrameBuffer.GetBufferData(SrcKey, (byte[] Buffer) =>
                 {
-                    CopyTexture(
-                        Vmm,
-                        DstTexture,
-                        Buffer,
-                        SrcWidth,
-                        SrcHeight);
+                    TextureWriter.Write(Vmm, DstTexture, Buffer, SrcWidth, SrcHeight);
                 });
             }
             else
@@ -121,23 +137,8 @@ namespace Ryujinx.HLE.Gpu.Engines
 
                 byte[] Buffer = Vmm.ReadBytes(SrcAddress, Size);
 
-                CopyTexture(
-                    Vmm,
-                    DstTexture,
-                    Buffer,
-                    SrcWidth,
-                    SrcHeight);
+                TextureWriter.Write(Vmm, DstTexture, Buffer, SrcWidth, SrcHeight);
             }
-        }
-
-        private void CopyTexture(
-            NvGpuVmm    Vmm,
-            TextureInfo Texture,
-            byte[]      Buffer,
-            int         Width,
-            int         Height)
-        {
-            TextureWriter.Write(Vmm, Texture, Buffer, Width, Height);
         }
 
         private long MakeInt64From2xInt32(NvGpuEngine2dReg Reg)
