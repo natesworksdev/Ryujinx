@@ -262,8 +262,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     SrcX0, SrcY0, SrcX1, SrcY1,
                     DstX0, DstY0, DstX1, DstY1,
                     ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Linear);
-
-                BindCurrentFramebuffer();
             }
         }
 
@@ -315,8 +313,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     Data);
 
                 Callback(Data);
-
-                BindCurrentFramebuffer();
             }
         }
 
@@ -371,20 +367,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     0);
 
                 GL.Viewport(0, 0, Width, Height);
-
-                BindCurrentFramebuffer();
-            }
-        }
-
-        private void BindCurrentFramebuffer()
-        {
-            if (CurrFb != null)
-            {
-                GL.BindFramebuffer(FramebufferTarget.Framebuffer, CurrFb.Handle);
-            }
-            else
-            {
-                GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             }
         }
 
