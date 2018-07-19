@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
             };
         }
 
-        public UInt32 NoInternetConnection = 0x2586e;
+        public const int NoInternetConnection = 0x2586e;
 
         //CreateRequest(i32)
         public long CreateRequest(ServiceCtx Context)
@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
             }
 
             IPHostEntry Host = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress Local = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
+            IPAddress Local  = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
 
             Context.ResponseData.Write(BitConverter.ToUInt32(Local.GetAddressBytes()));
 
