@@ -45,12 +45,12 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
                 return NoInternetConnection;
             }
 
-            IPHostEntry Host = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress Local  = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
+            IPHostEntry Host  = Dns.GetHostEntry(Dns.GetHostName());
+            IPAddress Address = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
 
-            Context.ResponseData.Write(BitConverter.ToUInt32(Local.GetAddressBytes()));
+            Context.ResponseData.Write(BitConverter.ToUInt32(Address.GetAddressBytes()));
 
-            Context.Ns.Log.PrintInfo(LogClass.ServiceNifm, "Console's local IP is " + Local.ToString());
+            Context.Ns.Log.PrintInfo(LogClass.ServiceNifm, "Console's local IP is " + Address.ToString());
 
             return 0;
         }
