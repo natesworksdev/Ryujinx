@@ -812,11 +812,12 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
-            int Elems = !Scalar ? 8 >> Op.Size : 1;
+            int Bytes = Op.GetBitsCount() >> 3;
+            int Elems = !Scalar ? Bytes >> Op.Size : 1;
 
             int ESize = 8 << Op.Size;
 
-            long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (1L << ESize) - 1L;
+            long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (long)(~0UL >> (64 - ESize));
             long TMinValue = SignedDst ? -((1 << (ESize - 1))) : 0;
 
             Context.EmitLdc_I8(0L);
@@ -827,8 +828,8 @@ namespace ChocolArm64.Instruction
                 AILLabel LblLe    = new AILLabel();
                 AILLabel LblGeEnd = new AILLabel();
 
-                EmitVectorExtract(Context, Op.Rn, Index, Op.Size + 1, SignedSrc);
-                EmitVectorExtract(Context, Op.Rm, Index, Op.Size + 1, SignedSrc);
+                EmitVectorExtract(Context, Op.Rn, Index, Op.Size, SignedSrc);
+                EmitVectorExtract(Context, Op.Rm, Index, Op.Size, SignedSrc);
 
                 Emit();
 
@@ -862,9 +863,9 @@ namespace ChocolArm64.Instruction
 
                 Context.MarkLabel(LblGeEnd);
 
-                if (Scalar)
+                if ((Op.RegisterSize == ARegisterSize.SIMD64) || Scalar)
                 {
-                    EmitVectorZeroLower(Context, Op.Rd);
+                    EmitVectorZeroUpper(Context, Op.Rd);
                 }
 
                 EmitVectorInsertTmp(Context, Index, Op.Size);
