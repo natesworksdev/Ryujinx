@@ -121,6 +121,7 @@ ClientBin/
 *.publishsettings
 packages/*
 *.config
+Ryujinx/Properties/
 
 # RIA/Silverlight projects
 Generated_Code/
