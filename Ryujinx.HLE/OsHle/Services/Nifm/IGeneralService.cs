@@ -45,8 +45,8 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
                 return NoInternetConnection;
             }
 
-            IPHostEntry Host  = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress Address = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
+            IPHostEntry Host    = Dns.GetHostEntry(Dns.GetHostName());
+            IPAddress   Address = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
 
             Context.ResponseData.Write(BitConverter.ToUInt32(Address.GetAddressBytes()));
 
