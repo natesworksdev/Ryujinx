@@ -4,6 +4,7 @@ using ChocolArm64.Instruction;
 using ChocolArm64.Instruction32;
 using ChocolArm64.State;
 using System;
+using System.Collections.Generic;
 
 namespace ChocolArm64
 {
@@ -389,6 +390,7 @@ namespace ChocolArm64
             SetA64("0100111101xxxxxx000001xxxxxxxxxx", AInstEmit.Sshr_V,        typeof(AOpCodeSimdShImm));
             SetA64("0x00111100>>>xxx000101xxxxxxxxxx", AInstEmit.Ssra_V,        typeof(AOpCodeSimdShImm));
             SetA64("0100111101xxxxxx000101xxxxxxxxxx", AInstEmit.Ssra_V,        typeof(AOpCodeSimdShImm));
+            SetA64("0x001110<<1xxxxx001100xxxxxxxxxx", AInstEmit.Ssubw_V,       typeof(AOpCodeSimdReg));
             SetA64("0x00110000000000xxxxxxxxxxxxxxxx", AInstEmit.St__Vms,       typeof(AOpCodeSimdMemMs));
             SetA64("0x001100100xxxxxxxxxxxxxxxxxxxxx", AInstEmit.St__Vms,       typeof(AOpCodeSimdMemMs));
             SetA64("0x00110100x00000xxxxxxxxxxxxxxxx", AInstEmit.St__Vss,       typeof(AOpCodeSimdMemSs));
@@ -434,24 +436,50 @@ namespace ChocolArm64
             SetA64("0110111101xxxxxx000001xxxxxxxxxx", AInstEmit.Ushr_V,        typeof(AOpCodeSimdShImm));
             SetA64("0x10111100>>>xxx000101xxxxxxxxxx", AInstEmit.Usra_V,        typeof(AOpCodeSimdShImm));
             SetA64("0110111101xxxxxx000101xxxxxxxxxx", AInstEmit.Usra_V,        typeof(AOpCodeSimdShImm));
+            SetA64("0x101110<<1xxxxx001100xxxxxxxxxx", AInstEmit.Usubw_V,       typeof(AOpCodeSimdReg));
             SetA64("0>001110<<0xxxxx000110xxxxxxxxxx", AInstEmit.Uzp1_V,        typeof(AOpCodeSimdReg));
             SetA64("0>001110<<0xxxxx010110xxxxxxxxxx", AInstEmit.Uzp2_V,        typeof(AOpCodeSimdReg));
             SetA64("0x001110<<100001001010xxxxxxxxxx", AInstEmit.Xtn_V,         typeof(AOpCodeSimd));
             SetA64("0>001110<<0xxxxx001110xxxxxxxxxx", AInstEmit.Zip1_V,        typeof(AOpCodeSimdReg));
             SetA64("0>001110<<0xxxxx011110xxxxxxxxxx", AInstEmit.Zip2_V,        typeof(AOpCodeSimdReg));
 #endregion
+
+#region "Generate InstA64FastLookup Table (AArch64)"
+            var Tmp = new List<InstInfo>[FastLookupSize];
+            for (int i = 0; i < FastLookupSize; i++)
+            {
+                Tmp[i] = new List<InstInfo>();
+            }
+
+            foreach (var Inst in AllInstA64)
+            {
+                int Mask = ToFastLookupIndex(Inst.Mask);
+                int Value = ToFastLookupIndex(Inst.Value);
+
+                for (int i = 0; i < FastLookupSize; i++)
+                {
+                    if ((i & Mask) == Value)
+                    {
+                        Tmp[i].Add(Inst);
+                    }
+                }
+            }
+
+            for (int i = 0; i < FastLookupSize; i++)
+            {
+                InstA64FastLookup[i] = Tmp[i].ToArray();
+            }
+#endregion
         }
 
-        private class TreeNode
+        private class InstInfo
         {
             public int Mask;
             public int Value;
 
-            public TreeNode Next;
-
             public AInst Inst;
 
-            public TreeNode(int Mask, int Value, AInst Inst)
+            public InstInfo(int Mask, int Value, AInst Inst)
             {
                 this.Mask  = Mask;
                 this.Value = Value;
@@ -459,8 +487,11 @@ namespace ChocolArm64
             }
         }
 
-        private static TreeNode InstHeadA32;
-        private static TreeNode InstHeadA64;
+        private static List<InstInfo> AllInstA32 = new List<InstInfo>();
+        private static List<InstInfo> AllInstA64 = new List<InstInfo>();
+
+        private static int FastLookupSize = 0x1000;
+        private static InstInfo[][] InstA64FastLookup = new InstInfo[FastLookupSize][];
 
         private static void SetA32(string Encoding, AInstInterpreter Interpreter, Type Type)
         {
@@ -521,7 +552,7 @@ namespace ChocolArm64
 
             if (XBits == 0)
             {
-                InsertTop(XMask, Value, Inst, Mode);
+                InsertInst(XMask, Value, Inst, Mode);
 
                 return;
             }
@@ -537,55 +568,53 @@ namespace ChocolArm64
 
                 if (Mask != Blacklisted)
                 {
-                    InsertTop(XMask, Value | Mask, Inst, Mode);
+                    InsertInst(XMask, Value | Mask, Inst, Mode);
                 }
             }
         }
 
-        private static void InsertTop(
+        private static void InsertInst(
             int            XMask,
             int            Value,
             AInst          Inst,
             AExecutionMode Mode)
         {
-            TreeNode Node = new TreeNode(XMask, Value, Inst);
+            InstInfo Info = new InstInfo(XMask, Value, Inst);
 
             if (Mode == AExecutionMode.AArch64)
             {
-                Node.Next = InstHeadA64;
-
-                InstHeadA64 = Node;
+                AllInstA64.Add(Info);
             }
             else
             {
-                Node.Next = InstHeadA32;
-
-                InstHeadA32 = Node;
+                AllInstA32.Add(Info);
             }
         }
 
         public static AInst GetInstA32(int OpCode)
         {
-            return GetInst(InstHeadA32, OpCode);
+            return GetInstFromList(AllInstA32, OpCode);
         }
 
         public static AInst GetInstA64(int OpCode)
         {
-            return GetInst(InstHeadA64, OpCode);
+            return GetInstFromList(InstA64FastLookup[ToFastLookupIndex(OpCode)], OpCode);
         }
 
-        private static AInst GetInst(TreeNode Head, int OpCode)
+        private static int ToFastLookupIndex(int Value)
         {
-            TreeNode Node = Head;
+            return ((Value >> 10) & 0x00F) | ((Value >> 18) & 0xFF0);
+        }
 
-            do
+        private static AInst GetInstFromList(IEnumerable<InstInfo> InstList, int OpCode)
+        {
+            foreach (var Node in InstList)
             {
                 if ((OpCode & Node.Mask) == Node.Value)
                 {
                     return Node.Inst;
                 }
             }
-            while ((Node = Node.Next) != null);
 
             return AInst.Undefined;
         }

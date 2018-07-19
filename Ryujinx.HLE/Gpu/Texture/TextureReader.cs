@@ -14,6 +14,8 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.R16G16B16A16: return Read8Bpp                  (Memory, Texture);
                 case GalTextureFormat.A8B8G8R8:     return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.R32:          return Read4Bpp                  (Memory, Texture);
+                case GalTextureFormat.BF10GF11RF11: return Read4Bpp                  (Memory, Texture);
+                case GalTextureFormat.Z24S8:        return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.A1B5G5R5:     return Read5551                  (Memory, Texture);
                 case GalTextureFormat.B5G6R5:       return Read565                   (Memory, Texture);
                 case GalTextureFormat.G8R8:         return Read2Bpp                  (Memory, Texture);
@@ -42,7 +44,7 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.Astc2D8x5:    return Read16BptCompressedTexture(Memory, Texture, 8, 5);
                 case GalTextureFormat.Astc2D10x5:   return Read16BptCompressedTexture(Memory, Texture, 10, 5);
                 case GalTextureFormat.Astc2D10x6:   return Read16BptCompressedTexture(Memory, Texture, 10, 6);
-            }
+             }
 
             throw new NotImplementedException(Texture.Format.ToString());
         }
@@ -54,7 +56,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 1);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 1, 1);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
@@ -87,7 +89,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height * 2];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 2);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 1, 2);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
@@ -125,7 +127,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height * 2];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 2);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 1, 2);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
@@ -162,7 +164,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height * 2];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 2);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 1, 2);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
@@ -195,7 +197,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height * 4];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 4);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 1, 4);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
@@ -228,7 +230,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height * 8];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 8);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 1, 8);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
@@ -261,7 +263,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height * 16];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 16);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 1, 16);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
@@ -296,7 +298,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height * 8];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 8);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, 4, 8);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
@@ -329,7 +331,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             byte[] Output = new byte[Width * Height * 16];
 
-            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 16);
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, BlockWidth, 16);
 
             (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
                 Memory,
