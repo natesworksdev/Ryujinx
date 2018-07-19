@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             {
                 if (ShouldDecrement)
                 {
-                    Memory.WriteUInt32(Address, (uint)CurrentValue - 1);
+                    Memory.WriteInt32(Address, CurrentValue - 1);
                 }
             }
             else
@@ -89,6 +89,6 @@ namespace Ryujinx.HLE.OsHle.Kernel
     {
         Signal,
         IncrementAndSignalIfEqual,
-        ModifyByWaitingCountAndSignalIfEqual,
+        ModifyByWaitingCountAndSignalIfEqual
     }
 }

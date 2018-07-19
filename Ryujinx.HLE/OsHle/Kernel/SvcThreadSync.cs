@@ -231,28 +231,20 @@ namespace Ryujinx.HLE.OsHle.Kernel
             switch (Type)
             {
                 case ArbitrationType.WaitIfLessThan:
-                { 
                     ThreadState.X0 = AddressArbiter.WaitForAddressIfLessThan(Process, ThreadState, Memory, Address, Value, Timeout, false);
                     break;
-                }
 
                 case ArbitrationType.DecrementAndWaitIfLessThan:
-                {
                     ThreadState.X0 = AddressArbiter.WaitForAddressIfLessThan(Process, ThreadState, Memory, Address, Value, Timeout, true);
                     break;
-                }
 
                 case ArbitrationType.WaitIfEqual:
-                { 
                     ThreadState.X0 = AddressArbiter.WaitForAddressIfEqual(Process, ThreadState, Memory, Address, Value, Timeout);
                     break;
-                }
 
                 default:
-                {
                     ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
                     break;
-                }
             }
         }
 
