@@ -280,9 +280,9 @@ namespace Ryujinx.HLE.Gpu.Memory
             return Cache.IsRegionModified(Memory, BufferType, PA, Size);
         }
 
-        public IntPtr GetHostAddress(long Position)
+        public IntPtr GetHostAddress(long Position, long Size)
         {
-            return Memory.GetHostAddress(GetPhysicalAddress(Position));
+            return Memory.GetHostAddress(GetPhysicalAddress(Position), Size);
         }
 
         public byte ReadByte(long Position)

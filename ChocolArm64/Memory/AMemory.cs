@@ -204,8 +204,10 @@ namespace ChocolArm64.Memory
             return Modified;
         }
 
-        public IntPtr GetHostAddress(long Position)
+        public IntPtr GetHostAddress(long Position, long Size)
         {
+            EnsureRangeIsValid(Position, Size, AMemoryPerm.Read);
+
             return (IntPtr)(RamPtr + (ulong)Position);
         }
 
