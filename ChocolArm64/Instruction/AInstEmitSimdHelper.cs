@@ -897,7 +897,6 @@ namespace ChocolArm64.Instruction
                 Part = !Scalar && (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0;
             }
 
-            //long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (1L << ESize) - 1L;
             long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (long)(~0UL >> (64 - ESize));
             long TMinValue = SignedDst ? -((1 << (ESize - 1))) : 0;
 
