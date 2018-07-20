@@ -100,7 +100,7 @@ namespace ChocolArm64.Instruction
                 Context.Emit(OpCodes.Shr);
             };
 
-            EmitVectorSaturatingNarrowOpSxSx(Context, Emit);
+            EmitVectorUnarySaturatingNarrowOpSxSx(Context, Emit);
         }
 
         public static void Srshr_V(AILEmitterCtx Context)

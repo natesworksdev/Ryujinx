@@ -1054,32 +1054,32 @@ namespace ChocolArm64.Instruction
 
         public static void Sqadd_S(AILEmitterCtx Context)
         {
-            EmitScalarSaturatingOpSxSx(Context, () => Context.Emit(OpCodes.Add));
+            EmitScalarBinarySaturatingOpSxSx(Context, () => Context.Emit(OpCodes.Add));
         }
 
         public static void Sqadd_V(AILEmitterCtx Context)
         {
-            EmitVectorSaturatingOpSxSx(Context, () => Context.Emit(OpCodes.Add));
+            EmitVectorBinarySaturatingOpSxSx(Context, () => Context.Emit(OpCodes.Add));
         }
 
         public static void Sqxtn_S(AILEmitterCtx Context)
         {
-            EmitScalarSaturatingNarrowOpSxSx(Context, () => { });
+            EmitScalarUnarySaturatingNarrowOpSxSx(Context, () => { });
         }
 
         public static void Sqxtn_V(AILEmitterCtx Context)
         {
-            EmitVectorSaturatingNarrowOpSxSx(Context, () => { });
+            EmitVectorUnarySaturatingNarrowOpSxSx(Context, () => { });
         }
 
         public static void Sqxtun_S(AILEmitterCtx Context)
         {
-            EmitScalarSaturatingNarrowOpSxZx(Context, () => { });
+            EmitScalarUnarySaturatingNarrowOpSxZx(Context, () => { });
         }
 
         public static void Sqxtun_V(AILEmitterCtx Context)
         {
-            EmitVectorSaturatingNarrowOpSxZx(Context, () => { });
+            EmitVectorUnarySaturatingNarrowOpSxZx(Context, () => { });
         }
 
         public static void Ssubw_V(AILEmitterCtx Context)
@@ -1233,22 +1233,22 @@ namespace ChocolArm64.Instruction
 
         public static void Uqadd_S(AILEmitterCtx Context)
         {
-            EmitScalarSaturatingOpZxZx(Context, () => Context.Emit(OpCodes.Add));
+            EmitScalarBinarySaturatingOpZxZx(Context, () => Context.Emit(OpCodes.Add));
         }
 
         public static void Uqadd_V(AILEmitterCtx Context)
         {
-            EmitVectorSaturatingOpZxZx(Context, () => Context.Emit(OpCodes.Add));
+            EmitVectorBinarySaturatingOpZxZx(Context, () => Context.Emit(OpCodes.Add));
         }
 
         public static void Uqxtn_S(AILEmitterCtx Context)
         {
-            EmitScalarSaturatingNarrowOpZxZx(Context, () => { });
+            EmitScalarUnarySaturatingNarrowOpZxZx(Context, () => { });
         }
 
         public static void Uqxtn_V(AILEmitterCtx Context)
         {
-            EmitVectorSaturatingNarrowOpZxZx(Context, () => { });
+            EmitVectorUnarySaturatingNarrowOpZxZx(Context, () => { });
         }
 
         public static void Usubw_V(AILEmitterCtx Context)
