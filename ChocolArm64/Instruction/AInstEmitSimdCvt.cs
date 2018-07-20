@@ -120,7 +120,7 @@ namespace ChocolArm64.Instruction
 
                 EmitRoundMathCall(Context, MidpointRounding.ToEven);
 		    
-		        if (Op.RegisterSize == ARegisterSize.SIMD64)
+                if (Op.RegisterSize == ARegisterSize.SIMD64)
                 {
                     Context.Emit(OpCodes.Conv_I4);
                 }
