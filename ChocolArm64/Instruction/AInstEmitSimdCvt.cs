@@ -119,6 +119,15 @@ namespace ChocolArm64.Instruction
                 EmitVectorExtractF(Context, Op.Rd, Index, SizeF);
 
                 EmitRoundMathCall(Context, MidpointRounding.ToEven);
+		    
+		if (Op.RegisterSize == ARegisterSize.SIMD64)
+                {
+                    Context.Emit(OpCodes.Conv_I4);
+                }
+                else if (Op.RegisterSize == ARegisterSize.SIMD128)
+                {
+                    Context.Emit(OpCodes.Conv_I8);
+                }
 
                 EmitVectorInsertF(Context, Op.Rd, Index, 0);
                 
@@ -127,8 +136,7 @@ namespace ChocolArm64.Instruction
             if (Op.RegisterSize == ARegisterSize.SIMD64)
             {
                 EmitVectorZeroUpper(Context, Op.Rd);
-            }
-			
+            }	
         }
 
         public static void Fcvtps_Gp(AILEmitterCtx Context)
