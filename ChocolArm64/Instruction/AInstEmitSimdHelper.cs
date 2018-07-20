@@ -792,19 +792,19 @@ namespace ChocolArm64.Instruction
             Narrow    = 1 << 3,
             Binary    = 1 << 4,
 
-            SxSxScalar       = SignedSrc | SignedDst | Scalar,
-            SxSxScalarNarrow = SignedSrc | SignedDst | Scalar | Narrow,
-            SxZxScalar       = SignedSrc | Scalar,
-            SxZxScalarNarrow = SignedSrc | Scalar | Narrow,
-            ZxZxScalar       = Scalar,
-            ZxZxScalarNarrow = Scalar | Narrow,
+            SxSxScalarUnary       = SignedSrc | SignedDst | Scalar,
+            SxSxScalarNarrowUnary = SignedSrc | SignedDst | Scalar | Narrow,
+            SxZxScalarUnary       = SignedSrc | Scalar,
+            SxZxScalarNarrowUnary = SignedSrc | Scalar | Narrow,
+            ZxZxScalarUnary       = Scalar,
+            ZxZxScalarNarrowUnary = Scalar | Narrow,
 
-            SxSxVector       = SignedSrc | SignedDst,
-            SxSxVectorNarrow = SignedSrc | SignedDst | Narrow,
-            SxZxVector       = SignedSrc,
-            SxZxVectorNarrow = SignedSrc | Narrow,
-            ZxZxVector       = 0,
-            ZxZxVectorNarrow = Narrow,
+            SxSxVectorUnary       = SignedSrc | SignedDst,
+            SxSxVectorNarrowUnary = SignedSrc | SignedDst | Narrow,
+            SxZxVectorUnary       = SignedSrc,
+            SxZxVectorNarrowUnary = SignedSrc | Narrow,
+            ZxZxVectorUnary       = 0,
+            ZxZxVectorNarrowUnary = Narrow,
 
             SxSxScalarBinary       = SignedSrc | SignedDst | Scalar | Binary,
             SxSxScalarNarrowBinary = SignedSrc | SignedDst | Scalar | Narrow | Binary,
@@ -843,32 +843,32 @@ namespace ChocolArm64.Instruction
 
         public static void EmitScalarUnarySaturatingNarrowOpSxSx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxSxScalarNarrow);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxSxScalarNarrowUnary);
         }
 
         public static void EmitScalarUnarySaturatingNarrowOpSxZx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxZxScalarNarrow);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxZxScalarNarrowUnary);
         }
 
         public static void EmitScalarUnarySaturatingNarrowOpZxZx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingOp(Context, Emit, SaturatingFlags.ZxZxScalarNarrow);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.ZxZxScalarNarrowUnary);
         }
 
         public static void EmitVectorUnarySaturatingNarrowOpSxSx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxSxVectorNarrow);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxSxVectorNarrowUnary);
         }
 
         public static void EmitVectorUnarySaturatingNarrowOpSxZx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxZxVectorNarrow);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxZxVectorNarrowUnary);
         }
 
         public static void EmitVectorUnarySaturatingNarrowOpZxZx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingOp(Context, Emit, SaturatingFlags.ZxZxVectorNarrow);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.ZxZxVectorNarrowUnary);
         }
 
         public static void EmitSaturatingOp(
@@ -889,6 +889,7 @@ namespace ChocolArm64.Instruction
             int ESize = 8 << Op.Size;
 
             int Part = 0;
+
             if (Narrow)
             {
                 Part = !Scalar && (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0;
@@ -912,6 +913,7 @@ namespace ChocolArm64.Instruction
                 AILLabel LblGeEnd = new AILLabel();
 
                 EmitVectorExtract(Context, Op.Rn, Index, Op.Size + 1, SignedSrc);
+                
                 if (Binary)
                 {
                     EmitVectorExtract(Context, ((AOpCodeSimdReg)Op).Rm, Index, Op.Size + 1, SignedSrc);
