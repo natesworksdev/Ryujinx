@@ -428,11 +428,6 @@ namespace ChocolArm64.Instruction
         {
             Fmin_S(Context);
         }
-        
-        public static void Fminnm_V(AILEmitterCtx Context)
-        {
-            Fmin_V(Context);
-        }
 
         public static void Fmla_Se(AILEmitterCtx Context)
         {
