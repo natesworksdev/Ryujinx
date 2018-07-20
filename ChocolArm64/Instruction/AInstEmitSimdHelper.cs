@@ -884,7 +884,9 @@ namespace ChocolArm64.Instruction
 
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Elems = !Scalar ? 8 >> Op.Size : 1;
+            int Bytes = Op.GetBitsCount() >> 3;
+
+            int Elems = !Scalar ? (Narrow ? 8 : Bytes) >> Op.Size : 1;
 
             int ESize = 8 << Op.Size;
 
@@ -912,11 +914,11 @@ namespace ChocolArm64.Instruction
                 AILLabel LblLe    = new AILLabel();
                 AILLabel LblGeEnd = new AILLabel();
 
-                EmitVectorExtract(Context, Op.Rn, Index, Op.Size + 1, SignedSrc);
+                EmitVectorExtract(Context, Op.Rn, Index, Narrow ? Op.Size + 1 : Op.Size, SignedSrc);
                 
                 if (Binary)
                 {
-                    EmitVectorExtract(Context, ((AOpCodeSimdReg)Op).Rm, Index, Op.Size + 1, SignedSrc);
+                    EmitVectorExtract(Context, ((AOpCodeSimdReg)Op).Rm, Index, Narrow ? Op.Size + 1 : Op.Size, SignedSrc);
                 }
 
                 Emit();
