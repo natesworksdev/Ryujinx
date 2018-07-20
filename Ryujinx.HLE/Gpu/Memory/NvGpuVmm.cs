@@ -68,6 +68,10 @@ namespace Ryujinx.HLE.Gpu.Memory
                     }
                 }
 
+                MappedMemory Mapped = new MappedMemory(Size);
+
+                Maps.AddOrUpdate(VA, Mapped, (Key, Old) => Mapped);
+
                 for (long Offset = 0; Offset < Size; Offset += PageSize)
                 {
                     SetPte(VA + Offset, PA + Offset);
@@ -85,9 +89,9 @@ namespace Ryujinx.HLE.Gpu.Memory
 
                 if (VA != -1)
                 {
-                    MappedMemory Map = new MappedMemory(Size);
+                    MappedMemory Mapped = new MappedMemory(Size);
 
-                    Maps.AddOrUpdate(VA, Map, (Key, Old) => Map);
+                    Maps.AddOrUpdate(VA, Mapped, (Key, Old) => Mapped);
 
                     for (long Offset = 0; Offset < Size; Offset += PageSize)
                     {
