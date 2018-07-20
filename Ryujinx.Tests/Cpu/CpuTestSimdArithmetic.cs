@@ -9,7 +9,6 @@ namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestSimdArithmetic : CpuTest
     {
-        
         [TestCase(0x1E224820u, 0x0000000000000000ul, 0x0000000080000000ul, 0x0000000000000000ul)]
         [TestCase(0x1E224820u, 0x0000000080000000ul, 0x0000000000000000ul, 0x0000000000000000ul)]
         [TestCase(0x1E224820u, 0x0000000080000000ul, 0x0000000080000000ul, 0x0000000080000000ul)]
