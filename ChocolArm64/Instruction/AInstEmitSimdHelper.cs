@@ -880,7 +880,7 @@ namespace ChocolArm64.Instruction
             bool SignedDst = (Flags & SaturatingFlags.SignedDst) != 0;
             bool Scalar    = (Flags & SaturatingFlags.Scalar) != 0;
             bool Narrow    = (Flags & SaturatingFlags.Narrow) != 0;
-            bool Binary   = (Flags & SaturatingFlags.Binary) != 0;
+            bool Binary    = (Flags & SaturatingFlags.Binary) != 0;
 
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
@@ -897,7 +897,8 @@ namespace ChocolArm64.Instruction
                 Part = !Scalar && (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0;
             }
 
-            long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (1L << ESize) - 1L;
+            //long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (1L << ESize) - 1L;
+            long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (long)(~0UL >> (64 - ESize));
             long TMinValue = SignedDst ? -((1 << (ESize - 1))) : 0;
 
             Context.EmitLdc_I8(0L);
