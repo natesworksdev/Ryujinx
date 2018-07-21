@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private const bool EnableProcessDebugging = false;
 
-        private const bool IsVirtualMemoryEnabled = true; //This is always true(?)
+        private const bool IsVirtualMemoryEnabled = false; //TODO: Fix virtual memory and re-enable it
 
         private void SvcExitProcess(AThreadState ThreadState)
         {
