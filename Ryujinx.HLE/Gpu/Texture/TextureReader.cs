@@ -279,9 +279,11 @@ namespace Ryujinx.HLE.Gpu.Texture
                 {
                     long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
 
-                    long Pixel = CpuMem.ReadInt64Unchecked(Position + Offset);
+                    long PxLow = CpuMem.ReadInt64Unchecked(Position + Offset);
+                    int  PxHigh = CpuMem.ReadInt32Unchecked(Position + Offset + 8);
 
-                    *(long*)(BuffPtr + OutOffs) = Pixel;
+                    *(long*)(BuffPtr + OutOffs)    = PxLow;
+                    *(int*)(BuffPtr + OutOffs + 8) = PxHigh;
 
                     OutOffs += 12;
                 }
