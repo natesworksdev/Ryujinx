@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.OsHle.Ipc
                     }
                 }
                 else if (Request.Type == IpcMessageType.Control ||
-                    Request.Type == IpcMessageType.ControlWithContext)
+                         Request.Type == IpcMessageType.ControlWithContext)
                 {
                     long Magic = ReqReader.ReadInt64();
                     long CmdId = ReqReader.ReadInt64();
