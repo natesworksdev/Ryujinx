@@ -19,11 +19,13 @@ namespace Ryujinx.HLE.Gpu.Memory
                 public Range(long Start, long End)
                 {
                     this.Start = Start;
-                    this.End   = End;
+                    this.End = End;
                 }
             }
 
             private List<Range>[] Regions;
+
+            private HashSet<long> ResidencyKeys;
 
             public LinkedListNode<long> Node { get; set; }
 
@@ -36,6 +38,27 @@ namespace Ryujinx.HLE.Gpu.Memory
                 for (int Index = 0; Index < Regions.Length; Index++)
                 {
                     Regions[Index] = new List<Range>();
+                }
+
+                ResidencyKeys = new HashSet<long>();
+            }
+
+            public void AddResidency(long Key)
+            {
+                ResidencyKeys.Add(Key);
+            }
+
+            public void RemoveResidency(HashSet<long>[] Residency, long PageSize)
+            {
+                for (int i = 0; i < (int)NvGpuBufferType.Count; i++)
+                {
+                    foreach (Range Region in Regions[i])
+                    {
+                        foreach (long Key in ResidencyKeys)
+                        {
+                            Residency[Region.Start / PageSize].Remove(Key);
+                        }
+                    }
                 }
             }
 
@@ -89,6 +112,10 @@ namespace Ryujinx.HLE.Gpu.Memory
 
         private LinkedList<long> SortedCache;
 
+        private HashSet<long>[] Residency;
+
+        private const int PageSize = AMemoryMgr.PageSize;
+
         private int CpCount;
 
         public NvGpuVmmCache()
@@ -96,11 +123,18 @@ namespace Ryujinx.HLE.Gpu.Memory
             Cache = new Dictionary<long, CachedPage>();
 
             SortedCache = new LinkedList<long>();
+
+            Residency = new HashSet<long>[AMemoryMgr.RamSize / PageSize];
+
+            for (int i = 0; i < Residency.Length; i++)
+            {
+                Residency[i] = new HashSet<long>();
+            }
         }
 
         public bool IsRegionModified(AMemory Memory, NvGpuBufferType BufferType, long PA, long Size)
         {
-            bool[] Modified = Memory.IsRegionModified(PA, Size);
+            (bool[] Modified, long ModifiedCount) = Memory.IsRegionModified(PA, Size);
 
             if (Modified == null)
             {
@@ -109,9 +143,16 @@ namespace Ryujinx.HLE.Gpu.Memory
 
             ClearCachedPagesIfNeeded();
 
-            long PageSize = Memory.GetHostPageSize();
+            bool HasResidents = AddResidency(PA, Size);
+
+            if (!HasResidents && ModifiedCount == 0)
+            {
+                return false;
+            }
 
             long Mask = PageSize - 1;
+
+            long ResidencyKey = PA;
 
             long PAEnd = PA + Size;
 
@@ -147,6 +188,8 @@ namespace Ryujinx.HLE.Gpu.Memory
                     Cache[Key] = Cp;
                 }
 
+                Cp.AddResidency(ResidencyKey);
+
                 Cp.Node = SortedCache.AddLast(Key);
 
                 RegMod |= Cp.AddRange(PA, PAPgEnd, BufferType);
@@ -157,6 +200,29 @@ namespace Ryujinx.HLE.Gpu.Memory
             }
 
             return RegMod;
+        }
+
+        private bool AddResidency(long PA, long Size)
+        {
+            long Mask = PageSize - 1;
+
+            long Key = PA;
+
+            bool ResidentFound = false;
+
+            for (long Cursor = PA & ~Mask; Cursor < ((PA + Size + PageSize - 1) & ~Mask); Cursor += PageSize)
+            {
+                long PageIndex = Cursor / PageSize;
+
+                Residency[PageIndex].Add(Key);
+
+                if (Residency[PageIndex].Count > 1)
+                {
+                    ResidentFound = true;
+                }
+            }
+
+            return ResidentFound;
         }
 
         private void ClearCachedPagesIfNeeded()
@@ -178,6 +244,8 @@ namespace Ryujinx.HLE.Gpu.Memory
                 }
 
                 CachedPage Cp = Cache[Key];
+
+                Cp.RemoveResidency(Residency, PageSize);
 
                 Cache.Remove(Key);
 
