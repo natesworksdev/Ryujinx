@@ -25,9 +25,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private HashSet<long> FrameBuffers;
 
-        private List<long> UploadedIndexes;
-        private List<long> UploadedVertices;
-        private List<long> UploadedTextures;
+        private List<long>[] UploadedKeys;
 
         public NvGpuEngine3d(NvGpu Gpu)
         {
@@ -62,9 +60,12 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             FrameBuffers = new HashSet<long>();
 
-            UploadedIndexes  = new List<long>();
-            UploadedVertices = new List<long>();
-            UploadedTextures = new List<long>();
+            UploadedKeys = new List<long>[(int)NvGpuBufferType.Count];
+
+            for (int i = 0; i < UploadedKeys.Length; i++)
+            {
+                UploadedKeys[i] = new List<long>();
+            }
         }
 
         public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
@@ -528,8 +529,6 @@ namespace Ryujinx.HLE.Gpu.Engines
                     {
                         Gpu.Renderer.Texture.Bind(Key, TexIndex);
 
-                        UploadedIndexes.Add(Key);
-
                         HasCachedTexture = true;
                     }
                 }
@@ -702,9 +701,10 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             if (Mode == 0)
             {
-                UploadedIndexes.Clear();
-                UploadedVertices.Clear();
-                UploadedTextures.Clear();
+                foreach (List<long> Uploaded in UploadedKeys)
+                {
+                    Uploaded.Clear();
+                }
 
                 //Write mode.
                 Vmm.WriteInt32(Position, Seq);
@@ -791,28 +791,16 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private bool QueryKeyUpload(NvGpuVmm Vmm, long Key, long Size, NvGpuBufferType Type)
         {
-            List<long> UploadedKeys = TypeUploadedList(Type);
+            List<long> Uploaded = UploadedKeys[(int)Type];
 
-            if (UploadedKeys.Contains(Key))
+            if (Uploaded.Contains(Key))
             {
                 return false;
             }
 
-            UploadedKeys.Add(Key);
+            Uploaded.Add(Key);
 
             return Vmm.IsRegionModified(Key, Size, Type);
-        }
-
-        private List<long> TypeUploadedList(NvGpuBufferType Type)
-        {
-            switch (Type)
-            {
-                case NvGpuBufferType.Index:   return UploadedIndexes;
-                case NvGpuBufferType.Vertex:  return UploadedVertices;
-                case NvGpuBufferType.Texture: return UploadedTextures;
-
-                default: throw new ArgumentException(nameof(Type));
-            }
         }
     }
 }
