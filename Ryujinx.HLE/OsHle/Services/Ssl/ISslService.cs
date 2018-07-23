@@ -21,7 +21,9 @@ namespace Ryujinx.HLE.OsHle.Services.Ssl
 		
         public long CreateContext(ServiceCtx Context)
         {
-            long Id = Context.RequestData.ReadInt64();
+            int Version = Context.RequestData.ReadInt32();
+	
+            long Unknown = Context.RequestData.ReadInt64();
 			
             MakeObject(Context, new ISslContext());
 			
