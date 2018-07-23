@@ -114,7 +114,7 @@ namespace Ryujinx.HLE.Gpu.Memory
 
         private HashSet<long>[] Residency;
 
-        private const int PageSize = AMemoryMgr.PageSize;
+        private long ResidencyPageSize;
 
         private int CpCount;
 
@@ -123,13 +123,6 @@ namespace Ryujinx.HLE.Gpu.Memory
             Cache = new Dictionary<long, CachedPage>();
 
             SortedCache = new LinkedList<long>();
-
-            Residency = new HashSet<long>[AMemoryMgr.RamSize / PageSize];
-
-            for (int i = 0; i < Residency.Length; i++)
-            {
-                Residency[i] = new HashSet<long>();
-            }
         }
 
         public bool IsRegionModified(AMemory Memory, NvGpuBufferType BufferType, long PA, long Size)
@@ -142,6 +135,10 @@ namespace Ryujinx.HLE.Gpu.Memory
             }
 
             ClearCachedPagesIfNeeded();
+
+            long PageSize = Memory.GetHostPageSize();
+
+            EnsureResidencyInitialized(PageSize);
 
             bool HasResidents = AddResidency(PA, Size);
 
@@ -204,6 +201,8 @@ namespace Ryujinx.HLE.Gpu.Memory
 
         private bool AddResidency(long PA, long Size)
         {
+            long PageSize = ResidencyPageSize;
+
             long Mask = PageSize - 1;
 
             long Key = PA;
@@ -223,6 +222,28 @@ namespace Ryujinx.HLE.Gpu.Memory
             }
 
             return ResidentFound;
+        }
+
+        private void EnsureResidencyInitialized(long PageSize)
+        {
+            if (Residency == null)
+            {
+                Residency = new HashSet<long>[AMemoryMgr.RamSize / PageSize];
+
+                for (int i = 0; i < Residency.Length; i++)
+                {
+                    Residency[i] = new HashSet<long>();
+                }
+
+                ResidencyPageSize = PageSize;
+            }
+            else
+            {
+                if (ResidencyPageSize != PageSize)
+                {
+                    throw new InvalidOperationException("Tried to change residency page size");
+                }
+            }
         }
 
         private void ClearCachedPagesIfNeeded()
@@ -245,7 +266,7 @@ namespace Ryujinx.HLE.Gpu.Memory
 
                 CachedPage Cp = Cache[Key];
 
-                Cp.RemoveResidency(Residency, PageSize);
+                Cp.RemoveResidency(Residency, ResidencyPageSize);
 
                 Cache.Remove(Key);
 
