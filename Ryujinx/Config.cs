@@ -19,6 +19,8 @@ namespace Ryujinx
         public static int   GamePadIndex                { get; private set; }
         public static float GamePadTriggerThreshold     { get; private set; }
 
+        public static bool DiscordRPCEnable { get; private set; }
+
         public static void Read(Logger Log)
         {
             string IniFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -41,6 +43,8 @@ namespace Ryujinx
             GamePadIndex             =        Convert.ToInt32  (Parser.Value("GamePad_Index"));
             GamePadDeadzone          = (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"),          CultureInfo.InvariantCulture);
             GamePadTriggerThreshold  = (float)Convert.ToDouble (Parser.Value("GamePad_Trigger_Threshold"), CultureInfo.InvariantCulture);
+
+            DiscordRPCEnable = Convert.ToBoolean(Parser.Value("DiscordRPC_Enable"));
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
 
