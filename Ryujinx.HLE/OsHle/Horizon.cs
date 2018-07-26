@@ -18,6 +18,8 @@ namespace Ryujinx.HLE.OsHle
 
         private ConcurrentDictionary<int, Process> Processes;
 
+        private bool IsDisposing;
+
         public SystemStateMgr SystemState { get; private set; }
 
         internal MemoryAllocator Allocator { get; private set; }
@@ -147,6 +149,22 @@ namespace Ryujinx.HLE.OsHle
             return Process;
         }
 
+        public void PauseAllProcesses()
+        {
+            foreach (Process Process in Processes.Values)
+            {
+                Process.Pause();
+            }
+        }
+
+        public void ResumeAllProcesses()
+        {
+            foreach (Process Process in Processes.Values)
+            {
+                Process.Resume();                
+            }
+        }
+        
         private void InitializeProcess(Process Process)
         {
             Process.AppletState.SetFocus(true);
@@ -154,7 +172,7 @@ namespace Ryujinx.HLE.OsHle
 
         internal void ExitProcess(int ProcessId)
         {
-            if (Processes.TryGetValue(ProcessId, out Process Process) && Process.NeedsHbAbi)
+            if (Processes.TryGetValue(ProcessId, out Process Process) && Process.NeedsHbAbi && !IsDisposing)
             {
                 string NextNro = Homebrew.ReadHbAbiNextLoadPath(Process.Memory, Process.HbAbiDataPosition);
 
@@ -178,7 +196,6 @@ namespace Ryujinx.HLE.OsHle
             if (Processes.TryRemove(ProcessId, out Process))
             {
                 Process.StopAllThreadsAsync();
-                Process.Dispose();
 
                 if (Processes.Count == 0)
                 {
@@ -199,6 +216,8 @@ namespace Ryujinx.HLE.OsHle
 
         protected virtual void Dispose(bool Disposing)
         {
+            IsDisposing = Disposing;
+
             if (Disposing)
             {
                 foreach (Process Process in Processes.Values)

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using System.Threading;
 
 namespace ChocolArm64
 {
@@ -20,6 +21,8 @@ namespace ChocolArm64
         public event EventHandler<ACpuTraceEventArgs> CpuTrace;
 
         public bool EnableCpuTrace { get; set; }
+
+        private ManualResetEvent PauseResetEvent = new ManualResetEvent(true);
 
         public ATranslator(IReadOnlyDictionary<long, string> SymbolTable = null)
         {
@@ -60,6 +63,8 @@ namespace ChocolArm64
                 AOpCode OpCode = ADecoder.DecodeOpCode(State, Memory, State.R15);
 
                 OpCode.Interpreter(State, Memory, OpCode);
+
+                PauseResetEvent.WaitOne();
             }
             while (State.R15 != 0 && State.Running);
         }
@@ -89,6 +94,8 @@ namespace ChocolArm64
                 }
 
                 Position = Sub.Execute(State, Memory);
+
+                PauseResetEvent.WaitOne();
             }
             while (Position != 0 && State.Running);
         }
@@ -201,6 +208,16 @@ namespace ChocolArm64
                     SymbolTable.TryAdd(LastOp.Position + 4, Name);
                 }
             }
+        }
+
+        public void Pause()
+        {
+            PauseResetEvent.Reset();
+        }
+
+        public void Resume()
+        {
+            PauseResetEvent.Set();
         }
     }
 }

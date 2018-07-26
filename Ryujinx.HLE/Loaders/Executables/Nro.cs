@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    class Nro : IExecutable
+    public class Nro : IExecutable
     {
         public string FilePath { get; private set; }
 
@@ -15,10 +15,11 @@ namespace Ryujinx.HLE.Loaders.Executables
         public int ROOffset   { get; private set; }
         public int DataOffset { get; private set; }
         public int BssSize    { get; private set; }
-
+        public int FileSize   { get; private set; }
+        
         public Nro(Stream Input, string FilePath)
         {
-            this.FilePath = FilePath;
+            this.FilePath = this.FilePath;
 
             BinaryReader Reader = new BinaryReader(Input);
 
@@ -44,6 +45,7 @@ namespace Ryujinx.HLE.Loaders.Executables
             this.ROOffset   = ROOffset;
             this.DataOffset = DataOffset;
             this.BssSize    = BssSize;
+            this.FileSize   = FileSize;
 
             byte[] Read(long Position, int Size)
             {

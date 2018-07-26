@@ -169,6 +169,26 @@ namespace Ryujinx.HLE.OsHle
             return true;
         }
 
+        public void Pause()
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(nameof(Process));
+            }
+
+            Translator.Pause();
+        }
+
+        public void Resume()
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(nameof(Process));
+            }
+
+            Translator.Resume();
+        }
+
         private void MapRWMemRegion(long Position, long Size, MemoryType Type)
         {
             Memory.Manager.Map(Position, Size, (int)Type, AMemoryPerm.RW);
@@ -178,7 +198,7 @@ namespace Ryujinx.HLE.OsHle
         {
             if (Disposed)
             {
-                throw new ObjectDisposedException(nameof(Process));
+                return;
             }
 
             if (MainThread != null)
@@ -403,6 +423,8 @@ namespace Ryujinx.HLE.OsHle
         {
             if (Disposing && !Disposed)
             {
+                Translator.Resume();
+
                 //If there is still some thread running, disposing the objects is not
                 //safe as the thread may try to access those resources. Instead, we set
                 //the flag to have the Process disposed when all threads finishes.

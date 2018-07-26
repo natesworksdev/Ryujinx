@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal
 {
-    public interface IGalRenderer
+    public interface IGalRenderer : IDisposable
     {
         void QueueAction(Action ActionMthd);
 
