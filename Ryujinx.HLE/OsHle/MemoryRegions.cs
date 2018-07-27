@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.OsHle
 
         public const long MainStackSize = 0x100000;
 
-        public const long MainStackAddress = AMemoryMgr.AddrSize - MainStackSize;
+        public const long MainStackAddress = 0x100000000L - MainStackSize;
 
         public const long TlsPagesSize = 0x20000;
 
@@ -22,8 +22,8 @@ namespace Ryujinx.HLE.OsHle
 
         public const long TotalMemoryUsed = HeapRegionAddress + TlsPagesSize + MainStackSize;
 
-        public const long TotalMemoryAvailable = AMemoryMgr.RamSize - AddrSpaceStart;
+        public const long TotalMemoryAvailable = 0x100000000L - AddrSpaceStart;
 
-        public const long AddrSpaceSize = AMemoryMgr.AddrSize - AddrSpaceStart;
+        public const long AddrSpaceSize = 0x100000000L - AddrSpaceStart;
     }
 }

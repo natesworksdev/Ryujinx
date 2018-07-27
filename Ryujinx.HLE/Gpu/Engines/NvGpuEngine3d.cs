@@ -418,6 +418,12 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             Key = Vmm.GetPhysicalAddress(Key);
 
+            if (Key == -1)
+            {
+                //FIXME: Should'nt ignore invalid addresses.
+                return;
+            }
+
             if (IsFrameBufferPosition(Key))
             {
                 //This texture is a frame buffer texture,

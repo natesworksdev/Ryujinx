@@ -40,6 +40,8 @@ namespace Ryujinx.HLE.OsHle
 
         public AMemory Memory { get; private set; }
 
+        public KMemoryManager MemoryManager { get; private set; }
+
         public KProcessScheduler Scheduler { get; private set; }
 
         public List<KThread> ThreadArbiterList { get; private set; }
@@ -76,7 +78,9 @@ namespace Ryujinx.HLE.OsHle
             this.Scheduler = Scheduler;
             this.ProcessId = ProcessId;
 
-            Memory = new AMemory();
+            Memory = new AMemory(Ns.Memory.RamPointer);
+
+            MemoryManager = new KMemoryManager(Memory, Ns.Memory.Allocator);
 
             ThreadArbiterList = new List<KThread>();
 
@@ -96,10 +100,11 @@ namespace Ryujinx.HLE.OsHle
 
             ImageBase = MemoryRegions.AddrSpaceStart;
 
-            MapRWMemRegion(
+            MemoryManager.HleMapCustom(
                 MemoryRegions.TlsPagesAddress,
                 MemoryRegions.TlsPagesSize,
-                MemoryType.ThreadLocal);
+                MemoryState.ThreadLocal,
+                MemoryPermission.ReadAndWrite);
         }
 
         public void LoadProgram(IExecutable Program)
@@ -111,17 +116,17 @@ namespace Ryujinx.HLE.OsHle
 
             Ns.Log.PrintInfo(LogClass.Loader, $"Image base at 0x{ImageBase:x16}.");
 
-            Executable Executable = new Executable(Program, Memory, ImageBase);
+            Executable Executable = new Executable(Program, MemoryManager, Memory, ImageBase);
 
             Executables.Add(Executable);
 
-            ImageBase = AMemoryHelper.PageRoundUp(Executable.ImageEnd);
+            ImageBase = IntUtils.AlignUp(Executable.ImageEnd, KMemoryManager.PageSize);
         }
 
         public void SetEmptyArgs()
         {
             //TODO: This should be part of Run.
-            ImageBase += AMemoryMgr.PageSize;
+            ImageBase += KMemoryManager.PageSize;
         }
 
         public bool Run(bool NeedsHbAbi = false)
@@ -140,10 +145,11 @@ namespace Ryujinx.HLE.OsHle
 
             MakeSymbolTable();
 
-            MapRWMemRegion(
+            MemoryManager.HleMapCustom(
                 MemoryRegions.MainStackAddress,
                 MemoryRegions.MainStackSize,
-                MemoryType.Normal);
+                MemoryState.MappedMemory,
+                MemoryPermission.ReadAndWrite);
 
             long StackTop = MemoryRegions.MainStackAddress + MemoryRegions.MainStackSize;
 
@@ -158,7 +164,15 @@ namespace Ryujinx.HLE.OsHle
 
             if (NeedsHbAbi)
             {
-                HbAbiDataPosition = AMemoryHelper.PageRoundUp(Executables[0].ImageEnd);
+                HbAbiDataPosition = IntUtils.AlignUp(Executables[0].ImageEnd, KMemoryManager.PageSize);
+
+                const long HbAbiDataSize = KMemoryManager.PageSize;
+
+                MemoryManager.HleMapCustom(
+                    HbAbiDataPosition,
+                    HbAbiDataSize,
+                    MemoryState.MappedMemory,
+                    MemoryPermission.ReadAndWrite);
 
                 string SwitchPath = Ns.VFs.SystemPathToSwitchPath(Executables[0].FilePath);
 
@@ -171,11 +185,6 @@ namespace Ryujinx.HLE.OsHle
             Scheduler.StartThread(MainThread);
 
             return true;
-        }
-
-        private void MapRWMemRegion(long Position, long Size, MemoryType Type)
-        {
-            Memory.Manager.Map(Position, Size, (int)Type, AMemoryPerm.RW);
         }
 
         public void StopAllThreadsAsync()
@@ -438,10 +447,6 @@ namespace Ryujinx.HLE.OsHle
                 INvDrvServices.UnloadProcess(this);
 
                 AppletState.Dispose();
-
-                SvcHandler.Dispose();
-
-                Memory.Dispose();
 
                 Ns.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
             }

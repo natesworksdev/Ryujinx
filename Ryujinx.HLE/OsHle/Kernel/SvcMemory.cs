@@ -13,41 +13,83 @@ namespace Ryujinx.HLE.OsHle.Kernel
         {
             uint Size = (uint)ThreadState.X1;
 
-            long Position = MemoryRegions.HeapRegionAddress;
-
-            if (Size > CurrentHeapSize)
+            if ((Size & 0x1fffff) != 0)
             {
-                Memory.Manager.Map(Position, Size, (int)MemoryType.Heap, AMemoryPerm.RW);
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Heap size 0x{Size:x16} is not aligned!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
+
+                return;
+            }
+
+            long Result = Process.MemoryManager.TrySetHeapSize(Size, out long Position);
+
+            ThreadState.X0 = (ulong)Result;
+
+            if (Result == 0)
+            {
+                ThreadState.X1 = (ulong)Position;
             }
             else
             {
-                Memory.Manager.Unmap(Position + Size, (long)CurrentHeapSize - Size);
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
-
-            CurrentHeapSize = Size;
-
-            ThreadState.X0 = 0;
-            ThreadState.X1 = (ulong)Position;
         }
 
         private void SvcSetMemoryAttribute(AThreadState ThreadState)
         {
             long Position = (long)ThreadState.X0;
             long Size     = (long)ThreadState.X1;
-            int  State0   =  (int)ThreadState.X2;
-            int  State1   =  (int)ThreadState.X3;
 
-            if ((State0 == 0 && State1 == 0) ||
-                (State0 == 8 && State1 == 0))
+            if (!PageAligned(Position))
             {
-                Memory.Manager.ClearAttrBit(Position, Size, 3);
-            }
-            else if (State0 == 8 && State1 == 8)
-            {
-                Memory.Manager.SetAttrBit(Position, Size, 3);
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+
+                return;
             }
 
-            ThreadState.X0 = 0;
+            if (!PageAligned(Size) || Size == 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
+
+                return;
+            }
+
+            MemoryAttribute AttributeMask  = (MemoryAttribute)ThreadState.X2;
+            MemoryAttribute AttributeValue = (MemoryAttribute)ThreadState.X3;
+
+            MemoryAttribute Attributes = AttributeMask | AttributeValue;
+
+            if (Attributes != AttributeMask ||
+               (Attributes | MemoryAttribute.Uncached) != MemoryAttribute.Uncached)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, "Invalid memory attributes!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
+
+                return;
+            }
+
+            long Result = Process.MemoryManager.SetMemoryAttribute(
+                Position,
+                Size,
+                AttributeMask,
+                AttributeValue);
+
+            if (Result != 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+            }
+            else
+            {
+                Memory.StopObservingRegion(Position, Size);
+            }
+
+            ThreadState.X0 = (ulong)Result;
         }
 
         private void SvcMapMemory(AThreadState ThreadState)
@@ -56,33 +98,50 @@ namespace Ryujinx.HLE.OsHle.Kernel
             long Src  = (long)ThreadState.X1;
             long Size = (long)ThreadState.X2;
 
-            if (!IsValidPosition(Src))
+            if (!PageAligned(Src | Dst))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid src address {Src:x16}!");
+                Ns.Log.PrintWarning(LogClass.KernelSvc, "Addresses are not page aligned!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+
+                return;
+            }
+
+            if (!PageAligned(Size) || Size == 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
+
+                return;
+            }
+
+            if (!InsideAddrSpace(Src, Size) || Src == 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            if (!InsideMapRegion(Dst, Size))
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
 
                 return;
             }
 
-            if (!IsValidMapPosition(Dst))
+            long Result = Process.MemoryManager.Map(Src, Dst, Size);
+
+            if (Result != 0)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid dst address {Dst:x16}!");
-
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
-
-                return;
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
-            AMemoryMapInfo SrcInfo = Memory.Manager.GetMapInfo(Src);
-
-            Memory.Manager.Map(Dst, Size, (int)MemoryType.MappedMemory, SrcInfo.Perm);
-
-            Memory.Manager.Reprotect(Src, Size, AMemoryPerm.None);
-
-            Memory.Manager.SetAttrBit(Src, Size, 0);
-
-            ThreadState.X0 = 0;
+            ThreadState.X0 = (ulong)Result;
         }
 
         private void SvcUnmapMemory(AThreadState ThreadState)
@@ -91,33 +150,50 @@ namespace Ryujinx.HLE.OsHle.Kernel
             long Src  = (long)ThreadState.X1;
             long Size = (long)ThreadState.X2;
 
-            if (!IsValidPosition(Src))
+            if (!PageAligned(Src | Dst))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid src address {Src:x16}!");
+                Ns.Log.PrintWarning(LogClass.KernelSvc, "Addresses are not page aligned!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+
+                return;
+            }
+
+            if (!PageAligned(Size) || Size == 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
+
+                return;
+            }
+
+            if (!InsideAddrSpace(Src, Size) || Src == 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            if (!InsideMapRegion(Dst, Size))
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
 
                 return;
             }
 
-            if (!IsValidMapPosition(Dst))
+            long Result = Process.MemoryManager.Unmap(Src, Dst, Size);
+
+            if (Result != 0)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid dst address {Dst:x16}!");
-
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
-
-                return;
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
-            AMemoryMapInfo DstInfo = Memory.Manager.GetMapInfo(Dst);
-
-            Memory.Manager.Unmap(Dst, Size, (int)MemoryType.MappedMemory);
-
-            Memory.Manager.Reprotect(Src, Size, DstInfo.Perm);
-
-            Memory.Manager.ClearAttrBit(Src, Size, 0);
-
-            ThreadState.X0 = 0;
+            ThreadState.X0 = (ulong)Result;
         }
 
         private void SvcQueryMemory(AThreadState ThreadState)
@@ -125,26 +201,16 @@ namespace Ryujinx.HLE.OsHle.Kernel
             long InfoPtr  = (long)ThreadState.X0;
             long Position = (long)ThreadState.X2;
 
-            AMemoryMapInfo MapInfo = Memory.Manager.GetMapInfo(Position);
+            KMemoryInfo BlkInfo = Process.MemoryManager.QueryMemory(Position);
 
-            if (MapInfo == null)
-            {
-                long AddrSpaceEnd = MemoryRegions.AddrSpaceStart + MemoryRegions.AddrSpaceSize;
-
-                long ReservedSize = (long)(ulong.MaxValue - (ulong)AddrSpaceEnd) + 1;
-
-                MapInfo = new AMemoryMapInfo(AddrSpaceEnd, ReservedSize, (int)MemoryType.Reserved, 0, AMemoryPerm.None);
-            }
-
-            Memory.WriteInt64(InfoPtr + 0x00, MapInfo.Position);
-            Memory.WriteInt64(InfoPtr + 0x08, MapInfo.Size);
-            Memory.WriteInt32(InfoPtr + 0x10, MapInfo.Type);
-            Memory.WriteInt32(InfoPtr + 0x14, MapInfo.Attr);
-            Memory.WriteInt32(InfoPtr + 0x18, (int)MapInfo.Perm);
-            Memory.WriteInt32(InfoPtr + 0x1c, 0);
-            Memory.WriteInt32(InfoPtr + 0x20, 0);
+            Memory.WriteInt64(InfoPtr + 0x00, BlkInfo.Position);
+            Memory.WriteInt64(InfoPtr + 0x08, BlkInfo.Size);
+            Memory.WriteInt32(InfoPtr + 0x10, (int)BlkInfo.State & 0xff);
+            Memory.WriteInt32(InfoPtr + 0x14, (int)BlkInfo.Attribute);
+            Memory.WriteInt32(InfoPtr + 0x18, (int)BlkInfo.Permission);
+            Memory.WriteInt32(InfoPtr + 0x1c, BlkInfo.IpcRefCount);
+            Memory.WriteInt32(InfoPtr + 0x20, BlkInfo.DeviceRefCount);
             Memory.WriteInt32(InfoPtr + 0x24, 0);
-            //TODO: X1.
 
             ThreadState.X0 = 0;
             ThreadState.X1 = 0;
@@ -152,84 +218,140 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private void SvcMapSharedMemory(AThreadState ThreadState)
         {
-            int  Handle =  (int)ThreadState.X0;
-            long Src    = (long)ThreadState.X1;
-            long Size   = (long)ThreadState.X2;
-            int  Perm   =  (int)ThreadState.X3;
+            int  Handle   =  (int)ThreadState.X0;
+            long Position = (long)ThreadState.X1;
+            long Size     = (long)ThreadState.X2;
 
-            if (!IsValidPosition(Src))
+            if (!PageAligned(Position))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Src:x16}!");
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
                 return;
             }
 
-            HSharedMem SharedMem = Process.HandleTable.GetData<HSharedMem>(Handle);
-
-            if (SharedMem != null)
+            if (!PageAligned(Size) || Size == 0)
             {
-                Memory.Manager.Map(Src, Size, (int)MemoryType.SharedMemory, AMemoryPerm.Write);
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
-                AMemoryHelper.FillWithZeros(Memory, Src, (int)Size);
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
-                SharedMem.AddVirtualPosition(Memory, Src, Size);
-
-                Memory.Manager.Reprotect(Src, Size, (AMemoryPerm)Perm);
-
-                lock (MappedSharedMems)
-                {
-                    MappedSharedMems.Add((SharedMem, Src, Size));
-                }
-
-                ThreadState.X0 = 0;
+                return;
             }
 
-            //TODO: Error codes.
+            MemoryPermission Permission = (MemoryPermission)ThreadState.X3;
+
+            if ((Permission | MemoryPermission.Write) != MemoryPermission.ReadAndWrite)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid permission {Permission}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidPermission);
+
+                return;
+            }
+
+            KSharedMemory SharedMemory = Process.HandleTable.GetData<KSharedMemory>(Handle);
+
+            if (SharedMemory == null)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid shared memory handle 0x{Handle:x8}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+
+                return;
+            }
+
+            if (!InsideAddrSpace(Position, Size) /*|| InsideMapRegion(Position, Size)*/ || InsideHeapRegion(Position, Size))
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            if (SharedMemory.Size != Size)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} does not match shared memory size 0x{SharedMemory.Size:16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
+
+                return;
+            }
+
+            long Result = Process.MemoryManager.MapSharedMemory(SharedMemory, Permission, Position);
+
+            if (Result != 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+            }
+
+            ThreadState.X0 = (ulong)Result;
         }
 
         private void SvcUnmapSharedMemory(AThreadState ThreadState)
         {
-            int  Handle =  (int)ThreadState.X0;
-            long Src    = (long)ThreadState.X1;
-            long Size   = (long)ThreadState.X2;
+            int  Handle   =  (int)ThreadState.X0;
+            long Position = (long)ThreadState.X1;
+            long Size     = (long)ThreadState.X2;
 
-            if (!IsValidPosition(Src))
+            if (!PageAligned(Position))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Src:x16}!");
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
                 return;
             }
 
-            HSharedMem SharedMem = Process.HandleTable.GetData<HSharedMem>(Handle);
-
-            if (SharedMem != null)
+            if (!PageAligned(Size) || Size == 0)
             {
-                Memory.Manager.Unmap(Src, Size, (int)MemoryType.SharedMemory);
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
-                SharedMem.RemoveVirtualPosition(Memory, Src, Size);
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
-                lock (MappedSharedMems)
-                {
-                    MappedSharedMems.Remove((SharedMem, Src, Size));
-                }
-
-                ThreadState.X0 = 0;
+                return;
             }
 
-            //TODO: Error codes.
+            KSharedMemory SharedMemory = Process.HandleTable.GetData<KSharedMemory>(Handle);
+
+            if (SharedMemory == null)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid shared memory handle 0x{Handle:x8}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+
+                return;
+            }
+
+            if (!InsideAddrSpace(Position, Size) /*|| InsideMapRegion(Position, Size)*/ || InsideHeapRegion(Position, Size))
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            long Result = Process.MemoryManager.UnmapSharedMemory(Position, Size);
+
+            if (Result != 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+            }
+
+            ThreadState.X0 = (ulong)Result;
         }
 
         private void SvcCreateTransferMemory(AThreadState ThreadState)
         {
             long Src  = (long)ThreadState.X1;
             long Size = (long)ThreadState.X2;
-            int  Perm =  (int)ThreadState.X3;
 
-            if (!IsValidPosition(Src))
+            MemoryPermission Permission = (MemoryPermission)ThreadState.X3;
+
+            if (!InsideAddrSpace(Src, Size))
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Src:x16}!");
 
@@ -238,48 +360,56 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
-            AMemoryMapInfo MapInfo = Memory.Manager.GetMapInfo(Src);
+            Process.MemoryManager.ReserveTransferMemory(Src, Size, Permission);
 
-            Memory.Manager.Reprotect(Src, Size, (AMemoryPerm)Perm);
+            KTransferMemory TransferMemory = new KTransferMemory(Src, Size);
 
-            HTransferMem TMem = new HTransferMem(Memory, MapInfo.Perm, Src, Size);
-
-            ulong Handle = (ulong)Process.HandleTable.OpenHandle(TMem);
+            int Handle = Process.HandleTable.OpenHandle(TransferMemory);
 
             ThreadState.X0 = 0;
-            ThreadState.X1 = Handle;
+            ThreadState.X1 = (ulong)Handle;
         }
 
         private void SvcMapPhysicalMemory(AThreadState ThreadState)
         {
-            long Position = (long)ThreadState.X0;
-            uint Size     = (uint)ThreadState.X1;
-
-            Memory.Manager.Map(Position, Size, (int)MemoryType.Heap, AMemoryPerm.RW);
-
-            ThreadState.X0 = 0;
+            //TODO.
         }
 
         private void SvcUnmapPhysicalMemory(AThreadState ThreadState)
         {
-            long Position = (long)ThreadState.X0;
-            uint Size     = (uint)ThreadState.X1;
-
-            Memory.Manager.Unmap(Position, Size);
-
-            ThreadState.X0 = 0;
+            //TODO.
         }
 
-        private static bool IsValidPosition(long Position)
+        private static bool PageAligned(long Position)
         {
-            return Position >= MemoryRegions.AddrSpaceStart &&
-                   Position <  MemoryRegions.AddrSpaceStart + MemoryRegions.AddrSpaceSize;
+            return (Position & (KMemoryManager.PageSize - 1)) == 0;
         }
 
-        private static bool IsValidMapPosition(long Position)
+        private bool InsideAddrSpace(long Position, long Size)
         {
-            return Position >= MemoryRegions.MapRegionAddress &&
-                   Position <  MemoryRegions.MapRegionAddress + MemoryRegions.MapRegionSize;
+            ulong Start = (ulong)Position;
+            ulong End   = (ulong)Size + Start;
+
+            return Start >= (ulong)Process.MemoryManager.AddrSpaceStart &&
+                   End   <  (ulong)Process.MemoryManager.AddrSpaceEnd;
+        }
+
+        private bool InsideMapRegion(long Position, long Size)
+        {
+            ulong Start = (ulong)Position;
+            ulong End   = (ulong)Size + Start;
+
+            return Start >= MemoryRegions.MapRegionAddress &&
+                   End   <  MemoryRegions.MapRegionAddress + MemoryRegions.MapRegionSize;
+        }
+
+        private bool InsideHeapRegion(long Position, long Size)
+        {
+            ulong Start = (ulong)Position;
+            ulong End   = (ulong)Size + Start;
+
+            return Start >= (ulong)Process.MemoryManager.HeapRegionStart &&
+                   End   <  (ulong)Process.MemoryManager.HeapRegionEnd;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.OsHle
     public class Horizon : IDisposable
     {
         internal const int HidSize  = 0x40000;
-        internal const int FontSize = 0x50;
+        internal const int FontSize = 0x1100000;
 
         private Switch Ns;
 
@@ -22,10 +22,8 @@ namespace Ryujinx.HLE.OsHle
 
         public SystemStateMgr SystemState { get; private set; }
 
-        internal MemoryAllocator Allocator { get; private set; }
-
-        internal HSharedMem HidSharedMem  { get; private set; }
-        internal HSharedMem FontSharedMem { get; private set; }
+        internal KSharedMemory HidSharedMem  { get; private set; }
+        internal KSharedMemory FontSharedMem { get; private set; }
 
         internal KEvent VsyncEvent { get; private set; }
 
@@ -39,10 +37,14 @@ namespace Ryujinx.HLE.OsHle
 
             SystemState = new SystemStateMgr();
 
-            Allocator = new MemoryAllocator();
+            if (!Ns.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
+                !Ns.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
+            {
+                throw new InvalidOperationException();
+            }
 
-            HidSharedMem  = new HSharedMem();
-            FontSharedMem = new HSharedMem();
+            HidSharedMem  = new KSharedMemory(HidPA, HidSize);
+            FontSharedMem = new KSharedMemory(FontPA, FontSize);
 
             VsyncEvent = new KEvent();
         }

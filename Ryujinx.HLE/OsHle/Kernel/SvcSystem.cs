@@ -53,12 +53,11 @@ namespace Ryujinx.HLE.OsHle.Kernel
             {
                 Session.Dispose();
             }
-            else if (Obj is HTransferMem TMem)
+            else if (Obj is KTransferMemory TransferMemory)
             {
-                TMem.Memory.Manager.Reprotect(
-                    TMem.Position,
-                    TMem.Size,
-                    TMem.Perm);
+                Process.MemoryManager.ResetTransferMemory(
+                    TransferMemory.Position,
+                    TransferMemory.Size);
             }
 
             ThreadState.X0 = 0;
@@ -326,7 +325,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                     break;
 
                 case 7:
-                    ThreadState.X1 = MemoryRegions.TotalMemoryUsed + CurrentHeapSize;
+                    ThreadState.X1 = MemoryRegions.TotalMemoryUsed + (ulong)Process.MemoryManager.GetHeapSize();
                     break;
 
                 case 8:
