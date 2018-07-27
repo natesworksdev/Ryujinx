@@ -160,7 +160,7 @@ namespace Ryujinx
                 case "DPADRIGHT": return GamePad.DPad.Right;
                 case "START":     return GamePad.Buttons.Start;
                 case "BACK":      return GamePad.Buttons.Back;
-                default:          throw  new ArgumentException();
+                default:          throw new ArgumentException();
             }
         }
 
@@ -170,17 +170,23 @@ namespace Ryujinx
             {
                 case "LTRIGGER": return GamePad.Triggers.Left;
                 case "RTRIGGER": return GamePad.Triggers.Right;
-                default:         throw  new ArgumentException();
+                default:         throw new ArgumentException();
             }
         }
 
-        private Vector2 GetJoystickAxisFromString(GamePadState GamePad, string Joystick)
+        private float GetJoystickAxisFromString(GamePadState GamePad, string Joystick)
         {
             switch (Joystick.ToUpper())
             {
-                case "LJOYSTICK": return GamePad.ThumbSticks.Left;
-                case "RJOYSTICK": return new Vector2(-GamePad.ThumbSticks.Right.Y, -GamePad.ThumbSticks.Right.X);
-                default:          throw  new ArgumentException();
+                case  "JOYSTICKAXIS0": return  GamePad.ThumbSticks.Left.X;
+                case  "JOYSTICKAXIS1": return  GamePad.ThumbSticks.Left.Y;
+                case  "JOYSTICKAXIS2": return  GamePad.ThumbSticks.Right.X;
+                case  "JOYSTICKAXIS3": return  GamePad.ThumbSticks.Right.Y;
+                case "-JOYSTICKAXIS0": return -GamePad.ThumbSticks.Left.X;
+                case "-JOYSTICKAXIS1": return -GamePad.ThumbSticks.Left.Y;
+                case "-JOYSTICKAXIS2": return -GamePad.ThumbSticks.Right.X;
+                case "-JOYSTICKAXIS3": return -GamePad.ThumbSticks.Right.Y;
+                default:               throw new ArgumentException(nameof(Joystick));
             }
         }
 
@@ -194,7 +200,6 @@ namespace Ryujinx
             int LeftJoystickDY        = 0;
             int RightJoystickDX       = 0;
             int RightJoystickDY       = 0;
-            float AnalogStickDeadzone = Config.GamePadDeadzone;
 
             //Keyboard Input
             if (Keyboard.HasValue)
@@ -240,6 +245,8 @@ namespace Ryujinx
             if (Config.GamePadEnable)
             {
                 GamePadState GamePad = OpenTK.Input.GamePad.GetState(Config.GamePadIndex);
+                float AnalogStickDeadzone = Config.GamePadDeadzone;
+
                 //LeftButtons
                 if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.DPadUp))       CurrentButton |= HidControllerButtons.KEY_DUP;
                 if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.DPadDown))     CurrentButton |= HidControllerButtons.KEY_DDOWN;
@@ -261,22 +268,22 @@ namespace Ryujinx
                 if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.ButtonZR))    CurrentButton |= HidControllerButtons.KEY_ZR;
 
                 //LeftJoystick
-                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).X >= AnalogStickDeadzone
-                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).X <= -AnalogStickDeadzone)
-                    LeftJoystickDX = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).X * short.MaxValue);
+                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick_AxisX) >= AnalogStickDeadzone
+                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick_AxisX) <= -AnalogStickDeadzone)
+                    LeftJoystickDX = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick_AxisX) * short.MaxValue);
 
-                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).Y >= AnalogStickDeadzone
-                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).Y <= -AnalogStickDeadzone)
-                    LeftJoystickDY = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).Y * short.MaxValue);
+                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick_AxisY) >= AnalogStickDeadzone
+                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick_AxisY) <= -AnalogStickDeadzone)
+                    LeftJoystickDY = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick_AxisY) * short.MaxValue);
 
                 //RightJoystick
-                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).X >= AnalogStickDeadzone
-                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).X <= -AnalogStickDeadzone)
-                    RightJoystickDX = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).X * short.MaxValue);
+                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick_AxisX) >= AnalogStickDeadzone
+                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick_AxisX) <= -AnalogStickDeadzone)
+                    RightJoystickDX = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick_AxisX) * short.MaxValue);
 
-                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).Y >= AnalogStickDeadzone
-                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).Y <= -AnalogStickDeadzone)
-                    RightJoystickDY = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).Y * short.MaxValue);
+                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick_AxisY) >= AnalogStickDeadzone
+                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick_AxisY) <= -AnalogStickDeadzone)
+                    RightJoystickDY = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick_AxisY) * short.MaxValue);
             }
 
             LeftJoystick = new HidJoystickPosition
