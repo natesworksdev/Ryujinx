@@ -124,6 +124,9 @@ namespace Ryujinx
                         Title = NewTitle;
                     }
                 }
+
+                //Polling becomes expensive if it's not slept
+                Thread.Sleep(1);
             }
         }
         
