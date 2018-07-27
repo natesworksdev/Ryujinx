@@ -143,8 +143,6 @@ namespace Ryujinx
             {
                 KeyboardState Keyboard = this.Keyboard.Value;
 
-                if (Keyboard[Key.Escape]) Exit();
-
                 CurrentButton = Config.JoyConKeyboard.GetButtons(Keyboard);
 
                 (LeftJoystickDX, LeftJoystickDY) = Config.JoyConKeyboard.GetLeftStick(Keyboard);
@@ -284,6 +282,29 @@ namespace Ryujinx
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
         {
+            bool ToggleFullscreen = e.Key == Key.F11 ||
+                (e.Modifiers.HasFlag(KeyModifiers.Alt) && e.Key == Key.Enter);
+
+            if (WindowState == WindowState.Fullscreen)
+            {
+                if (e.Key == Key.Escape || ToggleFullscreen)
+                {
+                    WindowState = WindowState.Normal;
+                }
+            }
+            else
+            {
+                if (e.Key == Key.Escape)
+                {
+                    Exit();
+                }
+
+                if (ToggleFullscreen)
+                {
+                    WindowState = WindowState.Fullscreen;
+                }
+            }
+
             Keyboard = e.Keyboard;
         }
 
