@@ -85,6 +85,16 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitI2i(Block, OpCode, ShaderOper.RR);
         }
 
+        public static void Isberd(ShaderIrBlock Block, long OpCode)
+        {
+            //This instruction seems to be used to translate from an address to a vertex index in a GS
+            //Stub it as such
+
+            Block.AddNode(new ShaderIrCmnt("Stubbed."));
+
+            Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), GetOperGpr8(OpCode)), OpCode));
+        }
+
         public static void Mov_C(ShaderIrBlock Block, long OpCode)
         {
             ShaderIrOperCbuf Cbuf = GetOperCbuf34(OpCode);
@@ -111,6 +121,31 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrOperGpr Gpr = GetOperGpr20(OpCode);
 
             Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), Gpr), OpCode));
+        }
+
+        public static void Sel_C(ShaderIrBlock Block, long OpCode)
+        {
+            EmitSel(Block, OpCode, ShaderOper.CR);
+        }
+
+        public static void Sel_I(ShaderIrBlock Block, long OpCode)
+        {
+            EmitSel(Block, OpCode, ShaderOper.Imm);
+        }
+
+        public static void Sel_R(ShaderIrBlock Block, long OpCode)
+        {
+            EmitSel(Block, OpCode, ShaderOper.RR);
+        }
+
+        public static void Mov_S(ShaderIrBlock Block, long OpCode)
+        {
+            Block.AddNode(new ShaderIrCmnt("Stubbed."));
+
+            //Zero is used as a special number to get a valid "0 * 0 + VertexIndex" in a GS
+            ShaderIrNode Source = new ShaderIrOperImm(0);
+
+            Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), Source), OpCode));
         }
 
         private static void EmitF2f(ShaderIrBlock Block, long OpCode, ShaderOper Oper)
@@ -338,6 +373,28 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             Block.AddNode(GetPredNode(new ShaderIrAsg(GetOperGpr0(OpCode), OperA), OpCode));
+        }
+
+        private static void EmitSel(ShaderIrBlock Block, long OpCode, ShaderOper Oper)
+        {
+            ShaderIrOperGpr Dst  = GetOperGpr0   (OpCode);
+            ShaderIrNode    Pred = GetOperPred39N(OpCode);
+
+            ShaderIrNode ResultA = GetOperGpr8(OpCode);
+            ShaderIrNode ResultB;
+
+            switch (Oper)
+            {
+                case ShaderOper.CR:  ResultB = GetOperCbuf34  (OpCode); break;
+                case ShaderOper.Imm: ResultB = GetOperImm19_20(OpCode); break;
+                case ShaderOper.RR:  ResultB = GetOperGpr20   (OpCode); break;
+
+                default: throw new ArgumentException(nameof(Oper));
+            }
+
+            Block.AddNode(GetPredNode(new ShaderIrCond(Pred, new ShaderIrAsg(Dst, ResultA), false), OpCode));
+
+            Block.AddNode(GetPredNode(new ShaderIrCond(Pred, new ShaderIrAsg(Dst, ResultB), true),  OpCode));
         }
 
         private static IntType GetIntType(long OpCode)

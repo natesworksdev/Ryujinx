@@ -163,11 +163,18 @@ namespace ChocolArm64.Instruction
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
             int Elems = 8 >> Op.Size;
+
             int ESize = 8 << Op.Size;
 
             int Part = Op.RegisterSize == ARegisterSize.SIMD128 ? Elems : 0;
 
             long RoundConst = 1L << (ESize - 1);
+
+            if (Part != 0)
+            {
+                Context.EmitLdvec(Op.Rd);
+                Context.EmitStvectmp();
+            }
 
             for (int Index = 0; Index < Elems; Index++)
             {
@@ -185,8 +192,11 @@ namespace ChocolArm64.Instruction
 
                 Context.EmitLsr(ESize);
 
-                EmitVectorInsert(Context, Op.Rd, Part + Index, Op.Size);
+                EmitVectorInsertTmp(Context, Part + Index, Op.Size);
             }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
 
             if (Part == 0)
             {
@@ -1062,6 +1072,11 @@ namespace ChocolArm64.Instruction
             EmitVectorSaturatingNarrowOpSxZx(Context, () => { });
         }
 
+        public static void Ssubw_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Sub));
+        }
+
         public static void Sub_S(AILEmitterCtx Context)
         {
             EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
@@ -1214,6 +1229,11 @@ namespace ChocolArm64.Instruction
         public static void Uqxtn_V(AILEmitterCtx Context)
         {
             EmitVectorSaturatingNarrowOpZxZx(Context, () => { });
+        }
+
+        public static void Usubw_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
         }
     }
 }

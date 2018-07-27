@@ -13,6 +13,7 @@ using Ryujinx.HLE.OsHle.Services.Nv;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Ryujinx.HLE.OsHle
@@ -155,7 +156,9 @@ namespace Ryujinx.HLE.OsHle
             {
                 HbAbiDataPosition = AMemoryHelper.PageRoundUp(Executables[0].ImageEnd);
 
-                Homebrew.WriteHbAbiData(Memory, HbAbiDataPosition, Handle);
+                string SwitchPath = Ns.VFs.SystemPathToSwitchPath(Executables[0].FilePath);
+
+                Homebrew.WriteHbAbiData(Memory, HbAbiDataPosition, Handle, SwitchPath);
 
                 MainThread.Thread.ThreadState.X0 = (ulong)HbAbiDataPosition;
                 MainThread.Thread.ThreadState.X1 = ulong.MaxValue;
@@ -421,6 +424,11 @@ namespace Ryujinx.HLE.OsHle
                     {
                         Session.Dispose();
                     }
+                }
+
+                if (NeedsHbAbi && Executables.Count > 0 && Executables[0].FilePath.EndsWith(Homebrew.TemporaryNroSuffix))
+                {
+                    File.Delete(Executables[0].FilePath);
                 }
 
                 INvDrvServices.UnloadProcess(this);

@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
+using Buffer = System.Buffer;
+
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     public class OGLShader : IGalShader
@@ -118,15 +120,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             if (IsDualVp)
             {
+                ShaderDumper.Dump(Memory, Position,  Type, "a");
+                ShaderDumper.Dump(Memory, PositionB, Type, "b");
+
                 Program = Decompiler.Decompile(
                     Memory,
-                    Position  + 0x50,
-                    PositionB + 0x50,
+                    Position,
+                    PositionB,
                     Type);
             }
             else
             {
-                Program = Decompiler.Decompile(Memory, Position + 0x50, Type);
+                ShaderDumper.Dump(Memory, Position, Type);
+
+                Program = Decompiler.Decompile(Memory, Position, Type);
             }
 
             return new ShaderStage(
@@ -146,7 +153,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return Enumerable.Empty<ShaderDeclInfo>();
         }
 
-        public void SetConstBuffer(long Key, int Cbuf, byte[] Data)
+        public void SetConstBuffer(long Key, int Cbuf, int DataSize, IntPtr HostAddress)
         {
             if (Stages.TryGetValue(Key, out ShaderStage Stage))
             {
@@ -154,13 +161,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 {
                     OGLStreamBuffer Buffer = GetConstBuffer(Stage.Type, Cbuf);
 
-                    int Size = Math.Min(Data.Length, Buffer.Size);
+                    int Size = Math.Min(DataSize, Buffer.Size);
 
-                    byte[] Destiny = Buffer.Map(Size);
-
-                    Array.Copy(Data, Destiny, Size);
-
-                    Buffer.Unmap(Size);
+                    Buffer.SetData(Size, HostAddress);
                 }
             }
         }
@@ -193,6 +196,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private void Bind(ShaderStage Stage)
         {
+            if (Stage.Type == GalShaderType.Geometry)
+            {
+                //Enhanced layouts are required for Geometry shaders
+                //skip this stage if current driver has no ARB_enhanced_layouts
+                if (!OGLExtension.HasEnhancedLayouts())
+                {
+                    return;
+                }
+            }
+
             switch (Stage.Type)
             {
                 case GalShaderType.Vertex:         Current.Vertex         = Stage; break;
@@ -244,7 +257,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.UseProgram(Handle);
 
-            BindUniformBuffers(Handle);
+            if (CurrentProgramHandle != Handle)
+            {
+                BindUniformBuffers(Handle);
+            }
 
             CurrentProgramHandle = Handle;
         }
@@ -263,7 +279,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int FreeBinding = 0;
 
-            int BindUniformBlocksIfNotNull(ShaderStage Stage)
+            void BindUniformBlocksIfNotNull(ShaderStage Stage)
             {
                 if (Stage != null)
                 {
@@ -282,8 +298,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         FreeBinding++;
                     }
                 }
-
-                return FreeBinding;
             }
 
             BindUniformBlocksIfNotNull(Current.Vertex);
@@ -297,7 +311,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int FreeBinding = 0;
 
-            int BindUniformBuffersIfNotNull(ShaderStage Stage)
+            void BindUniformBuffersIfNotNull(ShaderStage Stage)
             {
                 if (Stage != null)
                 {
@@ -310,8 +324,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         FreeBinding++;
                     }
                 }
-
-                return FreeBinding;
             }
 
             BindUniformBuffersIfNotNull(Current.Vertex);
@@ -332,7 +344,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 //Allocate a maximum of 64 KiB
                 int Size = Math.Min(GL.GetInteger(GetPName.MaxUniformBlockSize), 64 * 1024);
 
-                Buffer = OGLStreamBuffer.Create(BufferTarget.UniformBuffer, Size);
+                Buffer = new OGLStreamBuffer(BufferTarget.UniformBuffer, Size);
 
                 ConstBuffers[StageIndex][Cbuf] = Buffer;
             }

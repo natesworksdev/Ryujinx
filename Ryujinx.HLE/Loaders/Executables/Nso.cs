@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 {
     class Nso : IExecutable
     {
-        public string Name { get; private set; }
+        public string FilePath { get; private set; }
 
         public byte[] Text { get; private set; }
         public byte[] RO   { get; private set; }
@@ -29,9 +29,9 @@ namespace Ryujinx.HLE.Loaders.Executables
             HasDataHash      = 1 << 5
         }
 
-        public Nso(Stream Input, string Name)
+        public Nso(Stream Input, string FilePath)
         {
-            this.Name = Name;
+            this.FilePath = FilePath;
 
             BinaryReader Reader = new BinaryReader(Input);
 

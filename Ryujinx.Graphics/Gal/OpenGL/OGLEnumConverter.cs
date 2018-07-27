@@ -139,6 +139,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalTextureFormat.R16:          return (PixelFormat.Red,            PixelType.HalfFloat);
                 case GalTextureFormat.R8:           return (PixelFormat.Red,            PixelType.UnsignedByte);
                 case GalTextureFormat.ZF32:         return (PixelFormat.DepthComponent, PixelType.Float);
+                case GalTextureFormat.BF10GF11RF11: return (PixelFormat.Rgb,            PixelType.UnsignedInt10F11F11FRev);
+                case GalTextureFormat.Z24S8:        return (PixelFormat.DepthStencil,   PixelType.UnsignedInt248);
             }
 
             throw new NotImplementedException(Format.ToString());
@@ -148,12 +150,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Format)
             {
-                case GalTextureFormat.BC7U: return InternalFormat.CompressedRgbaBptcUnorm;
-                case GalTextureFormat.BC1:  return InternalFormat.CompressedRgbaS3tcDxt1Ext;
-                case GalTextureFormat.BC2:  return InternalFormat.CompressedRgbaS3tcDxt3Ext;
-                case GalTextureFormat.BC3:  return InternalFormat.CompressedRgbaS3tcDxt5Ext;
-                case GalTextureFormat.BC4:  return InternalFormat.CompressedRedRgtc1;
-                case GalTextureFormat.BC5:  return InternalFormat.CompressedRgRgtc2;
+                case GalTextureFormat.BC6H_UF16: return InternalFormat.CompressedRgbBptcUnsignedFloat;
+                case GalTextureFormat.BC6H_SF16: return InternalFormat.CompressedRgbBptcSignedFloat;
+                case GalTextureFormat.BC7U:      return InternalFormat.CompressedRgbaBptcUnorm;
+                case GalTextureFormat.BC1:       return InternalFormat.CompressedRgbaS3tcDxt1Ext;
+                case GalTextureFormat.BC2:       return InternalFormat.CompressedRgbaS3tcDxt3Ext;
+                case GalTextureFormat.BC3:       return InternalFormat.CompressedRgbaS3tcDxt5Ext;
+                case GalTextureFormat.BC4:       return InternalFormat.CompressedRedRgtc1;
+                case GalTextureFormat.BC5:       return InternalFormat.CompressedRgRgtc2;
             }
 
             throw new NotImplementedException(Format.ToString());
