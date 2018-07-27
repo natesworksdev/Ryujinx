@@ -16,9 +16,6 @@ namespace Ryujinx
         private const int TouchScreenWidth  = 1280;
         private const int TouchScreenHeight = 720;
 
-        private const float TouchScreenRatioX = (float)TouchScreenWidth  / TouchScreenHeight;
-        private const float TouchScreenRatioY = (float)TouchScreenHeight / TouchScreenWidth;
-
         private const int TargetFPS = 60;
 
         private Switch Ns;
@@ -302,13 +299,13 @@ namespace Ryujinx
                 int ScrnWidth  = Width;
                 int ScrnHeight = Height;
 
-                if (Width > Height * TouchScreenRatioX)
+                if (Width > (Height * TouchScreenWidth) / TouchScreenHeight)
                 {
-                    ScrnWidth = (int)(Height * TouchScreenRatioX);
+                    ScrnWidth = (Height * TouchScreenWidth) / TouchScreenHeight;
                 }
                 else
                 {
-                    ScrnHeight = (int)(Width * TouchScreenRatioY);
+                    ScrnHeight = (Width * TouchScreenHeight) / TouchScreenWidth;
                 }
 
                 int StartX = (Width  - ScrnWidth)  >> 1;
@@ -325,8 +322,8 @@ namespace Ryujinx
                     int ScrnMouseX = Mouse.X - StartX;
                     int ScrnMouseY = Mouse.Y - StartY;
 
-                    int MX = (int)(((float)ScrnMouseX / ScrnWidth)  * TouchScreenWidth);
-                    int MY = (int)(((float)ScrnMouseY / ScrnHeight) * TouchScreenHeight);
+                    int MX = (ScrnMouseX * TouchScreenWidth)  / ScrnWidth;
+                    int MY = (ScrnMouseY * TouchScreenHeight) / ScrnHeight;
 
                     HidTouchPoint CurrentPoint = new HidTouchPoint
                     {
