@@ -161,11 +161,11 @@ namespace Ryujinx.UI.Input
 
         private (short, short) ApplyDeadzone(Vector2 Axis)
         {
-            return (PurifyAxis(MathF.Abs(Axis.X) > Deadzone ? Axis.X : 0f),
-                    PurifyAxis(MathF.Abs(Axis.Y) > Deadzone ? Axis.Y : 0f));
+            return (ClampAxis(MathF.Abs(Axis.X) > Deadzone ? Axis.X : 0f),
+                    ClampAxis(MathF.Abs(Axis.Y) > Deadzone ? Axis.Y : 0f));
         }
 
-        private static short PurifyAxis(float Value)
+        private static short ClampAxis(float Value)
         {
             if (Value <= -short.MaxValue)
             {
