@@ -27,6 +27,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
                 { 13, SetFocusHandlingMode                  },
                 { 14, SetRestartMessageEnabled              },
                 { 16, SetOutOfFocusSuspendingEnabled        },
+                { 19, SetScreenShotImageOrientation         },
                 { 50, SetHandlesRequestToDisplay            }
             };
 
@@ -119,6 +120,13 @@ namespace Ryujinx.HLE.OsHle.Services.Am
             bool Enable = Context.RequestData.ReadByte() != 0 ? true : false;
 
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+
+            return 0;
+        }
+
+        public long SetScreenShotImageOrientation(ServiceCtx Context)
+        {
+            int Orientation = Context.RequestData.ReadInt32();
 
             return 0;
         }
