@@ -19,7 +19,7 @@ namespace ChocolArm64.Decoder
             OpActivators = new ConcurrentDictionary<Type, OpActivator>();
         }
 
-        public static ABlock DecodeBasicBlock(
+        public static (ABlock[] Graph, ABlock Root) DecodeBasicBlock(
             AThreadState State,
             ATranslator  Translator,
             AMemory      Memory,
@@ -29,7 +29,41 @@ namespace ChocolArm64.Decoder
 
             FillBlock(State, Memory, Block);
 
-            return Block;
+            AOpCode LastOp = Block.GetLastOp();
+
+            if (LastOp is AOpCodeBImm Op && Op.Emitter != AInstEmit.Bl)
+            {
+                if (Op.Imm == Start)
+                {
+                    Block.Branch = Block;
+                }
+                else if ((ulong)Op.Imm > (ulong)Start &&
+                         (ulong)Op.Imm < (ulong)Block.EndPosition)
+                {
+                    int NewBlockIndex = (int)((Op.Imm - Start) / 4);
+
+                    ABlock NewBlock = new ABlock(Op.Imm);
+
+                    for (int Index = NewBlockIndex; Index < Block.OpCodes.Count; Index++)
+                    {
+                        NewBlock.OpCodes.Add(Block.OpCodes[Index]);
+                    }
+
+                    Block.OpCodes.RemoveRange(NewBlockIndex, Block.OpCodes.Count - NewBlockIndex);
+
+                    NewBlock.EndPosition = Block.EndPosition;
+
+                    NewBlock.Branch = NewBlock;
+
+                    Block.EndPosition = Op.Imm;
+
+                    Block.Next = NewBlock;
+
+                    return (new ABlock[] { Block, NewBlock }, Block);
+                }
+            }
+
+            return (new ABlock[] { Block }, Block);
         }
 
         public static (ABlock[] Graph, ABlock Root) DecodeSubroutine(

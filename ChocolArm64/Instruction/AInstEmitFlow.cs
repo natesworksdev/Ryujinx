@@ -163,10 +163,18 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
 
-            if (Context.CurrBlock.Next   != null &&
-                Context.CurrBlock.Branch != null)
+            if (Context.CurrBlock.Branch != null)
             {
                 Context.EmitCondBranch(Context.GetLabel(Op.Imm), Cond);
+
+                if (Context.CurrBlock.Next == null)
+                {
+                    Context.EmitStoreState();
+
+                    Context.EmitLdc_I8(Op.Position + 4);
+
+                    Context.Emit(OpCodes.Ret);
+                }
             }
             else
             {
@@ -192,10 +200,18 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
 
-            if (Context.CurrBlock.Next   != null &&
-                Context.CurrBlock.Branch != null)
+            if (Context.CurrBlock.Branch != null)
             {
                 Context.Emit(ILOp, Context.GetLabel(Op.Imm));
+
+                if (Context.CurrBlock.Next == null)
+                {
+                    Context.EmitStoreState();
+
+                    Context.EmitLdc_I8(Op.Position + 4);
+
+                    Context.Emit(OpCodes.Ret);
+                }
             }
             else
             {

@@ -117,13 +117,11 @@ namespace ChocolArm64
 
         private ATranslatedSub TranslateTier0(AThreadState State, AMemory Memory, long Position)
         {
-            ABlock Block = ADecoder.DecodeBasicBlock(State, this, Memory, Position);
-
-            ABlock[] Graph = new ABlock[] { Block };
+            (ABlock[] Graph, ABlock Root) = ADecoder.DecodeBasicBlock(State, this, Memory, Position);
 
             string SubName = GetSubName(Position);
 
-            AILEmitterCtx Context = new AILEmitterCtx(this, Graph, Block, SubName);
+            AILEmitterCtx Context = new AILEmitterCtx(this, Graph, Root, SubName);
 
             do
             {
@@ -136,8 +134,6 @@ namespace ChocolArm64
             Subroutine.SetType(ATranslatedSubType.SubTier0);
 
             CachedSubs.AddOrUpdate(Position, Subroutine, (Key, OldVal) => Subroutine);
-
-            AOpCode LastOp = Block.GetLastOp();
 
             return Subroutine;
         }
