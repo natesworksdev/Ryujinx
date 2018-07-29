@@ -5,6 +5,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     public class OGLRenderer : IGalRenderer
     {
+        public IGalConstBuffer Buffer { get; private set; }
+
         public IGalFrameBuffer FrameBuffer { get; private set; }
 
         public IGalRasterizer Rasterizer { get; private set; }
@@ -19,11 +21,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLRenderer()
         {
+            Buffer = new OGLConstBuffer();
+
             FrameBuffer = new OGLFrameBuffer();
 
             Rasterizer = new OGLRasterizer();
 
-            Shader = new OGLShader();
+            Shader = new OGLShader(Buffer as OGLConstBuffer);
 
             Pipeline = new OGLPipeline();
 
