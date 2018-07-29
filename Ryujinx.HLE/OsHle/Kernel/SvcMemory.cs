@@ -116,7 +116,16 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Src, Size) || Src == 0)
+            if ((ulong)(Src + Size) <= (ulong)Src || (ulong)(Dst + Size) <= (ulong)Dst)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            if (!InsideAddrSpace(Src, Size))
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
 
@@ -168,7 +177,16 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Src, Size) || Src == 0)
+            if ((ulong)(Src + Size) <= (ulong)Src || (ulong)(Dst + Size) <= (ulong)Dst)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            if (!InsideAddrSpace(Src, Size))
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
 
@@ -236,6 +254,15 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
+
+                return;
+            }
+
+            if ((ulong)(Position + Size) <= (ulong)Position)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
@@ -314,6 +341,15 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
+            if ((ulong)(Position + Size) <= (ulong)Position)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
             KSharedMemory SharedMemory = Process.HandleTable.GetData<KSharedMemory>(Handle);
 
             if (SharedMemory == null)
@@ -355,7 +391,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Src:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
@@ -372,12 +408,104 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private void SvcMapPhysicalMemory(AThreadState ThreadState)
         {
-            //TODO.
+            long Position = (long)ThreadState.X0;
+            long Size     = (long)ThreadState.X1;
+
+            if (!PageAligned(Position))
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+
+                return;
+            }
+
+            if (!PageAligned(Size) || Size == 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
+
+                return;
+            }
+
+            if ((ulong)(Position + Size) <= (ulong)Position)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            if (!InsideAddrSpace(Position, Size))
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Position:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            long Result = Process.MemoryManager.MapPhysicalMemory(Position, Size);
+
+            if (Result != 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+            }
+
+            ThreadState.X0 = (ulong)Result;
         }
 
         private void SvcUnmapPhysicalMemory(AThreadState ThreadState)
         {
-            //TODO.
+            long Position = (long)ThreadState.X0;
+            long Size     = (long)ThreadState.X1;
+
+            if (!PageAligned(Position))
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+
+                return;
+            }
+
+            if (!PageAligned(Size) || Size == 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
+
+                return;
+            }
+
+            if ((ulong)(Position + Size) <= (ulong)Position)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            if (!InsideAddrSpace(Position, Size))
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Position:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            long Result = Process.MemoryManager.UnmapPhysicalMemory(Position, Size);
+
+            if (Result != 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+            }
+
+            ThreadState.X0 = (ulong)Result;
         }
 
         private static bool PageAligned(long Position)

@@ -305,19 +305,21 @@ namespace Ryujinx.HLE.OsHle.Kernel
                     break;
 
                 case 2:
-                    ThreadState.X1 = MemoryRegions.MapRegionAddress;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.MapRegionStart;
                     break;
 
                 case 3:
-                    ThreadState.X1 = MemoryRegions.MapRegionSize;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.MapRegionEnd -
+                                     (ulong)Process.MemoryManager.MapRegionStart;
                     break;
 
                 case 4:
-                    ThreadState.X1 = MemoryRegions.HeapRegionAddress;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.HeapRegionStart;
                     break;
 
                 case 5:
-                    ThreadState.X1 = MemoryRegions.HeapRegionSize;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.HeapRegionEnd -
+                                     (ulong)Process.MemoryManager.HeapRegionStart;
                     break;
 
                 case 6:
@@ -337,19 +339,21 @@ namespace Ryujinx.HLE.OsHle.Kernel
                     break;
 
                 case 12:
-                    ThreadState.X1 = MemoryRegions.AddrSpaceStart;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.AddrSpaceStart;
                     break;
 
                 case 13:
-                    ThreadState.X1 = MemoryRegions.AddrSpaceSize;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.AddrSpaceEnd -
+                                     (ulong)Process.MemoryManager.AddrSpaceStart;
                     break;
 
                 case 14:
-                    ThreadState.X1 = MemoryRegions.MapRegionAddress;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.NewMapRegionStart;
                     break;
 
                 case 15:
-                    ThreadState.X1 = MemoryRegions.MapRegionSize;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.NewMapRegionEnd -
+                                     (ulong)Process.MemoryManager.NewMapRegionStart;
                     break;
 
                 case 16:

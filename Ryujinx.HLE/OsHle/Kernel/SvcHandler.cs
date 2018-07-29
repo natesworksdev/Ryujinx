@@ -66,8 +66,8 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 { 0x26, SvcBreak                         },
                 { 0x27, SvcOutputDebugString             },
                 { 0x29, SvcGetInfo                       },
-                //{ 0x2c, SvcMapPhysicalMemory             },
-                //{ 0x2d, SvcUnmapPhysicalMemory           },
+                { 0x2c, SvcMapPhysicalMemory             },
+                { 0x2d, SvcUnmapPhysicalMemory           },
                 { 0x32, SvcSetThreadActivity             },
                 { 0x33, SvcGetThreadContext3             },
                 { 0x34, SvcWaitForAddress                }

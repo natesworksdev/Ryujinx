@@ -13,8 +13,8 @@ namespace ChocolArm64.Memory
 {
     public unsafe class AMemory : IAMemory
     {
-        private const int PTLvl0Bits = 10;
-        private const int PTLvl1Bits = 10;
+        private const int PTLvl0Bits = 13;
+        private const int PTLvl1Bits = 14;
         private const int PTPageBits = 12;
 
         private const int PTLvl0Size = 1 << PTLvl0Bits;

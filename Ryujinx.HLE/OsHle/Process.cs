@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.OsHle
 
             Memory = new AMemory(Ns.Memory.RamPointer);
 
-            MemoryManager = new KMemoryManager(Memory, Ns.Memory.Allocator);
+            MemoryManager = new KMemoryManager(Memory, Ns.Memory.Allocator, AddressSpaceType.Addr39Bits);
 
             ThreadArbiterList = new List<KThread>();
 
