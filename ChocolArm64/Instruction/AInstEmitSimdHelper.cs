@@ -1100,9 +1100,7 @@ namespace ChocolArm64.Instruction
         }
 
         // TSrc (from 8bit to 64bit) == TDst (from 8bit to 64bit), signed.
-        public static void EmitUnarySignedSatQAbsOrNeg(
-            AILEmitterCtx Context,
-            int Size)
+        public static void EmitUnarySignedSatQAbsOrNeg(AILEmitterCtx Context, int Size)
         {
             int ESize = 8 << Size;
 
@@ -1128,10 +1126,7 @@ namespace ChocolArm64.Instruction
         }
 
         // TSrcs (64bit) == TDst (64bit), signed or unsigned.
-        public static void EmitBinarySatQAdd(
-            AILEmitterCtx Context,
-            int  Index,
-            bool Signed)
+        public static void EmitBinarySatQAdd(AILEmitterCtx Context, int Index, bool Signed)
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
@@ -1213,10 +1208,7 @@ namespace ChocolArm64.Instruction
         }
 
         // TSrcs (64bit) == TDst (64bit), signed or unsigned.
-        public static void EmitBinarySatQSub(
-            AILEmitterCtx Context,
-            int  Index,
-            bool Signed)
+        public static void EmitBinarySatQSub(AILEmitterCtx Context, int Index, bool Signed)
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
 
@@ -1293,10 +1285,7 @@ namespace ChocolArm64.Instruction
         }
 
         // TSrcs (64bit) == TDst (64bit), signed or unsigned.
-        public static void EmitBinarySatQAccumulate(
-            AILEmitterCtx Context,
-            int  Index,
-            bool Signed)
+        public static void EmitBinarySatQAccumulate(AILEmitterCtx Context, int Index, bool Signed)
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
@@ -1421,7 +1410,7 @@ namespace ChocolArm64.Instruction
                 // op2 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
 
                 EmitVectorExtractZx(Context, Op.Rd, Index, 3);
-                Context.EmitLdc_I8(long.MaxValue); // TODO: Spostare a variabile?
+                Context.EmitLdc_I8(long.MaxValue);
                 Context.Emit(OpCodes.Ble_Un_S, LblLe);
 
                 EmitVectorExtractZx(Context, Op.Rn, Index, 3);
@@ -1456,7 +1445,7 @@ namespace ChocolArm64.Instruction
 
         public static void EmitUpdateFpsrQCFlag(AILEmitterCtx Context)
         {
-            const int QCFlag = 27;
+            const int QCFlagBit = 27;
 
             Context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
@@ -1465,7 +1454,7 @@ namespace ChocolArm64.Instruction
 
             Context.EmitLdtmp(); // Saturated == 0 || Saturated == 1
             Context.Emit(OpCodes.Conv_I4);
-            Context.EmitLsl(QCFlag);
+            Context.EmitLsl(QCFlagBit);
 
             Context.Emit(OpCodes.Or);
 
