@@ -3,14 +3,19 @@ using ChocolArm64.Memory;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle;
 using Ryujinx.HLE.OsHle.Handles;
+using Ryujinx.HLE.Resource;
 using System;
 using System.Collections.Generic;
+using System.IO;
+
 
 namespace Ryujinx.HLE.Font
 {
     public class SharedFontManager
     {
         private Logger Log;
+
+        private string FontsPath;
 
         private object ShMemLock;
 
@@ -20,9 +25,10 @@ namespace Ryujinx.HLE.Font
 
         private uint[] LoadedFonts;
 
-        public SharedFontManager(Logger Log)
+        public SharedFontManager(Logger Log, string SystemPath)
         {
             this.Log          = Log;
+            this.FontsPath    = Path.Combine(SystemPath, "fonts");
 
             ShMemLock         = new object();
 
@@ -30,15 +36,27 @@ namespace Ryujinx.HLE.Font
 
             FontEmbeddedPaths = new Dictionary<SharedFontType, byte[]>()
             {
-                { SharedFontType.JapanUsEurope,       EmbeddedResource.GetData("FontStandard")                  },
-                { SharedFontType.SimplifiedChinese,   EmbeddedResource.GetData("FontChineseSimplified")         },
-                { SharedFontType.SimplifiedChineseEx, EmbeddedResource.GetData("FontExtendedChineseSimplified") },
-                { SharedFontType.TraditionalChinese,  EmbeddedResource.GetData("FontChineseTraditional")        },
-                { SharedFontType.Korean,              EmbeddedResource.GetData("FontKorean")                    },
-                { SharedFontType.NintendoEx,          EmbeddedResource.GetData("FontNintendoExtended")          }
+                { SharedFontType.JapanUsEurope,       GetData("FontStandard")                  },
+                { SharedFontType.SimplifiedChinese,   GetData("FontChineseSimplified")         },
+                { SharedFontType.SimplifiedChineseEx, GetData("FontExtendedChineseSimplified") },
+                { SharedFontType.TraditionalChinese,  GetData("FontChineseTraditional")        },
+                { SharedFontType.Korean,              GetData("FontKorean")                    },
+                { SharedFontType.NintendoEx,          GetData("FontNintendoExtended")          }
             };
 
             LoadedFonts       = new uint[FontEmbeddedPaths.Count];
+        }
+
+        public byte[] GetData(string FontName)
+        {
+            string FontFilePath = Path.Combine(FontsPath, $"{FontName}.ttf");
+            try
+            {
+                return File.ReadAllBytes(FontFilePath);
+            } catch (FileNotFoundException e)
+            {
+                throw new SystemResourceNotFoundException($"Font \"{FontName}.ttf\" not found. Please provide it in {FontsPath}", e);
+            }
         }
 
         public void MapFont(SharedFontType FontType, AMemory Memory, long Position)

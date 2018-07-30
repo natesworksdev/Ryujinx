@@ -60,7 +60,7 @@ namespace Ryujinx.HLE
 
             Hid = new Hid(Log);
 
-            Font = new SharedFontManager(Log);
+            Font = new SharedFontManager(Log, VFs.GetSystemPath());
 
             Os.HidSharedMem.MemoryMapped    += Hid.ShMemMap;
             Os.HidSharedMem.MemoryUnmapped  += Hid.ShMemUnmap;

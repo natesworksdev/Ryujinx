@@ -14,27 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Font\FontChineseSimplified.ttf">
-      <LogicalName>FontChineseSimplified</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Font\FontChineseTraditional.ttf">
-      <LogicalName>FontChineseTraditional</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Font\FontExtendedChineseSimplified.ttf">
-      <LogicalName>FontExtendedChineseSimplified</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Font\FontKorean.ttf">
-      <LogicalName>FontKorean</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Font\FontNintendoExtended.ttf">
-      <LogicalName>FontNintendoExtended</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Font\FontStandard.ttf">
-      <LogicalName>FontStandard</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ChocolArm64\ChocolArm64.csproj" />
     <ProjectReference Include="..\Ryujinx.Audio\Ryujinx.Audio.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics\Ryujinx.Graphics.csproj" />
