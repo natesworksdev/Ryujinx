@@ -826,8 +826,7 @@ namespace ChocolArm64.Instruction
             int Bytes = Op.GetBitsCount() >> 3;
             int Elems = !Scalar ? Bytes >> Op.Size : 1;
 
-            Context.EmitLdc_I8(0L);
-            Context.EmitSttmp(); // Saturated = 0
+            EmitResetSaturatedFlag(Context);
 
             if (Scalar)
             {
@@ -891,8 +890,7 @@ namespace ChocolArm64.Instruction
             int Bytes = Op.GetBitsCount() >> 3;
             int Elems = !Scalar ? Bytes >> Op.Size : 1;
 
-            Context.EmitLdc_I8(0L);
-            Context.EmitSttmp(); // Saturated = 0
+            EmitResetSaturatedFlag(Context);
 
             if (Scalar)
             {
@@ -1014,8 +1012,7 @@ namespace ChocolArm64.Instruction
 
             int Part = !Scalar && (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0;
 
-            Context.EmitLdc_I8(0L);
-            Context.EmitSttmp(); // Saturated = 0
+            EmitResetSaturatedFlag(Context);
 
             if (Scalar)
             {
@@ -1050,7 +1047,7 @@ namespace ChocolArm64.Instruction
             EmitUpdateFpsrQCFlag(Context);
         }
 
-        // TSrc (from 8bit to 64bit) > TDst (from 8bit to 32bit), signed or unsigned.
+        // TSrc (16bit, 32bit, 64bit) > TDst (8bit, 16bit, 32bit); signed, unsigned.
         public static void EmitSatQ(
             AILEmitterCtx Context,
             int  SizeDst,
@@ -1076,8 +1073,7 @@ namespace ChocolArm64.Instruction
 
             Context.Emit(OpCodes.Pop);
 
-            Context.EmitLdc_I8(1L);
-            Context.EmitSttmp(); // Saturated = 1
+            EmitSetSaturatedFlag(Context);
 
             Context.EmitLdc_I8(TMaxValue);
 
@@ -1091,15 +1087,14 @@ namespace ChocolArm64.Instruction
 
             Context.Emit(OpCodes.Pop);
 
-            Context.EmitLdc_I8(1L);
-            Context.EmitSttmp(); // Saturated = 1
+            EmitSetSaturatedFlag(Context);
 
             Context.EmitLdc_I8(TMinValue);
 
             Context.MarkLabel(LblGeEnd);
         }
 
-        // TSrc (from 8bit to 64bit) == TDst (from 8bit to 64bit), signed.
+        // TSrc (8bit, 16bit, 32bit, 64bit) == TDst (8bit, 16bit, 32bit, 64bit); signed.
         public static void EmitUnarySignedSatQAbsOrNeg(AILEmitterCtx Context, int Size)
         {
             int ESize = 8 << Size;
@@ -1117,15 +1112,14 @@ namespace ChocolArm64.Instruction
 
             Context.Emit(OpCodes.Pop);
 
-            Context.EmitLdc_I8(1L);
-            Context.EmitSttmp(); // Saturated = 1
+            EmitSetSaturatedFlag(Context);
 
             Context.EmitLdc_I8(TMaxValue);
 
             Context.MarkLabel(LblFalse);
         }
 
-        // TSrcs (64bit) == TDst (64bit), signed or unsigned.
+        // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQAdd(AILEmitterCtx Context, int Index, bool Signed)
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
@@ -1165,8 +1159,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 EmitVectorExtractSx(Context, Op.Rn, Index, 3);
                 Context.Emit(OpCodes.Ldc_I4_0);
@@ -1184,7 +1177,7 @@ namespace ChocolArm64.Instruction
             }
             else
             {
-                long TMaxValue = ~0L;
+                long TMaxValue = ~0L; // ulong.MaxValue
 
                 AILLabel LblGeEnd = new AILLabel();
 
@@ -1198,8 +1191,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 Context.EmitLdc_I8(TMaxValue);
 
@@ -1207,7 +1199,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        // TSrcs (64bit) == TDst (64bit), signed or unsigned.
+        // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQSub(AILEmitterCtx Context, int Index, bool Signed)
         {
             AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
@@ -1246,8 +1238,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 EmitVectorExtractSx(Context, Op.Rn, Index, 3);
                 Context.Emit(OpCodes.Ldc_I4_0);
@@ -1265,7 +1256,7 @@ namespace ChocolArm64.Instruction
             }
             else
             {
-                long TMinValue = 0L;
+                long TMinValue = 0L; // ulong.MinValue
 
                 AILLabel LblTrue = new AILLabel();
 
@@ -1275,8 +1266,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 Context.EmitLdc_I8(TMinValue);
 
@@ -1284,7 +1274,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        // TSrcs (64bit) == TDst (64bit), signed or unsigned.
+        // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQAccumulate(AILEmitterCtx Context, int Index, bool Signed)
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
@@ -1303,7 +1293,7 @@ namespace ChocolArm64.Instruction
                 AILLabel LblEnd = new AILLabel();
 
                 EmitVectorExtractZx(Context, Op.Rn, Index, 3);
-                Context.EmitLdc_I8(TMaxValue);
+                Context.EmitLdc_I8(long.MaxValue);
                 Context.Emit(OpCodes.Bgt_Un_S, LblGt);
 
                 // op1 from ulong.MinValue to (ulong)long.MaxValue
@@ -1322,8 +1312,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 Context.EmitLdc_I8(TMaxValue);
 
@@ -1338,8 +1327,7 @@ namespace ChocolArm64.Instruction
                 Context.Emit(OpCodes.Ldc_I4_0);
                 Context.Emit(OpCodes.Blt_S, LblLt);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 Context.EmitLdc_I8(TMaxValue);
 
@@ -1360,8 +1348,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 Context.EmitLdc_I8(TMaxValue);
 
@@ -1369,8 +1356,8 @@ namespace ChocolArm64.Instruction
             }
             else
             {
-                long TMaxValue = ~0L;
-                long TMinValue =  0L;
+                long TMaxValue = ~0L; // ulong.MaxValue
+                long TMinValue =  0L; // ulong.MinValue
 
                 AILLabel LblLt  = new AILLabel();
                 AILLabel LblLe  = new AILLabel();
@@ -1397,8 +1384,7 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 Context.EmitLdc_I8(TMaxValue);
 
@@ -1434,13 +1420,24 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Pop);
 
-                Context.EmitLdc_I8(1L);
-                Context.EmitSttmp(); // Saturated = 1
+                EmitSetSaturatedFlag(Context);
 
                 Context.EmitLdc_I8(TMinValue);
 
                 Context.MarkLabel(LblEnd);
             }
+        }
+
+        public static void EmitResetSaturatedFlag(AILEmitterCtx Context)
+        {
+            Context.EmitLdc_I8(0L);
+            Context.EmitSttmp(); // Saturated = 0
+        }
+
+        public static void EmitSetSaturatedFlag(AILEmitterCtx Context)
+        {
+            Context.EmitLdc_I8(1L);
+            Context.EmitSttmp(); // Saturated = 1
         }
 
         public static void EmitUpdateFpsrQCFlag(AILEmitterCtx Context)
