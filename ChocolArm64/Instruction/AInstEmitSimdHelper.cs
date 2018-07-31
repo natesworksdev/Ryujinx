@@ -1099,7 +1099,7 @@ namespace ChocolArm64.Instruction
         {
             int ESize = 8 << Size;
 
-            long TMaxValue =  (1L << (ESize - 1)) - 1;
+            long TMaxValue =  (1L << (ESize - 1)) - 1L;
             long TMinValue = -(1L << (ESize - 1));
 
             AILLabel LblFalse = new AILLabel();
