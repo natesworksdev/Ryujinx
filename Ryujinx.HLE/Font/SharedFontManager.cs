@@ -50,19 +50,22 @@ namespace Ryujinx.HLE.Font
         public byte[] GetData(string FontName)
         {
             string FontFilePath = Path.Combine(FontsPath, $"{FontName}.ttf");
-            try
+            if (File.Exists(FontFilePath))
             {
                 return File.ReadAllBytes(FontFilePath);
-            } catch (FileNotFoundException e)
+            }
+            else
             {
-                throw new SystemResourceNotFoundException($"Font \"{FontName}.ttf\" not found. Please provide it in {FontsPath}", e);
+                throw new SystemResourceNotFoundException($"Font \"{FontName}.ttf\" not found. Please provide it in \"{FontsPath}\".");
             }
         }
 
         public void MapFont(SharedFontType FontType, AMemory Memory, long Position)
         {
+            uint SharedMemoryAddressOffset = GetSharedMemoryAddressOffset(FontType);
             // TODO: find what are the 8 bytes before the font
-            Memory.WriteBytes(Position + GetSharedMemoryAddressOffset(FontType), FontEmbeddedPaths[FontType]);
+            Memory.WriteUInt64(Position + SharedMemoryAddressOffset - 8, 0);
+            Memory.WriteBytes(Position + SharedMemoryAddressOffset, FontEmbeddedPaths[FontType]);
         }
 
         public void PropagateNewMapFont(SharedFontType Type)
@@ -97,11 +100,11 @@ namespace Ryujinx.HLE.Font
 
                 (AMemory Memory, long Position, long Size) = ShMemPositions[ShMemPositions.Length - 1];
 
-                for (SharedFontType Type = SharedFontType.JapanUsEurope; (int)Type < LoadedFonts.Length; Type++)
+                for (int Type = 0; Type < LoadedFonts.Length; Type++)
                 {
                     if (LoadedFonts[(int)Type] == 1)
                     {
-                        MapFont(Type, Memory, Position);
+                        MapFont((SharedFontType)Type, Memory, Position);
                     }
                 }
             }
@@ -140,7 +143,7 @@ namespace Ryujinx.HLE.Font
 
         public uint GetFontSize(SharedFontType FontType)
         {
-            return Convert.ToUInt32(FontEmbeddedPaths[FontType].Length);
+            return (uint)FontEmbeddedPaths[FontType].Length;
         }
 
         public uint GetSharedMemoryAddressOffset(SharedFontType FontType)
@@ -156,9 +159,6 @@ namespace Ryujinx.HLE.Font
             return Pos;
         }
 
-        public int Count()
-        {
-            return FontEmbeddedPaths.Count;
-        }
+        public int Count => FontEmbeddedPaths.Count;
     }
 }

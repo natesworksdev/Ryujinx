@@ -102,14 +102,14 @@ namespace Ryujinx.HLE.OsHle.Services.Pl
             uint  BufferPos    = 0;
             uint  Loaded       = 0;
 
-            for (SharedFontType Type = SharedFontType.JapanUsEurope; (int)Type < Context.Ns.Font.Count(); Type++)
+            for (int Type = 0; Type < Context.Ns.Font.Count; Type++)
             {
-                BufferPos   = AddFontToOrderOfPriorityList(Context, Type, BufferPos, out Loaded);
+                BufferPos   = AddFontToOrderOfPriorityList(Context, (SharedFontType)Type, BufferPos, out Loaded);
                 LoadedCount += Loaded;
             }
 
             Context.ResponseData.Write(LoadedCount);
-            Context.ResponseData.Write(Context.Ns.Font.Count());
+            Context.ResponseData.Write(Context.Ns.Font.Count);
 
             return 0;
         }
