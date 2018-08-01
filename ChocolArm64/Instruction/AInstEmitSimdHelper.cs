@@ -1056,7 +1056,7 @@ namespace ChocolArm64.Instruction
         {
             if (SizeDst > 2)
             {
-                throw new PlatformNotSupportedException();
+                throw new ArgumentOutOfRangeException(nameof(SizeDst));
             }
 
             int ESize = 8 << SizeDst;
@@ -1126,7 +1126,7 @@ namespace ChocolArm64.Instruction
 
             if (Op.Size < 3)
             {
-                throw new NotSupportedException();
+                throw new InvalidOperationException();
             }
 
             EmitVectorExtract(Context, Op.Rn, Index, 3, Signed);
@@ -1206,7 +1206,7 @@ namespace ChocolArm64.Instruction
 
             if (Op.Size < 3)
             {
-                throw new NotSupportedException();
+                throw new InvalidOperationException();
             }
 
             EmitVectorExtract(Context, Op.Rn, Index, 3, Signed);
@@ -1281,7 +1281,7 @@ namespace ChocolArm64.Instruction
 
             if (Op.Size < 3)
             {
-                throw new NotSupportedException();
+                throw new InvalidOperationException();
             }
 
             if (Signed)
