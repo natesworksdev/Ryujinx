@@ -2,6 +2,8 @@
 {
     public struct GalPipelineState
     {
+        
+
         public GalFrontFace FrontFace;
 
         public bool CullFaceEnabled;

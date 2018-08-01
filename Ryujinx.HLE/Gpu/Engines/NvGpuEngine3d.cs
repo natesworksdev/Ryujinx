@@ -101,11 +101,11 @@ namespace Ryujinx.HLE.Gpu.Engines
             SetAlphaBlending();
             SetPrimitiveRestart();
 
-            Gpu.Renderer.Pipeline.Bind(ref State);
-
             UploadTextures(Vmm, Keys);
             UploadUniforms(Vmm);
             UploadVertexArrays(Vmm);
+
+            DispatchRender(Vmm);
 
             UnlockCaches();
         }
@@ -477,7 +477,6 @@ namespace Ryujinx.HLE.Gpu.Engines
             long IboKey = Vmm.GetPhysicalAddress(IndexPosition);
 
             int IndexEntryFmt = ReadRegister(NvGpuEngine3dReg.IndexArrayFormat);
-            int IndexFirst    = ReadRegister(NvGpuEngine3dReg.IndexBatchFirst);
             int IndexCount    = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
 
             GalIndexFormat IndexFormat = (GalIndexFormat)IndexEntryFmt;
@@ -527,11 +526,6 @@ namespace Ryujinx.HLE.Gpu.Engines
                                          ((Packed >> 31) & 0x1) != 0));
             }
 
-            int VertexFirst = ReadRegister(NvGpuEngine3dReg.VertexArrayFirst);
-            int VertexCount = ReadRegister(NvGpuEngine3dReg.VertexArrayCount);
-
-            int PrimCtrl = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
-
             for (int Index = 0; Index < 32; Index++)
             {
                 if (Attribs[Index] == null)
@@ -568,17 +562,34 @@ namespace Ryujinx.HLE.Gpu.Engines
 
                 Gpu.Renderer.Rasterizer.SetVertexArray(Stride, VboKey, Attribs[Index].ToArray());
             }
+        }
+
+        private void DispatchRender(NvGpuVmm Vmm)
+        {
+            int IndexCount = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
+            int PrimCtrl   = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
 
             GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
 
+            Gpu.Renderer.Pipeline.Bind(ref State);
+
             if (IndexCount != 0)
             {
-                int VertexBase = ReadRegister(NvGpuEngine3dReg.VertexArrayElemBase);
+                int IndexEntryFmt = ReadRegister(NvGpuEngine3dReg.IndexArrayFormat);
+                int IndexFirst    = ReadRegister(NvGpuEngine3dReg.IndexBatchFirst);
+                int VertexBase    = ReadRegister(NvGpuEngine3dReg.VertexArrayElemBase);
+
+                long IndexPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.IndexArrayAddress);
+
+                long IboKey = Vmm.GetPhysicalAddress(IndexPosition);
 
                 Gpu.Renderer.Rasterizer.DrawElements(IboKey, IndexFirst, VertexBase, PrimType);
             }
             else
             {
+                int VertexFirst = ReadRegister(NvGpuEngine3dReg.VertexArrayFirst);
+                int VertexCount = ReadRegister(NvGpuEngine3dReg.VertexArrayCount);
+
                 Gpu.Renderer.Rasterizer.DrawArrays(VertexFirst, VertexCount, PrimType);
             }
         }
