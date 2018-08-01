@@ -2,6 +2,6 @@
 {
     public interface IGalPipeline
     {
-        void Bind(ref GalPipelineState State);
+        void Bind(GalPipelineState State);
     }
 }

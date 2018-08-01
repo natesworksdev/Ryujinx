@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    public class OGLPipeline : IGalPipeline
+    class OGLPipeline : IGalPipeline
     {
         private static Dictionary<GalVertexAttribSize, int> AttribElements =
                    new Dictionary<GalVertexAttribSize, int>()
@@ -46,13 +46,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private GalPipelineState O;
 
+        private OGLConstBuffer Buffer;
         private OGLRasterizer Rasterizer;
+        private OGLShader Shader;
 
         private int VaoHandle;
 
-        public OGLPipeline(OGLRasterizer Rasterizer)
+        public OGLPipeline(OGLConstBuffer Buffer, OGLRasterizer Rasterizer, OGLShader Shader)
         {
+            this.Buffer     = Buffer;
             this.Rasterizer = Rasterizer;
+            this.Shader     = Shader;
 
             //These values match OpenGL's defaults
             O = new GalPipelineState
@@ -100,58 +104,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             };
         }
 
-        public void Bind(ref GalPipelineState S)
+        public void Bind(GalPipelineState S)
         {
             //O stands for Older, S for (current) State
 
-            foreach (GalVertexBinding Binding in S.VertexBindings)
-            {
-                if (!Binding.Enabled || !Rasterizer.TryGetVbo(Binding.VboKey, out int VboHandle))
-                {
-                    continue;
-                }
+            BindUniforms(S);
 
-                if (VaoHandle == 0)
-                {
-                    VaoHandle = GL.GenVertexArray();
-
-                    //Vertex arrays shouldn't be used anywhere else in OpenGL's backend
-                    //if you want to use it, move this line out of the if
-                    GL.BindVertexArray(VaoHandle);
-                }
-
-                foreach (GalVertexAttrib Attrib in Binding.Attribs)
-                {
-                    GL.EnableVertexAttribArray(Attrib.Index);
-
-                    GL.BindBuffer(BufferTarget.ArrayBuffer, VboHandle);
-
-                    bool Unsigned =
-                        Attrib.Type == GalVertexAttribType.Unorm ||
-                        Attrib.Type == GalVertexAttribType.Uint ||
-                        Attrib.Type == GalVertexAttribType.Uscaled;
-
-                    bool Normalize =
-                        Attrib.Type == GalVertexAttribType.Snorm ||
-                        Attrib.Type == GalVertexAttribType.Unorm;
-
-                    VertexAttribPointerType Type = 0;
-
-                    if (Attrib.Type == GalVertexAttribType.Float)
-                    {
-                        Type = VertexAttribPointerType.Float;
-                    }
-                    else
-                    {
-                        Type = AttribTypes[Attrib.Size] + (Unsigned ? 1 : 0);
-                    }
-
-                    int Size = AttribElements[Attrib.Size];
-                    int Offset = Attrib.Offset;
-
-                    GL.VertexAttribPointer(Attrib.Index, Size, Type, Normalize, Binding.Stride, Offset);
-                }
-            }
+            BindVertexLayout(S);
 
             //Note: Uncomment SetFrontFace and SetCullFace when flipping issues are solved
 
@@ -318,6 +277,90 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
 
             O = S;
+        }
+
+        private void BindUniforms(GalPipelineState S)
+        {
+            int FreeBinding = 0;
+
+            void BindIfNotNull(OGLShaderStage Stage)
+            {
+                if (Stage != null)
+                {
+                    foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage)
+                    {
+                        long Key = S.ConstBufferKeys[(int)Stage.Type][DeclInfo.Cbuf];
+
+                        if (Key != 0 && Key != O.ConstBufferKeys[(int)Stage.Type][DeclInfo.Cbuf])
+                        {
+                            if (Buffer.TryGetUbo(Key, out int UboHandle))
+                            {
+                                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, FreeBinding, UboHandle);
+                            }
+                        }
+
+                        FreeBinding++;
+                    }
+                }
+            }
+
+            BindIfNotNull(Shader.Current.Vertex);
+            BindIfNotNull(Shader.Current.TessControl);
+            BindIfNotNull(Shader.Current.TessEvaluation);
+            BindIfNotNull(Shader.Current.Geometry);
+            BindIfNotNull(Shader.Current.Fragment);
+        }
+
+        private void BindVertexLayout(GalPipelineState S)
+        {
+            foreach (GalVertexBinding Binding in S.VertexBindings)
+            {
+                if (!Binding.Enabled || !Rasterizer.TryGetVbo(Binding.VboKey, out int VboHandle))
+                {
+                    continue;
+                }
+
+                if (VaoHandle == 0)
+                {
+                    VaoHandle = GL.GenVertexArray();
+
+                    //Vertex arrays shouldn't be used anywhere else in OpenGL's backend
+                    //if you want to use it, move this line out of the if
+                    GL.BindVertexArray(VaoHandle);
+                }
+
+                foreach (GalVertexAttrib Attrib in Binding.Attribs)
+                {
+                    GL.EnableVertexAttribArray(Attrib.Index);
+
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, VboHandle);
+
+                    bool Unsigned =
+                        Attrib.Type == GalVertexAttribType.Unorm ||
+                        Attrib.Type == GalVertexAttribType.Uint ||
+                        Attrib.Type == GalVertexAttribType.Uscaled;
+
+                    bool Normalize =
+                        Attrib.Type == GalVertexAttribType.Snorm ||
+                        Attrib.Type == GalVertexAttribType.Unorm;
+
+                    VertexAttribPointerType Type = 0;
+
+                    if (Attrib.Type == GalVertexAttribType.Float)
+                    {
+                        Type = VertexAttribPointerType.Float;
+                    }
+                    else
+                    {
+                        Type = AttribTypes[Attrib.Size] + (Unsigned ? 1 : 0);
+                    }
+
+                    int Size = AttribElements[Attrib.Size];
+                    int Offset = Attrib.Offset;
+
+                    GL.VertexAttribPointer(Attrib.Index, Size, Type, Normalize, Binding.Stride, Offset);
+                }
+            }
         }
 
         private void Enable(EnableCap Cap, bool Enabled)

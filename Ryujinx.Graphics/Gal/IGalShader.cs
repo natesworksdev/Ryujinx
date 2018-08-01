@@ -11,8 +11,6 @@ namespace Ryujinx.Graphics.Gal
 
         IEnumerable<ShaderDeclInfo> GetTextureUsage(long Key);
 
-        void BindConstBuffers();
-
         void EnsureTextureBinding(string UniformName, int Value);
 
         void SetFlip(float X, float Y);

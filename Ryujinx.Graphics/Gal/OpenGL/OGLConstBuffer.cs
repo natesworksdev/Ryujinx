@@ -5,22 +5,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLConstBuffer : IGalConstBuffer
     {
-        public const int ConstBuffersPerStage = 18;
-
         private OGLCachedResource<OGLStreamBuffer> Cache;
-
-        private long[][] Keys;
 
         public OGLConstBuffer()
         {
             Cache = new OGLCachedResource<OGLStreamBuffer>(DeleteBuffer);
-
-            Keys = new long[5][];
-
-            for (int i = 0; i < Keys.Length; i++)
-            {
-                Keys[i] = new long[ConstBuffersPerStage];
-            }
         }
 
         public void LockCache()
@@ -55,19 +44,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Buffer.SetData(Size, HostAddress);
         }
 
-        public void Bind(GalShaderType Stage, int Index, long Key)
+        public bool TryGetUbo(long Key, out int UboHandle)
         {
-            Keys[(int)Stage][Index] = Key;
-        }
-
-        public void PipelineBind(GalShaderType Stage, int Index, int BindingIndex)
-        {
-            long Key = Keys[(int)Stage][Index];
-
-            if (Key != 0 && Cache.TryGetValue(Key, out OGLStreamBuffer Buffer))
+            if (Cache.TryGetValue(Key, out OGLStreamBuffer Buffer))
             {
-                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, BindingIndex, Buffer.Handle);
+                UboHandle = Buffer.Handle;
+
+                return true;
             }
+
+            UboHandle = 0;
+
+            return false;
         }
 
         private static void DeleteBuffer(OGLStreamBuffer Buffer)

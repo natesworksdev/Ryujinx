@@ -10,17 +10,12 @@
         public GalVertexAttrib[] Attribs;
     }
 
-    public struct GalConstBufferBinding
+    public class GalPipelineState
     {
-        public bool Enabled;
-        public long Key;
-    }
-
-    public struct GalPipelineState
-    {
+        public const int Stages = 5;
         public const int ConstBuffersPerStage = 18;
 
-        public GalConstBufferBinding[][] ConstBufferKeys;
+        public long[][] ConstBufferKeys;
 
         public GalVertexBinding[] VertexBindings;
 
@@ -63,5 +58,15 @@
 
         public bool PrimitiveRestartEnabled;
         public uint PrimitiveRestartIndex;
+
+        public GalPipelineState()
+        {
+            ConstBufferKeys = new long[Stages][];
+
+            for (int Stage = 0; Stage < Stages; Stage++)
+            {
+                ConstBufferKeys[Stage] = new long[ConstBuffersPerStage];
+            }
+        }
     }
 }

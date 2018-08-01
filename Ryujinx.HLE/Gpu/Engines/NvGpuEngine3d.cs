@@ -27,10 +27,6 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private List<long>[] UploadedKeys;
 
-        private GalPipelineState State;
-
-        private bool ConstBufferBindingsChanged;
-
         public NvGpuEngine3d(NvGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -70,8 +66,6 @@ namespace Ryujinx.HLE.Gpu.Engines
             {
                 UploadedKeys[i] = new List<long>();
             }
-
-            State = new GalPipelineState();
         }
 
         public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
@@ -90,32 +84,26 @@ namespace Ryujinx.HLE.Gpu.Engines
         {
             LockCaches();
 
+            GalPipelineState State = new GalPipelineState();
+
             SetFrameBuffer(Vmm, 0);
 
             long[] Keys = UploadShaders(Vmm);
 
             Gpu.Renderer.Shader.BindProgram();
 
-            if (ConstBufferBindingsChanged)
-            {
-                ConstBufferBindingsChanged = false;
+            SetFrontFace(State);
+            SetCullFace(State);
+            SetDepth(State);
+            SetStencil(State);
+            SetAlphaBlending(State);
+            SetPrimitiveRestart(State);
 
-                Gpu.Renderer.Shader.BindConstBuffers();
-            }
+            UploadTextures(Vmm, State, Keys);
+            UploadConstBuffers(Vmm, State);
+            UploadVertexArrays(Vmm, State);
 
-            //Note: Uncomment SetFrontFace and SetCullFace when flipping issues are solved
-            //SetFrontFace();
-            //SetCullFace();
-            SetDepth();
-            SetStencil();
-            SetAlphaBlending();
-            SetPrimitiveRestart();
-
-            UploadTextures(Vmm, Keys);
-            UploadConstBuffers(Vmm);
-            UploadVertexArrays(Vmm);
-
-            DispatchRender(Vmm);
+            DispatchRender(Vmm, State);
 
             UnlockCaches();
         }
@@ -256,7 +244,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             throw new ArgumentOutOfRangeException(nameof(Program));
         }
 
-        private void SetFrontFace()
+        private void SetFrontFace(GalPipelineState State)
         {
             float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
             float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
@@ -281,7 +269,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             State.FrontFace = FrontFace;
         }
 
-        private void SetCullFace()
+        private void SetCullFace(GalPipelineState State)
         {
             State.CullFaceEnabled = (ReadRegister(NvGpuEngine3dReg.CullFaceEnable) & 1) != 0;
 
@@ -291,7 +279,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
         }
 
-        private void SetDepth()
+        private void SetDepth(GalPipelineState State)
         {
             State.DepthTestEnabled = (ReadRegister(NvGpuEngine3dReg.DepthTestEnable) & 1) != 0;
 
@@ -303,7 +291,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
         }
 
-        private void SetStencil()
+        private void SetStencil(GalPipelineState State)
         {
             State.StencilTestEnabled = (ReadRegister(NvGpuEngine3dReg.StencilEnable) & 1) != 0;
 
@@ -329,7 +317,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
         }
 
-        private void SetAlphaBlending()
+        private void SetAlphaBlending(GalPipelineState State)
         {
             //TODO: Support independent blend properly.
             State.BlendEnabled = (ReadRegister(NvGpuEngine3dReg.IBlendNEnable) & 1) != 0;
@@ -347,7 +335,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
         }
 
-        private void SetPrimitiveRestart()
+        private void SetPrimitiveRestart(GalPipelineState State)
         {
             State.PrimitiveRestartEnabled = (ReadRegister(NvGpuEngine3dReg.PrimRestartEnable) & 1) != 0;
 
@@ -357,7 +345,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
         }
 
-        private void UploadTextures(NvGpuVmm Vmm, long[] Keys)
+        private void UploadTextures(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)
         {
             long BaseShPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
 
@@ -451,30 +439,29 @@ namespace Ryujinx.HLE.Gpu.Engines
             Gpu.Renderer.Texture.SetSampler(Sampler);
         }
 
-        private void UploadConstBuffers(NvGpuVmm Vmm)
+        private void UploadConstBuffers(NvGpuVmm Vmm, GalPipelineState State)
         {
-            for (int Stage = 0; Stage < 5; Stage++)
+            for (int Stage = 0; Stage < State.ConstBufferKeys.Length; Stage++)
             {
-                for (int Index = 0; Index < 18; Index++)
+                for (int Index = 0; Index < State.ConstBufferKeys[Stage].Length; Index++)
                 {
                     ConstBuffer Cb = ConstBuffers[Stage][Index];
 
-                    if (Cb.Enabled)
+                    long Key = Cb.Position;
+
+                    if (Cb.Enabled && QueryKeyUpload(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer))
                     {
-                        long Key = Cb.Position;
+                        IntPtr Source = Vmm.GetHostAddress(Key, Cb.Size);
 
-                        if (QueryKeyUpload(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer))
-                        {
-                            IntPtr Source = Vmm.GetHostAddress(Key, Cb.Size);
-
-                            Gpu.Renderer.Buffer.SetData(Key, Cb.Size, Source);
-                        }
+                        Gpu.Renderer.Buffer.SetData(Key, Cb.Size, Source);
                     }
+
+                    State.ConstBufferKeys[Stage][Index] = Key;
                 }
             }
         }
 
-        private void UploadVertexArrays(NvGpuVmm Vmm)
+        private void UploadVertexArrays(NvGpuVmm Vmm, GalPipelineState State)
         {
             long IndexPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.IndexArrayAddress);
 
@@ -573,14 +560,14 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
         }
 
-        private void DispatchRender(NvGpuVmm Vmm)
+        private void DispatchRender(NvGpuVmm Vmm, GalPipelineState State)
         {
             int IndexCount = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
             int PrimCtrl   = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
 
             GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
 
-            Gpu.Renderer.Pipeline.Bind(ref State);
+            Gpu.Renderer.Pipeline.Bind(State);
 
             if (IndexCount != 0)
             {
@@ -665,10 +652,6 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             if (Cb.Position != Position || Cb.Enabled != Enabled || Cb.Size != Size)
             {
-                Gpu.Renderer.Buffer.Bind((GalShaderType)Stage, Index, Enabled ? Position : 0);
-
-                ConstBufferBindingsChanged = true;
-
                 ConstBuffers[Stage][Index].Position = Position;
                 ConstBuffers[Stage][Index].Enabled = Enabled;
                 ConstBuffers[Stage][Index].Size = Size;
