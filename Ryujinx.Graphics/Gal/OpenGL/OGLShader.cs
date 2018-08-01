@@ -9,7 +9,7 @@ using Buffer = System.Buffer;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    public class OGLShader : IGalShader
+    class OGLShader : IGalShader
     {
         private class ShaderStage : IDisposable
         {
@@ -71,8 +71,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             public ShaderStage Fragment;
         }
 
-        const int ConstBuffersPerStage = 18;
-
         private ShaderProgram Current;
 
         private ConcurrentDictionary<long, ShaderStage> Stages;
@@ -81,20 +79,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public int CurrentProgramHandle { get; private set; }
 
-        private OGLStreamBuffer[][] ConstBuffers;
+        private OGLConstBuffer Buffer;
 
-        public OGLShader()
+        public OGLShader(OGLConstBuffer Buffer)
         {
+            this.Buffer = Buffer;
+
             Stages = new ConcurrentDictionary<long, ShaderStage>();
 
             Programs = new Dictionary<ShaderProgram, int>();
-
-            ConstBuffers = new OGLStreamBuffer[5][];
-
-            for (int i = 0; i < 5; i++)
-            {
-                ConstBuffers[i] = new OGLStreamBuffer[ConstBuffersPerStage];
-            }
         }
 
         public void Create(IGalMemory Memory, long Key, GalShaderType Type)
@@ -153,19 +146,28 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return Enumerable.Empty<ShaderDeclInfo>();
         }
 
-        public void SetConstBuffer(long Key, int Cbuf, int DataSize, IntPtr HostAddress)
+        public void BindConstBuffers()
         {
-            if (Stages.TryGetValue(Key, out ShaderStage Stage))
+            int FreeBinding = 0;
+
+            void BindIfNotNull(ShaderStage Stage)
             {
-                foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage.Where(x => x.Cbuf == Cbuf))
+                if (Stage != null)
                 {
-                    OGLStreamBuffer Buffer = GetConstBuffer(Stage.Type, Cbuf);
+                    foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage)
+                    {
+                        Buffer.PipelineBind(Stage.Type, DeclInfo.Cbuf, FreeBinding);
 
-                    int Size = Math.Min(DataSize, Buffer.Size);
-
-                    Buffer.SetData(Size, HostAddress);
+                        FreeBinding++;
+                    }
                 }
             }
+
+            BindIfNotNull(Current.Vertex);
+            BindIfNotNull(Current.TessControl);
+            BindIfNotNull(Current.TessEvaluation);
+            BindIfNotNull(Current.Geometry);
+            BindIfNotNull(Current.Fragment);
         }
 
         public void EnsureTextureBinding(string UniformName, int Value)
@@ -257,11 +259,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.UseProgram(Handle);
 
-            if (CurrentProgramHandle != Handle)
-            {
-                BindUniformBuffers(Handle);
-            }
-
             CurrentProgramHandle = Handle;
         }
 
@@ -305,51 +302,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             BindUniformBlocksIfNotNull(Current.TessEvaluation);
             BindUniformBlocksIfNotNull(Current.Geometry);
             BindUniformBlocksIfNotNull(Current.Fragment);
-        }
-
-        private void BindUniformBuffers(int ProgramHandle)
-        {
-            int FreeBinding = 0;
-
-            void BindUniformBuffersIfNotNull(ShaderStage Stage)
-            {
-                if (Stage != null)
-                {
-                    foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage)
-                    {
-                        OGLStreamBuffer Buffer = GetConstBuffer(Stage.Type, DeclInfo.Cbuf);
-
-                        GL.BindBufferBase(BufferRangeTarget.UniformBuffer, FreeBinding, Buffer.Handle);
-
-                        FreeBinding++;
-                    }
-                }
-            }
-
-            BindUniformBuffersIfNotNull(Current.Vertex);
-            BindUniformBuffersIfNotNull(Current.TessControl);
-            BindUniformBuffersIfNotNull(Current.TessEvaluation);
-            BindUniformBuffersIfNotNull(Current.Geometry);
-            BindUniformBuffersIfNotNull(Current.Fragment);
-        }
-
-        private OGLStreamBuffer GetConstBuffer(GalShaderType StageType, int Cbuf)
-        {
-            int StageIndex = (int)StageType;
-
-            OGLStreamBuffer Buffer = ConstBuffers[StageIndex][Cbuf];
-
-            if (Buffer == null)
-            {
-                //Allocate a maximum of 64 KiB
-                int Size = Math.Min(GL.GetInteger(GetPName.MaxUniformBlockSize), 64 * 1024);
-
-                Buffer = new OGLStreamBuffer(BufferTarget.UniformBuffer, Size);
-
-                ConstBuffers[StageIndex][Cbuf] = Buffer;
-            }
-
-            return Buffer;
         }
 
         public static void CompileAndCheck(int Handle, string Code)
