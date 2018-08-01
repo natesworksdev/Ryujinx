@@ -1,62 +1,157 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     public class OGLPipeline : IGalPipeline
     {
+        private static Dictionary<GalVertexAttribSize, int> AttribElements =
+                   new Dictionary<GalVertexAttribSize, int>()
+        {
+            { GalVertexAttribSize._32_32_32_32, 4 },
+            { GalVertexAttribSize._32_32_32,    3 },
+            { GalVertexAttribSize._16_16_16_16, 4 },
+            { GalVertexAttribSize._32_32,       2 },
+            { GalVertexAttribSize._16_16_16,    3 },
+            { GalVertexAttribSize._8_8_8_8,     4 },
+            { GalVertexAttribSize._16_16,       2 },
+            { GalVertexAttribSize._32,          1 },
+            { GalVertexAttribSize._8_8_8,       3 },
+            { GalVertexAttribSize._8_8,         2 },
+            { GalVertexAttribSize._16,          1 },
+            { GalVertexAttribSize._8,           1 },
+            { GalVertexAttribSize._10_10_10_2,  4 },
+            { GalVertexAttribSize._11_11_10,    3 }
+        };
+
+        private static Dictionary<GalVertexAttribSize, VertexAttribPointerType> AttribTypes =
+                   new Dictionary<GalVertexAttribSize, VertexAttribPointerType>()
+        {
+            { GalVertexAttribSize._32_32_32_32, VertexAttribPointerType.Int   },
+            { GalVertexAttribSize._32_32_32,    VertexAttribPointerType.Int   },
+            { GalVertexAttribSize._16_16_16_16, VertexAttribPointerType.Short },
+            { GalVertexAttribSize._32_32,       VertexAttribPointerType.Int   },
+            { GalVertexAttribSize._16_16_16,    VertexAttribPointerType.Short },
+            { GalVertexAttribSize._8_8_8_8,     VertexAttribPointerType.Byte  },
+            { GalVertexAttribSize._16_16,       VertexAttribPointerType.Short },
+            { GalVertexAttribSize._32,          VertexAttribPointerType.Int   },
+            { GalVertexAttribSize._8_8_8,       VertexAttribPointerType.Byte  },
+            { GalVertexAttribSize._8_8,         VertexAttribPointerType.Byte  },
+            { GalVertexAttribSize._16,          VertexAttribPointerType.Short },
+            { GalVertexAttribSize._8,           VertexAttribPointerType.Byte  },
+            { GalVertexAttribSize._10_10_10_2,  VertexAttribPointerType.Int   }, //?
+            { GalVertexAttribSize._11_11_10,    VertexAttribPointerType.Int   }  //?
+        };
+
         private GalPipelineState O;
 
-        public OGLPipeline()
+        private OGLRasterizer Rasterizer;
+
+        private int VaoHandle;
+
+        public OGLPipeline(OGLRasterizer Rasterizer)
         {
-            //The following values match OpenGL's defaults
-            O = new GalPipelineState();
+            this.Rasterizer = Rasterizer;
 
-            O.FrontFace = GalFrontFace.CCW;
+            //These values match OpenGL's defaults
+            O = new GalPipelineState
+            {
+                FrontFace = GalFrontFace.CCW,
 
-            O.CullFaceEnabled = false;
-            O.CullFace = GalCullFace.Back;
+                CullFaceEnabled = false,
+                CullFace = GalCullFace.Back,
 
-            O.DepthTestEnabled = false;
-            O.DepthClear = 1f;
-            O.DepthFunc = GalComparisonOp.Less;
+                DepthTestEnabled = false,
+                DepthClear = 1f,
+                DepthFunc = GalComparisonOp.Less,
 
-            O.StencilTestEnabled = false;
-            O.StencilClear = 0;
+                StencilTestEnabled = false,
+                StencilClear = 0,
 
-            O.StencilBackFuncFunc = GalComparisonOp.Always;
-            O.StencilBackFuncRef = 0;
-            O.StencilBackFuncMask = UInt32.MaxValue;
-            O.StencilBackOpFail = GalStencilOp.Keep;
-            O.StencilBackOpZFail = GalStencilOp.Keep;
-            O.StencilBackOpZPass = GalStencilOp.Keep;
-            O.StencilBackMask = UInt32.MaxValue;
+                StencilBackFuncFunc = GalComparisonOp.Always,
+                StencilBackFuncRef = 0,
+                StencilBackFuncMask = UInt32.MaxValue,
+                StencilBackOpFail = GalStencilOp.Keep,
+                StencilBackOpZFail = GalStencilOp.Keep,
+                StencilBackOpZPass = GalStencilOp.Keep,
+                StencilBackMask = UInt32.MaxValue,
 
-            O.StencilFrontFuncFunc = GalComparisonOp.Always;
-            O.StencilFrontFuncRef = 0;
-            O.StencilFrontFuncMask = UInt32.MaxValue;
-            O.StencilFrontOpFail = GalStencilOp.Keep;
-            O.StencilFrontOpZFail = GalStencilOp.Keep;
-            O.StencilFrontOpZPass = GalStencilOp.Keep;
-            O.StencilFrontMask = UInt32.MaxValue;
+                StencilFrontFuncFunc = GalComparisonOp.Always,
+                StencilFrontFuncRef = 0,
+                StencilFrontFuncMask = UInt32.MaxValue,
+                StencilFrontOpFail = GalStencilOp.Keep,
+                StencilFrontOpZFail = GalStencilOp.Keep,
+                StencilFrontOpZPass = GalStencilOp.Keep,
+                StencilFrontMask = UInt32.MaxValue,
 
-            O.BlendEnabled = false;
-            O.BlendSeparateAlpha = false;
+                BlendEnabled = false,
+                BlendSeparateAlpha = false,
 
-            O.BlendEquationRgb = 0;
-            O.BlendFuncSrcRgb = GalBlendFactor.One;
-            O.BlendFuncDstRgb = GalBlendFactor.Zero;
-            O.BlendEquationAlpha = 0;
-            O.BlendFuncSrcAlpha = GalBlendFactor.One;
-            O.BlendFuncDstAlpha = GalBlendFactor.Zero;
+                BlendEquationRgb = 0,
+                BlendFuncSrcRgb = GalBlendFactor.One,
+                BlendFuncDstRgb = GalBlendFactor.Zero,
+                BlendEquationAlpha = 0,
+                BlendFuncSrcAlpha = GalBlendFactor.One,
+                BlendFuncDstAlpha = GalBlendFactor.Zero,
 
-            O.PrimitiveRestartEnabled = false;
-            O.PrimitiveRestartIndex = 0;
+                PrimitiveRestartEnabled = false,
+                PrimitiveRestartIndex = 0
+            };
         }
 
         public void Bind(ref GalPipelineState S)
         {
-            // O stands for Other, S from State (current state)
+            //O stands for Older, S for (current) State
+
+            foreach (GalVertexBinding Binding in S.VertexBindings)
+            {
+                if (!Binding.Enabled || !Rasterizer.TryGetVbo(Binding.VboKey, out int VboHandle))
+                {
+                    continue;
+                }
+
+                if (VaoHandle == 0)
+                {
+                    VaoHandle = GL.GenVertexArray();
+
+                    //Vertex arrays shouldn't be used anywhere else in OpenGL's backend
+                    //if you want to use it, move this line out of the if
+                    GL.BindVertexArray(VaoHandle);
+                }
+
+                foreach (GalVertexAttrib Attrib in Binding.Attribs)
+                {
+                    GL.EnableVertexAttribArray(Attrib.Index);
+
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, VboHandle);
+
+                    bool Unsigned =
+                        Attrib.Type == GalVertexAttribType.Unorm ||
+                        Attrib.Type == GalVertexAttribType.Uint ||
+                        Attrib.Type == GalVertexAttribType.Uscaled;
+
+                    bool Normalize =
+                        Attrib.Type == GalVertexAttribType.Snorm ||
+                        Attrib.Type == GalVertexAttribType.Unorm;
+
+                    VertexAttribPointerType Type = 0;
+
+                    if (Attrib.Type == GalVertexAttribType.Float)
+                    {
+                        Type = VertexAttribPointerType.Float;
+                    }
+                    else
+                    {
+                        Type = AttribTypes[Attrib.Size] + (Unsigned ? 1 : 0);
+                    }
+
+                    int Size = AttribElements[Attrib.Size];
+                    int Offset = Attrib.Offset;
+
+                    GL.VertexAttribPointer(Attrib.Index, Size, Type, Normalize, Binding.Stride, Offset);
+                }
+            }
 
             //Note: Uncomment SetFrontFace and SetCullFace when flipping issues are solved
 

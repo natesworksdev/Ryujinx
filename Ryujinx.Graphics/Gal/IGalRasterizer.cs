@@ -17,8 +17,6 @@ namespace Ryujinx.Graphics.Gal
 
         void CreateIbo(long Key, int DataSize, IntPtr HostAddress);
 
-        void SetVertexArray(int Stride, long VboKey, GalVertexAttrib[] Attribs);
-
         void SetIndexArray(int Size, GalIndexFormat Format);
 
         void DrawArrays(int First, int PrimCount, GalPrimitiveType PrimType);

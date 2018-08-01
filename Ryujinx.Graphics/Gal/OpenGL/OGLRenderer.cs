@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             Shader = new OGLShader(Buffer as OGLConstBuffer);
 
-            Pipeline = new OGLPipeline();
+            Pipeline = new OGLPipeline(Rasterizer as OGLRasterizer);
 
             Texture = new OGLTexture();
 

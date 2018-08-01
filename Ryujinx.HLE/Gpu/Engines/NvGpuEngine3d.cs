@@ -530,6 +530,8 @@ namespace Ryujinx.HLE.Gpu.Engines
                                          ((Packed >> 31) & 0x1) != 0));
             }
 
+            State.VertexBindings = new GalVertexBinding[32];
+
             for (int Index = 0; Index < 32; Index++)
             {
                 if (Attribs[Index] == null)
@@ -541,13 +543,13 @@ namespace Ryujinx.HLE.Gpu.Engines
 
                 bool Enable = (Control & 0x1000) != 0;
 
-                long VertexPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNAddress + Index * 4);
-                long VertexEndPos   = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNEndAddr + Index * 2);
-
                 if (!Enable)
                 {
                     continue;
                 }
+
+                long VertexPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNAddress + Index * 4);
+                long VertexEndPos   = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNEndAddr + Index * 2);
 
                 long VboKey = Vmm.GetPhysicalAddress(VertexPosition);
 
@@ -564,7 +566,10 @@ namespace Ryujinx.HLE.Gpu.Engines
                     Gpu.Renderer.Rasterizer.CreateVbo(VboKey, (int)VbSize, DataAddress);
                 }
 
-                Gpu.Renderer.Rasterizer.SetVertexArray(Stride, VboKey, Attribs[Index].ToArray());
+                State.VertexBindings[Index].Enabled = true;
+                State.VertexBindings[Index].Stride  = Stride;
+                State.VertexBindings[Index].VboKey  = VboKey;
+                State.VertexBindings[Index].Attribs = Attribs[Index].ToArray();
             }
         }
 
