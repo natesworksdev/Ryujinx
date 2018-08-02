@@ -13,8 +13,6 @@ namespace Ryujinx.Graphics.Gal
 
         void EnsureTextureBinding(string UniformName, int Value);
 
-        void SetFlip(float X, float Y);
-
         void Bind(long Key);
 
         void Unbind(GalShaderType Type);

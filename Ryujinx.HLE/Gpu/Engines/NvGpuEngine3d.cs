@@ -86,18 +86,19 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             GalPipelineState State = new GalPipelineState();
 
-            SetFrameBuffer(Vmm, 0);
-
-            long[] Keys = UploadShaders(Vmm);
-
-            Gpu.Renderer.Shader.BindProgram();
-
+            SetFlip(State);
             SetFrontFace(State);
             SetCullFace(State);
             SetDepth(State);
             SetStencil(State);
             SetAlphaBlending(State);
             SetPrimitiveRestart(State);
+
+            SetFrameBuffer(Vmm, 0);
+
+            long[] Keys = UploadShaders(Vmm);
+
+            Gpu.Renderer.Shader.BindProgram();
 
             UploadTextures(Vmm, State, Keys);
             UploadConstBuffers(Vmm, State);
@@ -190,6 +191,8 @@ namespace Ryujinx.HLE.Gpu.Engines
                 long VpAPos = BasePosition + (uint)VpAOffset;
                 long VpBPos = BasePosition + (uint)VpBOffset;
 
+                Keys[(int)GalShaderType.Vertex] = VpBPos;
+
                 Gpu.Renderer.Shader.Create(Vmm, VpAPos, VpBPos, GalShaderType.Vertex);
                 Gpu.Renderer.Shader.Bind(VpBPos);
 
@@ -221,11 +224,6 @@ namespace Ryujinx.HLE.Gpu.Engines
                 Gpu.Renderer.Shader.Bind(Key);
             }
 
-            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
-            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
-
-            Gpu.Renderer.Shader.SetFlip(SignX, SignY);
-
             return Keys;
         }
 
@@ -242,6 +240,12 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
 
             throw new ArgumentOutOfRangeException(nameof(Program));
+        }
+
+        private void SetFlip(GalPipelineState State)
+        {
+            State.FlipX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
+            State.FlipY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
         }
 
         private void SetFrontFace(GalPipelineState State)

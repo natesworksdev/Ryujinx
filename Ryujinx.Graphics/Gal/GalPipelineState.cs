@@ -19,6 +19,9 @@
 
         public GalVertexBinding[] VertexBindings;
 
+        public float FlipX;
+        public float FlipY;
+
         public GalFrontFace FrontFace;
 
         public bool CullFaceEnabled;

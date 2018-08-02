@@ -108,9 +108,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             //O stands for Older, S for (current) State
 
-            BindUniforms(S);
+            BindConstBuffers(S);
 
             BindVertexLayout(S);
+
+            if (S.FlipX != O.FlipX || S.FlipY != O.FlipY)
+            {
+                Shader.SetFlip(S.FlipX, S.FlipY);
+            }
 
             //Note: Uncomment SetFrontFace and SetCullFace when flipping issues are solved
 
@@ -279,9 +284,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             O = S;
         }
 
-        private void BindUniforms(GalPipelineState S)
+        private void BindConstBuffers(GalPipelineState S)
         {
-            int FreeBinding = 0;
+            //Index 0 is reserved
+            int FreeBinding = 1;
 
             void BindIfNotNull(OGLShaderStage Stage)
             {

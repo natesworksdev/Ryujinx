@@ -5,8 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-using Buffer = System.Buffer;
-
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLShader : IGalShader
@@ -20,6 +18,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public int CurrentProgramHandle { get; private set; }
 
         private OGLConstBuffer Buffer;
+
+        private int ExtraUboHandle;
 
         public OGLShader(OGLConstBuffer Buffer)
         {
@@ -95,13 +95,22 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.Uniform1(Location, Value);
         }
 
-        public void SetFlip(float X, float Y)
+        public unsafe void SetFlip(float X, float Y)
         {
             BindProgram();
 
-            int Location = GL.GetUniformLocation(CurrentProgramHandle, GlslDecl.FlipUniformName);
+            EnsureExtraBlock();
 
-            GL.Uniform2(Location, X, Y);
+            GL.BindBuffer(BufferTarget.UniformBuffer, ExtraUboHandle);
+
+            float* Data = stackalloc float[4];
+            Data[0] = X;
+            Data[1] = Y;
+
+            //Invalidate buffer
+            GL.BufferData(BufferTarget.UniformBuffer, 4 * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
+
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, 4 * sizeof(float), (IntPtr)Data);
         }
 
         public void Bind(long Key)
@@ -178,6 +187,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             CurrentProgramHandle = Handle;
         }
 
+        private void EnsureExtraBlock()
+        {
+            if (ExtraUboHandle == 0)
+            {
+                ExtraUboHandle = GL.GenBuffer();
+
+                GL.BindBuffer(BufferTarget.UniformBuffer, ExtraUboHandle);
+
+                GL.BufferData(BufferTarget.UniformBuffer, 4 * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
+
+                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, ExtraUboHandle);
+            }
+        }
+
         private void AttachIfNotNull(int ProgramHandle, OGLShaderStage Stage)
         {
             if (Stage != null)
@@ -190,7 +213,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private void BindUniformBlocks(int ProgramHandle)
         {
-            int FreeBinding = 0;
+            int ExtraBlockindex = GL.GetUniformBlockIndex(ProgramHandle, GlslDecl.ExtraUniformBlockName);
+
+            GL.UniformBlockBinding(ProgramHandle, ExtraBlockindex, 0);
+
+            //First index is reserved
+            int FreeBinding = 1;
 
             void BindUniformBlocksIfNotNull(OGLShaderStage Stage)
             {
