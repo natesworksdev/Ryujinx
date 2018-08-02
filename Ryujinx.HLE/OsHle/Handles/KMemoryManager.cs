@@ -591,25 +591,24 @@ namespace Ryujinx.HLE.OsHle.Handles
             {
                 long MappedSize = 0;
 
-                long CurrPosition = Position;
+                KMemoryInfo Info;
+
+                LinkedListNode<KMemoryBlock> BaseNode = FindBlockNode(Position);
+
+                LinkedListNode<KMemoryBlock> Node = BaseNode;
 
                 do
                 {
-                    KMemoryInfo Info = FindBlock(CurrPosition).GetInfo();
+                    Info = Node.Value.GetInfo();
 
                     if (Info.State != MemoryState.Unmapped)
                     {
                         MappedSize += GetSizeInRange(Info, Position, End);
                     }
 
-                    if (Info.Size == 0)
-                    {
-                        throw new InvalidOperationException();
-                    }
-
-                    CurrPosition = Info.Position + Info.Size;
+                    Node = Node.Next;
                 }
-                while ((ulong)CurrPosition < (ulong)End);
+                while ((ulong)(Info.Position + Info.Size) < (ulong)End && Node != null);
 
                 if (MappedSize == Size)
                 {
@@ -623,29 +622,24 @@ namespace Ryujinx.HLE.OsHle.Handles
                     return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
                 }
 
-                CurrPosition = Position;
+                Node = BaseNode;
 
                 do
                 {
-                    KMemoryInfo Info = FindBlock(CurrPosition).GetInfo();
+                    Info = Node.Value.GetInfo();
 
                     if (Info.State == MemoryState.Unmapped)
                     {
                         long CurrSize = GetSizeInRange(Info, Position, End);
 
-                        CpuMemory.Map(CurrPosition, PA, CurrSize);
+                        CpuMemory.Map(Info.Position, PA, CurrSize);
 
                         PA += CurrSize;
                     }
 
-                    if (Info.Size == 0)
-                    {
-                        throw new InvalidOperationException();
-                    }
-
-                    CurrPosition = Info.Position + Info.Size;
+                    Node = Node.Next;
                 }
-                while ((ulong)CurrPosition < (ulong)End);
+                while ((ulong)(Info.Position + Info.Size) < (ulong)End && Node != null);
 
                 PersonalMmHeapUsage += RemainingSize;
 
@@ -675,9 +669,13 @@ namespace Ryujinx.HLE.OsHle.Handles
 
                 long CurrPosition = Position;
 
+                KMemoryInfo Info;
+
+                LinkedListNode<KMemoryBlock> Node = FindBlockNode(CurrPosition);
+
                 do
                 {
-                    KMemoryInfo Info = FindBlock(CurrPosition).GetInfo();
+                    Info = Node.Value.GetInfo();
 
                     if (Info.State == MemoryState.Heap)
                     {
@@ -693,14 +691,9 @@ namespace Ryujinx.HLE.OsHle.Handles
                         return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
                     }
 
-                    if (Info.Size == 0)
-                    {
-                        throw new InvalidOperationException();
-                    }
-
-                    CurrPosition = Info.Position + Info.Size;
+                    Node = Node.Next;
                 }
-                while ((ulong)CurrPosition < (ulong)End);
+                while ((ulong)(Info.Position + Info.Size) < (ulong)End && Node != null);
 
                 if (HeapMappedSize == 0)
                 {
@@ -1056,6 +1049,11 @@ namespace Ryujinx.HLE.OsHle.Handles
 
         private KMemoryBlock FindBlock(long Position)
         {
+            return FindBlockNode(Position)?.Value;
+        }
+
+        private LinkedListNode<KMemoryBlock> FindBlockNode(long Position)
+        {
             ulong Addr = (ulong)Position;
 
             lock (Blocks)
@@ -1071,7 +1069,7 @@ namespace Ryujinx.HLE.OsHle.Handles
 
                     if (Start <= Addr && End - 1 >= Addr)
                     {
-                        return Block;
+                        return Node;
                     }
 
                     Node = Node.Next;
