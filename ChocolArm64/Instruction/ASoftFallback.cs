@@ -10,6 +10,159 @@ namespace ChocolArm64.Instruction
             Context.EmitCall(typeof(ASoftFallback), MthdName);
         }
 
+        public static bool  BinarySignedSatQAdd_Sat(long op1, long op2)     => BinarySignedSatQAdd(op1, op2).Item1;
+        public static long  BinarySignedSatQAdd_Res(long op1, long op2)     => BinarySignedSatQAdd(op1, op2).Item2;
+        public static bool  BinaryUnsignedSatQAdd_Sat(ulong op1, ulong op2) => BinaryUnsignedSatQAdd(op1, op2).Item1;
+        public static ulong BinaryUnsignedSatQAdd_Res(ulong op1, ulong op2) => BinaryUnsignedSatQAdd(op1, op2).Item2;
+
+        private static (bool, long) BinarySignedSatQAdd(long op1, long op2)
+        {
+            long Add = op1 + op2;
+
+            if ((~(op1 ^ op2) & (op1 ^ Add)) < 0L)
+            {
+                if (op1 < 0L)
+                {
+                    return (true, long.MinValue);
+                }
+                else
+                {
+                    return (true, long.MaxValue);
+                }
+            }
+            else
+            {
+                return (false, Add);
+            }
+        }
+
+        private static (bool, ulong) BinaryUnsignedSatQAdd(ulong op1, ulong op2)
+        {
+            ulong Add = op1 + op2;
+
+            if ((Add < op1) && (Add < op2))
+            {
+                return (true, ulong.MaxValue);
+            }
+            else
+            {
+                return (false, Add);
+            }
+        }
+
+        public static bool  BinarySignedSatQSub_Sat(long op1, long op2)     => BinarySignedSatQSub(op1, op2).Item1;
+        public static long  BinarySignedSatQSub_Res(long op1, long op2)     => BinarySignedSatQSub(op1, op2).Item2;
+        public static bool  BinaryUnsignedSatQSub_Sat(ulong op1, ulong op2) => BinaryUnsignedSatQSub(op1, op2).Item1;
+        public static ulong BinaryUnsignedSatQSub_Res(ulong op1, ulong op2) => BinaryUnsignedSatQSub(op1, op2).Item2;
+
+        private static (bool, long) BinarySignedSatQSub(long op1, long op2)
+        {
+            long Sub = op1 - op2;
+
+            if (((op1 ^ op2) & (op1 ^ Sub)) < 0L)
+            {
+                if (op1 < 0L)
+                {
+                    return (true, long.MinValue);
+                }
+                else
+                {
+                    return (true, long.MaxValue);
+                }
+            }
+            else
+            {
+                return (false, Sub);
+            }
+        }
+
+        private static (bool, ulong) BinaryUnsignedSatQSub(ulong op1, ulong op2)
+        {
+            ulong Sub = op1 - op2;
+
+            if (op1 < op2)
+            {
+                return (true, ulong.MinValue);
+            }
+            else
+            {
+                return (false, Sub);
+            }
+        }
+
+        public static bool  BinarySignedSatQAcc_Sat(ulong op1, long op2)   => BinarySignedSatQAcc(op1, op2).Item1;
+        public static long  BinarySignedSatQAcc_Res(ulong op1, long op2)   => BinarySignedSatQAcc(op1, op2).Item2;
+        public static bool  BinaryUnsignedSatQAcc_Sat(long op1, ulong op2) => BinaryUnsignedSatQAcc(op1, op2).Item1;
+        public static ulong BinaryUnsignedSatQAcc_Res(long op1, ulong op2) => BinaryUnsignedSatQAcc(op1, op2).Item2;
+
+        private static (bool, long) BinarySignedSatQAcc(ulong op1, long op2)
+        {
+            if (op1 <= (ulong)long.MaxValue)
+            {
+                long Add = (long)op1 + op2;
+
+                if ((~op2 & Add) < 0L)
+                {
+                    return (true, long.MaxValue);
+                }
+                else
+                {
+                    return (false, Add);
+                }
+            }
+            else if (op2 >= 0L)
+            {
+                return (true, long.MaxValue);
+            }
+            else
+            {
+                ulong Add = op1 + (ulong)op2;
+
+                if (Add > (ulong)long.MaxValue)
+                {
+                    return (true, long.MaxValue);
+                }
+                else
+                {
+                    return (false, (long)Add);
+                }
+            }
+        }
+
+        private static (bool, ulong) BinaryUnsignedSatQAcc(long op1, ulong op2)
+        {
+            if (op1 >= 0L)
+            {
+                ulong Add = (ulong)op1 + op2;
+
+                if ((Add < (ulong)op1) && (Add < op2))
+                {
+                    return (true, ulong.MaxValue);
+                }
+                else
+                {
+                    return (false, Add);
+                }
+            }
+            else if (op2 > (ulong)long.MaxValue)
+            {
+                return (false, (ulong)op1 + op2);
+            }
+            else
+            {
+                long Add = op1 + (long)op2;
+
+                if (Add < (long)ulong.MinValue)
+                {
+                    return (true, ulong.MinValue);
+                }
+                else
+                {
+                    return (false, (ulong)Add);
+                }
+            }
+        }
+
         public static ulong CountLeadingSigns(ulong Value, int Size)
         {
             Value ^= Value >> 1;
