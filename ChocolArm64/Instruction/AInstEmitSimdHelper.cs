@@ -1129,24 +1129,13 @@ namespace ChocolArm64.Instruction
                 throw new InvalidOperationException();
             }
 
-            AILLabel LblFalse = new AILLabel();
-
             EmitVectorExtract(Context, Op.Rn, Index, 3, Signed);
-            Context.Emit(OpCodes.Dup);
-
             EmitVectorExtract(Context, Op.Rm, Index, 3, Signed);
-            ASoftFallback.EmitCall(Context, Signed
-                ? nameof(ASoftFallback.BinarySignedSatQAdd_Sat)
-                : nameof(ASoftFallback.BinaryUnsignedSatQAdd_Sat));
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-            Context.Emit(OpCodes.Brfalse_S, LblFalse);
-            EmitSetSaturatedFlag(Context);
-            Context.MarkLabel(LblFalse);
-
-            EmitVectorExtract(Context, Op.Rm, Index, 3, Signed);
             ASoftFallback.EmitCall(Context, Signed
-                ? nameof(ASoftFallback.BinarySignedSatQAdd_Res)
-                : nameof(ASoftFallback.BinaryUnsignedSatQAdd_Res));
+                ? nameof(ASoftFallback.BinarySignedSatQAdd)
+                : nameof(ASoftFallback.BinaryUnsignedSatQAdd));
         }
 
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
@@ -1159,24 +1148,13 @@ namespace ChocolArm64.Instruction
                 throw new InvalidOperationException();
             }
 
-            AILLabel LblFalse = new AILLabel();
-
             EmitVectorExtract(Context, Op.Rn, Index, 3, Signed);
-            Context.Emit(OpCodes.Dup);
-
             EmitVectorExtract(Context, Op.Rm, Index, 3, Signed);
-            ASoftFallback.EmitCall(Context, Signed
-                ? nameof(ASoftFallback.BinarySignedSatQSub_Sat)
-                : nameof(ASoftFallback.BinaryUnsignedSatQSub_Sat));
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-            Context.Emit(OpCodes.Brfalse_S, LblFalse);
-            EmitSetSaturatedFlag(Context);
-            Context.MarkLabel(LblFalse);
-
-            EmitVectorExtract(Context, Op.Rm, Index, 3, Signed);
             ASoftFallback.EmitCall(Context, Signed
-                ? nameof(ASoftFallback.BinarySignedSatQSub_Res)
-                : nameof(ASoftFallback.BinaryUnsignedSatQSub_Res));
+                ? nameof(ASoftFallback.BinarySignedSatQSub)
+                : nameof(ASoftFallback.BinaryUnsignedSatQSub));
         }
 
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
@@ -1189,24 +1167,13 @@ namespace ChocolArm64.Instruction
                 throw new InvalidOperationException();
             }
 
-            AILLabel LblFalse = new AILLabel();
-
             EmitVectorExtract(Context, Op.Rn, Index, 3, !Signed);
-            Context.Emit(OpCodes.Dup);
-
             EmitVectorExtract(Context, Op.Rd, Index, 3,  Signed);
-            ASoftFallback.EmitCall(Context, Signed
-                ? nameof(ASoftFallback.BinarySignedSatQAcc_Sat)
-                : nameof(ASoftFallback.BinaryUnsignedSatQAcc_Sat));
+            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-            Context.Emit(OpCodes.Brfalse_S, LblFalse);
-            EmitSetSaturatedFlag(Context);
-            Context.MarkLabel(LblFalse);
-
-            EmitVectorExtract(Context, Op.Rd, Index, 3,  Signed);
             ASoftFallback.EmitCall(Context, Signed
-                ? nameof(ASoftFallback.BinarySignedSatQAcc_Res)
-                : nameof(ASoftFallback.BinaryUnsignedSatQAcc_Res));
+                ? nameof(ASoftFallback.BinarySignedSatQAcc)
+                : nameof(ASoftFallback.BinaryUnsignedSatQAcc));
         }
 
         public static void EmitResetSaturatedFlag(AILEmitterCtx Context)
