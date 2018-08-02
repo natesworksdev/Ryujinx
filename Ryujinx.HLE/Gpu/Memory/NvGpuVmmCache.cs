@@ -130,6 +130,8 @@ namespace Ryujinx.HLE.Gpu.Memory
         {
             (bool[] Modified, long ModifiedCount) = Memory.IsRegionModified(PA, Size);
 
+            PA = Memory.GetPhysicalAddress(PA);
+
             ClearCachedPagesIfNeeded();
 
             long PageSize = AMemory.PageSize;

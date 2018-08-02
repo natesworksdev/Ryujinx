@@ -228,7 +228,7 @@ namespace ChocolArm64.Memory
             PageTable[L0][L1] = Ptr;
         }
 
-        public bool[] IsRegionModified(long Position, long Size)
+        public (bool[], int) IsRegionModified(long Position, long Size)
         {
             long EndPosition = (Position + Size + PageMask) & ~PageMask;
 
@@ -237,6 +237,8 @@ namespace ChocolArm64.Memory
             Size = EndPosition - Position;
 
             bool[] Modified = new bool[Size >> PTPageBits];
+
+            int Count = 0;
 
             lock (ObservedPages)
             {
@@ -257,7 +259,10 @@ namespace ChocolArm64.Memory
 
                         if (Lvl1 != null)
                         {
-                            Modified[Page] = Lvl1[L1] != null;
+                            if (Modified[Page] = Lvl1[L1] != null)
+                            {
+                                Count++;
+                            }
                         }
                     }
 
