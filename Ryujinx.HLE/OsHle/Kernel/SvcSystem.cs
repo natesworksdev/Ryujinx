@@ -18,8 +18,6 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private const bool EnableProcessDebugging = false;
 
-        private const bool IsVirtualMemoryEnabled = true; //This is always true(?)
-
         private void SvcExitProcess(AThreadState ThreadState)
         {
             Ns.Os.ExitProcess(ThreadState.ProcessId);
@@ -323,11 +321,11 @@ namespace Ryujinx.HLE.OsHle.Kernel
                     break;
 
                 case 6:
-                    ThreadState.X1 = MemoryRegions.TotalMemoryAvailable;
+                    ThreadState.X1 = (ulong)Process.Ns.Memory.Allocator.TotalAvailableSize;
                     break;
 
                 case 7:
-                    ThreadState.X1 = MemoryRegions.TotalMemoryUsed + (ulong)Process.MemoryManager.GetHeapSize();
+                    ThreadState.X1 = (ulong)Process.Ns.Memory.Allocator.TotalUsedSize;
                     break;
 
                 case 8:
@@ -357,7 +355,11 @@ namespace Ryujinx.HLE.OsHle.Kernel
                     break;
 
                 case 16:
-                    ThreadState.X1 = IsVirtualMemoryEnabled ? 1 : 0;
+                    ThreadState.X1 = (ulong)(Process.MetaData?.SystemResourceSize ?? 0);
+                    break;
+
+                case 17:
+                    ThreadState.X1 = (ulong)Process.MemoryManager.PersonalMmHeapUsage;
                     break;
 
                 default:

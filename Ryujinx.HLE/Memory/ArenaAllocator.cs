@@ -18,8 +18,13 @@ namespace Ryujinx.HLE.Memory
 
         private LinkedList<Region> FreeRegions;
 
+        public long TotalAvailableSize { get; private set; }
+        public long TotalUsedSize      { get; private set; }
+
         public ArenaAllocator(long ArenaSize)
         {
+            TotalAvailableSize = ArenaSize;
+
             FreeRegions = new LinkedList<Region>();
 
             FreeRegions.AddFirst(new Region(0, ArenaSize));
@@ -39,6 +44,8 @@ namespace Ryujinx.HLE.Memory
 
                     Rg.Position += Size;
                     Rg.Size     -= Size;
+
+                    TotalUsedSize += Size;
 
                     return true;
                 }
@@ -98,6 +105,8 @@ namespace Ryujinx.HLE.Memory
             {
                 FreeRegions.AddFirst(NewRg);
             }
+
+            TotalUsedSize -= Size;
         }
     }
 }

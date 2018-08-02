@@ -1,7 +1,3 @@
-using ChocolArm64.Memory;
-using System;
-using System.Collections.Generic;
-
 namespace Ryujinx.HLE.OsHle.Handles
 {
     class KSharedMemory

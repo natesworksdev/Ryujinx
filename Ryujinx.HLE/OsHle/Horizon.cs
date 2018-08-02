@@ -56,7 +56,25 @@ namespace Ryujinx.HLE.OsHle
                 Ns.VFs.LoadRomFs(RomFsFile);
             }
 
-            Process MainProcess = MakeProcess();
+            string NpdmFileName = Path.Combine(ExeFsDir, "main.npdm");
+
+            Npdm MetaData = null;
+
+            if (File.Exists(NpdmFileName))
+            {
+                Ns.Log.PrintInfo(LogClass.Loader, $"Loading main.npdm...");
+
+                using (FileStream Input = new FileStream(NpdmFileName, FileMode.Open))
+                {
+                    MetaData = new Npdm(Input);
+                }
+            }
+            else
+            {
+                Ns.Log.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
+            }
+
+            Process MainProcess = MakeProcess(MetaData);
 
             void LoadNso(string FileName)
             {
@@ -147,7 +165,7 @@ namespace Ryujinx.HLE.OsHle
 
         public void SignalVsync() => VsyncEvent.WaitEvent.Set();
 
-        private Process MakeProcess()
+        private Process MakeProcess(Npdm MetaData = null)
         {
             Process Process;
 
@@ -160,7 +178,7 @@ namespace Ryujinx.HLE.OsHle
                     ProcessId++;
                 }
 
-                Process = new Process(Ns, Scheduler, ProcessId);
+                Process = new Process(Ns, Scheduler, ProcessId, MetaData);
 
                 Processes.TryAdd(ProcessId, Process);
             }

@@ -1,4 +1,3 @@
-using ChocolArm64.Memory;
 using ChocolArm64.State;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Handles;
@@ -11,9 +10,9 @@ namespace Ryujinx.HLE.OsHle.Kernel
     {
         private void SvcSetHeapSize(AThreadState ThreadState)
         {
-            uint Size = (uint)ThreadState.X1;
+            long Size = (long)ThreadState.X1;
 
-            if ((Size & 0x1fffff) != 0)
+            if ((Size & 0x1fffff) != 0 || Size != (uint)Size)
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Heap size 0x{Size:x16} is not aligned!");
 
@@ -134,7 +133,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
-            if (!InsideMapRegion(Dst, Size))
+            if (!InsideNewMapRegion(Dst, Size))
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
 
@@ -195,7 +194,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
-            if (!InsideMapRegion(Dst, Size))
+            if (!InsideNewMapRegion(Dst, Size))
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
 
@@ -289,7 +288,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Position, Size) /*|| InsideMapRegion(Position, Size)*/ || InsideHeapRegion(Position, Size))
+            if (!InsideAddrSpace(Position, Size) || InsideMapRegion(Position, Size) || InsideHeapRegion(Position, Size))
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
 
@@ -361,7 +360,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Position, Size) /*|| InsideMapRegion(Position, Size)*/ || InsideHeapRegion(Position, Size))
+            if (!InsideAddrSpace(Position, Size) || InsideMapRegion(Position, Size) || InsideHeapRegion(Position, Size))
             {
                 Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
 
@@ -382,23 +381,50 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private void SvcCreateTransferMemory(AThreadState ThreadState)
         {
-            long Src  = (long)ThreadState.X1;
-            long Size = (long)ThreadState.X2;
+            long Position = (long)ThreadState.X1;
+            long Size     = (long)ThreadState.X2;
 
-            MemoryPermission Permission = (MemoryPermission)ThreadState.X3;
-
-            if (!InsideAddrSpace(Src, Size))
+            if (!PageAligned(Position))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Src:x16}!");
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+
+                return;
+            }
+
+            if (!PageAligned(Size) || Size == 0)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+
+                return;
+            }
+
+            if ((ulong)(Position + Size) <= (ulong)Position)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            Process.MemoryManager.ReserveTransferMemory(Src, Size, Permission);
+            MemoryPermission Permission = (MemoryPermission)ThreadState.X3;
 
-            KTransferMemory TransferMemory = new KTransferMemory(Src, Size);
+            if (Permission > MemoryPermission.ReadAndWrite || Permission == MemoryPermission.Write)
+            {
+                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid permission {Permission}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidPermission);
+
+                return;
+            }
+
+            Process.MemoryManager.ReserveTransferMemory(Position, Size, Permission);
+
+            KTransferMemory TransferMemory = new KTransferMemory(Position, Size);
 
             int Handle = Process.HandleTable.OpenHandle(TransferMemory);
 
@@ -527,8 +553,8 @@ namespace Ryujinx.HLE.OsHle.Kernel
             ulong Start = (ulong)Position;
             ulong End   = (ulong)Size + Start;
 
-            return Start >= MemoryRegions.MapRegionAddress &&
-                   End   <  MemoryRegions.MapRegionAddress + MemoryRegions.MapRegionSize;
+            return Start >= (ulong)Process.MemoryManager.MapRegionStart &&
+                   End   <  (ulong)Process.MemoryManager.MapRegionEnd;
         }
 
         private bool InsideHeapRegion(long Position, long Size)
@@ -538,6 +564,15 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             return Start >= (ulong)Process.MemoryManager.HeapRegionStart &&
                    End   <  (ulong)Process.MemoryManager.HeapRegionEnd;
+        }
+
+        private bool InsideNewMapRegion(long Position, long Size)
+        {
+            ulong Start = (ulong)Position;
+            ulong End   = (ulong)Size + Start;
+
+            return Start >= (ulong)Process.MemoryManager.NewMapRegionStart &&
+                   End   <  (ulong)Process.MemoryManager.NewMapRegionEnd;
         }
     }
 }

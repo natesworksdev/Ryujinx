@@ -1,7 +1,4 @@
-﻿using ChocolArm64.Memory;
-using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle;
-using Ryujinx.HLE.OsHle.Handles;
+﻿using Ryujinx.HLE.OsHle;
 using System;
 
 namespace Ryujinx.HLE.Input

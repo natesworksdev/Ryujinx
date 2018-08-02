@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace ChocolArm64.Memory
 {
-    public unsafe class AMemory : IAMemory
+    public unsafe class AMemory : IAMemory, IDisposable
     {
         private const int PTLvl0Bits = 13;
         private const int PTLvl1Bits = 14;
@@ -654,6 +654,33 @@ namespace ChocolArm64.Memory
             {
                 throw new VmmPageFaultException(Position);
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (PageTable == null)
+            {
+                return;
+            }
+
+            for (int L0 = 0; L0 < PTLvl0Size; L0++)
+            {
+                if (PageTable[L0] != null)
+                {
+                    Marshal.FreeHGlobal((IntPtr)PageTable[L0]);
+                }
+
+                PageTable[L0] = null;
+            }
+
+            Marshal.FreeHGlobal((IntPtr)PageTable);
+
+            PageTable = null;
         }
     }
 }
