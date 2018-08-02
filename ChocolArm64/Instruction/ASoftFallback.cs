@@ -1,3 +1,4 @@
+using ChocolArm64.State;
 using ChocolArm64.Translation;
 using System;
 
@@ -10,92 +11,85 @@ namespace ChocolArm64.Instruction
             Context.EmitCall(typeof(ASoftFallback), MthdName);
         }
 
-        public static bool  BinarySignedSatQAdd_Sat(long op1, long op2)     => BinarySignedSatQAdd(op1, op2).Item1;
-        public static long  BinarySignedSatQAdd_Res(long op1, long op2)     => BinarySignedSatQAdd(op1, op2).Item2;
-        public static bool  BinaryUnsignedSatQAdd_Sat(ulong op1, ulong op2) => BinaryUnsignedSatQAdd(op1, op2).Item1;
-        public static ulong BinaryUnsignedSatQAdd_Res(ulong op1, ulong op2) => BinaryUnsignedSatQAdd(op1, op2).Item2;
-
-        private static (bool, long) BinarySignedSatQAdd(long op1, long op2)
+        public static long BinarySignedSatQAdd(long op1, long op2, AThreadState State)
         {
             long Add = op1 + op2;
 
             if ((~(op1 ^ op2) & (op1 ^ Add)) < 0L)
             {
+                SetFpsrQCFlag(State);
+
                 if (op1 < 0L)
                 {
-                    return (true, long.MinValue);
+                    return long.MinValue;
                 }
                 else
                 {
-                    return (true, long.MaxValue);
+                    return long.MaxValue;
                 }
             }
             else
             {
-                return (false, Add);
+                return Add;
             }
         }
 
-        private static (bool, ulong) BinaryUnsignedSatQAdd(ulong op1, ulong op2)
+        public static ulong BinaryUnsignedSatQAdd(ulong op1, ulong op2, AThreadState State)
         {
             ulong Add = op1 + op2;
 
             if ((Add < op1) && (Add < op2))
             {
-                return (true, ulong.MaxValue);
+                SetFpsrQCFlag(State);
+
+                return ulong.MaxValue;
             }
             else
             {
-                return (false, Add);
+                return Add;
             }
         }
 
-        public static bool  BinarySignedSatQSub_Sat(long op1, long op2)     => BinarySignedSatQSub(op1, op2).Item1;
-        public static long  BinarySignedSatQSub_Res(long op1, long op2)     => BinarySignedSatQSub(op1, op2).Item2;
-        public static bool  BinaryUnsignedSatQSub_Sat(ulong op1, ulong op2) => BinaryUnsignedSatQSub(op1, op2).Item1;
-        public static ulong BinaryUnsignedSatQSub_Res(ulong op1, ulong op2) => BinaryUnsignedSatQSub(op1, op2).Item2;
-
-        private static (bool, long) BinarySignedSatQSub(long op1, long op2)
+        public static long BinarySignedSatQSub(long op1, long op2, AThreadState State)
         {
             long Sub = op1 - op2;
 
             if (((op1 ^ op2) & (op1 ^ Sub)) < 0L)
             {
+                SetFpsrQCFlag(State);
+
                 if (op1 < 0L)
                 {
-                    return (true, long.MinValue);
+                    return long.MinValue;
                 }
                 else
                 {
-                    return (true, long.MaxValue);
+                    return long.MaxValue;
                 }
             }
             else
             {
-                return (false, Sub);
+                return Sub;
             }
         }
 
-        private static (bool, ulong) BinaryUnsignedSatQSub(ulong op1, ulong op2)
+        public static ulong BinaryUnsignedSatQSub(ulong op1, ulong op2, AThreadState State)
         {
             ulong Sub = op1 - op2;
 
             if (op1 < op2)
             {
-                return (true, ulong.MinValue);
+                SetFpsrQCFlag(State);
+
+                return ulong.MinValue;
             }
             else
             {
-                return (false, Sub);
+                return Sub;
             }
         }
 
-        public static bool  BinarySignedSatQAcc_Sat(ulong op1, long op2)   => BinarySignedSatQAcc(op1, op2).Item1;
-        public static long  BinarySignedSatQAcc_Res(ulong op1, long op2)   => BinarySignedSatQAcc(op1, op2).Item2;
-        public static bool  BinaryUnsignedSatQAcc_Sat(long op1, ulong op2) => BinaryUnsignedSatQAcc(op1, op2).Item1;
-        public static ulong BinaryUnsignedSatQAcc_Res(long op1, ulong op2) => BinaryUnsignedSatQAcc(op1, op2).Item2;
-
-        private static (bool, long) BinarySignedSatQAcc(ulong op1, long op2)
+        public static long BinarySignedSatQAcc(ulong op1, long op2, AThreadState State)
         {
             if (op1 <= (ulong)long.MaxValue)
             {
@@ -103,16 +97,20 @@ namespace ChocolArm64.Instruction
 
                 if ((~op2 & Add) < 0L)
                 {
-                    return (true, long.MaxValue);
+                    SetFpsrQCFlag(State);
+
+                    return long.MaxValue;
                 }
                 else
                 {
-                    return (false, Add);
+                    return Add;
                 }
             }
             else if (op2 >= 0L)
             {
-                return (true, long.MaxValue);
+                SetFpsrQCFlag(State);
+
+                return long.MaxValue;
             }
             else
             {
@@ -120,16 +118,18 @@ namespace ChocolArm64.Instruction
 
                 if (Add > (ulong)long.MaxValue)
                 {
-                    return (true, long.MaxValue);
+                    SetFpsrQCFlag(State);
+
+                    return long.MaxValue;
                 }
                 else
                 {
-                    return (false, (long)Add);
+                    return (long)Add;
                 }
             }
         }
 
-        private static (bool, ulong) BinaryUnsignedSatQAcc(long op1, ulong op2)
+        public static ulong BinaryUnsignedSatQAcc(long op1, ulong op2, AThreadState State)
         {
             if (op1 >= 0L)
             {
@@ -137,16 +137,18 @@ namespace ChocolArm64.Instruction
 
                 if ((Add < (ulong)op1) && (Add < op2))
                 {
-                    return (true, ulong.MaxValue);
+                    SetFpsrQCFlag(State);
+
+                    return ulong.MaxValue;
                 }
                 else
                 {
-                    return (false, Add);
+                    return Add;
                 }
             }
             else if (op2 > (ulong)long.MaxValue)
             {
-                return (false, (ulong)op1 + op2);
+                return (ulong)op1 + op2;
             }
             else
             {
@@ -154,13 +156,22 @@ namespace ChocolArm64.Instruction
 
                 if (Add < (long)ulong.MinValue)
                 {
-                    return (true, ulong.MinValue);
+                    SetFpsrQCFlag(State);
+
+                    return ulong.MinValue;
                 }
                 else
                 {
-                    return (false, (ulong)Add);
+                    return (ulong)Add;
                 }
             }
+        }
+
+        private static void SetFpsrQCFlag(AThreadState State)
+        {
+            const int QCFlagBit = 27;
+
+            State.Fpsr |= 1 << QCFlagBit;
         }
 
         public static ulong CountLeadingSigns(ulong Value, int Size)
