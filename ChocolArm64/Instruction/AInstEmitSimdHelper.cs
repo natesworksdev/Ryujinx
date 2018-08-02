@@ -1129,74 +1129,24 @@ namespace ChocolArm64.Instruction
                 throw new InvalidOperationException();
             }
 
+            AILLabel LblFalse = new AILLabel();
+
             EmitVectorExtract(Context, Op.Rn, Index, 3, Signed);
+            Context.Emit(OpCodes.Dup);
+
             EmitVectorExtract(Context, Op.Rm, Index, 3, Signed);
+            ASoftFallback.EmitCall(Context, Signed
+                ? nameof(ASoftFallback.BinarySignedSatQAdd_Sat)
+                : nameof(ASoftFallback.BinaryUnsignedSatQAdd_Sat));
 
-            Context.Emit(OpCodes.Add);
+            Context.Emit(OpCodes.Brfalse_S, LblFalse);
+            EmitSetSaturatedFlag(Context);
+            Context.MarkLabel(LblFalse);
 
-            if (Signed)
-            {
-                long TMaxValue = long.MaxValue;
-                long TMinValue = long.MinValue;
-
-                AILLabel LblGeEnd = new AILLabel();
-                AILLabel LblGe    = new AILLabel();
-
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                EmitVectorExtractSx(Context, Op.Rm, Index, 3);
-                Context.Emit(OpCodes.Xor);
-                Context.Emit(OpCodes.Not);
-
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                Context.Emit(OpCodes.Dup);
-                EmitVectorExtractSx(Context, Op.Rm, Index, 3);
-                Context.Emit(OpCodes.Add);
-                Context.Emit(OpCodes.Xor);
-
-                Context.Emit(OpCodes.And);
-                Context.Emit(OpCodes.Ldc_I4_0);
-                Context.Emit(OpCodes.Bge_S, LblGeEnd);
-
-                Context.Emit(OpCodes.Pop);
-
-                EmitSetSaturatedFlag(Context);
-
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                Context.Emit(OpCodes.Ldc_I4_0);
-                Context.Emit(OpCodes.Bge_S, LblGe);
-
-                Context.EmitLdc_I8(TMinValue);
-
-                Context.Emit(OpCodes.Br_S, LblGeEnd);
-
-                Context.MarkLabel(LblGe);
-
-                Context.EmitLdc_I8(TMaxValue);
-
-                Context.MarkLabel(LblGeEnd);
-            }
-            else
-            {
-                long TMaxValue = ~0L; // ulong.MaxValue
-
-                AILLabel LblGeEnd = new AILLabel();
-
-                Context.Emit(OpCodes.Dup);
-                EmitVectorExtractZx(Context, Op.Rn, Index, 3);
-                Context.Emit(OpCodes.Bge_Un_S, LblGeEnd);
-
-                Context.Emit(OpCodes.Dup);
-                EmitVectorExtractZx(Context, Op.Rm, Index, 3);
-                Context.Emit(OpCodes.Bge_Un_S, LblGeEnd);
-
-                Context.Emit(OpCodes.Pop);
-
-                EmitSetSaturatedFlag(Context);
-
-                Context.EmitLdc_I8(TMaxValue);
-
-                Context.MarkLabel(LblGeEnd);
-            }
+            EmitVectorExtract(Context, Op.Rm, Index, 3, Signed);
+            ASoftFallback.EmitCall(Context, Signed
+                ? nameof(ASoftFallback.BinarySignedSatQAdd_Res)
+                : nameof(ASoftFallback.BinaryUnsignedSatQAdd_Res));
         }
 
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
@@ -1209,69 +1159,24 @@ namespace ChocolArm64.Instruction
                 throw new InvalidOperationException();
             }
 
+            AILLabel LblFalse = new AILLabel();
+
             EmitVectorExtract(Context, Op.Rn, Index, 3, Signed);
+            Context.Emit(OpCodes.Dup);
+
             EmitVectorExtract(Context, Op.Rm, Index, 3, Signed);
+            ASoftFallback.EmitCall(Context, Signed
+                ? nameof(ASoftFallback.BinarySignedSatQSub_Sat)
+                : nameof(ASoftFallback.BinaryUnsignedSatQSub_Sat));
 
-            Context.Emit(OpCodes.Sub);
+            Context.Emit(OpCodes.Brfalse_S, LblFalse);
+            EmitSetSaturatedFlag(Context);
+            Context.MarkLabel(LblFalse);
 
-            if (Signed)
-            {
-                long TMaxValue = long.MaxValue;
-                long TMinValue = long.MinValue;
-
-                AILLabel LblGeEnd = new AILLabel();
-                AILLabel LblGe    = new AILLabel();
-
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                EmitVectorExtractSx(Context, Op.Rm, Index, 3);
-                Context.Emit(OpCodes.Xor);
-
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                Context.Emit(OpCodes.Dup);
-                EmitVectorExtractSx(Context, Op.Rm, Index, 3);
-                Context.Emit(OpCodes.Sub);
-                Context.Emit(OpCodes.Xor);
-
-                Context.Emit(OpCodes.And);
-                Context.Emit(OpCodes.Ldc_I4_0);
-                Context.Emit(OpCodes.Bge_S, LblGeEnd);
-
-                Context.Emit(OpCodes.Pop);
-
-                EmitSetSaturatedFlag(Context);
-
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                Context.Emit(OpCodes.Ldc_I4_0);
-                Context.Emit(OpCodes.Bge_S, LblGe);
-
-                Context.EmitLdc_I8(TMinValue);
-
-                Context.Emit(OpCodes.Br_S, LblGeEnd);
-
-                Context.MarkLabel(LblGe);
-
-                Context.EmitLdc_I8(TMaxValue);
-
-                Context.MarkLabel(LblGeEnd);
-            }
-            else
-            {
-                long TMinValue = 0L; // ulong.MinValue
-
-                AILLabel LblTrue = new AILLabel();
-
-                EmitVectorExtractZx(Context, Op.Rn, Index, 3);
-                EmitVectorExtractZx(Context, Op.Rm, Index, 3);
-                Context.Emit(OpCodes.Bge_Un_S, LblTrue);
-
-                Context.Emit(OpCodes.Pop);
-
-                EmitSetSaturatedFlag(Context);
-
-                Context.EmitLdc_I8(TMinValue);
-
-                Context.MarkLabel(LblTrue);
-            }
+            EmitVectorExtract(Context, Op.Rm, Index, 3, Signed);
+            ASoftFallback.EmitCall(Context, Signed
+                ? nameof(ASoftFallback.BinarySignedSatQSub_Res)
+                : nameof(ASoftFallback.BinaryUnsignedSatQSub_Res));
         }
 
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
@@ -1284,148 +1189,24 @@ namespace ChocolArm64.Instruction
                 throw new InvalidOperationException();
             }
 
-            if (Signed)
-            {
-                long TMaxValue = long.MaxValue;
+            AILLabel LblFalse = new AILLabel();
 
-                AILLabel LblGt  = new AILLabel();
-                AILLabel LblLt  = new AILLabel();
-                AILLabel LblEnd = new AILLabel();
+            EmitVectorExtract(Context, Op.Rn, Index, 3, !Signed);
+            Context.Emit(OpCodes.Dup);
 
-                EmitVectorExtractZx(Context, Op.Rn, Index, 3);
-                Context.EmitLdc_I8(long.MaxValue);
-                Context.Emit(OpCodes.Bgt_Un_S, LblGt);
+            EmitVectorExtract(Context, Op.Rd, Index, 3,  Signed);
+            ASoftFallback.EmitCall(Context, Signed
+                ? nameof(ASoftFallback.BinarySignedSatQAcc_Sat)
+                : nameof(ASoftFallback.BinaryUnsignedSatQAcc_Sat));
 
-                // op1 from ulong.MinValue to (ulong)long.MaxValue
-                // op2 from long.MinValue to long.MaxValue
+            Context.Emit(OpCodes.Brfalse_S, LblFalse);
+            EmitSetSaturatedFlag(Context);
+            Context.MarkLabel(LblFalse);
 
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                EmitVectorExtractSx(Context, Op.Rd, Index, 3);
-                Context.Emit(OpCodes.Add);
-
-                Context.Emit(OpCodes.Dup);
-                EmitVectorExtractSx(Context, Op.Rd, Index, 3);
-                Context.Emit(OpCodes.Not);
-                Context.Emit(OpCodes.And);
-                Context.Emit(OpCodes.Ldc_I4_0);
-                Context.Emit(OpCodes.Bge_S, LblEnd);
-
-                Context.Emit(OpCodes.Pop);
-
-                EmitSetSaturatedFlag(Context);
-
-                Context.EmitLdc_I8(TMaxValue);
-
-                Context.Emit(OpCodes.Br_S, LblEnd);
-
-                Context.MarkLabel(LblGt);
-
-                // op1 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
-                // op2 from (long)ulong.MinValue to long.MaxValue
-
-                EmitVectorExtractSx(Context, Op.Rd, Index, 3);
-                Context.Emit(OpCodes.Ldc_I4_0);
-                Context.Emit(OpCodes.Blt_S, LblLt);
-
-                EmitSetSaturatedFlag(Context);
-
-                Context.EmitLdc_I8(TMaxValue);
-
-                Context.Emit(OpCodes.Br_S, LblEnd);
-
-                Context.MarkLabel(LblLt);
-
-                // op1 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
-                // op2 from long.MinValue to (long)ulong.MinValue - 1L
-
-                EmitVectorExtractZx(Context, Op.Rn, Index, 3);
-                EmitVectorExtractSx(Context, Op.Rd, Index, 3);
-                Context.Emit(OpCodes.Add);
-
-                Context.Emit(OpCodes.Dup);
-                Context.EmitLdc_I8(TMaxValue);
-                Context.Emit(OpCodes.Ble_Un_S, LblEnd);
-
-                Context.Emit(OpCodes.Pop);
-
-                EmitSetSaturatedFlag(Context);
-
-                Context.EmitLdc_I8(TMaxValue);
-
-                Context.MarkLabel(LblEnd);
-            }
-            else
-            {
-                long TMaxValue = ~0L; // ulong.MaxValue
-                long TMinValue =  0L; // ulong.MinValue
-
-                AILLabel LblLt  = new AILLabel();
-                AILLabel LblLe  = new AILLabel();
-                AILLabel LblEnd = new AILLabel();
-
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                Context.Emit(OpCodes.Ldc_I4_0);
-                Context.Emit(OpCodes.Blt_S, LblLt);
-
-                // op1 from (long)ulong.MinValue to long.MaxValue
-                // op2 from ulong.MinValue to ulong.MaxValue
-
-                EmitVectorExtractZx(Context, Op.Rn, Index, 3);
-                EmitVectorExtractZx(Context, Op.Rd, Index, 3);
-                Context.Emit(OpCodes.Add);
-
-                Context.Emit(OpCodes.Dup);
-                EmitVectorExtractZx(Context, Op.Rn, Index, 3);
-                Context.Emit(OpCodes.Bge_Un_S, LblEnd);
-
-                Context.Emit(OpCodes.Dup);
-                EmitVectorExtractZx(Context, Op.Rd, Index, 3);
-                Context.Emit(OpCodes.Bge_Un_S, LblEnd);
-
-                Context.Emit(OpCodes.Pop);
-
-                EmitSetSaturatedFlag(Context);
-
-                Context.EmitLdc_I8(TMaxValue);
-
-                Context.Emit(OpCodes.Br_S, LblEnd);
-
-                Context.MarkLabel(LblLt);
-
-                // op1 from long.MinValue to (long)ulong.MinValue - 1L
-                // op2 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
-
-                EmitVectorExtractZx(Context, Op.Rd, Index, 3);
-                Context.EmitLdc_I8(long.MaxValue);
-                Context.Emit(OpCodes.Ble_Un_S, LblLe);
-
-                EmitVectorExtractZx(Context, Op.Rn, Index, 3);
-                EmitVectorExtractZx(Context, Op.Rd, Index, 3);
-                Context.Emit(OpCodes.Add);
-
-                Context.Emit(OpCodes.Br_S, LblEnd);
-
-                Context.MarkLabel(LblLe);
-
-                // op1 from long.MinValue to (long)ulong.MinValue - 1L
-                // op2 from ulong.MinValue to (ulong)long.MaxValue
-
-                EmitVectorExtractSx(Context, Op.Rn, Index, 3);
-                EmitVectorExtractSx(Context, Op.Rd, Index, 3);
-                Context.Emit(OpCodes.Add);
-
-                Context.Emit(OpCodes.Dup);
-                Context.EmitLdc_I8(TMinValue);
-                Context.Emit(OpCodes.Bge_S, LblEnd);
-
-                Context.Emit(OpCodes.Pop);
-
-                EmitSetSaturatedFlag(Context);
-
-                Context.EmitLdc_I8(TMinValue);
-
-                Context.MarkLabel(LblEnd);
-            }
+            EmitVectorExtract(Context, Op.Rd, Index, 3,  Signed);
+            ASoftFallback.EmitCall(Context, Signed
+                ? nameof(ASoftFallback.BinarySignedSatQAcc_Res)
+                : nameof(ASoftFallback.BinaryUnsignedSatQAcc_Res));
         }
 
         public static void EmitResetSaturatedFlag(AILEmitterCtx Context)
