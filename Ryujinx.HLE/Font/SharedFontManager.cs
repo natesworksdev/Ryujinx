@@ -13,6 +13,7 @@ namespace Ryujinx.HLE.Font
 {
     public class SharedFontManager
     {
+        private const uint SharedMemorySize = 0x1100000;
         private Logger Log;
 
         private string FontsPath;
@@ -21,7 +22,7 @@ namespace Ryujinx.HLE.Font
 
         private (AMemory, long, long)[] ShMemPositions;
 
-        private Dictionary<SharedFontType, byte[]> FontEmbeddedPaths;
+        private Dictionary<SharedFontType, byte[]> FontData;
 
         private uint[] LoadedFonts;
 
@@ -34,7 +35,7 @@ namespace Ryujinx.HLE.Font
 
             ShMemPositions    = new(AMemory, long, long)[0];
 
-            FontEmbeddedPaths = new Dictionary<SharedFontType, byte[]>()
+            FontData          = new Dictionary<SharedFontType, byte[]>()
             {
                 { SharedFontType.JapanUsEurope,       GetData("FontStandard")                  },
                 { SharedFontType.SimplifiedChinese,   GetData("FontChineseSimplified")         },
@@ -44,7 +45,19 @@ namespace Ryujinx.HLE.Font
                 { SharedFontType.NintendoEx,          GetData("FontNintendoExtended")          }
             };
 
-            LoadedFonts       = new uint[FontEmbeddedPaths.Count];
+            int FontMemoryUsage = 0;
+            foreach (byte[] data in FontData.Values)
+            {
+                FontMemoryUsage += data.Length;
+                FontMemoryUsage += 0x8;
+            }
+
+            if (FontMemoryUsage > SharedMemorySize)
+            {
+                throw new InvalidSystemResourceException($"The sum of all fonts size exceed the shared memory size. Please make sure that the fonts don't exceed {SharedMemorySize} bytes in total. (actual size: {FontMemoryUsage} bytes)");
+            }
+
+            LoadedFonts       = new uint[FontData.Count];
         }
 
         public byte[] GetData(string FontName)
@@ -56,7 +69,7 @@ namespace Ryujinx.HLE.Font
             }
             else
             {
-                throw new SystemResourceNotFoundException($"Font \"{FontName}.ttf\" not found. Please provide it in \"{FontsPath}\".");
+                throw new InvalidSystemResourceException($"Font \"{FontName}.ttf\" not found. Please provide it in \"{FontsPath}\".");
             }
         }
 
@@ -65,7 +78,7 @@ namespace Ryujinx.HLE.Font
             uint SharedMemoryAddressOffset = GetSharedMemoryAddressOffset(FontType);
             // TODO: find what are the 8 bytes before the font
             Memory.WriteUInt64(Position + SharedMemoryAddressOffset - 8, 0);
-            Memory.WriteBytes(Position + SharedMemoryAddressOffset, FontEmbeddedPaths[FontType]);
+            Memory.WriteBytes(Position + SharedMemoryAddressOffset, FontData[FontType]);
         }
 
         public void PropagateNewMapFont(SharedFontType Type)
@@ -143,7 +156,7 @@ namespace Ryujinx.HLE.Font
 
         public uint GetFontSize(SharedFontType FontType)
         {
-            return (uint)FontEmbeddedPaths[FontType].Length;
+            return (uint)FontData[FontType].Length;
         }
 
         public uint GetSharedMemoryAddressOffset(SharedFontType FontType)
@@ -159,6 +172,6 @@ namespace Ryujinx.HLE.Font
             return Pos;
         }
 
-        public int Count => FontEmbeddedPaths.Count;
+        public int Count => FontData.Count;
     }
 }
