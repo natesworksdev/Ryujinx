@@ -297,7 +297,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 if (DeclInfo.Index >= 0)
                 {
-                    SB.AppendLine("layout (location = " + DeclInfo.Index + ") " + InOut + " " + "vec4" + ";");
+                    SB.AppendLine("layout (location = " + DeclInfo.Index + ") " + InOut + " " + "vec4 " + DeclInfo.Name + ";");
 
                     Count++;
                 }
@@ -370,7 +370,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 ShaderDeclInfo DeclInfo = KV.Value;
 
-                string Swizzle = ".xyzw".Substring(0, DeclInfo.Size + 1);
+                string Swizzle = ".xyzw";
 
                 if (Decl.ShaderType == GalShaderType.Geometry)
                 {
@@ -418,7 +418,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 ShaderDeclInfo DeclInfo = KV.Value;
 
-                string Swizzle = ".xyzw".Substring(0, DeclInfo.Size + 1);
+                string Swizzle = ".xyzw";
 
                 string Name = Attr.Name;
 
