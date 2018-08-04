@@ -297,7 +297,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 if (DeclInfo.Index >= 0)
                 {
-                    SB.AppendLine("layout (location = " + DeclInfo.Index + ") " + InOut + " " + GetDecl(DeclInfo) + ";");
+                    SB.AppendLine("layout (location = " + DeclInfo.Index + ") " + InOut + " " + "vec4" + ";");
 
                     Count++;
                 }
