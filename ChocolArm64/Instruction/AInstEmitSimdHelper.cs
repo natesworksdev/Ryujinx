@@ -891,9 +891,9 @@ namespace ChocolArm64.Instruction
                 EmitVectorZeroLowerTmp(Context);
             }
 
-            for (int Index = 0; Index < Elems; Index++)
+            if (Add || Sub)
             {
-                if (Add || Sub)
+                for (int Index = 0; Index < Elems; Index++)
                 {
                     EmitVectorExtract(Context,                   Op.Rn, Index, Op.Size, Signed);
                     EmitVectorExtract(Context, ((AOpCodeSimdReg)Op).Rm, Index, Op.Size, Signed);
@@ -915,9 +915,13 @@ namespace ChocolArm64.Instruction
                             EmitBinarySatQSub(Context, Signed);
                         }
                     }
-                }
 
-                if (Accumulate)
+                    EmitVectorInsertTmp(Context, Index, Op.Size);
+                }
+            }
+            else if (Accumulate)
+            {
+                for (int Index = 0; Index < Elems; Index++)
                 {
                     EmitVectorExtract(Context, Op.Rn, Index, Op.Size, !Signed);
                     EmitVectorExtract(Context, Op.Rd, Index, Op.Size,  Signed);
@@ -932,9 +936,9 @@ namespace ChocolArm64.Instruction
                     {
                         EmitBinarySatQAccumulate(Context, Signed);
                     }
-                }
 
-                EmitVectorInsertTmp(Context, Index, Op.Size);
+                    EmitVectorInsertTmp(Context, Index, Op.Size);
+                }
             }
 
             Context.EmitLdvectmp();
