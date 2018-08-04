@@ -304,7 +304,7 @@ namespace ChocolArm64.Instruction
                 return op1;
             }
 
-            if (op1 <= op2 && op2 != 0)
+            if (op1 < op2 || (op1 == op2 && op2 != 0))
             {
                 return op2;
             }
@@ -335,7 +335,7 @@ namespace ChocolArm64.Instruction
                 return op1;
             }
 
-            if (op1 <= op2 && op2 != 0)
+            if (op1 < op2 || (op1 == op2 && op2 != 0))
             {
                 return op2;
             }
@@ -400,7 +400,7 @@ namespace ChocolArm64.Instruction
                 return op1;
             }
 
-            if (op1 >= op2 && op2 != 0)
+            if (op1 > op2 || (op1 == op2 && op2 != 0))
             {
                 return op2;
             }
@@ -431,7 +431,7 @@ namespace ChocolArm64.Instruction
                 return op1;
             }
 
-            if (op1 >= op2 && op2 != 0)
+            if (op1 > op2 || (op1 == op2 && op2 != 0))
             {
                 return op2;
             }
