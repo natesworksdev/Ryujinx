@@ -364,7 +364,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     int Size = AttribElements[Attrib.Size];
                     int Offset = Attrib.Offset;
 
-                    GL.VertexAttribPointer(Attrib.Index, Size, Type, Normalize, Binding.Stride, Offset);
+                    if (Attrib.Type == GalVertexAttribType.Sint ||
+                        Attrib.Type == GalVertexAttribType.Uint)
+                    {
+                        IntPtr Pointer = new IntPtr(Offset);
+
+                        VertexAttribIntegerType IType = (VertexAttribIntegerType)Type;
+
+                        GL.VertexAttribIPointer(Attrib.Index, Size, IType, Binding.Stride, Pointer);
+                    }
+                    else
+                    {
+                        GL.VertexAttribPointer(Attrib.Index, Size, Type, Normalize, Binding.Stride, Offset);
+                    }
                 }
             }
         }
