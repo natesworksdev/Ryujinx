@@ -1126,6 +1126,19 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
+        [TestCase(0x00000001u, 0x7FFFFFFFu, 0x7FFFFFFFu, true)]
+        public void Sqadd_S(uint A, uint B, uint Result, bool Fpsr)
+        {
+            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> V2 = MakeVectorE0(B);
+            AThreadState ThreadState = SingleOpcode(0x5EA20C20, V1: V1, V2: V2);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(Result, GetVectorE0(ThreadState.V0));
+                Assert.AreEqual(((ThreadState.Fpsr >> 27) & 1) == 1, Fpsr);
+            });
+        }
+
         [Test, Description("SQXTN <Vb><d>, <Va><n>")]
         public void Sqxtn_S_HB_SH_DS([Values(0u)] uint Rd,
                                      [Values(1u, 0u)] uint Rn,

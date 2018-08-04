@@ -781,50 +781,121 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static void EmitScalarSaturatingNarrowOpSxSx(AILEmitterCtx Context, Action Emit)
+        [Flags]
+        public enum SaturatingFlags
         {
-            EmitSaturatingNarrowOp(Context, Emit, true, true, true);
+            None = 0,
+
+            SignedSrc = 1 << 0,
+            SignedDst = 1 << 1,
+            Scalar    = 1 << 2,
+            Narrow    = 1 << 3,
+            Binary    = 1 << 4,
+
+            SxSxScalarUnary       = SignedSrc | SignedDst | Scalar,
+            SxSxScalarNarrowUnary = SignedSrc | SignedDst | Scalar | Narrow,
+            SxZxScalarUnary       = SignedSrc | Scalar,
+            SxZxScalarNarrowUnary = SignedSrc | Scalar | Narrow,
+            ZxZxScalarUnary       = Scalar,
+            ZxZxScalarNarrowUnary = Scalar | Narrow,
+
+            SxSxVectorUnary       = SignedSrc | SignedDst,
+            SxSxVectorNarrowUnary = SignedSrc | SignedDst | Narrow,
+            SxZxVectorUnary       = SignedSrc,
+            SxZxVectorNarrowUnary = SignedSrc | Narrow,
+            ZxZxVectorUnary       = 0,
+            ZxZxVectorNarrowUnary = Narrow,
+
+            SxSxScalarBinary       = SignedSrc | SignedDst | Scalar | Binary,
+            SxSxScalarNarrowBinary = SignedSrc | SignedDst | Scalar | Narrow | Binary,
+            SxZxScalarBinary       = SignedSrc | Scalar | Binary,
+            SxZxScalarNarrowBinary = SignedSrc | Scalar | Narrow | Binary,
+            ZxZxScalarBinary       = Scalar | Binary,
+            ZxZxScalarNarrowBinary = Scalar | Narrow | Binary,
+
+            SxSxVectorBinary       = SignedSrc | SignedDst | Binary,
+            SxSxVectorNarrowBinary = SignedSrc | SignedDst | Narrow | Binary,
+            SxZxVectorBinary       = SignedSrc | Binary,
+            SxZxVectorNarrowBinary = SignedSrc | Narrow | Binary,
+            ZxZxVectorBinary       = Binary,
+            ZxZxVectorNarrowBinary = Narrow | Binary
         }
 
-        public static void EmitScalarSaturatingNarrowOpSxZx(AILEmitterCtx Context, Action Emit)
+        public static void EmitScalarBinarySaturatingOpSxSx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingNarrowOp(Context, Emit, true, false, true);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxSxScalarBinary);
         }
 
-        public static void EmitScalarSaturatingNarrowOpZxZx(AILEmitterCtx Context, Action Emit)
+        public static void EmitScalarBinarySaturatingOpZxZx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingNarrowOp(Context, Emit, false, false, true);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.ZxZxScalarBinary);
         }
 
-        public static void EmitVectorSaturatingNarrowOpSxSx(AILEmitterCtx Context, Action Emit)
+        public static void EmitVectorBinarySaturatingOpSxSx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingNarrowOp(Context, Emit, true, true, false);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxSxVectorBinary);
         }
 
-        public static void EmitVectorSaturatingNarrowOpSxZx(AILEmitterCtx Context, Action Emit)
+        public static void EmitVectorBinarySaturatingOpZxZx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingNarrowOp(Context, Emit, true, false, false);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.ZxZxVectorBinary);
         }
 
-        public static void EmitVectorSaturatingNarrowOpZxZx(AILEmitterCtx Context, Action Emit)
+        public static void EmitScalarUnarySaturatingNarrowOpSxSx(AILEmitterCtx Context, Action Emit)
         {
-            EmitSaturatingNarrowOp(Context, Emit, false, false, false);
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxSxScalarNarrowUnary);
         }
 
-        public static void EmitSaturatingNarrowOp(
+        public static void EmitScalarUnarySaturatingNarrowOpSxZx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxZxScalarNarrowUnary);
+        }
+
+        public static void EmitScalarUnarySaturatingNarrowOpZxZx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.ZxZxScalarNarrowUnary);
+        }
+
+        public static void EmitVectorUnarySaturatingNarrowOpSxSx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxSxVectorNarrowUnary);
+        }
+
+        public static void EmitVectorUnarySaturatingNarrowOpSxZx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.SxZxVectorNarrowUnary);
+        }
+
+        public static void EmitVectorUnarySaturatingNarrowOpZxZx(AILEmitterCtx Context, Action Emit)
+        {
+            EmitSaturatingOp(Context, Emit, SaturatingFlags.ZxZxVectorNarrowUnary);
+        }
+
+        public static void EmitSaturatingOp(
             AILEmitterCtx Context,
             Action        Emit,
-            bool          SignedSrc,
-            bool          SignedDst,
-            bool          Scalar)
+            SaturatingFlags Flags)
         {
+            bool SignedSrc = (Flags & SaturatingFlags.SignedSrc) != 0;
+            bool SignedDst = (Flags & SaturatingFlags.SignedDst) != 0;
+            bool Scalar    = (Flags & SaturatingFlags.Scalar) != 0;
+            bool Narrow    = (Flags & SaturatingFlags.Narrow) != 0;
+            bool Binary    = (Flags & SaturatingFlags.Binary) != 0;
+
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
 
-            int Elems = !Scalar ? 8 >> Op.Size : 1;
+            int Bytes = Op.GetBitsCount() >> 3;
+
+            int Elems = !Scalar ? (Narrow ? 8 : Bytes) >> Op.Size : 1;
 
             int ESize = 8 << Op.Size;
 
-            int Part = !Scalar && (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0;
+            int Part = 0;
+
+            if (Narrow)
+            {
+                Part = !Scalar && (Op.RegisterSize == ARegisterSize.SIMD128) ? Elems : 0;
+            }
 
             long TMaxValue = SignedDst ? (1 << (ESize - 1)) - 1 : (long)(~0UL >> (64 - ESize));
             long TMinValue = SignedDst ? -((1 << (ESize - 1))) : 0;
@@ -832,7 +903,7 @@ namespace ChocolArm64.Instruction
             Context.EmitLdc_I8(0L);
             Context.EmitSttmp();
 
-            if (Part != 0)
+            if (Part != 0 && Narrow)
             {
                 Context.EmitLdvec(Op.Rd);
                 Context.EmitStvectmp();
@@ -843,7 +914,12 @@ namespace ChocolArm64.Instruction
                 AILLabel LblLe    = new AILLabel();
                 AILLabel LblGeEnd = new AILLabel();
 
-                EmitVectorExtract(Context, Op.Rn, Index, Op.Size + 1, SignedSrc);
+                EmitVectorExtract(Context, Op.Rn, Index, Narrow ? Op.Size + 1 : Op.Size, SignedSrc);
+                
+                if (Binary)
+                {
+                    EmitVectorExtract(Context, ((AOpCodeSimdReg)Op).Rm, Index, Narrow ? Op.Size + 1 : Op.Size, SignedSrc);
+                }
 
                 Emit();
 
@@ -882,13 +958,13 @@ namespace ChocolArm64.Instruction
                     EmitVectorZeroLowerTmp(Context);
                 }
 
-                EmitVectorInsertTmp(Context, Part + Index, Op.Size);
+                EmitVectorInsertTmp(Context, Narrow ? Index + Part : Index, Op.Size);
             }
 
             Context.EmitLdvectmp();
             Context.EmitStvec(Op.Rd);
 
-            if (Part == 0)
+            if ((Op.RegisterSize == ARegisterSize.SIMD64) || Scalar || (Part == 0 && Narrow))
             {
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
