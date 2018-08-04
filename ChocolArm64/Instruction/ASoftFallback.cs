@@ -93,6 +93,9 @@ namespace ChocolArm64.Instruction
         {
             if (op1 <= (ulong)long.MaxValue)
             {
+                // op1 from ulong.MinValue to (ulong)long.MaxValue
+                // op2 from long.MinValue to long.MaxValue
+
                 long Add = (long)op1 + op2;
 
                 if ((~op2 & Add) < 0L)
@@ -108,12 +111,18 @@ namespace ChocolArm64.Instruction
             }
             else if (op2 >= 0L)
             {
+                // op1 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
+                // op2 from (long)ulong.MinValue to long.MaxValue
+
                 SetFpsrQCFlag(State);
 
                 return long.MaxValue;
             }
             else
             {
+                // op1 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
+                // op2 from long.MinValue to (long)ulong.MinValue - 1L
+
                 ulong Add = op1 + (ulong)op2;
 
                 if (Add > (ulong)long.MaxValue)
@@ -133,6 +142,9 @@ namespace ChocolArm64.Instruction
         {
             if (op1 >= 0L)
             {
+                // op1 from (long)ulong.MinValue to long.MaxValue
+                // op2 from ulong.MinValue to ulong.MaxValue
+
                 ulong Add = (ulong)op1 + op2;
 
                 if ((Add < (ulong)op1) && (Add < op2))
@@ -148,10 +160,16 @@ namespace ChocolArm64.Instruction
             }
             else if (op2 > (ulong)long.MaxValue)
             {
+                // op1 from long.MinValue to (long)ulong.MinValue - 1L
+                // op2 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
+
                 return (ulong)op1 + op2;
             }
             else
             {
+                // op1 from long.MinValue to (long)ulong.MinValue - 1L
+                // op2 from ulong.MinValue to (ulong)long.MaxValue
+
                 long Add = op1 + (long)op2;
 
                 if (Add < (long)ulong.MinValue)
@@ -164,6 +182,92 @@ namespace ChocolArm64.Instruction
                 {
                     return (ulong)Add;
                 }
+            }
+        }
+
+        public static long SignedSrcSignedDstSatQ(long op, int Size, AThreadState State)
+        {
+            int ESize = 8 << Size;
+
+            long TMaxValue =  (1L << (ESize - 1)) - 1L;
+            long TMinValue = -(1L << (ESize - 1));
+
+            if (op > TMaxValue)
+            {
+                SetFpsrQCFlag(State);
+
+                return TMaxValue;
+            }
+            else if (op < TMinValue)
+            {
+                SetFpsrQCFlag(State);
+
+                return TMinValue;
+            }
+            else
+            {
+                return op;
+            }
+        }
+
+        public static ulong SignedSrcUnsignedDstSatQ(long op, int Size, AThreadState State)
+        {
+            int ESize = 8 << Size;
+
+            ulong TMaxValue = (1UL << ESize) - 1UL;
+            ulong TMinValue =  0UL;
+
+            if (op > (long)TMaxValue)
+            {
+                SetFpsrQCFlag(State);
+
+                return TMaxValue;
+            }
+            else if (op < (long)TMinValue)
+            {
+                SetFpsrQCFlag(State);
+
+                return TMinValue;
+            }
+            else
+            {
+                return (ulong)op;
+            }
+        }
+
+        public static long UnsignedSrcSignedDstSatQ(ulong op, int Size, AThreadState State)
+        {
+            int ESize = 8 << Size;
+
+            long TMaxValue = (1L << (ESize - 1)) - 1L;
+
+            if (op > (ulong)TMaxValue)
+            {
+                SetFpsrQCFlag(State);
+
+                return TMaxValue;
+            }
+            else
+            {
+                return (long)op;
+            }
+        }
+
+        public static ulong UnsignedSrcUnsignedDstSatQ(ulong op, int Size, AThreadState State)
+        {
+            int ESize = 8 << Size;
+
+            ulong TMaxValue = (1UL << ESize) - 1UL;
+
+            if (op > TMaxValue)
+            {
+                SetFpsrQCFlag(State);
+
+                return TMaxValue;
+            }
+            else
+            {
+                return op;
             }
         }
 
