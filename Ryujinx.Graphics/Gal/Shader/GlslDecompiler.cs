@@ -352,9 +352,9 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     Name = CustomType + " " + DeclInfo.Name + Suffix + ";";
                 }
-                else if (DeclInfo.Name == GlslDecl.FragmentOutputName)
+                else if (DeclInfo.Name.Contains(GlslDecl.FragmentOutputName))
                 {
-                    Name = "layout (location = 0) out vec4 " + DeclInfo.Name + Suffix + ";" + Environment.NewLine;
+                    Name = "layout (location = " + DeclInfo.Index / 4 + ") out vec4 " + DeclInfo.Name + Suffix + ";" + Environment.NewLine;
                 }
                 else
                 {
@@ -876,7 +876,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetNameWithSwizzle(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, int Index)
         {
-            int VecIndex = Index >> 2;
+            int VecIndex = Index & ~3;
 
             if (Dict.TryGetValue(VecIndex, out ShaderDeclInfo DeclInfo))
             {
