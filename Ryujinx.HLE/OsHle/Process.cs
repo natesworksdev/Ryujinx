@@ -4,6 +4,7 @@ using ChocolArm64.Memory;
 using ChocolArm64.State;
 using Ryujinx.HLE.Loaders;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Diagnostics;
 using Ryujinx.HLE.OsHle.Exceptions;
@@ -47,6 +48,8 @@ namespace Ryujinx.HLE.OsHle
         public KProcessHandleTable HandleTable { get; private set; }
 
         public AppletStateMgr AppletState { get; private set; }
+
+        public Npdm Metadata { get; set; }
 
         private SvcHandler SvcHandler;
 
@@ -403,11 +406,6 @@ namespace Ryujinx.HLE.OsHle
         {
             if (Disposing && !Disposed)
             {
-                if (NeedsHbAbi && Executables[0].FilePath.EndsWith(Homebrew.TemporaryNroSuffix))
-                {
-                    File.Delete(Executables[0].FilePath);
-                }
-
                 //If there is still some thread running, disposing the objects is not
                 //safe as the thread may try to access those resources. Instead, we set
                 //the flag to have the Process disposed when all threads finishes.
@@ -429,6 +427,11 @@ namespace Ryujinx.HLE.OsHle
                     {
                         Session.Dispose();
                     }
+                }
+
+                if (NeedsHbAbi && Executables.Count > 0 && Executables[0].FilePath.EndsWith(Homebrew.TemporaryNroSuffix))
+                {
+                    File.Delete(Executables[0].FilePath);
                 }
 
                 INvDrvServices.UnloadProcess(this);

@@ -242,7 +242,6 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 Process.Scheduler.Suspend(CurrThread);
 
                 IpcMessage Cmd = new IpcMessage(CmdData, CmdPtr);
-
                 long Result = IpcHandler.IpcCall(Ns, Process, Memory, Session, Cmd, CmdPtr);
 
                 Thread.Yield();
@@ -294,7 +293,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 InfoType == 19 ||
                 InfoType == 20)
             {
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidInfo);
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
 
                 return;
             }
