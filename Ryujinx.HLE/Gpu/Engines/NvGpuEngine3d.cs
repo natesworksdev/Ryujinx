@@ -104,6 +104,8 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             SetFrameBuffer(Vmm, 0);
 
+            SetZeta(Vmm);
+
             long[] Keys = UploadShaders(Vmm);
 
             Gpu.Renderer.Shader.BindProgram();
@@ -152,6 +154,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             Gpu.Renderer.Rasterizer.ClearBuffers(
                 Flags,
+                FbIndex,
                 Red, Green, Blue, Alpha,
                 Depth,
                 Stencil);
@@ -161,13 +164,22 @@ namespace Ryujinx.HLE.Gpu.Engines
         {
             long VA = MakeInt64From2xInt32(NvGpuEngine3dReg.FrameBufferNAddress + FbIndex * 0x10);
 
+            int Format = ReadRegister(NvGpuEngine3dReg.FrameBufferNFormat + FbIndex * 0x10);
+
+            if (VA == 0 || Format == 0)
+            {
+                Gpu.Renderer.FrameBuffer.UnbindColor(FbIndex);
+
+                return;
+            }
+
             long Key = Vmm.GetPhysicalAddress(VA);
 
             FrameBuffers.Add(Key);
 
             int Width  = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
             int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
-
+            
             float TX = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNTranslateX + FbIndex * 4);
             float TY = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNTranslateY + FbIndex * 4);
 
@@ -180,10 +192,35 @@ namespace Ryujinx.HLE.Gpu.Engines
             int VpW = (int)(TX + MathF.Abs(SX)) - VpX;
             int VpH = (int)(TY + MathF.Abs(SY)) - VpY;
 
-            Gpu.Renderer.FrameBuffer.Create(Key, Width, Height);
-            Gpu.Renderer.FrameBuffer.Bind(Key);
+            Gpu.Renderer.FrameBuffer.CreateColor(Key, Width, Height, (GalFrameBufferFormat)Format);
+            Gpu.Renderer.FrameBuffer.BindColor(Key, FbIndex);
 
             Gpu.Renderer.FrameBuffer.SetViewport(VpX, VpY, VpW, VpH);
+        }
+
+        private void SetZeta(NvGpuVmm Vmm)
+        {
+            long ZA = MakeInt64From2xInt32(NvGpuEngine3dReg.ZetaAddress);
+
+            int Format = ReadRegister(NvGpuEngine3dReg.ZetaFormat);
+
+            bool ZetaEnable = (ReadRegister(NvGpuEngine3dReg.ZetaEnable) & 1) != 0;
+
+            if (ZA == 0 || Format == 0 || !ZetaEnable)
+            {
+                Gpu.Renderer.FrameBuffer.UnbindZeta();
+
+                return;
+            }
+
+            long Key = Vmm.GetPhysicalAddress(ZA);
+
+            int Width  = ReadRegister(NvGpuEngine3dReg.ZetaHoriz);
+            int Height = ReadRegister(NvGpuEngine3dReg.ZetaVert);
+
+            Gpu.Renderer.FrameBuffer.CreateZeta(Key, Width, Height, (GalZetaFormat)Format);
+
+            Gpu.Renderer.FrameBuffer.BindZeta(Key);
         }
 
         private long[] UploadShaders(NvGpuVmm Vmm)

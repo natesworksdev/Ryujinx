@@ -51,6 +51,7 @@ namespace Ryujinx.HLE.Gpu.Engines
         StencilFrontFuncMask = 0x4e6,
         StencilFrontMask     = 0x4e7,
         VertexArrayElemBase  = 0x50d,
+        ZetaEnable           = 0x54e,
         TexHeaderPoolOffset  = 0x55d,
         TexSamplerPoolOffset = 0x557,
         StencilTwoSideEnable = 0x565,

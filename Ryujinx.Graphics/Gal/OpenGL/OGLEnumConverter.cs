@@ -125,6 +125,75 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             throw new ArgumentException(nameof(Type));
         }
 
+        public static PixelInternalFormat GetFrameBufferInternalFormat(GalFrameBufferFormat Format)
+        {
+            switch (Format)
+            {
+                //Sometimes it's not set, use a safe format
+                case 0: return PixelInternalFormat.Rgba8;
+
+                case GalFrameBufferFormat.RGBA32Float:    return PixelInternalFormat.Rgba32f;
+                case GalFrameBufferFormat.RGBA32Sint:     return PixelInternalFormat.Rgba32i;
+                case GalFrameBufferFormat.RGBA32Uint:     return PixelInternalFormat.Rgba32ui;
+                case GalFrameBufferFormat.RGBA16Unorm:    return PixelInternalFormat.Rgba16;
+                case GalFrameBufferFormat.RGBA16Snorm:    return PixelInternalFormat.Rgba16Snorm;
+                case GalFrameBufferFormat.RGBA16Sint:     return PixelInternalFormat.Rgba16i;
+                case GalFrameBufferFormat.RGBA16Uint:     return PixelInternalFormat.Rgba16ui;
+                case GalFrameBufferFormat.RGBA16Float:    return PixelInternalFormat.Rgba16f;
+                case GalFrameBufferFormat.RG32Float:      return PixelInternalFormat.Rg32f;
+                case GalFrameBufferFormat.RG32Sint:       return PixelInternalFormat.Rg32i;
+                case GalFrameBufferFormat.RG32Uint:       return PixelInternalFormat.Rg32ui;
+                case GalFrameBufferFormat.RGB10A2Unorm:   return PixelInternalFormat.Rgb10A2;
+                case GalFrameBufferFormat.RGB10A2Uint:    return PixelInternalFormat.Rgb10A2ui;
+                case GalFrameBufferFormat.RGBA8Unorm:     return PixelInternalFormat.Rgba8;
+                case GalFrameBufferFormat.RGBA8Srgb:      return PixelInternalFormat.Srgb8;
+                case GalFrameBufferFormat.RG16Snorm:      return PixelInternalFormat.Rg16Snorm;
+                case GalFrameBufferFormat.R11G11B10Float: return PixelInternalFormat.R11fG11fB10f;
+                case GalFrameBufferFormat.R32Float:       return PixelInternalFormat.R32f;
+                case GalFrameBufferFormat.R16Float:       return PixelInternalFormat.R16f;
+                case GalFrameBufferFormat.R8Unorm:        return PixelInternalFormat.R8;
+                case GalFrameBufferFormat.R8Snorm:        return PixelInternalFormat.R8Snorm;
+                case GalFrameBufferFormat.R8Sint:         return PixelInternalFormat.R8i;
+                case GalFrameBufferFormat.R8Uint:         return PixelInternalFormat.R8ui;
+            }
+
+            throw new NotImplementedException(Format.ToString());
+        }
+
+        public static (PixelFormat Format, PixelType Type) GetFrameBufferFormat(GalFrameBufferFormat Format)
+        {
+            switch (Format)
+            {
+                case 0: return (PixelFormat.Rgba, PixelType.UnsignedByte);
+
+                case GalFrameBufferFormat.RGBA32Float:    return (PixelFormat.Rgba, PixelType.Float);
+                case GalFrameBufferFormat.RGBA32Sint:     return (PixelFormat.Rgba, PixelType.Int);
+                case GalFrameBufferFormat.RGBA32Uint:     return (PixelFormat.Rgba, PixelType.UnsignedInt);
+                case GalFrameBufferFormat.RGBA16Unorm:    return (PixelFormat.Rgba, PixelType.UnsignedShort);
+                case GalFrameBufferFormat.RGBA16Snorm:    return (PixelFormat.Rgba, PixelType.Short);
+                case GalFrameBufferFormat.RGBA16Sint:     return (PixelFormat.Rgba, PixelType.Short);
+                case GalFrameBufferFormat.RGBA16Uint:     return (PixelFormat.Rgba, PixelType.UnsignedShort);
+                case GalFrameBufferFormat.RGBA16Float:    return (PixelFormat.Rgba, PixelType.HalfFloat);
+                case GalFrameBufferFormat.RG32Float:      return (PixelFormat.Rg,   PixelType.Float);
+                case GalFrameBufferFormat.RG32Sint:       return (PixelFormat.Rg,   PixelType.Int);
+                case GalFrameBufferFormat.RG32Uint:       return (PixelFormat.Rg,   PixelType.UnsignedInt);
+                case GalFrameBufferFormat.RGB10A2Unorm:   return (PixelFormat.Rgba, PixelType.UnsignedInt2101010Reversed);
+                case GalFrameBufferFormat.RGB10A2Uint:    return (PixelFormat.Rgba, PixelType.UnsignedInt2101010Reversed);
+                case GalFrameBufferFormat.RGBA8Unorm:     return (PixelFormat.Rgba, PixelType.UnsignedByte);
+                case GalFrameBufferFormat.RGBA8Srgb:      return (PixelFormat.Rgba, PixelType.UnsignedByte);
+                case GalFrameBufferFormat.RG16Snorm:      return (PixelFormat.Rg,   PixelType.Short);
+                case GalFrameBufferFormat.R11G11B10Float: return (PixelFormat.Rgb,  PixelType.UnsignedInt10F11F11FRev);
+                case GalFrameBufferFormat.R32Float:       return (PixelFormat.Red,  PixelType.Float);
+                case GalFrameBufferFormat.R16Float:       return (PixelFormat.Red,  PixelType.HalfFloat);
+                case GalFrameBufferFormat.R8Unorm:        return (PixelFormat.Red,  PixelType.UnsignedByte);
+                case GalFrameBufferFormat.R8Snorm:        return (PixelFormat.Red,  PixelType.Byte);
+                case GalFrameBufferFormat.R8Sint:         return (PixelFormat.Red,  PixelType.Byte);
+                case GalFrameBufferFormat.R8Uint:         return (PixelFormat.Red,  PixelType.UnsignedByte);
+            }
+
+            throw new NotImplementedException(Format.ToString());
+        }
+
         public static (PixelFormat, PixelType) GetTextureFormat(GalTextureFormat Format)
         {
             switch (Format)

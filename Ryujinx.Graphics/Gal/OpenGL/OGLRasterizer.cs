@@ -45,17 +45,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void ClearBuffers(
             GalClearBufferFlags Flags,
+            int Attachment,
             float Red, float Green, float Blue, float Alpha,
             float Depth,
             int Stencil)
         {
-            ClearBufferMask Mask = ClearBufferMask.ColorBufferBit;
+            //TODO: Handle attachment
 
-            GL.ColorMask(
-                Flags.HasFlag(GalClearBufferFlags.ColorRed),
-                Flags.HasFlag(GalClearBufferFlags.ColorGreen),
-                Flags.HasFlag(GalClearBufferFlags.ColorBlue),
-                Flags.HasFlag(GalClearBufferFlags.ColorAlpha));
+            ClearBufferMask Mask = ClearBufferMask.ColorBufferBit;
 
             if (Flags.HasFlag(GalClearBufferFlags.Depth))
             {
@@ -66,6 +63,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 Mask |= ClearBufferMask.StencilBufferBit;
             }
+
+            GL.ColorMask(
+                Flags.HasFlag(GalClearBufferFlags.ColorRed),
+                Flags.HasFlag(GalClearBufferFlags.ColorGreen),
+                Flags.HasFlag(GalClearBufferFlags.ColorBlue),
+                Flags.HasFlag(GalClearBufferFlags.ColorAlpha));
 
             GL.ClearColor(Red, Green, Blue, Alpha);
 

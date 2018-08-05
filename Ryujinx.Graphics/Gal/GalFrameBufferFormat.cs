@@ -19,7 +19,7 @@
         RG32Sint             = 0xcc,
         RG32Uint             = 0xcd,
         RGBX16Float          = 0xce,
-        BGRA8Unorm           = 0x0cf,
+        BGRA8Unorm           = 0xcf,
         BGRA8Srgb            = 0xd0,
         RGB10A2Unorm         = 0xd1,
         RGB10A2Uint          = 0xd2,
