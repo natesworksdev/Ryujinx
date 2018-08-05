@@ -102,6 +102,21 @@ namespace Ryujinx.HLE.Memory
             *((ulong*)(RamPtr + Position)) = Value;
         }
 
+        public void FillWithZeros(long Position, int Size)
+        {
+            int Size8 = Size & ~(8 - 1);
+
+            for (int Offs = 0; Offs < Size8; Offs += 8)
+            {
+                WriteInt64(Position + Offs, 0);
+            }
+
+            for (int Offs = Size8; Offs < (Size - Size8); Offs++)
+            {
+                WriteByte(Position + Offs, 0);
+            }
+        }
+
         public void Dispose()
         {
             Dispose(true);

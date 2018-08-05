@@ -69,10 +69,7 @@ namespace Ryujinx.HLE.Input
             this.Device      = Device;
             this.HidPosition = HidPosition;
 
-            for (long Offset = 0; Offset < Horizon.HidSize; Offset += 8)
-            {
-                Device.Memory.WriteInt64(HidPosition + Offset, 0);
-            }
+            Device.Memory.FillWithZeros(HidPosition, Horizon.HidSize);
 
             InitializeJoyconPair(
                 JoyConColor.Body_Neon_Red,

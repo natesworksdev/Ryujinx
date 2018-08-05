@@ -141,7 +141,7 @@ namespace ChocolArm64.Memory
                 return (byte*)Ptr + (Position & PageMask);
             }
 
-            return RamPtr;
+            throw new VmmPageFaultException(Position);
         }
 
         internal byte* TranslateWrite(long Position)
@@ -181,7 +181,7 @@ namespace ChocolArm64.Memory
                 return (byte*)Ptr + (Position & PageMask);
             }
 
-            return RamPtr;
+            throw new VmmPageFaultException(Position);
         }
 
         private void SetPTEntries(long VA, byte* Ptr, long Size)
