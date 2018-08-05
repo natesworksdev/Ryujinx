@@ -25,6 +25,8 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private HashSet<long> FrameBuffers;
 
+        private List<long>[] UploadedKeys;
+
         public NvGpuEngine3d(NvGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -57,6 +59,13 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
 
             FrameBuffers = new HashSet<long>();
+
+            UploadedKeys = new List<long>[(int)NvGpuBufferType.Count];
+
+            for (int i = 0; i < UploadedKeys.Length; i++)
+            {
+                UploadedKeys[i] = new List<long>();
+            }
         }
 
         public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
@@ -132,10 +141,22 @@ namespace Ryujinx.HLE.Gpu.Engines
             int Width  = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
             int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
 
-            //Note: Using the Width/Height results seems to give incorrect results.
-            //Maybe the size of all frame buffers is hardcoded to screen size? This seems unlikely.
-            Gpu.Renderer.FrameBuffer.Create(Key, 1280, 720);
+            float TX = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNTranslateX + FbIndex * 4);
+            float TY = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNTranslateY + FbIndex * 4);
+
+            float SX = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNScaleX + FbIndex * 4);
+            float SY = ReadRegisterFloat(NvGpuEngine3dReg.ViewportNScaleY + FbIndex * 4);
+
+            int VpX = (int)MathF.Max(0, TX - MathF.Abs(SX));
+            int VpY = (int)MathF.Max(0, TY - MathF.Abs(SY));
+
+            int VpW = (int)(TX + MathF.Abs(SX)) - VpX;
+            int VpH = (int)(TY + MathF.Abs(SY)) - VpY;
+
+            Gpu.Renderer.FrameBuffer.Create(Key, Width, Height);
             Gpu.Renderer.FrameBuffer.Bind(Key);
+
+            Gpu.Renderer.FrameBuffer.SetViewport(VpX, VpY, VpW, VpH);
         }
 
         private long[] UploadShaders(NvGpuVmm Vmm)
@@ -195,8 +216,8 @@ namespace Ryujinx.HLE.Gpu.Engines
                 Gpu.Renderer.Shader.Bind(Key);
             }
 
-            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportScaleX);
-            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportScaleY);
+            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
+            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
 
             Gpu.Renderer.Shader.SetFlip(SignX, SignY);
 
@@ -220,8 +241,8 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private void SetFrontFace()
         {
-            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportScaleX);
-            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportScaleY);
+            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
+            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
 
             GalFrontFace FrontFace = (GalFrontFace)ReadRegister(NvGpuEngine3dReg.FrontFace);
 
@@ -504,7 +525,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
                 if (Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalTexture Texture))
                 {
-                    if (NewTexture.Equals(Texture) && !Vmm.IsRegionModified(Key, Size, NvGpuBufferType.Texture))
+                    if (NewTexture.Equals(Texture) && !QueryKeyUpload(Vmm, Key, Size, NvGpuBufferType.Texture))
                     {
                         Gpu.Renderer.Texture.Bind(Key, TexIndex);
 
@@ -548,9 +569,9 @@ namespace Ryujinx.HLE.Gpu.Engines
 
                     if (Cb.Enabled)
                     {
-                        byte[] Data = Vmm.ReadBytes(Cb.Position, (uint)Cb.Size);
+                        IntPtr DataAddress = Vmm.GetHostAddress(Cb.Position, Cb.Size);
 
-                        Gpu.Renderer.Shader.SetConstBuffer(BasePosition + (uint)Offset, Cbuf, Data);
+                        Gpu.Renderer.Shader.SetConstBuffer(BasePosition + (uint)Offset, Cbuf, Cb.Size, DataAddress);
                     }
                 }
             }
@@ -581,11 +602,11 @@ namespace Ryujinx.HLE.Gpu.Engines
 
                 bool IboCached = Gpu.Renderer.Rasterizer.IsIboCached(IboKey, (uint)IbSize);
 
-                if (!IboCached || Vmm.IsRegionModified(IboKey, (uint)IbSize, NvGpuBufferType.Index))
+                if (!IboCached || QueryKeyUpload(Vmm, IboKey, (uint)IbSize, NvGpuBufferType.Index))
                 {
-                    byte[] Data = Vmm.ReadBytes(IndexPosition, (uint)IbSize);
+                    IntPtr DataAddress = Vmm.GetHostAddress(IndexPosition, IbSize);
 
-                    Gpu.Renderer.Rasterizer.CreateIbo(IboKey, Data);
+                    Gpu.Renderer.Rasterizer.CreateIbo(IboKey, IbSize, DataAddress);
                 }
 
                 Gpu.Renderer.Rasterizer.SetIndexArray(IbSize, IndexFormat);
@@ -645,11 +666,11 @@ namespace Ryujinx.HLE.Gpu.Engines
 
                 bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VboKey, VbSize);
 
-                if (!VboCached || Vmm.IsRegionModified(VboKey, VbSize, NvGpuBufferType.Vertex))
+                if (!VboCached || QueryKeyUpload(Vmm, VboKey, VbSize, NvGpuBufferType.Vertex))
                 {
-                    byte[] Data = Vmm.ReadBytes(VertexPosition, VbSize);
+                    IntPtr DataAddress = Vmm.GetHostAddress(VertexPosition, VbSize);
 
-                    Gpu.Renderer.Rasterizer.CreateVbo(VboKey, Data);
+                    Gpu.Renderer.Rasterizer.CreateVbo(VboKey, (int)VbSize, DataAddress);
                 }
 
                 Gpu.Renderer.Rasterizer.SetVertexArray(Stride, VboKey, Attribs[Index].ToArray());
@@ -680,6 +701,11 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             if (Mode == 0)
             {
+                foreach (List<long> Uploaded in UploadedKeys)
+                {
+                    Uploaded.Clear();
+                }
+
                 //Write mode.
                 Vmm.WriteInt32(Position, Seq);
             }
@@ -761,6 +787,20 @@ namespace Ryujinx.HLE.Gpu.Engines
         public bool IsFrameBufferPosition(long Position)
         {
             return FrameBuffers.Contains(Position);
+        }
+
+        private bool QueryKeyUpload(NvGpuVmm Vmm, long Key, long Size, NvGpuBufferType Type)
+        {
+            List<long> Uploaded = UploadedKeys[(int)Type];
+
+            if (Uploaded.Contains(Key))
+            {
+                return false;
+            }
+
+            Uploaded.Add(Key);
+
+            return Vmm.IsRegionModified(Key, Size, Type);
         }
     }
 }
