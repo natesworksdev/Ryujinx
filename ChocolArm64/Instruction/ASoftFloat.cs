@@ -510,28 +510,28 @@ namespace ChocolArm64.Instruction
             return true;
         }
 
-        private static bool IsQNaN(uint x)
+        private static bool IsQNaN(uint op_bits)
         {
-            return (x & 0x007FFFFF) != 0 &&
-                   (x & 0x7FC00000) == 0x7FC00000;
+            return (op_bits & 0x007FFFFF) != 0 &&
+                   (op_bits & 0x7FC00000) == 0x7FC00000;
         }
 
-        private static bool IsQNaN(ulong x)
+        private static bool IsQNaN(ulong op_bits)
         {
-            return (x & 0x000FFFFFFFFFFFFF) != 0 &&
-                   (x & 0x7FF8000000000000) == 0x7FF8000000000000;
+            return (op_bits & 0x000FFFFFFFFFFFFF) != 0 &&
+                   (op_bits & 0x7FF8000000000000) == 0x7FF8000000000000;
         }
 
-        private static bool IsSNaN(uint x)
+        private static bool IsSNaN(uint op_bits)
         {
-            return (x & 0x007FFFFF) != 0 &&
-                   (x & 0x7FC00000) == 0x7F800000;
+            return (op_bits & 0x007FFFFF) != 0 &&
+                   (op_bits & 0x7FC00000) == 0x7F800000;
         }
 
-        private static bool IsSNaN(ulong x)
+        private static bool IsSNaN(ulong op_bits)
         {
-            return (x & 0x000FFFFFFFFFFFFF) != 0 &&
-                   (x & 0x7FF8000000000000) == 0x7FF0000000000000;
+            return (op_bits & 0x000FFFFFFFFFFFFF) != 0 &&
+                   (op_bits & 0x7FF8000000000000) == 0x7FF0000000000000;
         }
     }
 }
