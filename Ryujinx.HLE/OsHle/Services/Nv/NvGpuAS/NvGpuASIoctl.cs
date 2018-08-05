@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
                 case 0x4106: return MapBufferEx (Context);
                 case 0x4108: return GetVaRegions(Context);
                 case 0x4109: return InitializeEx(Context);
-                case 0x4114: return Remap       (Context);
+                case 0x4114: return Remap       (Context, Cmd);
             }
 
             throw new NotImplementedException(Cmd.ToString("x8"));
@@ -59,11 +59,11 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
 
             if ((Args.Flags & FlagFixedOffset) != 0)
             {
-                Args.Offset = Vmm.Reserve(Args.Offset, (long)Size, 1);
+                Args.Offset = Vmm.ReserveFixed(Args.Offset, (long)Size);
             }
             else
             {
-                Args.Offset = Vmm.Reserve((long)Size, 1);
+                Args.Offset = Vmm.Reserve((long)Size, Args.Offset);
             }
 
             int Result = NvResult.Success;
@@ -206,26 +206,37 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
             return NvResult.Success;
         }
 
-        private static int Remap(ServiceCtx Context)
+        private static int Remap(ServiceCtx Context, int Cmd)
         {
+            int Count = ((Cmd >> 16) & 0xff) / 0x14;
+
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
 
-            NvGpuASRemap Args = AMemoryHelper.Read<NvGpuASRemap>(Context.Memory, InputPosition);
-
-            NvGpuVmm Vmm = GetVmm(Context);
-
-            NvMapHandle Map = NvMapIoctl.GetNvMapWithFb(Context, Args.NvMapHandle);
-
-            if (Map == null)
+            for (int Index = 0; Index < Count; Index++, InputPosition += 0x14)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{Args.NvMapHandle:x8}!");
+                NvGpuASRemap Args = AMemoryHelper.Read<NvGpuASRemap>(Context.Memory, InputPosition);
 
-                return NvResult.InvalidInput;
+                NvGpuVmm Vmm = GetVmm(Context);
+
+                NvMapHandle Map = NvMapIoctl.GetNvMapWithFb(Context, Args.NvMapHandle);
+
+                if (Map == null)
+                {
+                    Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{Args.NvMapHandle:x8}!");
+
+                    return NvResult.InvalidInput;
+                }
+
+                long Result = Vmm.Map(Map.Address, (long)(uint)Args.Offset << 16,
+                                                   (long)(uint)Args.Pages  << 16);
+
+                if (Result < 0)
+                {
+                    Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Page 0x{Args.Offset:x16} size 0x{Args.Pages:x16} not allocated!");
+
+                    return NvResult.InvalidInput;
+                }
             }
-
-            //FIXME: This is most likely wrong...
-            Vmm.Map(Map.Address, (long)(uint)Args.Offset << 16,
-                                 (long)(uint)Args.Pages  << 16);
 
             return NvResult.Success;
         }

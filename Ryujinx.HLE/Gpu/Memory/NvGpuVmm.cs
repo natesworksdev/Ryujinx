@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.Gpu.Memory
                 {
                     if (GetPte(VA + Offset) != PteReserved)
                     {
-                        return Map(PA, Size);
+                        return -1;
                     }
                 }
 
@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.Gpu.Memory
             return false;
         }
 
-        public long Reserve(long VA, long Size, long Align)
+        public long ReserveFixed(long VA, long Size)
         {
             lock (PageTable)
             {
@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.Gpu.Memory
                 {
                     if (IsPageInUse(VA + Offset))
                     {
-                        return Reserve(Size, Align);
+                        return -1;
                     }
                 }
 
