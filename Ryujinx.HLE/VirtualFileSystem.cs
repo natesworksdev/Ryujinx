@@ -8,6 +8,7 @@ namespace Ryujinx.HLE
         private const string BasePath   = "RyuFs";
         private const string NandPath   = "nand";
         private const string SdCardPath = "sdmc";
+        private const string SystemPath = "system";
 
         public Stream RomFs { get; private set; }
 
@@ -44,6 +45,37 @@ namespace Ryujinx.HLE
         public string GetSdCardPath() => MakeDirAndGetFullPath(SdCardPath);
 
         public string GetGameSavesPath() => MakeDirAndGetFullPath(NandPath);
+
+        public string GetSystemPath() => MakeDirAndGetFullPath(SystemPath);
+
+        public string SwitchPathToSystemPath(string SwitchPath)
+        {
+            string[] Parts = SwitchPath.Split(":");
+            if (Parts.Length != 2)
+            {
+                return null;
+            }
+            return GetFullPath(MakeDirAndGetFullPath(Parts[0]), Parts[1]);
+        }
+
+        public string SystemPathToSwitchPath(string SystemPath)
+        {
+            string BaseSystemPath = GetBasePath() + Path.DirectorySeparatorChar;
+            if (SystemPath.StartsWith(BaseSystemPath))
+            {
+                string RawPath = SystemPath.Replace(BaseSystemPath, "");
+                int FirstSeparatorOffset = RawPath.IndexOf(Path.DirectorySeparatorChar);
+                if (FirstSeparatorOffset == -1)
+                {
+                    return $"{RawPath}:/";
+                }
+
+                string BasePath = RawPath.Substring(0, FirstSeparatorOffset);
+                string FileName = RawPath.Substring(FirstSeparatorOffset + 1);
+                return $"{BasePath}:/{FileName}";
+            }
+            return null;
+        }
 
         private string MakeDirAndGetFullPath(string Dir)
         {
