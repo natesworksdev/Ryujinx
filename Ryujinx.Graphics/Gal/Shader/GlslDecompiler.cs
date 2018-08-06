@@ -421,8 +421,6 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 ShaderDeclInfo DeclInfo = KV.Value;
 
-                string Swizzle = ".xyzw".Substring(0, DeclInfo.Size + 1);
-
                 string Name = Attr.Name;
 
                 if (Decl.ShaderType == GalShaderType.Geometry)
@@ -430,7 +428,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     Name += "[0]";
                 }
 
-                SB.AppendLine(Identation + DeclInfo.Name + " = " + Name + Swizzle + ";");
+                SB.AppendLine(Identation + DeclInfo.Name + " = " + Name + ";");
             }
 
             if (Decl.ShaderType == GalShaderType.Vertex)
