@@ -23,6 +23,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private const int MaxVertexInput = 3;
 
+        private static string[] ElemTypes = new string[] { "float", "vec2", "vec3", "vec4" };
+
         private GlslDecl Decl;
 
         private ShaderHeader Header, HeaderB;
@@ -108,9 +110,9 @@ namespace Ryujinx.Graphics.Gal.Shader
         }
 
         public GlslProgram Decompile(
-            IGalMemory Memory,
-            long       VpAPosition,
-            long       VpBPosition,
+            IGalMemory    Memory,
+            long          VpAPosition,
+            long          VpBPosition,
             GalShaderType ShaderType)
         {
             Header  = new ShaderHeader(Memory, VpAPosition);
@@ -190,8 +192,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 switch (Header.OutputTopology)
                 {
-                    case ShaderHeader.PointList:     OutputTopology = "points"; break;
-                    case ShaderHeader.LineStrip:     OutputTopology = "line_strip"; break;
+                    case ShaderHeader.PointList:     OutputTopology = "points";         break;
+                    case ShaderHeader.LineStrip:     OutputTopology = "line_strip";     break;
                     case ShaderHeader.TriangleStrip: OutputTopology = "triangle_strip"; break;
 
                     default: throw new InvalidOperationException();
@@ -264,7 +266,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         if (DeclInfo.Index >= 0)
                         {
-                            SB.AppendLine(IdentationStr + "layout (location = " + DeclInfo.Index + ") " + "vec4 " + DeclInfo.Name + "; ");
+                            SB.AppendLine(IdentationStr + "layout (location = " + DeclInfo.Index + ") " + GetDecl(DeclInfo) + "; ");
                         }
                     }
 
@@ -295,7 +297,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 if (DeclInfo.Index >= 0)
                 {
-                    SB.AppendLine("layout (location = " + DeclInfo.Index + ") " + InOut + " vec4 " + DeclInfo.Name + ";");
+                    SB.AppendLine("layout (location = " + DeclInfo.Index + ") " + InOut + " " + GetDecl(DeclInfo) + ";");
 
                     Count++;
                 }
@@ -329,7 +331,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
                 else if (DeclInfo.Name == GlslDecl.FragmentOutputName)
                 {
-                    Name = "layout (location = 0) out " + "vec4 " + DeclInfo.Name + Suffix + ";" + Environment.NewLine;
+                    Name = "layout (location = 0) out " + GetDecl(DeclInfo) + Suffix + ";" + Environment.NewLine;
                 }
                 else
                 {
@@ -352,14 +354,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetDecl(ShaderDeclInfo DeclInfo)
         {
-            if (DeclInfo.Size == 4)
-            {
-                return "vec4 " + DeclInfo.Name;
-            }
-            else
-            {
-                return "float " + DeclInfo.Name;
-            }
+            return ElemTypes[DeclInfo.Size - 1] + " " + DeclInfo.Name;
         }
 
         private void PrintMain()
@@ -375,11 +370,13 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 ShaderDeclInfo DeclInfo = KV.Value;
 
+                string Swizzle = ".xyzw".Substring(0, DeclInfo.Size + 1);
+
                 if (Decl.ShaderType == GalShaderType.Geometry)
                 {
                     for (int Vertex = 0; Vertex < MaxVertexInput; Vertex++)
                     {
-                        string Dst = Attr.Name + "[" + Vertex + "]";
+                        string Dst = Attr.Name + "[" + Vertex + "]" + Swizzle;
 
                         string Src = "block_in[" + Vertex + "]." + DeclInfo.Name;
 
@@ -388,7 +385,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
                 else
                 {
-                    SB.AppendLine(IdentationStr + Attr.Name + " = " + DeclInfo.Name + ";");
+                    SB.AppendLine(IdentationStr + Attr.Name + Swizzle + " = " + DeclInfo.Name + ";");
                 }
             }
 
@@ -421,6 +418,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 ShaderDeclInfo DeclInfo = KV.Value;
 
+                string Swizzle = ".xyzw".Substring(0, DeclInfo.Size + 1);
+
                 string Name = Attr.Name;
 
                 if (Decl.ShaderType == GalShaderType.Geometry)
@@ -428,7 +427,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     Name += "[0]";
                 }
 
-                SB.AppendLine(Identation + DeclInfo.Name + " = " + Name + ";");
+                SB.AppendLine(Identation + DeclInfo.Name + " = " + Name + Swizzle + ";");
             }
 
             if (Decl.ShaderType == GalShaderType.Vertex)
@@ -480,10 +479,10 @@ namespace Ryujinx.Graphics.Gal.Shader
         }
 
         private ShaderIrBlock PrintNodes(
-            ShaderIrBlock     Block,
-            ShaderIrBlock     EndBlock,
-            ShaderIrBlock     LoopBlock,
-            string            Identation,
+            ShaderIrBlock         Block,
+            ShaderIrBlock         EndBlock,
+            ShaderIrBlock         LoopBlock,
+            string                Identation,
             params ShaderIrNode[] Nodes)
         {
             /*
@@ -1147,29 +1146,29 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     case ShaderIrOperGpr Gpr:
                     {
-                            //When the Gpr is ZR, just return the 0 value directly,
-                            //since the float encoding for 0 is 0.
-                            if (Gpr.IsConst)
-                            {
-                                return "0";
-                            }
-                            break;
+                        //When the Gpr is ZR, just return the 0 value directly,
+                        //since the float encoding for 0 is 0.
+                        if (Gpr.IsConst)
+                        {
+                            return "0";
+                        }
+                        break;
                     }
 
                     case ShaderIrOperImm Imm:
                     {
-                            //For integer immediates being used as float,
-                            //it's better (for readability) to just return the float value.
-                            if (DstType == OperType.F32)
-                            {
-                                float Value = BitConverter.Int32BitsToSingle(Imm.Value);
+                        //For integer immediates being used as float,
+                        //it's better (for readability) to just return the float value.
+                        if (DstType == OperType.F32)
+                        {
+                            float Value = BitConverter.Int32BitsToSingle(Imm.Value);
 
-                                if (!float.IsNaN(Value) && !float.IsInfinity(Value))
-                                {
-                                    return GetFloatConst(Value);
-                                }
+                            if (!float.IsNaN(Value) && !float.IsInfinity(Value))
+                            {
+                                return GetFloatConst(Value);
                             }
-                            break;
+                        }
+                        break;
                     }
                 }
 
@@ -1232,8 +1231,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                         : OperType.F32;
 
                 case ShaderIrOperCbuf Cbuf: return OperType.F32;
-                case ShaderIrOperGpr  Gpr : return OperType.F32;
-                case ShaderIrOperImm  Imm : return OperType.I32;
+                case ShaderIrOperGpr  Gpr:  return OperType.F32;
+                case ShaderIrOperImm  Imm:  return OperType.I32;
                 case ShaderIrOperImmf Immf: return OperType.F32;
                 case ShaderIrOperPred Pred: return OperType.Bool;
 
