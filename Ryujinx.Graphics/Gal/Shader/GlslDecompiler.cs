@@ -109,17 +109,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public GlslProgram Decompile(
             IGalMemory Memory,
-            long VpAPosition,
-            long VpBPosition,
+            long       VpAPosition,
+            long       VpBPosition,
             GalShaderType ShaderType)
         {
-            Header = new ShaderHeader(Memory, VpAPosition);
+            Header  = new ShaderHeader(Memory, VpAPosition);
             HeaderB = new ShaderHeader(Memory, VpBPosition);
 
-            Blocks = ShaderDecoder.Decode(Memory, VpAPosition);
+            Blocks  = ShaderDecoder.Decode(Memory, VpAPosition);
             BlocksB = ShaderDecoder.Decode(Memory, VpBPosition);
 
-            GlslDecl DeclVpA = new GlslDecl(Blocks, ShaderType);
+            GlslDecl DeclVpA = new GlslDecl(Blocks,  ShaderType);
             GlslDecl DeclVpB = new GlslDecl(BlocksB, ShaderType);
 
             Decl = GlslDecl.Merge(DeclVpA, DeclVpB);
@@ -129,10 +129,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public GlslProgram Decompile(IGalMemory Memory, long Position, GalShaderType ShaderType)
         {
-            Header = new ShaderHeader(Memory, Position);
+            Header  = new ShaderHeader(Memory, Position);
             HeaderB = null;
 
-            Blocks = ShaderDecoder.Decode(Memory, Position);
+            Blocks  = ShaderDecoder.Decode(Memory, Position);
             BlocksB = null;
 
             Decl = new GlslDecl(Blocks, ShaderType);
@@ -157,7 +157,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (BlocksB != null)
             {
-                PrintBlockScope(Blocks[0], null, null, "void " + GlslDecl.ProgramAName + "()", IdentationStr);
+                PrintBlockScope(Blocks[0],  null, null, "void " + GlslDecl.ProgramAName + "()", IdentationStr);
 
                 SB.AppendLine();
 
@@ -165,7 +165,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
             else
             {
-                PrintBlockScope(Blocks[0], null, null, "void " + GlslDecl.ProgramName + "()", IdentationStr);
+                PrintBlockScope(Blocks[0],  null, null, "void " + GlslDecl.ProgramName + "()", IdentationStr);
             }
 
             SB.AppendLine();
@@ -190,8 +190,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 switch (Header.OutputTopology)
                 {
-                    case ShaderHeader.PointList: OutputTopology = "points"; break;
-                    case ShaderHeader.LineStrip: OutputTopology = "line_strip"; break;
+                    case ShaderHeader.PointList:     OutputTopology = "points"; break;
+                    case ShaderHeader.LineStrip:     OutputTopology = "line_strip"; break;
                     case ShaderHeader.TriangleStrip: OutputTopology = "triangle_strip"; break;
 
                     default: throw new InvalidOperationException();
@@ -447,9 +447,9 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrBlock Block,
             ShaderIrBlock EndBlock,
             ShaderIrBlock LoopBlock,
-            string ScopeName,
-            string Identation,
-            bool IsDoWhile = false)
+            string        ScopeName,
+            string        Identation,
+            bool          IsDoWhile = false)
         {
             string UpIdent = Identation.Substring(0, Identation.Length - IdentationStr.Length);
 
@@ -480,10 +480,10 @@ namespace Ryujinx.Graphics.Gal.Shader
         }
 
         private ShaderIrBlock PrintNodes(
-            ShaderIrBlock Block,
-            ShaderIrBlock EndBlock,
-            ShaderIrBlock LoopBlock,
-            string Identation,
+            ShaderIrBlock     Block,
+            ShaderIrBlock     EndBlock,
+            ShaderIrBlock     LoopBlock,
+            string            Identation,
             params ShaderIrNode[] Nodes)
         {
             /*
@@ -668,12 +668,12 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             switch (Node)
             {
-                case ShaderIrOperAbuf Abuf: return GetName(Abuf);
-                case ShaderIrOperCbuf Cbuf: return GetName(Cbuf);
-                case ShaderIrOperGpr Gpr: return GetName(Gpr);
-                case ShaderIrOperImm Imm: return GetValue(Imm);
+                case ShaderIrOperAbuf Abuf: return GetName (Abuf);
+                case ShaderIrOperCbuf Cbuf: return GetName (Cbuf);
+                case ShaderIrOperGpr  Gpr:  return GetName (Gpr);
+                case ShaderIrOperImm  Imm:  return GetValue(Imm);
                 case ShaderIrOperImmf Immf: return GetValue(Immf);
-                case ShaderIrOperPred Pred: return GetName(Pred);
+                case ShaderIrOperPred Pred: return GetName (Pred);
 
                 case ShaderIrOp Op:
                     string Expr;
@@ -753,7 +753,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 switch (Abuf.Offs)
                 {
-                    case GlslDecl.VertexIdAttr: return "gl_VertexID";
+                    case GlslDecl.VertexIdAttr:   return "gl_VertexID";
                     case GlslDecl.InstanceIdAttr: return "gl_InstanceID";
                 }
             }
@@ -780,8 +780,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetAttrTempName(ShaderIrOperAbuf Abuf)
         {
-            int Index = Abuf.Offs >> 4;
-            int Elem = (Abuf.Offs >> 2) & 3;
+            int Index =  Abuf.Offs >> 4;
+            int Elem  = (Abuf.Offs >> 2) & 3;
 
             string Swizzle = "." + GetAttrSwizzle(Elem);
 
@@ -821,7 +821,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         private string GetValue(ShaderIrOperImm Imm)
         {
             //Only use hex is the value is too big and would likely be hard to read as int.
-            if (Imm.Value > 0xfff ||
+            if (Imm.Value >  0xfff ||
                 Imm.Value < -0xfff)
             {
                 return "0x" + Imm.Value.ToString("x8", CultureInfo.InvariantCulture);
@@ -1146,7 +1146,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 switch (Src)
                 {
                     case ShaderIrOperGpr Gpr:
-                        {
+                    {
                             //When the Gpr is ZR, just return the 0 value directly,
                             //since the float encoding for 0 is 0.
                             if (Gpr.IsConst)
@@ -1154,10 +1154,10 @@ namespace Ryujinx.Graphics.Gal.Shader
                                 return "0";
                             }
                             break;
-                        }
+                    }
 
                     case ShaderIrOperImm Imm:
-                        {
+                    {
                             //For integer immediates being used as float,
                             //it's better (for readability) to just return the float value.
                             if (DstType == OperType.F32)
@@ -1170,7 +1170,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                                 }
                             }
                             break;
-                        }
+                    }
                 }
 
                 switch (DstType)
@@ -1232,8 +1232,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                         : OperType.F32;
 
                 case ShaderIrOperCbuf Cbuf: return OperType.F32;
-                case ShaderIrOperGpr Gpr: return OperType.F32;
-                case ShaderIrOperImm Imm: return OperType.I32;
+                case ShaderIrOperGpr  Gpr : return OperType.F32;
+                case ShaderIrOperImm  Imm : return OperType.I32;
                 case ShaderIrOperImmf Immf: return OperType.F32;
                 case ShaderIrOperPred Pred: return OperType.Bool;
 
