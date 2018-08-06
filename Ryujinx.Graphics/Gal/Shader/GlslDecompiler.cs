@@ -264,7 +264,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         if (DeclInfo.Index >= 0)
                         {
-                            SB.AppendLine(IdentationStr + "layout (location = " + DeclInfo.Index + ") " + GetDecl(DeclInfo) + "; ");
+                            SB.AppendLine(IdentationStr + "layout (location = " + DeclInfo.Index + ") vec4 " + DeclInfo.Name + "; ");
                         }
                     }
 
@@ -329,7 +329,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
                 else if (DeclInfo.Name == GlslDecl.FragmentOutputName)
                 {
-                    Name = "layout (location = 0) out " + "vec4 " + DeclInfo.Name + Suffix + ";" + Environment.NewLine;
+                    Name = "layout (location = 0) out vec4 " + DeclInfo.Name + Suffix + ";" + Environment.NewLine;
                 }
                 else
                 {
