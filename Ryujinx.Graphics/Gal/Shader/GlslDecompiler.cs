@@ -379,7 +379,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     for (int Vertex = 0; Vertex < MaxVertexInput; Vertex++)
                     {
-                        string Dst = Attr.Name + "[" + Vertex + "]" + Swizzle;
+                        string Dst = Attr.Name + "[" + Vertex + "]";
 
                         string Src = "block_in[" + Vertex + "]." + DeclInfo.Name;
 
@@ -388,7 +388,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
                 else
                 {
-                    SB.AppendLine(IdentationStr + Attr.Name + Swizzle + " = " + DeclInfo.Name + ";");
+                    SB.AppendLine(IdentationStr + Attr.Name + " = " + DeclInfo.Name + ";");
                 }
             }
 
