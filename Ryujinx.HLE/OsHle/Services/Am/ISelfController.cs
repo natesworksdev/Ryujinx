@@ -127,6 +127,8 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         public long SetScreenShotImageOrientation(ServiceCtx Context)
         {
             int Orientation = Context.RequestData.ReadInt32();
+            
+            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
