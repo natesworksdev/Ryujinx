@@ -297,12 +297,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     {
                         long Key = S.ConstBufferKeys[(int)Stage.Type][DeclInfo.Cbuf];
 
-                        if (Key != 0 && Key != O.ConstBufferKeys[(int)Stage.Type][DeclInfo.Cbuf])
+                        if (Key != 0 && Buffer.TryGetUbo(Key, out int UboHandle))
                         {
-                            if (Buffer.TryGetUbo(Key, out int UboHandle))
-                            {
-                                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, FreeBinding, UboHandle);
-                            }
+                            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, FreeBinding, UboHandle);
                         }
 
                         FreeBinding++;
