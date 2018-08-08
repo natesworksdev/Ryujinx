@@ -340,7 +340,7 @@ namespace ChocolArm64.Instruction
             
         public static void Fmaxp_V(AILEmitterCtx Context)
         {
-            EmitVectorPairwiseFloat(Context, nameof(AVectorHelper.MaxF), nameof(AVectorHelper.Max));
+            EmitVectorPairwiseFloat(Context, nameof(ASoftFloat.Max), nameof(ASoftFloat.Max));
         }
 
         public static void Fmin_S(AILEmitterCtx Context)
@@ -361,7 +361,7 @@ namespace ChocolArm64.Instruction
             
         public static void Fminp_V(AILEmitterCtx Context)
         {
-            EmitVectorPairwiseFloat(Context, nameof(AVectorHelper.MinF), nameof(AVectorHelper.Min));
+            EmitVectorPairwiseFloat(Context, nameof(ASoftFloat.Min), nameof(ASoftFloat.Min));
         }
 
 
