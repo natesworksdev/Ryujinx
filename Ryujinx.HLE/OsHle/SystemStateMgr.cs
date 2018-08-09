@@ -1,3 +1,4 @@
+using Ryujinx.HLE.Loaders.Npdm;
 using System;
 
 namespace Ryujinx.HLE.OsHle
