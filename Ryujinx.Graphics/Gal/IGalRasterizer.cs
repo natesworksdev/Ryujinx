@@ -7,7 +7,11 @@ namespace Ryujinx.Graphics.Gal
         void LockCaches();
         void UnlockCaches();
 
-        void ClearBuffers(GalClearBufferFlags Flags);
+        void ClearBuffers(
+            GalClearBufferFlags Flags,
+            float Red, float Green, float Blue, float Alpha,
+            float Depth,
+            int Stencil);
 
         bool IsVboCached(long Key, long DataSize);
 

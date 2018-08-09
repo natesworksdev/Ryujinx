@@ -131,9 +131,22 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             GalClearBufferFlags Flags = (GalClearBufferFlags)(Arg0 & 0x3f);
 
+            float Red   = ReadRegisterFloat(NvGpuEngine3dReg.ClearNColor + 0);
+            float Green = ReadRegisterFloat(NvGpuEngine3dReg.ClearNColor + 1);
+            float Blue  = ReadRegisterFloat(NvGpuEngine3dReg.ClearNColor + 2);
+            float Alpha = ReadRegisterFloat(NvGpuEngine3dReg.ClearNColor + 3);
+
+            float Depth = ReadRegisterFloat(NvGpuEngine3dReg.ClearDepth);
+
+            int Stencil = ReadRegister(NvGpuEngine3dReg.ClearStencil);
+
             SetFrameBuffer(Vmm, FbIndex);
 
-            Gpu.Renderer.Rasterizer.ClearBuffers(Flags);
+            Gpu.Renderer.Rasterizer.ClearBuffers(
+                Flags,
+                Red, Green, Blue, Alpha,
+                Depth,
+                Stencil);
         }
 
         private void SetFrameBuffer(NvGpuVmm Vmm, int FbIndex)
@@ -287,8 +300,6 @@ namespace Ryujinx.HLE.Gpu.Engines
         {
             State.DepthTestEnabled = (ReadRegister(NvGpuEngine3dReg.DepthTestEnable) & 1) != 0;
 
-            State.DepthClear = ReadRegisterFloat(NvGpuEngine3dReg.ClearDepth);
-
             if (State.DepthTestEnabled)
             {
                 State.DepthFunc = (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.DepthTestFunction);
@@ -298,8 +309,6 @@ namespace Ryujinx.HLE.Gpu.Engines
         private void SetStencil(GalPipelineState State)
         {
             State.StencilTestEnabled = (ReadRegister(NvGpuEngine3dReg.StencilEnable) & 1) != 0;
-
-            State.StencilClear = ReadRegister(NvGpuEngine3dReg.ClearStencil);
             
             if (State.StencilTestEnabled)
             {

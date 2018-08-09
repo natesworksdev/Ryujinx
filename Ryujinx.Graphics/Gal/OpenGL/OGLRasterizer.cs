@@ -43,7 +43,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             IboCache.Unlock();
         }
 
-        public void ClearBuffers(GalClearBufferFlags Flags)
+        public void ClearBuffers(
+            GalClearBufferFlags Flags,
+            float Red, float Green, float Blue, float Alpha,
+            float Depth,
+            int Stencil)
         {
             ClearBufferMask Mask = ClearBufferMask.ColorBufferBit;
 
@@ -62,6 +66,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 Mask |= ClearBufferMask.StencilBufferBit;
             }
+
+            GL.ClearColor(Red, Green, Blue, Alpha);
+
+            GL.ClearDepth(Depth);
+
+            GL.ClearStencil(Stencil);
 
             GL.Clear(Mask);
 

@@ -67,11 +67,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 CullFace = GalCullFace.Back,
 
                 DepthTestEnabled = false,
-                DepthClear = 1f,
                 DepthFunc = GalComparisonOp.Less,
 
                 StencilTestEnabled = false,
-                StencilClear = 0,
 
                 StencilBackFuncFunc = GalComparisonOp.Always,
                 StencilBackFuncRef = 0,
@@ -142,11 +140,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Enable(EnableCap.DepthTest, S.DepthTestEnabled);
             }
 
-            if (S.DepthClear != O.DepthClear)
-            {
-                GL.ClearDepth(S.DepthClear);
-            }
-
             if (S.DepthTestEnabled)
             {
                 if (S.DepthFunc != O.DepthFunc)
@@ -158,11 +151,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             if (S.StencilTestEnabled != O.StencilTestEnabled)
             {
                 Enable(EnableCap.StencilTest, S.StencilTestEnabled);
-            }
-
-            if (S.StencilClear != O.StencilClear)
-            {
-                GL.ClearStencil(S.StencilClear);
             }
 
             if (S.StencilTestEnabled)

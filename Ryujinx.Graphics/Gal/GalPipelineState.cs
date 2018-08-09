@@ -28,11 +28,9 @@
         public GalCullFace CullFace;
 
         public bool DepthTestEnabled;
-        public float DepthClear;
         public GalComparisonOp DepthFunc;
 
         public bool StencilTestEnabled;
-        public int StencilClear;
 
         public GalComparisonOp StencilBackFuncFunc;
         public int StencilBackFuncRef;
