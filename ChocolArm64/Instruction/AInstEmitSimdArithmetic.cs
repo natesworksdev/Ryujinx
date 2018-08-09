@@ -174,7 +174,7 @@ namespace ChocolArm64.Instruction
             {
                 long RoundConst = 1L << (ESize - 1);
 
-                AILLabel LblFalse = new AILLabel();
+                AILLabel LblTrue = new AILLabel();
 
                 Context.EmitLsl(1);
 
@@ -186,12 +186,11 @@ namespace ChocolArm64.Instruction
 
                 Context.Emit(OpCodes.Dup);
                 Context.EmitLdc_I8((long)int.MinValue);
-                Context.Emit(OpCodes.Ceq);
-                Context.Emit(OpCodes.Brfalse_S, LblFalse);
+                Context.Emit(OpCodes.Bne_Un_S, LblTrue);
 
                 Context.Emit(OpCodes.Neg);
 
-                Context.MarkLabel(LblFalse);
+                Context.MarkLabel(LblTrue);
             }
         }
 
