@@ -6,8 +6,7 @@ namespace Ryujinx.UI.Input
 {
     public struct JoyConControllerLeft
     {
-        public string Stick_AxisX;
-        public string Stick_AxisY;
+        public string Stick;
         public string StickButton;
         public string DPadUp;
         public string DPadDown;
@@ -20,8 +19,7 @@ namespace Ryujinx.UI.Input
 
     public struct JoyConControllerRight
     {
-        public string Stick_AxisX;
-        public string Stick_AxisY;
+        public string Stick;
         public string StickButton;
         public string ButtonA;
         public string ButtonB;
