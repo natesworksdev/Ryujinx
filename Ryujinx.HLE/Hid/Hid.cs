@@ -2,6 +2,7 @@
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle;
 using Ryujinx.HLE.OsHle.Handles;
+using Ryujinx;
 using System;
 
 namespace Ryujinx.HLE.Input
@@ -111,26 +112,148 @@ namespace Ryujinx.HLE.Input
 
         private void Init(AMemory Memory, long Position)
         {
-            InitializeJoyconPair(
+            if (HidEmulatedDevices.Devices.Handheld != -2)
+            {
+                InitializeJoyconPair(
                 Memory,
                 Position,
+                HidControllerId.CONTROLLER_HANDHELD,
+                HidControllerType.ControllerType_Handheld,
                 JoyConColor.Body_Neon_Red,
                 JoyConColor.Buttons_Neon_Red,
                 JoyConColor.Body_Neon_Blue,
                 JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.Player1 != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_PLAYER_1,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.Player2 != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_PLAYER_2,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.Player3 != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_PLAYER_3,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.Player4 != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_PLAYER_4,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.Player5 != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_PLAYER_5,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.Player6 != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_PLAYER_6,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.Player7 != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_PLAYER_7,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.Player8 != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_PLAYER_8,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
+
+            if (HidEmulatedDevices.Devices.PlayerUnknown != -2)
+            {
+                InitializeJoyconPair(
+                Memory,
+                Position,
+                HidControllerId.CONTROLLER_UNKNOWN,
+                HidControllerType.ControllerType_JoyconPair,
+                JoyConColor.Body_Neon_Red,
+                JoyConColor.Buttons_Neon_Red,
+                JoyConColor.Body_Neon_Blue,
+                JoyConColor.Buttons_Neon_Blue);
+            }
         }
 
         private void InitializeJoyconPair(
-            AMemory     Memory,
-            long        Position,
+            AMemory Memory,
+            long Position,
+            HidControllerId ControllerId,
+            HidControllerType Type,
             JoyConColor LeftColorBody,
             JoyConColor LeftColorButtons,
             JoyConColor RightColorBody,
             JoyConColor RightColorButtons)
         {
-            long BaseControllerOffset = Position + HidControllersOffset + 8 * HidControllerSize;
-
-            HidControllerType Type = HidControllerType.ControllerType_Handheld;
+            long BaseControllerOffset = Position + HidControllersOffset + (int)ControllerId * HidControllerSize;
 
             bool IsHalf = false;
 
