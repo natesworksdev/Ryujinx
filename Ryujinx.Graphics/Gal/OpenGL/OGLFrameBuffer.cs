@@ -23,126 +23,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        private class Texture
-        {
-            public int Width  { get; private set; }
-            public int Height { get; private set; }
-
-            public PixelInternalFormat InternalFormat { get; private set; }
-            public PixelFormat         Format         { get; private set; }
-            public PixelType           Type           { get; private set; }
-
-            public int Handle { get; private set; }
-
-            private bool Initialized;
-
-            public Texture()
-            {
-                Handle = GL.GenTexture();
-            }
-
-            public void EnsureSetup(
-                int Width,
-                int Height,
-                PixelInternalFormat InternalFormat,
-                PixelFormat Format,
-                PixelType Type)
-            {
-                if (!Initialized                  ||
-                    this.Width          != Width  ||
-                    this.Height         != Height ||
-                    this.InternalFormat != InternalFormat)
-                {
-                    int CopyBuffer = 0;
-
-                    bool ChangingFormat = Initialized && this.InternalFormat != InternalFormat;
-
-                    GL.BindTexture(TextureTarget.Texture2D, Handle);
-
-                    if (ChangingFormat)
-                    {
-                        CopyBuffer = GL.GenBuffer();
-
-                        GL.BindBuffer(BufferTarget.PixelPackBuffer,   CopyBuffer);
-                        GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyBuffer);
-
-                        int MaxWidth  = Math.Max(Width,  this.Width);
-                        int MaxHeight = Math.Max(Height, this.Height);
-
-                        //TODO: Dehardcode size number
-                        GL.BufferData(BufferTarget.PixelPackBuffer, MaxWidth * MaxHeight * MaxBpp, IntPtr.Zero, BufferUsageHint.StaticCopy);
-
-                        GL.GetTexImage(TextureTarget.Texture2D, 0, this.Format, this.Type, IntPtr.Zero);
-
-                        GL.DeleteTexture(Handle);
-
-                        Handle = GL.GenTexture();
-
-                        GL.BindTexture(TextureTarget.Texture2D, Handle);
-                    }
-
-                    const int MinFilter = (int)TextureMinFilter.Linear;
-                    const int MagFilter = (int)TextureMagFilter.Linear;
-
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, MinFilter);
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, MagFilter);
-
-                    const int Level = 0;
-                    const int Border = 0;
-
-                    GL.TexImage2D(
-                        TextureTarget.Texture2D,
-                        Level,
-                        InternalFormat,
-                        Width,
-                        Height,
-                        Border,
-                        Format,
-                        Type,
-                        IntPtr.Zero);
-
-                    if (ChangingFormat)
-                    {
-                        GL.BindBuffer(BufferTarget.PixelPackBuffer,   0);
-                        GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
-
-                        GL.DeleteBuffer(CopyBuffer);
-                    }
-
-                    this.Width          = Width;
-                    this.Height         = Height;
-                    this.InternalFormat = InternalFormat;
-                    this.Format         = Format;
-                    this.Type           = Type;
-
-                    Initialized = true;
-                }
-            }
-
-            public void EnsureSetup(int Width, int Height, GalFrameBufferFormat Format)
-            {
-                //TODO: Convert color format
-
-                EnsureSetup(
-                    Width,
-                    Height,
-                    PixelInternalFormat.Rgba8,
-                    PixelFormat.Rgba,
-                    PixelType.UnsignedByte);
-            }
-
-            public void EnsureSetup(int Width, int Height, GalZetaFormat Format)
-            {
-                //TODO: Convert zeta format
-
-                EnsureSetup(
-                    Width,
-                    Height,
-                    PixelInternalFormat.Depth24Stencil8,
-                    PixelFormat.DepthStencil,
-                    PixelType.UnsignedInt248);
-            }
-        }
+        
 
         private static readonly DrawBuffersEnum[] DrawBuffers = new DrawBuffersEnum[]
         {
@@ -159,16 +40,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private const int NativeWidth  = 1280;
         private const int NativeHeight = 720;
 
-        //TODO: Use a variable value here
-        private const int MaxBpp = 16;
+        private const GalImageFormat RawFormat = GalImageFormat.A8B8G8R8;
 
-        private const GalTextureFormat RawFormat = GalTextureFormat.A8B8G8R8;
+        private Dictionary<long, TCE> ColorTextures;
+        private Dictionary<long, TCE> ZetaTextures;
 
-        private Dictionary<long, Texture> ColorTextures;
-        private Dictionary<long, Texture> ZetaTextures;
-
-        private Texture RawTex;
-        private Texture ReadTex;
+        private TCE RawTex;
+        private TCE ReadTex;
 
         private Rect Viewport;
         private Rect Window;
@@ -188,26 +66,28 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLFrameBuffer()
         {
-            ColorTextures = new Dictionary<long, Texture>();
+            ColorTextures = new Dictionary<long, TCE>();
 
-            ZetaTextures = new Dictionary<long, Texture>();
+            ZetaTextures = new Dictionary<long, TCE>();
         }
 
         public void CreateColor(long Key, int Width, int Height, GalFrameBufferFormat Format)
         {
-            if (!ColorTextures.TryGetValue(Key, out Texture Tex))
+            if (!ColorTextures.TryGetValue(Key, out TCE Tex))
             {
-                Tex = new Texture();
+                Tex = new TCE();
 
                 ColorTextures.Add(Key, Tex);
             }
 
-            Tex.EnsureSetup(Width, Height, Format);
+            GalImageFormat ImageFormat = ImageFormatConverter.ConvertFrameBuffer(Format);
+
+            Tex.EnsureSetup(new GalImage(Width, Height, ImageFormat));
         }
 
         public void BindColor(long Key, int Attachment)
         {
-            if (ColorTextures.TryGetValue(Key, out Texture Tex))
+            if (ColorTextures.TryGetValue(Key, out TCE Tex))
             {
                 EnsureFrameBuffer();
 
@@ -236,19 +116,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void CreateZeta(long Key, int Width, int Height, GalZetaFormat Format)
         {
-            if (!ZetaTextures.TryGetValue(Key, out Texture Tex))
+            if (!ZetaTextures.TryGetValue(Key, out TCE Tex))
             {
-                Tex = new Texture();
+                Tex = new TCE();
 
                 ZetaTextures.Add(Key, Tex);
             }
 
-            Tex.EnsureSetup(Width, Height, Format);
+            GalImageFormat ImageFormat = ImageFormatConverter.ConvertZeta(Format);
+
+            Tex.EnsureSetup(new GalImage(Width, Height, ImageFormat));
         }
 
         public void BindZeta(long Key)
         {
-            if (ZetaTextures.TryGetValue(Key, out Texture Tex))
+            if (ZetaTextures.TryGetValue(Key, out TCE Tex))
             {
                 EnsureFrameBuffer();
 
@@ -277,7 +159,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void BindTexture(long Key, int Index)
         {
-            Texture Tex;
+            TCE Tex;
 
             if (ColorTextures.TryGetValue(Key, out Tex) ||
                  ZetaTextures.TryGetValue(Key, out Tex))
@@ -290,7 +172,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Set(long Key)
         {
-            if (ColorTextures.TryGetValue(Key, out Texture Tex))
+            if (ColorTextures.TryGetValue(Key, out TCE Tex))
             {
                 ReadTex = Tex;
             }
@@ -300,16 +182,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (RawTex == null)
             {
-                RawTex = new Texture();
+                RawTex = new TCE();
             }
 
-            RawTex.EnsureSetup(Width, Height, PixelInternalFormat.Rgba8, PixelFormat.Rgba, PixelType.UnsignedByte);
+            RawTex.EnsureSetup(new GalImage(Width, Height, RawFormat));
 
             GL.BindTexture(TextureTarget.Texture2D, RawTex.Handle);
 
-            (PixelFormat Format, PixelType Type) = OGLEnumConverter.GetTextureFormat(RawFormat);
-
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, Format, Type, Data);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, RawTex.PixelFormat, RawTex.PixelType, Data);
 
             ReadTex = RawTex;
         }
@@ -429,8 +309,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             bool Found = false;
 
-            if (ColorTextures.TryGetValue(SrcKey, out Texture SrcTex) &&
-                ColorTextures.TryGetValue(DstKey, out Texture DstTex))
+            if (ColorTextures.TryGetValue(SrcKey, out TCE SrcTex) &&
+                ColorTextures.TryGetValue(DstKey, out TCE DstTex))
             {
                 CopyTextures(
                     SrcX0, SrcY0, SrcX1, SrcY1,
@@ -444,8 +324,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Found = true;
             }
 
-            if (ZetaTextures.TryGetValue(SrcKey, out Texture ZetaSrcTex) &&
-                ZetaTextures.TryGetValue(DstKey, out Texture ZetaDstTex))
+            if (ZetaTextures.TryGetValue(SrcKey, out TCE ZetaSrcTex) &&
+                ZetaTextures.TryGetValue(DstKey, out TCE ZetaDstTex))
             {
                 CopyTextures(
                     SrcX0, SrcY0, SrcX1, SrcY1,
@@ -467,21 +347,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void GetBufferData(long Key, Action<byte[]> Callback)
         {
-            Texture Tex;
+            TCE Tex;
 
             if (ColorTextures.TryGetValue(Key, out Tex) ||
                  ZetaTextures.TryGetValue(Key, out Tex))
             {
-                //Note: Change this value when framebuffer sizes are dehardcoded
-                byte[] Data = new byte[Tex.Width * Tex.Height * MaxBpp];
+                byte[] Data = new byte[Tex.Width * Tex.Height * TCE.MaxBpp];
 
                 GL.BindTexture(TextureTarget.Texture2D, Tex.Handle);
 
                 GL.GetTexImage(
                     TextureTarget.Texture2D,
                     0,
-                    Tex.Format,
-                    Tex.Type,
+                    Tex.PixelFormat,
+                    Tex.PixelType,
                     Data);
 
                 Callback(Data);
@@ -494,7 +373,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             int              Height,
             byte[]           Buffer)
         {
-            Texture Tex;
+            TCE Tex;
 
             if (ColorTextures.TryGetValue(Key, out Tex) ||
                  ZetaTextures.TryGetValue(Key, out Tex))
@@ -511,8 +390,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     Width,
                     Height,
                     Border,
-                    Tex.Format,
-                    Tex.Type,
+                    Tex.PixelFormat,
+                    Tex.PixelType,
                     Buffer);
             }
         }

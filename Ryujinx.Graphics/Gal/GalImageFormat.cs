@@ -1,0 +1,44 @@
+﻿namespace Ryujinx.Graphics.Gal
+{
+    public enum GalImageFormat
+    {
+        R32G32B32A32,
+        R16G16B16A16,
+        A8B8G8R8,
+        A2B10G10R10,
+        R32,
+        BC6H_SF16,
+        BC6H_UF16,
+        A1B5G5R5,
+        B5G6R5,
+        BC7U,
+        G8R8,
+        R16,
+        R8,
+        BF10GF11RF11,
+        BC1,
+        BC2,
+        BC3,
+        BC4,
+        BC5,
+        Z24S8,
+        ZF32,
+
+        ConvertedBegin,
+        Astc2D4x4,
+        Astc2D5x5,
+        Astc2D6x6,
+        Astc2D8x8,
+        Astc2D10x10,
+        Astc2D12x12,
+        Astc2D5x4,
+        Astc2D6x5,
+        Astc2D8x6,
+        Astc2D10x8,
+        Astc2D12x10,
+        Astc2D8x5,
+        Astc2D10x5,
+        Astc2D10x6,
+        ConvertedEnd
+    }
+}

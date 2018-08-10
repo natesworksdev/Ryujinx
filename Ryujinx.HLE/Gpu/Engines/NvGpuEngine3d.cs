@@ -166,7 +166,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             int Format = ReadRegister(NvGpuEngine3dReg.FrameBufferNFormat + FbIndex * 0x10);
 
-            if (VA == 0 || Format == 0)
+            if (VA == 0/* || Format == 0*/)
             {
                 Gpu.Renderer.FrameBuffer.UnbindColor(FbIndex);
 
@@ -479,13 +479,13 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
             else
             {
-                GalTexture NewTexture = TextureFactory.MakeTexture(Vmm, TicPosition);
+                GalImage NewTexture = TextureFactory.MakeTexture(Vmm, TicPosition);
 
                 long Size = (uint)TextureHelper.GetTextureSize(NewTexture);
 
                 bool HasCachedTexture = false;
 
-                if (Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalTexture Texture))
+                if (Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalImage Texture))
                 {
                     if (NewTexture.Equals(Texture) && !QueryKeyUpload(Vmm, Key, Size, NvGpuBufferType.Texture))
                     {
