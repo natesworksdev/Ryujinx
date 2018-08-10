@@ -46,6 +46,23 @@
   
   Whether or not to enable Controller Support.
   
+- `Handheld_Device` *(String)*
+
+  The specific Device to be the Emulated Handheld Device.
+  
+- `Player(1-8)_Device` *(String)*
+
+  The specific Device to be the Emulated Player(1-8) Device.
+  
+- `PlayerUnknown_Device` *(String)*
+
+  The specific Device to be the Emulated PlayerUnknown Device. (This should basically always be None)
+  
+- Valid Emulated Device Mappings
+  - None = Disabled
+  - Keyboard = The Keyboard Device
+  - GamePad_X = X GamePad Configuration
+ 
 - `Controls_Left_JoyConKeyboard_XX` *(int)*
   ```
   Controls_Left_JoyConKeyboard_Stick_Up (int)
@@ -64,7 +81,7 @@
   
   Keys of the Left Emulated Joycon, the values depend of the [OpenTK Enum Keys](https://github.com/opentk/opentk/blob/develop/src/OpenTK/Input/Key.cs).
   
-  OpenTK use a QWERTY layout, so pay attention if you use another Keyboard Layout.
+  OpenTK uses a QWERTY layout, so pay attention if you use another Keyboard Layout.
   
   Ex: `Controls_Left_JoyConKeyboard_Button_Minus = 52` > Tab key (All Layout).
 
@@ -86,36 +103,39 @@
 
   Keys of the right Emulated Joycon, the values depend of the [OpenTK Enum Keys](https://github.com/opentk/opentk/blob/develop/src/OpenTK/Input/Key.cs).
   
-  OpenTK use a QWERTY layout, so pay attention if you use another Keyboard Layout.
+  OpenTK uses a QWERTY layout, so pay attention if you use another Keyboard Layout.
   
   Ex: `Controls_Right_JoyConKeyboard_Button_A = 83` > A key (QWERTY Layout) / Q key (AZERTY Layout).
   
-- `Controls_Left_JoyConController_XX` *(String)*
+- `X_Controls_Left_JoyConController_XX` *(String)*
   ```
-  Controls_Left_JoyConController_Stick (String)
-  Controls_Left_JoyConController_Stick_Button (String)
-  Controls_Left_JoyConController_DPad_Up (String)
-  Controls_Left_JoyConController_DPad_Down (String)
-  Controls_Left_JoyConController_DPad_Left (String)
-  Controls_Left_JoyConController_DPad_Right (String)
-  Controls_Left_JoyConController_Button_Minus (String)
-  Controls_Left_JoyConController_Button_L (String)
-  Controls_Left_JoyConController_Button_ZL (String)
+  X_Controls_Left_JoyConController_Stick (String)
+  X_Controls_Left_JoyConController_Stick_Button (String)
+  X_Controls_Left_JoyConController_DPad_Up (String)
+  X_Controls_Left_JoyConController_DPad_Down (String)
+  X_Controls_Left_JoyConController_DPad_Left (String)
+  X_Controls_Left_JoyConController_DPad_Right (String)
+  X_Controls_Left_JoyConController_Button_Minus (String)
+  X_Controls_Left_JoyConController_Button_L (String)
+  X_Controls_Left_JoyConController_Button_ZL (String)
   ```
   
-- `Controls_Right_JoyConController_XX` *(String)*
+- `X_Controls_Right_JoyConController_XX` *(String)*
   ```
-  Controls_Right_JoyConController_Stick (String)
-  Controls_Right_JoyConController_Stick_Button (String)
-  Controls_Right_JoyConController_Button_A (String)
-  Controls_Right_JoyConController_Button_B (String)
-  Controls_Right_JoyConController_Button_X (String)
-  Controls_Right_JoyConController_Button_Y (String)
-  Controls_Right_JoyConController_Button_Plus (String)
-  Controls_Right_JoyConController_Button_R (String)
-  Controls_Right_JoyConController_Button_ZR (String)
+  X_Controls_Right_JoyConController_Stick (String)
+  X_Controls_Right_JoyConController_Stick_Button (String)
+  X_Controls_Right_JoyConController_Button_A (String)
+  X_Controls_Right_JoyConController_Button_B (String)
+  X_Controls_Right_JoyConController_Button_X (String)
+  X_Controls_Right_JoyConController_Button_Y (String)
+  X_Controls_Right_JoyConController_Button_Plus (String)
+  X_Controls_Right_JoyConController_Button_R (String)
+  X_Controls_Right_JoyConController_Button_ZR (String)
   ```
 
+  The "X" is the Controller Configuration Number, to add more configurations, copy the first configuration, then increment the Number "X"
+  change the Button Configuration as you wish.
+  
 - Valid Button Mappings
   - A = The A / Cross Button
   - B = The B / Circle Button
