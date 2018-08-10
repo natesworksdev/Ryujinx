@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             { GalVertexAttribSize._11_11_10,    VertexAttribPointerType.Int   }  //?
         };
 
-        private GalPipelineState O;
+        private GalPipelineState Old;
 
         private OGLConstBuffer Buffer;
         private OGLRasterizer Rasterizer;
@@ -59,7 +59,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             this.Shader     = Shader;
 
             //These values match OpenGL's defaults
-            O = new GalPipelineState
+            Old = new GalPipelineState
             {
                 FrontFace = GalFrontFace.CCW,
 
@@ -102,177 +102,175 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             };
         }
 
-        public void Bind(GalPipelineState S)
+        public void Bind(GalPipelineState New)
         {
-            //O stands for Older, S for (current) State
+            BindConstBuffers(New);
 
-            BindConstBuffers(S);
+            BindVertexLayout(New);
 
-            BindVertexLayout(S);
-
-            if (S.FlipX != O.FlipX || S.FlipY != O.FlipY)
+            if (New.FlipX != Old.FlipX || New.FlipY != Old.FlipY)
             {
-                Shader.SetFlip(S.FlipX, S.FlipY);
+                Shader.SetFlip(New.FlipX, New.FlipY);
             }
 
             //Note: Uncomment SetFrontFace and SetCullFace when flipping issues are solved
 
-            //if (S.FrontFace != O.FrontFace)
+            //if (New.FrontFace != O.FrontFace)
             //{
-            //    GL.FrontFace(OGLEnumConverter.GetFrontFace(S.FrontFace));
+            //    GL.FrontFace(OGLEnumConverter.GetFrontFace(New.FrontFace));
             //}
 
-            //if (S.CullFaceEnabled != O.CullFaceEnabled)
+            //if (New.CullFaceEnabled != O.CullFaceEnabled)
             //{
-            //    Enable(EnableCap.CullFace, S.CullFaceEnabled);
+            //    Enable(EnableCap.CullFace, New.CullFaceEnabled);
             //}
 
-            //if (S.CullFaceEnabled)
+            //if (New.CullFaceEnabled)
             //{
-            //    if (S.CullFace != O.CullFace)
+            //    if (New.CullFace != O.CullFace)
             //    {
-            //        GL.CullFace(OGLEnumConverter.GetCullFace(S.CullFace));
+            //        GL.CullFace(OGLEnumConverter.GetCullFace(New.CullFace));
             //    }
             //}
 
-            if (S.DepthTestEnabled != O.DepthTestEnabled)
+            if (New.DepthTestEnabled != Old.DepthTestEnabled)
             {
-                Enable(EnableCap.DepthTest, S.DepthTestEnabled);
+                Enable(EnableCap.DepthTest, New.DepthTestEnabled);
             }
 
-            if (S.DepthTestEnabled)
+            if (New.DepthTestEnabled)
             {
-                if (S.DepthFunc != O.DepthFunc)
+                if (New.DepthFunc != Old.DepthFunc)
                 {
-                    GL.DepthFunc(OGLEnumConverter.GetDepthFunc(S.DepthFunc));
+                    GL.DepthFunc(OGLEnumConverter.GetDepthFunc(New.DepthFunc));
                 }
             }
 
-            if (S.StencilTestEnabled != O.StencilTestEnabled)
+            if (New.StencilTestEnabled != Old.StencilTestEnabled)
             {
-                Enable(EnableCap.StencilTest, S.StencilTestEnabled);
+                Enable(EnableCap.StencilTest, New.StencilTestEnabled);
             }
 
-            if (S.StencilTestEnabled)
+            if (New.StencilTestEnabled)
             {
-                if (S.StencilBackFuncFunc != O.StencilBackFuncFunc ||
-                    S.StencilBackFuncRef  != O.StencilBackFuncRef  ||
-                    S.StencilBackFuncMask != O.StencilBackFuncMask)
+                if (New.StencilBackFuncFunc != Old.StencilBackFuncFunc ||
+                    New.StencilBackFuncRef  != Old.StencilBackFuncRef  ||
+                    New.StencilBackFuncMask != Old.StencilBackFuncMask)
                 {
                     GL.StencilFuncSeparate(
                         StencilFace.Back,
-                        OGLEnumConverter.GetStencilFunc(S.StencilBackFuncFunc),
-                        S.StencilBackFuncRef,
-                        S.StencilBackFuncMask);
+                        OGLEnumConverter.GetStencilFunc(New.StencilBackFuncFunc),
+                        New.StencilBackFuncRef,
+                        New.StencilBackFuncMask);
                 }
 
-                if (S.StencilBackOpFail  != O.StencilBackOpFail  ||
-                    S.StencilBackOpZFail != O.StencilBackOpZFail ||
-                    S.StencilBackOpZPass != O.StencilBackOpZPass)
+                if (New.StencilBackOpFail  != Old.StencilBackOpFail  ||
+                    New.StencilBackOpZFail != Old.StencilBackOpZFail ||
+                    New.StencilBackOpZPass != Old.StencilBackOpZPass)
                 {
                     GL.StencilOpSeparate(
                         StencilFace.Back,
-                        OGLEnumConverter.GetStencilOp(S.StencilBackOpFail),
-                        OGLEnumConverter.GetStencilOp(S.StencilBackOpZFail),
-                        OGLEnumConverter.GetStencilOp(S.StencilBackOpZPass));
+                        OGLEnumConverter.GetStencilOp(New.StencilBackOpFail),
+                        OGLEnumConverter.GetStencilOp(New.StencilBackOpZFail),
+                        OGLEnumConverter.GetStencilOp(New.StencilBackOpZPass));
                 }
 
-                if (S.StencilBackMask != O.StencilBackMask)
+                if (New.StencilBackMask != Old.StencilBackMask)
                 {
-                    GL.StencilMaskSeparate(StencilFace.Back, S.StencilBackMask);
+                    GL.StencilMaskSeparate(StencilFace.Back, New.StencilBackMask);
                 }
 
-                if (S.StencilFrontFuncFunc != O.StencilFrontFuncFunc ||
-                    S.StencilFrontFuncRef  != O.StencilFrontFuncRef  ||
-                    S.StencilFrontFuncMask != O.StencilFrontFuncMask)
+                if (New.StencilFrontFuncFunc != Old.StencilFrontFuncFunc ||
+                    New.StencilFrontFuncRef  != Old.StencilFrontFuncRef  ||
+                    New.StencilFrontFuncMask != Old.StencilFrontFuncMask)
                 {
                     GL.StencilFuncSeparate(
                         StencilFace.Front,
-                        OGLEnumConverter.GetStencilFunc(S.StencilFrontFuncFunc),
-                        S.StencilFrontFuncRef,
-                        S.StencilFrontFuncMask);
+                        OGLEnumConverter.GetStencilFunc(New.StencilFrontFuncFunc),
+                        New.StencilFrontFuncRef,
+                        New.StencilFrontFuncMask);
                 }
 
-                if (S.StencilFrontOpFail  != O.StencilFrontOpFail  ||
-                    S.StencilFrontOpZFail != O.StencilFrontOpZFail ||
-                    S.StencilFrontOpZPass != O.StencilFrontOpZPass)
+                if (New.StencilFrontOpFail  != Old.StencilFrontOpFail  ||
+                    New.StencilFrontOpZFail != Old.StencilFrontOpZFail ||
+                    New.StencilFrontOpZPass != Old.StencilFrontOpZPass)
                 {
                     GL.StencilOpSeparate(
                         StencilFace.Front,
-                        OGLEnumConverter.GetStencilOp(S.StencilFrontOpFail),
-                        OGLEnumConverter.GetStencilOp(S.StencilFrontOpZFail),
-                        OGLEnumConverter.GetStencilOp(S.StencilFrontOpZPass));
+                        OGLEnumConverter.GetStencilOp(New.StencilFrontOpFail),
+                        OGLEnumConverter.GetStencilOp(New.StencilFrontOpZFail),
+                        OGLEnumConverter.GetStencilOp(New.StencilFrontOpZPass));
                 }
 
-                if (S.StencilFrontMask != O.StencilFrontMask)
+                if (New.StencilFrontMask != Old.StencilFrontMask)
                 {
-                    GL.StencilMaskSeparate(StencilFace.Front, S.StencilFrontMask);
+                    GL.StencilMaskSeparate(StencilFace.Front, New.StencilFrontMask);
                 }
             }
 
-            if (S.BlendEnabled != O.BlendEnabled)
+            if (New.BlendEnabled != Old.BlendEnabled)
             {
-                Enable(EnableCap.Blend, S.BlendEnabled);
+                Enable(EnableCap.Blend, New.BlendEnabled);
             }
 
-            if (S.BlendEnabled)
+            if (New.BlendEnabled)
             {
-                if (S.BlendSeparateAlpha)
+                if (New.BlendSeparateAlpha)
                 {
-                    if (S.BlendEquationRgb   != O.BlendEquationRgb ||
-                        S.BlendEquationAlpha != O.BlendEquationAlpha)
+                    if (New.BlendEquationRgb   != Old.BlendEquationRgb ||
+                        New.BlendEquationAlpha != Old.BlendEquationAlpha)
                     {
                         GL.BlendEquationSeparate(
-                            OGLEnumConverter.GetBlendEquation(S.BlendEquationRgb),
-                            OGLEnumConverter.GetBlendEquation(S.BlendEquationAlpha));
+                            OGLEnumConverter.GetBlendEquation(New.BlendEquationRgb),
+                            OGLEnumConverter.GetBlendEquation(New.BlendEquationAlpha));
                     }
 
-                    if (S.BlendFuncSrcRgb   != O.BlendFuncSrcRgb   ||
-                        S.BlendFuncDstRgb   != O.BlendFuncDstRgb   ||
-                        S.BlendFuncSrcAlpha != O.BlendFuncSrcAlpha ||
-                        S.BlendFuncDstAlpha != O.BlendFuncDstAlpha)
+                    if (New.BlendFuncSrcRgb   != Old.BlendFuncSrcRgb   ||
+                        New.BlendFuncDstRgb   != Old.BlendFuncDstRgb   ||
+                        New.BlendFuncSrcAlpha != Old.BlendFuncSrcAlpha ||
+                        New.BlendFuncDstAlpha != Old.BlendFuncDstAlpha)
                     {
                         GL.BlendFuncSeparate(
-                            (BlendingFactorSrc) OGLEnumConverter.GetBlendFactor(S.BlendFuncSrcRgb),
-                            (BlendingFactorDest)OGLEnumConverter.GetBlendFactor(S.BlendFuncDstRgb),
-                            (BlendingFactorSrc) OGLEnumConverter.GetBlendFactor(S.BlendFuncSrcAlpha),
-                            (BlendingFactorDest)OGLEnumConverter.GetBlendFactor(S.BlendFuncDstAlpha));
+                            (BlendingFactorSrc) OGLEnumConverter.GetBlendFactor(New.BlendFuncSrcRgb),
+                            (BlendingFactorDest)OGLEnumConverter.GetBlendFactor(New.BlendFuncDstRgb),
+                            (BlendingFactorSrc) OGLEnumConverter.GetBlendFactor(New.BlendFuncSrcAlpha),
+                            (BlendingFactorDest)OGLEnumConverter.GetBlendFactor(New.BlendFuncDstAlpha));
                     }
                 }
                 else
                 {
-                    if (S.BlendEquationRgb != O.BlendEquationRgb)
+                    if (New.BlendEquationRgb != Old.BlendEquationRgb)
                     {
-                        GL.BlendEquation(OGLEnumConverter.GetBlendEquation(S.BlendEquationRgb));
+                        GL.BlendEquation(OGLEnumConverter.GetBlendEquation(New.BlendEquationRgb));
                     }
 
-                    if (S.BlendFuncSrcRgb != O.BlendFuncSrcRgb ||
-                        S.BlendFuncDstRgb != O.BlendFuncDstRgb)
+                    if (New.BlendFuncSrcRgb != Old.BlendFuncSrcRgb ||
+                        New.BlendFuncDstRgb != Old.BlendFuncDstRgb)
                     {
                         GL.BlendFunc(
-                            OGLEnumConverter.GetBlendFactor(S.BlendFuncSrcRgb),
-                            OGLEnumConverter.GetBlendFactor(S.BlendFuncDstRgb));
+                            OGLEnumConverter.GetBlendFactor(New.BlendFuncSrcRgb),
+                            OGLEnumConverter.GetBlendFactor(New.BlendFuncDstRgb));
                     }
                 }
             }
 
-            if (S.PrimitiveRestartEnabled != O.PrimitiveRestartEnabled)
+            if (New.PrimitiveRestartEnabled != Old.PrimitiveRestartEnabled)
             {
-                Enable(EnableCap.PrimitiveRestart, S.PrimitiveRestartEnabled);
+                Enable(EnableCap.PrimitiveRestart, New.PrimitiveRestartEnabled);
             }
 
-            if (S.PrimitiveRestartEnabled)
+            if (New.PrimitiveRestartEnabled)
             {
-                if (S.PrimitiveRestartIndex != O.PrimitiveRestartIndex)
+                if (New.PrimitiveRestartIndex != Old.PrimitiveRestartIndex)
                 {
-                    GL.PrimitiveRestartIndex(S.PrimitiveRestartIndex);
+                    GL.PrimitiveRestartIndex(New.PrimitiveRestartIndex);
                 }
             }
 
-            O = S;
+            Old = New;
         }
 
-        private void BindConstBuffers(GalPipelineState S)
+        private void BindConstBuffers(GalPipelineState New)
         {
             //Index 0 is reserved
             int FreeBinding = 1;
@@ -283,7 +281,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 {
                     foreach (ShaderDeclInfo DeclInfo in Stage.UniformUsage)
                     {
-                        long Key = S.ConstBufferKeys[(int)Stage.Type][DeclInfo.Cbuf];
+                        long Key = New.ConstBufferKeys[(int)Stage.Type][DeclInfo.Cbuf];
 
                         if (Key != 0 && Buffer.TryGetUbo(Key, out int UboHandle))
                         {
@@ -302,9 +300,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             BindIfNotNull(Shader.Current.Fragment);
         }
 
-        private void BindVertexLayout(GalPipelineState S)
+        private void BindVertexLayout(GalPipelineState New)
         {
-            foreach (GalVertexBinding Binding in S.VertexBindings)
+            foreach (GalVertexBinding Binding in New.VertexBindings)
             {
                 if (!Binding.Enabled || !Rasterizer.TryGetVbo(Binding.VboKey, out int VboHandle))
                 {
