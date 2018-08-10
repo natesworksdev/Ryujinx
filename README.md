@@ -3,7 +3,7 @@
 
 Experimental Switch emulator written in C#
 
-Don't expect much from this. Some homebrew apps work, Puyo Puyo Tetris shows the intro logo (sometimes), and a handful of games boot / work; but that's about it for now.
+Don't expect much from this. Some homebrew apps work, a handful of games boot / work; but that's about it for now.
 Contributions are always welcome.
 
 **Building**
@@ -15,10 +15,10 @@ Or just drag'n'drop the *.NRO / *.NSO or the game folder on the executable if yo
 
 **Features**
 
- - Audio is partially supported (glitched) on Windows but you need to install the OpenAL Core SDK.
+ - Audio is supported on Windows, but you need to install the OpenAL Core SDK.
 https://openal.org/downloads/OpenAL11CoreSDK.zip
 
- - Keyboard Input is partially supported:
+ - Keyboard Input is supported:
    - Left Joycon:
 	 - Stick Up = W
 	 - Stick Down = S
@@ -48,7 +48,7 @@ https://openal.org/downloads/OpenAL11CoreSDK.zip
 	 - ZR = O
    - For more information on how to configure these buttons see [CONFIG.md](CONFIG.md)
 
- - Controller Input is partially supported:
+ - Controller Input is supported:
    - Left Joycon:
      - Analog Stick = Left Analog Stick
 	 - DPad Up = DPad Up
@@ -69,7 +69,8 @@ https://openal.org/downloads/OpenAL11CoreSDK.zip
 	 - R = Right Shoulder Button
 	 - ZR = Right Trigger
    - For more information on how to configure these buttons see [CONFIG.md](CONFIG.md)
-
+ - Multiple Players are supported. See [CONFIG.md](CONFIG.md) for more details.
+   
  - Config File: `Ryujinx.conf` should be present in executable folder.
    For more information [you can go here](CONFIG.md).
 
@@ -95,9 +96,10 @@ Run `dotnet run -c Release -- path\to\game_exefs_and_romfs_folder` to run offici
 
 **Compatibility**
 
-You can check out the compatibility list within the Wiki. Only a handful of games actually work.
+You can check out the compatibility list within the Wiki.
 
 **Latest build**
 
 These builds are compiled automatically for each commit on the master branch. They may be unstable or might not work at all.  
 The latest automatic build for Windows (64-bit) can be found on the [official website](https://ryujinx.org/#/Build).
+However, for opening issues and testing, it is recommended to build the Master Branch as it is much more stable (Though still very experimental)

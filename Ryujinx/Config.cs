@@ -1,5 +1,6 @@
 ﻿using Ryujinx.UI.Input;
 using Ryujinx.HLE.Logging;
+using Ryujinx.HLE.Input;
 using System;
 using System.Globalization;
 using System.Collections.Generic;
@@ -11,8 +12,9 @@ namespace Ryujinx
 {
     public static class Config
     {
-        public static JoyConKeyboard   JoyConKeyboard   { get; private set; }
-        public static JoyConController JoyConController { get; private set; }
+        public static JoyConKeyboard     JoyConKeyboard        { get; private set; }
+        public static JoyConController[] JoyConControllers     { get; private set; }
+        public static bool               GamePadEnable         { get; private set; }
 
         public static void Read(Logger Log)
         {
@@ -33,6 +35,20 @@ namespace Ryujinx
             Log.SetEnable(LogLevel.Error,   Convert.ToBoolean(Parser.Value("Logging_Enable_Error")));
 
             string[] FilteredLogClasses = Parser.Value("Logging_Filtered_Classes").Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+            GamePadEnable = Boolean.Parse(Parser.Value("GamePad_Enable"));
+
+            //Device Mappings
+            HidEmulatedDevices.Devices.Handheld      = ToEmulatedDevice(Parser.Value("Handheld_Device")); // -2: None, -1: Keyboard, Everything Else: GamePad Index
+            HidEmulatedDevices.Devices.Player1       = ToEmulatedDevice(Parser.Value("Player1_Device"));
+            HidEmulatedDevices.Devices.Player2       = ToEmulatedDevice(Parser.Value("Player2_Device"));
+            HidEmulatedDevices.Devices.Player3       = ToEmulatedDevice(Parser.Value("Player3_Device"));
+            HidEmulatedDevices.Devices.Player4       = ToEmulatedDevice(Parser.Value("Player4_Device"));
+            HidEmulatedDevices.Devices.Player5       = ToEmulatedDevice(Parser.Value("Player5_Device"));
+            HidEmulatedDevices.Devices.Player6       = ToEmulatedDevice(Parser.Value("Player6_Device"));
+            HidEmulatedDevices.Devices.Player7       = ToEmulatedDevice(Parser.Value("Player7_Device"));
+            HidEmulatedDevices.Devices.Player8       = ToEmulatedDevice(Parser.Value("Player8_Device"));
+            HidEmulatedDevices.Devices.PlayerUnknown = ToEmulatedDevice(Parser.Value("PlayerUnknown_Device"));
 
             //When the classes are specified on the list, we only
             //enable the classes that are on the list.
@@ -94,38 +110,51 @@ namespace Ryujinx
                     ButtonZR    = Convert.ToInt16(Parser.Value("Controls_Right_JoyConKeyboard_Button_ZR"))
                 });
 
-            JoyConController = new JoyConController(
 
-                       Convert.ToBoolean(Parser.Value("GamePad_Enable")),
-                       Convert.ToInt32  (Parser.Value("GamePad_Index")),
-                (float)Convert.ToDouble (Parser.Value("GamePad_Deadzone"),          CultureInfo.InvariantCulture),
-                (float)Convert.ToDouble (Parser.Value("GamePad_Trigger_Threshold"), CultureInfo.InvariantCulture),
+            List<JoyConController> JoyConControllerList = new List<JoyConController>();
+
+            //Populate the Controller List
+            for (int i = 0; i < 255; ++i)
+            {
+                if (Parser.Value(i + "_GamePad_Index") == null) break;
+
+                JoyConController Controller = new JoyConController(
+                       Convert.ToBoolean(GamePadEnable),
+                       Convert.ToInt32  (Parser.Value(i + "_GamePad_Index")),
+                (float)Convert.ToDouble (Parser.Value(i + "_GamePad_Deadzone"),          CultureInfo.InvariantCulture),
+                (float)Convert.ToDouble (Parser.Value(i + "_GamePad_Trigger_Threshold"), CultureInfo.InvariantCulture),
 
                 new JoyConControllerLeft
                 {
-                    Stick       = ToID(Parser.Value("Controls_Left_JoyConController_Stick")),
-                    StickButton = ToID(Parser.Value("Controls_Left_JoyConController_Stick_Button")),
-                    DPadUp      = ToID(Parser.Value("Controls_Left_JoyConController_DPad_Up")),
-                    DPadDown    = ToID(Parser.Value("Controls_Left_JoyConController_DPad_Down")),
-                    DPadLeft    = ToID(Parser.Value("Controls_Left_JoyConController_DPad_Left")),
-                    DPadRight   = ToID(Parser.Value("Controls_Left_JoyConController_DPad_Right")),
-                    ButtonMinus = ToID(Parser.Value("Controls_Left_JoyConController_Button_Minus")),
-                    ButtonL     = ToID(Parser.Value("Controls_Left_JoyConController_Button_L")),
-                    ButtonZL    = ToID(Parser.Value("Controls_Left_JoyConController_Button_ZL"))
+                    Stick       = ToID(Parser.Value(i + "_Controls_Left_JoyConController_Stick")),
+                    StickButton = ToID(Parser.Value(i + "_Controls_Left_JoyConController_Stick_Button")),
+                    DPadUp      = ToID(Parser.Value(i + "_Controls_Left_JoyConController_DPad_Up")),
+                    DPadDown    = ToID(Parser.Value(i + "_Controls_Left_JoyConController_DPad_Down")),
+                    DPadLeft    = ToID(Parser.Value(i + "_Controls_Left_JoyConController_DPad_Left")),
+                    DPadRight   = ToID(Parser.Value(i + "_Controls_Left_JoyConController_DPad_Right")),
+                    ButtonMinus = ToID(Parser.Value(i + "_Controls_Left_JoyConController_Button_Minus")),
+                    ButtonL     = ToID(Parser.Value(i + "_Controls_Left_JoyConController_Button_L")),
+                    ButtonZL    = ToID(Parser.Value(i + "_Controls_Left_JoyConController_Button_ZL"))
                 },
 
                 new JoyConControllerRight
                 {
-                    Stick       = ToID(Parser.Value("Controls_Right_JoyConController_Stick")),
-                    StickButton = ToID(Parser.Value("Controls_Right_JoyConController_Stick_Button")),
-                    ButtonA     = ToID(Parser.Value("Controls_Right_JoyConController_Button_A")),
-                    ButtonB     = ToID(Parser.Value("Controls_Right_JoyConController_Button_B")),
-                    ButtonX     = ToID(Parser.Value("Controls_Right_JoyConController_Button_X")),
-                    ButtonY     = ToID(Parser.Value("Controls_Right_JoyConController_Button_Y")),
-                    ButtonPlus  = ToID(Parser.Value("Controls_Right_JoyConController_Button_Plus")),
-                    ButtonR     = ToID(Parser.Value("Controls_Right_JoyConController_Button_R")),
-                    ButtonZR    = ToID(Parser.Value("Controls_Right_JoyConController_Button_ZR"))
+                    Stick       = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Stick")),
+                    StickButton = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Stick_Button")),
+                    ButtonA     = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Button_A")),
+                    ButtonB     = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Button_B")),
+                    ButtonX     = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Button_X")),
+                    ButtonY     = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Button_Y")),
+                    ButtonPlus  = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Button_Plus")),
+                    ButtonR     = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Button_R")),
+                    ButtonZR    = ToID(Parser.Value(i + "_Controls_Right_JoyConController_Button_ZR"))
                 });
+
+                JoyConControllerList.Add(Controller);
+            }
+
+            //Finally, convert that to a regular Array.
+            JoyConControllers = JoyConControllerList.ToArray();
         }
 
         private static ControllerInputID ToID(string Key)
@@ -155,6 +184,20 @@ namespace Ryujinx
 
                 default: return ControllerInputID.Invalid;
             }
+        }
+
+        // -2: None, -1: Keyboard, Everything Else: GamePad Index
+        private static int ToEmulatedDevice(string Key)
+        {
+            switch (Key.ToUpper())
+            {
+                case "NONE":     return -2;
+                case "KEYBOARD": return -1;
+            }
+
+            if (Key.ToUpper().StartsWith("GAMEPAD_")) return Int32.Parse(Key.Substring(Key.Length - 1));
+
+            return -2;
         }
     }
 
