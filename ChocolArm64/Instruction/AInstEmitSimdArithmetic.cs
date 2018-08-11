@@ -460,6 +460,14 @@ namespace ChocolArm64.Instruction
             });
         }
 
+        public static void Fmls_Se(AILEmitterCtx Context)
+        {
+            EmitScalarTernaryOpByElemF(Context, () => {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Sub);
+            });
+        }
+
         public static void Fmls_V(AILEmitterCtx Context)
         {
             EmitVectorTernaryOpF(Context, () =>
@@ -472,15 +480,6 @@ namespace ChocolArm64.Instruction
         public static void Fmls_Ve(AILEmitterCtx Context)
         {
             EmitVectorTernaryOpByElemF(Context, () =>
-            {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Sub);
-            });
-        }
-
-        public static void Fmls_Se(AILEmitterCtx Context) 
-        {
-            EmitScalarTernaryOpByElemF(Context, () => 
             {
                 Context.Emit(OpCodes.Mul);
                 Context.Emit(OpCodes.Sub);
