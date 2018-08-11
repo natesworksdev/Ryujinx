@@ -277,6 +277,7 @@ namespace ChocolArm64
             SetA64("010111111<<xxxxx0001x0xxxxxxxxxx", AInstEmit.Fmla_Se,       typeof(AOpCodeSimdRegElemF));
             SetA64("0>0011100<1xxxxx110011xxxxxxxxxx", AInstEmit.Fmla_V,        typeof(AOpCodeSimdReg));
             SetA64("0x0011111<<xxxxx0001x0xxxxxxxxxx", AInstEmit.Fmla_Ve,       typeof(AOpCodeSimdRegElemF));
+            SetA64("010111111<<xxxxx0101x0xxxxxxxxxx", AInstEmit.Fmls_Se,       typeof(AOpCodeSimdRegElemF));
             SetA64("0>0011101<1xxxxx110011xxxxxxxxxx", AInstEmit.Fmls_V,        typeof(AOpCodeSimdReg));
             SetA64("0x0011111<<xxxxx0101x0xxxxxxxxxx", AInstEmit.Fmls_Ve,       typeof(AOpCodeSimdRegElemF));
             SetA64("000111100x100000010000xxxxxxxxxx", AInstEmit.Fmov_S,        typeof(AOpCodeSimd));
