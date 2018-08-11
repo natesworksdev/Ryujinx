@@ -50,12 +50,22 @@ namespace Ryujinx.Graphics.Gal
 
         public static GalImageFormat ConvertFrameBuffer(GalFrameBufferFormat Format)
         {
+            switch (Format)
+            {
+                case GalFrameBufferFormat.R32Float: return GalImageFormat.R32;
+            }
+
             //Stubbed.
             return GalImageFormat.A8B8G8R8;
         }
 
         public static GalImageFormat ConvertZeta(GalZetaFormat Format)
         {
+            switch (Format)
+            {
+                case GalZetaFormat.Z32Float: return GalImageFormat.ZF32;
+            }
+
             //Stubbed.
             return GalImageFormat.Z24S8;
         }

@@ -4,13 +4,9 @@ namespace Ryujinx.Graphics.Gal
 {
     public interface IGalFrameBuffer
     {
-        void CreateColor(long Key, int Width, int Height, GalFrameBufferFormat Format);
-
         void BindColor(long Key, int Attachment);
 
         void UnbindColor(int Attachment);
-
-        void CreateZeta(long Key, int Width, int Height, GalZetaFormat Format);
 
         void BindZeta(long Key);
 

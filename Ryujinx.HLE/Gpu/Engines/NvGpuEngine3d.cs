@@ -102,8 +102,10 @@ namespace Ryujinx.HLE.Gpu.Engines
             SetAlphaBlending(State);
             SetPrimitiveRestart(State);
 
-            SetFrameBuffer(Vmm, 0);
-
+            for (int FbIndex = 0; FbIndex < 8; FbIndex++)
+            {
+                SetFrameBuffer(Vmm, FbIndex);
+            }
             SetZeta(Vmm);
 
             long[] Keys = UploadShaders(Vmm);
@@ -151,6 +153,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             int Stencil = ReadRegister(NvGpuEngine3dReg.ClearStencil);
 
             SetFrameBuffer(Vmm, FbIndex);
+            SetZeta(Vmm);
 
             Gpu.Renderer.Rasterizer.ClearBuffers(
                 Flags,
@@ -166,7 +169,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             int Format = ReadRegister(NvGpuEngine3dReg.FrameBufferNFormat + FbIndex * 0x10);
 
-            if (VA == 0/* || Format == 0*/)
+            if (VA == 0 || Format == 0)
             {
                 Gpu.Renderer.FrameBuffer.UnbindColor(FbIndex);
 
@@ -192,7 +195,13 @@ namespace Ryujinx.HLE.Gpu.Engines
             int VpW = (int)(TX + MathF.Abs(SX)) - VpX;
             int VpH = (int)(TY + MathF.Abs(SY)) - VpY;
 
-            Gpu.Renderer.FrameBuffer.CreateColor(Key, Width, Height, (GalFrameBufferFormat)Format);
+            GalImageFormat ImageFormat = ImageFormatConverter.ConvertFrameBuffer((GalFrameBufferFormat)Format);
+
+            GalImage Image = new GalImage(Width, Height, ImageFormat);
+
+            long Size = TextureHelper.GetTextureSize(Image);
+
+            Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
             Gpu.Renderer.FrameBuffer.BindColor(Key, FbIndex);
 
             Gpu.Renderer.FrameBuffer.SetViewport(VpX, VpY, VpW, VpH);
@@ -214,12 +223,17 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
 
             long Key = Vmm.GetPhysicalAddress(ZA);
-
+            
             int Width  = ReadRegister(NvGpuEngine3dReg.ZetaHoriz);
             int Height = ReadRegister(NvGpuEngine3dReg.ZetaVert);
 
-            Gpu.Renderer.FrameBuffer.CreateZeta(Key, Width, Height, (GalZetaFormat)Format);
+            GalImageFormat ImageFormat = ImageFormatConverter.ConvertZeta((GalZetaFormat)Format);
 
+            GalImage Image = new GalImage(Width, Height, ImageFormat);
+
+            long Size = TextureHelper.GetTextureSize(Image);
+
+            Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
             Gpu.Renderer.FrameBuffer.BindZeta(Key);
         }
 
@@ -479,15 +493,15 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
             else
             {
-                GalImage NewTexture = TextureFactory.MakeTexture(Vmm, TicPosition);
+                GalImage NewImage = TextureFactory.MakeTexture(Vmm, TicPosition);
 
-                long Size = (uint)TextureHelper.GetTextureSize(NewTexture);
+                long Size = (uint)TextureHelper.GetTextureSize(NewImage);
 
                 bool HasCachedTexture = false;
 
-                if (Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalImage Texture))
+                if (Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalImage Image))
                 {
-                    if (NewTexture.Equals(Texture) && !QueryKeyUpload(Vmm, Key, Size, NvGpuBufferType.Texture))
+                    if (NewImage.Equals(Image) && !QueryKeyUpload(Vmm, Key, Size, NvGpuBufferType.Texture))
                     {
                         Gpu.Renderer.Texture.Bind(Key, TexIndex);
 
@@ -499,7 +513,7 @@ namespace Ryujinx.HLE.Gpu.Engines
                 {
                     byte[] Data = TextureFactory.GetTextureData(Vmm, TicPosition);
 
-                    Gpu.Renderer.Texture.Create(Key, Data, NewTexture);
+                    Gpu.Renderer.Texture.Create(Key, Data, NewImage);
                 }
 
                 Gpu.Renderer.Texture.Bind(Key, TexIndex);

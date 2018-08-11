@@ -50,33 +50,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             float Depth,
             int Stencil)
         {
-            //TODO: Handle attachment
-
-            ClearBufferMask Mask = ClearBufferMask.ColorBufferBit;
-
-            if (Flags.HasFlag(GalClearBufferFlags.Depth))
-            {
-                Mask |= ClearBufferMask.DepthBufferBit;
-            }
-
-            if (Flags.HasFlag(GalClearBufferFlags.Stencil))
-            {
-                Mask |= ClearBufferMask.StencilBufferBit;
-            }
-
             GL.ColorMask(
                 Flags.HasFlag(GalClearBufferFlags.ColorRed),
                 Flags.HasFlag(GalClearBufferFlags.ColorGreen),
                 Flags.HasFlag(GalClearBufferFlags.ColorBlue),
                 Flags.HasFlag(GalClearBufferFlags.ColorAlpha));
 
-            GL.ClearColor(Red, Green, Blue, Alpha);
+            GL.ClearBuffer(ClearBuffer.Color, Attachment, new float[] { Red, Green, Blue, Alpha });
 
-            GL.ClearDepth(Depth);
+            if (Flags.HasFlag(GalClearBufferFlags.Depth))
+            {
+                GL.ClearBuffer(ClearBuffer.Depth, 0, ref Depth);
+            }
 
-            GL.ClearStencil(Stencil);
-
-            GL.Clear(Mask);
+            if (Flags.HasFlag(GalClearBufferFlags.Stencil))
+            {
+                GL.ClearBuffer(ClearBuffer.Stencil, 0, ref Stencil);
+            }
 
             GL.ColorMask(true, true, true, true);
         }

@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    public class OGLTexture : IGalTexture
+    class OGLTexture : IGalTexture
     {
         private OGLCachedResource<TCE> TextureCache;
 
@@ -93,6 +93,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG, SwizzleG);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, SwizzleB);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, SwizzleA);
+        }
+
+        public void CreateFb(long Key, long Size, GalImage Image)
+        {
+            if (!TryGetTCE(Key, out TCE Texture))
+            {
+                Texture = new TCE();
+
+                TextureCache.AddOrUpdate(Key, Texture, Size);
+            }
+
+            Texture.EnsureSetup(Image);
+        }
+
+        public bool TryGetTCE(long Key, out TCE CachedTexture)
+        {
+            if (TextureCache.TryGetValue(Key, out CachedTexture))
+            {
+                return true;
+            }
+
+            CachedTexture = null;
+
+            return false;
         }
 
         private static int GetAstcBlockWidth(GalImageFormat Format)

@@ -8,6 +8,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         //TODO: Use a variable value here
         public const int MaxBpp = 16;
 
+        private static int CopyBuffer = 0;
+        private static int CopyBufferSize = 0;
+
         public GalImage Image { get; private set; }
 
         public int Width { get => Image.Width; }
@@ -36,31 +39,37 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void EnsureSetup(GalImage Image)
         {
-            if (this.Width != Image.Width ||
-                this.Height != Image.Height ||
-                this.Format != Image.Format ||
+            if (Width  != Image.Width  ||
+                Height != Image.Height ||
+                Format != Image.Format ||
                 !Initialized)
             {
                 (PixelInternalFormat InternalFormat, PixelFormat PixelFormat, PixelType PixelType) =
                     OGLEnumConverter.GetImageFormat(Image.Format);
 
-                int CopyBuffer = 0;
-
-                bool ChangingFormat = Initialized && this.InternalFormat != InternalFormat;
-
                 GL.BindTexture(TextureTarget.Texture2D, Handle);
 
-                if (ChangingFormat)
+                if (Initialized)
                 {
-                    CopyBuffer = GL.GenBuffer();
+                    if (CopyBuffer == 0)
+                    {
+                        CopyBuffer = GL.GenBuffer();
+                    }
+
+                    int MaxWidth  = Math.Max(Image.Width, Width);
+                    int MaxHeight = Math.Max(Image.Height, Height);
+
+                    int CurrentSize = MaxWidth * MaxHeight * MaxBpp;
 
                     GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyBuffer);
                     GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyBuffer);
 
-                    int MaxWidth = Math.Max(Image.Width, this.Width);
-                    int MaxHeight = Math.Max(Image.Height, this.Height);
+                    if (CopyBufferSize < CurrentSize)
+                    {
+                        CopyBufferSize = CurrentSize;
 
-                    GL.BufferData(BufferTarget.PixelPackBuffer, MaxWidth * MaxHeight * MaxBpp, IntPtr.Zero, BufferUsageHint.StaticCopy);
+                        GL.BufferData(BufferTarget.PixelPackBuffer, CurrentSize, IntPtr.Zero, BufferUsageHint.DynamicCopy);
+                    }
 
                     GL.GetTexImage(TextureTarget.Texture2D, 0, this.PixelFormat, this.PixelType, IntPtr.Zero);
 
@@ -91,12 +100,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     PixelType,
                     IntPtr.Zero);
 
-                if (ChangingFormat)
+                if (Initialized)
                 {
                     GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
                     GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
-
-                    GL.DeleteBuffer(CopyBuffer);
                 }
 
                 this.Image = Image;
@@ -108,5 +115,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Initialized = true;
             }
         }
+
+        public bool HasColor   { get => ImageFormatConverter.HasColor(Format); }
+        public bool HasDepth   { get => ImageFormatConverter.HasDepth(Format); }
+        public bool HasStencil { get => ImageFormatConverter.HasStencil(Format); }
     }
 }
