@@ -69,7 +69,7 @@ https://openal.org/downloads/OpenAL11CoreSDK.zip
 	 - R = Right Shoulder Button
 	 - ZR = Right Trigger
    - For more information on how to configure these buttons see [CONFIG.md](CONFIG.md)
- - Multiple Players are supported. See [CONFIG.md](CONFIG.md) for more details.
+ - Multiple Players are partially supported. See [CONFIG.md](CONFIG.md) for more details.
    
  - Config File: `Ryujinx.conf` should be present in executable folder.
    For more information [you can go here](CONFIG.md).

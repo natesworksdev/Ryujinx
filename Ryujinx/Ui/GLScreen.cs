@@ -263,6 +263,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_HANDHELD,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Handheld < 0)
@@ -270,6 +276,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_HANDHELD,
                             HidControllerLayouts.Handheld_Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Handheld],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Handheld],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Handheld]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_HANDHELD,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Handheld],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Handheld],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Handheld]);
@@ -288,6 +300,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_1,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Player1 < 0)
@@ -295,6 +313,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_PLAYER_1,
                             HidControllerLayouts.Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player1],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player1],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player1]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_1,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player1],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Player1],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Player1]);
@@ -313,6 +337,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_2,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Player2 < 0)
@@ -320,6 +350,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_PLAYER_2,
                             HidControllerLayouts.Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player2],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player2],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player2]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_2,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player2],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Player2],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Player2]);
@@ -338,6 +374,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_3,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Player3 < 0)
@@ -345,6 +387,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_PLAYER_3,
                             HidControllerLayouts.Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player3],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player3],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player3]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_3,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player3],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Player3],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Player3]);
@@ -363,6 +411,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_4,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Player4 < 0)
@@ -370,6 +424,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_PLAYER_4,
                             HidControllerLayouts.Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player4],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player4],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player4]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_4,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player4],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Player4],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Player4]);
@@ -388,6 +448,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_5,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Player5 < 0)
@@ -395,6 +461,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_PLAYER_5,
                             HidControllerLayouts.Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player5],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player5],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player5]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_5,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player5],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Player5],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Player5]);
@@ -413,6 +485,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_6,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Player6 < 0)
@@ -420,6 +498,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_PLAYER_6,
                             HidControllerLayouts.Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player6],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player6],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player6]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_6,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player6],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Player6],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Player6]);
@@ -438,6 +522,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_7,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Player7 < 0)
@@ -445,6 +535,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_PLAYER_7,
                             HidControllerLayouts.Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player7],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player7],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player7]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_7,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player7],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Player7],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Player7]);
@@ -463,6 +559,12 @@ namespace Ryujinx
                             CurrentButtonsKeyboard,
                             LeftJoystickKeyboard,
                             RightJoystickKeyboard);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_8,
+                            HidControllerLayouts.Main,
+                            CurrentButtonsKeyboard,
+                            LeftJoystickKeyboard,
+                            RightJoystickKeyboard);
                         break;
                     default:
                         if (HidEmulatedDevices.Devices.Player8 < 0)
@@ -470,6 +572,12 @@ namespace Ryujinx
                         Ns.Hid.SetJoyconButton(
                             HidControllerId.CONTROLLER_PLAYER_8,
                             HidControllerLayouts.Joined,
+                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player8],
+                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player8],
+                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player8]);
+                        Ns.Hid.SetJoyconButton(
+                            HidControllerId.CONTROLLER_PLAYER_8,
+                            HidControllerLayouts.Main,
                             CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player8],
                             LeftJoystickGamePad[HidEmulatedDevices.Devices.Player8],
                             RightJoystickGamePad[HidEmulatedDevices.Devices.Player8]);
@@ -487,6 +595,12 @@ namespace Ryujinx
                                 CurrentButtonsKeyboard,
                                 LeftJoystickKeyboard,
                                 RightJoystickKeyboard);
+                            Ns.Hid.SetJoyconButton(
+                                HidControllerId.CONTROLLER_UNKNOWN,
+                                HidControllerLayouts.Main,
+                                CurrentButtonsKeyboard,
+                                LeftJoystickKeyboard,
+                                RightJoystickKeyboard);
                             break;
                         default:
                             if (HidEmulatedDevices.Devices.PlayerUnknown < 0)
@@ -497,17 +611,16 @@ namespace Ryujinx
                                 CurrentButtonsGamePad[HidEmulatedDevices.Devices.PlayerUnknown],
                                 LeftJoystickGamePad[HidEmulatedDevices.Devices.PlayerUnknown],
                                 RightJoystickGamePad[HidEmulatedDevices.Devices.PlayerUnknown]);
+                            Ns.Hid.SetJoyconButton(
+                                HidControllerId.CONTROLLER_UNKNOWN,
+                                HidControllerLayouts.Main,
+                                CurrentButtonsGamePad[HidEmulatedDevices.Devices.PlayerUnknown],
+                                LeftJoystickGamePad[HidEmulatedDevices.Devices.PlayerUnknown],
+                                RightJoystickGamePad[HidEmulatedDevices.Devices.PlayerUnknown]);
                             break;
                     }
                 }
             }
-
-            /*Ns.Hid.SetJoyconButton(
-                HidControllerId.CONTROLLER_PLAYER_1,
-                HidControllerLayouts.Joined,
-                CurrentButton,
-                LeftJoystick,
-                RightJoystick);*/
         }
 
         private new void RenderFrame()
