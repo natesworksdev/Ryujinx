@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     {
                         CopyBufferSize = CurrentSize;
 
-                        GL.BufferData(BufferTarget.PixelPackBuffer, CurrentSize, IntPtr.Zero, BufferUsageHint.DynamicCopy);
+                        GL.BufferData(BufferTarget.PixelPackBuffer, CurrentSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
                     }
 
                     GL.GetTexImage(TextureTarget.Texture2D, 0, this.PixelFormat, this.PixelType, IntPtr.Zero);

@@ -52,11 +52,19 @@ namespace Ryujinx.Graphics.Gal
         {
             switch (Format)
             {
-                case GalFrameBufferFormat.R32Float: return GalImageFormat.R32;
+                case GalFrameBufferFormat.R32Float:       return GalImageFormat.R32;
+                case GalFrameBufferFormat.RGB10A2Unorm:   return GalImageFormat.A2B10G10R10;
+                case GalFrameBufferFormat.RGBA8Srgb:      return GalImageFormat.A8B8G8R8; //Stubbed
+                case GalFrameBufferFormat.RGBA16Float:    return GalImageFormat.R16G16B16A16;
+                case GalFrameBufferFormat.R16Float:       return GalImageFormat.R16;
+                case GalFrameBufferFormat.R8Unorm:        return GalImageFormat.R8;
+                case GalFrameBufferFormat.RGBA8Unorm:     return GalImageFormat.A8B8G8R8;
+                case GalFrameBufferFormat.R11G11B10Float: return GalImageFormat.BF10GF11RF11;
+                case GalFrameBufferFormat.RGBA32Float:    return GalImageFormat.R32G32B32A32;
+                case GalFrameBufferFormat.RG16Snorm:      return GalImageFormat.G16R16;
             }
 
-            //Stubbed.
-            return GalImageFormat.A8B8G8R8;
+            throw new NotImplementedException(Format.ToString());
         }
 
         public static GalImageFormat ConvertZeta(GalZetaFormat Format)
@@ -66,8 +74,7 @@ namespace Ryujinx.Graphics.Gal
                 case GalZetaFormat.Z32Float: return GalImageFormat.ZF32;
             }
 
-            //Stubbed.
-            return GalImageFormat.Z24S8;
+            throw new NotImplementedException(Format.ToString());
         }
 
         public static bool HasColor(GalImageFormat Format)
@@ -84,6 +91,7 @@ namespace Ryujinx.Graphics.Gal
                 case GalImageFormat.A1B5G5R5:
                 case GalImageFormat.B5G6R5:
                 case GalImageFormat.BC7U:
+                case GalImageFormat.G16R16:
                 case GalImageFormat.G8R8:
                 case GalImageFormat.R16:
                 case GalImageFormat.R8:

@@ -42,6 +42,7 @@ namespace Ryujinx.HLE.Gpu.Texture
 
                 case GalImageFormat.A8B8G8R8:
                 case GalImageFormat.A2B10G10R10:
+                case GalImageFormat.G16R16:
                 case GalImageFormat.R32:
                 case GalImageFormat.ZF32:
                 case GalImageFormat.BF10GF11RF11:

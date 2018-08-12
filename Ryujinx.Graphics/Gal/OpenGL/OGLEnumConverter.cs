@@ -129,18 +129,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Format)
             {
-                case GalImageFormat.R32G32B32A32: return (PixelInternalFormat.Rgba8,             PixelFormat.Rgba,           PixelType.Float);
-                case GalImageFormat.R16G16B16A16: return (PixelInternalFormat.Rgba8,             PixelFormat.Rgba,           PixelType.HalfFloat);
+                case GalImageFormat.R32G32B32A32: return (PixelInternalFormat.Rgba32f,           PixelFormat.Rgba,           PixelType.Float);
+                case GalImageFormat.R16G16B16A16: return (PixelInternalFormat.Rgba16f,           PixelFormat.Rgba,           PixelType.HalfFloat);
                 case GalImageFormat.A8B8G8R8:     return (PixelInternalFormat.Rgba8,             PixelFormat.Rgba,           PixelType.UnsignedByte);
-                case GalImageFormat.A2B10G10R10:  return (PixelInternalFormat.Rgba8,             PixelFormat.Rgba,           PixelType.UnsignedInt2101010Reversed);
-                case GalImageFormat.R32:          return (PixelInternalFormat.Rgba8,             PixelFormat.Red,            PixelType.Float);
-                case GalImageFormat.A1B5G5R5:     return (PixelInternalFormat.Rgba8,             PixelFormat.Rgba,           PixelType.UnsignedShort5551);
-                case GalImageFormat.B5G6R5:       return (PixelInternalFormat.Rgba8,             PixelFormat.Rgb,            PixelType.UnsignedShort565);
-                case GalImageFormat.G8R8:         return (PixelInternalFormat.Rgba8,             PixelFormat.Rg,             PixelType.UnsignedByte);
-                case GalImageFormat.R16:          return (PixelInternalFormat.Rgba8,             PixelFormat.Red,            PixelType.HalfFloat);
-                case GalImageFormat.R8:           return (PixelInternalFormat.Rgba8,             PixelFormat.Red,            PixelType.UnsignedByte);
+                case GalImageFormat.A2B10G10R10:  return (PixelInternalFormat.Rgb10A2,           PixelFormat.Rgba,           PixelType.UnsignedInt2101010Reversed);
+                case GalImageFormat.R32:          return (PixelInternalFormat.R32f,              PixelFormat.Red,            PixelType.Float);
+                case GalImageFormat.A1B5G5R5:     return (PixelInternalFormat.Rgb5A1,            PixelFormat.Rgba,           PixelType.UnsignedShort5551);
+                case GalImageFormat.B5G6R5:       return (PixelInternalFormat.Rgba,              PixelFormat.Rgb,            PixelType.UnsignedShort565); //Stubbed.
+                case GalImageFormat.G16R16:       return (PixelInternalFormat.Rg16f,             PixelFormat.Rg,             PixelType.HalfFloat);
+                case GalImageFormat.G8R8:         return (PixelInternalFormat.Rg8,               PixelFormat.Rg,             PixelType.UnsignedByte);
+                case GalImageFormat.R16:          return (PixelInternalFormat.R16,               PixelFormat.Red,            PixelType.HalfFloat);
+                case GalImageFormat.R8:           return (PixelInternalFormat.R8,                PixelFormat.Red,            PixelType.UnsignedByte);
                 case GalImageFormat.ZF32:         return (PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, PixelType.Float);
-                case GalImageFormat.BF10GF11RF11: return (PixelInternalFormat.Rgba8,             PixelFormat.Rgb,            PixelType.UnsignedInt10F11F11FRev);
+                case GalImageFormat.BF10GF11RF11: return (PixelInternalFormat.R11fG11fB10f,      PixelFormat.Rgb,            PixelType.UnsignedInt10F11F11FRev);
                 case GalImageFormat.Z24S8:        return (PixelInternalFormat.Depth24Stencil8,   PixelFormat.DepthStencil,   PixelType.UnsignedInt248);
             }
 
