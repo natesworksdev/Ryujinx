@@ -24,6 +24,7 @@
         BC5,
         Z24S8,
         ZF32,
+        Z16,
 
         ConvertedBegin,
         Astc2D4x4,

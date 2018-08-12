@@ -141,6 +141,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.R16:          return (PixelInternalFormat.R16,               PixelFormat.Red,            PixelType.HalfFloat);
                 case GalImageFormat.R8:           return (PixelInternalFormat.R8,                PixelFormat.Red,            PixelType.UnsignedByte);
                 case GalImageFormat.ZF32:         return (PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, PixelType.Float);
+                case GalImageFormat.Z16:          return (PixelInternalFormat.DepthComponent16,  PixelFormat.DepthComponent, PixelType.HalfFloat);
                 case GalImageFormat.BF10GF11RF11: return (PixelInternalFormat.R11fG11fB10f,      PixelFormat.Rgb,            PixelType.UnsignedInt10F11F11FRev);
                 case GalImageFormat.Z24S8:        return (PixelInternalFormat.Depth24Stencil8,   PixelFormat.DepthStencil,   PixelType.UnsignedInt248);
             }

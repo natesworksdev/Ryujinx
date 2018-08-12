@@ -71,7 +71,9 @@ namespace Ryujinx.Graphics.Gal
         {
             switch (Format)
             {
-                case GalZetaFormat.Z32Float: return GalImageFormat.ZF32;
+                case GalZetaFormat.Z32Float:   return GalImageFormat.ZF32;
+                case GalZetaFormat.S8Z24Unorm: return GalImageFormat.Z24S8;
+                case GalZetaFormat.Z16Unorm:   return GalImageFormat.Z16;
             }
 
             throw new NotImplementedException(Format.ToString());
@@ -127,6 +129,7 @@ namespace Ryujinx.Graphics.Gal
             {
                 case GalImageFormat.Z24S8:
                 case GalImageFormat.ZF32:
+                case GalImageFormat.Z16:
                     return true;
             }
 
