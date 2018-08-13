@@ -102,10 +102,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             SetAlphaBlending(State);
             SetPrimitiveRestart(State);
 
-            for (int FbIndex = 0; FbIndex < 8; FbIndex++)
-            {
-                SetFrameBuffer(Vmm, FbIndex);
-            }
+            SetFrameBuffer(Vmm, 0);
             SetZeta(Vmm);
 
             long[] Keys = UploadShaders(Vmm);

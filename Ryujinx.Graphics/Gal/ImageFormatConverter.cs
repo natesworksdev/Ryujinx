@@ -62,6 +62,8 @@ namespace Ryujinx.Graphics.Gal
                 case GalFrameBufferFormat.R11G11B10Float: return GalImageFormat.BF10GF11RF11;
                 case GalFrameBufferFormat.RGBA32Float:    return GalImageFormat.R32G32B32A32;
                 case GalFrameBufferFormat.RG16Snorm:      return GalImageFormat.G16R16;
+                case GalFrameBufferFormat.RG16Float:      return GalImageFormat.G16R16; //Stubbed
+                case GalFrameBufferFormat.RG8Snorm:       return GalImageFormat.R8; //Stubbed
             }
 
             throw new NotImplementedException(Format.ToString());

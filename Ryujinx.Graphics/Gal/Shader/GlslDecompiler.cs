@@ -829,8 +829,11 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     return "gl_PointSize";
                 }
+            }
 
-                throw new InvalidOperationException();
+            if (DeclInfo.Index >= 16)
+            {
+                throw new InvalidOperationException($"Shader attribute offset {Abuf.Offs} is invalid.");
             }
 
             if (Decl.ShaderType == GalShaderType.Geometry)

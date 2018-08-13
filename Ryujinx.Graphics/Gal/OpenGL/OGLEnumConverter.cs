@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.BC2:       return InternalFormat.CompressedRgbaS3tcDxt3Ext;
                 case GalImageFormat.BC3:       return InternalFormat.CompressedRgbaS3tcDxt5Ext;
                 case GalImageFormat.BC4:       return InternalFormat.CompressedRedRgtc1;
-                case GalImageFormat.BC5:       return InternalFormat.CompressedRgRgtc2;
+                case GalImageFormat.BC5:       return InternalFormat.CompressedSignedRgRgtc2;
             }
 
             throw new NotImplementedException(Format.ToString());
