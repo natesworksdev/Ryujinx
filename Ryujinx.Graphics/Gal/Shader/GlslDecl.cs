@@ -228,7 +228,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         }
                         else
                         {
-                            throw new InvalidOperationException();
+                            throw new NotImplementedException("Shader TEX.B instruction is not fully supported!");
                         }
                     }
                     break;
