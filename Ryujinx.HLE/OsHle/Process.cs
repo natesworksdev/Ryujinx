@@ -52,8 +52,6 @@ namespace Ryujinx.HLE.OsHle
 
         public AppletStateMgr AppletState { get; private set; }
 
-        public Npdm Metadata { get; set; }
-
         private SvcHandler SvcHandler;
 
         private ConcurrentDictionary<long, KThread> Threads;

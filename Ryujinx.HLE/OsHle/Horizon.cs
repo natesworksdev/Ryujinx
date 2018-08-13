@@ -103,21 +103,7 @@ namespace Ryujinx.HLE.OsHle
                 }
             }
 
-            void LoadNpdm(string FileName)
-            {
-                string File = Directory.GetFiles(ExeFsDir, FileName)[0];
-
-                Ns.Log.PrintInfo(LogClass.Loader, "Loading Title Metadata...");
-
-                using (FileStream Input = new FileStream(File, FileMode.Open))
-                {
-                    MainProcess.Metadata = new Npdm(Input);
-                }
-            }
-
-            LoadNpdm("*.npdm");
-
-            if (!MainProcess.Metadata.Is64Bits)
+            if (!MainProcess.MetaData.Is64Bits)
             {
                 throw new NotImplementedException("32-bit titles are unsupported!");
             }

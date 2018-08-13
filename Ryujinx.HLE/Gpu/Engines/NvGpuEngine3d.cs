@@ -471,11 +471,11 @@ namespace Ryujinx.HLE.Gpu.Engines
                 {
                     ConstBuffer Cb = ConstBuffers[Stage][Index];
 
-                    long Key = Cb.Position;
+                    long Key = Vmm.GetPhysicalAddress(Cb.Position);
 
                     if (Cb.Enabled && QueryKeyUpload(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer))
                     {
-                        IntPtr Source = Vmm.GetHostAddress(Key, Cb.Size);
+                        IntPtr Source = Vmm.GetHostAddress(Cb.Position, Cb.Size);
 
                         Gpu.Renderer.Buffer.SetData(Key, Cb.Size, Source);
                     }
@@ -669,11 +669,13 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             long Position = MakeInt64From2xInt32(NvGpuEngine3dReg.ConstBufferAddress);
 
+            long CbKey = Vmm.GetPhysicalAddress(Position);
+
             int Size = ReadRegister(NvGpuEngine3dReg.ConstBufferSize);
 
-            if (!Gpu.Renderer.Buffer.IsCached(Position, Size))
+            if (!Gpu.Renderer.Buffer.IsCached(CbKey, Size))
             {
-                Gpu.Renderer.Buffer.Create(Position, Size);
+                Gpu.Renderer.Buffer.Create(CbKey, Size);
             }
 
             ConstBuffer Cb = ConstBuffers[Stage][Index];

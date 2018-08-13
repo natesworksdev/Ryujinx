@@ -28,8 +28,6 @@ namespace Ryujinx.HLE.OsHle.Font
 
         private Dictionary<SharedFontType, FontInfo> FontData;
 
-        private bool[] LoadedFonts;
-
         public SharedFontManager(Switch Device, long PhysicalAddress)
         {
             this.PhysicalAddress = PhysicalAddress;
@@ -37,8 +35,6 @@ namespace Ryujinx.HLE.OsHle.Font
             Memory = Device.Memory;
 
             FontsPath = Path.Combine(Device.VFs.GetSystemPath(), "fonts");
-
-            LoadedFonts = new bool[(int)SharedFontType.Count];
         }
 
         public void EnsureInitialized()
