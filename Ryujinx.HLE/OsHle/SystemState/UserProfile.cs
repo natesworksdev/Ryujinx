@@ -8,9 +8,9 @@ namespace Ryujinx.HLE.OsHle.SystemState
 
         public UserId Uuid { get; private set; }
 
-        public long LastModifiedTimestamp { get; private set; }
-
         public string Name { get; private set; }
+
+        public long LastModifiedTimestamp { get; private set; }
 
         public OpenCloseState AccountState    { get; set; }
         public OpenCloseState OnlinePlayState { get; set; }
@@ -20,10 +20,10 @@ namespace Ryujinx.HLE.OsHle.SystemState
             this.Uuid = Uuid;
             this.Name = Name;
 
+            LastModifiedTimestamp = 0;
+
             AccountState    = OpenCloseState.Closed;
             OnlinePlayState = OpenCloseState.Closed;
-
-            LastModifiedTimestamp = 0;
 
             UpdateTimestamp();
         }
