@@ -52,6 +52,11 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long ListOpenUsers(ServiceCtx Context)
         {
+            long Position = Context.Request.RecvListBuff[0].Position;
+
+            Context.Memory.WriteInt64(Position,     1L);
+            Context.Memory.WriteInt64(Position + 8, 0L);
+			
             Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
             return 0;
