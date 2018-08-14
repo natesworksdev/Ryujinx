@@ -259,7 +259,7 @@ namespace Ryujinx
             double HostFps = Ns.Statistics.GetSystemFrameRate();
             double GameFps = Ns.Statistics.GetGameFrameRate();
 
-            NewTitle = $"Ryujinx | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0}";
+            NewTitle = $"Ryujinx [{Properties.Resources.CurrentCommit}] | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0}";
 
             TitleEvent = true;
 
