@@ -13,6 +13,11 @@ namespace Ryujinx.HLE.OsHle.SystemState
 
         public UserId(long Low, long High)
         {
+            if ((Low | High) == 0)
+            {
+                throw new ArgumentException("Zero is not a valid user id!");
+            }
+
             byte[] Bytes = new byte[16];
 
             int Index = Bytes.Length;
@@ -42,7 +47,12 @@ namespace Ryujinx.HLE.OsHle.SystemState
         {
             if (UserIdHex == null || UserIdHex.Length != 32 || !UserIdHex.All("0123456789abcdefABCDEF".Contains))
             {
-                throw new ArgumentException("UserId is not a valid Hex string", nameof(UserIdHex));
+                throw new ArgumentException("Invalid user id!", nameof(UserIdHex));
+            }
+
+            if (UserIdHex == "00000000000000000000000000000000")
+            {
+                throw new ArgumentException("Zero is not a valid user id!", nameof(UserIdHex));
             }
 
             this.UserIdHex = UserIdHex.ToUpper();
