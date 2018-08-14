@@ -59,8 +59,6 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
             ulong Size = (ulong)Args.Pages *
                          (ulong)Args.PageSize;
 
-            long oldoffs = Args.Offset;
-
             int Result = NvResult.Success;
 
             lock (ASCtx)
@@ -173,8 +171,6 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
 
                 return NvResult.InvalidInput;
             }
-
-            long oldoffs = Args.Offset;
 
             long PA;
 
