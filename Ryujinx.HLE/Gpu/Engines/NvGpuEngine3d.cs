@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             Gpu.Renderer.Shader.BindProgram();
 
             UploadTextures(Vmm, State, Keys);
-            UploadConstBuffers(Vmm, State);
+            UploadConstBuffers(Vmm, State, Keys);
             UploadVertexArrays(Vmm, State);
 
             DispatchRender(Vmm, State);
@@ -463,24 +463,29 @@ namespace Ryujinx.HLE.Gpu.Engines
             Gpu.Renderer.Texture.SetSampler(Sampler);
         }
 
-        private void UploadConstBuffers(NvGpuVmm Vmm, GalPipelineState State)
+        private void UploadConstBuffers(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)
         {
-            for (int Stage = 0; Stage < State.ConstBufferKeys.Length; Stage++)
+            for (int Stage = 0; Stage < Keys.Length; Stage++)
             {
-                for (int Index = 0; Index < State.ConstBufferKeys[Stage].Length; Index++)
+                foreach (ShaderDeclInfo DeclInfo in Gpu.Renderer.Shader.GetConstBufferUsage(Keys[Stage]))
                 {
-                    ConstBuffer Cb = ConstBuffers[Stage][Index];
+                    ConstBuffer Cb = ConstBuffers[Stage][DeclInfo.Cbuf];
+
+                    if (!Cb.Enabled)
+                    {
+                        continue;
+                    }
 
                     long Key = Vmm.GetPhysicalAddress(Cb.Position);
 
-                    if (Cb.Enabled && QueryKeyUpload(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer))
+                    if (QueryKeyUpload(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer))
                     {
                         IntPtr Source = Vmm.GetHostAddress(Cb.Position, Cb.Size);
 
                         Gpu.Renderer.Buffer.SetData(Key, Cb.Size, Source);
                     }
 
-                    State.ConstBufferKeys[Stage][Index] = Key;
+                    State.ConstBufferKeys[Stage][DeclInfo.Cbuf] = Key;
                 }
             }
         }
