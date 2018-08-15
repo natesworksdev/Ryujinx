@@ -2,6 +2,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Logging;
 using System.Collections.Generic;
+
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Acc

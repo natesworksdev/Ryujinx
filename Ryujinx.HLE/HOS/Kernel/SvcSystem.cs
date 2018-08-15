@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.Logging;
 using System;
 using System.Threading;
+
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel

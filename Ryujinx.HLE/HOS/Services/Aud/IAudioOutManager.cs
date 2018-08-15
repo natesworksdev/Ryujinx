@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Services.Aud.AudioOut;
 using Ryujinx.HLE.Logging;
 using System.Collections.Generic;
 using System.Text;
+
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Aud

@@ -4,6 +4,7 @@ using Ryujinx.HLE.HOS.Services.Aud.AudioRenderer;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
+
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Aud

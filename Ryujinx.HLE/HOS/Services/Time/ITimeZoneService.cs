@@ -3,6 +3,7 @@ using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
+
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Time
