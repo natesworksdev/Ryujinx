@@ -2,7 +2,7 @@ using ChocolArm64.Memory;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Ipc;
 using Ryujinx.HLE.OsHle.SystemState;
-using Ryujinx.HLE.OsHle.Utilities;
+using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.Text;
 

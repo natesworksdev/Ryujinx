@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.HLE.OsHle.Exceptions
+namespace Ryujinx.HLE.Exceptions
 {
     public class UndefinedInstructionException : Exception
     {

@@ -2,7 +2,7 @@ using Ryujinx.Audio;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Ipc;
 using Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer;
-using Ryujinx.HLE.OsHle.Utilities;
+using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 
 using static Ryujinx.HLE.OsHle.ErrorCode;

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace Ryujinx.HLE.OsHle.Utilities
+namespace Ryujinx.HLE.Utilities
 {
     static class StringUtils
     {

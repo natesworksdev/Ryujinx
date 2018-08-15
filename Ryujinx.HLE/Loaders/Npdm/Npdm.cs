@@ -1,4 +1,4 @@
-using Ryujinx.HLE.OsHle.Utilities;
+using Ryujinx.HLE.Utilities;
 using System.IO;
 using System.Text;
 

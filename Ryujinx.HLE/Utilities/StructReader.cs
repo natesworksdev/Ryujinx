@@ -1,7 +1,7 @@
 using ChocolArm64.Memory;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.OsHle.Utilities
+namespace Ryujinx.HLE.Utilities
 {
     class StructReader
     {

@@ -4,7 +4,7 @@ using Ryujinx.Audio.Adpcm;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Ipc;
 using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.Utilities;
+using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;

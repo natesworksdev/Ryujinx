@@ -1,5 +1,5 @@
 using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Utilities;
+using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;

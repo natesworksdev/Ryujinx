@@ -1,9 +1,9 @@
-﻿namespace Ryujinx.HLE.OsHle.Utilities
+﻿namespace Ryujinx.HLE.Utilities
 {
     static class EndianSwap
     {
         public static short Swap16(short Value) => (short)(((Value >> 8) & 0xff) | (Value << 8));
-        
+
         public static int Swap32(int Value)
         {
             uint UintVal = (uint)Value;

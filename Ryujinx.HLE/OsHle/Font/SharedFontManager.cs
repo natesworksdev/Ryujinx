@@ -1,5 +1,5 @@
 ﻿using Ryujinx.HLE.Memory;
-using Ryujinx.HLE.OsHle.Utilities;
+using Ryujinx.HLE.Utilities;
 using Ryujinx.HLE.Resource;
 using System.Collections.Generic;
 using System.IO;

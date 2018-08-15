@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Utilities
+namespace Ryujinx.HLE.Utilities
 {
     static class IntUtils
     {
