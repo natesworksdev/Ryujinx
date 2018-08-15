@@ -583,6 +583,8 @@ namespace ChocolArm64.Memory
                     if (ObservedPages.TryAdd(Position >> PTPageBits, (IntPtr)Ptr))
                     {
                         Modified[Page] = true;
+
+                        Count++;
                     }
                     else
                     {
