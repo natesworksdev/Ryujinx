@@ -43,17 +43,19 @@ namespace ChocolArm64.Memory
 
         private Dictionary<int, ArmMonitor> Monitors;
 
+        private ConcurrentDictionary<long, IntPtr> ObservedPages;
+
         public IntPtr Ram { get; private set; }
 
         private byte* RamPtr;
 
         private byte*** PageTable;
 
-        private ConcurrentDictionary<long, IntPtr> ObservedPages;
-
         public AMemory(IntPtr Ram)
         {
             Monitors = new Dictionary<int, ArmMonitor>();
+
+            ObservedPages = new ConcurrentDictionary<long, IntPtr>();
 
             this.Ram = Ram;
 
@@ -65,8 +67,6 @@ namespace ChocolArm64.Memory
             {
                 PageTable[L0] = null;
             }
-
-            ObservedPages = new ConcurrentDictionary<long, IntPtr>();
         }
 
         public void RemoveMonitor(AThreadState State)
@@ -445,14 +445,19 @@ namespace ChocolArm64.Memory
             long L0 = (Position >> PTLvl0Bit) & PTLvl0Mask;
             long L1 = (Position >> PTLvl1Bit) & PTLvl1Mask;
 
+            long Old = Position;
+
             byte** Lvl1 = PageTable[L0];
+
+            if ((Position >> (PTLvl0Bit + PTLvl0Bits)) != 0)
+            {
+                goto Unmapped;
+            }
 
             if (Lvl1 == null)
             {
-                return HandleNullPte(Position);
+                goto Unmapped;
             }
-
-            long Old = Position;
 
             Position &= PageMask;
 
@@ -460,10 +465,13 @@ namespace ChocolArm64.Memory
 
             if (Ptr == null)
             {
-                return HandleNullPte(Old);
+                goto Unmapped;
             }
 
             return Ptr + Position;
+
+Unmapped:
+            return HandleNullPte(Old);
         }
 
         private byte* HandleNullPte(long Position)
@@ -483,14 +491,19 @@ namespace ChocolArm64.Memory
             long L0 = (Position >> PTLvl0Bit) & PTLvl0Mask;
             long L1 = (Position >> PTLvl1Bit) & PTLvl1Mask;
 
+            long Old = Position;
+
             byte** Lvl1 = PageTable[L0];
+
+            if ((Position >> (PTLvl0Bit + PTLvl0Bits)) != 0)
+            {
+                goto Unmapped;
+            }
 
             if (Lvl1 == null)
             {
-                return HandleNullPteWrite(Position);
+                goto Unmapped;
             }
-
-            long Old = Position;
 
             Position &= PageMask;
 
@@ -498,10 +511,13 @@ namespace ChocolArm64.Memory
 
             if (Ptr == null)
             {
-                return HandleNullPteWrite(Old);
+                goto Unmapped;
             }
 
             return Ptr + Position;
+
+Unmapped:
+            return HandleNullPteWrite(Old);
         }
 
         private byte* HandleNullPteWrite(long Position)
