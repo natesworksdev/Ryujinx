@@ -186,28 +186,7 @@ namespace Ryujinx.HLE.OsHle
 
         internal void ExitProcess(int ProcessId)
         {
-            if (Processes.TryGetValue(ProcessId, out Process Process) && Process.NeedsHbAbi)
-            {
-                string NextNro = Homebrew.ReadHbAbiNextLoadPath(Process.Memory, Process.HbAbiDataPosition);
-
-                Ns.Log.PrintInfo(LogClass.Loader, $"HbAbi NextLoadPath {NextNro}");
-
-                if (NextNro == string.Empty)
-                {
-                    NextNro = "sdmc:/hbmenu.nro";
-                }
-
-                NextNro = NextNro.Replace("sdmc:", string.Empty);
-
-                NextNro = Ns.VFs.GetFullPath(Ns.VFs.GetSdCardPath(), NextNro);
-
-                if (File.Exists(NextNro))
-                {
-                    LoadProgram(NextNro);
-                }
-            }
-
-            if (Processes.TryRemove(ProcessId, out Process))
+            if (Processes.TryRemove(ProcessId, out Process Process))
             {
                 Process.StopAllThreadsAsync();
                 Process.Dispose();
