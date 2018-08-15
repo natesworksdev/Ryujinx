@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx.HLE.OsHle.SystemState
+namespace Ryujinx.HLE.HOS.SystemState
 {
     class UserProfile
     {

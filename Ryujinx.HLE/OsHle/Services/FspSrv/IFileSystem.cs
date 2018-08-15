@@ -1,12 +1,12 @@
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-namespace Ryujinx.HLE.OsHle.Services.FspSrv
+namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
     class IFileSystem : IpcService
     {

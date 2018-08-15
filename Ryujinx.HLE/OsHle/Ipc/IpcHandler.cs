@@ -1,9 +1,9 @@
 using ChocolArm64.Memory;
-using Ryujinx.HLE.OsHle.Kernel;
+using Ryujinx.HLE.HOS.Kernel;
 using System;
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle.Ipc
+namespace Ryujinx.HLE.HOS.Ipc
 {
     static class IpcHandler
     {

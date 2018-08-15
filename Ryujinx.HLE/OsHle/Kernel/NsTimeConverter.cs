@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Kernel
+namespace Ryujinx.HLE.HOS.Kernel
 {
     static class NsTimeConverter
     {

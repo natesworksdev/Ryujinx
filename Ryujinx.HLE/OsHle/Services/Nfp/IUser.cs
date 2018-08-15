@@ -1,10 +1,10 @@
-﻿using Ryujinx.HLE.Input;
+﻿using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.Input;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Nfp
+namespace Ryujinx.HLE.HOS.Services.Nfp
 {
     class IUser : IpcService
     {

@@ -1,8 +1,8 @@
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.SystemState;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.SystemState;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Set
+namespace Ryujinx.HLE.HOS.Services.Set
 {
     class ISettingsServer : IpcService
     {

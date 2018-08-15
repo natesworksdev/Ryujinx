@@ -1,8 +1,8 @@
-using Ryujinx.HLE.OsHle.Font;
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Font;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Pl
+namespace Ryujinx.HLE.HOS.Services.Pl
 {
     class ISharedFontManager : IpcService
     {

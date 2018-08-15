@@ -1,15 +1,14 @@
 using ChocolArm64.Memory;
 using Ryujinx.Audio;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.Aud.AudioOut;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.Services.Aud.AudioOut;
 using System.Collections.Generic;
 using System.Text;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
-
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.HOS.Services.Aud
 {
     class IAudioOutManager : IpcService
     {

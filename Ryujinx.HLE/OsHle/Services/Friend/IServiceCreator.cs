@@ -1,7 +1,7 @@
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Friend
+namespace Ryujinx.HLE.HOS.Services.Friend
 {
     class IServiceCreator : IpcService
     {

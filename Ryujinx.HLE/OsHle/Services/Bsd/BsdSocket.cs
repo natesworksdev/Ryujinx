@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace Ryujinx.HLE.OsHle.Services.Bsd
+namespace Ryujinx.HLE.HOS.Services.Bsd
 {
     class BsdSocket
     {

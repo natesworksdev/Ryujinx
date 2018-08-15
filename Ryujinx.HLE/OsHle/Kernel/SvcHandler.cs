@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Ryujinx.HLE.OsHle.Kernel
+namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {

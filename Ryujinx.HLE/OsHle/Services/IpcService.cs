@@ -1,11 +1,11 @@
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle.Services
+namespace Ryujinx.HLE.HOS.Services
 {
     abstract class IpcService : IIpcService
     {

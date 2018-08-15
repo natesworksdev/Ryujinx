@@ -3,7 +3,7 @@ using Ryujinx.HLE.Logging;
 using System;
 using System.Diagnostics;
 
-namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuGpu
+namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 {
     class NvGpuGpuIoctl
     {

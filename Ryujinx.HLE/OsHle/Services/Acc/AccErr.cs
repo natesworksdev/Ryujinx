@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Acc
+namespace Ryujinx.HLE.HOS.Services.Acc
 {
     static class AccErr
     {

@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace Ryujinx.HLE.OsHle.SystemState
+namespace Ryujinx.HLE.HOS.SystemState
 {
     public struct UserId
     {

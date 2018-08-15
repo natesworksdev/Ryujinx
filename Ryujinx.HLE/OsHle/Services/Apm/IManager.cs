@@ -1,7 +1,7 @@
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Apm
+namespace Ryujinx.HLE.HOS.Services.Apm
 {
     class IManager : IpcService
     {

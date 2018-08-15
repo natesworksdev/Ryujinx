@@ -1,12 +1,12 @@
 using ChocolArm64.Memory;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.SystemState;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ryujinx.HLE.OsHle.Services.Acc
+namespace Ryujinx.HLE.HOS.Services.Acc
 {
     class IProfile : IpcService
     {

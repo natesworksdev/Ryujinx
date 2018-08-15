@@ -1,11 +1,10 @@
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
 using System.Collections.Generic;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
-
-namespace Ryujinx.HLE.OsHle.Services.Am
+namespace Ryujinx.HLE.HOS.Services.Am
 {
     class ICommonStateGetter : IpcService
     {

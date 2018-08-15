@@ -4,7 +4,7 @@ using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Concurrent;
 
-namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
+namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 {
     class NvMapIoctl
     {

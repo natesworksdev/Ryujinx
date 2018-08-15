@@ -1,15 +1,14 @@
 using ChocolArm64.Memory;
 using ChocolArm64.State;
-using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Exceptions;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Services;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Services;
+using Ryujinx.HLE.Logging;
 using System;
 using System.Threading;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
-
-namespace Ryujinx.HLE.OsHle.Kernel
+namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {

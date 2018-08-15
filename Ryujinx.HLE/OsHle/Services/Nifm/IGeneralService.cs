@@ -1,13 +1,13 @@
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
-namespace Ryujinx.HLE.OsHle.Services.Nifm
+namespace Ryujinx.HLE.HOS.Services.Nifm
 {
     class IGeneralService : IpcService
     {

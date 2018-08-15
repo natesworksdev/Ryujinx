@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Font
+namespace Ryujinx.HLE.HOS.Font
 {
     public enum SharedFontType
     {

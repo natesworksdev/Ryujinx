@@ -1,10 +1,10 @@
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Nifm
+namespace Ryujinx.HLE.HOS.Services.Nifm
 {
     class IRequest : IpcService, IDisposable
     {

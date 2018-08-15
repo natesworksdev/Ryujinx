@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle.Services.Android
+namespace Ryujinx.HLE.HOS.Services.Android
 {
     struct GbpBuffer
     {

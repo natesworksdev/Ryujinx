@@ -1,7 +1,7 @@
 using ChocolArm64.Memory;
+using Ryujinx.HLE.HOS;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Loaders.Executables;
-using Ryujinx.HLE.OsHle;
-using Ryujinx.HLE.OsHle.Kernel;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.IO;

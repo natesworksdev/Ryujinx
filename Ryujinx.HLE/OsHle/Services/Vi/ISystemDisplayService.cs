@@ -1,8 +1,8 @@
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Vi
+namespace Ryujinx.HLE.HOS.Services.Vi
 {
     class ISystemDisplayService : IpcService
     {

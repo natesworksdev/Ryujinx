@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuGpu
+﻿namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 {
     struct NvGpuGpuGetActiveSlotMask
     {

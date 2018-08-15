@@ -1,9 +1,9 @@
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.SystemState;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Friend
+namespace Ryujinx.HLE.HOS.Services.Friend
 {
     class IFriendService : IpcService
     {

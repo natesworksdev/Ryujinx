@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.HOS.Services.Aud
 {
     enum SampleFormat : byte
     {

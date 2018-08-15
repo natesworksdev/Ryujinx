@@ -1,8 +1,8 @@
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle.Services.FspSrv
+namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
     class IStorage : IpcService
     {

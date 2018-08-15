@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Time
+namespace Ryujinx.HLE.HOS.Services.Time
 {
     enum SystemClockType
     {

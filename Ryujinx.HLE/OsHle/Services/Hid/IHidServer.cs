@@ -1,11 +1,11 @@
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Input;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Hid
+namespace Ryujinx.HLE.HOS.Services.Hid
 {
     class IHidServer : IpcService, IDisposable
     {

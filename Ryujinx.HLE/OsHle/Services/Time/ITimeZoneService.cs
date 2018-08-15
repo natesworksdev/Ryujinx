@@ -1,12 +1,11 @@
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
-
-namespace Ryujinx.HLE.OsHle.Services.Time
+namespace Ryujinx.HLE.HOS.Services.Time
 {
     class ITimeZoneService : IpcService
     {

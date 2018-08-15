@@ -1,9 +1,9 @@
 using ChocolArm64.State;
 using Ryujinx.HLE.Logging;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-namespace Ryujinx.HLE.OsHle.Kernel
+namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {

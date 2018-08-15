@@ -1,11 +1,11 @@
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.SystemState;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.HOS.Services.Aud
 {
     class IAudioDevice : IpcService
     {

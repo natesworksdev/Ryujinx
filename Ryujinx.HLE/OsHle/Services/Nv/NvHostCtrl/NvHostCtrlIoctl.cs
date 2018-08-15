@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Threading;
 
-namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
+namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 {
     class NvHostCtrlIoctl
     {

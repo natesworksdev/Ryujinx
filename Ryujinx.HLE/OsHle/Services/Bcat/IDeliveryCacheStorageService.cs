@@ -1,7 +1,7 @@
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Bcat
+namespace Ryujinx.HLE.HOS.Services.Bcat
 {
     class IDeliveryCacheStorageService : IpcService
     {
@@ -16,6 +16,6 @@ namespace Ryujinx.HLE.OsHle.Services.Bcat
                 //...
             };
         }
-		
+
     }
 }

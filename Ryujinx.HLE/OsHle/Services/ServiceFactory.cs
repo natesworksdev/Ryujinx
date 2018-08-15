@@ -1,28 +1,28 @@
-using Ryujinx.HLE.OsHle.Services.Acc;
-using Ryujinx.HLE.OsHle.Services.Am;
-using Ryujinx.HLE.OsHle.Services.Apm;
-using Ryujinx.HLE.OsHle.Services.Aud;
-using Ryujinx.HLE.OsHle.Services.Bsd;
-using Ryujinx.HLE.OsHle.Services.Caps;
-using Ryujinx.HLE.OsHle.Services.FspSrv;
-using Ryujinx.HLE.OsHle.Services.Hid;
-using Ryujinx.HLE.OsHle.Services.Lm;
-using Ryujinx.HLE.OsHle.Services.Mm;
-using Ryujinx.HLE.OsHle.Services.Nfp;
-using Ryujinx.HLE.OsHle.Services.Ns;
-using Ryujinx.HLE.OsHle.Services.Nv;
-using Ryujinx.HLE.OsHle.Services.Pctl;
-using Ryujinx.HLE.OsHle.Services.Pl;
-using Ryujinx.HLE.OsHle.Services.Prepo;
-using Ryujinx.HLE.OsHle.Services.Set;
-using Ryujinx.HLE.OsHle.Services.Sfdnsres;
-using Ryujinx.HLE.OsHle.Services.Sm;
-using Ryujinx.HLE.OsHle.Services.Spl;
-using Ryujinx.HLE.OsHle.Services.Ssl;
-using Ryujinx.HLE.OsHle.Services.Vi;
+using Ryujinx.HLE.HOS.Services.Acc;
+using Ryujinx.HLE.HOS.Services.Am;
+using Ryujinx.HLE.HOS.Services.Apm;
+using Ryujinx.HLE.HOS.Services.Aud;
+using Ryujinx.HLE.HOS.Services.Bsd;
+using Ryujinx.HLE.HOS.Services.Caps;
+using Ryujinx.HLE.HOS.Services.FspSrv;
+using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.HOS.Services.Lm;
+using Ryujinx.HLE.HOS.Services.Mm;
+using Ryujinx.HLE.HOS.Services.Nfp;
+using Ryujinx.HLE.HOS.Services.Ns;
+using Ryujinx.HLE.HOS.Services.Nv;
+using Ryujinx.HLE.HOS.Services.Pctl;
+using Ryujinx.HLE.HOS.Services.Pl;
+using Ryujinx.HLE.HOS.Services.Prepo;
+using Ryujinx.HLE.HOS.Services.Set;
+using Ryujinx.HLE.HOS.Services.Sfdnsres;
+using Ryujinx.HLE.HOS.Services.Sm;
+using Ryujinx.HLE.HOS.Services.Spl;
+using Ryujinx.HLE.HOS.Services.Ssl;
+using Ryujinx.HLE.HOS.Services.Vi;
 using System;
 
-namespace Ryujinx.HLE.OsHle.Services
+namespace Ryujinx.HLE.HOS.Services
 {
     static class ServiceFactory
     {

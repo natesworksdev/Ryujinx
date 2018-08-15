@@ -2,7 +2,7 @@ using ChocolArm64.Memory;
 using Ryujinx.Audio.Adpcm;
 using System;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
+namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
     class VoiceContext
     {

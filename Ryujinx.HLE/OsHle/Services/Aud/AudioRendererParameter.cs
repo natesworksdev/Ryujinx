@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.HOS.Services.Aud
 {
     [StructLayout(LayoutKind.Sequential)]
     struct AudioRendererParameter

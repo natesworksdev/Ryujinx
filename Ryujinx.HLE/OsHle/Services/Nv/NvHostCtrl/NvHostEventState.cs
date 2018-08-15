@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
+namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 {
     enum NvHostEventState
     {

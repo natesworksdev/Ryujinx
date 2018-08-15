@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.FspSrv
+namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
     static class FsErr
     {

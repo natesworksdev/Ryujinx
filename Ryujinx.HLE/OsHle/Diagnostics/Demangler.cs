@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ryujinx.HLE.OsHle.Diagnostics
+namespace Ryujinx.HLE.HOS.Diagnostics
 {
     static class Demangler
     {

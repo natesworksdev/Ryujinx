@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
+namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 {
     enum NvChannelName
     {

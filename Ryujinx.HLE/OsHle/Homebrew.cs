@@ -1,7 +1,7 @@
 ﻿using ChocolArm64.Memory;
 using System.Text;
 
-namespace Ryujinx.HLE.OsHle
+namespace Ryujinx.HLE.HOS
 {
     static class Homebrew
     {

@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle.Ipc
+namespace Ryujinx.HLE.HOS.Ipc
 {
     struct IpcRecvListBuffDesc
     {

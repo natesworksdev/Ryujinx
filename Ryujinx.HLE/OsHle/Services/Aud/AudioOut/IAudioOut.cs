@@ -1,11 +1,11 @@
 using ChocolArm64.Memory;
 using Ryujinx.Audio;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud.AudioOut
+namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
 {
     class IAudioOut : IpcService, IDisposable
     {

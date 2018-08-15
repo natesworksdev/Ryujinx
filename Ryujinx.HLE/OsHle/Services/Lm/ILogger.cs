@@ -1,10 +1,10 @@
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Ryujinx.HLE.OsHle.Services.Lm
+namespace Ryujinx.HLE.HOS.Services.Lm
 {
     class ILogger : IpcService
     {

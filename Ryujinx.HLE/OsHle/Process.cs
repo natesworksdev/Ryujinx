@@ -2,15 +2,15 @@ using ChocolArm64;
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
+using Ryujinx.HLE.Exceptions;
+using Ryujinx.HLE.HOS.Diagnostics;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.Nv;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Diagnostics;
-using Ryujinx.HLE.Exceptions;
-using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.Services.Nv;
-using Ryujinx.HLE.OsHle.SystemState;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Concurrent;
@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Ryujinx.HLE.OsHle
+namespace Ryujinx.HLE.HOS
 {
     class Process : IDisposable
     {

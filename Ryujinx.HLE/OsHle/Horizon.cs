@@ -1,14 +1,14 @@
+using Ryujinx.HLE.HOS.Font;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Font;
-using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.SystemState;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle
+namespace Ryujinx.HLE.HOS
 {
     public class Horizon : IDisposable
     {

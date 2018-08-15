@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle.Ipc
+namespace Ryujinx.HLE.HOS.Ipc
 {
     class IpcMessage
     {

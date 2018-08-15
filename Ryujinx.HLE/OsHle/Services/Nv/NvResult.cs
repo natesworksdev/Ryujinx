@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Nv
+namespace Ryujinx.HLE.HOS.Services.Nv
 {
     static class NvResult
     {

@@ -1,8 +1,8 @@
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Sm
+namespace Ryujinx.HLE.HOS.Services.Sm
 {
     class IUserInterface : IpcService
     {

@@ -1,8 +1,8 @@
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Time
+namespace Ryujinx.HLE.HOS.Services.Time
 {
     class ISystemClock : IpcService
     {

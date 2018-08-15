@@ -1,9 +1,9 @@
 ﻿using ChocolArm64.Memory;
 using ChocolArm64.State;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-namespace Ryujinx.HLE.OsHle.Kernel
+namespace Ryujinx.HLE.HOS.Kernel
 {
     static class AddressArbiter
     {

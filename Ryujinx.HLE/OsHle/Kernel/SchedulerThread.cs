@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace Ryujinx.HLE.OsHle.Kernel
+namespace Ryujinx.HLE.HOS.Kernel
 {
     class SchedulerThread : IDisposable
     {

@@ -1,17 +1,16 @@
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE.Gpu.Texture;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.Nv.NvMap;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.Services.Nv.NvMap;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+using static Ryujinx.HLE.HOS.Services.Android.Parcel;
 
-using static Ryujinx.HLE.OsHle.Services.Android.Parcel;
-
-namespace Ryujinx.HLE.OsHle.Services.Android
+namespace Ryujinx.HLE.HOS.Services.Android
 {
     class NvFlinger : IDisposable
     {

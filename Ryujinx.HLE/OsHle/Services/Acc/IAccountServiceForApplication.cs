@@ -1,11 +1,10 @@
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.SystemState;
 using System.Collections.Generic;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
-
-namespace Ryujinx.HLE.OsHle.Services.Acc
+namespace Ryujinx.HLE.HOS.Services.Acc
 {
     class IAccountServiceForApplication : IpcService
     {

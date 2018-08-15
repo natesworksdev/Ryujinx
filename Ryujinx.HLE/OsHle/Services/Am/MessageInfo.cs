@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Am
+namespace Ryujinx.HLE.HOS.Services.Am
 {
     enum MessageInfo
     {

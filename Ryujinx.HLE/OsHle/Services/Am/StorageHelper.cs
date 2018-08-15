@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Ryujinx.HLE.OsHle.Services.Am
+namespace Ryujinx.HLE.HOS.Services.Am
 {
     class StorageHelper
     {

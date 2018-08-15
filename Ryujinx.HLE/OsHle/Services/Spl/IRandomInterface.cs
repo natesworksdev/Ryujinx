@@ -1,9 +1,9 @@
-﻿using Ryujinx.HLE.OsHle.Ipc;
+﻿using Ryujinx.HLE.HOS.Ipc;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace Ryujinx.HLE.OsHle.Services.Spl
+namespace Ryujinx.HLE.HOS.Services.Spl
 {
     class IRandomInterface : IpcService, IDisposable
     {

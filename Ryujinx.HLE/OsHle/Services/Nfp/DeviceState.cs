@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.OsHle.Services.Nfp
+﻿namespace Ryujinx.HLE.HOS.Services.Nfp
 {
     enum DeviceState
     {

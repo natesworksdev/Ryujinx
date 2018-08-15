@@ -1,9 +1,9 @@
 using ChocolArm64.Memory;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle
+namespace Ryujinx.HLE.HOS
 {
     class ServiceCtx
     {

@@ -1,15 +1,15 @@
 using ChocolArm64.Memory;
 using Ryujinx.Audio;
 using Ryujinx.Audio.Adpcm;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
+namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
     class IAudioRenderer : IpcService, IDisposable
     {

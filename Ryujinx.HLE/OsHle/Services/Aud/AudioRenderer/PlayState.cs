@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
+namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
     enum PlayState : byte
     {

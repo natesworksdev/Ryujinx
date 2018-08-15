@@ -1,10 +1,10 @@
 ﻿using Ryujinx.HLE.Memory;
-using Ryujinx.HLE.Utilities;
 using Ryujinx.HLE.Resource;
+using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.HLE.OsHle.Font
+namespace Ryujinx.HLE.HOS.Font
 {
     class SharedFontManager
     {

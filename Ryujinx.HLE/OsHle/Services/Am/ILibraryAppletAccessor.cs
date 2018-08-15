@@ -1,9 +1,9 @@
-﻿using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
+﻿using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.Logging;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Am
+namespace Ryujinx.HLE.HOS.Services.Am
 {
     class ILibraryAppletAccessor : IpcService
     {

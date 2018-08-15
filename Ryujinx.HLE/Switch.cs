@@ -1,10 +1,10 @@
 using Ryujinx.Audio;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE.Gpu;
+using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.Input;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Memory;
-using Ryujinx.HLE.OsHle;
 using System;
 
 namespace Ryujinx.HLE

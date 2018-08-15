@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Vi
+namespace Ryujinx.HLE.HOS.Services.Vi
 {
     class Display
     {

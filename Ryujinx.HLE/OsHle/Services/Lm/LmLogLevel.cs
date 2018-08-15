@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Lm
+namespace Ryujinx.HLE.HOS.Services.Lm
 {
     enum LmLogLevel
     {

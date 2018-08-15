@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.OsHle.Services.Apm
+﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
     enum PerformanceConfiguration : uint
     {

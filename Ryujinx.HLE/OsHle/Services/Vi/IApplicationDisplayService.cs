@@ -1,12 +1,12 @@
 using ChocolArm64.Memory;
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-using static Ryujinx.HLE.OsHle.Services.Android.Parcel;
+using static Ryujinx.HLE.HOS.Services.Android.Parcel;
 
-namespace Ryujinx.HLE.OsHle.Services.Vi
+namespace Ryujinx.HLE.HOS.Services.Vi
 {
     class IApplicationDisplayService : IpcService
     {

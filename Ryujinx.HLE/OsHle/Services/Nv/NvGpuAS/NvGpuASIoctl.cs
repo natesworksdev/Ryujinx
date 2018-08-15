@@ -1,11 +1,11 @@
 using ChocolArm64.Memory;
 using Ryujinx.HLE.Gpu.Memory;
+using Ryujinx.HLE.HOS.Services.Nv.NvMap;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Services.Nv.NvMap;
 using System;
 using System.Collections.Concurrent;
 
-namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
+namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
     class NvGpuASIoctl
     {

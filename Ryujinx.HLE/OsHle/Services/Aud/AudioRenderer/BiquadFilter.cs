@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
+namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
     [StructLayout(LayoutKind.Sequential, Size = 0xc, Pack = 1)]
     struct BiquadFilter

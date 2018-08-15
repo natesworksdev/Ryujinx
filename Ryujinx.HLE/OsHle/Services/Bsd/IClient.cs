@@ -1,4 +1,4 @@
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Ryujinx.HLE.OsHle.Services.Bsd
+namespace Ryujinx.HLE.HOS.Services.Bsd
 {
     class IClient : IpcService
     {

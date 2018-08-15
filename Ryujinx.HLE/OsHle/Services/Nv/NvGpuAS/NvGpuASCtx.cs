@@ -1,7 +1,7 @@
 using Ryujinx.HLE.Gpu.Memory;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
+namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
     class NvGpuASCtx
     {

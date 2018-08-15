@@ -1,9 +1,9 @@
-using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.Services.Am;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.Am;
 using System;
 using System.Collections.Concurrent;
 
-namespace Ryujinx.HLE.OsHle.SystemState
+namespace Ryujinx.HLE.HOS.SystemState
 {
     class AppletStateMgr : IDisposable
     {

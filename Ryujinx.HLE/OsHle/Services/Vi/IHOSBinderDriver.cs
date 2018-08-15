@@ -1,11 +1,11 @@
 using Ryujinx.Graphics.Gal;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.Services.Android;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.Android;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Vi
+namespace Ryujinx.HLE.HOS.Services.Vi
 {
     class IHOSBinderDriver : IpcService, IDisposable
     {

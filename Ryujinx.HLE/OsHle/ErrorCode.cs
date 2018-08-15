@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle
+namespace Ryujinx.HLE.HOS
 {
     static class ErrorCode
     {

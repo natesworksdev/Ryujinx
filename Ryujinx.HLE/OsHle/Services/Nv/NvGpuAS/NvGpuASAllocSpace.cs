@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
+namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
     struct NvGpuASAllocSpace
     {

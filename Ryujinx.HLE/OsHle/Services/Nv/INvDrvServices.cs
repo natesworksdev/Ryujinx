@@ -1,16 +1,16 @@
 using ChocolArm64.Memory;
+using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.Nv.NvGpuAS;
+using Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu;
+using Ryujinx.HLE.HOS.Services.Nv.NvHostChannel;
+using Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl;
+using Ryujinx.HLE.HOS.Services.Nv.NvMap;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Ipc;
-using Ryujinx.HLE.OsHle.Kernel;
-using Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS;
-using Ryujinx.HLE.OsHle.Services.Nv.NvGpuGpu;
-using Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel;
-using Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl;
-using Ryujinx.HLE.OsHle.Services.Nv.NvMap;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Nv
+namespace Ryujinx.HLE.HOS.Services.Nv
 {
     class INvDrvServices : IpcService, IDisposable
     {

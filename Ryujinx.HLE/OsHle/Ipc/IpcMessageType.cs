@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Ipc
+namespace Ryujinx.HLE.HOS.Ipc
 {
     enum IpcMessageType
     {

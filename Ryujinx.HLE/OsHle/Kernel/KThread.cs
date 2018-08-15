@@ -1,7 +1,7 @@
 using ChocolArm64;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Kernel
+namespace Ryujinx.HLE.HOS.Kernel
 {
     class KThread : KSynchronizationObject
     {
