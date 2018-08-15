@@ -691,6 +691,19 @@ namespace ChocolArm64.Memory
             Marshal.Copy(Data, 0, (IntPtr)(RamPtr + (uint)Position), Data.Length);
         }
 
+        public void CopyBytes(long Src, long Dst, long Size)
+        {
+            EnsureRangeIsValid(Src, Size, AMemoryPerm.Read);
+            EnsureRangeIsValid(Dst, Size, AMemoryPerm.Write);
+
+            Buffer.MemoryCopy(
+                RamPtr + (uint)Src,
+                RamPtr + (uint)Dst,
+                Size,
+                Size);
+        }
+
+
         private void EnsureRangeIsValid(long Position, long Size, AMemoryPerm Perm)
         {
             long EndPos = Position + Size;

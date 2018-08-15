@@ -58,6 +58,9 @@ namespace Ryujinx.HLE.Gpu.Engines
             int SrcPitch = ReadRegister(NvGpuEngineDmaReg.SrcPitch);
             int DstPitch = ReadRegister(NvGpuEngineDmaReg.DstPitch);
 
+            int XCount = ReadRegister(NvGpuEngineDmaReg.XCount);
+            int YCount = ReadRegister(NvGpuEngineDmaReg.YCount);
+
             int DstBlkDim = ReadRegister(NvGpuEngineDmaReg.DstBlkDim);
             int DstSizeX  = ReadRegister(NvGpuEngineDmaReg.DstSizeX);
             int DstSizeY  = ReadRegister(NvGpuEngineDmaReg.DstSizeY);
@@ -103,13 +106,23 @@ namespace Ryujinx.HLE.Gpu.Engines
                 DstSwizzle = new BlockLinearSwizzle(DstSizeX, 1, DstBlockHeight);
             }
 
-            for (int Y = 0; Y < DstSizeY; Y++)
-            for (int X = 0; X < DstSizeX; X++)
+            if (SrcLinear == DstLinear)
             {
-                long SrcOffset = SrcAddress + (uint)SrcSwizzle.GetSwizzleOffset(X, Y);
-                long DstOffset = DstAddress + (uint)DstSwizzle.GetSwizzleOffset(X, Y);
+                long Src = Vmm.GetPhysicalAddress(SrcAddress);
+                long Dst = Vmm.GetPhysicalAddress(DstAddress);
 
-                Vmm.WriteByte(DstOffset, Vmm.ReadByte(SrcOffset));
+                Vmm.Memory.CopyBytes(Src, Dst, XCount * YCount);
+            }
+            else
+            {
+                for (int Y = 0; Y < YCount; Y++)
+                for (int X = 0; X < XCount; X++)
+                {
+                    long SrcOffset = SrcAddress + (uint)SrcSwizzle.GetSwizzleOffset(X, Y);
+                    long DstOffset = DstAddress + (uint)DstSwizzle.GetSwizzleOffset(X, Y);
+
+                    Vmm.WriteByte(DstOffset, Vmm.ReadByte(SrcOffset));
+                }
             }
         }
 
