@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using static Ryujinx.HLE.OsHle.ErrorCode;
+
 namespace Ryujinx.HLE.OsHle.Services.Time
 {
     class ITimeZoneService : IpcService
@@ -51,7 +53,8 @@ namespace Ryujinx.HLE.OsHle.Services.Time
         public long SetDeviceLocationName(ServiceCtx Context)
         {
             byte[] LocationName = Context.RequestData.ReadBytes(0x24);
-            string TzID         = Encoding.ASCII.GetString(LocationName).TrimEnd('\0');
+
+            string TzID = Encoding.ASCII.GetString(LocationName).TrimEnd('\0');
 
             long ResultCode = 0;
 
@@ -59,9 +62,9 @@ namespace Ryujinx.HLE.OsHle.Services.Time
             {
                 TimeZone = TimeZoneInfo.FindSystemTimeZoneById(TzID);
             }
-            catch (TimeZoneNotFoundException e)
+            catch (TimeZoneNotFoundException)
             {
-                ResultCode = 0x7BA74;
+                ResultCode = MakeError(ErrorModule.Time, 0x3dd);
             }
 
             return ResultCode;
@@ -79,12 +82,13 @@ namespace Ryujinx.HLE.OsHle.Services.Time
             long BufferPosition = Context.Response.SendBuff[0].Position;
             long BufferSize     = Context.Response.SendBuff[0].Size;
 
-            int i = 0;
+            int Offset = 0;
+
             foreach (TimeZoneInfo info in TimeZoneInfo.GetSystemTimeZones())
             {
                 byte[] TzData = Encoding.ASCII.GetBytes(info.Id);
 
-                Context.Memory.WriteBytes(BufferPosition + i, TzData);
+                Context.Memory.WriteBytes(BufferPosition + Offset, TzData);
 
                 int Padding = 0x24 - TzData.Length;
 
@@ -93,8 +97,9 @@ namespace Ryujinx.HLE.OsHle.Services.Time
                     Context.ResponseData.Write((byte)0);
                 }
 
-                i += 0x24;
+                Offset += 0x24;
             }
+
             return 0;
         }
 
@@ -111,22 +116,25 @@ namespace Ryujinx.HLE.OsHle.Services.Time
             long ResultCode = 0;
 
             byte[] LocationName = Context.RequestData.ReadBytes(0x24);
-            string TzID         = Encoding.ASCII.GetString(LocationName).TrimEnd('\0');
+
+            string TzID = Encoding.ASCII.GetString(LocationName).TrimEnd('\0');
 
             // Check if the Time Zone exists, otherwise error out.
             try
             {
                 TimeZoneInfo Info = TimeZoneInfo.FindSystemTimeZoneById(TzID);
-                byte[] TzData     = Encoding.ASCII.GetBytes(Info.Id);
+
+                byte[] TzData = Encoding.ASCII.GetBytes(Info.Id);
 
                 // FIXME: This is not in ANY cases accurate, but the games don't care about the content of the buffer, they only pass it.
                 // TODO: Reverse the TZif2 conversion in PCV to make this match with real hardware.
                 Context.Memory.WriteBytes(BufferPosition, TzData);
             }
-            catch (TimeZoneNotFoundException e)
+            catch (TimeZoneNotFoundException)
             {
                 Context.Ns.Log.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {TzID} (len: {TzID.Length})");
-                ResultCode = 0x7BA74;
+
+                ResultCode = MakeError(ErrorModule.Time, 0x3dd);
             }
 
             return ResultCode;
@@ -135,7 +143,8 @@ namespace Ryujinx.HLE.OsHle.Services.Time
         private long ToCalendarTimeWithTz(ServiceCtx Context, long PosixTime, TimeZoneInfo Info)
         {
             DateTime CurrentTime = Epoch.AddSeconds(PosixTime);
-            CurrentTime          = TimeZoneInfo.ConvertTimeFromUtc(CurrentTime, Info);
+
+            CurrentTime = TimeZoneInfo.ConvertTimeFromUtc(CurrentTime, Info);
 
             Context.ResponseData.Write((ushort)CurrentTime.Year);
             Context.ResponseData.Write((byte)CurrentTime.Month);
@@ -166,7 +175,8 @@ namespace Ryujinx.HLE.OsHle.Services.Time
 
             // TODO: Reverse the TZif2 conversion in PCV to make this match with real hardware.
             byte[] TzData = Context.Memory.ReadBytes(BufferPosition, 0x24);
-            string TzID   = Encoding.ASCII.GetString(TzData).TrimEnd('\0');
+
+            string TzID = Encoding.ASCII.GetString(TzData).TrimEnd('\0');
 
             long ResultCode = 0;
 
@@ -177,10 +187,11 @@ namespace Ryujinx.HLE.OsHle.Services.Time
 
                 ResultCode = ToCalendarTimeWithTz(Context, PosixTime, Info);
             }
-            catch (TimeZoneNotFoundException e)
+            catch (TimeZoneNotFoundException)
             {
                 Context.Ns.Log.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {TzID} (len: {TzID.Length})");
-                ResultCode = 0x7BA74;
+
+                ResultCode = MakeError(ErrorModule.Time, 0x3dd);
             }
 
             return ResultCode;
@@ -214,7 +225,8 @@ namespace Ryujinx.HLE.OsHle.Services.Time
 
             // TODO: Reverse the TZif2 conversion in PCV to make this match with real hardware.
             byte[] TzData = Context.Memory.ReadBytes(BufferPosition, 0x24);
-            string TzID   = Encoding.ASCII.GetString(TzData).TrimEnd('\0');
+
+            string TzID = Encoding.ASCII.GetString(TzData).TrimEnd('\0');
 
             long ResultCode = 0;
 
@@ -225,10 +237,11 @@ namespace Ryujinx.HLE.OsHle.Services.Time
 
                 return ToPosixTimeWithTz(Context, CalendarTime, Info);
             }
-            catch (TimeZoneNotFoundException e)
+            catch (TimeZoneNotFoundException)
             {
                 Context.Ns.Log.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {TzID} (len: {TzID.Length})");
-                ResultCode = 0x7BA74;
+
+                ResultCode = MakeError(ErrorModule.Time, 0x3dd);
             }
 
             return ResultCode;
