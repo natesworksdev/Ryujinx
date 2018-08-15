@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
         public KMemoryManager(Process Process)
         {
             CpuMemory = Process.Memory;
-            Allocator = Process.Ns.Memory.Allocator;
+            Allocator = Process.Device.Memory.Allocator;
 
             long CodeRegionSize;
             long MapRegionSize;

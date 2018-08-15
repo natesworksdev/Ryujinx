@@ -143,7 +143,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv
 
         public long FinishInitialize(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return 0;
         }
@@ -177,14 +177,14 @@ namespace Ryujinx.HLE.OsHle.Services.Nv
         {
             if (CmdIn(Cmd) && Context.Request.GetBufferType0x21().Position == 0)
             {
-                Context.Ns.Log.PrintError(LogClass.ServiceNv, "Input buffer is null!");
+                Context.Device.Log.PrintError(LogClass.ServiceNv, "Input buffer is null!");
 
                 return NvResult.InvalidInput;
             }
 
             if (CmdOut(Cmd) && Context.Request.GetBufferType0x22().Position == 0)
             {
-                Context.Ns.Log.PrintError(LogClass.ServiceNv, "Output buffer is null!");
+                Context.Device.Log.PrintError(LogClass.ServiceNv, "Output buffer is null!");
 
                 return NvResult.InvalidInput;
             }

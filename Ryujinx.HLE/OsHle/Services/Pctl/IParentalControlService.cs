@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.OsHle.Services.Pctl
             }
             else
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
+                Context.Device.Log.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
             }
 
             return 0;

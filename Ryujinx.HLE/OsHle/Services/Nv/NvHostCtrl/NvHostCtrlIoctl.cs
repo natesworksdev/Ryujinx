@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
                     {
                         if (StringValue.Length > 0x100)
                         {
-                            Context.Ns.Log.PrintError(Logging.LogClass.ServiceNv, $"{Domain}!{Name} String value size is too big!");
+                            Context.Device.Log.PrintError(Logging.LogClass.ServiceNv, $"{Domain}!{Name} String value size is too big!");
                         }
                         else
                         {
@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
 
                     Context.Memory.WriteBytes(OutputPosition + 0x82, SettingBuffer);
 
-                    Context.Ns.Log.PrintDebug(Logging.LogClass.ServiceNv, $"Got setting {Domain}!{Name}");
+                    Context.Device.Log.PrintDebug(Logging.LogClass.ServiceNv, $"Got setting {Domain}!{Name}");
                 }
 
                 return NvResult.Success;
@@ -144,7 +144,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
 
             int EventId = Context.Memory.ReadInt32(InputPosition);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -201,7 +201,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
             }
             else
             {
-                Context.Ns.Log.PrintDebug(LogClass.ServiceNv, "Waiting syncpt with timeout of " + Args.Timeout + "ms...");
+                Context.Device.Log.PrintDebug(LogClass.ServiceNv, "Waiting syncpt with timeout of " + Args.Timeout + "ms...");
 
                 using (ManualResetEvent WaitEvent = new ManualResetEvent(false))
                 {
@@ -232,7 +232,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostCtrl
                     }
                 }
 
-                Context.Ns.Log.PrintDebug(LogClass.ServiceNv, "Resuming...");
+                Context.Device.Log.PrintDebug(LogClass.ServiceNv, "Resuming...");
             }
 
             if (Extended)

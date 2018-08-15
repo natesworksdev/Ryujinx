@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long Get(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
             long Position = Context.Request.ReceiveBuff[0].Position;
 

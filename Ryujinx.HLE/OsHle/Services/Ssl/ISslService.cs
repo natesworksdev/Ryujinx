@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.OsHle.Services.Ssl
         {
             int Version = Context.RequestData.ReadInt32();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceSsl, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceSsl, "Stubbed.");
 
             return 0;
         }

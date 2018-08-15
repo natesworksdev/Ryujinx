@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.OsHle.Services.Android
 
                 if (Commands.TryGetValue((InterfaceName, Code), out ServiceProcessParcel ProcReq))
                 {
-                    Context.Ns.Log.PrintDebug(LogClass.ServiceVi, $"{InterfaceName} {ProcReq.Method.Name}");
+                    Context.Device.Log.PrintDebug(LogClass.ServiceVi, $"{InterfaceName} {ProcReq.Method.Name}");
 
                     return ProcReq(Context, Reader);
                 }
@@ -164,7 +164,7 @@ namespace Ryujinx.HLE.OsHle.Services.Android
 
         private long GbpQueueBuffer(ServiceCtx Context, BinaryReader ParcelReader)
         {
-            Context.Ns.Statistics.RecordGameFrameTime();
+            Context.Device.Statistics.RecordGameFrameTime();
 
             //TODO: Errors.
             int Slot            = ParcelReader.ReadInt32();
@@ -307,7 +307,7 @@ namespace Ryujinx.HLE.OsHle.Services.Android
 
             //TODO: Support double buffering here aswell, it is broken for GPU
             //frame buffers because it seems to be completely out of sync.
-            if (Context.Ns.Gpu.Engine3d.IsFrameBufferPosition(FbAddr))
+            if (Context.Device.Gpu.Engine3d.IsFrameBufferPosition(FbAddr))
             {
                 //Frame buffer is rendered to by the GPU, we can just
                 //bind the frame buffer texture, it's not necessary to read anything.
@@ -324,7 +324,7 @@ namespace Ryujinx.HLE.OsHle.Services.Android
                 Renderer.QueueAction(() => Renderer.FrameBuffer.Set(Data, FbWidth, FbHeight));
             }
 
-            Context.Ns.Gpu.Renderer.QueueAction(() => ReleaseBuffer(Slot));
+            Context.Device.Gpu.Renderer.QueueAction(() => ReleaseBuffer(Slot));
         }
 
         private void ReleaseBuffer(int Slot)

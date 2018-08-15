@@ -50,14 +50,14 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
 
         public long CreateAppletResource(ServiceCtx Context)
         {
-            MakeObject(Context, new IAppletResource(Context.Ns.Os.HidSharedMem));
+            MakeObject(Context, new IAppletResource(Context.Device.System.HidSharedMem));
 
             return 0;
         }
 
         public long ActivateDebugPad(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
         {
             long AppletResourceUserId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
         {
             long AppletResourceUserId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
         {
             long AppletResourceUserId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
 
             long AppletResourceUserId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -106,7 +106,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
             int  Unknown              = Context.RequestData.ReadInt32();
             long AppletResourceUserId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
         {
             Context.ResponseData.Write(0);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
             long Unknown0 = Context.RequestData.ReadInt64();
             long Unknown8 = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -143,7 +143,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
         {
             long Unknown = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
         {
             long Unknown = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -163,7 +163,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
 
             Context.ResponseData.Write(0L);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
             long Unknown0 = Context.RequestData.ReadInt64();
             long Unknown8 = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
         {
             Context.ResponseData.Write(0L);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -193,7 +193,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
 
             long AppletUserResourceId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
             long AppletUserResourceId = Context.RequestData.ReadInt64();
             long NpadJoyDeviceType    = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -216,7 +216,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
 
             long AppletUserResourceId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -227,7 +227,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
             long Unknown8             = Context.RequestData.ReadInt32();
             long AppletUserResourceId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -237,7 +237,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
             long AppletUserResourceId = Context.RequestData.ReadInt64();
             long Unknown              = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -246,7 +246,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
         {
             int VibrationDeviceHandle = Context.RequestData.ReadInt32();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             Context.ResponseData.Write(0L); //VibrationDeviceInfoForIpc
 
@@ -264,7 +264,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
 
             long AppletUserResourceId = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }
@@ -278,7 +278,7 @@ namespace Ryujinx.HLE.OsHle.Services.Hid
 
         public long SendVibrationValues(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
             return 0;
         }

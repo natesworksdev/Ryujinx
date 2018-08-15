@@ -23,26 +23,26 @@ namespace Ryujinx.HLE.OsHle.Services.Vi
 
         public static long CreateManagedLayer(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
             Context.ResponseData.Write(0L); //LayerId
             return 0;
         }
 
         public long DestroyManagedLayer(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
             return 0;
         }
 
         public static long AddToLayerStack(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
             return 0;
         }
 
         public static long SetLayerVisibility(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
             return 0;
         }
     }

@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
         public long OpenAudioRenderer(ServiceCtx Context)
         {
-            IAalOutput AudioOut = Context.Ns.AudioOut;
+            IAalOutput AudioOut = Context.Device.AudioOut;
 
             AudioRendererParameter Params = GetAudioRendererParameter(Context);
 
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
                 Context.ResponseData.Write(Size);
 
-                Context.Ns.Log.PrintDebug(LogClass.ServiceAudio, $"WorkBufferSize is 0x{Size:x16}.");
+                Context.Device.Log.PrintDebug(LogClass.ServiceAudio, $"WorkBufferSize is 0x{Size:x16}.");
 
                 return 0;
             }
@@ -106,7 +106,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             {
                 Context.ResponseData.Write(0L);
 
-                Context.Ns.Log.PrintWarning(LogClass.ServiceAudio, $"Library Revision 0x{Params.Revision:x8} is not supported!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceAudio, $"Library Revision 0x{Params.Revision:x8} is not supported!");
 
                 return MakeError(ErrorModule.Audio, AudErr.UnsupportedRevision);
             }

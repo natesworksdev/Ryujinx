@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long GetUserCount(ServiceCtx Context)
         {
-            Context.ResponseData.Write(Context.Ns.Os.SystemState.GetUserCount());
+            Context.ResponseData.Write(Context.Device.System.State.GetUserCount());
 
             return 0;
         }
@@ -41,19 +41,19 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
                 Context.RequestData.ReadInt64(),
                 Context.RequestData.ReadInt64());
 
-            Context.ResponseData.Write(Context.Ns.Os.SystemState.TryGetUser(Uuid, out _) ? 1 : 0);
+            Context.ResponseData.Write(Context.Device.System.State.TryGetUser(Uuid, out _) ? 1 : 0);
 
             return 0;
         }
 
         public long ListAllUsers(ServiceCtx Context)
         {
-            return WriteUserList(Context, Context.Ns.Os.SystemState.GetAllUsers());
+            return WriteUserList(Context, Context.Device.System.State.GetAllUsers());
         }
 
         public long ListOpenUsers(ServiceCtx Context)
         {
-            return WriteUserList(Context, Context.Ns.Os.SystemState.GetOpenUsers());
+            return WriteUserList(Context, Context.Device.System.State.GetOpenUsers());
         }
 
         private long WriteUserList(ServiceCtx Context, IEnumerable<UserProfile> Profiles)
@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long GetLastOpenedUser(ServiceCtx Context)
         {
-            UserProfile LastOpened = Context.Ns.Os.SystemState.LastOpenUser;
+            UserProfile LastOpened = Context.Device.System.State.LastOpenUser;
 
             LastOpened.Uuid.Write(Context.ResponseData);
 
@@ -96,9 +96,9 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
                 Context.RequestData.ReadInt64(),
                 Context.RequestData.ReadInt64());
 
-            if (!Context.Ns.Os.SystemState.TryGetUser(Uuid, out UserProfile Profile))
+            if (!Context.Device.System.State.TryGetUser(Uuid, out UserProfile Profile))
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceAcc, $"User 0x{Uuid} not found!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceAcc, $"User 0x{Uuid} not found!");
 
                 return MakeError(ErrorModule.Account, AccErr.UserNotFound);
             }
@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long InitializeApplicationInfo(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
             return 0;
         }

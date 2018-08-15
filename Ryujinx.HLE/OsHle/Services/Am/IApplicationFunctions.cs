@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
             long UIdLow  = Context.RequestData.ReadInt64();
             long UIdHigh = Context.RequestData.ReadInt64();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             Context.ResponseData.Write(0L);
 
@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long GetDesiredLanguage(ServiceCtx Context)
         {
-            Context.ResponseData.Write(Context.Ns.Os.SystemState.DesiredLanguageCode);
+            Context.ResponseData.Write(Context.Device.System.State.DesiredLanguageCode);
 
             return 0;
         }
@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
             string Result = GetFormattedErrorCode(ErrorCode);
 
-            Context.Ns.Log.PrintInfo(LogClass.ServiceAm, $"Result = 0x{ErrorCode:x8} ({Result}).");
+            Context.Device.Log.PrintInfo(LogClass.ServiceAm, $"Result = 0x{ErrorCode:x8} ({Result}).");
 
             return 0;
         }
@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long GetPseudoDeviceId(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             Context.ResponseData.Write(0L);
             Context.ResponseData.Write(0L);
@@ -100,7 +100,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long InitializeGamePlayRecording(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             int State = Context.RequestData.ReadInt32();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }

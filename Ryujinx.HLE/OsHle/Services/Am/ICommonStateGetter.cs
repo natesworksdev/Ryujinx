@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long GetOperationMode(ServiceCtx Context)
         {
-            OperationMode Mode = Context.Ns.Os.SystemState.DockedMode
+            OperationMode Mode = Context.Device.System.State.DockedMode
                 ? OperationMode.Docked
                 : OperationMode.Handheld;
 
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long GetPerformanceMode(ServiceCtx Context)
         {
-            Apm.PerformanceMode Mode = Context.Ns.Os.SystemState.DockedMode
+            Apm.PerformanceMode Mode = Context.Device.System.State.DockedMode
                 ? Apm.PerformanceMode.Docked
                 : Apm.PerformanceMode.Handheld;
 
@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             Context.ResponseData.Write((byte)0); //Unknown value.
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }

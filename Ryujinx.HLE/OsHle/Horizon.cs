@@ -15,13 +15,13 @@ namespace Ryujinx.HLE.OsHle
         internal const int HidSize  = 0x40000;
         internal const int FontSize = 0x1100000;
 
-        private Switch Ns;
+        private Switch Device;
 
         private KProcessScheduler Scheduler;
 
         private ConcurrentDictionary<int, Process> Processes;
 
-        public SystemStateMgr SystemState { get; private set; }
+        public SystemStateMgr State { get; private set; }
 
         internal KSharedMemory HidSharedMem  { get; private set; }
         internal KSharedMemory FontSharedMem { get; private set; }
@@ -30,18 +30,18 @@ namespace Ryujinx.HLE.OsHle
 
         internal KEvent VsyncEvent { get; private set; }
 
-        public Horizon(Switch Ns)
+        public Horizon(Switch Device)
         {
-            this.Ns = Ns;
+            this.Device = Device;
 
-            Scheduler = new KProcessScheduler(Ns.Log);
+            Scheduler = new KProcessScheduler(Device.Log);
 
             Processes = new ConcurrentDictionary<int, Process>();
 
-            SystemState = new SystemStateMgr();
+            State = new SystemStateMgr();
 
-            if (!Ns.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
-                !Ns.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
+            if (!Device.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
+                !Device.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
             {
                 throw new InvalidOperationException();
             }
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.OsHle
             HidSharedMem  = new KSharedMemory(HidPA, HidSize);
             FontSharedMem = new KSharedMemory(FontPA, FontSize);
 
-            Font = new SharedFontManager(Ns, FontSharedMem.PA);
+            Font = new SharedFontManager(Device, FontSharedMem.PA);
 
             VsyncEvent = new KEvent();
         }
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.OsHle
         {
             if (RomFsFile != null)
             {
-                Ns.VFs.LoadRomFs(RomFsFile);
+                Device.VFs.LoadRomFs(RomFsFile);
             }
 
             string NpdmFileName = Path.Combine(ExeFsDir, "main.npdm");
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.OsHle
 
             if (File.Exists(NpdmFileName))
             {
-                Ns.Log.PrintInfo(LogClass.Loader, $"Loading main.npdm...");
+                Device.Log.PrintInfo(LogClass.Loader, $"Loading main.npdm...");
 
                 using (FileStream Input = new FileStream(NpdmFileName, FileMode.Open))
                 {
@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.OsHle
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
+                Device.Log.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
             }
 
             Process MainProcess = MakeProcess(MetaData);
@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.OsHle
                         continue;
                     }
 
-                    Ns.Log.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(File)}...");
+                    Device.Log.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(File)}...");
 
                     using (FileStream Input = new FileStream(File, FileMode.Open))
                     {
@@ -124,18 +124,20 @@ namespace Ryujinx.HLE.OsHle
             bool IsNro = Path.GetExtension(FilePath).ToLower() == ".nro";
 
             string Name = Path.GetFileNameWithoutExtension(FilePath);
-            string SwitchFilePath = Ns.VFs.SystemPathToSwitchPath(FilePath);
+            string SwitchFilePath = Device.VFs.SystemPathToSwitchPath(FilePath);
 
             if (IsNro && (SwitchFilePath == null || !SwitchFilePath.StartsWith("sdmc:/")))
             {
                 string SwitchPath = $"sdmc:/switch/{Name}{Homebrew.TemporaryNroSuffix}";
-                string TempPath = Ns.VFs.SwitchPathToSystemPath(SwitchPath);
+                string TempPath = Device.VFs.SwitchPathToSystemPath(SwitchPath);
 
                 string SwitchDir = Path.GetDirectoryName(TempPath);
+
                 if (!Directory.Exists(SwitchDir))
                 {
                     Directory.CreateDirectory(SwitchDir);
                 }
+
                 File.Copy(FilePath, TempPath, true);
 
                 FilePath = TempPath;
@@ -169,7 +171,7 @@ namespace Ryujinx.HLE.OsHle
                     ProcessId++;
                 }
 
-                Process = new Process(Ns, Scheduler, ProcessId, MetaData);
+                Process = new Process(Device, Scheduler, ProcessId, MetaData);
 
                 Processes.TryAdd(ProcessId, Process);
             }
@@ -193,7 +195,7 @@ namespace Ryujinx.HLE.OsHle
 
                 if (Processes.Count == 0)
                 {
-                    Ns.OnFinish(EventArgs.Empty);
+                    Device.OnFinish(EventArgs.Empty);
                 }
             }
         }

@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private Dictionary<int, SvcFunc> SvcFuncs;
 
-        private Switch  Ns;
+        private Switch  Device;
         private Process Process;
         private AMemory Memory;
 
@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private static Random Rng;
 
-        public SvcHandler(Switch Ns, Process Process)
+        public SvcHandler(Switch Device, Process Process)
         {
             SvcFuncs = new Dictionary<int, SvcFunc>()
             {
@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 { 0x34, SvcWaitForAddress                }
             };
 
-            this.Ns      = Ns;
+            this.Device  = Device;
             this.Process = Process;
             this.Memory  = Process.Memory;
 
@@ -92,13 +92,13 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (SvcFuncs.TryGetValue(e.Id, out SvcFunc Func))
             {
-                Ns.Log.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} called.");
+                Device.Log.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} called.");
 
                 Func(ThreadState);
 
                 Process.Scheduler.Reschedule(Process.GetThread(ThreadState.Tpidr));
 
-                Ns.Log.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} ended.");
+                Device.Log.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} ended.");
             }
             else
             {

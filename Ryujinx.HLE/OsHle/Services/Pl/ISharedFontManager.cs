@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.OsHle.Services.Pl
         {
             SharedFontType FontType = (SharedFontType)Context.RequestData.ReadInt32();
 
-            Context.ResponseData.Write(Context.Ns.Os.Font.GetFontSize(FontType));
+            Context.ResponseData.Write(Context.Device.System.Font.GetFontSize(FontType));
 
             return 0;
         }
@@ -56,16 +56,16 @@ namespace Ryujinx.HLE.OsHle.Services.Pl
         {
             SharedFontType FontType = (SharedFontType)Context.RequestData.ReadInt32();
 
-            Context.ResponseData.Write(Context.Ns.Os.Font.GetSharedMemoryAddressOffset(FontType));
+            Context.ResponseData.Write(Context.Device.System.Font.GetSharedMemoryAddressOffset(FontType));
 
             return 0;
         }
 
         public long GetSharedMemoryNativeHandle(ServiceCtx Context)
         {
-            Context.Ns.Os.Font.EnsureInitialized();
+            Context.Device.System.Font.EnsureInitialized();
 
-            int Handle = Context.Process.HandleTable.OpenHandle(Context.Ns.Os.FontSharedMem);
+            int Handle = Context.Process.HandleTable.OpenHandle(Context.Device.System.FontSharedMem);
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
@@ -115,9 +115,9 @@ namespace Ryujinx.HLE.OsHle.Services.Pl
 
             Context.Memory.WriteInt32(TypesPosition + Offset, (int)FontType);
 
-            Context.Memory.WriteInt32(OffsetsPosition + Offset, Context.Ns.Os.Font.GetSharedMemoryAddressOffset(FontType));
+            Context.Memory.WriteInt32(OffsetsPosition + Offset, Context.Device.System.Font.GetSharedMemoryAddressOffset(FontType));
 
-            Context.Memory.WriteInt32(FontSizeBufferPosition + Offset, Context.Ns.Os.Font.GetFontSize(FontType));
+            Context.Memory.WriteInt32(FontSizeBufferPosition + Offset, Context.Device.System.Font.GetFontSize(FontType));
 
             return true;
         }

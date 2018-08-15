@@ -200,14 +200,14 @@ namespace Ryujinx.HLE.OsHle.Services.Aud.AudioRenderer
 
         public long StartAudioRenderer(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }
 
         public long StopAudioRenderer(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }

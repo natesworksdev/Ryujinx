@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
                 if ((Position - BasePosition) + Buffer.Length > Size)
                 {
-                    Context.Ns.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
+                    Context.Device.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
 
                     break;
                 }
@@ -79,14 +79,14 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             string DeviceName = Encoding.ASCII.GetString(DeviceNameBuffer);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }
 
         public long GetActiveAudioDeviceName(ServiceCtx Context)
         {
-            string Name = Context.Ns.Os.SystemState.ActiveAudioOutput;
+            string Name = Context.Device.System.State.ActiveAudioOutput;
 
             long Position = Context.Request.ReceiveBuff[0].Position;
             long Size     = Context.Request.ReceiveBuff[0].Size;
@@ -99,7 +99,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             }
             else
             {
-                Context.Ns.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
+                Context.Device.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
             }
 
             return 0;
@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         {
             Context.ResponseData.Write(2);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }
@@ -141,7 +141,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
                 if ((Position - BasePosition) + Buffer.Length > Size)
                 {
-                    Context.Ns.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
+                    Context.Device.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
 
                     break;
                 }
@@ -164,7 +164,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             string DeviceName = Encoding.UTF8.GetString(DeviceNameBuffer);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }
@@ -173,14 +173,14 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         {
             Context.ResponseData.Write(1f);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }
 
         public long GetActiveAudioDeviceNameAuto(ServiceCtx Context)
         {
-            string Name = Context.Ns.Os.SystemState.ActiveAudioOutput;
+            string Name = Context.Device.System.State.ActiveAudioOutput;
 
             (long Position, long Size) = Context.Request.GetBufferType0x22();
 
@@ -192,7 +192,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
             }
             else
             {
-                Context.Ns.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
+                Context.Device.Log.PrintError(LogClass.ServiceAudio, $"Output buffer size {Size} too small!");
             }
 
             return 0;
@@ -204,7 +204,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }
@@ -215,7 +215,7 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
             return 0;
         }

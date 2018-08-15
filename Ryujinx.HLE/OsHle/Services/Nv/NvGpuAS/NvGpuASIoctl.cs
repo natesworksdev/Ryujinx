@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
                 {
                     Args.Offset = 0;
 
-                    Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Failed to allocate size {Size:x16}!");
+                    Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Failed to allocate size {Size:x16}!");
 
                     Result = NvResult.OutOfMemory;
                 }
@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
                 }
                 else
                 {
-                    Context.Ns.Log.PrintWarning(LogClass.ServiceNv,
+                    Context.Device.Log.PrintWarning(LogClass.ServiceNv,
                         $"Failed to free offset 0x{Args.Offset:x16} size 0x{Size:x16}!");
 
                     Result = NvResult.InvalidInput;
@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
                 }
                 else
                 {
-                    Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid buffer offset {Args.Offset:x16}!");
+                    Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid buffer offset {Args.Offset:x16}!");
                 }
             }
 
@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
 
             if (Map == null)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{Args.NvMapHandle:x8}!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{Args.NvMapHandle:x8}!");
 
                 return NvResult.InvalidInput;
             }
@@ -188,7 +188,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
                         {
                             string Msg = string.Format(MapErrorMsg, VA, Args.MappingSize);
 
-                            Context.Ns.Log.PrintWarning(LogClass.ServiceNv, Msg);
+                            Context.Device.Log.PrintWarning(LogClass.ServiceNv, Msg);
 
                             return NvResult.InvalidInput;
                         }
@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
                     }
                     else
                     {
-                        Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Address 0x{Args.Offset:x16} not mapped!");
+                        Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Address 0x{Args.Offset:x16} not mapped!");
 
                         return NvResult.InvalidInput;
                     }
@@ -231,7 +231,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
                     {
                         string Msg = string.Format(MapErrorMsg, Args.Offset, Size);
 
-                        Context.Ns.Log.PrintWarning(LogClass.ServiceNv, Msg);
+                        Context.Device.Log.PrintWarning(LogClass.ServiceNv, Msg);
 
                         Result = NvResult.InvalidInput;
                     }
@@ -245,7 +245,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
                 {
                     Args.Offset = 0;
 
-                    Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Failed to map size 0x{Size:x16}!");
+                    Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Failed to map size 0x{Size:x16}!");
 
                     Result = NvResult.InvalidInput;
                 }
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -275,7 +275,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -296,7 +296,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
 
                 if (Map == null)
                 {
-                    Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{Args.NvMapHandle:x8}!");
+                    Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{Args.NvMapHandle:x8}!");
 
                     return NvResult.InvalidInput;
                 }
@@ -306,7 +306,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuAS
 
                 if (Result < 0)
                 {
-                    Context.Ns.Log.PrintWarning(LogClass.ServiceNv,
+                    Context.Device.Log.PrintWarning(LogClass.ServiceNv,
                         $"Page 0x{Args.Offset:x16} size 0x{Args.Pages:x16} not allocated!");
 
                     return NvResult.InvalidInput;

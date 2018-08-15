@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.OsHle
 {
     class ServiceCtx
     {
-        public Switch       Ns           { get; private set; }
+        public Switch       Device       { get; private set; }
         public Process      Process      { get; private set; }
         public AMemory      Memory       { get; private set; }
         public KSession     Session      { get; private set; }
@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.OsHle
         public BinaryWriter ResponseData { get; private set; }
 
         public ServiceCtx(
-            Switch       Ns,
+            Switch       Device,
             Process      Process,
             AMemory      Memory,
             KSession     Session,
@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.OsHle
             BinaryReader RequestData,
             BinaryWriter ResponseData)
         {
-            this.Ns           = Ns;
+            this.Device       = Device;
             this.Process      = Process;
             this.Memory       = Memory;
             this.Session      = Session;

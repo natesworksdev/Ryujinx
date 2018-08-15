@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.OsHle.Services.Prepo
 
         public static long SaveReportWithUser(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServicePrepo, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServicePrepo, "Stubbed.");
 
             return 0;
         }

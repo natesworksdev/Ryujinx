@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
 
             MakeObject(Context, new IRequest());
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
 
             Context.ResponseData.Write(BitConverter.ToUInt32(Address.GetAddressBytes()));
 
-            Context.Ns.Log.PrintInfo(LogClass.ServiceNifm, $"Console's local IP is {Address.ToString()}");
+            Context.Device.Log.PrintInfo(LogClass.ServiceNifm, $"Console's local IP is {Address.ToString()}");
 
             return 0;
         }

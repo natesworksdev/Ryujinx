@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuGpu
 
             AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuGpu
 
             AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuGpu
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -163,7 +163,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvGpuGpu
 
             AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }

@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nfp
 
         public long Initialize(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
             State = State.Initialized;
 
@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nfp
 
         public long AttachActivateEvent(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
             int Handle = Context.Process.HandleTable.OpenHandle(ActivateEvent);
 
@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nfp
 
         public long AttachDeactivateEvent(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
             int Handle = Context.Process.HandleTable.OpenHandle(DeactivateEvent);
 
@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nfp
         {
             Context.ResponseData.Write((int)State);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
             return 0;
         }
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nfp
         {
             Context.ResponseData.Write((int)DeviceState);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
             return 0;
         }
@@ -95,14 +95,14 @@ namespace Ryujinx.HLE.OsHle.Services.Nfp
         {
             Context.ResponseData.Write((int)NpadId);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
             return 0;
         }
 
         public long AttachAvailabilityChangeEvent(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNfp, "Stubbed.");
 
             int Handle = Context.Process.HandleTable.OpenHandle(AvailabilityChangeEvent);
 

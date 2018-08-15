@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if ((uint)Priority > 0x3f)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid priority 0x{Priority:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid priority 0x{Priority:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidPriority);
 
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else if ((uint)ProcessorId > 3)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core id 0x{ProcessorId:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core id 0x{ProcessorId:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidCoreId);
 
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
         {
             ulong TimeoutNs = ThreadState.X0;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc, "Timeout = " + TimeoutNs.ToString("x16"));
+            Device.Log.PrintDebug(LogClass.KernelSvc, "Timeout = " + TimeoutNs.ToString("x16"));
 
             KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
 
@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             int Handle   = (int)ThreadState.X0;
             int Priority = (int)ThreadState.X1;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc,
+            Device.Log.PrintDebug(LogClass.KernelSvc,
                 "Handle = "   + Handle  .ToString("x8") + ", " +
                 "Priority = " + Priority.ToString("x8"));
 
@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -148,7 +148,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
         {
             int Handle = (int)ThreadState.X2;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc, "Handle = " + Handle.ToString("x8"));
+            Device.Log.PrintDebug(LogClass.KernelSvc, "Handle = " + Handle.ToString("x8"));
 
             KThread Thread = GetThread(ThreadState.Tpidr, Handle);
 
@@ -160,7 +160,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -172,7 +172,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             int  IdealCore =  (int)ThreadState.X1;
             long CoreMask  = (long)ThreadState.X2;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc,
+            Device.Log.PrintDebug(LogClass.KernelSvc,
                 "Handle = "    + Handle   .ToString("x8") + ", " +
                 "IdealCore = " + IdealCore.ToString("x8") + ", " +
                 "CoreMask = "  + CoreMask .ToString("x16"));
@@ -192,7 +192,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 {
                     if ((IdealCore | 2) != -1)
                     {
-                        Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core id 0x{IdealCore:x8}!");
+                        Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core id 0x{IdealCore:x8}!");
 
                         ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidCoreId);
 
@@ -201,7 +201,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 }
                 else if ((CoreMask & (1 << IdealCore)) == 0)
                 {
-                    Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core mask 0x{CoreMask:x8}!");
+                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core mask 0x{CoreMask:x8}!");
 
                     ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
 
@@ -211,7 +211,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (Thread == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -223,7 +223,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             //-3 is used as "don't update", the old IdealCore value is kept.
             if (IdealCore == -3 && (CoreMask & (1 << Thread.IdealCore)) == 0)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core mask 0x{CoreMask:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core mask 0x{CoreMask:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
 
@@ -253,7 +253,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -274,7 +274,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -289,7 +289,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (Thread == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -298,7 +298,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (Process.GetThread(ThreadState.Tpidr) == Thread)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Thread handle 0x{Handle:x8} is current thread!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Thread handle 0x{Handle:x8} is current thread!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidThread);
 

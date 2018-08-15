@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long RequestToGetForeground(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }

@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
         private void SvcExitProcess(AThreadState ThreadState)
         {
-            Ns.Os.ExitProcess(ThreadState.ProcessId);
+            Device.System.ExitProcess(ThreadState.ProcessId);
         }
 
         private void SvcClearEvent(AThreadState ThreadState)
@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (Obj == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid event handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid event handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             int   HandlesCount =  (int)ThreadState.X2;
             ulong Timeout      =       ThreadState.X3;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc,
+            Device.Log.PrintDebug(LogClass.KernelSvc,
                 "HandlesPtr = "   + HandlesPtr  .ToString("x16") + ", " +
                 "HandlesCount = " + HandlesCount.ToString("x8")  + ", " +
                 "Timeout = "      + Timeout     .ToString("x16"));
@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                 if (SyncObj == null)
                 {
-                    Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid handle 0x{Handle:x8}!");
+                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid handle 0x{Handle:x8}!");
 
                     ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -174,7 +174,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (Thread == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{ThreadHandle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{ThreadHandle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -239,7 +239,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                 IpcMessage Cmd = new IpcMessage(CmdData, CmdPtr);
 
-                long Result = IpcHandler.IpcCall(Ns, Process, Memory, Session, Cmd, CmdPtr);
+                long Result = IpcHandler.IpcCall(Device, Process, Memory, Session, Cmd, CmdPtr);
 
                 Thread.Yield();
 
@@ -249,7 +249,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             }
             else
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid session handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid session handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -273,7 +273,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             string Str = AMemoryHelper.ReadAsciiString(Memory, Position, Size);
 
-            Ns.Log.PrintWarning(LogClass.KernelSvc, Str);
+            Device.Log.PrintWarning(LogClass.KernelSvc, Str);
 
             ThreadState.X0 = 0;
         }
@@ -320,11 +320,11 @@ namespace Ryujinx.HLE.OsHle.Kernel
                     break;
 
                 case 6:
-                    ThreadState.X1 = (ulong)Process.Ns.Memory.Allocator.TotalAvailableSize;
+                    ThreadState.X1 = (ulong)Process.Device.Memory.Allocator.TotalAvailableSize;
                     break;
 
                 case 7:
-                    ThreadState.X1 = (ulong)Process.Ns.Memory.Allocator.TotalUsedSize;
+                    ThreadState.X1 = (ulong)Process.Device.Memory.Allocator.TotalUsedSize;
                     break;
 
                 case 8:

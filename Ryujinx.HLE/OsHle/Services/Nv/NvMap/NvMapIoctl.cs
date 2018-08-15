@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
                 case 0x010e: return GetId (Context);
             }
 
-            Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Unsupported Ioctl command 0x{Cmd:x8}!");
+            Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Unsupported Ioctl command 0x{Cmd:x8}!");
 
             return NvResult.NotSupported;
         }
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
 
             if (Args.Size == 0)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid size 0x{Args.Size:x8}!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid size 0x{Args.Size:x8}!");
 
                 return NvResult.InvalidInput;
             }
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
 
             Args.Handle = AddNvMap(Context, new NvMapHandle(Size));
 
-            Context.Ns.Log.PrintInfo(LogClass.ServiceNv, $"Created map {Args.Handle} with size 0x{Size:x8}!");
+            Context.Device.Log.PrintInfo(LogClass.ServiceNv, $"Created map {Args.Handle} with size 0x{Size:x8}!");
 
             AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
 
                 return NvResult.InvalidInput;
             }
@@ -95,14 +95,14 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
 
                 return NvResult.InvalidInput;
             }
 
             if ((Args.Align & (Args.Align - 1)) != 0)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid alignment 0x{Args.Align:x8}!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid alignment 0x{Args.Align:x8}!");
 
                 return NvResult.InvalidInput;
             }
@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
                     //When the address is zero, we need to allocate
                     //our own backing memory for the NvMap.
                     //TODO: Is this allocation inside the transfer memory?
-                    if (!Context.Ns.Memory.Allocator.TryAllocate((uint)Size, out Address))
+                    if (!Context.Device.Memory.Allocator.TryAllocate((uint)Size, out Address))
                     {
                         Result = NvResult.OutOfMemory;
                     }
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
 
                 return NvResult.InvalidInput;
             }
@@ -168,7 +168,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
             {
                 DeleteNvMap(Context, Args.Handle);
 
-                Context.Ns.Log.PrintInfo(LogClass.ServiceNv, $"Deleted map {Args.Handle}!");
+                Context.Device.Log.PrintInfo(LogClass.ServiceNv, $"Deleted map {Args.Handle}!");
 
                 Args.Address = Map.Address;
                 Args.Flags   = 0;
@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
 
                 return NvResult.InvalidInput;
             }
@@ -231,7 +231,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvMap
 
             if (Map == null)
             {
-                Context.Ns.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
+                Context.Device.Log.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{Args.Handle:x8}!");
 
                 return NvResult.InvalidInput;
             }

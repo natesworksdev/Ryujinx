@@ -36,21 +36,21 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
         public long Exit(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
 
         public long LockExit(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
 
         public long UnlockExit(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             bool Enable = Context.RequestData.ReadByte() != 0 ? true : false;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             bool Enable = Context.RequestData.ReadByte() != 0 ? true : false;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             bool Enable = Context.RequestData.ReadByte() != 0 ? true : false;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
             bool Flag2 = Context.RequestData.ReadByte() != 0 ? true : false;
             bool Flag3 = Context.RequestData.ReadByte() != 0 ? true : false;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             bool Enable = Context.RequestData.ReadByte() != 0 ? true : false;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             bool Enable = Context.RequestData.ReadByte() != 0 ? true : false;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -128,7 +128,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             int Orientation = Context.RequestData.ReadInt32();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         {
             bool Enable = Context.RequestData.ReadByte() != 0 ? true : false;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }

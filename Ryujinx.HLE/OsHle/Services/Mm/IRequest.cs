@@ -22,14 +22,14 @@ namespace Ryujinx.HLE.OsHle.Services.Mm
 
         public long Initialize(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceMm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
         }
 
         public long SetAndWait(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceMm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
         }
@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.OsHle.Services.Mm
         {
             Context.ResponseData.Write(0);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceMm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
         }

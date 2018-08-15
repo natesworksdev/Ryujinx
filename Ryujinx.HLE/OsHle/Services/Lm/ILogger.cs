@@ -72,11 +72,11 @@ namespace Ryujinx.HLE.OsHle.Services.Lm
 
                 switch((LmLogLevel)Level)
                 {
-                    case LmLogLevel.Trace:    Context.Ns.Log.PrintDebug  (LogClass.ServiceLm, Text); break;
-                    case LmLogLevel.Info:     Context.Ns.Log.PrintInfo   (LogClass.ServiceLm, Text); break;
-                    case LmLogLevel.Warning:  Context.Ns.Log.PrintWarning(LogClass.ServiceLm, Text); break;
-                    case LmLogLevel.Error:    Context.Ns.Log.PrintError  (LogClass.ServiceLm, Text); break;
-                    case LmLogLevel.Critical: Context.Ns.Log.PrintError  (LogClass.ServiceLm, Text); break;
+                    case LmLogLevel.Trace:    Context.Device.Log.PrintDebug  (LogClass.ServiceLm, Text); break;
+                    case LmLogLevel.Info:     Context.Device.Log.PrintInfo   (LogClass.ServiceLm, Text); break;
+                    case LmLogLevel.Warning:  Context.Device.Log.PrintWarning(LogClass.ServiceLm, Text); break;
+                    case LmLogLevel.Error:    Context.Device.Log.PrintError  (LogClass.ServiceLm, Text); break;
+                    case LmLogLevel.Critical: Context.Device.Log.PrintError  (LogClass.ServiceLm, Text); break;
                 }
             }
 

@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.OsHle.Services.Vi
 
         public long GetRelayService(ServiceCtx Context)
         {
-            MakeObject(Context, new IHOSBinderDriver(Context.Ns.Gpu.Renderer));
+            MakeObject(Context, new IHOSBinderDriver(Context.Device.Gpu.Renderer));
 
             return 0;
         }
@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.OsHle.Services.Vi
 
         public long GetIndirectDisplayTransactionService(ServiceCtx Context)
         {
-            MakeObject(Context, new IHOSBinderDriver(Context.Ns.Gpu.Renderer));
+            MakeObject(Context, new IHOSBinderDriver(Context.Device.Gpu.Renderer));
 
             return 0;
         }
@@ -174,7 +174,7 @@ namespace Ryujinx.HLE.OsHle.Services.Vi
         {
             string Name = GetDisplayName(Context);
 
-            int Handle = Context.Process.HandleTable.OpenHandle(Context.Ns.Os.VsyncEvent);
+            int Handle = Context.Process.HandleTable.OpenHandle(Context.Device.System.VsyncEvent);
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 

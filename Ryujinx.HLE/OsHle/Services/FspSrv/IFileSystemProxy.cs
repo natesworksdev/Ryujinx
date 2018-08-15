@@ -31,35 +31,35 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
 
         public long OpenSdCardFileSystem(ServiceCtx Context)
         {
-            MakeObject(Context, new IFileSystem(Context.Ns.VFs.GetSdCardPath()));
+            MakeObject(Context, new IFileSystem(Context.Device.VFs.GetSdCardPath()));
 
             return 0;
         }
 
         public long CreateSaveDataFileSystem(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceFs, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceFs, "Stubbed.");
 
             return 0;
         }
 
         public long OpenSaveDataFileSystem(ServiceCtx Context)
         {
-            MakeObject(Context, new IFileSystem(Context.Ns.VFs.GetGameSavesPath()));
+            MakeObject(Context, new IFileSystem(Context.Device.VFs.GetGameSavesPath()));
 
             return 0;
         }
 
         public long OpenDataStorageByCurrentProcess(ServiceCtx Context)
         {
-            MakeObject(Context, new IStorage(Context.Ns.VFs.RomFs));
+            MakeObject(Context, new IStorage(Context.Device.VFs.RomFs));
 
             return 0;
         }
 
         public long OpenPatchDataStorageByCurrentProcess(ServiceCtx Context)
         {
-            MakeObject(Context, new IStorage(Context.Ns.VFs.RomFs));
+            MakeObject(Context, new IStorage(Context.Device.VFs.RomFs));
 
             return 0;
         }

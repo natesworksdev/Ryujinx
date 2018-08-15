@@ -21,7 +21,7 @@ namespace Ryujinx.HLE
 
         internal VirtualFileSystem VFs { get; private set; }
 
-        public Horizon Os { get; private set; }
+        public Horizon System { get; private set; }
 
         public PerformanceStatistics Statistics { get; private set; }
 
@@ -51,21 +51,21 @@ namespace Ryujinx.HLE
 
             VFs = new VirtualFileSystem();
 
-            Os = new Horizon(this);
+            System = new Horizon(this);
 
             Statistics = new PerformanceStatistics();
 
-            Hid = new Hid(this, Os.HidSharedMem.PA);
+            Hid = new Hid(this, System.HidSharedMem.PA);
         }
 
         public void LoadCart(string ExeFsDir, string RomFsFile = null)
         {
-            Os.LoadCart(ExeFsDir, RomFsFile);
+            System.LoadCart(ExeFsDir, RomFsFile);
         }
 
         public void LoadProgram(string FileName)
         {
-            Os.LoadProgram(FileName);
+            System.LoadProgram(FileName);
         }
 
         public bool WaitFifo()
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE
 
         public virtual void OnFinish(EventArgs e)
         {
-            Os.Dispose();
+            System.Dispose();
             Finish?.Invoke(this, e);
         }
 
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE
         {
             if (Disposing)
             {
-                Os.Dispose();
+                System.Dispose();
                 VFs.Dispose();
             }
         }

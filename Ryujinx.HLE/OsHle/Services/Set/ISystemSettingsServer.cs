@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.OsHle.Services.Set
 
         public static long GetColorSetId(ServiceCtx Context)
         {
-            Context.ResponseData.Write((int)Context.Ns.Os.SystemState.ThemeColor);
+            Context.ResponseData.Write((int)Context.Device.System.State.ThemeColor);
 
             return 0;
         }
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.OsHle.Services.Set
         {
             int ColorSetId = Context.RequestData.ReadInt32();
 
-            Context.Ns.Os.SystemState.ThemeColor = (ColorSet)ColorSetId;
+            Context.Device.System.State.ThemeColor = (ColorSet)ColorSetId;
 
             return 0;
         }
@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.OsHle.Services.Set
                 {
                     if (StringValue.Length + 1 > ReplySize)
                     {
-                        Context.Ns.Log.PrintError(Logging.LogClass.ServiceSet, $"{AskedSetting} String value size is too big!");
+                        Context.Device.Log.PrintError(Logging.LogClass.ServiceSet, $"{AskedSetting} String value size is too big!");
                     }
                     else
                     {
@@ -138,11 +138,11 @@ namespace Ryujinx.HLE.OsHle.Services.Set
 
                 Context.Memory.WriteBytes(ReplyPos, SettingBuffer);
 
-                Context.Ns.Log.PrintDebug(Logging.LogClass.ServiceSet, $"{AskedSetting} set value: {NxSetting} as {NxSetting.GetType()}");
+                Context.Device.Log.PrintDebug(Logging.LogClass.ServiceSet, $"{AskedSetting} set value: {NxSetting} as {NxSetting.GetType()}");
             }
             else
             {
-                Context.Ns.Log.PrintError(Logging.LogClass.ServiceSet, $"{AskedSetting} not found!");
+                Context.Device.Log.PrintError(Logging.LogClass.ServiceSet, $"{AskedSetting} not found!");
             }
 
             return 0;

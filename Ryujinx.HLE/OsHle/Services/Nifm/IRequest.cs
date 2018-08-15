@@ -35,14 +35,14 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
         {
             Context.ResponseData.Write(1);
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long GetResult(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
@@ -59,21 +59,21 @@ namespace Ryujinx.HLE.OsHle.Services.Nifm
 
         public long Cancel(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long Submit(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long SetConnectionConfirmationOption(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }

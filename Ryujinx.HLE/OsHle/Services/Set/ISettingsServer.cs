@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.OsHle.Services.Set
 
         public static long GetLanguageCode(ServiceCtx Context)
         {
-            Context.ResponseData.Write(Context.Ns.Os.SystemState.DesiredLanguageCode);
+            Context.ResponseData.Write(Context.Device.System.State.DesiredLanguageCode);
 
             return 0;
         }

@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.OsHle
     {
         private const int TickFreq = 19_200_000;
 
-        public Switch Ns { get; private set; }
+        public Switch Device { get; private set; }
 
         public bool NeedsHbAbi { get; private set; }
 
@@ -68,14 +68,14 @@ namespace Ryujinx.HLE.OsHle
 
         private bool Disposed;
 
-        public Process(Switch Ns, KProcessScheduler Scheduler, int ProcessId, Npdm MetaData)
+        public Process(Switch Device, KProcessScheduler Scheduler, int ProcessId, Npdm MetaData)
         {
-            this.Ns        = Ns;
+            this.Device    = Device;
             this.Scheduler = Scheduler;
             this.MetaData  = MetaData;
             this.ProcessId = ProcessId;
 
-            Memory = new AMemory(Ns.Memory.RamPointer);
+            Memory = new AMemory(Device.Memory.RamPointer);
 
             MemoryManager = new KMemoryManager(this);
 
@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.OsHle
 
             AppletState = new AppletStateMgr();
 
-            SvcHandler = new SvcHandler(Ns, this);
+            SvcHandler = new SvcHandler(Device, this);
 
             Threads = new ConcurrentDictionary<long, KThread>();
 
@@ -105,7 +105,7 @@ namespace Ryujinx.HLE.OsHle
                 throw new ObjectDisposedException(nameof(Process));
             }
 
-            Ns.Log.PrintInfo(LogClass.Loader, $"Image base at 0x{ImageBase:x16}.");
+            Device.Log.PrintInfo(LogClass.Loader, $"Image base at 0x{ImageBase:x16}.");
 
             Executable Executable = new Executable(Program, MemoryManager, Memory, ImageBase);
 
@@ -169,7 +169,7 @@ namespace Ryujinx.HLE.OsHle
                     MemoryState.MappedMemory,
                     MemoryPermission.ReadAndWrite);
 
-                string SwitchPath = Ns.VFs.SystemPathToSwitchPath(Executables[0].FilePath);
+                string SwitchPath = Device.VFs.SystemPathToSwitchPath(Executables[0].FilePath);
 
                 Homebrew.WriteHbAbiData(Memory, HbAbiDataPosition, Handle, SwitchPath);
 
@@ -329,7 +329,7 @@ namespace Ryujinx.HLE.OsHle
                 }
             }
 
-            Ns.Log.PrintDebug(LogClass.Cpu, $"Executing at 0x{e.Position:x16} {e.SubName} {NsoName}");
+            Device.Log.PrintDebug(LogClass.Cpu, $"Executing at 0x{e.Position:x16} {e.SubName} {NsoName}");
         }
 
         public void PrintStackTrace(AThreadState ThreadState)
@@ -354,7 +354,7 @@ namespace Ryujinx.HLE.OsHle
                 Trace.AppendLine(" " + SubName + " (" + GetNsoNameAndAddress(Position) + ")");
             }
 
-            Ns.Log.PrintInfo(LogClass.Cpu, Trace.ToString());
+            Device.Log.PrintInfo(LogClass.Cpu, Trace.ToString());
         }
 
         private string GetNsoNameAndAddress(long Position)
@@ -394,7 +394,7 @@ namespace Ryujinx.HLE.OsHle
                     Dispose();
                 }
 
-                Ns.Os.ExitProcess(ProcessId);
+                Device.System.ExitProcess(ProcessId);
             }
         }
 
@@ -425,7 +425,7 @@ namespace Ryujinx.HLE.OsHle
                 {
                     ShouldDispose = true;
 
-                    Ns.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} waiting all threads terminate...");
+                    Device.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} waiting all threads terminate...");
 
                     return;
                 }
@@ -449,7 +449,7 @@ namespace Ryujinx.HLE.OsHle
 
                 AppletState.Dispose();
 
-                Ns.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
+                Device.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
             }
         }
     }

@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.OsHle.Services.Friend
                 Context.RequestData.ReadInt64(),
                 Context.RequestData.ReadInt64());
 
-            if (Context.Ns.Os.SystemState.TryGetUser(Uuid, out UserProfile Profile))
+            if (Context.Device.System.State.TryGetUser(Uuid, out UserProfile Profile))
             {
                 Profile.OnlinePlayState = OpenCloseState.Closed;
             }
@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.OsHle.Services.Friend
                 Context.RequestData.ReadInt64());
 
             //TODO.
-            Context.Ns.Log.PrintStub(LogClass.ServiceFriend, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceFriend, "Stubbed.");
 
             return 0;
         }

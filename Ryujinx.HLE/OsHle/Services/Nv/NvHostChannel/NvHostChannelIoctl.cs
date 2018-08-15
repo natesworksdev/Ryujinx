@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -150,7 +150,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -189,7 +189,7 @@ namespace Ryujinx.HLE.OsHle.Services.Nv.NvHostChannel
 
             NvGpuPBEntry[] PushBuffer = NvGpuPushBuffer.Decode(Data);
 
-            Context.Ns.Gpu.Fifo.PushBuffer(Vmm, PushBuffer);
+            Context.Device.Gpu.Fifo.PushBuffer(Vmm, PushBuffer);
         }
 
         public static NvChannel GetChannel(ServiceCtx Context, NvChannelName Channel)

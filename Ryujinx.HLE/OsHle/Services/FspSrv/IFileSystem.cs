@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
             long Mode = Context.RequestData.ReadInt64();
             int  Size = Context.RequestData.ReadInt32();
 
-            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+            string FileName = Context.Device.VFs.GetFullPath(Path, Name);
 
             if (FileName == null)
             {
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
         {
             string Name = ReadUtf8String(Context);
 
-            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+            string FileName = Context.Device.VFs.GetFullPath(Path, Name);
 
             if (!File.Exists(FileName))
             {
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
         {
             string Name = ReadUtf8String(Context);
 
-            string DirName = Context.Ns.VFs.GetFullPath(Path, Name);
+            string DirName = Context.Device.VFs.GetFullPath(Path, Name);
 
             if (DirName == null)
             {
@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
         {
             string Name = ReadUtf8String(Context);
 
-            string DirName = Context.Ns.VFs.GetFullPath(Path, Name);
+            string DirName = Context.Device.VFs.GetFullPath(Path, Name);
 
             if (!Directory.Exists(DirName))
             {
@@ -159,8 +159,8 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
             string OldName = ReadUtf8String(Context, 0);
             string NewName = ReadUtf8String(Context, 1);
 
-            string OldFileName = Context.Ns.VFs.GetFullPath(Path, OldName);
-            string NewFileName = Context.Ns.VFs.GetFullPath(Path, NewName);
+            string OldFileName = Context.Device.VFs.GetFullPath(Path, OldName);
+            string NewFileName = Context.Device.VFs.GetFullPath(Path, NewName);
 
             if (!File.Exists(OldFileName))
             {
@@ -187,8 +187,8 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
             string OldName = ReadUtf8String(Context, 0);
             string NewName = ReadUtf8String(Context, 1);
 
-            string OldDirName = Context.Ns.VFs.GetFullPath(Path, OldName);
-            string NewDirName = Context.Ns.VFs.GetFullPath(Path, NewName);
+            string OldDirName = Context.Device.VFs.GetFullPath(Path, OldName);
+            string NewDirName = Context.Device.VFs.GetFullPath(Path, NewName);
 
             if (!Directory.Exists(OldDirName))
             {
@@ -214,7 +214,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
         {
             string Name = ReadUtf8String(Context);
 
-            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+            string FileName = Context.Device.VFs.GetFullPath(Path, Name);
 
             if (File.Exists(FileName))
             {
@@ -240,7 +240,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
 
             string Name = ReadUtf8String(Context);
 
-            string FileName = Context.Ns.VFs.GetFullPath(Path, Name);
+            string FileName = Context.Device.VFs.GetFullPath(Path, Name);
 
             if (!File.Exists(FileName))
             {
@@ -274,7 +274,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
 
             string Name = ReadUtf8String(Context);
 
-            string DirName = Context.Ns.VFs.GetFullPath(Path, Name);
+            string DirName = Context.Device.VFs.GetFullPath(Path, Name);
 
             if (!Directory.Exists(DirName))
             {
@@ -309,7 +309,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
         {
             string Name = ReadUtf8String(Context);
 
-            Context.ResponseData.Write(Context.Ns.VFs.GetDrive().AvailableFreeSpace);
+            Context.ResponseData.Write(Context.Device.VFs.GetDrive().AvailableFreeSpace);
 
             return 0;
         }
@@ -318,7 +318,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
         {
             string Name = ReadUtf8String(Context);
 
-            Context.ResponseData.Write(Context.Ns.VFs.GetDrive().TotalSize);
+            Context.ResponseData.Write(Context.Device.VFs.GetDrive().TotalSize);
 
             return 0;
         }
@@ -327,7 +327,7 @@ namespace Ryujinx.HLE.OsHle.Services.FspSrv
         {
             string Name = ReadUtf8String(Context);
 
-            string DirName = Context.Ns.VFs.GetFullPath(Path, Name);
+            string DirName = Context.Device.VFs.GetFullPath(Path, Name);
 
             if (!Directory.Exists(DirName))
             {

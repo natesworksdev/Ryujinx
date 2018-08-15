@@ -16,14 +16,14 @@ namespace Ryujinx.HLE.OsHle.Kernel
             long MutexAddress      = (long)ThreadState.X1;
             int  WaitThreadHandle  =  (int)ThreadState.X2;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc,
+            Device.Log.PrintDebug(LogClass.KernelSvc,
                 "OwnerThreadHandle = " + OwnerThreadHandle.ToString("x8")  + ", " +
                 "MutexAddress = "      + MutexAddress     .ToString("x16") + ", " +
                 "WaitThreadHandle = "  + WaitThreadHandle .ToString("x8"));
 
             if (IsPointingInsideKernel(MutexAddress))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (IsWordAddressUnaligned(MutexAddress))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (OwnerThread == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid owner thread handle 0x{OwnerThreadHandle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid owner thread handle 0x{OwnerThreadHandle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (WaitThread == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid requesting thread handle 0x{WaitThreadHandle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid requesting thread handle 0x{WaitThreadHandle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -72,11 +72,11 @@ namespace Ryujinx.HLE.OsHle.Kernel
         {
             long MutexAddress = (long)ThreadState.X0;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc, "MutexAddress = " + MutexAddress.ToString("x16"));
+            Device.Log.PrintDebug(LogClass.KernelSvc, "MutexAddress = " + MutexAddress.ToString("x16"));
 
             if (IsPointingInsideKernel(MutexAddress))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (IsWordAddressUnaligned(MutexAddress))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -104,7 +104,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             int   ThreadHandle   =  (int)ThreadState.X2;
             ulong Timeout        =       ThreadState.X3;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc,
+            Device.Log.PrintDebug(LogClass.KernelSvc,
                 "MutexAddress = "   + MutexAddress  .ToString("x16") + ", " +
                 "CondVarAddress = " + CondVarAddress.ToString("x16") + ", " +
                 "ThreadHandle = "   + ThreadHandle  .ToString("x8")  + ", " +
@@ -112,7 +112,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (IsPointingInsideKernel(MutexAddress))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -121,7 +121,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (IsWordAddressUnaligned(MutexAddress))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -132,7 +132,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (Thread == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{ThreadHandle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{ThreadHandle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             long CondVarAddress = (long)ThreadState.X0;
             int  Count          =  (int)ThreadState.X1;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc,
+            Device.Log.PrintDebug(LogClass.KernelSvc,
                 "CondVarAddress = " + CondVarAddress.ToString("x16") + ", " +
                 "Count = "          + Count         .ToString("x8"));
 
@@ -178,7 +178,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             {
                 int MutexValue = Memory.ReadInt32(MutexAddress);
 
-                Ns.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = " + MutexValue.ToString("x8"));
+                Device.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = " + MutexValue.ToString("x8"));
 
                 if (MutexValue != (OwnerThreadHandle | MutexHasListenersMask))
                 {
@@ -191,7 +191,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 InsertWaitingMutexThreadUnsafe(OwnerThreadHandle, WaitThread);
             }
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc, "Entering wait state...");
+            Device.Log.PrintDebug(LogClass.KernelSvc, "Entering wait state...");
 
             Process.Scheduler.EnterWait(CurrThread);
         }
@@ -203,7 +203,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
             int             Value   = (int)ThreadState.X2;
             ulong           Timeout = ThreadState.X3;
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc,
+            Device.Log.PrintDebug(LogClass.KernelSvc,
                 "Address = "         + Address.ToString("x16") + ", " +
                 "ArbitrationType = " + Type   .ToString()      + ", " +
                 "Value = "           + Value  .ToString("x8")  + ", " +
@@ -211,7 +211,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (IsPointingInsideKernel(Address))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -220,7 +220,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (IsWordAddressUnaligned(Address))
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -281,13 +281,13 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                     Process.Scheduler.WakeUp(OwnerThread);
 
-                    Ns.Log.PrintDebug(LogClass.KernelSvc, "Gave mutex to thread id " + OwnerThread.ThreadId + "!");
+                    Device.Log.PrintDebug(LogClass.KernelSvc, "Gave mutex to thread id " + OwnerThread.ThreadId + "!");
                 }
                 else
                 {
                     Memory.WriteInt32ToSharedAddr(MutexAddress, 0);
 
-                    Ns.Log.PrintDebug(LogClass.KernelSvc, "No threads waiting mutex!");
+                    Device.Log.PrintDebug(LogClass.KernelSvc, "No threads waiting mutex!");
                 }
             }
         }
@@ -312,7 +312,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                 Process.ThreadArbiterList.Add(WaitThread);
             }
 
-            Ns.Log.PrintDebug(LogClass.KernelSvc, "Entering wait state...");
+            Device.Log.PrintDebug(LogClass.KernelSvc, "Entering wait state...");
 
             if (Timeout != ulong.MaxValue)
             {
@@ -332,7 +332,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                         Process.ThreadArbiterList.Remove(WaitThread);
 
-                        Ns.Log.PrintDebug(LogClass.KernelSvc, "Timed out...");
+                        Device.Log.PrintDebug(LogClass.KernelSvc, "Timed out...");
 
                         return false;
                     }
@@ -360,7 +360,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
                     if (WaitThread == null)
                     {
-                        Ns.Log.PrintDebug(LogClass.KernelSvc, "No more threads to wake up!");
+                        Device.Log.PrintDebug(LogClass.KernelSvc, "No more threads to wake up!");
 
                         break;
                     }
@@ -392,7 +392,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
                         MutexValue = Memory.ReadInt32(MutexAddress);
                     }
 
-                    Ns.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = " + MutexValue.ToString("x8"));
+                    Device.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = " + MutexValue.ToString("x8"));
 
                     if (MutexValue == 0)
                     {
@@ -436,7 +436,7 @@ namespace Ryujinx.HLE.OsHle.Kernel
 
             if (OwnerThread == null)
             {
-                Ns.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{OwnerThreadHandle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{OwnerThreadHandle:x8}!");
 
                 return;
             }

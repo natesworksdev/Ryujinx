@@ -21,14 +21,14 @@ namespace Ryujinx.HLE.OsHle.Services.Acc
 
         public long CheckAvailability(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
             return 0;
         }
 
         public long GetAccountId(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
             Context.ResponseData.Write(0xcafeL);
 

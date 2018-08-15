@@ -22,13 +22,13 @@ namespace Ryujinx.HLE.OsHle.Services.Vi
 
         public static long SetLayerZ(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
             return 0;
         }
 
         public static long SetLayerVisibility(ServiceCtx Context)
         {
-            Context.Ns.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
+            Context.Device.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
             return 0;
         }
 
