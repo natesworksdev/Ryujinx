@@ -1,4 +1,3 @@
-using ChocolArm64.Memory;
 using Ryujinx.HLE.Gpu.Memory;
 using System.Collections.Generic;
 

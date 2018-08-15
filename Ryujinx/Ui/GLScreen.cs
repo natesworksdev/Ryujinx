@@ -4,7 +4,6 @@ using OpenTK.Input;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
-using Ryujinx.UI.Input;
 using System;
 using System.Threading;
 
@@ -152,7 +151,7 @@ namespace Ryujinx
 
             //Controller Input
             CurrentButton |= Config.JoyConController.GetButtons();
-                
+
             //Keyboard has priority stick-wise
             if (LeftJoystickDX == 0 && LeftJoystickDY == 0)
             {
@@ -163,7 +162,7 @@ namespace Ryujinx
             {
                 (RightJoystickDX, RightJoystickDY) = Config.JoyConController.GetRightStick();
             }
-            
+
             LeftJoystick = new HidJoystickPosition
             {
                 DX = LeftJoystickDX,

@@ -2,10 +2,8 @@ using Ryujinx.HLE.OsHle.Services.Acc;
 using Ryujinx.HLE.OsHle.Services.Am;
 using Ryujinx.HLE.OsHle.Services.Apm;
 using Ryujinx.HLE.OsHle.Services.Aud;
-using Ryujinx.HLE.OsHle.Services.Bcat;
 using Ryujinx.HLE.OsHle.Services.Bsd;
 using Ryujinx.HLE.OsHle.Services.Caps;
-using Ryujinx.HLE.OsHle.Services.Friend;
 using Ryujinx.HLE.OsHle.Services.FspSrv;
 using Ryujinx.HLE.OsHle.Services.Hid;
 using Ryujinx.HLE.OsHle.Services.Lm;
@@ -97,10 +95,10 @@ namespace Ryujinx.HLE.OsHle.Services
 
                 case "lm":
                     return new ILogService();
-                    
+
                 case "mm:u":
                     return new IRequest();
-                    
+
                 case "nfp:user":
                     return new IUserManager();
 
