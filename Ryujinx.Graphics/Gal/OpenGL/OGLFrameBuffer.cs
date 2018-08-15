@@ -61,8 +61,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private int SrcFb;
         private int DstFb;
 
+        private int[] ColorAttachments;
+        private int DepthAttachment;
+        private int StencilAttachment;
+
         public OGLFrameBuffer(OGLTexture Texture)
         {
+            ColorAttachments = new int[8];
+
             this.Texture = Texture;
         }
 
@@ -72,11 +78,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 EnsureFrameBuffer();
 
-                GL.FramebufferTexture(
-                    FramebufferTarget.DrawFramebuffer,
-                    FramebufferAttachment.ColorAttachment0 + Attachment,
-                    Tex.Handle,
-                    0);
+                Attach(ref ColorAttachments[Attachment], Tex.Handle, FramebufferAttachment.ColorAttachment0 + Attachment);
             }
             else
             {
@@ -88,11 +90,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             EnsureFrameBuffer();
 
-            GL.FramebufferTexture(
-                FramebufferTarget.DrawFramebuffer,
-                FramebufferAttachment.ColorAttachment0 + Attachment,
-                0,
-                0);
+            Attach(ref ColorAttachments[Attachment], 0, FramebufferAttachment.ColorAttachment0 + Attachment);
+        }
+
+        private void Attach(ref int OldHandle, int NewHandle, FramebufferAttachment FbAttachment)
+        {
+            if (OldHandle != NewHandle)
+            {
+                GL.FramebufferTexture(
+                    FramebufferTarget.DrawFramebuffer,
+                    FbAttachment,
+                    NewHandle,
+                    0);
+
+                OldHandle = NewHandle;
+            }
         }
         
         public void BindZeta(long Key)
@@ -103,39 +115,31 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 if (Tex.HasDepth && Tex.HasStencil)
                 {
-                    GL.FramebufferTexture(
-                        FramebufferTarget.DrawFramebuffer,
-                        FramebufferAttachment.DepthStencilAttachment,
-                        Tex.Handle,
-                        0);
+                    if (DepthAttachment   != Tex.Handle ||
+                        StencilAttachment != Tex.Handle)
+                    {
+                        GL.FramebufferTexture(
+                            FramebufferTarget.DrawFramebuffer,
+                            FramebufferAttachment.DepthStencilAttachment,
+                            Tex.Handle,
+                            0);
+
+                        DepthAttachment = Tex.Handle;
+
+                        StencilAttachment = Tex.Handle;
+                    }
                 }
                 else if (Tex.HasDepth)
                 {
-                    GL.FramebufferTexture(
-                        FramebufferTarget.DrawFramebuffer,
-                        FramebufferAttachment.DepthAttachment,
-                        Tex.Handle,
-                        0);
+                    Attach(ref DepthAttachment, Tex.Handle, FramebufferAttachment.DepthAttachment);
 
-                    GL.FramebufferTexture(
-                        FramebufferTarget.DrawFramebuffer,
-                        FramebufferAttachment.StencilAttachment,
-                        0,
-                        0);
+                    Attach(ref StencilAttachment, 0, FramebufferAttachment.StencilAttachment);
                 }
                 else if (Tex.HasStencil)
                 {
-                    GL.FramebufferTexture(
-                        FramebufferTarget.DrawFramebuffer,
-                        FramebufferAttachment.DepthAttachment,
-                        Tex.Handle,
-                        0);
+                    Attach(ref DepthAttachment, 0, FramebufferAttachment.DepthAttachment);
 
-                    GL.FramebufferTexture(
-                        FramebufferTarget.DrawFramebuffer,
-                        FramebufferAttachment.StencilAttachment,
-                        0,
-                        0);
+                    Attach(ref StencilAttachment, Tex.Handle, FramebufferAttachment.StencilAttachment);
                 }
                 else
                 {
@@ -152,11 +156,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             EnsureFrameBuffer();
 
-            GL.FramebufferTexture(
-                FramebufferTarget.DrawFramebuffer,
-                FramebufferAttachment.DepthStencilAttachment,
-                0,
-                0);
+            if (DepthAttachment   != 0 ||
+                StencilAttachment != 0)
+            {
+                GL.FramebufferTexture(
+                    FramebufferTarget.DrawFramebuffer,
+                    FramebufferAttachment.DepthStencilAttachment,
+                    0,
+                    0);
+
+                DepthAttachment = 0;
+
+                StencilAttachment = 0;
+            }
         }
 
         public void BindTexture(long Key, int Index)
@@ -364,8 +376,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 {
                     throw new InvalidOperationException();
                 }
-
-                EnsureFrameBuffer();
             }
         }
 
@@ -471,6 +481,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 DstX0, DstY0, DstX1, DstY1,
                 Mask,
                 Color ? BlitFramebufferFilter.Linear : BlitFramebufferFilter.Nearest);
+
+            EnsureFrameBuffer();
         }
     }
 }
