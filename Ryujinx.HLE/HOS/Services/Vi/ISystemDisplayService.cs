@@ -23,21 +23,25 @@ namespace Ryujinx.HLE.HOS.Services.Vi
         public static long SetLayerZ(ServiceCtx Context)
         {
             Context.Device.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
+
             return 0;
         }
 
         public static long SetLayerVisibility(ServiceCtx Context)
         {
             Context.Device.Log.PrintStub(LogClass.ServiceVi, "Stubbed.");
+
             return 0;
         }
 
         public static long GetDisplayMode(ServiceCtx Context)
         {
+            //TODO: De-hardcode resolution.
             Context.ResponseData.Write(1280);
             Context.ResponseData.Write(720);
             Context.ResponseData.Write(60.0f);
             Context.ResponseData.Write(0);
+
             return 0;
         }
     }
