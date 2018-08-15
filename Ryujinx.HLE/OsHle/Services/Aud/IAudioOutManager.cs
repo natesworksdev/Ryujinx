@@ -1,8 +1,8 @@
 using ChocolArm64.Memory;
 using Ryujinx.Audio;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.OsHle.Kernel;
 using Ryujinx.HLE.OsHle.Services.Aud.AudioOut;
 using System.Collections.Generic;
 using System.Text;

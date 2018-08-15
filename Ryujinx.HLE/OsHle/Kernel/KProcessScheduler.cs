@@ -3,7 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace Ryujinx.HLE.OsHle.Handles
+namespace Ryujinx.HLE.OsHle.Kernel
 {
     class KProcessScheduler : IDisposable
     {

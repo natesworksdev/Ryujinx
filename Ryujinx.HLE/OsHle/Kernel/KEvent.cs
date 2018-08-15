@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.OsHle.Handles
+namespace Ryujinx.HLE.OsHle.Kernel
 {
     class KEvent : KSynchronizationObject { }
 }

@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.HLE.OsHle.Handles
+namespace Ryujinx.HLE.OsHle.Kernel
 {
     [Flags]
     enum MemoryPermission : byte

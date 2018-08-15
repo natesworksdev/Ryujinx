@@ -1,7 +1,7 @@
 using Ryujinx.HLE.OsHle.Services;
 using System;
 
-namespace Ryujinx.HLE.OsHle.Handles
+namespace Ryujinx.HLE.OsHle.Kernel
 {
     class KSession : IDisposable
     {

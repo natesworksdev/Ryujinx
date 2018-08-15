@@ -2,7 +2,6 @@ using ChocolArm64.Memory;
 using ChocolArm64.State;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.OsHle.Exceptions;
-using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
 using Ryujinx.HLE.OsHle.Services;
 using System;

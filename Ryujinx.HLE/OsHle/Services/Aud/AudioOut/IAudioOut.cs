@@ -1,7 +1,7 @@
 using ChocolArm64.Memory;
 using Ryujinx.Audio;
-using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.OsHle.Kernel;
 using System;
 using System.Collections.Generic;
 

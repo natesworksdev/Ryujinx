@@ -1,5 +1,5 @@
-using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.OsHle.Kernel;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.OsHle.Services.Sm

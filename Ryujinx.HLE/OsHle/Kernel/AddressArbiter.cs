@@ -1,6 +1,5 @@
 ﻿using ChocolArm64.Memory;
 using ChocolArm64.State;
-using Ryujinx.HLE.OsHle.Handles;
 
 using static Ryujinx.HLE.OsHle.ErrorCode;
 
@@ -27,12 +26,12 @@ namespace Ryujinx.HLE.OsHle.Kernel
             return 0;
         }
 
-        public static ulong WaitForAddressIfLessThan(Process      Process, 
-                                                     AThreadState ThreadState, 
-                                                     AMemory      Memory, 
-                                                     long         Address, 
-                                                     int          Value, 
-                                                     ulong        Timeout, 
+        public static ulong WaitForAddressIfLessThan(Process      Process,
+                                                     AThreadState ThreadState,
+                                                     AMemory      Memory,
+                                                     long         Address,
+                                                     int          Value,
+                                                     ulong        Timeout,
                                                      bool         ShouldDecrement)
         {
             Memory.SetExclusive(ThreadState, Address);
@@ -75,11 +74,11 @@ namespace Ryujinx.HLE.OsHle.Kernel
             return WaitForAddress(Process, ThreadState, Address, Timeout);
         }
 
-        public static ulong WaitForAddressIfEqual(Process      Process, 
-                                                  AThreadState ThreadState, 
-                                                  AMemory      Memory, 
-                                                  long         Address, 
-                                                  int          Value, 
+        public static ulong WaitForAddressIfEqual(Process      Process,
+                                                  AThreadState ThreadState,
+                                                  AMemory      Memory,
+                                                  long         Address,
+                                                  int          Value,
                                                   ulong        Timeout)
         {
             if (Memory.ReadInt32(Address) != Value)

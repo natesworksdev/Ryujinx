@@ -1,6 +1,6 @@
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.OsHle.Kernel;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.OsHle.Services.Am
@@ -37,21 +37,21 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         public long Exit(ServiceCtx Context)
         {
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
-            
+
             return 0;
         }
 
         public long LockExit(ServiceCtx Context)
         {
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
-            
+
             return 0;
         }
 
         public long UnlockExit(ServiceCtx Context)
         {
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
-            
+
             return 0;
         }
 
@@ -127,7 +127,7 @@ namespace Ryujinx.HLE.OsHle.Services.Am
         public long SetScreenShotImageOrientation(ServiceCtx Context)
         {
             int Orientation = Context.RequestData.ReadInt32();
-            
+
             Context.Ns.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;

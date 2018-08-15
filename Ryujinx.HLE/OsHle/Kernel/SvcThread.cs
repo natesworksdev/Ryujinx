@@ -1,6 +1,5 @@
 using ChocolArm64.State;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Handles;
 using System.Threading;
 
 using static Ryujinx.HLE.OsHle.ErrorCode;

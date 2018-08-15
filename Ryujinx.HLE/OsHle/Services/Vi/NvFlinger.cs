@@ -1,7 +1,7 @@
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE.Gpu.Texture;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Handles;
+using Ryujinx.HLE.OsHle.Kernel;
 using Ryujinx.HLE.OsHle.Services.Nv.NvMap;
 using System;
 using System.Collections.Generic;

@@ -2,7 +2,6 @@ using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
 using Ryujinx.HLE.Logging;
-using Ryujinx.HLE.OsHle.Handles;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

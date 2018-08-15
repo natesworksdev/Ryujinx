@@ -1,5 +1,5 @@
 using ChocolArm64.Memory;
-using Ryujinx.HLE.OsHle.Handles;
+using Ryujinx.HLE.OsHle.Kernel;
 using System;
 using System.IO;
 

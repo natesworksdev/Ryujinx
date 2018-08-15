@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Handles
+namespace Ryujinx.HLE.OsHle.Kernel
 {
     class KProcessHandleTable
     {

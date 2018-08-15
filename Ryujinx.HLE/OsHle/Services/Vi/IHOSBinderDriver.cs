@@ -1,6 +1,6 @@
 using Ryujinx.Graphics.Gal;
-using Ryujinx.HLE.OsHle.Handles;
 using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.OsHle.Kernel;
 using Ryujinx.HLE.OsHle.Services.Android;
 using System;
 using System.Collections.Generic;

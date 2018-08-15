@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 using static Ryujinx.HLE.OsHle.ErrorCode;
 
-namespace Ryujinx.HLE.OsHle.Handles
+namespace Ryujinx.HLE.OsHle.Kernel
 {
     class KMemoryManager
     {

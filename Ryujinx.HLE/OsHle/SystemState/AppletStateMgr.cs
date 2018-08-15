@@ -1,4 +1,4 @@
-using Ryujinx.HLE.OsHle.Handles;
+using Ryujinx.HLE.OsHle.Kernel;
 using Ryujinx.HLE.OsHle.Services.Am;
 using System;
 using System.Collections.Concurrent;
