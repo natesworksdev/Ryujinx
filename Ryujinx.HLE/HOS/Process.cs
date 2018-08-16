@@ -56,7 +56,7 @@ namespace Ryujinx.HLE.HOS
 
         private ConcurrentDictionary<long, KThread> Threads;
 
-         private List<Executable> Executables;
+        private List<Executable> Executables;
 
         private Dictionary<long, string> SymbolTable;
 

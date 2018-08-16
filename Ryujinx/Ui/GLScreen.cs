@@ -40,7 +40,7 @@ namespace Ryujinx
             DisplayDevice.Default, 3, 3,
             GraphicsContextFlags.ForwardCompatible)
         {
-            this.Device       = Device;
+            this.Device   = Device;
             this.Renderer = Renderer;
 
             Location = new Point(
