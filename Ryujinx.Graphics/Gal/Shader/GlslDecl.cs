@@ -259,8 +259,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         Abuf.Offs == PointCoordAttrY ||
                         Abuf.Offs == VertexIdAttr    ||
                         Abuf.Offs == InstanceIdAttr  ||
-                        Abuf.Offs == FaceAttr
-                        )
+                        Abuf.Offs == FaceAttr)
                     {
                         break;
                     }
