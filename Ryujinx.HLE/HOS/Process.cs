@@ -194,18 +194,16 @@ namespace Ryujinx.HLE.HOS
 
             AThread CpuThread = new AThread(GetTranslator(), Memory, EntryPoint);
 
-            KThread Thread = new KThread(CpuThread, this, ProcessorId, Priority);
+            long Tpidr = GetFreeTls();
+
+            int ThreadId = (int)((Tpidr - MemoryManager.TlsIoRegionStart) / 0x200) + 1;
+
+            KThread Thread = new KThread(CpuThread, this, ProcessorId, Priority, ThreadId);
 
             Thread.LastPc = EntryPoint;
 
             int Handle = HandleTable.OpenHandle(Thread);
 
-            long Tpidr = GetFreeTls();
-
-            int ThreadId = (int)((Tpidr - MemoryManager.TlsIoRegionStart) / 0x200) + 1;
-
-            CpuThread.ThreadState.ProcessId = ProcessId;
-            CpuThread.ThreadState.ThreadId  = ThreadId;
             CpuThread.ThreadState.CntfrqEl0 = TickFreq;
             CpuThread.ThreadState.Tpidr     = Tpidr;
 

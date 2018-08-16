@@ -33,18 +33,20 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long LastPc { get; set; }
 
-        public int ThreadId => Thread.ThreadId;
+        public int ThreadId { get; private set; }
 
         public KThread(
             AThread Thread,
             Process Process,
             int     ProcessorId,
-            int     Priority)
+            int     Priority,
+            int     ThreadId)
         {
             this.Thread      = Thread;
             this.Process     = Process;
             this.ProcessorId = ProcessorId;
             this.IdealCore   = ProcessorId;
+            this.ThreadId    = ThreadId;
 
             MutexWaiters = new List<KThread>();
 

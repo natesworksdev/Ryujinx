@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcExitProcess(AThreadState ThreadState)
         {
-            Device.System.ExitProcess(ThreadState.ProcessId);
+            Device.System.ExitProcess(Process.ProcessId);
         }
 
         private void SvcClearEvent(AThreadState ThreadState)
