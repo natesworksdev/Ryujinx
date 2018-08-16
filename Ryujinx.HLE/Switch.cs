@@ -79,6 +79,8 @@ namespace Ryujinx.HLE
         internal void Unload()
         {
             VFs.Dispose();
+
+            Memory.Dispose();
         }
 
         public void Dispose()

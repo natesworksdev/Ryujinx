@@ -370,8 +370,6 @@ namespace Ryujinx.HLE.HOS
             if (Threads.Count == 0)
             {
                 Device.System.ExitProcess(ProcessId);
-
-                Unload();
             }
         }
 
