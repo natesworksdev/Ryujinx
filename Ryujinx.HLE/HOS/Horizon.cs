@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (RomFsFile != null)
             {
-                Device.VFs.LoadRomFs(RomFsFile);
+                Device.FileSystem.LoadRomFs(RomFsFile);
             }
 
             string NpdmFileName = Path.Combine(ExeFsDir, "main.npdm");
@@ -124,12 +124,12 @@ namespace Ryujinx.HLE.HOS
             bool IsNro = Path.GetExtension(FilePath).ToLower() == ".nro";
 
             string Name = Path.GetFileNameWithoutExtension(FilePath);
-            string SwitchFilePath = Device.VFs.SystemPathToSwitchPath(FilePath);
+            string SwitchFilePath = Device.FileSystem.SystemPathToSwitchPath(FilePath);
 
             if (IsNro && (SwitchFilePath == null || !SwitchFilePath.StartsWith("sdmc:/")))
             {
                 string SwitchPath = $"sdmc:/switch/{Name}{Homebrew.TemporaryNroSuffix}";
-                string TempPath = Device.VFs.SwitchPathToSystemPath(SwitchPath);
+                string TempPath = Device.FileSystem.SwitchPathToSystemPath(SwitchPath);
 
                 string SwitchDir = Path.GetDirectoryName(TempPath);
 

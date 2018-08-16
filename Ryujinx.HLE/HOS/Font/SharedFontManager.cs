@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Font
 
             Memory = Device.Memory;
 
-            FontsPath = Path.Combine(Device.VFs.GetSystemPath(), "fonts");
+            FontsPath = Path.Combine(Device.FileSystem.GetSystemPath(), "fonts");
         }
 
         public void EnsureInitialized()

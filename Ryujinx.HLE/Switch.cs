@@ -19,7 +19,7 @@ namespace Ryujinx.HLE
 
         internal NvGpu Gpu { get; private set; }
 
-        internal VirtualFileSystem VFs { get; private set; }
+        internal VirtualFileSystem FileSystem { get; private set; }
 
         public Horizon System { get; private set; }
 
@@ -47,7 +47,7 @@ namespace Ryujinx.HLE
 
             Gpu = new NvGpu(Renderer);
 
-            VFs = new VirtualFileSystem();
+            FileSystem = new VirtualFileSystem();
 
             System = new Horizon(this);
 
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE
 
         internal void Unload()
         {
-            VFs.Dispose();
+            FileSystem.Dispose();
 
             Memory.Dispose();
         }

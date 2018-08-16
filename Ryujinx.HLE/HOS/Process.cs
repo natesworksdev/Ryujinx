@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.HOS
                     MemoryState.MappedMemory,
                     MemoryPermission.ReadAndWrite);
 
-                string SwitchPath = Device.VFs.SystemPathToSwitchPath(Executables[0].FilePath);
+                string SwitchPath = Device.FileSystem.SystemPathToSwitchPath(Executables[0].FilePath);
 
                 Homebrew.WriteHbAbiData(Memory, HbAbiDataPosition, Handle, SwitchPath);
 

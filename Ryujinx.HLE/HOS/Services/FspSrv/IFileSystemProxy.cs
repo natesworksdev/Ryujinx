@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public long OpenSdCardFileSystem(ServiceCtx Context)
         {
-            MakeObject(Context, new IFileSystem(Context.Device.VFs.GetSdCardPath()));
+            MakeObject(Context, new IFileSystem(Context.Device.FileSystem.GetSdCardPath()));
 
             return 0;
         }
@@ -45,21 +45,21 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public long OpenSaveDataFileSystem(ServiceCtx Context)
         {
-            MakeObject(Context, new IFileSystem(Context.Device.VFs.GetGameSavesPath()));
+            MakeObject(Context, new IFileSystem(Context.Device.FileSystem.GetGameSavesPath()));
 
             return 0;
         }
 
         public long OpenDataStorageByCurrentProcess(ServiceCtx Context)
         {
-            MakeObject(Context, new IStorage(Context.Device.VFs.RomFs));
+            MakeObject(Context, new IStorage(Context.Device.FileSystem.RomFs));
 
             return 0;
         }
 
         public long OpenPatchDataStorageByCurrentProcess(ServiceCtx Context)
         {
-            MakeObject(Context, new IStorage(Context.Device.VFs.RomFs));
+            MakeObject(Context, new IStorage(Context.Device.FileSystem.RomFs));
 
             return 0;
         }
