@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Ryujinx.HLE.Exceptions;
+using System;
 using System.IO;
-
-using Ryujinx.HLE.Exceptions;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
