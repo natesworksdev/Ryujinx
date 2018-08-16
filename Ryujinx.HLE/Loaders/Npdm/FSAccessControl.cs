@@ -2,20 +2,20 @@
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    public class FSAccessControl
+    class FsAccessControl
     {
-        public int   Version;
-        public ulong PermissionsBitmask;
-        public int   Unknown1;
-        public int   Unknown2;
-        public int   Unknown3;
-        public int   Unknown4;
+        public int   Version            { get; private set; }
+        public ulong PermissionsBitmask { get; private set; }
+        public int   Unknown1           { get; private set; }
+        public int   Unknown2           { get; private set; }
+        public int   Unknown3           { get; private set; }
+        public int   Unknown4           { get; private set; }
 
-        public FSAccessControl(Stream FSAccessHeaderStream, int Offset, int Size)
+        public FsAccessControl(Stream Stream, int Offset, int Size)
         {
-            FSAccessHeaderStream.Seek(Offset, SeekOrigin.Begin);
+            Stream.Seek(Offset, SeekOrigin.Begin);
 
-            BinaryReader Reader = new BinaryReader(FSAccessHeaderStream);
+            BinaryReader Reader = new BinaryReader(Stream);
 
             Version            = Reader.ReadInt32();
             PermissionsBitmask = Reader.ReadUInt64();

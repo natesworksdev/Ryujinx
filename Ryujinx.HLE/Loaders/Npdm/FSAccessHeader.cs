@@ -1,36 +1,37 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+
+using Ryujinx.HLE.Exceptions;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    public class FSAccessHeader
+    public class FsAccessHeader
     {
-        public int   Version;
-        public ulong PermissionsBitmask;
-        public int   DataSize;
-        public int   ContentOwnerIDSize;
-        public int   DataAndContentOwnerIDSize;
+        public int   Version            { get; private set; }
+        public ulong PermissionsBitmask { get; private set; }
 
-        public FSAccessHeader(Stream FSAccessHeaderStream, int Offset, int Size)
+        public FsAccessHeader(Stream Stream, int Offset, int Size)
         {
-            FSAccessHeaderStream.Seek(Offset, SeekOrigin.Begin);
+            Stream.Seek(Offset, SeekOrigin.Begin);
 
-            BinaryReader Reader = new BinaryReader(FSAccessHeaderStream);
+            BinaryReader Reader = new BinaryReader(Stream);
 
             Version            = Reader.ReadInt32();
             PermissionsBitmask = Reader.ReadUInt64();
-            DataSize           = Reader.ReadInt32();
 
-            if (DataSize != 0x1C)
+            int DataSize = Reader.ReadInt32();
+
+            if (DataSize != 0x1c)
             {
-                throw new InvalidNpdmException("FSAccessHeader is corrupted!");
+                throw new InvalidNpdmException("FsAccessHeader is corrupted!");
             }
 
-            ContentOwnerIDSize        = Reader.ReadInt32();
-            DataAndContentOwnerIDSize = Reader.ReadInt32();
+            int ContentOwnerIdSize        = Reader.ReadInt32();
+            int DataAndContentOwnerIdSize = Reader.ReadInt32();
 
-            if (DataAndContentOwnerIDSize != 0x1C)
+            if (DataAndContentOwnerIdSize != 0x1c)
             {
-                throw new InvalidNpdmException("ContentOwnerID section is not implemented!");
+                throw new NotImplementedException("ContentOwnerId section is not implemented!");
             }
         }
     }
