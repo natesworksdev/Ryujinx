@@ -2,10 +2,10 @@ namespace Ryujinx.HLE.Loaders.Npdm
 {
     struct KernelAccessControlMmio
     {
-        public ulong Address;
-        public ulong Size;
-        public bool  IsRo;
-        public bool  IsNormal;
+        public ulong Address  { get; private set; }
+        public ulong Size     { get; private set; }
+        public bool  IsRo     { get; private set; }
+        public bool  IsNormal { get; private set; }
 
         public KernelAccessControlMmio(
             ulong Address,
