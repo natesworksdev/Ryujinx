@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    public class OGLRasterizer : IGalRasterizer
+    class OGLRasterizer : IGalRasterizer
     {
         private int[] VertexBuffers;
 

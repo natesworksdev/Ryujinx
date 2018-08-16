@@ -98,17 +98,11 @@ namespace Ryujinx.Graphics.Gal
                     break;
 
                 case GalTextureType.Snorm_Force_Fp16:
-                    switch (Format)
-                    {
-                        //TODO
-                    }
+                    //TODO
                     break;
 
                 case GalTextureType.Unorm_Force_Fp16:
-                    switch (Format)
-                    {
-                        //TODO
-                    }
+                    //TODO
                     break;
 
                 case GalTextureType.Float:
@@ -145,6 +139,8 @@ namespace Ryujinx.Graphics.Gal
                 case GalFrameBufferFormat.RG16Snorm:      return GalImageFormat.R16G16_SNORM;
                 case GalFrameBufferFormat.RG16Float:      return GalImageFormat.R16G16_SFLOAT;
                 case GalFrameBufferFormat.RG8Snorm:       return GalImageFormat.R8_SNORM;
+                case GalFrameBufferFormat.RGBA8Snorm:     return GalImageFormat.A8B8G8R8_SNORM_PACK32;
+                case GalFrameBufferFormat.RG8Unorm:       return GalImageFormat.R8G8_UNORM;
             }
 
             throw new NotImplementedException(Format.ToString());
