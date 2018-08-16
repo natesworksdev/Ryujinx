@@ -75,25 +75,15 @@ namespace Ryujinx.HLE.Input
             this.HidPosition = HidPosition;
 
             Device.Memory.FillWithZeros(HidPosition, Horizon.HidSize);
-        }
-      
-        internal void ShMemUnmap(object sender, EventArgs e)
-        {
-            HSharedMem SharedMem = (HSharedMem)sender;
-
-            lock (ShMemLock)
-            {
-                ShMemPositions = SharedMem.GetVirtualPositions();
-            }
+			
+			Init();
         }
 
-        private void Init(AMemory Memory, long Position)
+        private void Init()
         {
             if (HidEmulatedDevices.Devices.Handheld != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_HANDHELD,
                 HidControllerType.ControllerType_Handheld,
                 JoyConColor.Body_Neon_Red,
@@ -105,8 +95,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.Player1 != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_PLAYER_1,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -118,8 +106,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.Player2 != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_PLAYER_2,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -131,8 +117,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.Player3 != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_PLAYER_3,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -144,8 +128,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.Player4 != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_PLAYER_4,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -157,8 +139,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.Player5 != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_PLAYER_5,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -170,8 +150,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.Player6 != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_PLAYER_6,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -183,8 +161,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.Player7 != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_PLAYER_7,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -196,8 +172,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.Player8 != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_PLAYER_8,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -209,8 +183,6 @@ namespace Ryujinx.HLE.Input
             if (HidEmulatedDevices.Devices.PlayerUnknown != -2)
             {
                 InitializeJoyconPair(
-                Memory,
-                Position,
                 HidControllerId.CONTROLLER_UNKNOWN,
                 HidControllerType.ControllerType_JoyconPair,
                 JoyConColor.Body_Neon_Red,
@@ -221,8 +193,6 @@ namespace Ryujinx.HLE.Input
         }
 
         private void InitializeJoyconPair(
-            AMemory Memory,
-            long Position,
             HidControllerId ControllerId,
             HidControllerType Type,
             JoyConColor LeftColorBody,
@@ -230,7 +200,7 @@ namespace Ryujinx.HLE.Input
             JoyConColor RightColorBody,
             JoyConColor RightColorButtons)
         {
-            long BaseControllerOffset = Position + HidControllersOffset + (int)ControllerId * HidControllerSize;
+            long BaseControllerOffset = HidPosition + HidControllersOffset + (int)ControllerId * HidControllerSize;
 
             bool IsHalf = false;
 
