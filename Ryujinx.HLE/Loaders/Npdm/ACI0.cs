@@ -33,14 +33,14 @@ namespace Ryujinx.HLE.Loaders.Npdm
             //Reserved.
             Stream.Seek(8, SeekOrigin.Current);
 
-            int FSAccessHeaderOffset       = Reader.ReadInt32();
-            int FSAccessHeaderSize         = Reader.ReadInt32();
+            int FsAccessHeaderOffset       = Reader.ReadInt32();
+            int FsAccessHeaderSize         = Reader.ReadInt32();
             int ServiceAccessControlOffset = Reader.ReadInt32();
             int ServiceAccessControlSize   = Reader.ReadInt32();
             int KernelAccessControlOffset  = Reader.ReadInt32();
             int KernelAccessControlSize    = Reader.ReadInt32();
 
-            FsAccessHeader FsAccessHeader = new FsAccessHeader(Stream, Offset + FSAccessHeaderOffset, FSAccessHeaderSize);
+            FsAccessHeader FsAccessHeader = new FsAccessHeader(Stream, Offset + FsAccessHeaderOffset, FsAccessHeaderSize);
 
             FsVersion            = FsAccessHeader.Version;
             FsPermissionsBitmask = FsAccessHeader.PermissionsBitmask;
