@@ -100,6 +100,11 @@ namespace ChocolArm64.State
             TickCounter.Start();
         }
 
+        internal bool Synchronize()
+        {
+            return Running;
+        }
+
         internal void OnBreak(long Position, int Imm)
         {
             Break?.Invoke(this, new AInstExceptionEventArgs(Position, Imm));

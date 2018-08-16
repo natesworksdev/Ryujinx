@@ -124,6 +124,16 @@ namespace Ryujinx.HLE.HOS.Kernel
             AllThreads[Thread].WaitSync.Set();
         }
 
+        public void ForceWakeUp(KThread Thread)
+        {
+            if (AllThreads.TryGetValue(Thread, out SchedulerThread SchedThread))
+            {
+                SchedThread.WaitSync.Set();
+                SchedThread.WaitActivity.Set();
+                SchedThread.WaitSched.Set();
+            }
+        }
+
         public void ChangeCore(KThread Thread, int IdealCore, int CoreMask)
         {
             lock (SchedLock)

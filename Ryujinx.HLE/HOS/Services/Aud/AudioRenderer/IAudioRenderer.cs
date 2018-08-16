@@ -309,6 +309,8 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
         {
             if (Disposing)
             {
+                AudioOut.CloseTrack(Track);
+
                 UpdateEvent.Dispose();
             }
         }

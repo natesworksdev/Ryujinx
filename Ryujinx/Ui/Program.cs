@@ -62,16 +62,12 @@ namespace Ryujinx
 
             using (GLScreen Screen = new GLScreen(Device, Renderer))
             {
-                Device.Finish += (Sender, Args) =>
-                {
-                    Screen.Exit();
-                };
-
                 Screen.MainLoop();
-                Device.OnFinish(EventArgs.Empty);
+
+                Device.Dispose();
             }
 
-            Environment.Exit(0);
+            AudioOut.Dispose();
         }
     }
 }

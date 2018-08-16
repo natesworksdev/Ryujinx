@@ -190,19 +190,22 @@ namespace Ryujinx.HLE.HOS
         {
             if (Processes.TryRemove(ProcessId, out Process Process))
             {
-                Process.StopAllThreadsAsync();
                 Process.Dispose();
 
                 if (Processes.Count == 0)
                 {
-                    Device.OnFinish(EventArgs.Empty);
+                    Unload();
+
+                    Device.Unload();
                 }
             }
         }
 
-        internal bool TryGetProcess(int ProcessId, out Process Process)
+        private void Unload()
         {
-            return Processes.TryGetValue(ProcessId, out Process);
+            VsyncEvent.Dispose();
+
+            Scheduler.Dispose();
         }
 
         public void Dispose()
@@ -216,13 +219,8 @@ namespace Ryujinx.HLE.HOS
             {
                 foreach (Process Process in Processes.Values)
                 {
-                    Process.StopAllThreadsAsync();
                     Process.Dispose();
                 }
-
-                VsyncEvent.Dispose();
-
-                Scheduler.Dispose();
             }
         }
     }

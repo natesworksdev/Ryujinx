@@ -56,9 +56,7 @@ namespace Ryujinx.HLE.HOS
 
         private ConcurrentDictionary<long, KThread> Threads;
 
-        private KThread MainThread;
-
-        private List<Executable> Executables;
+         private List<Executable> Executables;
 
         private Dictionary<long, string> SymbolTable;
 
@@ -155,7 +153,7 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            MainThread = HandleTable.GetData<KThread>(Handle);
+            KThread MainThread = HandleTable.GetData<KThread>(Handle);
 
             if (NeedsHbAbi)
             {
@@ -180,24 +178,6 @@ namespace Ryujinx.HLE.HOS
             Scheduler.StartThread(MainThread);
 
             return true;
-        }
-
-        public void StopAllThreadsAsync()
-        {
-            if (Disposed)
-            {
-                throw new ObjectDisposedException(nameof(Process));
-            }
-
-            if (MainThread != null)
-            {
-                MainThread.Thread.StopExecution();
-            }
-
-            foreach (KThread Thread in Threads.Values)
-            {
-                Thread.Thread.StopExecution();
-            }
         }
 
         public int MakeThread(
@@ -389,12 +369,9 @@ namespace Ryujinx.HLE.HOS
 
             if (Threads.Count == 0)
             {
-                if (ShouldDispose)
-                {
-                    Dispose();
-                }
-
                 Device.System.ExitProcess(ProcessId);
+
+                Unload();
             }
         }
 
@@ -408,6 +385,35 @@ namespace Ryujinx.HLE.HOS
             return Thread;
         }
 
+        private void Unload()
+        {
+            if (Disposed || Threads.Count > 0)
+            {
+                return;
+            }
+
+            Disposed = true;
+
+            foreach (object Obj in HandleTable.Clear())
+            {
+                if (Obj is KSession Session)
+                {
+                    Session.Dispose();
+                }
+            }
+
+            INvDrvServices.UnloadProcess(this);
+
+            AppletState.Dispose();
+
+            if (NeedsHbAbi && Executables.Count > 0 && Executables[0].FilePath.EndsWith(Homebrew.TemporaryNroSuffix))
+            {
+                File.Delete(Executables[0].FilePath);
+            }
+
+            Device.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -415,41 +421,21 @@ namespace Ryujinx.HLE.HOS
 
         protected virtual void Dispose(bool Disposing)
         {
-            if (Disposing && !Disposed)
+            if (Disposing)
             {
-                //If there is still some thread running, disposing the objects is not
-                //safe as the thread may try to access those resources. Instead, we set
-                //the flag to have the Process disposed when all threads finishes.
-                //Note: This may not happen if the guest code gets stuck on a infinite loop.
                 if (Threads.Count > 0)
                 {
-                    ShouldDispose = true;
-
-                    Device.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} waiting all threads terminate...");
-
-                    return;
-                }
-
-                Disposed = true;
-
-                foreach (object Obj in HandleTable.Clear())
-                {
-                    if (Obj is KSession Session)
+                    foreach (KThread Thread in Threads.Values)
                     {
-                        Session.Dispose();
+                        Thread.Thread.StopExecution();
+
+                        Scheduler.ForceWakeUp(Thread);
                     }
                 }
-
-                if (NeedsHbAbi && Executables.Count > 0 && Executables[0].FilePath.EndsWith(Homebrew.TemporaryNroSuffix))
+                else
                 {
-                    File.Delete(Executables[0].FilePath);
+                    Unload();
                 }
-
-                INvDrvServices.UnloadProcess(this);
-
-                AppletState.Dispose();
-
-                Device.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
             }
         }
     }

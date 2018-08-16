@@ -27,8 +27,6 @@ namespace Ryujinx.HLE
 
         public Hid Hid { get; private set; }
 
-        public event EventHandler Finish;
-
         public Switch(IGalRenderer Renderer, IAalOutput AudioOut)
         {
             if (Renderer == null)
@@ -78,10 +76,9 @@ namespace Ryujinx.HLE
             Gpu.Fifo.DispatchCalls();
         }
 
-        public virtual void OnFinish(EventArgs e)
+        internal void Unload()
         {
-            System.Dispose();
-            Finish?.Invoke(this, e);
+            VFs.Dispose();
         }
 
         public void Dispose()
@@ -94,7 +91,6 @@ namespace Ryujinx.HLE
             if (Disposing)
             {
                 System.Dispose();
-                VFs.Dispose();
             }
         }
     }
