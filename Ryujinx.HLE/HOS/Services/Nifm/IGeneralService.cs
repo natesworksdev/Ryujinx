@@ -7,6 +7,8 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
+using static Ryujinx.HLE.HOS.ErrorCode;
+
 namespace Ryujinx.HLE.HOS.Services.Nifm
 {
     class IGeneralService : IpcService
@@ -24,9 +26,6 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
             };
         }
 
-        public const int NoInternetConnection = 0x2586e;
-
-        //CreateRequest(i32)
         public long CreateRequest(ServiceCtx Context)
         {
             int Unknown = Context.RequestData.ReadInt32();
@@ -42,15 +41,16 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                return NoInternetConnection;
+                return MakeError(ErrorModule.Nifm, NifmErr.NoInternetConnection);
             }
 
-            IPHostEntry Host    = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress   Address = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
+            IPHostEntry Host = Dns.GetHostEntry(Dns.GetHostName());
+
+            IPAddress Address = Host.AddressList.FirstOrDefault(A => A.AddressFamily == AddressFamily.InterNetwork);
 
             Context.ResponseData.Write(BitConverter.ToUInt32(Address.GetAddressBytes()));
 
-            Context.Device.Log.PrintInfo(LogClass.ServiceNifm, $"Console's local IP is {Address.ToString()}");
+            Context.Device.Log.PrintInfo(LogClass.ServiceNifm, $"Console's local IP is \"{Address}\".");
 
             return 0;
         }
