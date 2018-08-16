@@ -89,8 +89,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 const int Level = 0;
                 const int Border = 0;
 
-                GL.GetError();
-
                 GL.TexImage2D(
                     TextureTarget.Texture2D,
                     Level,
@@ -101,11 +99,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     PixelFormat,
                     PixelType,
                     IntPtr.Zero);
-
-                if (GL.GetError() != ErrorCode.NoError)
-                {
-                    throw new InvalidOperationException($"{InternalFormat} {PixelFormat} {PixelType}");
-                }
 
                 if (Initialized)
                 {

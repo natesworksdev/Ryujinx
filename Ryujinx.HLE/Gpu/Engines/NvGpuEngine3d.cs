@@ -102,6 +102,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             SetAlphaBlending(State);
             SetPrimitiveRestart(State);
 
+            //Enabling multiple framebuffer attachments cause graphics reggresions
             SetFrameBuffer(Vmm, 0);
             SetZeta(Vmm);
 

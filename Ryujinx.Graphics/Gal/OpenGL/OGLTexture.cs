@@ -72,8 +72,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 (PixelInternalFormat InternalFormat, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(Image.Format);
 
-                GL.GetError();
-
                 GL.TexImage2D(
                     TextureTarget.Texture2D,
                     Level,
@@ -84,11 +82,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     Format,
                     Type,
                     Data);
-
-                if (GL.GetError() != ErrorCode.NoError)
-                {
-                    throw new InvalidOperationException($"{InternalFormat} {Format} {Type}");
-                }
             }
 
             int SwizzleR = (int)OGLEnumConverter.GetTextureSwizzle(Image.XSource);

@@ -1,7 +1,6 @@
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
@@ -56,12 +55,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private int CropRight;
         private int CropBottom;
 
+        //This framebuffer is used to attach guest rendertargets,
+        //think of it as a dummy OpenGL VAO
         private int DummyFrameBuffer;
 
+        //These framebuffers are used to blit images
         private int SrcFb;
         private int DstFb;
 
+        //Holds current attachments, used to avoid unnecesary calls to OpenGL
         private int[] ColorAttachments;
+
         private int DepthAttachment;
         private int StencilAttachment;
 
@@ -91,20 +95,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             EnsureFrameBuffer();
 
             Attach(ref ColorAttachments[Attachment], 0, FramebufferAttachment.ColorAttachment0 + Attachment);
-        }
-
-        private void Attach(ref int OldHandle, int NewHandle, FramebufferAttachment FbAttachment)
-        {
-            if (OldHandle != NewHandle)
-            {
-                GL.FramebufferTexture(
-                    FramebufferTarget.DrawFramebuffer,
-                    FbAttachment,
-                    NewHandle,
-                    0);
-
-                OldHandle = NewHandle;
-            }
         }
         
         public void BindZeta(long Key)
@@ -434,6 +424,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, DummyFrameBuffer);
 
             GL.DrawBuffers(8, DrawBuffers);
+        }
+
+        private void Attach(ref int OldHandle, int NewHandle, FramebufferAttachment FbAttachment)
+        {
+            if (OldHandle != NewHandle)
+            {
+                GL.FramebufferTexture(
+                    FramebufferTarget.DrawFramebuffer,
+                    FbAttachment,
+                    NewHandle,
+                    0);
+
+                OldHandle = NewHandle;
+            }
         }
 
         private void CopyTextures(
