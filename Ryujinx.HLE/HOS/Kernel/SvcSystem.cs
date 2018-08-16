@@ -87,9 +87,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             ulong Timeout      =       ThreadState.X3;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "HandlesPtr = "   + HandlesPtr  .ToString("x16") + ", " +
-                "HandlesCount = " + HandlesCount.ToString("x8")  + ", " +
-                "Timeout = "      + Timeout     .ToString("x16"));
+                "HandlesPtr = 0x"   + HandlesPtr  .ToString("x16") + ", " +
+                "HandlesCount = 0x" + HandlesCount.ToString("x8")  + ", " +
+                "Timeout = 0x"      + Timeout     .ToString("x16"));
 
             if ((uint)HandlesCount > 0x40)
             {
@@ -364,7 +364,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 default:
                     Process.PrintStackTrace(ThreadState);
 
-                    throw new NotImplementedException($"SvcGetInfo: {InfoType} {Handle:x8} {InfoId}");
+                    throw new NotImplementedException($"SvcGetInfo: {InfoType} 0x{Handle:x8} {InfoId}");
             }
 
             ThreadState.X0 = 0;

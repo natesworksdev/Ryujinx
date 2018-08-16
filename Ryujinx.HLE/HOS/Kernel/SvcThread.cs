@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             ulong TimeoutNs = ThreadState.X0;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc, "Timeout = " + TimeoutNs.ToString("x16"));
+            Device.Log.PrintDebug(LogClass.KernelSvc, "Timeout = 0x" + TimeoutNs.ToString("x16"));
 
             KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
 
@@ -125,8 +125,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             int Priority = (int)ThreadState.X1;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "Handle = "   + Handle  .ToString("x8") + ", " +
-                "Priority = " + Priority.ToString("x8"));
+                "Handle = 0x"   + Handle  .ToString("x8") + ", " +
+                "Priority = 0x" + Priority.ToString("x8"));
 
             KThread Thread = GetThread(ThreadState.Tpidr, Handle);
 
@@ -148,7 +148,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             int Handle = (int)ThreadState.X2;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc, "Handle = " + Handle.ToString("x8"));
+            Device.Log.PrintDebug(LogClass.KernelSvc, "Handle = 0x" + Handle.ToString("x8"));
 
             KThread Thread = GetThread(ThreadState.Tpidr, Handle);
 
@@ -173,9 +173,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             long CoreMask  = (long)ThreadState.X2;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "Handle = "    + Handle   .ToString("x8") + ", " +
-                "IdealCore = " + IdealCore.ToString("x8") + ", " +
-                "CoreMask = "  + CoreMask .ToString("x16"));
+                "Handle = 0x"    + Handle   .ToString("x8") + ", " +
+                "IdealCore = 0x" + IdealCore.ToString("x8") + ", " +
+                "CoreMask = 0x"  + CoreMask .ToString("x16"));
 
             KThread Thread = GetThread(ThreadState.Tpidr, Handle);
 

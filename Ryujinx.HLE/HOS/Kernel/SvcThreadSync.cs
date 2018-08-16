@@ -17,9 +17,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             int  WaitThreadHandle  =  (int)ThreadState.X2;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "OwnerThreadHandle = " + OwnerThreadHandle.ToString("x8")  + ", " +
-                "MutexAddress = "      + MutexAddress     .ToString("x16") + ", " +
-                "WaitThreadHandle = "  + WaitThreadHandle .ToString("x8"));
+                "OwnerThreadHandle = 0x" + OwnerThreadHandle.ToString("x8")  + ", " +
+                "MutexAddress = 0x"      + MutexAddress     .ToString("x16") + ", " +
+                "WaitThreadHandle = 0x"  + WaitThreadHandle .ToString("x8"));
 
             if (IsPointingInsideKernel(MutexAddress))
             {
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (IsWordAddressUnaligned(MutexAddress))
+            if (IsAddressNotWordAligned(MutexAddress))
             {
                 Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             long MutexAddress = (long)ThreadState.X0;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc, "MutexAddress = " + MutexAddress.ToString("x16"));
+            Device.Log.PrintDebug(LogClass.KernelSvc, "MutexAddress = 0x" + MutexAddress.ToString("x16"));
 
             if (IsPointingInsideKernel(MutexAddress))
             {
@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (IsWordAddressUnaligned(MutexAddress))
+            if (IsAddressNotWordAligned(MutexAddress))
             {
                 Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
@@ -105,10 +105,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             ulong Timeout        =       ThreadState.X3;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "MutexAddress = "   + MutexAddress  .ToString("x16") + ", " +
-                "CondVarAddress = " + CondVarAddress.ToString("x16") + ", " +
-                "ThreadHandle = "   + ThreadHandle  .ToString("x8")  + ", " +
-                "Timeout = "        + Timeout       .ToString("x16"));
+                "MutexAddress = 0x"   + MutexAddress  .ToString("x16") + ", " +
+                "CondVarAddress = 0x" + CondVarAddress.ToString("x16") + ", " +
+                "ThreadHandle = 0x"   + ThreadHandle  .ToString("x8")  + ", " +
+                "Timeout = 0x"        + Timeout       .ToString("x16"));
 
             if (IsPointingInsideKernel(MutexAddress))
             {
@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (IsWordAddressUnaligned(MutexAddress))
+            if (IsAddressNotWordAligned(MutexAddress))
             {
                 Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
@@ -157,8 +157,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             int  Count          =  (int)ThreadState.X1;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "CondVarAddress = " + CondVarAddress.ToString("x16") + ", " +
-                "Count = "          + Count         .ToString("x8"));
+                "CondVarAddress = 0x" + CondVarAddress.ToString("x16") + ", " +
+                "Count = 0x"          + Count         .ToString("x8"));
 
             KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
 
@@ -178,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 int MutexValue = Memory.ReadInt32(MutexAddress);
 
-                Device.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = " + MutexValue.ToString("x8"));
+                Device.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = 0x" + MutexValue.ToString("x8"));
 
                 if (MutexValue != (OwnerThreadHandle | MutexHasListenersMask))
                 {
@@ -204,10 +204,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             ulong           Timeout = ThreadState.X3;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "Address = "         + Address.ToString("x16") + ", " +
-                "ArbitrationType = " + Type   .ToString()      + ", " +
-                "Value = "           + Value  .ToString("x8")  + ", " +
-                "Timeout = "         + Timeout.ToString("x16"));
+                "Address = 0x"         + Address.ToString("x16") + ", " +
+                "ArbitrationType = 0x" + Type   .ToString()      + ", " +
+                "Value = 0x"           + Value  .ToString("x8")  + ", " +
+                "Timeout = 0x"         + Timeout.ToString("x16"));
 
             if (IsPointingInsideKernel(Address))
             {
@@ -218,7 +218,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (IsWordAddressUnaligned(Address))
+            if (IsAddressNotWordAligned(Address))
             {
                 Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
 
@@ -392,7 +392,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                         MutexValue = Memory.ReadInt32(MutexAddress);
                     }
 
-                    Device.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = " + MutexValue.ToString("x8"));
+                    Device.Log.PrintDebug(LogClass.KernelSvc, "MutexValue = 0x" + MutexValue.ToString("x8"));
 
                     if (MutexValue == 0)
                     {
@@ -515,7 +515,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             return ((ulong)Address + 0x1000000000) < 0xffffff000;
         }
 
-        private bool IsWordAddressUnaligned(long Address)
+        private bool IsAddressNotWordAligned(long Address)
         {
             return (Address & 3) != 0;
         }
