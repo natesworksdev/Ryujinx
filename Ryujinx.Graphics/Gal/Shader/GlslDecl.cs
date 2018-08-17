@@ -16,6 +16,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         public const int VertexIdAttr    = 0x2fc;
         public const int FaceAttr        = 0x3fc;
 
+        public const int MaxFrameBufferAttachments = 8;
         public const int MaxUboSize = 1024;
 
         public const int GlPositionVec4Index = 7;
@@ -99,7 +100,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (ShaderType == GalShaderType.Fragment)
             {
-                m_Gprs.Add(0, new ShaderDeclInfo(FragmentOutputName, 0, false, 0, 4));
+                for (int Index = 0; Index < MaxFrameBufferAttachments; Index++)
+                {
+                    m_Gprs.Add(Index * 4, new ShaderDeclInfo(FragmentOutputName + Index, Index * 4, false, 0, 4));
+                }
             }
 
             foreach (ShaderIrBlock Block in Blocks)
