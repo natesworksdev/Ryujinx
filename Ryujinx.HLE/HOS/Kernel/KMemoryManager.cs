@@ -744,6 +744,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 long VA = Position + Page * PageSize;
 
+                if (!CpuMemory.IsMapped(VA))
+                {
+                    continue;
+                }
+
                 long PA = CpuMemory.GetPhysicalAddress(VA);
 
                 Allocator.Free(PA, PageSize);
