@@ -259,9 +259,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                         InsertBlock(FreeAddr, PagesCount, MemoryState.Unmapped);
 
-                        CpuMemory.Unmap(FreeAddr, DiffSize);
-
                         FreePages(FreeAddr, PagesCount);
+
+                        CpuMemory.Unmap(FreeAddr, DiffSize);
                     }
                 }
             }
@@ -712,9 +712,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 InsertBlock(Position, PagesCount, MemoryState.Unmapped);
 
-                CpuMemory.Unmap(Position, Size);
-
                 FreePages(Position, PagesCount);
+
+                CpuMemory.Unmap(Position, Size);
 
                 return 0;
             }
