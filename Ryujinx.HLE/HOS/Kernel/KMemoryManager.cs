@@ -631,7 +631,14 @@ namespace Ryujinx.HLE.HOS.Kernel
                     {
                         long CurrSize = GetSizeInRange(Info, Position, End);
 
-                        CpuMemory.Map(Info.Position, PA, CurrSize);
+                        long MapPosition = Info.Position;
+
+                        if ((ulong)MapPosition < (ulong)Position)
+                        {
+                            MapPosition = Position;
+                        }
+
+                        CpuMemory.Map(MapPosition, PA, CurrSize);
 
                         PA += CurrSize;
                     }
