@@ -6,11 +6,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLTexture : IGalTexture
     {
-        private OGLCachedResource<TCE> TextureCache;
+        private OGLCachedResource<ImageHandler> TextureCache;
 
         public OGLTexture()
         {
-            TextureCache = new OGLCachedResource<TCE>(DeleteTexture);
+            TextureCache = new OGLCachedResource<ImageHandler>(DeleteTexture);
         }
 
         public void LockCache()
@@ -23,16 +23,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             TextureCache.Unlock();
         }
 
-        private static void DeleteTexture(TCE CachedTexture)
+        private static void DeleteTexture(ImageHandler CachedImage)
         {
-            GL.DeleteTexture(CachedTexture.Handle);
+            GL.DeleteTexture(CachedImage.Handle);
         }
 
         public void Create(long Key, byte[] Data, GalImage Image)
         {
             int Handle = GL.GenTexture();
 
-            TextureCache.AddOrUpdate(Key, new TCE(Handle, Image), (uint)Data.Length);
+            TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Data.Length);
 
             GL.BindTexture(TextureTarget.Texture2D, Handle);
 
@@ -97,24 +97,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void CreateFb(long Key, long Size, GalImage Image)
         {
-            if (!TryGetTCE(Key, out TCE Texture))
+            if (!TryGetImage(Key, out ImageHandler CachedImage))
             {
-                Texture = new TCE();
+                CachedImage = new ImageHandler();
 
-                TextureCache.AddOrUpdate(Key, Texture, Size);
+                TextureCache.AddOrUpdate(Key, CachedImage, Size);
             }
 
-            Texture.EnsureSetup(Image);
+            CachedImage.EnsureSetup(Image);
         }
 
-        public bool TryGetTCE(long Key, out TCE CachedTexture)
+        public bool TryGetImage(long Key, out ImageHandler CachedImage)
         {
-            if (TextureCache.TryGetValue(Key, out CachedTexture))
+            if (TextureCache.TryGetValue(Key, out CachedImage))
             {
                 return true;
             }
 
-            CachedTexture = null;
+            CachedImage = null;
 
             return false;
         }
@@ -169,9 +169,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (TextureCache.TryGetSize(Key, out long Size) && Size == DataSize)
             {
-                if (TextureCache.TryGetValue(Key, out TCE CachedTexture))
+                if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
                 {
-                    Image = CachedTexture.Image;
+                    Image = CachedImage.Image;
 
                     return true;
                 }
@@ -184,11 +184,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Bind(long Key, int Index)
         {
-            if (TextureCache.TryGetValue(Key, out TCE CachedTexture))
+            if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
             {
                 GL.ActiveTexture(TextureUnit.Texture0 + Index);
 
-                GL.BindTexture(TextureTarget.Texture2D, CachedTexture.Handle);
+                GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
             }
         }
 

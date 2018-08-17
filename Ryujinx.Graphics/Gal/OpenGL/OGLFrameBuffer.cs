@@ -40,8 +40,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private OGLTexture Texture;
 
-        private TCE RawTex;
-        private TCE ReadTex;
+        private ImageHandler RawTex;
+        private ImageHandler ReadTex;
 
         private Rect Viewport;
         private Rect Window;
@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void BindColor(long Key, int Attachment)
         {
-            if (Texture.TryGetTCE(Key, out TCE Tex))
+            if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
                 EnsureFrameBuffer();
 
@@ -98,7 +98,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         
         public void BindZeta(long Key)
         {
-            if (Texture.TryGetTCE(Key, out TCE Tex))
+            if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
                 EnsureFrameBuffer();
 
@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void BindTexture(long Key, int Index)
         {
-            if (Texture.TryGetTCE(Key, out TCE Tex))
+            if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
                 GL.ActiveTexture(TextureUnit.Texture0 + Index);
 
@@ -172,7 +172,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Set(long Key)
         {
-            if (Texture.TryGetTCE(Key, out TCE Tex))
+            if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
                 ReadTex = Tex;
             }
@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (RawTex == null)
             {
-                RawTex = new TCE();
+                RawTex = new ImageHandler();
             }
 
             RawTex.EnsureSetup(new GalImage(Width, Height, RawFormat));
@@ -307,8 +307,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             int  DstX1,
             int  DstY1)
         {
-            if (Texture.TryGetTCE(SrcKey, out TCE SrcTex) &&
-                Texture.TryGetTCE(DstKey, out TCE DstTex))
+            if (Texture.TryGetImage(SrcKey, out ImageHandler SrcTex) &&
+                Texture.TryGetImage(DstKey, out ImageHandler DstTex))
             {
                 if (SrcTex.HasColor != DstTex.HasColor ||
                     SrcTex.HasDepth != DstTex.HasDepth ||
@@ -370,9 +370,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void GetBufferData(long Key, Action<byte[]> Callback)
         {
-            if (Texture.TryGetTCE(Key, out TCE Tex))
+            if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
-                byte[] Data = new byte[Tex.Width * Tex.Height * TCE.MaxBpp];
+                byte[] Data = new byte[Tex.Width * Tex.Height * ImageHandler.MaxBpp];
 
                 GL.BindTexture(TextureTarget.Texture2D, Tex.Handle);
 
@@ -393,7 +393,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             int              Height,
             byte[]           Buffer)
         {
-            if (Texture.TryGetTCE(Key, out TCE Tex))
+            if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
                 GL.BindTexture(TextureTarget.Texture2D, Tex.Handle);
 

@@ -242,7 +242,8 @@ namespace Ryujinx.Graphics.Gal
                     return true;
             }
 
-            //Depth formats are easier to maintain so not false case, just return false
+            //Depth formats are fewer than colors, so it's harder to miss one
+            //Instead of checking for individual formats, return false
             return false;
         }
 

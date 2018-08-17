@@ -354,7 +354,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
                 else if (DeclInfo.Name.Contains(GlslDecl.FragmentOutputName))
                 {
-                    Name = "layout (location = " + DeclInfo.Index / 4 + ") out vec4 " + DeclInfo.Name + Suffix + ";" + Environment.NewLine;
+                    Name = "layout (location = " + DeclInfo.Index / 4 + ") out vec4 " + DeclInfo.Name + Suffix + ";";
                 }
                 else
                 {

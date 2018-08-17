@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class TCE
+    class ImageHandler
     {
         //TODO: Use a variable value here
         public const int MaxBpp = 16;
@@ -13,24 +13,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public GalImage Image { get; private set; }
 
-        public int Width { get => Image.Width; }
-        public int Height { get => Image.Height; }
-        public GalImageFormat Format { get => Image.Format; }
+        public int Width  => Image.Width;
+        public int Height => Image.Height;
+
+        public GalImageFormat Format => Image.Format;
 
         public PixelInternalFormat InternalFormat { get; private set; }
-        public PixelFormat PixelFormat { get; private set; }
-        public PixelType PixelType { get; private set; }
+        public PixelFormat         PixelFormat    { get; private set; }
+        public PixelType           PixelType      { get; private set; }
 
         public int Handle { get; private set; }
 
         private bool Initialized;
 
-        public TCE()
+        public ImageHandler()
         {
             Handle = GL.GenTexture();
         }
 
-        public TCE(int Handle, GalImage Image)
+        public ImageHandler(int Handle, GalImage Image)
         {
             this.Handle = Handle;
 

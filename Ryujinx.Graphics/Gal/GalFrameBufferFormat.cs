@@ -9,7 +9,7 @@
         RGBA32Uint           = 0xc2,
         RGBX32Float          = 0xc3,
         RGBX32Sint           = 0xc4,
-	    RGBX32Uint           = 0xc5,
+        RGBX32Uint           = 0xc5,
         RGBA16Unorm          = 0xc6,
         RGBA16Snorm          = 0xc7,
         RGBA16Sint           = 0xc8,
