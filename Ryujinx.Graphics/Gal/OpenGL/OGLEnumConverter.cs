@@ -145,7 +145,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.R32_SFLOAT:               return (PixelInternalFormat.R32f,         PixelFormat.Red,         PixelType.Float);
                 case GalImageFormat.R32_SINT:                 return (PixelInternalFormat.R32i,         PixelFormat.Red,         PixelType.Int);
                 case GalImageFormat.R32_UINT:                 return (PixelInternalFormat.R32ui,        PixelFormat.Red,         PixelType.UnsignedInt);
-                case GalImageFormat.R4G4B4A4_UNORM_PACK16:    return (PixelInternalFormat.Rgba4,        PixelFormat.Rgba,        PixelType.UnsignedShort4444Reversed);
                 case GalImageFormat.A1R5G5B5_UNORM_PACK16:    return (PixelInternalFormat.Rgb5A1,       PixelFormat.Rgba,        PixelType.UnsignedShort5551);
                 case GalImageFormat.B5G6R5_UNORM_PACK16:      return (PixelInternalFormat.Rgba,         PixelFormat.Rgb,         PixelType.UnsignedShort565);
                 case GalImageFormat.R16G16_SFLOAT:            return (PixelInternalFormat.Rg16f,        PixelFormat.Rg,          PixelType.HalfFloat);
@@ -166,6 +165,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.R8_UINT:                  return (PixelInternalFormat.R8ui,         PixelFormat.RedInteger,  PixelType.UnsignedByte);
                 case GalImageFormat.R8_UNORM:                 return (PixelInternalFormat.R8,           PixelFormat.Red,         PixelType.UnsignedByte);
                 case GalImageFormat.B10G11R11_UFLOAT_PACK32:  return (PixelInternalFormat.R11fG11fB10f, PixelFormat.Rgb,         PixelType.UnsignedInt10F11F11FRev);
+
+                case GalImageFormat.R4G4B4A4_UNORM_PACK16_REVERSED: return (PixelInternalFormat.Rgba4, PixelFormat.Rgba, PixelType.UnsignedShort4444Reversed);
 
                 case GalImageFormat.D24_UNORM_S8_UINT: return (PixelInternalFormat.Depth24Stencil8,   PixelFormat.DepthStencil,   PixelType.UnsignedInt248);
                 case GalImageFormat.D32_SFLOAT:        return (PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, PixelType.Float);

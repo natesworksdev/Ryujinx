@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalImageFormat.D24_UNORM_S8_UINT:
                     return Image.Width * Image.Height * 4;
 
-                case GalImageFormat.R4G4B4A4_UNORM_PACK16:
+                case GalImageFormat.B4G4R4A4_UNORM_PACK16:
                 case GalImageFormat.A1R5G5B5_UNORM_PACK16:
                 case GalImageFormat.B5G6R5_UNORM_PACK16:
                 case GalImageFormat.R8G8_SINT:
