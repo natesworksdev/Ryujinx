@@ -100,7 +100,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (ShaderType == GalShaderType.Fragment)
             {
-                for (int Index = 0; Index < MaxFrameBufferAttachments; Index++)
+                //Note: Replace 1 with MaxFrameBufferAttachments when attachments start to work
+                for (int Index = 0; Index < 1; Index++)
                 {
                     m_Gprs.Add(Index * 4, new ShaderDeclInfo(FragmentOutputName + Index, Index * 4, false, 0, 4));
                 }
