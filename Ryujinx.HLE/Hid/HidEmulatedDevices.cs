@@ -6,20 +6,21 @@ namespace Ryujinx.HLE.Input
 {
     public class HidEmulatedDevices
     {
-        public struct EmulatedDevices
+        public enum HostDevice
         {
-            public int Handheld;
-            public int Player1;
-            public int Player2;
-            public int Player3;
-            public int Player4;
-            public int Player5;
-            public int Player6;
-            public int Player7;
-            public int Player8;
-            public int PlayerUnknown;
+            None,
+            Keyboard,
+            GamePad_0,
+            GamePad_1,
+            GamePad_2,
+            GamePad_3,
+            GamePad_4,
+            GamePad_5,
+            GamePad_6,
+            GamePad_7,
+            GamePad_8,
         };
 
-        public static EmulatedDevices Devices;
+        public static Dictionary<HidControllerId, HostDevice> Devices;
     }
 }

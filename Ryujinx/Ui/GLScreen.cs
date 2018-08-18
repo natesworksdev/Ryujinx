@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 using Stopwatch = System.Diagnostics.Stopwatch;
@@ -251,375 +252,42 @@ namespace Ryujinx
                 Device.Hid.SetTouchPoints();
             }
 
-            if (HidEmulatedDevices.Devices.Handheld != -2)
+            foreach (KeyValuePair<HidControllerId, HidEmulatedDevices.HostDevice> entry in HidEmulatedDevices.Devices)
             {
-                switch (HidEmulatedDevices.Devices.Handheld)
+                if (entry.Value != HidEmulatedDevices.HostDevice.None)
                 {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_HANDHELD,
-                            HidControllerLayouts.Handheld_Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_HANDHELD,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Handheld < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Handheld + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_HANDHELD,
-                            HidControllerLayouts.Handheld_Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Handheld],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Handheld],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Handheld]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_HANDHELD,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Handheld],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Handheld],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Handheld]);
-                        break;
+                    Device.Hid.SetJoyconButton(
+                        entry.Key,
+                        (entry.Key == HidControllerId.CONTROLLER_HANDHELD) ? HidControllerLayouts.Handheld_Joined : HidControllerLayouts.Joined,
+                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
+                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
+                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
+                    Device.Hid.SetJoyconButton(
+                        entry.Key,
+                        HidControllerLayouts.Main,
+                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
+                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
+                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
                 }
             }
-
-            if (HidEmulatedDevices.Devices.Player1 != -2)
+        }
+        
+        private int GetGamePadIndexFromHostDevice(HidEmulatedDevices.HostDevice hostDevice)
+        {
+            switch (hostDevice)
             {
-                switch (HidEmulatedDevices.Devices.Player1)
-                {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_1,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_1,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Player1 < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Player1 + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_1,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player1],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player1],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player1]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_1,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player1],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player1],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player1]);
-                        break;
-                }
+                case HidEmulatedDevices.HostDevice.GamePad_0: return 0;
+                case HidEmulatedDevices.HostDevice.GamePad_1: return 1;
+                case HidEmulatedDevices.HostDevice.GamePad_2: return 2;
+                case HidEmulatedDevices.HostDevice.GamePad_3: return 3;
+                case HidEmulatedDevices.HostDevice.GamePad_4: return 4;
+                case HidEmulatedDevices.HostDevice.GamePad_5: return 5;
+                case HidEmulatedDevices.HostDevice.GamePad_6: return 6;
+                case HidEmulatedDevices.HostDevice.GamePad_7: return 7;
+                case HidEmulatedDevices.HostDevice.GamePad_8: return 8;
             }
 
-            if (HidEmulatedDevices.Devices.Player2 != -2)
-            {
-                switch (HidEmulatedDevices.Devices.Player2)
-                {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_2,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_2,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Player2 < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Player2 + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_2,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player2],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player2],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player2]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_2,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player2],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player2],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player2]);
-                        break;
-                }
-            }
-
-            if (HidEmulatedDevices.Devices.Player3 != -2)
-            {
-                switch (HidEmulatedDevices.Devices.Player3)
-                {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_3,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_3,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Player3 < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Player3 + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_3,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player3],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player3],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player3]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_3,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player3],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player3],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player3]);
-                        break;
-                }
-            }
-
-            if (HidEmulatedDevices.Devices.Player4 != -2)
-            {
-                switch (HidEmulatedDevices.Devices.Player4)
-                {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_4,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_4,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Player4 < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Player4 + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_4,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player4],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player4],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player4]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_4,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player4],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player4],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player4]);
-                        break;
-                }
-            }
-
-            if (HidEmulatedDevices.Devices.Player5 != -2)
-            {
-                switch (HidEmulatedDevices.Devices.Player5)
-                {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_5,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_5,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Player5 < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Player5 + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_5,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player5],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player5],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player5]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_5,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player5],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player5],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player5]);
-                        break;
-                }
-            }
-
-            if (HidEmulatedDevices.Devices.Player6 != -2)
-            {
-                switch (HidEmulatedDevices.Devices.Player6)
-                {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_6,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_6,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Player6 < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Player6 + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_6,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player6],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player6],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player6]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_6,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player6],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player6],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player6]);
-                        break;
-                }
-            }
-
-            if (HidEmulatedDevices.Devices.Player7 != -2)
-            {
-                switch (HidEmulatedDevices.Devices.Player7)
-                {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_7,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_7,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Player7 < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Player7 + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_7,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player7],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player7],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player7]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_7,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player7],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player7],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player7]);
-                        break;
-                }
-            }
-
-            if (HidEmulatedDevices.Devices.Player8 != -2)
-            {
-                switch (HidEmulatedDevices.Devices.Player8)
-                {
-                    case -1:
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_8,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_8,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsKeyboard,
-                            LeftJoystickKeyboard,
-                            RightJoystickKeyboard);
-                        break;
-                    default:
-                        if (HidEmulatedDevices.Devices.Player8 < 0)
-                            throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.Player8 + ".");
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_8,
-                            HidControllerLayouts.Joined,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player8],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player8],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player8]);
-                        Ns.Hid.SetJoyconButton(
-                            HidControllerId.CONTROLLER_PLAYER_8,
-                            HidControllerLayouts.Main,
-                            CurrentButtonsGamePad[HidEmulatedDevices.Devices.Player8],
-                            LeftJoystickGamePad[HidEmulatedDevices.Devices.Player8],
-                            RightJoystickGamePad[HidEmulatedDevices.Devices.Player8]);
-                        break;
-                }
-
-                if (HidEmulatedDevices.Devices.PlayerUnknown != -2)
-                {
-                    switch (HidEmulatedDevices.Devices.PlayerUnknown)
-                    {
-                        case -1:
-                            Ns.Hid.SetJoyconButton(
-                                HidControllerId.CONTROLLER_UNKNOWN,
-                                HidControllerLayouts.Joined,
-                                CurrentButtonsKeyboard,
-                                LeftJoystickKeyboard,
-                                RightJoystickKeyboard);
-                            Ns.Hid.SetJoyconButton(
-                                HidControllerId.CONTROLLER_UNKNOWN,
-                                HidControllerLayouts.Main,
-                                CurrentButtonsKeyboard,
-                                LeftJoystickKeyboard,
-                                RightJoystickKeyboard);
-                            break;
-                        default:
-                            if (HidEmulatedDevices.Devices.PlayerUnknown < 0)
-                                throw new ArgumentException("Unknown Emulated Device Code: " + HidEmulatedDevices.Devices.PlayerUnknown + ".");
-                            Ns.Hid.SetJoyconButton(
-                                HidControllerId.CONTROLLER_UNKNOWN,
-                                HidControllerLayouts.Joined,
-                                CurrentButtonsGamePad[HidEmulatedDevices.Devices.PlayerUnknown],
-                                LeftJoystickGamePad[HidEmulatedDevices.Devices.PlayerUnknown],
-                                RightJoystickGamePad[HidEmulatedDevices.Devices.PlayerUnknown]);
-                            Ns.Hid.SetJoyconButton(
-                                HidControllerId.CONTROLLER_UNKNOWN,
-                                HidControllerLayouts.Main,
-                                CurrentButtonsGamePad[HidEmulatedDevices.Devices.PlayerUnknown],
-                                LeftJoystickGamePad[HidEmulatedDevices.Devices.PlayerUnknown],
-                                RightJoystickGamePad[HidEmulatedDevices.Devices.PlayerUnknown]);
-                            break;
-                    }
-                }
-            }
+            return -1;
         }
 
         private new void RenderFrame()

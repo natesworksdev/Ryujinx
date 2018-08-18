@@ -8,14 +8,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Ryujinx
 {
     public static class Config
     {
-        public static JoyConKeyboard     JoyConKeyboard        { get; private set; }
-        public static JoyConController[] JoyConControllers     { get; private set; }
-        public static bool               GamePadEnable         { get; private set; }
+        public static JoyConKeyboard     JoyConKeyboard    { get; private set; }
+        public static JoyConController[] JoyConControllers { get; private set; }
+        public static bool               GamePadEnable     { get; private set; }
 
         public static void Read(Switch Device)
         {
@@ -39,17 +40,20 @@ namespace Ryujinx
 
             GamePadEnable = Boolean.Parse(Parser.Value("GamePad_Enable"));
 
-            //Device Mappings
-            HidEmulatedDevices.Devices.Handheld      = ToEmulatedDevice(Parser.Value("Handheld_Device")); // -2: None, -1: Keyboard, Everything Else: GamePad Index
-            HidEmulatedDevices.Devices.Player1       = ToEmulatedDevice(Parser.Value("Player1_Device"));
-            HidEmulatedDevices.Devices.Player2       = ToEmulatedDevice(Parser.Value("Player2_Device"));
-            HidEmulatedDevices.Devices.Player3       = ToEmulatedDevice(Parser.Value("Player3_Device"));
-            HidEmulatedDevices.Devices.Player4       = ToEmulatedDevice(Parser.Value("Player4_Device"));
-            HidEmulatedDevices.Devices.Player5       = ToEmulatedDevice(Parser.Value("Player5_Device"));
-            HidEmulatedDevices.Devices.Player6       = ToEmulatedDevice(Parser.Value("Player6_Device"));
-            HidEmulatedDevices.Devices.Player7       = ToEmulatedDevice(Parser.Value("Player7_Device"));
-            HidEmulatedDevices.Devices.Player8       = ToEmulatedDevice(Parser.Value("Player8_Device"));
-            HidEmulatedDevices.Devices.PlayerUnknown = ToEmulatedDevice(Parser.Value("PlayerUnknown_Device"));
+            HidEmulatedDevices.Devices = new Dictionary<HidControllerId, HidEmulatedDevices.HostDevice>
+            {
+                //Device Mappings
+                { HidControllerId.CONTROLLER_HANDHELD, ToHostDevice(Parser.Value("Handheld_Device")) },
+                { HidControllerId.CONTROLLER_PLAYER_1, ToHostDevice(Parser.Value("Player1_Device")) },
+                { HidControllerId.CONTROLLER_PLAYER_2, ToHostDevice(Parser.Value("Player2_Device")) },
+                { HidControllerId.CONTROLLER_PLAYER_3, ToHostDevice(Parser.Value("Player3_Device")) },
+                { HidControllerId.CONTROLLER_PLAYER_4, ToHostDevice(Parser.Value("Player4_Device")) },
+                { HidControllerId.CONTROLLER_PLAYER_5, ToHostDevice(Parser.Value("Player5_Device")) },
+                { HidControllerId.CONTROLLER_PLAYER_6, ToHostDevice(Parser.Value("Player6_Device")) },
+                { HidControllerId.CONTROLLER_PLAYER_7, ToHostDevice(Parser.Value("Player7_Device")) },
+                { HidControllerId.CONTROLLER_PLAYER_8, ToHostDevice(Parser.Value("Player8_Device")) },
+                { HidControllerId.CONTROLLER_UNKNOWN,  ToHostDevice(Parser.Value("PlayerUnknown_Device")) }
+            };
 
             //When the classes are specified on the list, we only
             //enable the classes that are on the list.
@@ -115,7 +119,7 @@ namespace Ryujinx
             List<JoyConController> JoyConControllerList = new List<JoyConController>();
 
             //Populate the Controller List
-            for (int i = 0; i < 255; ++i)
+            for (int i = 0; i < 9; ++i)
             {
                 if (Parser.Value(i + "_GamePad_Index") == null) break;
 
@@ -187,18 +191,31 @@ namespace Ryujinx
             }
         }
 
-        // -2: None, -1: Keyboard, Everything Else: GamePad Index
-        private static int ToEmulatedDevice(string Key)
+        private static HidEmulatedDevices.HostDevice ToHostDevice(string Key)
         {
             switch (Key.ToUpper())
             {
-                case "NONE":     return -2;
-                case "KEYBOARD": return -1;
+                case "NONE":     return HidEmulatedDevices.HostDevice.None;
+                case "KEYBOARD": return HidEmulatedDevices.HostDevice.Keyboard;
             }
 
-            if (Key.ToUpper().StartsWith("GAMEPAD_")) return Int32.Parse(Key.Substring(Key.Length - 1));
+            if (Key.Split("GAMEPAD_").Length > 0 && Regex.IsMatch(""+Key[Key.Length-1], @"^\d+$"))
+            {
+                switch (Key[Key.Length - 1])
+                {
+                    case '0': return HidEmulatedDevices.HostDevice.GamePad_0;
+                    case '1': return HidEmulatedDevices.HostDevice.GamePad_1;
+                    case '2': return HidEmulatedDevices.HostDevice.GamePad_2;
+                    case '3': return HidEmulatedDevices.HostDevice.GamePad_3;
+                    case '4': return HidEmulatedDevices.HostDevice.GamePad_4;
+                    case '5': return HidEmulatedDevices.HostDevice.GamePad_5;
+                    case '6': return HidEmulatedDevices.HostDevice.GamePad_6;
+                    case '7': return HidEmulatedDevices.HostDevice.GamePad_7;
+                    case '8': return HidEmulatedDevices.HostDevice.GamePad_8;
+                }
+            }
 
-            return -2;
+            return HidEmulatedDevices.HostDevice.None;
         }
     }
 
