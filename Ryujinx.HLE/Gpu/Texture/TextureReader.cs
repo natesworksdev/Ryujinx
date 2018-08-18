@@ -12,11 +12,13 @@ namespace Ryujinx.HLE.Gpu.Texture
             {
                 case GalTextureFormat.R32G32B32A32: return Read16Bpp                 (Memory, Texture);
                 case GalTextureFormat.R16G16B16A16: return Read8Bpp                  (Memory, Texture);
+                case GalTextureFormat.R32B24G8:     return Read8Bpp                  (Memory, Texture);
                 case GalTextureFormat.A8B8G8R8:     return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.A2B10G10R10:  return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.R32:          return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.BF10GF11RF11: return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.Z24S8:        return Read4Bpp                  (Memory, Texture);
+                case GalTextureFormat.A4B4G4R4:     return Read2Bpp                  (Memory, Texture);
                 case GalTextureFormat.A1B5G5R5:     return Read5551                  (Memory, Texture);
                 case GalTextureFormat.B5G6R5:       return Read565                   (Memory, Texture);
                 case GalTextureFormat.G8R8:         return Read2Bpp                  (Memory, Texture);
@@ -31,6 +33,7 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.BC4:          return Read8Bpt4x4               (Memory, Texture);
                 case GalTextureFormat.BC5:          return Read16BptCompressedTexture(Memory, Texture, 4, 4);
                 case GalTextureFormat.ZF32:         return Read4Bpp                  (Memory, Texture);
+                case GalTextureFormat.Z16:          return Read2Bpp                  (Memory, Texture);
                 case GalTextureFormat.Astc2D4x4:    return Read16BptCompressedTexture(Memory, Texture, 4, 4);
                 case GalTextureFormat.Astc2D5x5:    return Read16BptCompressedTexture(Memory, Texture, 5, 5);
                 case GalTextureFormat.Astc2D6x6:    return Read16BptCompressedTexture(Memory, Texture, 6, 6);
