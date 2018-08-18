@@ -38,7 +38,8 @@ namespace Ryujinx
             : base(1280, 720,
             new GraphicsMode(), "Ryujinx", 0,
             DisplayDevice.Default, 3, 3,
-            GraphicsContextFlags.ForwardCompatible)
+            GraphicsContextFlags.ForwardCompatible |
+                  (GraphicsConfig.DebugMode ? GraphicsContextFlags.Debug : 0))
         {
             this.Device   = Device;
             this.Renderer = Renderer;
@@ -95,6 +96,8 @@ namespace Ryujinx
             VSync = VSyncMode.Off;
 
             Visible = true;
+
+            Renderer.Initialize();
 
             Renderer.FrameBuffer.SetWindowSize(Width, Height);
 

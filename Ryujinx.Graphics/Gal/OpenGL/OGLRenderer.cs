@@ -1,5 +1,8 @@
+using OpenTK;
+using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Concurrent;
+using System.Text;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
@@ -19,6 +22,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private ConcurrentQueue<Action> ActionsQueue;
 
+        private DebugProc DebugProcDelegate;
+
         public OGLRenderer()
         {
             Buffer = new OGLConstBuffer();
@@ -36,6 +41,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ActionsQueue = new ConcurrentQueue<Action>();
         }
 
+        public void Initialize()
+        {
+            if (GraphicsConfig.DebugMode && OGLExtension.HasDebug())
+            {
+                DebugProcDelegate = DebugCallback;
+
+                GL.DebugMessageCallback(DebugProcDelegate, IntPtr.Zero);
+            }
+        }
+
         public void QueueAction(Action ActionMthd)
         {
             ActionsQueue.Enqueue(ActionMthd);
@@ -48,6 +63,36 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             while (Count-- > 0 && ActionsQueue.TryDequeue(out Action RenderAction))
             {
                 RenderAction();
+            }
+        }
+
+        private static unsafe void DebugCallback(
+            DebugSource Source,
+            DebugType Type,
+            int Id,
+            DebugSeverity Severity,
+            int Length,
+            IntPtr Message,
+            IntPtr UserParam)
+        {
+            bool IsError = Type == DebugType.DebugTypeError || Type == DebugType.DebugTypeDeprecatedBehavior;
+
+            if (!IsError && !GraphicsConfig.DebugEnableInfo)
+            {
+                return;
+            }
+
+            string MessageLog = Encoding.UTF8.GetString((byte*)Message, Length);
+
+            Console.ForegroundColor = IsError ? ConsoleColor.Red : ConsoleColor.Cyan;
+
+            Console.WriteLine(MessageLog);
+
+            Console.ResetColor();
+
+            if (IsError && GraphicsConfig.DebugFatalErrors)
+            {
+                throw new OpenGLException(MessageLog);
             }
         }
     }

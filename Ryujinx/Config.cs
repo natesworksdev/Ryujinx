@@ -23,7 +23,10 @@ namespace Ryujinx
 
             IniParser Parser = new IniParser(IniPath);
 
-            GraphicsConfig.ShadersDumpPath = Parser.Value("Graphics_Shaders_Dump_Path");
+            GraphicsConfig.DebugMode        = Convert.ToBoolean(Parser.Value("Graphics_Enable_Debug"));
+            GraphicsConfig.DebugFatalErrors = Convert.ToBoolean(Parser.Value("Graphics_Debug_Fatal_Errors"));
+            GraphicsConfig.DebugEnableInfo  = Convert.ToBoolean(Parser.Value("Graphics_Debug_Enable_Info"));
+            GraphicsConfig.ShadersDumpPath  =                   Parser.Value("Graphics_Shaders_Dump_Path");
 
             Device.Log.SetEnable(LogLevel.Debug,   Convert.ToBoolean(Parser.Value("Logging_Enable_Debug")));
             Device.Log.SetEnable(LogLevel.Stub,    Convert.ToBoolean(Parser.Value("Logging_Enable_Stub")));

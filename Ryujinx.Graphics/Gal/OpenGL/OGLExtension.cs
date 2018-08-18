@@ -6,7 +6,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
     {
         private static bool Initialized = false;
 
+        private static bool Debug;
         private static bool EnhancedLayouts;
+
+        public static bool HasDebug()
+        {
+            EnsureInitialized();
+
+            return Debug;
+        }
 
         public static bool HasEnhancedLayouts()
         {
@@ -22,6 +30,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 return;
             }
 
+            Debug           = HasExtension("GL_KHR_debug");
             EnhancedLayouts = HasExtension("GL_ARB_enhanced_layouts");
         }
 
