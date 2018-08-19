@@ -157,7 +157,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         int Offset = ((int)(OpCode >> 20) << 8) >> 8;
 
-                        long Target = Position + Offset;
+                        long Target = Position + Offset - Beginning;
 
                         DbgOpCode += " (0x" + Target.ToString("x16") + ")";
                     }
