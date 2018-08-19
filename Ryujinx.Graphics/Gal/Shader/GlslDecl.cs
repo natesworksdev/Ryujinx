@@ -43,9 +43,9 @@ namespace Ryujinx.Graphics.Gal.Shader
         public const string FlipUniformName = "flip";
         public const string InstanceUniformName = "instance";
 
-        public const string ProgramName  = "program";
-        public const string ProgramAName = ProgramName + "_a";
-        public const string ProgramBName = ProgramName + "_b";
+        public const string BasicBlockName  = "bb";
+        public const string BasicBlockAName = BasicBlockName + "_a";
+        public const string BasicBlockBName = BasicBlockName + "_b";
 
         private string[] StagePrefixes = new string[] { "vp", "tcp", "tep", "gp", "fp" };
 

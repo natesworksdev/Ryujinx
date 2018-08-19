@@ -158,15 +158,15 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (BlocksB != null)
             {
-                PrintBlockScope(Blocks, "bb_a");
+                PrintBlockScope(Blocks, GlslDecl.BasicBlockAName);
 
                 SB.AppendLine();
 
-                PrintBlockScope(BlocksB, "bb_b");
+                PrintBlockScope(BlocksB, GlslDecl.BasicBlockBName);
             }
             else
             {
-                PrintBlockScope(Blocks, "bb");
+                PrintBlockScope(Blocks, GlslDecl.BasicBlockName);
             }
 
             SB.AppendLine();
@@ -436,12 +436,12 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (BlocksB != null)
             {
-                PrintProgram(Blocks,  "bb_a");
-                PrintProgram(BlocksB, "bb_b");
+                PrintProgram(Blocks,  GlslDecl.BasicBlockAName);
+                PrintProgram(BlocksB, GlslDecl.BasicBlockBName);
             }
             else
             {
-                PrintProgram(Blocks, "bb");
+                PrintProgram(Blocks, GlslDecl.BasicBlockName);
             }
 
             if (Decl.ShaderType != GalShaderType.Geometry)
