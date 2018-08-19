@@ -67,6 +67,8 @@ namespace Ryujinx.HLE.HOS
 
             Memory = new AMemory(Device.Memory.RamPointer);
 
+            Memory.InvalidAccess += CpuInvalidAccessHandler;
+
             MemoryManager = new KMemoryManager(this);
 
             TlsPages = new List<KTlsPageManager>();
@@ -96,7 +98,7 @@ namespace Ryujinx.HLE.HOS
 
             Executables = new List<Executable>();
 
-            ImageBase = MemoryManager.CodeRegionStart;
+            ImageBase = 0x8000000;
         }
 
         public void LoadProgram(IExecutable Program)
@@ -332,6 +334,19 @@ namespace Ryujinx.HLE.HOS
             }
 
             return Translator;
+        }
+
+        private void CpuInvalidAccessHandler(object sender, AInvalidAccessEventArgs e)
+        {
+            foreach (KThread Thread in Threads.Values)
+            {
+                if (Thread.Thread.IsCurrentThread())
+                {
+                    PrintStackTrace(Thread.Thread.ThreadState);
+
+                    break;
+                }
+            }
         }
 
         public void PrintStackTrace(AThreadState ThreadState)
