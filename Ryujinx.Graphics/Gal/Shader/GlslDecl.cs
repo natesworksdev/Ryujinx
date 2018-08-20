@@ -47,6 +47,10 @@ namespace Ryujinx.Graphics.Gal.Shader
         public const string BasicBlockAName = BasicBlockName + "_a";
         public const string BasicBlockBName = BasicBlockName + "_b";
 
+        public const int SsyStackSize = 16;
+        public const string SsyStackName = "ssy_stack";
+        public const string SsyCursorName = "ssy_cursor";
+
         private string[] StagePrefixes = new string[] { "vp", "tcp", "tep", "gp", "fp" };
 
         private string StagePrefix;

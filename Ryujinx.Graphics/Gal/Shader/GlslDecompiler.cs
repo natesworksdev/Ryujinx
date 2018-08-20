@@ -155,6 +155,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             PrintDeclOutAttributes();
             PrintDeclGprs();
             PrintDeclPreds();
+            PrintDeclSsy();
 
             if (BlocksB != null)
             {
@@ -355,6 +356,13 @@ namespace Ryujinx.Graphics.Gal.Shader
         private void PrintDeclPreds()
         {
             PrintDecls(Decl.Preds, "bool");
+        }
+
+        private void PrintDeclSsy()
+        {
+            SB.AppendLine("uint " + GlslDecl.SsyCursorName + ";");
+
+            SB.AppendLine("uint " + GlslDecl.SsyStackName + "[" + GlslDecl.SsyStackSize + "];" + Environment.NewLine);
         }
 
         private void PrintDecls(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, string CustomType = null, string Suffix = "")
@@ -587,19 +595,53 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
             else if (Node is ShaderIrOp Op)
             {
-                if (Op.Inst == ShaderIrInst.Bra)
+                switch (Op.Inst)
                 {
-                    SB.AppendLine(Identation + "return " + GetBlockPosition(Block.Branch) + ";");
-                }
-                else if (Op.Inst == ShaderIrInst.Emit)
-                {
-                    PrintAttrToOutput(Identation);
+                    case ShaderIrInst.Bra:
+                    {
+                        SB.AppendLine(Identation + "return " + GetBlockPosition(Block.Branch) + ";");
 
-                    SB.AppendLine(Identation + "EmitVertex();");
-                }
-                else
-                {
-                    SB.AppendLine(Identation + GetSrcExpr(Op, true) + ";");
+                        break;
+                    }
+
+                    case ShaderIrInst.Emit:
+                    {
+                        PrintAttrToOutput(Identation);
+
+                        SB.AppendLine(Identation + "EmitVertex();");
+
+                        break;
+                    }
+
+                    case ShaderIrInst.Ssy:
+                    {
+                        string StackIndex = GlslDecl.SsyStackName + "[" + GlslDecl.SsyCursorName + "]";
+
+                        int TargetPosition = (Op.OperandA as ShaderIrOperImm).Value;
+
+                        string Target = "0x" + TargetPosition.ToString("x8") + "u";
+
+                        SB.AppendLine(Identation + StackIndex + " = " + Target + ";");
+
+                        SB.AppendLine(Identation + GlslDecl.SsyCursorName + "++;");
+
+                        break;
+                    }
+
+                    case ShaderIrInst.Sync:
+                    {
+                        SB.AppendLine(Identation + GlslDecl.SsyCursorName + "--;");
+
+                        string Target = GlslDecl.SsyStackName + "[" + GlslDecl.SsyCursorName + "]";
+
+                        SB.AppendLine(Identation + "return " + Target + ";");
+
+                        break;
+                    }
+
+                    default:
+                        SB.AppendLine(Identation + GetSrcExpr(Op, true) + ";");
+                        break;
                 }
             }
             else if (Node is ShaderIrCmnt Cmnt)
@@ -632,6 +674,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         case ShaderIrInst.Bra:
                         case ShaderIrInst.Exit:
                         case ShaderIrInst.Kil:
+                        case ShaderIrInst.Sync:
                             UnconditionalFlowChange = true;
                             break;
                     }
