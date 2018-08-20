@@ -263,6 +263,7 @@ namespace Ryujinx
                         IsKeyboard ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
                         IsKeyboard ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
                         IsKeyboard ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
+
                     Device.Hid.SetJoyconButton(
                         entry.Key,
                         HidControllerLayouts.Main,
