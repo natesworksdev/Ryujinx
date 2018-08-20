@@ -252,24 +252,24 @@ namespace Ryujinx
                 Device.Hid.SetTouchPoints();
             }
 
-            foreach (KeyValuePair<HidControllerId, HidEmulatedDevices.HostDevice> entry in HidEmulatedDevices.Devices)
+            foreach (KeyValuePair<HidControllerId, HidEmulatedDevices.HostDevice> Entry in HidEmulatedDevices.Devices)
             {
-                if (entry.Value != HidEmulatedDevices.HostDevice.None)
+                if (Entry.Value != HidEmulatedDevices.HostDevice.None)
                 {
-                    bool IsKeyboard = entry.Value == HidEmulatedDevices.HostDevice.Keyboard;
+                    bool IsKeyboard = Entry.Value == HidEmulatedDevices.HostDevice.Keyboard;
                     Device.Hid.SetJoyconButton(
-                        entry.Key,
-                        (entry.Key == HidControllerId.CONTROLLER_HANDHELD) ? HidControllerLayouts.Handheld_Joined : HidControllerLayouts.Joined,
-                        IsKeyboard ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
-                        IsKeyboard ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
-                        IsKeyboard ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
+                        Entry.Key,
+                        (Entry.Key == HidControllerId.CONTROLLER_HANDHELD) ? HidControllerLayouts.Handheld_Joined : HidControllerLayouts.Joined,
+                        IsKeyboard ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(Entry.Value)],
+                        IsKeyboard ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(Entry.Value)],
+                        IsKeyboard ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(Entry.Value)]);
 
                     Device.Hid.SetJoyconButton(
-                        entry.Key,
+                        Entry.Key,
                         HidControllerLayouts.Main,
-                        IsKeyboard ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
-                        IsKeyboard ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
-                        IsKeyboard ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
+                        IsKeyboard ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(Entry.Value)],
+                        IsKeyboard ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(Entry.Value)],
+                        IsKeyboard ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(Entry.Value)]);
                 }
             }
         }
