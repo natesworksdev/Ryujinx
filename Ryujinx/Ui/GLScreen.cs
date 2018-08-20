@@ -256,25 +256,26 @@ namespace Ryujinx
             {
                 if (entry.Value != HidEmulatedDevices.HostDevice.None)
                 {
+                    bool IsKeyboard = entry.Value == HidEmulatedDevices.HostDevice.Keyboard;
                     Device.Hid.SetJoyconButton(
                         entry.Key,
                         (entry.Key == HidControllerId.CONTROLLER_HANDHELD) ? HidControllerLayouts.Handheld_Joined : HidControllerLayouts.Joined,
-                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
-                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
-                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
+                        IsKeyboard ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
+                        IsKeyboard ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
+                        IsKeyboard ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
                     Device.Hid.SetJoyconButton(
                         entry.Key,
                         HidControllerLayouts.Main,
-                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
-                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
-                        (entry.Value == HidEmulatedDevices.HostDevice.Keyboard) ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
+                        IsKeyboard ? CurrentButtonsKeyboard : CurrentButtonsGamePad[GetGamePadIndexFromHostDevice(entry.Value)],
+                        IsKeyboard ? LeftJoystickKeyboard   : LeftJoystickGamePad  [GetGamePadIndexFromHostDevice(entry.Value)],
+                        IsKeyboard ? RightJoystickKeyboard  : RightJoystickGamePad [GetGamePadIndexFromHostDevice(entry.Value)]);
                 }
             }
         }
         
-        private int GetGamePadIndexFromHostDevice(HidEmulatedDevices.HostDevice hostDevice)
+        private int GetGamePadIndexFromHostDevice(HidEmulatedDevices.HostDevice HostDevice)
         {
-            switch (hostDevice)
+            switch (HostDevice)
             {
                 case HidEmulatedDevices.HostDevice.GamePad_0: return 0;
                 case HidEmulatedDevices.HostDevice.GamePad_1: return 1;
@@ -287,7 +288,7 @@ namespace Ryujinx
                 case HidEmulatedDevices.HostDevice.GamePad_8: return 8;
             }
 
-            return -1;
+            throw new ArgumentException("Not a valid GamePad Device");
         }
 
         private new void RenderFrame()
