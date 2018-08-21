@@ -76,6 +76,11 @@ namespace Ryujinx.Graphics.Gal.Shader
                 OperA.Pos   += Index;
                 OperD.Index += Index;
 
+                if (!OperD.IsValidRegister)
+                {
+                    break;
+                }
+
                 ShaderIrNode Node = OperA;
 
                 if (Type < 4)
