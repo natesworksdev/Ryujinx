@@ -52,9 +52,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static void Ld_C(ShaderIrBlock Block, long OpCode)
         {
-            int Type      = (int)(OpCode >> 48) & 7;
-            int CbufIndex = (int)(OpCode >> 36) & 0x1f;
             int CbufPos   = (int)(OpCode >> 22) & 0x3fff;
+            int CbufIndex = (int)(OpCode >> 36) & 0x1f;
+            int Type      = (int)(OpCode >> 48) & 7;
 
             if (Type > 5)
             {
