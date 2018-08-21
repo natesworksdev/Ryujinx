@@ -70,6 +70,8 @@ namespace Ryujinx.HLE.Input
 
         private readonly long HidPosition;
 
+        public static Dictionary<HidControllerId, HidHostDevice> Devices;
+
         public Hid(Switch Device, long HidPosition)
         {
             this.Device      = Device;
@@ -80,13 +82,13 @@ namespace Ryujinx.HLE.Input
 
         public void InitializeJoycons()
         {
-            foreach (KeyValuePair<HidControllerId, HidEmulatedDevices.HostDevice> entry in HidEmulatedDevices.Devices)
+            foreach (KeyValuePair<HidControllerId, HidHostDevice> Entry in Devices)
             {
-                if (entry.Value != HidEmulatedDevices.HostDevice.None)
+                if (Entry.Value != HidHostDevice.None)
                 {
                     InitializeJoyconPair(
-                        entry.Key,
-                        (entry.Key == HidControllerId.CONTROLLER_HANDHELD) ? HidControllerType.ControllerType_Handheld : HidControllerType.ControllerType_JoyconPair,
+                        Entry.Key,
+                        (Entry.Key == HidControllerId.CONTROLLER_HANDHELD) ? HidControllerType.ControllerType_Handheld : HidControllerType.ControllerType_JoyconPair,
                         BodyColorLeft,
                         ButtonColorLeft,
                         BodyColorRight,

@@ -4,6 +4,7 @@ using OpenTK.Input;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
+using Ryujinx.Ui.Input;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -252,11 +253,11 @@ namespace Ryujinx
                 Device.Hid.SetTouchPoints();
             }
 
-            foreach (KeyValuePair<HidControllerId, HidEmulatedDevices.HostDevice> Entry in HidEmulatedDevices.Devices)
+            foreach (KeyValuePair<HidControllerId, HidHostDevice> Entry in EmulatedDevices.Devices)
             {
-                if (Entry.Value != HidEmulatedDevices.HostDevice.None)
+                if (Entry.Value != HidHostDevice.None)
                 {
-                    bool IsKeyboard = Entry.Value == HidEmulatedDevices.HostDevice.Keyboard;
+                    bool IsKeyboard = (Entry.Value == HidHostDevice.Keyboard);
                     Device.Hid.SetJoyconButton(
                         Entry.Key,
                         (Entry.Key == HidControllerId.CONTROLLER_HANDHELD) ? HidControllerLayouts.Handheld_Joined : HidControllerLayouts.Joined,
@@ -274,19 +275,19 @@ namespace Ryujinx
             }
         }
         
-        private int GetGamePadIndexFromHostDevice(HidEmulatedDevices.HostDevice HostDevice)
+        private int GetGamePadIndexFromHostDevice(HidHostDevice HostDevice)
         {
             switch (HostDevice)
             {
-                case HidEmulatedDevices.HostDevice.GamePad_0: return 0;
-                case HidEmulatedDevices.HostDevice.GamePad_1: return 1;
-                case HidEmulatedDevices.HostDevice.GamePad_2: return 2;
-                case HidEmulatedDevices.HostDevice.GamePad_3: return 3;
-                case HidEmulatedDevices.HostDevice.GamePad_4: return 4;
-                case HidEmulatedDevices.HostDevice.GamePad_5: return 5;
-                case HidEmulatedDevices.HostDevice.GamePad_6: return 6;
-                case HidEmulatedDevices.HostDevice.GamePad_7: return 7;
-                case HidEmulatedDevices.HostDevice.GamePad_8: return 8;
+                case HidHostDevice.GamePad0: return 0;
+                case HidHostDevice.GamePad1: return 1;
+                case HidHostDevice.GamePad2: return 2;
+                case HidHostDevice.GamePad3: return 3;
+                case HidHostDevice.GamePad4: return 4;
+                case HidHostDevice.GamePad5: return 5;
+                case HidHostDevice.GamePad6: return 6;
+                case HidHostDevice.GamePad7: return 7;
+                case HidHostDevice.GamePad8: return 8;
             }
 
             throw new ArgumentException("Not a valid GamePad Device");
