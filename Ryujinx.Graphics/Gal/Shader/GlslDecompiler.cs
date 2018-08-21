@@ -481,15 +481,13 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private void PrintProgram(ShaderIrBlock[] Blocks, string Name)
         {
-            string Ident1 = IdentationStr;
-            string Ident2 = Ident1 + IdentationStr;
-            string Ident3 = Ident2 + IdentationStr;
-            string Ident4 = Ident3 + IdentationStr;
+            const string Ident1 = IdentationStr;
+            const string Ident2 = Ident1 + IdentationStr;
+            const string Ident3 = Ident2 + IdentationStr;
+            const string Ident4 = Ident3 + IdentationStr;
 
             SB.AppendLine(Ident1 + "pc = " + GetBlockPosition(Blocks[0]) + ";");
-
             SB.AppendLine(Ident1 + "do {");
-
             SB.AppendLine(Ident2 + "switch (pc) {");
 
             foreach (ShaderIrBlock Block in Blocks)
@@ -500,13 +498,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             SB.AppendLine(Ident3 + "default:");
-
             SB.AppendLine(Ident4 + "pc = 0;");
-
             SB.AppendLine(Ident4 + "break;");
 
             SB.AppendLine(Ident2 + "}");
-
             SB.AppendLine(Ident1 + "} while (pc != 0);");
         }
 
@@ -628,7 +623,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 ShaderIrNode Last = Nodes[Nodes.Length - 1];
 
-                bool TailBranch = false;
+                bool UnconditionalFlowChange = false;
 
                 if (Last is ShaderIrOp Op)
                 {
@@ -637,15 +632,13 @@ namespace Ryujinx.Graphics.Gal.Shader
                         case ShaderIrInst.Bra:
                         case ShaderIrInst.Exit:
                         case ShaderIrInst.Kil:
-                            TailBranch = true;
+                            UnconditionalFlowChange = true;
                             break;
                     }
                 }
 
-                if (!TailBranch)
+                if (!UnconditionalFlowChange)
                 {
-                    SB.AppendLine(IdentationStr + "// Jump to next block");
-
                     SB.AppendLine(IdentationStr + "return " + GetBlockPosition(Block.Next) + ";");
                 }
             }
@@ -958,7 +951,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetCnumExpr(ShaderIrOp Op) => GetUnaryCall(Op, "!isnan");
 
-        private string GetExitExpr(ShaderIrOp Op) => "return 0";
+        private string GetExitExpr(ShaderIrOp Op) => "return 0u";
 
         private string GetFcosExpr(ShaderIrOp Op) => GetUnaryCall(Op, "cos");
 
