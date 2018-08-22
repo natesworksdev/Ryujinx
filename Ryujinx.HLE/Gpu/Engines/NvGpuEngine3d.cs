@@ -106,6 +106,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             {
                 SetFrameBuffer(Vmm, 0);
             }
+            
             SetZeta(Vmm);
 
             SetRenderTargets();
