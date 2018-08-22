@@ -120,8 +120,8 @@ namespace Ryujinx.Graphics.Gal.Shader
             Blocks  = ShaderDecoder.Decode(Memory, VpAPosition);
             BlocksB = ShaderDecoder.Decode(Memory, VpBPosition);
 
-            GlslDecl DeclVpA = new GlslDecl(Blocks,  ShaderType);
-            GlslDecl DeclVpB = new GlslDecl(BlocksB, ShaderType);
+            GlslDecl DeclVpA = new GlslDecl(Blocks,  ShaderType, Header);
+            GlslDecl DeclVpB = new GlslDecl(BlocksB, ShaderType, HeaderB);
 
             Decl = GlslDecl.Merge(DeclVpA, DeclVpB);
 
@@ -136,7 +136,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             Blocks  = ShaderDecoder.Decode(Memory, Position);
             BlocksB = null;
 
-            Decl = new GlslDecl(Blocks, ShaderType);
+            Decl = new GlslDecl(Blocks, ShaderType, Header);
 
             return Decompile();
         }
@@ -430,6 +430,14 @@ namespace Ryujinx.Graphics.Gal.Shader
             if (Decl.ShaderType != GalShaderType.Geometry)
             {
                 PrintAttrToOutput();
+            }
+
+            if (Decl.ShaderType == GalShaderType.Fragment)
+            {
+                if (Header.OmapDepth)
+                {
+                    SB.AppendLine(IdentationStr + "gl_FragDepth = " + GlslDecl.GetGprName(Header.DepthRegister) + ";");
+                }
             }
 
             SB.AppendLine("}");
