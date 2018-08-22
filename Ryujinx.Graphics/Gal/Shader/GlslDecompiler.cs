@@ -304,7 +304,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private void PrintDeclOutAttributes()
         {
-            if (Decl.ShaderType != GalShaderType.Fragment)
+            if (Decl.ShaderType == GalShaderType.Fragment)
+            {
+                for (int Attachment = 0; Attachment < 8; Attachment++)
+                {
+                    if (Header.OmapTargets[Attachment].Enabled)
+                    {
+                        SB.AppendLine("layout (location = " + Attachment + ") out vec4 " + GlslDecl.FragmentOutputName + Attachment + ";");
+                    }
+                }
+            }
+            else
             {
                 SB.AppendLine("layout (location = " + GlslDecl.PositionOutAttrLocation + ") out vec4 " + GlslDecl.PositionOutAttrName + ";");
             }
@@ -437,6 +447,25 @@ namespace Ryujinx.Graphics.Gal.Shader
                 if (Header.OmapDepth)
                 {
                     SB.AppendLine(IdentationStr + "gl_FragDepth = " + GlslDecl.GetGprName(Header.DepthRegister) + ";");
+                }
+
+                int GprIndex = 0;
+
+                for (int Attachment = 0; Attachment < 8; Attachment++)
+                {
+                    string Output = GlslDecl.FragmentOutputName + Attachment;
+
+                    OmapTarget Target = Header.OmapTargets[Attachment];
+
+                    for (int Component = 0; Component < 4; Component++)
+                    {
+                        if (Target.ComponentEnabled(Component))
+                        {
+                            SB.AppendLine(IdentationStr + Output + "[" + Component + "] = " + GlslDecl.GetGprName(GprIndex) + ";");
+
+                            GprIndex++;
+                        }
+                    }
                 }
             }
 

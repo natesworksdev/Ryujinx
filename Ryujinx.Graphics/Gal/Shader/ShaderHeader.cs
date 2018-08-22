@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Graphics.Gal.Shader
+﻿using System;
+
+namespace Ryujinx.Graphics.Gal.Shader
 {
     struct OmapTarget
     {
@@ -8,6 +10,19 @@
         public bool Alpha;
 
         public bool Enabled => Red || Green || Blue || Alpha;
+
+        public bool ComponentEnabled(int Component)
+        {
+            switch (Component)
+            {
+                case 0: return Red;
+                case 1: return Green;
+                case 2: return Blue;
+                case 3: return Alpha;
+            }
+
+            throw new ArgumentException(nameof(Component));
+        }
     }
 
     class ShaderHeader
@@ -99,23 +114,27 @@
             OmapDepth      = ReadBits(Type2Omap, 1, 1) != 0;
         }
 
-        public int FragOutputCount
+        public int DepthRegister
         {
             get
             {
-                int Index = 0;
+                int Count = 0;
 
-                while (OmapTargets[Index].Enabled && Index < 8)
+                for (int Index = 0; Index < OmapTargets.Length; Index++)
                 {
-                    Index++;
+                    for (int Component = 0; Component < 4; Component++)
+                    {
+                        if (OmapTargets[Index].ComponentEnabled(Component))
+                        {
+                            Count++;
+                        }
+                    }
                 }
 
-                return Index;
+                // Depth register is always two registers after the last color output
+                return Count + 1;
             }
         }
-
-        // Depth register is always two registers after the last color output
-        public int DepthRegister => FragOutputCount * 4 + 1;
 
         private static int ReadBits(uint Word, int Offset, int BitWidth)
         {
