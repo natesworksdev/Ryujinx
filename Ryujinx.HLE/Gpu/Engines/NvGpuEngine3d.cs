@@ -202,7 +202,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             GalImageFormat ImageFormat = ImageFormatConverter.ConvertFrameBuffer((GalFrameBufferFormat)Format);
 
-            GalImage Image = new GalImage(Width, Height, ImageFormat);
+            GalImage Image = new GalImage(Width, Height, 1, ImageFormat, GalImageTarget._2d);
 
             long Size = TextureHelper.GetTextureSize(Image);
 
@@ -234,7 +234,7 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             GalImageFormat ImageFormat = ImageFormatConverter.ConvertZeta((GalZetaFormat)Format);
 
-            GalImage Image = new GalImage(Width, Height, ImageFormat);
+            GalImage Image = new GalImage(Width, Height, 1, ImageFormat, GalImageTarget._2d);
 
             long Size = TextureHelper.GetTextureSize(Image);
 
@@ -549,7 +549,7 @@ namespace Ryujinx.HLE.Gpu.Engines
                 Gpu.Renderer.Texture.Bind(Key, TexIndex);
             }
 
-            Gpu.Renderer.Texture.SetSampler(Sampler);
+            Gpu.Renderer.Texture.SetSampler(Key, Sampler);
         }
 
         private void UploadConstBuffers(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)

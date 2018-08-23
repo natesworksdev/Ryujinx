@@ -299,5 +299,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             throw new ArgumentException(nameof(BlendFactor));
         }
+
+        public static TextureTarget GetImageTarget(GalImageTarget Target)
+        {
+            switch (Target)
+            {
+                case GalImageTarget._2d:      return TextureTarget.Texture2D;
+                case GalImageTarget._2dArray: return TextureTarget.Texture2DArray;
+                case GalImageTarget.CubeMap:  return TextureTarget.TextureCubeMap;
+            }
+
+            throw new NotImplementedException(Target.ToString());
+        }
     }
 }

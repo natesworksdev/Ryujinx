@@ -34,13 +34,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public ImageHandler(int Handle, GalImage Image)
         {
             this.Handle = Handle;
-
-            this.Image = Image;
+            this.Image  = Image;
         }
 
         public void EnsureSetup(GalImage Image)
         {
-            if (Width  != Image.Width  ||
+            if (Width != Image.Width ||
                 Height != Image.Height ||
                 Format != Image.Format ||
                 !Initialized)
@@ -48,7 +47,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 (PixelInternalFormat InternalFormat, PixelFormat PixelFormat, PixelType PixelType) =
                     OGLEnumConverter.GetImageFormat(Image.Format);
 
-                GL.BindTexture(TextureTarget.Texture2D, Handle);
+                TextureTarget Target = OGLEnumConverter.GetImageTarget(Image.Target);
+
+                GL.BindTexture(Target, Handle);
 
                 if (Initialized)
                 {
@@ -72,7 +73,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         GL.BufferData(BufferTarget.PixelPackBuffer, CurrentSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
                     }
 
-                    GL.GetTexImage(TextureTarget.Texture2D, 0, this.PixelFormat, this.PixelType, IntPtr.Zero);
+                    GL.GetTexImage(Target, 0, this.PixelFormat, this.PixelType, IntPtr.Zero);
 
                     GL.DeleteTexture(Handle);
 
@@ -84,22 +85,44 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 const int MinFilter = (int)TextureMinFilter.Linear;
                 const int MagFilter = (int)TextureMagFilter.Linear;
 
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, MinFilter);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, MagFilter);
+                GL.TexParameter(Target, TextureParameterName.TextureMinFilter, MinFilter);
+                GL.TexParameter(Target, TextureParameterName.TextureMagFilter, MagFilter);
 
                 const int Level = 0;
                 const int Border = 0;
 
-                GL.TexImage2D(
-                    TextureTarget.Texture2D,
-                    Level,
-                    InternalFormat,
-                    Image.Width,
-                    Image.Height,
-                    Border,
-                    PixelFormat,
-                    PixelType,
-                    IntPtr.Zero);
+                switch (Target)
+                {
+                    case TextureTarget.Texture2D:
+                        GL.TexImage2D(
+                            Target,
+                            Level,
+                            InternalFormat,
+                            Image.Width,
+                            Image.Height,
+                            Border,
+                            PixelFormat,
+                            PixelType,
+                            IntPtr.Zero);
+                        break;
+
+                    case TextureTarget.Texture2DArray:
+                        GL.TexImage3D(
+                            Target,
+                            Level,
+                            InternalFormat,
+                            Image.Width,
+                            Image.Height,
+                            Image.Depth,
+                            Border,
+                            PixelFormat,
+                            PixelType,
+                            IntPtr.Zero);
+                        break;
+
+                    default:
+                        throw new NotImplementedException(Target.ToString());
+                }
 
                 if (Initialized)
                 {

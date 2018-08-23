@@ -24,11 +24,16 @@ namespace Ryujinx.HLE.Gpu.Texture
 
             int Width  = (Tic[4] & 0xffff) + 1;
             int Height = (Tic[5] & 0xffff) + 1;
+            int Depth  = ((Tic[5] >> 16) & 0x7fff) + 1;
+
+            GalImageTarget Target = (GalImageTarget)((Tic[4] >> 23) & 0xf);
 
             return new GalImage(
                 Width,
                 Height,
+                Depth,
                 Format,
+                Target,
                 XSource,
                 YSource,
                 ZSource,

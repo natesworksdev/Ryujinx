@@ -221,7 +221,16 @@ namespace Ryujinx.Graphics.Gal.Shader
                 SB.AppendLine("uniform sampler2D " + DeclInfo.Name + ";");
             }
 
-            PrintDecls(Decl.Textures, "uniform sampler2D");
+            foreach (ShaderDeclInfo DeclInfo in Decl.Textures.Values.OrderBy(DeclKeySelector))
+            {
+                ShaderTextureType Type = Decl.TextureTypes[DeclInfo.Index];
+
+                string TypeName = GetSamplerName(Type);
+
+                SB.AppendLine("uniform " + TypeName + " " + DeclInfo.Name + ";");
+            }
+
+            SB.AppendLine();
         }
 
         private IEnumerable<ShaderDeclInfo> IterateCbTextures()
@@ -1188,9 +1197,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetTexSamplerName(ShaderIrOp Op)
         {
-            ShaderIrOperImm Node = (ShaderIrOperImm)Op.OperandC;
+            ShaderIrNode Node = ((ShaderIrMetaTex)Op.MetaData).Index;
 
-            int Handle = ((ShaderIrOperImm)Op.OperandC).Value;
+            int Handle = ((ShaderIrOperImm)Node).Value;
 
             if (!Decl.Textures.TryGetValue(Handle, out ShaderDeclInfo DeclInfo))
             {
@@ -1202,14 +1211,32 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetTexSamplerCoords(ShaderIrOp Op)
         {
-            return "vec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                             GetOperExpr(Op, Op.OperandB) + ")";
+            if (Op.OperandC != null)
+            {
+                return "vec3(" + GetOperExpr(Op, Op.OperandA) + ", " +
+                                 GetOperExpr(Op, Op.OperandB) + ", " +
+                                 GetOperExpr(Op, Op.OperandC) + ")";
+            }
+            else
+            {
+                return "vec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
+                                 GetOperExpr(Op, Op.OperandB) + ")";
+            }
         }
 
         private string GetITexSamplerCoords(ShaderIrOp Op)
         {
-            return "ivec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                              GetOperExpr(Op, Op.OperandB) + ")";
+            if (Op.OperandC != null)
+            {
+                return "ivec3(" + GetOperExpr(Op, Op.OperandA) + ", " +
+                                  GetOperExpr(Op, Op.OperandB) + ", " +
+                                  GetOperExpr(Op, Op.OperandC) + ")";
+            }
+            else
+            {
+                return "ivec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
+                                  GetOperExpr(Op, Op.OperandB) + ")";
+            }
         }
 
         private string GetOperExpr(ShaderIrOp Op, ShaderIrNode Oper)
@@ -1350,6 +1377,18 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             throw new ArgumentException(nameof(Node));
+        }
+
+        private static string GetSamplerName(ShaderTextureType Type)
+        {
+            switch (Type)
+            {
+                case ShaderTextureType._2d:      return "sampler2D";
+                case ShaderTextureType._2dArray: return "sampler2DArray";
+                case ShaderTextureType.Cube:     return "samplerCube";
+            }
+
+            throw new NotImplementedException(Type.ToString());
         }
     }
 }
