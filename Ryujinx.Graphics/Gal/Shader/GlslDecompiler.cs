@@ -158,15 +158,15 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (BlocksB != null)
             {
-                PrintBlockScope(Blocks[0],  null, null, "void " + GlslDecl.ProgramAName + "()", IdentationStr);
+                PrintBlockScope(Blocks, GlslDecl.BasicBlockAName);
 
                 SB.AppendLine();
 
-                PrintBlockScope(BlocksB[0], null, null, "void " + GlslDecl.ProgramBName + "()", IdentationStr);
+                PrintBlockScope(BlocksB, GlslDecl.BasicBlockBName);
             }
             else
             {
-                PrintBlockScope(Blocks[0],  null, null, "void " + GlslDecl.ProgramName + "()", IdentationStr);
+                PrintBlockScope(Blocks, GlslDecl.BasicBlockName);
             }
 
             SB.AppendLine();
@@ -241,7 +241,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             if (Decl.ShaderType == GalShaderType.Vertex)
             {
-                SB.AppendLine("layout (std140) uniform " + GlslDecl.ExtraUniformBlockName + "{");
+                SB.AppendLine("layout (std140) uniform " + GlslDecl.ExtraUniformBlockName + " {");
 
                 SB.AppendLine(IdentationStr + "vec2 " + GlslDecl.FlipUniformName + ";");
 
@@ -427,14 +427,16 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
             }
 
+            SB.AppendLine(IdentationStr + "uint pc;");
+
             if (BlocksB != null)
             {
-                SB.AppendLine(IdentationStr + GlslDecl.ProgramAName + "();");
-                SB.AppendLine(IdentationStr + GlslDecl.ProgramBName + "();");
+                PrintProgram(Blocks,  GlslDecl.BasicBlockAName);
+                PrintProgram(BlocksB, GlslDecl.BasicBlockBName);
             }
             else
             {
-                SB.AppendLine(IdentationStr + GlslDecl.ProgramName + "();");
+                PrintProgram(Blocks, GlslDecl.BasicBlockName);
             }
 
             if (Decl.ShaderType != GalShaderType.Geometry)
@@ -472,6 +474,32 @@ namespace Ryujinx.Graphics.Gal.Shader
             SB.AppendLine("}");
         }
 
+        private void PrintProgram(ShaderIrBlock[] Blocks, string Name)
+        {
+            const string Ident1 = IdentationStr;
+            const string Ident2 = Ident1 + IdentationStr;
+            const string Ident3 = Ident2 + IdentationStr;
+            const string Ident4 = Ident3 + IdentationStr;
+
+            SB.AppendLine(Ident1 + "pc = " + GetBlockPosition(Blocks[0]) + ";");
+            SB.AppendLine(Ident1 + "do {");
+            SB.AppendLine(Ident2 + "switch (pc) {");
+
+            foreach (ShaderIrBlock Block in Blocks)
+            {
+                string FunctionName = Block.Position.ToString("x8");
+
+                SB.AppendLine(Ident3 + "case 0x" + FunctionName + ": pc = " + Name + "_" + FunctionName + "(); break;");
+            }
+
+            SB.AppendLine(Ident3 + "default:");
+            SB.AppendLine(Ident4 + "pc = 0;");
+            SB.AppendLine(Ident4 + "break;");
+
+            SB.AppendLine(Ident2 + "}");
+            SB.AppendLine(Ident1 + "} while (pc != 0);");
+        }
+
         private void PrintAttrToOutput(string Identation = IdentationStr)
         {
             foreach (KeyValuePair<int, ShaderDeclInfo> KV in Decl.OutAttributes)
@@ -505,193 +533,110 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        private void PrintBlockScope(
-            ShaderIrBlock Block,
-            ShaderIrBlock EndBlock,
-            ShaderIrBlock LoopBlock,
-            string        ScopeName,
-            string        Identation,
-            bool          IsDoWhile = false)
+        private void PrintBlockScope(ShaderIrBlock[] Blocks, string Name)
         {
-            string UpIdent = Identation.Substring(0, Identation.Length - IdentationStr.Length);
+            foreach (ShaderIrBlock Block in Blocks)
+            {
+                SB.AppendLine("uint " + Name + "_" + Block.Position.ToString("x8") + "() {");
 
-            if (IsDoWhile)
-            {
-                SB.AppendLine(UpIdent + "do {");
-            }
-            else
-            {
-                SB.AppendLine(UpIdent + ScopeName + " {");
-            }
+                PrintNodes(Block, Block.GetNodes());
 
-            while (Block != null && Block != EndBlock)
-            {
-                ShaderIrNode[] Nodes = Block.GetNodes();
-
-                Block = PrintNodes(Block, EndBlock, LoopBlock, Identation, Nodes);
-            }
-
-            if (IsDoWhile)
-            {
-                SB.AppendLine(UpIdent + "} " + ScopeName + ";");
-            }
-            else
-            {
-                SB.AppendLine(UpIdent + "}");
+                SB.AppendLine("}" + Environment.NewLine);
             }
         }
 
-        private ShaderIrBlock PrintNodes(
-            ShaderIrBlock         Block,
-            ShaderIrBlock         EndBlock,
-            ShaderIrBlock         LoopBlock,
-            string                Identation,
-            params ShaderIrNode[] Nodes)
+        private void PrintNode(ShaderIrBlock Block, ShaderIrNode Node, string Identation)
         {
-            /*
-             * Notes about control flow and if-else/loop generation:
-             * The code assumes that the program has sane control flow,
-             * that is, there's no jumps to a location after another jump or
-             * jump target (except for the end of an if-else block), and backwards
-             * jumps to a location before the last loop dominator.
-             * Such cases needs to be transformed on a step before the GLSL code
-             * generation to ensure that we have sane graphs to work with.
-             * TODO: Such transformation is not yet implemented.
-             */
-            string NewIdent = Identation + IdentationStr;
-
-            ShaderIrBlock LoopTail = GetLoopTailBlock(Block);
-
-            if (LoopTail != null && LoopBlock != Block)
+            if (Node is ShaderIrCond Cond)
             {
-                //Shoock! kuma shock! We have a loop here!
-                //The entire sequence needs to be inside a do-while block.
-                ShaderIrBlock LoopEnd = GetDownBlock(LoopTail);
+                string IfExpr = GetSrcExpr(Cond.Pred, true);
 
-                PrintBlockScope(Block, LoopEnd, Block, "while (false)", NewIdent, IsDoWhile: true);
-
-                return LoopEnd;
-            }
-
-            foreach (ShaderIrNode Node in Nodes)
-            {
-                if (Node is ShaderIrCond Cond)
+                if (Cond.Not)
                 {
-                    string IfExpr = GetSrcExpr(Cond.Pred, true);
-
-                    if (Cond.Not)
-                    {
-                        IfExpr = "!(" + IfExpr + ")";
-                    }
-
-                    if (Cond.Child is ShaderIrOp Op && Op.Inst == ShaderIrInst.Bra)
-                    {
-                        //Branch is a loop branch and would result in infinite recursion.
-                        if (Block.Branch.Position <= Block.Position)
-                        {
-                            SB.AppendLine(Identation + "if (" + IfExpr + ") {");
-
-                            SB.AppendLine(Identation + IdentationStr + "continue;");
-
-                            SB.AppendLine(Identation + "}");
-
-                            continue;
-                        }
-
-                        string SubScopeName = "if (!" + IfExpr + ")";
-
-                        PrintBlockScope(Block.Next, Block.Branch, LoopBlock, SubScopeName, NewIdent);
-
-                        ShaderIrBlock IfElseEnd = GetUpBlock(Block.Branch).Branch;
-
-                        if (IfElseEnd?.Position > Block.Branch.Position)
-                        {
-                            PrintBlockScope(Block.Branch, IfElseEnd, LoopBlock, "else", NewIdent);
-
-                            return IfElseEnd;
-                        }
-
-                        return Block.Branch;
-                    }
-                    else
-                    {
-                        SB.AppendLine(Identation + "if (" + IfExpr + ") {");
-
-                        PrintNodes(Block, EndBlock, LoopBlock, NewIdent, Cond.Child);
-
-                        SB.AppendLine(Identation + "}");
-                    }
+                    IfExpr = "!(" + IfExpr + ")";
                 }
-                else if (Node is ShaderIrAsg Asg)
-                {
-                    if (IsValidOutOper(Asg.Dst))
-                    {
-                        string Expr = GetSrcExpr(Asg.Src, true);
 
-                        Expr = GetExprWithCast(Asg.Dst, Asg.Src, Expr);
+                SB.AppendLine(Identation + "if (" + IfExpr + ") {");
 
-                        SB.AppendLine(Identation + GetDstOperName(Asg.Dst) + " = " + Expr + ";");
-                    }
-                }
-                else if (Node is ShaderIrOp Op)
+                if (Cond.Child is ShaderIrOp Op && Op.Inst == ShaderIrInst.Bra)
                 {
-                    if (Op.Inst == ShaderIrInst.Bra)
-                    {
-                        if (Block.Branch.Position <= Block.Position)
-                        {
-                            SB.AppendLine(Identation + "continue;");
-                        }
-                    }
-                    else if (Op.Inst == ShaderIrInst.Emit)
-                    {
-                        PrintAttrToOutput(Identation);
-
-                        SB.AppendLine(Identation + "EmitVertex();");
-                    }
-                    else
-                    {
-                        SB.AppendLine(Identation + GetSrcExpr(Op, true) + ";");
-                    }
-                }
-                else if (Node is ShaderIrCmnt Cmnt)
-                {
-                    SB.AppendLine(Identation + "// " + Cmnt.Comment);
+                    SB.AppendLine(Identation + IdentationStr + "return " + GetBlockPosition(Block.Branch) + ";");
                 }
                 else
                 {
-                    throw new InvalidOperationException();
+                    PrintNode(Block, Cond.Child, Identation + IdentationStr);
+                }
+
+                SB.AppendLine(Identation + "}");
+            }
+            else if (Node is ShaderIrAsg Asg)
+            {
+                if (IsValidOutOper(Asg.Dst))
+                {
+                    string Expr = GetSrcExpr(Asg.Src, true);
+
+                    Expr = GetExprWithCast(Asg.Dst, Asg.Src, Expr);
+
+                    SB.AppendLine(Identation + GetDstOperName(Asg.Dst) + " = " + Expr + ";");
                 }
             }
-
-            return Block.Next;
-        }
-
-        private ShaderIrBlock GetUpBlock(ShaderIrBlock Block)
-        {
-            return Blocks.FirstOrDefault(x => x.EndPosition == Block.Position);
-        }
-
-        private ShaderIrBlock GetDownBlock(ShaderIrBlock Block)
-        {
-            return Blocks.FirstOrDefault(x => x.Position == Block.EndPosition);
-        }
-
-        private ShaderIrBlock GetLoopTailBlock(ShaderIrBlock LoopHead)
-        {
-            ShaderIrBlock Tail = null;
-
-            foreach (ShaderIrBlock Block in LoopHead.Sources)
+            else if (Node is ShaderIrOp Op)
             {
-                if (Block.Position >= LoopHead.Position)
+                if (Op.Inst == ShaderIrInst.Bra)
                 {
-                    if (Tail == null || Tail.Position < Block.Position)
+                    SB.AppendLine(Identation + "return " + GetBlockPosition(Block.Branch) + ";");
+                }
+                else if (Op.Inst == ShaderIrInst.Emit)
+                {
+                    PrintAttrToOutput(Identation);
+
+                    SB.AppendLine(Identation + "EmitVertex();");
+                }
+                else
+                {
+                    SB.AppendLine(Identation + GetSrcExpr(Op, true) + ";");
+                }
+            }
+            else if (Node is ShaderIrCmnt Cmnt)
+            {
+                SB.AppendLine(Identation + "// " + Cmnt.Comment);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        private void PrintNodes(ShaderIrBlock Block, ShaderIrNode[] Nodes)
+        {
+            foreach (ShaderIrNode Node in Nodes)
+            {
+                PrintNode(Block, Node, IdentationStr);
+            }
+
+            if (Nodes.Length > 0)
+            {
+                ShaderIrNode Last = Nodes[Nodes.Length - 1];
+
+                bool UnconditionalFlowChange = false;
+
+                if (Last is ShaderIrOp Op)
+                {
+                    switch (Op.Inst)
                     {
-                        Tail = Block;
+                        case ShaderIrInst.Bra:
+                        case ShaderIrInst.Exit:
+                        case ShaderIrInst.Kil:
+                            UnconditionalFlowChange = true;
+                            break;
                     }
                 }
-            }
 
-            return Tail;
+                if (!UnconditionalFlowChange)
+                {
+                    SB.AppendLine(IdentationStr + "return " + GetBlockPosition(Block.Next) + ";");
+                }
+            }
         }
 
         private bool IsValidOutOper(ShaderIrNode Node)
@@ -1001,7 +946,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetCnumExpr(ShaderIrOp Op) => GetUnaryCall(Op, "!isnan");
 
-        private string GetExitExpr(ShaderIrOp Op) => "return";
+        private string GetExitExpr(ShaderIrOp Op) => "return 0u";
 
         private string GetFcosExpr(ShaderIrOp Op) => GetUnaryCall(Op, "cos");
 
@@ -1345,6 +1290,18 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             throw new ArgumentException(nameof(Node));
+        }
+
+        private static string GetBlockPosition(ShaderIrBlock Block)
+        {
+            if (Block != null)
+            {
+                return "0x" + Block.Position.ToString("x8") + "u";
+            }
+            else
+            {
+                return "0u";
+            }
         }
     }
 }
