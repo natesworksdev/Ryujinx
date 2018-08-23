@@ -11,9 +11,11 @@ namespace Ryujinx.HLE.Gpu.Texture
             switch (Texture.Format)
             {
                 case GalTextureFormat.R32G32B32A32: return Read16Bpp                 (Memory, Texture);
+                case GalTextureFormat.R32G32B32:    return Read12Bpp                 (Memory, Texture);
                 case GalTextureFormat.R16G16B16A16: return Read8Bpp                  (Memory, Texture);
                 case GalTextureFormat.A8B8G8R8:     return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.A2B10G10R10:  return Read4Bpp                  (Memory, Texture);
+                case GalTextureFormat.R16G16:       return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.R32:          return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.BF10GF11RF11: return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.Z24S8:        return Read4Bpp                  (Memory, Texture);
@@ -32,6 +34,7 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.BC4:          return Read8Bpt4x4               (Memory, Texture);
                 case GalTextureFormat.BC5:          return Read16BptCompressedTexture(Memory, Texture, 4, 4);
                 case GalTextureFormat.ZF32:         return Read4Bpp                  (Memory, Texture);
+                case GalTextureFormat.Z16:          return Read2Bpp                  (Memory, Texture);
                 case GalTextureFormat.Astc2D4x4:    return Read16BptCompressedTexture(Memory, Texture, 4, 4);
                 case GalTextureFormat.Astc2D5x5:    return Read16BptCompressedTexture(Memory, Texture, 5, 5);
                 case GalTextureFormat.Astc2D6x6:    return Read16BptCompressedTexture(Memory, Texture, 6, 6);
@@ -253,6 +256,41 @@ namespace Ryujinx.HLE.Gpu.Texture
 
                     OutOffs += 8;
                 }
+            }
+
+            return Output;
+        }
+
+        private unsafe static byte[] Read12Bpp(IAMemory Memory, TextureInfo Texture)
+        {
+            int Width = Texture.Width;
+            int Height = Texture.Height;
+
+            byte[] Output = new byte[Width * Height * 12];
+
+            ISwizzle Swizzle = TextureHelper.GetSwizzle(Texture, Width, 12);
+
+            (AMemory CpuMem, long Position) = TextureHelper.GetMemoryAndPosition(
+               Memory,
+               Texture.Position);
+
+            fixed (byte* BuffPtr = Output)
+            {
+                long OutOffs = 0;
+
+                for (int Y = 0; Y < Height; Y++)
+                    for (int X = 0; X < Width; X++)
+                    {
+                        long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
+
+                        long PxLow = CpuMem.ReadInt64(Position + Offset);
+                        int PxHigh = CpuMem.ReadInt32(Position + Offset + 8);
+
+                        *(long*)(BuffPtr + OutOffs) = PxLow;
+                        *(int*)(BuffPtr + OutOffs + 8) = PxHigh;
+
+                        OutOffs += 12;
+                    }
             }
 
             return Output;
