@@ -132,6 +132,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.R32G32B32A32_SFLOAT:      return (PixelInternalFormat.Rgba32f,      PixelFormat.Rgba,        PixelType.Float);
                 case GalImageFormat.R32G32B32A32_SINT:        return (PixelInternalFormat.Rgba32i,      PixelFormat.RgbaInteger, PixelType.Int);
                 case GalImageFormat.R32G32B32A32_UINT:        return (PixelInternalFormat.Rgba32ui,     PixelFormat.RgbaInteger, PixelType.UnsignedInt);
+                case GalImageFormat.R32G32B32_SFLOAT:         return (PixelInternalFormat.Rgb32f,       PixelFormat.Rgb,         PixelType.Float);
+                case GalImageFormat.R32G32B32_SINT:           return (PixelInternalFormat.Rgb32i,       PixelFormat.RgbInteger,  PixelType.Int);
+                case GalImageFormat.R32G32B32_UINT:           return (PixelInternalFormat.Rgb32ui,      PixelFormat.RgbInteger,  PixelType.UnsignedInt);
                 case GalImageFormat.R16G16B16A16_SFLOAT:      return (PixelInternalFormat.Rgba16f,      PixelFormat.Rgba,        PixelType.HalfFloat);
                 case GalImageFormat.R16G16B16A16_SINT:        return (PixelInternalFormat.Rgba16i,      PixelFormat.RgbaInteger, PixelType.Short);
                 case GalImageFormat.R16G16B16A16_UINT:        return (PixelInternalFormat.Rgba16ui,     PixelFormat.RgbaInteger, PixelType.UnsignedShort);
@@ -149,6 +152,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.B5G6R5_UNORM_PACK16:      return (PixelInternalFormat.Rgba,         PixelFormat.Rgb,         PixelType.UnsignedShort565);
                 case GalImageFormat.R16G16_SFLOAT:            return (PixelInternalFormat.Rg16f,        PixelFormat.Rg,          PixelType.HalfFloat);
                 case GalImageFormat.R16G16_SINT:              return (PixelInternalFormat.Rg16i,        PixelFormat.RgInteger,   PixelType.Short);
+                case GalImageFormat.R16G16_UINT:              return (PixelInternalFormat.Rg16ui,       PixelFormat.RgInteger,   PixelType.UnsignedShort);
                 case GalImageFormat.R16G16_SNORM:             return (PixelInternalFormat.Rg16Snorm,    PixelFormat.Rg,          PixelType.Byte);
                 case GalImageFormat.R16G16_UNORM:             return (PixelInternalFormat.Rg16,         PixelFormat.Rg,          PixelType.UnsignedShort);
                 case GalImageFormat.R8G8_SINT:                return (PixelInternalFormat.Rg8i,         PixelFormat.RgInteger,   PixelType.Byte);
@@ -168,9 +172,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 case GalImageFormat.R4G4B4A4_UNORM_PACK16_REVERSED: return (PixelInternalFormat.Rgba4, PixelFormat.Rgba, PixelType.UnsignedShort4444Reversed);
 
-                case GalImageFormat.D24_UNORM_S8_UINT: return (PixelInternalFormat.Depth24Stencil8,   PixelFormat.DepthStencil,   PixelType.UnsignedInt248);
-                case GalImageFormat.D32_SFLOAT:        return (PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, PixelType.Float);
-                case GalImageFormat.D16_UNORM:         return (PixelInternalFormat.DepthComponent16,  PixelFormat.DepthComponent, PixelType.UnsignedShort);
+                case GalImageFormat.D24_UNORM_S8_UINT:  return (PixelInternalFormat.Depth24Stencil8,   PixelFormat.DepthStencil,   PixelType.UnsignedInt248);
+                case GalImageFormat.D32_SFLOAT:         return (PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, PixelType.Float);
+                case GalImageFormat.D16_UNORM:          return (PixelInternalFormat.DepthComponent16,  PixelFormat.DepthComponent, PixelType.UnsignedShort);
+                case GalImageFormat.D32_SFLOAT_S8_UINT: return (PixelInternalFormat.Depth32fStencil8,  PixelFormat.DepthStencil,   PixelType.Float32UnsignedInt248Rev);
             }
 
             throw new NotImplementedException(Format.ToString());
