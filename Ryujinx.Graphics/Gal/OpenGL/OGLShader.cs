@@ -15,7 +15,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLShaderProgram Current;
 
-        private ConcurrentDictionary<long, OGLShaderStage> Stages;
+        private Dictionary<long, List<OGLShaderStage>> Stages;
+
+        private Dictionary<long, OGLShaderStage> TopStages;
 
         private Dictionary<OGLShaderProgram, int> Programs;
 
@@ -29,60 +31,71 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             this.Buffer = Buffer;
 
-            Stages = new ConcurrentDictionary<long, OGLShaderStage>();
+            Stages = new Dictionary<long, List<OGLShaderStage>>();
+
+            TopStages = new Dictionary<long, OGLShaderStage>();
 
             Programs = new Dictionary<OGLShaderProgram, int>();
         }
 
-        public void Create(IGalMemory Memory, long Key, GalShaderType Type)
-        {
-            Stages.GetOrAdd(Key, (Stage) => ShaderStageFactory(Memory, Key, 0, false, Type));
-        }
-
-        public void Create(IGalMemory Memory, long VpAPos, long Key, GalShaderType Type)
-        {
-            Stages.GetOrAdd(Key, (Stage) => ShaderStageFactory(Memory, VpAPos, Key, true, Type));
-        }
-
-        private OGLShaderStage ShaderStageFactory(
-            IGalMemory    Memory,
-            long          Position,
-            long          PositionB,
-            bool          IsDualVp,
+        public void Create(
+            long          Key,
+            byte[]        BinaryA,
+            byte[]        BinaryB,
             GalShaderType Type)
         {
+            if (Stages.TryGetValue(Key, out List<OGLShaderStage> Cache))
+            {
+                OGLShaderStage CachedStage = Cache.Find((OGLShaderStage Stage) => Stage.EqualsBinary(BinaryA, BinaryB));
+
+                if (CachedStage != null)
+                {
+                    TopStages[Key] = CachedStage;
+
+                    return;
+                }
+            }
+            else
+            {
+                Cache = new List<OGLShaderStage>();
+
+                Stages.Add(Key, Cache);
+            }
+
             GlslProgram Program;
 
             GlslDecompiler Decompiler = new GlslDecompiler();
 
-            if (IsDualVp)
+            if (BinaryA != null)
             {
-                ShaderDumper.Dump(Memory, Position,  Type, "a");
-                ShaderDumper.Dump(Memory, PositionB, Type, "b");
+                ShaderHelper.Dump(BinaryA, Type, "a");
+                ShaderHelper.Dump(BinaryB, Type, "b");
 
-                Program = Decompiler.Decompile(
-                    Memory,
-                    Position,
-                    PositionB,
-                    Type);
+                Program = Decompiler.Decompile(BinaryA, BinaryB, Type);
             }
             else
             {
-                ShaderDumper.Dump(Memory, Position, Type);
+                ShaderHelper.Dump(BinaryB, Type);
 
-                Program = Decompiler.Decompile(Memory, Position, Type);
+                Program = Decompiler.Decompile(BinaryB, Type);
             }
 
-            return new OGLShaderStage(
+            OGLShaderStage NewStage = new OGLShaderStage(
                 Type,
+                BinaryA,
+                BinaryB,
                 Program.Code,
                 Program.Uniforms,
                 Program.Textures);
+
+            Cache.Add(NewStage);
+
+            TopStages[Key] = NewStage;
         }
 
         public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long Key)
         {
-            if (Stages.TryGetValue(Key, out OGLShaderStage Stage))
+            if (TopStages.TryGetValue(Key, out OGLShaderStage Stage))
             {
                 return Stage.ConstBufferUsage;
             }
@@ -92,7 +105,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public IEnumerable<ShaderDeclInfo> GetTextureUsage(long Key)
         {
-            if (Stages.TryGetValue(Key, out OGLShaderStage Stage))
+            if (TopStages.TryGetValue(Key, out OGLShaderStage Stage))
             {
                 return Stage.TextureUsage;
             }
@@ -121,7 +134,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Bind(long Key)
         {
-            if (Stages.TryGetValue(Key, out OGLShaderStage Stage))
+            if (TopStages.TryGetValue(Key, out OGLShaderStage Stage))
             {
                 Bind(Stage);
             }

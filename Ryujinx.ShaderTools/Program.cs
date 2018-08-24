@@ -24,14 +24,11 @@ namespace Ryujinx.ShaderTools
                     case "f":  ShaderType = GalShaderType.Fragment;       break;
                 }
 
-                using (FileStream FS = new FileStream(args[1], FileMode.Open, FileAccess.Read))
-                {
-                    Memory Mem = new Memory(FS);
+                byte[] Binary = File.ReadAllBytes(args[1]);
 
-                    GlslProgram Program = Decompiler.Decompile(Mem, 0, ShaderType);
+                GlslProgram Program = Decompiler.Decompile(Binary, ShaderType);
 
-                    Console.WriteLine(Program.Code);
-                }
+                Console.WriteLine(Program.Code);
             }
             else
             {

@@ -109,16 +109,15 @@ namespace Ryujinx.Graphics.Gal.Shader
         }
 
         public GlslProgram Decompile(
-            IGalMemory    Memory,
-            long          VpAPosition,
-            long          VpBPosition,
+            byte[]        BinaryA,
+            byte[]        BinaryB,
             GalShaderType ShaderType)
         {
-            Header  = new ShaderHeader(Memory, VpAPosition);
-            HeaderB = new ShaderHeader(Memory, VpBPosition);
+            Header  = new ShaderHeader(BinaryA);
+            HeaderB = new ShaderHeader(BinaryB);
 
-            Blocks  = ShaderDecoder.Decode(Memory, VpAPosition);
-            BlocksB = ShaderDecoder.Decode(Memory, VpBPosition);
+            Blocks  = ShaderDecoder.Decode(BinaryA);
+            BlocksB = ShaderDecoder.Decode(BinaryB);
 
             GlslDecl DeclVpA = new GlslDecl(Blocks,  ShaderType, Header);
             GlslDecl DeclVpB = new GlslDecl(BlocksB, ShaderType, HeaderB);
@@ -128,12 +127,12 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Decompile();
         }
 
-        public GlslProgram Decompile(IGalMemory Memory, long Position, GalShaderType ShaderType)
+        public GlslProgram Decompile(byte[] Binary, GalShaderType ShaderType)
         {
-            Header  = new ShaderHeader(Memory, Position);
+            Header  = new ShaderHeader(Binary);
             HeaderB = null;
 
-            Blocks  = ShaderDecoder.Decode(Memory, Position);
+            Blocks  = ShaderDecoder.Decode(Binary);
             BlocksB = null;
 
             Decl = new GlslDecl(Blocks, ShaderType, Header);

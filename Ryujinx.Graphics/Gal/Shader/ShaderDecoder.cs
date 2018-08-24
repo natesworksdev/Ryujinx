@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private const bool AddDbgComments = true;
 
-        public static ShaderIrBlock[] Decode(IGalMemory Memory, long Start)
+        public static ShaderIrBlock[] Decode(byte[] Binary)
         {
             Dictionary<long, ShaderIrBlock> Visited    = new Dictionary<long, ShaderIrBlock>();
             Dictionary<long, ShaderIrBlock> VisitedEnd = new Dictionary<long, ShaderIrBlock>();
@@ -34,13 +34,13 @@ namespace Ryujinx.Graphics.Gal.Shader
                 return Output;
             }
 
-            ShaderIrBlock Entry = Enqueue(Start + HeaderSize);
+            ShaderIrBlock Entry = Enqueue(HeaderSize);
 
             while (Blocks.Count > 0)
             {
                 ShaderIrBlock Current = Blocks.Dequeue();
 
-                FillBlock(Memory, Current, Start + HeaderSize);
+                FillBlock(Binary, Current, HeaderSize);
 
                 //Set child blocks. "Branch" is the block the branch instruction
                 //points to (when taken), "Next" is the block at the next address,
@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Graph;
         }
 
-        private static void FillBlock(IGalMemory Memory, ShaderIrBlock Block, long Beginning)
+        private static void FillBlock(byte[] Binary, ShaderIrBlock Block, long Beginning)
         {
             long Position = Block.Position;
 
@@ -138,12 +138,9 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                uint Word0 = (uint)Memory.ReadInt32(Position + 0);
-                uint Word1 = (uint)Memory.ReadInt32(Position + 4);
+                long OpCode = ReadQWord(Binary, Position);
 
                 Position += 8;
-
-                long OpCode = Word0 | (long)Word1 << 32;
 
                 ShaderDecodeFunc Decode = ShaderOpCodeTable.GetDecoder(OpCode);
 
@@ -201,6 +198,19 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             return Op.Inst != ShaderIrInst.Exit &&
                    Op.Inst != ShaderIrInst.Bra;
+        }
+
+        private static unsafe long ReadQWord(byte[] Bytes, long Position)
+        {
+            if (Position >= Bytes.Length)
+            {
+                throw new System.InvalidOperationException();
+            }
+
+            fixed (byte* Pointer = Bytes)
+            {
+                return *((long*)(Pointer + Position));
+            }
         }
     }
 }
