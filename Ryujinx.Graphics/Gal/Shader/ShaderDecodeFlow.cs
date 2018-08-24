@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static void Sync(ShaderIrBlock Block, long OpCode, long Position)
         {
-            //TODO: Stop ignoring Sync branches
+            //TODO: Implement Sync condition codes
 
             Block.AddNode(GetPredNode(new ShaderIrOp(ShaderIrInst.Sync), OpCode));
         }
