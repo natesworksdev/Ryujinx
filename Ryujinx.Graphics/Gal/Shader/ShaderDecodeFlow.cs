@@ -39,8 +39,15 @@ namespace Ryujinx.Graphics.Gal.Shader
             Block.AddNode(GetPredNode(new ShaderIrOp(ShaderIrInst.Kil), OpCode));
         }
 
-        public static void Ssy_I(ShaderIrBlock Block, long OpCode, long Position)
+        public static void Ssy(ShaderIrBlock Block, long OpCode, long Position)
         {
+            if ((OpCode & 0x20) != 0)
+            {
+                //This reads the target offset from the constant buffer.
+                //Almost impossible to support with GLSL.
+                throw new NotImplementedException();
+            }
+
             int Offset = ((int)(OpCode >> 20) << 8) >> 8;
 
             int Target = (int)(Position + Offset);
