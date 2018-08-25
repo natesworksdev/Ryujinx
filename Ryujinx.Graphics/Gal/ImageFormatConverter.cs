@@ -142,6 +142,8 @@ namespace Ryujinx.Graphics.Gal
                 case GalFrameBufferFormat.RG8Snorm:       return GalImageFormat.R8_SNORM;
                 case GalFrameBufferFormat.RGBA8Snorm:     return GalImageFormat.A8B8G8R8_SNORM_PACK32;
                 case GalFrameBufferFormat.RG8Unorm:       return GalImageFormat.R8G8_UNORM;
+                case GalFrameBufferFormat.B5G6R5Unorm:    return GalImageFormat.B5G6R5_UNORM_PACK16;
+                case GalFrameBufferFormat.BGR5A1Unorm:    return GalImageFormat.A1R5G5B5_UNORM_PACK16;
             }
 
             throw new NotImplementedException(Format.ToString());
