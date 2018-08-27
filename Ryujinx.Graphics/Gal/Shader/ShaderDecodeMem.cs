@@ -260,7 +260,6 @@ namespace Ryujinx.Graphics.Gal.Shader
                     OperB = GetOperGpr20(OpCode);
                     break;
 
-                //Unsure about this layout
                 case ShaderTextureType._2dArray:
                     OperA = GetOperGpr8 (OpCode) + 1;
                     OperB = GetOperGpr20(OpCode);

@@ -509,47 +509,32 @@ namespace Ryujinx.HLE.Gpu.Engines
 
             if (Key == -1)
             {
-                //FIXME: Should'nt ignore invalid addresses.
+                //FIXME: Shouldn't ignore invalid addresses.
                 return;
             }
 
-            if (IsFrameBufferPosition(Key))
-            {
-                //This texture is a frame buffer texture,
-                //we shouldn't read anything from memory and bind
-                //the frame buffer texture instead, since we're not
-                //really writing anything to memory.
-                Gpu.Renderer.FrameBuffer.BindTexture(Key, TexIndex);
-            }
-            else
+            //If a texture is a rendertarget texture,
+            //we shouldn't read anything from memory and just bind it
+
+            if (!IsFrameBufferPosition(Key))
             {
                 GalImage NewImage = TextureFactory.MakeTexture(Vmm, TicPosition);
 
                 long Size = (uint)TextureHelper.GetTextureSize(NewImage);
 
-                bool HasCachedTexture = false;
+                bool Exists = Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalImage Image);
 
-                if (Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalImage Image))
-                {
-                    if (NewImage.Equals(Image) && !QueryKeyUpload(Vmm, Key, Size, NvGpuBufferType.Texture))
-                    {
-                        Gpu.Renderer.Texture.Bind(Key, TexIndex);
-
-                        HasCachedTexture = true;
-                    }
-                }
-
-                if (!HasCachedTexture)
+                if (!Exists                 ||
+                    !NewImage.Equals(Image) ||
+                    QueryKeyUpload(Vmm, Key, Size, NvGpuBufferType.Texture))
                 {
                     byte[] Data = TextureFactory.GetTextureData(Vmm, TicPosition);
 
                     Gpu.Renderer.Texture.Create(Key, Data, NewImage);
                 }
-
-                Gpu.Renderer.Texture.Bind(Key, TexIndex);
             }
 
-            Gpu.Renderer.Texture.SetSampler(Key, Sampler);
+            Gpu.Renderer.Texture.Bind(Key, TexIndex, Sampler);
         }
 
         private void UploadConstBuffers(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)

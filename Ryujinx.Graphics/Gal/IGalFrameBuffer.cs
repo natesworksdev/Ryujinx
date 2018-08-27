@@ -12,8 +12,6 @@ namespace Ryujinx.Graphics.Gal
 
         void UnbindZeta();
 
-        void BindTexture(long Key, int Index);
-
         void Set(long Key);
 
         void Set(byte[] Data, int Width, int Height);

@@ -148,16 +148,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public void BindTexture(long Key, int Index)
-        {
-            if (Texture.TryGetImage(Key, out ImageHandler Tex))
-            {
-                GL.ActiveTexture(TextureUnit.Texture0 + Index);
-
-                GL.BindTexture(TextureTarget.Texture2D, Tex.Handle);
-            }
-        }
-
         public void Set(long Key)
         {
             if (Texture.TryGetImage(Key, out ImageHandler Tex))

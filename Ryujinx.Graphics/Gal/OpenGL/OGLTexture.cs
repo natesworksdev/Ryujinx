@@ -185,19 +185,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return false;
         }
 
-        public void Bind(long Key, int Index)
-        {
-            if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
-            {
-                TextureTarget Target = OGLEnumConverter.GetImageTarget(CachedImage.Image.Target);
-
-                GL.ActiveTexture(TextureUnit.Texture0 + Index);
-
-                GL.BindTexture(Target, CachedImage.Handle);
-            }
-        }
-
-        public void SetSampler(long Key, GalTextureSampler Sampler)
+        public void Bind(long Key, int Index, GalTextureSampler Sampler)
         {
             if (!TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
             {
@@ -205,6 +193,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
 
             TextureTarget Target = OGLEnumConverter.GetImageTarget(CachedImage.Image.Target);
+
+            GL.ActiveTexture(TextureUnit.Texture0 + Index);
+
+            GL.BindTexture(Target, CachedImage.Handle);
 
             int WrapS = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressU);
             int WrapT = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressV);
