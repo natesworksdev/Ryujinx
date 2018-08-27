@@ -304,8 +304,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Target)
             {
+                case GalImageTarget._1d:      return TextureTarget.Texture1D;
                 case GalImageTarget._2d:      return TextureTarget.Texture2D;
                 case GalImageTarget._2dArray: return TextureTarget.Texture2DArray;
+                case GalImageTarget._3d:      return TextureTarget.Texture3D;
                 case GalImageTarget.CubeMap:  return TextureTarget.TextureCubeMap;
             }
 

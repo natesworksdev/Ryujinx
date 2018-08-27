@@ -19,6 +19,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Target)
             {
+                case TextureTarget.Texture1D:
+                    GL.TexImage1D(
+                        Target,
+                        Level,
+                        InternalFormat,
+                        Width,
+                        Border,
+                        PixelFormat,
+                        PixelType,
+                        Data);
+                    break;
+
                 case TextureTarget.Texture2D:
                     GL.TexImage2D(
                         Target,
@@ -33,6 +45,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     break;
 
                 case TextureTarget.Texture2DArray:
+                case TextureTarget.Texture3D:
+                    //FIXME: Unstub depth when swizzle is fixed
+                    Depth = 1;
                     GL.TexImage3D(
                         Target,
                         Level,
@@ -110,6 +125,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     break;
 
                 case TextureTarget.Texture2DArray:
+                case TextureTarget.Texture3D:
+                    //FIXME: Unstub depth when swizzle is fixed
+                    Depth = 1;
                     GL.CompressedTexImage3D(
                         Target,
                         Level,

@@ -145,8 +145,6 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             SB = new StringBuilder();
 
-            SB.AppendLine("#version 410 core");
-
             PrintDeclHeader();
             PrintDeclTextures();
             PrintDeclUniforms();
@@ -185,6 +183,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private void PrintDeclHeader()
         {
+            SB.AppendLine("#version 410 core");
+
             if (Decl.ShaderType == GalShaderType.Geometry)
             {
                 int MaxVertices = Header.MaxOutputVertexCount;
@@ -209,9 +209,9 @@ namespace Ryujinx.Graphics.Gal.Shader
                 SB.AppendLine("layout(triangles) in;" + Environment.NewLine);
 
                 SB.AppendLine($"layout({OutputTopology}, max_vertices = {MaxVertices}) out;");
-
-                SB.AppendLine();
             }
+
+            SB.AppendLine();
         }
 
         private void PrintDeclTextures()
@@ -259,10 +259,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 SB.AppendLine(IdentationStr + "int " + GlslDecl.InstanceUniformName + ";");
 
-                SB.AppendLine("};");
+                SB.AppendLine("};" + Environment.NewLine);
             }
-
-            SB.AppendLine();
 
             foreach (ShaderDeclInfo DeclInfo in Decl.Uniforms.Values.OrderBy(DeclKeySelector))
             {
@@ -1217,10 +1215,14 @@ namespace Ryujinx.Graphics.Gal.Shader
                                  GetOperExpr(Op, Op.OperandB) + ", " +
                                  GetOperExpr(Op, Op.OperandC) + ")";
             }
-            else
+            else if (Op.OperandB != null)
             {
                 return "vec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
                                  GetOperExpr(Op, Op.OperandB) + ")";
+            }
+            else
+            {
+                return GetOperExpr(Op, Op.OperandA);
             }
         }
 
@@ -1232,10 +1234,14 @@ namespace Ryujinx.Graphics.Gal.Shader
                                   GetOperExpr(Op, Op.OperandB) + ", " +
                                   GetOperExpr(Op, Op.OperandC) + ")";
             }
-            else
+            else if (Op.OperandB != null)
             {
                 return "ivec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
                                   GetOperExpr(Op, Op.OperandB) + ")";
+            }
+            else
+            {
+                return GetOperExpr(Op, Op.OperandA);
             }
         }
 
@@ -1383,8 +1389,10 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             switch (Type)
             {
+                case ShaderTextureType._1d:      return "sampler1D";
                 case ShaderTextureType._2d:      return "sampler2D";
                 case ShaderTextureType._2dArray: return "sampler2DArray";
+                case ShaderTextureType._3d:      return "sampler3D";
                 case ShaderTextureType.Cube:     return "samplerCube";
             }
 

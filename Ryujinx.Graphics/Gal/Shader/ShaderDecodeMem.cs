@@ -31,6 +31,16 @@ namespace Ryujinx.Graphics.Gal.Shader
             { RGB_, RG_A, R_BA, _GBA, RGBA, ____, ____, ____ }
         };
 
+        private static ShaderTextureType[] TexTypes = new ShaderTextureType[]
+        {
+            ShaderTextureType._1d,
+            ShaderTextureType._2d,
+            ShaderTextureType._3d,
+            ShaderTextureType.Cube,
+        };
+
+        private static int[] TexTypeCoords = new int[] { 1, 2, 3, 3 };
+
         private static ShaderTextureType[] TexsTypes = new ShaderTextureType[]
         {
             ShaderTextureType._1d,
@@ -159,14 +169,15 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static void EmitTex(ShaderIrBlock Block, long OpCode, bool GprHandle)
         {
-            //TODO: Support other formats.
-            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[2];
+            int TypeId = (int)((OpCode >> 29) & 3);
 
-            for (int Index = 0; Index < Coords.Length; Index++)
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[3];
+
+            ShaderTextureType Type = TexTypes[TypeId];
+
+            for (int Index = 0; Index < TexTypeCoords[TypeId]; Index++)
             {
-                Coords[Index] = GetOperGpr8(OpCode);
-
-                Coords[Index].Index += Index;
+                Coords[Index] = GetOperGpr8(OpCode) + Index;
 
                 if (Coords[Index].Index > ShaderIrOperGpr.ZRIndex)
                 {
@@ -186,9 +197,9 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 ShaderIrOperGpr Dst = new ShaderIrOperGpr(TempRegStart + Ch);
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(ShaderTextureType._2d, TextureIndex, Ch);
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Type, TextureIndex, Ch);
 
-                ShaderIrOp Op = new ShaderIrOp(Inst, Coords[0], Coords[1], null, Meta);
+                ShaderIrOp Op = new ShaderIrOp(Inst, Coords[0], Coords[1], Coords[2], Meta);
 
                 Block.AddNode(GetPredNode(new ShaderIrAsg(Dst, Op), OpCode));
             }
@@ -264,6 +275,13 @@ namespace Ryujinx.Graphics.Gal.Shader
                     OperA = GetOperGpr8 (OpCode) + 1;
                     OperB = GetOperGpr20(OpCode);
                     OperC = GetOperGpr8 (OpCode);
+                    break;
+
+                //This layout is copy-pasted, complitely untested
+                case ShaderTextureType._3d:
+                    OperA = GetOperGpr8(OpCode) + 1;
+                    OperB = GetOperGpr20(OpCode);
+                    OperC = GetOperGpr8(OpCode);
                     break;
 
                 //Unsure about this layout

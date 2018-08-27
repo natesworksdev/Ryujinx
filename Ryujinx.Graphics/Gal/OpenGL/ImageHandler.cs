@@ -91,38 +91,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 const int Level = 0;
                 const int Border = 0;
 
-                switch (Target)
-                {
-                    case TextureTarget.Texture2D:
-                        GL.TexImage2D(
-                            Target,
-                            Level,
-                            InternalFormat,
-                            Image.Width,
-                            Image.Height,
-                            Border,
-                            PixelFormat,
-                            PixelType,
-                            IntPtr.Zero);
-                        break;
-
-                    case TextureTarget.Texture2DArray:
-                        GL.TexImage3D(
-                            Target,
-                            Level,
-                            InternalFormat,
-                            Image.Width,
-                            Image.Height,
-                            Image.Depth,
-                            Border,
-                            PixelFormat,
-                            PixelType,
-                            IntPtr.Zero);
-                        break;
-
-                    default:
-                        throw new NotImplementedException(Target.ToString());
-                }
+                OGLHelper.TexImage(
+                    Target,
+                    Level,
+                    InternalFormat,
+                    Image.Width,
+                    Image.Height,
+                    Image.Depth,
+                    Border,
+                    PixelFormat,
+                    PixelType,
+                    null);
 
                 if (Initialized)
                 {
