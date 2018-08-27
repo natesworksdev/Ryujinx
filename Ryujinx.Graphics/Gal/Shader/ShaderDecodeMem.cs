@@ -31,12 +31,12 @@ namespace Ryujinx.Graphics.Gal.Shader
             { RGB_, RG_A, R_BA, _GBA, RGBA, ____, ____, ____ }
         };
 
-        private static ShaderTextureType[] TexTypes = new ShaderTextureType[]
+        private static ShaderTextureType[,] TexTypes = new ShaderTextureType[,]
         {
-            ShaderTextureType._1d,
-            ShaderTextureType._2d,
-            ShaderTextureType._3d,
-            ShaderTextureType.Cube,
+            { ShaderTextureType._1d,  ShaderTextureType._1dArray },
+            { ShaderTextureType._2d,  ShaderTextureType._2dArray },
+            { ShaderTextureType._3d,  ShaderTextureType.Invalid  },
+            { ShaderTextureType.Cube, ShaderTextureType.Invalid  }
         };
 
         private static int[] TexTypeCoords = new int[] { 1, 2, 3, 3 };
@@ -169,13 +169,20 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static void EmitTex(ShaderIrBlock Block, long OpCode, bool GprHandle)
         {
+            bool IsArray = ((OpCode >> 28) & 1) != 0;
+
             int TypeId = (int)((OpCode >> 29) & 3);
 
             ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[3];
 
-            ShaderTextureType Type = TexTypes[TypeId];
+            ShaderTextureType Type = TexTypes[TypeId, IsArray ? 1 : 0];
 
-            for (int Index = 0; Index < TexTypeCoords[TypeId]; Index++)
+            if (Type == ShaderTextureType.Invalid)
+            {
+                throw new InvalidOperationException();
+            }
+
+            for (int Index = 0; Index < TexTypeCoords[TypeId] + (IsArray ? 1 : 0); Index++)
             {
                 Coords[Index] = GetOperGpr8(OpCode) + Index;
 

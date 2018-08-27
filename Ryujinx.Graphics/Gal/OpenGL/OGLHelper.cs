@@ -62,38 +62,38 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     break;
 
                 case TextureTarget.TextureCubeMap:
+                {
+                    long FaceSize = Data.LongLength / 6;
+
+                    for (int Face = 0; Face < 6; Face++)
                     {
-                        long FaceSize = Data.LongLength / 6;
-
-                        for (int Face = 0; Face < 6; Face++)
+                        fixed (byte* DataPtr = Data)
                         {
-                            fixed (byte* DataPtr = Data)
+                            IntPtr Addr;
+
+                            if (Data != null)
                             {
-                                IntPtr Addr;
-
-                                if (Data != null)
-                                {
-                                    Addr = new IntPtr(DataPtr + FaceSize * Face);
-                                }
-                                else
-                                {
-                                    Addr = new IntPtr(0);
-                                }
-
-                                GL.TexImage2D(
-                                    TextureTarget.TextureCubeMapPositiveX + Face,
-                                    Level,
-                                    InternalFormat,
-                                    Width,
-                                    Height,
-                                    Border,
-                                    PixelFormat,
-                                    PixelType,
-                                    Addr);
+                                Addr = new IntPtr(DataPtr + FaceSize * Face);
                             }
+                            else
+                            {
+                                Addr = new IntPtr(0);
+                            }
+
+                            GL.TexImage2D(
+                                TextureTarget.TextureCubeMapPositiveX + Face,
+                                Level,
+                                InternalFormat,
+                                Width,
+                                Height,
+                                Border,
+                                PixelFormat,
+                                PixelType,
+                                Addr);
                         }
-                        break;
                     }
+                    break;
+                }
 
                 default:
                     throw new NotImplementedException(Target.ToString());
@@ -112,6 +112,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Target)
             {
+                case TextureTarget.Texture1D:
+                    GL.CompressedTexImage1D(
+                        Target,
+                        Level,
+                        InternalFormat,
+                        Width,
+                        Border,
+                        Data.Length,
+                        Data);
+                    break;
+
                 case TextureTarget.Texture2D:
                     GL.CompressedTexImage2D(
                         Target,
