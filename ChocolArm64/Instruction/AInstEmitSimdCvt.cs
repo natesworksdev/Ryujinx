@@ -105,6 +105,39 @@ namespace ChocolArm64.Instruction
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
         }
+		
+        public static void Fcvtns_V(AILEmitterCtx Context)
+        {
+            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+
+            int SizeF = Op.Size & 1;
+
+            int Elems = 4 >> SizeF;
+
+            for (int Index = 0; Index < Elems; Index++)
+            {
+                EmitVectorExtractF(Context, Op.Rd, Index, SizeF);
+
+                EmitRoundMathCall(Context, MidpointRounding.ToEven);
+		    
+                if (Op.RegisterSize == ARegisterSize.SIMD64)
+                {
+                    Context.Emit(OpCodes.Conv_I4);
+                }
+                else if (Op.RegisterSize == ARegisterSize.SIMD128)
+                {
+                    Context.Emit(OpCodes.Conv_I8);
+                }
+
+                EmitVectorInsertF(Context, Op.Rd, Index, 0);
+                
+            }
+
+            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            {
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }	
+        }
 
         public static void Fcvtps_Gp(AILEmitterCtx Context)
         {
