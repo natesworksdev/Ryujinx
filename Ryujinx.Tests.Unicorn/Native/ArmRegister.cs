@@ -278,7 +278,9 @@ namespace Ryujinx.Tests.Unicorn.Native
         TPIDRRO_EL0,
         TPIDR_EL1,
 
-        PSTATE,
+        PSTATE,        // PSTATE pseudoregister
+
+        //> floating point control and status registers
         FPCR,
         FPSR,
 
@@ -286,9 +288,9 @@ namespace Ryujinx.Tests.Unicorn.Native
 
         //> alias registers
 
-        IP0 = X16,
-        IP1 = X17,
-        FP = X29,
-        LR = X30,
+        IP0 =   X16,
+        IP1 =   X17,
+        FP =    X29,
+        LR =    X30,
     }
 }
