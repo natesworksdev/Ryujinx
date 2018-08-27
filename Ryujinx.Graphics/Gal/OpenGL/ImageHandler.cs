@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void EnsureSetup(GalImage Image)
         {
-            if (Width != Image.Width ||
+            if (Width  != Image.Width  ||
                 Height != Image.Height ||
                 Format != Image.Format ||
                 !Initialized)

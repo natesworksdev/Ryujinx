@@ -45,67 +45,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 InternalFormat InternalFmt = OGLEnumConverter.GetCompressedImageFormat(Image.Format);
 
-                switch (Target)
-                {
-                    case TextureTarget.Texture2D:
-                        GL.CompressedTexImage2D(
-                            Target,
-                            Level,
-                            InternalFmt,
-                            Image.Width,
-                            Image.Height,
-                            Border,
-                            Data.Length,
-                            Data);
-                        break;
-
-                    case TextureTarget.Texture2DArray:
-                        GL.CompressedTexImage3D(
-                            Target,
-                            Level,
-                            InternalFmt,
-                            Image.Width,
-                            Image.Height,
-                            Image.Depth,
-                            Border,
-                            Data.Length,
-                            Data);
-                        break;
-
-                    case TextureTarget.TextureCubeMap:
-                    {
-                        int FaceSize = Data.Length / 6;
-
-                        for (int i = 0; i < 6; i++)
-                        {
-                            unsafe
-                            {
-                                fixed (byte* DataPtr = Data)
-                                {
-                                    GL.CompressedTexImage2D(
-                                        TextureTarget.TextureCubeMapPositiveX + i,
-                                        Level,
-                                        InternalFmt,
-                                        Image.Width,
-                                        Image.Height,
-                                        Border,
-                                        FaceSize,
-                                        (IntPtr)(DataPtr + FaceSize * i));
-                                }
-                            }
-                        }
-                        break;
-                    }
-
-                    default:
-                        throw new NotImplementedException(Target.ToString());
-                }
+                OGLHelper.CompressedTexImage(
+                    Target,
+                    Level,
+                    InternalFmt,
+                    Image.Width,
+                    Image.Height,
+                    Image.Depth,
+                    Border,
+                    Data);
             }
             else
             {
                 if (Image.Format >= GalImageFormat.ASTC_BEGIN && Image.Format <= GalImageFormat.ASTC_END)
                 {
-                    int TextureBlockWidth = GetAstcBlockWidth(Image.Format);
+                    int TextureBlockWidth  = GetAstcBlockWidth (Image.Format);
                     int TextureBlockHeight = GetAstcBlockHeight(Image.Format);
 
                     Data = ASTCDecoder.DecodeToRGBA8888(
@@ -120,64 +74,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 (PixelInternalFormat InternalFormat, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(Image.Format);
 
-                switch (Target)
-                {
-                    case TextureTarget.Texture2D:
-                        GL.TexImage2D(
-                            Target,
-                            Level,
-                            InternalFormat,
-                            Image.Width,
-                            Image.Height,
-                            Border,
-                            Format,
-                            Type,
-                            Data);
-                        break;
-
-                    case TextureTarget.TextureCubeMap:
-                    {
-                        long FaceSize = Data.LongLength / 6;
-
-                        for (int i = 0; i < 6; i++)
-                        {
-                            unsafe
-                            {
-                                fixed (byte* DataPtr = Data)
-                                {
-                                    GL.TexImage2D(
-                                        TextureTarget.TextureCubeMapPositiveX + i,
-                                        Level,
-                                        InternalFormat,
-                                        Image.Width,
-                                        Image.Height,
-                                        Border,
-                                        Format,
-                                        Type,
-                                        (IntPtr)(DataPtr + FaceSize * i));
-                                }
-                            }
-                        }
-                        break;
-                    }
-
-                    case TextureTarget.Texture2DArray:
-                        GL.TexImage3D(
-                            Target,
-                            Level,
-                            InternalFormat,
-                            Image.Width,
-                            Image.Height,
-                            Image.Depth,
-                            Border,
-                            Format,
-                            Type,
-                            Data);
-                        break;
-
-                    default:
-                        throw new NotImplementedException(Target.ToString());
-                }
+                OGLHelper.TexImage(
+                    Target,
+                    Level,
+                    InternalFormat,
+                    Image.Width,
+                    Image.Height,
+                    Image.Depth,
+                    Border,
+                    Format,
+                    Type,
+                    Data);
             }
 
             int SwizzleR = (int)OGLEnumConverter.GetTextureSwizzle(Image.XSource);
