@@ -5481,6 +5481,116 @@ namespace Ryujinx.Tests.Cpu.Tester
             V(d, result);
         }
 
+        // smlal_advsimd_vec.html
+        public static void Smlal_V(bool Q, Bits size, Bits Rm, Bits Rn, Bits Rd)
+        {
+            const bool U = false;
+            const bool o1 = false;
+
+            /* Decode */
+            int d = (int)UInt(Rd);
+            int n = (int)UInt(Rn);
+            int m = (int)UInt(Rm);
+
+            /* if size == '11' then ReservedValue(); */
+
+            int esize = 8 << (int)UInt(size);
+            int datasize = 64;
+            int part = (int)UInt(Q);
+            int elements = datasize / esize;
+
+            bool sub_op = (o1 == true);
+            bool unsigned = (U == true);
+
+            /* Operation */
+            /* CheckFPAdvSIMDEnabled64(); */
+
+            Bits result = new Bits(2 * datasize);
+            Bits operand1 = Vpart(datasize, n, part);
+            Bits operand2 = Vpart(datasize, m, part);
+            Bits operand3 = V(2 * datasize, d);
+            BigInteger element1;
+            BigInteger element2;
+            Bits product;
+            Bits accum;
+
+            for (int e = 0; e <= elements - 1; e++)
+            {
+                element1 = Int(Elem(operand1, e, esize), unsigned);
+                element2 = Int(Elem(operand2, e, esize), unsigned);
+
+                product = (element1 * element2).SubBigInteger(2 * esize - 1, 0);
+
+                if (sub_op)
+                {
+                    accum = Elem(operand3, e, 2 * esize) - product;
+                }
+                else
+                {
+                    accum = Elem(operand3, e, 2 * esize) + product;
+                }
+
+                Elem(result, e, 2 * esize, accum);
+            }
+
+            V(d, result);
+        }
+
+        // smlsl_advsimd_vec.html
+        public static void Smlsl_V(bool Q, Bits size, Bits Rm, Bits Rn, Bits Rd)
+        {
+            const bool U = false;
+            const bool o1 = true;
+
+            /* Decode */
+            int d = (int)UInt(Rd);
+            int n = (int)UInt(Rn);
+            int m = (int)UInt(Rm);
+
+            /* if size == '11' then ReservedValue(); */
+
+            int esize = 8 << (int)UInt(size);
+            int datasize = 64;
+            int part = (int)UInt(Q);
+            int elements = datasize / esize;
+
+            bool sub_op = (o1 == true);
+            bool unsigned = (U == true);
+
+            /* Operation */
+            /* CheckFPAdvSIMDEnabled64(); */
+
+            Bits result = new Bits(2 * datasize);
+            Bits operand1 = Vpart(datasize, n, part);
+            Bits operand2 = Vpart(datasize, m, part);
+            Bits operand3 = V(2 * datasize, d);
+            BigInteger element1;
+            BigInteger element2;
+            Bits product;
+            Bits accum;
+
+            for (int e = 0; e <= elements - 1; e++)
+            {
+                element1 = Int(Elem(operand1, e, esize), unsigned);
+                element2 = Int(Elem(operand2, e, esize), unsigned);
+
+                product = (element1 * element2).SubBigInteger(2 * esize - 1, 0);
+
+                if (sub_op)
+                {
+                    accum = Elem(operand3, e, 2 * esize) - product;
+                }
+                else
+                {
+                    accum = Elem(operand3, e, 2 * esize) + product;
+                }
+
+                Elem(result, e, 2 * esize, accum);
+            }
+
+            V(d, result);
+        }
+
         // sqadd_advsimd.html#SQADD_asisdsame_only
         public static void Sqadd_S(Bits size, Bits Rm, Bits Rn, Bits Rd)
         {
@@ -6488,6 +6598,116 @@ namespace Ryujinx.Tests.Cpu.Tester
                 diff = element1 - element2;
 
                 Elem(result, e, esize, diff.SubBigInteger(esize, 1));
+            }
+
+            V(d, result);
+        }
+
+        // umlal_advsimd_vec.html
+        public static void Umlal_V(bool Q, Bits size, Bits Rm, Bits Rn, Bits Rd)
+        {
+            const bool U = true;
+            const bool o1 = false;
+
+            /* Decode */
+            int d = (int)UInt(Rd);
+            int n = (int)UInt(Rn);
+            int m = (int)UInt(Rm);
+
+            /* if size == '11' then ReservedValue(); */
+
+            int esize = 8 << (int)UInt(size);
+            int datasize = 64;
+            int part = (int)UInt(Q);
+            int elements = datasize / esize;
+
+            bool sub_op = (o1 == true);
+            bool unsigned = (U == true);
+
+            /* Operation */
+            /* CheckFPAdvSIMDEnabled64(); */
+
+            Bits result = new Bits(2 * datasize);
+            Bits operand1 = Vpart(datasize, n, part);
+            Bits operand2 = Vpart(datasize, m, part);
+            Bits operand3 = V(2 * datasize, d);
+            BigInteger element1;
+            BigInteger element2;
+            Bits product;
+            Bits accum;
+
+            for (int e = 0; e <= elements - 1; e++)
+            {
+                element1 = Int(Elem(operand1, e, esize), unsigned);
+                element2 = Int(Elem(operand2, e, esize), unsigned);
+
+                product = (element1 * element2).SubBigInteger(2 * esize - 1, 0);
+
+                if (sub_op)
+                {
+                    accum = Elem(operand3, e, 2 * esize) - product;
+                }
+                else
+                {
+                    accum = Elem(operand3, e, 2 * esize) + product;
+                }
+
+                Elem(result, e, 2 * esize, accum);
+            }
+
+            V(d, result);
+        }
+
+        // umlsl_advsimd_vec.html
+        public static void Umlsl_V(bool Q, Bits size, Bits Rm, Bits Rn, Bits Rd)
+        {
+            const bool U = true;
+            const bool o1 = true;
+
+            /* Decode */
+            int d = (int)UInt(Rd);
+            int n = (int)UInt(Rn);
+            int m = (int)UInt(Rm);
+
+            /* if size == '11' then ReservedValue(); */
+
+            int esize = 8 << (int)UInt(size);
+            int datasize = 64;
+            int part = (int)UInt(Q);
+            int elements = datasize / esize;
+
+            bool sub_op = (o1 == true);
+            bool unsigned = (U == true);
+
+            /* Operation */
+            /* CheckFPAdvSIMDEnabled64(); */
+
+            Bits result = new Bits(2 * datasize);
+            Bits operand1 = Vpart(datasize, n, part);
+            Bits operand2 = Vpart(datasize, m, part);
+            Bits operand3 = V(2 * datasize, d);
+            BigInteger element1;
+            BigInteger element2;
+            Bits product;
+            Bits accum;
+
+            for (int e = 0; e <= elements - 1; e++)
+            {
+                element1 = Int(Elem(operand1, e, esize), unsigned);
+                element2 = Int(Elem(operand2, e, esize), unsigned);
+
+                product = (element1 * element2).SubBigInteger(2 * esize - 1, 0);
+
+                if (sub_op)
+                {
+                    accum = Elem(operand3, e, 2 * esize) - product;
+                }
+                else
+                {
+                    accum = Elem(operand3, e, 2 * esize) + product;
+                }
+
+                Elem(result, e, 2 * esize, accum);
             }
 
             V(d, result);
