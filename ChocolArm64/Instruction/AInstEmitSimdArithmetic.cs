@@ -1032,6 +1032,11 @@ namespace ChocolArm64.Instruction
             EmitAddLongPairwise(Context, Signed: true, Accumulate: true);
         }
 
+        public static void Saddl_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Add));
+        }
+
         public static void Saddlp_V(AILEmitterCtx Context)
         {
             EmitAddLongPairwise(Context, Signed: true, Accumulate: false);
@@ -1215,6 +1220,11 @@ namespace ChocolArm64.Instruction
                 Context.Emit(OpCodes.Ldc_I4_1);
                 Context.Emit(OpCodes.Shr);
             });
+        }
+
+        public static void Ssubl_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Sub));
         }
 
         public static void Ssubw_V(AILEmitterCtx Context)
@@ -1466,6 +1476,11 @@ namespace ChocolArm64.Instruction
         public static void Usqadd_V(AILEmitterCtx Context)
         {
             EmitVectorSaturatingBinaryOpZx(Context, SaturatingFlags.Accumulate);
+        }
+
+        public static void Usubl_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
         }
 
         public static void Usubw_V(AILEmitterCtx Context)
