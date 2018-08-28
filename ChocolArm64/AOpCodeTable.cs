@@ -255,6 +255,10 @@ namespace ChocolArm64
             SetA64("x00111100x110000000000xxxxxxxxxx", AInstEmit.Fcvtms_Gp,     typeof(AOpCodeSimdCvt));
             SetA64("x00111100x110001000000xxxxxxxxxx", AInstEmit.Fcvtmu_Gp,     typeof(AOpCodeSimdCvt));
             SetA64("0x0011100x100001011010xxxxxxxxxx", AInstEmit.Fcvtn_V,       typeof(AOpCodeSimd));
+            SetA64("010111100x100001101010xxxxxxxxxx", AInstEmit.Fcvtns_S,      typeof(AOpCodeSimd));
+            SetA64("0>0011100<100001101010xxxxxxxxxx", AInstEmit.Fcvtns_V,      typeof(AOpCodeSimd));
+            SetA64("011111100x100001101010xxxxxxxxxx", AInstEmit.Fcvtnu_S,      typeof(AOpCodeSimd));
+            SetA64("0>1011100<100001101010xxxxxxxxxx", AInstEmit.Fcvtnu_V,      typeof(AOpCodeSimd));
             SetA64("x00111100x101000000000xxxxxxxxxx", AInstEmit.Fcvtps_Gp,     typeof(AOpCodeSimdCvt));
             SetA64("x00111100x101001000000xxxxxxxxxx", AInstEmit.Fcvtpu_Gp,     typeof(AOpCodeSimdCvt));
             SetA64("x00111100x111000000000xxxxxxxxxx", AInstEmit.Fcvtzs_Gp,     typeof(AOpCodeSimdCvt));
