@@ -1391,6 +1391,24 @@ namespace ChocolArm64.Instruction
             EmitVectorPairwiseOpZx(Context, () => Context.EmitCall(MthdInfo));
         }
 
+        public static void Umlal_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmTernaryOpZx(Context, () =>
+            {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Add);
+            });
+        }
+
+        public static void Umlsl_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmTernaryOpZx(Context, () =>
+            {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Sub);
+            });
+        }
+
         public static void Umull_V(AILEmitterCtx Context)
         {
             EmitVectorWidenRnRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Mul));
