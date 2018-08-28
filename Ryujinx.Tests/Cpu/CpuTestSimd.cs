@@ -156,9 +156,9 @@ namespace Ryujinx.Tests.Cpu
         }
 #endregion
 
-        private const int RndCnt = 1;
+        private const int RndCnt = 4;
 
-        [Test, Description("ABS <V><d>, <V><n>")]
+        [Test, Pairwise, Description("ABS <V><d>, <V><n>")]
         public void Abs_S_D([Values(0u)]     uint Rd,
                             [Values(1u, 0u)] uint Rn,
                             [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
@@ -183,7 +183,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("ABS <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("ABS <Vd>.<T>, <Vn>.<T>")]
         public void Abs_V_8B_4H_2S([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
                                    [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -210,7 +210,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("ABS <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("ABS <Vd>.<T>, <Vn>.<T>")]
         public void Abs_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                        [Values(1u, 0u)] uint Rn,
                                        [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -237,7 +237,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("ADDP <V><d>, <Vn>.<T>")]
+        [Test, Pairwise, Description("ADDP <V><d>, <Vn>.<T>")]
         public void Addp_S_2DD([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
                                [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
@@ -262,7 +262,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("ADDV <V><d>, <Vn>.<T>")]
+        [Test, Pairwise, Description("ADDV <V><d>, <Vn>.<T>")]
         public void Addv_V_8BB_4HH([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
                                    [ValueSource("_8B4H_")] [Random(RndCnt)] ulong Z,
@@ -289,7 +289,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("ADDV <V><d>, <Vn>.<T>")]
+        [Test, Pairwise, Description("ADDV <V><d>, <Vn>.<T>")]
         public void Addv_V_16BB_8HH_4SS([Values(0u)]     uint Rd,
                                         [Values(1u, 0u)] uint Rn,
                                         [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -316,7 +316,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CLS <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("CLS <Vd>.<T>, <Vn>.<T>")]
         public void Cls_V_8B_4H_2S([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
                                    [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -343,7 +343,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CLS <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("CLS <Vd>.<T>, <Vn>.<T>")]
         public void Cls_V_16B_8H_4S([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -370,7 +370,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CLZ <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("CLZ <Vd>.<T>, <Vn>.<T>")]
         public void Clz_V_8B_4H_2S([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
                                    [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -397,7 +397,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CLZ <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("CLZ <Vd>.<T>, <Vn>.<T>")]
         public void Clz_V_16B_8H_4S([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -424,7 +424,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMEQ <V><d>, <V><n>, #0")]
+        [Test, Pairwise, Description("CMEQ <V><d>, <V><n>, #0")]
         public void Cmeq_S_D([Values(0u)]     uint Rd,
                              [Values(1u, 0u)] uint Rn,
                              [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
@@ -449,7 +449,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMEQ <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMEQ <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmeq_V_8B_4H_2S([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -476,7 +476,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMEQ <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMEQ <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmeq_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                         [Values(1u, 0u)] uint Rn,
                                         [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -503,7 +503,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMGE <V><d>, <V><n>, #0")]
+        [Test, Pairwise, Description("CMGE <V><d>, <V><n>, #0")]
         public void Cmge_S_D([Values(0u)]     uint Rd,
                              [Values(1u, 0u)] uint Rn,
                              [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
@@ -528,7 +528,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMGE <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMGE <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmge_V_8B_4H_2S([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -555,7 +555,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMGE <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMGE <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmge_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                         [Values(1u, 0u)] uint Rn,
                                         [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -582,7 +582,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMGT <V><d>, <V><n>, #0")]
+        [Test, Pairwise, Description("CMGT <V><d>, <V><n>, #0")]
         public void Cmgt_S_D([Values(0u)]     uint Rd,
                              [Values(1u, 0u)] uint Rn,
                              [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
@@ -607,7 +607,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMGT <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMGT <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmgt_V_8B_4H_2S([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -634,7 +634,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMGT <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMGT <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmgt_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                         [Values(1u, 0u)] uint Rn,
                                         [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -661,7 +661,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMLE <V><d>, <V><n>, #0")]
+        [Test, Pairwise, Description("CMLE <V><d>, <V><n>, #0")]
         public void Cmle_S_D([Values(0u)]     uint Rd,
                              [Values(1u, 0u)] uint Rn,
                              [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
@@ -686,7 +686,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMLE <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMLE <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmle_V_8B_4H_2S([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -713,7 +713,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMLE <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMLE <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmle_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                         [Values(1u, 0u)] uint Rn,
                                         [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -740,7 +740,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMLT <V><d>, <V><n>, #0")]
+        [Test, Pairwise, Description("CMLT <V><d>, <V><n>, #0")]
         public void Cmlt_S_D([Values(0u)]     uint Rd,
                              [Values(1u, 0u)] uint Rn,
                              [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
@@ -765,7 +765,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMLT <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMLT <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmlt_V_8B_4H_2S([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -792,7 +792,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CMLT <Vd>.<T>, <Vn>.<T>, #0")]
+        [Test, Pairwise, Description("CMLT <Vd>.<T>, <Vn>.<T>, #0")]
         public void Cmlt_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                         [Values(1u, 0u)] uint Rn,
                                         [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -819,7 +819,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CNT <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("CNT <Vd>.<T>, <Vn>.<T>")]
         public void Cnt_V_8B([Values(0u)]     uint Rd,
                              [Values(1u, 0u)] uint Rn,
                              [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
@@ -844,7 +844,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("CNT <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("CNT <Vd>.<T>, <Vn>.<T>")]
         public void Cnt_V_16B([Values(0u)]     uint Rd,
                               [Values(1u, 0u)] uint Rn,
                               [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
@@ -872,8 +872,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNS <V><d>, <V><n>")]
         public void Fcvtns_S_S([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1S_F_")] [Random(RndCnt * 2)] ulong Z,
-                               [ValueSource("_1S_F_")] [Random(RndCnt * 2)] ulong A)
+                               [ValueSource("_1S_F_")] [Random(RndCnt)] ulong Z,
+                               [ValueSource("_1S_F_")] [Random(RndCnt)] ulong A)
         {
             //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
 
@@ -913,8 +913,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNS <V><d>, <V><n>")]
         public void Fcvtns_S_D([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1D_F_")] [Random(RndCnt * 2)] ulong Z,
-                               [ValueSource("_1D_F_")] [Random(RndCnt * 2)] ulong A)
+                               [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
+                               [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
         {
             uint Opcode = 0x5E61A800; // FCVTNS D0, D0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
@@ -938,8 +938,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNS <Vd>.<T>, <Vn>.<T>")]
         public void Fcvtns_V_2S_4S([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
-                                   [ValueSource("_2S_F_")] [Random(RndCnt * 2)] ulong Z,
-                                   [ValueSource("_2S_F_")] [Random(RndCnt * 2)] ulong A,
+                                   [ValueSource("_2S_F_")] [Random(RndCnt)] ulong Z,
+                                   [ValueSource("_2S_F_")] [Random(RndCnt)] ulong A,
                                    [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             uint Opcode = 0x0E21A800; // FCVTNS V0.2S, V0.2S
@@ -965,8 +965,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNS <Vd>.<T>, <Vn>.<T>")]
         public void Fcvtns_V_2D([Values(0u)]     uint Rd,
                                 [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_1D_F_")] [Random(RndCnt * 2)] ulong Z,
-                                [ValueSource("_1D_F_")] [Random(RndCnt * 2)] ulong A)
+                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
+                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
         {
             uint Opcode = 0x4E61A800; // FCVTNS V0.2D, V0.2D
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
@@ -990,8 +990,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNU <V><d>, <V><n>")]
         public void Fcvtnu_S_S([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1S_F_")] [Random(RndCnt * 2)] ulong Z,
-                               [ValueSource("_1S_F_")] [Random(RndCnt * 2)] ulong A)
+                               [ValueSource("_1S_F_")] [Random(RndCnt)] ulong Z,
+                               [ValueSource("_1S_F_")] [Random(RndCnt)] ulong A)
         {
             //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
 
@@ -1031,8 +1031,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNU <V><d>, <V><n>")]
         public void Fcvtnu_S_D([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1D_F_")] [Random(RndCnt * 2)] ulong Z,
-                               [ValueSource("_1D_F_")] [Random(RndCnt * 2)] ulong A)
+                               [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
+                               [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
         {
             uint Opcode = 0x7E61A800; // FCVTNU D0, D0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
@@ -1056,8 +1056,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNU <Vd>.<T>, <Vn>.<T>")]
         public void Fcvtnu_V_2S_4S([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
-                                   [ValueSource("_2S_F_")] [Random(RndCnt * 2)] ulong Z,
-                                   [ValueSource("_2S_F_")] [Random(RndCnt * 2)] ulong A,
+                                   [ValueSource("_2S_F_")] [Random(RndCnt)] ulong Z,
+                                   [ValueSource("_2S_F_")] [Random(RndCnt)] ulong A,
                                    [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             uint Opcode = 0x2E21A800; // FCVTNU V0.2S, V0.2S
@@ -1083,8 +1083,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNU <Vd>.<T>, <Vn>.<T>")]
         public void Fcvtnu_V_2D([Values(0u)]     uint Rd,
                                 [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_1D_F_")] [Random(RndCnt * 2)] ulong Z,
-                                [ValueSource("_1D_F_")] [Random(RndCnt * 2)] ulong A)
+                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
+                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
         {
             uint Opcode = 0x6E61A800; // FCVTNU V0.2D, V0.2D
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
@@ -1105,7 +1105,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("NEG <V><d>, <V><n>")]
+        [Test, Pairwise, Description("NEG <V><d>, <V><n>")]
         public void Neg_S_D([Values(0u)]     uint Rd,
                             [Values(1u, 0u)] uint Rn,
                             [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
@@ -1130,7 +1130,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("NEG <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("NEG <Vd>.<T>, <Vn>.<T>")]
         public void Neg_V_8B_4H_2S([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
                                    [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1157,7 +1157,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("NEG <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("NEG <Vd>.<T>, <Vn>.<T>")]
         public void Neg_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                        [Values(1u, 0u)] uint Rn,
                                        [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -1184,7 +1184,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("NOT <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("NOT <Vd>.<T>, <Vn>.<T>")]
         public void Not_V_8B([Values(0u)]     uint Rd,
                              [Values(1u, 0u)] uint Rn,
                              [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
@@ -1209,7 +1209,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("NOT <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("NOT <Vd>.<T>, <Vn>.<T>")]
         public void Not_V_16B([Values(0u)]     uint Rd,
                               [Values(1u, 0u)] uint Rn,
                               [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
@@ -1234,7 +1234,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("RBIT <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("RBIT <Vd>.<T>, <Vn>.<T>")]
         public void Rbit_V_8B([Values(0u)]     uint Rd,
                               [Values(1u, 0u)] uint Rn,
                               [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
@@ -1259,7 +1259,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("RBIT <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("RBIT <Vd>.<T>, <Vn>.<T>")]
         public void Rbit_V_16B([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
                                [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
@@ -1284,7 +1284,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("REV16 <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("REV16 <Vd>.<T>, <Vn>.<T>")]
         public void Rev16_V_8B([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
                                [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
@@ -1309,7 +1309,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("REV16 <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("REV16 <Vd>.<T>, <Vn>.<T>")]
         public void Rev16_V_16B([Values(0u)]     uint Rd,
                                 [Values(1u, 0u)] uint Rn,
                                 [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
@@ -1334,7 +1334,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("REV32 <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("REV32 <Vd>.<T>, <Vn>.<T>")]
         public void Rev32_V_8B_4H([Values(0u)]     uint Rd,
                                   [Values(1u, 0u)] uint Rn,
                                   [ValueSource("_8B4H_")] [Random(RndCnt)] ulong Z,
@@ -1361,7 +1361,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("REV32 <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("REV32 <Vd>.<T>, <Vn>.<T>")]
         public void Rev32_V_16B_8H([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
                                    [ValueSource("_8B4H_")] [Random(RndCnt)] ulong Z,
@@ -1388,7 +1388,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("REV64 <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("REV64 <Vd>.<T>, <Vn>.<T>")]
         public void Rev64_V_8B_4H_2S([Values(0u)]     uint Rd,
                                      [Values(1u, 0u)] uint Rn,
                                      [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1415,7 +1415,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("REV64 <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("REV64 <Vd>.<T>, <Vn>.<T>")]
         public void Rev64_V_16B_8H_4S([Values(0u)]     uint Rd,
                                       [Values(1u, 0u)] uint Rn,
                                       [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1442,7 +1442,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("SADALP <Vd>.<Ta>, <Vn>.<Tb>")]
+        [Test, Pairwise, Description("SADALP <Vd>.<Ta>, <Vn>.<Tb>")]
         public void Sadalp_V_8B4H_4H2S_2S1D([Values(0u)]     uint Rd,
                                             [Values(1u, 0u)] uint Rn,
                                             [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1469,7 +1469,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("SADALP <Vd>.<Ta>, <Vn>.<Tb>")]
+        [Test, Pairwise, Description("SADALP <Vd>.<Ta>, <Vn>.<Tb>")]
         public void Sadalp_V_16B8H_8H4S_4S2D([Values(0u)]     uint Rd,
                                              [Values(1u, 0u)] uint Rn,
                                              [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1496,7 +1496,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("SADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
+        [Test, Pairwise, Description("SADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
         public void Saddlp_V_8B4H_4H2S_2S1D([Values(0u)]     uint Rd,
                                             [Values(1u, 0u)] uint Rn,
                                             [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1523,7 +1523,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("SADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
+        [Test, Pairwise, Description("SADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
         public void Saddlp_V_16B8H_8H4S_4S2D([Values(0u)]     uint Rd,
                                              [Values(1u, 0u)] uint Rn,
                                              [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1553,8 +1553,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("SHA256SU0 <Vd>.4S, <Vn>.4S")]
         public void Sha256su0_V([Values(0u)]     uint Rd,
                                 [Values(1u, 0u)] uint Rn,
-                                [Random(RndCnt * 2)] ulong Z0, [Random(RndCnt * 2)] ulong Z1,
-                                [Random(RndCnt * 2)] ulong A0, [Random(RndCnt * 2)] ulong A1)
+                                [Random(RndCnt / 2)] ulong Z0, [Random(RndCnt / 2)] ulong Z1,
+                                [Random(RndCnt / 2)] ulong A0, [Random(RndCnt / 2)] ulong A1)
         {
             uint Opcode = 0x5E282800; // SHA256SU0 V0.4S, V0.4S
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
@@ -1580,7 +1580,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("SQABS <V><d>, <V><n>")]
+        [Test, Pairwise, Description("SQABS <V><d>, <V><n>")]
         public void Sqabs_S_B_H_S_D([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_1B1H1S1D_")] [Random(RndCnt)] ulong Z,
@@ -1611,7 +1611,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
         public void Sqabs_V_8B_4H_2S([Values(0u)]     uint Rd,
                                      [Values(1u, 0u)] uint Rn,
                                      [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1642,7 +1642,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
         public void Sqabs_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                          [Values(1u, 0u)] uint Rn,
                                          [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -1673,7 +1673,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQNEG <V><d>, <V><n>")]
+        [Test, Pairwise, Description("SQNEG <V><d>, <V><n>")]
         public void Sqneg_S_B_H_S_D([Values(0u)]     uint Rd,
                                     [Values(1u, 0u)] uint Rn,
                                     [ValueSource("_1B1H1S1D_")] [Random(RndCnt)] ulong Z,
@@ -1704,7 +1704,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
         public void Sqneg_V_8B_4H_2S([Values(0u)]     uint Rd,
                                      [Values(1u, 0u)] uint Rn,
                                      [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -1735,7 +1735,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
         public void Sqneg_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                          [Values(1u, 0u)] uint Rn,
                                          [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -1766,7 +1766,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQXTN <Vb><d>, <Va><n>")]
+        [Test, Pairwise, Description("SQXTN <Vb><d>, <Va><n>")]
         public void Sqxtn_S_HB_SH_DS([Values(0u)]     uint Rd,
                                      [Values(1u, 0u)] uint Rn,
                                      [ValueSource("_1H1S1D_")] [Random(RndCnt)] ulong Z,
@@ -1797,7 +1797,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
+        [Test, Pairwise, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
         public void Sqxtn_V_8H8B_4S4H_2D2S([Values(0u)]     uint Rd,
                                            [Values(1u, 0u)] uint Rn,
                                            [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -1828,7 +1828,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
+        [Test, Pairwise, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
         public void Sqxtn_V_8H16B_4S8H_2D4S([Values(0u)]     uint Rd,
                                             [Values(1u, 0u)] uint Rn,
                                             [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -1859,7 +1859,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQXTUN <Vb><d>, <Va><n>")]
+        [Test, Pairwise, Description("SQXTUN <Vb><d>, <Va><n>")]
         public void Sqxtun_S_HB_SH_DS([Values(0u)]     uint Rd,
                                       [Values(1u, 0u)] uint Rn,
                                       [ValueSource("_1H1S1D_")] [Random(RndCnt)] ulong Z,
@@ -1890,7 +1890,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
+        [Test, Pairwise, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
         public void Sqxtun_V_8H8B_4S4H_2D2S([Values(0u)]     uint Rd,
                                             [Values(1u, 0u)] uint Rn,
                                             [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -1921,7 +1921,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
+        [Test, Pairwise, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
         public void Sqxtun_V_8H16B_4S8H_2D4S([Values(0u)]     uint Rd,
                                              [Values(1u, 0u)] uint Rn,
                                              [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -1952,7 +1952,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SUQADD <V><d>, <V><n>")]
+        [Test, Pairwise, Description("SUQADD <V><d>, <V><n>")]
         public void Suqadd_S_B_H_S_D([Values(0u)]     uint Rd,
                                      [Values(1u, 0u)] uint Rn,
                                      [ValueSource("_1B1H1S1D_")] [Random(RndCnt)] ulong Z,
@@ -1983,7 +1983,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
         public void Suqadd_V_8B_4H_2S([Values(0u)]     uint Rd,
                                       [Values(1u, 0u)] uint Rn,
                                       [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -2014,7 +2014,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
         public void Suqadd_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                           [Values(1u, 0u)] uint Rn,
                                           [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -2045,7 +2045,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("UADALP <Vd>.<Ta>, <Vn>.<Tb>")]
+        [Test, Pairwise, Description("UADALP <Vd>.<Ta>, <Vn>.<Tb>")]
         public void Uadalp_V_8B4H_4H2S_2S1D([Values(0u)]     uint Rd,
                                             [Values(1u, 0u)] uint Rn,
                                             [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -2072,7 +2072,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("UADALP <Vd>.<Ta>, <Vn>.<Tb>")]
+        [Test, Pairwise, Description("UADALP <Vd>.<Ta>, <Vn>.<Tb>")]
         public void Uadalp_V_16B8H_8H4S_4S2D([Values(0u)]     uint Rd,
                                              [Values(1u, 0u)] uint Rn,
                                              [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -2099,7 +2099,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("UADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
+        [Test, Pairwise, Description("UADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
         public void Uaddlp_V_8B4H_4H2S_2S1D([Values(0u)]     uint Rd,
                                             [Values(1u, 0u)] uint Rn,
                                             [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -2126,7 +2126,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("UADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
+        [Test, Pairwise, Description("UADDLP <Vd>.<Ta>, <Vn>.<Tb>")]
         public void Uaddlp_V_16B8H_8H4S_4S2D([Values(0u)]     uint Rd,
                                              [Values(1u, 0u)] uint Rn,
                                              [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -2153,7 +2153,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("UQXTN <Vb><d>, <Va><n>")]
+        [Test, Pairwise, Description("UQXTN <Vb><d>, <Va><n>")]
         public void Uqxtn_S_HB_SH_DS([Values(0u)]     uint Rd,
                                      [Values(1u, 0u)] uint Rn,
                                      [ValueSource("_1H1S1D_")] [Random(RndCnt)] ulong Z,
@@ -2184,7 +2184,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
+        [Test, Pairwise, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
         public void Uqxtn_V_8H8B_4S4H_2D2S([Values(0u)]     uint Rd,
                                            [Values(1u, 0u)] uint Rn,
                                            [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -2215,7 +2215,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
+        [Test, Pairwise, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
         public void Uqxtn_V_8H16B_4S8H_2D4S([Values(0u)]     uint Rd,
                                             [Values(1u, 0u)] uint Rn,
                                             [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -2246,7 +2246,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("USQADD <V><d>, <V><n>")]
+        [Test, Pairwise, Description("USQADD <V><d>, <V><n>")]
         public void Usqadd_S_B_H_S_D([Values(0u)]     uint Rd,
                                      [Values(1u, 0u)] uint Rn,
                                      [ValueSource("_1B1H1S1D_")] [Random(RndCnt)] ulong Z,
@@ -2277,7 +2277,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
         public void Usqadd_V_8B_4H_2S([Values(0u)]     uint Rd,
                                       [Values(1u, 0u)] uint Rn,
                                       [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
@@ -2308,7 +2308,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
+        [Test, Pairwise, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
         public void Usqadd_V_16B_8H_4S_2D([Values(0u)]     uint Rd,
                                           [Values(1u, 0u)] uint Rn,
                                           [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -2339,7 +2339,7 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
         }
 
-        [Test, Description("XTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
+        [Test, Pairwise, Description("XTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
         public void Xtn_V_8H8B_4S4H_2D2S([Values(0u)]     uint Rd,
                                          [Values(1u, 0u)] uint Rn,
                                          [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong Z,
@@ -2366,7 +2366,7 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
-        [Test, Description("XTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
+        [Test, Pairwise, Description("XTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
         public void Xtn_V_8H16B_4S8H_2D4S([Values(0u)]     uint Rd,
                                           [Values(1u, 0u)] uint Rn,
                                           [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong Z,
