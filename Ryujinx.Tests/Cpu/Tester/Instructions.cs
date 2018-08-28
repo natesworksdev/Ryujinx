@@ -2685,6 +2685,154 @@ namespace Ryujinx.Tests.Cpu.Tester
             V(d, result);
         }
 
+        // fcvtns_advsimd.html#FCVTNS_asisdmisc_R
+        public static void Fcvtns_S(Bits sz, Bits Rn, Bits Rd)
+        {
+            const bool U = false;
+            const bool o2 = false;
+            const bool o1 = false;
+
+            /* Decode Scalar */
+            int d = (int)UInt(Rd);
+            int n = (int)UInt(Rn);
+
+            int esize = 32 << (int)UInt(sz);
+            int datasize = esize;
+            int elements = 1;
+
+            FPRounding rounding = FPDecodeRounding(Bits.Concat(o1, o2));
+
+            bool unsigned = (U == true);
+
+            /* Operation */
+            /* CheckFPAdvSIMDEnabled64(); */
+
+            Bits result = new Bits(datasize);
+            Bits operand = V(datasize, n);
+            Bits element;
+
+            for (int e = 0; e <= elements - 1; e++)
+            {
+                element = Elem(operand, e, esize);
+
+                Elem(result, e, esize, FPToFixed(esize, element, 0, unsigned, FPCR, rounding));
+            }
+
+            V(d, result);
+        }
+
+        // fcvtns_advsimd.html#FCVTNS_asimdmisc_R
+        public static void Fcvtns_V(bool Q, Bits sz, Bits Rn, Bits Rd)
+        {
+            const bool U = false;
+            const bool o2 = false;
+            const bool o1 = false;
+
+            /* Decode Vector */
+            int d = (int)UInt(Rd);
+            int n = (int)UInt(Rn);
+
+            /* if sz:Q == '10' then ReservedValue(); */
+
+            int esize = 32 << (int)UInt(sz);
+            int datasize = (Q ? 128 : 64);
+            int elements = datasize / esize;
+
+            FPRounding rounding = FPDecodeRounding(Bits.Concat(o1, o2));
+
+            bool unsigned = (U == true);
+
+            /* Operation */
+            /* CheckFPAdvSIMDEnabled64(); */
+
+            Bits result = new Bits(datasize);
+            Bits operand = V(datasize, n);
+            Bits element;
+
+            for (int e = 0; e <= elements - 1; e++)
+            {
+                element = Elem(operand, e, esize);
+
+                Elem(result, e, esize, FPToFixed(esize, element, 0, unsigned, FPCR, rounding));
+            }
+
+            V(d, result);
+        }
+
+        // fcvtnu_advsimd.html#FCVTNU_asisdmisc_R
+        public static void Fcvtnu_S(Bits sz, Bits Rn, Bits Rd)
+        {
+            const bool U = true;
+            const bool o2 = false;
+            const bool o1 = false;
+
+            /* Decode Scalar */
+            int d = (int)UInt(Rd);
+            int n = (int)UInt(Rn);
+
+            int esize = 32 << (int)UInt(sz);
+            int datasize = esize;
+            int elements = 1;
+
+            FPRounding rounding = FPDecodeRounding(Bits.Concat(o1, o2));
+
+            bool unsigned = (U == true);
+
+            /* Operation */
+            /* CheckFPAdvSIMDEnabled64(); */
+
+            Bits result = new Bits(datasize);
+            Bits operand = V(datasize, n);
+            Bits element;
+
+            for (int e = 0; e <= elements - 1; e++)
+            {
+                element = Elem(operand, e, esize);
+
+                Elem(result, e, esize, FPToFixed(esize, element, 0, unsigned, FPCR, rounding));
+            }
+
+            V(d, result);
+        }
+
+        // fcvtnu_advsimd.html#FCVTNU_asimdmisc_R
+        public static void Fcvtnu_V(bool Q, Bits sz, Bits Rn, Bits Rd)
+        {
+            const bool U = true;
+            const bool o2 = false;
+            const bool o1 = false;
+
+            /* Decode Vector */
+            int d = (int)UInt(Rd);
+            int n = (int)UInt(Rn);
+
+            /* if sz:Q == '10' then ReservedValue(); */
+
+            int esize = 32 << (int)UInt(sz);
+            int datasize = (Q ? 128 : 64);
+            int elements = datasize / esize;
+
+            FPRounding rounding = FPDecodeRounding(Bits.Concat(o1, o2));
+
+            bool unsigned = (U == true);
+
+            /* Operation */
+            /* CheckFPAdvSIMDEnabled64(); */
+
+            Bits result = new Bits(datasize);
+            Bits operand = V(datasize, n);
+            Bits element;
+
+            for (int e = 0; e <= elements - 1; e++)
+            {
+                element = Elem(operand, e, esize);
+
+                Elem(result, e, esize, FPToFixed(esize, element, 0, unsigned, FPCR, rounding));
+            }
+
+            V(d, result);
+        }
+
         // neg_advsimd.html#NEG_asisdmisc_R
         public static void Neg_S(Bits size, Bits Rn, Bits Rd)
         {
