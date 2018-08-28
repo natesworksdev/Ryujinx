@@ -1685,6 +1685,68 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
+        [Test, Pairwise, Description("SADDL{2} <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Saddl_V_8B8H_4H4S_2S2D([Values(0u)]     uint Rd,
+                                           [Values(1u, 0u)] uint Rn,
+                                           [Values(2u, 0u)] uint Rm,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong B,
+                                           [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B8H, 4H4S, 2S2D>
+        {
+            uint Opcode = 0x0E200000; // SADDL V0.8H, V0.8B, V0.8B
+            Opcode |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((size & 3) << 22);
+            Bits Op = new Bits(Opcode);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> V2 = MakeVectorE0(B);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
+
+            AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
+            AArch64.Vpart(1, 0, new Bits(A));
+            AArch64.Vpart(2, 0, new Bits(B));
+            SimdFp.Saddl_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
+                Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
+            });
+        }
+
+        [Test, Pairwise, Description("SADDL{2} <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Saddl_V_16B8H_8H4S_4S2D([Values(0u)]     uint Rd,
+                                            [Values(1u, 0u)] uint Rn,
+                                            [Values(2u, 0u)] uint Rm,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong B,
+                                            [Values(0b00u, 0b01u, 0b10u)] uint size) // <16B8H, 8H4S, 4S2D>
+        {
+            uint Opcode = 0x4E200000; // SADDL2 V0.8H, V0.16B, V0.16B
+            Opcode |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((size & 3) << 22);
+            Bits Op = new Bits(Opcode);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE1(A);
+            Vector128<float> V2 = MakeVectorE1(B);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
+
+            AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
+            AArch64.Vpart(1, 1, new Bits(A));
+            AArch64.Vpart(2, 1, new Bits(B));
+            SimdFp.Saddl_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
+                Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
+            });
+        }
+
         [Test, Pairwise, Description("SADDW{2} <Vd>.<Ta>, <Vn>.<Ta>, <Vm>.<Tb>")]
         public void Saddw_V_8B8H8H_4H4S4S_2S2D2D([Values(0u)]     uint Rd,
                                                  [Values(1u, 0u)] uint Rn,
@@ -2588,6 +2650,68 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
+        [Test, Pairwise, Description("SSUBL{2} <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Ssubl_V_8B8H_4H4S_2S2D([Values(0u)]     uint Rd,
+                                           [Values(1u, 0u)] uint Rn,
+                                           [Values(2u, 0u)] uint Rm,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong B,
+                                           [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B8H, 4H4S, 2S2D>
+        {
+            uint Opcode = 0x0E202000; // SSUBL V0.8H, V0.8B, V0.8B
+            Opcode |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((size & 3) << 22);
+            Bits Op = new Bits(Opcode);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> V2 = MakeVectorE0(B);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
+
+            AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
+            AArch64.Vpart(1, 0, new Bits(A));
+            AArch64.Vpart(2, 0, new Bits(B));
+            SimdFp.Ssubl_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
+                Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
+            });
+        }
+
+        [Test, Pairwise, Description("SSUBL{2} <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Ssubl_V_16B8H_8H4S_4S2D([Values(0u)]     uint Rd,
+                                            [Values(1u, 0u)] uint Rn,
+                                            [Values(2u, 0u)] uint Rm,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong B,
+                                            [Values(0b00u, 0b01u, 0b10u)] uint size) // <16B8H, 8H4S, 4S2D>
+        {
+            uint Opcode = 0x4E202000; // SSUBL2 V0.8H, V0.16B, V0.16B
+            Opcode |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((size & 3) << 22);
+            Bits Op = new Bits(Opcode);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE1(A);
+            Vector128<float> V2 = MakeVectorE1(B);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
+
+            AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
+            AArch64.Vpart(1, 1, new Bits(A));
+            AArch64.Vpart(2, 1, new Bits(B));
+            SimdFp.Ssubl_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
+                Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
+            });
+        }
+
         [Test, Pairwise, Description("SSUBW{2} <Vd>.<Ta>, <Vn>.<Ta>, <Vm>.<Tb>")]
         public void Ssubw_V_8B8H8H_4H4S4S_2S2D2D([Values(0u)]     uint Rd,
                                                  [Values(1u, 0u)] uint Rn,
@@ -3175,6 +3299,68 @@ namespace Ryujinx.Tests.Cpu
             });
         }
 
+        [Test, Pairwise, Description("UADDL{2} <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Uaddl_V_8B8H_4H4S_2S2D([Values(0u)]     uint Rd,
+                                           [Values(1u, 0u)] uint Rn,
+                                           [Values(2u, 0u)] uint Rm,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong B,
+                                           [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B8H, 4H4S, 2S2D>
+        {
+            uint Opcode = 0x2E200000; // UADDL V0.8H, V0.8B, V0.8B
+            Opcode |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((size & 3) << 22);
+            Bits Op = new Bits(Opcode);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> V2 = MakeVectorE0(B);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
+
+            AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
+            AArch64.Vpart(1, 0, new Bits(A));
+            AArch64.Vpart(2, 0, new Bits(B));
+            SimdFp.Uaddl_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
+                Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
+            });
+        }
+
+        [Test, Pairwise, Description("UADDL{2} <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Uaddl_V_16B8H_8H4S_4S2D([Values(0u)]     uint Rd,
+                                            [Values(1u, 0u)] uint Rn,
+                                            [Values(2u, 0u)] uint Rm,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong B,
+                                            [Values(0b00u, 0b01u, 0b10u)] uint size) // <16B8H, 8H4S, 4S2D>
+        {
+            uint Opcode = 0x6E200000; // UADDL2 V0.8H, V0.16B, V0.16B
+            Opcode |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((size & 3) << 22);
+            Bits Op = new Bits(Opcode);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE1(A);
+            Vector128<float> V2 = MakeVectorE1(B);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
+
+            AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
+            AArch64.Vpart(1, 1, new Bits(A));
+            AArch64.Vpart(2, 1, new Bits(B));
+            SimdFp.Uaddl_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
+                Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
+            });
+        }
+
         [Test, Pairwise, Description("UADDW{2} <Vd>.<Ta>, <Vn>.<Ta>, <Vm>.<Tb>")]
         public void Uaddw_V_8B8H8H_4H4S4S_2S2D2D([Values(0u)]     uint Rd,
                                                  [Values(1u, 0u)] uint Rn,
@@ -3749,6 +3935,68 @@ namespace Ryujinx.Tests.Cpu
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
             AArch64.Vpart(2, 0, new Bits(B)); AArch64.Vpart(2, 1, new Bits(B));
             SimdFp.Urhadd_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
+                Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
+            });
+        }
+
+        [Test, Pairwise, Description("USUBL{2} <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Usubl_V_8B8H_4H4S_2S2D([Values(0u)]     uint Rd,
+                                           [Values(1u, 0u)] uint Rn,
+                                           [Values(2u, 0u)] uint Rm,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
+                                           [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong B,
+                                           [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B8H, 4H4S, 2S2D>
+        {
+            uint Opcode = 0x2E202000; // USUBL V0.8H, V0.8B, V0.8B
+            Opcode |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((size & 3) << 22);
+            Bits Op = new Bits(Opcode);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> V2 = MakeVectorE0(B);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
+
+            AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
+            AArch64.Vpart(1, 0, new Bits(A));
+            AArch64.Vpart(2, 0, new Bits(B));
+            SimdFp.Usubl_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
+                Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
+            });
+        }
+
+        [Test, Pairwise, Description("USUBL{2} <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Usubl_V_16B8H_8H4S_4S2D([Values(0u)]     uint Rd,
+                                            [Values(1u, 0u)] uint Rn,
+                                            [Values(2u, 0u)] uint Rm,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong Z,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
+                                            [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong B,
+                                            [Values(0b00u, 0b01u, 0b10u)] uint size) // <16B8H, 8H4S, 4S2D>
+        {
+            uint Opcode = 0x6E202000; // USUBL2 V0.8H, V0.16B, V0.16B
+            Opcode |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((size & 3) << 22);
+            Bits Op = new Bits(Opcode);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE1(A);
+            Vector128<float> V2 = MakeVectorE1(B);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
+
+            AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
+            AArch64.Vpart(1, 1, new Bits(A));
+            AArch64.Vpart(2, 1, new Bits(B));
+            SimdFp.Usubl_V(Op[30], Op[23, 22], Op[20, 16], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
             {
