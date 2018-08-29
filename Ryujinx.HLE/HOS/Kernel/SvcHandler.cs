@@ -1,11 +1,10 @@
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
@@ -17,9 +16,28 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private Switch  Device;
         private Process Process;
+        private Horizon System;
         private AMemory Memory;
 
-        private ConcurrentDictionary<KThread, AutoResetEvent> SyncWaits;
+        private struct HleIpcMessage
+        {
+            public KThread    Thread     { get; private set; }
+            public KSession   Session    { get; private set; }
+            public IpcMessage Message    { get; private set; }
+            public long       MessagePtr { get; private set; }
+
+            public HleIpcMessage(
+                KThread    Thread,
+                KSession   Session,
+                IpcMessage Message,
+                long       MessagePtr)
+            {
+                this.Thread     = Thread;
+                this.Session    = Session;
+                this.Message    = Message;
+                this.MessagePtr = MessagePtr;
+            }
+        }
 
         private const uint SelfThreadHandle  = 0xffff8000;
         private const uint SelfProcessHandle = 0xffff8001;
@@ -74,9 +92,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             this.Device  = Device;
             this.Process = Process;
+            this.System  = Process.Device.System;
             this.Memory  = Process.Memory;
-
-            SyncWaits = new ConcurrentDictionary<KThread, AutoResetEvent>();
         }
 
         static SvcHandler()
@@ -95,8 +112,6 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Device.Log.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} called.");
 
                 Func(ThreadState);
-
-                Process.Scheduler.Reschedule(Process.GetThread(ThreadState.Tpidr));
 
                 Device.Log.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} ended.");
             }

@@ -9,14 +9,11 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         static ulong WaitForAddress(Process Process, AThreadState ThreadState, long Address, ulong Timeout)
         {
+            //TODO: Update.
             KThread CurrentThread = Process.GetThread(ThreadState.Tpidr);
-
-            Process.Scheduler.SetReschedule(CurrentThread.ProcessorId);
 
             CurrentThread.ArbiterWaitAddress = Address;
             CurrentThread.ArbiterSignaled    = false;
-
-            Process.Scheduler.EnterWait(CurrentThread, NsTimeConverter.GetTimeMs(Timeout));
 
             if (!CurrentThread.ArbiterSignaled)
             {
@@ -34,44 +31,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                                                      ulong        Timeout,
                                                      bool         ShouldDecrement)
         {
-            Memory.SetExclusive(ThreadState, Address);
-
-            int CurrentValue = Memory.ReadInt32(Address);
-
-            while (true)
-            {
-                if (Memory.TestExclusive(ThreadState, Address))
-                {
-                    if (CurrentValue < Value)
-                    {
-                        if (ShouldDecrement)
-                        {
-                            Memory.WriteInt32(Address, CurrentValue - 1);
-                        }
-
-                        Memory.ClearExclusiveForStore(ThreadState);
-                    }
-                    else
-                    {
-                        Memory.ClearExclusiveForStore(ThreadState);
-
-                        return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
-                    }
-
-                    break;
-                }
-
-                Memory.SetExclusive(ThreadState, Address);
-
-                CurrentValue = Memory.ReadInt32(Address);
-            }
-
-            if (Timeout == 0)
-            {
-                return MakeError(ErrorModule.Kernel, KernelErr.Timeout);
-            }
-
-            return WaitForAddress(Process, ThreadState, Address, Timeout);
+            return 0;
         }
 
         public static ulong WaitForAddressIfEqual(Process      Process,

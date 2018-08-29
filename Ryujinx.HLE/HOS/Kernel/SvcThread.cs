@@ -1,6 +1,5 @@
 using ChocolArm64.State;
 using Ryujinx.HLE.Logging;
-using System.Threading;
 
 using static Ryujinx.HLE.HOS.ErrorCode;
 
@@ -54,14 +53,18 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             int Handle = (int)ThreadState.X0;
 
-            KThread NewThread = Process.HandleTable.GetData<KThread>(Handle);
+            KThread Thread = Process.HandleTable.GetData<KThread>(Handle);
 
-            if (NewThread != null)
+            if (Thread != null)
             {
-                Process.Scheduler.StartThread(NewThread);
-                Process.Scheduler.SetReschedule(NewThread.ProcessorId);
+                long Result = Thread.Start();
 
-                ThreadState.X0 = 0;
+                if (Result != 0)
+                {
+                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                }
+
+                ThreadState.X0 = (ulong)Result;
             }
             else
             {
@@ -73,30 +76,37 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcExitThread(AThreadState ThreadState)
         {
-            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
+            KThread CurrentThread = System.Scheduler.GetCurrentThread();
 
-            CurrThread.Thread.StopExecution();
+            CurrentThread.Exit();
+
+            CurrentThread.Thread.StopExecution();
+
+            System.Scheduler.CoreContexts[CurrentThread.CurrentCore].RemoveThread(CurrentThread);
         }
 
         private void SvcSleepThread(AThreadState ThreadState)
         {
-            ulong TimeoutNs = ThreadState.X0;
+            long Timeout = (long)ThreadState.X0;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc, "Timeout = 0x" + TimeoutNs.ToString("x16"));
+            Device.Log.PrintDebug(LogClass.KernelSvc, "Timeout = 0x" + Timeout.ToString("x16"));
 
-            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
+            KThread CurrentThread = System.Scheduler.GetCurrentThread();
 
-            if (TimeoutNs == 0 || TimeoutNs == ulong.MaxValue)
+            if (Timeout < 1)
             {
-                Process.Scheduler.Yield(CurrThread);
+                switch (Timeout)
+                {
+                    case  0: CurrentThread.Yield();                        break;
+                    case -1: CurrentThread.YieldWithLoadBalancing();       break;
+                    case -2: CurrentThread.YieldWithForcedLoadBalancing(); break;
+                }
             }
             else
             {
-                Process.Scheduler.Suspend(CurrThread);
+                CurrentThread.Sleep(Timeout);
 
-                Thread.Sleep(NsTimeConverter.GetTimeMs(TimeoutNs));
-
-                Process.Scheduler.Resume(CurrThread);
+                ThreadState.X0 = 0;
             }
         }
 
@@ -109,7 +119,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (Thread != null)
             {
                 ThreadState.X0 = 0;
-                ThreadState.X1 = (ulong)Thread.ActualPriority;
+                ThreadState.X1 = (ulong)Thread.DynamicPriority;
             }
             else
             {
@@ -128,20 +138,22 @@ namespace Ryujinx.HLE.HOS.Kernel
                 "Handle = 0x"   + Handle  .ToString("x8") + ", " +
                 "Priority = 0x" + Priority.ToString("x8"));
 
+            //TODO: NPDM check.
+
             KThread Thread = GetThread(ThreadState.Tpidr, Handle);
 
-            if (Thread != null)
-            {
-                Thread.SetPriority(Priority);
-
-                ThreadState.X0 = 0;
-            }
-            else
+            if (Thread == null)
             {
                 Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+
+                return;
             }
+
+            Thread.SetPriority(Priority);
+
+            ThreadState.X0 = 0;
         }
 
         private void SvcGetThreadCoreMask(AThreadState ThreadState)
@@ -155,8 +167,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (Thread != null)
             {
                 ThreadState.X0 = 0;
-                ThreadState.X1 = (ulong)Thread.IdealCore;
-                ThreadState.X2 = (ulong)Thread.CoreMask;
+                ThreadState.X1 = (ulong)Thread.PreferredCore;
+                ThreadState.X2 = (ulong)Thread.AffinityMask;
             }
             else
             {
@@ -168,40 +180,40 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcSetThreadCoreMask(AThreadState ThreadState)
         {
-            int  Handle    =  (int)ThreadState.X0;
-            int  IdealCore =  (int)ThreadState.X1;
-            long CoreMask  = (long)ThreadState.X2;
+            int  ThreadHandle  =  (int)ThreadState.X0;
+            int  PrefferedCore =  (int)ThreadState.X1;
+            long AffinityMask  = (long)ThreadState.X2;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "Handle = 0x"    + Handle   .ToString("x8") + ", " +
-                "IdealCore = 0x" + IdealCore.ToString("x8") + ", " +
-                "CoreMask = 0x"  + CoreMask .ToString("x16"));
+                "ThreadHandle = 0x"  + ThreadHandle .ToString("x8") + ", " +
+                "PrefferedCore = 0x" + PrefferedCore.ToString("x8") + ", " +
+                "AffinityMask = 0x"  + AffinityMask .ToString("x16"));
 
-            KThread Thread = GetThread(ThreadState.Tpidr, Handle);
-
-            if (IdealCore == -2)
+            if (PrefferedCore == -2)
             {
                 //TODO: Get this value from the NPDM file.
-                IdealCore = 0;
+                PrefferedCore = 0;
 
-                CoreMask = 1 << IdealCore;
+                AffinityMask = 1 << PrefferedCore;
             }
             else
             {
-                if ((uint)IdealCore > 3)
+                //TODO: Check allowed cores from NPDM file.
+
+                if ((uint)PrefferedCore > 3)
                 {
-                    if ((IdealCore | 2) != -1)
+                    if ((PrefferedCore | 2) != -1)
                     {
-                        Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core id 0x{IdealCore:x8}!");
+                        Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core id 0x{PrefferedCore:x8}!");
 
                         ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidCoreId);
 
                         return;
                     }
                 }
-                else if ((CoreMask & (1 << IdealCore)) == 0)
+                else if ((AffinityMask & (1 << PrefferedCore)) == 0)
                 {
-                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core mask 0x{CoreMask:x8}!");
+                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core mask 0x{AffinityMask:x8}!");
 
                     ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
 
@@ -209,35 +221,30 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
             }
 
+            KThread Thread = GetThread(ThreadState.Tpidr, ThreadHandle);
+
             if (Thread == null)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{ThreadHandle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
                 return;
             }
 
-            //-1 is used as "don't care", so the IdealCore value is ignored.
-            //-2 is used as "use NPDM default core id" (handled above).
-            //-3 is used as "don't update", the old IdealCore value is kept.
-            if (IdealCore == -3 && (CoreMask & (1 << Thread.IdealCore)) == 0)
+            long Result = Thread.SetCoreAndAffinityMask(PrefferedCore, AffinityMask);
+
+            if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid core mask 0x{CoreMask:x8}!");
-
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
-
-                return;
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
-            Process.Scheduler.ChangeCore(Thread, IdealCore, (int)CoreMask);
-
-            ThreadState.X0 = 0;
+            ThreadState.X0 = (ulong)Result;
         }
 
         private void SvcGetCurrentProcessorNumber(AThreadState ThreadState)
         {
-            ThreadState.X0 = (ulong)Process.GetThread(ThreadState.Tpidr).ActualCore;
+            ThreadState.X0 = (ulong)Process.GetThread(ThreadState.Tpidr).CurrentCore;
         }
 
         private void SvcGetThreadId(AThreadState ThreadState)
@@ -268,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Thread != null)
             {
-                Process.Scheduler.SetThreadActivity(Thread, Active);
+                //TODO: Implement.
 
                 ThreadState.X0 = 0;
             }

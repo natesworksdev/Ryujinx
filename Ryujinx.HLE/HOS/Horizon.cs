@@ -19,11 +19,19 @@ namespace Ryujinx.HLE.HOS
 
         private Switch Device;
 
-        private KProcessScheduler Scheduler;
-
         private ConcurrentDictionary<int, Process> Processes;
 
         public SystemStateMgr State { get; private set; }
+
+        internal KScheduler Scheduler { get; private set; }
+
+        internal KTimeManager TimeManager { get; private set; }
+
+        internal KAddressArbiter AddressArbiter { get; private set; }
+
+        internal KSynchronization Synchronization { get; private set; }
+
+        internal KRecursiveLock CriticalSectionLock { get; private set; }
 
         internal KSharedMemory HidSharedMem  { get; private set; }
         internal KSharedMemory FontSharedMem { get; private set; }
@@ -38,11 +46,19 @@ namespace Ryujinx.HLE.HOS
         {
             this.Device = Device;
 
-            Scheduler = new KProcessScheduler(Device.Log);
-
             Processes = new ConcurrentDictionary<int, Process>();
 
             State = new SystemStateMgr();
+
+            Scheduler = new KScheduler();
+
+            TimeManager = new KTimeManager();
+
+            AddressArbiter = new KAddressArbiter(this);
+
+            Synchronization = new KSynchronization(this);
+
+            CriticalSectionLock = new KRecursiveLock(this);
 
             if (!Device.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
                 !Device.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
@@ -55,9 +71,13 @@ namespace Ryujinx.HLE.HOS
 
             Font = new SharedFontManager(Device, FontSharedMem.PA);
 
+<<<<<<< HEAD
             VsyncEvent = new KEvent();
 
             LoadKeySet();
+=======
+            VsyncEvent = new KEvent(this);
+>>>>>>> Started to rewrite the thread scheduler
         }
 
         public void LoadCart(string ExeFsDir, string RomFsFile = null)
@@ -371,7 +391,10 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void SignalVsync() => VsyncEvent.WaitEvent.Set();
+        public void SignalVsync()
+        {
+            VsyncEvent.Signal();
+        }
 
         private Process MakeProcess(Npdm MetaData = null)
         {
@@ -386,7 +409,7 @@ namespace Ryujinx.HLE.HOS
                     ProcessId++;
                 }
 
-                Process = new Process(Device, Scheduler, ProcessId, MetaData);
+                Process = new Process(Device, ProcessId, MetaData);
 
                 Processes.TryAdd(ProcessId, Process);
             }
@@ -409,18 +432,11 @@ namespace Ryujinx.HLE.HOS
 
                 if (Processes.Count == 0)
                 {
-                    Unload();
+                    TimeManager.Dispose();
 
                     Device.Unload();
                 }
             }
-        }
-
-        private void Unload()
-        {
-            VsyncEvent.Dispose();
-
-            Scheduler.Dispose();
         }
 
         public void Dispose()
