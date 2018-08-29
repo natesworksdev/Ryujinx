@@ -1587,20 +1587,19 @@ namespace Ryujinx.Tests.Cpu
                                     [ValueSource("_1B1H1S1D_")] [Random(RndCnt)] ulong A,
                                     [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <B, H, S, D>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x5E207800; // SQABS B0, B0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqabs_S(Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1608,7 +1607,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
@@ -1618,20 +1618,19 @@ namespace Ryujinx.Tests.Cpu
                                      [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
                                      [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B, 4H, 2S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x0E207800; // SQABS V0.8B, V0.8B
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqabs_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1639,7 +1638,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
@@ -1649,20 +1649,19 @@ namespace Ryujinx.Tests.Cpu
                                          [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong A,
                                          [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <16B, 8H, 4S, 2D>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x4E207800; // SQABS V0.16B, V0.16B
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqabs_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1670,7 +1669,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQNEG <V><d>, <V><n>")]
@@ -1680,20 +1680,19 @@ namespace Ryujinx.Tests.Cpu
                                     [ValueSource("_1B1H1S1D_")] [Random(RndCnt)] ulong A,
                                     [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <B, H, S, D>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x7E207800; // SQNEG B0, B0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqneg_S(Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1701,7 +1700,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
@@ -1711,20 +1711,19 @@ namespace Ryujinx.Tests.Cpu
                                      [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
                                      [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B, 4H, 2S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x2E207800; // SQNEG V0.8B, V0.8B
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqneg_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1732,7 +1731,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
@@ -1742,20 +1742,19 @@ namespace Ryujinx.Tests.Cpu
                                          [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong A,
                                          [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <16B, 8H, 4S, 2D>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x6E207800; // SQNEG V0.16B, V0.16B
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqneg_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1763,7 +1762,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQXTN <Vb><d>, <Va><n>")]
@@ -1773,20 +1773,19 @@ namespace Ryujinx.Tests.Cpu
                                      [ValueSource("_1H1S1D_")] [Random(RndCnt)] ulong A,
                                      [Values(0b00u, 0b01u, 0b10u)] uint size) // <HB, SH, DS>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x5E214800; // SQXTN B0, H0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqxtn_S(Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1794,7 +1793,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1804,20 +1804,19 @@ namespace Ryujinx.Tests.Cpu
                                            [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong A,
                                            [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H8B, 4S4H, 2D2S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x0E214800; // SQXTN V0.8B, V0.8H
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqxtn_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1825,7 +1824,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1835,20 +1835,19 @@ namespace Ryujinx.Tests.Cpu
                                             [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong A,
                                             [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H16B, 4S8H, 2D4S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x4E214800; // SQXTN2 V0.16B, V0.8H
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqxtn_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1856,7 +1855,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQXTUN <Vb><d>, <Va><n>")]
@@ -1866,20 +1866,19 @@ namespace Ryujinx.Tests.Cpu
                                       [ValueSource("_1H1S1D_")] [Random(RndCnt)] ulong A,
                                       [Values(0b00u, 0b01u, 0b10u)] uint size) // <HB, SH, DS>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x7E212800; // SQXTUN B0, H0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqxtun_S(Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1887,7 +1886,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1897,20 +1897,19 @@ namespace Ryujinx.Tests.Cpu
                                             [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong A,
                                             [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H8B, 4S4H, 2D2S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x2E212800; // SQXTUN V0.8B, V0.8H
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqxtun_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1918,7 +1917,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1928,20 +1928,19 @@ namespace Ryujinx.Tests.Cpu
                                              [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong A,
                                              [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H16B, 4S8H, 2D4S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x6E212800; // SQXTUN2 V0.16B, V0.8H
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Sqxtun_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1949,7 +1948,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SUQADD <V><d>, <V><n>")]
@@ -1959,20 +1959,19 @@ namespace Ryujinx.Tests.Cpu
                                      [ValueSource("_1B1H1S1D_")] [Random(RndCnt)] ulong A,
                                      [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <B, H, S, D>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x5E203800; // SUQADD B0, B0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Suqadd_S(Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -1980,7 +1979,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
@@ -1990,20 +1990,19 @@ namespace Ryujinx.Tests.Cpu
                                       [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
                                       [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B, 4H, 2S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x0E203800; // SUQADD V0.8B, V0.8B
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Suqadd_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -2011,7 +2010,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
@@ -2021,20 +2021,19 @@ namespace Ryujinx.Tests.Cpu
                                           [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong A,
                                           [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <16B, 8H, 4S, 2D>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x4E203800; // SUQADD V0.16B, V0.16B
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Suqadd_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -2042,7 +2041,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("UADALP <Vd>.<Ta>, <Vn>.<Tb>")]
@@ -2160,20 +2160,19 @@ namespace Ryujinx.Tests.Cpu
                                      [ValueSource("_1H1S1D_")] [Random(RndCnt)] ulong A,
                                      [Values(0b00u, 0b01u, 0b10u)] uint size) // <HB, SH, DS>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x7E214800; // UQXTN B0, H0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Uqxtn_S(Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -2181,7 +2180,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -2191,20 +2191,19 @@ namespace Ryujinx.Tests.Cpu
                                            [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong A,
                                            [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H8B, 4S4H, 2D2S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x2E214800; // UQXTN V0.8B, V0.8H
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Uqxtn_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -2212,7 +2211,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -2222,20 +2222,19 @@ namespace Ryujinx.Tests.Cpu
                                             [ValueSource("_4H2S1D_")] [Random(RndCnt)] ulong A,
                                             [Values(0b00u, 0b01u, 0b10u)] uint size) // <8H16B, 4S8H, 2D4S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x6E214800; // UQXTN2 V0.16B, V0.8H
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Uqxtn_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -2243,7 +2242,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("USQADD <V><d>, <V><n>")]
@@ -2253,20 +2253,19 @@ namespace Ryujinx.Tests.Cpu
                                      [ValueSource("_1B1H1S1D_")] [Random(RndCnt)] ulong A,
                                      [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <B, H, S, D>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x7E203800; // USQADD B0, B0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Usqadd_S(Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -2274,7 +2273,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
@@ -2284,20 +2284,19 @@ namespace Ryujinx.Tests.Cpu
                                       [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong A,
                                       [Values(0b00u, 0b01u, 0b10u)] uint size) // <8B, 4H, 2S>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x2E203800; // USQADD V0.8B, V0.8B
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.V(1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Usqadd_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -2305,7 +2304,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
@@ -2315,20 +2315,19 @@ namespace Ryujinx.Tests.Cpu
                                           [ValueSource("_8B4H2S1D_")] [Random(RndCnt)] ulong A,
                                           [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint size) // <16B, 8H, 4S, 2D>
         {
+            const int QCFlagBit = 27; // Cumulative saturation bit.
+
             uint Opcode = 0x6E203800; // USQADD V0.16B, V0.16B
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((size & 3) << 22);
             Bits Op = new Bits(Opcode);
 
-            int Fpsr = (int)TestContext.CurrentContext.Random.NextUInt();
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpsr: Fpsr);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
             AArch64.Vpart(0, 0, new Bits(Z)); AArch64.Vpart(0, 1, new Bits(Z));
             AArch64.Vpart(1, 0, new Bits(A)); AArch64.Vpart(1, 1, new Bits(A));
-            Shared.FPSR = new Bits((uint)Fpsr);
             SimdFp.Usqadd_V(Op[30], Op[23, 22], Op[9, 5], Op[4, 0]);
 
             Assert.Multiple(() =>
@@ -2336,7 +2335,8 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE0(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 0).ToUInt64()));
                 Assert.That(GetVectorE1(ThreadState.V0), Is.EqualTo(AArch64.Vpart(64, 0, 1).ToUInt64()));
             });
-            Assert.That(ThreadState.Fpsr, Is.EqualTo((int)Shared.FPSR.ToUInt32()));
+
+            Assert.That(((ThreadState.Fpsr >> QCFlagBit) & 1) != 0, Is.EqualTo(Shared.FPSR[QCFlagBit]));
         }
 
         [Test, Pairwise, Description("XTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
