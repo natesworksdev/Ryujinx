@@ -24,6 +24,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             ContextSwitchNeeded = true;
         }
 
+        public void UpdateCurrentThread()
+        {
+            ContextSwitchNeeded = false;
+
+            CurrentThread = SelectedThread;
+        }
+
         public void ContextSwitch()
         {
             ContextSwitchNeeded = false;

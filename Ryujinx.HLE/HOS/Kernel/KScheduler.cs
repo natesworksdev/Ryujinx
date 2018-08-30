@@ -4,10 +4,14 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KScheduler
+    class KScheduler : IDisposable
     {
         public const int PrioritiesCount = 64;
         public const int CpuCoresCount   = 4;
+
+        private int CurrentCore;
+
+        public bool MultiCoreScheduling { get; set; }
 
         public KSchedulingData SchedulingData { get; private set; }
 
@@ -16,6 +20,8 @@ namespace Ryujinx.HLE.HOS.Kernel
         public KCoreContext[] CoreContexts;
 
         public bool ThreadReselectionRequested;
+
+        private bool KeepPreempting;
 
         public KScheduler()
         {
@@ -29,44 +35,123 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 CoreContexts[Core] = new KCoreContext(this, CoreManager);
             }
+
+            if (!MultiCoreScheduling)
+            {
+                Thread PreemptionThread = new Thread(PreemptCurrentThread);
+
+                KeepPreempting = true;
+
+                PreemptionThread.Start();
+            }
         }
 
         public void ContextSwitch()
         {
             lock (CoreContexts)
             {
-                int SelectedCount = 0;
-
-                for (int Core = 0; Core < KScheduler.CpuCoresCount; Core++)
+                if (MultiCoreScheduling)
                 {
-                    KCoreContext CoreContext = CoreContexts[Core];
+                    int SelectedCount = 0;
 
-                    if (CoreContext.ContextSwitchNeeded && (CoreContext.CurrentThread?.Thread.IsCurrentThread() ?? false))
+                    for (int Core = 0; Core < KScheduler.CpuCoresCount; Core++)
                     {
-                        CoreContext.ContextSwitch();
+                        KCoreContext CoreContext = CoreContexts[Core];
+
+                        if (CoreContext.ContextSwitchNeeded && (CoreContext.CurrentThread?.Thread.IsCurrentThread() ?? false))
+                        {
+                            CoreContext.ContextSwitch();
+                        }
+
+                        if (CoreContext.CurrentThread?.Thread.IsCurrentThread() ?? false)
+                        {
+                            SelectedCount++;
+                        }
                     }
 
-                    if (CoreContext.CurrentThread?.Thread.IsCurrentThread() ?? false)
+                    if (SelectedCount == 0)
                     {
-                        SelectedCount++;
+                        CoreManager.GetThread(Thread.CurrentThread).Pause();
                     }
-                }
-
-                if (SelectedCount == 0)
-                {
-                    CoreManager.GetThread(Thread.CurrentThread).Pause();
-                }
-                else if (SelectedCount == 1)
-                {
-                    CoreManager.GetThread(Thread.CurrentThread).Unpause();
+                    else if (SelectedCount == 1)
+                    {
+                        CoreManager.GetThread(Thread.CurrentThread).Unpause();
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Thread scheduled in more than one core!");
+                    }
                 }
                 else
                 {
-                    throw new InvalidOperationException("Thread scheduled in more than one core!");
+                    KThread CurrentThread = CoreContexts[CurrentCore].CurrentThread;
+
+                    bool HasThreadExecuting = CurrentThread != null;
+
+                    if (HasThreadExecuting)
+                    {
+                        //This is not the thread that is currently executing, we need
+                        //to request an interrupt to allow safely starting another thread.
+                        if (!CurrentThread.Thread.IsCurrentThread())
+                        {
+                            CurrentThread.Thread.RequestInterrupt();
+
+                            return;
+                        }
+
+                        CoreManager.GetThread(CurrentThread.Thread.Work).Pause();
+                    }
+
+                    //Advance current core and try picking a thread,
+                    //keep advancing if it is null.
+                    for (int Core = 0; Core < 4; Core++)
+                    {
+                        CurrentCore = (CurrentCore + 1) % CpuCoresCount;
+
+                        KCoreContext CoreContext = CoreContexts[CurrentCore];
+
+                        CoreContext.UpdateCurrentThread();
+
+                        if (CoreContext.CurrentThread != null)
+                        {
+                            //System.Console.WriteLine("preempt thread " + CoreContext.CurrentThread.ThreadId);
+
+                            CoreManager.GetThread(CoreContext.CurrentThread.Thread.Work).Unpause();
+
+                            CoreContext.CurrentThread.Thread.Execute();
+
+                            break;
+                        }
+                    }
+
+                    //If nothing was running before, then we are on a "external"
+                    //HLE thread, we don't need to wait.
+                    if (!HasThreadExecuting)
+                    {
+                        return;
+                    }
                 }
             }
 
             CoreManager.GetThread(Thread.CurrentThread).Wait();
+        }
+
+        private void PreemptCurrentThread()
+        {
+            //Preempts current thread every 10 seconds on a round-robin fashion,
+            //when multi core scheduling is disabled, to try ensuring that all threads
+            //gets a chance to run.
+            while (KeepPreempting)
+            {
+                lock (CoreContexts)
+                {
+                    KThread CurrentThread = CoreContexts[CurrentCore].CurrentThread;
+
+                    CurrentThread?.Thread.RequestInterrupt();
+                }
+
+                Thread.Sleep(10);
+            }
         }
 
         public void StopThread(KThread Thread)
@@ -178,6 +263,19 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             throw new InvalidOperationException("Current thread is not scheduled!");
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool Disposing)
+        {
+            if (Disposing)
+            {
+                KeepPreempting = false;
+            }
         }
     }
 }

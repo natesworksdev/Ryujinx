@@ -432,6 +432,8 @@ namespace Ryujinx.HLE.HOS
 
                 if (Processes.Count == 0)
                 {
+                    Scheduler.Dispose();
+
                     TimeManager.Dispose();
 
                     Device.Unload();

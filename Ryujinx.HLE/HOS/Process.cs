@@ -58,8 +58,6 @@ namespace Ryujinx.HLE.HOS
 
         private long ImageBase;
 
-        private bool ShouldDispose;
-
         private bool Disposed;
 
         public Process(Switch Device, int ProcessId, Npdm MetaData)

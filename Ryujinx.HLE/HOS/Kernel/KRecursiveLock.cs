@@ -43,35 +43,40 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 Monitor.Exit(LockObj);
 
-                lock (System.Scheduler.CoreContexts)
+                if (System.Scheduler.MultiCoreScheduling)
                 {
-                    for (int Core = 0; Core < KScheduler.CpuCoresCount; Core++)
+                    lock (System.Scheduler.CoreContexts)
                     {
-                        KCoreContext CoreContext = System.Scheduler.CoreContexts[Core];
-
-                        if (CoreContext.ContextSwitchNeeded)
+                        for (int Core = 0; Core < KScheduler.CpuCoresCount; Core++)
                         {
-                            KThread ct = CoreContext.CurrentThread;
+                            KCoreContext CoreContext = System.Scheduler.CoreContexts[Core];
 
-                            AThread CurrentHleThread = ct?.Thread;
+                            if (CoreContext.ContextSwitchNeeded)
+                            {
+                                AThread CurrentHleThread = CoreContext.CurrentThread?.Thread;
 
-                            if (CurrentHleThread == null || ct == null)
-                            {
-                                //Nothing is running, we can perform the context switch immediately.
-                                CoreContext.ContextSwitch();
-                            }
-                            else if (CurrentHleThread.IsCurrentThread())
-                            {
-                                //Thread running on the current core, context switch will block.
-                                DoContextSwitch = true;
-                            }
-                            else
-                            {
-                                //Thread running on another core, request a interrupt.
-                                CurrentHleThread.RequestInterrupt();
+                                if (CurrentHleThread == null)
+                                {
+                                    //Nothing is running, we can perform the context switch immediately.
+                                    CoreContext.ContextSwitch();
+                                }
+                                else if (CurrentHleThread.IsCurrentThread())
+                                {
+                                    //Thread running on the current core, context switch will block.
+                                    DoContextSwitch = true;
+                                }
+                                else
+                                {
+                                    //Thread running on another core, request a interrupt.
+                                    CurrentHleThread.RequestInterrupt();
+                                }
                             }
                         }
                     }
+                }
+                else
+                {
+                    DoContextSwitch = true;
                 }
             }
             else
