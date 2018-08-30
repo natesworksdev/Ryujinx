@@ -63,6 +63,8 @@ namespace Ryujinx.Graphics.Gal.Shader
         private Dictionary<int, ShaderDeclInfo> m_Gprs;
         private Dictionary<int, ShaderDeclInfo> m_Preds;
 
+        private Dictionary<int, ShaderTextureType> m_TextureTypes;
+
         public IReadOnlyDictionary<ShaderIrOp, ShaderDeclInfo> CbTextures => m_CbTextures;
 
         public IReadOnlyDictionary<int, ShaderDeclInfo> Textures => m_Textures;
@@ -74,6 +76,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public IReadOnlyDictionary<int, ShaderDeclInfo> Gprs  => m_Gprs;
         public IReadOnlyDictionary<int, ShaderDeclInfo> Preds => m_Preds;
+
+        public IReadOnlyDictionary<int, ShaderTextureType> TextureTypes => m_TextureTypes;
 
         public GalShaderType ShaderType { get; private set; }
 
@@ -92,6 +96,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             m_Gprs  = new Dictionary<int, ShaderDeclInfo>();
             m_Preds = new Dictionary<int, ShaderDeclInfo>();
+
+            m_TextureTypes = new Dictionary<int, ShaderTextureType>();
         }
 
         public GlslDecl(ShaderIrBlock[] Blocks, GalShaderType ShaderType, ShaderHeader Header)
@@ -221,16 +227,26 @@ namespace Ryujinx.Graphics.Gal.Shader
                         Op.Inst == ShaderIrInst.Texs ||
                         Op.Inst == ShaderIrInst.Txlf)
                     {
-                        int Handle = ((ShaderIrOperImm)Op.OperandC).Value;
+                        ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+
+                        Traverse(Nodes, Op, Meta.Index);
+
+                        int Handle = ((ShaderIrOperImm)Meta.Index).Value;
 
                         int Index = Handle - TexStartIndex;
 
                         string Name = StagePrefix + TextureName + Index;
 
                         m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Handle));
+
+                        m_TextureTypes.TryAdd(Handle, Meta.Type);
                     }
                     else if (Op.Inst == ShaderIrInst.Texb)
                     {
+                        ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+
+                        Traverse(Nodes, Op, Meta.Index);
+
                         ShaderIrNode HandleSrc = null;
 
                         int Index = Array.IndexOf(Nodes, Parent) - 1;
@@ -241,7 +257,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                             if (Curr is ShaderIrAsg Asg && Asg.Dst is ShaderIrOperGpr Gpr)
                             {
-                                if (Gpr.Index == ((ShaderIrOperGpr)Op.OperandC).Index)
+                                if (Gpr.Index == ((ShaderIrOperGpr)Meta.Index).Index)
                                 {
                                     HandleSrc = Asg.Src;
 
@@ -255,6 +271,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                             string Name = StagePrefix + TextureName + "_cb" + Cbuf.Index + "_" + Cbuf.Pos;
 
                             m_CbTextures.Add(Op, new ShaderDeclInfo(Name, Cbuf.Pos, true, Cbuf.Index));
+
+                            //TODO: Add m_CbTextures to texture types
                         }
                         else
                         {

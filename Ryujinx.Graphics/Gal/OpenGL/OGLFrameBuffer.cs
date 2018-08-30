@@ -148,16 +148,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public void BindTexture(long Key, int Index)
-        {
-            if (Texture.TryGetImage(Key, out ImageHandler Tex))
-            {
-                GL.ActiveTexture(TextureUnit.Texture0 + Index);
-
-                GL.BindTexture(TextureTarget.Texture2D, Tex.Handle);
-            }
-        }
-
         public void Set(long Key)
         {
             if (Texture.TryGetImage(Key, out ImageHandler Tex))
@@ -173,7 +163,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 RawTex = new ImageHandler();
             }
 
-            RawTex.EnsureSetup(new GalImage(Width, Height, RawFormat));
+            RawTex.EnsureSetup(new GalImage(Width, Height, 1, RawFormat, GalImageTarget._2d));
 
             GL.BindTexture(TextureTarget.Texture2D, RawTex.Handle);
 

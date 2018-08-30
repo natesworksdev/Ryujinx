@@ -15,6 +15,11 @@ namespace Ryujinx.Graphics.Gal.Shader
             this.Index = Index;
         }
 
+        public static ShaderIrOperGpr operator+(ShaderIrOperGpr Gpr, int PlusIndex)
+        {
+            return new ShaderIrOperGpr(Gpr.Index + PlusIndex);
+        }
+
         public static ShaderIrOperGpr MakeTemporary(int Index = 0)
         {
             return new ShaderIrOperGpr(0x100 + Index);

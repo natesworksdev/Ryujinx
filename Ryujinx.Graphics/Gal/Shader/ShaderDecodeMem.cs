@@ -31,12 +31,37 @@ namespace Ryujinx.Graphics.Gal.Shader
             { RGB_, RG_A, R_BA, _GBA, RGBA, ____, ____, ____ }
         };
 
+        private static ShaderTextureType[,] TexTypes = new ShaderTextureType[,]
+        {
+            { ShaderTextureType._1d,  ShaderTextureType._1dArray },
+            { ShaderTextureType._2d,  ShaderTextureType._2dArray },
+            { ShaderTextureType._3d,  ShaderTextureType.Invalid  },
+            { ShaderTextureType.Cube, ShaderTextureType.Invalid  }
+        };
+
+        private static int[] TexTypeCoords = new int[] { 1, 2, 3, 3 };
+
+        private static ShaderTextureType[] TexsTypes = new ShaderTextureType[]
+        {
+            ShaderTextureType._1d,
+            ShaderTextureType._2d,
+            ShaderTextureType._2d,
+            ShaderTextureType._2d,
+            ShaderTextureType._2d,
+            ShaderTextureType._2d,
+            ShaderTextureType._2d,
+            ShaderTextureType._2dArray,
+            ShaderTextureType._2dArray,
+            ShaderTextureType._2dArray,
+            ShaderTextureType._3d,
+            ShaderTextureType._3d,
+            ShaderTextureType.Cube,
+            ShaderTextureType.Cube,
+        };
+
         public static void Ld_A(ShaderIrBlock Block, long OpCode)
         {
             ShaderIrNode[] Opers = GetOperAbuf20(OpCode);
-
-            //Used by GS
-            ShaderIrOperGpr Vertex = GetOperGpr39(OpCode);
 
             int Index = 0;
 
@@ -118,15 +143,15 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrNode OperD = GetOperGpr0(OpCode);
             ShaderIrNode OperA = GetOperGpr8(OpCode);
 
+            ShaderIrNode TextureIndex = GetOperImm13_36(OpCode);
+
             ShaderTexqInfo Info = (ShaderTexqInfo)((OpCode >> 22) & 0x1f);
 
-            ShaderIrMetaTexq Meta0 = new ShaderIrMetaTexq(Info, 0);
-            ShaderIrMetaTexq Meta1 = new ShaderIrMetaTexq(Info, 1);
+            ShaderIrMetaTexq Meta0 = new ShaderIrMetaTexq(Info, ShaderTextureType._2d, TextureIndex, 0);
+            ShaderIrMetaTexq Meta1 = new ShaderIrMetaTexq(Info, ShaderTextureType._2d, TextureIndex, 1);
 
-            ShaderIrNode OperC = GetOperImm13_36(OpCode);
-
-            ShaderIrOp Op0 = new ShaderIrOp(ShaderIrInst.Texq, OperA, null, OperC, Meta0);
-            ShaderIrOp Op1 = new ShaderIrOp(ShaderIrInst.Texq, OperA, null, OperC, Meta1);
+            ShaderIrOp Op0 = new ShaderIrOp(ShaderIrInst.Texq, OperA, null, null, Meta0);
+            ShaderIrOp Op1 = new ShaderIrOp(ShaderIrInst.Texq, OperA, null, null, Meta1);
 
             Block.AddNode(GetPredNode(new ShaderIrAsg(OperD, Op0), OpCode));
             Block.AddNode(GetPredNode(new ShaderIrAsg(OperA, Op1), OpCode)); //Is this right?
@@ -144,14 +169,22 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static void EmitTex(ShaderIrBlock Block, long OpCode, bool GprHandle)
         {
-            //TODO: Support other formats.
-            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[2];
+            bool IsArray = ((OpCode >> 28) & 1) != 0;
 
-            for (int Index = 0; Index < Coords.Length; Index++)
+            int TypeId = (int)((OpCode >> 29) & 3);
+
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[3];
+
+            ShaderTextureType Type = TexTypes[TypeId, IsArray ? 1 : 0];
+
+            if (Type == ShaderTextureType.Invalid)
             {
-                Coords[Index] = GetOperGpr8(OpCode);
+                throw new InvalidOperationException();
+            }
 
-                Coords[Index].Index += Index;
+            for (int Index = 0; Index < TexTypeCoords[TypeId] + (IsArray ? 1 : 0); Index++)
+            {
+                Coords[Index] = GetOperGpr8(OpCode) + Index;
 
                 if (Coords[Index].Index > ShaderIrOperGpr.ZRIndex)
                 {
@@ -161,7 +194,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             int ChMask = (int)(OpCode >> 31) & 0xf;
 
-            ShaderIrNode OperC = GprHandle
+            ShaderIrNode TextureIndex = GprHandle
                 ? (ShaderIrNode)GetOperGpr20   (OpCode)
                 : (ShaderIrNode)GetOperImm13_36(OpCode);
 
@@ -171,9 +204,9 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 ShaderIrOperGpr Dst = new ShaderIrOperGpr(TempRegStart + Ch);
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch);
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Type, TextureIndex, Ch);
 
-                ShaderIrOp Op = new ShaderIrOp(Inst, Coords[0], Coords[1], OperC, Meta);
+                ShaderIrOp Op = new ShaderIrOp(Inst, Coords[0], Coords[1], Coords[2], Meta);
 
                 Block.AddNode(GetPredNode(new ShaderIrAsg(Dst, Op), OpCode));
             }
@@ -214,10 +247,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static void EmitTexs(ShaderIrBlock Block, long OpCode, ShaderIrInst Inst)
         {
-            //TODO: Support other formats.
-            ShaderIrNode OperA = GetOperGpr8    (OpCode);
-            ShaderIrNode OperB = GetOperGpr20   (OpCode);
-            ShaderIrNode OperC = GetOperImm13_36(OpCode);
+            ShaderIrNode TextureIndex = GetOperImm13_36(OpCode);
 
             int LutIndex;
 
@@ -233,11 +263,50 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             int ChMask = MaskLut[LutIndex, (OpCode >> 50) & 7];
 
+            long TypeIndex = (OpCode >> 53) & 0xf;
+
+            ShaderTextureType Type = TexsTypes[TypeIndex];
+
+            ShaderIrNode OperA = null;
+            ShaderIrNode OperB = null;
+            ShaderIrNode OperC = null;
+
+            switch (Type)
+            {
+                case ShaderTextureType._2d:
+                    OperA = GetOperGpr8 (OpCode);
+                    OperB = GetOperGpr20(OpCode);
+                    break;
+
+                case ShaderTextureType._2dArray:
+                    OperA = GetOperGpr8 (OpCode) + 1;
+                    OperB = GetOperGpr20(OpCode);
+                    OperC = GetOperGpr8 (OpCode);
+                    break;
+
+                //This layout is copy-pasted, complitely untested
+                case ShaderTextureType._3d:
+                    OperA = GetOperGpr8(OpCode) + 1;
+                    OperB = GetOperGpr20(OpCode);
+                    OperC = GetOperGpr8(OpCode);
+                    break;
+
+                //Unsure about this layout
+                case ShaderTextureType.Cube:
+                    OperA = GetOperGpr8 (OpCode);
+                    OperB = GetOperGpr8 (OpCode) + 1;
+                    OperC = GetOperGpr20(OpCode);
+                    break;
+
+                default:
+                    throw new NotImplementedException(Type.ToString());
+            }
+
             for (int Ch = 0; Ch < 4; Ch++)
             {
                 ShaderIrOperGpr Dst = new ShaderIrOperGpr(TempRegStart + Ch);
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch);
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Type, TextureIndex, Ch);
 
                 ShaderIrOp Op = new ShaderIrOp(Inst, OperA, OperB, OperC, Meta);
 

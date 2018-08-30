@@ -34,7 +34,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Data.Length);
 
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            TextureTarget Target = OGLEnumConverter.GetImageTarget(Image.Target);
+
+            GL.BindTexture(Target, Handle);
 
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
@@ -43,21 +45,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 InternalFormat InternalFmt = OGLEnumConverter.GetCompressedImageFormat(Image.Format);
 
-                GL.CompressedTexImage2D(
-                    TextureTarget.Texture2D,
+                OGLHelper.CompressedTexImage(
+                    Target,
                     Level,
                     InternalFmt,
                     Image.Width,
                     Image.Height,
+                    Image.Depth,
                     Border,
-                    Data.Length,
                     Data);
             }
             else
             {
                 if (Image.Format >= GalImageFormat.ASTC_BEGIN && Image.Format <= GalImageFormat.ASTC_END)
                 {
-                    int TextureBlockWidth  = GetAstcBlockWidth(Image.Format);
+                    int TextureBlockWidth  = GetAstcBlockWidth (Image.Format);
                     int TextureBlockHeight = GetAstcBlockHeight(Image.Format);
 
                     Data = ASTCDecoder.DecodeToRGBA8888(
@@ -72,12 +74,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 (PixelInternalFormat InternalFormat, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(Image.Format);
 
-                GL.TexImage2D(
-                    TextureTarget.Texture2D,
+                OGLHelper.TexImage(
+                    Target,
                     Level,
                     InternalFormat,
                     Image.Width,
                     Image.Height,
+                    Image.Depth,
                     Border,
                     Format,
                     Type,
@@ -89,10 +92,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             int SwizzleB = (int)OGLEnumConverter.GetTextureSwizzle(Image.ZSource);
             int SwizzleA = (int)OGLEnumConverter.GetTextureSwizzle(Image.WSource);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, SwizzleR);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG, SwizzleG);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, SwizzleB);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, SwizzleA);
+            GL.TexParameter(Target, TextureParameterName.TextureSwizzleR, SwizzleR);
+            GL.TexParameter(Target, TextureParameterName.TextureSwizzleG, SwizzleG);
+            GL.TexParameter(Target, TextureParameterName.TextureSwizzleB, SwizzleB);
+            GL.TexParameter(Target, TextureParameterName.TextureSwizzleA, SwizzleA);
         }
 
         public void CreateFb(long Key, long Size, GalImage Image)
@@ -182,29 +185,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return false;
         }
 
-        public void Bind(long Key, int Index)
+        public void Bind(long Key, int Index, GalTextureSampler Sampler)
         {
-            if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
+            if (!TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
             {
-                GL.ActiveTexture(TextureUnit.Texture0 + Index);
-
-                GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
+                return;
             }
-        }
 
-        public void SetSampler(GalTextureSampler Sampler)
-        {
+            TextureTarget Target = OGLEnumConverter.GetImageTarget(CachedImage.Image.Target);
+
+            GL.ActiveTexture(TextureUnit.Texture0 + Index);
+
+            GL.BindTexture(Target, CachedImage.Handle);
+
             int WrapS = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressU);
             int WrapT = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressV);
 
             int MinFilter = (int)OGLEnumConverter.GetTextureMinFilter(Sampler.MinFilter, Sampler.MipFilter);
             int MagFilter = (int)OGLEnumConverter.GetTextureMagFilter(Sampler.MagFilter);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, WrapS);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, WrapT);
+            GL.TexParameter(Target, TextureParameterName.TextureWrapS, WrapS);
+            GL.TexParameter(Target, TextureParameterName.TextureWrapT, WrapT);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, MinFilter);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, MagFilter);
+            GL.TexParameter(Target, TextureParameterName.TextureMinFilter, MinFilter);
+            GL.TexParameter(Target, TextureParameterName.TextureMagFilter, MagFilter);
 
             float[] Color = new float[]
             {
@@ -214,7 +218,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Sampler.BorderColor.Alpha
             };
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, Color);
+            GL.TexParameter(Target, TextureParameterName.TextureBorderColor, Color);
         }
 
         private static bool IsCompressedTextureFormat(GalImageFormat Format)
