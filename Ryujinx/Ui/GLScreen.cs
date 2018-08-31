@@ -4,7 +4,7 @@ using OpenTK.Input;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
-using Ryujinx.Ui.Input;
+using Ryujinx.UI.Input;
 using System;
 using System.Collections.Generic;
 using System.Threading;

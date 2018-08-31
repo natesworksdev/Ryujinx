@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Ryujinx.HLE.Input;
 
-namespace Ryujinx.Ui.Input
+namespace Ryujinx.UI.Input
 {
     class EmulatedDevices
     {

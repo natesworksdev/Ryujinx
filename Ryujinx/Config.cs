@@ -1,15 +1,14 @@
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
-using Ryujinx.UI.Input;
 using Ryujinx.HLE.Logging;
+using Ryujinx.UI.Input;
 using System;
-using System.Globalization;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Ryujinx.Ui.Input;
 
 namespace Ryujinx
 {
