@@ -46,7 +46,15 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                if (Result == MakeError(ErrorModule.Kernel, KernelErr.Timeout) ||
+                    Result == MakeError(ErrorModule.Kernel, KernelErr.Cancelled))
+                {
+                    Device.Log.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                }
+                else
+                {
+                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                }
             }
 
             ThreadState.X0 = (ulong)Result;
@@ -192,7 +200,14 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                if (Result == MakeError(ErrorModule.Kernel, KernelErr.Timeout))
+                {
+                    Device.Log.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                }
+                else
+                {
+                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                }
             }
 
             ThreadState.X0 = (ulong)Result;

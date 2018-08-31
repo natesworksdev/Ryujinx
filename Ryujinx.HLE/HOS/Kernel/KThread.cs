@@ -43,10 +43,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public int ObjSyncResult { get; set; }
 
-        public int DynamicPriority { get; private set; }
+        public int DynamicPriority { get; set; }
         public int CurrentCore     { get; set; }
-        public int BasePriority    { get; private set; }
-        public int PreferredCore   { get; private set; }
+        public int BasePriority    { get; set; }
+        public int PreferredCore   { get; set; }
 
         private long AffinityMaskOverride;
         private int  PreferredCoreOverride;
@@ -847,6 +847,11 @@ namespace Ryujinx.HLE.HOS.Kernel
         public override bool IsSignaled()
         {
             return HasExited;
+        }
+
+        public void ClearExclusive()
+        {
+            Owner.Memory.ClearExclusive(CurrentCore);
         }
 
         public void TimeUp()

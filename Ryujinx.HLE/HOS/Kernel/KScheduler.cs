@@ -114,7 +114,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                         if (CoreContext.CurrentThread != null)
                         {
-                            //System.Console.WriteLine("preempt thread " + CoreContext.CurrentThread.ThreadId);
+                            CoreContext.CurrentThread.ClearExclusive();
 
                             CoreManager.GetThread(CoreContext.CurrentThread.Thread.Work).Unpause();
 

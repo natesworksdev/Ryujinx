@@ -44,9 +44,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (CurrentThread != null)
             {
-                CurrentThread.Thread.Execute();
+                CurrentThread.ClearExclusive();
 
                 CoreManager.GetThread(CurrentThread.Thread.Work).Unpause();
+
+                CurrentThread.Thread.Execute();
             }
         }
 
