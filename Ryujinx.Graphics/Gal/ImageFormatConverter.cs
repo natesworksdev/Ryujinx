@@ -76,6 +76,7 @@ namespace Ryujinx.Graphics.Gal
                     {
                         case GalTextureFormat.R32G32B32A32: return GalImageFormat.R32G32B32A32_SINT;
                         case GalTextureFormat.R16G16B16A16: return GalImageFormat.R16G16B16A16_SINT;
+                        case GalTextureFormat.R32G32:       return GalImageFormat.R32G32_SINT;
                         case GalTextureFormat.A8B8G8R8:     return GalImageFormat.A8B8G8R8_SINT_PACK32;
                         case GalTextureFormat.A2B10G10R10:  return GalImageFormat.A2B10G10R10_SINT_PACK32;
                         case GalTextureFormat.R32:          return GalImageFormat.R32_SINT;
@@ -90,6 +91,7 @@ namespace Ryujinx.Graphics.Gal
                     {
                         case GalTextureFormat.R32G32B32A32: return GalImageFormat.R32G32B32A32_UINT;
                         case GalTextureFormat.R16G16B16A16: return GalImageFormat.R16G16B16A16_UINT;
+                        case GalTextureFormat.R32G32:       return GalImageFormat.R32G32_UINT;
                         case GalTextureFormat.A8B8G8R8:     return GalImageFormat.A8B8G8R8_UINT_PACK32;
                         case GalTextureFormat.A2B10G10R10:  return GalImageFormat.A2B10G10R10_UINT_PACK32;
                         case GalTextureFormat.R32:          return GalImageFormat.R32_UINT;
@@ -112,6 +114,7 @@ namespace Ryujinx.Graphics.Gal
                     {
                         case GalTextureFormat.R32G32B32A32: return GalImageFormat.R32G32B32A32_SFLOAT;
                         case GalTextureFormat.R16G16B16A16: return GalImageFormat.R16G16B16A16_SFLOAT;
+                        case GalTextureFormat.R32G32:       return GalImageFormat.R32G32_SFLOAT;
                         case GalTextureFormat.R32:          return GalImageFormat.R32_SFLOAT;
                         case GalTextureFormat.BC6H_SF16:    return GalImageFormat.BC6H_SFLOAT_BLOCK;
                         case GalTextureFormat.BC6H_UF16:    return GalImageFormat.BC6H_UFLOAT_BLOCK;
