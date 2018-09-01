@@ -19,6 +19,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private Dictionary<long, OGLShaderStage> TopStages;
 
+        private Dictionary<long, long> TopStageSizes;
+
         private Dictionary<OGLShaderProgram, int> Programs;
 
         public int CurrentProgramHandle { get; private set; }
@@ -35,15 +37,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             TopStages = new Dictionary<long, OGLShaderStage>();
 
+            TopStageSizes = new Dictionary<long, long>();
+
             Programs = new Dictionary<OGLShaderProgram, int>();
         }
 
         public void Create(
-            long          Key,
+            long          KeyA,
+            long          KeyB,
             byte[]        BinaryA,
             byte[]        BinaryB,
             GalShaderType Type)
         {
+            long Key = KeyB;
+
             if (Stages.TryGetValue(Key, out List<OGLShaderStage> Cache))
             {
                 OGLShaderStage CachedStage = Cache.Find((OGLShaderStage Stage) => Stage.EqualsBinary(BinaryA, BinaryB));
@@ -91,6 +98,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Cache.Add(NewStage);
 
             TopStages[Key] = NewStage;
+
+            if (BinaryA != null)
+            {
+                TopStageSizes[KeyA] = BinaryA.Length;
+            }
+
+            TopStageSizes[KeyB] = BinaryB.Length;
+        }
+
+        public bool TryGetSize(long Key, out long Size)
+        {
+            if (TopStageSizes.TryGetValue(Key, out Size))
+            {
+                return true;
+            }
+
+            Size = 0;
+
+            return false;
         }
 
         public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long Key)

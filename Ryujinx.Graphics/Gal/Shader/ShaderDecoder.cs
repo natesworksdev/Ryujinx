@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.Shader
@@ -138,7 +139,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                long OpCode = ReadQWord(Binary, Position);
+                long OpCode = BitConverter.ToInt64(Binary, (int)Position);
 
                 Position += 8;
 
@@ -198,19 +199,6 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             return Op.Inst != ShaderIrInst.Exit &&
                    Op.Inst != ShaderIrInst.Bra;
-        }
-
-        private static unsafe long ReadQWord(byte[] Bytes, long Position)
-        {
-            if (Position >= Bytes.Length)
-            {
-                throw new System.InvalidOperationException();
-            }
-
-            fixed (byte* Pointer = Bytes)
-            {
-                return *((long*)(Pointer + Position));
-            }
         }
     }
 }

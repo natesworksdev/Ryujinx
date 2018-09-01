@@ -61,11 +61,11 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public unsafe ShaderHeader(byte[] Binary)
         {
-            uint CommonWord0 = ReadWord(Binary, 0);
-            uint CommonWord1 = ReadWord(Binary, 4);
-            uint CommonWord2 = ReadWord(Binary, 8);
-            uint CommonWord3 = ReadWord(Binary, 12);
-            uint CommonWord4 = ReadWord(Binary, 16);
+            uint CommonWord0 = BitConverter.ToUInt32(Binary, 0);
+            uint CommonWord1 = BitConverter.ToUInt32(Binary, 4);
+            uint CommonWord2 = BitConverter.ToUInt32(Binary, 8);
+            uint CommonWord3 = BitConverter.ToUInt32(Binary, 12);
+            uint CommonWord4 = BitConverter.ToUInt32(Binary, 16);
 
             SphType         = ReadBits(CommonWord0,  0, 5);
             Version         = ReadBits(CommonWord0,  5, 5);
@@ -92,8 +92,8 @@ namespace Ryujinx.Graphics.Gal.Shader
             StoreReqEnd          = ReadBits(CommonWord4, 24,  8);
 
             //Type 2 (fragment?) reading
-            uint Type2OmapTarget = ReadWord(Binary, 72);
-            uint Type2Omap       = ReadWord(Binary, 76);
+            uint Type2OmapTarget = BitConverter.ToUInt32(Binary, 72);
+            uint Type2Omap       = BitConverter.ToUInt32(Binary, 76);
 
             OmapTargets = new OmapTarget[8];
 
@@ -133,14 +133,6 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 // Depth register is always two registers after the last color output
                 return Count + 1;
-            }
-        }
-
-        private static unsafe uint ReadWord(byte[] Bytes, long Position)
-        {
-            fixed (byte* Pointer = Bytes)
-            {
-                return *((uint*)(Pointer + Position));
             }
         }
 

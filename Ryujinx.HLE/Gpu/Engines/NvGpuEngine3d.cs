@@ -29,8 +29,6 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private int CurrentInstance = 0;
 
-        private Dictionary<long, long> ShadersSize;
-
         public NvGpuEngine3d(NvGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -70,8 +68,6 @@ namespace Ryujinx.HLE.Gpu.Engines
             {
                 UploadedKeys[i] = new List<long>();
             }
-
-            ShadersSize = new Dictionary<long, long>();
         }
 
         public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
@@ -279,7 +275,7 @@ namespace Ryujinx.HLE.Gpu.Engines
                     byte[] BinaryA = ReadShaderBinary(Vmm, VpAPos); 
                     byte[] BinaryB = ReadShaderBinary(Vmm, VpBPos);
 
-                    Gpu.Renderer.Shader.Create(VpBPos, BinaryA, BinaryB, GalShaderType.Vertex);
+                    Gpu.Renderer.Shader.Create(VpAPos, VpBPos, BinaryA, BinaryB, GalShaderType.Vertex);
                 }
 
                 Gpu.Renderer.Shader.Bind(VpBPos);
@@ -312,7 +308,7 @@ namespace Ryujinx.HLE.Gpu.Engines
                 {
                     byte[] Binary = ReadShaderBinary(Vmm, Key);
 
-                    Gpu.Renderer.Shader.Create(Key, null, Binary, Type);
+                    Gpu.Renderer.Shader.Create(0, Key, null, Binary, Type);
                 }
 
                 Gpu.Renderer.Shader.Bind(Key);
@@ -892,7 +888,7 @@ namespace Ryujinx.HLE.Gpu.Engines
         {
             long Address = Vmm.GetPhysicalAddress(Key);
 
-            if (ShadersSize.TryGetValue(Address, out long Size))
+            if (Gpu.Renderer.Shader.TryGetSize(Address, out long Size))
             {
                 if (!QueryKeyUpload(Vmm, Address, Size, NvGpuBufferType.Shader))
                 {
@@ -908,8 +904,6 @@ namespace Ryujinx.HLE.Gpu.Engines
             long Size = GetShaderSize(Vmm, Key);
 
             long Address = Vmm.GetPhysicalAddress(Key);
-
-            ShadersSize[Address] = Size;
 
             return Vmm.ReadBytes(Key, Size);
         }
