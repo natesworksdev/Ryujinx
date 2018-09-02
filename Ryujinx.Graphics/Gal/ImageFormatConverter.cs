@@ -53,6 +53,7 @@ namespace Ryujinx.Graphics.Gal
                         case GalTextureFormat.BC4:          return GalImageFormat.BC4_UNORM_BLOCK;
                         case GalTextureFormat.BC5:          return GalImageFormat.BC5_UNORM_BLOCK;
                         case GalTextureFormat.Z24S8:        return GalImageFormat.D24_UNORM_S8_UINT;
+                        case GalTextureFormat.ZF32_X24S8:   return GalImageFormat.D32_SFLOAT_S8_UINT;
                         case GalTextureFormat.Astc2D4x4:    return GalImageFormat.ASTC_4x4_UNORM_BLOCK;
                         case GalTextureFormat.Astc2D5x5:    return GalImageFormat.ASTC_5x5_UNORM_BLOCK;
                         case GalTextureFormat.Astc2D6x6:    return GalImageFormat.ASTC_6x6_UNORM_BLOCK;
@@ -75,6 +76,7 @@ namespace Ryujinx.Graphics.Gal
                     {
                         case GalTextureFormat.R32G32B32A32: return GalImageFormat.R32G32B32A32_SINT;
                         case GalTextureFormat.R16G16B16A16: return GalImageFormat.R16G16B16A16_SINT;
+                        case GalTextureFormat.R32G32:       return GalImageFormat.R32G32_SINT;
                         case GalTextureFormat.A8B8G8R8:     return GalImageFormat.A8B8G8R8_SINT_PACK32;
                         case GalTextureFormat.A2B10G10R10:  return GalImageFormat.A2B10G10R10_SINT_PACK32;
                         case GalTextureFormat.R32:          return GalImageFormat.R32_SINT;
@@ -89,6 +91,7 @@ namespace Ryujinx.Graphics.Gal
                     {
                         case GalTextureFormat.R32G32B32A32: return GalImageFormat.R32G32B32A32_UINT;
                         case GalTextureFormat.R16G16B16A16: return GalImageFormat.R16G16B16A16_UINT;
+                        case GalTextureFormat.R32G32:       return GalImageFormat.R32G32_UINT;
                         case GalTextureFormat.A8B8G8R8:     return GalImageFormat.A8B8G8R8_UINT_PACK32;
                         case GalTextureFormat.A2B10G10R10:  return GalImageFormat.A2B10G10R10_UINT_PACK32;
                         case GalTextureFormat.R32:          return GalImageFormat.R32_UINT;
@@ -111,6 +114,7 @@ namespace Ryujinx.Graphics.Gal
                     {
                         case GalTextureFormat.R32G32B32A32: return GalImageFormat.R32G32B32A32_SFLOAT;
                         case GalTextureFormat.R16G16B16A16: return GalImageFormat.R16G16B16A16_SFLOAT;
+                        case GalTextureFormat.R32G32:       return GalImageFormat.R32G32_SFLOAT;
                         case GalTextureFormat.R32:          return GalImageFormat.R32_SFLOAT;
                         case GalTextureFormat.BC6H_SF16:    return GalImageFormat.BC6H_SFLOAT_BLOCK;
                         case GalTextureFormat.BC6H_UF16:    return GalImageFormat.BC6H_UFLOAT_BLOCK;
@@ -121,7 +125,7 @@ namespace Ryujinx.Graphics.Gal
                     break;
             }
 
-            throw new NotImplementedException("0x" + Format.ToString("x2") + " " + Type.ToString());
+            throw new NotImplementedException("0x" + ((int)Format).ToString("x2") + " " + Type.ToString());
         }
 
         public static GalImageFormat ConvertFrameBuffer(GalFrameBufferFormat Format)
@@ -142,6 +146,11 @@ namespace Ryujinx.Graphics.Gal
                 case GalFrameBufferFormat.RG8Snorm:       return GalImageFormat.R8_SNORM;
                 case GalFrameBufferFormat.RGBA8Snorm:     return GalImageFormat.A8B8G8R8_SNORM_PACK32;
                 case GalFrameBufferFormat.RG8Unorm:       return GalImageFormat.R8G8_UNORM;
+                case GalFrameBufferFormat.BGRA8Unorm:     return GalImageFormat.A8B8G8R8_UNORM_PACK32;
+                case GalFrameBufferFormat.BGRA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB_PACK32;
+                case GalFrameBufferFormat.RG32Float:      return GalImageFormat.R32G32_SFLOAT;
+                case GalFrameBufferFormat.RG32Sint:       return GalImageFormat.R32G32_SINT;
+                case GalFrameBufferFormat.RG32Uint:       return GalImageFormat.R32G32_UINT;
             }
 
             throw new NotImplementedException(Format.ToString());
@@ -151,9 +160,10 @@ namespace Ryujinx.Graphics.Gal
         {
             switch (Format)
             {
-                case GalZetaFormat.Z32Float:   return GalImageFormat.D32_SFLOAT;
-                case GalZetaFormat.S8Z24Unorm: return GalImageFormat.D24_UNORM_S8_UINT;
-                case GalZetaFormat.Z16Unorm:   return GalImageFormat.D16_UNORM;
+                case GalZetaFormat.Z32Float:      return GalImageFormat.D32_SFLOAT;
+                case GalZetaFormat.S8Z24Unorm:    return GalImageFormat.D24_UNORM_S8_UINT;
+                case GalZetaFormat.Z16Unorm:      return GalImageFormat.D16_UNORM;
+                case GalZetaFormat.Z32S8X24Float: return GalImageFormat.D32_SFLOAT_S8_UINT;
             }
 
             throw new NotImplementedException(Format.ToString());
@@ -169,6 +179,9 @@ namespace Ryujinx.Graphics.Gal
                 case GalImageFormat.R16G16B16A16_SFLOAT:
                 case GalImageFormat.R16G16B16A16_SINT:
                 case GalImageFormat.R16G16B16A16_UINT:
+                case GalImageFormat.R32G32_SFLOAT:
+                case GalImageFormat.R32G32_SINT:
+                case GalImageFormat.R32G32_UINT:
                 case GalImageFormat.A8B8G8R8_SNORM_PACK32:
                 case GalImageFormat.A8B8G8R8_UNORM_PACK32:
                 case GalImageFormat.A8B8G8R8_SINT_PACK32:
@@ -228,7 +241,8 @@ namespace Ryujinx.Graphics.Gal
                 case GalImageFormat.D24_UNORM_S8_UINT:
                 case GalImageFormat.D32_SFLOAT:
                 case GalImageFormat.D16_UNORM:
-                    return true;
+                case GalImageFormat.D32_SFLOAT_S8_UINT:
+                    return false;
             }
 
             throw new NotImplementedException(Format.ToString());
@@ -241,6 +255,7 @@ namespace Ryujinx.Graphics.Gal
                 case GalImageFormat.D24_UNORM_S8_UINT:
                 case GalImageFormat.D32_SFLOAT:
                 case GalImageFormat.D16_UNORM:
+                case GalImageFormat.D32_SFLOAT_S8_UINT:
                     return true;
             }
 
@@ -254,6 +269,7 @@ namespace Ryujinx.Graphics.Gal
             switch (Format)
             {
                 case GalImageFormat.D24_UNORM_S8_UINT:
+                case GalImageFormat.D32_SFLOAT_S8_UINT:
                     return true;
             }
 

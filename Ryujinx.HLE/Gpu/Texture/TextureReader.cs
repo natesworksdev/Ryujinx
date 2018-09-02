@@ -12,6 +12,7 @@ namespace Ryujinx.HLE.Gpu.Texture
             {
                 case GalTextureFormat.R32G32B32A32: return Read16Bpp                 (Memory, Texture);
                 case GalTextureFormat.R16G16B16A16: return Read8Bpp                  (Memory, Texture);
+                case GalTextureFormat.R32G32:       return Read8Bpp                  (Memory, Texture);
                 case GalTextureFormat.A8B8G8R8:     return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.A2B10G10R10:  return Read4Bpp                  (Memory, Texture);
                 case GalTextureFormat.R32:          return Read4Bpp                  (Memory, Texture);
@@ -32,6 +33,7 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.BC4:          return Read8Bpt4x4               (Memory, Texture);
                 case GalTextureFormat.BC5:          return Read16BptCompressedTexture(Memory, Texture, 4, 4);
                 case GalTextureFormat.ZF32:         return Read4Bpp                  (Memory, Texture);
+                case GalTextureFormat.ZF32_X24S8:   return Read8Bpp                  (Memory, Texture);
                 case GalTextureFormat.Astc2D4x4:    return Read16BptCompressedTexture(Memory, Texture, 4, 4);
                 case GalTextureFormat.Astc2D5x5:    return Read16BptCompressedTexture(Memory, Texture, 5, 5);
                 case GalTextureFormat.Astc2D6x6:    return Read16BptCompressedTexture(Memory, Texture, 6, 6);
@@ -48,7 +50,7 @@ namespace Ryujinx.HLE.Gpu.Texture
                 case GalTextureFormat.Astc2D10x6:   return Read16BptCompressedTexture(Memory, Texture, 10, 6);
              }
 
-            throw new NotImplementedException("0x" + Texture.Format.ToString("x2"));
+            throw new NotImplementedException("0x" + ((int)Texture.Format).ToString("x2"));
         }
 
         private unsafe static byte[] Read1Bpp(IAMemory Memory, TextureInfo Texture)

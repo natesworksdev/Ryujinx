@@ -9,6 +9,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLShader : IGalShader
     {
+        public const int ReservedCbufCount = 1;
+
+        private const int ExtraDataSize = 4;
+
         public OGLShaderProgram Current;
 
         private ConcurrentDictionary<long, OGLShaderStage> Stages;
@@ -96,16 +100,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return Enumerable.Empty<ShaderDeclInfo>();
         }
 
-        public void EnsureTextureBinding(string UniformName, int Value)
-        {
-            BindProgram();
-
-            int Location = GL.GetUniformLocation(CurrentProgramHandle, UniformName);
-
-            GL.Uniform1(Location, Value);
-        }
-
-        public unsafe void SetFlip(float X, float Y)
+        public unsafe void SetExtraData(float FlipX, float FlipY, int Instance)
         {
             BindProgram();
 
@@ -113,14 +108,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.BindBuffer(BufferTarget.UniformBuffer, ExtraUboHandle);
 
-            float* Data = stackalloc float[4];
-            Data[0] = X;
-            Data[1] = Y;
+            float* Data = stackalloc float[ExtraDataSize];
+            Data[0] = FlipX;
+            Data[1] = FlipY;
+            Data[2] = BitConverter.Int32BitsToSingle(Instance);
 
             //Invalidate buffer
-            GL.BufferData(BufferTarget.UniformBuffer, 4 * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
+            GL.BufferData(BufferTarget.UniformBuffer, ExtraDataSize * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
-            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, 4 * sizeof(float), (IntPtr)Data);
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, ExtraDataSize * sizeof(float), (IntPtr)Data);
         }
 
         public void Bind(long Key)
@@ -188,6 +184,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 CheckProgramLink(Handle);
 
                 BindUniformBlocks(Handle);
+                BindTextureLocations(Handle);
 
                 Programs.Add(Current, Handle);
             }
@@ -205,7 +202,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 GL.BindBuffer(BufferTarget.UniformBuffer, ExtraUboHandle);
 
-                GL.BufferData(BufferTarget.UniformBuffer, 4 * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
+                GL.BufferData(BufferTarget.UniformBuffer, ExtraDataSize * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
                 GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, ExtraUboHandle);
             }
@@ -227,8 +224,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.UniformBlockBinding(ProgramHandle, ExtraBlockindex, 0);
 
-            //First index is reserved
-            int FreeBinding = 1;
+            int FreeBinding = ReservedCbufCount;
 
             void BindUniformBlocksIfNotNull(OGLShaderStage Stage)
             {
@@ -256,6 +252,34 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             BindUniformBlocksIfNotNull(Current.TessEvaluation);
             BindUniformBlocksIfNotNull(Current.Geometry);
             BindUniformBlocksIfNotNull(Current.Fragment);
+        }
+
+        private void BindTextureLocations(int ProgramHandle)
+        {
+            int Index = 0;
+
+            void BindTexturesIfNotNull(OGLShaderStage Stage)
+            {
+                if (Stage != null)
+                {
+                    foreach (ShaderDeclInfo Decl in Stage.TextureUsage)
+                    {
+                        int Location = GL.GetUniformLocation(ProgramHandle, Decl.Name);
+
+                        GL.Uniform1(Location, Index);
+
+                        Index++;
+                    }
+                }
+            }
+
+            GL.UseProgram(ProgramHandle);
+
+            BindTexturesIfNotNull(Current.Vertex);
+            BindTexturesIfNotNull(Current.TessControl);
+            BindTexturesIfNotNull(Current.TessEvaluation);
+            BindTexturesIfNotNull(Current.Geometry);
+            BindTexturesIfNotNull(Current.Fragment);
         }
 
         private static void CheckProgramLink(int Handle)

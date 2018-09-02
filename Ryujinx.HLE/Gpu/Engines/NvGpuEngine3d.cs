@@ -27,6 +27,8 @@ namespace Ryujinx.HLE.Gpu.Engines
 
         private List<long>[] UploadedKeys;
 
+        private int CurrentInstance = 0;
+
         public NvGpuEngine3d(NvGpu Gpu)
         {
             this.Gpu = Gpu;
@@ -102,9 +104,14 @@ namespace Ryujinx.HLE.Gpu.Engines
             SetAlphaBlending(State);
             SetPrimitiveRestart(State);
 
-            //Enabling multiple framebuffer attachments cause graphics reggresions
-            SetFrameBuffer(Vmm, 0);
+            for (int FbIndex = 0; FbIndex < 8; FbIndex++)
+            {
+                SetFrameBuffer(Vmm, 0);
+            }
+
             SetZeta(Vmm);
+
+            SetRenderTargets();
 
             long[] Keys = UploadShaders(Vmm);
 
@@ -221,7 +228,7 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
 
             long Key = Vmm.GetPhysicalAddress(ZA);
-            
+
             int Width  = ReadRegister(NvGpuEngine3dReg.ZetaHoriz);
             int Height = ReadRegister(NvGpuEngine3dReg.ZetaVert);
 
@@ -415,6 +422,33 @@ namespace Ryujinx.HLE.Gpu.Engines
             }
         }
 
+        private void SetRenderTargets()
+        {
+            bool SeparateFragData = (ReadRegister(NvGpuEngine3dReg.RTSeparateFragData) & 1) != 0;
+
+            if (SeparateFragData)
+            {
+                uint Control = (uint)(ReadRegister(NvGpuEngine3dReg.RTControl));
+
+                uint Count = Control & 0xf;
+
+                int[] Map = new int[Count];
+
+                for (int i = 0; i < Count; i++)
+                {
+                    int Shift = 4 + i * 3;
+
+                    Map[i] = (int)((Control >> Shift) & 7);
+                }
+
+                Gpu.Renderer.FrameBuffer.SetMap(Map);
+            }
+            else
+            {
+                Gpu.Renderer.FrameBuffer.SetMap(null);
+            }
+        }
+
         private void UploadTextures(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)
         {
             long BaseShPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
@@ -441,8 +475,6 @@ namespace Ryujinx.HLE.Gpu.Engines
                     int TextureHandle = Vmm.ReadInt32(Position + DeclInfo.Index * 4);
 
                     UploadTexture(Vmm, TexIndex, TextureHandle);
-
-                    Gpu.Renderer.Shader.EnsureTextureBinding(DeclInfo.Name, TexIndex);
 
                     TexIndex++;
                 }
@@ -624,9 +656,24 @@ namespace Ryujinx.HLE.Gpu.Engines
                 long VertexPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNAddress + Index * 4);
                 long VertexEndPos   = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNEndAddr + Index * 2);
 
-                long VboKey = Vmm.GetPhysicalAddress(VertexPosition);
+                int VertexDivisor = ReadRegister(NvGpuEngine3dReg.VertexArrayNDivisor + Index * 4);
+
+                bool Instanced = (ReadRegister(NvGpuEngine3dReg.VertexArrayNInstance + Index) & 1) != 0;
 
                 int Stride = Control & 0xfff;
+
+                if (Instanced && VertexDivisor != 0)
+                {
+                    VertexPosition += Stride * (CurrentInstance / VertexDivisor);
+                }
+
+                if (VertexPosition > VertexEndPos)
+                {
+                    //Instance is invalid, ignore the draw call
+                    continue;
+                }
+
+                long VboKey = Vmm.GetPhysicalAddress(VertexPosition);
 
                 long VbSize = (VertexEndPos - VertexPosition) + 1;
 
@@ -639,10 +686,12 @@ namespace Ryujinx.HLE.Gpu.Engines
                     Gpu.Renderer.Rasterizer.CreateVbo(VboKey, (int)VbSize, DataAddress);
                 }
 
-                State.VertexBindings[Index].Enabled = true;
-                State.VertexBindings[Index].Stride  = Stride;
-                State.VertexBindings[Index].VboKey  = VboKey;
-                State.VertexBindings[Index].Attribs = Attribs[Index].ToArray();
+                State.VertexBindings[Index].Enabled   = true;
+                State.VertexBindings[Index].Stride    = Stride;
+                State.VertexBindings[Index].VboKey    = VboKey;
+                State.VertexBindings[Index].Instanced = Instanced;
+                State.VertexBindings[Index].Divisor   = VertexDivisor;
+                State.VertexBindings[Index].Attribs   = Attribs[Index].ToArray();
             }
         }
 
@@ -652,6 +701,25 @@ namespace Ryujinx.HLE.Gpu.Engines
             int PrimCtrl   = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
 
             GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
+
+            bool InstanceNext = ((PrimCtrl >> 26) & 1) != 0;
+            bool InstanceCont = ((PrimCtrl >> 27) & 1) != 0;
+
+            if (InstanceNext && InstanceCont)
+            {
+                throw new InvalidOperationException("GPU tried to increase and reset instance count at the same time");
+            }
+
+            if (InstanceNext)
+            {
+                CurrentInstance++;
+            }
+            else if (!InstanceCont)
+            {
+                CurrentInstance = 0;
+            }
+
+            State.Instance = CurrentInstance;
 
             Gpu.Renderer.Pipeline.Bind(State);
 
@@ -680,22 +748,43 @@ namespace Ryujinx.HLE.Gpu.Engines
             WriteRegister(NvGpuEngine3dReg.IndexBatchCount, 0);
         }
 
+        private enum QueryMode
+        {
+            WriteSeq,
+            Sync,
+            WriteCounterAndTimestamp
+        }
+
         private void QueryControl(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
         {
+            WriteRegister(PBEntry);
+
             long Position = MakeInt64From2xInt32(NvGpuEngine3dReg.QueryAddress);
 
             int Seq  = Registers[(int)NvGpuEngine3dReg.QuerySequence];
             int Ctrl = Registers[(int)NvGpuEngine3dReg.QueryControl];
 
-            int Mode = Ctrl & 3;
+            QueryMode Mode = (QueryMode)(Ctrl & 3);
 
-            if (Mode == 0)
+            switch (Mode)
             {
-                //Write mode.
-                Vmm.WriteInt32(Position, Seq);
-            }
+                case QueryMode.WriteSeq: Vmm.WriteInt32(Position, Seq); break;
 
-            WriteRegister(PBEntry);
+                case QueryMode.WriteCounterAndTimestamp:
+                {
+                    //TODO: Implement counters.
+                    long Counter = 1;
+
+                    long Timestamp = (uint)Environment.TickCount;
+
+                    Timestamp = (long)(Timestamp * 615384.615385);
+
+                    Vmm.WriteInt64(Position + 0, Counter);
+                    Vmm.WriteInt64(Position + 8, Timestamp);
+
+                    break;
+                }
+            }
         }
 
         private void CbData(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)

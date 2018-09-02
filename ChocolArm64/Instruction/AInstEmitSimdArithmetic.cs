@@ -1032,6 +1032,11 @@ namespace ChocolArm64.Instruction
             EmitAddLongPairwise(Context, Signed: true, Accumulate: true);
         }
 
+        public static void Saddl_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Add));
+        }
+
         public static void Saddlp_V(AILEmitterCtx Context)
         {
             EmitAddLongPairwise(Context, Signed: true, Accumulate: false);
@@ -1040,6 +1045,28 @@ namespace ChocolArm64.Instruction
         public static void Saddw_V(AILEmitterCtx Context)
         {
             EmitVectorWidenRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Add));
+        }
+
+        public static void Shadd_V(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpSx(Context, () =>
+            {
+                Context.Emit(OpCodes.Add);
+
+                Context.Emit(OpCodes.Ldc_I4_1);
+                Context.Emit(OpCodes.Shr);
+            });
+        }
+
+        public static void Shsub_V(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpSx(Context, () =>
+            {
+                Context.Emit(OpCodes.Sub);
+
+                Context.Emit(OpCodes.Ldc_I4_1);
+                Context.Emit(OpCodes.Shr);
+            });
         }
 
         public static void Smax_V(AILEmitterCtx Context)
@@ -1181,6 +1208,25 @@ namespace ChocolArm64.Instruction
             EmitVectorSaturatingNarrowOpSxZx(Context, () => { });
         }
 
+        public static void Srhadd_V(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpSx(Context, () =>
+            {
+                Context.Emit(OpCodes.Add);
+
+                Context.Emit(OpCodes.Ldc_I4_1);
+                Context.Emit(OpCodes.Add);
+
+                Context.Emit(OpCodes.Ldc_I4_1);
+                Context.Emit(OpCodes.Shr);
+            });
+        }
+
+        public static void Ssubl_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Sub));
+        }
+
         public static void Ssubw_V(AILEmitterCtx Context)
         {
             EmitVectorWidenRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Sub));
@@ -1303,10 +1349,38 @@ namespace ChocolArm64.Instruction
             {
                 Context.Emit(OpCodes.Add);
 
-                Context.EmitLdc_I4(1);
-
+                Context.Emit(OpCodes.Ldc_I4_1);
                 Context.Emit(OpCodes.Shr_Un);
             });
+        }
+
+        public static void Uhsub_V(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpZx(Context, () =>
+            {
+                Context.Emit(OpCodes.Sub);
+
+                Context.Emit(OpCodes.Ldc_I4_1);
+                Context.Emit(OpCodes.Shr_Un);
+            });
+        }
+
+        public static void Umax_V(AILEmitterCtx Context)
+        {
+            Type[] Types = new Type[] { typeof(ulong), typeof(ulong) };
+
+            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Max), Types);
+
+            EmitVectorBinaryOpZx(Context, () => Context.EmitCall(MthdInfo));
+        }
+
+        public static void Umaxp_V(AILEmitterCtx Context)
+        {
+            Type[] Types = new Type[] { typeof(ulong), typeof(ulong) };
+
+            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Max), Types);
+
+            EmitVectorPairwiseOpZx(Context, () => Context.EmitCall(MthdInfo));
         }
 
         public static void Umin_V(AILEmitterCtx Context)
@@ -1327,22 +1401,22 @@ namespace ChocolArm64.Instruction
             EmitVectorPairwiseOpZx(Context, () => Context.EmitCall(MthdInfo));
         }
 
-        public static void Umax_V(AILEmitterCtx Context)
+        public static void Umlal_V(AILEmitterCtx Context)
         {
-            Type[] Types = new Type[] { typeof(ulong), typeof(ulong) };
-
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Max), Types);
-
-            EmitVectorBinaryOpZx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorWidenRnRmTernaryOpZx(Context, () =>
+            {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Add);
+            });
         }
 
-        public static void Umaxp_V(AILEmitterCtx Context)
+        public static void Umlsl_V(AILEmitterCtx Context)
         {
-            Type[] Types = new Type[] { typeof(ulong), typeof(ulong) };
-
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Max), Types);
-
-            EmitVectorPairwiseOpZx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorWidenRnRmTernaryOpZx(Context, () =>
+            {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Sub);
+            });
         }
 
         public static void Umull_V(AILEmitterCtx Context)
@@ -1380,6 +1454,20 @@ namespace ChocolArm64.Instruction
             EmitVectorSaturatingNarrowOpZxZx(Context, () => { });
         }
 
+        public static void Urhadd_V(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpZx(Context, () =>
+            {
+                Context.Emit(OpCodes.Add);
+
+                Context.Emit(OpCodes.Ldc_I4_1);
+                Context.Emit(OpCodes.Add);
+
+                Context.Emit(OpCodes.Ldc_I4_1);
+                Context.Emit(OpCodes.Shr_Un);
+            });
+        }
+
         public static void Usqadd_S(AILEmitterCtx Context)
         {
             EmitScalarSaturatingBinaryOpZx(Context, SaturatingFlags.Accumulate);
@@ -1388,6 +1476,11 @@ namespace ChocolArm64.Instruction
         public static void Usqadd_V(AILEmitterCtx Context)
         {
             EmitVectorSaturatingBinaryOpZx(Context, SaturatingFlags.Accumulate);
+        }
+
+        public static void Usubl_V(AILEmitterCtx Context)
+        {
+            EmitVectorWidenRnRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
         }
 
         public static void Usubw_V(AILEmitterCtx Context)
