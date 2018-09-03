@@ -30,7 +30,7 @@ namespace ChocolArm64
         {
             CachedSubs = new ConcurrentDictionary<long, ATranslatedSub>();
 
-            AsyncTranslator = new AsyncTier1Translator();
+            AsyncTranslator = AsyncTier1Translator.GetAsyncTranslator();
 
             if (SymbolTable != null)
             {
@@ -96,8 +96,6 @@ namespace ChocolArm64
                     {
                         AsyncTranslator.Enqueue(Position, this, State, Memory);
                     }
-
-                    TranslateTier1(State, Memory, Position);
                 }
 
                 Position = Sub.Execute(State, Memory);

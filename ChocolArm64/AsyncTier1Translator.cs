@@ -28,8 +28,10 @@ namespace ChocolArm64
             }
         }
 
-        Thread Thread;
-        BlockingCollection<QueueObj> Queue = new BlockingCollection<QueueObj>();
+        private Thread Thread;
+        private BlockingCollection<QueueObj> Queue = new BlockingCollection<QueueObj>();
+
+        private static AsyncTier1Translator AsyncTranslator;
 
         public AsyncTier1Translator()
         {
@@ -44,6 +46,16 @@ namespace ChocolArm64
                 QueueObj QObj = Queue.Take();
                 QObj.Translator.TranslateTier1(QObj.State, QObj.Memory, QObj.Position);
             }
+        }
+
+        public static AsyncTier1Translator GetAsyncTranslator()
+        {
+            if (AsyncTranslator == null)
+            {
+                AsyncTranslator = new AsyncTier1Translator();
+            }
+
+            return AsyncTranslator;
         }
 
         public void Enqueue(long Position, ATranslator Translator, AThreadState State, AMemory Memory)
