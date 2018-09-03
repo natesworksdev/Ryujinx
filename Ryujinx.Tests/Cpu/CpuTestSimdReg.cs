@@ -1543,7 +1543,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -1565,7 +1565,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -1587,7 +1587,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQDMULH <V><d>, <V><n>, <V><m>")]
@@ -1609,7 +1609,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQDMULH <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -1631,7 +1631,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQDMULH <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -1653,7 +1653,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQRDMULH <V><d>, <V><n>, <V><m>")]
@@ -1675,7 +1675,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQRDMULH <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -1697,7 +1697,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQRDMULH <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -1719,7 +1719,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQSUB <V><d>, <V><n>, <V><m>")]
@@ -1741,7 +1741,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQSUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -1763,7 +1763,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQSUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -1785,7 +1785,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SRHADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -2575,7 +2575,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("UQADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -2597,7 +2597,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("UQADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -2619,7 +2619,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("UQSUB <V><d>, <V><n>, <V><m>")]
@@ -2641,7 +2641,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("UQSUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -2663,7 +2663,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("UQSUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
@@ -2685,7 +2685,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("URHADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
