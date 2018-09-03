@@ -174,16 +174,33 @@ namespace Ryujinx.Tests.Cpu
             return GetThreadState();
         }
 
-        protected void CompareAgainstUnicorn()
+        [Flags]
+        protected enum FPSR
+        {
+            None = 0,
+
+            /// <summary>Invalid Operation cumulative floating-point exception bit.</summary>
+            IOC = 1 << 0,
+            /// <summary>Divide by Zero cumulative floating-point exception bit.</summary>
+            DZC = 1 << 1,
+            /// <summary>Overflow cumulative floating-point exception bit.</summary>
+            OFC = 1 << 2,
+            /// <summary>Underflow cumulative floating-point exception bit.</summary>
+            UFC = 1 << 3,
+            /// <summary>Inexact cumulative floating-point exception bit.</summary>
+            IXC = 1 << 4,
+            /// <summary>Input Denormal cumulative floating-point exception bit.</summary>
+            IDC = 1 << 7,
+            /// <summary>Cumulative saturation bit.</summary>
+            QC  = 1 << 27
+        }
+
+        protected void CompareAgainstUnicorn(FPSR FpsrMask = FPSR.None)
         {
             if (!UnicornAvailable)
             {
                 return;
             }
-
-            const int QCFlagBit = 27; // Cumulative saturation bit.
-
-            int FpsrMask = 1 << QCFlagBit;
 
             Assert.That(Thread.ThreadState.X0,  Is.EqualTo(UnicornEmu.X[0]));
             Assert.That(Thread.ThreadState.X1,  Is.EqualTo(UnicornEmu.X[1]));
@@ -253,8 +270,8 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(Thread.ThreadState.V31, Is.EqualTo(UnicornEmu.Q[31]));
             Assert.That(Thread.ThreadState.V31, Is.EqualTo(UnicornEmu.Q[31]));
 
-            Assert.That(Thread.ThreadState.Fpcr,            Is.EqualTo(UnicornEmu.Fpcr));
-            Assert.That(Thread.ThreadState.Fpsr & FpsrMask, Is.EqualTo(UnicornEmu.Fpsr & FpsrMask));
+            Assert.That(Thread.ThreadState.Fpcr,                 Is.EqualTo(UnicornEmu.Fpcr));
+            Assert.That(Thread.ThreadState.Fpsr & (int)FpsrMask, Is.EqualTo(UnicornEmu.Fpsr & (int)FpsrMask));
 
             Assert.That(Thread.ThreadState.Overflow, Is.EqualTo(UnicornEmu.OverflowFlag));
             Assert.That(Thread.ThreadState.Carry,    Is.EqualTo(UnicornEmu.CarryFlag));
