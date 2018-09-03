@@ -1,6 +1,6 @@
 using Ryujinx.Graphics.Memory;
 
-namespace Ryujinx.Graphics.Engines
+namespace Ryujinx.Graphics
 {
     delegate void NvGpuMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry);
 }

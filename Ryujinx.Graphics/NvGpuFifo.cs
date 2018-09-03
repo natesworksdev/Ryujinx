@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Memory;
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace Ryujinx.Graphics.Engines
+namespace Ryujinx.Graphics
 {
     public class NvGpuFifo
     {

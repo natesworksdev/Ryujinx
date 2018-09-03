@@ -4,7 +4,7 @@ using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.Graphics.Engines
+namespace Ryujinx.Graphics
 {
     public class NvGpuEngine2d : INvGpuEngine
     {
