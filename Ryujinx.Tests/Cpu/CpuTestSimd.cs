@@ -663,7 +663,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
         [Test, Pairwise, Description("FCVTNS <V><d>, <V><n>")]
@@ -672,15 +672,19 @@ namespace Ryujinx.Tests.Cpu
                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
         {
+            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
+
             uint Opcode = 0x5E61A800; // FCVTNS D0, D0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+
+            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
         [Test, Pairwise, Description("FCVTNS <Vd>.<T>, <Vn>.<T>")]
@@ -690,16 +694,20 @@ namespace Ryujinx.Tests.Cpu
                                    [ValueSource("_2S_F_")] [Random(RndCnt)] ulong A,
                                    [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
+            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
+
             uint Opcode = 0x0E21A800; // FCVTNS V0.2S, V0.2S
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((Q & 1) << 30);
 
+            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
+
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
         [Test, Pairwise, Description("FCVTNS <Vd>.<T>, <Vn>.<T>")]
@@ -708,15 +716,19 @@ namespace Ryujinx.Tests.Cpu
                                 [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
                                 [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
         {
+            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
+
             uint Opcode = 0x4E61A800; // FCVTNS V0.2D, V0.2D
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+
+            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
         [Test, Pairwise, Description("FCVTNU <V><d>, <V><n>")]
@@ -737,7 +749,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
         [Test, Pairwise, Description("FCVTNU <V><d>, <V><n>")]
@@ -746,15 +758,19 @@ namespace Ryujinx.Tests.Cpu
                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
         {
+            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
+
             uint Opcode = 0x7E61A800; // FCVTNU D0, D0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+
+            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
         [Test, Pairwise, Description("FCVTNU <Vd>.<T>, <Vn>.<T>")]
@@ -764,16 +780,20 @@ namespace Ryujinx.Tests.Cpu
                                    [ValueSource("_2S_F_")] [Random(RndCnt)] ulong A,
                                    [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
+            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
+
             uint Opcode = 0x2E21A800; // FCVTNU V0.2S, V0.2S
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((Q & 1) << 30);
 
+            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
+
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
         [Test, Pairwise, Description("FCVTNU <Vd>.<T>, <Vn>.<T>")]
@@ -782,15 +802,19 @@ namespace Ryujinx.Tests.Cpu
                                 [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
                                 [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
         {
+            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
+
             uint Opcode = 0x6E61A800; // FCVTNU V0.2D, V0.2D
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+
+            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
         [Test, Pairwise, Description("NEG <V><d>, <V><n>")]
@@ -1135,7 +1159,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
@@ -1154,7 +1178,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQABS <Vd>.<T>, <Vn>.<T>")]
@@ -1173,7 +1197,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQNEG <V><d>, <V><n>")]
@@ -1192,7 +1216,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
@@ -1211,7 +1235,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQNEG <Vd>.<T>, <Vn>.<T>")]
@@ -1230,7 +1254,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQXTN <Vb><d>, <Va><n>")]
@@ -1249,7 +1273,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1268,7 +1292,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1287,7 +1311,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQXTUN <Vb><d>, <Va><n>")]
@@ -1306,7 +1330,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1325,7 +1349,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SQXTUN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1344,7 +1368,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SUQADD <V><d>, <V><n>")]
@@ -1363,7 +1387,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
@@ -1382,7 +1406,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("SUQADD <Vd>.<T>, <Vn>.<T>")]
@@ -1401,7 +1425,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("UADALP <Vd>.<Ta>, <Vn>.<Tb>")]
@@ -1496,7 +1520,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1515,7 +1539,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("UQXTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
@@ -1534,7 +1558,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("USQADD <V><d>, <V><n>")]
@@ -1553,7 +1577,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
@@ -1572,7 +1596,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("USQADD <Vd>.<T>, <Vn>.<T>")]
@@ -1591,7 +1615,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(FpsrMask: FPSR.QC);
         }
 
         [Test, Pairwise, Description("XTN{2} <Vd>.<Tb>, <Vn>.<Ta>")]
