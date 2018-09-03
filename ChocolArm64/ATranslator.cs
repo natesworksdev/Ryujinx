@@ -7,7 +7,10 @@ using ChocolArm64.Translation;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection.Emit;
+using System.Threading;
 
 namespace ChocolArm64
 {
@@ -21,9 +24,13 @@ namespace ChocolArm64
 
         public bool EnableCpuTrace { get; set; }
 
+        public AsyncTier1Translator AsyncTranslator;
+
         public ATranslator(IReadOnlyDictionary<long, string> SymbolTable = null)
         {
             CachedSubs = new ConcurrentDictionary<long, ATranslatedSub>();
+
+            AsyncTranslator = new AsyncTier1Translator();
 
             if (SymbolTable != null)
             {
@@ -85,6 +92,11 @@ namespace ChocolArm64
 
                 if (Sub.ShouldReJit())
                 {
+                    if (!AsyncTranslator.InTranslation(Position))
+                    {
+                        AsyncTranslator.Enqueue(Position, this, State, Memory);
+                    }
+
                     TranslateTier1(State, Memory, Position);
                 }
 
@@ -142,7 +154,7 @@ namespace ChocolArm64
             return Subroutine;
         }
 
-        private void TranslateTier1(AThreadState State, AMemory Memory, long Position)
+        internal void TranslateTier1(AThreadState State, AMemory Memory, long Position)
         {
             (ABlock[] Graph, ABlock Root) Cfg = ADecoder.DecodeSubroutine(State, this, Memory, Position);
 
