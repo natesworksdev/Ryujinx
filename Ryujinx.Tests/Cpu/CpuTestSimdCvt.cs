@@ -23,7 +23,7 @@ namespace Ryujinx.Tests.Cpu
         [TestCase((ushort)0x0001, 0x33800000u)] // 5.96046448e-8 (Smallest Subnormal)
         public void Fcvtl_V_f16(ushort Value, uint Result)
         {
-            uint Opcode = 0x0E217801;
+            uint Opcode = 0x0E217801; // FCVTL V1.4S, V0.4H
 
             Vector128<float> V0 = Sse.StaticCast<ushort, float>(Sse2.SetAllVector128(Value));
 
