@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.Gpu.Engines
+namespace Ryujinx.Graphics.Engines
 {
     enum NvGpuEngine2dReg
     {

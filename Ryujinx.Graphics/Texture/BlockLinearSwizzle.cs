@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.HLE.Gpu.Texture
+namespace Ryujinx.Graphics.Texture
 {
     class BlockLinearSwizzle : ISwizzle
     {

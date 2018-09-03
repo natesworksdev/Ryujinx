@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.HLE.Gpu.Memory
+namespace Ryujinx.Graphics.Memory
 {
-    static class NvGpuPushBuffer
+    public static class NvGpuPushBuffer
     {
         private enum SubmissionMode
         {

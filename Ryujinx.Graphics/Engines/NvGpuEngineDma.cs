@@ -1,10 +1,10 @@
-using Ryujinx.HLE.Gpu.Memory;
-using Ryujinx.HLE.Gpu.Texture;
+using Ryujinx.Graphics.Memory;
+using Ryujinx.Graphics.Texture;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.Gpu.Engines
+namespace Ryujinx.Graphics.Engines
 {
-    class NvGpuEngineDma : INvGpuEngine
+    public class NvGpuEngineDma : INvGpuEngine
     {
         public int[] Registers { get; private set; }
 

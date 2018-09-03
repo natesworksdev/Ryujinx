@@ -1,8 +1,8 @@
-using Ryujinx.HLE.Gpu.Memory;
+using Ryujinx.Graphics.Memory;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.Gpu.Engines
+namespace Ryujinx.Graphics.Engines
 {
     class MacroInterpreter
     {

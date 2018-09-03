@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.Gpu.Texture
+namespace Ryujinx.Graphics.Texture
 {
     interface ISwizzle
     {

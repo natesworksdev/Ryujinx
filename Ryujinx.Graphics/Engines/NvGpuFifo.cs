@@ -1,10 +1,10 @@
-using Ryujinx.HLE.Gpu.Memory;
+using Ryujinx.Graphics.Memory;
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace Ryujinx.HLE.Gpu.Engines
+namespace Ryujinx.Graphics.Engines
 {
-    class NvGpuFifo
+    public class NvGpuFifo
     {
         private const int MacrosCount    = 0x80;
         private const int MacroIndexMask = MacrosCount - 1;

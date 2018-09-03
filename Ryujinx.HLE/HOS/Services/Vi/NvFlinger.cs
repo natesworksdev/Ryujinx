@@ -1,5 +1,5 @@
 using Ryujinx.Graphics.Gal;
-using Ryujinx.HLE.Gpu.Texture;
+using Ryujinx.Graphics.Texture;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.Nv.NvMap;
 using Ryujinx.HLE.Logging;

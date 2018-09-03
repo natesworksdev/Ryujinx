@@ -1,9 +1,9 @@
 using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
-using Ryujinx.HLE.Gpu.Memory;
+using Ryujinx.Graphics.Memory;
 using System;
 
-namespace Ryujinx.HLE.Gpu.Texture
+namespace Ryujinx.Graphics.Texture
 {
     static class TextureHelper
     {

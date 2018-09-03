@@ -1,9 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
 
-namespace Ryujinx.HLE.Gpu.Memory
+namespace Ryujinx.Graphics.Memory
 {
-    struct NvGpuPBEntry
+    public struct NvGpuPBEntry
     {
         public int Method { get; private set; }
 

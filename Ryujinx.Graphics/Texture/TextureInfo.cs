@@ -1,8 +1,8 @@
 using Ryujinx.Graphics.Gal;
 
-namespace Ryujinx.HLE.Gpu.Texture
+namespace Ryujinx.Graphics.Texture
 {
-    struct TextureInfo
+    public struct TextureInfo
     {
         public long Position { get; private set; }
 

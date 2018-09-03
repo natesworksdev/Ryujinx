@@ -1,6 +1,6 @@
-namespace Ryujinx.HLE.Gpu.Memory
+namespace Ryujinx.Graphics.Memory
 {
-    enum NvGpuBufferType
+    public enum NvGpuBufferType
     {
         Index,
         Vertex,

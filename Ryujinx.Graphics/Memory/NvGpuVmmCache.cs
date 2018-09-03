@@ -1,12 +1,13 @@
 using ChocolArm64.Memory;
-using Ryujinx.HLE.Memory;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.Gpu.Memory
+namespace Ryujinx.Graphics.Memory
 {
     class NvGpuVmmCache
     {
+        private const long RamSize = 4L * 1024 * 1024 * 1024;
+
         private const int MaxCpCount     = 10000;
         private const int MaxCpTimeDelta = 60000;
 
@@ -226,7 +227,7 @@ namespace Ryujinx.HLE.Gpu.Memory
         {
             if (Residency == null)
             {
-                Residency = new HashSet<long>[DeviceMemory.RamSize / PageSize];
+                Residency = new HashSet<long>[RamSize / PageSize];
 
                 for (int i = 0; i < Residency.Length; i++)
                 {

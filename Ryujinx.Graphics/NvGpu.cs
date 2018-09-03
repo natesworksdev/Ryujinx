@@ -1,9 +1,9 @@
 using Ryujinx.Graphics.Gal;
-using Ryujinx.HLE.Gpu.Engines;
+using Ryujinx.Graphics.Engines;
 
-namespace Ryujinx.HLE.Gpu
+namespace Ryujinx.Graphics
 {
-    class NvGpu
+    public class NvGpu
     {
         public IGalRenderer Renderer { get; private set; }
 

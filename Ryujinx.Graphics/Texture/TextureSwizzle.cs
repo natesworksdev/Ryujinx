@@ -1,6 +1,6 @@
-namespace Ryujinx.HLE.Gpu.Texture
+namespace Ryujinx.Graphics.Texture
 {
-    enum TextureSwizzle
+    public enum TextureSwizzle
     {
         _1dBuffer           = 0,
         PitchColorKey       = 1,

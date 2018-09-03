@@ -1,6 +1,6 @@
 using ChocolArm64.Memory;
 
-namespace Ryujinx.HLE.Gpu.Texture
+namespace Ryujinx.Graphics.Texture
 {
     static class TextureWriter
     {

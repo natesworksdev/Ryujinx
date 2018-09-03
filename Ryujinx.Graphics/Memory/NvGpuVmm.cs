@@ -2,9 +2,9 @@ using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
 using System;
 
-namespace Ryujinx.HLE.Gpu.Memory
+namespace Ryujinx.Graphics.Memory
 {
-    class NvGpuVmm : IAMemory, IGalMemory
+    public class NvGpuVmm : IAMemory, IGalMemory
     {
         public const long AddrSize = 1L << 40;
 
