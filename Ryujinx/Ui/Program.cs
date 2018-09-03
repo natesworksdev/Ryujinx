@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
 using System;
+using System.Globalization;
 using System.IO;
 
 namespace Ryujinx
@@ -13,6 +14,9 @@ namespace Ryujinx
         static void Main(string[] args)
         {
             Console.Title = "Ryujinx Console";
+
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             IGalRenderer Renderer = new OGLRenderer();
 
