@@ -4,56 +4,18 @@ using System;
 
 namespace Ryujinx.Graphics.Texture
 {
+    delegate byte[] TextureReaderDelegate(IAMemory Memory, TextureInfo Texture);
+
     public static class TextureReader
     {
         public static byte[] Read(IAMemory Memory, TextureInfo Texture)
         {
-            switch (Texture.Format)
-            {
-                case GalTextureFormat.R32G32B32A32: return Read16Bpp                 (Memory, Texture);
-                case GalTextureFormat.R16G16B16A16: return Read8Bpp                  (Memory, Texture);
-                case GalTextureFormat.R32G32:       return Read8Bpp                  (Memory, Texture);
-                case GalTextureFormat.A8B8G8R8:     return Read4Bpp                  (Memory, Texture);
-                case GalTextureFormat.A2B10G10R10:  return Read4Bpp                  (Memory, Texture);
-                case GalTextureFormat.R32:          return Read4Bpp                  (Memory, Texture);
-                case GalTextureFormat.BF10GF11RF11: return Read4Bpp                  (Memory, Texture);
-                case GalTextureFormat.Z24S8:        return Read4Bpp                  (Memory, Texture);
-                case GalTextureFormat.A1B5G5R5:     return Read5551                  (Memory, Texture);
-                case GalTextureFormat.B5G6R5:       return Read565                   (Memory, Texture);
-                case GalTextureFormat.A4B4G4R4:     return Read2Bpp                  (Memory, Texture);
-                case GalTextureFormat.G8R8:         return Read2Bpp                  (Memory, Texture);
-                case GalTextureFormat.R16:          return Read2Bpp                  (Memory, Texture);
-                case GalTextureFormat.R8:           return Read1Bpp                  (Memory, Texture);
-                case GalTextureFormat.BC6H_SF16:    return Read16BptCompressedTexture(Memory, Texture, 4, 4);
-                case GalTextureFormat.BC6H_UF16:    return Read16BptCompressedTexture(Memory, Texture, 4, 4);
-                case GalTextureFormat.BC7U:         return Read16BptCompressedTexture(Memory, Texture, 4, 4);
-                case GalTextureFormat.BC1:          return Read8Bpt4x4               (Memory, Texture);
-                case GalTextureFormat.BC2:          return Read16BptCompressedTexture(Memory, Texture, 4, 4);
-                case GalTextureFormat.BC3:          return Read16BptCompressedTexture(Memory, Texture, 4, 4);
-                case GalTextureFormat.BC4:          return Read8Bpt4x4               (Memory, Texture);
-                case GalTextureFormat.BC5:          return Read16BptCompressedTexture(Memory, Texture, 4, 4);
-                case GalTextureFormat.ZF32:         return Read4Bpp                  (Memory, Texture);
-                case GalTextureFormat.ZF32_X24S8:   return Read8Bpp                  (Memory, Texture);
-                case GalTextureFormat.Astc2D4x4:    return Read16BptCompressedTexture(Memory, Texture, 4, 4);
-                case GalTextureFormat.Astc2D5x5:    return Read16BptCompressedTexture(Memory, Texture, 5, 5);
-                case GalTextureFormat.Astc2D6x6:    return Read16BptCompressedTexture(Memory, Texture, 6, 6);
-                case GalTextureFormat.Astc2D8x8:    return Read16BptCompressedTexture(Memory, Texture, 8, 8);
-                case GalTextureFormat.Astc2D10x10:  return Read16BptCompressedTexture(Memory, Texture, 10, 10);
-                case GalTextureFormat.Astc2D12x12:  return Read16BptCompressedTexture(Memory, Texture, 12, 12);
-                case GalTextureFormat.Astc2D5x4:    return Read16BptCompressedTexture(Memory, Texture, 5, 4);
-                case GalTextureFormat.Astc2D6x5:    return Read16BptCompressedTexture(Memory, Texture, 6, 5);
-                case GalTextureFormat.Astc2D8x6:    return Read16BptCompressedTexture(Memory, Texture, 8, 6);
-                case GalTextureFormat.Astc2D10x8:   return Read16BptCompressedTexture(Memory, Texture, 10, 8);
-                case GalTextureFormat.Astc2D12x10:  return Read16BptCompressedTexture(Memory, Texture, 12, 10);
-                case GalTextureFormat.Astc2D8x5:    return Read16BptCompressedTexture(Memory, Texture, 8, 5);
-                case GalTextureFormat.Astc2D10x5:   return Read16BptCompressedTexture(Memory, Texture, 10, 5);
-                case GalTextureFormat.Astc2D10x6:   return Read16BptCompressedTexture(Memory, Texture, 10, 6);
-             }
+            TextureReaderDelegate Reader = ImageTable.GetTextureDescriptor(Texture.Format).Reader;
 
-            throw new NotImplementedException("0x" + ((int)Texture.Format).ToString("x2"));
+            return Reader(Memory, Texture);
         }
 
-        private unsafe static byte[] Read1Bpp(IAMemory Memory, TextureInfo Texture)
+        public unsafe static byte[] Read1Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -86,7 +48,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        private unsafe static byte[] Read5551(IAMemory Memory, TextureInfo Texture)
+        public unsafe static byte[] Read5551(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -124,7 +86,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        private unsafe static byte[] Read565(IAMemory Memory, TextureInfo Texture)
+        public unsafe static byte[] Read565(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -161,7 +123,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        private unsafe static byte[] Read2Bpp(IAMemory Memory, TextureInfo Texture)
+        public unsafe static byte[] Read2Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -194,7 +156,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        private unsafe static byte[] Read4Bpp(IAMemory Memory, TextureInfo Texture)
+        public unsafe static byte[] Read4Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -227,7 +189,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        private unsafe static byte[] Read8Bpp(IAMemory Memory, TextureInfo Texture)
+        public unsafe static byte[] Read8Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -260,7 +222,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        private unsafe static byte[] Read16Bpp(IAMemory Memory, TextureInfo Texture)
+        public unsafe static byte[] Read16Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -295,7 +257,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        private unsafe static byte[] Read8Bpt4x4(IAMemory Memory, TextureInfo Texture)
+        public unsafe static byte[] Read8Bpt4x4(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = (Texture.Width  + 3) / 4;
             int Height = (Texture.Height + 3) / 4;
@@ -361,6 +323,76 @@ namespace Ryujinx.Graphics.Texture
             }
 
             return Output;
+        }
+
+        public static byte[] Read16BptCompressedTexture4x4(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 4, 4);
+        }
+
+        public static byte[] Read16BptCompressedTexture5x5(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 5, 5);
+        }
+
+        public static byte[] Read16BptCompressedTexture6x6(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 6, 6);
+        }
+
+        public static byte[] Read16BptCompressedTexture8x8(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 8, 8);
+        }
+
+        public static byte[] Read16BptCompressedTexture10x10(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 10, 10);
+        }
+
+        public static byte[] Read16BptCompressedTexture12x12(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 12, 12);
+        }
+
+        public static byte[] Read16BptCompressedTexture5x4(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 5, 4);
+        }
+
+        public static byte[] Read16BptCompressedTexture6x5(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 6, 5);
+        }
+
+        public static byte[] Read16BptCompressedTexture8x6(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 8, 6);
+        }
+
+        public static byte[] Read16BptCompressedTexture10x8(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 10, 8);
+        }
+
+        public static byte[] Read16BptCompressedTexture12x10(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 12, 10);
+        }
+
+        public static byte[] Read16BptCompressedTexture8x5(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 5, 5);
+        }
+
+        public static byte[] Read16BptCompressedTexture10x5(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 10, 5);
+        }
+
+        public static byte[] Read16BptCompressedTexture10x6(IAMemory Memory, TextureInfo Texture)
+        {
+            return Read16BptCompressedTexture(Memory, Texture, 10, 6);
         }
     }
 }

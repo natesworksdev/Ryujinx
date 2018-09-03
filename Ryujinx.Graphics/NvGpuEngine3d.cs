@@ -158,6 +158,7 @@ namespace Ryujinx.Graphics
             int Stencil = ReadRegister(NvGpuEngine3dReg.ClearStencil);
 
             SetFrameBuffer(Vmm, FbIndex);
+
             SetZeta(Vmm);
 
             Gpu.Renderer.Rasterizer.ClearBuffers(
@@ -200,13 +201,14 @@ namespace Ryujinx.Graphics
             int VpW = (int)(TX + MathF.Abs(SX)) - VpX;
             int VpH = (int)(TY + MathF.Abs(SY)) - VpY;
 
-            GalImageFormat ImageFormat = ImageFormatConverter.ConvertFrameBuffer((GalFrameBufferFormat)Format);
+            GalImageFormat ImageFormat = ImageTable.ConvertFrameBuffer((GalFrameBufferFormat)Format);
 
             GalImage Image = new GalImage(Width, Height, ImageFormat);
 
-            long Size = TextureHelper.GetTextureSize(Image);
+            long Size = ImageTable.GetImageSize(Image);
 
             Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
+
             Gpu.Renderer.FrameBuffer.BindColor(Key, FbIndex);
 
             Gpu.Renderer.FrameBuffer.SetViewport(VpX, VpY, VpW, VpH);
@@ -232,13 +234,14 @@ namespace Ryujinx.Graphics
             int Width  = ReadRegister(NvGpuEngine3dReg.ZetaHoriz);
             int Height = ReadRegister(NvGpuEngine3dReg.ZetaVert);
 
-            GalImageFormat ImageFormat = ImageFormatConverter.ConvertZeta((GalZetaFormat)Format);
+            GalImageFormat ImageFormat = ImageTable.ConvertZeta((GalZetaFormat)Format);
 
             GalImage Image = new GalImage(Width, Height, ImageFormat);
 
-            long Size = TextureHelper.GetTextureSize(Image);
+            long Size = ImageTable.GetImageSize(Image);
 
             Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
+
             Gpu.Renderer.FrameBuffer.BindZeta(Key);
         }
 
@@ -525,7 +528,7 @@ namespace Ryujinx.Graphics
             {
                 GalImage NewImage = TextureFactory.MakeTexture(Vmm, TicPosition);
 
-                long Size = (uint)TextureHelper.GetTextureSize(NewImage);
+                long Size = (uint)ImageTable.GetImageSize(NewImage);
 
                 bool HasCachedTexture = false;
 

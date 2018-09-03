@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Texture
             GalTextureType BType = (GalTextureType)((Tic[0] >> 13) & 7);
             GalTextureType AType = (GalTextureType)((Tic[0] >> 16) & 7);
 
-            GalImageFormat Format = ImageFormatConverter.ConvertTexture((GalTextureFormat)(Tic[0] & 0x7f), RType, GType, BType, AType);
+            GalImageFormat Format = ImageTable.ConvertTexture((GalTextureFormat)(Tic[0] & 0x7f), RType, GType, BType, AType);
 
             GalTextureSource XSource = (GalTextureSource)((Tic[0] >> 19) & 7);
             GalTextureSource YSource = (GalTextureSource)((Tic[0] >> 22) & 7);

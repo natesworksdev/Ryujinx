@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using Ryujinx.Graphics.Texture;
 using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
@@ -117,8 +118,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public bool HasColor   { get => ImageFormatConverter.HasColor(Format); }
-        public bool HasDepth   { get => ImageFormatConverter.HasDepth(Format); }
-        public bool HasStencil { get => ImageFormatConverter.HasStencil(Format); }
+        public bool HasColor   { get => ImageTable.HasColor(Image); }
+        public bool HasDepth   { get => ImageTable.HasDepth(Image); }
+        public bool HasStencil { get => ImageTable.HasStencil(Image); }
     }
 }
