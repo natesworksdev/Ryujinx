@@ -88,7 +88,7 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(Sse41.Extract(GetThreadState().V0, 0), Is.EqualTo(16f));
+            Assert.That(Sse41.Extract(GetThreadState().V0, (byte)0), Is.EqualTo(16f));
         }
 
         [TestCase(-20d,  -5d)] // 18 integer solutions.
@@ -137,7 +137,7 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(VectorExtractDouble(GetThreadState().V0, 0), Is.EqualTo(16d));
+            Assert.That(VectorExtractDouble(GetThreadState().V0, (byte)0), Is.EqualTo(16d));
         }
 
         [Test]
