@@ -71,6 +71,11 @@ namespace Ryujinx.HLE
             System.LoadNca(NcaFile);
         }
 
+        public void LoadNsp(string NspFile)
+        {
+            System.LoadNsp(NspFile);
+        }
+
         public void LoadProgram(string FileName)
         {
             System.LoadProgram(FileName);

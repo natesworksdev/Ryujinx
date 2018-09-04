@@ -60,6 +60,10 @@ namespace Ryujinx
                             Console.WriteLine("Loading as NCA.");
                             Device.LoadNca(args[0]);
                             break;
+                        case ".nsp":
+                            Console.WriteLine("Loading as NSP.");
+                            Device.LoadNsp(args[0]);
+                            break;
                         default:
                             Console.WriteLine("Loading as homebrew.");
                             Device.LoadProgram(args[0]);

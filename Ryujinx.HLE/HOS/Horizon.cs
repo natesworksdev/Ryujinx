@@ -164,6 +164,45 @@ namespace Ryujinx.HLE.HOS
             LoadNca(Nca);
         }
 
+        public void LoadNsp(string NspFile)
+        {
+            FileStream File = new FileStream(NspFile, FileMode.Open, FileAccess.Read);
+            Pfs Nsp = new Pfs(File);
+
+            Nca ProgramNca = null;
+
+            PfsFileEntry TicketFile = Nsp.Files.FirstOrDefault(x => x.Name.EndsWith(".tik"));
+
+            // Load title key from the NSP's ticket in case the user doesn't have a title key file
+            if (TicketFile != null)
+            {
+                // todo Change when Ticket(Stream) overload is added
+                BinaryReader TicketReader = new BinaryReader(Nsp.OpenFile(TicketFile));
+                Ticket Ticket = new Ticket(TicketReader);
+
+                byte[] TitleKey = Ticket.GetTitleKey(Keyset);
+                Keyset.TitleKeys[Ticket.RightsId] = TitleKey;
+            }
+
+            foreach (PfsFileEntry NcaFile in Nsp.Files.Where(x => x.Name.EndsWith(".nca")))
+            {
+                Nca Nca = new Nca(Keyset, Nsp.OpenFile(NcaFile), true);
+
+                if (Nca.Header.ContentType == ContentType.Program)
+                {
+                    ProgramNca = Nca;
+                    break;
+                }
+            }
+
+            if (ProgramNca == null)
+            {
+                Device.Log.PrintError(LogClass.Loader, "Could not find program NCA inside NSP file");
+            }
+
+            LoadNca(ProgramNca);
+        }
+
         public void LoadNca(Nca Nca)
         {
             NcaSection RomfsSection = Nca.Sections.FirstOrDefault(x => x.Type == SectionType.Romfs);
