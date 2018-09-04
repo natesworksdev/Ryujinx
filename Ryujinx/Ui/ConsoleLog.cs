@@ -9,7 +9,9 @@ namespace Ryujinx
     static class ConsoleLog
     {
         private static Thread MessageThread;
+
         private static BlockingCollection<LogEventArgs> MessageQueue;
+
         private static Dictionary<LogLevel, ConsoleColor> LogColors;
 
         private static object ConsoleLock;
@@ -54,7 +56,9 @@ namespace Ryujinx
         private static void PrintLog(LogEventArgs e)
         {
             string FormattedTime = e.Time.ToString(@"hh\:mm\:ss\.fff");
+
             string CurrentThread = Thread.CurrentThread.ManagedThreadId.ToString("d4");
+            
             string Message = FormattedTime + " | " + CurrentThread + " " + e.Message;
 
             if (LogColors.TryGetValue(e.Level, out ConsoleColor Color))
