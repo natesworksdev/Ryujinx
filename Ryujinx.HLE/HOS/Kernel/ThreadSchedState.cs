@@ -5,6 +5,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         LowNibbleMask   = 0xf,
         HighNibbleMask  = 0xf0,
         ExceptionalMask = 0x70,
+        ForcePauseFlag  = 0x20,
 
         None               = 0,
         Paused             = 1,

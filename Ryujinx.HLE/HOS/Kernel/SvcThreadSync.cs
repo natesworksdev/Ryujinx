@@ -7,8 +7,6 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {
-        private const int MutexHasListenersMask = 0x40000000;
-
         private void SvcWaitSynchronization(AThreadState ThreadState)
         {
             long HandlesPtr   = (long)ThreadState.X1;
@@ -64,6 +62,8 @@ namespace Ryujinx.HLE.HOS.Kernel
         private void SvcCancelSynchronization(AThreadState ThreadState)
         {
             int ThreadHandle = (int)ThreadState.X0;
+
+            Device.Log.PrintDebug(LogClass.KernelSvc, "ThreadHandle = 0x" + ThreadHandle.ToString("x8"));
 
             KThread Thread = Process.HandleTable.GetData<KThread>(ThreadHandle);
 

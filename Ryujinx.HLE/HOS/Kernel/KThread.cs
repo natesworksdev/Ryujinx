@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         public long MutexAddress       { get; set; }
         public long ArbiterWaitAddress { get; set; }
 
-        private Process Owner;
+        public Process Owner { get; private set; }
 
         private long LastScheduledTicks;
 
@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public int ThreadHandleForUserMutex { get; set; }
 
-        private ThreadSchedState ExceptionalSchedFlags;
+        private ThreadSchedState ForcePauseFlags;
 
         public int ObjSyncResult { get; set; }
 
@@ -115,11 +115,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                         break;
                     }
 
-                    if (CurrentThread.ExceptionalSchedFlags == ThreadSchedState.None)
+                    if (CurrentThread.ForcePauseFlags == ThreadSchedState.None)
                     {
-                        if (Owner != null && ExceptionalSchedFlags != ThreadSchedState.None)
+                        if (Owner != null && ForcePauseFlags != ThreadSchedState.None)
                         {
-                            CombineExceptionalSchedFlags();
+                            CombineForcePauseFlags();
                         }
 
                         SetNewSchedFlags(ThreadSchedState.Running);
@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     }
                     else
                     {
-                        CurrentThread.CombineExceptionalSchedFlags();
+                        CurrentThread.CombineForcePauseFlags();
 
                         System.CriticalSectionLock.Unlock();
                         System.CriticalSectionLock.Lock();
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             System.CriticalSectionLock.Lock();
 
-            ExceptionalSchedFlags &= ~ThreadSchedState.ExceptionalMask;
+            ForcePauseFlags &= ~ThreadSchedState.ExceptionalMask;
 
             ExitImpl();
 
@@ -411,11 +411,47 @@ namespace Ryujinx.HLE.HOS.Kernel
             System.CriticalSectionLock.Unlock();
         }
 
+        public long SetActivity(bool Active)
+        {
+            System.CriticalSectionLock.Lock();
+
+            if (SchedFlags == ThreadSchedState.TerminationPending ||
+                (SchedFlags & ThreadSchedState.HighNibbleMask) != 0)
+            {
+                System.CriticalSectionLock.Unlock();
+
+                return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+            }
+
+            System.CriticalSectionLock.Lock();
+
+            if (!ShallBeTerminated && SchedFlags != ThreadSchedState.TerminationPending)
+            {
+                if (Active)
+                {
+                    ForcePauseFlags &= ~ThreadSchedState.ForcePauseFlag;
+
+                    UncombineForcePauseFlags();
+                }
+                else
+                {
+                    ForcePauseFlags |= ThreadSchedState.ForcePauseFlag;
+
+                    CombineForcePauseFlags();
+                }
+            }
+
+            System.CriticalSectionLock.Unlock();
+            System.CriticalSectionLock.Unlock();
+
+            return 0;
+        }
+
         public void CancelSynchronization()
         {
             System.CriticalSectionLock.Lock();
 
-            if ((SchedFlags & ThreadSchedState.LowNibbleMask) == ThreadSchedState.Paused || !WaitingSync)
+            if ((SchedFlags & ThreadSchedState.LowNibbleMask) != ThreadSchedState.Paused || !WaitingSync)
             {
                 SyncCancelled = true;
             }
@@ -511,14 +547,27 @@ namespace Ryujinx.HLE.HOS.Kernel
             return 64;
         }
 
-        private void CombineExceptionalSchedFlags()
+        private void CombineForcePauseFlags()
         {
             ThreadSchedState OldStat   = SchedFlags;
             ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowNibbleMask;
 
-            SchedFlags = LowNibble | ExceptionalSchedFlags;
+            SchedFlags = LowNibble | ForcePauseFlags;
 
             AdjustScheduling(OldStat);
+        }
+
+        private void UncombineForcePauseFlags()
+        {
+            ThreadSchedState OldStat   = SchedFlags;
+            ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowNibbleMask;
+
+            SchedFlags = LowNibble;
+
+            if (ForcePauseFlags != ThreadSchedState.None)
+            {
+                AdjustScheduling(OldStat);
+            }
         }
 
         private void SetNewSchedFlags(ThreadSchedState NewFlags)
@@ -555,16 +604,16 @@ namespace Ryujinx.HLE.HOS.Kernel
             System.CriticalSectionLock.Unlock();
         }
 
-        public void Reschedule(ThreadSchedState NewStat)
+        public void Reschedule(ThreadSchedState NewFlags)
         {
             System.CriticalSectionLock.Lock();
 
-            ThreadSchedState OldStat = SchedFlags;
+            ThreadSchedState OldFlags = SchedFlags;
 
-            SchedFlags = (OldStat & ThreadSchedState.HighNibbleMask) |
-                        (NewStat & ThreadSchedState.LowNibbleMask);
+            SchedFlags = (OldFlags & ThreadSchedState.HighNibbleMask) |
+                         (NewFlags & ThreadSchedState.LowNibbleMask);
 
-            AdjustScheduling(OldStat);
+            AdjustScheduling(OldFlags);
 
             System.CriticalSectionLock.Unlock();
         }
@@ -574,6 +623,18 @@ namespace Ryujinx.HLE.HOS.Kernel
             AddToMutexWaitersList(Requester);
 
             Requester.MutexOwner = this;
+
+            UpdatePriorityInheritance();
+        }
+
+        public void RemoveMutexWaiter(KThread Thread)
+        {
+            if (Thread.MutexWaiterNode?.List != null)
+            {
+                MutexWaiters.Remove(Thread.MutexWaiterNode);
+            }
+
+            Thread.MutexOwner = null;
 
             UpdatePriorityInheritance();
         }
@@ -644,18 +705,6 @@ namespace Ryujinx.HLE.HOS.Kernel
             return NewMutexOwner;
         }
 
-        public void TransferMutexTo(KThread NewOwner)
-        {
-            if (NewOwner.MutexWaiterNode.List != null)
-            {
-                NewOwner.MutexWaiterNode.List.Remove(NewOwner.MutexWaiterNode);
-            }
-
-            NewOwner.MutexOwner = null;
-
-            UpdatePriorityInheritance();
-        }
-
         private void UpdatePriorityInheritance()
         {
             //If any of the threads waiting for the mutex has
@@ -684,7 +733,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 if (MutexOwner != null)
                 {
                     //Remove and re-insert to ensure proper sorting based on new priority.
-                    MutexWaiterNode.List.Remove(MutexWaiterNode);
+                    MutexOwner.MutexWaiters.Remove(MutexWaiterNode);
 
                     MutexOwner.AddToMutexWaitersList(this);
                 }
@@ -712,14 +761,14 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private void AdjustScheduling(ThreadSchedState OldStat)
+        private void AdjustScheduling(ThreadSchedState OldFlags)
         {
-            if (OldStat == SchedFlags)
+            if (OldFlags == SchedFlags)
             {
                 return;
             }
 
-            if (OldStat == ThreadSchedState.Running)
+            if (OldFlags == ThreadSchedState.Running)
             {
                 //Was running, now it's stopped.
                 if (CurrentCore >= 0)

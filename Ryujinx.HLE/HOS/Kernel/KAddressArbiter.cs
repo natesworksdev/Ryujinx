@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (CurrentThread.MutexOwner != null)
             {
-                CurrentThread.MutexOwner.TransferMutexTo(CurrentThread);
+                CurrentThread.MutexOwner.RemoveMutexWaiter(CurrentThread);
             }
 
             System.CriticalSectionLock.Unlock();
@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (CurrentThread.MutexOwner != null)
             {
-                CurrentThread.MutexOwner.TransferMutexTo(CurrentThread);
+                CurrentThread.MutexOwner.RemoveMutexWaiter(CurrentThread);
             }
 
             CondVarThreads.Remove(CurrentThread);
@@ -204,7 +204,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private KThread TryAcquireMutex(Process Process, AMemory Memory, KThread Requester)
         {
-            int Core = Requester.CurrentCore;
+            //TODO: Use correct core number of find a better way to do that.
+            int Core = 0;
 
             long Address = Requester.MutexAddress;
 
@@ -212,7 +213,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             int MutexValue = Memory.ReadInt32(Address);
 
-            while (MutexValue != 0)
+            while (true)
             {
                 if (Memory.TestExclusive(Core, Address))
                 {

@@ -269,22 +269,36 @@ namespace Ryujinx.HLE.HOS.Kernel
         private void SvcSetThreadActivity(AThreadState ThreadState)
         {
             int  Handle = (int)ThreadState.X0;
-            bool Active = (int)ThreadState.X1 == 0;
+            bool Active = (int)ThreadState.X1 == 1;
 
             KThread Thread = Process.HandleTable.GetData<KThread>(Handle);
 
-            if (Thread != null)
-            {
-                //TODO: Implement.
-
-                ThreadState.X0 = 0;
-            }
-            else
+            if (Thread == null)
             {
                 Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+
+                return;
             }
+
+            if (Thread.Owner != Process)
+            {
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread owner process!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+
+                return;
+            }
+
+            long Result = Thread.SetActivity(Active);
+
+            if (Result != 0)
+            {
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+            }
+
+            ThreadState.X0 = (ulong)Result;
         }
 
         private void SvcGetThreadContext3(AThreadState ThreadState)

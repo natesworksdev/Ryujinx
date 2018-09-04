@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void PreemptCurrentThread()
         {
-            //Preempts current thread every 10 seconds on a round-robin fashion,
+            //Preempts current thread every 10 milliseconds on a round-robin fashion,
             //when multi core scheduling is disabled, to try ensuring that all threads
             //gets a chance to run.
             while (KeepPreempting)
