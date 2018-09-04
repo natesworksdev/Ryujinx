@@ -125,75 +125,74 @@ namespace Ryujinx.HLE.HOS
             MainProcess.Run();
         }
 
-        public void LoadXci(string xciFile)
+        public void LoadXci(string XciFile)
         {
-            var file = new FileStream(xciFile, FileMode.Open, FileAccess.Read);
-            var xci = new Xci(Keyset, file);
-            var nca = GetXciMainNca(xci);
-            LoadNca(nca);
+            FileStream File = new FileStream(XciFile, FileMode.Open, FileAccess.Read);
+            Xci Xci = new Xci(Keyset, File);
+            Nca Nca = GetXciMainNca(Xci);
+            LoadNca(Nca);
         }
 
-        private Nca GetXciMainNca(Xci xci)
+        private Nca GetXciMainNca(Xci Xci)
         {
-            if (xci.SecurePartition == null)
+            if (Xci.SecurePartition == null)
             {
                 Device.Log.PrintError(LogClass.Loader, "Could not find XCI secure partition");
                 return null;
             }
 
-            Nca mainNca = null;
+            Nca MainNca = null;
 
-            foreach (var fileEntry in xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
+            foreach (PfsFileEntry FileEntry in Xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
             {
-                var ncaStream = xci.SecurePartition.OpenFile(fileEntry);
-                var nca = new Nca(Keyset, ncaStream, true);
+                Stream NcaStream = Xci.SecurePartition.OpenFile(FileEntry);
+                Nca Nca = new Nca(Keyset, NcaStream, true);
 
-                if (nca.Header.ContentType == ContentType.Program)
+                if (Nca.Header.ContentType == ContentType.Program)
                 {
-                    mainNca = nca;
+                    MainNca = Nca;
                 }
             }
 
-            return mainNca;
+            return MainNca;
         }
 
-        public void LoadNca(string ncaFile)
+        public void LoadNca(string NcaFile)
         {
-            var file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
-            var nca = new Nca(Keyset, file, true);
-            LoadNca(nca);
+            FileStream File = new FileStream(NcaFile, FileMode.Open, FileAccess.Read);
+            Nca Nca = new Nca(Keyset, File, true);
+            LoadNca(Nca);
         }
 
-        public void LoadNca(Nca nca)
+        public void LoadNca(Nca Nca)
         {
-            NcaSection romfsSection = nca.Sections.FirstOrDefault(x => x.Type == SectionType.Romfs);
-            NcaSection exefsSection = nca.Sections.FirstOrDefault(x => x.IsExefs);
+            NcaSection RomfsSection = Nca.Sections.FirstOrDefault(x => x.Type == SectionType.Romfs);
+            NcaSection ExefsSection = Nca.Sections.FirstOrDefault(x => x.IsExefs);
 
-            if (exefsSection == null)
+            if (ExefsSection == null)
             {
                 Device.Log.PrintError(LogClass.Loader, "No ExeFS found in NCA");
                 return;
             }
 
-            if (romfsSection == null)
+            if (RomfsSection == null)
             {
                 Device.Log.PrintError(LogClass.Loader, "No RomFS found in NCA");
                 return;
             }
 
-            var romfsStream = nca.OpenSection(romfsSection.SectionNum, false);
-            Device.FileSystem.SetRomFs(romfsStream);
+            Stream RomfsStream = Nca.OpenSection(RomfsSection.SectionNum, false);
+            Device.FileSystem.SetRomFs(RomfsStream);
 
-            var exefsStream = nca.OpenSection(exefsSection.SectionNum, false);
-            var exefs = new Pfs(exefsStream);
+            Stream ExefsStream = Nca.OpenSection(ExefsSection.SectionNum, false);
+            Pfs Exefs = new Pfs(ExefsStream);
 
             Npdm MetaData = null;
 
-            if (exefs.FileExists("main.npdm"))
+            if (Exefs.FileExists("main.npdm"))
             {
                 Device.Log.PrintInfo(LogClass.Loader, "Loading main.npdm...");
-                MetaData = new Npdm(exefs.OpenFile("main.npdm"));
-
+                MetaData = new Npdm(Exefs.OpenFile("main.npdm"));
             }
             else
             {
@@ -202,20 +201,20 @@ namespace Ryujinx.HLE.HOS
 
             Process MainProcess = MakeProcess(MetaData);
 
-            void LoadNso(string filename)
+            void LoadNso(string Filename)
             {
-                foreach (var File in exefs.Files.Where(x => x.Name.StartsWith(filename)))
+                foreach (PfsFileEntry File in Exefs.Files.Where(x => x.Name.StartsWith(Filename)))
                 {
                     if (Path.GetExtension(File.Name) != string.Empty)
                     {
                         continue;
                     }
 
-                    Device.Log.PrintInfo(LogClass.Loader, $"Loading {filename}...");
+                    Device.Log.PrintInfo(LogClass.Loader, $"Loading {Filename}...");
 
                     string Name = Path.GetFileNameWithoutExtension(File.Name);
 
-                    Nso Program = new Nso(exefs.OpenFile(File), Name);
+                    Nso Program = new Nso(Exefs.OpenFile(File), Name);
 
                     MainProcess.LoadProgram(Program);
                 }
@@ -276,10 +275,10 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadDefaultKeyset()
         {
-            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var homeKeyFile = Path.Combine(home, ".switch", "prod.keys");
-            var homeTitleKeyFile = Path.Combine(home, ".switch", "title.keys");
-            var homeConsoleKeyFile = Path.Combine(home, ".switch", "console.keys");
+            string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string homeKeyFile = Path.Combine(home, ".switch", "prod.keys");
+            string homeTitleKeyFile = Path.Combine(home, ".switch", "title.keys");
+            string homeConsoleKeyFile = Path.Combine(home, ".switch", "console.keys");
 
             string keyFile = null;
             string titleKeyFile = null;
