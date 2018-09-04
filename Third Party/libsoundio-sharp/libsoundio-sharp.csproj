@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\libsoundio-sharp\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".gitignore" />
+    <None Remove=".gitversion" />
+    <None Remove="LICENSE" />
+    <None Remove="README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="libs\libsoundio.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.dll</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="libs\libsoundio.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.dylib</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="libs\libsoundio.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.so</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+</Project>

@@ -23,6 +23,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luea", "Ryujinx.LLE\Luea.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Common", "Ryujinx.Common\Ryujinx.Common.csproj", "{5FD4E4F6-8928-4B3C-BE07-28A675C17226}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "libsoundio-sharp", "Third Party\libsoundio-sharp\libsoundio-sharp.csproj", "{E8B7DCD3-A2C8-4274-A260-BBBF1B842703}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Third Party", "Third Party", "{16D8E2A1-0D12-4315-945E-CABC15B3616D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,9 +73,16 @@ Global
 		{5FD4E4F6-8928-4B3C-BE07-28A675C17226}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FD4E4F6-8928-4B3C-BE07-28A675C17226}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FD4E4F6-8928-4B3C-BE07-28A675C17226}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8B7DCD3-A2C8-4274-A260-BBBF1B842703}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8B7DCD3-A2C8-4274-A260-BBBF1B842703}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8B7DCD3-A2C8-4274-A260-BBBF1B842703}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8B7DCD3-A2C8-4274-A260-BBBF1B842703}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E8B7DCD3-A2C8-4274-A260-BBBF1B842703} = {16D8E2A1-0D12-4315-945E-CABC15B3616D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {110169B3-3328-4730-8AB0-BA05BEF75C1A}
