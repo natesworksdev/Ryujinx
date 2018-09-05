@@ -8,17 +8,21 @@ namespace Ryujinx.Graphics.Texture
     {
         struct ImageDescriptor
         {
+            public TextureReaderDelegate Reader;
+
             public bool HasColor;
             public bool HasDepth;
             public bool HasStencil;
 
             public ImageDescriptor(
-                bool HasColor,
-                bool HasDepth,
-                bool HasStencil)
+                TextureReaderDelegate Reader,
+                bool                  HasColor,
+                bool                  HasDepth,
+                bool                  HasStencil)
             {
-                this.HasColor = HasColor;
-                this.HasDepth = HasDepth;
+                this.Reader     = Reader;
+                this.HasColor   = HasColor;
+                this.HasDepth   = HasDepth;
                 this.HasStencil = HasStencil;
             }
         }
@@ -29,97 +33,96 @@ namespace Ryujinx.Graphics.Texture
         private const GalImageFormat Uint   = GalImageFormat.Uint;
         private const GalImageFormat Sfloat = GalImageFormat.Sfloat;
 
-        private static readonly Dictionary<GalTextureFormat, TextureDescriptor> s_TextureTable =
-            new Dictionary<GalTextureFormat, TextureDescriptor>()
+        private static readonly Dictionary<GalTextureFormat, GalImageFormat> s_TextureTable =
+                            new Dictionary<GalTextureFormat, GalImageFormat>()
             {
-                { GalTextureFormat.R32G32B32A32, new TextureDescriptor(TextureReader.Read16Bpp, GalImageFormat.R32G32B32A32                 | Sint | Uint | Sfloat) },
-                { GalTextureFormat.R16G16B16A16, new TextureDescriptor(TextureReader.Read8Bpp,  GalImageFormat.R16G16B16A16 | Snorm | Unorm | Sint | Uint | Sfloat) },
-                { GalTextureFormat.R32G32,       new TextureDescriptor(TextureReader.Read8Bpp,  GalImageFormat.R32G32                       | Sint | Uint | Sfloat) },
-                { GalTextureFormat.A8B8G8R8,     new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.A8B8G8R8     | Snorm | Unorm | Sint | Uint         ) },
-                { GalTextureFormat.A2B10G10R10,  new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.A2B10G10R10  | Snorm | Unorm | Sint | Uint         ) },
-                { GalTextureFormat.G8R8,         new TextureDescriptor(TextureReader.Read2Bpp,  GalImageFormat.R8G8         | Snorm | Unorm | Sint | Uint         ) },
-                { GalTextureFormat.R16,          new TextureDescriptor(TextureReader.Read2Bpp,  GalImageFormat.R16          | Snorm | Unorm | Sint | Uint | Sfloat) },
-                { GalTextureFormat.R8,           new TextureDescriptor(TextureReader.Read1Bpp,  GalImageFormat.R8           | Snorm | Unorm | Sint | Uint         ) },
-                { GalTextureFormat.R32,          new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.R32                          | Sint | Uint | Sfloat) },
-                //TODO: Reverse this one in the reader
-                { GalTextureFormat.A4B4G4R4,     new TextureDescriptor(TextureReader.Read2Bpp,  GalImageFormat.R4G4B4A4_REVERSED    | Unorm                       ) },
-                { GalTextureFormat.A1B5G5R5,     new TextureDescriptor(TextureReader.Read5551,  GalImageFormat.A1R5G5B5             | Unorm                       ) },
-                { GalTextureFormat.B5G6R5,       new TextureDescriptor(TextureReader.Read565,   GalImageFormat.B5G6R5               | Unorm                       ) },
-                { GalTextureFormat.BF10GF11RF11, new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.B10G11R11                                  | Sfloat) },
-                { GalTextureFormat.Z24S8,        new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.D24_S8               | Unorm                       ) },
-                { GalTextureFormat.ZF32,         new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.D32                                        | Sfloat) },
-                { GalTextureFormat.ZF32_X24S8,   new TextureDescriptor(TextureReader.Read8Bpp,  GalImageFormat.D32_S8               | Unorm                       ) },
+                { GalTextureFormat.R32G32B32A32, GalImageFormat.R32G32B32A32                 | Sint | Uint | Sfloat },
+                { GalTextureFormat.R16G16B16A16, GalImageFormat.R16G16B16A16 | Snorm | Unorm | Sint | Uint | Sfloat },
+                { GalTextureFormat.R32G32,       GalImageFormat.R32G32                       | Sint | Uint | Sfloat },
+                { GalTextureFormat.A8B8G8R8,     GalImageFormat.A8B8G8R8     | Snorm | Unorm | Sint | Uint          },
+                { GalTextureFormat.A2B10G10R10,  GalImageFormat.A2B10G10R10  | Snorm | Unorm | Sint | Uint          },
+                { GalTextureFormat.G8R8,         GalImageFormat.G8R8         | Snorm | Unorm | Sint | Uint          },
+                { GalTextureFormat.R16,          GalImageFormat.R16          | Snorm | Unorm | Sint | Uint | Sfloat },
+                { GalTextureFormat.R8,           GalImageFormat.R8           | Snorm | Unorm | Sint | Uint          },
+                { GalTextureFormat.R32,          GalImageFormat.R32                          | Sint | Uint | Sfloat },
+                { GalTextureFormat.A4B4G4R4,     GalImageFormat.A4B4G4R4             | Unorm                        },
+                { GalTextureFormat.A1B5G5R5,     GalImageFormat.A1R5G5B5             | Unorm                        },
+                { GalTextureFormat.B5G6R5,       GalImageFormat.B5G6R5               | Unorm                        },
+                { GalTextureFormat.BF10GF11RF11, GalImageFormat.B10G11R11                                  | Sfloat },
+                { GalTextureFormat.Z24S8,        GalImageFormat.D24_S8               | Unorm                        },
+                { GalTextureFormat.ZF32,         GalImageFormat.D32                                        | Sfloat },
+                { GalTextureFormat.ZF32_X24S8,   GalImageFormat.D32_S8               | Unorm                        },
 
                 //Compressed formats
-                { GalTextureFormat.BC6H_SF16,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC6H_SF16  | Unorm        ) },
-                { GalTextureFormat.BC6H_UF16,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC6H_UF16  | Unorm        ) },
-                { GalTextureFormat.BC7U,        new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC7        | Unorm        ) },
-                { GalTextureFormat.BC1,         new TextureDescriptor(TextureReader.Read8Bpt4x4,                     GalImageFormat.BC1_RGBA   | Unorm        ) },
-                { GalTextureFormat.BC2,         new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC2        | Unorm        ) },
-                { GalTextureFormat.BC3,         new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC3        | Unorm        ) },
-                { GalTextureFormat.BC4,         new TextureDescriptor(TextureReader.Read8Bpt4x4,                     GalImageFormat.BC4        | Unorm | Snorm) },
-                { GalTextureFormat.BC5,         new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC5        | Unorm | Snorm) },
-                { GalTextureFormat.Astc2D4x4,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.ASTC_4x4   | Unorm        ) },
-                { GalTextureFormat.Astc2D5x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture5x5,   GalImageFormat.ASTC_5x5   | Unorm        ) },
-                { GalTextureFormat.Astc2D6x6,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture6x6,   GalImageFormat.ASTC_6x6   | Unorm        ) },
-                { GalTextureFormat.Astc2D8x8,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x8,   GalImageFormat.ASTC_8x8   | Unorm        ) },
-                { GalTextureFormat.Astc2D10x10, new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x10, GalImageFormat.ASTC_10x10 | Unorm        ) },
-                { GalTextureFormat.Astc2D12x12, new TextureDescriptor(TextureReader.Read16BptCompressedTexture12x12, GalImageFormat.ASTC_12x12 | Unorm        ) },
-                { GalTextureFormat.Astc2D5x4,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture5x4,   GalImageFormat.ASTC_5x4   | Unorm        ) },
-                { GalTextureFormat.Astc2D6x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture6x5,   GalImageFormat.ASTC_6x5   | Unorm        ) },
-                { GalTextureFormat.Astc2D8x6,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x6,   GalImageFormat.ASTC_8x6   | Unorm        ) },
-                { GalTextureFormat.Astc2D10x8,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x8,  GalImageFormat.ASTC_10x8  | Unorm        ) },
-                { GalTextureFormat.Astc2D12x10, new TextureDescriptor(TextureReader.Read16BptCompressedTexture12x10, GalImageFormat.ASTC_12x10 | Unorm        ) },
-                { GalTextureFormat.Astc2D8x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x5,   GalImageFormat.ASTC_8x5   | Unorm        ) },
-                { GalTextureFormat.Astc2D10x5,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x5,  GalImageFormat.ASTC_10x5  | Unorm        ) },
-                { GalTextureFormat.Astc2D10x6,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x6,  GalImageFormat.ASTC_10x6  | Unorm        ) }
+                { GalTextureFormat.BC6H_SF16,   GalImageFormat.BC6H_SF16  | Unorm         },
+                { GalTextureFormat.BC6H_UF16,   GalImageFormat.BC6H_UF16  | Unorm         },
+                { GalTextureFormat.BC7U,        GalImageFormat.BC7        | Unorm         },
+                { GalTextureFormat.BC1,         GalImageFormat.BC1_RGBA   | Unorm         },
+                { GalTextureFormat.BC2,         GalImageFormat.BC2        | Unorm         },
+                { GalTextureFormat.BC3,         GalImageFormat.BC3        | Unorm         },
+                { GalTextureFormat.BC4,         GalImageFormat.BC4        | Unorm | Snorm },
+                { GalTextureFormat.BC5,         GalImageFormat.BC5        | Unorm | Snorm },
+                { GalTextureFormat.Astc2D4x4,   GalImageFormat.ASTC_4x4   | Unorm         },
+                { GalTextureFormat.Astc2D5x5,   GalImageFormat.ASTC_5x5   | Unorm         },
+                { GalTextureFormat.Astc2D6x6,   GalImageFormat.ASTC_6x6   | Unorm         },
+                { GalTextureFormat.Astc2D8x8,   GalImageFormat.ASTC_8x8   | Unorm         },
+                { GalTextureFormat.Astc2D10x10, GalImageFormat.ASTC_10x10 | Unorm         },
+                { GalTextureFormat.Astc2D12x12, GalImageFormat.ASTC_12x12 | Unorm         },
+                { GalTextureFormat.Astc2D5x4,   GalImageFormat.ASTC_5x4   | Unorm         },
+                { GalTextureFormat.Astc2D6x5,   GalImageFormat.ASTC_6x5   | Unorm         },
+                { GalTextureFormat.Astc2D8x6,   GalImageFormat.ASTC_8x6   | Unorm         },
+                { GalTextureFormat.Astc2D10x8,  GalImageFormat.ASTC_10x8  | Unorm         },
+                { GalTextureFormat.Astc2D12x10, GalImageFormat.ASTC_12x10 | Unorm         },
+                { GalTextureFormat.Astc2D8x5,   GalImageFormat.ASTC_8x5   | Unorm         },
+                { GalTextureFormat.Astc2D10x5,  GalImageFormat.ASTC_10x5  | Unorm         },
+                { GalTextureFormat.Astc2D10x6,  GalImageFormat.ASTC_10x6  | Unorm         }
             };
 
         private static readonly Dictionary<GalImageFormat, ImageDescriptor> s_ImageTable =
             new Dictionary<GalImageFormat, ImageDescriptor>()
             {
-                { GalImageFormat.R32G32B32A32, new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16B16A16, new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32G32,       new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A8B8G8R8,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A2B10G10R10,  new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC6H_SF16,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC6H_UF16,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A1R5G5B5,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.B5G6R5,       new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC7,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16,       new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8G8,         new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8,           new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.B10G11R11,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC1_RGBA,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC2,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC3,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC4,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC5,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_4x4,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_5x5,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_6x6,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_8x8,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_10x10,   new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_12x12,   new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_5x4,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_6x5,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_8x6,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_10x8,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_12x10,   new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_8x5,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_10x5,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_10x6,    new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R32G32B32A32, new ImageDescriptor(TextureReader.Read16Bpp,                       true, false, false) },
+                { GalImageFormat.R16G16B16A16, new ImageDescriptor(TextureReader.Read8Bpp,                        true, false, false) },
+                { GalImageFormat.R32G32,       new ImageDescriptor(TextureReader.Read8Bpp,                        true, false, false) },
+                { GalImageFormat.A8B8G8R8,     new ImageDescriptor(TextureReader.Read4Bpp,                        true, false, false) },
+                { GalImageFormat.A2B10G10R10,  new ImageDescriptor(TextureReader.Read4Bpp,                        true, false, false) },
+                { GalImageFormat.R32,          new ImageDescriptor(TextureReader.Read4Bpp,                        true, false, false) },
+                { GalImageFormat.A4B4G4R4,     new ImageDescriptor(TextureReader.Read2Bpp,                        true, false, false) },
+                { GalImageFormat.BC6H_SF16,    new ImageDescriptor(TextureReader.Read16BptCompressedTexture4x4,   true, false, false) },
+                { GalImageFormat.BC6H_UF16,    new ImageDescriptor(TextureReader.Read16BptCompressedTexture4x4,   true, false, false) },
+                { GalImageFormat.A1R5G5B5,     new ImageDescriptor(TextureReader.Read5551,                        true, false, false) },
+                { GalImageFormat.B5G6R5,       new ImageDescriptor(TextureReader.Read565,                         true, false, false) },
+                { GalImageFormat.BC7,          new ImageDescriptor(TextureReader.Read16BptCompressedTexture4x4,   true, false, false) },
+                { GalImageFormat.R16G16,       new ImageDescriptor(TextureReader.Read4Bpp,                        true, false, false) },
+                { GalImageFormat.R8G8,         new ImageDescriptor(TextureReader.Read2Bpp,                        true, false, false) },
+                { GalImageFormat.G8R8,         new ImageDescriptor(TextureReader.Read2Bpp,                        true, false, false) },
+                { GalImageFormat.R16,          new ImageDescriptor(TextureReader.Read2Bpp,                        true, false, false) },
+                { GalImageFormat.R8,           new ImageDescriptor(TextureReader.Read1Bpp,                        true, false, false) },
+                { GalImageFormat.B10G11R11,    new ImageDescriptor(TextureReader.Read4Bpp,                        true, false, false) },
+                { GalImageFormat.BC1_RGBA,     new ImageDescriptor(TextureReader.Read8Bpt4x4,                     true, false, false) },
+                { GalImageFormat.BC2,          new ImageDescriptor(TextureReader.Read16BptCompressedTexture4x4,   true, false, false) },
+                { GalImageFormat.BC3,          new ImageDescriptor(TextureReader.Read16BptCompressedTexture4x4,   true, false, false) },
+                { GalImageFormat.BC4,          new ImageDescriptor(TextureReader.Read8Bpt4x4,                     true, false, false) },
+                { GalImageFormat.BC5,          new ImageDescriptor(TextureReader.Read16BptCompressedTexture4x4,   true, false, false) },
+                { GalImageFormat.ASTC_4x4,     new ImageDescriptor(TextureReader.Read16BptCompressedTexture4x4,   true, false, false) },
+                { GalImageFormat.ASTC_5x5,     new ImageDescriptor(TextureReader.Read16BptCompressedTexture5x5,   true, false, false) },
+                { GalImageFormat.ASTC_6x6,     new ImageDescriptor(TextureReader.Read16BptCompressedTexture6x6,   true, false, false) },
+                { GalImageFormat.ASTC_8x8,     new ImageDescriptor(TextureReader.Read16BptCompressedTexture8x8,   true, false, false) },
+                { GalImageFormat.ASTC_10x10,   new ImageDescriptor(TextureReader.Read16BptCompressedTexture10x10, true, false, false) },
+                { GalImageFormat.ASTC_12x12,   new ImageDescriptor(TextureReader.Read16BptCompressedTexture12x12, true, false, false) },
+                { GalImageFormat.ASTC_5x4,     new ImageDescriptor(TextureReader.Read16BptCompressedTexture5x4,   true, false, false) },
+                { GalImageFormat.ASTC_6x5,     new ImageDescriptor(TextureReader.Read16BptCompressedTexture6x5,   true, false, false) },
+                { GalImageFormat.ASTC_8x6,     new ImageDescriptor(TextureReader.Read16BptCompressedTexture8x6,   true, false, false) },
+                { GalImageFormat.ASTC_10x8,    new ImageDescriptor(TextureReader.Read16BptCompressedTexture10x8,  true, false, false) },
+                { GalImageFormat.ASTC_12x10,   new ImageDescriptor(TextureReader.Read16BptCompressedTexture12x10, true, false, false) },
+                { GalImageFormat.ASTC_8x5,     new ImageDescriptor(TextureReader.Read16BptCompressedTexture8x5,   true, false, false) },
+                { GalImageFormat.ASTC_10x5,    new ImageDescriptor(TextureReader.Read16BptCompressedTexture10x5,  true, false, false) },
+                { GalImageFormat.ASTC_10x6,    new ImageDescriptor(TextureReader.Read16BptCompressedTexture10x6,  true, false, false) },
 
-                { GalImageFormat.D24_S8, new ImageDescriptor(false, true,  true)  },
-                { GalImageFormat.D32,    new ImageDescriptor(false, true,  false) },
-                { GalImageFormat.D16,    new ImageDescriptor(false, true,  false) },
-                { GalImageFormat.D32_S8, new ImageDescriptor(false, true,  true)  },
-
-                { GalImageFormat.R4G4B4A4_REVERSED, new ImageDescriptor(true,  false, false) }
+                { GalImageFormat.D24_S8, new ImageDescriptor(TextureReader.Read4Bpp, false, true, true)  },
+                { GalImageFormat.D32,    new ImageDescriptor(TextureReader.Read4Bpp, false, true, false) },
+                { GalImageFormat.D16,    new ImageDescriptor(TextureReader.Read2Bpp, false, true, false) },
+                { GalImageFormat.D32_S8, new ImageDescriptor(TextureReader.Read8Bpp, false, true, true)  },
             };
 
         public static GalImageFormat ConvertTexture(
@@ -134,9 +137,12 @@ namespace Ryujinx.Graphics.Texture
                 throw new NotImplementedException("Per component types are not implemented");
             }
 
-            GalTextureType Type = RType;
+            if (!s_TextureTable.TryGetValue(Format, out GalImageFormat ImageFormat))
+            {
+                throw new NotImplementedException("Texture with format " + ((int)Format).ToString("x2") + " not implemented");
+            }
 
-            GalImageFormat ImageFormat = GetTextureDescriptor(Format).Format;
+            GalTextureType Type = RType;
 
             GalImageFormat FormatType = GetFormatType(RType);
 
@@ -191,6 +197,11 @@ namespace Ryujinx.Graphics.Texture
             }
 
             throw new NotImplementedException(Format.ToString());
+        }
+
+        public static TextureReaderDelegate GetReader(GalImageFormat Format)
+        {
+            return GetImageDescriptor(Format).Reader;
         }
 
         public static int GetImageSize(GalImage Image)
@@ -284,29 +295,19 @@ namespace Ryujinx.Graphics.Texture
             throw new NotImplementedException((Image.Format & GalImageFormat.FormatMask).ToString());
         }
 
-        public static bool HasColor(GalImage Image)
+        public static bool HasColor(GalImageFormat Format)
         {
-            return GetImageDescriptor(Image.Format).HasColor;
+            return GetImageDescriptor(Format).HasColor;
         }
 
-        public static bool HasDepth(GalImage Image)
+        public static bool HasDepth(GalImageFormat Format)
         {
-            return GetImageDescriptor(Image.Format).HasDepth;
+            return GetImageDescriptor(Format).HasDepth;
         }
 
-        public static bool HasStencil(GalImage Image)
+        public static bool HasStencil(GalImageFormat Format)
         {
-            return GetImageDescriptor(Image.Format).HasStencil;
-        }
-
-        public static TextureDescriptor GetTextureDescriptor(GalTextureFormat Format)
-        {
-            if (s_TextureTable.TryGetValue(Format, out TextureDescriptor Descriptor))
-            {
-                return Descriptor;
-            }
-
-            throw new NotImplementedException("Texture with format code " + ((int)Format).ToString("x2") + " not implemented");
+            return GetImageDescriptor(Format).HasStencil;
         }
 
         private static ImageDescriptor GetImageDescriptor(GalImageFormat Format)

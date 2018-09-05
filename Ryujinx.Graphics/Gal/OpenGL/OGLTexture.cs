@@ -57,6 +57,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 GalImageFormat TypeLess = Image.Format & GalImageFormat.FormatMask;
 
+                //TODO: Use KHR_texture_compression_astc_hdr when available
                 if (TypeLess >= GalImageFormat.ASTC_BEGIN && TypeLess <= GalImageFormat.ASTC_END)
                 {
                     int TextureBlockWidth  = GetAstcBlockWidth(Image.Format);
@@ -70,6 +71,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         Image.Height, 1);
 
                     Image.Format = GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm;
+                }
+                else if (TypeLess == GalImageFormat.G8R8)
+                {
+                    Data = ImageConverter.G8R8ToR8G8(
+                        Data,
+                        Image.Width,
+                        Image.Height,
+                        1);
+
+                    Image.Format = GalImageFormat.R8G8 | (Image.Format & GalImageFormat.FormatMask);
                 }
 
                 (PixelInternalFormat InternalFormat, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(Image.Format);

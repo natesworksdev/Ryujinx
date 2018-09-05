@@ -143,6 +143,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.A8B8G8R8     | GalImageFormat.Sint:   return (PixelInternalFormat.Rgba8i,       PixelFormat.RgbaInteger, PixelType.Byte);
                 case GalImageFormat.A8B8G8R8     | GalImageFormat.Uint:   return (PixelInternalFormat.Rgba8ui,      PixelFormat.RgbaInteger, PixelType.UnsignedByte);
                 case GalImageFormat.A8B8G8R8_SRGB:                        return (PixelInternalFormat.Srgb8Alpha8,  PixelFormat.Rgba,        PixelType.UnsignedByte);
+                case GalImageFormat.A4B4G4R4     | GalImageFormat.Unorm:  return (PixelInternalFormat.Rgba4,        PixelFormat.Rgba,        PixelType.UnsignedShort4444Reversed);
                 case GalImageFormat.A2B10G10R10  | GalImageFormat.Uint:   return (PixelInternalFormat.Rgb10A2ui,    PixelFormat.RgbaInteger, PixelType.UnsignedInt2101010Reversed);
                 case GalImageFormat.A2B10G10R10  | GalImageFormat.Unorm:  return (PixelInternalFormat.Rgb10A2,      PixelFormat.Rgba,        PixelType.UnsignedInt2101010Reversed);
                 case GalImageFormat.R32          | GalImageFormat.Sfloat: return (PixelInternalFormat.R32f,         PixelFormat.Red,         PixelType.Float);
@@ -168,8 +169,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.R8           | GalImageFormat.Uint:   return (PixelInternalFormat.R8ui,         PixelFormat.RedInteger,  PixelType.UnsignedByte);
                 case GalImageFormat.R8           | GalImageFormat.Unorm:  return (PixelInternalFormat.R8,           PixelFormat.Red,         PixelType.UnsignedByte);
                 case GalImageFormat.B10G11R11    | GalImageFormat.Sfloat: return (PixelInternalFormat.R11fG11fB10f, PixelFormat.Rgb,         PixelType.UnsignedInt10F11F11FRev);
-
-                case GalImageFormat.R4G4B4A4_REVERSED | GalImageFormat.Unorm: return (PixelInternalFormat.Rgba4, PixelFormat.Rgba, PixelType.UnsignedShort4444Reversed);
 
                 case GalImageFormat.D24_S8 | GalImageFormat.Unorm:  return (PixelInternalFormat.Depth24Stencil8,   PixelFormat.DepthStencil,   PixelType.UnsignedInt248);
                 case GalImageFormat.D32    | GalImageFormat.Sfloat: return (PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, PixelType.Float);

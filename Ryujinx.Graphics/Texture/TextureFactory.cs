@@ -10,12 +10,7 @@ namespace Ryujinx.Graphics.Texture
         {
             int[] Tic = ReadWords(Vmm, TicPosition, 8);
 
-            GalTextureType RType = (GalTextureType)((Tic[0] >> 7)  & 7);
-            GalTextureType GType = (GalTextureType)((Tic[0] >> 10) & 7);
-            GalTextureType BType = (GalTextureType)((Tic[0] >> 13) & 7);
-            GalTextureType AType = (GalTextureType)((Tic[0] >> 16) & 7);
-
-            GalImageFormat Format = ImageTable.ConvertTexture((GalTextureFormat)(Tic[0] & 0x7f), RType, GType, BType, AType);
+            GalImageFormat Format = GetImageFormat(Tic);
 
             GalTextureSource XSource = (GalTextureSource)((Tic[0] >> 19) & 7);
             GalTextureSource YSource = (GalTextureSource)((Tic[0] >> 22) & 7);
@@ -39,7 +34,7 @@ namespace Ryujinx.Graphics.Texture
         {
             int[] Tic = ReadWords(Vmm, TicPosition, 8);
 
-            GalTextureFormat Format = (GalTextureFormat)(Tic[0] & 0x7f);
+            GalImageFormat Format = GetImageFormat(Tic);
 
             long TextureAddress = (uint)Tic[1];
 
@@ -108,6 +103,18 @@ namespace Ryujinx.Graphics.Texture
                 MagFilter,
                 MipFilter,
                 BorderColor);
+        }
+
+        private static GalImageFormat GetImageFormat(int[] Tic)
+        {
+            GalTextureType RType = (GalTextureType)((Tic[0] >> 7) & 7);
+            GalTextureType GType = (GalTextureType)((Tic[0] >> 10) & 7);
+            GalTextureType BType = (GalTextureType)((Tic[0] >> 13) & 7);
+            GalTextureType AType = (GalTextureType)((Tic[0] >> 16) & 7);
+
+            GalTextureFormat Format = (GalTextureFormat)(Tic[0] & 0x7f);
+
+            return ImageTable.ConvertTexture(Format, RType, GType, BType, AType);
         }
 
         private static int[] ReadWords(NvGpuVmm Vmm, long Position, int Count)

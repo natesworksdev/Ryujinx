@@ -58,7 +58,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     int CurrentSize = Math.Max(ImageTable.GetImageSize(NewImage),
                                                ImageTable.GetImageSize(Image));
 
-                    GL.BindBuffer(BufferTarget.PixelPackBuffer,   CopyBuffer);
+                    GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyBuffer);
                     GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyBuffer);
 
                     if (CopyBufferSize < CurrentSize)
@@ -113,8 +113,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public bool HasColor   { get => ImageTable.HasColor(Image); }
-        public bool HasDepth   { get => ImageTable.HasDepth(Image); }
-        public bool HasStencil { get => ImageTable.HasStencil(Image); }
+        public bool HasColor   => ImageTable.HasColor(Image.Format);
+        public bool HasDepth   => ImageTable.HasDepth(Image.Format);
+        public bool HasStencil => ImageTable.HasStencil(Image.Format);
     }
 }

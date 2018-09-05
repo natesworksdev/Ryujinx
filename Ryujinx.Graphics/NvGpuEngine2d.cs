@@ -103,7 +103,7 @@ namespace Ryujinx.Graphics
                     SrcPitch,
                     SrcBlockHeight, 1,
                     SrcSwizzle,
-                    GalTextureFormat.A8B8G8R8);
+                    GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm);
             }
 
             TextureInfo DstTexture()
@@ -115,7 +115,7 @@ namespace Ryujinx.Graphics
                     DstPitch,
                     DstBlockHeight, 1,
                     DstSwizzle,
-                    GalTextureFormat.A8B8G8R8);
+                    GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm);
             }
 
             //TODO: fb -> fb copies, tex -> fb copies, formats other than RGBA8,

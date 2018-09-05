@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Texture
 
         public TextureSwizzle Swizzle { get; private set; }
 
-        public GalTextureFormat Format { get; private set; }
+        public GalImageFormat Format { get; private set; }
 
         public TextureInfo(
             long Position,
@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Texture
 
             Swizzle = TextureSwizzle.BlockLinear;
 
-            Format = GalTextureFormat.A8B8G8R8;
+            Format = GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm;
         }
 
         public TextureInfo(
@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Texture
             int              BlockHeight,
             int              TileWidth,
             TextureSwizzle   Swizzle,
-            GalTextureFormat Format)
+            GalImageFormat   Format)
         {
             this.Position     = Position;
             this.Width        = Width;

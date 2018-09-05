@@ -37,6 +37,7 @@ namespace Ryujinx.Graphics.Gal
         R4G4,
         R4G4B4A4,
         B4G4R4A4,
+        A4B4G4R4,
         R5G6B5,
         B5G6R5,
         R5G5B5A1,
@@ -44,6 +45,7 @@ namespace Ryujinx.Graphics.Gal
         A1R5G5B5,
         R8,
         R8G8,
+        G8R8,
         R8G8B8,
         B8G8R8,
         R8G8B8A8,
@@ -87,11 +89,5 @@ namespace Ryujinx.Graphics.Gal
         ETC2_R8G8B8A8,
         EAC_R11,
         EAC_R11G11,
-
-        REVERSED_BEGIN,
-
-        R4G4B4A4_REVERSED = REVERSED_BEGIN,
-
-        REVERSED_END
     }
 }
