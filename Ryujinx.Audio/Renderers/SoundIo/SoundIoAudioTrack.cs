@@ -81,7 +81,7 @@ namespace Ryujinx.Audio.SoundIo
         public void Open(int sampleRate, int channelCount, ReleaseCallback callback, SoundIOFormat format = SoundIOFormat.S16LE)
         {
             // Close any existing audio streams
-            if(AudioStream != null)
+            if (AudioStream != null)
                 Close();
 
             if (!AudioDevice.SupportsSampleRate(sampleRate))
@@ -114,7 +114,7 @@ namespace Ryujinx.Audio.SoundIo
         private unsafe void WriteCallback(int minFrameCount, int maxFrameCount)
         {
             var bytesPerFrame = AudioStream.BytesPerFrame;
-            var bytesPerSample = AudioStream.BytesPerSample;
+            var bytesPerSample = (uint)AudioStream.BytesPerSample;
 
             var bufferedFrames = m_Buffer.Length / bytesPerFrame;
             var bufferedSamples = m_Buffer.Length / bytesPerSample;
@@ -128,52 +128,312 @@ namespace Ryujinx.Audio.SoundIo
             var channelCount = areas.ChannelCount;
 
             var samples = new byte[frameCount * bytesPerFrame];
-            var samplesLength = samples.Length;
 
-            m_Buffer.Read(samples, 0, samplesLength);
+            m_Buffer.Read(samples, 0, samples.Length);
 
-            var channels = new SoundIOChannelArea[channelCount];
-
-            for (var i = 0; i < channelCount; i++)
-                channels[i] = areas.GetArea(i);
-
-            fixed (byte* buffPtr = &samples[0])
+            // This is a huge ugly block of code, but we save
+            // a significant amount of time over the generic
+            // loop that handles other channel counts.
+            
+            // Mono
+            if (channelCount == 1)
             {
-                for (var frame = 0; frame < frameCount; frame++)
-                for (var channel = 0; channel < areas.ChannelCount; channel++)
-                {
-                    Unsafe.CopyBlockUnaligned((byte*)channels[channel].Pointer, buffPtr + frame * bytesPerFrame + channel * bytesPerSample, (uint)bytesPerSample);
-                    channels[channel].Pointer += channels[channel].Step;
-                }
-            }
+                var area = areas.GetArea(0);
 
-            bool bufferReleased = false;
-            while (samplesLength > 0)
-            {
-                if (m_ReservedBuffers.TryPeek(out SoundIoBuffer buffer))
+                fixed (byte* buffPtr = &samples[0])
                 {
-                    if(buffer.Length > samplesLength)
+                    if (bytesPerSample == 1)
                     {
-                        buffer.Length -= samplesLength;
-                        samplesLength = 0;
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            *((byte*)area.Pointer) = *(buffPtr + (frame * bytesPerFrame));
+
+                            area.Pointer += area.Step;
+                        }
+                    }
+                    else if (bytesPerSample == 2)
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            *((byte*)area.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + 0);
+                            *((byte*)area.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + 1);
+
+                            area.Pointer += area.Step;
+                        }
+                    }
+                    else if (bytesPerSample == 4)
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            *((byte*)area.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + 0);
+                            *((byte*)area.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + 1);
+                            *((byte*)area.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + 2);
+                            *((byte*)area.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + 3);
+
+                            area.Pointer += area.Step;
+                        }
                     }
                     else
                     {
-                        samplesLength -= buffer.Length;
-                        m_ReservedBuffers.TryDequeue(out buffer);
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            Unsafe.CopyBlockUnaligned((byte*)area.Pointer, buffPtr + (frame * bytesPerFrame), bytesPerSample);
 
-                        ReleasedBuffers.Enqueue(buffer.Tag);
-                        bufferReleased = true;
+                            area.Pointer += area.Step;
+                        }
+                    }
+                }
+            }
+            // Stereo
+            else if (channelCount == 2)
+            {
+                var area1 = areas.GetArea(0);
+                var area2 = areas.GetArea(1);
+
+                fixed (byte* buffPtr = &samples[0])
+                {
+                    if (bytesPerSample == 1)
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            // Channel 1
+                            *((byte*)area1.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample));
+
+                            // Channel 2
+                            *((byte*)area2.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample));
+
+                            area1.Pointer += area1.Step;
+                            area2.Pointer += area2.Step;
+                        }
+                    }
+                    else if (bytesPerSample == 2)
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            // Channel 1
+                            *((byte*)area1.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 0);
+                            *((byte*)area1.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 1);
+
+                            // Channel 2
+                            *((byte*)area2.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 0);
+                            *((byte*)area2.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 1);
+
+                            area1.Pointer += area1.Step;
+                            area2.Pointer += area2.Step;
+                        }
+                    }
+                    else if (bytesPerSample == 4)
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            // Channel 1
+                            *((byte*)area1.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 0);
+                            *((byte*)area1.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 1);
+                            *((byte*)area1.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 2);
+                            *((byte*)area1.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 3);
+
+                            // Channel 2
+                            *((byte*)area2.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 0);
+                            *((byte*)area2.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 1);
+                            *((byte*)area2.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 2);
+                            *((byte*)area2.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 3);
+
+                            area1.Pointer += area1.Step;
+                            area2.Pointer += area2.Step;
+                        }
+                    }
+                    else
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample), bytesPerSample);
+                            Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample), bytesPerSample);
+
+                            area1.Pointer += area1.Step;
+                            area2.Pointer += area2.Step;
+                        }
+                    }
+                }
+            }
+            // Surround
+            else if (channelCount == 5)
+            {
+                var area1 = areas.GetArea(0);
+                var area2 = areas.GetArea(1);
+                var area3 = areas.GetArea(2);
+                var area4 = areas.GetArea(3);
+                var area5 = areas.GetArea(4);
+
+                fixed (byte* buffPtr = &samples[0])
+                {
+                    if (bytesPerSample == 1)
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            // Channel 1
+                            *((byte*)area1.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample));
+
+                            // Channel 2
+                            *((byte*)area2.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample));
+
+                            // Channel 3
+                            *((byte*)area3.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample));
+
+                            // Channel 4
+                            *((byte*)area4.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample));
+
+                            // Channel 5
+                            *((byte*)area5.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample));
+
+                            area1.Pointer += area1.Step;
+                            area2.Pointer += area2.Step;
+                            area3.Pointer += area3.Step;
+                            area4.Pointer += area4.Step;
+                            area5.Pointer += area5.Step;
+                        }
+                    }
+                    else if (bytesPerSample == 2)
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            // Channel 1
+                            *((byte*)area1.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 0);
+                            *((byte*)area1.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 1);
+
+                            // Channel 2
+                            *((byte*)area2.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 0);
+                            *((byte*)area2.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 1);
+
+                            // Channel 3
+                            *((byte*)area3.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 0);
+                            *((byte*)area3.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 1);
+
+                            // Channel 4
+                            *((byte*)area4.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 0);
+                            *((byte*)area4.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 1);
+
+                            // Channel 5
+                            *((byte*)area5.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 0);
+                            *((byte*)area5.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 1);
+
+                            area1.Pointer += area1.Step;
+                            area2.Pointer += area2.Step;
+                            area3.Pointer += area3.Step;
+                            area4.Pointer += area4.Step;
+                            area5.Pointer += area5.Step;
+                        }
+                    }
+                    else if (bytesPerSample == 4)
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            // Channel 1
+                            *((byte*)area1.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 0);
+                            *((byte*)area1.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 1);
+                            *((byte*)area1.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 2);
+                            *((byte*)area1.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 3);
+
+                            // Channel 2
+                            *((byte*)area2.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 0);
+                            *((byte*)area2.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 1);
+                            *((byte*)area2.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 2);
+                            *((byte*)area2.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 3);
+
+                            // Channel 3
+                            *((byte*)area3.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 0);
+                            *((byte*)area3.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 1);
+                            *((byte*)area3.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 2);
+                            *((byte*)area3.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 3);
+
+                            // Channel 4
+                            *((byte*)area4.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 0);
+                            *((byte*)area4.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 1);
+                            *((byte*)area4.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 2);
+                            *((byte*)area4.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 3);
+
+                            // Channel 5
+                            *((byte*)area5.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 0);
+                            *((byte*)area5.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 1);
+                            *((byte*)area5.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 2);
+                            *((byte*)area5.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 3);
+
+                            area1.Pointer += area1.Step;
+                            area2.Pointer += area2.Step;
+                            area3.Pointer += area3.Step;
+                            area4.Pointer += area4.Step;
+                            area5.Pointer += area5.Step;
+                        }
+                    }
+                    else
+                    {
+                        for (var frame = 0; frame < frameCount; frame++)
+                        {
+                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample), bytesPerSample);
+                            Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample), bytesPerSample);
+
+                            area1.Pointer += area1.Step;
+                            area2.Pointer += area2.Step;
+                        }
+                    }
+                }
+            }
+            // Every other channel count
+            else
+            {
+                var channels = new SoundIOChannelArea[channelCount];
+
+                // Obtain the channel area for each channel
+                for (var i = 0; i < channelCount; i++)
+                    channels[i] = areas.GetArea(i);
+
+                fixed (byte* buffPtr = &samples[0])
+                {
+                    for (var frame = 0; frame < frameCount; frame++)
+                    for (var channel = 0; channel < areas.ChannelCount; channel++)
+                    {
+                        // This is slow!
+                        Unsafe.CopyBlockUnaligned((byte*)channels[channel].Pointer, buffPtr + frame * bytesPerFrame + channel * bytesPerSample, bytesPerSample);
+                        channels[channel].Pointer += channels[channel].Step;
                     }
                 }
             }
 
-            if(bufferReleased)
+            AudioStream.EndWrite();
+
+            UpdateReleasedBuffers(samples.Length);
+        }
+
+        /// <summary>
+        /// Releases any buffers that have been fully written to the output device
+        /// </summary>
+        /// <param name="bytesRead">The amount of bytes written in the last device write</param>
+        private void UpdateReleasedBuffers(int bytesRead)
+        {
+            bool bufferReleased = false;
+            while (bytesRead > 0)
+            {
+                if (m_ReservedBuffers.TryPeek(out SoundIoBuffer buffer))
+                {
+                    if (buffer.Length > bytesRead)
+                    {
+                        buffer.Length -= bytesRead;
+                        bytesRead = 0;
+                    }
+                    else
+                    {
+                        bufferReleased = true;
+                        bytesRead -= buffer.Length;
+
+                        m_ReservedBuffers.TryDequeue(out buffer);
+                        ReleasedBuffers.Enqueue(buffer.Tag);
+                    }
+                }
+            }
+
+            if (bufferReleased)
             {
                 OnBufferReleased();
             }
-
-            AudioStream.EndWrite();
         }
 
         /// <summary>
@@ -181,7 +441,7 @@ namespace Ryujinx.Audio.SoundIo
         /// </summary>
         private void ErrorCallback()
         {
-            
+
         }
 
         /// <summary>
@@ -189,7 +449,7 @@ namespace Ryujinx.Audio.SoundIo
         /// </summary>
         private void UnderflowCallback()
         {
-            
+
         }
 
         /// <summary>
@@ -257,7 +517,7 @@ namespace Ryujinx.Audio.SoundIo
         /// </summary>
         public void Close()
         {
-            if(AudioStream != null)
+            if (AudioStream != null)
             {
                 AudioStream.Pause(true);
                 AudioStream.Dispose();
