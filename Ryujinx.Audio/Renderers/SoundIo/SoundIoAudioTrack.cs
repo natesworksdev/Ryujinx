@@ -247,13 +247,14 @@ namespace Ryujinx.Audio.SoundIo
                 }
             }
             // Surround
-            else if (channelCount == 5)
+            else if (channelCount == 6)
             {
                 var area1 = areas.GetArea(0);
                 var area2 = areas.GetArea(1);
                 var area3 = areas.GetArea(2);
                 var area4 = areas.GetArea(3);
                 var area5 = areas.GetArea(4);
+                var area6 = areas.GetArea(5);
 
                 fixed (byte* srcptr = samples)
                 {
@@ -276,11 +277,15 @@ namespace Ryujinx.Audio.SoundIo
                             // Channel 5
                             ((byte*)area5.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 4];
 
+                            // Channel 6
+                            ((byte*)area6.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 5];
+
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
                             area3.Pointer += area3.Step;
                             area4.Pointer += area4.Step;
                             area5.Pointer += area5.Step;
+                            area6.Pointer += area6.Step;
                         }
                     }
                     else if (bytesPerSample == 2)
@@ -302,11 +307,15 @@ namespace Ryujinx.Audio.SoundIo
                             // Channel 5
                             ((short*)area5.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 4];
 
+                            // Channel 6
+                            ((short*)area6.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 5];
+
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
                             area3.Pointer += area3.Step;
                             area4.Pointer += area4.Step;
                             area5.Pointer += area5.Step;
+                            area6.Pointer += area6.Step;
                         }
                     }
                     else if (bytesPerSample == 4)
@@ -328,11 +337,15 @@ namespace Ryujinx.Audio.SoundIo
                             // Channel 5
                             ((int*)area5.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 4];
 
+                            // Channel 6
+                            ((int*)area6.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 5];
+
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
                             area3.Pointer += area3.Step;
                             area4.Pointer += area4.Step;
                             area5.Pointer += area5.Step;
+                            area6.Pointer += area6.Step;
                         }
                     }
                     else
@@ -346,19 +359,23 @@ namespace Ryujinx.Audio.SoundIo
                             Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, srcptr + (frame * bytesPerFrame) + (1 * bytesPerSample), bytesPerSample);
 
                             // Channel 3
-                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, srcptr + (frame * bytesPerFrame) + (2 * bytesPerSample), bytesPerSample);
+                            Unsafe.CopyBlockUnaligned((byte*)area3.Pointer, srcptr + (frame * bytesPerFrame) + (2 * bytesPerSample), bytesPerSample);
 
                             // Channel 4
-                            Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, srcptr + (frame * bytesPerFrame) + (3 * bytesPerSample), bytesPerSample);
+                            Unsafe.CopyBlockUnaligned((byte*)area4.Pointer, srcptr + (frame * bytesPerFrame) + (3 * bytesPerSample), bytesPerSample);
 
                             // Channel 5
-                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, srcptr + (frame * bytesPerFrame) + (4 * bytesPerSample), bytesPerSample);
+                            Unsafe.CopyBlockUnaligned((byte*)area5.Pointer, srcptr + (frame * bytesPerFrame) + (4 * bytesPerSample), bytesPerSample);
+
+                            // Channel 6
+                            Unsafe.CopyBlockUnaligned((byte*)area6.Pointer, srcptr + (frame * bytesPerFrame) + (5 * bytesPerSample), bytesPerSample);
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
                             area3.Pointer += area3.Step;
                             area4.Pointer += area4.Step;
                             area5.Pointer += area5.Step;
+                            area6.Pointer += area6.Step;
                         }
                     }
                 }
