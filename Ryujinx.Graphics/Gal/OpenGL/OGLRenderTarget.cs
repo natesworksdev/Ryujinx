@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLFrameBuffer : IGalFrameBuffer
+    class OGLRenderTarget : IGalRenderTarget
     {
         private struct Rect
         {
@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private int DepthAttachment;
         private int StencilAttachment;
 
-        public OGLFrameBuffer(OGLTexture Texture)
+        public OGLRenderTarget(OGLTexture Texture)
         {
             ColorAttachments = new int[8];
 

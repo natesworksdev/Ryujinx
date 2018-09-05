@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal
 {
-    public interface IGalFrameBuffer
+    public interface IGalRenderTarget
     {
         void BindColor(long Key, int Attachment);
 

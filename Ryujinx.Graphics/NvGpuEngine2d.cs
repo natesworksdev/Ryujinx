@@ -123,7 +123,7 @@ namespace Ryujinx.Graphics
             if (IsSrcFb && IsDstFb)
             {
                 //Frame Buffer -> Frame Buffer copy.
-                Gpu.Renderer.FrameBuffer.Copy(
+                Gpu.Renderer.RenderTarget.Copy(
                     SrcKey,
                     DstKey,
                     0,
@@ -138,7 +138,7 @@ namespace Ryujinx.Graphics
             if (IsSrcFb)
             {
                 //Frame Buffer -> Texture copy.
-                Gpu.Renderer.FrameBuffer.GetBufferData(SrcKey, (byte[] Buffer) =>
+                Gpu.Renderer.RenderTarget.GetBufferData(SrcKey, (byte[] Buffer) =>
                 {
                     TextureInfo Src = SrcTexture();
                     TextureInfo Dst = DstTexture();
@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics
             {
                 byte[] Buffer = TextureReader.Read(Vmm, SrcTexture());
 
-                Gpu.Renderer.FrameBuffer.SetBufferData(
+                Gpu.Renderer.RenderTarget.SetBufferData(
                     DstKey,
                     DstWidth,
                     DstHeight,

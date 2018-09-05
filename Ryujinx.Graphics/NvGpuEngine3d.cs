@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics
 
             if (VA == 0 || Format == 0)
             {
-                Gpu.Renderer.FrameBuffer.UnbindColor(FbIndex);
+                Gpu.Renderer.RenderTarget.UnbindColor(FbIndex);
 
                 return;
             }
@@ -209,9 +209,9 @@ namespace Ryujinx.Graphics
 
             Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
 
-            Gpu.Renderer.FrameBuffer.BindColor(Key, FbIndex);
+            Gpu.Renderer.RenderTarget.BindColor(Key, FbIndex);
 
-            Gpu.Renderer.FrameBuffer.SetViewport(VpX, VpY, VpW, VpH);
+            Gpu.Renderer.RenderTarget.SetViewport(VpX, VpY, VpW, VpH);
         }
 
         private void SetZeta(NvGpuVmm Vmm)
@@ -224,7 +224,7 @@ namespace Ryujinx.Graphics
 
             if (ZA == 0 || Format == 0 || !ZetaEnable)
             {
-                Gpu.Renderer.FrameBuffer.UnbindZeta();
+                Gpu.Renderer.RenderTarget.UnbindZeta();
 
                 return;
             }
@@ -242,7 +242,7 @@ namespace Ryujinx.Graphics
 
             Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
 
-            Gpu.Renderer.FrameBuffer.BindZeta(Key);
+            Gpu.Renderer.RenderTarget.BindZeta(Key);
         }
 
         private long[] UploadShaders(NvGpuVmm Vmm)
@@ -444,11 +444,11 @@ namespace Ryujinx.Graphics
                     Map[i] = (int)((Control >> Shift) & 7);
                 }
 
-                Gpu.Renderer.FrameBuffer.SetMap(Map);
+                Gpu.Renderer.RenderTarget.SetMap(Map);
             }
             else
             {
-                Gpu.Renderer.FrameBuffer.SetMap(null);
+                Gpu.Renderer.RenderTarget.SetMap(null);
             }
         }
 
@@ -522,7 +522,7 @@ namespace Ryujinx.Graphics
                 //we shouldn't read anything from memory and bind
                 //the frame buffer texture instead, since we're not
                 //really writing anything to memory.
-                Gpu.Renderer.FrameBuffer.BindTexture(Key, TexIndex);
+                Gpu.Renderer.RenderTarget.BindTexture(Key, TexIndex);
             }
             else
             {
