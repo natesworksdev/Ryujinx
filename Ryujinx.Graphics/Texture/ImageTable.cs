@@ -23,129 +23,103 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
+        private const GalImageFormat Snorm  = GalImageFormat.Snorm;
+        private const GalImageFormat Unorm  = GalImageFormat.Unorm;
+        private const GalImageFormat Sint   = GalImageFormat.Sint;
+        private const GalImageFormat Uint   = GalImageFormat.Uint;
+        private const GalImageFormat Sfloat = GalImageFormat.Sfloat;
+
         private static readonly Dictionary<GalTextureFormat, TextureDescriptor> s_TextureTable =
             new Dictionary<GalTextureFormat, TextureDescriptor>()
             {
-                { GalTextureFormat.R16G16B16A16, new TextureDescriptor(TextureReader.Read8Bpp,  GalImageFormat.R16G16B16A16_SNORM,       GalImageFormat.R16G16B16A16_UNORM,       GalImageFormat.R16G16B16A16_SINT,       GalImageFormat.R16G16B16A16_UINT,       GalImageFormat.R16G16B16A16_SFLOAT, null, null) },
-                { GalTextureFormat.A8B8G8R8,     new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.A8B8G8R8_SNORM_PACK32,    GalImageFormat.A8B8G8R8_UNORM_PACK32,    GalImageFormat.A8B8G8R8_SINT_PACK32,    GalImageFormat.A8B8G8R8_UINT_PACK32,    null,                               null, null) },
-                { GalTextureFormat.A2B10G10R10,  new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.A2B10G10R10_SNORM_PACK32, GalImageFormat.A2B10G10R10_UNORM_PACK32, GalImageFormat.A2B10G10R10_SINT_PACK32, GalImageFormat.A2B10G10R10_UINT_PACK32, null,                               null, null) },
-                { GalTextureFormat.G8R8,         new TextureDescriptor(TextureReader.Read2Bpp,  GalImageFormat.R8G8_SNORM,               GalImageFormat.R8G8_UNORM,               GalImageFormat.R8G8_SINT,               GalImageFormat.R8G8_UINT,               null,                               null, null) },
-                { GalTextureFormat.R16,          new TextureDescriptor(TextureReader.Read2Bpp,  GalImageFormat.R16_SNORM,                GalImageFormat.R16_UNORM,                GalImageFormat.R16_SINT,                GalImageFormat.R16_UINT,                GalImageFormat.R16_SFLOAT,          null, null) },
-                { GalTextureFormat.R8,           new TextureDescriptor(TextureReader.Read1Bpp,  GalImageFormat.R8_SNORM,                 GalImageFormat.R8_UNORM,                 GalImageFormat.R8_SINT,                 GalImageFormat.R8_UINT,                 null,                               null, null) },
-                { GalTextureFormat.R32G32B32A32, new TextureDescriptor(TextureReader.Read16Bpp, null,                                    null,                                    GalImageFormat.R32G32B32A32_SINT,       GalImageFormat.R32G32B32A32_UINT,       GalImageFormat.R32G32B32A32_SFLOAT, null, null) },
-                { GalTextureFormat.R32G32,       new TextureDescriptor(TextureReader.Read8Bpp,  null,                                    null,                                    GalImageFormat.R32G32_SINT,             GalImageFormat.R32G32_UINT,             GalImageFormat.R32G32_SFLOAT,       null, null) },
-                { GalTextureFormat.R32,          new TextureDescriptor(TextureReader.Read4Bpp,  null,                                    null,                                    GalImageFormat.R32_SINT,                GalImageFormat.R32_UINT,                GalImageFormat.R32_SFLOAT,          null, null) },
-
-                { GalTextureFormat.A4B4G4R4,     new TextureDescriptor(TextureReader.Read2Bpp, Unorm: GalImageFormat.R4G4B4A4_UNORM_PACK16_REVERSED) }, //TODO: Reverse this one in the reader
-                { GalTextureFormat.A1B5G5R5,     new TextureDescriptor(TextureReader.Read5551, Unorm: GalImageFormat.A1R5G5B5_UNORM_PACK16)          },
-                { GalTextureFormat.B5G6R5,       new TextureDescriptor(TextureReader.Read565,  Unorm: GalImageFormat.B5G6R5_UNORM_PACK16)            },
-                { GalTextureFormat.BF10GF11RF11, new TextureDescriptor(TextureReader.Read4Bpp, Float: GalImageFormat.B10G11R11_UFLOAT_PACK32)        },
-
-                //Zeta formats
-                { GalTextureFormat.ZF32,       new TextureDescriptor(TextureReader.Read4Bpp, Float: GalImageFormat.D32_SFLOAT)         },
-                { GalTextureFormat.Z24S8,      new TextureDescriptor(TextureReader.Read4Bpp, Unorm: GalImageFormat.D24_UNORM_S8_UINT)  },
-                { GalTextureFormat.ZF32_X24S8, new TextureDescriptor(TextureReader.Read8Bpp, Unorm: GalImageFormat.D32_SFLOAT_S8_UINT) },
+                { GalTextureFormat.R32G32B32A32, new TextureDescriptor(TextureReader.Read16Bpp, GalImageFormat.R32G32B32A32                 | Sint | Uint | Sfloat) },
+                { GalTextureFormat.R16G16B16A16, new TextureDescriptor(TextureReader.Read8Bpp,  GalImageFormat.R16G16B16A16 | Snorm | Unorm | Sint | Uint | Sfloat) },
+                { GalTextureFormat.R32G32,       new TextureDescriptor(TextureReader.Read8Bpp,  GalImageFormat.R32G32                       | Sint | Uint | Sfloat) },
+                { GalTextureFormat.A8B8G8R8,     new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.A8B8G8R8     | Snorm | Unorm | Sint | Uint         ) },
+                { GalTextureFormat.A2B10G10R10,  new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.A2B10G10R10  | Snorm | Unorm | Sint | Uint         ) },
+                { GalTextureFormat.G8R8,         new TextureDescriptor(TextureReader.Read2Bpp,  GalImageFormat.R8G8         | Snorm | Unorm | Sint | Uint         ) },
+                { GalTextureFormat.R16,          new TextureDescriptor(TextureReader.Read2Bpp,  GalImageFormat.R16          | Snorm | Unorm | Sint | Uint | Sfloat) },
+                { GalTextureFormat.R8,           new TextureDescriptor(TextureReader.Read1Bpp,  GalImageFormat.R8           | Snorm | Unorm | Sint | Uint         ) },
+                { GalTextureFormat.R32,          new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.R32                          | Sint | Uint | Sfloat) },
+                //TODO: Reverse this one in the reader
+                { GalTextureFormat.A4B4G4R4,     new TextureDescriptor(TextureReader.Read2Bpp,  GalImageFormat.R4G4B4A4_REVERSED    | Unorm                       ) },
+                { GalTextureFormat.A1B5G5R5,     new TextureDescriptor(TextureReader.Read5551,  GalImageFormat.A1R5G5B5             | Unorm                       ) },
+                { GalTextureFormat.B5G6R5,       new TextureDescriptor(TextureReader.Read565,   GalImageFormat.B5G6R5               | Unorm                       ) },
+                { GalTextureFormat.BF10GF11RF11, new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.B10G11R11                                  | Sfloat) },
+                { GalTextureFormat.Z24S8,        new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.D24_S8               | Unorm                       ) },
+                { GalTextureFormat.ZF32,         new TextureDescriptor(TextureReader.Read4Bpp,  GalImageFormat.D32                                        | Sfloat) },
+                { GalTextureFormat.ZF32_X24S8,   new TextureDescriptor(TextureReader.Read8Bpp,  GalImageFormat.D32_S8               | Unorm                       ) },
 
                 //Compressed formats
-                { GalTextureFormat.BC4,  new TextureDescriptor(TextureReader.Read8Bpt4x4,                   Snorm: GalImageFormat.BC4_SNORM_BLOCK, Unorm: GalImageFormat.BC4_UNORM_BLOCK) },
-                { GalTextureFormat.BC5,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4, Snorm: GalImageFormat.BC5_SNORM_BLOCK, Unorm: GalImageFormat.BC5_UNORM_BLOCK) },
-
-                { GalTextureFormat.BC7U,      new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4, Unorm: GalImageFormat.BC7_UNORM_BLOCK)      },
-                { GalTextureFormat.BC1,       new TextureDescriptor(TextureReader.Read8Bpt4x4,                   Unorm: GalImageFormat.BC1_RGBA_UNORM_BLOCK) },
-                { GalTextureFormat.BC2,       new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4, Unorm: GalImageFormat.BC2_UNORM_BLOCK)      },
-                { GalTextureFormat.BC3,       new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4, Unorm: GalImageFormat.BC3_UNORM_BLOCK)      },
-                { GalTextureFormat.BC6H_SF16, new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4, Unorm: GalImageFormat.BC6H_SFLOAT_BLOCK)    },
-                { GalTextureFormat.BC6H_UF16, new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4, Unorm: GalImageFormat.BC6H_UFLOAT_BLOCK)    },
-
-                { GalTextureFormat.Astc2D4x4,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   Unorm: GalImageFormat.ASTC_4x4_UNORM_BLOCK)   },
-                { GalTextureFormat.Astc2D5x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture5x5,   Unorm: GalImageFormat.ASTC_5x5_UNORM_BLOCK)   },
-                { GalTextureFormat.Astc2D6x6,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture6x6,   Unorm: GalImageFormat.ASTC_6x6_UNORM_BLOCK)   },
-                { GalTextureFormat.Astc2D8x8,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x8,   Unorm: GalImageFormat.ASTC_8x8_UNORM_BLOCK)   },
-                { GalTextureFormat.Astc2D10x10, new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x10, Unorm: GalImageFormat.ASTC_10x10_UNORM_BLOCK) },
-                { GalTextureFormat.Astc2D12x12, new TextureDescriptor(TextureReader.Read16BptCompressedTexture12x12, Unorm: GalImageFormat.ASTC_12x12_UNORM_BLOCK) },
-                { GalTextureFormat.Astc2D5x4,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture5x4,   Unorm: GalImageFormat.ASTC_5x4_UNORM_BLOCK)   },
-                { GalTextureFormat.Astc2D6x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture6x5,   Unorm: GalImageFormat.ASTC_6x5_UNORM_BLOCK)   },
-                { GalTextureFormat.Astc2D8x6,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x6,   Unorm: GalImageFormat.ASTC_8x6_UNORM_BLOCK)   },
-                { GalTextureFormat.Astc2D10x8,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x8,  Unorm: GalImageFormat.ASTC_10x8_UNORM_BLOCK)  },
-                { GalTextureFormat.Astc2D12x10, new TextureDescriptor(TextureReader.Read16BptCompressedTexture12x10, Unorm: GalImageFormat.ASTC_12x10_UNORM_BLOCK) },
-                { GalTextureFormat.Astc2D8x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x5,   Unorm: GalImageFormat.ASTC_8x5_UNORM_BLOCK)   },
-                { GalTextureFormat.Astc2D10x5,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x5,  Unorm: GalImageFormat.ASTC_10x5_UNORM_BLOCK)  },
-                { GalTextureFormat.Astc2D10x6,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x6,  Unorm: GalImageFormat.ASTC_10x6_UNORM_BLOCK)  },
-
+                { GalTextureFormat.BC6H_SF16,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC6H_SF16  | Unorm        ) },
+                { GalTextureFormat.BC6H_UF16,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC6H_UF16  | Unorm        ) },
+                { GalTextureFormat.BC7U,        new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC7        | Unorm        ) },
+                { GalTextureFormat.BC1,         new TextureDescriptor(TextureReader.Read8Bpt4x4,                     GalImageFormat.BC1_RGBA   | Unorm        ) },
+                { GalTextureFormat.BC2,         new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC2        | Unorm        ) },
+                { GalTextureFormat.BC3,         new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC3        | Unorm        ) },
+                { GalTextureFormat.BC4,         new TextureDescriptor(TextureReader.Read8Bpt4x4,                     GalImageFormat.BC4        | Unorm | Snorm) },
+                { GalTextureFormat.BC5,         new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.BC5        | Unorm | Snorm) },
+                { GalTextureFormat.Astc2D4x4,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture4x4,   GalImageFormat.ASTC_4x4   | Unorm        ) },
+                { GalTextureFormat.Astc2D5x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture5x5,   GalImageFormat.ASTC_5x5   | Unorm        ) },
+                { GalTextureFormat.Astc2D6x6,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture6x6,   GalImageFormat.ASTC_6x6   | Unorm        ) },
+                { GalTextureFormat.Astc2D8x8,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x8,   GalImageFormat.ASTC_8x8   | Unorm        ) },
+                { GalTextureFormat.Astc2D10x10, new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x10, GalImageFormat.ASTC_10x10 | Unorm        ) },
+                { GalTextureFormat.Astc2D12x12, new TextureDescriptor(TextureReader.Read16BptCompressedTexture12x12, GalImageFormat.ASTC_12x12 | Unorm        ) },
+                { GalTextureFormat.Astc2D5x4,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture5x4,   GalImageFormat.ASTC_5x4   | Unorm        ) },
+                { GalTextureFormat.Astc2D6x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture6x5,   GalImageFormat.ASTC_6x5   | Unorm        ) },
+                { GalTextureFormat.Astc2D8x6,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x6,   GalImageFormat.ASTC_8x6   | Unorm        ) },
+                { GalTextureFormat.Astc2D10x8,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x8,  GalImageFormat.ASTC_10x8  | Unorm        ) },
+                { GalTextureFormat.Astc2D12x10, new TextureDescriptor(TextureReader.Read16BptCompressedTexture12x10, GalImageFormat.ASTC_12x10 | Unorm        ) },
+                { GalTextureFormat.Astc2D8x5,   new TextureDescriptor(TextureReader.Read16BptCompressedTexture8x5,   GalImageFormat.ASTC_8x5   | Unorm        ) },
+                { GalTextureFormat.Astc2D10x5,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x5,  GalImageFormat.ASTC_10x5  | Unorm        ) },
+                { GalTextureFormat.Astc2D10x6,  new TextureDescriptor(TextureReader.Read16BptCompressedTexture10x6,  GalImageFormat.ASTC_10x6  | Unorm        ) }
             };
 
         private static readonly Dictionary<GalImageFormat, ImageDescriptor> s_ImageTable =
             new Dictionary<GalImageFormat, ImageDescriptor>()
             {
-                { GalImageFormat.R32G32B32A32_SFLOAT,      new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32G32B32A32_SINT,        new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32G32B32A32_UINT,        new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16B16A16_SFLOAT,      new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16B16A16_SINT,        new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16B16A16_UINT,        new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32G32_SFLOAT,            new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32G32_SINT,              new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32G32_UINT,              new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A8B8G8R8_SNORM_PACK32,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A8B8G8R8_UNORM_PACK32,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A8B8G8R8_SINT_PACK32,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A8B8G8R8_UINT_PACK32,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A2B10G10R10_SINT_PACK32,  new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A2B10G10R10_SNORM_PACK32, new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A2B10G10R10_UINT_PACK32,  new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A2B10G10R10_UNORM_PACK32, new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32_SFLOAT,               new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32_SINT,                 new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R32_UINT,                 new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC6H_SFLOAT_BLOCK,        new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC6H_UFLOAT_BLOCK,        new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.A1R5G5B5_UNORM_PACK16,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.B5G6R5_UNORM_PACK16,      new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC7_UNORM_BLOCK,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16_SFLOAT,            new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16_SINT,              new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16_SNORM,             new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16G16_UNORM,             new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8G8_SINT,                new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8G8_SNORM,               new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8G8_UINT,                new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8G8_UNORM,               new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16_SFLOAT,               new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16_SINT,                 new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16_SNORM,                new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16_UINT,                 new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R16_UNORM,                new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8_SINT,                  new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8_SNORM,                 new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8_UINT,                  new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.R8_UNORM,                 new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.B10G11R11_UFLOAT_PACK32,  new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC1_RGBA_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC2_UNORM_BLOCK,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC3_UNORM_BLOCK,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC4_UNORM_BLOCK,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.BC5_UNORM_BLOCK,          new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_4x4_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_5x5_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_6x6_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_8x8_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_10x10_UNORM_BLOCK,   new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_12x12_UNORM_BLOCK,   new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_5x4_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_6x5_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_8x6_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_10x8_UNORM_BLOCK,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_12x10_UNORM_BLOCK,   new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_8x5_UNORM_BLOCK,     new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_10x5_UNORM_BLOCK,    new ImageDescriptor(true,  false, false) },
-                { GalImageFormat.ASTC_10x6_UNORM_BLOCK,    new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R32G32B32A32, new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R16G16B16A16, new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R32G32,       new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.A8B8G8R8,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.A2B10G10R10,  new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R32,          new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.BC6H_SF16,    new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.BC6H_UF16,    new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.A1R5G5B5,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.B5G6R5,       new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.BC7,          new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R16G16,       new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R8G8,         new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R16,          new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.R8,           new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.B10G11R11,    new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.BC1_RGBA,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.BC2,          new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.BC3,          new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.BC4,          new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.BC5,          new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_4x4,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_5x5,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_6x6,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_8x8,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_10x10,   new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_12x12,   new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_5x4,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_6x5,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_8x6,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_10x8,    new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_12x10,   new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_8x5,     new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_10x5,    new ImageDescriptor(true,  false, false) },
+                { GalImageFormat.ASTC_10x6,    new ImageDescriptor(true,  false, false) },
 
-                { GalImageFormat.D24_UNORM_S8_UINT,  new ImageDescriptor(false, true,  true)  },
-                { GalImageFormat.D32_SFLOAT,         new ImageDescriptor(false, true,  false) },
-                { GalImageFormat.D16_UNORM,          new ImageDescriptor(false, true,  false) },
-                { GalImageFormat.D32_SFLOAT_S8_UINT, new ImageDescriptor(false, true,  true)  },
+                { GalImageFormat.D24_S8, new ImageDescriptor(false, true,  true)  },
+                { GalImageFormat.D32,    new ImageDescriptor(false, true,  false) },
+                { GalImageFormat.D16,    new ImageDescriptor(false, true,  false) },
+                { GalImageFormat.D32_S8, new ImageDescriptor(false, true,  true)  },
 
-                { GalImageFormat.R4G4B4A4_UNORM_PACK16_REVERSED, new ImageDescriptor(true,  false, false) }
+                { GalImageFormat.R4G4B4A4_REVERSED, new ImageDescriptor(true,  false, false) }
             };
 
         public static GalImageFormat ConvertTexture(
@@ -160,57 +134,46 @@ namespace Ryujinx.Graphics.Texture
                 throw new NotImplementedException("Per component types are not implemented");
             }
 
-            TextureDescriptor Descriptor = GetTextureDescriptor(Format);
-
             GalTextureType Type = RType;
 
-            GalImageFormat? ImageFormat;
+            GalImageFormat ImageFormat = GetTextureDescriptor(Format).Format;
 
-            switch (Type)
+            GalImageFormat FormatType = GetFormatType(RType);
+
+            if (ImageFormat.HasFlag(FormatType))
             {
-                case GalTextureType.Snorm:            ImageFormat = Descriptor.Snorm;            break;
-                case GalTextureType.Unorm:            ImageFormat = Descriptor.Unorm;            break;
-                case GalTextureType.Sint:             ImageFormat = Descriptor.Sint;             break;
-                case GalTextureType.Uint:             ImageFormat = Descriptor.Uint;             break;
-                case GalTextureType.Float:            ImageFormat = Descriptor.Float;            break;
-                case GalTextureType.Snorm_Force_Fp16: ImageFormat = Descriptor.Snorm_Force_Fp16; break;
-                case GalTextureType.Unorm_Force_Fp16: ImageFormat = Descriptor.Unorm_Force_Fp16; break;
-
-                default: throw new NotImplementedException("Unknown component type " + ((int)Type).ToString("x2"));
+                return (ImageFormat & GalImageFormat.FormatMask) | FormatType;
             }
-
-            if (!ImageFormat.HasValue)
+            else
             {
                 throw new NotImplementedException("Texture with format " + Format +
                                                   " and component type " + Type + " is not implemented");
             }
-
-            return ImageFormat.Value;
         }
 
         public static GalImageFormat ConvertFrameBuffer(GalFrameBufferFormat Format)
         {
             switch (Format)
             {
-                case GalFrameBufferFormat.R32Float:       return GalImageFormat.R32_SFLOAT;
-                case GalFrameBufferFormat.RGB10A2Unorm:   return GalImageFormat.A2B10G10R10_UNORM_PACK32;
-                case GalFrameBufferFormat.RGBA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB_PACK32;
-                case GalFrameBufferFormat.RGBA16Float:    return GalImageFormat.R16G16B16A16_SFLOAT;
-                case GalFrameBufferFormat.R16Float:       return GalImageFormat.R16_SFLOAT;
-                case GalFrameBufferFormat.R8Unorm:        return GalImageFormat.R8_UNORM;
-                case GalFrameBufferFormat.RGBA8Unorm:     return GalImageFormat.A8B8G8R8_UNORM_PACK32;
-                case GalFrameBufferFormat.R11G11B10Float: return GalImageFormat.B10G11R11_UFLOAT_PACK32;
-                case GalFrameBufferFormat.RGBA32Float:    return GalImageFormat.R32G32B32A32_SFLOAT;
-                case GalFrameBufferFormat.RG16Snorm:      return GalImageFormat.R16G16_SNORM;
-                case GalFrameBufferFormat.RG16Float:      return GalImageFormat.R16G16_SFLOAT;
-                case GalFrameBufferFormat.RG8Snorm:       return GalImageFormat.R8_SNORM;
-                case GalFrameBufferFormat.RGBA8Snorm:     return GalImageFormat.A8B8G8R8_SNORM_PACK32;
-                case GalFrameBufferFormat.RG8Unorm:       return GalImageFormat.R8G8_UNORM;
-                case GalFrameBufferFormat.BGRA8Unorm:     return GalImageFormat.A8B8G8R8_UNORM_PACK32;
-                case GalFrameBufferFormat.BGRA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB_PACK32;
-                case GalFrameBufferFormat.RG32Float:      return GalImageFormat.R32G32_SFLOAT;
-                case GalFrameBufferFormat.RG32Sint:       return GalImageFormat.R32G32_SINT;
-                case GalFrameBufferFormat.RG32Uint:       return GalImageFormat.R32G32_UINT;
+                case GalFrameBufferFormat.RGBA32Float:    return GalImageFormat.R32G32B32A32   | Sfloat;
+                case GalFrameBufferFormat.RGBA16Float:    return GalImageFormat.R16G16B16A16   | Sfloat;
+                case GalFrameBufferFormat.RG32Float:      return GalImageFormat.R32G32         | Sfloat;
+                case GalFrameBufferFormat.RG32Sint:       return GalImageFormat.R32G32         | Sint;
+                case GalFrameBufferFormat.RG32Uint:       return GalImageFormat.R32G32         | Uint;
+                case GalFrameBufferFormat.BGRA8Unorm:     return GalImageFormat.R8G8B8A8       | Unorm; //Is this right?
+                case GalFrameBufferFormat.BGRA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB;          //This one might be wrong
+                case GalFrameBufferFormat.RGB10A2Unorm:   return GalImageFormat.A2B10G10R10    | Unorm;
+                case GalFrameBufferFormat.RGBA8Unorm:     return GalImageFormat.A8B8G8R8       | Unorm;
+                case GalFrameBufferFormat.RGBA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB;
+                case GalFrameBufferFormat.RGBA8Snorm:     return GalImageFormat.A8B8G8R8       | Snorm;
+                case GalFrameBufferFormat.RG16Snorm:      return GalImageFormat.R16G16         | Snorm;
+                case GalFrameBufferFormat.RG16Float:      return GalImageFormat.R16G16         | Sfloat;
+                case GalFrameBufferFormat.R11G11B10Float: return GalImageFormat.B10G11R11      | Sfloat;
+                case GalFrameBufferFormat.R32Float:       return GalImageFormat.R32            | Sfloat;
+                case GalFrameBufferFormat.RG8Unorm:       return GalImageFormat.R8G8           | Unorm;
+                case GalFrameBufferFormat.RG8Snorm:       return GalImageFormat.R8             | Snorm;
+                case GalFrameBufferFormat.R16Float:       return GalImageFormat.R16            | Sfloat;
+                case GalFrameBufferFormat.R8Unorm:        return GalImageFormat.R8             | Unorm;
             }
 
             throw new NotImplementedException(Format.ToString());
@@ -220,10 +183,11 @@ namespace Ryujinx.Graphics.Texture
         {
             switch (Format)
             {
-                case GalZetaFormat.Z32Float: return GalImageFormat.D32_SFLOAT;
-                case GalZetaFormat.S8Z24Unorm: return GalImageFormat.D24_UNORM_S8_UINT;
-                case GalZetaFormat.Z16Unorm: return GalImageFormat.D16_UNORM;
-                case GalZetaFormat.Z32S8X24Float: return GalImageFormat.D32_SFLOAT_S8_UINT;
+                case GalZetaFormat.Z32Float:      return GalImageFormat.D32    | Sfloat;
+                case GalZetaFormat.S8Z24Unorm:    return GalImageFormat.D24_S8 | Unorm;
+                case GalZetaFormat.Z16Unorm:      return GalImageFormat.D16    | Unorm;
+                //This one might not be Uint, change when a texture uses this format
+                case GalZetaFormat.Z32S8X24Float: return GalImageFormat.D32_S8 | Uint;
             }
 
             throw new NotImplementedException(Format.ToString());
@@ -231,168 +195,107 @@ namespace Ryujinx.Graphics.Texture
 
         public static int GetImageSize(GalImage Image)
         {
-            switch (Image.Format)
+            switch (Image.Format & GalImageFormat.FormatMask)
             {
-                case GalImageFormat.R32G32B32A32_SFLOAT:
-                case GalImageFormat.R32G32B32A32_SINT:
-                case GalImageFormat.R32G32B32A32_UINT:
+                case GalImageFormat.R32G32B32A32:
                     return Image.Width * Image.Height * 16;
 
-                case GalImageFormat.R16G16B16A16_SFLOAT:
-                case GalImageFormat.R16G16B16A16_SINT:
-                case GalImageFormat.R16G16B16A16_SNORM:
-                case GalImageFormat.R16G16B16A16_UINT:
-                case GalImageFormat.R16G16B16A16_UNORM:
-                case GalImageFormat.D32_SFLOAT_S8_UINT:
-                case GalImageFormat.R32G32_SFLOAT:
-                case GalImageFormat.R32G32_SINT:
-                case GalImageFormat.R32G32_UINT:
+                case GalImageFormat.R16G16B16A16:
+                case GalImageFormat.D32_S8:
+                case GalImageFormat.R32G32:
                     return Image.Width * Image.Height * 8;
 
-                case GalImageFormat.A8B8G8R8_SINT_PACK32:
-                case GalImageFormat.A8B8G8R8_SNORM_PACK32:
-                case GalImageFormat.A8B8G8R8_UINT_PACK32:
-                case GalImageFormat.A8B8G8R8_UNORM_PACK32:
-                case GalImageFormat.A8B8G8R8_SRGB_PACK32:
-                case GalImageFormat.A2B10G10R10_SINT_PACK32:
-                case GalImageFormat.A2B10G10R10_SNORM_PACK32:
-                case GalImageFormat.A2B10G10R10_UINT_PACK32:
-                case GalImageFormat.A2B10G10R10_UNORM_PACK32:
-                case GalImageFormat.R16G16_SFLOAT:
-                case GalImageFormat.R16G16_SINT:
-                case GalImageFormat.R16G16_SNORM:
-                case GalImageFormat.R16G16_UINT:
-                case GalImageFormat.R16G16_UNORM:
-                case GalImageFormat.R32_SFLOAT:
-                case GalImageFormat.R32_SINT:
-                case GalImageFormat.R32_UINT:
-                case GalImageFormat.D32_SFLOAT:
-                case GalImageFormat.B10G11R11_UFLOAT_PACK32:
-                case GalImageFormat.D24_UNORM_S8_UINT:
+                case GalImageFormat.A8B8G8R8:
+                case GalImageFormat.A2B10G10R10:
+                case GalImageFormat.R16G16:
+                case GalImageFormat.R32:
+                case GalImageFormat.D32:
+                case GalImageFormat.B10G11R11:
+                case GalImageFormat.D24_S8:
                     return Image.Width * Image.Height * 4;
 
-                case GalImageFormat.B4G4R4A4_UNORM_PACK16:
-                case GalImageFormat.A1R5G5B5_UNORM_PACK16:
-                case GalImageFormat.B5G6R5_UNORM_PACK16:
-                case GalImageFormat.R8G8_SINT:
-                case GalImageFormat.R8G8_SNORM:
-                case GalImageFormat.R8G8_UINT:
-                case GalImageFormat.R8G8_UNORM:
-                case GalImageFormat.R16_SFLOAT:
-                case GalImageFormat.R16_SINT:
-                case GalImageFormat.R16_SNORM:
-                case GalImageFormat.R16_UINT:
-                case GalImageFormat.R16_UNORM:
-                case GalImageFormat.D16_UNORM:
+                case GalImageFormat.B4G4R4A4:
+                case GalImageFormat.A1R5G5B5:
+                case GalImageFormat.B5G6R5:
+                case GalImageFormat.R8G8:
+                case GalImageFormat.R16:
+                case GalImageFormat.D16:
                     return Image.Width * Image.Height * 2;
 
-                case GalImageFormat.R8_SINT:
-                case GalImageFormat.R8_SNORM:
-                case GalImageFormat.R8_UINT:
-                case GalImageFormat.R8_UNORM:
+                case GalImageFormat.R8:
                     return Image.Width * Image.Height;
 
-                case GalImageFormat.BC1_RGBA_UNORM_BLOCK:
-                case GalImageFormat.BC4_SNORM_BLOCK:
-                case GalImageFormat.BC4_UNORM_BLOCK:
+                case GalImageFormat.BC1_RGBA:
+                case GalImageFormat.BC4:
                 {
                     return CompressedTextureSize(Image.Width, Image.Height, 4, 4, 8);
                 }
 
-                case GalImageFormat.BC6H_SFLOAT_BLOCK:
-                case GalImageFormat.BC6H_UFLOAT_BLOCK:
-                case GalImageFormat.BC7_UNORM_BLOCK:
-                case GalImageFormat.BC2_UNORM_BLOCK:
-                case GalImageFormat.BC3_UNORM_BLOCK:
-                case GalImageFormat.BC5_SNORM_BLOCK:
-                case GalImageFormat.BC5_UNORM_BLOCK:
-                case GalImageFormat.ASTC_4x4_UNORM_BLOCK:
-                {
+                case GalImageFormat.BC6H_SF16:
+                case GalImageFormat.BC6H_UF16:
+                case GalImageFormat.BC7:
+                case GalImageFormat.BC2:
+                case GalImageFormat.BC3:
+                case GalImageFormat.BC5:
+                case GalImageFormat.ASTC_4x4:
                     return CompressedTextureSize(Image.Width, Image.Height, 4, 4, 16);
-                }
 
-                case GalImageFormat.ASTC_5x5_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_5x5:
                     return CompressedTextureSize(Image.Width, Image.Height, 5, 5, 16);
-                }
 
-                case GalImageFormat.ASTC_6x6_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_6x6:
                     return CompressedTextureSize(Image.Width, Image.Height, 6, 6, 16);
-                }
 
-                case GalImageFormat.ASTC_8x8_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_8x8:
                     return CompressedTextureSize(Image.Width, Image.Height, 8, 8, 16);
-                }
 
-                case GalImageFormat.ASTC_10x10_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_10x10:
                     return CompressedTextureSize(Image.Width, Image.Height, 10, 10, 16);
-                }
 
-                case GalImageFormat.ASTC_12x12_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_12x12:
                     return CompressedTextureSize(Image.Width, Image.Height, 12, 12, 16);
-                }
 
-                case GalImageFormat.ASTC_5x4_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_5x4:
                     return CompressedTextureSize(Image.Width, Image.Height, 5, 4, 16);
-                }
 
-                case GalImageFormat.ASTC_6x5_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_6x5:
                     return CompressedTextureSize(Image.Width, Image.Height, 6, 5, 16);
-                }
 
-                case GalImageFormat.ASTC_8x6_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_8x6:
                     return CompressedTextureSize(Image.Width, Image.Height, 8, 6, 16);
-                }
 
-                case GalImageFormat.ASTC_10x8_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_10x8:
                     return CompressedTextureSize(Image.Width, Image.Height, 10, 8, 16);
-                }
 
-                case GalImageFormat.ASTC_12x10_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_12x10:
                     return CompressedTextureSize(Image.Width, Image.Height, 12, 10, 16);
-                }
 
-                case GalImageFormat.ASTC_8x5_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_8x5:
                     return CompressedTextureSize(Image.Width, Image.Height, 8, 5, 16);
-                }
 
-                case GalImageFormat.ASTC_10x5_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_10x5:
                     return CompressedTextureSize(Image.Width, Image.Height, 10, 5, 16);
-                }
 
-                case GalImageFormat.ASTC_10x6_UNORM_BLOCK:
-                {
+                case GalImageFormat.ASTC_10x6:
                     return CompressedTextureSize(Image.Width, Image.Height, 10, 6, 16);
-                }
             }
 
-            throw new NotImplementedException(Image.Format.ToString());
+            throw new NotImplementedException((Image.Format & GalImageFormat.FormatMask).ToString());
         }
 
         public static bool HasColor(GalImage Image)
         {
-            return s_ImageTable[Image.Format].HasColor;
+            return GetImageDescriptor(Image.Format).HasColor;
         }
 
         public static bool HasDepth(GalImage Image)
         {
-            return s_ImageTable[Image.Format].HasDepth;
+            return GetImageDescriptor(Image.Format).HasDepth;
         }
 
         public static bool HasStencil(GalImage Image)
         {
-            return s_ImageTable[Image.Format].HasStencil;
+            return GetImageDescriptor(Image.Format).HasStencil;
         }
 
         public static TextureDescriptor GetTextureDescriptor(GalTextureFormat Format)
@@ -403,6 +306,32 @@ namespace Ryujinx.Graphics.Texture
             }
 
             throw new NotImplementedException("Texture with format code " + ((int)Format).ToString("x2") + " not implemented");
+        }
+
+        private static ImageDescriptor GetImageDescriptor(GalImageFormat Format)
+        {
+            GalImageFormat TypeLess = (Format & GalImageFormat.FormatMask);
+
+            if (s_ImageTable.TryGetValue(TypeLess, out ImageDescriptor Descriptor))
+            {
+                return Descriptor;
+            }
+
+            throw new NotImplementedException("Image with format " + TypeLess.ToString() + "not implemented");
+        }
+
+        private static GalImageFormat GetFormatType(GalTextureType Type)
+        {
+            switch (Type)
+            {
+                case GalTextureType.Snorm: return Snorm;
+                case GalTextureType.Unorm: return Unorm;
+                case GalTextureType.Sint:  return Sint;
+                case GalTextureType.Uint:  return Uint;
+                case GalTextureType.Float: return Sfloat;
+
+                default: throw new NotImplementedException(((int)Type).ToString());
+            }
         }
 
         private static int CompressedTextureSize(int TextureWidth, int TextureHeight, int BlockWidth, int BlockHeight, int Bpb)

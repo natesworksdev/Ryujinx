@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         Image.Width,
                         Image.Height, 1);
 
-                    Image.Format = GalImageFormat.A8B8G8R8_UNORM_PACK32;
+                    Image.Format = GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm;
                 }
 
                 (PixelInternalFormat InternalFormat, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(Image.Format);
@@ -123,20 +123,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Format)
             {
-                case GalImageFormat.ASTC_4x4_UNORM_BLOCK:   return 4;
-                case GalImageFormat.ASTC_5x5_UNORM_BLOCK:   return 5;
-                case GalImageFormat.ASTC_6x6_UNORM_BLOCK:   return 6;
-                case GalImageFormat.ASTC_8x8_UNORM_BLOCK:   return 8;
-                case GalImageFormat.ASTC_10x10_UNORM_BLOCK: return 10;
-                case GalImageFormat.ASTC_12x12_UNORM_BLOCK: return 12;
-                case GalImageFormat.ASTC_5x4_UNORM_BLOCK:   return 5;
-                case GalImageFormat.ASTC_6x5_UNORM_BLOCK:   return 6;
-                case GalImageFormat.ASTC_8x6_UNORM_BLOCK:   return 8;
-                case GalImageFormat.ASTC_10x8_UNORM_BLOCK:  return 10;
-                case GalImageFormat.ASTC_12x10_UNORM_BLOCK: return 12;
-                case GalImageFormat.ASTC_8x5_UNORM_BLOCK:   return 8;
-                case GalImageFormat.ASTC_10x5_UNORM_BLOCK:  return 10;
-                case GalImageFormat.ASTC_10x6_UNORM_BLOCK:  return 10;
+                case GalImageFormat.ASTC_4x4   | GalImageFormat.Unorm: return 4;
+                case GalImageFormat.ASTC_5x5   | GalImageFormat.Unorm: return 5;
+                case GalImageFormat.ASTC_6x6   | GalImageFormat.Unorm: return 6;
+                case GalImageFormat.ASTC_8x8   | GalImageFormat.Unorm: return 8;
+                case GalImageFormat.ASTC_10x10 | GalImageFormat.Unorm: return 10;
+                case GalImageFormat.ASTC_12x12 | GalImageFormat.Unorm: return 12;
+                case GalImageFormat.ASTC_5x4   | GalImageFormat.Unorm: return 5;
+                case GalImageFormat.ASTC_6x5   | GalImageFormat.Unorm: return 6;
+                case GalImageFormat.ASTC_8x6   | GalImageFormat.Unorm: return 8;
+                case GalImageFormat.ASTC_10x8  | GalImageFormat.Unorm: return 10;
+                case GalImageFormat.ASTC_12x10 | GalImageFormat.Unorm: return 12;
+                case GalImageFormat.ASTC_8x5   | GalImageFormat.Unorm: return 8;
+                case GalImageFormat.ASTC_10x5  | GalImageFormat.Unorm: return 10;
+                case GalImageFormat.ASTC_10x6  | GalImageFormat.Unorm: return 10;
             }
 
             throw new ArgumentException(nameof(Format));
@@ -146,20 +146,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Format)
             {
-                case GalImageFormat.ASTC_4x4_UNORM_BLOCK:   return 4;
-                case GalImageFormat.ASTC_5x5_UNORM_BLOCK:   return 5;
-                case GalImageFormat.ASTC_6x6_UNORM_BLOCK:   return 6;
-                case GalImageFormat.ASTC_8x8_UNORM_BLOCK:   return 8;
-                case GalImageFormat.ASTC_10x10_UNORM_BLOCK: return 10;
-                case GalImageFormat.ASTC_12x12_UNORM_BLOCK: return 12;
-                case GalImageFormat.ASTC_5x4_UNORM_BLOCK:   return 4;
-                case GalImageFormat.ASTC_6x5_UNORM_BLOCK:   return 5;
-                case GalImageFormat.ASTC_8x6_UNORM_BLOCK:   return 6;
-                case GalImageFormat.ASTC_10x8_UNORM_BLOCK:  return 8;
-                case GalImageFormat.ASTC_12x10_UNORM_BLOCK: return 10;
-                case GalImageFormat.ASTC_8x5_UNORM_BLOCK:   return 5;
-                case GalImageFormat.ASTC_10x5_UNORM_BLOCK:  return 5;
-                case GalImageFormat.ASTC_10x6_UNORM_BLOCK:  return 6;
+                case GalImageFormat.ASTC_4x4   | GalImageFormat.Unorm: return 4;
+                case GalImageFormat.ASTC_5x5   | GalImageFormat.Unorm: return 5;
+                case GalImageFormat.ASTC_6x6   | GalImageFormat.Unorm: return 6;
+                case GalImageFormat.ASTC_8x8   | GalImageFormat.Unorm: return 8;
+                case GalImageFormat.ASTC_10x10 | GalImageFormat.Unorm: return 10;
+                case GalImageFormat.ASTC_12x12 | GalImageFormat.Unorm: return 12;
+                case GalImageFormat.ASTC_5x4   | GalImageFormat.Unorm: return 4;
+                case GalImageFormat.ASTC_6x5   | GalImageFormat.Unorm: return 5;
+                case GalImageFormat.ASTC_8x6   | GalImageFormat.Unorm: return 6;
+                case GalImageFormat.ASTC_10x8  | GalImageFormat.Unorm: return 8;
+                case GalImageFormat.ASTC_12x10 | GalImageFormat.Unorm: return 10;
+                case GalImageFormat.ASTC_8x5   | GalImageFormat.Unorm: return 5;
+                case GalImageFormat.ASTC_10x5  | GalImageFormat.Unorm: return 5;
+                case GalImageFormat.ASTC_10x6  | GalImageFormat.Unorm: return 6;
             }
 
             throw new ArgumentException(nameof(Format));
@@ -219,18 +219,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private static bool IsCompressedTextureFormat(GalImageFormat Format)
         {
-            switch (Format)
+            switch (Format & GalImageFormat.FormatMask)
             {
-                case GalImageFormat.BC6H_UFLOAT_BLOCK:
-                case GalImageFormat.BC6H_SFLOAT_BLOCK:
-                case GalImageFormat.BC7_UNORM_BLOCK:
-                case GalImageFormat.BC1_RGBA_UNORM_BLOCK:
-                case GalImageFormat.BC2_UNORM_BLOCK:
-                case GalImageFormat.BC3_UNORM_BLOCK:
-                case GalImageFormat.BC4_SNORM_BLOCK:
-                case GalImageFormat.BC4_UNORM_BLOCK:
-                case GalImageFormat.BC5_SNORM_BLOCK:
-                case GalImageFormat.BC5_UNORM_BLOCK:
+                case GalImageFormat.BC6H_UF16:
+                case GalImageFormat.BC6H_SF16:
+                case GalImageFormat.BC7:
+                case GalImageFormat.BC1_RGBA:
+                case GalImageFormat.BC2:
+                case GalImageFormat.BC3:
+                case GalImageFormat.BC4:
+                case GalImageFormat.BC5:
                     return true;
             }
 

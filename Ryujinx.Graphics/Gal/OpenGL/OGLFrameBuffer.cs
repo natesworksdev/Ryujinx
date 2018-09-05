@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private const int NativeWidth  = 1280;
         private const int NativeHeight = 720;
 
-        private const GalImageFormat RawFormat = GalImageFormat.A8B8G8R8_UNORM_PACK32;
+        private const GalImageFormat RawFormat = GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm;
 
         private OGLTexture Texture;
 
