@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Texture
             return Reader(Memory, Texture);
         }
 
-        public unsafe static byte[] Read1Bpp(IAMemory Memory, TextureInfo Texture)
+        internal unsafe static byte[] Read1Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        public unsafe static byte[] Read5551(IAMemory Memory, TextureInfo Texture)
+        internal unsafe static byte[] Read5551(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        public unsafe static byte[] Read565(IAMemory Memory, TextureInfo Texture)
+        internal unsafe static byte[] Read565(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -123,7 +123,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        public unsafe static byte[] Read2Bpp(IAMemory Memory, TextureInfo Texture)
+        internal unsafe static byte[] Read2Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        public unsafe static byte[] Read4Bpp(IAMemory Memory, TextureInfo Texture)
+        internal unsafe static byte[] Read4Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -189,7 +189,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        public unsafe static byte[] Read8Bpp(IAMemory Memory, TextureInfo Texture)
+        internal unsafe static byte[] Read8Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -222,7 +222,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        public unsafe static byte[] Read16Bpp(IAMemory Memory, TextureInfo Texture)
+        internal unsafe static byte[] Read16Bpp(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = Texture.Width;
             int Height = Texture.Height;
@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        public unsafe static byte[] Read8Bpt4x4(IAMemory Memory, TextureInfo Texture)
+        internal unsafe static byte[] Read8Bpt4x4(IAMemory Memory, TextureInfo Texture)
         {
             int Width  = (Texture.Width  + 3) / 4;
             int Height = (Texture.Height + 3) / 4;
@@ -290,7 +290,7 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        private unsafe static byte[] Read16BptCompressedTexture(IAMemory Memory, TextureInfo Texture, int BlockWidth, int BlockHeight)
+        internal unsafe static byte[] Read16BptCompressedTexture(IAMemory Memory, TextureInfo Texture, int BlockWidth, int BlockHeight)
         {
             int Width  = (Texture.Width  + (BlockWidth - 1)) / BlockWidth;
             int Height = (Texture.Height + (BlockHeight - 1)) / BlockHeight;
@@ -325,72 +325,72 @@ namespace Ryujinx.Graphics.Texture
             return Output;
         }
 
-        public static byte[] Read16BptCompressedTexture4x4(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture4x4(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 4, 4);
         }
 
-        public static byte[] Read16BptCompressedTexture5x5(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture5x5(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 5, 5);
         }
 
-        public static byte[] Read16BptCompressedTexture6x6(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture6x6(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 6, 6);
         }
 
-        public static byte[] Read16BptCompressedTexture8x8(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture8x8(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 8, 8);
         }
 
-        public static byte[] Read16BptCompressedTexture10x10(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture10x10(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 10, 10);
         }
 
-        public static byte[] Read16BptCompressedTexture12x12(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture12x12(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 12, 12);
         }
 
-        public static byte[] Read16BptCompressedTexture5x4(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture5x4(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 5, 4);
         }
 
-        public static byte[] Read16BptCompressedTexture6x5(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture6x5(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 6, 5);
         }
 
-        public static byte[] Read16BptCompressedTexture8x6(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture8x6(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 8, 6);
         }
 
-        public static byte[] Read16BptCompressedTexture10x8(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture10x8(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 10, 8);
         }
 
-        public static byte[] Read16BptCompressedTexture12x10(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture12x10(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 12, 10);
         }
 
-        public static byte[] Read16BptCompressedTexture8x5(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture8x5(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 5, 5);
         }
 
-        public static byte[] Read16BptCompressedTexture10x5(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture10x5(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 10, 5);
         }
 
-        public static byte[] Read16BptCompressedTexture10x6(IAMemory Memory, TextureInfo Texture)
+        internal static byte[] Read16BptCompressedTexture10x6(IAMemory Memory, TextureInfo Texture)
         {
             return Read16BptCompressedTexture(Memory, Texture, 10, 6);
         }
