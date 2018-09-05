@@ -55,7 +55,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
             else
             {
-                if (Image.Format >= GalImageFormat.ASTC_BEGIN && Image.Format <= GalImageFormat.ASTC_END)
+                GalImageFormat TypeLess = Image.Format & GalImageFormat.FormatMask;
+
+                if (TypeLess >= GalImageFormat.ASTC_BEGIN && TypeLess <= GalImageFormat.ASTC_END)
                 {
                     int TextureBlockWidth  = GetAstcBlockWidth(Image.Format);
                     int TextureBlockHeight = GetAstcBlockHeight(Image.Format);

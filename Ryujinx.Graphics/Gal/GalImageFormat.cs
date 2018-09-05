@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Gal
 
         ASTC_BEGIN = ASTC_4x4,
 
-        ASTC_4x4 = 0,
+        ASTC_4x4 = 1,
         ASTC_5x4,
         ASTC_5x5,
         ASTC_6x5,

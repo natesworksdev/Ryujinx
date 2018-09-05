@@ -206,6 +206,7 @@ namespace Ryujinx.Graphics.Texture
                     return Image.Width * Image.Height * 8;
 
                 case GalImageFormat.A8B8G8R8:
+                case GalImageFormat.A8B8G8R8_SRGB:
                 case GalImageFormat.A2B10G10R10:
                 case GalImageFormat.R16G16:
                 case GalImageFormat.R32:
