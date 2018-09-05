@@ -1,4 +1,5 @@
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Graphics.Texture;
 using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
@@ -379,7 +380,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
-                byte[] Data = new byte[Tex.Width * Tex.Height * ImageHandler.MaxBpp];
+                byte[] Data = new byte[ImageTable.GetImageSize(Tex.Image)];
 
                 GL.BindTexture(TextureTarget.Texture2D, Tex.Handle);
 

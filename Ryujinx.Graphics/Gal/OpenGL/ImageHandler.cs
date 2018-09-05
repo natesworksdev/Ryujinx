@@ -6,9 +6,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class ImageHandler
     {
-        //TODO: Use a variable value here
-        public const int MaxBpp = 16;
-
         private static int CopyBuffer = 0;
         private static int CopyBufferSize = 0;
 
@@ -39,15 +36,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             this.Image = Image;
         }
 
-        public void EnsureSetup(GalImage Image)
+        public void EnsureSetup(GalImage NewImage)
         {
-            if (Width  != Image.Width  ||
-                Height != Image.Height ||
-                Format != Image.Format ||
+            if (Width  != NewImage.Width  ||
+                Height != NewImage.Height ||
+                Format != NewImage.Format ||
                 !Initialized)
             {
                 (PixelInternalFormat InternalFormat, PixelFormat PixelFormat, PixelType PixelType) =
-                    OGLEnumConverter.GetImageFormat(Image.Format);
+                    OGLEnumConverter.GetImageFormat(NewImage.Format);
 
                 GL.BindTexture(TextureTarget.Texture2D, Handle);
 
@@ -58,12 +55,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         CopyBuffer = GL.GenBuffer();
                     }
 
-                    int MaxWidth  = Math.Max(Image.Width, Width);
-                    int MaxHeight = Math.Max(Image.Height, Height);
+                    int CurrentSize = Math.Max(ImageTable.GetImageSize(NewImage),
+                                               ImageTable.GetImageSize(Image));
 
-                    int CurrentSize = MaxWidth * MaxHeight * MaxBpp;
-
-                    GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyBuffer);
+                    GL.BindBuffer(BufferTarget.PixelPackBuffer,   CopyBuffer);
                     GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyBuffer);
 
                     if (CopyBufferSize < CurrentSize)
@@ -95,8 +90,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     TextureTarget.Texture2D,
                     Level,
                     InternalFormat,
-                    Image.Width,
-                    Image.Height,
+                    NewImage.Width,
+                    NewImage.Height,
                     Border,
                     PixelFormat,
                     PixelType,
@@ -104,11 +99,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 if (Initialized)
                 {
-                    GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+                    GL.BindBuffer(BufferTarget.PixelPackBuffer,   0);
                     GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
                 }
 
-                this.Image = Image;
+                Image = NewImage;
 
                 this.InternalFormat = InternalFormat;
                 this.PixelFormat = PixelFormat;
