@@ -145,8 +145,8 @@ namespace Ryujinx.Audio.SoundIo
         /// <summary>
         /// Reads a sequence of bytes from the ring buffer and advances the position within the ring buffer by the number of bytes read
         /// </summary>
-        /// <param name="buffer">A byte array containing the data to write</param>
-        /// <param name="index">The byte offset in <paramref name="array" /> at which the read bytes will be placed</param>
+        /// <param name="buffer">The buffer to write the data into</param>
+        /// <param name="index">The zero-based byte offset in <paramref name="buffer" /> at which the read bytes will be placed</param>
         /// <param name="count">The maximum number of bytes to read</param>
         /// <returns>The total number of bytes read into the buffer. This might be less than the number of bytes requested if that number of bytes are not currently available, or zero if the ring buffer is empty</returns>
         public int Read<T>(T[] buffer, int index, int count)
