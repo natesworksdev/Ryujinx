@@ -188,7 +188,7 @@ namespace Ryujinx.Audio.SoundIo
 
                 fixed (byte* srcptr = samples)
                 {
-                    if (bytesPerSample == 11)
+                    if (bytesPerSample == 1)
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
@@ -202,7 +202,7 @@ namespace Ryujinx.Audio.SoundIo
                             area2.Pointer += area2.Step;
                         }
                     }
-                    else if (bytesPerSample == 12)
+                    else if (bytesPerSample == 2)
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
@@ -216,7 +216,7 @@ namespace Ryujinx.Audio.SoundIo
                             area2.Pointer += area2.Step;
                         }
                     }
-                    else if (bytesPerSample == 14)
+                    else if (bytesPerSample == 4)
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
