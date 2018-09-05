@@ -201,7 +201,7 @@ namespace Ryujinx.Graphics
             int VpW = (int)(TX + MathF.Abs(SX)) - VpX;
             int VpH = (int)(TY + MathF.Abs(SY)) - VpY;
 
-            GalImageFormat ImageFormat = ImageTable.ConvertFrameBuffer((GalFrameBufferFormat)Format);
+            GalImageFormat ImageFormat = ImageTable.ConvertSurface((GalSurfaceFormat)Format);
 
             GalImage Image = new GalImage(Width, Height, ImageFormat);
 

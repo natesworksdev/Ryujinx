@@ -157,29 +157,29 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        public static GalImageFormat ConvertFrameBuffer(GalFrameBufferFormat Format)
+        public static GalImageFormat ConvertSurface(GalSurfaceFormat Format)
         {
             switch (Format)
             {
-                case GalFrameBufferFormat.RGBA32Float:    return GalImageFormat.R32G32B32A32   | Sfloat;
-                case GalFrameBufferFormat.RGBA16Float:    return GalImageFormat.R16G16B16A16   | Sfloat;
-                case GalFrameBufferFormat.RG32Float:      return GalImageFormat.R32G32         | Sfloat;
-                case GalFrameBufferFormat.RG32Sint:       return GalImageFormat.R32G32         | Sint;
-                case GalFrameBufferFormat.RG32Uint:       return GalImageFormat.R32G32         | Uint;
-                case GalFrameBufferFormat.BGRA8Unorm:     return GalImageFormat.R8G8B8A8       | Unorm; //Is this right?
-                case GalFrameBufferFormat.BGRA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB;          //This one might be wrong
-                case GalFrameBufferFormat.RGB10A2Unorm:   return GalImageFormat.A2B10G10R10    | Unorm;
-                case GalFrameBufferFormat.RGBA8Unorm:     return GalImageFormat.A8B8G8R8       | Unorm;
-                case GalFrameBufferFormat.RGBA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB;
-                case GalFrameBufferFormat.RGBA8Snorm:     return GalImageFormat.A8B8G8R8       | Snorm;
-                case GalFrameBufferFormat.RG16Snorm:      return GalImageFormat.R16G16         | Snorm;
-                case GalFrameBufferFormat.RG16Float:      return GalImageFormat.R16G16         | Sfloat;
-                case GalFrameBufferFormat.R11G11B10Float: return GalImageFormat.B10G11R11      | Sfloat;
-                case GalFrameBufferFormat.R32Float:       return GalImageFormat.R32            | Sfloat;
-                case GalFrameBufferFormat.RG8Unorm:       return GalImageFormat.R8G8           | Unorm;
-                case GalFrameBufferFormat.RG8Snorm:       return GalImageFormat.R8             | Snorm;
-                case GalFrameBufferFormat.R16Float:       return GalImageFormat.R16            | Sfloat;
-                case GalFrameBufferFormat.R8Unorm:        return GalImageFormat.R8             | Unorm;
+                case GalSurfaceFormat.RGBA32Float:    return GalImageFormat.R32G32B32A32   | Sfloat;
+                case GalSurfaceFormat.RGBA16Float:    return GalImageFormat.R16G16B16A16   | Sfloat;
+                case GalSurfaceFormat.RG32Float:      return GalImageFormat.R32G32         | Sfloat;
+                case GalSurfaceFormat.RG32Sint:       return GalImageFormat.R32G32         | Sint;
+                case GalSurfaceFormat.RG32Uint:       return GalImageFormat.R32G32         | Uint;
+                case GalSurfaceFormat.BGRA8Unorm:     return GalImageFormat.R8G8B8A8       | Unorm; //Is this right?
+                case GalSurfaceFormat.BGRA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB;          //This one might be wrong
+                case GalSurfaceFormat.RGB10A2Unorm:   return GalImageFormat.A2B10G10R10    | Unorm;
+                case GalSurfaceFormat.RGBA8Unorm:     return GalImageFormat.A8B8G8R8       | Unorm;
+                case GalSurfaceFormat.RGBA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB;
+                case GalSurfaceFormat.RGBA8Snorm:     return GalImageFormat.A8B8G8R8       | Snorm;
+                case GalSurfaceFormat.RG16Snorm:      return GalImageFormat.R16G16         | Snorm;
+                case GalSurfaceFormat.RG16Float:      return GalImageFormat.R16G16         | Sfloat;
+                case GalSurfaceFormat.R11G11B10Float: return GalImageFormat.B10G11R11      | Sfloat;
+                case GalSurfaceFormat.R32Float:       return GalImageFormat.R32            | Sfloat;
+                case GalSurfaceFormat.RG8Unorm:       return GalImageFormat.R8G8           | Unorm;
+                case GalSurfaceFormat.RG8Snorm:       return GalImageFormat.R8             | Snorm;
+                case GalSurfaceFormat.R16Float:       return GalImageFormat.R16            | Sfloat;
+                case GalSurfaceFormat.R8Unorm:        return GalImageFormat.R8             | Unorm;
             }
 
             throw new NotImplementedException(Format.ToString());
