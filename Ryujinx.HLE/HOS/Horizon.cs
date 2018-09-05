@@ -1,3 +1,4 @@
+using LibHac;
 using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.SystemState;
@@ -8,7 +9,6 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using LibHac;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS
 
         internal KEvent VsyncEvent { get; private set; }
 
-        internal Keyset Keyset { get; private set; }
+        internal Keyset KeySet { get; private set; }
 
         public Horizon(Switch Device)
         {
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS
 
             VsyncEvent = new KEvent();
 
-            LoadDefaultKeyset();
+            LoadKeySet();
         }
 
         public void LoadCart(string ExeFsDir, string RomFsFile = null)
@@ -128,8 +128,17 @@ namespace Ryujinx.HLE.HOS
         public void LoadXci(string XciFile)
         {
             FileStream File = new FileStream(XciFile, FileMode.Open, FileAccess.Read);
-            Xci Xci = new Xci(Keyset, File);
+
+            Xci Xci = new Xci(KeySet, File);
+
             Nca Nca = GetXciMainNca(Xci);
+
+            if (Nca == null)
+            {
+                Device.Log.PrintError(LogClass.Loader, "Unable to load XCI");
+                return;
+            }
+
             LoadNca(Nca);
         }
 
@@ -137,8 +146,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (Xci.SecurePartition == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "Could not find XCI secure partition");
-                return null;
+                throw new InvalidDataException("Could not find XCI secure partition");
             }
 
             Nca MainNca = null;
@@ -146,12 +154,18 @@ namespace Ryujinx.HLE.HOS
             foreach (PfsFileEntry FileEntry in Xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
             {
                 Stream NcaStream = Xci.SecurePartition.OpenFile(FileEntry);
-                Nca Nca = new Nca(Keyset, NcaStream, true);
+
+                Nca Nca = new Nca(KeySet, NcaStream, true);
 
                 if (Nca.Header.ContentType == ContentType.Program)
                 {
                     MainNca = Nca;
                 }
+            }
+
+            if (MainNca == null)
+            {
+                Device.Log.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
             }
 
             return MainNca;
@@ -160,16 +174,17 @@ namespace Ryujinx.HLE.HOS
         public void LoadNca(string NcaFile)
         {
             FileStream File = new FileStream(NcaFile, FileMode.Open, FileAccess.Read);
-            Nca Nca = new Nca(Keyset, File, true);
+
+            Nca Nca = new Nca(KeySet, File, true);
+
             LoadNca(Nca);
         }
 
         public void LoadNsp(string NspFile)
         {
             FileStream File = new FileStream(NspFile, FileMode.Open, FileAccess.Read);
-            Pfs Nsp = new Pfs(File);
 
-            Nca ProgramNca = null;
+            Pfs Nsp = new Pfs(File);
 
             PfsFileEntry TicketFile = Nsp.Files.FirstOrDefault(x => x.Name.EndsWith(".tik"));
 
@@ -177,36 +192,29 @@ namespace Ryujinx.HLE.HOS
             if (TicketFile != null)
             {
                 // todo Change when Ticket(Stream) overload is added
-                BinaryReader TicketReader = new BinaryReader(Nsp.OpenFile(TicketFile));
-                Ticket Ticket = new Ticket(TicketReader);
+                Ticket Ticket = new Ticket(new BinaryReader(Nsp.OpenFile(TicketFile)));
 
-                byte[] TitleKey = Ticket.GetTitleKey(Keyset);
-                Keyset.TitleKeys[Ticket.RightsId] = TitleKey;
+                KeySet.TitleKeys[Ticket.RightsId] = Ticket.GetTitleKey(KeySet);
             }
 
             foreach (PfsFileEntry NcaFile in Nsp.Files.Where(x => x.Name.EndsWith(".nca")))
             {
-                Nca Nca = new Nca(Keyset, Nsp.OpenFile(NcaFile), true);
+                Nca Nca = new Nca(KeySet, Nsp.OpenFile(NcaFile), true);
 
                 if (Nca.Header.ContentType == ContentType.Program)
                 {
-                    ProgramNca = Nca;
-                    break;
+                    LoadNca(Nca);
+                    return;
                 }
             }
 
-            if (ProgramNca == null)
-            {
-                Device.Log.PrintError(LogClass.Loader, "Could not find program NCA inside NSP file");
-            }
-
-            LoadNca(ProgramNca);
+            Device.Log.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided NSP file");
         }
 
         public void LoadNca(Nca Nca)
         {
-            NcaSection RomfsSection = Nca.Sections.FirstOrDefault(x => x.Type == SectionType.Romfs);
-            NcaSection ExefsSection = Nca.Sections.FirstOrDefault(x => x.IsExefs);
+            NcaSection RomfsSection = Nca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
+            NcaSection ExefsSection = Nca.Sections.FirstOrDefault(x => x?.IsExefs == true);
 
             if (ExefsSection == null)
             {
@@ -231,6 +239,7 @@ namespace Ryujinx.HLE.HOS
             if (Exefs.FileExists("main.npdm"))
             {
                 Device.Log.PrintInfo(LogClass.Loader, "Loading main.npdm...");
+
                 MetaData = new Npdm(Exefs.OpenFile("main.npdm"));
             }
             else
@@ -312,33 +321,40 @@ namespace Ryujinx.HLE.HOS
             MainProcess.Run(IsNro);
         }
 
-        public void LoadDefaultKeyset()
+        public void LoadKeySet()
         {
-            string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string homeKeyFile = Path.Combine(home, ".switch", "prod.keys");
-            string homeTitleKeyFile = Path.Combine(home, ".switch", "title.keys");
-            string homeConsoleKeyFile = Path.Combine(home, ".switch", "console.keys");
+            string KeyFile        = null;
+            string TitleKeyFile   = null;
+            string ConsoleKeyFile = null;
 
-            string keyFile = null;
-            string titleKeyFile = null;
-            string consoleKeyFile = null;
+            string Home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            if (File.Exists(homeKeyFile))
+            LoadSetAtPath(Path.Combine(Home, ".switch"));
+            LoadSetAtPath(Device.FileSystem.GetSystemPath());
+
+            KeySet = ExternalKeys.ReadKeyFile(KeyFile, TitleKeyFile, ConsoleKeyFile);
+
+            void LoadSetAtPath(string BasePath)
             {
-                keyFile = homeKeyFile;
-            }
+                string LocalKeyFile        = Path.Combine(BasePath,    "prod.keys");
+                string LocalTitleKeyFile   = Path.Combine(BasePath,   "title.keys");
+                string LocalConsoleKeyFile = Path.Combine(BasePath, "console.keys");
 
-            if (File.Exists(homeTitleKeyFile))
-            {
-                titleKeyFile = homeTitleKeyFile;
-            }
+                if (File.Exists(LocalKeyFile))
+                {
+                    KeyFile = LocalKeyFile;
+                }
 
-            if (File.Exists(homeConsoleKeyFile))
-            {
-                consoleKeyFile = homeConsoleKeyFile;
-            }
+                if (File.Exists(LocalTitleKeyFile))
+                {
+                    TitleKeyFile = LocalTitleKeyFile;
+                }
 
-            Keyset = ExternalKeys.ReadKeyFile(keyFile, titleKeyFile, consoleKeyFile);
+                if (File.Exists(LocalConsoleKeyFile))
+                {
+                    ConsoleKeyFile = LocalConsoleKeyFile;
+                }
+            }
         }
 
         public void SignalVsync() => VsyncEvent.WaitEvent.Set();
