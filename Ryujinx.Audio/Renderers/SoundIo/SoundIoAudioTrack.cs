@@ -140,13 +140,13 @@ namespace Ryujinx.Audio.SoundIo
             {
                 var area = areas.GetArea(0);
 
-                fixed (byte* buffPtr = &samples[0])
+                fixed (byte* srcptr = samples)
                 {
                     if (bytesPerSample == 1)
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
-                            *((byte*)area.Pointer) = *(buffPtr + (frame * bytesPerFrame));
+                            ((byte*)area.Pointer)[0] = srcptr[frame * bytesPerFrame];
 
                             area.Pointer += area.Step;
                         }
@@ -155,8 +155,7 @@ namespace Ryujinx.Audio.SoundIo
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
-                            *((byte*)area.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + 0);
-                            *((byte*)area.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + 1);
+                            ((short*)area.Pointer)[0] = ((short*)srcptr)[frame * bytesPerFrame >> 1];
 
                             area.Pointer += area.Step;
                         }
@@ -165,10 +164,7 @@ namespace Ryujinx.Audio.SoundIo
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
-                            *((byte*)area.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + 0);
-                            *((byte*)area.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + 1);
-                            *((byte*)area.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + 2);
-                            *((byte*)area.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + 3);
+                            ((int*)area.Pointer)[0] = ((int*)srcptr)[frame * bytesPerFrame >> 2];
 
                             area.Pointer += area.Step;
                         }
@@ -177,7 +173,7 @@ namespace Ryujinx.Audio.SoundIo
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
-                            Unsafe.CopyBlockUnaligned((byte*)area.Pointer, buffPtr + (frame * bytesPerFrame), bytesPerSample);
+                            Unsafe.CopyBlockUnaligned((byte*)area.Pointer, srcptr + (frame * bytesPerFrame), bytesPerSample);
 
                             area.Pointer += area.Step;
                         }
@@ -190,53 +186,45 @@ namespace Ryujinx.Audio.SoundIo
                 var area1 = areas.GetArea(0);
                 var area2 = areas.GetArea(1);
 
-                fixed (byte* buffPtr = &samples[0])
+                fixed (byte* srcptr = samples)
                 {
-                    if (bytesPerSample == 1)
+                    if (bytesPerSample == 11)
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
-                            *((byte*)area1.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample));
+                            ((byte*)area1.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 0];
 
                             // Channel 2
-                            *((byte*)area2.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample));
+                            ((byte*)area2.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 1];
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
                         }
                     }
-                    else if (bytesPerSample == 2)
+                    else if (bytesPerSample == 12)
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
-                            *((byte*)area1.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 0);
-                            *((byte*)area1.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 1);
+                            ((short*)area1.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 0];
 
                             // Channel 2
-                            *((byte*)area2.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 0);
-                            *((byte*)area2.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 1);
+                            ((short*)area2.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 1];
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
                         }
                     }
-                    else if (bytesPerSample == 4)
+                    else if (bytesPerSample == 14)
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
-                            *((byte*)area1.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 0);
-                            *((byte*)area1.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 1);
-                            *((byte*)area1.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 2);
-                            *((byte*)area1.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 3);
+                            ((int*)area1.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 0];
 
                             // Channel 2
-                            *((byte*)area2.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 0);
-                            *((byte*)area2.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 1);
-                            *((byte*)area2.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 2);
-                            *((byte*)area2.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 3);
+                            ((int*)area2.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 1];
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
@@ -246,8 +234,11 @@ namespace Ryujinx.Audio.SoundIo
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
-                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample), bytesPerSample);
-                            Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample), bytesPerSample);
+                            // Channel 1
+                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, srcptr + (frame * bytesPerFrame) + (0 * bytesPerSample), bytesPerSample);
+
+                            // Channel 2
+                            Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, srcptr + (frame * bytesPerFrame) + (1 * bytesPerSample), bytesPerSample);
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
@@ -264,26 +255,26 @@ namespace Ryujinx.Audio.SoundIo
                 var area4 = areas.GetArea(3);
                 var area5 = areas.GetArea(4);
 
-                fixed (byte* buffPtr = &samples[0])
+                fixed (byte* srcptr = samples)
                 {
                     if (bytesPerSample == 1)
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
-                            *((byte*)area1.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample));
+                            ((byte*)area1.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 0];
 
                             // Channel 2
-                            *((byte*)area2.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample));
+                            ((byte*)area2.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 1];
 
                             // Channel 3
-                            *((byte*)area3.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample));
+                            ((byte*)area3.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 2];
 
                             // Channel 4
-                            *((byte*)area4.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample));
+                            ((byte*)area4.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 3];
 
                             // Channel 5
-                            *((byte*)area5.Pointer) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample));
+                            ((byte*)area5.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 4];
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
@@ -297,24 +288,19 @@ namespace Ryujinx.Audio.SoundIo
                         for (var frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
-                            *((byte*)area1.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 0);
-                            *((byte*)area1.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 1);
+                            ((short*)area1.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 0];
 
                             // Channel 2
-                            *((byte*)area2.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 0);
-                            *((byte*)area2.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 1);
+                            ((short*)area2.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 1];
 
                             // Channel 3
-                            *((byte*)area3.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 0);
-                            *((byte*)area3.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 1);
+                            ((short*)area3.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 2];
 
                             // Channel 4
-                            *((byte*)area4.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 0);
-                            *((byte*)area4.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 1);
+                            ((short*)area4.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 3];
 
                             // Channel 5
-                            *((byte*)area5.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 0);
-                            *((byte*)area5.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 1);
+                            ((short*)area5.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 4];
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
@@ -328,34 +314,19 @@ namespace Ryujinx.Audio.SoundIo
                         for (var frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
-                            *((byte*)area1.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 0);
-                            *((byte*)area1.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 1);
-                            *((byte*)area1.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 2);
-                            *((byte*)area1.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample) + 3);
+                            ((int*)area1.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 0];
 
                             // Channel 2
-                            *((byte*)area2.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 0);
-                            *((byte*)area2.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 1);
-                            *((byte*)area2.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 2);
-                            *((byte*)area2.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample) + 3);
+                            ((int*)area2.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 1];
 
                             // Channel 3
-                            *((byte*)area3.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 0);
-                            *((byte*)area3.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 1);
-                            *((byte*)area3.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 2);
-                            *((byte*)area3.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (2 * bytesPerSample) + 3);
+                            ((int*)area3.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 2];
 
                             // Channel 4
-                            *((byte*)area4.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 0);
-                            *((byte*)area4.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 1);
-                            *((byte*)area4.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 2);
-                            *((byte*)area4.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (3 * bytesPerSample) + 3);
+                            ((int*)area4.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 3];
 
                             // Channel 5
-                            *((byte*)area5.Pointer + 0) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 0);
-                            *((byte*)area5.Pointer + 1) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 1);
-                            *((byte*)area5.Pointer + 2) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 2);
-                            *((byte*)area5.Pointer + 3) = *(buffPtr + (frame * bytesPerFrame) + (4 * bytesPerSample) + 3);
+                            ((int*)area5.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 4];
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
@@ -368,11 +339,26 @@ namespace Ryujinx.Audio.SoundIo
                     {
                         for (var frame = 0; frame < frameCount; frame++)
                         {
-                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, buffPtr + (frame * bytesPerFrame) + (0 * bytesPerSample), bytesPerSample);
-                            Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, buffPtr + (frame * bytesPerFrame) + (1 * bytesPerSample), bytesPerSample);
+                            // Channel 1
+                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, srcptr + (frame * bytesPerFrame) + (0 * bytesPerSample), bytesPerSample);
+
+                            // Channel 2
+                            Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, srcptr + (frame * bytesPerFrame) + (1 * bytesPerSample), bytesPerSample);
+
+                            // Channel 3
+                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, srcptr + (frame * bytesPerFrame) + (2 * bytesPerSample), bytesPerSample);
+
+                            // Channel 4
+                            Unsafe.CopyBlockUnaligned((byte*)area2.Pointer, srcptr + (frame * bytesPerFrame) + (3 * bytesPerSample), bytesPerSample);
+
+                            // Channel 5
+                            Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, srcptr + (frame * bytesPerFrame) + (4 * bytesPerSample), bytesPerSample);
 
                             area1.Pointer += area1.Step;
                             area2.Pointer += area2.Step;
+                            area3.Pointer += area3.Step;
+                            area4.Pointer += area4.Step;
+                            area5.Pointer += area5.Step;
                         }
                     }
                 }
@@ -386,13 +372,14 @@ namespace Ryujinx.Audio.SoundIo
                 for (var i = 0; i < channelCount; i++)
                     channels[i] = areas.GetArea(i);
 
-                fixed (byte* buffPtr = &samples[0])
+                fixed (byte* srcptr = samples)
                 {
                     for (var frame = 0; frame < frameCount; frame++)
                     for (var channel = 0; channel < areas.ChannelCount; channel++)
                     {
-                        // This is slow!
-                        Unsafe.CopyBlockUnaligned((byte*)channels[channel].Pointer, buffPtr + frame * bytesPerFrame + channel * bytesPerSample, bytesPerSample);
+                        // Copy channel by channel, frame by frame. This is slow!
+                        Unsafe.CopyBlockUnaligned((byte*)channels[channel].Pointer, srcptr + (frame * bytesPerFrame) + (channel * bytesPerSample), bytesPerSample);
+
                         channels[channel].Pointer += channels[channel].Step;
                     }
                 }
