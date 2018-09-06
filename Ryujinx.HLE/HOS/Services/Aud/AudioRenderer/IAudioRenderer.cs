@@ -309,7 +309,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
         {
             int[] MixBuffer = new int[MixBufferSamplesCount * AudioConsts.HostChannelsCount];
 
-            fixed (int* mixptr = &MixBuffer[0])
+            fixed (int* mixptr = MixBuffer)
             {
                 foreach (VoiceContext Voice in Voices)
                 {
@@ -339,7 +339,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
                         if(Avx2.IsSupported && Avx.IsSupported)
                         {
-                            fixed (int* samptr = &Samples[0])
+                            fixed (int* samptr = Samples)
                             {
                                 // Load our scale factor as a scalar
                                 Vector256<float> volume = Avx.SetAllVector256(Volume);
@@ -369,7 +369,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                         }
                         else if (Sse2.IsSupported && Sse.IsSupported)
                         {
-                            fixed (int* samptr = &Samples[0])
+                            fixed (int* samptr = Samples)
                             {
                                 // Load our scale factor as a scalar
                                 Vector128<float> volume = Sse.SetAllVector128(Volume);
@@ -419,8 +419,8 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             // Perform Saturation using SSE2 if supported
             if (Sse2.IsSupported)
             {
-                fixed (int* inptr = &Buffer[0])
-                fixed (short* outptr = &Output[0])
+                fixed (int* inptr = Buffer)
+                fixed (short* outptr = Output)
                 {
                     for (; Offset + 32 <= Buffer.Length; Offset += 32)
                     {
