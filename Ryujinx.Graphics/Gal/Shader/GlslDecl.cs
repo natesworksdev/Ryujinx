@@ -41,10 +41,15 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public const string ExtraUniformBlockName = "Extra";
         public const string FlipUniformName = "flip";
+        public const string InstanceUniformName = "instance";
 
-        public const string ProgramName  = "program";
-        public const string ProgramAName = ProgramName + "_a";
-        public const string ProgramBName = ProgramName + "_b";
+        public const string BasicBlockName  = "bb";
+        public const string BasicBlockAName = BasicBlockName + "_a";
+        public const string BasicBlockBName = BasicBlockName + "_b";
+
+        public const int SsyStackSize = 16;
+        public const string SsyStackName = "ssy_stack";
+        public const string SsyCursorName = "ssy_cursor";
 
         private string[] StagePrefixes = new string[] { "vp", "tcp", "tep", "gp", "fp" };
 
@@ -93,13 +98,34 @@ namespace Ryujinx.Graphics.Gal.Shader
             m_Preds = new Dictionary<int, ShaderDeclInfo>();
         }
 
-        public GlslDecl(ShaderIrBlock[] Blocks, GalShaderType ShaderType) : this(ShaderType)
+        public GlslDecl(ShaderIrBlock[] Blocks, GalShaderType ShaderType, ShaderHeader Header)
+            : this(ShaderType)
         {
             StagePrefix = StagePrefixes[(int)ShaderType] + "_";
 
             if (ShaderType == GalShaderType.Fragment)
             {
-                m_Gprs.Add(0, new ShaderDeclInfo(FragmentOutputName, 0, false, 0, 4));
+                int Index = 0;
+
+                for (int Attachment = 0; Attachment < 8; Attachment++)
+                {
+                    for (int Component = 0; Component < 4; Component++)
+                    {
+                        if (Header.OmapTargets[Attachment].ComponentEnabled(Component))
+                        {
+                            m_Gprs.TryAdd(Index, new ShaderDeclInfo(GetGprName(Index), Index));
+
+                            Index++;
+                        }
+                    }
+                }
+
+                if (Header.OmapDepth)
+                {
+                    Index = Header.DepthRegister;
+
+                    m_Gprs.TryAdd(Index, new ShaderDeclInfo(GetGprName(Index), Index));
+                }
             }
 
             foreach (ShaderIrBlock Block in Blocks)
@@ -146,6 +172,11 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             return Combined;
+        }
+
+        public static string GetGprName(int Index)
+        {
+            return GprName + Index;
         }
 
         private static void Merge(
@@ -311,9 +342,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 case ShaderIrOperGpr Gpr:
                 {
-                    if (!Gpr.IsConst && !HasName(m_Gprs, Gpr.Index))
+                    if (!Gpr.IsConst)
                     {
-                        string Name = GprName + Gpr.Index;
+                        string Name = GetGprName(Gpr.Index);
 
                         m_Gprs.TryAdd(Gpr.Index, new ShaderDeclInfo(Name, Gpr.Index));
                     }

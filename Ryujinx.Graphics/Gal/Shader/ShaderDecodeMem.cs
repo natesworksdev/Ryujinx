@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             { RGB_, RG_A, R_BA, _GBA, RGBA, ____, ____, ____ }
         };
 
-        public static void Ld_A(ShaderIrBlock Block, long OpCode)
+        public static void Ld_A(ShaderIrBlock Block, long OpCode, long Position)
         {
             ShaderIrNode[] Opers = GetOperAbuf20(OpCode);
 
@@ -50,24 +50,36 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        public static void Ld_C(ShaderIrBlock Block, long OpCode)
+        public static void Ld_C(ShaderIrBlock Block, long OpCode, long Position)
         {
-            int Type = (int)(OpCode >> 48) & 7;
+            int CbufPos   = (int)(OpCode >> 22) & 0x3fff;
+            int CbufIndex = (int)(OpCode >> 36) & 0x1f;
+            int Type      = (int)(OpCode >> 48) & 7;
 
             if (Type > 5)
             {
                 throw new InvalidOperationException();
             }
 
+            ShaderIrOperGpr Temp = ShaderIrOperGpr.MakeTemporary();
+
+            Block.AddNode(new ShaderIrAsg(Temp, GetOperGpr8(OpCode)));
+
             int Count = Type == 5 ? 2 : 1;
 
             for (int Index = 0; Index < Count; Index++)
             {
-                ShaderIrOperCbuf OperA = GetOperCbuf36(OpCode);
-                ShaderIrOperGpr  OperD = GetOperGpr0  (OpCode);
+                ShaderIrOperCbuf OperA = new ShaderIrOperCbuf(CbufIndex, CbufPos, Temp);
+
+                ShaderIrOperGpr OperD = GetOperGpr0(OpCode);
 
                 OperA.Pos   += Index;
                 OperD.Index += Index;
+
+                if (!OperD.IsValidRegister)
+                {
+                    break;
+                }
 
                 ShaderIrNode Node = OperA;
 
@@ -85,7 +97,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        public static void St_A(ShaderIrBlock Block, long OpCode)
+        public static void St_A(ShaderIrBlock Block, long OpCode, long Position)
         {
             ShaderIrNode[] Opers = GetOperAbuf20(OpCode);
 
@@ -101,7 +113,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        public static void Texq(ShaderIrBlock Block, long OpCode)
+        public static void Texq(ShaderIrBlock Block, long OpCode, long Position)
         {
             ShaderIrNode OperD = GetOperGpr0(OpCode);
             ShaderIrNode OperA = GetOperGpr8(OpCode);
@@ -120,12 +132,12 @@ namespace Ryujinx.Graphics.Gal.Shader
             Block.AddNode(GetPredNode(new ShaderIrAsg(OperA, Op1), OpCode)); //Is this right?
         }
 
-        public static void Tex(ShaderIrBlock Block, long OpCode)
+        public static void Tex(ShaderIrBlock Block, long OpCode, long Position)
         {
             EmitTex(Block, OpCode, GprHandle: false);
         }
 
-        public static void Tex_B(ShaderIrBlock Block, long OpCode)
+        public static void Tex_B(ShaderIrBlock Block, long OpCode, long Position)
         {
             EmitTex(Block, OpCode, GprHandle: true);
         }
@@ -190,12 +202,12 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        public static void Texs(ShaderIrBlock Block, long OpCode)
+        public static void Texs(ShaderIrBlock Block, long OpCode, long Position)
         {
             EmitTexs(Block, OpCode, ShaderIrInst.Texs);
         }
 
-        public static void Tlds(ShaderIrBlock Block, long OpCode)
+        public static void Tlds(ShaderIrBlock Block, long OpCode, long Position)
         {
             EmitTexs(Block, OpCode, ShaderIrInst.Txlf);
         }
