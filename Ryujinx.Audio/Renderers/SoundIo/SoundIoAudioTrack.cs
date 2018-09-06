@@ -56,9 +56,9 @@ namespace Ryujinx.Audio.SoundIo
         /// <summary>
         /// Constructs a new instance of a <see cref="SoundIoAudioTrack"/>
         /// </summary>
-        /// <param name="trackId"></param>
-        /// <param name="audioContext"></param>
-        /// <param name="audioDevice"></param>
+        /// <param name="trackId">The track ID</param>
+        /// <param name="audioContext">The SoundIO audio context</param>
+        /// <param name="audioDevice">The SoundIO audio device</param>
         public SoundIoAudioTrack(int trackId, SoundIO audioContext, SoundIODevice audioDevice)
         {
             TrackID = trackId;

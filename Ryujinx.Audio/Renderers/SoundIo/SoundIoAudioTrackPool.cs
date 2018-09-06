@@ -116,8 +116,7 @@ namespace Ryujinx.Audio.SoundIo
         /// <summary>
         /// Retrieves the <see cref="SoundIoAudioTrack"/> associated with the specified <paramref name="trackId"/> from the pool
         /// </summary>
-        /// <param name="trackId"></param>
-        /// <returns></returns>
+        /// <param name="trackId">The ID of the track to retrieve</param>
         public SoundIoAudioTrack Get(int trackId)
         {
             if (m_TrackList.TryGetValue(trackId, out SoundIoAudioTrack track))
@@ -129,7 +128,7 @@ namespace Ryujinx.Audio.SoundIo
         /// <summary>
         /// Attempers to get a <see cref="SoundIoAudioTrack"/> from the pool
         /// </summary>
-        /// <param name="track"></param>
+        /// <param name="track">The track retrieved from the pool</param>
         /// <returns>True if retrieve was successful</returns>
         public bool TryGet(out SoundIoAudioTrack track)
         {
@@ -140,8 +139,8 @@ namespace Ryujinx.Audio.SoundIo
         /// <summary>
         /// Attempts to get the <see cref="SoundIoAudioTrack" /> associated with the specified <paramref name="trackId"/> from the pool
         /// </summary>
-        /// <param name="trackId"></param>
-        /// <param name="track"></param>
+        /// <param name="trackId">The ID of the track to retrieve</param>
+        /// <param name="track">The track retrieved from the pool</param>
         public bool TryGet(int trackId, out SoundIoAudioTrack track)
         {
             return m_TrackList.TryGetValue(trackId, out track);

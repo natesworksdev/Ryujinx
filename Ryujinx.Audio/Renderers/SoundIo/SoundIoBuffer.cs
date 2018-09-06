@@ -18,8 +18,8 @@
         /// <summary>
         /// Constructs a new instance of a <see cref="SoundIoBuffer"/>
         /// </summary>
-        /// <param name="tag"></param>
-        /// <param name="length"></param>
+        /// <param name="tag">The buffer tag</param>
+        /// <param name="length">The size of the buffer</param>
         public SoundIoBuffer(long tag, int length)
         {
             Tag = tag;

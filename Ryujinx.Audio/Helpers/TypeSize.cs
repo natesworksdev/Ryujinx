@@ -4,9 +4,8 @@ using System.Reflection.Emit;
 namespace Ryujinx.Audio
 {
     /// <summary>
-    /// Helper to determine the byte size of a type
+    /// Helper to determine the byte size of type <see cref="T"/>
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public static class TypeSize<T>
     {
         /// <summary>
