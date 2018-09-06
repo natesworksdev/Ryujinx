@@ -380,7 +380,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
-                byte[] Data = new byte[ImageTable.GetImageSize(Tex.Image)];
+                byte[] Data = new byte[ImageTable.GetSize(Tex.Image)];
 
                 GL.BindTexture(TextureTarget.Texture2D, Tex.Handle);
 

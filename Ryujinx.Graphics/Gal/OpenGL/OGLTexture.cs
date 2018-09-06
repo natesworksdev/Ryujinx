@@ -39,7 +39,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
 
-            if (IsCompressedTextureFormat(Image.Format))
+            GalImageFormat TypeLess = Image.Format & GalImageFormat.FormatMask;
+
+            bool IsASTC = TypeLess >= GalImageFormat.ASTC_BEGIN && TypeLess <= GalImageFormat.ASTC_END;
+
+            if (ImageTable.IsCompressed(Image.Format) && !IsASTC)
             {
                 InternalFormat InternalFmt = OGLEnumConverter.GetCompressedImageFormat(Image.Format);
 
@@ -55,10 +59,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
             else
             {
-                GalImageFormat TypeLess = Image.Format & GalImageFormat.FormatMask;
-
                 //TODO: Use KHR_texture_compression_astc_hdr when available
-                if (TypeLess >= GalImageFormat.ASTC_BEGIN && TypeLess <= GalImageFormat.ASTC_END)
+                if (IsASTC)
                 {
                     int TextureBlockWidth  = GetAstcBlockWidth(Image.Format);
                     int TextureBlockHeight = GetAstcBlockHeight(Image.Format);
@@ -228,24 +230,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             };
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, Color);
-        }
-
-        private static bool IsCompressedTextureFormat(GalImageFormat Format)
-        {
-            switch (Format & GalImageFormat.FormatMask)
-            {
-                case GalImageFormat.BC6H_UF16:
-                case GalImageFormat.BC6H_SF16:
-                case GalImageFormat.BC7:
-                case GalImageFormat.BC1_RGBA:
-                case GalImageFormat.BC2:
-                case GalImageFormat.BC3:
-                case GalImageFormat.BC4:
-                case GalImageFormat.BC5:
-                    return true;
-            }
-
-            return false;
         }
     }
 }

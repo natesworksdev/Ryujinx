@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics
 
             GalImage Image = new GalImage(Width, Height, ImageFormat);
 
-            long Size = ImageTable.GetImageSize(Image);
+            long Size = ImageTable.GetSize(Image);
 
             Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
 
@@ -238,7 +238,7 @@ namespace Ryujinx.Graphics
 
             GalImage Image = new GalImage(Width, Height, ImageFormat);
 
-            long Size = ImageTable.GetImageSize(Image);
+            long Size = ImageTable.GetSize(Image);
 
             Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
 
@@ -528,7 +528,7 @@ namespace Ryujinx.Graphics
             {
                 GalImage NewImage = TextureFactory.MakeTexture(Vmm, TicPosition);
 
-                long Size = (uint)ImageTable.GetImageSize(NewImage);
+                long Size = (uint)ImageTable.GetSize(NewImage);
 
                 bool HasCachedTexture = false;
 

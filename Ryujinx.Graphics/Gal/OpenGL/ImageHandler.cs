@@ -46,8 +46,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 return;
             }
 
-            (PixelInternalFormat InternalFormat, PixelFormat PixelFormat, PixelType PixelType) =
-                OGLEnumConverter.GetImageFormat(NewImage.Format);
+            PixelInternalFormat InternalFmt;
+            PixelFormat         PixelFormat;
+            PixelType           PixelType;
+
+            if (ImageTable.IsCompressed(NewImage.Format))
+            {
+                InternalFmt = (PixelInternalFormat)OGLEnumConverter.GetCompressedImageFormat(NewImage.Format);
+
+                PixelFormat = default(PixelFormat);
+                PixelType   = default(PixelType);
+            }
+            else
+            {
+                (InternalFmt, PixelFormat, PixelType) = OGLEnumConverter.GetImageFormat(NewImage.Format);
+            }
 
             GL.BindTexture(TextureTarget.Texture2D, Handle);
 
@@ -58,8 +71,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     CopyBuffer = GL.GenBuffer();
                 }
 
-                int CurrentSize = Math.Max(ImageTable.GetImageSize(NewImage),
-                                           ImageTable.GetImageSize(Image));
+                int CurrentSize = Math.Max(ImageTable.GetSize(NewImage),
+                                           ImageTable.GetSize(Image));
 
                 GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyBuffer);
                 GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyBuffer);
@@ -71,7 +84,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     GL.BufferData(BufferTarget.PixelPackBuffer, CurrentSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
                 }
 
-                GL.GetTexImage(TextureTarget.Texture2D, 0, this.PixelFormat, this.PixelType, IntPtr.Zero);
+                if (ImageTable.IsCompressed(Image.Format))
+                {
+                    GL.GetCompressedTexImage(TextureTarget.Texture2D, 0, IntPtr.Zero);
+                }
+                else
+                {
+                    GL.GetTexImage(TextureTarget.Texture2D, 0, this.PixelFormat, this.PixelType, IntPtr.Zero);
+                }
 
                 GL.DeleteTexture(Handle);
 
@@ -89,16 +109,33 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level = 0;
             const int Border = 0;
 
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                Level,
-                InternalFormat,
-                NewImage.Width,
-                NewImage.Height,
-                Border,
-                PixelFormat,
-                PixelType,
-                IntPtr.Zero);
+            if (ImageTable.IsCompressed(NewImage.Format))
+            {
+                Console.WriteLine("Hit");
+
+                GL.CompressedTexImage2D(
+                    TextureTarget.Texture2D,
+                    Level,
+                    (InternalFormat)InternalFmt,
+                    NewImage.Width,
+                    NewImage.Height,
+                    Border,
+                    ImageTable.GetSize(NewImage),
+                    IntPtr.Zero);
+            }
+            else
+            {
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,
+                    Level,
+                    InternalFmt,
+                    NewImage.Width,
+                    NewImage.Height,
+                    Border,
+                    PixelFormat,
+                    PixelType,
+                    IntPtr.Zero);
+            }
 
             if (Initialized)
             {
@@ -108,7 +145,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             Image = NewImage;
 
-            this.InternalFormat = InternalFormat;
+            this.InternalFormat = InternalFmt;
             this.PixelFormat = PixelFormat;
             this.PixelType = PixelType;
 
