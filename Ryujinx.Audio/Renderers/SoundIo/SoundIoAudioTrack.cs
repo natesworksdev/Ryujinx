@@ -495,7 +495,7 @@ namespace Ryujinx.Audio.SoundIo
                 return;
 
             // Calculate the size of the audio samples
-            var size = TypeSize<T>.Size;
+            var size = Unsafe.SizeOf<T>();
 
             // Calculate the amount of bytes to copy from the buffer
             var bytesToCopy = size * buffer.Length;
