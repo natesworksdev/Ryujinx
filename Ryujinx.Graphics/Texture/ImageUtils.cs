@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Texture
 {
-    static class ImageTable
+    static class ImageUtils
     {
         struct ImageDescriptor
         {

@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Texture
     {
         public static byte[] Read(IAMemory Memory, TextureInfo Texture)
         {
-            TextureReaderDelegate Reader = ImageTable.GetReader(Texture.Format);
+            TextureReaderDelegate Reader = ImageUtils.GetReader(Texture.Format);
 
             return Reader(Memory, Texture);
         }

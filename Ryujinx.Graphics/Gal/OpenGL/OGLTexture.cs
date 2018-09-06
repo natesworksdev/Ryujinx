@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             bool IsASTC = TypeLess >= GalImageFormat.ASTC_BEGIN && TypeLess <= GalImageFormat.ASTC_END;
 
-            if (ImageTable.IsCompressed(Image.Format) && !IsASTC)
+            if (ImageUtils.IsCompressed(Image.Format) && !IsASTC)
             {
                 InternalFormat InternalFmt = OGLEnumConverter.GetCompressedImageFormat(Image.Format);
 

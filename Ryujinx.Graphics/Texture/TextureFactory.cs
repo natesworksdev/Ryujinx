@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Texture
 
             GalTextureFormat Format = (GalTextureFormat)(Tic[0] & 0x7f);
 
-            return ImageTable.ConvertTexture(Format, RType, GType, BType, AType);
+            return ImageUtils.ConvertTexture(Format, RType, GType, BType, AType);
         }
 
         private static int[] ReadWords(NvGpuVmm Vmm, long Position, int Count)

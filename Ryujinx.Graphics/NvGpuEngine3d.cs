@@ -201,11 +201,11 @@ namespace Ryujinx.Graphics
             int VpW = (int)(TX + MathF.Abs(SX)) - VpX;
             int VpH = (int)(TY + MathF.Abs(SY)) - VpY;
 
-            GalImageFormat ImageFormat = ImageTable.ConvertSurface((GalSurfaceFormat)Format);
+            GalImageFormat ImageFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)Format);
 
             GalImage Image = new GalImage(Width, Height, ImageFormat);
 
-            long Size = ImageTable.GetSize(Image);
+            long Size = ImageUtils.GetSize(Image);
 
             Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
 
@@ -234,11 +234,11 @@ namespace Ryujinx.Graphics
             int Width  = ReadRegister(NvGpuEngine3dReg.ZetaHoriz);
             int Height = ReadRegister(NvGpuEngine3dReg.ZetaVert);
 
-            GalImageFormat ImageFormat = ImageTable.ConvertZeta((GalZetaFormat)Format);
+            GalImageFormat ImageFormat = ImageUtils.ConvertZeta((GalZetaFormat)Format);
 
             GalImage Image = new GalImage(Width, Height, ImageFormat);
 
-            long Size = ImageTable.GetSize(Image);
+            long Size = ImageUtils.GetSize(Image);
 
             Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
 
@@ -528,7 +528,7 @@ namespace Ryujinx.Graphics
             {
                 GalImage NewImage = TextureFactory.MakeTexture(Vmm, TicPosition);
 
-                long Size = (uint)ImageTable.GetSize(NewImage);
+                long Size = (uint)ImageUtils.GetSize(NewImage);
 
                 bool HasCachedTexture = false;
 

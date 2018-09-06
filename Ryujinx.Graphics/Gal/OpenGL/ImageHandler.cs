@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             PixelFormat         PixelFormat;
             PixelType           PixelType;
 
-            if (ImageTable.IsCompressed(NewImage.Format))
+            if (ImageUtils.IsCompressed(NewImage.Format))
             {
                 InternalFmt = (PixelInternalFormat)OGLEnumConverter.GetCompressedImageFormat(NewImage.Format);
 
@@ -71,8 +71,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     CopyBuffer = GL.GenBuffer();
                 }
 
-                int CurrentSize = Math.Max(ImageTable.GetSize(NewImage),
-                                           ImageTable.GetSize(Image));
+                int CurrentSize = Math.Max(ImageUtils.GetSize(NewImage),
+                                           ImageUtils.GetSize(Image));
 
                 GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyBuffer);
                 GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyBuffer);
@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     GL.BufferData(BufferTarget.PixelPackBuffer, CurrentSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
                 }
 
-                if (ImageTable.IsCompressed(Image.Format))
+                if (ImageUtils.IsCompressed(Image.Format))
                 {
                     GL.GetCompressedTexImage(TextureTarget.Texture2D, 0, IntPtr.Zero);
                 }
@@ -109,7 +109,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level = 0;
             const int Border = 0;
 
-            if (ImageTable.IsCompressed(NewImage.Format))
+            if (ImageUtils.IsCompressed(NewImage.Format))
             {
                 Console.WriteLine("Hit");
 
@@ -120,7 +120,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     NewImage.Width,
                     NewImage.Height,
                     Border,
-                    ImageTable.GetSize(NewImage),
+                    ImageUtils.GetSize(NewImage),
                     IntPtr.Zero);
             }
             else
@@ -152,8 +152,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Initialized = true;
         }
 
-        public bool HasColor   => ImageTable.HasColor(Image.Format);
-        public bool HasDepth   => ImageTable.HasDepth(Image.Format);
-        public bool HasStencil => ImageTable.HasStencil(Image.Format);
+        public bool HasColor   => ImageUtils.HasColor(Image.Format);
+        public bool HasDepth   => ImageUtils.HasDepth(Image.Format);
+        public bool HasStencil => ImageUtils.HasStencil(Image.Format);
     }
 }
