@@ -161,3 +161,6 @@ $RECYCLE.BIN/
 
 # VS Launch Settings
 launchSettings.json
+
+# Commit String
+CurrentCommit.txt
