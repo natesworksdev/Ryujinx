@@ -136,6 +136,7 @@ namespace Ryujinx.HLE.HOS
             if (Nca == null)
             {
                 Device.Log.PrintError(LogClass.Loader, "Unable to load XCI");
+
                 return;
             }
 
@@ -150,6 +151,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             Nca MainNca = null;
+            Nca PatchNca = null;
 
             foreach (PfsFileEntry FileEntry in Xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
             {
@@ -159,7 +161,14 @@ namespace Ryujinx.HLE.HOS
 
                 if (Nca.Header.ContentType == ContentType.Program)
                 {
-                    MainNca = Nca;
+                    if (Nca.Sections.Any(x => x?.Type == SectionType.Romfs))
+                    {
+                        MainNca = Nca;
+                    }
+                    else if (Nca.Sections.Any(x => x?.Type == SectionType.Bktr))
+                    {
+                        PatchNca = Nca;
+                    }
                 }
             }
 
@@ -167,6 +176,8 @@ namespace Ryujinx.HLE.HOS
             {
                 Device.Log.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
             }
+
+            MainNca.SetBaseNca(PatchNca);
 
             return MainNca;
         }
@@ -204,6 +215,7 @@ namespace Ryujinx.HLE.HOS
                 if (Nca.Header.ContentType == ContentType.Program)
                 {
                     LoadNca(Nca);
+
                     return;
                 }
             }
@@ -219,12 +231,14 @@ namespace Ryujinx.HLE.HOS
             if (ExefsSection == null)
             {
                 Device.Log.PrintError(LogClass.Loader, "No ExeFS found in NCA");
+
                 return;
             }
 
             if (RomfsSection == null)
             {
                 Device.Log.PrintError(LogClass.Loader, "No RomFS found in NCA");
+
                 return;
             }
 
