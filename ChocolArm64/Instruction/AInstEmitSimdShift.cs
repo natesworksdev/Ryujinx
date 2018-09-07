@@ -343,7 +343,7 @@ namespace ChocolArm64.Instruction
 
                     Context.Emit(Signed ? OpCodes.Shr : OpCodes.Shr_Un);
                 }
-                else
+                else /* if (Op.Size == 3) */
                 {
                     EmitShrImm_64(Context, Signed, Round ? RoundConst : 0L, Shift);
                 }
