@@ -168,7 +168,7 @@ namespace Ryujinx.Tests.Cpu
                                 [ValueSource("_4H_")] [Random(RndCnt)] ulong Z,
                                 [ValueSource("_4H_")] [Random(RndCnt)] ulong A,
                                 [Range(0u, 15u)] uint Shift,
-                                [Values(0b0u, 0b1u)] uint Q) // <4H, 8B>
+                                [Values(0b0u, 0b1u)] uint Q) // <4H, 8H>
         {
             uint ImmHB = (16 + Shift) & 0x7F;
 
@@ -280,7 +280,7 @@ namespace Ryujinx.Tests.Cpu
                                    [ValueSource("_4H_")] [Random(RndCnt)] ulong Z,
                                    [ValueSource("_4H_")] [Random(RndCnt)] ulong A,
                                    [Range(1u, 16u)] uint Shift,
-                                   [Values(0b0u, 0b1u)] uint Q) // <4H, 8B>
+                                   [Values(0b0u, 0b1u)] uint Q) // <4H, 8H>
         {
             uint ImmHB = (32 - Shift) & 0x7F;
 
