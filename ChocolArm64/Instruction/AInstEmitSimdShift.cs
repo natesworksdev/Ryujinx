@@ -119,14 +119,12 @@ namespace ChocolArm64.Instruction
 
         public static void Srsra_S(AILEmitterCtx Context)
         {
-            EmitScalarShrImmOpSx(Context,
-                ShrImmFlags.Round | ShrImmFlags.Accumulate);
+            EmitScalarShrImmOpSx(Context, ShrImmFlags.Round | ShrImmFlags.Accumulate);
         }
 
         public static void Srsra_V(AILEmitterCtx Context)
         {
-            EmitVectorShrImmOpSx(Context,
-                ShrImmFlags.Round | ShrImmFlags.Accumulate);
+            EmitVectorShrImmOpSx(Context, ShrImmFlags.Round | ShrImmFlags.Accumulate);
         }
 
         public static void Sshl_V(AILEmitterCtx Context)
@@ -173,14 +171,12 @@ namespace ChocolArm64.Instruction
 
         public static void Ursra_S(AILEmitterCtx Context)
         {
-            EmitScalarShrImmOpZx(Context,
-                ShrImmFlags.Round | ShrImmFlags.Accumulate);
+            EmitScalarShrImmOpZx(Context, ShrImmFlags.Round | ShrImmFlags.Accumulate);
         }
 
         public static void Ursra_V(AILEmitterCtx Context)
         {
-            EmitVectorShrImmOpZx(Context,
-                ShrImmFlags.Round | ShrImmFlags.Accumulate);
+            EmitVectorShrImmOpZx(Context, ShrImmFlags.Round | ShrImmFlags.Accumulate);
         }
 
         public static void Ushl_V(AILEmitterCtx Context)
@@ -378,10 +374,10 @@ namespace ChocolArm64.Instruction
             long RoundConst,
             int  Shift)
         {
-            /*if (((AOpCodeSimd)Context.CurrOp).Size < 3)
+            if (((AOpCodeSimd)Context.CurrOp).Size < 3)
             {
                 throw new InvalidOperationException();
-            }*/
+            }
 
             Context.EmitLdc_I8(RoundConst);
             Context.EmitLdc_I4(Shift);
