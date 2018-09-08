@@ -27,7 +27,7 @@ namespace ChocolArm64.Instruction
 
                     Type[] Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<double>) };
 
-                    Context.EmitCall(typeof(Sse2).GetMethod( nameof(Sse2.ConvertScalarToVector128Single), Types));
+                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Single), Types));
 
                     Context.EmitStvec(Op.Rd);
                 }

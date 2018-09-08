@@ -410,8 +410,8 @@ namespace ChocolArm64.Instruction
 
                     Type[] Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
-                    Context.EmitCall(typeof(Sse).GetMethod( nameof(Sse.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod( nameof(Sse.AddScalar),      Types));
+                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), Types));
+                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AddScalar),      Types));
 
                     Context.EmitStvec(Op.Rd);
 
@@ -425,8 +425,8 @@ namespace ChocolArm64.Instruction
 
                     Type[] Types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                    Context.EmitCall(typeof(Sse2).GetMethod( nameof(Sse2.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod( nameof(Sse2.AddScalar),      Types));
+                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), Types));
+                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AddScalar),      Types));
 
                     EmitStvecWithCastFromDouble(Context, Op.Rd);
 
