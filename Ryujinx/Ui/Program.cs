@@ -50,7 +50,7 @@ namespace Ryujinx
                 }
                 else if (File.Exists(args[0]))
                 {
-                    switch (Path.GetExtension(args[0]))
+                    switch (Path.GetExtension(args[0]).ToLowerInvariant())
                     {
                         case ".xci":
                             Console.WriteLine("Loading as XCI.");
