@@ -32,8 +32,6 @@ namespace Ryujinx.HLE.HOS
 
         public int ProcessId { get; private set; }
 
-        public long YieldCounter { get; set; }
-
         private ATranslator Translator;
 
         public AMemory Memory { get; private set; }

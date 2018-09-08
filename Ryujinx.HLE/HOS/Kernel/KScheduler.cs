@@ -216,7 +216,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                         break;
                     }
 
-                    SchedulingData.MoveTo(Dst.DynamicPriority, Core, Dst);
+                    SchedulingData.TransferToCore(Dst.DynamicPriority, Core, Dst);
 
                     SelectedThreads[Core] = Dst;
 
@@ -239,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                         CoreContexts[SrcCore].SelectThread(Src);
 
-                        SchedulingData.MoveTo(OrigSelectedCoreSrc.DynamicPriority, Core, OrigSelectedCoreSrc);
+                        SchedulingData.TransferToCore(OrigSelectedCoreSrc.DynamicPriority, Core, OrigSelectedCoreSrc);
 
                         SelectedThreads[Core] = OrigSelectedCoreSrc;
 

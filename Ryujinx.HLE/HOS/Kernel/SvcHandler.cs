@@ -87,7 +87,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                 { 0x2d, SvcUnmapPhysicalMemory           },
                 { 0x32, SvcSetThreadActivity             },
                 { 0x33, SvcGetThreadContext3             },
-                { 0x34, SvcWaitForAddress                }
+                { 0x34, SvcWaitForAddress                },
+                { 0x35, SvcSignalToAddress               }
             };
 
             this.Device  = Device;

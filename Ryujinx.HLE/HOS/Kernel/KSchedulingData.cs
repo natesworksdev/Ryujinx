@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             return Count;
         }
 
-        public void MoveTo(int Prio, int DstCore, KThread Thread)
+        public void TransferToCore(int Prio, int DstCore, KThread Thread)
         {
             bool Schedulable = Thread.DynamicPriority < KScheduler.PrioritiesCount;
 
@@ -104,8 +104,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Unschedule(Prio, SrcCore, Thread);
             }
 
-            Unsuggest(Prio, DstCore, Thread);
-            Schedule(Prio, DstCore, Thread);
+            if (DstCore >= 0)
+            {
+                Unsuggest(Prio, DstCore, Thread);
+                Schedule(Prio, DstCore, Thread);
+            }
 
             if (SrcCore >= 0)
             {

@@ -7,6 +7,7 @@ using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -32,6 +33,8 @@ namespace Ryujinx.HLE.HOS
         internal KSynchronization Synchronization { get; private set; }
 
         internal KRecursiveLock CriticalSectionLock { get; private set; }
+
+        internal LinkedList<KThread> Withholders { get; private set; }
 
         internal KSharedMemory HidSharedMem  { get; private set; }
         internal KSharedMemory FontSharedMem { get; private set; }
@@ -59,6 +62,8 @@ namespace Ryujinx.HLE.HOS
             Synchronization = new KSynchronization(this);
 
             CriticalSectionLock = new KRecursiveLock(this);
+
+            Withholders = new LinkedList<KThread>();
 
             if (!Device.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
                 !Device.Memory.Allocator.TryAllocate(FontSize, out long FontPA))

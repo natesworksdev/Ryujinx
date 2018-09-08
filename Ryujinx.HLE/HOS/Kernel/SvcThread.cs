@@ -99,7 +99,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     case  0: CurrentThread.Yield();                        break;
                     case -1: CurrentThread.YieldWithLoadBalancing();       break;
-                    case -2: CurrentThread.YieldWithForcedLoadBalancing(); break;
+                    case -2: CurrentThread.YieldAndWaitForLoadBalancing(); break;
                 }
             }
             else

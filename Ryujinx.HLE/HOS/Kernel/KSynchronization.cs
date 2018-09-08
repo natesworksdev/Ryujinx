@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 CurrentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (Timeout >= 1)
+                if (Timeout > 0)
                 {
                     System.TimeManager.ScheduleFutureInvocation(CurrentThread, Timeout);
                 }
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 CurrentThread.WaitingSync = false;
 
-                if (Timeout >= 1)
+                if (Timeout > 0)
                 {
                     System.TimeManager.UnscheduleFutureInvocation(CurrentThread);
                 }

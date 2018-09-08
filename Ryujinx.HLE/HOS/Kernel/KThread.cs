@@ -16,21 +16,16 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KSynchronizationObject SignaledObj;
 
-        public long CondVarAddress     { get; set; }
-        public long MutexAddress       { get; set; }
-        public long ArbiterWaitAddress { get; set; }
+        public long CondVarAddress { get; set; }
+        public long MutexAddress   { get; set; }
 
         public Process Owner { get; private set; }
 
         private long LastScheduledTicks;
 
-        private long YieldCount;
-
-        public bool ArbiterSignaled { get; set; }
-
         public LinkedListNode<KThread>[] SiblingsPerCore { get; private set; }
 
-        private LinkedListNode<KThread> Withholder;
+        private LinkedListNode<KThread> WithholderNode;
 
         private LinkedList<KThread>     MutexWaiters;
         private LinkedListNode<KThread> MutexWaiterNode;
@@ -56,10 +51,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public bool ShallBeTerminated { get; private set; }
 
-        public bool SyncCancelled  { get; set; }
-        public bool WaitingSync    { get; set; }
+        public bool SyncCancelled { get; set; }
+        public bool WaitingSync   { get; set; }
 
         private bool HasExited;
+
+        public bool WaitingInArbitration { get; set; }
 
         private KScheduler Scheduler;
 
@@ -185,14 +182,17 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             SetNewSchedFlags(ThreadSchedState.Paused);
 
-            if (Timeout >= 1)
+            if (Timeout > 0)
             {
                 System.TimeManager.ScheduleFutureInvocation(this, Timeout);
             }
 
             System.CriticalSectionLock.Unlock();
 
-            System.TimeManager.UnscheduleFutureInvocation(this);
+            if (Timeout > 0)
+            {
+                System.TimeManager.UnscheduleFutureInvocation(this);
+            }
 
             return 0;
         }
@@ -225,11 +225,6 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void YieldWithLoadBalancing()
         {
-            if (YieldCount == Owner.YieldCounter)
-            {
-                return;
-            }
-
             int Prio = DynamicPriority;
             int Core = CurrentCore;
 
@@ -252,11 +247,6 @@ namespace Ryujinx.HLE.HOS.Kernel
                 SchedulingData.Reschedule(Prio, Core, this);
 
                 NextThreadOnCurrentQueue = SchedulingData.ScheduledThreadsPerPrioPerCore[Prio][Core].First?.Value;
-            }
-
-            if (Owner != null)
-            {
-                Owner.YieldCounter++;
             }
 
             foreach (KThread Thread in SchedulingData.SuggestedThreads(Core))
@@ -293,14 +283,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 if (SelectedOnCandidateCore == null || SelectedOnCandidateCore.DynamicPriority >= 2)
                 {
-                    SchedulingData.MoveTo(Thread.DynamicPriority, Core, Thread);
+                    SchedulingData.TransferToCore(Thread.DynamicPriority, Core, Thread);
 
                     Scheduler.ThreadReselectionRequested = true;
-
-                    if (Thread.Owner != null)
-                    {
-                        Thread.Owner.YieldCounter++;
-                    }
 
                     break;
                 }
@@ -310,23 +295,14 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 Scheduler.ThreadReselectionRequested = true;
             }
-            else
-            {
-                YieldCount = Owner.YieldCounter;
-            }
 
             System.CriticalSectionLock.Unlock();
 
             System.Scheduler.ContextSwitch();
         }
 
-        public void YieldWithForcedLoadBalancing()
+        public void YieldAndWaitForLoadBalancing()
         {
-            if (YieldCount == Owner.YieldCounter)
-            {
-                return;
-            }
-
             System.CriticalSectionLock.Lock();
 
             if (SchedFlags != ThreadSchedState.Running)
@@ -340,59 +316,40 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             int Core = CurrentCore;
 
-            CurrentCore = -1;
+            SchedulingData.TransferToCore(DynamicPriority, -1, this);
 
-            if (Core >= 0)
-            {
-                SchedulingData.Unschedule(DynamicPriority, Core, this);
-                SchedulingData.Suggest(DynamicPriority, Core, this);
-            }
+            KThread SelectedThread = null;
 
-            if (Owner != null)
-            {
-                Owner.YieldCounter++;
-            }
-
-            KThread FirstScheduled = SchedulingData.ScheduledThreads(Core).FirstOrDefault();
-            KThread FirstSuggested = SchedulingData.SuggestedThreads(Core).FirstOrDefault();
-
-            if (FirstScheduled != null || FirstSuggested == null)
-            {
-                Scheduler.ThreadReselectionRequested = true;
-            }
-            else
+            if (!SchedulingData.ScheduledThreads(Core).Any())
             {
                 foreach (KThread Thread in SchedulingData.SuggestedThreads(Core))
                 {
-                    if (Thread.CurrentCore >= 0)
+                    if (Thread.CurrentCore < 0)
                     {
-                        KThread FirstCandidate = SchedulingData.SuggestedThreads(Thread.CurrentCore).FirstOrDefault();
-
-                        if (FirstCandidate != Thread)
-                        {
-                            if (FirstCandidate == null || FirstCandidate.DynamicPriority >= 2)
-                            {
-                                SchedulingData.MoveTo(Thread.DynamicPriority, Core, Thread);
-
-                                if (Thread.Owner != null)
-                                {
-                                    Thread.Owner.YieldCounter++;
-                                }
-
-                                if (Thread != this)
-                                {
-                                    Scheduler.ThreadReselectionRequested = true;
-                                }
-                                else
-                                {
-                                    YieldCount = Owner.YieldCounter;
-                                }
-                            }
-
-                            break;
-                        }
+                        continue;
                     }
+
+                    KThread FirstCandidate = SchedulingData.ScheduledThreads(Thread.CurrentCore).FirstOrDefault();
+
+                    if (FirstCandidate == Thread)
+                    {
+                        continue;
+                    }
+
+                    if (FirstCandidate == null || FirstCandidate.DynamicPriority >= 2)
+                    {
+                        SchedulingData.TransferToCore(Thread.DynamicPriority, Core, Thread);
+
+                        SelectedThread = Thread;
+                    }
+
+                    break;
                 }
+            }
+
+            if (SelectedThread != this)
+            {
+                Scheduler.ThreadReselectionRequested = true;
             }
 
             System.CriticalSectionLock.Unlock();
@@ -455,13 +412,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 SyncCancelled = true;
             }
-            else if (Withholder != null)
+            else if (WithholderNode != null)
             {
-                Withholder.List.Remove(Withholder);
+                System.Withholders.Remove(WithholderNode);
 
                 SetNewSchedFlags(ThreadSchedState.Running);
 
-                Withholder = null;
+                WithholderNode = null;
 
                 SyncCancelled = true;
             }
@@ -589,11 +546,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((SchedFlags & ThreadSchedState.LowNibbleMask) == ThreadSchedState.Paused)
             {
-                //TODO: withholder stuff.
-
-                if (false)
+                if (WithholderNode != null)
                 {
+                    System.Withholders.Remove(WithholderNode);
+
                     SetNewSchedFlags(ThreadSchedState.Running);
+
+                    WithholderNode = null;
                 }
                 else
                 {

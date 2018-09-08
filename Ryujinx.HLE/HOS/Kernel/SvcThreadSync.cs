@@ -149,7 +149,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = System.AddressArbiter.ArbitrateUnlock(Process, Memory, MutexAddress);
+            long Result = System.AddressArbiter.ArbitrateUnlock(Memory, MutexAddress);
 
             if (Result != 0)
             {
@@ -191,7 +191,6 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             long Result = System.AddressArbiter.WaitProcessWideKeyAtomic(
-                Process,
                 Memory,
                 MutexAddress,
                 CondVarAddress,
@@ -229,16 +228,16 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcWaitForAddress(AThreadState ThreadState)
         {
-            long            Address = (long)ThreadState.X0;
+            long            Address =            (long)ThreadState.X0;
             ArbitrationType Type    = (ArbitrationType)ThreadState.X1;
-            int             Value   = (int)ThreadState.X2;
-            ulong           Timeout = ThreadState.X3;
+            int             Value   =             (int)ThreadState.X2;
+            long            Timeout =            (long)ThreadState.X3;
 
             Device.Log.PrintDebug(LogClass.KernelSvc,
-                "Address = 0x"         + Address.ToString("x16") + ", " +
-                "ArbitrationType = 0x" + Type   .ToString()      + ", " +
-                "Value = 0x"           + Value  .ToString("x8")  + ", " +
-                "Timeout = 0x"         + Timeout.ToString("x16"));
+                "Address = 0x" + Address.ToString("x16") + ", " +
+                "Type = "      + Type   .ToString()      + ", " +
+                "Value = 0x"   + Value  .ToString("x8")  + ", " +
+                "Timeout = 0x" + Timeout.ToString("x16"));
 
             if (IsPointingInsideKernel(Address))
             {
@@ -258,24 +257,93 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
+            long Result;
+
             switch (Type)
             {
                 case ArbitrationType.WaitIfLessThan:
-                    ThreadState.X0 = AddressArbiter.WaitForAddressIfLessThan(Process, ThreadState, Memory, Address, Value, Timeout, false);
+                    Result = System.AddressArbiter.WaitForAddressIfLessThan(Memory, Address, Value, false, Timeout);
                     break;
 
                 case ArbitrationType.DecrementAndWaitIfLessThan:
-                    ThreadState.X0 = AddressArbiter.WaitForAddressIfLessThan(Process, ThreadState, Memory, Address, Value, Timeout, true);
+                    Result = System.AddressArbiter.WaitForAddressIfLessThan(Memory, Address, Value, true, Timeout);
                     break;
 
                 case ArbitrationType.WaitIfEqual:
-                    ThreadState.X0 = AddressArbiter.WaitForAddressIfEqual(Process, ThreadState, Memory, Address, Value, Timeout);
+                    Result = System.AddressArbiter.WaitForAddressIfEqual(Memory, Address, Value, Timeout);
                     break;
 
                 default:
-                    ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
+                    Result = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
                     break;
             }
+
+            if (Result != 0)
+            {
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+            }
+
+            ThreadState.X0 = (ulong)Result;
+        }
+
+        private void SvcSignalToAddress(AThreadState ThreadState)
+        {
+            long       Address =       (long)ThreadState.X0;
+            SignalType Type    = (SignalType)ThreadState.X1;
+            int        Value   =        (int)ThreadState.X2;
+            int        Count   =        (int)ThreadState.X3;
+
+            Device.Log.PrintDebug(LogClass.KernelSvc,
+                "Address = 0x" + Address.ToString("x16") + ", " +
+                "Type = "      + Type   .ToString()      + ", " +
+                "Value = 0x"   + Value  .ToString("x8")  + ", " +
+                "Count = 0x"   + Count  .ToString("x8"));
+
+            if (IsPointingInsideKernel(Address))
+            {
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+
+                return;
+            }
+
+            if (IsAddressNotWordAligned(Address))
+            {
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+
+                return;
+            }
+
+            long Result;
+
+            switch (Type)
+            {
+                case SignalType.Signal:
+                    Result = System.AddressArbiter.Signal(Address, Count);
+                    break;
+
+                case SignalType.SignalAndIncrementIfEqual:
+                    Result = System.AddressArbiter.SignalAndIncrementIfEqual(Memory, Address, Value, Count);
+                    break;
+
+                case SignalType.SignalAndModifyIfEqual:
+                    Result = System.AddressArbiter.SignalAndModifyIfEqual(Memory, Address, Value, Count);
+                    break;
+
+                default:
+                    Result = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
+                    break;
+            }
+
+            if (Result != 0)
+            {
+                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+            }
+
+            ThreadState.X0 = (ulong)Result;
         }
 
         private bool IsPointingInsideKernel(long Address)
