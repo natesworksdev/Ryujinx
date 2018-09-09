@@ -84,6 +84,30 @@ namespace ChocolArm64.Instruction
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
         }
+		
+        public static void Sqshrun_S(AILEmitterCtx Context)
+        {
+            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+
+            EmitScalarSaturatingNarrowOpSxZx(Context, () =>
+            {
+                Context.EmitLdc_I4(GetImmShr(Op));
+
+                Context.Emit(OpCodes.Shr);
+            });
+        }
+		
+        public static void Sqshrun_V(AILEmitterCtx Context)
+        {
+            AOpCodeSimdShImm Op = (AOpCodeSimdShImm)Context.CurrOp;
+
+            EmitVectorSaturatingNarrowOpSxZx(Context, () =>
+            {
+                Context.EmitLdc_I4(GetImmShr(Op));
+
+                Context.Emit(OpCodes.Shr);
+            });
+        }
 
         public static void Sqrshrn_V(AILEmitterCtx Context)
         {
