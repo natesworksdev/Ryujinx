@@ -75,7 +75,7 @@ namespace Ryujinx
                 {
                     ResizeEvent = false;
 
-                    Renderer.FrameBuffer.SetWindowSize(Width, Height);
+                    Renderer.RenderTarget.SetWindowSize(Width, Height);
                 }
 
                 Ticks += Chrono.ElapsedTicks;
@@ -98,7 +98,7 @@ namespace Ryujinx
 
             Visible = true;
 
-            Renderer.FrameBuffer.SetWindowSize(Width, Height);
+            Renderer.RenderTarget.SetWindowSize(Width, Height);
 
             Context.MakeCurrent(null);
 
@@ -295,20 +295,23 @@ namespace Ryujinx
 
         private new void RenderFrame()
         {
-            Renderer.FrameBuffer.Render();
+            Renderer.RenderTarget.Render();
 
             Device.Statistics.RecordSystemFrameTime();
 
             double HostFps = Device.Statistics.GetSystemFrameRate();
             double GameFps = Device.Statistics.GetGameFrameRate();
 
-            NewTitle = $"Ryujinx | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0}";
+            NewTitle = $"Ryujinx | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0} | Game Vsync: " +
+               (Device.EnableDeviceVsync ? "On" : "Off");
 
             TitleEvent = true;
 
             SwapBuffers();
 
             Device.System.SignalVsync();
+
+            Device.VsyncEvent.Set();
         }
 
         protected override void OnUnload(EventArgs e)

@@ -1,11 +1,13 @@
 using Ryujinx.Audio;
+using Ryujinx.Graphics;
 using Ryujinx.Graphics.Gal;
-using Ryujinx.HLE.Gpu;
+using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.Input;
 using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Memory;
 using System;
+using System.Threading;
 
 namespace Ryujinx.HLE
 {
@@ -26,6 +28,12 @@ namespace Ryujinx.HLE
         public PerformanceStatistics Statistics { get; private set; }
 
         public Hid Hid { get; private set; }
+
+        public bool EnableDeviceVsync { get; set; } = true;
+
+        public AutoResetEvent VsyncEvent { get; private set; }
+
+        public event EventHandler Finish;
 
         public Switch(IGalRenderer Renderer, IAalOutput AudioOut)
         {
@@ -54,11 +62,28 @@ namespace Ryujinx.HLE
             Statistics = new PerformanceStatistics();
 
             Hid = new Hid(this, System.HidSharedMem.PA);
+
+            VsyncEvent = new AutoResetEvent(true);
         }
 
         public void LoadCart(string ExeFsDir, string RomFsFile = null)
         {
             System.LoadCart(ExeFsDir, RomFsFile);
+        }
+
+        public void LoadXci(string XciFile)
+        {
+            System.LoadXci(XciFile);
+        }
+
+        public void LoadNca(string NcaFile)
+        {
+            System.LoadNca(NcaFile);
+        }
+
+        public void LoadNsp(string NspFile)
+        {
+            System.LoadNsp(NspFile);
         }
 
         public void LoadProgram(string FileName)
@@ -93,6 +118,8 @@ namespace Ryujinx.HLE
             if (Disposing)
             {
                 System.Dispose();
+
+                VsyncEvent.Dispose();
             }
         }
     }
