@@ -13,7 +13,9 @@ namespace Ryujinx.Graphics.Gal
         IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long Key);
         IEnumerable<ShaderDeclInfo> GetTextureUsage(long Key);
 
-        void SetGlobalMemory(IntPtr Data);
+        void SetGlobalMemory(IntPtr Data, int Size);
+
+        int GetGlobalMemorySize();
 
         void Bind(long Key);
 

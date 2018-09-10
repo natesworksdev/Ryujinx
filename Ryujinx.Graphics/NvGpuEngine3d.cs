@@ -469,9 +469,11 @@ namespace Ryujinx.Graphics
 
                 long BaseAddress = (uint)BaseAddressLow | ((long)BaseAddressHigh << 32);
 
-                IntPtr Data = Vmm.GetHostAddress(BaseAddress, 16384);
+                int GmemSize = Gpu.Renderer.Shader.GetGlobalMemorySize();
 
-                Gpu.Renderer.Shader.SetGlobalMemory(Data);
+                IntPtr Data = Vmm.GetHostAddress(BaseAddress, GmemSize);
+
+                Gpu.Renderer.Shader.SetGlobalMemory(Data, GmemSize);
             }
         }
 

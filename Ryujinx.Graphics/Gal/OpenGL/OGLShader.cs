@@ -9,6 +9,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLShader : IGalShader
     {
+        public const int ExtraBinding = 0;
+        public const int GmemBinding = 1;
+
         public const int ReservedCbufCount = 2;
 
         private const int ExtraDataSize = 4;
@@ -94,7 +97,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return null;
         }
 
-        public void SetGlobalMemory(IntPtr Data)
+        public void SetGlobalMemory(IntPtr Data, int Size)
         {
             BindProgram();
 
@@ -102,9 +105,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.BindBuffer(BufferTarget.UniformBuffer, GlobalMemoryUboHandle);
 
-            GL.BufferData(BufferTarget.UniformBuffer, GmemSize, IntPtr.Zero, BufferUsageHint.StreamDraw);
+            GL.BufferData(BufferTarget.UniformBuffer, Size, IntPtr.Zero, BufferUsageHint.StreamDraw);
 
-            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, GmemSize, Data);
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, Size, Data);
+        }
+
+        public int GetGlobalMemorySize()
+        {
+            return GmemSize;
         }
 
         public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long Key)
@@ -231,7 +239,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 GL.BufferData(BufferTarget.UniformBuffer, ExtraDataSize * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
-                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, ExtraUboHandle);
+                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, ExtraBinding, ExtraUboHandle);
             }
         }
 
@@ -243,9 +251,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 GL.BindBuffer(BufferTarget.UniformBuffer, GlobalMemoryUboHandle);
 
-                GL.BufferData(BufferTarget.UniformBuffer, 16384, IntPtr.Zero, BufferUsageHint.StreamDraw);
+                GL.BufferData(BufferTarget.UniformBuffer, GmemSize, IntPtr.Zero, BufferUsageHint.StreamDraw);
 
-                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 1, GlobalMemoryUboHandle);
+                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, GmemBinding, GlobalMemoryUboHandle);
             }
         }
 
@@ -263,11 +271,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int ExtraBlockindex = GL.GetUniformBlockIndex(ProgramHandle, GlslDecl.ExtraUniformBlockName);
 
-            GL.UniformBlockBinding(ProgramHandle, ExtraBlockindex, 0);
+            GL.UniformBlockBinding(ProgramHandle, ExtraBlockindex, ExtraBinding);
 
             int GmemBlockIndex = GL.GetUniformBlockIndex(ProgramHandle, GlslDecl.GmemUniformBlockName);
 
-            GL.UniformBlockBinding(ProgramHandle, GmemBlockIndex, 1);
+            GL.UniformBlockBinding(ProgramHandle, GmemBlockIndex, GmemBinding);
 
             int FreeBinding = ReservedCbufCount;
 
