@@ -9,9 +9,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLShader : IGalShader
     {
-        public const int ReservedCbufCount = 1;
+        public const int ReservedCbufCount = 2;
 
         private const int ExtraDataSize = 4;
+
+        private const int GmemSize = 16384;
 
         public OGLShaderProgram Current;
 
@@ -24,6 +26,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private OGLConstBuffer Buffer;
 
         private int ExtraUboHandle;
+        private int GlobalMemoryUboHandle;
 
         public OGLShader(OGLConstBuffer Buffer)
         {
@@ -76,8 +79,32 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return new OGLShaderStage(
                 Type,
                 Program.Code,
+                Program.GlobalMemory,
                 Program.Uniforms,
                 Program.Textures);
+        }
+
+        public ShaderDeclInfo GetGlobalMemoryUsage(long Key)
+        {
+            if (Stages.TryGetValue(Key, out OGLShaderStage Stage))
+            {
+                return Stage.GlobalMemoryUsage;
+            }
+
+            return null;
+        }
+
+        public void SetGlobalMemory(IntPtr Data)
+        {
+            BindProgram();
+
+            EnsureGmemBlock();
+
+            GL.BindBuffer(BufferTarget.UniformBuffer, GlobalMemoryUboHandle);
+
+            GL.BufferData(BufferTarget.UniformBuffer, GmemSize, IntPtr.Zero, BufferUsageHint.StreamDraw);
+
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, GmemSize, Data);
         }
 
         public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long Key)
@@ -208,6 +235,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
+        private void EnsureGmemBlock()
+        {
+            if (GlobalMemoryUboHandle == 0)
+            {
+                GlobalMemoryUboHandle = GL.GenBuffer();
+
+                GL.BindBuffer(BufferTarget.UniformBuffer, GlobalMemoryUboHandle);
+
+                GL.BufferData(BufferTarget.UniformBuffer, 16384, IntPtr.Zero, BufferUsageHint.StreamDraw);
+
+                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 1, GlobalMemoryUboHandle);
+            }
+        }
+
         private void AttachIfNotNull(int ProgramHandle, OGLShaderStage Stage)
         {
             if (Stage != null)
@@ -223,6 +264,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             int ExtraBlockindex = GL.GetUniformBlockIndex(ProgramHandle, GlslDecl.ExtraUniformBlockName);
 
             GL.UniformBlockBinding(ProgramHandle, ExtraBlockindex, 0);
+
+            int GmemBlockIndex = GL.GetUniformBlockIndex(ProgramHandle, GlslDecl.GmemUniformBlockName);
+
+            GL.UniformBlockBinding(ProgramHandle, GmemBlockIndex, 1);
 
             int FreeBinding = ReservedCbufCount;
 

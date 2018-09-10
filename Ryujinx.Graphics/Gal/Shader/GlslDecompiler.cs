@@ -181,7 +181,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             TextureInfo.AddRange(Decl.Textures.Values);
             TextureInfo.AddRange(IterateCbTextures());
 
-            return new GlslProgram(GlslCode, TextureInfo, Decl.Uniforms.Values);
+            return new GlslProgram(GlslCode, Decl.GmemBase, TextureInfo, Decl.Uniforms.Values);
         }
 
         private void PrintDeclHeader()
@@ -252,6 +252,17 @@ namespace Ryujinx.Graphics.Gal.Shader
                 SB.AppendLine(IdentationStr + "int " + GlslDecl.InstanceUniformName + ";");
 
                 SB.AppendLine("};");
+            }
+
+            if (Decl.GmemBase != null)
+            {
+                SB.AppendLine("layout (std140) uniform " + GlslDecl.GmemUniformBlockName + " {");
+
+                SB.AppendLine($"{IdentationStr}vec4 {GlslDecl.GmemUniformBlockName}_data[{GlslDecl.MaxUboSize}];");
+
+                SB.AppendLine("};");
+
+                SB.AppendLine();
             }
 
             SB.AppendLine();
@@ -727,6 +738,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case ShaderIrOperAbuf Abuf: return GetName (Abuf);
                 case ShaderIrOperCbuf Cbuf: return GetName (Cbuf);
                 case ShaderIrOperGpr  Gpr:  return GetName (Gpr);
+                case ShaderIrOperGmem Gmem: return GetName(Gmem);
                 case ShaderIrOperImm  Imm:  return GetValue(Imm);
                 case ShaderIrOperImmf Immf: return GetValue(Immf);
                 case ShaderIrOperPred Pred: return GetName (Pred);
@@ -787,6 +799,16 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 return $"{DeclInfo.Name}_data[{Cbuf.Pos / 4}][{Cbuf.Pos % 4}]";
             }
+        }
+
+        private string GetName(ShaderIrOperGmem Gmem)
+        {
+            string Index = "(floatBitsToInt(" + GetSrcExpr(Gmem.BaseAddress) + ") - " +
+                            "floatBitsToInt(" + GetName(Decl.GmemBaseCbuf) + ")";
+
+            Index += " + " + Gmem.Offset.ToString(CultureInfo.InvariantCulture) + ")";
+
+            return $"{GlslDecl.GmemUniformBlockName}_data[{Index} / 16][({Index} / 4) % 4]";
         }
 
         private string GetOutAbufName(ShaderIrOperAbuf Abuf)
@@ -1338,6 +1360,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         : OperType.F32;
 
                 case ShaderIrOperCbuf Cbuf: return OperType.F32;
+                case ShaderIrOperGmem Gmem: return OperType.F32;
                 case ShaderIrOperGpr  Gpr:  return OperType.F32;
                 case ShaderIrOperImm  Imm:  return OperType.I32;
                 case ShaderIrOperImmf Immf: return OperType.F32;

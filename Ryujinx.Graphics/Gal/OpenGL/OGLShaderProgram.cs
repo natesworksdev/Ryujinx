@@ -23,19 +23,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public string Code { get; private set; }
 
+        public ShaderDeclInfo GlobalMemoryUsage { get; private set; }
+
         public IEnumerable<ShaderDeclInfo> ConstBufferUsage { get; private set; }
         public IEnumerable<ShaderDeclInfo> TextureUsage     { get; private set; }
 
         public OGLShaderStage(
             GalShaderType               Type,
             string                      Code,
+            ShaderDeclInfo              GlobalMemoryUsage,
             IEnumerable<ShaderDeclInfo> ConstBufferUsage,
             IEnumerable<ShaderDeclInfo> TextureUsage)
         {
-            this.Type             = Type;
-            this.Code             = Code;
-            this.ConstBufferUsage = ConstBufferUsage;
-            this.TextureUsage     = TextureUsage;
+            this.Type              = Type;
+            this.Code              = Code;
+            this.GlobalMemoryUsage = GlobalMemoryUsage;
+            this.ConstBufferUsage  = ConstBufferUsage;
+            this.TextureUsage      = TextureUsage;
         }
 
         public void Compile()
