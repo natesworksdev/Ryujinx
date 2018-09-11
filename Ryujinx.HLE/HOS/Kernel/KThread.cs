@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KThread : KSynchronizationObject, IKFutureSchedulerObject
     {
-        public AThread Thread { get; private set; }
+        public AThread Context { get; private set; }
 
         public long AffinityMask { get; set; }
 
@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public Process Owner { get; private set; }
 
-        private long LastScheduledTicks;
+        public long LastScheduledTicks { get; set; }
 
         public LinkedListNode<KThread>[] SiblingsPerCore { get; private set; }
 
@@ -72,9 +72,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             int     Priority,
             int     ThreadId) : base(System)
         {
-            this.Thread   = Thread;
             this.ThreadId = ThreadId;
 
+            Context        = Thread;
             Owner          = Process;
             PreferredCore  = ProcessorId;
             Scheduler      = System.Scheduler;
@@ -249,46 +249,39 @@ namespace Ryujinx.HLE.HOS.Kernel
                 NextThreadOnCurrentQueue = SchedulingData.ScheduledThreadsPerPrioPerCore[Prio][Core].First?.Value;
             }
 
-            foreach (KThread Thread in SchedulingData.SuggestedThreads(Core))
+            IEnumerable<KThread> SuitableCandidates()
             {
-                KThread SelectedOnCandidateCore = null;
-
-                if (Thread.CurrentCore >= 0)
+                foreach (KThread Thread in SchedulingData.SuggestedThreads(Core))
                 {
-                    SelectedOnCandidateCore = Scheduler.CoreContexts[Thread.CurrentCore].SelectedThread;
-                }
+                    int SrcCore = Thread.CurrentCore;
 
-                if (Thread == SelectedOnCandidateCore)
-                {
-                    continue;
-                }
-
-                if (this != NextThreadOnCurrentQueue)
-                {
-                    //If the candidate has lower priority than the current thread,
-                    //or the priority is the same, but it was already scheduled
-                    //after the next thread on the queue, then it's not worth to run
-                    //it, as the next thread on the queue is already a better candidate.
-                    if (Thread.DynamicPriority > DynamicPriority ||
-                        (Thread.DynamicPriority == DynamicPriority &&
-                        Thread.LastScheduledTicks > NextThreadOnCurrentQueue.LastScheduledTicks))
+                    if (SrcCore >= 0)
                     {
-                        break;
+                        KThread SelectedSrcCore = Scheduler.CoreContexts[SrcCore].SelectedThread;
+
+                        if (SelectedSrcCore == Thread || ((SelectedSrcCore?.DynamicPriority ?? 2) < 2))
+                        {
+                            continue;
+                        }
+                    }
+
+                    //If the candidate was scheduled after the current thread, then it's not worth it,
+                    //unless the priority is higher than the current one.
+                    if (NextThreadOnCurrentQueue.LastScheduledTicks >= Thread.LastScheduledTicks ||
+                        NextThreadOnCurrentQueue.DynamicPriority    <  Thread.DynamicPriority)
+                    {
+                        yield return Thread;
                     }
                 }
-                else if (Thread.DynamicPriority > DynamicPriority)
-                {
-                    break;
-                }
+            }
 
-                if (SelectedOnCandidateCore == null || SelectedOnCandidateCore.DynamicPriority >= 2)
-                {
-                    SchedulingData.TransferToCore(Thread.DynamicPriority, Core, Thread);
+            KThread Dst = SuitableCandidates().FirstOrDefault(x => x.DynamicPriority <= Prio);
 
-                    Scheduler.ThreadReselectionRequested = true;
+            if (Dst != null)
+            {
+                SchedulingData.TransferToCore(Dst.DynamicPriority, Core, Dst);
 
-                    break;
-                }
+                Scheduler.ThreadReselectionRequested = true;
             }
 
             if (this != NextThreadOnCurrentQueue)
@@ -368,12 +361,15 @@ namespace Ryujinx.HLE.HOS.Kernel
             System.CriticalSectionLock.Unlock();
         }
 
-        public long SetActivity(bool Active)
+        public long SetActivity(bool Pause)
         {
+            long Result = 0;
+
             System.CriticalSectionLock.Lock();
 
-            if (SchedFlags == ThreadSchedState.TerminationPending ||
-                (SchedFlags & ThreadSchedState.HighNibbleMask) != 0)
+            ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowNibbleMask;
+
+            if (LowNibble != ThreadSchedState.Paused && LowNibble != ThreadSchedState.Running)
             {
                 System.CriticalSectionLock.Unlock();
 
@@ -384,24 +380,49 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!ShallBeTerminated && SchedFlags != ThreadSchedState.TerminationPending)
             {
-                if (Active)
+                if (Pause)
                 {
-                    ForcePauseFlags &= ~ThreadSchedState.ForcePauseFlag;
+                    //Pause, the force pause flag should be clear (thread is NOT paused).
+                    if ((ForcePauseFlags & ThreadSchedState.ForcePauseFlag) == 0)
+                    {
+                        ForcePauseFlags |= ThreadSchedState.ForcePauseFlag;
 
-                    UncombineForcePauseFlags();
+                        CombineForcePauseFlags();
+                    }
+                    else
+                    {
+                        Result = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+                    }
                 }
                 else
                 {
-                    ForcePauseFlags |= ThreadSchedState.ForcePauseFlag;
+                    //Unpause, the force pause flag should be set (thread is paused).
+                    if ((ForcePauseFlags & ThreadSchedState.ForcePauseFlag) != 0)
+                    {
+                        ThreadSchedState OldForcePauseFlags = ForcePauseFlags;
 
-                    CombineForcePauseFlags();
+                        ForcePauseFlags &= ~ThreadSchedState.ForcePauseFlag;
+
+                        if ((OldForcePauseFlags & ~ThreadSchedState.ForcePauseFlag) == ThreadSchedState.None)
+                        {
+                            ThreadSchedState OldSchedFlags = SchedFlags;
+
+                            SchedFlags &= ThreadSchedState.LowNibbleMask;
+
+                            AdjustScheduling(OldSchedFlags);
+                        }
+                    }
+                    else
+                    {
+                        Result = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+                    }
                 }
             }
 
             System.CriticalSectionLock.Unlock();
             System.CriticalSectionLock.Unlock();
 
-            return 0;
+            return Result;
         }
 
         public void CancelSynchronization()
@@ -474,7 +495,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     {
                         if (PreferredCore < 0)
                         {
-                            CurrentCore = 63 - CountLeadingZeros(AffinityMask);
+                            CurrentCore = HighestSetCore(AffinityMask);
                         }
                         else
                         {
@@ -491,51 +512,41 @@ namespace Ryujinx.HLE.HOS.Kernel
             return 0;
         }
 
-        private static int CountLeadingZeros(long Value)
+        private static int HighestSetCore(long Mask)
         {
-            for (int Bit = 0; Bit < 64; Bit++)
+            for (int Core = KScheduler.CpuCoresCount - 1; Core >= 0; Core--)
             {
-                if (((Value >> (63 - Bit)) & 1) != 0)
+                if (((Mask >> Core) & 1) != 0)
                 {
-                    return Bit;
+                    return Core;
                 }
             }
 
-            return 64;
+            return -1;
         }
 
         private void CombineForcePauseFlags()
         {
-            ThreadSchedState OldStat   = SchedFlags;
+            ThreadSchedState OldFlags  = SchedFlags;
             ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowNibbleMask;
 
             SchedFlags = LowNibble | ForcePauseFlags;
 
-            AdjustScheduling(OldStat);
-        }
-
-        private void UncombineForcePauseFlags()
-        {
-            ThreadSchedState OldStat   = SchedFlags;
-            ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowNibbleMask;
-
-            SchedFlags = LowNibble;
-
-            if (ForcePauseFlags != ThreadSchedState.None)
-            {
-                AdjustScheduling(OldStat);
-            }
+            AdjustScheduling(OldFlags);
         }
 
         private void SetNewSchedFlags(ThreadSchedState NewFlags)
         {
             System.CriticalSectionLock.Lock();
 
-            ThreadSchedState OldStat = SchedFlags;
+            ThreadSchedState OldFlags = SchedFlags;
 
-            SchedFlags = (OldStat & ThreadSchedState.HighNibbleMask) | NewFlags;
+            SchedFlags = (OldFlags & ThreadSchedState.HighNibbleMask) | NewFlags;
 
-            AdjustScheduling(OldStat);
+            if ((OldFlags & ThreadSchedState.LowNibbleMask) != NewFlags)
+            {
+                AdjustScheduling(OldFlags);
+            }
 
             System.CriticalSectionLock.Unlock();
         }

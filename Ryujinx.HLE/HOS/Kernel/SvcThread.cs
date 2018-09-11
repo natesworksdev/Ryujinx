@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             CurrentThread.Exit();
 
-            CurrentThread.Thread.StopExecution();
+            System.Scheduler.StopThread(CurrentThread);
 
             System.Scheduler.CoreContexts[CurrentThread.CurrentCore].RemoveThread(CurrentThread);
         }
@@ -269,7 +269,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         private void SvcSetThreadActivity(AThreadState ThreadState)
         {
             int  Handle = (int)ThreadState.X0;
-            bool Active = (int)ThreadState.X1 == 1;
+            bool Pause  = (int)ThreadState.X1 == 1;
 
             KThread Thread = Process.HandleTable.GetData<KThread>(Handle);
 
@@ -291,7 +291,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = Thread.SetActivity(Active);
+            long Result = Thread.SetActivity(Pause);
 
             if (Result != 0)
             {
@@ -326,79 +326,79 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            Memory.WriteUInt64(Position + 0x0,  ThreadState.X0);
-            Memory.WriteUInt64(Position + 0x8,  ThreadState.X1);
-            Memory.WriteUInt64(Position + 0x10, ThreadState.X2);
-            Memory.WriteUInt64(Position + 0x18, ThreadState.X3);
-            Memory.WriteUInt64(Position + 0x20, ThreadState.X4);
-            Memory.WriteUInt64(Position + 0x28, ThreadState.X5);
-            Memory.WriteUInt64(Position + 0x30, ThreadState.X6);
-            Memory.WriteUInt64(Position + 0x38, ThreadState.X7);
-            Memory.WriteUInt64(Position + 0x40, ThreadState.X8);
-            Memory.WriteUInt64(Position + 0x48, ThreadState.X9);
-            Memory.WriteUInt64(Position + 0x50, ThreadState.X10);
-            Memory.WriteUInt64(Position + 0x58, ThreadState.X11);
-            Memory.WriteUInt64(Position + 0x60, ThreadState.X12);
-            Memory.WriteUInt64(Position + 0x68, ThreadState.X13);
-            Memory.WriteUInt64(Position + 0x70, ThreadState.X14);
-            Memory.WriteUInt64(Position + 0x78, ThreadState.X15);
-            Memory.WriteUInt64(Position + 0x80, ThreadState.X16);
-            Memory.WriteUInt64(Position + 0x88, ThreadState.X17);
-            Memory.WriteUInt64(Position + 0x90, ThreadState.X18);
-            Memory.WriteUInt64(Position + 0x98, ThreadState.X19);
-            Memory.WriteUInt64(Position + 0xa0, ThreadState.X20);
-            Memory.WriteUInt64(Position + 0xa8, ThreadState.X21);
-            Memory.WriteUInt64(Position + 0xb0, ThreadState.X22);
-            Memory.WriteUInt64(Position + 0xb8, ThreadState.X23);
-            Memory.WriteUInt64(Position + 0xc0, ThreadState.X24);
-            Memory.WriteUInt64(Position + 0xc8, ThreadState.X25);
-            Memory.WriteUInt64(Position + 0xd0, ThreadState.X26);
-            Memory.WriteUInt64(Position + 0xd8, ThreadState.X27);
-            Memory.WriteUInt64(Position + 0xe0, ThreadState.X28);
-            Memory.WriteUInt64(Position + 0xe8, ThreadState.X29);
-            Memory.WriteUInt64(Position + 0xf0, ThreadState.X30);
-            Memory.WriteUInt64(Position + 0xf8, ThreadState.X31);
+            Memory.WriteUInt64(Position + 0x0,  Thread.Context.ThreadState.X0);
+            Memory.WriteUInt64(Position + 0x8,  Thread.Context.ThreadState.X1);
+            Memory.WriteUInt64(Position + 0x10, Thread.Context.ThreadState.X2);
+            Memory.WriteUInt64(Position + 0x18, Thread.Context.ThreadState.X3);
+            Memory.WriteUInt64(Position + 0x20, Thread.Context.ThreadState.X4);
+            Memory.WriteUInt64(Position + 0x28, Thread.Context.ThreadState.X5);
+            Memory.WriteUInt64(Position + 0x30, Thread.Context.ThreadState.X6);
+            Memory.WriteUInt64(Position + 0x38, Thread.Context.ThreadState.X7);
+            Memory.WriteUInt64(Position + 0x40, Thread.Context.ThreadState.X8);
+            Memory.WriteUInt64(Position + 0x48, Thread.Context.ThreadState.X9);
+            Memory.WriteUInt64(Position + 0x50, Thread.Context.ThreadState.X10);
+            Memory.WriteUInt64(Position + 0x58, Thread.Context.ThreadState.X11);
+            Memory.WriteUInt64(Position + 0x60, Thread.Context.ThreadState.X12);
+            Memory.WriteUInt64(Position + 0x68, Thread.Context.ThreadState.X13);
+            Memory.WriteUInt64(Position + 0x70, Thread.Context.ThreadState.X14);
+            Memory.WriteUInt64(Position + 0x78, Thread.Context.ThreadState.X15);
+            Memory.WriteUInt64(Position + 0x80, Thread.Context.ThreadState.X16);
+            Memory.WriteUInt64(Position + 0x88, Thread.Context.ThreadState.X17);
+            Memory.WriteUInt64(Position + 0x90, Thread.Context.ThreadState.X18);
+            Memory.WriteUInt64(Position + 0x98, Thread.Context.ThreadState.X19);
+            Memory.WriteUInt64(Position + 0xa0, Thread.Context.ThreadState.X20);
+            Memory.WriteUInt64(Position + 0xa8, Thread.Context.ThreadState.X21);
+            Memory.WriteUInt64(Position + 0xb0, Thread.Context.ThreadState.X22);
+            Memory.WriteUInt64(Position + 0xb8, Thread.Context.ThreadState.X23);
+            Memory.WriteUInt64(Position + 0xc0, Thread.Context.ThreadState.X24);
+            Memory.WriteUInt64(Position + 0xc8, Thread.Context.ThreadState.X25);
+            Memory.WriteUInt64(Position + 0xd0, Thread.Context.ThreadState.X26);
+            Memory.WriteUInt64(Position + 0xd8, Thread.Context.ThreadState.X27);
+            Memory.WriteUInt64(Position + 0xe0, Thread.Context.ThreadState.X28);
+            Memory.WriteUInt64(Position + 0xe8, Thread.Context.ThreadState.X29);
+            Memory.WriteUInt64(Position + 0xf0, Thread.Context.ThreadState.X30);
+            Memory.WriteUInt64(Position + 0xf8, Thread.Context.ThreadState.X31);
 
             Memory.WriteInt64(Position + 0x100, Thread.LastPc);
 
-            Memory.WriteUInt64(Position + 0x108, (ulong)ThreadState.Psr);
+            Memory.WriteUInt64(Position + 0x108, (ulong)Thread.Context.ThreadState.Psr);
 
-            Memory.WriteVector128(Position + 0x110, ThreadState.V0);
-            Memory.WriteVector128(Position + 0x120, ThreadState.V1);
-            Memory.WriteVector128(Position + 0x130, ThreadState.V2);
-            Memory.WriteVector128(Position + 0x140, ThreadState.V3);
-            Memory.WriteVector128(Position + 0x150, ThreadState.V4);
-            Memory.WriteVector128(Position + 0x160, ThreadState.V5);
-            Memory.WriteVector128(Position + 0x170, ThreadState.V6);
-            Memory.WriteVector128(Position + 0x180, ThreadState.V7);
-            Memory.WriteVector128(Position + 0x190, ThreadState.V8);
-            Memory.WriteVector128(Position + 0x1a0, ThreadState.V9);
-            Memory.WriteVector128(Position + 0x1b0, ThreadState.V10);
-            Memory.WriteVector128(Position + 0x1c0, ThreadState.V11);
-            Memory.WriteVector128(Position + 0x1d0, ThreadState.V12);
-            Memory.WriteVector128(Position + 0x1e0, ThreadState.V13);
-            Memory.WriteVector128(Position + 0x1f0, ThreadState.V14);
-            Memory.WriteVector128(Position + 0x200, ThreadState.V15);
-            Memory.WriteVector128(Position + 0x210, ThreadState.V16);
-            Memory.WriteVector128(Position + 0x220, ThreadState.V17);
-            Memory.WriteVector128(Position + 0x230, ThreadState.V18);
-            Memory.WriteVector128(Position + 0x240, ThreadState.V19);
-            Memory.WriteVector128(Position + 0x250, ThreadState.V20);
-            Memory.WriteVector128(Position + 0x260, ThreadState.V21);
-            Memory.WriteVector128(Position + 0x270, ThreadState.V22);
-            Memory.WriteVector128(Position + 0x280, ThreadState.V23);
-            Memory.WriteVector128(Position + 0x290, ThreadState.V24);
-            Memory.WriteVector128(Position + 0x2a0, ThreadState.V25);
-            Memory.WriteVector128(Position + 0x2b0, ThreadState.V26);
-            Memory.WriteVector128(Position + 0x2c0, ThreadState.V27);
-            Memory.WriteVector128(Position + 0x2d0, ThreadState.V28);
-            Memory.WriteVector128(Position + 0x2e0, ThreadState.V29);
-            Memory.WriteVector128(Position + 0x2f0, ThreadState.V30);
-            Memory.WriteVector128(Position + 0x300, ThreadState.V31);
+            Memory.WriteVector128(Position + 0x110, Thread.Context.ThreadState.V0);
+            Memory.WriteVector128(Position + 0x120, Thread.Context.ThreadState.V1);
+            Memory.WriteVector128(Position + 0x130, Thread.Context.ThreadState.V2);
+            Memory.WriteVector128(Position + 0x140, Thread.Context.ThreadState.V3);
+            Memory.WriteVector128(Position + 0x150, Thread.Context.ThreadState.V4);
+            Memory.WriteVector128(Position + 0x160, Thread.Context.ThreadState.V5);
+            Memory.WriteVector128(Position + 0x170, Thread.Context.ThreadState.V6);
+            Memory.WriteVector128(Position + 0x180, Thread.Context.ThreadState.V7);
+            Memory.WriteVector128(Position + 0x190, Thread.Context.ThreadState.V8);
+            Memory.WriteVector128(Position + 0x1a0, Thread.Context.ThreadState.V9);
+            Memory.WriteVector128(Position + 0x1b0, Thread.Context.ThreadState.V10);
+            Memory.WriteVector128(Position + 0x1c0, Thread.Context.ThreadState.V11);
+            Memory.WriteVector128(Position + 0x1d0, Thread.Context.ThreadState.V12);
+            Memory.WriteVector128(Position + 0x1e0, Thread.Context.ThreadState.V13);
+            Memory.WriteVector128(Position + 0x1f0, Thread.Context.ThreadState.V14);
+            Memory.WriteVector128(Position + 0x200, Thread.Context.ThreadState.V15);
+            Memory.WriteVector128(Position + 0x210, Thread.Context.ThreadState.V16);
+            Memory.WriteVector128(Position + 0x220, Thread.Context.ThreadState.V17);
+            Memory.WriteVector128(Position + 0x230, Thread.Context.ThreadState.V18);
+            Memory.WriteVector128(Position + 0x240, Thread.Context.ThreadState.V19);
+            Memory.WriteVector128(Position + 0x250, Thread.Context.ThreadState.V20);
+            Memory.WriteVector128(Position + 0x260, Thread.Context.ThreadState.V21);
+            Memory.WriteVector128(Position + 0x270, Thread.Context.ThreadState.V22);
+            Memory.WriteVector128(Position + 0x280, Thread.Context.ThreadState.V23);
+            Memory.WriteVector128(Position + 0x290, Thread.Context.ThreadState.V24);
+            Memory.WriteVector128(Position + 0x2a0, Thread.Context.ThreadState.V25);
+            Memory.WriteVector128(Position + 0x2b0, Thread.Context.ThreadState.V26);
+            Memory.WriteVector128(Position + 0x2c0, Thread.Context.ThreadState.V27);
+            Memory.WriteVector128(Position + 0x2d0, Thread.Context.ThreadState.V28);
+            Memory.WriteVector128(Position + 0x2e0, Thread.Context.ThreadState.V29);
+            Memory.WriteVector128(Position + 0x2f0, Thread.Context.ThreadState.V30);
+            Memory.WriteVector128(Position + 0x300, Thread.Context.ThreadState.V31);
 
-            Memory.WriteInt32(Position + 0x310, ThreadState.Fpcr);
-            Memory.WriteInt32(Position + 0x314, ThreadState.Fpsr);
-            Memory.WriteInt64(Position + 0x318, ThreadState.Tpidr);
+            Memory.WriteInt32(Position + 0x310, Thread.Context.ThreadState.Fpcr);
+            Memory.WriteInt32(Position + 0x314, Thread.Context.ThreadState.Fpsr);
+            Memory.WriteInt64(Position + 0x318, Thread.Context.ThreadState.Tpidr);
 
             ThreadState.X0 = 0;
         }

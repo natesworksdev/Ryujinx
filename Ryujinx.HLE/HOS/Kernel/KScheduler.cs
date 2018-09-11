@@ -1,30 +1,30 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KScheduler : IDisposable
+    partial class KScheduler : IDisposable
     {
         public const int PrioritiesCount = 64;
         public const int CpuCoresCount   = 4;
 
-        private int CurrentCore;
+        private const int PreemptionPriorityCores012 = 59;
+        private const int PreemptionPriorityCore3    = 63;
 
-        public bool MultiCoreScheduling { get; set; }
+        private Horizon System;
 
         public KSchedulingData SchedulingData { get; private set; }
 
-        private HleCoreManager CoreManager;
+        public KCoreContext[] CoreContexts { get; private set; }
 
-        public KCoreContext[] CoreContexts;
+        public bool ThreadReselectionRequested { get; set; }
 
-        public bool ThreadReselectionRequested;
-
-        private bool KeepPreempting;
-
-        public KScheduler()
+        public KScheduler(Horizon System)
         {
+            this.System = System;
+
             SchedulingData = new KSchedulingData();
 
             CoreManager = new HleCoreManager();
@@ -36,154 +36,110 @@ namespace Ryujinx.HLE.HOS.Kernel
                 CoreContexts[Core] = new KCoreContext(this, CoreManager);
             }
 
-            if (!MultiCoreScheduling)
-            {
-                Thread PreemptionThread = new Thread(PreemptCurrentThread);
+            Thread PreemptionThread = new Thread(PreemptCurrentThread);
 
-                KeepPreempting = true;
+            KeepPreempting = true;
 
-                PreemptionThread.Start();
-            }
+            PreemptionThread.Start();
         }
 
-        public void ContextSwitch()
+        private void PreemptThreads()
         {
-            lock (CoreContexts)
+            System.CriticalSectionLock.Lock();
+
+            PreemptThread(PreemptionPriorityCores012, 0);
+            PreemptThread(PreemptionPriorityCores012, 1);
+            PreemptThread(PreemptionPriorityCores012, 2);
+            PreemptThread(PreemptionPriorityCore3,    3);
+
+            System.CriticalSectionLock.Unlock();
+        }
+
+        private void PreemptThread(int Prio, int Core)
+        {
+            IEnumerable<KThread> ScheduledThreads = SchedulingData.ScheduledThreads(Core);
+
+            KThread SelectedThread = ScheduledThreads.FirstOrDefault(x => x.DynamicPriority == Prio);
+
+            //Yield priority queue.
+            if (SelectedThread != null)
             {
-                if (MultiCoreScheduling)
+                SchedulingData.Reschedule(Prio, Core, SelectedThread);
+            }
+
+            IEnumerable<KThread> SuitableCandidates()
+            {
+                foreach (KThread Thread in SchedulingData.SuggestedThreads(Core))
                 {
-                    int SelectedCount = 0;
+                    int SrcCore = Thread.CurrentCore;
 
-                    for (int Core = 0; Core < KScheduler.CpuCoresCount; Core++)
+                    if (SrcCore >= 0)
                     {
-                        KCoreContext CoreContext = CoreContexts[Core];
+                        KThread HighestPrioSrcCore = SchedulingData.ScheduledThreads(SrcCore).FirstOrDefault();
 
-                        if (CoreContext.ContextSwitchNeeded && (CoreContext.CurrentThread?.Thread.IsCurrentThread() ?? false))
+                        if (HighestPrioSrcCore != null && HighestPrioSrcCore.DynamicPriority < 2)
                         {
-                            CoreContext.ContextSwitch();
-                        }
-
-                        if (CoreContext.CurrentThread?.Thread.IsCurrentThread() ?? false)
-                        {
-                            SelectedCount++;
-                        }
-                    }
-
-                    if (SelectedCount == 0)
-                    {
-                        CoreManager.GetThread(Thread.CurrentThread).Pause();
-                    }
-                    else if (SelectedCount == 1)
-                    {
-                        CoreManager.GetThread(Thread.CurrentThread).Unpause();
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Thread scheduled in more than one core!");
-                    }
-                }
-                else
-                {
-                    KThread CurrentThread = CoreContexts[CurrentCore].CurrentThread;
-
-                    bool HasThreadExecuting = CurrentThread != null;
-
-                    if (HasThreadExecuting)
-                    {
-                        //This is not the thread that is currently executing, we need
-                        //to request an interrupt to allow safely starting another thread.
-                        if (!CurrentThread.Thread.IsCurrentThread())
-                        {
-                            CurrentThread.Thread.RequestInterrupt();
-
-                            return;
-                        }
-
-                        CoreManager.GetThread(CurrentThread.Thread.Work).Pause();
-                    }
-
-                    //Advance current core and try picking a thread,
-                    //keep advancing if it is null.
-                    for (int Core = 0; Core < 4; Core++)
-                    {
-                        CurrentCore = (CurrentCore + 1) % CpuCoresCount;
-
-                        KCoreContext CoreContext = CoreContexts[CurrentCore];
-
-                        CoreContext.UpdateCurrentThread();
-
-                        if (CoreContext.CurrentThread != null)
-                        {
-                            CoreContext.CurrentThread.ClearExclusive();
-
-                            CoreManager.GetThread(CoreContext.CurrentThread.Thread.Work).Unpause();
-
-                            CoreContext.CurrentThread.Thread.Execute();
-
                             break;
                         }
+
+                        if (HighestPrioSrcCore == Thread)
+                        {
+                            continue;
+                        }
                     }
 
-                    //If nothing was running before, then we are on a "external"
-                    //HLE thread, we don't need to wait.
-                    if (!HasThreadExecuting)
+                    //If the candidate was scheduled after the current thread, then it's not worth it.
+                    if (SelectedThread.LastScheduledTicks >= Thread.LastScheduledTicks)
                     {
-                        return;
+                        yield return Thread;
                     }
                 }
             }
 
-            CoreManager.GetThread(Thread.CurrentThread).Wait();
-        }
+            //Select candidate threads that could run on this core.
+            //Only take into account threads that are not yet selected.
+            KThread Dst = SuitableCandidates().FirstOrDefault(x => x.DynamicPriority == Prio);
 
-        private void PreemptCurrentThread()
-        {
-            //Preempts current thread every 10 milliseconds on a round-robin fashion,
-            //when multi core scheduling is disabled, to try ensuring that all threads
-            //gets a chance to run.
-            while (KeepPreempting)
+            if (Dst != null)
             {
-                lock (CoreContexts)
-                {
-                    KThread CurrentThread = CoreContexts[CurrentCore].CurrentThread;
+                SchedulingData.TransferToCore(Prio, Core, Dst);
 
-                    CurrentThread?.Thread.RequestInterrupt();
-                }
-
-                Thread.Sleep(10);
+                SelectedThread = Dst;
             }
-        }
 
-        public void StopThread(KThread Thread)
-        {
-            Thread.Thread.StopExecution();
+            //If the priority of the currently selected thread is lower than preemption priority,
+            //then allow threads with lower priorities to be selected aswell.
+            if (SelectedThread != null && SelectedThread.DynamicPriority > Prio)
+            {
+                Func<KThread, bool> Predicate = x => x.DynamicPriority >= SelectedThread.DynamicPriority;
 
-            CoreManager.GetThread(Thread.Thread.Work).Unpause();
+                Dst = SuitableCandidates().FirstOrDefault(Predicate);
+
+                if (Dst != null)
+                {
+                    SchedulingData.TransferToCore(Dst.DynamicPriority, Core, Dst);
+                }
+            }
+
+            ThreadReselectionRequested = true;
         }
 
         public void SelectThreads()
         {
             ThreadReselectionRequested = false;
 
-            KThread[] SelectedThreads = new KThread[CpuCoresCount];
-
             for (int Core = 0; Core < CpuCoresCount; Core++)
             {
-                KThread Thread = null;
-
-                if (!SchedulingData.IsCoreIdle(Core))
-                {
-                    Thread = SchedulingData.ScheduledThreads(Core).FirstOrDefault();
-                }
-
-                SelectedThreads[Core] = Thread;
+                KThread Thread = SchedulingData.ScheduledThreads(Core).FirstOrDefault();
 
                 CoreContexts[Core].SelectThread(Thread);
             }
 
             for (int Core = 0; Core < CpuCoresCount; Core++)
             {
-                if (!SchedulingData.IsCoreIdle(Core))
+                //If the core is not idle (there's already a thread running on it),
+                //then we don't need to attempt load balancing.
+                if (SchedulingData.ScheduledThreads(Core).Any())
                 {
                     continue;
                 }
@@ -194,54 +150,52 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 KThread Dst = null;
 
-                foreach (KThread CurrDst in SchedulingData.SuggestedThreads(Core))
+                //Select candidate threads that could run on this core.
+                //Give preference to threads that are not yet selected.
+                foreach (KThread Thread in SchedulingData.SuggestedThreads(Core))
                 {
-                    if (CurrDst.CurrentCore < 0 || CurrDst != SelectedThreads[CurrDst.CurrentCore])
+                    if (Thread.CurrentCore < 0 || Thread != CoreContexts[Thread.CurrentCore].SelectedThread)
                     {
-                        Dst = CurrDst;
+                        Dst = Thread;
 
                         break;
                     }
 
-                    SrcCoresHighestPrioThreads[SrcCoresHighestPrioThreadsCount++] = CurrDst.CurrentCore;
+                    SrcCoresHighestPrioThreads[SrcCoresHighestPrioThreadsCount++] = Thread.CurrentCore;
                 }
 
                 //Not yet selected candidate found.
                 if (Dst != null)
                 {
-                    //Those priorities are used for the kernel message dispatching
+                    //Priorities < 2 are used for the kernel message dispatching
                     //threads, we should skip load balancing entirely.
-                    if (Dst.DynamicPriority < 2)
+                    if (Dst.DynamicPriority >= 2)
                     {
-                        break;
+                        SchedulingData.TransferToCore(Dst.DynamicPriority, Core, Dst);
+
+                        CoreContexts[Core].SelectThread(Dst);
                     }
-
-                    SchedulingData.TransferToCore(Dst.DynamicPriority, Core, Dst);
-
-                    SelectedThreads[Core] = Dst;
-
-                    CoreContexts[Core].SelectThread(Dst);
 
                     continue;
                 }
 
+                //All candiates are already selected, choose the best one
+                //(the first one that doesn't make the source core idle if moved).
                 for (int Index = 0; Index < SrcCoresHighestPrioThreadsCount; Index++)
                 {
                     int SrcCore = SrcCoresHighestPrioThreads[Index];
-
-                    KThread OrigSelectedCoreSrc = SelectedThreads[SrcCore];
 
                     KThread Src = SchedulingData.ScheduledThreads(SrcCore).ElementAtOrDefault(1);
 
                     if (Src != null)
                     {
-                        SelectedThreads[SrcCore] = Src;
+                        //Run the second thread on the queue on the source core,
+                        //move the first one to the current core.
+                        KThread OrigSelectedCoreSrc = CoreContexts[SrcCore].SelectedThread;
 
                         CoreContexts[SrcCore].SelectThread(Src);
 
                         SchedulingData.TransferToCore(OrigSelectedCoreSrc.DynamicPriority, Core, OrigSelectedCoreSrc);
-
-                        SelectedThreads[Core] = OrigSelectedCoreSrc;
 
                         CoreContexts[Core].SelectThread(OrigSelectedCoreSrc);
                     }
@@ -255,7 +209,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 for (int Core = 0; Core < CpuCoresCount; Core++)
                 {
-                    if (CoreContexts[Core].CurrentThread?.Thread.IsCurrentThread() ?? false)
+                    if (CoreContexts[Core].CurrentThread?.Context.IsCurrentThread() ?? false)
                     {
                         return CoreContexts[Core].CurrentThread;
                     }

@@ -158,8 +158,8 @@ namespace Ryujinx.HLE.HOS
 
                 Homebrew.WriteHbAbiData(Memory, HbAbiDataPosition, Handle, SwitchPath);
 
-                MainThread.Thread.ThreadState.X0 = (ulong)HbAbiDataPosition;
-                MainThread.Thread.ThreadState.X1 = ulong.MaxValue;
+                MainThread.Context.ThreadState.X0 = (ulong)HbAbiDataPosition;
+                MainThread.Context.ThreadState.X1 = ulong.MaxValue;
             }
 
             MainThread.TimeUp();

@@ -1,3 +1,5 @@
+using System;
+
 namespace Ryujinx.HLE.HOS.Kernel
 {
     class KCoreContext
@@ -21,6 +23,11 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             SelectedThread = Thread;
 
+            if (Thread != null)
+            {
+                Thread.LastScheduledTicks = (uint)Environment.TickCount;
+            }
+
             ContextSwitchNeeded = true;
         }
 
@@ -37,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (CurrentThread != null)
             {
-                CoreManager.GetThread(CurrentThread.Thread.Work).Pause();
+                CoreManager.GetThread(CurrentThread.Context.Work).Reset();
             }
 
             CurrentThread = SelectedThread;
@@ -46,9 +53,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 CurrentThread.ClearExclusive();
 
-                CoreManager.GetThread(CurrentThread.Thread.Work).Unpause();
+                CoreManager.GetThread(CurrentThread.Context.Work).Set();
 
-                CurrentThread.Thread.Execute();
+                CurrentThread.Context.Execute();
             }
         }
 

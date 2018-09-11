@@ -5,50 +5,24 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class HleCoreManager
     {
-        public class PausableThread
-        {
-            private ManualResetEvent WaitEvent;
-
-            public PausableThread()
-            {
-                WaitEvent = new ManualResetEvent(false);
-            }
-
-            public void Pause()
-            {
-                WaitEvent.Reset();
-            }
-
-            public void Unpause()
-            {
-                WaitEvent.Set();
-            }
-
-            public void Wait()
-            {
-                WaitEvent.WaitOne();
-            }
-        }
-
-        private ConcurrentDictionary<Thread, PausableThread> Threads;
+        private ConcurrentDictionary<Thread, ManualResetEvent> Threads;
 
         public HleCoreManager()
         {
-            Threads = new ConcurrentDictionary<Thread, PausableThread>();
+            Threads = new ConcurrentDictionary<Thread, ManualResetEvent>();
         }
 
-        public PausableThread GetThread(Thread Thread)
+        public ManualResetEvent GetThread(Thread Thread)
         {
-            return Threads.GetOrAdd(Thread, (Key) => new PausableThread());
+            return Threads.GetOrAdd(Thread, (Key) => new ManualResetEvent(false));
         }
 
         public void RemoveThread(Thread Thread)
         {
-            if (Threads.TryRemove(Thread, out PausableThread Value))
+            if (Threads.TryRemove(Thread, out ManualResetEvent Event))
             {
-                Value.Unpause();
-
-                //TODO: Dispose
+                Event.Set();
+                Event.Dispose();
             }
         }
     }

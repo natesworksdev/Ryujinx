@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
@@ -203,11 +202,6 @@ namespace Ryujinx.HLE.HOS.Kernel
         private LinkedList<KThread> ScheduledQueue(int Prio, int Core)
         {
             return ScheduledThreadsPerPrioPerCore[Prio][Core];
-        }
-
-        public bool IsCoreIdle(int Core)
-        {
-            return ScheduledThreads(Core).Count() == 0;
         }
     }
 }

@@ -24,6 +24,8 @@ namespace Ryujinx.HLE.HOS
 
         public SystemStateMgr State { get; private set; }
 
+        internal KRecursiveLock CriticalSectionLock { get; private set; }
+
         internal KScheduler Scheduler { get; private set; }
 
         internal KTimeManager TimeManager { get; private set; }
@@ -31,8 +33,6 @@ namespace Ryujinx.HLE.HOS
         internal KAddressArbiter AddressArbiter { get; private set; }
 
         internal KSynchronization Synchronization { get; private set; }
-
-        internal KRecursiveLock CriticalSectionLock { get; private set; }
 
         internal LinkedList<KThread> Withholders { get; private set; }
 
@@ -43,7 +43,11 @@ namespace Ryujinx.HLE.HOS
 
         internal KEvent VsyncEvent { get; private set; }
 
+<<<<<<< HEAD
         internal Keyset KeySet { get; private set; }
+=======
+        private bool HasStarted;
+>>>>>>> Misc fixes (on SetActivity and Arbiter), other tweaks
 
         public Horizon(Switch Device)
         {
@@ -53,15 +57,15 @@ namespace Ryujinx.HLE.HOS
 
             State = new SystemStateMgr();
 
-            Scheduler = new KScheduler();
+            CriticalSectionLock = new KRecursiveLock(this);
+
+            Scheduler = new KScheduler(this);
 
             TimeManager = new KTimeManager();
 
             AddressArbiter = new KAddressArbiter(this);
 
             Synchronization = new KSynchronization(this);
-
-            CriticalSectionLock = new KRecursiveLock(this);
 
             Withholders = new LinkedList<KThread>();
 
@@ -76,13 +80,9 @@ namespace Ryujinx.HLE.HOS
 
             Font = new SharedFontManager(Device, FontSharedMem.PA);
 
-<<<<<<< HEAD
-            VsyncEvent = new KEvent();
+            VsyncEvent = new KEvent(this);
 
             LoadKeySet();
-=======
-            VsyncEvent = new KEvent(this);
->>>>>>> Started to rewrite the thread scheduler
         }
 
         public void LoadCart(string ExeFsDir, string RomFsFile = null)
@@ -403,6 +403,8 @@ namespace Ryujinx.HLE.HOS
 
         private Process MakeProcess(Npdm MetaData = null)
         {
+            HasStarted = true;
+
             Process Process;
 
             lock (Processes)
@@ -443,6 +445,22 @@ namespace Ryujinx.HLE.HOS
 
                     Device.Unload();
                 }
+            }
+        }
+
+        public void EnableMultiCoreScheduling()
+        {
+            if (!HasStarted)
+            {
+                Scheduler.MultiCoreScheduling = true;
+            }
+        }
+
+        public void DisableMultiCoreScheduling()
+        {
+            if (!HasStarted)
+            {
+                Scheduler.MultiCoreScheduling = false;
             }
         }
 
