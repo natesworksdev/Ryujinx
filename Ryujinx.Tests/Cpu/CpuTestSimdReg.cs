@@ -4,6 +4,8 @@ using ChocolArm64.State;
 
 using NUnit.Framework;
 
+using System;
+using System.Collections.Generic;
 using System.Runtime.Intrinsics;
 
 namespace Ryujinx.Tests.Cpu
@@ -76,7 +78,100 @@ namespace Ryujinx.Tests.Cpu
                                  0x8000000080000000ul, 0x7FFFFFFFFFFFFFFFul,
                                  0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
+
+        private static IEnumerable<ulong> _1S_F_()
+        {
+            yield return 0x00000000FF7FFFFFul; // -Max Normal, float.MinValue
+            yield return 0x0000000080800000ul; // -Min Normal
+            yield return 0x00000000807FFFFFul; // -Max SubNormal
+            yield return 0x0000000080000001ul; // -Min SubNormal
+            yield return 0x0000000000000001ul; // +Min SubNormal
+            yield return 0x00000000007FFFFFul; // +Max SubNormal
+            yield return 0x0000000000800000ul; // +Min Normal
+            yield return 0x000000007F7FFFFFul; // +Max Normal, float.MaxValue
+
+            if (!NoZeros)
+            {
+                yield return 0x0000000080000000ul; // -0
+                yield return 0x0000000000000000ul; // +0
+            }
+
+            if (!NoInfs)
+            {
+                yield return 0x00000000FF800000ul; // -INF
+                yield return 0x000000007F800000ul; // +INF
+            }
+
+            if (!NoNaNs)
+            {
+                yield return 0x00000000FFFFFFFFul; // -QNaN (all ones payload)
+                yield return 0x00000000FFBFFFFFul; // -SNaN (all ones payload)
+                yield return 0x000000007FBFFFFFul; // +SNaN (all ones payload)
+                yield return 0x000000007FFFFFFFul; // +QNaN (all ones payload)
+            }
+
+            for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
+            {
+                float Rnd;
+
+                do     Rnd = TestContext.CurrentContext.Random.NextFloat(float.MinValue, float.MaxValue);
+                while (Rnd == 0f); // -0, +0
+
+                ulong Noise = TestContext.CurrentContext.Random.NextUInt();
+                ulong Value = (uint)BitConverter.SingleToInt32Bits(Rnd);
+
+                yield return (Noise << 32) | Value;
+            }
+        }
+
+        private static IEnumerable<ulong> _1D_F_()
+        {
+            yield return 0xFFEFFFFFFFFFFFFFul; // -Max Normal, double.MinValue
+            yield return 0x8010000000000000ul; // -Min Normal
+            yield return 0x800FFFFFFFFFFFFFul; // -Max SubNormal
+            yield return 0x8000000000000001ul; // -Min SubNormal
+            yield return 0x0000000000000001ul; // +Min SubNormal
+            yield return 0x000FFFFFFFFFFFFFul; // +Max SubNormal
+            yield return 0x0010000000000000ul; // +Min Normal
+            yield return 0x7FEFFFFFFFFFFFFFul; // +Max Normal, double.MaxValue
+
+            if (!NoZeros)
+            {
+                yield return 0x8000000000000000ul; // -0
+                yield return 0x0000000000000000ul; // +0
+            }
+
+            if (!NoInfs)
+            {
+                yield return 0xFFF0000000000000ul; // -INF
+                yield return 0x7FF0000000000000ul; // +INF
+            }
+
+            if (!NoNaNs)
+            {
+                yield return 0xFFFFFFFFFFFFFFFFul; // -QNaN (all ones payload)
+                yield return 0xFFF7FFFFFFFFFFFFul; // -SNaN (all ones payload)
+                yield return 0x7FF7FFFFFFFFFFFFul; // +SNaN (all ones payload)
+                yield return 0x7FFFFFFFFFFFFFFFul; // +QNaN (all ones payload)
+            }
+
+            for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
+            {
+                double Rnd;
+
+                do     Rnd = TestContext.CurrentContext.Random.NextDouble(double.MinValue, double.MaxValue);
+                while (Rnd == 0d); // -0, +0
+
+                ulong Value = (ulong)BitConverter.DoubleToInt64Bits(Rnd);
+
+                yield return Value;
+            }
+        }
 #endregion
+
+        private static readonly bool NoZeros = false;
+        private static readonly bool NoInfs  = false;
+        private static readonly bool NoNaNs  = true;
 
         private const int RndCnt = 2;
 
@@ -854,6 +949,48 @@ namespace Ryujinx.Tests.Cpu
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2);
 
             CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("FMADD <Sd>, <Sn>, <Sm>, <Sa>")]
+        public void Fmadd_S_S([ValueSource("_1S_F_")] ulong A,
+                              [ValueSource("_1S_F_")] ulong B,
+                              [ValueSource("_1S_F_")] ulong C)
+        {
+            //const int DNFlagBit = 25; // Default NaN mode control bit.
+            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
+
+            uint Opcode = 0x1F020C20; // FMADD S0, S1, S2, S3
+
+            ulong Z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> V0 = MakeVectorE1(Z);
+            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> V2 = MakeVectorE0(B);
+            Vector128<float> V3 = MakeVectorE0(C);
+
+            //int Fpcr  = 1 << DNFlagBit; // Any operation involving one or more NaNs returns the Default NaN.
+                //Fpcr |= 1 << FZFlagBit; // Flush-to-zero mode enabled.
+
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2, V3: V3/*, Fpcr: Fpcr*/);
+
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IOC, */FpSkips: FpSkips.IfNaN_S);
+        }
+
+        [Test, Pairwise, Description("FMADD <Dd>, <Dn>, <Dm>, <Da>")]
+        public void Fmadd_S_D([ValueSource("_1D_F_")] ulong A,
+                              [ValueSource("_1D_F_")] ulong B,
+                              [ValueSource("_1D_F_")] ulong C)
+        {
+            uint Opcode = 0x1F420C20; // FMADD D0, D1, D2, D3
+
+            ulong Z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> V0 = MakeVectorE1(Z);
+            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> V2 = MakeVectorE0(B);
+            Vector128<float> V3 = MakeVectorE0(C);
+
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2, V3: V3);
+
+            CompareAgainstUnicorn(FpSkips: FpSkips.IfNaN_D);
         }
 
         [Test, Pairwise, Description("ORN <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
