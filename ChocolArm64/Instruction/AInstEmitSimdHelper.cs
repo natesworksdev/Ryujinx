@@ -1370,6 +1370,81 @@ namespace ChocolArm64.Instruction
 
             Context.EmitStvectmp();
         }
+        
+        public static void EmitVectorPairwiseFloat(AILEmitterCtx Context, OpCode EmitMethod)
+        {
+            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+
+            int SizeF = Op.Size & 1;
+
+            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+
+            int Elems = Bytes >> SizeF + 2;
+            int Half  = Elems >> 1;
+
+            for (int Index = 0; Index < Elems; Index++)
+            {
+                int Elem = (Index & (Half - 1)) << 1;
+
+                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 0, SizeF);
+                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 1, SizeF);
+				
+                Context.Emit(EmitMethod);
+                    
+                EmitVectorInsertTmpF(Context, Index, SizeF);
+            }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
+
+            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            {
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }
+        }
+            
+        public static void EmitVectorPairwiseFloat(AILEmitterCtx Context, string EmitMethodF, string EmitMethod)
+        {
+            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+
+            int SizeF = Op.Size & 1;
+
+            int Bytes = Context.CurrOp.GetBitsCount() >> 3;
+
+            int Elems = Bytes >> SizeF + 2;
+            int Half  = Elems >> 1;
+
+            for (int Index = 0; Index < Elems; Index++)
+            {
+                int Elem = (Index & (Half - 1)) << 1;
+
+                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 0, SizeF);
+                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 1, SizeF);
+
+                if (SizeF == 0)
+                {
+                    AVectorHelper.EmitCall(Context, EmitMethodF);
+                }
+                else if (SizeF == 1)
+                {
+                    AVectorHelper.EmitCall(Context, EmitMethod);
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
+                
+                EmitVectorInsertTmpF(Context, Index, SizeF);
+            }
+
+            Context.EmitLdvectmp();
+            Context.EmitStvec(Op.Rd);
+
+            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            {
+                EmitVectorZeroUpper(Context, Op.Rd);
+            }
+        }
 
         private static void ThrowIfInvalid(int Index, int Size)
         {
