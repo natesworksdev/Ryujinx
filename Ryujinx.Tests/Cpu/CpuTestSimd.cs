@@ -4,6 +4,8 @@ using ChocolArm64.State;
 
 using NUnit.Framework;
 
+using System;
+using System.Collections.Generic;
 using System.Runtime.Intrinsics;
 
 namespace Ryujinx.Tests.Cpu
@@ -78,75 +80,143 @@ namespace Ryujinx.Tests.Cpu
                                  0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
 
-        private static ulong[] _1S_F_()
+        private static IEnumerable<ulong> _1S_F_()
         {
-            return new ulong[]
+            yield return 0x00000000FF7FFFFFul; // -Max Normal, float.MinValue
+            yield return 0x0000000080800000ul; // -Min Normal
+            yield return 0x00000000807FFFFFul; // -Max SubNormal
+            yield return 0x0000000080000001ul; // -Min SubNormal
+            yield return 0x0000000000000001ul; // +Min SubNormal
+            yield return 0x00000000007FFFFFul; // +Max SubNormal
+            yield return 0x0000000000800000ul; // +Min Normal
+            yield return 0x000000007F7FFFFFul; // +Max Normal, float.MaxValue
+
+            if (!NoZeros)
             {
-                0x00000000FFFFFFFFul, // -QNaN (all ones payload)
-                0x00000000FFBFFFFFul, // -SNaN (all ones payload)
-                0x00000000FF800000ul, // -INF
-                0x00000000FF7FFFFFul, // -Max Normal, float.MinValue
-                0x0000000080800000ul, // -Min Normal
-                0x00000000807FFFFFul, // -Max SubNormal
-                0x0000000080000001ul, // -Min SubNormal
-                0x0000000080000000ul, // -0
-                0x0000000000000000ul, // +0
-                0x0000000000000001ul, // +Min SubNormal
-                0x00000000007FFFFFul, // +Max SubNormal
-                0x0000000000800000ul, // +Min Normal
-                0x000000007F7FFFFFul, // +Max Normal, float.MaxValue
-                0x000000007F800000ul, // +INF
-                0x000000007FBFFFFFul, // +SNaN (all ones payload)
-                0x000000007FFFFFFFul  // +QNaN (all ones payload)
-            };
+                yield return 0x0000000080000000ul; // -0
+                yield return 0x0000000000000000ul; // +0
+            }
+
+            if (!NoInfs)
+            {
+                yield return 0x00000000FF800000ul; // -INF
+                yield return 0x000000007F800000ul; // +INF
+            }
+
+            if (!NoNaNs)
+            {
+                yield return 0x00000000FFFFFFFFul; // -QNaN (all ones payload)
+                yield return 0x00000000FFBFFFFFul; // -SNaN (all ones payload)
+                yield return 0x000000007FBFFFFFul; // +SNaN (all ones payload)
+                yield return 0x000000007FFFFFFFul; // +QNaN (all ones payload)
+            }
+
+            for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
+            {
+                float Rnd;
+
+                do     Rnd = TestContext.CurrentContext.Random.NextFloat(float.MinValue, float.MaxValue);
+                while (Rnd == 0f); // -0, +0
+
+                ulong Noise = TestContext.CurrentContext.Random.NextUInt();
+                ulong Value = (uint)BitConverter.SingleToInt32Bits(Rnd);
+
+                yield return (Noise << 32) | Value;
+            }
         }
 
-        private static ulong[] _2S_F_()
+        private static IEnumerable<ulong> _2S_F_()
         {
-            return new ulong[]
+            yield return 0xFF7FFFFFFF7FFFFFul; // -Max Normal, float.MinValue
+            yield return 0x8080000080800000ul; // -Min Normal
+            yield return 0x807FFFFF807FFFFFul; // -Max SubNormal
+            yield return 0x8000000180000001ul; // -Min SubNormal
+            yield return 0x0000000100000001ul; // +Min SubNormal
+            yield return 0x007FFFFF007FFFFFul; // +Max SubNormal
+            yield return 0x0080000000800000ul; // +Min Normal
+            yield return 0x7F7FFFFF7F7FFFFFul; // +Max Normal, float.MaxValue
+
+            if (!NoZeros)
             {
-                0xFFFFFFFFFFFFFFFFul, // -QNaN (all ones payload)
-                0xFFBFFFFFFFBFFFFFul, // -SNaN (all ones payload)
-                0xFF800000FF800000ul, // -INF
-                0xFF7FFFFFFF7FFFFFul, // -Max Normal, float.MinValue
-                0x8080000080800000ul, // -Min Normal
-                0x807FFFFF807FFFFFul, // -Max SubNormal
-                0x8000000180000001ul, // -Min SubNormal
-                0x8000000080000000ul, // -0
-                0x0000000000000000ul, // +0
-                0x0000000100000001ul, // +Min SubNormal
-                0x007FFFFF007FFFFFul, // +Max SubNormal
-                0x0080000000800000ul, // +Min Normal
-                0x7F7FFFFF7F7FFFFFul, // +Max Normal, float.MaxValue
-                0x7F8000007F800000ul, // +INF
-                0x7FBFFFFF7FBFFFFFul, // +SNaN (all ones payload)
-                0x7FFFFFFF7FFFFFFFul  // +QNaN (all ones payload)
-            };
+                yield return 0x8000000080000000ul; // -0
+                yield return 0x0000000000000000ul; // +0
+            }
+
+            if (!NoInfs)
+            {
+                yield return 0xFF800000FF800000ul; // -INF
+                yield return 0x7F8000007F800000ul; // +INF
+            }
+
+            if (!NoNaNs)
+            {
+                yield return 0xFFFFFFFFFFFFFFFFul; // -QNaN (all ones payload)
+                yield return 0xFFBFFFFFFFBFFFFFul; // -SNaN (all ones payload)
+                yield return 0x7FBFFFFF7FBFFFFFul; // +SNaN (all ones payload)
+                yield return 0x7FFFFFFF7FFFFFFFul; // +QNaN (all ones payload)
+            }
+
+            for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
+            {
+                float Rnd;
+
+                do     Rnd = TestContext.CurrentContext.Random.NextFloat(float.MinValue, float.MaxValue);
+                while (Rnd == 0f); // -0, +0
+
+                ulong Value = (uint)BitConverter.SingleToInt32Bits(Rnd);
+
+                yield return (Value << 32) | Value;
+            }
         }
 
-        private static ulong[] _1D_F_()
+        private static IEnumerable<ulong> _1D_F_()
         {
-            return new ulong[]
+            yield return 0xFFEFFFFFFFFFFFFFul; // -Max Normal, double.MinValue
+            yield return 0x8010000000000000ul; // -Min Normal
+            yield return 0x800FFFFFFFFFFFFFul; // -Max SubNormal
+            yield return 0x8000000000000001ul; // -Min SubNormal
+            yield return 0x0000000000000001ul; // +Min SubNormal
+            yield return 0x000FFFFFFFFFFFFFul; // +Max SubNormal
+            yield return 0x0010000000000000ul; // +Min Normal
+            yield return 0x7FEFFFFFFFFFFFFFul; // +Max Normal, double.MaxValue
+
+            if (!NoZeros)
             {
-                0xFFFFFFFFFFFFFFFFul, // -QNaN (all ones payload)
-                0xFFF7FFFFFFFFFFFFul, // -SNaN (all ones payload)
-                0xFFF0000000000000ul, // -INF
-                0xFFEFFFFFFFFFFFFFul, // -Max Normal, double.MinValue
-                0x8010000000000000ul, // -Min Normal
-                0x800FFFFFFFFFFFFFul, // -Max SubNormal
-                0x8000000000000001ul, // -Min SubNormal
-                0x8000000000000000ul, // -0
-                0x0000000000000000ul, // +0
-                0x0000000000000001ul, // +Min SubNormal
-                0x000FFFFFFFFFFFFFul, // +Max SubNormal
-                0x0010000000000000ul, // +Min Normal
-                0x7FEFFFFFFFFFFFFFul, // +Max Normal, double.MaxValue
-                0x7FF0000000000000ul, // +INF
-                0x7FF7FFFFFFFFFFFFul, // +SNaN (all ones payload)
-                0x7FFFFFFFFFFFFFFFul  // +QNaN (all ones payload)
-            };
+                yield return 0x8000000000000000ul; // -0
+                yield return 0x0000000000000000ul; // +0
+            }
+
+            if (!NoInfs)
+            {
+                yield return 0xFFF0000000000000ul; // -INF
+                yield return 0x7FF0000000000000ul; // +INF
+            }
+
+            if (!NoNaNs)
+            {
+                yield return 0xFFFFFFFFFFFFFFFFul; // -QNaN (all ones payload)
+                yield return 0xFFF7FFFFFFFFFFFFul; // -SNaN (all ones payload)
+                yield return 0x7FF7FFFFFFFFFFFFul; // +SNaN (all ones payload)
+                yield return 0x7FFFFFFFFFFFFFFFul; // +QNaN (all ones payload)
+            }
+
+            for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
+            {
+                double Rnd;
+
+                do     Rnd = TestContext.CurrentContext.Random.NextDouble(double.MinValue, double.MaxValue);
+                while (Rnd == 0d); // -0, +0
+
+                ulong Value = (ulong)BitConverter.DoubleToInt64Bits(Rnd);
+
+                yield return Value;
+            }
         }
 #endregion
+
+        private static readonly bool NoZeros = false;
+        private static readonly bool NoInfs  = false;
+        private static readonly bool NoNaNs  = false;
 
         private const int RndCnt = 2;
 
@@ -648,18 +718,18 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNS <V><d>, <V><n>")]
         public void Fcvtns_S_S([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1S_F_")] [Random(RndCnt)] ulong Z,
-                               [ValueSource("_1S_F_")] [Random(RndCnt)] ulong A)
+                               [ValueSource("_1S_F_")] ulong Z,
+                               [ValueSource("_1S_F_")] ulong A)
         {
             //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
 
             uint Opcode = 0x5E21A800; // FCVTNS S0, S0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
 
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
+
+            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
@@ -669,83 +739,71 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNS <V><d>, <V><n>")]
         public void Fcvtns_S_D([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
-                               [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
+                               [ValueSource("_1D_F_")] ulong Z,
+                               [ValueSource("_1D_F_")] ulong A)
         {
-            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
-
             uint Opcode = 0x5E61A800; // FCVTNS D0, D0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("FCVTNS <Vd>.<T>, <Vn>.<T>")]
         public void Fcvtns_V_2S_4S([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
-                                   [ValueSource("_2S_F_")] [Random(RndCnt)] ulong Z,
-                                   [ValueSource("_2S_F_")] [Random(RndCnt)] ulong A,
+                                   [ValueSource("_2S_F_")] ulong Z,
+                                   [ValueSource("_2S_F_")] ulong A,
                                    [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
-            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
-
             uint Opcode = 0x0E21A800; // FCVTNS V0.2S, V0.2S
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((Q & 1) << 30);
 
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("FCVTNS <Vd>.<T>, <Vn>.<T>")]
         public void Fcvtns_V_2D([Values(0u)]     uint Rd,
                                 [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
-                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
+                                [ValueSource("_1D_F_")] ulong Z,
+                                [ValueSource("_1D_F_")] ulong A)
         {
-            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
-
             uint Opcode = 0x4E61A800; // FCVTNS V0.2D, V0.2D
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("FCVTNU <V><d>, <V><n>")]
         public void Fcvtnu_S_S([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1S_F_")] [Random(RndCnt)] ulong Z,
-                               [ValueSource("_1S_F_")] [Random(RndCnt)] ulong A)
+                               [ValueSource("_1S_F_")] ulong Z,
+                               [ValueSource("_1S_F_")] ulong A)
         {
             //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
 
             uint Opcode = 0x7E21A800; // FCVTNU S0, S0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
 
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
+
+            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
@@ -755,66 +813,54 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("FCVTNU <V><d>, <V><n>")]
         public void Fcvtnu_S_D([Values(0u)]     uint Rd,
                                [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
-                               [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
+                               [ValueSource("_1D_F_")] ulong Z,
+                               [ValueSource("_1D_F_")] ulong A)
         {
-            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
-
             uint Opcode = 0x7E61A800; // FCVTNU D0, D0
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("FCVTNU <Vd>.<T>, <Vn>.<T>")]
         public void Fcvtnu_V_2S_4S([Values(0u)]     uint Rd,
                                    [Values(1u, 0u)] uint Rn,
-                                   [ValueSource("_2S_F_")] [Random(RndCnt)] ulong Z,
-                                   [ValueSource("_2S_F_")] [Random(RndCnt)] ulong A,
+                                   [ValueSource("_2S_F_")] ulong Z,
+                                   [ValueSource("_2S_F_")] ulong A,
                                    [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
-            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
-
             uint Opcode = 0x2E21A800; // FCVTNU V0.2S, V0.2S
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcode |= ((Q & 1) << 30);
 
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
-
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("FCVTNU <Vd>.<T>, <Vn>.<T>")]
         public void Fcvtnu_V_2D([Values(0u)]     uint Rd,
                                 [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong Z,
-                                [ValueSource("_1D_F_")] [Random(RndCnt)] ulong A)
+                                [ValueSource("_1D_F_")] ulong Z,
+                                [ValueSource("_1D_F_")] ulong A)
         {
-            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
-
             uint Opcode = 0x6E61A800; // FCVTNU V0.2D, V0.2D
             Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
 
-            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("NEG <V><d>, <V><n>")]
