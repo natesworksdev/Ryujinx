@@ -43,11 +43,9 @@ namespace Ryujinx.HLE.HOS
 
         internal KEvent VsyncEvent { get; private set; }
 
-<<<<<<< HEAD
         internal Keyset KeySet { get; private set; }
-=======
+
         private bool HasStarted;
->>>>>>> Misc fixes (on SetActivity and Arbiter), other tweaks
 
         public Horizon(Switch Device)
         {
