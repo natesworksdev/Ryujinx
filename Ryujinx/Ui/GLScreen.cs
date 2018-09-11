@@ -181,7 +181,7 @@ namespace Ryujinx
                     };
                 }
             }
-            
+
             LeftJoystickKeyboard = new HidJoystickPosition
             {
                 DX = LeftJoystickDXKeyboard,
