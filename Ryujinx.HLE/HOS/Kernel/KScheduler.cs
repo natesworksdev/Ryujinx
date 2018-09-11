@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     }
 
                     //If the candidate was scheduled after the current thread, then it's not worth it.
-                    if (SelectedThread.LastScheduledTicks >= Thread.LastScheduledTicks)
+                    if (SelectedThread == null || SelectedThread.LastScheduledTicks >= Thread.LastScheduledTicks)
                     {
                         yield return Thread;
                     }
