@@ -102,4 +102,3 @@ You can check out the compatibility list within the Wiki.
 
 These builds are compiled automatically for each commit on the master branch. They may be unstable or might not work at all.  
 The latest automatic build for Windows (64-bit) can be found on the [official website](https://ryujinx.org/#/Build).
-However, for opening issues and testing, it is recommended to build the Master Branch as it is much more stable (Though still very experimental)
