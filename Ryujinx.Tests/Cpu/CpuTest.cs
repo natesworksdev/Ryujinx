@@ -399,5 +399,47 @@ namespace Ryujinx.Tests.Cpu
 
             return Sse41.Extract(Sse.StaticCast<float, ulong>(Vector), (byte)1);
         }
+
+        protected static uint GenNormal_S()
+        {
+            uint Rnd;
+
+            do      Rnd = TestContext.CurrentContext.Random.NextUInt();
+            while ((Rnd & 0x7F800000u) == 0u ||
+                   (Rnd & 0x7F800000u) == 0x7F800000u);
+
+            return Rnd;
+        }
+
+        protected static uint GenSubNormal_S()
+        {
+            uint Rnd;
+
+            do      Rnd = TestContext.CurrentContext.Random.NextUInt();
+            while ((Rnd & 0x007FFFFFu) == 0u);
+
+            return Rnd & 0x807FFFFFu;
+        }
+
+        protected static ulong GenNormal_D()
+        {
+            ulong Rnd;
+
+            do      Rnd = TestContext.CurrentContext.Random.NextULong();
+            while ((Rnd & 0x7FF0000000000000ul) == 0ul ||
+                   (Rnd & 0x7FF0000000000000ul) == 0x7FF0000000000000ul);
+
+            return Rnd;
+        }
+
+        protected static ulong GenSubNormal_D()
+        {
+            ulong Rnd;
+
+            do      Rnd = TestContext.CurrentContext.Random.NextULong();
+            while ((Rnd & 0x000FFFFFFFFFFFFFul) == 0ul);
+
+            return Rnd & 0x800FFFFFFFFFFFFFul;
+        }
     }
 }
