@@ -4,7 +4,6 @@ using ChocolArm64.State;
 
 using NUnit.Framework;
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics;
 
@@ -81,90 +80,84 @@ namespace Ryujinx.Tests.Cpu
 
         private static IEnumerable<ulong> _1S_F_()
         {
-            yield return 0x00000000FF7FFFFFul; // -Max Normal, float.MinValue
+            yield return 0x00000000FF7FFFFFul; // -Max Normal (float.MinValue)
             yield return 0x0000000080800000ul; // -Min Normal
             yield return 0x00000000807FFFFFul; // -Max SubNormal
             yield return 0x0000000080000001ul; // -Min SubNormal
-            yield return 0x0000000000000001ul; // +Min SubNormal
-            yield return 0x00000000007FFFFFul; // +Max SubNormal
+            yield return 0x000000007F7FFFFFul; // +Max Normal (float.MaxValue)
             yield return 0x0000000000800000ul; // +Min Normal
-            yield return 0x000000007F7FFFFFul; // +Max Normal, float.MaxValue
+            yield return 0x00000000007FFFFFul; // +Max SubNormal
+            yield return 0x0000000000000001ul; // +Min SubNormal
 
             if (!NoZeros)
             {
-                yield return 0x0000000080000000ul; // -0
-                yield return 0x0000000000000000ul; // +0
+                yield return 0x0000000080000000ul; // -Zero
+                yield return 0x0000000000000000ul; // +Zero
             }
 
             if (!NoInfs)
             {
-                yield return 0x00000000FF800000ul; // -INF
-                yield return 0x000000007F800000ul; // +INF
+                yield return 0x00000000FF800000ul; // -Infinity
+                yield return 0x000000007F800000ul; // +Infinity
             }
 
             if (!NoNaNs)
             {
                 yield return 0x00000000FFFFFFFFul; // -QNaN (all ones payload)
                 yield return 0x00000000FFBFFFFFul; // -SNaN (all ones payload)
-                yield return 0x000000007FBFFFFFul; // +SNaN (all ones payload)
                 yield return 0x000000007FFFFFFFul; // +QNaN (all ones payload)
+                yield return 0x000000007FBFFFFFul; // +SNaN (all ones payload)
             }
 
             for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
             {
-                float Rnd;
+                ulong Grbg = TestContext.CurrentContext.Random.NextUInt();
+                ulong Val1 = GenNormal_S();
+                ulong Val2 = GenSubNormal_S();
 
-                do     Rnd = TestContext.CurrentContext.Random.NextFloat(float.MinValue, float.MaxValue);
-                while (Rnd == 0f); // -0, +0
-
-                ulong Noise = TestContext.CurrentContext.Random.NextUInt();
-                ulong Value = (uint)BitConverter.SingleToInt32Bits(Rnd);
-
-                yield return (Noise << 32) | Value;
+                yield return (Grbg << 32) | Val1;
+                yield return (Grbg << 32) | Val2;
             }
         }
 
         private static IEnumerable<ulong> _1D_F_()
         {
-            yield return 0xFFEFFFFFFFFFFFFFul; // -Max Normal, double.MinValue
+            yield return 0xFFEFFFFFFFFFFFFFul; // -Max Normal (double.MinValue)
             yield return 0x8010000000000000ul; // -Min Normal
             yield return 0x800FFFFFFFFFFFFFul; // -Max SubNormal
             yield return 0x8000000000000001ul; // -Min SubNormal
-            yield return 0x0000000000000001ul; // +Min SubNormal
-            yield return 0x000FFFFFFFFFFFFFul; // +Max SubNormal
+            yield return 0x7FEFFFFFFFFFFFFFul; // +Max Normal (double.MaxValue)
             yield return 0x0010000000000000ul; // +Min Normal
-            yield return 0x7FEFFFFFFFFFFFFFul; // +Max Normal, double.MaxValue
+            yield return 0x000FFFFFFFFFFFFFul; // +Max SubNormal
+            yield return 0x0000000000000001ul; // +Min SubNormal
 
             if (!NoZeros)
             {
-                yield return 0x8000000000000000ul; // -0
-                yield return 0x0000000000000000ul; // +0
+                yield return 0x8000000000000000ul; // -Zero
+                yield return 0x0000000000000000ul; // +Zero
             }
 
             if (!NoInfs)
             {
-                yield return 0xFFF0000000000000ul; // -INF
-                yield return 0x7FF0000000000000ul; // +INF
+                yield return 0xFFF0000000000000ul; // -Infinity
+                yield return 0x7FF0000000000000ul; // +Infinity
             }
 
             if (!NoNaNs)
             {
                 yield return 0xFFFFFFFFFFFFFFFFul; // -QNaN (all ones payload)
                 yield return 0xFFF7FFFFFFFFFFFFul; // -SNaN (all ones payload)
-                yield return 0x7FF7FFFFFFFFFFFFul; // +SNaN (all ones payload)
                 yield return 0x7FFFFFFFFFFFFFFFul; // +QNaN (all ones payload)
+                yield return 0x7FF7FFFFFFFFFFFFul; // +SNaN (all ones payload)
             }
 
             for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
             {
-                double Rnd;
+                ulong Val1 = GenNormal_D();
+                ulong Val2 = GenSubNormal_D();
 
-                do     Rnd = TestContext.CurrentContext.Random.NextDouble(double.MinValue, double.MaxValue);
-                while (Rnd == 0d); // -0, +0
-
-                ulong Value = (ulong)BitConverter.DoubleToInt64Bits(Rnd);
-
-                yield return Value;
+                yield return Val1;
+                yield return Val2;
             }
         }
 #endregion
@@ -962,7 +955,7 @@ namespace Ryujinx.Tests.Cpu
             uint Opcode = 0x1F020C20; // FMADD S0, S1, S2, S3
 
             ulong Z = TestContext.CurrentContext.Random.NextULong();
-            Vector128<float> V0 = MakeVectorE1(Z);
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
             Vector128<float> V2 = MakeVectorE0(B);
             Vector128<float> V3 = MakeVectorE0(C);
