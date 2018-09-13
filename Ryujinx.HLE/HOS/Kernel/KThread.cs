@@ -662,14 +662,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 UpdatePriorityInheritance();
 
-                KThread CurrOwner = NewMutexOwner;
-
-                while (CurrOwner != null)
-                {
-                    CurrOwner.UpdatePriorityInheritance();
-
-                    CurrOwner = CurrOwner.MutexOwner;
-                }
+                NewMutexOwner.UpdatePriorityInheritance();
             }
 
             return NewMutexOwner;
@@ -706,6 +699,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                     MutexOwner.MutexWaiters.Remove(MutexWaiterNode);
 
                     MutexOwner.AddToMutexWaitersList(this);
+
+                    MutexOwner.UpdatePriorityInheritance();
                 }
             }
         }

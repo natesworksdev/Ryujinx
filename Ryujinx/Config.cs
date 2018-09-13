@@ -63,7 +63,7 @@ namespace Ryujinx
 
             Device.EnableDeviceVsync = Convert.ToBoolean(Parser.Value("Enable_Vsync"));
 
-            if (Convert.ToBoolean(Parser.Value("MultiCore_Scheduling_Enable")))
+            if (Convert.ToBoolean(Parser.Value("Enable_MultiCore_Scheduling")))
             {
                 Device.System.EnableMultiCoreScheduling();
             }
