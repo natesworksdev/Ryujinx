@@ -10,6 +10,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             this.NameValue = NameValue;
         }
+
         public NameType(string NameValue) : base(NodeType.NameType)
         {
             this.NameValue = NameValue;

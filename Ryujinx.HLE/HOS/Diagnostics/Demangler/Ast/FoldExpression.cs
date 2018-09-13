@@ -4,18 +4,17 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class FoldExpression : BaseNode
     {
-        private bool IsLeftFold;
-
-        private string OperatorName;
+        private bool     IsLeftFold;
+        private string   OperatorName;
         private BaseNode Expression;
         private BaseNode Initializer;
 
         public FoldExpression(bool IsLeftFold, string OperatorName, BaseNode Expression, BaseNode Initializer) : base(NodeType.FunctionParameter)
         {
-            this.IsLeftFold = IsLeftFold;
+            this.IsLeftFold   = IsLeftFold;
             this.OperatorName = OperatorName;
-            this.Expression = Expression;
-            this.Initializer = Initializer;
+            this.Expression   = Expression;
+            this.Initializer  = Initializer;
         }
 
         public override void PrintLeft(TextWriter Writer)

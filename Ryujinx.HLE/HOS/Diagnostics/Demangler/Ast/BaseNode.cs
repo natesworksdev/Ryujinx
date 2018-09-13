@@ -70,8 +70,11 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public virtual void Print(TextWriter Writer)
         {
             PrintLeft(Writer);
+
             if (HasRightPart())
+            {
                 PrintRight(Writer);
+            }
         }
 
         public abstract void PrintLeft(TextWriter Writer);
@@ -101,7 +104,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override string ToString()
         {
             StringWriter Writer = new StringWriter();
+
             Print(Writer);
+
             return Writer.ToString();
         }
     }

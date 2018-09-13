@@ -14,8 +14,11 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override void PrintLeft(TextWriter Writer)
         {
             Writer.Write("fp ");
+
             if (Number != null)
+            {
                 Writer.Write(Number);
+            }
         }
     }
 }

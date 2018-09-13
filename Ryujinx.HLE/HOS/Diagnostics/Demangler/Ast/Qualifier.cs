@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         Const,
         Volatile,
         Restricted = 4
-    };
+    }
 
     public enum Reference
     {
@@ -32,10 +32,12 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             {
                 Writer.Write(" const");
             }
+
             if ((Qualifier & CV.Volatile) != 0)
             {
                 Writer.Write(" volatile");
             }
+
             if ((Qualifier & CV.Restricted) != 0)
             {
                 Writer.Write(" restrict");
@@ -45,7 +47,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override void PrintLeft(TextWriter Writer)
         {
             if (Child != null)
+            {
                 Child.PrintLeft(Writer);
+            }
+
             PrintQualifier(Writer);
         }
 
@@ -57,7 +62,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override void PrintRight(TextWriter Writer)
         {
             if (Child != null)
+            {
                 Child.PrintRight(Writer);
+            }
         }
     }
 
@@ -76,6 +83,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             {
                 Writer.Write("&");
             }
+
             if ((Qualifier & Reference.RValue) != 0)
             {
                 Writer.Write("&&");
@@ -85,9 +93,14 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override void PrintLeft(TextWriter Writer)
         {
             if (Child != null)
+            {
                 Child.PrintLeft(Writer);
+            }
             else if (Qualifier != Reference.None)
+            {
                 Writer.Write(" ");
+            }
+
             PrintQualifier(Writer);
         }
 
@@ -99,7 +112,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override void PrintRight(TextWriter Writer)
         {
             if (Child != null)
+            {
                 Child.PrintRight(Writer);
+            }
         }
     }
 }

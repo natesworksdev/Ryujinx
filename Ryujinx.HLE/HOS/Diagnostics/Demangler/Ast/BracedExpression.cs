@@ -6,12 +6,12 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     {
         private BaseNode Element;
         private BaseNode Expression;
-        private bool IsArrayExpression;
+        private bool     IsArrayExpression;
 
         public BracedExpression(BaseNode Element, BaseNode Expression, bool IsArrayExpression) : base(NodeType.BracedExpression)
         {
-            this.Element = Element;
-            this.Expression = Expression;
+            this.Element           = Element;
+            this.Expression        = Expression;
             this.IsArrayExpression = IsArrayExpression;
         }
 
@@ -33,7 +33,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             {
                 Writer.Write(" = ");
             }
+
             Expression.Print(Writer);
+
         }
     }
 }

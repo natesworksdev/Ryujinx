@@ -5,10 +5,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class PackedTemplateParameter : NodeArray
     {
-        public PackedTemplateParameter(List<BaseNode> Nodes) : base(Nodes, NodeType.PackedTemplateParameter)
-        {
+        public PackedTemplateParameter(List<BaseNode> Nodes) : base(Nodes, NodeType.PackedTemplateParameter) { }
 
-        }
         public override void PrintLeft(TextWriter Writer)
         {
             foreach (BaseNode Node in Nodes)
@@ -34,6 +32,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
                     return true;
                 }
             }
+
             return false;
         }
     }

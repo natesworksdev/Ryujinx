@@ -5,14 +5,13 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     public class MemberExpression : BaseNode
     {
         private BaseNode LeftNode;
+        private string   Kind;
         private BaseNode RightNode;
-
-        private string Kind;
 
         public MemberExpression(BaseNode LeftNode, string Kind, BaseNode RightNode) : base(NodeType.MemberExpression)
         {
-            this.LeftNode = LeftNode;
-            this.Kind = Kind;
+            this.LeftNode  = LeftNode;
+            this.Kind      = Kind;
             this.RightNode = RightNode;
         }
 

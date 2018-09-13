@@ -16,6 +16,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override void PrintLeft(TextWriter Writer)
         {
             Callee.Print(Writer);
+
             Writer.Write("(");
             Writer.Write(string.Join<BaseNode>(", ", Nodes.ToArray()));
             Writer.Write(")");

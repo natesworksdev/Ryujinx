@@ -4,10 +4,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class PackedTemplateParameterExpansion : ParentNode
     {
-        public PackedTemplateParameterExpansion(BaseNode Child) : base(NodeType.PackedTemplateParameterExpansion, Child)
-        {
-
-        }
+        public PackedTemplateParameterExpansion(BaseNode Child) : base(NodeType.PackedTemplateParameterExpansion, Child) {}
 
         public override void PrintLeft(TextWriter Writer)
         {

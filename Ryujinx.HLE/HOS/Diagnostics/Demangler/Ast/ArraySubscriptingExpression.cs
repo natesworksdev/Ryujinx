@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ArraySubscriptingExpression(BaseNode LeftNode, BaseNode Subscript) : base(NodeType.ArraySubscriptingExpression)
         {
-            this.LeftNode = LeftNode;
+            this.LeftNode  = LeftNode;
             this.Subscript = Subscript;
         }
 

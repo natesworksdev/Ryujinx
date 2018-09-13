@@ -6,9 +6,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     {
         private BaseNode Prev;
         private BaseNode TemplateArgument;
+
         public NameTypeWithTemplateArguments(BaseNode Prev, BaseNode TemplateArgument) : base(NodeType.NameTypeWithTemplateArguments)
         {
-            this.Prev = Prev;
+            this.Prev             = Prev;
             this.TemplateArgument = TemplateArgument;
         }
 

@@ -12,8 +12,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             IStream,
             OStream,
             IOStream,
-
         }
+
         private SpecialType SpecialSubstitutionKey;
 
         public SpecialSubstitution(SpecialType SpecialSubstitutionKey) : base(NodeType.SpecialSubstitution)
@@ -36,7 +36,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
                     return "basic_string";
                 case SpecialType.String:
                     if (Type == NodeType.ExpandedSpecialSubstitution)
+                    {
                         return "basic_string";
+                    }
+
                     return "string";
                 case SpecialType.IStream:
                     return "istream";
@@ -45,6 +48,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
                 case SpecialType.IOStream:
                     return "iostream";
             }
+
             return null;
         }
 
@@ -65,6 +69,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
                 case SpecialType.IOStream:
                     return "std::basic_iostream<char, std::char_traits<char> >";
             }
+
             return null;
         }
 

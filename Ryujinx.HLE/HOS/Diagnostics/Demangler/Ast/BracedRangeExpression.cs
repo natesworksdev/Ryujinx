@@ -10,8 +10,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public BracedRangeExpression(BaseNode FirstNode, BaseNode LastNode, BaseNode Expression) : base(NodeType.BracedRangeExpression)
         {
-            this.FirstNode = FirstNode;
-            this.LastNode = LastNode;
+            this.FirstNode  = FirstNode;
+            this.LastNode   = LastNode;
             this.Expression = Expression;
         }
 
@@ -27,6 +27,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             {
                 Writer.Write(" = ");
             }
+
             Expression.Print(Writer);
 
         }
