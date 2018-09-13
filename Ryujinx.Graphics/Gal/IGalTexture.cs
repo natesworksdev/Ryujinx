@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gal
 
         bool TryGetCachedTexture(long Key, long DataSize, out GalImage Image);
 
-        void Bind(long Key, int Index);
+        void Bind(long Key, int Index, GalImage Image);
 
         void SetSampler(GalTextureSampler Sampler);
     }

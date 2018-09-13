@@ -94,6 +94,8 @@ namespace Ryujinx.Graphics
 
                 Gpu.Engine3d.ResetCache();
 
+                Gpu.ResourceManager.ClearPbCache();
+
                 CurrPbEntryIndex = 0;
             }
 

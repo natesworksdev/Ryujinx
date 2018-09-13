@@ -4,15 +4,13 @@ namespace Ryujinx.Graphics.Gal
 {
     public interface IGalRenderTarget
     {
-        void BindColor(long Key, int Attachment);
+        void BindColor(long Key, int Attachment, GalImage Image);
 
         void UnbindColor(int Attachment);
 
         void BindZeta(long Key);
 
         void UnbindZeta();
-
-        void BindTexture(long Key, int Index);
 
         void Set(long Key);
 

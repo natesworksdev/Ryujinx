@@ -205,11 +205,7 @@ namespace Ryujinx.Graphics
 
             GalImage Image = new GalImage(Width, Height, ImageFormat);
 
-            long Size = ImageUtils.GetSize(Image);
-
-            Gpu.Renderer.Texture.CreateFb(Key, Size, Image);
-
-            Gpu.Renderer.RenderTarget.BindColor(Key, FbIndex);
+            Gpu.ResourceManager.SendColorBuffer(Vmm, Key, FbIndex, Image);
 
             Gpu.Renderer.RenderTarget.SetViewport(VpX, VpY, VpW, VpH);
         }
@@ -516,7 +512,9 @@ namespace Ryujinx.Graphics
                 return;
             }
 
-            if (IsFrameBufferPosition(Key))
+            Gpu.ResourceManager.SendTexture(Vmm, Key, TicPosition, TexIndex);
+
+            /*if (IsFrameBufferPosition(Key))
             {
                 //This texture is a frame buffer texture,
                 //we shouldn't read anything from memory and bind
@@ -550,7 +548,7 @@ namespace Ryujinx.Graphics
                 }
 
                 Gpu.Renderer.Texture.Bind(Key, TexIndex);
-            }
+            }*/
 
             Gpu.Renderer.Texture.SetSampler(Sampler);
         }

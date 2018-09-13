@@ -64,13 +64,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             this.Texture = Texture;
         }
 
-        public void BindColor(long Key, int Attachment)
+        public void BindColor(long Key, int Attachment, GalImage Image)
         {
-            if (Texture.TryGetImage(Key, out ImageHandler Tex))
+            if (Texture.TryGetImage(Key, out ImageHandler CachedImage))
             {
+                Texture.EnsureFormat(Key, CachedImage, Image);
+
                 EnsureFrameBuffer();
 
-                Attach(ref ColorAttachments[Attachment], Tex.Handle, FramebufferAttachment.ColorAttachment0 + Attachment);
+                Attach(ref ColorAttachments[Attachment], CachedImage.Handle, FramebufferAttachment.ColorAttachment0 + Attachment);
             }
             else
             {
@@ -84,7 +86,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             Attach(ref ColorAttachments[Attachment], 0, FramebufferAttachment.ColorAttachment0 + Attachment);
         }
-        
+
         public void BindZeta(long Key)
         {
             if (Texture.TryGetImage(Key, out ImageHandler Tex))
@@ -102,8 +104,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Tex.Handle,
                             0);
 
-                        DepthAttachment = Tex.Handle;
-
+                        DepthAttachment   = Tex.Handle;
                         StencilAttachment = Tex.Handle;
                     }
                 }
@@ -130,6 +131,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
+        private void Attach(ref int OldHandle, int NewHandle, FramebufferAttachment FbAttachment)
+        {
+            if (OldHandle != NewHandle)
+            {
+                GL.FramebufferTexture(
+                    FramebufferTarget.DrawFramebuffer,
+                    FbAttachment,
+                    NewHandle,
+                    0);
+
+                OldHandle = NewHandle;
+            }
+        }
+
         public void UnbindZeta()
         {
             EnsureFrameBuffer();
@@ -143,19 +158,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     0,
                     0);
 
-                DepthAttachment = 0;
-
+                DepthAttachment   = 0;
                 StencilAttachment = 0;
-            }
-        }
-
-        public void BindTexture(long Key, int Index)
-        {
-            if (Texture.TryGetImage(Key, out ImageHandler Tex))
-            {
-                GL.ActiveTexture(TextureUnit.Texture0 + Index);
-
-                GL.BindTexture(TextureTarget.Texture2D, Tex.Handle);
             }
         }
 
@@ -395,11 +399,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public void SetBufferData(
-            long             Key,
-            int              Width,
-            int              Height,
-            byte[]           Buffer)
+        public void SetBufferData(long Key, int Width, int Height, byte[] Buffer)
         {
             if (Texture.TryGetImage(Key, out ImageHandler Tex))
             {
@@ -429,20 +429,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
 
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, DummyFrameBuffer);
-        }
-
-        private void Attach(ref int OldHandle, int NewHandle, FramebufferAttachment FbAttachment)
-        {
-            if (OldHandle != NewHandle)
-            {
-                GL.FramebufferTexture(
-                    FramebufferTarget.DrawFramebuffer,
-                    FbAttachment,
-                    NewHandle,
-                    0);
-
-                OldHandle = NewHandle;
-            }
         }
 
         private void CopyTextures(

@@ -98,16 +98,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     Type,
                     Data);
             }
-
-            int SwizzleR = (int)OGLEnumConverter.GetTextureSwizzle(Image.XSource);
-            int SwizzleG = (int)OGLEnumConverter.GetTextureSwizzle(Image.YSource);
-            int SwizzleB = (int)OGLEnumConverter.GetTextureSwizzle(Image.ZSource);
-            int SwizzleA = (int)OGLEnumConverter.GetTextureSwizzle(Image.WSource);
-
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, SwizzleR);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG, SwizzleG);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, SwizzleB);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, SwizzleA);
         }
 
         public void CreateFb(long Key, long Size, GalImage Image)
@@ -197,14 +187,48 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return false;
         }
 
-        public void Bind(long Key, int Index)
+        public void Bind(long Key, int Index, GalImage Image)
         {
             if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
             {
                 GL.ActiveTexture(TextureUnit.Texture0 + Index);
 
                 GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
+
+                EnsureFormat(Key, CachedImage, Image);
+
+                int[] SwizzleRgba = new int[]
+                {
+                    (int)OGLEnumConverter.GetTextureSwizzle(Image.XSource),
+                    (int)OGLEnumConverter.GetTextureSwizzle(Image.YSource),
+                    (int)OGLEnumConverter.GetTextureSwizzle(Image.ZSource),
+                    (int)OGLEnumConverter.GetTextureSwizzle(Image.WSource)
+                };
+
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, SwizzleRgba);
             }
+        }
+
+        internal void EnsureFormat(long Key, ImageHandler CachedImage, GalImage Image)
+        {
+            if (CachedImage.Format == Image.Format)
+            {
+                return;
+            }
+
+            //TODO: De-hardcode mipmap levels and TextureTarget.
+            const int Level = 0;
+
+            byte[] Data = new byte[ImageUtils.GetSize(CachedImage.Image)];
+
+            GL.GetTexImage(
+                TextureTarget.Texture2D,
+                Level,
+                CachedImage.PixelFormat,
+                CachedImage.PixelType,
+                Data);
+
+            Create(Key, Data, Image);
         }
 
         public void SetSampler(GalTextureSampler Sampler)

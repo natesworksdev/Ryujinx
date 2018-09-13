@@ -32,8 +32,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public ImageHandler(int Handle, GalImage Image)
         {
             this.Handle = Handle;
-
-            this.Image = Image;
+            this.Image  = Image;
         }
 
         public void EnsureSetup(GalImage NewImage)
@@ -64,42 +63,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.BindTexture(TextureTarget.Texture2D, Handle);
 
-            if (Initialized)
-            {
-                if (CopyBuffer == 0)
-                {
-                    CopyBuffer = GL.GenBuffer();
-                }
-
-                int CurrentSize = Math.Max(ImageUtils.GetSize(NewImage),
-                                           ImageUtils.GetSize(Image));
-
-                GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyBuffer);
-                GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyBuffer);
-
-                if (CopyBufferSize < CurrentSize)
-                {
-                    CopyBufferSize = CurrentSize;
-
-                    GL.BufferData(BufferTarget.PixelPackBuffer, CurrentSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
-                }
-
-                if (ImageUtils.IsCompressed(Image.Format))
-                {
-                    GL.GetCompressedTexImage(TextureTarget.Texture2D, 0, IntPtr.Zero);
-                }
-                else
-                {
-                    GL.GetTexImage(TextureTarget.Texture2D, 0, this.PixelFormat, this.PixelType, IntPtr.Zero);
-                }
-
-                GL.DeleteTexture(Handle);
-
-                Handle = GL.GenTexture();
-
-                GL.BindTexture(TextureTarget.Texture2D, Handle);
-            }
-
             const int MinFilter = (int)TextureMinFilter.Linear;
             const int MagFilter = (int)TextureMagFilter.Linear;
 
@@ -111,8 +74,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             if (ImageUtils.IsCompressed(NewImage.Format))
             {
-                Console.WriteLine("Hit");
-
                 GL.CompressedTexImage2D(
                     TextureTarget.Texture2D,
                     Level,
@@ -135,12 +96,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     PixelFormat,
                     PixelType,
                     IntPtr.Zero);
-            }
-
-            if (Initialized)
-            {
-                GL.BindBuffer(BufferTarget.PixelPackBuffer,   0);
-                GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
             }
 
             Image = NewImage;
