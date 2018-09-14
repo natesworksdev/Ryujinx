@@ -14,7 +14,7 @@ namespace Ryujinx.Tests.Cpu
     {
 #if Simd
 
-#region "ValueSource"
+#region "ValueSource (Types)"
         private static ulong[] _1B1H1S1D_()
         {
             return new ulong[] { 0x0000000000000000ul, 0x000000000000007Ful,
@@ -204,11 +204,57 @@ namespace Ryujinx.Tests.Cpu
         }
 #endregion
 
+#region "ValueSource (Opcodes)"
+        private static uint[] _F_Cvt_NZ_SU_S_S_()
+        {
+            return new uint[]
+            {
+                0x5E21A820u, // FCVTNS S0, S1
+                0x7E21A820u, // FCVTNU S0, S1
+                0x5EA1B820u, // FCVTZS S0, S1
+                0x7EA1B820u  // FCVTZU S0, S1
+            };
+        }
+
+        private static uint[] _F_Cvt_NZ_SU_S_D_()
+        {
+            return new uint[]
+            {
+                0x5E61A820u, // FCVTNS D0, D1
+                0x7E61A820u, // FCVTNU D0, D1
+                0x5EE1B820u, // FCVTZS D0, D1
+                0x7EE1B820u  // FCVTZU D0, D1
+            };
+        }
+
+        private static uint[] _F_Cvt_NZ_SU_V_2S_4S_()
+        {
+            return new uint[]
+            {
+                0x0E21A800u, // FCVTNS V0.2S, V0.2S
+                0x2E21A800u, // FCVTNU V0.2S, V0.2S
+                0x0EA1B800u, // FCVTZS V0.2S, V0.2S
+                0x2EA1B800u  // FCVTZU V0.2S, V0.2S
+            };
+        }
+
+        private static uint[] _F_Cvt_NZ_SU_V_2D_()
+        {
+            return new uint[]
+            {
+                0x4E61A800u, // FCVTNS V0.2D, V0.2D
+                0x6E61A800u, // FCVTNU V0.2D, V0.2D
+                0x4EE1B800u, // FCVTZS V0.2D, V0.2D
+                0x6EE1B800u  // FCVTZU V0.2D, V0.2D
+            };
+        }
+#endregion
+
+        private const int RndCnt = 2;
+
         private static readonly bool NoZeros = false;
         private static readonly bool NoInfs  = false;
         private static readonly bool NoNaNs  = false;
-
-        private const int RndCnt = 2;
 
         [Test, Pairwise, Description("ABS <V><d>, <V><n>")]
         public void Abs_S_D([Values(0u)]     uint Rd,
@@ -739,150 +785,68 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("FCVTNS <V><d>, <V><n>")]
-        public void Fcvtns_S_S([Values(0u)]     uint Rd,
-                               [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1S_F_")] ulong Z,
-                               [ValueSource("_1S_F_")] ulong A)
+        [Test, Pairwise]
+        public void F_Cvt_NZ_SU_S_S([ValueSource("_F_Cvt_NZ_SU_S_S_")] uint Opcodes,
+                                    [ValueSource("_1S_F_")] ulong A)
         {
             //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
 
-            uint Opcode = 0x5E21A800; // FCVTNS S0, S0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
+            ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
 
             //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
+            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
 
             CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
         }
 
-        [Test, Pairwise, Description("FCVTNS <V><d>, <V><n>")]
-        public void Fcvtns_S_D([Values(0u)]     uint Rd,
-                               [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1D_F_")] ulong Z,
-                               [ValueSource("_1D_F_")] ulong A)
+        [Test, Pairwise]
+        public void F_Cvt_NZ_SU_S_D([ValueSource("_F_Cvt_NZ_SU_S_D_")] uint Opcodes,
+                                    [ValueSource("_1D_F_")] ulong A)
         {
-            uint Opcode = 0x5E61A800; // FCVTNS D0, D0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            ulong Z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> V0 = MakeVectorE1(Z);
             Vector128<float> V1 = MakeVectorE0(A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("FCVTNS <Vd>.<T>, <Vn>.<T>")]
-        public void Fcvtns_V_2S_4S([Values(0u)]     uint Rd,
-                                   [Values(1u, 0u)] uint Rn,
-                                   [ValueSource("_2S_F_")] ulong Z,
-                                   [ValueSource("_2S_F_")] ulong A,
-                                   [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
+        [Test, Pairwise]
+        public void F_Cvt_NZ_SU_V_2S_4S([ValueSource("_F_Cvt_NZ_SU_V_2S_4S_")] uint Opcodes,
+                                        [Values(0u)]     uint Rd,
+                                        [Values(1u, 0u)] uint Rn,
+                                        [ValueSource("_2S_F_")] ulong Z,
+                                        [ValueSource("_2S_F_")] ulong A,
+                                        [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
-            uint Opcode = 0x0E21A800; // FCVTNS V0.2S, V0.2S
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcode |= ((Q & 1) << 30);
+            Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcodes |= ((Q & 1) << 30);
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("FCVTNS <Vd>.<T>, <Vn>.<T>")]
-        public void Fcvtns_V_2D([Values(0u)]     uint Rd,
-                                [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_1D_F_")] ulong Z,
-                                [ValueSource("_1D_F_")] ulong A)
+        [Test, Pairwise]
+        public void F_Cvt_NZ_SU_V_2D([ValueSource("_F_Cvt_NZ_SU_V_2D_")] uint Opcodes,
+                                     [Values(0u)]     uint Rd,
+                                     [Values(1u, 0u)] uint Rn,
+                                     [ValueSource("_1D_F_")] ulong Z,
+                                     [ValueSource("_1D_F_")] ulong A)
         {
-            uint Opcode = 0x4E61A800; // FCVTNS V0.2D, V0.2D
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
 
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
-
-            CompareAgainstUnicorn();
-        }
-
-        [Test, Pairwise, Description("FCVTNU <V><d>, <V><n>")]
-        public void Fcvtnu_S_S([Values(0u)]     uint Rd,
-                               [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1S_F_")] ulong Z,
-                               [ValueSource("_1S_F_")] ulong A)
-        {
-            //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
-
-            uint Opcode = 0x7E21A800; // FCVTNU S0, S0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0(A);
-
-            //int Fpcr = 1 << FZFlagBit; // Flush-to-zero mode enabled.
-
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1/*, Fpcr: Fpcr*/);
-
-            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IXC | FPSR.IOC*/);
-        }
-
-        [Test, Pairwise, Description("FCVTNU <V><d>, <V><n>")]
-        public void Fcvtnu_S_D([Values(0u)]     uint Rd,
-                               [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1D_F_")] ulong Z,
-                               [ValueSource("_1D_F_")] ulong A)
-        {
-            uint Opcode = 0x7E61A800; // FCVTNU D0, D0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0(A);
-
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
-
-            CompareAgainstUnicorn();
-        }
-
-        [Test, Pairwise, Description("FCVTNU <Vd>.<T>, <Vn>.<T>")]
-        public void Fcvtnu_V_2S_4S([Values(0u)]     uint Rd,
-                                   [Values(1u, 0u)] uint Rn,
-                                   [ValueSource("_2S_F_")] ulong Z,
-                                   [ValueSource("_2S_F_")] ulong A,
-                                   [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
-        {
-            uint Opcode = 0x2E21A800; // FCVTNU V0.2S, V0.2S
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcode |= ((Q & 1) << 30);
-
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
-
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
-
-            CompareAgainstUnicorn();
-        }
-
-        [Test, Pairwise, Description("FCVTNU <Vd>.<T>, <Vn>.<T>")]
-        public void Fcvtnu_V_2D([Values(0u)]     uint Rd,
-                                [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_1D_F_")] ulong Z,
-                                [ValueSource("_1D_F_")] ulong A)
-        {
-            uint Opcode = 0x6E61A800; // FCVTNU V0.2D, V0.2D
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A);
-
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1);
 
             CompareAgainstUnicorn();
         }
