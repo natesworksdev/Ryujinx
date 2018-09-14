@@ -2135,7 +2135,6 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                             return ParsePrefixExpression("!");
                         case 'x':
                             Position += 2;
-                            Position += 2;
                             Expression = ParseExpression();
                             if (Expression == null)
                             {
