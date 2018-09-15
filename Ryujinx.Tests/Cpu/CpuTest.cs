@@ -201,7 +201,12 @@ namespace Ryujinx.Tests.Cpu
 
         protected enum FpSkips { None, IfNaN_S, IfNaN_D };
 
-        protected void CompareAgainstUnicorn(FPSR FpsrMask = FPSR.None, FpSkips FpSkips = FpSkips.None)
+        protected enum FpUseTolerance { None, OneUlps_S, OneUlps_D };
+
+        protected void CompareAgainstUnicorn(
+            FPSR           FpsrMask       = FPSR.None,
+            FpSkips        FpSkips        = FpSkips.None,
+            FpUseTolerance FpUseTolerance = FpUseTolerance.None)
         {
             if (!UnicornAvailable)
             {
@@ -252,7 +257,51 @@ namespace Ryujinx.Tests.Cpu
 
             Assert.That(Thread.ThreadState.X31, Is.EqualTo(UnicornEmu.SP));
 
-            Assert.That(Thread.ThreadState.V0,  Is.EqualTo(UnicornEmu.Q[0]));
+            if (FpUseTolerance == FpUseTolerance.None)
+            {
+                Assert.That(Thread.ThreadState.V0, Is.EqualTo(UnicornEmu.Q[0]));
+            }
+            else
+            {
+                if (!Is.EqualTo(UnicornEmu.Q[0]).ApplyTo(Thread.ThreadState.V0).IsSuccess)
+                {
+                    if (FpUseTolerance == FpUseTolerance.OneUlps_S)
+                    {
+                        if (float.IsNormal   (VectorExtractSingle(UnicornEmu.Q[0], (byte)0)) ||
+                            float.IsSubnormal(VectorExtractSingle(UnicornEmu.Q[0], (byte)0)))
+                        {
+                            Assert.That   (VectorExtractSingle(Thread.ThreadState.V0, (byte)0),
+                                Is.EqualTo(VectorExtractSingle(UnicornEmu.Q[0],       (byte)0)).Within(1).Ulps);
+                            Assert.That   (VectorExtractSingle(Thread.ThreadState.V0, (byte)1),
+                                Is.EqualTo(VectorExtractSingle(UnicornEmu.Q[0],       (byte)1)).Within(1).Ulps);
+                            Assert.That   (VectorExtractSingle(Thread.ThreadState.V0, (byte)2),
+                                Is.EqualTo(VectorExtractSingle(UnicornEmu.Q[0],       (byte)2)).Within(1).Ulps);
+                            Assert.That   (VectorExtractSingle(Thread.ThreadState.V0, (byte)3),
+                                Is.EqualTo(VectorExtractSingle(UnicornEmu.Q[0],       (byte)3)).Within(1).Ulps);
+                        }
+                        else
+                        {
+                            Assert.That(Thread.ThreadState.V0, Is.EqualTo(UnicornEmu.Q[0]));
+                        }
+                    }
+
+                    if (FpUseTolerance == FpUseTolerance.OneUlps_D)
+                    {
+                        if (double.IsNormal   (VectorExtractDouble(UnicornEmu.Q[0], (byte)0)) ||
+                            double.IsSubnormal(VectorExtractDouble(UnicornEmu.Q[0], (byte)0)))
+                        {
+                            Assert.That   (VectorExtractDouble(Thread.ThreadState.V0, (byte)0),
+                                Is.EqualTo(VectorExtractDouble(UnicornEmu.Q[0],       (byte)0)).Within(1).Ulps);
+                            Assert.That   (VectorExtractDouble(Thread.ThreadState.V0, (byte)1),
+                                Is.EqualTo(VectorExtractDouble(UnicornEmu.Q[0],       (byte)1)).Within(1).Ulps);
+                        }
+                        else
+                        {
+                            Assert.That(Thread.ThreadState.V0, Is.EqualTo(UnicornEmu.Q[0]));
+                        }
+                    }
+                }
+            }
             Assert.That(Thread.ThreadState.V1,  Is.EqualTo(UnicornEmu.Q[1]));
             Assert.That(Thread.ThreadState.V2,  Is.EqualTo(UnicornEmu.Q[2]));
             Assert.That(Thread.ThreadState.V3,  Is.EqualTo(UnicornEmu.Q[3]));
