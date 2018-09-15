@@ -113,11 +113,11 @@ namespace Ryujinx.Tests.Cpu
             for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
             {
                 ulong Grbg = TestContext.CurrentContext.Random.NextUInt();
-                ulong Val1 = GenNormal_S();
-                ulong Val2 = GenSubNormal_S();
+                ulong Rnd1 = GenNormal_S();
+                ulong Rnd2 = GenSubNormal_S();
 
-                yield return (Grbg << 32) | Val1;
-                yield return (Grbg << 32) | Val2;
+                yield return (Grbg << 32) | Rnd1;
+                yield return (Grbg << 32) | Rnd2;
             }
         }
 
@@ -154,11 +154,11 @@ namespace Ryujinx.Tests.Cpu
 
             for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
             {
-                ulong Val1 = GenNormal_S();
-                ulong Val2 = GenSubNormal_S();
+                ulong Rnd1 = GenNormal_S();
+                ulong Rnd2 = GenSubNormal_S();
 
-                yield return (Val1 << 32) | Val1;
-                yield return (Val2 << 32) | Val2;
+                yield return (Rnd1 << 32) | Rnd1;
+                yield return (Rnd2 << 32) | Rnd2;
             }
         }
 
@@ -195,11 +195,11 @@ namespace Ryujinx.Tests.Cpu
 
             for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
             {
-                ulong Val1 = GenNormal_D();
-                ulong Val2 = GenSubNormal_D();
+                ulong Rnd1 = GenNormal_D();
+                ulong Rnd2 = GenSubNormal_D();
 
-                yield return Val1;
-                yield return Val2;
+                yield return Rnd1;
+                yield return Rnd2;
             }
         }
 #endregion
