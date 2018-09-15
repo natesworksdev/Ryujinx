@@ -167,6 +167,7 @@ namespace Ryujinx.Graphics.Texture
             switch (Format)
             {
                 case GalSurfaceFormat.RGBA32Float:    return GalImageFormat.R32G32B32A32   | Sfloat;
+                case GalSurfaceFormat.RGBA32Uint:     return GalImageFormat.R32G32B32A32   | Uint;
                 case GalSurfaceFormat.RGBA16Float:    return GalImageFormat.R16G16B16A16   | Sfloat;
                 case GalSurfaceFormat.RG32Float:      return GalImageFormat.R32G32         | Sfloat;
                 case GalSurfaceFormat.RG32Sint:       return GalImageFormat.R32G32         | Sint;
