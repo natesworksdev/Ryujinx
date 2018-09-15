@@ -185,6 +185,8 @@ namespace Ryujinx.Graphics.Texture
                 case GalSurfaceFormat.RG8Snorm:       return GalImageFormat.R8             | Snorm;
                 case GalSurfaceFormat.R16Float:       return GalImageFormat.R16            | Sfloat;
                 case GalSurfaceFormat.R8Unorm:        return GalImageFormat.R8             | Unorm;
+                case GalSurfaceFormat.B5G6R5Unorm:    return GalImageFormat.B5G6R5         | Unorm;
+                case GalSurfaceFormat.BGR5A1Unorm:    return GalImageFormat.A1R5G5B5       | Unorm;
             }
 
             throw new NotImplementedException(Format.ToString());
