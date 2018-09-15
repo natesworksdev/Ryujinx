@@ -29,7 +29,6 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             }
 
             Expression.Print(Writer);
-
         }
     }
 }

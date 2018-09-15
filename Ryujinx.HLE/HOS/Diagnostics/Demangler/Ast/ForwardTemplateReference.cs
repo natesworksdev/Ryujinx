@@ -6,7 +6,6 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     {
         // TODO: Compute inside the Demangler
         public BaseNode Reference;
-
         private int     Index;
 
         public ForwardTemplateReference(int Index) : base(NodeType.ForwardTemplateReference)

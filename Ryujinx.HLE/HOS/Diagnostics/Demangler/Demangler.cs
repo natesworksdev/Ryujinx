@@ -101,8 +101,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
         private int ParseSeqId()
         {
-            string Part  = Mangled.Substring(Position);
-            int SeqIdLen = 0;
+            string Part     = Mangled.Substring(Position);
+            int    SeqIdLen = 0;
 
             for (; SeqIdLen < Part.Length; SeqIdLen++)
             {
@@ -900,8 +900,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
         private int ParsePositiveNumber()
         {
-            string Part      = Mangled.Substring(Position);
-            int NumberLength = 0;
+            string Part         = Mangled.Substring(Position);
+            int    NumberLength = 0;
 
             for (; NumberLength < Part.Length; NumberLength++)
             {
@@ -933,8 +933,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                 return null;
             }
 
-            string Part      = Mangled.Substring(Position);
-            int NumberLength = 0;
+            string Part         = Mangled.Substring(Position);
+            int    NumberLength = 0;
 
             for (; NumberLength < Part.Length; NumberLength++)
             {
