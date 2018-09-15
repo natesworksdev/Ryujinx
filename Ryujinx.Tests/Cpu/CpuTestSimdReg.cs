@@ -112,11 +112,11 @@ namespace Ryujinx.Tests.Cpu
             for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
             {
                 ulong Grbg = TestContext.CurrentContext.Random.NextUInt();
-                ulong Val1 = GenNormal_S();
-                ulong Val2 = GenSubNormal_S();
+                ulong Rnd1 = GenNormal_S();
+                ulong Rnd2 = GenSubNormal_S();
 
-                yield return (Grbg << 32) | Val1;
-                yield return (Grbg << 32) | Val2;
+                yield return (Grbg << 32) | Rnd1;
+                yield return (Grbg << 32) | Rnd2;
             }
         }
 
@@ -153,11 +153,11 @@ namespace Ryujinx.Tests.Cpu
 
             for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
             {
-                ulong Val1 = GenNormal_S();
-                ulong Val2 = GenSubNormal_S();
+                ulong Rnd1 = GenNormal_S();
+                ulong Rnd2 = GenSubNormal_S();
 
-                yield return (Val1 << 32) | Val1;
-                yield return (Val2 << 32) | Val2;
+                yield return (Rnd1 << 32) | Rnd1;
+                yield return (Rnd2 << 32) | Rnd2;
             }
         }
 
@@ -194,53 +194,61 @@ namespace Ryujinx.Tests.Cpu
 
             for (int Cnt = 1; Cnt <= RndCnt; Cnt++)
             {
-                ulong Val1 = GenNormal_D();
-                ulong Val2 = GenSubNormal_D();
+                ulong Rnd1 = GenNormal_D();
+                ulong Rnd2 = GenSubNormal_D();
 
-                yield return Val1;
-                yield return Val2;
+                yield return Rnd1;
+                yield return Rnd2;
             }
         }
 #endregion
 
 #region "ValueSource (Opcodes)"
-        private static uint[] _F_Max_Min_S_S_()
+        private static uint[] _F_Max_Min_Nm_S_S_()
         {
             return new uint[]
             {
-                0x1E224820u, // FMAX S0, S1, S2
-                0x1E225820u  // FMIN S0, S1, S2
+                0x1E224820u, // FMAX   S0, S1, S2
+                0x1E226820u, // FMAXNM S0, S1, S2
+                0x1E225820u, // FMIN   S0, S1, S2
+                0x1E227820u  // FMINNM S0, S1, S2
             };
         }
 
-        private static uint[] _F_Max_Min_S_D_()
+        private static uint[] _F_Max_Min_Nm_S_D_()
         {
             return new uint[]
             {
-                0x1E624820u, // FMAX D0, D1, D2
-                0x1E625820u  // FMIN D0, D1, D2
+                0x1E624820u, // FMAX   D0, D1, D2
+                0x1E626820u, // FMAXNM D0, D1, D2
+                0x1E625820u, // FMIN   D0, D1, D2
+                0x1E627820u  // FMINNM D0, D1, D2
             };
         }
 
-        private static uint[] _F_Max_Min_P_V_2S_4S_()
+        private static uint[] _F_Max_Min_Nm_P_V_2S_4S_()
         {
             return new uint[]
             {
-                0x0E20F400u, // FMAX  V0.2S, V0.2S, V0.2S
-                0x2E20F400u, // FMAXP V0.2S, V0.2S, V0.2S
-                0x0EA0F400u, // FMIN  V0.2S, V0.2S, V0.2S
-                0x2EA0F400u  // FMINP V0.2S, V0.2S, V0.2S
+                0x0E20F400u, // FMAX   V0.2S, V0.2S, V0.2S
+                0x0E20C400u, // FMAXNM V0.2S, V0.2S, V0.2S
+                0x2E20F400u, // FMAXP  V0.2S, V0.2S, V0.2S
+                0x0EA0F400u, // FMIN   V0.2S, V0.2S, V0.2S
+                0x0EA0C400u, // FMINNM V0.2S, V0.2S, V0.2S
+                0x2EA0F400u  // FMINP  V0.2S, V0.2S, V0.2S
             };
         }
 
-        private static uint[] _F_Max_Min_P_V_2D_()
+        private static uint[] _F_Max_Min_Nm_P_V_2D_()
         {
             return new uint[]
             {
-                0x4E60F400u, // FMAX  V0.2D, V0.2D, V0.2D
-                0x6E60F400u, // FMAXP V0.2D, V0.2D, V0.2D
-                0x4EE0F400u, // FMIN  V0.2D, V0.2D, V0.2D
-                0x6EE0F400u  // FMINP V0.2D, V0.2D, V0.2D
+                0x4E60F400u, // FMAX   V0.2D, V0.2D, V0.2D
+                0x4E60C400u, // FMAXNM V0.2D, V0.2D, V0.2D
+                0x6E60F400u, // FMAXP  V0.2D, V0.2D, V0.2D
+                0x4EE0F400u, // FMIN   V0.2D, V0.2D, V0.2D
+                0x4EE0C400u, // FMINNM V0.2D, V0.2D, V0.2D
+                0x6EE0F400u  // FMINP  V0.2D, V0.2D, V0.2D
             };
         }
 #endregion
@@ -1048,7 +1056,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2, V3: V3/*, Fpcr: Fpcr*/);
 
-            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IOC, */FpSkips: FpSkips.IfNaN_S);
+            CompareAgainstUnicorn(/*FpsrMask: FPSR.IDC | FPSR.IOC, */FpSkips: FpSkips.IfNaN_S/*, FpUseTolerance: FpUseTolerance.OneUlps_S*/);
         }
 
         [Test, Pairwise, Description("FMADD <Dd>, <Dn>, <Dm>, <Da>")]
@@ -1066,13 +1074,13 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, V2: V2, V3: V3);
 
-            CompareAgainstUnicorn(FpSkips: FpSkips.IfNaN_D);
+            CompareAgainstUnicorn(FpSkips: FpSkips.IfNaN_D/*, FpUseTolerance: FpUseTolerance.OneUlps_D*/);
         }
 
         [Test, Pairwise]
-        public void F_Max_Min_S_S([ValueSource("_F_Max_Min_S_S_")] uint Opcodes,
-                                  [ValueSource("_1S_F_")] ulong A,
-                                  [ValueSource("_1S_F_")] ulong B)
+        public void F_Max_Min_Nm_S_S([ValueSource("_F_Max_Min_Nm_S_S_")] uint Opcodes,
+                                     [ValueSource("_1S_F_")] ulong A,
+                                     [ValueSource("_1S_F_")] ulong B)
         {
             //const int DNFlagBit = 25; // Default NaN mode control bit.
             //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
@@ -1091,9 +1099,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void F_Max_Min_S_D([ValueSource("_F_Max_Min_S_D_")] uint Opcodes,
-                                  [ValueSource("_1D_F_")] ulong A,
-                                  [ValueSource("_1D_F_")] ulong B)
+        public void F_Max_Min_Nm_S_D([ValueSource("_F_Max_Min_Nm_S_D_")] uint Opcodes,
+                                     [ValueSource("_1D_F_")] ulong A,
+                                     [ValueSource("_1D_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE1(Z);
@@ -1106,14 +1114,14 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void F_Max_Min_P_V_2S_4S([ValueSource("_F_Max_Min_P_V_2S_4S_")] uint Opcodes,
-                                        [Values(0u)]     uint Rd,
-                                        [Values(1u, 0u)] uint Rn,
-                                        [Values(2u, 0u)] uint Rm,
-                                        [ValueSource("_2S_F_")] ulong Z,
-                                        [ValueSource("_2S_F_")] ulong A,
-                                        [ValueSource("_2S_F_")] ulong B,
-                                        [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
+        public void F_Max_Min_Nm_P_V_2S_4S([ValueSource("_F_Max_Min_Nm_P_V_2S_4S_")] uint Opcodes,
+                                           [Values(0u)]     uint Rd,
+                                           [Values(1u, 0u)] uint Rn,
+                                           [Values(2u, 0u)] uint Rm,
+                                           [ValueSource("_2S_F_")] ulong Z,
+                                           [ValueSource("_2S_F_")] ulong A,
+                                           [ValueSource("_2S_F_")] ulong B,
+                                           [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             //const int DNFlagBit = 25; // Default NaN mode control bit.
             //const int FZFlagBit = 24; // Flush-to-zero mode control bit.
@@ -1134,13 +1142,13 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void F_Max_Min_P_V_2D([ValueSource("_F_Max_Min_P_V_2D_")] uint Opcodes,
-                                     [Values(0u)]     uint Rd,
-                                     [Values(1u, 0u)] uint Rn,
-                                     [Values(2u, 0u)] uint Rm,
-                                     [ValueSource("_1D_F_")] ulong Z,
-                                     [ValueSource("_1D_F_")] ulong A,
-                                     [ValueSource("_1D_F_")] ulong B)
+        public void F_Max_Min_Nm_P_V_2D([ValueSource("_F_Max_Min_Nm_P_V_2D_")] uint Opcodes,
+                                        [Values(0u)]     uint Rd,
+                                        [Values(1u, 0u)] uint Rn,
+                                        [Values(2u, 0u)] uint Rm,
+                                        [ValueSource("_1D_F_")] ulong Z,
+                                        [ValueSource("_1D_F_")] ulong A,
+                                        [ValueSource("_1D_F_")] ulong B)
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
 
