@@ -56,6 +56,7 @@ namespace Ryujinx.Graphics.Texture
                 { GalTextureFormat.Z24S8,        GalImageFormat.D24_S8               | Unorm                        },
                 { GalTextureFormat.ZF32,         GalImageFormat.D32                                        | Sfloat },
                 { GalTextureFormat.ZF32_X24S8,   GalImageFormat.D32_S8               | Unorm                        },
+                { GalTextureFormat.Z16,          GalImageFormat.D16                  | Unorm                        },
 
                 //Compressed formats
                 { GalTextureFormat.BC6H_SF16,   GalImageFormat.BC6H_SF16  | Unorm         },
@@ -185,6 +186,7 @@ namespace Ryujinx.Graphics.Texture
                 case GalSurfaceFormat.RG8Unorm:       return GalImageFormat.R8G8           | Unorm;
                 case GalSurfaceFormat.RG8Snorm:       return GalImageFormat.R8             | Snorm;
                 case GalSurfaceFormat.R16Float:       return GalImageFormat.R16            | Sfloat;
+                case GalSurfaceFormat.R16Unorm:       return GalImageFormat.R16            | Unorm;
                 case GalSurfaceFormat.R8Unorm:        return GalImageFormat.R8             | Unorm;
                 case GalSurfaceFormat.B5G6R5Unorm:    return GalImageFormat.B5G6R5         | Unorm;
                 case GalSurfaceFormat.BGR5A1Unorm:    return GalImageFormat.A1R5G5B5       | Unorm;
