@@ -32,12 +32,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int Handle = GL.GenTexture();
 
-            TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Data.Length);
-
             GL.BindTexture(TextureTarget.Texture2D, Handle);
 
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
+
+            ImageHandler Handler = new ImageHandler(Handle, Image);
 
             GalImageFormat TypeLess = Image.Format & GalImageFormat.FormatMask;
 
@@ -98,30 +98,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     Type,
                     Data);
             }
-        }
 
-        public void CreateFb(long Key, long Size, GalImage Image)
-        {
-            if (!TryGetImage(Key, out ImageHandler CachedImage))
-            {
-                CachedImage = new ImageHandler();
-
-                TextureCache.AddOrUpdate(Key, CachedImage, Size);
-            }
-
-            CachedImage.EnsureSetup(Image);
-        }
-
-        public bool TryGetImage(long Key, out ImageHandler CachedImage)
-        {
-            if (TextureCache.TryGetValue(Key, out CachedImage))
-            {
-                return true;
-            }
-
-            CachedImage = null;
-
-            return false;
+            TextureCache.AddOrUpdate(Key, Handler, (uint)Data.Length);
         }
 
         private static int GetAstcBlockWidth(GalImageFormat Format)
@@ -172,17 +150,26 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public bool TryGetCachedTexture(long Key, long DataSize, out GalImage Image)
         {
-            if (TextureCache.TryGetSize(Key, out long Size) && Size == DataSize)
+            if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
             {
-                if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
-                {
-                    Image = CachedImage.Image;
+                Image = CachedImage.Image;
 
-                    return true;
-                }
+                return true;
             }
 
             Image = default(GalImage);
+
+            return false;
+        }
+
+        public bool TryGetImage(long Key, out ImageHandler CachedImage)
+        {
+            if (TextureCache.TryGetValue(Key, out CachedImage))
+            {
+                return true;
+            }
+
+            CachedImage = null;
 
             return false;
         }
@@ -195,8 +182,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
 
-                EnsureFormat(Key, CachedImage, Image);
-
                 int[] SwizzleRgba = new int[]
                 {
                     (int)OGLEnumConverter.GetTextureSwizzle(Image.XSource),
@@ -207,28 +192,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, SwizzleRgba);
             }
-        }
-
-        internal void EnsureFormat(long Key, ImageHandler CachedImage, GalImage Image)
-        {
-            if (CachedImage.Format == Image.Format)
-            {
-                return;
-            }
-
-            //TODO: De-hardcode mipmap levels and TextureTarget.
-            const int Level = 0;
-
-            byte[] Data = new byte[ImageUtils.GetSize(CachedImage.Image)];
-
-            GL.GetTexImage(
-                TextureTarget.Texture2D,
-                Level,
-                CachedImage.PixelFormat,
-                CachedImage.PixelType,
-                Data);
-
-            Create(Key, Data, Image);
         }
 
         public void SetSampler(GalTextureSampler Sampler)

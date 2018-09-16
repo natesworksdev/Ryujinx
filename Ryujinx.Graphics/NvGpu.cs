@@ -1,5 +1,4 @@
 using Ryujinx.Graphics.Gal;
-using Ryujinx.Graphics;
 
 namespace Ryujinx.Graphics
 {

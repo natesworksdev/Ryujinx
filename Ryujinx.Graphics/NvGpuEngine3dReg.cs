@@ -6,6 +6,7 @@ namespace Ryujinx.Graphics
         FrameBufferNWidth    = 0x202,
         FrameBufferNHeight   = 0x203,
         FrameBufferNFormat   = 0x204,
+        FrameBufferNBlockDim = 0x205,
         ViewportNScaleX      = 0x280,
         ViewportNScaleY      = 0x281,
         ViewportNScaleZ      = 0x282,

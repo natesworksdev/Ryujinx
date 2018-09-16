@@ -1,6 +1,4 @@
-﻿using static Ryujinx.Graphics.Gal.Shader.ShaderDecodeHelper;
-
-namespace Ryujinx.Graphics.Gal.Shader
+﻿namespace Ryujinx.Graphics.Gal.Shader
 {
     static partial class ShaderDecode
     {

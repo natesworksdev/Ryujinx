@@ -9,12 +9,7 @@ namespace Ryujinx.Graphics
     {
         private NvGpu Gpu;
 
-        private class GpuResource
-        {
-            public bool GpuWritable { get; set; }
-        }
-
-        private Dictionary<long, GpuResource> Resources;
+        private ValueRangeSet<long> WritableResources;
 
         private HashSet<long>[] UploadedKeys;
 
@@ -22,7 +17,7 @@ namespace Ryujinx.Graphics
         {
             this.Gpu = Gpu;
 
-            Resources = new Dictionary<long, GpuResource>();
+            WritableResources = new ValueRangeSet<long>();
 
             UploadedKeys = new HashSet<long>[(int)NvGpuBufferType.Count];
 
@@ -32,60 +27,135 @@ namespace Ryujinx.Graphics
             }
         }
 
-        public void SendColorBuffer(NvGpuVmm Vmm, long Key, int Attachment, GalImage NewImage)
+        public void SendColorBuffer(NvGpuVmm Vmm, long Position, int Attachment, GalImage NewImage)
         {
-            if (Resources.TryGetValue(Key, out GpuResource Resource))
-            {
-                Resources.Remove(Key);
-            }
-
-            Resources.Add(Key, new GpuResource());
-
             long Size = (uint)ImageUtils.GetSize(NewImage);
 
-            Gpu.Renderer.Texture.CreateFb(Key, Size, NewImage);
-            Gpu.Renderer.RenderTarget.BindColor(Key, Attachment, NewImage);
-        }
-
-        public void SendTexture(NvGpuVmm Vmm, long Key, long TicPosition, int TexIndex)
-        {
-            if (Resources.TryGetValue(Key, out GpuResource Resource))
+            if (!MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture))
             {
-                Resources.Remove(Key);
-            }
+                bool IsCached = Gpu.Renderer.Texture.TryGetCachedTexture(Position, Size, out GalImage CachedImage);
 
-            Resources.Add(Key, new GpuResource());
-
-            GalImage NewImage = TextureFactory.MakeTexture(Vmm, TicPosition);
-
-            long Size = (uint)ImageUtils.GetSize(NewImage);
-
-            if (IsResourceCached(Vmm, Key, Size, NvGpuBufferType.Texture))
-            {
-                if (Gpu.Renderer.Texture.TryGetCachedTexture(Key, Size, out GalImage CachedImage))
+                if (IsCached && CachedImage.CompatibleWith(NewImage))
                 {
-                    Gpu.Renderer.Texture.Bind(Key, TexIndex, NewImage);
+                    Gpu.Renderer.RenderTarget.BindColor(Position, Attachment, NewImage);
 
                     return;
                 }
+
+                SynchronizeRange(Vmm, Position, Size);
             }
 
-            byte[] Data = TextureFactory.GetTextureData(Vmm, TicPosition);
+            AddWritableResource(Position, Size);
 
-            Gpu.Renderer.Texture.Create(Key, Data, NewImage);
-            Gpu.Renderer.Texture.Bind(Key, TexIndex, NewImage);
+            byte[] Data = ImageUtils.ReadTexture(Vmm, NewImage, Position);
+
+            Gpu.Renderer.Texture.Create(Position, Data, NewImage);
+
+            Gpu.Renderer.RenderTarget.BindColor(Position, Attachment, NewImage);
         }
 
-        private bool IsResourceCached(NvGpuVmm Vmm, long Key, long Size, NvGpuBufferType Type)
+        public void SendZetaBuffer(NvGpuVmm Vmm, long Position, GalImage NewImage)
+        {
+            long Size = (uint)ImageUtils.GetSize(NewImage);
+
+            if (!MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture))
+            {
+                bool IsCached = Gpu.Renderer.Texture.TryGetCachedTexture(Position, Size, out GalImage CachedImage);
+
+                if (IsCached && CachedImage.CompatibleWith(NewImage))
+                {
+                    Gpu.Renderer.RenderTarget.BindZeta(Position, NewImage);
+
+                    return;
+                }
+
+                SynchronizeRange(Vmm, Position, Size);
+            }
+
+            AddWritableResource(Position, Size);
+
+            byte[] Data = ImageUtils.ReadTexture(Vmm, NewImage, Position);
+
+            Gpu.Renderer.Texture.Create(Position, Data, NewImage);
+
+            Gpu.Renderer.RenderTarget.BindZeta(Position, NewImage);
+        }
+
+        public void SendTexture(NvGpuVmm Vmm, long Position, GalImage NewImage, int TexIndex = -1)
+        {
+            long Size = (uint)ImageUtils.GetSize(NewImage);
+
+            if (!MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture))
+            {
+                bool IsCached = Gpu.Renderer.Texture.TryGetCachedTexture(Position, Size, out GalImage CachedImage);
+
+                if (IsCached && CachedImage.CompatibleWith(NewImage))
+                {
+                    if (TexIndex >= 0)
+                    {
+                        Gpu.Renderer.Texture.Bind(Position, TexIndex, NewImage);
+                    }
+
+                    return;
+                }
+
+                SynchronizeRange(Vmm, Position, Size);
+            }
+
+            byte[] Data = ImageUtils.ReadTexture(Vmm, NewImage, Position);
+
+            Gpu.Renderer.Texture.Create(Position, Data, NewImage);
+
+            if (TexIndex >= 0)
+            {
+                Gpu.Renderer.Texture.Bind(Position, TexIndex, NewImage);
+            }
+        }
+
+        public void AddWritableResource(long Position, long Size)
+        {
+            WritableResources.Add(new ValueRange<long>(Position, Position + Size, Position));
+        }
+
+        public void SynchronizeRange(NvGpuVmm Vmm, long Position, long Size)
+        {
+            ValueRange<long> Range = new ValueRange<long>(Position, Position + Size);
+
+            ValueRange<long>[] Ranges = WritableResources.GetAllIntersections(Range);
+
+            foreach (ValueRange<long> CachedRange in Ranges)
+            {
+                DownloadResourceToGuest(Vmm, CachedRange.Value);
+
+                if (CachedRange.Value == Position)
+                {
+                    WritableResources.Remove(CachedRange);
+                }
+            }
+        }
+
+        private void DownloadResourceToGuest(NvGpuVmm Vmm, long Position)
+        {
+            if (!Gpu.Renderer.Texture.TryGetCachedTexture(Position, 0, out GalImage Image))
+            {
+                return;
+            }
+
+            byte[] Data = Gpu.Renderer.RenderTarget.GetData(Position);
+
+            ImageUtils.WriteTexture(Vmm, Image, Position, Data);
+        }
+
+        private bool MemoryRegionModified(NvGpuVmm Vmm, long Position, long Size, NvGpuBufferType Type)
         {
             HashSet<long> Uploaded = UploadedKeys[(int)Type];
 
-            if (!Uploaded.Add(Key))
+            if (!Uploaded.Add(Position))
             {
-                return true;
+                return false;
             }
 
-            return !Vmm.IsRegionModified(Key, Size, Type);
+            return Vmm.IsRegionModified(Position, Size, Type);
         }
 
         public void ClearPbCache()

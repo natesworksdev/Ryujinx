@@ -310,9 +310,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
             Renderer.QueueAction(() => Renderer.RenderTarget.SetTransform(FlipX, FlipY, Top, Left, Right, Bottom));
 
-            //TODO: Support double buffering here aswell, it is broken for GPU
-            //frame buffers because it seems to be completely out of sync.
-            if (Context.Device.Gpu.Engine3d.IsFrameBufferPosition(FbAddr))
+            if (Renderer.Texture.TryGetCachedTexture(FbAddr, 0, out _))
             {
                 //Frame buffer is rendered to by the GPU, we can just
                 //bind the frame buffer texture, it's not necessary to read anything.
@@ -322,9 +320,13 @@ namespace Ryujinx.HLE.HOS.Services.Android
             {
                 //Frame buffer is not set on the GPU registers, in this case
                 //assume that the app is manually writing to it.
-                TextureInfo Texture = new TextureInfo(FbAddr, FbWidth, FbHeight);
+                GalImage Image = new GalImage(
+                    FbWidth,
+                    FbHeight, 1, 16,
+                    GalMemoryLayout.BlockLinear,
+                    GalImageFormat.A8B8G8R8);
 
-                byte[] Data = TextureReader.Read(Context.Memory, Texture);
+                byte[] Data = ImageUtils.ReadTexture(Context.Memory, Image, FbAddr);
 
                 Renderer.QueueAction(() => Renderer.RenderTarget.Set(Data, FbWidth, FbHeight));
             }

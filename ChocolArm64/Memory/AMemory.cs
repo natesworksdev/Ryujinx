@@ -287,6 +287,14 @@ namespace ChocolArm64.Memory
             return Data;
         }
 
+        public void ReadBytes(long Position, byte[] Data, int StartIndex, int Size)
+        {
+            //Note: This will be moved later.
+            EnsureRangeIsValid(Position, (uint)Size);
+
+            Marshal.Copy((IntPtr)Translate(Position), Data, StartIndex, Size);
+        }
+
         public void WriteSByte(long Position, sbyte Value)
         {
             WriteByte(Position, (byte)Value);
@@ -401,6 +409,15 @@ namespace ChocolArm64.Memory
             EnsureRangeIsValid(Position, (uint)Data.Length);
 
             Marshal.Copy(Data, 0, (IntPtr)TranslateWrite(Position), Data.Length);
+        }
+
+        public void WriteBytes(long Position, byte[] Data, int StartIndex, int Size)
+        {
+            //Note: This will be moved later.
+            //Using Translate instead of TranslateWrite is on purpose.
+            EnsureRangeIsValid(Position, (uint)Size);
+
+            Marshal.Copy(Data, StartIndex, (IntPtr)Translate(Position), Size);
         }
 
         public void Map(long VA, long PA, long Size)

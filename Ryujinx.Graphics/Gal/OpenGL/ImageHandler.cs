@@ -6,9 +6,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class ImageHandler
     {
-        private static int CopyBuffer = 0;
-        private static int CopyBufferSize = 0;
-
         public GalImage Image { get; private set; }
 
         public int Width  => Image.Width;
@@ -16,11 +13,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public GalImageFormat Format => Image.Format;
 
-        public PixelInternalFormat InternalFormat { get; private set; }
-        public PixelFormat         PixelFormat    { get; private set; }
-        public PixelType           PixelType      { get; private set; }
-
         public int Handle { get; private set; }
+
+        public bool HasColor   => ImageUtils.HasColor(Image.Format);
+        public bool HasDepth   => ImageUtils.HasDepth(Image.Format);
+        public bool HasStencil => ImageUtils.HasStencil(Image.Format);
 
         private bool Initialized;
 
@@ -100,15 +97,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             Image = NewImage;
 
-            this.InternalFormat = InternalFmt;
-            this.PixelFormat = PixelFormat;
-            this.PixelType = PixelType;
-
             Initialized = true;
         }
-
-        public bool HasColor   => ImageUtils.HasColor(Image.Format);
-        public bool HasDepth   => ImageUtils.HasDepth(Image.Format);
-        public bool HasStencil => ImageUtils.HasStencil(Image.Format);
     }
 }
