@@ -63,6 +63,7 @@ namespace Ryujinx.Graphics
         StencilBackOpZFail   = 0x567,
         StencilBackOpZPass   = 0x568,
         StencilBackFuncFunc  = 0x569,
+        FrameBufferSrgb      = 0x56e,
         ShaderAddress        = 0x582,
         VertexBeginGl        = 0x586,
         PrimRestartEnable    = 0x591,

@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics
     {
         public IGalRenderer Renderer { get; private set; }
 
-        internal GpuResourceManager ResourceManager { get; private set; }
+        public GpuResourceManager ResourceManager { get; private set; }
 
         public NvGpuFifo Fifo { get; private set; }
 

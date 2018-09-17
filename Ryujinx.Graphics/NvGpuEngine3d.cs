@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics
 
             GalPipelineState State = new GalPipelineState();
 
-            SetFlip(State);
+            SetFrameBuffer(State);
             SetFrontFace(State);
             SetCullFace(State);
             SetDepth(State);
@@ -100,10 +100,7 @@ namespace Ryujinx.Graphics
             SetAlphaBlending(State);
             SetPrimitiveRestart(State);
 
-            for (int FbIndex = 0; FbIndex < 8; FbIndex++)
-            {
-                SetFrameBuffer(Vmm, 0);
-            }
+            SetFrameBuffer(Vmm, 0);
 
             SetZeta(Vmm);
 
@@ -210,9 +207,17 @@ namespace Ryujinx.Graphics
             Gpu.Renderer.RenderTarget.SetViewport(VpX, VpY, VpW, VpH);
         }
 
+        private void SetFrameBuffer(GalPipelineState State)
+        {
+            State.FramebufferSrgb = (ReadRegister(NvGpuEngine3dReg.FrameBufferSrgb) & 1) != 0;
+
+            State.FlipX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
+            State.FlipY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
+        }
+
         private void SetZeta(NvGpuVmm Vmm)
         {
-            long ZA = MakeInt64From2xInt32(NvGpuEngine3dReg.ZetaAddress);
+            long VA = MakeInt64From2xInt32(NvGpuEngine3dReg.ZetaAddress);
 
             int ZetaFormat = ReadRegister(NvGpuEngine3dReg.ZetaFormat);
 
@@ -224,14 +229,14 @@ namespace Ryujinx.Graphics
 
             bool ZetaEnable = (ReadRegister(NvGpuEngine3dReg.ZetaEnable) & 1) != 0;
 
-            if (ZA == 0 || ZetaFormat == 0 || !ZetaEnable)
+            if (VA == 0 || ZetaFormat == 0 || !ZetaEnable)
             {
                 Gpu.Renderer.RenderTarget.UnbindZeta();
 
                 return;
             }
 
-            long Key = Vmm.GetPhysicalAddress(ZA);
+            long Key = Vmm.GetPhysicalAddress(VA);
 
             int Width  = ReadRegister(NvGpuEngine3dReg.ZetaHoriz);
             int Height = ReadRegister(NvGpuEngine3dReg.ZetaVert);
@@ -318,12 +323,6 @@ namespace Ryujinx.Graphics
             }
 
             throw new ArgumentOutOfRangeException(nameof(Program));
-        }
-
-        private void SetFlip(GalPipelineState State)
-        {
-            State.FlipX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
-            State.FlipY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
         }
 
         private void SetFrontFace(GalPipelineState State)
@@ -851,7 +850,7 @@ namespace Ryujinx.Graphics
             Registers[(int)Reg] = Value;
         }
 
-        private bool QueryKeyUpload(NvGpuVmm Vmm, long Key, long Size, NvGpuBufferType Type, bool DoDbg = false)
+        private bool QueryKeyUpload(NvGpuVmm Vmm, long Key, long Size, NvGpuBufferType Type)
         {
             List<long> Uploaded = UploadedKeys[(int)Type];
 

@@ -126,6 +126,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             BindVertexLayout(New);
 
+            if (New.FramebufferSrgb != Old.FramebufferSrgb)
+            {
+                Enable(EnableCap.FramebufferSrgb, New.FramebufferSrgb);
+            }
+
             if (New.FlipX != Old.FlipX || New.FlipY != Old.FlipY || New.Instance != Old.Instance)
             {
                 Shader.SetExtraData(New.FlipX, New.FlipY, New.Instance);

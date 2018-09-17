@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.Gal;
-using Ryujinx.Graphics.Texture;
+using Ryujinx.Graphics.Memory;
 using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.Nv.NvGpuAS;
 using Ryujinx.HLE.HOS.Services.Nv.NvMap;
 using Ryujinx.HLE.Logging;
 using System;
@@ -301,37 +302,36 @@ namespace Ryujinx.HLE.HOS.Services.Android
             bool FlipX = BufferQueue[Slot].Transform.HasFlag(HalTransform.FlipX);
             bool FlipY = BufferQueue[Slot].Transform.HasFlag(HalTransform.FlipY);
 
-            //Rotation is being ignored
+            //Note: Rotation is being ignored.
 
             int Top    = Crop.Top;
             int Left   = Crop.Left;
             int Right  = Crop.Right;
             int Bottom = Crop.Bottom;
 
-            Renderer.QueueAction(() => Renderer.RenderTarget.SetTransform(FlipX, FlipY, Top, Left, Right, Bottom));
+            NvGpuVmm Vmm = NvGpuASIoctl.GetASCtx(Context).Vmm;
 
-            if (Renderer.Texture.TryGetCachedTexture(FbAddr, 0, out _))
+            Renderer.QueueAction(() =>
             {
-                //Frame buffer is rendered to by the GPU, we can just
-                //bind the frame buffer texture, it's not necessary to read anything.
-                Renderer.QueueAction(() => Renderer.RenderTarget.Set(FbAddr));
-            }
-            else
-            {
-                //Frame buffer is not set on the GPU registers, in this case
-                //assume that the app is manually writing to it.
-                GalImage Image = new GalImage(
-                    FbWidth,
-                    FbHeight, 1, 16,
-                    GalMemoryLayout.BlockLinear,
-                    GalImageFormat.A8B8G8R8);
+                if (!Renderer.Texture.TryGetImage(FbAddr, out GalImage Image))
+                {
+                    System.Console.WriteLine("image not found!");
 
-                byte[] Data = ImageUtils.ReadTexture(Context.Memory, Image, FbAddr);
+                    Image = new GalImage(
+                        FbWidth,
+                        FbHeight, 1, 16,
+                        GalMemoryLayout.BlockLinear,
+                        GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm);
+                }
 
-                Renderer.QueueAction(() => Renderer.RenderTarget.Set(Data, FbWidth, FbHeight));
-            }
+                Context.Device.Gpu.ResourceManager.ClearPbCache();
+                Context.Device.Gpu.ResourceManager.SendTexture(Vmm, FbAddr, Image);
 
-            Context.Device.Gpu.Renderer.QueueAction(() => ReleaseBuffer(Slot));
+                Renderer.RenderTarget.SetTransform(FlipX, FlipY, Top, Left, Right, Bottom);
+                Renderer.RenderTarget.Set(FbAddr);
+
+                ReleaseBuffer(Slot);
+            });
         }
 
         private void ReleaseBuffer(int Slot)

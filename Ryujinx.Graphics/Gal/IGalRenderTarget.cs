@@ -12,8 +12,6 @@ namespace Ryujinx.Graphics.Gal
 
         void Set(long Key);
 
-        void Set(byte[] Data, int Width, int Height);
-
         void SetMap(int[] Map);
 
         void SetTransform(bool FlipX, bool FlipY, int Top, int Left, int Right, int Bottom);
@@ -35,6 +33,8 @@ namespace Ryujinx.Graphics.Gal
             int  DstY0,
             int  DstX1,
             int  DstY1);
+
+        void Reinterpret(long Key, GalImage NewImage);
 
         byte[] GetData(long Key);
     }

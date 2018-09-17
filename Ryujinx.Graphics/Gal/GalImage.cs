@@ -43,16 +43,21 @@ namespace Ryujinx.Graphics.Gal
             Pitch = ImageUtils.GetPitch(Format, Width);
         }
 
-        public bool CompatibleWith(GalImage Image)
+        public bool SizeMatches(GalImage Image)
         {
-            bool Compatible = Width          == Image.Width          &&
-                              Height         == Image.Height         &&
-                              TileWidth      == Image.TileWidth      &&
-                              GobBlockHeight == Image.GobBlockHeight &&
-                              Layout         == Image.Layout         &&
-                              Format         == Image.Format;
+            if (ImageUtils.GetBytesPerPixel(Format) !=
+                ImageUtils.GetBytesPerPixel(Image.Format))
+            {
+                return false;
+            }
 
-            return Compatible;
+            if (ImageUtils.GetAlignedWidth(this) !=
+                ImageUtils.GetAlignedWidth(Image))
+            {
+                return false;
+            }
+
+            return Height == Image.Height;
         }
     }
 }

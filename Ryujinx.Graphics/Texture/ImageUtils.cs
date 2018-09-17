@@ -8,34 +8,30 @@ namespace Ryujinx.Graphics.Texture
 {
     public static class ImageUtils
     {
+        [Flags]
+        private enum TargetBuffer
+        {
+            Color   = 1 << 0,
+            Depth   = 1 << 1,
+            Stencil = 1 << 2,
+
+            DepthStencil = Depth | Stencil
+        }
+
         private struct ImageDescriptor
         {
-            public int BytesPerPixel;
-            public int BlockWidth;
-            public int BlockHeight;
+            public int BytesPerPixel { get; private set; }
+            public int BlockWidth    { get; private set; }
+            public int BlockHeight   { get; private set; }
 
-            public bool HasColor;
-            public bool HasDepth;
-            public bool HasStencil;
+            public TargetBuffer Target { get; private set; }
 
-            public bool Compressed;
-
-            public ImageDescriptor(
-                int  BytesPerPixel,
-                int  BlockWidth,
-                int  BlockHeight,
-                bool HasColor,
-                bool HasDepth,
-                bool HasStencil,
-                bool Compressed)
+            public ImageDescriptor(int BytesPerPixel, int BlockWidth, int BlockHeight, TargetBuffer Target)
             {
                 this.BytesPerPixel = BytesPerPixel;
                 this.BlockWidth    = BlockWidth;
                 this.BlockHeight   = BlockHeight;
-                this.HasColor      = HasColor;
-                this.HasDepth      = HasDepth;
-                this.HasStencil    = HasStencil;
-                this.Compressed    = Compressed;
+                this.Target        = Target;
             }
         }
 
@@ -95,57 +91,57 @@ namespace Ryujinx.Graphics.Texture
         private static readonly Dictionary<GalImageFormat, ImageDescriptor> s_ImageTable =
                             new Dictionary<GalImageFormat, ImageDescriptor>()
         {
-            { GalImageFormat.R32G32B32A32,  new ImageDescriptor(16, 1,  1,  true, false, false, false) },
-            { GalImageFormat.R16G16B16A16,  new ImageDescriptor(8,  1,  1,  true, false, false, false) },
-            { GalImageFormat.R32G32,        new ImageDescriptor(8,  1,  1,  true, false, false, false) },
-            { GalImageFormat.A8B8G8R8,      new ImageDescriptor(4,  1,  1,  true, false, false, false) },
-            { GalImageFormat.A2B10G10R10,   new ImageDescriptor(4,  1,  1,  true, false, false, false) },
-            { GalImageFormat.R32,           new ImageDescriptor(4,  1,  1,  true, false, false, false) },
-            { GalImageFormat.A4B4G4R4,      new ImageDescriptor(2,  1,  1,  true, false, false, false) },
-            { GalImageFormat.BC6H_SF16,     new ImageDescriptor(16, 4,  4,  true, false, false, true)  },
-            { GalImageFormat.BC6H_UF16,     new ImageDescriptor(16, 4,  4,  true, false, false, true)  },
-            { GalImageFormat.A1R5G5B5,      new ImageDescriptor(2,  1,  1,  true, false, false, false) },
-            { GalImageFormat.B5G6R5,        new ImageDescriptor(2,  1,  1,  true, false, false, false) },
-            { GalImageFormat.BC7,           new ImageDescriptor(16, 4,  4,  true, false, false, true)  },
-            { GalImageFormat.R16G16,        new ImageDescriptor(4,  1,  1,  true, false, false, false) },
-            { GalImageFormat.R8G8,          new ImageDescriptor(2,  1,  1,  true, false, false, false) },
-            { GalImageFormat.G8R8,          new ImageDescriptor(2,  1,  1,  true, false, false, false) },
-            { GalImageFormat.R16,           new ImageDescriptor(2,  1,  1,  true, false, false, false) },
-            { GalImageFormat.R8,            new ImageDescriptor(1,  1,  1,  true, false, false, false) },
-            { GalImageFormat.B10G11R11,     new ImageDescriptor(4,  1,  1,  true, false, false, false) },
-            { GalImageFormat.A8B8G8R8_SRGB, new ImageDescriptor(4,  1,  1,  true, false, false, false) },
-            { GalImageFormat.BC1_RGBA,      new ImageDescriptor(8,  4,  4,  true, false, false, true)  },
-            { GalImageFormat.BC2,           new ImageDescriptor(16, 4,  4,  true, false, false, true)  },
-            { GalImageFormat.BC3,           new ImageDescriptor(16, 4,  4,  true, false, false, true)  },
-            { GalImageFormat.BC4,           new ImageDescriptor(8,  4,  4,  true, false, false, true)  },
-            { GalImageFormat.BC5,           new ImageDescriptor(16, 4,  4,  true, false, false, true)  },
-            { GalImageFormat.ASTC_4x4,      new ImageDescriptor(16, 4,  4,  true, false, false, true)  },
-            { GalImageFormat.ASTC_5x5,      new ImageDescriptor(16, 5,  5,  true, false, false, true)  },
-            { GalImageFormat.ASTC_6x6,      new ImageDescriptor(16, 6,  6,  true, false, false, true)  },
-            { GalImageFormat.ASTC_8x8,      new ImageDescriptor(16, 8,  8,  true, false, false, true)  },
-            { GalImageFormat.ASTC_10x10,    new ImageDescriptor(16, 10, 10, true, false, false, true)  },
-            { GalImageFormat.ASTC_12x12,    new ImageDescriptor(16, 12, 12, true, false, false, true)  },
-            { GalImageFormat.ASTC_5x4,      new ImageDescriptor(16, 5,  4,  true, false, false, true)  },
-            { GalImageFormat.ASTC_6x5,      new ImageDescriptor(16, 6,  5,  true, false, false, true)  },
-            { GalImageFormat.ASTC_8x6,      new ImageDescriptor(16, 8,  6,  true, false, false, true)  },
-            { GalImageFormat.ASTC_10x8,     new ImageDescriptor(16, 10, 8,  true, false, false, true)  },
-            { GalImageFormat.ASTC_12x10,    new ImageDescriptor(16, 12, 10, true, false, false, true)  },
-            { GalImageFormat.ASTC_8x5,      new ImageDescriptor(16, 8,  5,  true, false, false, true)  },
-            { GalImageFormat.ASTC_10x5,     new ImageDescriptor(16, 10, 5,  true, false, false, true)  },
-            { GalImageFormat.ASTC_10x6,     new ImageDescriptor(16, 10, 6,  true, false, false, true)  },
+            { GalImageFormat.R32G32B32A32,  new ImageDescriptor(16, 1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R16G16B16A16,  new ImageDescriptor(8,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R32G32,        new ImageDescriptor(8,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.A8B8G8R8,      new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.A2B10G10R10,   new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R32,           new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.A4B4G4R4,      new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.BC6H_SF16,     new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC6H_UF16,     new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.A1R5G5B5,      new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.B5G6R5,        new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.BC7,           new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.R16G16,        new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R8G8,          new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.G8R8,          new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R16,           new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R8,            new ImageDescriptor(1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.B10G11R11,     new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.A8B8G8R8_SRGB, new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.BC1_RGBA,      new ImageDescriptor(8,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC2,           new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC3,           new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC4,           new ImageDescriptor(8,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC5,           new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_4x4,      new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_5x5,      new ImageDescriptor(16, 5,  5,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_6x6,      new ImageDescriptor(16, 6,  6,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_8x8,      new ImageDescriptor(16, 8,  8,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_10x10,    new ImageDescriptor(16, 10, 10, TargetBuffer.Color) },
+            { GalImageFormat.ASTC_12x12,    new ImageDescriptor(16, 12, 12, TargetBuffer.Color) },
+            { GalImageFormat.ASTC_5x4,      new ImageDescriptor(16, 5,  4,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_6x5,      new ImageDescriptor(16, 6,  5,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_8x6,      new ImageDescriptor(16, 8,  6,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_10x8,     new ImageDescriptor(16, 10, 8,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_12x10,    new ImageDescriptor(16, 12, 10, TargetBuffer.Color) },
+            { GalImageFormat.ASTC_8x5,      new ImageDescriptor(16, 8,  5,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_10x5,     new ImageDescriptor(16, 10, 5,  TargetBuffer.Color) },
+            { GalImageFormat.ASTC_10x6,     new ImageDescriptor(16, 10, 6,  TargetBuffer.Color) },
 
-            { GalImageFormat.D24_S8, new ImageDescriptor(4, 1, 1, false, true, true,  false) },
-            { GalImageFormat.D32,    new ImageDescriptor(4, 1, 1, false, true, false, false) },
-            { GalImageFormat.D16,    new ImageDescriptor(2, 1, 1, false, true, false, false) },
-            { GalImageFormat.D32_S8, new ImageDescriptor(8, 1, 1, false, true, true,  false) },
+            { GalImageFormat.D24_S8, new ImageDescriptor(4, 1, 1, TargetBuffer.DepthStencil) },
+            { GalImageFormat.D32,    new ImageDescriptor(4, 1, 1, TargetBuffer.Depth)        },
+            { GalImageFormat.D16,    new ImageDescriptor(2, 1, 1, TargetBuffer.Depth)        },
+            { GalImageFormat.D32_S8, new ImageDescriptor(8, 1, 1, TargetBuffer.DepthStencil) },
         };
 
         public static GalImageFormat ConvertTexture(
             GalTextureFormat Format,
-            GalTextureType RType,
-            GalTextureType GType,
-            GalTextureType BType,
-            GalTextureType AType)
+            GalTextureType   RType,
+            GalTextureType   GType,
+            GalTextureType   BType,
+            GalTextureType   AType)
         {
             if (RType != GType || RType != BType || RType != AType)
             {
@@ -302,6 +298,29 @@ namespace Ryujinx.Graphics.Texture
             return GetImageDescriptor(Format).BlockWidth;
         }
 
+        public static int GetBlockHeight(GalImageFormat Format)
+        {
+            return GetImageDescriptor(Format).BlockHeight;
+        }
+
+        public static int GetAlignedWidth(GalImage Image)
+        {
+            ImageDescriptor Desc = GetImageDescriptor(Image.Format);
+
+             int AlignMask;
+
+            if (Image.Layout == GalMemoryLayout.BlockLinear)
+            {
+                AlignMask = Image.TileWidth * (64 / Desc.BytesPerPixel) - 1;
+            }
+            else
+            {
+                AlignMask = (32 / Desc.BytesPerPixel) - 1;
+            }
+
+            return (Image.Width + AlignMask) & ~AlignMask;
+        }
+
         public static (int Width, int Height) GetImageSizeInBlocks(GalImage Image)
         {
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);
@@ -322,22 +341,24 @@ namespace Ryujinx.Graphics.Texture
 
         public static bool HasColor(GalImageFormat Format)
         {
-            return GetImageDescriptor(Format).HasColor;
+            return (GetImageDescriptor(Format).Target & TargetBuffer.Color) != 0;
         }
 
         public static bool HasDepth(GalImageFormat Format)
         {
-            return GetImageDescriptor(Format).HasDepth;
+            return (GetImageDescriptor(Format).Target & TargetBuffer.Depth) != 0;
         }
 
         public static bool HasStencil(GalImageFormat Format)
         {
-            return GetImageDescriptor(Format).HasStencil;
+            return (GetImageDescriptor(Format).Target & TargetBuffer.Stencil) != 0;
         }
 
         public static bool IsCompressed(GalImageFormat Format)
         {
-            return GetImageDescriptor(Format).Compressed;
+            ImageDescriptor Desc = GetImageDescriptor(Format);
+
+            return (Desc.BlockWidth | Desc.BlockHeight) != 1;
         }
 
         private static ImageDescriptor GetImageDescriptor(GalImageFormat Format)
