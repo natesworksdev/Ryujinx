@@ -107,8 +107,6 @@ namespace Ryujinx.Graphics
             Gpu.ResourceManager.SendTexture(Vmm, SrcKey, SrcTexture);
             Gpu.ResourceManager.SendTexture(Vmm, DstKey, DstTexture);
 
-            Gpu.ResourceManager.AddWritableResource(DstKey, ImageUtils.GetSize(DstTexture));
-
             Gpu.Renderer.RenderTarget.Copy(
                 SrcKey,
                 DstKey,

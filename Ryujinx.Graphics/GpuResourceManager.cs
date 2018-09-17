@@ -9,15 +9,11 @@ namespace Ryujinx.Graphics
     {
         private NvGpu Gpu;
 
-        private ValueRangeSet<long> WritableResources;
-
         private HashSet<long>[] UploadedKeys;
 
         public GpuResourceManager(NvGpu Gpu)
         {
             this.Gpu = Gpu;
-
-            WritableResources = new ValueRangeSet<long>();
 
             UploadedKeys = new HashSet<long>[(int)NvGpuBufferType.Count];
 
@@ -96,40 +92,6 @@ namespace Ryujinx.Graphics
             {
                 Gpu.Renderer.Texture.Bind(Position, TexIndex, NewImage);
             }
-        }
-
-        internal void AddWritableResource(long Position, long Size)
-        {
-            WritableResources.Add(new ValueRange<long>(Position, Position + Size, Position));
-        }
-
-        public void SynchronizeRange(NvGpuVmm Vmm, long Position, long Size)
-        {
-            ValueRange<long> Range = new ValueRange<long>(Position, Position + Size);
-
-            ValueRange<long>[] Ranges = WritableResources.GetAllIntersections(Range);
-
-            foreach (ValueRange<long> CachedRange in Ranges)
-            {
-                DownloadResourceToGuest(Vmm, CachedRange.Value);
-
-                if (CachedRange.Value == Position)
-                {
-                    WritableResources.Remove(CachedRange);
-                }
-            }
-        }
-
-        private void DownloadResourceToGuest(NvGpuVmm Vmm, long Position)
-        {
-            if (!Gpu.Renderer.Texture.TryGetImage(Position, out GalImage Image))
-            {
-                return;
-            }
-
-            byte[] Data = Gpu.Renderer.RenderTarget.GetData(Position);
-
-            ImageUtils.WriteTexture(Vmm, Image, Position, Data);
         }
 
         private void MarkAsCached(NvGpuVmm Vmm, long Position, long Size, NvGpuBufferType Type)

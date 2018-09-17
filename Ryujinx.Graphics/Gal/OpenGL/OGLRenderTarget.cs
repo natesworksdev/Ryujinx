@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
                 else
                 {
-                    //throw new InvalidOperationException();
+                    throw new InvalidOperationException();
                 }
             }
             else
