@@ -19,9 +19,9 @@ namespace Ryujinx
             IAalOutput AudioOut = new OpenALAudioOut();
 
             Switch Device = new Switch(Renderer, AudioOut);
-
             Config.Read(Device);
 
+            Device.Hid.InitializeJoycons();
             Device.Log.Updated += ConsoleLog.Log;
 
             if (args.Length == 1)

@@ -1,5 +1,6 @@
 ﻿using Ryujinx.HLE.HOS;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.HLE.Input
 {
@@ -60,9 +61,16 @@ namespace Ryujinx.HLE.Input
 
         private const int HidEntryCount = 17;
 
+        private const JoyConColor BodyColorLeft    = JoyConColor.Body_Neon_Red;
+        private const JoyConColor ButtonColorLeft  = JoyConColor.Buttons_Neon_Red;
+        private const JoyConColor BodyColorRight   = JoyConColor.Body_Neon_Blue;
+        private const JoyConColor ButtonColorRight = JoyConColor.Buttons_Neon_Blue;
+
         private Switch Device;
 
-        private long HidPosition;
+        private readonly long HidPosition;
+
+        public static Dictionary<HidControllerId, HidHostDevice> Devices;
 
         public Hid(Switch Device, long HidPosition)
         {
@@ -70,23 +78,34 @@ namespace Ryujinx.HLE.Input
             this.HidPosition = HidPosition;
 
             Device.Memory.FillWithZeros(HidPosition, Horizon.HidSize);
+        }
 
-            InitializeJoyconPair(
-                JoyConColor.Body_Neon_Red,
-                JoyConColor.Buttons_Neon_Red,
-                JoyConColor.Body_Neon_Blue,
-                JoyConColor.Buttons_Neon_Blue);
+        public void InitializeJoycons()
+        {
+            foreach (KeyValuePair<HidControllerId, HidHostDevice> Entry in Devices)
+            {
+                if (Entry.Value != HidHostDevice.None)
+                {
+                    InitializeJoyconPair(
+                        Entry.Key,
+                        (Entry.Key == HidControllerId.CONTROLLER_HANDHELD) ? HidControllerType.ControllerType_Handheld : HidControllerType.ControllerType_JoyconPair,
+                        BodyColorLeft,
+                        ButtonColorLeft,
+                        BodyColorRight,
+                        ButtonColorRight);
+                }
+            }
         }
 
         private void InitializeJoyconPair(
+            HidControllerId ControllerId,
+            HidControllerType Type,
             JoyConColor LeftColorBody,
             JoyConColor LeftColorButtons,
             JoyConColor RightColorBody,
             JoyConColor RightColorButtons)
         {
-            long BaseControllerOffset = HidPosition + HidControllersOffset + 8 * HidControllerSize;
-
-            HidControllerType Type = HidControllerType.ControllerType_Handheld;
+            long BaseControllerOffset = HidPosition + HidControllersOffset + (int)ControllerId * HidControllerSize;
 
             bool IsHalf = false;
 
