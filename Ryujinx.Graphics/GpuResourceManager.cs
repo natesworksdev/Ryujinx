@@ -7,9 +7,19 @@ namespace Ryujinx.Graphics
 {
     public class GpuResourceManager
     {
+        private enum ImageType
+        {
+            None,
+            Texture,
+            ColorBuffer,
+            ZetaBuffer
+        }
+
         private NvGpu Gpu;
 
         private HashSet<long>[] UploadedKeys;
+
+        private Dictionary<long, ImageType> ImageTypes;
 
         public GpuResourceManager(NvGpu Gpu)
         {
@@ -21,25 +31,20 @@ namespace Ryujinx.Graphics
             {
                 UploadedKeys[Index] = new HashSet<long>();
             }
+
+            ImageTypes = new Dictionary<long, ImageType>();
         }
 
         public void SendColorBuffer(NvGpuVmm Vmm, long Position, int Attachment, GalImage NewImage)
         {
             long Size = (uint)ImageUtils.GetSize(NewImage);
 
-            MarkAsCached(Vmm, Position, Size, NvGpuBufferType.Texture);
+            ImageTypes[Position] = ImageType.ColorBuffer;
 
-            bool IsCached = Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage);
-
-            if (IsCached && CachedImage.SizeMatches(NewImage))
+            if (!TryReuse(Vmm, Position, NewImage))
             {
-                Gpu.Renderer.RenderTarget.Reinterpret(Position, NewImage);
-                Gpu.Renderer.RenderTarget.BindColor(Position, Attachment, NewImage);
-
-                return;
+                Gpu.Renderer.Texture.Create(Position, (int)Size, NewImage);
             }
-
-            Gpu.Renderer.Texture.Create(Position, (int)Size, NewImage);
 
             Gpu.Renderer.RenderTarget.BindColor(Position, Attachment, NewImage);
         }
@@ -48,19 +53,12 @@ namespace Ryujinx.Graphics
         {
             long Size = (uint)ImageUtils.GetSize(NewImage);
 
-            MarkAsCached(Vmm, Position, Size, NvGpuBufferType.Texture);
+            ImageTypes[Position] = ImageType.ZetaBuffer;
 
-            bool IsCached = Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage);
-
-            if (IsCached && CachedImage.SizeMatches(NewImage))
+            if (!TryReuse(Vmm, Position, NewImage))
             {
-                Gpu.Renderer.RenderTarget.Reinterpret(Position, NewImage);
-                Gpu.Renderer.RenderTarget.BindZeta(Position, NewImage);
-
-                return;
+                Gpu.Renderer.Texture.Create(Position, (int)Size, NewImage);
             }
-
-            Gpu.Renderer.Texture.Create(Position, (int)Size, NewImage);
 
             Gpu.Renderer.RenderTarget.BindZeta(Position, NewImage);
         }
@@ -69,12 +67,21 @@ namespace Ryujinx.Graphics
         {
             long Size = (uint)ImageUtils.GetSize(NewImage);
 
+            if (ImageTypes.TryGetValue(Position, out ImageType OldType))
+            {
+                if (OldType == ImageType.ColorBuffer || OldType == ImageType.ZetaBuffer)
+                {
+                    //Avoid data destruction
+                    MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture);
+                }
+            }
+
+            ImageTypes[Position] = ImageType.Texture;
+
             if (!MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture))
             {
-                if (Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage) && CachedImage.SizeMatches(NewImage))
+                if (TryReuse(Vmm, Position, NewImage))
                 {
-                    Gpu.Renderer.RenderTarget.Reinterpret(Position, NewImage);
-
                     if (TexIndex >= 0)
                     {
                         Gpu.Renderer.Texture.Bind(Position, TexIndex, NewImage);
@@ -94,9 +101,16 @@ namespace Ryujinx.Graphics
             }
         }
 
-        private void MarkAsCached(NvGpuVmm Vmm, long Position, long Size, NvGpuBufferType Type)
+        private bool TryReuse(NvGpuVmm Vmm, long Position, GalImage NewImage)
         {
-            Vmm.IsRegionModified(Position, Size, Type);
+            if (Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage) && CachedImage.SizeMatches(NewImage))
+            {
+                Gpu.Renderer.RenderTarget.Reinterpret(Position, NewImage);
+
+                return true;
+            }
+
+            return false;
         }
 
         private bool MemoryRegionModified(NvGpuVmm Vmm, long Position, long Size, NvGpuBufferType Type)

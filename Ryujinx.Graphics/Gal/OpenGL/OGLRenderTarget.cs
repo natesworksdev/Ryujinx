@@ -56,6 +56,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private int DepthAttachment;
         private int StencilAttachment;
 
+        private int CopyPBO;
+
         public OGLRenderTarget(OGLTexture Texture)
         {
             ColorAttachments = new int[8];
@@ -358,13 +360,33 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 return;
             }
 
-            byte[] Data = GetData(Key);
+            if (CopyPBO == 0)
+            {
+                CopyPBO = GL.GenBuffer();
+            }
 
-            GL.PixelStore(PixelStoreParameter.UnpackRowLength, OldImage.Width);
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyPBO);
 
-            Texture.Create(Key, Data, NewImage);
+            GL.BufferData(BufferTarget.PixelPackBuffer, Math.Max(ImageUtils.GetSize(OldImage), ImageUtils.GetSize(NewImage)), IntPtr.Zero, BufferUsageHint.StreamCopy);
 
-            GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
+            if (!Texture.TryGetImageHandler(Key, out ImageHandler CachedImage))
+            {
+                throw new InvalidOperationException();
+            }
+
+            (_, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(CachedImage.Format);
+
+            GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
+
+            GL.GetTexImage(TextureTarget.Texture2D, 0, Format, Type, IntPtr.Zero);
+
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyPBO);
+
+            Texture.Create(Key, ImageUtils.GetSize(NewImage), NewImage);
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
         }
 
         public byte[] GetData(long Key)
