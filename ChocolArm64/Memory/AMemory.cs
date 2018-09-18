@@ -420,6 +420,18 @@ namespace ChocolArm64.Memory
             Marshal.Copy(Data, StartIndex, (IntPtr)Translate(Position), Size);
         }
 
+        public void CopyBytes(long Src, long Dst, long Size)
+        {
+            //Note: This will be moved later.
+            EnsureRangeIsValid(Src, Size);
+            EnsureRangeIsValid(Dst, Size);
+
+            byte* SrcPtr = Translate(Src);
+            byte* DstPtr = TranslateWrite(Dst);
+
+            Buffer.MemoryCopy(SrcPtr, DstPtr, Size, Size);
+        }
+
         public void Map(long VA, long PA, long Size)
         {
             SetPTEntries(VA, RamPtr + PA, Size);

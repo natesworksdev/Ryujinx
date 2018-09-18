@@ -342,6 +342,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 foreach (GalVertexAttrib Attrib in Binding.Attribs)
                 {
+                    //Skip uninitialized attributes.
+                    if (Attrib.Size == 0)
+                    {
+                        continue;
+                    }
+
                     GL.EnableVertexAttribArray(Attrib.Index);
 
                     GL.BindBuffer(BufferTarget.ArrayBuffer, VboHandle);

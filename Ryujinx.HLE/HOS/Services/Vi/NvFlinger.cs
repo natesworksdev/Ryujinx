@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
         private Dictionary<(string, int), ServiceProcessParcel> Commands;
 
-        private KEvent ReleaseEvent;
+        private KEvent BinderEvent;
 
         private IGalRenderer Renderer;
 
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
             };
 
             this.Renderer     = Renderer;
-            this.ReleaseEvent = ReleaseEvent;
+            this.BinderEvent = ReleaseEvent;
 
             BufferQueue = new BufferEntry[0x40];
 
@@ -315,8 +315,6 @@ namespace Ryujinx.HLE.HOS.Services.Android
             {
                 if (!Renderer.Texture.TryGetImage(FbAddr, out GalImage Image))
                 {
-                    System.Console.WriteLine("image not found!");
-
                     Image = new GalImage(
                         FbWidth,
                         FbHeight, 1, 16,
@@ -338,7 +336,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
         {
             BufferQueue[Slot].State = BufferState.Free;
 
-            ReleaseEvent.WaitEvent.Set();
+            BinderEvent.WaitEvent.Set();
 
             lock (WaitBufferFree)
             {

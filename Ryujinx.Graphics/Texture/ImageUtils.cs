@@ -207,9 +207,8 @@ namespace Ryujinx.Graphics.Texture
                 case GalZetaFormat.Z32Float:      return GalImageFormat.D32    | Sfloat;
                 case GalZetaFormat.S8Z24Unorm:    return GalImageFormat.D24_S8 | Unorm;
                 case GalZetaFormat.Z16Unorm:      return GalImageFormat.D16    | Unorm;
-
-                //This one might not be Uint, change when a texture uses this format
-                case GalZetaFormat.Z32S8X24Float: return GalImageFormat.D32_S8 | Uint;
+                case GalZetaFormat.Z24S8Unorm:    return GalImageFormat.D24_S8 | Unorm;
+                case GalZetaFormat.Z32S8X24Float: return GalImageFormat.D32_S8 | Sfloat;
             }
 
             throw new NotImplementedException(Format.ToString());
