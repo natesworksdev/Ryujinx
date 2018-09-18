@@ -1,4 +1,5 @@
 using ChocolArm64;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -246,7 +247,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 //Move current thread to the end of the queue.
                 SchedulingData.Reschedule(Prio, Core, this);
 
-                NextThreadOnCurrentQueue = SchedulingData.ScheduledThreadsPerPrioPerCore[Prio][Core].First?.Value;
+                Func<KThread, bool> Predicate = x => x.DynamicPriority == Prio;
+
+                NextThreadOnCurrentQueue = SchedulingData.ScheduledThreads(Core).FirstOrDefault(Predicate);
             }
 
             IEnumerable<KThread> SuitableCandidates()
