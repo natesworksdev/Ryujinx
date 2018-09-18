@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
         private bool Disposed;
 
-        public NvFlinger(IGalRenderer Renderer, KEvent ReleaseEvent)
+        public NvFlinger(IGalRenderer Renderer, KEvent BinderEvent)
         {
             Commands = new Dictionary<(string, int), ServiceProcessParcel>()
             {
@@ -83,8 +83,8 @@ namespace Ryujinx.HLE.HOS.Services.Android
                 { ("android.gui.IGraphicBufferProducer", 0xe), GbpPreallocBuffer }
             };
 
-            this.Renderer     = Renderer;
-            this.BinderEvent = ReleaseEvent;
+            this.Renderer    = Renderer;
+            this.BinderEvent = BinderEvent;
 
             BufferQueue = new BufferEntry[0x40];
 
