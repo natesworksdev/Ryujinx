@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KSchedulingData
     {
-        private LinkedList<KThread>[][] SuggestedThreadsPerPrioPerCore;
         private LinkedList<KThread>[][] ScheduledThreadsPerPrioPerCore;
+        private LinkedList<KThread>[][] SuggestedThreadsPerPrioPerCore;
 
         private long[] ScheduledPrioritiesPerCore;
         private long[] SuggestedPrioritiesPerCore;
