@@ -15,9 +15,6 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimdIns Op = (AOpCodeSimdIns)Context.CurrOp;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> Op.Size;
-
             if (AOptimizations.UseSse2)
             {
                 Context.EmitLdintzr(Op.Rn);
@@ -42,6 +39,9 @@ namespace ChocolArm64.Instruction
             }
             else
             {
+                int Bytes = Op.GetBitsCount() >> 3;
+                int Elems = Bytes >> Op.Size;
+
                 for (int Index = 0; Index < Elems; Index++)
                 {
                     Context.EmitLdintzr(Op.Rn);
