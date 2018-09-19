@@ -145,19 +145,6 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        private static void EmitAbs(AILEmitterCtx Context)
-        {
-            AILLabel LblTrue = new AILLabel();
-
-            Context.Emit(OpCodes.Dup);
-            Context.Emit(OpCodes.Ldc_I4_0);
-            Context.Emit(OpCodes.Bge_S, LblTrue);
-
-            Context.Emit(OpCodes.Neg);
-
-            Context.MarkLabel(LblTrue);
-        }
-
         public static void Fabd_S(AILEmitterCtx Context)
         {
             EmitScalarBinaryOpF(Context, () =>
@@ -1144,6 +1131,7 @@ namespace ChocolArm64.Instruction
             EmitVectorTernaryOpZx(Context, () =>
             {
                 Context.Emit(OpCodes.Sub);
+
                 EmitAbs(Context);
 
                 Context.Emit(OpCodes.Add);
@@ -1155,6 +1143,7 @@ namespace ChocolArm64.Instruction
             EmitVectorWidenRnRmTernaryOpZx(Context, () =>
             {
                 Context.Emit(OpCodes.Sub);
+
                 EmitAbs(Context);
 
                 Context.Emit(OpCodes.Add);
@@ -1166,6 +1155,7 @@ namespace ChocolArm64.Instruction
             EmitVectorBinaryOpZx(Context, () =>
             {
                 Context.Emit(OpCodes.Sub);
+
                 EmitAbs(Context);
             });
         }
@@ -1175,6 +1165,7 @@ namespace ChocolArm64.Instruction
             EmitVectorWidenRnRmBinaryOpZx(Context, () =>
             {
                 Context.Emit(OpCodes.Sub);
+
                 EmitAbs(Context);
             });
         }
@@ -1363,6 +1354,19 @@ namespace ChocolArm64.Instruction
             EmitVectorWidenRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
         }
 
+        private static void EmitAbs(AILEmitterCtx Context)
+        {
+            AILLabel LblTrue = new AILLabel();
+
+            Context.Emit(OpCodes.Dup);
+            Context.Emit(OpCodes.Ldc_I4_0);
+            Context.Emit(OpCodes.Bge_S, LblTrue);
+
+            Context.Emit(OpCodes.Neg);
+
+            Context.MarkLabel(LblTrue);
+        }
+
         private static void EmitAddLongPairwise(AILEmitterCtx Context, bool Signed, bool Accumulate)
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
@@ -1475,38 +1479,6 @@ namespace ChocolArm64.Instruction
             Context.EmitStvec(Op.Rd);
 
             if (Part == 0)
-            {
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
-        }
-
-        private static void EmitVectorPairwiseOpF(AILEmitterCtx Context, Action Emit)
-        {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
-
-            int SizeF = Op.Size & 1;
-
-            int Bytes = Op.GetBitsCount() >> 3;
-
-            int Elems = Bytes >> SizeF + 2;
-            int Half  = Elems >> 1;
-
-            for (int Index = 0; Index < Elems; Index++)
-            {
-                int Elem = (Index & (Half - 1)) << 1;
-
-                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 0, SizeF);
-                EmitVectorExtractF(Context, Index < Half ? Op.Rn : Op.Rm, Elem + 1, SizeF);
-
-                Emit();
-
-                EmitVectorInsertTmpF(Context, Index, SizeF);
-            }
-
-            Context.EmitLdvectmp();
-            Context.EmitStvec(Op.Rd);
-
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
             {
                 EmitVectorZeroUpper(Context, Op.Rd);
             }
