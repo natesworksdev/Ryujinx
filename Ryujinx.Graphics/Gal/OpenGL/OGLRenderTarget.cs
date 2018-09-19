@@ -389,38 +389,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
         }
 
-        public byte[] GetData(long Key)
-        {
-            if (!Texture.TryGetImageHandler(Key, out ImageHandler CachedImage))
-            {
-                return null;
-            }
-
-            if (SrcFb == 0)
-            {
-                SrcFb = GL.GenFramebuffer();
-            }
-
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, SrcFb);
-
-            FramebufferAttachment Attachment = GetAttachment(CachedImage);
-
-            GL.FramebufferTexture(FramebufferTarget.ReadFramebuffer, Attachment, CachedImage.Handle, 0);
-
-            int Size = ImageUtils.GetSize(CachedImage.Image);
-
-            byte[] Data = new byte[Size];
-
-            int Width  = CachedImage.Width;
-            int Height = CachedImage.Height;
-
-            (_, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(CachedImage.Format);
-
-            GL.ReadPixels(0, 0, Width, Height, Format, Type, Data);
-
-            return Data;
-        }
-
         private static FramebufferAttachment GetAttachment(ImageHandler CachedImage)
         {
             if (CachedImage.HasColor)
