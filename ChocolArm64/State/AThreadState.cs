@@ -121,7 +121,6 @@ namespace ChocolArm64.State
             return Running;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         internal void RequestInterrupt()
         {
             Interrupted = true;
