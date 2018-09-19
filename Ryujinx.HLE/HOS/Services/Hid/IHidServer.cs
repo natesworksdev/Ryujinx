@@ -38,6 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 { 124, SetNpadJoyAssignmentModeDual            },
                 { 125, MergeSingleJoyAsDualJoy                 },
                 { 128, SetNpadHandheldActivationMode           },
+                { 130, SwapNpadAssigment                       },
                 { 200, GetVibrationDeviceInfo                  },
                 { 201, SendVibrationValue                      },
                 { 203, CreateActiveVibrationDeviceList         },
@@ -235,6 +236,16 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long AppletUserResourceId = Context.RequestData.ReadInt64();
             long Unknown              = Context.RequestData.ReadInt64();
+
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+
+            return 0;
+        }
+
+        public long SwapNpadAssigment(ServiceCtx Context)
+        {
+            int Npad1 = Context.RequestData.ReadInt32();
+            int Npad2 = Context.RequestData.ReadInt32();
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
 
