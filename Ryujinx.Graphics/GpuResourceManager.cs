@@ -65,7 +65,21 @@ namespace Ryujinx.Graphics
 
         public void SendTexture(NvGpuVmm Vmm, long Position, GalImage NewImage, int TexIndex = -1)
         {
-            long Size = (uint)ImageUtils.GetSize(NewImage);
+            PrepareSendTexture(Vmm, Position, NewImage);
+
+            if (TexIndex >= 0)
+            {
+                Gpu.Renderer.Texture.Bind(Position, TexIndex, NewImage);
+            }
+
+            ImageTypes[Position] = ImageType.Texture;
+        }
+
+        private void PrepareSendTexture(NvGpuVmm Vmm, long Position, GalImage NewImage)
+        {
+            long Size = ImageUtils.GetSize(NewImage);
+
+            bool SkipCheck = false;
 
             if (ImageTypes.TryGetValue(Position, out ImageType OldType))
             {
@@ -73,20 +87,15 @@ namespace Ryujinx.Graphics
                 {
                     //Avoid data destruction
                     MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture);
+
+                    SkipCheck = true;
                 }
             }
 
-            ImageTypes[Position] = ImageType.Texture;
-
-            if (!MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture))
+            if (SkipCheck || !MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture))
             {
                 if (TryReuse(Vmm, Position, NewImage))
                 {
-                    if (TexIndex >= 0)
-                    {
-                        Gpu.Renderer.Texture.Bind(Position, TexIndex, NewImage);
-                    }
-
                     return;
                 }
             }
@@ -94,11 +103,6 @@ namespace Ryujinx.Graphics
             byte[] Data = ImageUtils.ReadTexture(Vmm, NewImage, Position);
 
             Gpu.Renderer.Texture.Create(Position, Data, NewImage);
-
-            if (TexIndex >= 0)
-            {
-                Gpu.Renderer.Texture.Bind(Position, TexIndex, NewImage);
-            }
         }
 
         private bool TryReuse(NvGpuVmm Vmm, long Position, GalImage NewImage)
