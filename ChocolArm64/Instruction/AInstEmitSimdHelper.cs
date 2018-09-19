@@ -1338,24 +1338,11 @@ namespace ChocolArm64.Instruction
 
         public static void EmitVectorZero32_128(AILEmitterCtx Context, int Reg)
         {
-            if (AOptimizations.UseSse41)
-            {
-                EmitLdvecWithUnsignedCast(Context, Reg, 2);
+            Context.EmitLdvec(Reg);
 
-                Type[] Types = new Type[] { typeof(Vector128<uint>) };
+            AVectorHelper.EmitCall(Context, nameof(AVectorHelper.VectorZero32_128));
 
-                Context.EmitCall(typeof(Sse41).GetMethod(nameof(Sse41.ConvertToVector128Int64), Types));
-
-                EmitStvecWithSignedCast(Context, Reg, 3);
-            }
-            else
-            {
-                Context.EmitLdvec(Reg);
-
-                AVectorHelper.EmitCall(Context, nameof(AVectorHelper.VectorZero32_128));
-
-                Context.EmitStvec(Reg);
-            }
+            Context.EmitStvec(Reg);
         }
 
         public static void EmitVectorInsert(AILEmitterCtx Context, int Reg, int Index, int Size)
