@@ -120,8 +120,6 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            MakeSymbolTable();
-
             long MainStackTop = MemoryManager.CodeRegionEnd - KMemoryManager.PageSize;
 
             long MainStackSize = 1 * 1024 * 1024;
@@ -282,7 +280,7 @@ namespace Ryujinx.HLE.HOS
 
             string ExeNameWithAddr = $"{Exe.Name}:0x{Offset:x8}";
 
-            Ns.Log.PrintDebug(LogClass.Cpu, ExeNameWithAddr + " " + SubName);
+            Device.Log.PrintDebug(LogClass.Cpu, ExeNameWithAddr + " " + SubName);
         }
 
         private ATranslator GetTranslator()
@@ -337,7 +335,7 @@ namespace Ryujinx.HLE.HOS
                 FramePointer = Memory.ReadInt64(FramePointer);
             }
 
-            Ns.Log.PrintInfo(LogClass.Cpu, Trace.ToString());
+            Device.Log.PrintInfo(LogClass.Cpu, Trace.ToString());
         }
 
         private bool TryGetSubName(Executable Exe, long Position, out string Name)

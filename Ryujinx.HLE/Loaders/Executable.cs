@@ -3,8 +3,11 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 
 namespace Ryujinx.HLE.Loaders
 {
@@ -23,15 +26,11 @@ namespace Ryujinx.HLE.Loaders
         public long ImageBase { get; private set; }
         public long ImageEnd  { get; private set; }
 
-        private AMemory Memory;
-
         private KMemoryManager MemoryManager;
 
         public Executable(IExecutable Exe, KMemoryManager MemoryManager, AMemory Memory, long ImageBase)
         {
             Dynamic = new List<ElfDyn>();
-
-            m_SymbolTable = new Dictionary<long, string>();
 
             FilePath = Exe.FilePath;
 
