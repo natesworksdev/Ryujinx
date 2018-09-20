@@ -795,12 +795,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             HidControllerId      HidControllerId      = (HidControllerId)Context.RequestData.ReadInt32();
             long                 AppletResourceUserId = Context.RequestData.ReadInt64();
-            HidNpadJoyDeviceType Type                 = (HidNpadJoyDeviceType)Context.RequestData.ReadInt64();
+            HidNpadJoyDeviceType HidNpadJoyDeviceType = (HidNpadJoyDeviceType)Context.RequestData.ReadInt64();
 
             NpadJoyAssignmentMode = HidNpadJoyAssignmentMode.Single;
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. AppletResourceUserId: {AppletResourceUserId} - " +
                                                               $"HidControllerId: {HidControllerId} - " +
+                                                              $"HidNpadJoyDeviceType: {HidNpadJoyDeviceType} - " +
                                                               $"NpadJoyAssignmentModeValue: {NpadJoyAssignmentMode}");
 
             return 0;
@@ -923,23 +924,24 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return 0;
         }
 
-        // SetNpadJoyAssignmentModeSingleWithDestination(uint HidControllerId, long Unknown0, nn::applet::AppletResourceUserId) -> bool Unknown1, uint Unknown2
+        // SetNpadJoyAssignmentModeSingleWithDestination(uint HidControllerId, long HidNpadJoyDeviceType, nn::applet::AppletResourceUserId) -> bool Unknown0, uint Unknown1
         public long SetNpadJoyAssignmentModeSingleWithDestination(ServiceCtx Context)
         {
             HidControllerId      HidControllerId      = (HidControllerId)Context.RequestData.ReadInt32();
-            HidNpadJoyDeviceType Type                 = (HidNpadJoyDeviceType)Context.RequestData.ReadInt64();
+            HidNpadJoyDeviceType HidNpadJoyDeviceType = (HidNpadJoyDeviceType)Context.RequestData.ReadInt64();
             long                 AppletResourceUserId = Context.RequestData.ReadInt64();
 
             NpadJoyAssignmentMode = HidNpadJoyAssignmentMode.Single;
 
+            Context.ResponseData.Write(0); //Unknown0
             Context.ResponseData.Write(0); //Unknown1
-            Context.ResponseData.Write(0); //Unknown2
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. AppletResourceUserId: {AppletResourceUserId} - " +
                                                               $"HidControllerId: {HidControllerId} - " +
+                                                              $"HidNpadJoyDeviceType: {HidNpadJoyDeviceType} - " +
                                                               $"NpadJoyAssignmentModeValue: {NpadJoyAssignmentMode} - " +
-                                                              $"Unknown1: 0 - " +
-                                                              $"Unknown2: 0");
+                                                              $"Unknown0: 0 - " +
+                                                              $"Unknown1: 0");
 
             return 0;
         }
@@ -1401,7 +1403,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public long EnablePalmaStep(ServiceCtx Context)
         {
             int PalmaConnectionHandle = Context.RequestData.ReadInt32();
-            int EnabledPalmaStep       = Context.RequestData.ReadInt32();
+            int EnabledPalmaStep      = Context.RequestData.ReadInt32();
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. PalmaConnectionHandle: {PalmaConnectionHandle} - " +
                                                               $"EnabledPalmaStep: {EnabledPalmaStep}");
