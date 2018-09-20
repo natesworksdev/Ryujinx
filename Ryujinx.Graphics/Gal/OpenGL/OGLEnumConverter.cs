@@ -155,6 +155,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.R16G16       | GalImageFormat.Sint:   return (PixelInternalFormat.Rg16i,        PixelFormat.RgInteger,   PixelType.Short);
                 case GalImageFormat.R16G16       | GalImageFormat.Snorm:  return (PixelInternalFormat.Rg16Snorm,    PixelFormat.Rg,          PixelType.Byte);
                 case GalImageFormat.R16G16       | GalImageFormat.Unorm:  return (PixelInternalFormat.Rg16,         PixelFormat.Rg,          PixelType.UnsignedShort);
+                case GalImageFormat.R8G8         | GalImageFormat.Sint:   return (PixelInternalFormat.Rg8i,         PixelFormat.RgInteger,   PixelType.Byte);
+                case GalImageFormat.R8G8         | GalImageFormat.Snorm:  return (PixelInternalFormat.Rg8Snorm,     PixelFormat.Rg,          PixelType.Byte);
+                case GalImageFormat.R8G8         | GalImageFormat.Uint:   return (PixelInternalFormat.Rg8ui,        PixelFormat.RgInteger,   PixelType.UnsignedByte);
+                case GalImageFormat.R8G8         | GalImageFormat.Unorm:  return (PixelInternalFormat.Rg8,          PixelFormat.Rg,          PixelType.UnsignedByte);
                 case GalImageFormat.G8R8         | GalImageFormat.Sint:   return (PixelInternalFormat.Rg8i,         PixelFormat.RgInteger,   PixelType.Byte);
                 case GalImageFormat.G8R8         | GalImageFormat.Snorm:  return (PixelInternalFormat.Rg8Snorm,     PixelFormat.Rg,          PixelType.Byte);
                 case GalImageFormat.G8R8         | GalImageFormat.Uint:   return (PixelInternalFormat.Rg8ui,        PixelFormat.RgInteger,   PixelType.UnsignedByte);
