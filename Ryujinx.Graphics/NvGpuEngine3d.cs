@@ -154,6 +154,8 @@ namespace Ryujinx.Graphics
 
             SetZeta(Vmm);
 
+            Gpu.Renderer.RenderTarget.Bind();
+
             Gpu.Renderer.Rasterizer.ClearBuffers(
                 Flags,
                 FbIndex,
@@ -426,14 +428,15 @@ namespace Ryujinx.Graphics
 
         private void SetRenderTargets()
         {
-            bool SeparateFragData = ReadRegisterBool(NvGpuEngine3dReg.RTSeparateFragData);
+            //Commercial games do not seem to 
+            //bool SeparateFragData = ReadRegisterBool(NvGpuEngine3dReg.RTSeparateFragData);
 
-            if (SeparateFragData)
+            uint Control = (uint)(ReadRegister(NvGpuEngine3dReg.RTControl));
+
+            uint Count = Control & 0xf;
+
+            if (Count > 0)
             {
-                uint Control = (uint)(ReadRegister(NvGpuEngine3dReg.RTControl));
-
-                uint Count = Control & 0xf;
-
                 int[] Map = new int[Count];
 
                 for (int i = 0; i < Count; i++)
@@ -701,6 +704,8 @@ namespace Ryujinx.Graphics
             State.Instance = CurrentInstance;
 
             Gpu.Renderer.Pipeline.Bind(State);
+
+            Gpu.Renderer.RenderTarget.Bind();
 
             if (IndexCount != 0)
             {
