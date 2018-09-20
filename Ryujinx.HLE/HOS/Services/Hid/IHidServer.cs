@@ -25,6 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 { 31,  ActivateKeyboard                        },
                 { 66,  StartSixAxisSensor                      },
                 { 79,  SetGyroscopeZeroDriftMode               },
+                { 82,  IsSixAxisSensorAtRest                   },
                 { 100, SetSupportedNpadStyleSet                },
                 { 101, GetSupportedNpadStyleSet                },
                 { 102, SetSupportedNpadIdType                  },
@@ -106,6 +107,20 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             long AppletResourceUserId = Context.RequestData.ReadInt64();
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, "Stubbed.");
+
+            return 0;
+        }
+
+        public long IsSixAxisSensorAtRest(ServiceCtx Context)
+        {
+            int SixAxisSensorHandle   = Context.RequestData.ReadInt32();
+            long AppletResourceUserId = Context.RequestData.ReadInt64();
+
+            Context.ResponseData.Write(true);
+
+            Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. AppletResourceUserId: {AppletResourceUserId} - " +
+                                                              $"SixAxisSensorHandle: {SixAxisSensorHandle} - " +
+                                                              $"IsAtRest: {true}");
 
             return 0;
         }
