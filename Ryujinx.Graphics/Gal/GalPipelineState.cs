@@ -21,6 +21,8 @@
 
         public GalVertexBinding[] VertexBindings;
 
+        public bool FramebufferSrgb;
+
         public float FlipX;
         public float FlipY;
 
@@ -32,6 +34,7 @@
         public GalCullFace CullFace;
 
         public bool DepthTestEnabled;
+        public bool DepthWriteEnabled;
         public GalComparisonOp DepthFunc;
 
         public bool StencilTestEnabled;

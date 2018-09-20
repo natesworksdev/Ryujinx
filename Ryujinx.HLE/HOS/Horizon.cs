@@ -7,6 +7,7 @@ using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -19,11 +20,21 @@ namespace Ryujinx.HLE.HOS
 
         private Switch Device;
 
-        private KProcessScheduler Scheduler;
-
         private ConcurrentDictionary<int, Process> Processes;
 
         public SystemStateMgr State { get; private set; }
+
+        internal KRecursiveLock CriticalSectionLock { get; private set; }
+
+        internal KScheduler Scheduler { get; private set; }
+
+        internal KTimeManager TimeManager { get; private set; }
+
+        internal KAddressArbiter AddressArbiter { get; private set; }
+
+        internal KSynchronization Synchronization { get; private set; }
+
+        internal LinkedList<KThread> Withholders { get; private set; }
 
         internal KSharedMemory HidSharedMem  { get; private set; }
         internal KSharedMemory FontSharedMem { get; private set; }
@@ -34,15 +45,31 @@ namespace Ryujinx.HLE.HOS
 
         internal Keyset KeySet { get; private set; }
 
+        private bool HasStarted;
+
+        public Nacp ControlData { get; set; }
+
+        public string CurrentTitle { get; private set; }
+
         public Horizon(Switch Device)
         {
             this.Device = Device;
 
-            Scheduler = new KProcessScheduler(Device.Log);
-
             Processes = new ConcurrentDictionary<int, Process>();
 
             State = new SystemStateMgr();
+
+            CriticalSectionLock = new KRecursiveLock(this);
+
+            Scheduler = new KScheduler(this);
+
+            TimeManager = new KTimeManager();
+
+            AddressArbiter = new KAddressArbiter(this);
+
+            Synchronization = new KSynchronization(this);
+
+            Withholders = new LinkedList<KThread>();
 
             if (!Device.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
                 !Device.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
@@ -55,7 +82,7 @@ namespace Ryujinx.HLE.HOS
 
             Font = new SharedFontManager(Device, FontSharedMem.PA);
 
-            VsyncEvent = new KEvent();
+            VsyncEvent = new KEvent(this);
 
             LoadKeySet();
         }
@@ -114,6 +141,8 @@ namespace Ryujinx.HLE.HOS
                 throw new NotImplementedException("32-bit titles are unsupported!");
             }
 
+            CurrentTitle = MainProcess.MetaData.ACI0.TitleId.ToString("x16");
+
             LoadNso("rtld");
 
             MainProcess.SetEmptyArgs();
@@ -131,27 +160,28 @@ namespace Ryujinx.HLE.HOS
 
             Xci Xci = new Xci(KeySet, File);
 
-            Nca Nca = GetXciMainNca(Xci);
+            (Nca MainNca, Nca ControlNca) = GetXciGameData(Xci);
 
-            if (Nca == null)
+            if (MainNca == null)
             {
                 Device.Log.PrintError(LogClass.Loader, "Unable to load XCI");
 
                 return;
             }
 
-            LoadNca(Nca);
+            LoadNca(MainNca, ControlNca);
         }
 
-        private Nca GetXciMainNca(Xci Xci)
+        private (Nca Main, Nca Control) GetXciGameData(Xci Xci)
         {
             if (Xci.SecurePartition == null)
             {
                 throw new InvalidDataException("Could not find XCI secure partition");
             }
 
-            Nca MainNca = null;
-            Nca PatchNca = null;
+            Nca MainNca    = null;
+            Nca PatchNca   = null;
+            Nca ControlNca = null;
 
             foreach (PfsFileEntry FileEntry in Xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
             {
@@ -170,6 +200,10 @@ namespace Ryujinx.HLE.HOS
                         PatchNca = Nca;
                     }
                 }
+                else if (Nca.Header.ContentType == ContentType.Control)
+                {
+                    ControlNca = Nca;
+                }
             }
 
             if (MainNca == null)
@@ -178,8 +212,24 @@ namespace Ryujinx.HLE.HOS
             }
 
             MainNca.SetBaseNca(PatchNca);
+            
+            if (ControlNca != null)
+            {
+                ReadControlData(ControlNca);
+            }
 
-            return MainNca;
+            return (MainNca, ControlNca);
+        }
+
+        public void ReadControlData(Nca ControlNca)
+        {
+            Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false));
+
+            byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
+
+            BinaryReader Reader = new BinaryReader(new MemoryStream(ControlFile));
+
+            ControlData = new Nacp(Reader);
         }
 
         public void LoadNca(string NcaFile)
@@ -188,7 +238,7 @@ namespace Ryujinx.HLE.HOS
 
             Nca Nca = new Nca(KeySet, File, true);
 
-            LoadNca(Nca);
+            LoadNca(Nca, null);
         }
 
         public void LoadNsp(string NspFile)
@@ -208,25 +258,37 @@ namespace Ryujinx.HLE.HOS
                 KeySet.TitleKeys[Ticket.RightsId] = Ticket.GetTitleKey(KeySet);
             }
 
+            Nca MainNca    = null;
+            Nca ControlNca = null;
+
             foreach (PfsFileEntry NcaFile in Nsp.Files.Where(x => x.Name.EndsWith(".nca")))
             {
                 Nca Nca = new Nca(KeySet, Nsp.OpenFile(NcaFile), true);
 
                 if (Nca.Header.ContentType == ContentType.Program)
                 {
-                    LoadNca(Nca);
-
-                    return;
+                    MainNca = Nca;
                 }
+                else if (Nca.Header.ContentType == ContentType.Control)
+                {
+                    ControlNca = Nca;
+                }
+            }
+
+            if (MainNca != null)
+            {
+                LoadNca(MainNca, ControlNca);
+
+                return;
             }
 
             Device.Log.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided NSP file");
         }
 
-        public void LoadNca(Nca Nca)
+        public void LoadNca(Nca MainNca, Nca ControlNca)
         {
-            NcaSection RomfsSection = Nca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
-            NcaSection ExefsSection = Nca.Sections.FirstOrDefault(x => x?.IsExefs == true);
+            NcaSection RomfsSection = MainNca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
+            NcaSection ExefsSection = MainNca.Sections.FirstOrDefault(x => x?.IsExefs == true);
 
             if (ExefsSection == null)
             {
@@ -242,10 +304,12 @@ namespace Ryujinx.HLE.HOS
                 return;
             }
 
-            Stream RomfsStream = Nca.OpenSection(RomfsSection.SectionNum, false);
+            Stream RomfsStream = MainNca.OpenSection(RomfsSection.SectionNum, false);
+
             Device.FileSystem.SetRomFs(RomfsStream);
 
-            Stream ExefsStream = Nca.OpenSection(ExefsSection.SectionNum, false);
+            Stream ExefsStream = MainNca.OpenSection(ExefsSection.SectionNum, false);
+
             Pfs Exefs = new Pfs(ExefsStream);
 
             Npdm MetaData = null;
@@ -280,6 +344,35 @@ namespace Ryujinx.HLE.HOS
 
                     MainProcess.LoadProgram(Program);
                 }
+            }
+
+            Nacp ReadControlData()
+            {
+                Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false));
+
+                byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
+
+                BinaryReader Reader = new BinaryReader(new MemoryStream(ControlFile));
+
+                Nacp ControlData = new Nacp(Reader);
+
+                CurrentTitle = ControlData.Languages[(int)State.DesiredTitleLanguage].Title;
+
+                if (string.IsNullOrWhiteSpace(CurrentTitle))
+                {
+                    CurrentTitle = ControlData.Languages.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                }
+
+                return ControlData;
+            }
+
+            if (ControlNca != null)
+            {
+                MainProcess.ControlData = ReadControlData();
+            }
+            else
+            {
+                CurrentTitle = MainProcess.MetaData.ACI0.TitleId.ToString("x16");
             }
 
             if (!MainProcess.MetaData.Is64Bits)
@@ -371,10 +464,15 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void SignalVsync() => VsyncEvent.WaitEvent.Set();
+        public void SignalVsync()
+        {
+            VsyncEvent.Signal();
+        }
 
         private Process MakeProcess(Npdm MetaData = null)
         {
+            HasStarted = true;
+
             Process Process;
 
             lock (Processes)
@@ -386,7 +484,7 @@ namespace Ryujinx.HLE.HOS
                     ProcessId++;
                 }
 
-                Process = new Process(Device, Scheduler, ProcessId, MetaData);
+                Process = new Process(Device, ProcessId, MetaData);
 
                 Processes.TryAdd(ProcessId, Process);
             }
@@ -409,18 +507,29 @@ namespace Ryujinx.HLE.HOS
 
                 if (Processes.Count == 0)
                 {
-                    Unload();
+                    Scheduler.Dispose();
+
+                    TimeManager.Dispose();
 
                     Device.Unload();
                 }
             }
         }
 
-        private void Unload()
+        public void EnableMultiCoreScheduling()
         {
-            VsyncEvent.Dispose();
+            if (!HasStarted)
+            {
+                Scheduler.MultiCoreScheduling = true;
+            }
+        }
 
-            Scheduler.Dispose();
+        public void DisableMultiCoreScheduling()
+        {
+            if (!HasStarted)
+            {
+                Scheduler.MultiCoreScheduling = false;
+            }
         }
 
         public void Dispose()

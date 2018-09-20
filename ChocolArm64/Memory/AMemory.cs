@@ -41,7 +41,7 @@ namespace ChocolArm64.Memory
             }
         }
 
-        private Dictionary<AThreadState, ArmMonitor> Monitors;
+        private Dictionary<int, ArmMonitor> Monitors;
 
         private ConcurrentDictionary<long, IntPtr> ObservedPages;
 
@@ -53,7 +53,7 @@ namespace ChocolArm64.Memory
 
         public AMemory(IntPtr Ram)
         {
-            Monitors = new Dictionary<AThreadState, ArmMonitor>();
+            Monitors = new Dictionary<int, ArmMonitor>();
 
             ObservedPages = new ConcurrentDictionary<long, IntPtr>();
 
@@ -69,17 +69,17 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public void RemoveMonitor(AThreadState State)
+        public void RemoveMonitor(int Core)
         {
             lock (Monitors)
             {
-                ClearExclusive(State);
+                ClearExclusive(Core);
 
-                Monitors.Remove(State);
+                Monitors.Remove(Core);
             }
         }
 
-        public void SetExclusive(AThreadState ThreadState, long Position)
+        public void SetExclusive(int Core, long Position)
         {
             Position &= ~ErgMask;
 
@@ -93,11 +93,11 @@ namespace ChocolArm64.Memory
                     }
                 }
 
-                if (!Monitors.TryGetValue(ThreadState, out ArmMonitor ThreadMon))
+                if (!Monitors.TryGetValue(Core, out ArmMonitor ThreadMon))
                 {
                     ThreadMon = new ArmMonitor();
 
-                    Monitors.Add(ThreadState, ThreadMon);
+                    Monitors.Add(Core, ThreadMon);
                 }
 
                 ThreadMon.Position = Position;
@@ -105,7 +105,7 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public bool TestExclusive(AThreadState ThreadState, long Position)
+        public bool TestExclusive(int Core, long Position)
         {
             //Note: Any call to this method also should be followed by a
             //call to ClearExclusiveForStore if this method returns true.
@@ -113,7 +113,7 @@ namespace ChocolArm64.Memory
 
             Monitor.Enter(Monitors);
 
-            if (!Monitors.TryGetValue(ThreadState, out ArmMonitor ThreadMon))
+            if (!Monitors.TryGetValue(Core, out ArmMonitor ThreadMon))
             {
                 return false;
             }
@@ -128,9 +128,9 @@ namespace ChocolArm64.Memory
             return ExState;
         }
 
-        public void ClearExclusiveForStore(AThreadState ThreadState)
+        public void ClearExclusiveForStore(int Core)
         {
-            if (Monitors.TryGetValue(ThreadState, out ArmMonitor ThreadMon))
+            if (Monitors.TryGetValue(Core, out ArmMonitor ThreadMon))
             {
                 ThreadMon.ExState = false;
             }
@@ -138,11 +138,11 @@ namespace ChocolArm64.Memory
             Monitor.Exit(Monitors);
         }
 
-        public void ClearExclusive(AThreadState ThreadState)
+        public void ClearExclusive(int Core)
         {
             lock (Monitors)
             {
-                if (Monitors.TryGetValue(ThreadState, out ArmMonitor ThreadMon))
+                if (Monitors.TryGetValue(Core, out ArmMonitor ThreadMon))
                 {
                     ThreadMon.ExState = false;
                 }
@@ -287,6 +287,14 @@ namespace ChocolArm64.Memory
             return Data;
         }
 
+        public void ReadBytes(long Position, byte[] Data, int StartIndex, int Size)
+        {
+            //Note: This will be moved later.
+            EnsureRangeIsValid(Position, (uint)Size);
+
+            Marshal.Copy((IntPtr)Translate(Position), Data, StartIndex, Size);
+        }
+
         public void WriteSByte(long Position, sbyte Value)
         {
             WriteByte(Position, (byte)Value);
@@ -401,6 +409,27 @@ namespace ChocolArm64.Memory
             EnsureRangeIsValid(Position, (uint)Data.Length);
 
             Marshal.Copy(Data, 0, (IntPtr)TranslateWrite(Position), Data.Length);
+        }
+
+        public void WriteBytes(long Position, byte[] Data, int StartIndex, int Size)
+        {
+            //Note: This will be moved later.
+            //Using Translate instead of TranslateWrite is on purpose.
+            EnsureRangeIsValid(Position, (uint)Size);
+
+            Marshal.Copy(Data, StartIndex, (IntPtr)Translate(Position), Size);
+        }
+
+        public void CopyBytes(long Src, long Dst, long Size)
+        {
+            //Note: This will be moved later.
+            EnsureRangeIsValid(Src, Size);
+            EnsureRangeIsValid(Dst, Size);
+
+            byte* SrcPtr = Translate(Src);
+            byte* DstPtr = TranslateWrite(Dst);
+
+            Buffer.MemoryCopy(SrcPtr, DstPtr, Size, Size);
         }
 
         public void Map(long VA, long PA, long Size)

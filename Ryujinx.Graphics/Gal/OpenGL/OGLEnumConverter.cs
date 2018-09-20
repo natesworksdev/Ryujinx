@@ -149,8 +149,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.R32          | GalImageFormat.Sfloat: return (PixelInternalFormat.R32f,         PixelFormat.Red,         PixelType.Float);
                 case GalImageFormat.R32          | GalImageFormat.Sint:   return (PixelInternalFormat.R32i,         PixelFormat.Red,         PixelType.Int);
                 case GalImageFormat.R32          | GalImageFormat.Uint:   return (PixelInternalFormat.R32ui,        PixelFormat.Red,         PixelType.UnsignedInt);
-                case GalImageFormat.A1R5G5B5     | GalImageFormat.Unorm:  return (PixelInternalFormat.Rgb5A1,       PixelFormat.Rgba,        PixelType.UnsignedShort5551);
-                case GalImageFormat.B5G6R5       | GalImageFormat.Unorm:  return (PixelInternalFormat.Rgba,         PixelFormat.Rgb,         PixelType.UnsignedShort565);
+                case GalImageFormat.A1R5G5B5     | GalImageFormat.Unorm:  return (PixelInternalFormat.Rgb5A1,       PixelFormat.Rgba,        PixelType.UnsignedShort1555Reversed);
+                case GalImageFormat.B5G6R5       | GalImageFormat.Unorm:  return (PixelInternalFormat.Rgba,         PixelFormat.Rgb,         PixelType.UnsignedShort565Reversed);
                 case GalImageFormat.R16G16       | GalImageFormat.Sfloat: return (PixelInternalFormat.Rg16f,        PixelFormat.Rg,          PixelType.HalfFloat);
                 case GalImageFormat.R16G16       | GalImageFormat.Sint:   return (PixelInternalFormat.Rg16i,        PixelFormat.RgInteger,   PixelType.Short);
                 case GalImageFormat.R16G16       | GalImageFormat.Snorm:  return (PixelInternalFormat.Rg16Snorm,    PixelFormat.Rg,          PixelType.Byte);
@@ -173,7 +173,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalImageFormat.D24_S8 | GalImageFormat.Unorm:  return (PixelInternalFormat.Depth24Stencil8,   PixelFormat.DepthStencil,   PixelType.UnsignedInt248);
                 case GalImageFormat.D32    | GalImageFormat.Sfloat: return (PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, PixelType.Float);
                 case GalImageFormat.D16    | GalImageFormat.Unorm:  return (PixelInternalFormat.DepthComponent16,  PixelFormat.DepthComponent, PixelType.UnsignedShort);
-                case GalImageFormat.D32_S8 | GalImageFormat.Uint:   return (PixelInternalFormat.Depth32fStencil8,  PixelFormat.DepthStencil,   PixelType.Float32UnsignedInt248Rev);
+                case GalImageFormat.D32_S8 | GalImageFormat.Sfloat: return (PixelInternalFormat.Depth32fStencil8,  PixelFormat.DepthStencil,   PixelType.Float32UnsignedInt248Rev);
             }
 
             throw new NotImplementedException($"{Format & GalImageFormat.FormatMask} {Format & GalImageFormat.TypeMask}");
@@ -183,16 +183,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Format)
             {
-                case GalImageFormat.BC6H_UF16 | GalImageFormat.Unorm: return InternalFormat.CompressedRgbBptcUnsignedFloat;
-                case GalImageFormat.BC6H_SF16 | GalImageFormat.Unorm: return InternalFormat.CompressedRgbBptcSignedFloat;
-                case GalImageFormat.BC7       | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaBptcUnorm;
-                case GalImageFormat.BC1_RGBA  | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt1Ext;
-                case GalImageFormat.BC2       | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt3Ext;
-                case GalImageFormat.BC3       | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt5Ext;
-                case GalImageFormat.BC4       | GalImageFormat.Snorm: return InternalFormat.CompressedSignedRedRgtc1;
-                case GalImageFormat.BC4       | GalImageFormat.Unorm: return InternalFormat.CompressedRedRgtc1;
-                case GalImageFormat.BC5       | GalImageFormat.Snorm: return InternalFormat.CompressedSignedRgRgtc2;
-                case GalImageFormat.BC5       | GalImageFormat.Unorm: return InternalFormat.CompressedRgRgtc2;
+                case GalImageFormat.BC6H_UF16 | GalImageFormat.Sfloat: return InternalFormat.CompressedRgbBptcUnsignedFloat;
+                case GalImageFormat.BC6H_SF16 | GalImageFormat.Unorm:  return InternalFormat.CompressedRgbBptcSignedFloat;
+                case GalImageFormat.BC7       | GalImageFormat.Unorm:  return InternalFormat.CompressedRgbaBptcUnorm;
+                case GalImageFormat.BC1_RGBA  | GalImageFormat.Unorm:  return InternalFormat.CompressedRgbaS3tcDxt1Ext;
+                case GalImageFormat.BC2       | GalImageFormat.Unorm:  return InternalFormat.CompressedRgbaS3tcDxt3Ext;
+                case GalImageFormat.BC3       | GalImageFormat.Unorm:  return InternalFormat.CompressedRgbaS3tcDxt5Ext;
+                case GalImageFormat.BC4       | GalImageFormat.Snorm:  return InternalFormat.CompressedSignedRedRgtc1;
+                case GalImageFormat.BC4       | GalImageFormat.Unorm:  return InternalFormat.CompressedRedRgtc1;
+                case GalImageFormat.BC5       | GalImageFormat.Snorm:  return InternalFormat.CompressedSignedRgRgtc2;
+                case GalImageFormat.BC5       | GalImageFormat.Unorm:  return InternalFormat.CompressedRgRgtc2;
             }
 
             throw new NotImplementedException($"{Format & GalImageFormat.FormatMask} {Format & GalImageFormat.TypeMask}");

@@ -85,6 +85,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 CullFace = GalCullFace.Back,
 
                 DepthTestEnabled = false,
+                DepthWriteEnabled = true,
                 DepthFunc = GalComparisonOp.Less,
 
                 StencilTestEnabled = false,
@@ -126,6 +127,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             BindVertexLayout(New);
 
+            if (New.FramebufferSrgb != Old.FramebufferSrgb)
+            {
+                Enable(EnableCap.FramebufferSrgb, New.FramebufferSrgb);
+            }
+
             if (New.FlipX != Old.FlipX || New.FlipY != Old.FlipY || New.Instance != Old.Instance)
             {
                 Shader.SetExtraData(New.FlipX, New.FlipY, New.Instance);
@@ -133,19 +139,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             //Note: Uncomment SetFrontFace and SetCullFace when flipping issues are solved
 
-            //if (New.FrontFace != O.FrontFace)
+            //if (New.FrontFace != Old.FrontFace)
             //{
             //    GL.FrontFace(OGLEnumConverter.GetFrontFace(New.FrontFace));
             //}
 
-            //if (New.CullFaceEnabled != O.CullFaceEnabled)
+            //if (New.CullFaceEnabled != Old.CullFaceEnabled)
             //{
             //    Enable(EnableCap.CullFace, New.CullFaceEnabled);
             //}
 
             //if (New.CullFaceEnabled)
             //{
-            //    if (New.CullFace != O.CullFace)
+            //    if (New.CullFace != Old.CullFace)
             //    {
             //        GL.CullFace(OGLEnumConverter.GetCullFace(New.CullFace));
             //    }
@@ -154,6 +160,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             if (New.DepthTestEnabled != Old.DepthTestEnabled)
             {
                 Enable(EnableCap.DepthTest, New.DepthTestEnabled);
+            }
+
+            if (New.DepthWriteEnabled != Old.DepthWriteEnabled)
+            {
+                Rasterizer.DepthWriteEnabled = New.DepthWriteEnabled;
+
+                GL.DepthMask(New.DepthWriteEnabled);
             }
 
             if (New.DepthTestEnabled)
@@ -337,6 +350,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 foreach (GalVertexAttrib Attrib in Binding.Attribs)
                 {
+                    //Skip uninitialized attributes.
+                    if (Attrib.Size == 0)
+                    {
+                        continue;
+                    }
+
                     GL.EnableVertexAttribArray(Attrib.Index);
 
                     GL.BindBuffer(BufferTarget.ArrayBuffer, VboHandle);

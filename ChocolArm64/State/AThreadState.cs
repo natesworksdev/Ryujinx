@@ -1,7 +1,7 @@
 using ChocolArm64.Events;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 
 namespace ChocolArm64.State
@@ -13,6 +13,8 @@ namespace ChocolArm64.State
 
         internal const int ErgSizeLog2 = 4;
         internal const int DczSizeLog2 = 4;
+
+        private const int MinInstForCheck = 4000000;
 
         internal AExecutionMode ExecutionMode;
 
@@ -41,6 +43,11 @@ namespace ChocolArm64.State
         public bool Negative;
 
         public bool Running { get; set; }
+        public int  Core    { get; set; }
+
+        private bool Interrupted;
+
+        private int SyncCount;
 
         public long TpidrEl0 { get; set; }
         public long Tpidr    { get; set; }
@@ -73,20 +80,14 @@ namespace ChocolArm64.State
             }
         }
 
+        public event EventHandler<EventArgs>               Interrupt;
         public event EventHandler<AInstExceptionEventArgs> Break;
         public event EventHandler<AInstExceptionEventArgs> SvcCall;
         public event EventHandler<AInstUndefinedEventArgs> Undefined;
 
-        private Stack<long> CallStack;
-
         private static Stopwatch TickCounter;
 
         private static double HostTickFreq;
-
-        public AThreadState()
-        {
-            CallStack = new Stack<long>();
-        }
 
         static AThreadState()
         {
@@ -97,9 +98,37 @@ namespace ChocolArm64.State
             TickCounter.Start();
         }
 
-        internal bool Synchronize()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool Synchronize(int BbWeight)
         {
+            //Firing a interrupt frequently is expensive, so we only
+            //do it after a given number of instructions has executed.
+            SyncCount += BbWeight;
+
+            if (SyncCount >= MinInstForCheck)
+            {
+                CheckInterrupt();
+            }
+
             return Running;
+        }
+
+        internal void RequestInterrupt()
+        {
+            Interrupted = true;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void CheckInterrupt()
+        {
+            SyncCount = 0;
+
+            if (Interrupted)
+            {
+                Interrupted = false;
+
+                Interrupt?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         internal void OnBreak(long Position, int Imm)
@@ -115,28 +144,6 @@ namespace ChocolArm64.State
         internal void OnUndefined(long Position, int RawOpCode)
         {
             Undefined?.Invoke(this, new AInstUndefinedEventArgs(Position, RawOpCode));
-        }
-
-        internal void EnterMethod(long Position)
-        {
-            CallStack.Push(Position);
-        }
-
-        internal void ExitMethod()
-        {
-            CallStack.TryPop(out _);
-        }
-
-        internal void JumpMethod(long Position)
-        {
-            CallStack.TryPop(out _);
-
-            CallStack.Push(Position);
-        }
-
-        public long[] GetCallStack()
-        {
-            return CallStack.ToArray();
         }
     }
 }
