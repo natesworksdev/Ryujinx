@@ -104,7 +104,6 @@ namespace Ryujinx.Graphics.Texture
             { GalImageFormat.B5G6R5,        new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.BC7,           new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
             { GalImageFormat.R16G16,        new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.R8G8,          new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.G8R8,          new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R16,           new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R8,            new ImageDescriptor(1,  1,  1,  TargetBuffer.Color) },
@@ -188,8 +187,8 @@ namespace Ryujinx.Graphics.Texture
                 case GalSurfaceFormat.RG16Float:      return GalImageFormat.R16G16         | Sfloat;
                 case GalSurfaceFormat.R11G11B10Float: return GalImageFormat.B10G11R11      | Sfloat;
                 case GalSurfaceFormat.R32Float:       return GalImageFormat.R32            | Sfloat;
-                case GalSurfaceFormat.RG8Unorm:       return GalImageFormat.R8G8           | Unorm;
-                case GalSurfaceFormat.RG8Snorm:       return GalImageFormat.R8             | Snorm;
+                case GalSurfaceFormat.RG8Unorm:       return GalImageFormat.G8R8           | Unorm;
+                case GalSurfaceFormat.RG8Snorm:       return GalImageFormat.G8R8           | Snorm;
                 case GalSurfaceFormat.R16Float:       return GalImageFormat.R16            | Sfloat;
                 case GalSurfaceFormat.R16Unorm:       return GalImageFormat.R16            | Unorm;
                 case GalSurfaceFormat.R8Unorm:        return GalImageFormat.R8             | Unorm;
