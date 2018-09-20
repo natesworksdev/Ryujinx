@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Gal
 
         void SetWindowSize(int Width, int Height);
 
-        void SetViewport(int X, int Y, int Width, int Height);
+        void SetViewport(int Attachment, int X, int Y, int Width, int Height);
 
         void Render();
 

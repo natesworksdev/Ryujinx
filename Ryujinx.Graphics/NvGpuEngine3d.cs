@@ -100,7 +100,10 @@ namespace Ryujinx.Graphics
             SetAlphaBlending(State);
             SetPrimitiveRestart(State);
 
-            SetFrameBuffer(Vmm, 0);
+            for (int FbIndex = 0; FbIndex < 8; FbIndex++)
+            {
+                SetFrameBuffer(Vmm, FbIndex);
+            }
 
             SetZeta(Vmm);
 
@@ -206,7 +209,7 @@ namespace Ryujinx.Graphics
 
             Gpu.ResourceManager.SendColorBuffer(Vmm, Key, FbIndex, Image);
 
-            Gpu.Renderer.RenderTarget.SetViewport(VpX, VpY, VpW, VpH);
+            Gpu.Renderer.RenderTarget.SetViewport(FbIndex, VpX, VpY, VpW, VpH);
         }
 
         private void SetFrameBuffer(GalPipelineState State)

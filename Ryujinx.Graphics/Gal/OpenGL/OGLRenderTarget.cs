@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private ImageHandler ReadTex;
 
-        private Rect Viewport;
+        private Rect[] Viewports;
         private Rect Window;
 
         private bool FlipX;
@@ -64,6 +64,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             AttachmentMap = new DrawBuffersEnum[8];
 
+            Viewports = new Rect[8];
+
             this.Texture = Texture;
         }
 
@@ -93,6 +95,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     FramebufferAttachment.ColorAttachment0 + Attachment,
                     Handle,
                     0);
+
+                Rect Viewport = Viewports[Attachment];
+
+                GL.ViewportIndexed(
+                    Attachment,
+                    Viewport.X,
+                    Viewport.Y,
+                    Viewport.Width,
+                    Viewport.Height);
             }
             
             if (ZetaAttachment != 0 && Texture.TryGetImageHandler(ZetaAttachment, out CachedImage))
@@ -205,20 +216,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Window = new Rect(0, 0, Width, Height);
         }
 
-        public void SetViewport(int X, int Y, int Width, int Height)
+        public void SetViewport(int Attachment, int X, int Y, int Width, int Height)
         {
-            Viewport = new Rect(X, Y, Width, Height);
-
-            SetViewport(Viewport);
-        }
-
-        private void SetViewport(Rect Viewport)
-        {
-            GL.Viewport(
-                Viewport.X,
-                Viewport.Y,
-                Viewport.Width,
-                Viewport.Height);
+            Viewports[Attachment] = new Rect(X, Y, Width, Height);
         }
 
         public void Render()
