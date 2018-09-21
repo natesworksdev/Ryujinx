@@ -1,32 +1,17 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     static class OGLExtension
     {
-        private static bool Initialized = false;
+        private static Lazy<bool> s_EnhancedLayouts    = new Lazy<bool>(() => HasExtension("GL_ARB_enhanced_layouts"));
+        private static Lazy<bool> s_TextureMirrorClamp = new Lazy<bool>(() => HasExtension("GL_EXT_texture_mirror_clamp"));
+        private static Lazy<bool> s_ViewportArray      = new Lazy<bool>(() => HasExtension("GL_ARB_viewport_array"));
 
-        private static bool s_EnhancedLayouts;
-        private static bool s_ViewportArray;
-        private static bool s_TextureMirrorClamp;
-
-        public static bool EnhancedLayouts    => Query(ref s_EnhancedLayouts);
-        public static bool ViewportArray      => Query(ref s_ViewportArray);
-        public static bool TextureMirrorClamp => Query(ref s_TextureMirrorClamp);
-        
-        private static bool Query(ref bool Extension)
-        {
-            if (!Initialized)
-            {
-                s_EnhancedLayouts = HasExtension("GL_ARB_enhanced_layouts");
-                s_ViewportArray = HasExtension("GL_ARB_viewport_array");
-                s_TextureMirrorClamp = HasExtension("GL_EXT_texture_mirror_clamp");
-
-                Initialized = true;
-            }
-
-            return Extension;
-        }
+        public static bool EnhancedLayouts    => s_EnhancedLayouts.Value;
+        public static bool TextureMirrorClamp => s_TextureMirrorClamp.Value;
+        public static bool ViewportArray      => s_ViewportArray.Value;
 
         private static bool HasExtension(string Name)
         {
