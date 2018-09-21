@@ -97,7 +97,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     0);
             }
 
-            GL.ViewportArray(0, 8, Viewports);
+            if (OGLExtension.HasViewportArray())
+            {
+                GL.ViewportArray(0, 8, Viewports);
+            }
+            else
+            {
+                GL.Viewport(
+                    (int)Viewports[0],
+                    (int)Viewports[1],
+                    (int)Viewports[2],
+                    (int)Viewports[3]);
+            }
             
             if (ZetaAttachment != 0 && Texture.TryGetImageHandler(ZetaAttachment, out CachedImage))
             {
