@@ -157,6 +157,8 @@ namespace Ryujinx.Graphics
 
             SetZeta(Vmm);
 
+            SetRenderTargets();
+
             Gpu.Renderer.RenderTarget.Bind();
 
             Gpu.Renderer.Rasterizer.ClearBuffers(

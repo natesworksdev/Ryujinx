@@ -21,6 +21,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 EnhancedLayouts    = HasExtension("GL_ARB_enhanced_layouts");
                 ViewportArray      = HasExtension("GL_ARB_viewport_array");
                 TextureMirrorClamp = HasExtension("GL_EXT_texture_mirror_clamp");
+
+                Initialized = true;
             }
 
             return Extension;
