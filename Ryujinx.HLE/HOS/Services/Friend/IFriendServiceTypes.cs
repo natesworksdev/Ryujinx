@@ -16,5 +16,5 @@
         public bool                 IsSameAppPlayedOnly;
         public bool                 IsArbitraryAppPlayedOnly;
         public long                 PresenceGroupId;
-    };
+    }
 }
