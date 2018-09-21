@@ -5,9 +5,9 @@ namespace Ryujinx.Graphics.Gal
         void LockCache();
         void UnlockCache();
 
-        void Create(long Key, int Size, GalImage Image);
+        void CreateEmpty(long Key, int Size, GalImage Image);
 
-        void Create(long Key, byte[] Data, GalImage Image);
+        void CreateData(long Key, byte[] Data, GalImage Image);
 
         bool TryGetImage(long Key, out GalImage Image);
 

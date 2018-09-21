@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Texture;
 
 namespace Ryujinx.Graphics.Gal
 {
-    public struct GalImage
+    public struct GalImage : ICompatible<GalImage>
     {
         public int Width;
         public int Height;
@@ -58,6 +58,11 @@ namespace Ryujinx.Graphics.Gal
             }
 
             return Height == Image.Height;
+        }
+
+        public bool IsCompatible(GalImage Other)
+        {
+            return Format == Other.Format && SizeMatches(Other);
         }
     }
 }

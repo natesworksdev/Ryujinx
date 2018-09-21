@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class ImageHandler
+    class ImageHandler : Resource
     {
         public GalImage Image { get; private set; }
 

@@ -9,8 +9,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private int[] VertexBuffers;
 
-        private OGLCachedResource<int> VboCache;
-        private OGLCachedResource<int> IboCache;
+        private OGLCachedResource<BufferParams, OGLStreamBuffer> VboCache;
+        private OGLCachedResource<BufferParams, OGLStreamBuffer> IboCache;
 
         private struct IbInfo
         {
@@ -26,8 +26,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             VertexBuffers = new int[32];
 
-            VboCache = new OGLCachedResource<int>(GL.DeleteBuffer);
-            IboCache = new OGLCachedResource<int>(GL.DeleteBuffer);
+            VboCache = new OGLCachedResource<BufferParams, OGLStreamBuffer>(CreateBuffer, DeleteBuffer);
+            IboCache = new OGLCachedResource<BufferParams, OGLStreamBuffer>(CreateBuffer, DeleteBuffer);
 
             IndexBuffer = new IbInfo();
 
@@ -97,26 +97,28 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void CreateVbo(long Key, int DataSize, IntPtr HostAddress)
         {
-            int Handle = GL.GenBuffer();
+            BufferParams Params = new BufferParams(BufferTarget.ArrayBuffer, DataSize);
 
-            VboCache.AddOrUpdate(Key, Handle, (uint)DataSize);
+            OGLStreamBuffer CachedBuffer = VboCache.CreateOrRecycle(Key, Params, (uint)DataSize);
 
             IntPtr Length = new IntPtr(DataSize);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
-            GL.BufferData(BufferTarget.ArrayBuffer, Length, HostAddress, BufferUsageHint.StreamDraw);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, CachedBuffer.Handle);
+
+            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, Length, HostAddress);
         }
 
         public void CreateIbo(long Key, int DataSize, IntPtr HostAddress)
         {
-            int Handle = GL.GenBuffer();
+            BufferParams Params = new BufferParams(BufferTarget.ElementArrayBuffer, DataSize);
 
-            IboCache.AddOrUpdate(Key, Handle, (uint)DataSize);
+            OGLStreamBuffer CachedBuffer = IboCache.CreateOrRecycle(Key, Params, (uint)DataSize);
 
             IntPtr Length = new IntPtr(DataSize);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Handle);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, Length, HostAddress, BufferUsageHint.StreamDraw);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, CachedBuffer.Handle);
+
+            GL.BufferSubData(BufferTarget.ElementArrayBuffer, IntPtr.Zero, Length, HostAddress);
         }
 
         public void SetIndexArray(int Size, GalIndexFormat Format)
@@ -140,14 +142,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void DrawElements(long IboKey, int First, int VertexBase, GalPrimitiveType PrimType)
         {
-            if (!IboCache.TryGetValue(IboKey, out int IboHandle))
+            if (!IboCache.TryGetValue(IboKey, out OGLStreamBuffer CachedBuffer))
             {
                 return;
             }
 
             PrimitiveType Mode = OGLEnumConverter.GetPrimitiveType(PrimType);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IboHandle);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, CachedBuffer.Handle);
 
             First <<= IndexBuffer.ElemSizeLog2;
 
@@ -165,7 +167,26 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public bool TryGetVbo(long VboKey, out int VboHandle)
         {
-            return VboCache.TryGetValue(VboKey, out VboHandle);
+            if (VboCache.TryGetValue(VboKey, out OGLStreamBuffer CachedBuffer))
+            {
+                VboHandle = CachedBuffer.Handle;
+
+                return true;
+            }
+
+            VboHandle = 0;
+
+            return false;
+        }
+
+        private static OGLStreamBuffer CreateBuffer(BufferParams Params)
+        {
+            return new OGLStreamBuffer(Params.Target, (int)Params.Size);
+        }
+
+        private static void DeleteBuffer(OGLStreamBuffer CachedBuffer)
+        {
+            CachedBuffer.Dispose();
         }
     }
 }

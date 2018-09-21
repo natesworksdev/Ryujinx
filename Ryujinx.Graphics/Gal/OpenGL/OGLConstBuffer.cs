@@ -5,11 +5,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLConstBuffer : IGalConstBuffer
     {
-        private OGLCachedResource<OGLStreamBuffer> Cache;
+        private OGLCachedResource<BufferParams, OGLStreamBuffer> Cache;
 
         public OGLConstBuffer()
         {
-            Cache = new OGLCachedResource<OGLStreamBuffer>(DeleteBuffer);
+            Cache = new OGLCachedResource<BufferParams, OGLStreamBuffer>(CreateBuffer, DeleteBuffer);
         }
 
         public void LockCache()
@@ -24,9 +24,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Create(long Key, long Size)
         {
-            OGLStreamBuffer Buffer = new OGLStreamBuffer(BufferTarget.UniformBuffer, Size);
+            BufferParams Params = new BufferParams(BufferTarget.UniformBuffer, Size);
 
-            Cache.AddOrUpdate(Key, Buffer, Size);
+            Cache.CreateOrRecycle(Key, Params, Size);
         }
 
         public bool IsCached(long Key, long Size)
@@ -54,6 +54,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             UboHandle = 0;
 
             return false;
+        }
+
+        private static OGLStreamBuffer CreateBuffer(BufferParams Params)
+        {
+            return new OGLStreamBuffer(Params.Target, Params.Size);
         }
 
         private static void DeleteBuffer(OGLStreamBuffer Buffer)

@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLStreamBuffer : IDisposable
+    class OGLStreamBuffer : Resource, IDisposable
     {
         public int Handle { get; protected set; }
 

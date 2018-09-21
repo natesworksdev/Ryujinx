@@ -382,11 +382,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
 
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyPBO);
-
-            Texture.Create(Key, ImageUtils.GetSize(NewImage), NewImage);
-
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+            Texture.CreatePBO(Key, ImageUtils.GetSize(NewImage), NewImage, CopyPBO);
         }
 
         private static FramebufferAttachment GetAttachment(ImageHandler CachedImage)

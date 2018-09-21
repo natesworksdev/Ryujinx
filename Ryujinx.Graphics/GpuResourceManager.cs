@@ -37,13 +37,13 @@ namespace Ryujinx.Graphics
 
         public void SendColorBuffer(NvGpuVmm Vmm, long Position, int Attachment, GalImage NewImage)
         {
-            long Size = (uint)ImageUtils.GetSize(NewImage);
-
             ImageTypes[Position] = ImageType.ColorBuffer;
 
             if (!TryReuse(Vmm, Position, NewImage))
             {
-                Gpu.Renderer.Texture.Create(Position, (int)Size, NewImage);
+                int Size = ImageUtils.GetSize(NewImage);
+
+                Gpu.Renderer.Texture.CreateEmpty(Position, Size, NewImage);
             }
 
             Gpu.Renderer.RenderTarget.BindColor(Position, Attachment, NewImage);
@@ -51,13 +51,13 @@ namespace Ryujinx.Graphics
 
         public void SendZetaBuffer(NvGpuVmm Vmm, long Position, GalImage NewImage)
         {
-            long Size = (uint)ImageUtils.GetSize(NewImage);
-
             ImageTypes[Position] = ImageType.ZetaBuffer;
 
             if (!TryReuse(Vmm, Position, NewImage))
             {
-                Gpu.Renderer.Texture.Create(Position, (int)Size, NewImage);
+                int Size = ImageUtils.GetSize(NewImage);
+
+                Gpu.Renderer.Texture.CreateEmpty(Position, Size, NewImage);
             }
 
             Gpu.Renderer.RenderTarget.BindZeta(Position, NewImage);
@@ -102,7 +102,7 @@ namespace Ryujinx.Graphics
 
             byte[] Data = ImageUtils.ReadTexture(Vmm, NewImage, Position);
 
-            Gpu.Renderer.Texture.Create(Position, Data, NewImage);
+            Gpu.Renderer.Texture.CreateData(Position, Data, NewImage);
         }
 
         private bool TryReuse(NvGpuVmm Vmm, long Position, GalImage NewImage)
