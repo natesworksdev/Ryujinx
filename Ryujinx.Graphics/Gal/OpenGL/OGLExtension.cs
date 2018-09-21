@@ -6,21 +6,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
     {
         private static bool Initialized = false;
 
-        private static bool EnhancedLayouts;
-        private static bool ViewportArray;
-        private static bool TextureMirrorClamp;
+        private static bool s_EnhancedLayouts;
+        private static bool s_ViewportArray;
+        private static bool s_TextureMirrorClamp;
 
-        public static bool HasEnhancedLayouts()    => Query(ref EnhancedLayouts);
-        public static bool HasViewportArray()      => Query(ref ViewportArray);
-        public static bool HasTextureMirrorClamp() => Query(ref TextureMirrorClamp);
+        public static bool EnhancedLayouts    => Query(ref s_EnhancedLayouts);
+        public static bool ViewportArray      => Query(ref s_ViewportArray);
+        public static bool TextureMirrorClamp => Query(ref s_TextureMirrorClamp);
         
         private static bool Query(ref bool Extension)
         {
             if (!Initialized)
             {
-                EnhancedLayouts    = HasExtension("GL_ARB_enhanced_layouts");
-                ViewportArray      = HasExtension("GL_ARB_viewport_array");
-                TextureMirrorClamp = HasExtension("GL_EXT_texture_mirror_clamp");
+                s_EnhancedLayouts = HasExtension("GL_ARB_enhanced_layouts");
+                s_ViewportArray = HasExtension("GL_ARB_viewport_array");
+                s_TextureMirrorClamp = HasExtension("GL_EXT_texture_mirror_clamp");
 
                 Initialized = true;
             }

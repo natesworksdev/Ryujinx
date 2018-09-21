@@ -176,7 +176,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
             }
 
-            if (OGLExtension.HasViewportArray())
+            if (OGLExtension.ViewportArray)
             {
                 GL.ViewportArray(0, 8, Viewports);
             }
