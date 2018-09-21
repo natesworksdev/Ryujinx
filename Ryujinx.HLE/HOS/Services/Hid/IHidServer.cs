@@ -18,25 +18,25 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private int XpadIdEventHandle;
 
-        private bool SixAxisSensorFusionEnabled                 = false;
-        private bool UnintendedHomeButtonInputProtectionEnabled = false;
-        private bool VibrationPermitted                         = false;
-        private bool UsbFullKeyControllerEnabled                = false;
+        private bool SixAxisSensorFusionEnabled;
+        private bool UnintendedHomeButtonInputProtectionEnabled;
+        private bool VibrationPermitted;
+        private bool UsbFullKeyControllerEnabled;
 
-        private HidNpadJoyHoldType            NpadJoyHoldType            = HidNpadJoyHoldType.Vertical;
-        private HidNpadStyle                  NpadStyleTag               = HidNpadStyle.FullKey | HidNpadStyle.Dual | HidNpadStyle.Left | HidNpadStyle.Right;
-        private HidNpadJoyAssignmentMode      NpadJoyAssignmentMode      = HidNpadJoyAssignmentMode.Dual;
-        private HidNpadHandheldActivationMode NpadHandheldActivationMode = HidNpadHandheldActivationMode.Dual;
-        private HidGyroscopeZeroDriftMode     GyroscopeZeroDriftMode     = HidGyroscopeZeroDriftMode.Standard;
+        private HidNpadJoyHoldType            NpadJoyHoldType;
+        private HidNpadStyle                  NpadStyleTag;
+        private HidNpadJoyAssignmentMode      NpadJoyAssignmentMode;
+        private HidNpadHandheldActivationMode NpadHandheldActivationMode;
+        private HidGyroscopeZeroDriftMode     GyroscopeZeroDriftMode;
 
-        private long  NpadCommunicationMode            = 0;
-        private uint  AccelerometerPlayMode            = 0;
-        private long  VibrationGcErmCommand            = 0;
-        private float SevenSixAxisSensorFusionStrength = 0.0f;
+        private long  NpadCommunicationMode;
+        private uint  AccelerometerPlayMode;
+        private long  VibrationGcErmCommand;
+        private float SevenSixAxisSensorFusionStrength;
 
-        private HidSensorFusionParameters  SensorFusionParams  = new HidSensorFusionParameters();
-        private HidAccelerometerParameters AccelerometerParams = new HidAccelerometerParameters();
-        private HidVibrationValue          VibrationValue      = new HidVibrationValue();
+        private HidSensorFusionParameters  SensorFusionParams;
+        private HidAccelerometerParameters AccelerometerParams;
+        private HidVibrationValue          VibrationValue;
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
 
@@ -152,6 +152,16 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             NpadStyleSetUpdateEvent     = new KEvent(System);
             XpadIdEvent                 = new KEvent(System);
             PalmaOperationCompleteEvent = new KEvent(System);
+
+            NpadJoyHoldType            = HidNpadJoyHoldType.Vertical;
+            NpadStyleTag               = HidNpadStyle.FullKey | HidNpadStyle.Dual | HidNpadStyle.Left | HidNpadStyle.Right;
+            NpadJoyAssignmentMode      = HidNpadJoyAssignmentMode.Dual;
+            NpadHandheldActivationMode = HidNpadHandheldActivationMode.Dual;
+            GyroscopeZeroDriftMode     = HidGyroscopeZeroDriftMode.Standard;
+
+            SensorFusionParams  = new HidSensorFusionParameters();
+            AccelerometerParams = new HidAccelerometerParameters();
+            VibrationValue      = new HidVibrationValue();
         }
 
         // CreateAppletResource(nn::applet::AppletResourceUserId) -> object<nn::hid::IAppletResource>
@@ -386,7 +396,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             int SixAxisSensorHandle = Context.RequestData.ReadInt32();
             long AppletResourceUserId = Context.RequestData.ReadInt64();
 
-            Context.ResponseData.Write(SixAxisSensorFusionEnabled ? 1 : 0);
+            Context.ResponseData.Write(SixAxisSensorFusionEnabled);
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. AppletResourceUserId: {AppletResourceUserId} - " +
                                                               $"SixAxisSensorHandle: {SixAxisSensorHandle} - " +
@@ -398,7 +408,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // EnableSixAxisSensorFusion(bool Enabled, nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public long EnableSixAxisSensorFusion(ServiceCtx Context)
         {
-            SixAxisSensorFusionEnabled = Context.RequestData.ReadInt32() != 0 ? true : false;
+            SixAxisSensorFusionEnabled = Context.RequestData.ReadBoolean();
             int  SixAxisSensorHandle   = Context.RequestData.ReadInt32();
             long AppletResourceUserId  = Context.RequestData.ReadInt64();
             
@@ -901,7 +911,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             uint  Unknown0            = Context.RequestData.ReadUInt32();
             long AppletResourceUserId = Context.RequestData.ReadInt64();
 
-            Context.ResponseData.Write(UnintendedHomeButtonInputProtectionEnabled ? 1 : 0);
+            Context.ResponseData.Write(UnintendedHomeButtonInputProtectionEnabled);
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. AppletResourceUserId: {AppletResourceUserId} - " +
                                                               $"Unknown0: {Unknown0} - " +
@@ -913,7 +923,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // EnableUnintendedHomeButtonInputProtection(bool Enable, uint Unknown0, nn::applet::AppletResourceUserId)
         public long EnableUnintendedHomeButtonInputProtection(ServiceCtx Context)
         {
-            UnintendedHomeButtonInputProtectionEnabled = Context.RequestData.ReadInt32() != 0 ? true : false;
+            UnintendedHomeButtonInputProtectionEnabled = Context.RequestData.ReadBoolean();
             uint  Unknown0                             = Context.RequestData.ReadUInt32();
             long AppletResourceUserId                  = Context.RequestData.ReadInt64();
 
@@ -1024,7 +1034,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // PermitVibration(bool Enable)
         public long PermitVibration(ServiceCtx Context)
         {
-            VibrationPermitted = Context.RequestData.ReadInt32() != 0 ? true : false;
+            VibrationPermitted = Context.RequestData.ReadBoolean();
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. VibrationPermitted: {VibrationPermitted}");
 
@@ -1034,7 +1044,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // IsVibrationPermitted() -> bool IsEnabled
         public long IsVibrationPermitted(ServiceCtx Context)
         {
-            Context.ResponseData.Write(VibrationPermitted ? 1 : 0);
+            Context.ResponseData.Write(VibrationPermitted);
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. VibrationPermitted: {VibrationPermitted}");
 
@@ -1228,7 +1238,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // IsUsbFullKeyControllerEnabled() -> bool IsEnabled
         public long IsUsbFullKeyControllerEnabled(ServiceCtx Context)
         {
-            Context.ResponseData.Write(UsbFullKeyControllerEnabled ? 1 : 0);
+            Context.ResponseData.Write(UsbFullKeyControllerEnabled);
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. UsbFullKeyControllerEnabled: {UsbFullKeyControllerEnabled}");
 
@@ -1238,7 +1248,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // EnableUsbFullKeyController(bool Enable)
         public long EnableUsbFullKeyController(ServiceCtx Context)
         {
-            UsbFullKeyControllerEnabled = Context.RequestData.ReadInt32() != 0 ? true : false;
+            UsbFullKeyControllerEnabled = Context.RequestData.ReadBoolean();
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. UsbFullKeyControllerEnabled: {UsbFullKeyControllerEnabled}");
 
@@ -1250,7 +1260,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             int Unknown0 = Context.RequestData.ReadInt32();
 
-            Context.ResponseData.Write(1); //FullKeyController is always connected ?
+            Context.ResponseData.Write((byte)0x1); //FullKeyController is always connected ?
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. Unknown0: {Unknown0} - Connected: true");
 
@@ -1262,7 +1272,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             int NpadId = Context.RequestData.ReadInt32();
 
-            Context.ResponseData.Write(1); //Npad always got a battery ?
+            Context.ResponseData.Write((byte)0x1); //Npad always got a battery ?
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. NpadId: {NpadId} - HasBattery: true");
 
@@ -1274,8 +1284,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             int NpadId = Context.RequestData.ReadInt32();
 
-            Context.ResponseData.Write(1); //Npad always got a left battery ?
-            Context.ResponseData.Write(1); //Npad always got a right battery ?
+            Context.ResponseData.Write((byte)0x1); //Npad always got a left battery ?
+            Context.ResponseData.Write((byte)0x1); //Npad always got a right battery ?
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. NpadId: {NpadId} - HasLeftBattery: true - HasRightBattery: true");
 
@@ -1402,8 +1412,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // EnablePalmaStep(nn::hid::PalmaConnectionHandle, bool Enable)
         public long EnablePalmaStep(ServiceCtx Context)
         {
-            int PalmaConnectionHandle = Context.RequestData.ReadInt32();
-            int EnabledPalmaStep      = Context.RequestData.ReadInt32();
+            int  PalmaConnectionHandle = Context.RequestData.ReadInt32();
+            bool EnabledPalmaStep      = Context.RequestData.ReadBoolean();
 
             Context.Device.Log.PrintStub(LogClass.ServiceHid, $"Stubbed. PalmaConnectionHandle: {PalmaConnectionHandle} - " +
                                                               $"EnabledPalmaStep: {EnabledPalmaStep}");
