@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS
 
             TlsPages = new List<KTlsPageManager>();
 
-            HandleTable = new KProcessHandleTable();
+            HandleTable = new KProcessHandleTable(Device.System);
 
             AppletState = new AppletStateMgr(Device.System);
 
@@ -139,7 +139,7 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            KThread MainThread = HandleTable.GetData<KThread>(Handle);
+            KThread MainThread = HandleTable.GetKThread(Handle);
 
             if (NeedsHbAbi)
             {
@@ -190,7 +190,7 @@ namespace Ryujinx.HLE.HOS
 
             Thread.LastPc = EntryPoint;
 
-            int Handle = HandleTable.OpenHandle(Thread);
+            HandleTable.GenerateHandle(Thread, out int Handle);
 
             CpuThread.ThreadState.CntfrqEl0 = TickFreq;
             CpuThread.ThreadState.Tpidr     = Tpidr;
@@ -427,13 +427,7 @@ namespace Ryujinx.HLE.HOS
 
             Disposed = true;
 
-            foreach (object Obj in HandleTable.Clear())
-            {
-                if (Obj is KSession Session)
-                {
-                    Session.Dispose();
-                }
-            }
+            HandleTable.Destroy();
 
             INvDrvServices.UnloadProcess(this);
 
