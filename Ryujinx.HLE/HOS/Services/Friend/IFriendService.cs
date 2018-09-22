@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             return 0;
         }
 
-        // UpdateUserPresence(nn::account::Uid, ulong Unknown0) -> buffer<nn::friends::detail::UserPresenceImpl, type: 0x19, size: 0xe0>
+        // UpdateUserPresence(nn::account::Uid, ulong Unknown0) -> buffer<Unknown1, type: 0x19, size: 0xe0>
         public long UpdateUserPresence(ServiceCtx Context)
         {
             UserId Uuid = new UserId(
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             long Position = Context.Request.PtrBuff[0].Position;
             long Size     = Context.Request.PtrBuff[0].Size;
 
-            //Todo: Write the nn::friends::detail::UserPresenceImpl inside the buffer.
+            //Todo: Write the buffer content.
 
             Context.Device.Log.PrintStub(LogClass.ServiceFriend, $"Stubbed. Uuid: {Uuid.UserIdHex} - " +
                                                                  $"Unknown0: {Unknown0}");
