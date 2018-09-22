@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.SystemState
         {
             if (Messages.Count < 2)
             {
-                MessageEvent.ReadableEvent.Reset();
+                MessageEvent.ReadableEvent.Clear();
             }
 
             return Messages.TryDequeue(out Message);

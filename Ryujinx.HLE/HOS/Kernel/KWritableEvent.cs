@@ -2,9 +2,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KWritableEvent
     {
-        private bool Signaled;
-
-        private KEvent  Parent;
+        private KEvent Parent;
 
         public KWritableEvent(KEvent Parent)
         {
@@ -19,11 +17,6 @@ namespace Ryujinx.HLE.HOS.Kernel
         public KernelResult Clear()
         {
             return Parent.ReadableEvent.Clear();
-        }
-
-        public void Reset()
-        {
-            Signaled = false;
         }
     }
 }

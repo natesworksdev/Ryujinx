@@ -54,11 +54,6 @@ namespace Ryujinx.HLE.HOS.Kernel
             return Result;
         }
 
-        public void Reset()
-        {
-            Signaled = false;
-        }
-
         public override bool IsSignaled()
         {
             return Signaled;

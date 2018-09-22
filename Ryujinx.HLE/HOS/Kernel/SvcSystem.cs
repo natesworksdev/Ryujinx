@@ -122,15 +122,23 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             KReadableEvent ReadableEvent = Process.HandleTable.GetObject<KReadableEvent>(Handle);
 
+            KernelResult Result;
+
             //TODO: KProcess support.
-            if (ReadableEvent == null)
+            if (ReadableEvent != null)
             {
-                return KernelResult.InvalidHandle;
+                Result = ReadableEvent.ClearIfSignaled();
+            }
+            else
+            {
+                Result = KernelResult.InvalidHandle;
             }
 
-            KernelResult Result = ReadableEvent.ClearIfSignaled();
-
-            if (Result != KernelResult.Success)
+            if (Result == KernelResult.InvalidState)
+            {
+                Device.Log.PrintDebug(LogClass.KernelSvc, "Operation failed with error: " + Result + "!");
+            }
+            else if (Result != KernelResult.Success)
             {
                 Device.Log.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + Result + "!");
             }
