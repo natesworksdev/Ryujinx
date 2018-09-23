@@ -71,7 +71,22 @@ namespace Ryujinx.HLE.HOS
 
             TlsPages = new List<KTlsPageManager>();
 
-            HandleTable = new KProcessHandleTable(Device.System);
+            int HandleTableSize = 1024;
+
+            if (MetaData != null)
+            {
+                foreach (KernelAccessControlItem Item in MetaData.ACI0.KernelAccessControl.Items)
+                {
+                    if (Item.HasHandleTableSize)
+                    {
+                        HandleTableSize = Item.HandleTableSize;
+
+                        break;
+                    }
+                }
+            }
+
+            HandleTable = new KProcessHandleTable(Device.System, HandleTableSize);
 
             AppletState = new AppletStateMgr(Device.System);
 
