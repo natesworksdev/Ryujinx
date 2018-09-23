@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Friend
 {
-    public enum PresenceStatusFilter
+    enum PresenceStatusFilter
     {
         None,
         Online,
@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         OnlineOrOnlinePlay
     }
 
-    public struct FriendFilter
+    struct FriendFilter
     {
         public PresenceStatusFilter PresenceStatus;
         public bool                 IsFavoriteOnly;
