@@ -18,6 +18,8 @@ namespace Ryujinx.HLE.HOS
         internal const int HidSize  = 0x40000;
         internal const int FontSize = 0x1100000;
 
+        private const bool EnableFsIntegrityChecks = true;
+
         private Switch Device;
 
         private ConcurrentDictionary<int, Process> Processes;
@@ -212,10 +214,17 @@ namespace Ryujinx.HLE.HOS
             }
 
             MainNca.SetBaseNca(PatchNca);
-            
+
             if (ControlNca != null)
             {
                 ReadControlData(ControlNca);
+            }
+
+            if (PatchNca != null)
+            {
+                PatchNca.SetBaseNca(MainNca);
+
+                return (PatchNca, ControlNca);
             }
 
             return (MainNca, ControlNca);
@@ -223,7 +232,7 @@ namespace Ryujinx.HLE.HOS
 
         public void ReadControlData(Nca ControlNca)
         {
-            Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false));
+            Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false, EnableFsIntegrityChecks));
 
             byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
 
@@ -252,8 +261,7 @@ namespace Ryujinx.HLE.HOS
             // Load title key from the NSP's ticket in case the user doesn't have a title key file
             if (TicketFile != null)
             {
-                // todo Change when Ticket(Stream) overload is added
-                Ticket Ticket = new Ticket(new BinaryReader(Nsp.OpenFile(TicketFile)));
+                Ticket Ticket = new Ticket(Nsp.OpenFile(TicketFile));
 
                 KeySet.TitleKeys[Ticket.RightsId] = Ticket.GetTitleKey(KeySet);
             }
@@ -287,7 +295,7 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadNca(Nca MainNca, Nca ControlNca)
         {
-            NcaSection RomfsSection = MainNca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
+            NcaSection RomfsSection = MainNca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs || x?.Type == SectionType.Bktr);
             NcaSection ExefsSection = MainNca.Sections.FirstOrDefault(x => x?.IsExefs == true);
 
             if (ExefsSection == null)
@@ -299,16 +307,16 @@ namespace Ryujinx.HLE.HOS
 
             if (RomfsSection == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "No RomFS found in NCA");
+                Device.Log.PrintWarning(LogClass.Loader, "No RomFS found in NCA");
+            }
+            else
+            {
+                Stream RomfsStream = MainNca.OpenSection(RomfsSection.SectionNum, false, EnableFsIntegrityChecks);
 
-                return;
+                Device.FileSystem.SetRomFs(RomfsStream);
             }
 
-            Stream RomfsStream = MainNca.OpenSection(RomfsSection.SectionNum, false);
-
-            Device.FileSystem.SetRomFs(RomfsStream);
-
-            Stream ExefsStream = MainNca.OpenSection(ExefsSection.SectionNum, false);
+            Stream ExefsStream = MainNca.OpenSection(ExefsSection.SectionNum, false, EnableFsIntegrityChecks);
 
             Pfs Exefs = new Pfs(ExefsStream);
 
@@ -348,7 +356,7 @@ namespace Ryujinx.HLE.HOS
 
             Nacp ReadControlData()
             {
-                Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false));
+                Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false, EnableFsIntegrityChecks));
 
                 byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
 
