@@ -121,11 +121,16 @@ namespace Ryujinx.Graphics
 
         private LinkedList<TValue> GetOrAddEntry(TKey Params)
         {
-            foreach ((TKey MyParams, LinkedList<TValue> Resources) in Entries)
+            foreach ((TKey MyParams, LinkedList<TValue> Resources) Tuple in Entries)
             {
-                if (MyParams.IsCompatible(Params))
+                if (Tuple.MyParams.IsCompatible(Params))
                 {
-                    return Resources;
+                    //Move accessed siblings to the top of the list, for faster access in the future
+                    Entries.Remove(Tuple);
+
+                    Entries.AddFirst(Tuple);
+
+                    return Tuple.Resources;
                 }
             }
 
