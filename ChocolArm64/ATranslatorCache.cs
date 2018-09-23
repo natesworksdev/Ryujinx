@@ -8,9 +8,9 @@ namespace ChocolArm64
 {
     class ATranslatorCache
     {
-        private const int MaxTotalSize          = 2 * 1024 * 256;
-        private const int MaxTimeDelta          = 30000;
-        private const int MinCallCountForUpdate = 1000;
+        private const int MaxTotalSize          = 4 * 1024 * 256;
+        private const int MaxTimeDelta          = 2 * 60000;
+        private const int MinCallCountForUpdate = 250;
 
         private class CacheBucket
         {
