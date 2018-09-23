@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics
 
         public TValue CreateOrRecycle(TKey Params)
         {
-            LinkedList<TValue> Siblings = GetOrAddEntry(Params);
+            LinkedList<TValue> Siblings = GetOrAddSiblings(Params);
 
             foreach (TValue RecycledValue in Siblings)
             {
@@ -119,19 +119,24 @@ namespace Ryujinx.Graphics
             }
         }
 
-        private LinkedList<TValue> GetOrAddEntry(TKey Params)
+        private LinkedList<TValue> GetOrAddSiblings(TKey Params)
         {
-            foreach ((TKey MyParams, LinkedList<TValue> Resources) Tuple in Entries)
+            LinkedListNode<(TKey, LinkedList<TValue>)> Node = Entries.First;
+
+            while (Node != null)
             {
-                if (Tuple.MyParams.IsCompatible(Params))
+                (TKey Params, LinkedList<TValue> Resources) Tuple = Node.Value;
+
+                if (Tuple.Params.IsCompatible(Params))
                 {
-                    //Move accessed siblings to the top of the list, for faster access in the future
-                    Entries.Remove(Tuple);
+                    Entries.Remove(Node);
 
                     Entries.AddFirst(Tuple);
 
                     return Tuple.Resources;
                 }
+
+                Node = Node.Next;
             }
 
             LinkedList<TValue> Siblings = new LinkedList<TValue>();
