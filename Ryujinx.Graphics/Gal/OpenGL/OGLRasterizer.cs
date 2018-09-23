@@ -101,11 +101,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             OGLStreamBuffer CachedBuffer = VboCache.CreateOrRecycle(Key, Params, (uint)DataSize);
 
-            IntPtr Length = new IntPtr(DataSize);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, CachedBuffer.Handle);
-
-            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, Length, HostAddress);
+            CachedBuffer.SetData(DataSize, HostAddress);
         }
 
         public void CreateIbo(long Key, int DataSize, IntPtr HostAddress)
@@ -114,11 +110,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             OGLStreamBuffer CachedBuffer = IboCache.CreateOrRecycle(Key, Params, (uint)DataSize);
 
-            IntPtr Length = new IntPtr(DataSize);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, CachedBuffer.Handle);
-
-            GL.BufferSubData(BufferTarget.ElementArrayBuffer, IntPtr.Zero, Length, HostAddress);
+            CachedBuffer.SetData(DataSize, HostAddress);
         }
 
         public void SetIndexArray(int Size, GalIndexFormat Format)

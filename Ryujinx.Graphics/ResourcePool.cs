@@ -14,14 +14,14 @@ namespace Ryujinx.Graphics
 
         public bool IsUsed { get; private set; }
 
-        public void UpdateStamp()
+        public void UpdateTimestamp()
         {
             Timestamp = Environment.TickCount;
         }
 
         public void MarkAsUsed()
         {
-            UpdateStamp();
+            UpdateTimestamp();
 
             IsUsed = true;
         }
@@ -43,9 +43,9 @@ namespace Ryujinx.Graphics
 
         public delegate void DeleteValue(TValue Resource);
 
-        private List<(TKey, List<TValue>)> Entries;
+        private LinkedList<(TKey, LinkedList<TValue>)> Entries;
 
-        private Queue<(TValue, List<TValue>)> SortedCache;
+        private Queue<(TValue, LinkedList<TValue>)> SortedCache;
 
         private CreateValue CreateValueCallback;
         private DeleteValue DeleteValueCallback;
@@ -55,16 +55,16 @@ namespace Ryujinx.Graphics
             this.CreateValueCallback = CreateValueCallback;
             this.DeleteValueCallback = DeleteValueCallback;
 
-            Entries = new List<(TKey, List<TValue>)>();
+            Entries = new LinkedList<(TKey, LinkedList<TValue>)>();
 
-            SortedCache = new Queue<(TValue, List<TValue>)>();
+            SortedCache = new Queue<(TValue, LinkedList<TValue>)>();
         }
 
         public TValue CreateOrRecycle(TKey Params)
         {
-            List<TValue> Family = GetOrAddEntry(Params);
+            LinkedList<TValue> Siblings = GetOrAddEntry(Params);
 
-            foreach (TValue RecycledValue in Family)
+            foreach (TValue RecycledValue in Siblings)
             {
                 if (!RecycledValue.IsUsed)
                 {
@@ -78,9 +78,9 @@ namespace Ryujinx.Graphics
 
             Resource.MarkAsUsed();
 
-            Family.Add(Resource);
+            Siblings.AddLast(Resource);
 
-            SortedCache.Enqueue((Resource, Family));
+            SortedCache.Enqueue((Resource, Siblings));
 
             return Resource;
         }
@@ -91,14 +91,12 @@ namespace Ryujinx.Graphics
 
             for (int Count = 0; Count < MaxRemovalsPerRun; Count++)
             {
-                if (!SortedCache.TryDequeue(out (TValue Resource, List<TValue> Family) Tuple))
+                if (!SortedCache.TryDequeue(out (TValue Resource, LinkedList<TValue> Siblings) Tuple))
                 {
                     break;
                 }
 
-                TValue Resource = Tuple.Resource;
-
-                List<TValue> Family = Tuple.Family;
+                (TValue Resource, LinkedList <TValue> Siblings) = Tuple;
 
                 if (!Resource.IsUsed)
                 {
@@ -106,7 +104,7 @@ namespace Ryujinx.Graphics
 
                     if ((uint)TimeDelta > MaxTimeDelta)
                     {
-                        if (!Family.Remove(Resource))
+                        if (!Siblings.Remove(Resource))
                         {
                             throw new InvalidOperationException();
                         }
@@ -117,13 +115,13 @@ namespace Ryujinx.Graphics
                     }
                 }
 
-                SortedCache.Enqueue((Resource, Family));
+                SortedCache.Enqueue((Resource, Siblings));
             }
         }
 
-        private List<TValue> GetOrAddEntry(TKey Params)
+        private LinkedList<TValue> GetOrAddEntry(TKey Params)
         {
-            foreach ((TKey MyParams, List<TValue> Resources) in Entries)
+            foreach ((TKey MyParams, LinkedList<TValue> Resources) in Entries)
             {
                 if (MyParams.IsCompatible(Params))
                 {
@@ -131,11 +129,11 @@ namespace Ryujinx.Graphics
                 }
             }
 
-            List<TValue> Family = new List<TValue>();
+            LinkedList<TValue> Siblings = new LinkedList<TValue>();
 
-            Entries.Add((Params, Family));
+            Entries.AddFirst((Params, Siblings));
 
-            return Family;
+            return Siblings;
         }
 
         private static int RingDelta(int Old, int New)

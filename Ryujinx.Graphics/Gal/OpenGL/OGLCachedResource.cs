@@ -30,19 +30,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ResourcePool<TKey, TValue>.CreateValue CreateValueCallback,
             ResourcePool<TKey, TValue>.DeleteValue DeleteValueCallback)
         {
-            if (CreateValueCallback == null)
-            {
-                throw new ArgumentNullException(nameof(CreateValueCallback));
-            }
-
-            if (DeleteValueCallback == null)
-            {
-                throw new ArgumentNullException(nameof(DeleteValueCallback));
-            }
-
             Cache = new Dictionary<long, CacheBucket>();
 
-            Pool = new ResourcePool<TKey, TValue>(CreateValueCallback, DeleteValueCallback);
+            Pool = new ResourcePool<TKey, TValue>(
+                CreateValueCallback ?? throw new ArgumentNullException(nameof(CreateValueCallback)),
+                DeleteValueCallback ?? throw new ArgumentNullException(nameof(DeleteValueCallback)));
         }
 
         public void Lock()
@@ -82,7 +74,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 Value = Bucket.Value;
 
-                Value.UpdateStamp();
+                Value.UpdateTimestamp();
 
                 return true;
             }
