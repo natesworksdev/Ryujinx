@@ -27,8 +27,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private bool Locked;
 
         public OGLCachedResource(
-            ResourcePool<TKey, TValue>.CreateValue CreateValueCallback,
-            ResourcePool<TKey, TValue>.DeleteValue DeleteValueCallback)
+            Func<TKey, TValue> CreateValueCallback,
+            Action<TValue>     DeleteValueCallback)
         {
             Cache = new Dictionary<long, CacheBucket>();
 

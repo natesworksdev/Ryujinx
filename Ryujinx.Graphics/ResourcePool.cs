@@ -36,28 +36,50 @@ namespace Ryujinx.Graphics
         where TKey   : ICompatible<TKey>
         where TValue : Resource
     {
+        struct Entry
+        {
+            public TKey               Params;
+            public LinkedList<TValue> Resources;
+
+            public Entry(TKey Params, LinkedList<TValue> Resources)
+            {
+                this.Params    = Params;
+                this.Resources = Resources;
+            }
+        }
+
+        struct DeletionEntry
+        {
+            public TValue             Resource;
+            public LinkedList<TValue> Siblings;
+
+            public DeletionEntry(TValue Resource, LinkedList<TValue> Siblings)
+            {
+                this.Resource = Resource;
+                this.Siblings = Siblings;
+            }
+        }
+
         private const int MaxTimeDelta      = 5 * 60000;
         private const int MaxRemovalsPerRun = 10;
 
-        public delegate TValue CreateValue(TKey Params);
+        private LinkedList<Entry> Entries;
 
-        public delegate void DeleteValue(TValue Resource);
+        private Queue<DeletionEntry> SortedCache;
 
-        private LinkedList<(TKey, LinkedList<TValue>)> Entries;
+        private Func<TKey, TValue> CreateValueCallback;
+        private Action<TValue>     DeleteValueCallback;
 
-        private Queue<(TValue, LinkedList<TValue>)> SortedCache;
-
-        private CreateValue CreateValueCallback;
-        private DeleteValue DeleteValueCallback;
-
-        public ResourcePool(CreateValue CreateValueCallback, DeleteValue DeleteValueCallback)
+        public ResourcePool(
+            Func<TKey, TValue> CreateValueCallback,
+            Action<TValue>     DeleteValueCallback)
         {
             this.CreateValueCallback = CreateValueCallback;
             this.DeleteValueCallback = DeleteValueCallback;
 
-            Entries = new LinkedList<(TKey, LinkedList<TValue>)>();
+            Entries = new LinkedList<Entry>();
 
-            SortedCache = new Queue<(TValue, LinkedList<TValue>)>();
+            SortedCache = new Queue<DeletionEntry>();
         }
 
         public TValue CreateOrRecycle(TKey Params)
@@ -80,7 +102,7 @@ namespace Ryujinx.Graphics
 
             Siblings.AddLast(Resource);
 
-            SortedCache.Enqueue((Resource, Siblings));
+            SortedCache.Enqueue(new DeletionEntry(Resource, Siblings));
 
             return Resource;
         }
@@ -91,12 +113,13 @@ namespace Ryujinx.Graphics
 
             for (int Count = 0; Count < MaxRemovalsPerRun; Count++)
             {
-                if (!SortedCache.TryDequeue(out (TValue Resource, LinkedList<TValue> Siblings) Tuple))
+                if (!SortedCache.TryDequeue(out DeletionEntry DeletionEntry))
                 {
                     break;
                 }
 
-                (TValue Resource, LinkedList <TValue> Siblings) = Tuple;
+                TValue              Resource = DeletionEntry.Resource;
+                LinkedList <TValue> Siblings = DeletionEntry.Siblings;
 
                 if (!Resource.IsUsed)
                 {
@@ -109,31 +132,31 @@ namespace Ryujinx.Graphics
                             throw new InvalidOperationException();
                         }
 
-                        DeleteValueCallback(Resource);
+                        DeleteValueCallback.Invoke(Resource);
 
                         continue;
                     }
                 }
 
-                SortedCache.Enqueue((Resource, Siblings));
+                SortedCache.Enqueue(DeletionEntry);
             }
         }
 
         private LinkedList<TValue> GetOrAddSiblings(TKey Params)
         {
-            LinkedListNode<(TKey, LinkedList<TValue>)> Node = Entries.First;
+            LinkedListNode<Entry> Node = Entries.First;
 
             while (Node != null)
             {
-                (TKey Params, LinkedList<TValue> Resources) Tuple = Node.Value;
+                Entry Entry = Node.Value;
 
-                if (Tuple.Params.IsCompatible(Params))
+                if (Entry.Params.IsCompatible(Params))
                 {
                     Entries.Remove(Node);
 
-                    Entries.AddFirst(Tuple);
+                    Entries.AddFirst(Entry);
 
-                    return Tuple.Resources;
+                    return Entry.Resources;
                 }
 
                 Node = Node.Next;
@@ -141,7 +164,7 @@ namespace Ryujinx.Graphics
 
             LinkedList<TValue> Siblings = new LinkedList<TValue>();
 
-            Entries.AddFirst((Params, Siblings));
+            Entries.AddFirst(new Entry(Params, Siblings));
 
             return Siblings;
         }
