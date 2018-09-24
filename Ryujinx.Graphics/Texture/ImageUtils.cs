@@ -94,6 +94,7 @@ namespace Ryujinx.Graphics.Texture
             { GalImageFormat.R32G32B32A32,  new ImageDescriptor(16, 1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R16G16B16A16,  new ImageDescriptor(8,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R32G32,        new ImageDescriptor(8,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R8G8B8A8,      new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.A8B8G8R8,      new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.A2B10G10R10,   new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R32,           new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
