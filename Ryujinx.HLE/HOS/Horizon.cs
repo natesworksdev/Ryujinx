@@ -18,8 +18,6 @@ namespace Ryujinx.HLE.HOS
         internal const int HidSize  = 0x40000;
         internal const int FontSize = 0x1100000;
 
-        private const bool EnableFsIntegrityChecks = true;
-
         private Switch Device;
 
         private ConcurrentDictionary<int, Process> Processes;
@@ -52,6 +50,8 @@ namespace Ryujinx.HLE.HOS
         public Nacp ControlData { get; set; }
 
         public string CurrentTitle { get; private set; }
+
+        public bool EnableFsIntegrityChecks { get; set; }
 
         public Horizon(Switch Device)
         {
