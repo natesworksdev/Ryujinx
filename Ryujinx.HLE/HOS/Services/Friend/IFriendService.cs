@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             long Unknown1 = Context.RequestData.ReadInt64();
 
-            // There is any friend online, so we return 0 because the nn::account::NetworkServiceAccountId array is empty.
+            // There are no friends online, so we return 0 because the nn::account::NetworkServiceAccountId array is empty.
             Context.ResponseData.Write(0);
 
             Context.Device.Log.PrintStub(LogClass.ServiceFriend, $"Stubbed. UserId: {Uuid.UserIdHex} - " +
