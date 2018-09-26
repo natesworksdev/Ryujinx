@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Texture
             { GalImageFormat.R32G32B32A32,  new ImageDescriptor(16, 1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R16G16B16A16,  new ImageDescriptor(8,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R32G32,        new ImageDescriptor(8,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.R8G8B8A8,      new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.B8G8R8A8,      new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.A8B8G8R8,      new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.A2B10G10R10,   new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R32,           new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
@@ -179,7 +179,7 @@ namespace Ryujinx.Graphics.Texture
                 case GalSurfaceFormat.RG32Float:      return GalImageFormat.R32G32         | Sfloat;
                 case GalSurfaceFormat.RG32Sint:       return GalImageFormat.R32G32         | Sint;
                 case GalSurfaceFormat.RG32Uint:       return GalImageFormat.R32G32         | Uint;
-                case GalSurfaceFormat.BGRA8Unorm:     return GalImageFormat.R8G8B8A8       | Unorm; //Is this right?
+                case GalSurfaceFormat.BGRA8Unorm:     return GalImageFormat.B8G8R8A8       | Unorm;
                 case GalSurfaceFormat.BGRA8Srgb:      return GalImageFormat.A8B8G8R8_SRGB;          //This one might be wrong
                 case GalSurfaceFormat.RGB10A2Unorm:   return GalImageFormat.A2B10G10R10    | Unorm;
                 case GalSurfaceFormat.RGBA8Unorm:     return GalImageFormat.A8B8G8R8       | Unorm;
