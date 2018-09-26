@@ -189,11 +189,13 @@ namespace Ryujinx.Graphics.Texture
                 case GalSurfaceFormat.RG16Float:      return GalImageFormat.R16G16         | Sfloat;
                 case GalSurfaceFormat.R11G11B10Float: return GalImageFormat.B10G11R11      | Sfloat;
                 case GalSurfaceFormat.R32Float:       return GalImageFormat.R32            | Sfloat;
+                case GalSurfaceFormat.R32Uint:        return GalImageFormat.R32            | Uint;
                 case GalSurfaceFormat.RG8Unorm:       return GalImageFormat.R8G8           | Unorm;
                 case GalSurfaceFormat.RG8Snorm:       return GalImageFormat.R8G8           | Snorm;
                 case GalSurfaceFormat.R16Float:       return GalImageFormat.R16            | Sfloat;
                 case GalSurfaceFormat.R16Unorm:       return GalImageFormat.R16            | Unorm;
                 case GalSurfaceFormat.R8Unorm:        return GalImageFormat.R8             | Unorm;
+                case GalSurfaceFormat.R8Uint:         return GalImageFormat.R8             | Uint;
                 case GalSurfaceFormat.B5G6R5Unorm:    return GalImageFormat.B5G6R5         | Unorm;
                 case GalSurfaceFormat.BGR5A1Unorm:    return GalImageFormat.A1R5G5B5       | Unorm;
             }
