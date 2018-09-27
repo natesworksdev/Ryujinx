@@ -9,7 +9,7 @@ Keysets are stored as text files. These 3 filenames are automatically read:
 
 Ryujinx will first look for keys in `RyuFS/system`, and if it doesn't find any there it will look in `$HOME/.switch`.
 
-A guide to assist with dumping your own keys can be found [here](https://gist.github.com/roblabla/d8358ab058bbe3b00614740dcba4f208).
+A guide to assist with dumping your own keys can be found [here](https://gbatemp.net/threads/how-to-get-switch-keys-for-hactool-xci-decrypting.506978).
 
 ## Common keys
 
