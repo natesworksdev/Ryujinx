@@ -7,8 +7,6 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics;
 
-using System;
-
 namespace Ryujinx.Tests.Cpu
 {
     [Category("SimdReg")] // Tested: second half of 2018.
