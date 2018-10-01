@@ -841,6 +841,78 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
+        [Test, Pairwise, Description("FSQRT <Sd>, <Sn>")]
+        public void F_Sqrt_S_S([ValueSource("_1S_F_")] ulong A)
+        {
+            uint Opcode = 0x1E21C020; // FSQRT S0, S1
+
+            ulong Z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE0(A);
+
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpcr: Fpcr);
+
+            CompareAgainstUnicorn(FPSR.IOC);
+        }
+
+        [Test, Pairwise, Description("FSQRT <Dd>, <Dn>")]
+        public void F_Sqrt_S_D([ValueSource("_1D_F_")] ulong A)
+        {
+            uint Opcode = 0x1E61C020; // FSQRT D0, D1
+
+            ulong Z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> V0 = MakeVectorE1(Z);
+            Vector128<float> V1 = MakeVectorE0(A);
+
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpcr: Fpcr);
+
+            CompareAgainstUnicorn(FPSR.IOC);
+        }
+
+        [Test, Pairwise, Description("FSQRT <Vd>.<T>, <Vn>.<T>")]
+        public void F_Sqrt_V_2S_4S([Values(0u)]     uint Rd,
+                                   [Values(1u, 0u)] uint Rn,
+                                   [ValueSource("_2S_F_")] ulong Z,
+                                   [ValueSource("_2S_F_")] ulong A,
+                                   [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
+        {
+            uint Opcode = 0x2EA1F800; // FSQRT V0.2S, V0.2S
+            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            Opcode |= ((Q & 1) << 30);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
+
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpcr: Fpcr);
+
+            CompareAgainstUnicorn(FPSR.IOC);
+        }
+
+        [Test, Pairwise, Description("FSQRT <Vd>.<T>, <Vn>.<T>")]
+        public void F_Sqrt_V_2D([Values(0u)]     uint Rd,
+                                [Values(1u, 0u)] uint Rn,
+                                [ValueSource("_1D_F_")] ulong Z,
+                                [ValueSource("_1D_F_")] ulong A)
+        {
+            uint Opcode = 0x6EE1F800; // FSQRT V0.2D, V0.2D
+            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+
+            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
+            Vector128<float> V1 = MakeVectorE0E1(A, A);
+
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+
+            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1, Fpcr: Fpcr);
+
+            CompareAgainstUnicorn(FPSR.IOC);
+        }
+
         [Test, Pairwise, Description("NEG <V><d>, <V><n>")]
         public void Neg_S_D([Values(0u)]     uint Rd,
                             [Values(1u, 0u)] uint Rn,
