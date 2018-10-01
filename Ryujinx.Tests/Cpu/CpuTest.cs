@@ -178,26 +178,11 @@ namespace Ryujinx.Tests.Cpu
             return GetThreadState();
         }
 
-        /// <summary>Rounding Mode control field.</summary>
-        public enum RMode
-        {
-            /// <summary>Round to Nearest (RN) mode.</summary>
-            RN,
-            /// <summary>Round towards Plus Infinity (RP) mode.</summary>
-            RP,
-            /// <summary>Round towards Minus Infinity (RM) mode.</summary>
-            RM,
-            /// <summary>Round towards Zero (RZ) mode.</summary>
-            RZ
-        };
-
         /// <summary>Floating-point Control Register.</summary>
         protected enum FPCR
         {
-            /// <summary>Rounding Mode control field.</summary>
-            RMode = 22,
             /// <summary>Default NaN mode control bit.</summary>
-            DN    = 25
+            DN = 25
         }
 
         /// <summary>Floating-point Status Register.</summary>
@@ -217,13 +202,29 @@ namespace Ryujinx.Tests.Cpu
             IXC = 1 << 4,
             /// <summary>Input Denormal cumulative floating-point exception bit.</summary>
             IDC = 1 << 7,
+
             /// <summary>Cumulative saturation bit.</summary>
-            QC  = 1 << 27
+            QC = 1 << 27
         }
 
-        [Flags] protected enum FpSkips { None = 0, IfNaN_S = 1, IfNaN_D = 2, IfUnderflow = 4, IfOverflow = 8 };
+        [Flags] protected enum FpSkips
+        {
+            None = 0,
 
-        protected enum FpTolerances { None, UpToOneUlps_S, UpToOneUlps_D };
+            IfNaN_S = 1,
+            IfNaN_D = 2,
+
+            IfUnderflow = 4,
+            IfOverflow  = 8
+        }
+
+        protected enum FpTolerances
+        {
+            None,
+
+            UpToOneUlps_S,
+            UpToOneUlps_D
+        }
 
         protected void CompareAgainstUnicorn(
             FPSR         FpsrMask     = FPSR.None,
