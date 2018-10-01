@@ -1,5 +1,4 @@
 using ChocolArm64.State;
-
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -271,11 +270,6 @@ namespace ChocolArm64.Instruction
                 else
                 {
                     Result = Value1 + Value2;
-
-                    /*if (Result == 0f) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
                 }
             }
 
@@ -536,13 +530,10 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
+                    // TODO: When available, use: T MathF.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
-                    Result = ValueA + (Value1 * Value2);
 
-                    /*if (Result == 0f) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
+                    Result = ValueA + (Value1 * Value2);
                 }
             }
 
@@ -585,13 +576,10 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
+                    // TODO: When available, use: T MathF.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
-                    Result = 2f + (Value1 * Value2);
 
-                    /*if (Result == 0f) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
+                    Result = 2f + (Value1 * Value2);
                 }
             }
 
@@ -624,14 +612,45 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
+                    // TODO: When available, use: T MathF.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
-                    Result = (3f + (Value1 * Value2)) / 2f;
 
-                    /*if (Result == 0f) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
+                    Result = (3f + (Value1 * Value2)) / 2f;
                 }
+            }
+
+            return Result;
+        }
+
+        public static float FPSqrt(float Value, AThreadState State)
+        {
+            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPSqrt: State.Fpcr = 0x{State.Fpcr:X8}");
+
+            Value = Value.FPUnpack(out FPType Type, out bool Sign, out uint Op);
+
+            float Result;
+
+            if (Type == FPType.SNaN || Type == FPType.QNaN)
+            {
+                Result = FPProcessNaN(Type, Op, State);
+            }
+            else if (Type == FPType.Zero)
+            {
+                Result = FPZero(Sign);
+            }
+            else if (Type == FPType.Infinity && !Sign)
+            {
+                Result = FPInfinity(Sign);
+            }
+            else if (Sign)
+            {
+                Result = FPDefaultNaN();
+
+                FPProcessException(FPExc.InvalidOp, State);
+            }
+            else
+            {
+                Result = MathF.Sqrt(Value);
             }
 
             return Result;
@@ -672,28 +691,74 @@ namespace ChocolArm64.Instruction
                 else
                 {
                     Result = Value1 - Value2;
-
-                    /*if (Result == 0f) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
                 }
             }
 
             return Result;
         }
 
-        private enum FPType { Nonzero, Zero, Infinity, QNaN, SNaN };
-        private enum FPExc { InvalidOp, DivideByZero, Overflow, Underflow, Inexact, InputDenorm = 7 };
-        private enum FPRounding { TIEEVEN, POSINF, NEGINF, ZERO };
+        private enum FPType
+        {
+            Nonzero,
+            Zero,
+            Infinity,
+            QNaN,
+            SNaN
+        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static float FPDefaultNaN() => -float.NaN;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static float FPInfinity(bool Sign) => Sign ? float.NegativeInfinity : float.PositiveInfinity;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static float FPZero(bool Sign) => Sign ? -0f : +0f;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static float FPTwo(bool Sign) => Sign ? -2f : +2f;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static float FPOnePointFive(bool Sign) => Sign ? -1.5f : +1.5f;
+        private enum FPExc
+        {
+            InvalidOp,
+            DivideByZero,
+            Overflow,
+            Underflow,
+            Inexact,
+            InputDenorm = 7
+        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static float FPNeg(this float Value) => -Value;
+        private enum FPRounding
+        {
+            TIEEVEN,
+            POSINF,
+            NEGINF,
+            ZERO
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float FPDefaultNaN()
+        {
+            return -float.NaN;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float FPInfinity(bool Sign)
+        {
+            return Sign ? float.NegativeInfinity : float.PositiveInfinity;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float FPZero(bool Sign)
+        {
+            return Sign ? -0f : +0f;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float FPTwo(bool Sign)
+        {
+            return Sign ? -2f : +2f;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float FPOnePointFive(bool Sign)
+        {
+            return Sign ? -1.5f : +1.5f;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float FPNeg(this float Value)
+        {
+            return -Value;
+        }
 
         private static float FPUnpack(this float Value, out FPType Type, out bool Sign, out uint ValueBits)
         {
@@ -736,8 +801,10 @@ namespace ChocolArm64.Instruction
         }
 
         private static float FPProcessNaNs(
-            FPType Type1, FPType Type2,
-            uint Op1, uint Op2,
+            FPType Type1,
+            FPType Type2,
+            uint Op1,
+            uint Op2,
             AThreadState State,
             out bool Done)
         {
@@ -766,8 +833,12 @@ namespace ChocolArm64.Instruction
         }
 
         private static float FPProcessNaNs3(
-            FPType Type1, FPType Type2, FPType Type3,
-            uint Op1, uint Op2, uint Op3,
+            FPType Type1,
+            FPType Type2,
+            FPType Type3,
+            uint Op1,
+            uint Op2,
+            uint Op3,
             AThreadState State,
             out bool Done)
         {
@@ -882,11 +953,6 @@ namespace ChocolArm64.Instruction
                 else
                 {
                     Result = Value1 + Value2;
-
-                    /*if (Result == 0f) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
                 }
             }
 
@@ -1147,13 +1213,10 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
+                    // TODO: When available, use: T Math.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
-                    Result = ValueA + (Value1 * Value2);
 
-                    /*if (Result == 0d) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
+                    Result = ValueA + (Value1 * Value2);
                 }
             }
 
@@ -1196,13 +1259,10 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
+                    // TODO: When available, use: T Math.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
-                    Result = 2d + (Value1 * Value2);
 
-                    /*if (Result == 0d) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
+                    Result = 2d + (Value1 * Value2);
                 }
             }
 
@@ -1235,14 +1295,45 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
+                    // TODO: When available, use: T Math.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
-                    Result = (3d + (Value1 * Value2)) / 2d;
 
-                    /*if (Result == 0d) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
+                    Result = (3d + (Value1 * Value2)) / 2d;
                 }
+            }
+
+            return Result;
+        }
+
+        public static double FPSqrt(double Value, AThreadState State)
+        {
+            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPSqrt: State.Fpcr = 0x{State.Fpcr:X8}");
+
+            Value = Value.FPUnpack(out FPType Type, out bool Sign, out ulong Op);
+
+            double Result;
+
+            if (Type == FPType.SNaN || Type == FPType.QNaN)
+            {
+                Result = FPProcessNaN(Type, Op, State);
+            }
+            else if (Type == FPType.Zero)
+            {
+                Result = FPZero(Sign);
+            }
+            else if (Type == FPType.Infinity && !Sign)
+            {
+                Result = FPInfinity(Sign);
+            }
+            else if (Sign)
+            {
+                Result = FPDefaultNaN();
+
+                FPProcessException(FPExc.InvalidOp, State);
+            }
+            else
+            {
+                Result = Math.Sqrt(Value);
             }
 
             return Result;
@@ -1283,28 +1374,74 @@ namespace ChocolArm64.Instruction
                 else
                 {
                     Result = Value1 - Value2;
-
-                    /*if (Result == 0f) // -Zero, +Zero
-                    {
-                        Result = FPZero(FPRoundingMode(State) == FPRounding.NEGINF);
-                    }*/
                 }
             }
 
             return Result;
         }
 
-        private enum FPType { Nonzero, Zero, Infinity, QNaN, SNaN };
-        private enum FPExc { InvalidOp, DivideByZero, Overflow, Underflow, Inexact, InputDenorm = 7 };
-        private enum FPRounding { TIEEVEN, POSINF, NEGINF, ZERO };
+        private enum FPType
+        {
+            Nonzero,
+            Zero,
+            Infinity,
+            QNaN,
+            SNaN
+        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static double FPDefaultNaN() => -double.NaN;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static double FPInfinity(bool Sign) => Sign ? double.NegativeInfinity : double.PositiveInfinity;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static double FPZero(bool Sign) => Sign ? -0d : +0d;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static double FPTwo(bool Sign) => Sign ? -2d : +2d;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static double FPOnePointFive(bool Sign) => Sign ? -1.5d : +1.5d;
+        private enum FPExc
+        {
+            InvalidOp,
+            DivideByZero,
+            Overflow,
+            Underflow,
+            Inexact,
+            InputDenorm = 7
+        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] private static double FPNeg(this double Value) => -Value;
+        private enum FPRounding
+        {
+            TIEEVEN,
+            POSINF,
+            NEGINF,
+            ZERO
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double FPDefaultNaN()
+        {
+            return -double.NaN;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double FPInfinity(bool Sign)
+        {
+            return Sign ? double.NegativeInfinity : double.PositiveInfinity;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double FPZero(bool Sign)
+        {
+            return Sign ? -0d : +0d;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double FPTwo(bool Sign)
+        {
+            return Sign ? -2d : +2d;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double FPOnePointFive(bool Sign)
+        {
+            return Sign ? -1.5d : +1.5d;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double FPNeg(this double Value)
+        {
+            return -Value;
+        }
 
         private static double FPUnpack(this double Value, out FPType Type, out bool Sign, out ulong ValueBits)
         {
@@ -1331,7 +1468,7 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
-                    Type = (~ValueBits & 0x8000000000000ul) == 0ul
+                    Type = (~ValueBits & 0x0008000000000000ul) == 0ul
                         ? FPType.QNaN
                         : FPType.SNaN;
 
@@ -1347,8 +1484,10 @@ namespace ChocolArm64.Instruction
         }
 
         private static double FPProcessNaNs(
-            FPType Type1, FPType Type2,
-            ulong Op1, ulong Op2,
+            FPType Type1,
+            FPType Type2,
+            ulong Op1,
+            ulong Op2,
             AThreadState State,
             out bool Done)
         {
@@ -1377,8 +1516,12 @@ namespace ChocolArm64.Instruction
         }
 
         private static double FPProcessNaNs3(
-            FPType Type1, FPType Type2, FPType Type3,
-            ulong Op1, ulong Op2, ulong Op3,
+            FPType Type1,
+            FPType Type2,
+            FPType Type3,
+            ulong Op1,
+            ulong Op2,
+            ulong Op3,
             AThreadState State,
             out bool Done)
         {
