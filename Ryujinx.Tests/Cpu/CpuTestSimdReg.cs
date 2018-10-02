@@ -1136,41 +1136,35 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise]
         public void F_Add_Div_Mul_Sub_S_S([ValueSource("_F_Add_Div_Mul_Sub_S_S_")] uint Opcodes,
                                           [ValueSource("_1S_F_")] ulong A,
-                                          [ValueSource("_1S_F_")] ulong B,
-                                          [Values] RMode RMode)
+                                          [ValueSource("_1S_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
             Vector128<float> V2 = MakeVectorE0(B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
-            else CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_S);
+            CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
         }
 
         [Test, Pairwise]
         public void F_Add_Div_Mul_Sub_S_D([ValueSource("_F_Add_Div_Mul_Sub_S_D_")] uint Opcodes,
                                           [ValueSource("_1D_F_")] ulong A,
-                                          [ValueSource("_1D_F_")] ulong B,
-                                          [Values] RMode RMode)
+                                          [ValueSource("_1D_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE1(Z);
             Vector128<float> V1 = MakeVectorE0(A);
             Vector128<float> V2 = MakeVectorE0(B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
-            else CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_D);
+            CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
         }
 
         [Test, Pairwise]
@@ -1181,8 +1175,7 @@ namespace Ryujinx.Tests.Cpu
                                               [ValueSource("_2S_F_")] ulong Z,
                                               [ValueSource("_2S_F_")] ulong A,
                                               [ValueSource("_2S_F_")] ulong B,
-                                              [Values(0b0u, 0b1u)] uint Q, // <2S, 4S>
-                                              [Values] RMode RMode)
+                                              [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcodes |= ((Q & 1) << 30);
@@ -1191,13 +1184,11 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
             Vector128<float> V2 = MakeVectorE0E1(B, B * Q);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
-            else CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_S);
+            CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
         }
 
         [Test, Pairwise]
@@ -1207,8 +1198,7 @@ namespace Ryujinx.Tests.Cpu
                                            [Values(2u, 0u)] uint Rm,
                                            [ValueSource("_1D_F_")] ulong Z,
                                            [ValueSource("_1D_F_")] ulong A,
-                                           [ValueSource("_1D_F_")] ulong B,
-                                           [Values] RMode RMode)
+                                           [ValueSource("_1D_F_")] ulong B)
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
 
@@ -1216,21 +1206,18 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V1 = MakeVectorE0E1(A, A);
             Vector128<float> V2 = MakeVectorE0E1(B, B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
-            else CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_D);
+            CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
         }
 
         [Test, Pairwise] // Fused.
         public void Fmadd_Fmsub_S_S([ValueSource("_Fmadd_Fmsub_S_S_")] uint Opcodes,
                                     [ValueSource("_1S_F_")] ulong A,
                                     [ValueSource("_1S_F_")] ulong B,
-                                    [ValueSource("_1S_F_")] ulong C,
-                                    [Values] RMode RMode)
+                                    [ValueSource("_1S_F_")] ulong C)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
@@ -1238,21 +1225,18 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V2 = MakeVectorE0(B);
             Vector128<float> V3 = MakeVectorE0(C);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, V3: V3, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_S);
-            else CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_S);
+            CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_S);
         }
 
         [Test, Pairwise] // Fused.
         public void Fmadd_Fmsub_S_D([ValueSource("_Fmadd_Fmsub_S_D_")] uint Opcodes,
                                     [ValueSource("_1D_F_")] ulong A,
                                     [ValueSource("_1D_F_")] ulong B,
-                                    [ValueSource("_1D_F_")] ulong C,
-                                    [Values] RMode RMode)
+                                    [ValueSource("_1D_F_")] ulong C)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE1(Z);
@@ -1260,28 +1244,24 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V2 = MakeVectorE0(B);
             Vector128<float> V3 = MakeVectorE0(C);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, V3: V3, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_D);
-            else CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_D);
+            CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_D);
         }
 
         [Test, Pairwise]
         public void F_Max_Min_Nm_S_S([ValueSource("_F_Max_Min_Nm_S_S_")] uint Opcodes,
                                      [ValueSource("_1S_F_")] ulong A,
-                                     [ValueSource("_1S_F_")] ulong B,
-                                     [Values] RMode RMode)
+                                     [ValueSource("_1S_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
             Vector128<float> V2 = MakeVectorE0(B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
@@ -1291,16 +1271,14 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise]
         public void F_Max_Min_Nm_S_D([ValueSource("_F_Max_Min_Nm_S_D_")] uint Opcodes,
                                      [ValueSource("_1D_F_")] ulong A,
-                                     [ValueSource("_1D_F_")] ulong B,
-                                     [Values] RMode RMode)
+                                     [ValueSource("_1D_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE1(Z);
             Vector128<float> V1 = MakeVectorE0(A);
             Vector128<float> V2 = MakeVectorE0(B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
@@ -1315,8 +1293,7 @@ namespace Ryujinx.Tests.Cpu
                                            [ValueSource("_2S_F_")] ulong Z,
                                            [ValueSource("_2S_F_")] ulong A,
                                            [ValueSource("_2S_F_")] ulong B,
-                                           [Values(0b0u, 0b1u)] uint Q, // <2S, 4S>
-                                           [Values] RMode RMode)
+                                           [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcodes |= ((Q & 1) << 30);
@@ -1325,8 +1302,7 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
             Vector128<float> V2 = MakeVectorE0E1(B, B * Q);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
@@ -1340,8 +1316,7 @@ namespace Ryujinx.Tests.Cpu
                                         [Values(2u, 0u)] uint Rm,
                                         [ValueSource("_1D_F_")] ulong Z,
                                         [ValueSource("_1D_F_")] ulong A,
-                                        [ValueSource("_1D_F_")] ulong B,
-                                        [Values] RMode RMode)
+                                        [ValueSource("_1D_F_")] ulong B)
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
 
@@ -1349,8 +1324,7 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V1 = MakeVectorE0E1(A, A);
             Vector128<float> V2 = MakeVectorE0E1(B, B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
@@ -1360,41 +1334,35 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise] // Fused.
         public void Frecps_Frsqrts_S_S([ValueSource("_Frecps_Frsqrts_S_S_")] uint Opcodes,
                                        [ValueSource("_1S_F_")] ulong A,
-                                       [ValueSource("_1S_F_")] ulong B,
-                                       [Values] RMode RMode)
+                                       [ValueSource("_1S_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
             Vector128<float> V2 = MakeVectorE0(B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_S);
-            else CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_S);
+            CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_S);
         }
 
         [Test, Pairwise] // Fused.
         public void Frecps_Frsqrts_S_D([ValueSource("_Frecps_Frsqrts_S_D_")] uint Opcodes,
                                        [ValueSource("_1D_F_")] ulong A,
-                                       [ValueSource("_1D_F_")] ulong B,
-                                       [Values] RMode RMode)
+                                       [ValueSource("_1D_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE1(Z);
             Vector128<float> V1 = MakeVectorE0(A);
             Vector128<float> V2 = MakeVectorE0(B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_D);
-            else CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_D);
+            CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_D);
         }
 
         [Test, Pairwise] // Fused.
@@ -1405,8 +1373,7 @@ namespace Ryujinx.Tests.Cpu
                                            [ValueSource("_2S_F_")] ulong Z,
                                            [ValueSource("_2S_F_")] ulong A,
                                            [ValueSource("_2S_F_")] ulong B,
-                                           [Values(0b0u, 0b1u)] uint Q, // <2S, 4S>
-                                           [Values] RMode RMode)
+                                           [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcodes |= ((Q & 1) << 30);
@@ -1415,13 +1382,11 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
             Vector128<float> V2 = MakeVectorE0E1(B, B * Q);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_S);
-            else CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_S);
+            CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_S);
         }
 
         [Test, Pairwise] // Fused.
@@ -1431,8 +1396,7 @@ namespace Ryujinx.Tests.Cpu
                                         [Values(2u, 0u)] uint Rm,
                                         [ValueSource("_1D_F_")] ulong Z,
                                         [ValueSource("_1D_F_")] ulong A,
-                                        [ValueSource("_1D_F_")] ulong B,
-                                        [Values] RMode RMode)
+                                        [ValueSource("_1D_F_")] ulong B)
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
 
@@ -1440,13 +1404,11 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V1 = MakeVectorE0E1(A, A);
             Vector128<float> V2 = MakeVectorE0E1(B, B);
 
-            int Fpcr = (int)RMode << (int)FPCR.RMode;
-            Fpcr |= (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            if (RMode == RMode.RN) CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_D);
-            else CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow | FpSkips.IfOverflow, FpTolerances.UpToOneUlps_D);
+            CompareAgainstUnicorn(FPSR.IOC, FpSkips.IfUnderflow, FpTolerances.UpToOneUlps_D);
         }
 
         [Test, Pairwise, Description("ORN <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
