@@ -546,6 +546,22 @@ namespace ChocolArm64.Instruction
             EmitVectorBinaryOpByElemF(Context, () => Context.Emit(OpCodes.Mul));
         }
 
+        public static void Fmulx_S(AILEmitterCtx Context)
+        {
+            EmitScalarBinaryOpF(Context, () =>
+            {
+                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
+            });
+        }
+
+        public static void Fmulx_V(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpF(Context, () =>
+            {
+                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
+            });
+        }
+
         public static void Fneg_S(AILEmitterCtx Context)
         {
             EmitScalarUnaryOpF(Context, () => Context.Emit(OpCodes.Neg));
