@@ -204,47 +204,51 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Opcodes)"
-        private static uint[] _F_Add_Div_Mul_Sub_S_S_()
+        private static uint[] _F_Add_Div_Mul_MulX_Sub_S_S_()
         {
             return new uint[]
             {
-                0x1E222820u, // FADD S0, S1, S2
-                0x1E221820u, // FDIV S0, S1, S2
-                0x1E220820u, // FMUL S0, S1, S2
-                0x1E223820u  // FSUB S0, S1, S2
+                0x1E222820u, // FADD  S0, S1, S2
+                0x1E221820u, // FDIV  S0, S1, S2
+                0x1E220820u, // FMUL  S0, S1, S2
+                0x5E22DC20u, // FMULX S0, S1, S2
+                0x1E223820u  // FSUB  S0, S1, S2
             };
         }
 
-        private static uint[] _F_Add_Div_Mul_Sub_S_D_()
+        private static uint[] _F_Add_Div_Mul_MulX_Sub_S_D_()
         {
             return new uint[]
             {
-                0x1E622820u, // FADD D0, D1, D2
-                0x1E621820u, // FDIV D0, D1, D2
-                0x1E620820u, // FMUL D0, D1, D2
-                0x1E623820u  // FSUB D0, D1, D2
+                0x1E622820u, // FADD  D0, D1, D2
+                0x1E621820u, // FDIV  D0, D1, D2
+                0x1E620820u, // FMUL  D0, D1, D2
+                0x5E62DC20u, // FMULX D0, D1, D2
+                0x1E623820u  // FSUB  D0, D1, D2
             };
         }
 
-        private static uint[] _F_Add_Div_Mul_Sub_V_2S_4S_()
+        private static uint[] _F_Add_Div_Mul_MulX_Sub_V_2S_4S_()
         {
             return new uint[]
             {
-                0x0E20D400u, // FADD V0.2S, V0.2S, V0.2S
-                0x2E20FC00u, // FDIV V0.2S, V0.2S, V0.2S
-                0x2E20DC00u, // FMUL V0.2S, V0.2S, V0.2S
-                0x0EA0D400u  // FSUB V0.2S, V0.2S, V0.2S
+                0x0E20D400u, // FADD  V0.2S, V0.2S, V0.2S
+                0x2E20FC00u, // FDIV  V0.2S, V0.2S, V0.2S
+                0x2E20DC00u, // FMUL  V0.2S, V0.2S, V0.2S
+                0x0E20DC00u, // FMULX V0.2S, V0.2S, V0.2S
+                0x0EA0D400u  // FSUB  V0.2S, V0.2S, V0.2S
             };
         }
 
-        private static uint[] _F_Add_Div_Mul_Sub_V_2D_()
+        private static uint[] _F_Add_Div_Mul_MulX_Sub_V_2D_()
         {
             return new uint[]
             {
-                0x4E60D400u, // FADD V0.2D, V0.2D, V0.2D
-                0x6E60FC00u, // FDIV V0.2D, V0.2D, V0.2D
-                0x6E60DC00u, // FMUL V0.2D, V0.2D, V0.2D
-                0x4EE0D400u  // FSUB V0.2D, V0.2D, V0.2D
+                0x4E60D400u, // FADD  V0.2D, V0.2D, V0.2D
+                0x6E60FC00u, // FDIV  V0.2D, V0.2D, V0.2D
+                0x6E60DC00u, // FMUL  V0.2D, V0.2D, V0.2D
+                0x4E60DC00u, // FMULX V0.2D, V0.2D, V0.2D
+                0x4EE0D400u  // FSUB  V0.2D, V0.2D, V0.2D
             };
         }
 
@@ -1134,9 +1138,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void F_Add_Div_Mul_Sub_S_S([ValueSource("_F_Add_Div_Mul_Sub_S_S_")] uint Opcodes,
-                                          [ValueSource("_1S_F_")] ulong A,
-                                          [ValueSource("_1S_F_")] ulong B)
+        public void F_Add_Div_Mul_MulX_Sub_S_S([ValueSource("_F_Add_Div_Mul_MulX_Sub_S_S_")] uint Opcodes,
+                                               [ValueSource("_1S_F_")] ulong A,
+                                               [ValueSource("_1S_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
@@ -1151,9 +1155,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void F_Add_Div_Mul_Sub_S_D([ValueSource("_F_Add_Div_Mul_Sub_S_D_")] uint Opcodes,
-                                          [ValueSource("_1D_F_")] ulong A,
-                                          [ValueSource("_1D_F_")] ulong B)
+        public void F_Add_Div_Mul_MulX_Sub_S_D([ValueSource("_F_Add_Div_Mul_MulX_Sub_S_D_")] uint Opcodes,
+                                               [ValueSource("_1D_F_")] ulong A,
+                                               [ValueSource("_1D_F_")] ulong B)
         {
             ulong Z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> V0 = MakeVectorE1(Z);
@@ -1168,14 +1172,14 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void F_Add_Div_Mul_Sub_V_2S_4S([ValueSource("_F_Add_Div_Mul_Sub_V_2S_4S_")] uint Opcodes,
-                                              [Values(0u)]     uint Rd,
-                                              [Values(1u, 0u)] uint Rn,
-                                              [Values(2u, 0u)] uint Rm,
-                                              [ValueSource("_2S_F_")] ulong Z,
-                                              [ValueSource("_2S_F_")] ulong A,
-                                              [ValueSource("_2S_F_")] ulong B,
-                                              [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
+        public void F_Add_Div_Mul_MulX_Sub_V_2S_4S([ValueSource("_F_Add_Div_Mul_MulX_Sub_V_2S_4S_")] uint Opcodes,
+                                                   [Values(0u)]     uint Rd,
+                                                   [Values(1u, 0u)] uint Rn,
+                                                   [Values(2u, 0u)] uint Rm,
+                                                   [ValueSource("_2S_F_")] ulong Z,
+                                                   [ValueSource("_2S_F_")] ulong A,
+                                                   [ValueSource("_2S_F_")] ulong B,
+                                                   [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcodes |= ((Q & 1) << 30);
@@ -1192,13 +1196,13 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void F_Add_Div_Mul_Sub_V_2D([ValueSource("_F_Add_Div_Mul_Sub_V_2D_")] uint Opcodes,
-                                           [Values(0u)]     uint Rd,
-                                           [Values(1u, 0u)] uint Rn,
-                                           [Values(2u, 0u)] uint Rm,
-                                           [ValueSource("_1D_F_")] ulong Z,
-                                           [ValueSource("_1D_F_")] ulong A,
-                                           [ValueSource("_1D_F_")] ulong B)
+        public void F_Add_Div_Mul_MulX_Sub_V_2D([ValueSource("_F_Add_Div_Mul_MulX_Sub_V_2D_")] uint Opcodes,
+                                                [Values(0u)]     uint Rd,
+                                                [Values(1u, 0u)] uint Rn,
+                                                [Values(2u, 0u)] uint Rm,
+                                                [ValueSource("_1D_F_")] ulong Z,
+                                                [ValueSource("_1D_F_")] ulong A,
+                                                [ValueSource("_1D_F_")] ulong B)
         {
             Opcodes |= ((Rm & 31) << 16) | ((Rn & 31) << 5) | ((Rd & 31) << 0);
 
