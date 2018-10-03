@@ -550,6 +550,41 @@ namespace ChocolArm64.Instruction
             return FPMulAdd(ValueA, Value1, Value2, State);
         }
 
+        public static float FPMulX(float Value1, float Value2, AThreadState State)
+        {
+            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPMulX: State.Fpcr = 0x{State.Fpcr:X8}");
+
+            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
+            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+
+            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+
+            if (!Done)
+            {
+                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
+                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+
+                if ((Inf1 && Zero2) || (Zero1 && Inf2))
+                {
+                    Result = FPTwo(Sign1 ^ Sign2);
+                }
+                else if (Inf1 || Inf2)
+                {
+                    Result = FPInfinity(Sign1 ^ Sign2);
+                }
+                else if (Zero1 || Zero2)
+                {
+                    Result = FPZero(Sign1 ^ Sign2);
+                }
+                else
+                {
+                    Result = Value1 * Value2;
+                }
+            }
+
+            return Result;
+        }
+
         public static float FPRecipStepFused(float Value1, float Value2, AThreadState State)
         {
             Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPRecipStepFused: State.Fpcr = 0x{State.Fpcr:X8}");
@@ -1231,6 +1266,41 @@ namespace ChocolArm64.Instruction
             Value1 = Value1.FPNeg();
 
             return FPMulAdd(ValueA, Value1, Value2, State);
+        }
+
+        public static double FPMulX(double Value1, double Value2, AThreadState State)
+        {
+            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPMulX: State.Fpcr = 0x{State.Fpcr:X8}");
+
+            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
+            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+
+            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+
+            if (!Done)
+            {
+                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
+                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+
+                if ((Inf1 && Zero2) || (Zero1 && Inf2))
+                {
+                    Result = FPTwo(Sign1 ^ Sign2);
+                }
+                else if (Inf1 || Inf2)
+                {
+                    Result = FPInfinity(Sign1 ^ Sign2);
+                }
+                else if (Zero1 || Zero2)
+                {
+                    Result = FPZero(Sign1 ^ Sign2);
+                }
+                else
+                {
+                    Result = Value1 * Value2;
+                }
+            }
+
+            return Result;
         }
 
         public static double FPRecipStepFused(double Value1, double Value2, AThreadState State)
