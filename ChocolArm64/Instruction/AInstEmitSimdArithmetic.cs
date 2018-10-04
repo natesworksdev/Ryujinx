@@ -749,6 +749,14 @@ namespace ChocolArm64.Instruction
             }
         }
 
+        public static void Frecpx_S(AILEmitterCtx Context)
+        {
+            EmitScalarUnaryOpF(Context, () =>
+            {
+                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPRecpX));
+            });
+        }
+
         public static void Frinta_S(AILEmitterCtx Context)
         {
             AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
