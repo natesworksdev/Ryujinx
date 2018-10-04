@@ -621,6 +621,30 @@ namespace ChocolArm64.Instruction
             return Result;
         }
 
+        public static float FPRecpX(float Value, AThreadState State)
+        {
+            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPRecpX: State.Fpcr = 0x{State.Fpcr:X8}");
+
+            Value.FPUnpack(out FPType Type, out bool Sign, out uint Op);
+
+            float Result;
+
+            if (Type == FPType.SNaN || Type == FPType.QNaN)
+            {
+                Result = FPProcessNaN(Type, Op, State);
+            }
+            else
+            {
+                uint NotExp = (~Op >> 23) & 0xFFu;
+                uint MaxExp = 0xFEu;
+
+                Result = BitConverter.Int32BitsToSingle(
+                    (int)((Sign ? 1u : 0u) << 31 | (NotExp == 0xFFu ? MaxExp : NotExp) << 23));
+            }
+
+            return Result;
+        }
+
         public static float FPRSqrtStepFused(float Value1, float Value2, AThreadState State)
         {
             Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPRSqrtStepFused: State.Fpcr = 0x{State.Fpcr:X8}");
@@ -749,14 +773,6 @@ namespace ChocolArm64.Instruction
             Underflow,
             Inexact,
             InputDenorm = 7
-        }
-
-        private enum FPRounding
-        {
-            TIEEVEN,
-            POSINF,
-            NEGINF,
-            ZERO
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -940,14 +956,6 @@ namespace ChocolArm64.Instruction
             {
                 State.Fpsr |= 1 << (int)Exc;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static FPRounding FPRoundingMode(AThreadState State)
-        {
-            const int RModeBits = 22; // Rounding Mode control field.
-
-            return (FPRounding)((State.Fpcr >> RModeBits) & 0b11);
         }
     }
 
@@ -1339,6 +1347,30 @@ namespace ChocolArm64.Instruction
             return Result;
         }
 
+        public static double FPRecpX(double Value, AThreadState State)
+        {
+            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPRecpX: State.Fpcr = 0x{State.Fpcr:X8}");
+
+            Value.FPUnpack(out FPType Type, out bool Sign, out ulong Op);
+
+            double Result;
+
+            if (Type == FPType.SNaN || Type == FPType.QNaN)
+            {
+                Result = FPProcessNaN(Type, Op, State);
+            }
+            else
+            {
+                ulong NotExp = (~Op >> 52) & 0x7FFul;
+                ulong MaxExp = 0x7FEul;
+
+                Result = BitConverter.Int64BitsToDouble(
+                    (long)((Sign ? 1ul : 0ul) << 63 | (NotExp == 0x7FFul ? MaxExp : NotExp) << 52));
+            }
+
+            return Result;
+        }
+
         public static double FPRSqrtStepFused(double Value1, double Value2, AThreadState State)
         {
             Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPRSqrtStepFused: State.Fpcr = 0x{State.Fpcr:X8}");
@@ -1467,14 +1499,6 @@ namespace ChocolArm64.Instruction
             Underflow,
             Inexact,
             InputDenorm = 7
-        }
-
-        private enum FPRounding
-        {
-            TIEEVEN,
-            POSINF,
-            NEGINF,
-            ZERO
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1658,14 +1682,6 @@ namespace ChocolArm64.Instruction
             {
                 State.Fpsr |= 1 << (int)Exc;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static FPRounding FPRoundingMode(AThreadState State)
-        {
-            const int RModeBits = 22; // Rounding Mode control field.
-
-            return (FPRounding)((State.Fpcr >> RModeBits) & 0b11);
         }
     }
 }
