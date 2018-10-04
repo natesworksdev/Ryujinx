@@ -19,22 +19,25 @@ namespace Ryujinx.HLE.OsHle.Services.Ssl
             };
         }
 		
+        // CreateContext(nn::ssl::sf::SslVersion, u64, pid) -> object<nn::ssl::sf::ISslContext>
         public long CreateContext(ServiceCtx Context)
         {
-            int Version = Context.RequestData.ReadInt32();
-	
+            int  Version = Context.RequestData.ReadInt32();
             long Unknown = Context.RequestData.ReadInt64();
-			
+
+            Context.Device.Log.PrintStub(LogClass.ServiceSsl, $"Stubbed. Version: {Version} - Unknown: {Unknown}");
+
             MakeObject(Context, new ISslContext());
-			
+
             return 0;
         }
 
+        // SetInterfaceVersion(u32)
         public long SetInterfaceVersion(ServiceCtx Context)
         {
             int Version = Context.RequestData.ReadInt32();
 
-            Context.Ns.Log.PrintStub(LogClass.ServiceSsl, "Stubbed.");
+            Context.Ns.Log.PrintStub(LogClass.ServiceSsl, $"Stubbed. Version: {Version}");
 
             return 0;
         }
