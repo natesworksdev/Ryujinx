@@ -1151,7 +1151,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
+            CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.DZC);
         }
 
         [Test, Pairwise]
@@ -1168,7 +1168,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
+            CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.DZC);
         }
 
         [Test, Pairwise]
@@ -1192,7 +1192,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
+            CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.DZC);
         }
 
         [Test, Pairwise]
@@ -1214,7 +1214,7 @@ namespace Ryujinx.Tests.Cpu
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, V2: V2, Fpcr: Fpcr);
 
-            CompareAgainstUnicorn(FPSR.IOC | FPSR.DZC);
+            CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.DZC);
         }
 
         [Test, Pairwise] // Fused.
