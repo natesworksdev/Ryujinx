@@ -5,7 +5,7 @@ using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.Graphics
+namespace Ryujinx.Graphics.Graphics3d
 {
     class NvGpuEngine3d : INvGpuEngine
     {
@@ -523,7 +523,7 @@ namespace Ryujinx.Graphics
 
             int TextureCbIndex = ReadRegister(NvGpuEngine3dReg.TextureCbIndex);
 
-            int TexIndex = 0;
+            List<(long, GalImage)> UnboundTextures = new List<(long, GalImage)>();
 
             for (int Index = 0; Index < Keys.Length; Index++)
             {
@@ -542,20 +542,30 @@ namespace Ryujinx.Graphics
 
                     int TextureHandle = Vmm.ReadInt32(Position + DeclInfo.Index * 4);
 
-                    UploadTexture(Vmm, TexIndex, TextureHandle);
-
-                    TexIndex++;
+                    UnboundTextures.Add(UploadTexture(Vmm, TextureHandle));
                 }
+            }
+
+            for (int Index = 0; Index < UnboundTextures.Count; Index++)
+            {
+                (long Key, GalImage Image) = UnboundTextures[Index];
+
+                if (Key == 0)
+                {
+                    continue;
+                }
+
+                Gpu.Renderer.Texture.Bind(Key, Index, Image);
             }
         }
 
-        private void UploadTexture(NvGpuVmm Vmm, int TexIndex, int TextureHandle)
+        private (long, GalImage) UploadTexture(NvGpuVmm Vmm, int TextureHandle)
         {
             if (TextureHandle == 0)
             {
                 //FIXME: Some games like puyo puyo will use handles with the value 0.
                 //This is a bug, most likely caused by sync issues.
-                return;
+                return (0, default(GalImage));
             }
 
             bool LinkedTsc = ReadRegisterBool(NvGpuEngine3dReg.LinkedTsc);
@@ -590,12 +600,14 @@ namespace Ryujinx.Graphics
             if (Key == -1)
             {
                 //FIXME: Shouldn't ignore invalid addresses.
-                return;
+                return (0, default(GalImage));
             }
 
-            Gpu.ResourceManager.SendTexture(Vmm, Key, Image, TexIndex);
+            Gpu.ResourceManager.SendTexture(Vmm, Key, Image);
 
             Gpu.Renderer.Texture.SetSampler(Sampler);
+
+            return (Key, Image);
         }
 
         private void UploadConstBuffers(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)
