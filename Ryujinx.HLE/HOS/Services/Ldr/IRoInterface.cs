@@ -85,6 +85,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
         private const int MaxNrr = 0x40;
         private const int MaxNro = 0x40;
 
+        private const uint NrrMagic = 0x3052524E;
+        private const uint NroMagic = 0x304F524E;
+
         private List<NrrInfo> NrrInfos;
         private List<NroInfo> NroInfos;
 
@@ -121,7 +124,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             StructReader Reader = new StructReader(Context.Memory, NrrAddress);
             NrrHeader    Header = Reader.Read<NrrHeader>();
 
-            if (Header.Magic != 0x3052524E)
+            if (Header.Magic != NrrMagic)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.InvalidNrr);
             }
@@ -195,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             uint Magic       = Context.Memory.ReadUInt32(NroHeapAddress + 0x10);
             uint NroFileSize = Context.Memory.ReadUInt32(NroHeapAddress + 0x18);
 
-            if (Magic != 0x304F524E || NroSize != NroFileSize)
+            if (Magic != NroMagic || NroSize != NroFileSize)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.InvalidNro);
             }
