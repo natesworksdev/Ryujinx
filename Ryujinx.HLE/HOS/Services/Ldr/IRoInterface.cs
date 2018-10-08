@@ -60,12 +60,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
     class NroInfo
     {
-        public Nro    Executable { get; private set; }
-        public byte[] Hash       { get; private set; }
-        public long   NroAddress { get; private set; }
-        public long   TotalSize  { get; private set; }
-        public long   NroMappedAddress;
-
+        public Nro    Executable       { get; private set; }
+        public byte[] Hash             { get; private set; }
+        public long   NroAddress       { get; private set; }
+        public long   TotalSize        { get; private set; }
+        public long   NroMappedAddress { get; set; }
 
         public NroInfo(Nro Executable, byte[] Hash, long TotalSize)
         {
@@ -153,6 +152,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
                     }
                 }
             }
+
             return false;
         }
 
@@ -165,6 +165,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -243,6 +244,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             }
 
             Res = new NroInfo(Executable, NroHash, Executable.Text.Length + Executable.RO.Length + Executable.Data.Length + Executable.BssSize);
+
             return 0;
         }
 
