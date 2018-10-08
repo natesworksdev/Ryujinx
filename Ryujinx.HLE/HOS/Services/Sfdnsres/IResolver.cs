@@ -146,20 +146,24 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
 
         private List<IPAddress> GetIPV4Addresses(IPHostEntry HostEntry)
         {
-            List<IPAddress> Res = new List<IPAddress>();
+            List<IPAddress> Result = new List<IPAddress>();
             foreach (IPAddress Ip in HostEntry.AddressList)
             {
                 if (Ip.AddressFamily == AddressFamily.InterNetwork)
-                    Res.Add(Ip);
+                    Result.Add(Ip);
             }
-            return Res;
+            return Result;
         }
 
         // SetDnsAddressesPrivate(u32, buffer<unknown, 5, 0>)
         public long SetDnsAddressesPrivate(ServiceCtx Context)
         {
-            // TODO: This is not stubbed in 1.0.0, reverse it.
-            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, "Stubbed.");
+            uint Unknown0       = Context.RequestData.ReadUInt32();
+            long BufferPosition = Context.Request.SendBuff[0].Position;
+            long BufferSize     = Context.Request.SendBuff[0].Size;
+
+            // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake completeness.
+            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, $"Stubbed. Unknown0: {Unknown0}");
 
             return 0x7FE03;
         }
@@ -167,8 +171,10 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
         // GetDnsAddressPrivate(u32) -> buffer<unknown, 6, 0>
         public long GetDnsAddressesPrivate(ServiceCtx Context)
         {
-            // TODO: This is not stubbed in 1.0.0, reverse it.
-            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, "Stubbed.");
+            uint Unknown0 = Context.RequestData.ReadUInt32();
+
+            // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake completeness.
+            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, $"Stubbed. Unknown0: {Unknown0}");
 
             return 0x7FE03;
         }
@@ -177,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
         public long GetHostByName(ServiceCtx Context)
         {
             byte[] RawName = Context.Memory.ReadBytes(Context.Request.SendBuff[0].Position, Context.Request.SendBuff[0].Size);
-            string Name    =  Encoding.ASCII.GetString(RawName).TrimEnd('\0');
+            string Name    = Encoding.ASCII.GetString(RawName).TrimEnd('\0');
 
             // TODO: use params
             bool  EnableNsdResolve = Context.RequestData.ReadInt32() == 1;
@@ -231,11 +237,12 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
             if (HostEntry != null)
             {
                 Errno = GaiError.Success;
+
                 List<IPAddress> Addresses = GetIPV4Addresses(HostEntry);
 
                 if (Addresses.Count == 0)
                 {
-                    Errno = GaiError.NoData;
+                    Errno          = GaiError.NoData;
                     NetDBErrorCode = NetDBError.NoAddress;
                 }
                 else
@@ -257,10 +264,10 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
             byte[] RawIp = Context.Memory.ReadBytes(Context.Request.SendBuff[0].Position, Context.Request.SendBuff[0].Size);
 
             // TODO: use params
-            uint  SocketLength     = Context.RequestData.ReadUInt32();
-            uint  Type             = Context.RequestData.ReadUInt32();
-            int   TimeOut          = Context.RequestData.ReadInt32();
-            ulong PidPlaceholder   = Context.RequestData.ReadUInt64();
+            uint  SocketLength   = Context.RequestData.ReadUInt32();
+            uint  Type           = Context.RequestData.ReadUInt32();
+            int   TimeOut        = Context.RequestData.ReadInt32();
+            ulong PidPlaceholder = Context.RequestData.ReadUInt64();
 
             IPHostEntry HostEntry = null;
 
@@ -355,8 +362,11 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
         // RequestCancelHandle(u64, pid) -> u32
         public long RequestCancelHandle(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, "Stubbed.");
+            ulong Unknown0 = Context.RequestData.ReadUInt64();
+
             Context.ResponseData.Write(0);
+
+            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, $"Stubbed. Unknown0: {Unknown0}");
 
             return 0;
         }
@@ -364,7 +374,11 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
         // CancelSocketCall(u32, u64, pid)
         public long CancelSocketCall(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, "Stubbed.");
+            uint  Unknown0 = Context.RequestData.ReadUInt32();
+            ulong Unknown1 = Context.RequestData.ReadUInt64();
+
+            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, $"Stubbed. Unknown0: {Unknown0} - " +
+                                                                           $"Unknown1: {Unknown1}");
 
             return 0;
         }
@@ -372,7 +386,9 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
         // ClearDnsAddresses(u32)
         public long ClearDnsAddresses(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, "Stubbed.");
+            uint Unknown0 = Context.RequestData.ReadUInt32();
+
+            Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, $"Stubbed. Unknown0: {Unknown0}");
 
             return 0;
         }
