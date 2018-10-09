@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
+using static Ryujinx.HLE.HOS.ErrorCode;
+
 namespace Ryujinx.HLE.HOS.Services.Sfdnsres
 {
     class IResolver : IpcService
@@ -165,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
             // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake completeness.
             Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, $"Stubbed. Unknown0: {Unknown0}");
 
-            return 0x7FE03;
+            return MakeError(ErrorModule.Os, 1023);
         }
 
         // GetDnsAddressPrivate(u32) -> buffer<unknown, 6, 0>
@@ -176,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
             // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake completeness.
             Context.Device.Log.PrintStub(Logging.LogClass.ServiceSfdnsres, $"Stubbed. Unknown0: {Unknown0}");
 
-            return 0x7FE03;
+            return MakeError(ErrorModule.Os, 1023);
         }
 
         // GetHostByName(u8, u32, u64, pid, buffer<unknown, 5, 0>) -> (u32, u32, u32, buffer<unknown, 6, 0>)
@@ -330,7 +332,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
         // GetHostStringError(u32) -> buffer<unknown, 6, 0>
         public long GetHostStringError(ServiceCtx Context)
         {
-            long       ResultCode  = 0x7FE03;
+            long       ResultCode  = MakeError(ErrorModule.Os, 1023);
             NetDBError ErrorCode   = (NetDBError)Context.RequestData.ReadInt32();
             string     ErrorString = GetHostStringErrorFromErrorCode(ErrorCode);
 
@@ -346,7 +348,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
         // GetGaiStringError(u32) -> buffer<unknown, 6, 0>
         public long GetGaiStringError(ServiceCtx Context)
         {
-            long     ResultCode  = 0x7FE03;
+            long     ResultCode  = MakeError(ErrorModule.Os, 1023);
             GaiError ErrorCode   = (GaiError)Context.RequestData.ReadInt32();
             string   ErrorString = GetGaiStringErrorFromErrorCode(ErrorCode);
 
