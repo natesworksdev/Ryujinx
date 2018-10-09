@@ -2,7 +2,7 @@
 {
     static class LoaderErr
     {
-        public const int InvalidMemoryState = 52;
+        public const int InvalidMemoryState = 51;
         public const int InvalidNro         = 52;
         public const int InvalidNrr         = 53;
         public const int MaxNro             = 55;
