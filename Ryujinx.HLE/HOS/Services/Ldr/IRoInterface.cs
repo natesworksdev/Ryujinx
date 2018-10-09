@@ -48,9 +48,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
     class NrrInfo
     {
-        public NrrHeader       Header     { get; private set; }
-        public List<byte[]>    Hashes     { get; private set; }
-        public long            NrrAddress { get; private set; }
+        public NrrHeader    Header     { get; private set; }
+        public List<byte[]> Hashes     { get; private set; }
+        public long         NrrAddress { get; private set; }
 
         public NrrInfo(long NrrAddress, NrrHeader Header, List<byte[]> Hashes)
         {
@@ -328,8 +328,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
                     return Result;
                 }
             }
-            return MakeError(ErrorModule.Loader, LoaderErr.BadNroAddress);
 
+            return MakeError(ErrorModule.Loader, LoaderErr.BadNroAddress);
         }
 
         // LoadNro(u64, u64, u64, u64, u64, pid) -> u64
@@ -441,6 +441,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
                 Result = RemoveNrrInfo(NrrHeapAddress);
             }
+
             return Result;
         }
 
@@ -449,6 +450,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
         {
             // TODO: we actually ignore the pid and process handle receive, we will need to use them when we will have multi process support.
             IsInitialized = true;
+
             return 0;
         }
     }

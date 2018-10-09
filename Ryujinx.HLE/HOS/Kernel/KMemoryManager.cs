@@ -178,6 +178,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     InsertBlock(Src, PagesCount, MemoryState.Heap, MemoryPermission.None);
 
                     CpuMemory.Map(Dst, PA, Size);
+
                     return 0;
                 }
             }
@@ -225,6 +226,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     InsertBlock(Src, PagesCount, MemoryState.Heap, MemoryPermission.ReadAndWrite);
 
                     CpuMemory.Unmap(Dst, Size);
+
                     return 0;
                 }
             }
@@ -847,6 +849,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 Result = IsUnmapped(Position, Size);
             }
+
             return Result;
         }
 

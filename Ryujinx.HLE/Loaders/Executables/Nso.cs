@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.Loaders.Executables
         public int BssSize    { get; private set; }
 
         public long SourceAddress { get; private set; }
-        public long BssAddress { get; private set; }
+        public long BssAddress    { get; private set; }
 
         [Flags]
         private enum NsoFlags

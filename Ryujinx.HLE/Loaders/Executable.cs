@@ -67,7 +67,6 @@ namespace Ryujinx.HLE.Loaders
                 Memory.WriteBytes(TextPosition, Exe.Text);
                 Memory.WriteBytes(ROPosition, Exe.RO);
                 Memory.WriteBytes(DataPosition, Exe.Data);
-
             }
             else
             {
