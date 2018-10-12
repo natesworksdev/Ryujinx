@@ -439,6 +439,15 @@ namespace ChocolArm64.Instruction
                 Context.Emit(OpCodes.Add);
             });
         }
+        
+        public static void Fmls_Se(AILEmitterCtx Context)
+        {
+            EmitScalarTernaryOpByElemF(Context, () =>
+            {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Sub);
+            });
+        }
 
         public static void Fmls_V(AILEmitterCtx Context)
         {
