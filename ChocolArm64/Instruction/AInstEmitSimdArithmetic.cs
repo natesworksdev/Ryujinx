@@ -131,11 +131,7 @@ namespace ChocolArm64.Instruction
             {
                 EmitVectorExtractZx(Context, Op.Rn, Index, 0);
 
-                Context.Emit(OpCodes.Conv_U4);
-
                 ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CountSetBits8));
-
-                Context.Emit(OpCodes.Conv_U8);
 
                 EmitVectorInsert(Context, Op.Rd, Index, 0);
             }
@@ -440,6 +436,15 @@ namespace ChocolArm64.Instruction
             });
         }
 
+        public static void Fmls_Se(AILEmitterCtx Context)
+        {
+            EmitScalarTernaryOpByElemF(Context, () =>
+            {
+                Context.Emit(OpCodes.Mul);
+                Context.Emit(OpCodes.Sub);
+            });
+        }
+
         public static void Fmls_V(AILEmitterCtx Context)
         {
             EmitVectorTernaryOpF(Context, () =>
@@ -554,9 +559,25 @@ namespace ChocolArm64.Instruction
             });
         }
 
+        public static void Fmulx_Se(AILEmitterCtx Context)
+        {
+            EmitScalarBinaryOpByElemF(Context, () =>
+            {
+                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
+            });
+        }
+
         public static void Fmulx_V(AILEmitterCtx Context)
         {
             EmitVectorBinaryOpF(Context, () =>
+            {
+                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
+            });
+        }
+
+        public static void Fmulx_Ve(AILEmitterCtx Context)
+        {
+            EmitVectorBinaryOpByElemF(Context, () =>
             {
                 EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
             });
