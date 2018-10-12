@@ -356,8 +356,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         continue;
                     }
 
-                    GL.EnableVertexAttribArray(Attrib.Index);
-
                     GL.BindBuffer(BufferTarget.ArrayBuffer, VboHandle);
 
                     bool Unsigned =
@@ -390,18 +388,29 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     int Size = AttribElements[Attrib.Size];
                     int Offset = Attrib.Offset;
 
-                    if (Attrib.Type == GalVertexAttribType.Sint ||
-                        Attrib.Type == GalVertexAttribType.Uint)
+                    if (Binding.Stride != 0)
                     {
-                        IntPtr Pointer = new IntPtr(Offset);
+                        GL.EnableVertexAttribArray(Attrib.Index);
 
-                        VertexAttribIntegerType IType = (VertexAttribIntegerType)Type;
+                        if (Attrib.Type == GalVertexAttribType.Sint ||
+                            Attrib.Type == GalVertexAttribType.Uint)
+                        {
+                            IntPtr Pointer = new IntPtr(Offset);
 
-                        GL.VertexAttribIPointer(Attrib.Index, Size, IType, Binding.Stride, Pointer);
+                            VertexAttribIntegerType IType = (VertexAttribIntegerType)Type;
+
+                            GL.VertexAttribIPointer(Attrib.Index, Size, IType, Binding.Stride, Pointer);
+                        }
+                        else
+                        {
+                            GL.VertexAttribPointer(Attrib.Index, Size, Type, Normalize, Binding.Stride, Offset);
+                        }
                     }
                     else
                     {
-                        GL.VertexAttribPointer(Attrib.Index, Size, Type, Normalize, Binding.Stride, Offset);
+                        GL.DisableVertexAttribArray(Attrib.Index);
+
+                        SetConstAttrib(Attrib);
                     }
 
                     if (Binding.Instanced && Binding.Divisor != 0)
@@ -413,6 +422,124 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         GL.VertexAttribDivisor(Attrib.Index, 0);
                     }
                 }
+            }
+        }
+
+        private unsafe static void SetConstAttrib(GalVertexAttrib Attrib)
+        {
+            if (Attrib.Size == GalVertexAttribSize._10_10_10_2 ||
+                Attrib.Size == GalVertexAttribSize._11_11_10)
+            {
+                throw new NotImplementedException("Constant attribute " + Attrib.Size + " not implemented!");
+            }
+
+            if (Attrib.Type == GalVertexAttribType.Unorm)
+            {
+                switch (Attrib.Size)
+                {
+                    case GalVertexAttribSize._8:
+                    case GalVertexAttribSize._8_8:
+                    case GalVertexAttribSize._8_8_8:
+                    case GalVertexAttribSize._8_8_8_8:
+                        GL.VertexAttrib4N((uint)Attrib.Index, (byte*)Attrib.Pointer);
+                        break;
+
+                    case GalVertexAttribSize._16:
+                    case GalVertexAttribSize._16_16:
+                    case GalVertexAttribSize._16_16_16:
+                    case GalVertexAttribSize._16_16_16_16:
+                        GL.VertexAttrib4N((uint)Attrib.Index, (ushort*)Attrib.Pointer);
+                        break;
+
+                    case GalVertexAttribSize._32:
+                    case GalVertexAttribSize._32_32:
+                    case GalVertexAttribSize._32_32_32:
+                    case GalVertexAttribSize._32_32_32_32:
+                        GL.VertexAttrib4N((uint)Attrib.Index, (uint*)Attrib.Pointer);
+                        break;
+                }
+            }
+            else if (Attrib.Type == GalVertexAttribType.Snorm)
+            {
+                switch (Attrib.Size)
+                {
+                    case GalVertexAttribSize._8:
+                    case GalVertexAttribSize._8_8:
+                    case GalVertexAttribSize._8_8_8:
+                    case GalVertexAttribSize._8_8_8_8:
+                        GL.VertexAttrib4N((uint)Attrib.Index, (sbyte*)Attrib.Pointer);
+                        break;
+
+                    case GalVertexAttribSize._16:
+                    case GalVertexAttribSize._16_16:
+                    case GalVertexAttribSize._16_16_16:
+                    case GalVertexAttribSize._16_16_16_16:
+                        GL.VertexAttrib4N((uint)Attrib.Index, (short*)Attrib.Pointer);
+                        break;
+
+                    case GalVertexAttribSize._32:
+                    case GalVertexAttribSize._32_32:
+                    case GalVertexAttribSize._32_32_32:
+                    case GalVertexAttribSize._32_32_32_32:
+                        GL.VertexAttrib4N((uint)Attrib.Index, (int*)Attrib.Pointer);
+                        break;
+                }
+            }
+            else if (Attrib.Type == GalVertexAttribType.Uint)
+            {
+                switch (Attrib.Size)
+                {
+                    case GalVertexAttribSize._8:
+                    case GalVertexAttribSize._8_8:
+                    case GalVertexAttribSize._8_8_8:
+                    case GalVertexAttribSize._8_8_8_8:
+                        GL.VertexAttribI4((uint)Attrib.Index, (byte*)Attrib.Pointer);
+                        break;
+
+                    case GalVertexAttribSize._16:
+                    case GalVertexAttribSize._16_16:
+                    case GalVertexAttribSize._16_16_16:
+                    case GalVertexAttribSize._16_16_16_16:
+                        GL.VertexAttribI4((uint)Attrib.Index, (ushort*)Attrib.Pointer);
+                        break;
+
+                    case GalVertexAttribSize._32:
+                    case GalVertexAttribSize._32_32:
+                    case GalVertexAttribSize._32_32_32:
+                    case GalVertexAttribSize._32_32_32_32:
+                        GL.VertexAttribI4((uint)Attrib.Index, (uint*)Attrib.Pointer);
+                        break;
+                }
+            }
+            else if (Attrib.Type == GalVertexAttribType.Sint)
+            {
+                switch (Attrib.Size)
+                {
+                    case GalVertexAttribSize._8:
+                    case GalVertexAttribSize._8_8:
+                    case GalVertexAttribSize._8_8_8:
+                    case GalVertexAttribSize._8_8_8_8:
+                        GL.VertexAttribI4((uint)Attrib.Index, (sbyte*)Attrib.Pointer);
+                        break;
+
+                    case GalVertexAttribSize._16:
+                    case GalVertexAttribSize._16_16:
+                    case GalVertexAttribSize._16_16_16:
+                    case GalVertexAttribSize._16_16_16_16:
+                        GL.VertexAttribI4((uint)Attrib.Index, (short*)Attrib.Pointer);
+                        break;
+
+                    case GalVertexAttribSize._32:
+                    case GalVertexAttribSize._32_32:
+                    case GalVertexAttribSize._32_32_32:
+                    case GalVertexAttribSize._32_32_32_32:
+                        GL.VertexAttribI4((uint)Attrib.Index, (int*)Attrib.Pointer);
+                        break;
+                }
+            }
+            else if (Attrib.Type == GalVertexAttribType.Float)
+            {
+                GL.VertexAttrib4(Attrib.Index, (float*)Attrib.Pointer);
             }
         }
 
