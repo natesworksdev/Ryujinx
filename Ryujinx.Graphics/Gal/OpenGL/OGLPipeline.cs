@@ -25,6 +25,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             { GalVertexAttribSize._11_11_10,    3 }
         };
 
+        private static Dictionary<GalVertexAttribSize, VertexAttribPointerType> FloatAttribTypes =
+                   new Dictionary<GalVertexAttribSize, VertexAttribPointerType>()
+        {
+            { GalVertexAttribSize._32_32_32_32, VertexAttribPointerType.Float     },
+            { GalVertexAttribSize._32_32_32,    VertexAttribPointerType.Float     },
+            { GalVertexAttribSize._16_16_16_16, VertexAttribPointerType.HalfFloat },
+            { GalVertexAttribSize._32_32,       VertexAttribPointerType.Float     },
+            { GalVertexAttribSize._16_16_16,    VertexAttribPointerType.HalfFloat },
+            { GalVertexAttribSize._16_16,       VertexAttribPointerType.HalfFloat },
+            { GalVertexAttribSize._32,          VertexAttribPointerType.Float     },
+            { GalVertexAttribSize._16,          VertexAttribPointerType.HalfFloat }
+        };
+
         private static Dictionary<GalVertexAttribSize, VertexAttribPointerType> SignedAttribTypes =
                    new Dictionary<GalVertexAttribSize, VertexAttribPointerType>()
         {
@@ -371,21 +384,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                     if (Attrib.Type == GalVertexAttribType.Float)
                     {
-                        Type = VertexAttribPointerType.Float;
+                        Type = GetType(FloatAttribTypes, Attrib);
                     }
                     else
                     {
                         if (Unsigned)
                         {
-                            Type = UnsignedAttribTypes[Attrib.Size];
+                            Type = GetType(UnsignedAttribTypes, Attrib);
                         }
                         else
                         {
-                            Type = SignedAttribTypes[Attrib.Size];
+                            Type = GetType(SignedAttribTypes, Attrib);
                         }
                     }
 
-                    int Size = AttribElements[Attrib.Size];
+                    if (!AttribElements.TryGetValue(Attrib.Size, out int Size))
+                    {
+                        throw new InvalidOperationException("Invalid attribute size \"" + Attrib.Size + "\"!");
+                    }
+
                     int Offset = Attrib.Offset;
 
                     if (Binding.Stride != 0)
@@ -423,6 +440,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     }
                 }
             }
+        }
+
+        private static VertexAttribPointerType GetType(Dictionary<GalVertexAttribSize, VertexAttribPointerType> Dict, GalVertexAttrib Attrib)
+        {
+            if (!Dict.TryGetValue(Attrib.Size, out VertexAttribPointerType Type))
+            {
+                throw new NotImplementedException("Unsupported size \"" + Attrib.Size + "\" on type \"" + Attrib.Type + "\"!");
+            }
+
+            return Type;
         }
 
         private unsafe static void SetConstAttrib(GalVertexAttrib Attrib)
