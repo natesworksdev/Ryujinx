@@ -365,8 +365,8 @@ namespace ChocolArm64.Instruction
         {
             Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_32.FPMaxNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            Value1.FPUnpack(out FPType Type1, out bool _, out uint _);
+            Value2.FPUnpack(out FPType Type2, out bool _, out uint _);
 
             if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
             {
@@ -430,8 +430,8 @@ namespace ChocolArm64.Instruction
         {
             Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_32.FPMinNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            Value1.FPUnpack(out FPType Type1, out bool _, out uint _);
+            Value2.FPUnpack(out FPType Type2, out bool _, out uint _);
 
             if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
             {
@@ -1091,8 +1091,8 @@ namespace ChocolArm64.Instruction
         {
             Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_64.FPMaxNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            Value1.FPUnpack(out FPType Type1, out bool _, out ulong _);
+            Value2.FPUnpack(out FPType Type2, out bool _, out ulong _);
 
             if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
             {
@@ -1156,8 +1156,8 @@ namespace ChocolArm64.Instruction
         {
             Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_64.FPMinNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            Value1.FPUnpack(out FPType Type1, out bool _, out ulong _);
+            Value2.FPUnpack(out FPType Type2, out bool _, out ulong _);
 
             if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
             {
