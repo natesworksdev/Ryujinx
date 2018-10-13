@@ -38,9 +38,9 @@ namespace ChocolArm64.Instruction
 
                 EmitLdvecWithUnsignedCast(Context, Op.Rn, Op.Size);
 
-	            Context.EmitLdc_I4(GetImmShl(Op));
+                Context.EmitLdc_I4(GetImmShl(Op));
 
-	            Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftLeftLogical), Types));
+                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftLeftLogical), Types));
 
                 EmitStvecWithUnsignedCast(Context, Op.Rd, Op.Size);
 
@@ -197,9 +197,9 @@ namespace ChocolArm64.Instruction
 
                 EmitLdvecWithSignedCast(Context, Op.Rn, Op.Size);
 
-	            Context.EmitLdc_I4(GetImmShr(Op));
+                Context.EmitLdc_I4(GetImmShr(Op));
 
-	            Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightArithmetic), Types));
+                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightArithmetic), Types));
 
                 EmitStvecWithSignedCast(Context, Op.Rd, Op.Size);
 
@@ -291,9 +291,9 @@ namespace ChocolArm64.Instruction
 
                 EmitLdvecWithUnsignedCast(Context, Op.Rn, Op.Size);
 
-	            Context.EmitLdc_I4(GetImmShr(Op));
+                Context.EmitLdc_I4(GetImmShr(Op));
 
-	            Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightLogical), Types));
+                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightLogical), Types));
 
                 EmitStvecWithUnsignedCast(Context, Op.Rd, Op.Size);
 
