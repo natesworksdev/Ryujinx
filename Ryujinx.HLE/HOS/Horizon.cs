@@ -245,15 +245,17 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadNca(string NcaFile, string PatchNca = null)
         {
-            FileStream File = new FileStream(NcaFile, FileMode.Open, FileAccess.Read);
+            Nca Nca;
 
-            Nca Nca = new Nca(KeySet, File, true);
+            FileStream File = new FileStream(NcaFile, FileMode.Open, FileAccess.Read);
 
             if (PatchNca != null)
             {
-                FileStream BaseNcaFile = new FileStream(PatchNca, FileMode.Open, FileAccess.Read);
+                FileStream PatchNcaFile = new FileStream(PatchNca, FileMode.Open, FileAccess.Read);
 
-                Nca BaseNca = new Nca(KeySet, BaseNcaFile, true);
+                Nca = new Nca(KeySet, PatchNcaFile, true);
+
+                Nca BaseNca = new Nca(KeySet, File, true);
 
                 Nca.SetBaseNca(BaseNca);
 
@@ -261,6 +263,8 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
+                Nca = new Nca(KeySet, File, true);
+
                 LoadNca(Nca, null);
             }
         }
