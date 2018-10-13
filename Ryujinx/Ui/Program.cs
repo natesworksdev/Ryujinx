@@ -1,4 +1,4 @@
-﻿using Ryujinx.Audio;
+using Ryujinx.Audio;
 using Ryujinx.Audio.OpenAL;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
@@ -24,7 +24,7 @@ namespace Ryujinx
 
             Device.Log.Updated += ConsoleLog.Log;
 
-            if (args.Length == 1)
+            if (args.Length >= 1)
             {
                 if (Directory.Exists(args[0]))
                 {
@@ -57,8 +57,24 @@ namespace Ryujinx
                             Device.LoadXci(args[0]);
                             break;
                         case ".nca":
-                            Console.WriteLine("Loading as NCA.");
-                            Device.LoadNca(args[0]);
+                            if (args.Length > 1)
+                            {
+                                if (Path.GetExtension(args[1]).ToLowerInvariant() == ".nca")
+                                {
+                                    Console.WriteLine("Loading as NCA with update.");
+                                    Device.LoadNca(args[0], args[1]);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Second argument invalid, loading as NCA.");
+                                    Device.LoadNca(args[0]);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Loading as NCA.");
+                                Device.LoadNca(args[0]);
+                            }
                             break;
                         case ".nsp":
                             Console.WriteLine("Loading as NSP.");
