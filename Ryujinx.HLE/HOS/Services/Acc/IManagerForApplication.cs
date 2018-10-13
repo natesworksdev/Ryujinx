@@ -7,6 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 {
     class IManagerForApplication : IpcService
     {
+        private UInt128 Uuid;
+
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
@@ -18,6 +20,8 @@ namespace Ryujinx.HLE.HOS.Services.Acc
                 { 0, CheckAvailability },
                 { 1, GetAccountId      }
             };
+
+            this.Uuid = Uuid;
         }
 
         // CheckAvailability()
