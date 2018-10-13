@@ -407,52 +407,36 @@ namespace ChocolArm64.Instruction
 
         public static ulong CountLeadingZeros(ulong Value, int Size) // Size is 8, 16, 32 or 64 (SIMD&FP or Base Inst.).
         {
-            if (Lzcnt.IsSupported && Size >= 32)
+            if (Value == 0ul)
             {
-                return Size == 32
-                    ? (ulong)Lzcnt.LeadingZeroCount((uint)Value)
-                    : Lzcnt.LeadingZeroCount(Value);
+                return (ulong)Size;
             }
-            else
+
+            int NibbleIdx = Size;
+            int PreCount, Count = 0;
+
+            do
             {
-                if (Value == 0ul)
-                {
-                    return (ulong)Size;
-                }
-
-                int NibbleIdx = Size;
-                int PreCount, Count = 0;
-
-                do
-                {
-                    NibbleIdx -= 4;
-                    PreCount = ClzNibbleTbl[(Value >> NibbleIdx) & 0b1111];
-                    Count += PreCount;
-                }
-                while (PreCount == 4);
-
-                return (ulong)Count;
+                NibbleIdx -= 4;
+                PreCount = ClzNibbleTbl[(Value >> NibbleIdx) & 0b1111];
+                Count += PreCount;
             }
+            while (PreCount == 4);
+
+            return (ulong)Count;
         }
 
         public static ulong CountSetBits8(ulong Value) // "Size" is 8 (SIMD&FP Inst.).
         {
-            if (Popcnt.IsSupported)
+            if (Value == 0xfful)
             {
-                return (ulong)Popcnt.PopCount(Value);
+                return 8ul;
             }
-            else
-            {
-                if (Value == 0xfful)
-                {
-                    return 8ul;
-                }
 
-                Value = ((Value >> 1) & 0x55ul) + (Value & 0x55ul);
-                Value = ((Value >> 2) & 0x33ul) + (Value & 0x33ul);
+            Value = ((Value >> 1) & 0x55ul) + (Value & 0x55ul);
+            Value = ((Value >> 2) & 0x33ul) + (Value & 0x33ul);
 
-                return (Value >> 4) + (Value & 0x0ful);
-            }
+            return (Value >> 4) + (Value & 0x0ful);
         }
 #endregion
 
