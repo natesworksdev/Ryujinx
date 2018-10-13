@@ -243,13 +243,26 @@ namespace Ryujinx.HLE.HOS
             ControlData = new Nacp(Reader);
         }
 
-        public void LoadNca(string NcaFile)
+        public void LoadNca(string NcaFile, string PatchNca = null)
         {
             FileStream File = new FileStream(NcaFile, FileMode.Open, FileAccess.Read);
 
             Nca Nca = new Nca(KeySet, File, true);
 
-            LoadNca(Nca, null);
+            if (PatchNca != null)
+            {
+                FileStream BaseNcaFile = new FileStream(PatchNca, FileMode.Open, FileAccess.Read);
+
+                Nca BaseNca = new Nca(KeySet, BaseNcaFile, true);
+
+                Nca.SetBaseNca(BaseNca);
+
+                LoadNca(Nca, null);
+            }
+            else
+            {
+                LoadNca(Nca, null);
+            }
         }
 
         public void LoadNsp(string NspFile)
