@@ -454,10 +454,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private unsafe static void SetConstAttrib(GalVertexAttrib Attrib)
         {
+            void Unsupported()
+            {
+                throw new NotImplementedException("Constant attribute " + Attrib.Size + " not implemented!");
+            }
+
             if (Attrib.Size == GalVertexAttribSize._10_10_10_2 ||
                 Attrib.Size == GalVertexAttribSize._11_11_10)
             {
-                throw new NotImplementedException("Constant attribute " + Attrib.Size + " not implemented!");
+                Unsupported();
             }
 
             if (Attrib.Type == GalVertexAttribType.Unorm)
@@ -566,7 +571,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
             else if (Attrib.Type == GalVertexAttribType.Float)
             {
-                GL.VertexAttrib4(Attrib.Index, (float*)Attrib.Pointer);
+                switch (Attrib.Size)
+                {
+                    case GalVertexAttribSize._32:
+                    case GalVertexAttribSize._32_32:
+                    case GalVertexAttribSize._32_32_32:
+                    case GalVertexAttribSize._32_32_32_32:
+                        GL.VertexAttrib4(Attrib.Index, (float*)Attrib.Pointer);
+                        break;
+
+                    default: Unsupported(); break;
+                }
             }
         }
 
