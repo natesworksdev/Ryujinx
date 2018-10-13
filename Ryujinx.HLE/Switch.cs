@@ -76,9 +76,9 @@ namespace Ryujinx.HLE
             System.LoadXci(XciFile);
         }
 
-        public void LoadNca(string NcaFile)
+        public void LoadNca(string NcaFile, string PatchNca = null)
         {
-            System.LoadNca(NcaFile);
+            System.LoadNca(NcaFile, PatchNca);
         }
 
         public void LoadNsp(string NspFile)
