@@ -365,8 +365,8 @@ namespace ChocolArm64.Instruction
         {
             Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_32.FPMaxNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out bool _, out uint _);
-            Value2.FPUnpack(out FPType Type2, out bool _, out uint _);
+            Value1.FPUnpack(out FPType Type1, out _, out _);
+            Value2.FPUnpack(out FPType Type2, out _, out _);
 
             if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
             {
@@ -430,8 +430,8 @@ namespace ChocolArm64.Instruction
         {
             Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_32.FPMinNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out bool _, out uint _);
-            Value2.FPUnpack(out FPType Type2, out bool _, out uint _);
+            Value1.FPUnpack(out FPType Type1, out _, out _);
+            Value2.FPUnpack(out FPType Type2, out _, out _);
 
             if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
             {
@@ -1091,8 +1091,8 @@ namespace ChocolArm64.Instruction
         {
             Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_64.FPMaxNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out bool _, out ulong _);
-            Value2.FPUnpack(out FPType Type2, out bool _, out ulong _);
+            Value1.FPUnpack(out FPType Type1, out _, out _);
+            Value2.FPUnpack(out FPType Type2, out _, out _);
 
             if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
             {
@@ -1156,8 +1156,8 @@ namespace ChocolArm64.Instruction
         {
             Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_64.FPMinNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out bool _, out ulong _);
-            Value2.FPUnpack(out FPType Type2, out bool _, out ulong _);
+            Value1.FPUnpack(out FPType Type1, out _, out _);
+            Value2.FPUnpack(out FPType Type2, out _, out _);
 
             if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
             {
