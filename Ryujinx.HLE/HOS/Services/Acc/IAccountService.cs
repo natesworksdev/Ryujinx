@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
                 Context.RequestData.ReadInt64(),
                 Context.RequestData.ReadInt64());
 
-            Context.ResponseData.Write(Context.Device.System.State.TryGetUser(Uuid, out _) ? true : false);
+            Context.ResponseData.Write(Context.Device.System.State.TryGetUser(Uuid, out _));
 
             return 0;
         }
