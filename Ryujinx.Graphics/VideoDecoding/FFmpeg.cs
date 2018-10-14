@@ -77,8 +77,8 @@ namespace Ryujinx.Graphics.VideoDecoding
                 Height = ManagedFrame.height,
 
                 LumaPtr    = Data[0],
-                ChromaRPtr = Data[1],
-                ChromaBPtr = Data[2]
+                ChromaBPtr = Data[1],
+                ChromaRPtr = Data[2]
             };
         }
 

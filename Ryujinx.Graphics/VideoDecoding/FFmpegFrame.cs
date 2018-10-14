@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.VideoDecoding
         public int Height;
 
         public byte* LumaPtr;
-        public byte* ChromaRPtr;
         public byte* ChromaBPtr;
+        public byte* ChromaRPtr;
     }
 }
