@@ -523,7 +523,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
             int TextureCbIndex = ReadRegister(NvGpuEngine3dReg.TextureCbIndex);
 
-            List<(long, GalImage)> UnboundTextures = new List<(long, GalImage)>();
+            List<(long, GalImage, GalTextureSampler)> UnboundTextures = new List<(long, GalImage, GalTextureSampler)>();
 
             for (int Index = 0; Index < Keys.Length; Index++)
             {
@@ -548,7 +548,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
             for (int Index = 0; Index < UnboundTextures.Count; Index++)
             {
-                (long Key, GalImage Image) = UnboundTextures[Index];
+                (long Key, GalImage Image, GalTextureSampler Sampler) = UnboundTextures[Index];
 
                 if (Key == 0)
                 {
@@ -556,16 +556,17 @@ namespace Ryujinx.Graphics.Graphics3d
                 }
 
                 Gpu.Renderer.Texture.Bind(Key, Index, Image);
+                Gpu.Renderer.Texture.SetSampler(Sampler);
             }
         }
 
-        private (long, GalImage) UploadTexture(NvGpuVmm Vmm, int TextureHandle)
+        private (long, GalImage, GalTextureSampler) UploadTexture(NvGpuVmm Vmm, int TextureHandle)
         {
             if (TextureHandle == 0)
             {
                 //FIXME: Some games like puyo puyo will use handles with the value 0.
                 //This is a bug, most likely caused by sync issues.
-                return (0, default(GalImage));
+                return (0, default(GalImage), default(GalTextureSampler));
             }
 
             bool LinkedTsc = ReadRegisterBool(NvGpuEngine3dReg.LinkedTsc);
@@ -600,14 +601,12 @@ namespace Ryujinx.Graphics.Graphics3d
             if (Key == -1)
             {
                 //FIXME: Shouldn't ignore invalid addresses.
-                return (0, default(GalImage));
+                return (0, default(GalImage), default(GalTextureSampler));
             }
 
             Gpu.ResourceManager.SendTexture(Vmm, Key, Image);
 
-            Gpu.Renderer.Texture.SetSampler(Sampler);
-
-            return (Key, Image);
+            return (Key, Image, Sampler);
         }
 
         private void UploadConstBuffers(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)
