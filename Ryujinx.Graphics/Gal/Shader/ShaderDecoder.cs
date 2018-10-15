@@ -165,7 +165,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                     DbgOpCode += (Decode?.Method.Name ?? "???");
 
-                    if (Decode == ShaderDecode.Bra)
+                    if (Decode == ShaderDecode.Bra || Decode == ShaderDecode.Ssy)
                     {
                         int Offset = ((int)(OpCode >> 20) << 8) >> 8;
 

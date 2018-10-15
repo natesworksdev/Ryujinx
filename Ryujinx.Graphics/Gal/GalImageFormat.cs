@@ -47,9 +47,9 @@ namespace Ryujinx.Graphics.Gal
         BC3,
         BC4,
         BC5,
-        BC6H_SF16,
-        BC6H_UF16,
-        BC7,
+        BptcSfloat,
+        BptcUfloat,
+        BptcUnorm,
 
         Snorm = 1 << 26,
         Unorm = 1 << 27,

@@ -184,19 +184,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (Format)
             {
-                case GalImageFormat.BC6H_SF16 | GalImageFormat.Float: return InternalFormat.CompressedRgbBptcSignedFloat;
-                case GalImageFormat.BC6H_UF16 | GalImageFormat.Float: return InternalFormat.CompressedRgbBptcUnsignedFloat;
-                case GalImageFormat.BC7       | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaBptcUnorm;
-                case GalImageFormat.BC1       | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt1Ext;
-                case GalImageFormat.BC1       | GalImageFormat.Srgb:  return InternalFormat.CompressedSrgbAlphaS3tcDxt1Ext;
-                case GalImageFormat.BC2       | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt3Ext;
-                case GalImageFormat.BC2       | GalImageFormat.Srgb:  return InternalFormat.CompressedSrgbAlphaS3tcDxt3Ext;
-                case GalImageFormat.BC3       | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt5Ext;
-                case GalImageFormat.BC3       | GalImageFormat.Srgb:  return InternalFormat.CompressedSrgbAlphaS3tcDxt5Ext;
-                case GalImageFormat.BC4       | GalImageFormat.Snorm: return InternalFormat.CompressedSignedRedRgtc1;
-                case GalImageFormat.BC4       | GalImageFormat.Unorm: return InternalFormat.CompressedRedRgtc1;
-                case GalImageFormat.BC5       | GalImageFormat.Snorm: return InternalFormat.CompressedSignedRgRgtc2;
-                case GalImageFormat.BC5       | GalImageFormat.Unorm: return InternalFormat.CompressedRgRgtc2;
+                case GalImageFormat.BptcSfloat | GalImageFormat.Float: return InternalFormat.CompressedRgbBptcSignedFloat;
+                case GalImageFormat.BptcUfloat | GalImageFormat.Float: return InternalFormat.CompressedRgbBptcUnsignedFloat;
+                case GalImageFormat.BptcUnorm  | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaBptcUnorm;
+                case GalImageFormat.BptcUnorm  | GalImageFormat.Srgb:  return InternalFormat.CompressedSrgbAlphaBptcUnorm;
+                case GalImageFormat.BC1        | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt1Ext;
+                case GalImageFormat.BC1        | GalImageFormat.Srgb:  return InternalFormat.CompressedSrgbAlphaS3tcDxt1Ext;
+                case GalImageFormat.BC2        | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt3Ext;
+                case GalImageFormat.BC2        | GalImageFormat.Srgb:  return InternalFormat.CompressedSrgbAlphaS3tcDxt3Ext;
+                case GalImageFormat.BC3        | GalImageFormat.Unorm: return InternalFormat.CompressedRgbaS3tcDxt5Ext;
+                case GalImageFormat.BC3        | GalImageFormat.Srgb:  return InternalFormat.CompressedSrgbAlphaS3tcDxt5Ext;
+                case GalImageFormat.BC4        | GalImageFormat.Snorm: return InternalFormat.CompressedSignedRedRgtc1;
+                case GalImageFormat.BC4        | GalImageFormat.Unorm: return InternalFormat.CompressedRedRgtc1;
+                case GalImageFormat.BC5        | GalImageFormat.Snorm: return InternalFormat.CompressedSignedRgRgtc2;
+                case GalImageFormat.BC5        | GalImageFormat.Unorm: return InternalFormat.CompressedRgRgtc2;
             }
 
             throw new NotImplementedException($"{Format & GalImageFormat.FormatMask} {Format & GalImageFormat.TypeMask}");

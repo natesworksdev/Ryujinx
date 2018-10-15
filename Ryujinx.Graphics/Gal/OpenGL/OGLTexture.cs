@@ -45,19 +45,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
 
             (PixelInternalFormat InternalFmt,
-                 PixelFormat         Format,
-                 PixelType           Type) = OGLEnumConverter.GetImageFormat(Image.Format);
+             PixelFormat         Format,
+             PixelType           Type) = OGLEnumConverter.GetImageFormat(Image.Format);
 
-                GL.TexImage2D(
-                    TextureTarget.Texture2D,
-                    Level,
-                    InternalFmt,
-                    Image.Width,
-                    Image.Height,
-                    Border,
-                    Format,
-                    Type,
-                    IntPtr.Zero);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                Level,
+                InternalFmt,
+                Image.Width,
+                Image.Height,
+                Border,
+                Format,
+                Type,
+                IntPtr.Zero);
         }
 
         public void Create(long Key, byte[] Data, GalImage Image)
@@ -100,7 +100,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         Image.Width,
                         Image.Height, 1);
 
-                    Image.Format = GalImageFormat.RGBA8 | (Image.Format & GalImageFormat.TypeMask);
+                    Image.Format = GalImageFormat.RGBA8 | GalImageFormat.Unorm;
                 }
 
                 (PixelInternalFormat InternalFmt,

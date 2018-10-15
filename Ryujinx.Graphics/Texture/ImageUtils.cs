@@ -65,9 +65,9 @@ namespace Ryujinx.Graphics.Texture
             { GalTextureFormat.D16,        GalImageFormat.D16               | Unorm                              },
 
             //Compressed formats
-            { GalTextureFormat.BC6H_SF16,   GalImageFormat.BC6H_SF16   | Unorm                        },
-            { GalTextureFormat.BC6H_UF16,   GalImageFormat.BC6H_UF16                   | Float        },
-            { GalTextureFormat.BC7U,        GalImageFormat.BC7         | Unorm                        },
+            { GalTextureFormat.BptcSfloat,  GalImageFormat.BptcSfloat                  | Float        },
+            { GalTextureFormat.BptcUfloat,  GalImageFormat.BptcUfloat                  | Float        },
+            { GalTextureFormat.BptcUnorm,   GalImageFormat.BptcUnorm   | Unorm                 | Srgb },
             { GalTextureFormat.BC1,         GalImageFormat.BC1         | Unorm                 | Srgb },
             { GalTextureFormat.BC2,         GalImageFormat.BC2         | Unorm                 | Srgb },
             { GalTextureFormat.BC3,         GalImageFormat.BC3         | Unorm                 | Srgb },
@@ -100,11 +100,11 @@ namespace Ryujinx.Graphics.Texture
             { GalImageFormat.RGB10A2,     new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R32,         new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.RGBA4,       new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.BC6H_SF16,   new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.BC6H_UF16,   new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BptcSfloat,  new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BptcUfloat,  new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
             { GalImageFormat.RGB5A1,      new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.RGB565,      new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.BC7,         new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BptcUnorm,   new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
             { GalImageFormat.RG16,        new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.RG8,         new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.R16,         new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.Texture
 
             if (!s_TextureTable.TryGetValue(Format, out GalImageFormat ImageFormat))
             {
-                throw new NotImplementedException("Format " + ((int)Format).ToString("x2") + " not implemented!");
+                throw new NotImplementedException($"Format 0x{((int)Format):x} not implemented!");
             }
 
             GalImageFormat FormatType = ConvSrgb ? Srgb : GetFormatType(RType);
@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Texture
 
             if (!ImageFormat.HasFlag(FormatType))
             {
-                throw new NotImplementedException("Format " + CombinedFormat + " not implemented!");
+                throw new NotImplementedException($"Format \"{CombinedFormat}\" not implemented!");
             }
 
             return CombinedFormat;
@@ -380,7 +380,7 @@ namespace Ryujinx.Graphics.Texture
                 return Descriptor;
             }
 
-            throw new NotImplementedException("Image with format " + PixelFormat.ToString() + " not implemented");
+            throw new NotImplementedException($"Format \"{PixelFormat}\" not implemented!");
         }
 
         private static GalImageFormat GetFormatType(GalTextureType Type)
