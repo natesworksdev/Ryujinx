@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         {
                             int Target = ((ShaderIrOperImm)CurrOp.OperandA).Value;
 
-                            Current.Branch = Enqueue(Target, Current);
+                            Enqueue(Target, Current);
                         }
                     }
 
