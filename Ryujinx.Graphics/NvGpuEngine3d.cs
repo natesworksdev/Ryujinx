@@ -343,13 +343,8 @@ namespace Ryujinx.Graphics
             {
                 switch (FrontFace)
                 {
-                    case GalFrontFace.CW:
-                        FrontFace = GalFrontFace.CCW;
-                        break;
-
-                    case GalFrontFace.CCW:
-                        FrontFace = GalFrontFace.CW;
-                        break;
+                    case GalFrontFace.CW:  FrontFace = GalFrontFace.CCW; break;
+                    case GalFrontFace.CCW: FrontFace = GalFrontFace.CW;  break;
                 }
             }
 
