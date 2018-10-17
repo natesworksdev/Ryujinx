@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS
 
             Executables = new List<Executable>();
 
-            ImageBase = 0x8000000;
+            ImageBase = MemoryManager.CodeRegionStart;
         }
 
         public void LoadProgram(IExecutable Program)
@@ -285,11 +285,15 @@ namespace Ryujinx.HLE.HOS
 
         private void BreakHandler(object sender, AInstExceptionEventArgs e)
         {
+            PrintStackTraceForCurrentThread();
+
             throw new GuestBrokeExecutionException();
         }
 
         private void UndefinedHandler(object sender, AInstUndefinedEventArgs e)
         {
+            PrintStackTraceForCurrentThread();
+
             throw new UndefinedInstructionException(e.Position, e.RawOpCode);
         }
 
@@ -338,11 +342,16 @@ namespace Ryujinx.HLE.HOS
 
         private void CpuInvalidAccessHandler(object sender, AInvalidAccessEventArgs e)
         {
+            PrintStackTraceForCurrentThread();
+        }
+
+        private void PrintStackTraceForCurrentThread()
+        {
             foreach (KThread Thread in Threads.Values)
             {
-                if (Thread.Thread.IsCurrentThread())
+                if (Thread.Context.IsCurrentThread())
                 {
-                    PrintStackTrace(Thread.Thread.ThreadState);
+                    PrintStackTrace(Thread.Context.ThreadState);
 
                     break;
                 }
