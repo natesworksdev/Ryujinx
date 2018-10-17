@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 
 
@@ -24,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             To.PrintLeft(Writer);
             Writer.Write(">(");
             From.PrintLeft(Writer);
-            Writer.Write(")");            
+            Writer.Write(")");
         }
     }
 }
