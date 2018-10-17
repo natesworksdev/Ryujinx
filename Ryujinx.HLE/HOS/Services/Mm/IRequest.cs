@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         {
             Context.Device.Gpu.UninitializeVideoDecoder();
 
-            Context.Device.Log.PrintStub(LogClass.ServiceMm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
         }
