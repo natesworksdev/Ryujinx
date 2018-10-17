@@ -1,6 +1,5 @@
 using System.IO;
 
-
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class CastExpression : BaseNode
