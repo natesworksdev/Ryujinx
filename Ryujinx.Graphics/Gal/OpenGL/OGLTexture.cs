@@ -93,8 +93,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
             else
             {
-                GalImageFormat ComponentType = Image.Format & GalImageFormat.TypeMask;
-
                 //TODO: Use KHR_texture_compression_astc_hdr when available
                 if (IsAstc(Image.Format))
                 {
