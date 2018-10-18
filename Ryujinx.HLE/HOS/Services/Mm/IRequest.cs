@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 1, InitializeOld },
+                { 0, InitializeOld },
                 { 4, Initialize    },
                 { 6, SetAndWait    },
                 { 7, Get           }
@@ -33,6 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return 0;
         }
 
+        // Initialize()
         public long Initialize(ServiceCtx Context)
         {
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
@@ -40,6 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return 0;
         }
 
+        // SetAndWait(u32, u32, u32)
         public long SetAndWait(ServiceCtx Context)
         {
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
@@ -47,6 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return 0;
         }
 
+        // Get(u32) -> u32
         public long Get(ServiceCtx Context)
         {
             Context.ResponseData.Write(0);
