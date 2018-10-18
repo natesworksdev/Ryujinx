@@ -1,5 +1,6 @@
 using ChocolArm64.State;
-using Ryujinx.HLE.Logging;
+using Ryujinx.Common.Logging;
+using System.Collections.Generic;
 
 using static Ryujinx.HLE.HOS.ErrorCode;
 
@@ -13,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             int  HandlesCount =  (int)ThreadState.X2;
             long Timeout      = (long)ThreadState.X3;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc,
+            Logger.PrintDebug(LogClass.KernelSvc,
                 "HandlesPtr = 0x"   + HandlesPtr  .ToString("x16") + ", " +
                 "HandlesCount = 0x" + HandlesCount.ToString("x8")  + ", " +
                 "Timeout = 0x"      + Timeout     .ToString("x16"));
@@ -25,33 +26,38 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            KSynchronizationObject[] SyncObjs = new KSynchronizationObject[HandlesCount];
+            List<KSynchronizationObject> SyncObjs = new List<KSynchronizationObject>();
 
             for (int Index = 0; Index < HandlesCount; Index++)
             {
                 int Handle = Memory.ReadInt32(HandlesPtr + Index * 4);
 
-                KSynchronizationObject SyncObj = Process.HandleTable.GetData<KSynchronizationObject>(Handle);
+                KSynchronizationObject SyncObj = Process.HandleTable.GetObject<KSynchronizationObject>(Handle);
 
-                SyncObjs[Index] = SyncObj;
+                if (SyncObj == null)
+                {
+                    break;
+                }
+
+                SyncObjs.Add(SyncObj);
             }
 
             int HndIndex = (int)ThreadState.X1;
 
             ulong High = ThreadState.X1 & (0xffffffffUL << 32);
 
-            long Result = System.Synchronization.WaitFor(SyncObjs, Timeout, ref HndIndex);
+            long Result = System.Synchronization.WaitFor(SyncObjs.ToArray(), Timeout, ref HndIndex);
 
             if (Result != 0)
             {
                 if (Result == MakeError(ErrorModule.Kernel, KernelErr.Timeout) ||
                     Result == MakeError(ErrorModule.Kernel, KernelErr.Cancelled))
                 {
-                    Device.Log.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                    Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
                 }
                 else
                 {
-                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
                 }
             }
 
@@ -63,13 +69,13 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             int ThreadHandle = (int)ThreadState.X0;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc, "ThreadHandle = 0x" + ThreadHandle.ToString("x8"));
+            Logger.PrintDebug(LogClass.KernelSvc, "ThreadHandle = 0x" + ThreadHandle.ToString("x8"));
 
-            KThread Thread = Process.HandleTable.GetData<KThread>(ThreadHandle);
+            KThread Thread = Process.HandleTable.GetKThread(ThreadHandle);
 
             if (Thread == null)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{ThreadHandle:x8}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{ThreadHandle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -87,14 +93,14 @@ namespace Ryujinx.HLE.HOS.Kernel
             long MutexAddress    = (long)ThreadState.X1;
             int  RequesterHandle =  (int)ThreadState.X2;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc,
+            Logger.PrintDebug(LogClass.KernelSvc,
                 "OwnerHandle = 0x"     + OwnerHandle    .ToString("x8")  + ", " +
                 "MutexAddress = 0x"    + MutexAddress   .ToString("x16") + ", " +
                 "RequesterHandle = 0x" + RequesterHandle.ToString("x8"));
 
             if (IsPointingInsideKernel(MutexAddress))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -103,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (IsAddressNotWordAligned(MutexAddress))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -119,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;
@@ -129,11 +135,11 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             long MutexAddress = (long)ThreadState.X0;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc, "MutexAddress = 0x" + MutexAddress.ToString("x16"));
+            Logger.PrintDebug(LogClass.KernelSvc, "MutexAddress = 0x" + MutexAddress.ToString("x16"));
 
             if (IsPointingInsideKernel(MutexAddress))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -142,7 +148,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (IsAddressNotWordAligned(MutexAddress))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -153,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;
@@ -166,7 +172,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             int   ThreadHandle   =  (int)ThreadState.X2;
             long  Timeout        = (long)ThreadState.X3;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc,
+            Logger.PrintDebug(LogClass.KernelSvc,
                 "MutexAddress = 0x"   + MutexAddress  .ToString("x16") + ", " +
                 "CondVarAddress = 0x" + CondVarAddress.ToString("x16") + ", " +
                 "ThreadHandle = 0x"   + ThreadHandle  .ToString("x8")  + ", " +
@@ -174,7 +180,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (IsPointingInsideKernel(MutexAddress))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -183,7 +189,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (IsAddressNotWordAligned(MutexAddress))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -201,11 +207,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 if (Result == MakeError(ErrorModule.Kernel, KernelErr.Timeout))
                 {
-                    Device.Log.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                    Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
                 }
                 else
                 {
-                    Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
                 }
             }
 
@@ -217,7 +223,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             long Address = (long)ThreadState.X0;
             int  Count   =  (int)ThreadState.X1;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc,
+            Logger.PrintDebug(LogClass.KernelSvc,
                 "Address = 0x" + Address.ToString("x16") + ", " +
                 "Count = 0x"   + Count  .ToString("x8"));
 
@@ -233,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             int             Value   =             (int)ThreadState.X2;
             long            Timeout =            (long)ThreadState.X3;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc,
+            Logger.PrintDebug(LogClass.KernelSvc,
                 "Address = 0x" + Address.ToString("x16") + ", " +
                 "Type = "      + Type   .ToString()      + ", " +
                 "Value = 0x"   + Value  .ToString("x8")  + ", " +
@@ -241,7 +247,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (IsPointingInsideKernel(Address))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -250,7 +256,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (IsAddressNotWordAligned(Address))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -280,7 +286,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;
@@ -293,7 +299,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             int        Value   =        (int)ThreadState.X2;
             int        Count   =        (int)ThreadState.X3;
 
-            Device.Log.PrintDebug(LogClass.KernelSvc,
+            Logger.PrintDebug(LogClass.KernelSvc,
                 "Address = 0x" + Address.ToString("x16") + ", " +
                 "Type = "      + Type   .ToString()      + ", " +
                 "Value = 0x"   + Value  .ToString("x8")  + ", " +
@@ -301,7 +307,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (IsPointingInsideKernel(Address))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -310,7 +316,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (IsAddressNotWordAligned(Address))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -340,7 +346,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;

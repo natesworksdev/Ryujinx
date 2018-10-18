@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.Logging
+namespace Ryujinx.Common.Logging
 {
     public enum LogClass
     {
@@ -22,6 +22,8 @@ namespace Ryujinx.HLE.Logging
         ServiceFriend,
         ServiceFs,
         ServiceHid,
+        ServiceIrs,
+        ServiceLdr,
         ServiceLm,
         ServiceMm,
         ServiceNfp,

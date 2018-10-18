@@ -1,9 +1,9 @@
 using ChocolArm64.Memory;
 using ChocolArm64.State;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services;
-using Ryujinx.HLE.Logging;
 using System;
 using System.Threading;
 
@@ -22,24 +22,77 @@ namespace Ryujinx.HLE.HOS.Kernel
             Device.System.ExitProcess(Process.ProcessId);
         }
 
-        private void SvcClearEvent(AThreadState ThreadState)
+        private void SignalEvent64(AThreadState ThreadState)
         {
-            int Handle = (int)ThreadState.X0;
+            ThreadState.X0 = (ulong)SignalEvent((int)ThreadState.X0);
+        }
 
-            //TODO: Implement events.
+        private KernelResult SignalEvent(int Handle)
+        {
+            KWritableEvent WritableEvent = Process.HandleTable.GetObject<KWritableEvent>(Handle);
 
-            ThreadState.X0 = 0;
+            KernelResult Result;
+
+            if (WritableEvent != null)
+            {
+                WritableEvent.Signal();
+
+                Result = KernelResult.Success;
+            }
+            else
+            {
+                Result = KernelResult.InvalidHandle;
+            }
+
+            if (Result != KernelResult.Success)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + Result + "!");
+            }
+
+            return Result;
+        }
+
+        private void ClearEvent64(AThreadState ThreadState)
+        {
+            ThreadState.X0 = (ulong)ClearEvent((int)ThreadState.X0);
+        }
+
+        private KernelResult ClearEvent(int Handle)
+        {
+            KernelResult Result;
+
+            KWritableEvent WritableEvent = Process.HandleTable.GetObject<KWritableEvent>(Handle);
+
+            if (WritableEvent == null)
+            {
+                KReadableEvent ReadableEvent = Process.HandleTable.GetObject<KReadableEvent>(Handle);
+
+                Result = ReadableEvent?.Clear() ?? KernelResult.InvalidHandle;
+            }
+            else
+            {
+                Result = WritableEvent.Clear();
+            }
+
+            if (Result != KernelResult.Success)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + Result + "!");
+            }
+
+            return Result;
         }
 
         private void SvcCloseHandle(AThreadState ThreadState)
         {
             int Handle = (int)ThreadState.X0;
 
-            object Obj = Process.HandleTable.CloseHandle(Handle);
+            object Obj = Process.HandleTable.GetObject<object>(Handle);
+
+            Process.HandleTable.CloseHandle(Handle);
 
             if (Obj == null)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid handle 0x{Handle:x8}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -60,24 +113,37 @@ namespace Ryujinx.HLE.HOS.Kernel
             ThreadState.X0 = 0;
         }
 
-        private void SvcResetSignal(AThreadState ThreadState)
+        private void ResetSignal64(AThreadState ThreadState)
         {
-            int Handle = (int)ThreadState.X0;
+            ThreadState.X0 = (ulong)ResetSignal((int)ThreadState.X0);
+        }
 
-            KEvent Event = Process.HandleTable.GetData<KEvent>(Handle);
+        private KernelResult ResetSignal(int Handle)
+        {
+            KReadableEvent ReadableEvent = Process.HandleTable.GetObject<KReadableEvent>(Handle);
 
-            if (Event != null)
+            KernelResult Result;
+
+            //TODO: KProcess support.
+            if (ReadableEvent != null)
             {
-                Event.Reset();
-
-                ThreadState.X0 = 0;
+                Result = ReadableEvent.ClearIfSignaled();
             }
             else
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid event handle 0x{Handle:x8}!");
-
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+                Result = KernelResult.InvalidHandle;
             }
+
+            if (Result == KernelResult.InvalidState)
+            {
+                Logger.PrintDebug(LogClass.KernelSvc, "Operation failed with error: " + Result + "!");
+            }
+            else if (Result != KernelResult.Success)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + Result + "!");
+            }
+
+            return Result;
         }
 
         private void SvcGetSystemTick(AThreadState ThreadState)
@@ -96,10 +162,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             //actually exists, return error codes otherwise.
             KSession Session = new KSession(ServiceFactory.MakeService(System, Name), Name);
 
-            ulong Handle = (ulong)Process.HandleTable.OpenHandle(Session);
+            if (Process.HandleTable.GenerateHandle(Session, out int Handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             ThreadState.X0 = 0;
-            ThreadState.X1 = Handle;
+            ThreadState.X1 = (uint)Handle;
         }
 
         private void SvcSendSyncRequest(AThreadState ThreadState)
@@ -122,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             byte[] MessageData = Memory.ReadBytes(MessagePtr, Size);
 
-            KSession Session = Process.HandleTable.GetData<KSession>(Handle);
+            KSession Session = Process.HandleTable.GetObject<KSession>(Handle);
 
             if (Session != null)
             {
@@ -151,7 +220,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
             else
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid session handle 0x{Handle:x8}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid session handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
@@ -178,9 +247,17 @@ namespace Ryujinx.HLE.HOS.Kernel
             long Unknown = (long)ThreadState.X1;
             long Info    = (long)ThreadState.X2;
 
-            Process.PrintStackTrace(ThreadState);
+            if ((Reason & (1 << 31)) == 0)
+            {
+                Process.PrintStackTrace(ThreadState);
 
-            throw new GuestBrokeExecutionException();
+                throw new GuestBrokeExecutionException();
+            }
+            else
+            {
+                Logger.PrintInfo(LogClass.KernelSvc, "Debugger triggered");
+                Process.PrintStackTrace(ThreadState);
+            }
         }
 
         private void SvcOutputDebugString(AThreadState ThreadState)
@@ -190,7 +267,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             string Str = AMemoryHelper.ReadAsciiString(Memory, Position, Size);
 
-            Device.Log.PrintWarning(LogClass.KernelSvc, Str);
+            Logger.PrintWarning(LogClass.KernelSvc, Str);
 
             ThreadState.X0 = 0;
         }
@@ -206,7 +283,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (InfoType == 18 ||
                 InfoType == 19 ||
                 InfoType == 20 ||
-                InfoType == 21)
+                InfoType == 21 ||
+                InfoType == 22)
             {
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
 
@@ -286,6 +364,38 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             ThreadState.X0 = 0;
+        }
+
+        private void CreateEvent64(AThreadState State)
+        {
+            KernelResult Result = CreateEvent(out int WEventHandle, out int REventHandle);
+
+            State.X0 = (ulong)Result;
+            State.X1 = (ulong)WEventHandle;
+            State.X2 = (ulong)REventHandle;
+        }
+
+        private KernelResult CreateEvent(out int WEventHandle, out int REventHandle)
+        {
+            KEvent Event = new KEvent(System);
+
+            KernelResult Result = Process.HandleTable.GenerateHandle(Event.WritableEvent, out WEventHandle);
+
+            if (Result == KernelResult.Success)
+            {
+                Result = Process.HandleTable.GenerateHandle(Event.ReadableEvent, out REventHandle);
+
+                if (Result != KernelResult.Success)
+                {
+                    Process.HandleTable.CloseHandle(WEventHandle);
+                }
+            }
+            else
+            {
+                REventHandle = 0;
+            }
+
+            return Result;
         }
     }
 }

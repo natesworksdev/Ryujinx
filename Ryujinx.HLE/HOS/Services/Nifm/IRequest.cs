@@ -1,6 +1,7 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.Logging;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm
@@ -34,22 +35,29 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
         {
             Context.ResponseData.Write(1);
 
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long GetResult(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long GetSystemEventReadableHandles(ServiceCtx Context)
         {
-            int Handle0 = Context.Process.HandleTable.OpenHandle(Event0);
-            int Handle1 = Context.Process.HandleTable.OpenHandle(Event1);
+            if (Context.Process.HandleTable.GenerateHandle(Event0.ReadableEvent, out int Handle0) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
+
+            if (Context.Process.HandleTable.GenerateHandle(Event1.ReadableEvent, out int Handle1) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle0, Handle1);
 
@@ -58,21 +66,21 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
 
         public long Cancel(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long Submit(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long SetConnectionConfirmationOption(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }

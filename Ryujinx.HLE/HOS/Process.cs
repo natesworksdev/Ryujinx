@@ -3,6 +3,7 @@ using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
 using LibHac;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel;
@@ -11,7 +12,6 @@ using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
-using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Concurrent;
@@ -71,7 +71,22 @@ namespace Ryujinx.HLE.HOS
 
             TlsPages = new List<KTlsPageManager>();
 
-            HandleTable = new KProcessHandleTable();
+            int HandleTableSize = 1024;
+
+            if (MetaData != null)
+            {
+                foreach (KernelAccessControlItem Item in MetaData.ACI0.KernelAccessControl.Items)
+                {
+                    if (Item.HasHandleTableSize)
+                    {
+                        HandleTableSize = Item.HandleTableSize;
+
+                        break;
+                    }
+                }
+            }
+
+            HandleTable = new KProcessHandleTable(Device.System, HandleTableSize);
 
             AppletState = new AppletStateMgr(Device.System);
 
@@ -91,13 +106,37 @@ namespace Ryujinx.HLE.HOS
                 throw new ObjectDisposedException(nameof(Process));
             }
 
-            Device.Log.PrintInfo(LogClass.Loader, $"Image base at 0x{ImageBase:x16}.");
+            long ImageEnd = LoadProgram(Program, ImageBase);
 
-            Executable Executable = new Executable(Program, MemoryManager, Memory, ImageBase);
+            ImageBase = IntUtils.AlignUp(ImageEnd, KMemoryManager.PageSize);
+        }
+
+        public long LoadProgram(IExecutable Program, long ExecutableBase)
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(nameof(Process));
+            }
+
+            Logger.PrintInfo(LogClass.Loader, $"Image base at 0x{ExecutableBase:x16}.");
+
+            Executable Executable = new Executable(Program, MemoryManager, Memory, ExecutableBase);
 
             Executables.Add(Executable);
 
-            ImageBase = IntUtils.AlignUp(Executable.ImageEnd, KMemoryManager.PageSize);
+            return Executable.ImageEnd;
+        }
+
+        public void RemoveProgram(long ExecutableBase)
+        {
+            foreach (Executable Executable in Executables)
+            {
+                if (Executable.ImageBase == ExecutableBase)
+                {
+                    Executables.Remove(Executable);
+                    break;
+                }
+            }
         }
 
         public void SetEmptyArgs()
@@ -139,7 +178,7 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            KThread MainThread = HandleTable.GetData<KThread>(Handle);
+            KThread MainThread = HandleTable.GetKThread(Handle);
 
             if (NeedsHbAbi)
             {
@@ -190,7 +229,7 @@ namespace Ryujinx.HLE.HOS
 
             Thread.LastPc = EntryPoint;
 
-            int Handle = HandleTable.OpenHandle(Thread);
+            HandleTable.GenerateHandle(Thread, out int Handle);
 
             CpuThread.ThreadState.CntfrqEl0 = TickFreq;
             CpuThread.ThreadState.Tpidr     = Tpidr;
@@ -280,7 +319,7 @@ namespace Ryujinx.HLE.HOS
 
             string ExeNameWithAddr = $"{Exe.Name}:0x{Offset:x8}";
 
-            Device.Log.PrintDebug(LogClass.Cpu, ExeNameWithAddr + " " + SubName);
+            Logger.PrintDebug(LogClass.Cpu, ExeNameWithAddr + " " + SubName);
         }
 
         private ATranslator GetTranslator()
@@ -335,7 +374,7 @@ namespace Ryujinx.HLE.HOS
                 FramePointer = Memory.ReadInt64(FramePointer);
             }
 
-            Device.Log.PrintInfo(LogClass.Cpu, Trace.ToString());
+            Logger.PrintInfo(LogClass.Cpu, Trace.ToString());
         }
 
         private bool TryGetSubName(Executable Exe, long Position, out string Name)
@@ -427,13 +466,7 @@ namespace Ryujinx.HLE.HOS
 
             Disposed = true;
 
-            foreach (object Obj in HandleTable.Clear())
-            {
-                if (Obj is KSession Session)
-                {
-                    Session.Dispose();
-                }
-            }
+            HandleTable.Destroy();
 
             INvDrvServices.UnloadProcess(this);
 
@@ -442,7 +475,7 @@ namespace Ryujinx.HLE.HOS
                 File.Delete(Executables[0].FilePath);
             }
 
-            Device.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
+            Logger.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
         }
 
         public void Dispose()

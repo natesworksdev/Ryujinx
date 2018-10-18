@@ -1,10 +1,10 @@
 using LibHac;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
-using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -51,6 +51,8 @@ namespace Ryujinx.HLE.HOS
 
         public string CurrentTitle { get; private set; }
 
+        public bool EnableFsIntegrityChecks { get; set; }
+
         public Horizon(Switch Device)
         {
             this.Device = Device;
@@ -70,6 +72,8 @@ namespace Ryujinx.HLE.HOS
             Synchronization = new KSynchronization(this);
 
             Withholders = new LinkedList<KThread>();
+
+            Scheduler.StartAutoPreemptionThread();
 
             if (!Device.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
                 !Device.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
@@ -100,7 +104,7 @@ namespace Ryujinx.HLE.HOS
 
             if (File.Exists(NpdmFileName))
             {
-                Device.Log.PrintInfo(LogClass.Loader, $"Loading main.npdm...");
+                Logger.PrintInfo(LogClass.Loader, $"Loading main.npdm...");
 
                 using (FileStream Input = new FileStream(NpdmFileName, FileMode.Open))
                 {
@@ -109,7 +113,7 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                Device.Log.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
+                Logger.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
             }
 
             Process MainProcess = MakeProcess(MetaData);
@@ -123,7 +127,7 @@ namespace Ryujinx.HLE.HOS
                         continue;
                     }
 
-                    Device.Log.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(File)}...");
+                    Logger.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(File)}...");
 
                     using (FileStream Input = new FileStream(File, FileMode.Open))
                     {
@@ -164,7 +168,7 @@ namespace Ryujinx.HLE.HOS
 
             if (MainNca == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "Unable to load XCI");
+                Logger.PrintError(LogClass.Loader, "Unable to load XCI");
 
                 return;
             }
@@ -208,14 +212,21 @@ namespace Ryujinx.HLE.HOS
 
             if (MainNca == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
+                Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
             }
 
             MainNca.SetBaseNca(PatchNca);
-            
+
             if (ControlNca != null)
             {
                 ReadControlData(ControlNca);
+            }
+
+            if (PatchNca != null)
+            {
+                PatchNca.SetBaseNca(MainNca);
+
+                return (PatchNca, ControlNca);
             }
 
             return (MainNca, ControlNca);
@@ -223,7 +234,7 @@ namespace Ryujinx.HLE.HOS
 
         public void ReadControlData(Nca ControlNca)
         {
-            Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false));
+            Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false, EnableFsIntegrityChecks));
 
             byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
 
@@ -252,8 +263,7 @@ namespace Ryujinx.HLE.HOS
             // Load title key from the NSP's ticket in case the user doesn't have a title key file
             if (TicketFile != null)
             {
-                // todo Change when Ticket(Stream) overload is added
-                Ticket Ticket = new Ticket(new BinaryReader(Nsp.OpenFile(TicketFile)));
+                Ticket Ticket = new Ticket(Nsp.OpenFile(TicketFile));
 
                 KeySet.TitleKeys[Ticket.RightsId] = Ticket.GetTitleKey(KeySet);
             }
@@ -282,33 +292,33 @@ namespace Ryujinx.HLE.HOS
                 return;
             }
 
-            Device.Log.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided NSP file");
+            Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided NSP file");
         }
 
         public void LoadNca(Nca MainNca, Nca ControlNca)
         {
-            NcaSection RomfsSection = MainNca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
+            NcaSection RomfsSection = MainNca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs || x?.Type == SectionType.Bktr);
             NcaSection ExefsSection = MainNca.Sections.FirstOrDefault(x => x?.IsExefs == true);
 
             if (ExefsSection == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "No ExeFS found in NCA");
+                Logger.PrintError(LogClass.Loader, "No ExeFS found in NCA");
 
                 return;
             }
 
             if (RomfsSection == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "No RomFS found in NCA");
+                Logger.PrintWarning(LogClass.Loader, "No RomFS found in NCA");
+            }
+            else
+            {
+                Stream RomfsStream = MainNca.OpenSection(RomfsSection.SectionNum, false, EnableFsIntegrityChecks);
 
-                return;
+                Device.FileSystem.SetRomFs(RomfsStream);
             }
 
-            Stream RomfsStream = MainNca.OpenSection(RomfsSection.SectionNum, false);
-
-            Device.FileSystem.SetRomFs(RomfsStream);
-
-            Stream ExefsStream = MainNca.OpenSection(ExefsSection.SectionNum, false);
+            Stream ExefsStream = MainNca.OpenSection(ExefsSection.SectionNum, false, EnableFsIntegrityChecks);
 
             Pfs Exefs = new Pfs(ExefsStream);
 
@@ -316,13 +326,13 @@ namespace Ryujinx.HLE.HOS
 
             if (Exefs.FileExists("main.npdm"))
             {
-                Device.Log.PrintInfo(LogClass.Loader, "Loading main.npdm...");
+                Logger.PrintInfo(LogClass.Loader, "Loading main.npdm...");
 
                 MetaData = new Npdm(Exefs.OpenFile("main.npdm"));
             }
             else
             {
-                Device.Log.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
+                Logger.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
             }
 
             Process MainProcess = MakeProcess(MetaData);
@@ -336,7 +346,7 @@ namespace Ryujinx.HLE.HOS
                         continue;
                     }
 
-                    Device.Log.PrintInfo(LogClass.Loader, $"Loading {Filename}...");
+                    Logger.PrintInfo(LogClass.Loader, $"Loading {Filename}...");
 
                     string Name = Path.GetFileNameWithoutExtension(File.Name);
 
@@ -348,7 +358,7 @@ namespace Ryujinx.HLE.HOS
 
             Nacp ReadControlData()
             {
-                Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false));
+                Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false, EnableFsIntegrityChecks));
 
                 byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
 
@@ -466,7 +476,7 @@ namespace Ryujinx.HLE.HOS
 
         public void SignalVsync()
         {
-            VsyncEvent.Signal();
+            VsyncEvent.ReadableEvent.Signal();
         }
 
         private Process MakeProcess(Npdm MetaData = null)

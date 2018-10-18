@@ -5,8 +5,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLRasterizer : IGalRasterizer
     {
-        public bool DepthWriteEnabled { set; private get; }
-
         private int[] VertexBuffers;
 
         private OGLCachedResource<int> VboCache;
@@ -30,8 +28,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             IboCache = new OGLCachedResource<int>(GL.DeleteBuffer);
 
             IndexBuffer = new IbInfo();
-
-            DepthWriteEnabled = true;
         }
 
         public void LockCaches()
@@ -49,23 +45,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public void ClearBuffers(
             GalClearBufferFlags Flags,
             int Attachment,
-            float Red, float Green, float Blue, float Alpha,
+            float Red,
+            float Green,
+            float Blue,
+            float Alpha,
             float Depth,
             int Stencil)
         {
-            //OpenGL needs glDepthMask to be enabled to clear it
-            if (!DepthWriteEnabled)
-            {
-                GL.DepthMask(true);
-            }
-
             GL.ColorMask(
+                Attachment,
                 Flags.HasFlag(GalClearBufferFlags.ColorRed),
                 Flags.HasFlag(GalClearBufferFlags.ColorGreen),
                 Flags.HasFlag(GalClearBufferFlags.ColorBlue),
                 Flags.HasFlag(GalClearBufferFlags.ColorAlpha));
 
             GL.ClearBuffer(ClearBuffer.Color, Attachment, new float[] { Red, Green, Blue, Alpha });
+
+            GL.ColorMask(Attachment, true, true, true, true);
+            GL.DepthMask(true);
 
             if (Flags.HasFlag(GalClearBufferFlags.Depth))
             {
@@ -75,13 +72,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             if (Flags.HasFlag(GalClearBufferFlags.Stencil))
             {
                 GL.ClearBuffer(ClearBuffer.Stencil, 0, ref Stencil);
-            }
-
-            GL.ColorMask(true, true, true, true);
-
-            if (!DepthWriteEnabled)
-            {
-                GL.DepthMask(false);
             }
         }
 
@@ -119,6 +109,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BufferData(BufferTarget.ElementArrayBuffer, Length, HostAddress, BufferUsageHint.StreamDraw);
         }
 
+        public void CreateIbo(long Key, int DataSize, byte[] Buffer)
+        {
+            int Handle = GL.GenBuffer();
+
+            IboCache.AddOrUpdate(Key, Handle, (uint)DataSize);
+
+            IntPtr Length = new IntPtr(Buffer.Length);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Handle);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Length, Buffer, BufferUsageHint.StreamDraw);
+        }
+
         public void SetIndexArray(int Size, GalIndexFormat Format)
         {
             IndexBuffer.Type = OGLEnumConverter.GetDrawElementsType(Format);
@@ -135,7 +137,26 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 return;
             }
 
-            GL.DrawArrays(OGLEnumConverter.GetPrimitiveType(PrimType), First, Count);
+            if (PrimType == GalPrimitiveType.Quads)
+            {
+                for (int Offset = 0; Offset < Count; Offset += 4)
+                {
+                    GL.DrawArrays(PrimitiveType.TriangleFan, First + Offset, 4);
+                }
+            }
+            else if (PrimType == GalPrimitiveType.QuadStrip)
+            {
+                GL.DrawArrays(PrimitiveType.TriangleFan, First, 4);
+
+                for (int Offset = 2; Offset < Count; Offset += 2)
+                {
+                    GL.DrawArrays(PrimitiveType.TriangleFan, First + Offset, 4);
+                }
+            }
+            else
+            {
+                GL.DrawArrays(OGLEnumConverter.GetPrimitiveType(PrimType), First, Count);
+            }
         }
 
         public void DrawElements(long IboKey, int First, int VertexBase, GalPrimitiveType PrimType)

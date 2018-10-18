@@ -1,6 +1,7 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.Logging;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
@@ -27,18 +28,21 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long RequestToGetForeground(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
 
         public long GetPopFromGeneralChannelEvent(ServiceCtx Context)
         {
-            int Handle = Context.Process.HandleTable.OpenHandle(ChannelEvent);
+            if (Context.Process.HandleTable.GenerateHandle(ChannelEvent.ReadableEvent, out int Handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }

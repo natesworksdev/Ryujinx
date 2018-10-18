@@ -1,9 +1,9 @@
 using ChocolArm64.Memory;
 using Ryujinx.Audio;
 using Ryujinx.Audio.Adpcm;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
@@ -38,6 +38,8 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         private int Track;
 
+        private PlayState PlayState;
+
         public IAudioRenderer(
             Horizon                System,
             AMemory                Memory,
@@ -46,6 +48,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
+                { 0, GetSampleRate              },
+                { 1, GetSampleCount             },
+                { 2, GetMixBufferCount          },
+                { 3, GetState                   },
                 { 4, RequestUpdateAudioRenderer },
                 { 5, StartAudioRenderer         },
                 { 6, StopAudioRenderer          },
@@ -68,11 +74,47 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             Voices = CreateArray<VoiceContext>(Params.VoiceCount);
 
             InitializeAudioOut();
+
+            PlayState = PlayState.Stopped;
+        }
+
+        //  GetSampleRate() -> u32
+        public long GetSampleRate(ServiceCtx Context)
+        {
+            Context.ResponseData.Write(Params.SampleRate);
+
+            return 0;
+        }
+
+        //  GetSampleCount() -> u32
+        public long GetSampleCount(ServiceCtx Context)
+        {
+            Context.ResponseData.Write(Params.SampleCount);
+
+            return 0;
+        }
+
+        // GetMixBufferCount() -> u32
+        public long GetMixBufferCount(ServiceCtx Context)
+        {
+            Context.ResponseData.Write(Params.MixCount);
+
+            return 0;
+        }
+
+        // GetState() -> u32
+        private long GetState(ServiceCtx Context)
+        {
+            Context.ResponseData.Write((int)PlayState);
+
+            Logger.PrintStub(LogClass.ServiceAudio, $"Stubbed. Renderer State: {Enum.GetName(typeof(PlayState), PlayState)}");
+
+            return 0;
         }
 
         private void AudioCallback()
         {
-            UpdateEvent.Signal();
+            UpdateEvent.ReadableEvent.Signal();
         }
 
         private static T[] CreateArray<T>(int Size) where T : new()
@@ -204,21 +246,28 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         public long StartAudioRenderer(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+
+            PlayState = PlayState.Playing;
 
             return 0;
         }
 
         public long StopAudioRenderer(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+
+            PlayState = PlayState.Stopped;
 
             return 0;
         }
 
         public long QuerySystemEvent(ServiceCtx Context)
         {
-            int Handle = Context.Process.HandleTable.OpenHandle(UpdateEvent);
+            if (Context.Process.HandleTable.GenerateHandle(UpdateEvent.ReadableEvent, out int Handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 

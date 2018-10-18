@@ -1,9 +1,9 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.Nv.NvGpuAS;
 using Ryujinx.HLE.HOS.Services.Nv.NvMap;
-using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -114,7 +114,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
                 if (Commands.TryGetValue((InterfaceName, Code), out ServiceProcessParcel ProcReq))
                 {
-                    Context.Device.Log.PrintDebug(LogClass.ServiceVi, $"{InterfaceName} {ProcReq.Method.Name}");
+                    Logger.PrintDebug(LogClass.ServiceVi, $"{InterfaceName} {ProcReq.Method.Name}");
 
                     return ProcReq(Context, Reader);
                 }
@@ -321,14 +321,14 @@ namespace Ryujinx.HLE.HOS.Services.Android
                         FbWidth,
                         FbHeight, 1, 16,
                         GalMemoryLayout.BlockLinear,
-                        GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm);
+                        GalImageFormat.RGBA8 | GalImageFormat.Unorm);
                 }
 
                 Context.Device.Gpu.ResourceManager.ClearPbCache();
                 Context.Device.Gpu.ResourceManager.SendTexture(Vmm, FbAddr, Image);
 
                 Renderer.RenderTarget.SetTransform(FlipX, FlipY, Top, Left, Right, Bottom);
-                Renderer.RenderTarget.Set(FbAddr);
+                Renderer.RenderTarget.Present(FbAddr);
 
                 ReleaseBuffer(Slot);
             });
@@ -338,7 +338,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
         {
             BufferQueue[Slot].State = BufferState.Free;
 
-            BinderEvent.Signal();
+            BinderEvent.ReadableEvent.Signal();
 
             WaitBufferFree.Set();
         }

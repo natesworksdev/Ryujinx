@@ -1,21 +1,28 @@
 ﻿namespace Ryujinx.Graphics.Gal
 {
-    public struct GalVertexBinding
+    public struct ColorMaskRgba
     {
-        //VboKey shouldn't be here, but ARB_vertex_attrib_binding is core since 4.3
+        private static readonly ColorMaskRgba _Default = new ColorMaskRgba()
+        {
+            Red   = true,
+            Green = true,
+            Blue  = true,
+            Alpha = true
+        };
 
-        public bool Enabled;
-        public int Stride;
-        public long VboKey;
-        public bool Instanced;
-        public int Divisor;
-        public GalVertexAttrib[] Attribs;
+        public static ColorMaskRgba Default => _Default;
+
+        public bool Red;
+        public bool Green;
+        public bool Blue;
+        public bool Alpha;
     }
 
     public class GalPipelineState
     {
-        public const int Stages = 5;
+        public const int Stages               = 5;
         public const int ConstBuffersPerStage = 18;
+        public const int RenderTargetsCount   = 8;
 
         public long[][] ConstBufferKeys;
 
@@ -38,6 +45,7 @@
         public GalComparisonOp DepthFunc;
 
         public bool StencilTestEnabled;
+        public bool StencilTwoSideEnabled;
 
         public GalComparisonOp StencilBackFuncFunc;
         public int StencilBackFuncRef;
@@ -64,6 +72,9 @@
         public GalBlendFactor BlendFuncSrcAlpha;
         public GalBlendFactor BlendFuncDstAlpha;
 
+        public ColorMaskRgba ColorMask;
+        public ColorMaskRgba[] ColorMasks;
+
         public bool PrimitiveRestartEnabled;
         public uint PrimitiveRestartIndex;
 
@@ -75,6 +86,8 @@
             {
                 ConstBufferKeys[Stage] = new long[ConstBuffersPerStage];
             }
+
+            ColorMasks = new ColorMaskRgba[RenderTargetsCount];
         }
     }
 }
