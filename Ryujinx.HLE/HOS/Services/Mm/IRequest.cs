@@ -44,6 +44,10 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         // SetAndWait(u32, u32, u32)
         public long SetAndWait(ServiceCtx Context)
         {
+            int Unknown0 = Context.RequestData.ReadInt32();
+            int Unknown1 = Context.RequestData.ReadInt32();
+            int Unknown2 = Context.RequestData.ReadInt32();
+
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
@@ -52,9 +56,11 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         // Get(u32) -> u32
         public long Get(ServiceCtx Context)
         {
-            Context.ResponseData.Write(0);
+            int Unknown0 = Context.RequestData.ReadInt32();
 
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
+
+            Context.ResponseData.Write(0);
 
             return 0;
         }
