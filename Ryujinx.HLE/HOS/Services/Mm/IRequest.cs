@@ -15,6 +15,8 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, InitializeOld },
+                { 2, SetAndWaitOld },
+                { 3, GetOld        },
                 { 4, Initialize    },
                 { 6, SetAndWait    },
                 { 7, Get           }
@@ -30,6 +32,31 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
             Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {Unknown0} - " +
                                                  $"Unknown1: {Unknown1} - Unknown2: {Unknown2}");
+
+            return 0;
+        }
+
+        // SetAndWaitOld(u32, u32, u32)
+        public long SetAndWaitOld(ServiceCtx Context)
+        {
+            int Unknown0 = Context.RequestData.ReadInt32();
+            int Unknown1 = Context.RequestData.ReadInt32();
+            int Unknown2 = Context.RequestData.ReadInt32();
+
+            Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {Unknown0} - " +
+                                                 $"Unknown1: {Unknown1} - Unknown2: {Unknown2}");
+
+            return 0;
+        }
+
+        // GetOld(u32) -> u32
+        public long GetOld(ServiceCtx Context)
+        {
+            int Unknown0 = Context.RequestData.ReadInt32();
+
+            Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {Unknown0}");
+
+            Context.ResponseData.Write(0);
 
             return 0;
         }
