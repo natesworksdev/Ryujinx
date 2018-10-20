@@ -22,7 +22,8 @@ namespace Ryujinx.HLE.HOS.Services.Psm
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, GetBatteryChargePercentage },
-                { 1, GetChargerType             }
+                { 1, GetChargerType             },
+                { 7, OpenSession                }
             };
         }
 
@@ -44,6 +45,14 @@ namespace Ryujinx.HLE.HOS.Services.Psm
             Context.ResponseData.Write((int)ChargerType.ChargerOrDock);
 
             Logger.PrintStub(LogClass.ServicePsm, $"Stubbed. ChargerType: {ChargerType.ChargerOrDock}");
+
+            return 0;
+        }
+
+        // OpenSession() -> IPsmSession
+        public long OpenSession(ServiceCtx Context)
+        {
+            MakeObject(Context, new IPsmSession(Context.Device.System));
 
             return 0;
         }
