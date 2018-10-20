@@ -16,6 +16,7 @@ using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Pctl;
 using Ryujinx.HLE.HOS.Services.Pl;
 using Ryujinx.HLE.HOS.Services.Prepo;
+using Ryujinx.HLE.HOS.Services.Psm;
 using Ryujinx.HLE.HOS.Services.Set;
 using Ryujinx.HLE.HOS.Services.Sfdnsres;
 using Ryujinx.HLE.HOS.Services.Sm;
@@ -145,6 +146,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                 case "pl:u":
                     return new ISharedFontManager();
+
+                case "psm":
+                    return new IPsmServer();
 
                 case "prepo:a":
                     return new IPrepoService();
