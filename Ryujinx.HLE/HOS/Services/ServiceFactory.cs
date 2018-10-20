@@ -147,14 +147,14 @@ namespace Ryujinx.HLE.HOS.Services
                 case "pl:u":
                     return new ISharedFontManager();
 
-                case "psm":
-                    return new IPsmServer();
-
                 case "prepo:a":
                     return new IPrepoService();
 
                 case "prepo:u":
                     return new IPrepoService();
+
+                case "psm":
+                    return new IPsmServer();
 
                 case "set":
                     return new ISettingsServer();
