@@ -33,9 +33,9 @@ namespace Ryujinx.Graphics.VideoDecoding
                 Uninitialize();
             }
 
-            Codec     = ffmpeg.avcodec_find_decoder(CodecId);
-            Context   = ffmpeg.avcodec_alloc_context3(Codec);
-            Frame     = ffmpeg.av_frame_alloc();
+            Codec   = ffmpeg.avcodec_find_decoder(CodecId);
+            Context = ffmpeg.avcodec_alloc_context3(Codec);
+            Frame   = ffmpeg.av_frame_alloc();
 
             ffmpeg.avcodec_open2(Context, Codec, null);
 
