@@ -100,6 +100,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 DepthTestEnabled = false,
                 DepthWriteEnabled = true,
                 DepthFunc = GalComparisonOp.Less,
+                DepthRangeNear = 0,
+                DepthRangeFar = 1,
 
                 StencilTestEnabled = false,
 
@@ -193,6 +195,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 {
                     GL.DepthFunc(OGLEnumConverter.GetDepthFunc(New.DepthFunc));
                 }
+            }
+
+            if (New.DepthRangeNear != Old.DepthRangeNear ||
+                New.DepthRangeFar  != Old.DepthRangeFar)
+            {
+                GL.DepthRange(New.DepthRangeNear, New.DepthRangeFar);
             }
 
             if (New.StencilTestEnabled != Old.StencilTestEnabled)
