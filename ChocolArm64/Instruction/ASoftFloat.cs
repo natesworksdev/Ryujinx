@@ -231,6 +231,67 @@ namespace ChocolArm64.Instruction
             uint new_exp = (uint)((exponent + 127) & 0xFF) << 23;
             return BitConverter.Int32BitsToSingle((int)((x_sign << 31) | new_exp | (x_mantissa << 13)));
         }
+
+        public static ushort ConvertSingleToHalf(float op1, bool alt_hp)
+        {
+            uint op1_bits = (uint)BitConverter.SingleToInt32Bits(op1);
+
+            uint sign = (op1_bits >> 31) & 1;
+            uint exp = (op1_bits >> 23) & 0xFF;
+            uint mantissa = op1_bits & ((1u << 23) - 1);
+
+            // Convert from biased-single to biased-half precision
+            int new_exp = ((int)exp - 127) + 15;
+            ushort new_mantissa = (ushort)(mantissa >> 13);
+
+            if (exp == 0xFF && mantissa != 0)
+            {
+                // NaN
+                if (alt_hp)
+                {
+                    return (ushort)(sign << 15);
+                }
+                return (ushort)((sign << 15) | 0x7E00u | new_mantissa);
+            }
+            else if (exp == 0xFF && mantissa == 0)
+            {
+                // Infinity
+                if (alt_hp)
+                {
+                    return (ushort)((sign << 15) | 0x7FFFu);
+                }
+                return (ushort)((sign << 15) | 0x7C00u);
+            }
+            else if (exp == 0 && mantissa == 0)
+            {
+                // Zero
+                return (ushort)(sign << 15);
+            }
+
+            if (new_exp <= 0)
+            {
+                // Output a denormal
+                new_mantissa |= 0x0400; // explicit leading bit
+                new_mantissa >>= 1 - new_exp;
+                return (ushort)((sign << 15) | new_mantissa);
+            }
+
+            // TODO: Rounding correction
+            // We currently assume truncation rounding
+
+            if (new_exp >= 0x1F && !alt_hp)
+            {
+                // Output an infinity
+                return (ushort)((sign << 15) | 0x7C00u);
+            }
+            else if (new_exp >= 0x20 && alt_hp)
+            {
+                // Output a maximum value
+                return (ushort)((sign << 15) | 0x7FFFu);
+            }
+
+            return (ushort)((sign << 15) | (ushort)((uint)new_exp << 10) | new_mantissa);
+        }
     }
 
     static class ASoftFloat_32

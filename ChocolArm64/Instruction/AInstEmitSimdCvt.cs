@@ -122,14 +122,14 @@ namespace ChocolArm64.Instruction
 
             for (int Index = 0; Index < Elems; Index++)
             {
-                EmitVectorExtractF(Context, Op.Rd, Index, SizeF);
+                EmitVectorExtractF(Context, Op.Rn, Index, SizeF);
 
                 if (SizeF == 0)
                 {
-                    //TODO: This need the half precision floating point type,
-                    //that is not yet supported on .NET. We should probably
-                    //do our own implementation on the meantime.
-                    throw new NotImplementedException();
+                    Context.Emit(OpCodes.Ldc_I4_0);
+                    Context.EmitCall(typeof(ASoftFloat), nameof(ASoftFloat.ConvertSingleToHalf));
+
+                    EmitVectorInsert(Context, Op.Rd, Part + Index, 1);
                 }
                 else /* if (SizeF == 1) */
                 {
