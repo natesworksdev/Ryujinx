@@ -1,4 +1,7 @@
+using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
+using Ryujinx.Graphics.Texture;
+using Ryujinx.Graphics.VideoImageComposition;
 using System;
 using System.Runtime.InteropServices;
 
@@ -195,30 +198,81 @@ namespace Ryujinx.Graphics.VideoDecoding
             return (long)(uint)Arguments[0] << 8;
         }
 
-        internal void CopyPlanes(NvGpuVmm Vmm, long LumaPlaneAddress, long ChromaPlaneAddress)
+        internal void CopyPlanes(NvGpuVmm Vmm, SurfaceOutputConfig OutputConfig)
+        {
+            switch (OutputConfig.PixelFormat)
+            {
+                case SurfacePixelFormat.RGBA8:   CopyPlanesRgba8  (Vmm, OutputConfig); break;
+                case SurfacePixelFormat.YUV420P: CopyPlanesYuv420p(Vmm, OutputConfig); break;
+
+                default: ThrowUnimplementedPixelFormat(OutputConfig.PixelFormat); break;
+            }
+        }
+
+        private void CopyPlanesRgba8(NvGpuVmm Vmm, SurfaceOutputConfig OutputConfig)
+        {
+            FFmpegFrame Frame = FFmpegWrapper.GetFrameRgba();
+
+            if ((Frame.Width | Frame.Height) == 0)
+            {
+                return;
+            }
+
+            GalImage Image = new GalImage(
+                OutputConfig.SurfaceWidth,
+                OutputConfig.SurfaceHeight, 1,
+                OutputConfig.GobBlockHeight,
+                GalMemoryLayout.BlockLinear,
+                GalImageFormat.RGBA8 | GalImageFormat.Unorm);
+
+            ImageUtils.WriteTexture(Vmm, Image, Vmm.GetPhysicalAddress(OutputConfig.SurfaceLumaAddress), Frame.Data);
+        }
+
+        private void CopyPlanesYuv420p(NvGpuVmm Vmm, SurfaceOutputConfig OutputConfig)
         {
             FFmpegFrame Frame = FFmpegWrapper.GetFrame();
 
-            int HalfWidth  = Frame.Width  / 2;
-            int HalfHeight = Frame.Height / 2;
+            if ((Frame.Width | Frame.Height) == 0)
+            {
+                return;
+            }
 
-            int AlignedWidth = (Frame.Width + 0xff) & ~0xff;
+            if ((uint)OutputConfig.SurfaceWidth  > (uint)Frame.Width ||
+                (uint)OutputConfig.SurfaceHeight > (uint)Frame.Height)
+            {
+                string Msg = "Surface and frame resolution mismatch!";
 
-            byte* LumaPtr   = (byte*)Vmm.GetHostAddress(LumaPlaneAddress,   AlignedWidth * Frame.Height);
-            byte* ChromaPtr = (byte*)Vmm.GetHostAddress(ChromaPlaneAddress, AlignedWidth * HalfHeight);
+                Msg += $" Surface resolution is {OutputConfig.SurfaceWidth}x{OutputConfig.SurfaceHeight},";
+
+                Msg += $" Frame resolution is {Frame.Width}x{Frame.Height}.";
+
+                throw new InvalidOperationException(Msg);
+            }
+
+            int HalfSrcWidth = Frame.Width / 2;
+
+            int HalfWidth  = OutputConfig.SurfaceWidth  / 2;
+            int HalfHeight = OutputConfig.SurfaceHeight / 2;
+
+            int AlignedWidth = (OutputConfig.SurfaceWidth + 0xff) & ~0xff;
+
+            byte* LumaPtr   = (byte*)Vmm.GetHostAddress(OutputConfig.SurfaceLumaAddress,    AlignedWidth * Frame.Height);
+            byte* ChromaPtr = (byte*)Vmm.GetHostAddress(OutputConfig.SurfaceChromaUAddress, AlignedWidth * HalfHeight);
 
             for (int Y = 0; Y < Frame.Height; Y++)
             {
                 int Src = Y * Frame.Width;
                 int Dst = Y * AlignedWidth;
 
-                Buffer.MemoryCopy(Frame.LumaPtr + Src, LumaPtr + Dst, Frame.Width, Frame.Width);
+                int Size = OutputConfig.SurfaceWidth;
+
+                Buffer.MemoryCopy(Frame.LumaPtr + Src, LumaPtr + Dst, Size, Size);
             }
 
             //Copy chroma data from both channels with interleaving.
             for (int Y = 0; Y < HalfHeight; Y++)
             {
-                int Src = Y * HalfWidth;
+                int Src = Y * HalfSrcWidth;
                 int Dst = Y * AlignedWidth;
 
                 for (int X = 0; X < HalfWidth; X++)
@@ -232,6 +286,11 @@ namespace Ryujinx.Graphics.VideoDecoding
         private void ThrowUnimplementedCodec()
         {
             throw new NotImplementedException("Codec \"" + CurrentVideoCodec + "\" is not supported!");
+        }
+
+        private void ThrowUnimplementedPixelFormat(SurfacePixelFormat PixelFormat)
+        {
+            throw new NotImplementedException("Pixel format \"" + PixelFormat + "\" is not supported!");
         }
     }
 }

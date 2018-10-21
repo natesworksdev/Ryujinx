@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.VideoDecoding
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     struct H264ParameterSets
     {
-        public int  MaxPicOrderCntLsbMinus4;
+        public int  Log2MaxPicOrderCntLsbMinus4;
         public bool DeltaPicOrderAlwaysZeroFlag;
         public bool FrameMbsOnlyFlag;
         public int  PicWidthInMbs;

@@ -9,6 +9,10 @@ namespace Ryujinx.Graphics.VideoDecoding
         private static AVCodec*        Codec;
         private static AVCodecContext* Context;
         private static AVFrame*        Frame;
+        private static SwsContext*     ScalerCtx;
+
+        private static int ScalerWidth;
+        private static int ScalerHeight;
 
         public static bool IsInitialized { get; private set; }
 
@@ -29,9 +33,9 @@ namespace Ryujinx.Graphics.VideoDecoding
                 Uninitialize();
             }
 
-            Codec   = ffmpeg.avcodec_find_decoder(CodecId);
-            Context = ffmpeg.avcodec_alloc_context3(Codec);
-            Frame   = ffmpeg.av_frame_alloc();
+            Codec     = ffmpeg.avcodec_find_decoder(CodecId);
+            Context   = ffmpeg.avcodec_alloc_context3(Codec);
+            Frame     = ffmpeg.av_frame_alloc();
 
             ffmpeg.avcodec_open2(Context, Codec, null);
 
@@ -82,6 +86,61 @@ namespace Ryujinx.Graphics.VideoDecoding
             };
         }
 
+        public static FFmpegFrame GetFrameRgba()
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("Tried to use uninitialized codec!");
+            }
+
+            AVFrame ManagedFrame = Marshal.PtrToStructure<AVFrame>((IntPtr)Frame);
+
+            EnsureScalerSetup(ManagedFrame.width, ManagedFrame.height);
+
+            byte*[] Data = ManagedFrame.data.ToArray();
+
+            int[] LineSizes = ManagedFrame.linesize.ToArray();
+
+            byte[] Dst = new byte[ManagedFrame.width * ManagedFrame.height * 4];
+
+            fixed (byte* Ptr = Dst)
+            {
+                byte*[] DstData = new byte*[] { Ptr };
+
+                int[] DstLineSizes = new int[] { ManagedFrame.width * 4 };
+
+                ffmpeg.sws_scale(ScalerCtx, Data, LineSizes, 0, ManagedFrame.height, DstData, DstLineSizes);
+            }
+
+            return new FFmpegFrame()
+            {
+                Width  = ManagedFrame.width,
+                Height = ManagedFrame.height,
+
+                Data = Dst
+            };
+        }
+
+        private static void EnsureScalerSetup(int Width, int Height)
+        {
+            if (Width == 0 || Height == 0)
+            {
+                return;
+            }
+
+            if (ScalerCtx == null || ScalerWidth != Width || ScalerHeight != Height)
+            {
+                FreeScaler();
+
+                ScalerCtx = ffmpeg.sws_getContext(
+                    Width, Height, AVPixelFormat.AV_PIX_FMT_YUV420P,
+                    Width, Height, AVPixelFormat.AV_PIX_FMT_RGBA, 0, null, null, null);
+
+                ScalerWidth  = Width;
+                ScalerHeight = Height;
+            }
+        }
+
         public static void Uninitialize()
         {
             if (IsInitialized)
@@ -90,7 +149,19 @@ namespace Ryujinx.Graphics.VideoDecoding
                 ffmpeg.av_free(Frame);
                 ffmpeg.avcodec_close(Context);
 
+                FreeScaler();
+
                 IsInitialized = false;
+            }
+        }
+
+        private static void FreeScaler()
+        {
+            if (ScalerCtx != null)
+            {
+                ffmpeg.sws_freeContext(ScalerCtx);
+
+                ScalerCtx = null;
             }
         }
     }

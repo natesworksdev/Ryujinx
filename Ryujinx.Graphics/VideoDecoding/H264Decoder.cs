@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.VideoDecoding
 {
     class H264Decoder
     {
-        private int    MaxPicOrderCntLsbMinus4;
+        private int    Log2MaxPicOrderCntLsbMinus4;
         private bool   DeltaPicOrderAlwaysZeroFlag;
         private bool   FrameMbsOnlyFlag;
         private int    PicWidthInMbs;
@@ -35,9 +35,7 @@ namespace Ryujinx.Graphics.VideoDecoding
 
         public void Decode(H264ParameterSets Params, H264Matrices Matrices, byte[] FrameData)
         {
-            int LastFrameNumber = FrameNumber;
-
-            MaxPicOrderCntLsbMinus4               = Params.MaxPicOrderCntLsbMinus4;
+            Log2MaxPicOrderCntLsbMinus4           = Params.Log2MaxPicOrderCntLsbMinus4;
             DeltaPicOrderAlwaysZeroFlag           = Params.DeltaPicOrderAlwaysZeroFlag;
             FrameMbsOnlyFlag                      = Params.FrameMbsOnlyFlag;
             PicWidthInMbs                         = Params.PicWidthInMbs;
@@ -117,7 +115,7 @@ namespace Ryujinx.Graphics.VideoDecoding
 
                 if (PicOrderCntType == 0)
                 {
-                    Writer.WriteUe(MaxPicOrderCntLsbMinus4);
+                    Writer.WriteUe(Log2MaxPicOrderCntLsbMinus4);
                 }
                 else if (PicOrderCntType == 1)
                 {
@@ -130,7 +128,7 @@ namespace Ryujinx.Graphics.VideoDecoding
 
                 int PicHeightInMbs = PicHeightInMapUnits / (FrameMbsOnlyFlag ? 1 : 2);
 
-                Writer.WriteUe(4);
+                Writer.WriteUe(16);
                 Writer.WriteBit(false);
                 Writer.WriteUe(PicWidthInMbs - 1);
                 Writer.WriteUe(PicHeightInMbs - 1);
