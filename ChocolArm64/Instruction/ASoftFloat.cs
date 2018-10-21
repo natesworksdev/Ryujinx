@@ -443,7 +443,7 @@ namespace ChocolArm64.Instruction
 
             float Result;
 
-            if (BiasedExp >= (uint)Math.Pow(2d, E) - 1)
+            if (BiasedExp >= (uint)Math.Pow(2d, E) - 1u)
             {
                 Result = OverflowToInf ? FPInfinity(Sign) : FPMaxNormal(Sign);
 
@@ -759,7 +759,7 @@ namespace ChocolArm64.Instruction
 
             if (!State.GetFpcrFlag(FPCR.AHP))
             {
-                if (BiasedExp >= (uint)Math.Pow(2d, E) - 1)
+                if (BiasedExp >= (uint)Math.Pow(2d, E) - 1u)
                 {
                     ResultBits = OverflowToInf ? FPInfinity(Sign) : FPMaxNormal(Sign);
 
