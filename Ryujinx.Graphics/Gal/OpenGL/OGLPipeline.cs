@@ -95,46 +95,46 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 FrontFace = GalFrontFace.CCW,
 
                 CullFaceEnabled = false,
-                CullFace = GalCullFace.Back,
+                CullFace        = GalCullFace.Back,
 
-                DepthTestEnabled = false,
+                DepthTestEnabled  = false,
                 DepthWriteEnabled = true,
-                DepthFunc = GalComparisonOp.Less,
-                DepthRangeNear = 0,
-                DepthRangeFar = 1,
+                DepthFunc         = GalComparisonOp.Less,
+                DepthRangeNear    = 0,
+                DepthRangeFar     = 1,
 
                 StencilTestEnabled = false,
 
                 StencilBackFuncFunc = GalComparisonOp.Always,
-                StencilBackFuncRef = 0,
+                StencilBackFuncRef  = 0,
                 StencilBackFuncMask = UInt32.MaxValue,
-                StencilBackOpFail = GalStencilOp.Keep,
-                StencilBackOpZFail = GalStencilOp.Keep,
-                StencilBackOpZPass = GalStencilOp.Keep,
-                StencilBackMask = UInt32.MaxValue,
+                StencilBackOpFail   = GalStencilOp.Keep,
+                StencilBackOpZFail  = GalStencilOp.Keep,
+                StencilBackOpZPass  = GalStencilOp.Keep,
+                StencilBackMask     = UInt32.MaxValue,
 
                 StencilFrontFuncFunc = GalComparisonOp.Always,
-                StencilFrontFuncRef = 0,
+                StencilFrontFuncRef  = 0,
                 StencilFrontFuncMask = UInt32.MaxValue,
-                StencilFrontOpFail = GalStencilOp.Keep,
-                StencilFrontOpZFail = GalStencilOp.Keep,
-                StencilFrontOpZPass = GalStencilOp.Keep,
-                StencilFrontMask = UInt32.MaxValue,
+                StencilFrontOpFail   = GalStencilOp.Keep,
+                StencilFrontOpZFail  = GalStencilOp.Keep,
+                StencilFrontOpZPass  = GalStencilOp.Keep,
+                StencilFrontMask     = UInt32.MaxValue,
 
-                BlendEnabled = false,
+                BlendEnabled       = false,
                 BlendSeparateAlpha = false,
 
-                BlendEquationRgb = 0,
-                BlendFuncSrcRgb = GalBlendFactor.One,
-                BlendFuncDstRgb = GalBlendFactor.Zero,
+                BlendEquationRgb   = 0,
+                BlendFuncSrcRgb    = GalBlendFactor.One,
+                BlendFuncDstRgb    = GalBlendFactor.Zero,
                 BlendEquationAlpha = 0,
-                BlendFuncSrcAlpha = GalBlendFactor.One,
-                BlendFuncDstAlpha = GalBlendFactor.Zero,
+                BlendFuncSrcAlpha  = GalBlendFactor.One,
+                BlendFuncDstAlpha  = GalBlendFactor.Zero,
 
                 ColorMask = ColorMaskRgba.Default,
 
                 PrimitiveRestartEnabled = false,
-                PrimitiveRestartIndex = 0
+                PrimitiveRestartIndex   = 0
             };
 
             for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
