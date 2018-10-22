@@ -239,61 +239,21 @@ namespace ChocolArm64.Instruction
             return Result;
         }
 
-        private enum FPType
-        {
-            Nonzero,
-            Zero,
-            Infinity,
-            QNaN,
-            SNaN
-        }
-
-        private enum FPExc
-        {
-            InvalidOp,
-            DivideByZero,
-            Overflow,
-            Underflow,
-            Inexact,
-            InputDenorm = 7
-        }
-
-        private enum FPRounding
-        {
-            TIEEVEN,
-            POSINF,
-            NEGINF,
-            ZERO
-        };
-
-        private enum FPCR
-        {
-            UFE   = 11,
-            RMode = 22,
-            FZ    = 24,
-            DN    = 25,
-            AHP   = 26
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPDefaultNaN()
         {
             return -float.NaN;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPInfinity(bool Sign)
         {
             return Sign ? float.NegativeInfinity : float.PositiveInfinity;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPZero(bool Sign)
         {
             return Sign ? -0f : +0f;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPMaxNormal(bool Sign)
         {
             return Sign ? float.MinValue : float.MaxValue;
@@ -345,8 +305,6 @@ namespace ChocolArm64.Instruction
 
         private static float FPRoundCV(double Real, AThreadState State)
         {
-            const int UFCBit = 3;  // Underflow cumulative floating-point exception bit.
-
             const int MinimumExp = -126;
 
             const int E = 8;
@@ -382,13 +340,17 @@ namespace ChocolArm64.Instruction
 
             if (State.GetFpcrFlag(FPCR.FZ) && Exponent < MinimumExp)
             {
-                State.Fpsr |= 1 << UFCBit;
+                State.SetFpsrFlag(FPSR.UFC);
 
                 return FPZero(Sign);
             }
 
-            uint BiasedExp = (uint)Max(Exponent - MinimumExp + 1, 0);
-            if (BiasedExp == 0u) Mantissa /= Math.Pow(2d, MinimumExp - Exponent);
+            uint BiasedExp = (uint)Math.Max(Exponent - MinimumExp + 1, 0);
+
+            if (BiasedExp == 0u)
+            {
+                Mantissa /= Math.Pow(2d, MinimumExp - Exponent);
+            }
 
             uint IntMant = (uint)Math.Floor(Mantissa * Math.Pow(2d, F));
             double Error = Mantissa * Math.Pow(2d, F) - (double)IntMant;
@@ -401,25 +363,25 @@ namespace ChocolArm64.Instruction
             bool OverflowToInf;
             bool RoundUp;
 
-            switch (FPRoundingMode(State))
+            switch (State.FPRoundingMode())
             {
                 default:
-                case FPRounding.TIEEVEN:
+                case ARoundMode.ToNearest:
                     RoundUp       = (Error > 0.5d || (Error == 0.5d && (IntMant & 1u) == 1u));
                     OverflowToInf = true;
                     break;
 
-                case FPRounding.POSINF:
+                case ARoundMode.TowardsPlusInfinity:
                     RoundUp       = (Error != 0d && !Sign);
                     OverflowToInf = !Sign;
                     break;
 
-                case FPRounding.NEGINF:
+                case ARoundMode.TowardsMinusInfinity:
                     RoundUp       = (Error != 0d && Sign);
                     OverflowToInf = Sign;
                     break;
 
-                case FPRounding.ZERO:
+                case ARoundMode.TowardsZero:
                     RoundUp       = false;
                     OverflowToInf = false;
                     break;
@@ -463,11 +425,8 @@ namespace ChocolArm64.Instruction
             }
 
             return Result;
-
-            int Max(int Left, int Right) => Left >= Right ? Left : Right;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPConvertNaN(ushort ValueBits)
         {
             return BitConverter.Int32BitsToSingle(
@@ -486,18 +445,6 @@ namespace ChocolArm64.Instruction
             {
                 State.Fpsr |= 1 << (int)Exc;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static FPRounding FPRoundingMode(AThreadState State)
-        {
-            return (FPRounding)((State.Fpcr >> (int)FPCR.RMode) & 3);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool GetFpcrFlag(this AThreadState State, FPCR Fpcr)
-        {
-            return (State.Fpcr & (1 << (int)Fpcr)) != 0;
         }
     }
 
@@ -558,61 +505,21 @@ namespace ChocolArm64.Instruction
             return ResultBits;
         }
 
-        private enum FPType
-        {
-            Nonzero,
-            Zero,
-            Infinity,
-            QNaN,
-            SNaN
-        }
-
-        private enum FPExc
-        {
-            InvalidOp,
-            DivideByZero,
-            Overflow,
-            Underflow,
-            Inexact,
-            InputDenorm = 7
-        }
-
-        private enum FPRounding
-        {
-            TIEEVEN,
-            POSINF,
-            NEGINF,
-            ZERO
-        };
-
-        private enum FPCR
-        {
-            UFE   = 11,
-            RMode = 22,
-            FZ    = 24,
-            DN    = 25,
-            AHP   = 26
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort FPDefaultNaN()
         {
             return (ushort)0x7E00u;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort FPInfinity(bool Sign)
         {
             return Sign ? (ushort)0xFC00u : (ushort)0x7C00u;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort FPZero(bool Sign)
         {
             return Sign ? (ushort)0x8000u : (ushort)0x0000u;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort FPMaxNormal(bool Sign)
         {
             return Sign ? (ushort)0xFBFFu : (ushort)0x7BFFu;
@@ -701,8 +608,12 @@ namespace ChocolArm64.Instruction
                 Exponent++;
             }
 
-            uint BiasedExp = (uint)Max(Exponent - MinimumExp + 1, 0);
-            if (BiasedExp == 0u) Mantissa /= Math.Pow(2d, MinimumExp - Exponent);
+            uint BiasedExp = (uint)Math.Max(Exponent - MinimumExp + 1, 0);
+
+            if (BiasedExp == 0u)
+            {
+                Mantissa /= Math.Pow(2d, MinimumExp - Exponent);
+            }
 
             uint IntMant = (uint)Math.Floor(Mantissa * Math.Pow(2d, F));
             double Error = Mantissa * Math.Pow(2d, F) - (double)IntMant;
@@ -715,25 +626,25 @@ namespace ChocolArm64.Instruction
             bool OverflowToInf;
             bool RoundUp;
 
-            switch (FPRoundingMode(State))
+            switch (State.FPRoundingMode())
             {
                 default:
-                case FPRounding.TIEEVEN:
+                case ARoundMode.ToNearest:
                     RoundUp       = (Error > 0.5d || (Error == 0.5d && (IntMant & 1u) == 1u));
                     OverflowToInf = true;
                     break;
 
-                case FPRounding.POSINF:
+                case ARoundMode.TowardsPlusInfinity:
                     RoundUp       = (Error != 0d && !Sign);
                     OverflowToInf = !Sign;
                     break;
 
-                case FPRounding.NEGINF:
+                case ARoundMode.TowardsMinusInfinity:
                     RoundUp       = (Error != 0d && Sign);
                     OverflowToInf = Sign;
                     break;
 
-                case FPRounding.ZERO:
+                case ARoundMode.TowardsZero:
                     RoundUp       = false;
                     OverflowToInf = false;
                     break;
@@ -794,11 +705,8 @@ namespace ChocolArm64.Instruction
             }
 
             return ResultBits;
-
-            int Max(int Left, int Right) => Left >= Right ? Left : Right;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort FPConvertNaN(uint ValueBits)
         {
             return (ushort)((ValueBits & 0x80000000u) >> 16 | 0x7E00u | (ValueBits & 0x003FE000u) >> 13);
@@ -816,18 +724,6 @@ namespace ChocolArm64.Instruction
             {
                 State.Fpsr |= 1 << (int)Exc;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static FPRounding FPRoundingMode(AThreadState State)
-        {
-            return (FPRounding)((State.Fpcr >> (int)FPCR.RMode) & 3);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool GetFpcrFlag(this AThreadState State, FPCR Fpcr)
-        {
-            return (State.Fpcr & (1 << (int)Fpcr)) != 0;
         }
     }
 
@@ -1354,56 +1250,31 @@ namespace ChocolArm64.Instruction
             return Result;
         }
 
-        private enum FPType
-        {
-            Nonzero,
-            Zero,
-            Infinity,
-            QNaN,
-            SNaN
-        }
-
-        private enum FPExc
-        {
-            InvalidOp,
-            DivideByZero,
-            Overflow,
-            Underflow,
-            Inexact,
-            InputDenorm = 7
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPDefaultNaN()
         {
             return -float.NaN;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPInfinity(bool Sign)
         {
             return Sign ? float.NegativeInfinity : float.PositiveInfinity;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPZero(bool Sign)
         {
             return Sign ? -0f : +0f;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPTwo(bool Sign)
         {
             return Sign ? -2f : +2f;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPOnePointFive(bool Sign)
         {
             return Sign ? -1.5f : +1.5f;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float FPNeg(this float Value)
         {
             return -Value;
@@ -1525,8 +1396,6 @@ namespace ChocolArm64.Instruction
 
         private static float FPProcessNaN(FPType Type, uint Op, AThreadState State)
         {
-            const int DNBit = 25; // Default NaN mode control bit.
-
             if (Type == FPType.SNaN)
             {
                 Op |= 1u << 22;
@@ -1534,7 +1403,7 @@ namespace ChocolArm64.Instruction
                 FPProcessException(FPExc.InvalidOp, State);
             }
 
-            if ((State.Fpcr & (1 << DNBit)) != 0)
+            if (State.GetFpcrFlag(FPCR.DN))
             {
                 return FPDefaultNaN();
             }
@@ -2080,56 +1949,31 @@ namespace ChocolArm64.Instruction
             return Result;
         }
 
-        private enum FPType
-        {
-            Nonzero,
-            Zero,
-            Infinity,
-            QNaN,
-            SNaN
-        }
-
-        private enum FPExc
-        {
-            InvalidOp,
-            DivideByZero,
-            Overflow,
-            Underflow,
-            Inexact,
-            InputDenorm = 7
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double FPDefaultNaN()
         {
             return -double.NaN;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double FPInfinity(bool Sign)
         {
             return Sign ? double.NegativeInfinity : double.PositiveInfinity;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double FPZero(bool Sign)
         {
             return Sign ? -0d : +0d;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double FPTwo(bool Sign)
         {
             return Sign ? -2d : +2d;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double FPOnePointFive(bool Sign)
         {
             return Sign ? -1.5d : +1.5d;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double FPNeg(this double Value)
         {
             return -Value;
@@ -2251,8 +2095,6 @@ namespace ChocolArm64.Instruction
 
         private static double FPProcessNaN(FPType Type, ulong Op, AThreadState State)
         {
-            const int DNBit = 25; // Default NaN mode control bit.
-
             if (Type == FPType.SNaN)
             {
                 Op |= 1ul << 51;
@@ -2260,7 +2102,7 @@ namespace ChocolArm64.Instruction
                 FPProcessException(FPExc.InvalidOp, State);
             }
 
-            if ((State.Fpcr & (1 << DNBit)) != 0)
+            if (State.GetFpcrFlag(FPCR.DN))
             {
                 return FPDefaultNaN();
             }
