@@ -72,7 +72,7 @@
         public GalBlendFactor BlendFuncSrcAlpha;
         public GalBlendFactor BlendFuncDstAlpha;
 
-        public ColorMaskRgba ColorMask;
+        public bool ColorMaskCommon;
         public ColorMaskRgba[] ColorMasks;
 
         public bool PrimitiveRestartEnabled;

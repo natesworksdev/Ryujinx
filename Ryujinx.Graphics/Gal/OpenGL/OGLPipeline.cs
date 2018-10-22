@@ -129,8 +129,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 BlendFuncSrcAlpha = GalBlendFactor.One,
                 BlendFuncDstAlpha = GalBlendFactor.Zero,
 
-                ColorMask = ColorMaskRgba.Default,
-
                 PrimitiveRestartEnabled = false,
                 PrimitiveRestartIndex = 0
             };
@@ -308,16 +306,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
             }
 
-            for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
+            if (New.ColorMaskCommon)
             {
-                if (!New.ColorMasks[Index].Equals(Old.ColorMasks[Index]))
+                if (!New.ColorMasks[0].Equals(Old.ColorMasks[0]))
                 {
                     GL.ColorMask(
-                        Index,
-                        New.ColorMasks[Index].Red,
-                        New.ColorMasks[Index].Green,
-                        New.ColorMasks[Index].Blue,
-                        New.ColorMasks[Index].Alpha);
+                        New.ColorMasks[0].Red,
+                        New.ColorMasks[0].Green,
+                        New.ColorMasks[0].Blue,
+                        New.ColorMasks[0].Alpha);
+                }
+            }
+            else
+            {
+                for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
+                {
+                    if (!New.ColorMasks[Index].Equals(Old.ColorMasks[Index]))
+                    {
+                        GL.ColorMask(
+                            Index,
+                            New.ColorMasks[Index].Red,
+                            New.ColorMasks[Index].Green,
+                            New.ColorMasks[Index].Blue,
+                            New.ColorMasks[Index].Alpha);
+                    }
                 }
             }
 
