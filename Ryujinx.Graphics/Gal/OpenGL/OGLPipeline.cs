@@ -308,7 +308,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             if (New.ColorMaskCommon)
             {
-                if (!New.ColorMasks[0].Equals(Old.ColorMasks[0]))
+                if (New.ColorMaskCommon != Old.ColorMaskCommon || !New.ColorMasks[0].Equals(Old.ColorMasks[0]))
                 {
                     GL.ColorMask(
                         New.ColorMasks[0].Red,
