@@ -481,7 +481,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (!Dict.TryGetValue(Attrib.Size, out VertexAttribPointerType Type))
             {
-                throw new NotImplementedException("Unsupported size \"" + Attrib.Size + "\" on type \"" + Attrib.Type + "\"!");
+                ThrowUnsupportedAttrib(Attrib);
             }
 
             return Type;
@@ -489,15 +489,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private unsafe static void SetConstAttrib(GalVertexAttrib Attrib)
         {
-            void Unsupported()
-            {
-                throw new NotImplementedException("Constant attribute " + Attrib.Size + " not implemented!");
-            }
-
             if (Attrib.Size == GalVertexAttribSize._10_10_10_2 ||
                 Attrib.Size == GalVertexAttribSize._11_11_10)
             {
-                Unsupported();
+                ThrowUnsupportedAttrib(Attrib);
             }
 
             if (Attrib.Type == GalVertexAttribType.Unorm)
@@ -615,9 +610,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         GL.VertexAttrib4(Attrib.Index, (float*)Attrib.Pointer);
                         break;
 
-                    default: Unsupported(); break;
+                    default: ThrowUnsupportedAttrib(Attrib); break;
                 }
             }
+        }
+
+        private static void ThrowUnsupportedAttrib(GalVertexAttrib Attrib)
+        {
+            throw new NotImplementedException("Unsupported size \"" + Attrib.Size + "\" on type \"" + Attrib.Type + "\"!");
         }
 
         private void Enable(EnableCap Cap, bool Enabled)
