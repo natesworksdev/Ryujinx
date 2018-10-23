@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics
             }
 
             //Ensure that all components are enabled by default.
-            //Is this correct?
+            //FIXME: Is this correct?
             WriteRegister(NvGpuEngine3dReg.ColorMaskN, 0x1111);
         }
 
