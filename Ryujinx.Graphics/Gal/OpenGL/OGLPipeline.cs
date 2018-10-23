@@ -195,7 +195,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
             }
 
-            if (New.StencilTestEnabled != _old.StencilTestEnabled)
+	        if (New.DepthRangeNear != _old.DepthRangeNear ||
+	            New.DepthRangeFar != _old.DepthRangeFar)
+	        {
+		        GL.DepthRange(New.DepthRangeNear, New.DepthRangeFar);
+	        }
+
+			if (New.StencilTestEnabled != _old.StencilTestEnabled)
             {
                 Enable(EnableCap.StencilTest, New.StencilTestEnabled);
             }
