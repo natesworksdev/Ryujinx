@@ -2,18 +2,18 @@ namespace Ryujinx.Graphics.Texture
 {
     class LinearSwizzle : ISwizzle
     {
-        private int Pitch;
-        private int Bpp;
+        private int _pitch;
+        private int _bpp;
 
-        public LinearSwizzle(int Pitch, int Bpp)
+        public LinearSwizzle(int pitch, int bpp)
         {
-            this.Pitch = Pitch;
-            this.Bpp   = Bpp;
+            this._pitch = pitch;
+            this._bpp   = bpp;
         }
 
-        public int GetSwizzleOffset(int X, int Y)
+        public int GetSwizzleOffset(int x, int y)
         {
-            return X * Bpp + Y * Pitch;
+            return x * _bpp + y * _pitch;
         }
     }
 }

@@ -9,32 +9,32 @@ namespace Ryujinx.HLE.Loaders
         public ElfSymVisibility Visibility { get; private set; }
 
         public bool IsFuncOrObject =>
-            Type == ElfSymType.STT_FUNC ||
-            Type == ElfSymType.STT_OBJECT;
+            Type == ElfSymType.SttFunc ||
+            Type == ElfSymType.SttObject;
 
         public bool IsGlobalOrWeak =>
-            Binding == ElfSymBinding.STB_GLOBAL ||
-            Binding == ElfSymBinding.STB_WEAK;
+            Binding == ElfSymBinding.StbGlobal ||
+            Binding == ElfSymBinding.StbWeak;
 
-        public int  SHIdx { get; private set; }
+        public int  ShIdx { get; private set; }
         public long Value { get; private set; }
         public long Size  { get; private set; }
 
         public ElfSym(
-            string Name,
-            int    Info,
-            int    Other,
-            int    SHIdx,
-            long   Value,
-            long   Size)
+            string name,
+            int    info,
+            int    other,
+            int    shIdx,
+            long   value,
+            long   size)
         {
-            this.Name       = Name;
-            this.Type       = (ElfSymType)(Info & 0xf);
-            this.Binding    = (ElfSymBinding)(Info >> 4);
-            this.Visibility = (ElfSymVisibility)Other;
-            this.SHIdx      = SHIdx;
-            this.Value      = Value;
-            this.Size       = Size;
+            this.Name       = name;
+            this.Type       = (ElfSymType)(info & 0xf);
+            this.Binding    = (ElfSymBinding)(info >> 4);
+            this.Visibility = (ElfSymVisibility)other;
+            this.ShIdx      = shIdx;
+            this.Value      = value;
+            this.Size       = size;
         }
     }
 }

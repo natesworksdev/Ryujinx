@@ -11,300 +11,300 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void And_V(AILEmitterCtx Context)
+        public static void And_V(AilEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
             {
-                EmitSse2Op(Context, nameof(Sse2.And));
+                EmitSse2Op(context, nameof(Sse2.And));
             }
             else
             {
-                EmitVectorBinaryOpZx(Context, () => Context.Emit(OpCodes.And));
+                EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.And));
             }
         }
 
-        public static void Bic_V(AILEmitterCtx Context)
+        public static void Bic_V(AilEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
             {
-                AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+                AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-                EmitLdvecWithUnsignedCast(Context, Op.Rm, Op.Size);
-                EmitLdvecWithUnsignedCast(Context, Op.Rn, Op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rm, op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rn, op.Size);
 
-                Type[] Types = new Type[]
+                Type[] types = new Type[]
                 {
-                    VectorUIntTypesPerSizeLog2[Op.Size],
-                    VectorUIntTypesPerSizeLog2[Op.Size]
+                    VectorUIntTypesPerSizeLog2[op.Size],
+                    VectorUIntTypesPerSizeLog2[op.Size]
                 };
 
-                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), Types));
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), types));
 
-                EmitStvecWithUnsignedCast(Context, Op.Rd, Op.Size);
+                EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (Op.RegisterSize == ARegisterSize.SIMD64)
+                if (op.RegisterSize == ARegisterSize.Simd64)
                 {
-                    EmitVectorZeroUpper(Context, Op.Rd);
+                    EmitVectorZeroUpper(context, op.Rd);
                 }
             }
             else
             {
-                EmitVectorBinaryOpZx(Context, () =>
+                EmitVectorBinaryOpZx(context, () =>
                 {
-                    Context.Emit(OpCodes.Not);
-                    Context.Emit(OpCodes.And);
+                    context.Emit(OpCodes.Not);
+                    context.Emit(OpCodes.And);
                 });
             }
         }
 
-        public static void Bic_Vi(AILEmitterCtx Context)
+        public static void Bic_Vi(AilEmitterCtx context)
         {
-            EmitVectorImmBinaryOp(Context, () =>
+            EmitVectorImmBinaryOp(context, () =>
             {
-                Context.Emit(OpCodes.Not);
-                Context.Emit(OpCodes.And);
+                context.Emit(OpCodes.Not);
+                context.Emit(OpCodes.And);
             });
         }
 
-        public static void Bif_V(AILEmitterCtx Context)
+        public static void Bif_V(AilEmitterCtx context)
         {
-            EmitBitBif(Context, true);
+            EmitBitBif(context, true);
         }
 
-        public static void Bit_V(AILEmitterCtx Context)
+        public static void Bit_V(AilEmitterCtx context)
         {
-            EmitBitBif(Context, false);
+            EmitBitBif(context, false);
         }
 
-        private static void EmitBitBif(AILEmitterCtx Context, bool NotRm)
+        private static void EmitBitBif(AilEmitterCtx context, bool notRm)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
             if (AOptimizations.UseSse2)
             {
-                Type[] Types = new Type[]
+                Type[] types = new Type[]
                 {
-                    VectorUIntTypesPerSizeLog2[Op.Size],
-                    VectorUIntTypesPerSizeLog2[Op.Size]
+                    VectorUIntTypesPerSizeLog2[op.Size],
+                    VectorUIntTypesPerSizeLog2[op.Size]
                 };
 
-                EmitLdvecWithUnsignedCast(Context, Op.Rm, Op.Size);
-                EmitLdvecWithUnsignedCast(Context, Op.Rd, Op.Size);
-                EmitLdvecWithUnsignedCast(Context, Op.Rn, Op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rm, op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rd, op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rn, op.Size);
 
-                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), Types));
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), types));
 
-                string Name = NotRm ? nameof(Sse2.AndNot) : nameof(Sse2.And);
+                string name = notRm ? nameof(Sse2.AndNot) : nameof(Sse2.And);
 
-                Context.EmitCall(typeof(Sse2).GetMethod(Name, Types));
+                context.EmitCall(typeof(Sse2).GetMethod(name, types));
 
-                EmitLdvecWithUnsignedCast(Context, Op.Rd, Op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), Types));
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), types));
 
-                EmitStvecWithUnsignedCast(Context, Op.Rd, Op.Size);
+                EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (Op.RegisterSize == ARegisterSize.SIMD64)
+                if (op.RegisterSize == ARegisterSize.Simd64)
                 {
-                    EmitVectorZeroUpper(Context, Op.Rd);
+                    EmitVectorZeroUpper(context, op.Rd);
                 }
             }
             else
             {
-                int Bytes = Op.GetBitsCount() >> 3;
-                int Elems = Bytes >> Op.Size;
+                int bytes = op.GetBitsCount() >> 3;
+                int elems = bytes >> op.Size;
 
-                for (int Index = 0; Index < Elems; Index++)
+                for (int index = 0; index < elems; index++)
                 {
-                    EmitVectorExtractZx(Context, Op.Rd, Index, Op.Size);
-                    EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
+                    EmitVectorExtractZx(context, op.Rd, index, op.Size);
+                    EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                    Context.Emit(OpCodes.Xor);
+                    context.Emit(OpCodes.Xor);
 
-                    EmitVectorExtractZx(Context, Op.Rm, Index, Op.Size);
+                    EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                    if (NotRm)
+                    if (notRm)
                     {
-                        Context.Emit(OpCodes.Not);
+                        context.Emit(OpCodes.Not);
                     }
 
-                    Context.Emit(OpCodes.And);
+                    context.Emit(OpCodes.And);
 
-                    EmitVectorExtractZx(Context, Op.Rd, Index, Op.Size);
+                    EmitVectorExtractZx(context, op.Rd, index, op.Size);
 
-                    Context.Emit(OpCodes.Xor);
+                    context.Emit(OpCodes.Xor);
 
-                    EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                    EmitVectorInsert(context, op.Rd, index, op.Size);
                 }
 
-                if (Op.RegisterSize == ARegisterSize.SIMD64)
+                if (op.RegisterSize == ARegisterSize.Simd64)
                 {
-                    EmitVectorZeroUpper(Context, Op.Rd);
+                    EmitVectorZeroUpper(context, op.Rd);
                 }
             }
         }
 
-        public static void Bsl_V(AILEmitterCtx Context)
+        public static void Bsl_V(AilEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
             {
-                AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+                AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-                Type[] Types = new Type[]
+                Type[] types = new Type[]
                 {
-                    VectorUIntTypesPerSizeLog2[Op.Size],
-                    VectorUIntTypesPerSizeLog2[Op.Size]
+                    VectorUIntTypesPerSizeLog2[op.Size],
+                    VectorUIntTypesPerSizeLog2[op.Size]
                 };
 
-                EmitLdvecWithUnsignedCast(Context, Op.Rn, Op.Size);
-                EmitLdvecWithUnsignedCast(Context, Op.Rm, Op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rn, op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rm, op.Size);
 
-                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), Types));
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), types));
 
-                EmitLdvecWithUnsignedCast(Context, Op.Rd, Op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), Types));
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), types));
 
-                EmitLdvecWithUnsignedCast(Context, Op.Rm, Op.Size);
+                EmitLdvecWithUnsignedCast(context, op.Rm, op.Size);
 
-                Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), Types));
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), types));
 
-                EmitStvecWithUnsignedCast(Context, Op.Rd, Op.Size);
+                EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (Op.RegisterSize == ARegisterSize.SIMD64)
+                if (op.RegisterSize == ARegisterSize.Simd64)
                 {
-                    EmitVectorZeroUpper(Context, Op.Rd);
+                    EmitVectorZeroUpper(context, op.Rd);
                 }
             }
             else
             {
-                EmitVectorTernaryOpZx(Context, () =>
+                EmitVectorTernaryOpZx(context, () =>
                 {
-                    Context.EmitSttmp();
-                    Context.EmitLdtmp();
+                    context.EmitSttmp();
+                    context.EmitLdtmp();
 
-                    Context.Emit(OpCodes.Xor);
-                    Context.Emit(OpCodes.And);
+                    context.Emit(OpCodes.Xor);
+                    context.Emit(OpCodes.And);
 
-                    Context.EmitLdtmp();
+                    context.EmitLdtmp();
 
-                    Context.Emit(OpCodes.Xor);
+                    context.Emit(OpCodes.Xor);
                 });
             }
         }
 
-        public static void Eor_V(AILEmitterCtx Context)
+        public static void Eor_V(AilEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
             {
-                EmitSse2Op(Context, nameof(Sse2.Xor));
+                EmitSse2Op(context, nameof(Sse2.Xor));
             }
             else
             {
-                EmitVectorBinaryOpZx(Context, () => Context.Emit(OpCodes.Xor));
+                EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Xor));
             }
         }
 
-        public static void Not_V(AILEmitterCtx Context)
+        public static void Not_V(AilEmitterCtx context)
         {
-            EmitVectorUnaryOpZx(Context, () => Context.Emit(OpCodes.Not));
+            EmitVectorUnaryOpZx(context, () => context.Emit(OpCodes.Not));
         }
 
-        public static void Orn_V(AILEmitterCtx Context)
+        public static void Orn_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpZx(Context, () =>
+            EmitVectorBinaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Not);
-                Context.Emit(OpCodes.Or);
+                context.Emit(OpCodes.Not);
+                context.Emit(OpCodes.Or);
             });
         }
 
-        public static void Orr_V(AILEmitterCtx Context)
+        public static void Orr_V(AilEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
             {
-                EmitSse2Op(Context, nameof(Sse2.Or));
+                EmitSse2Op(context, nameof(Sse2.Or));
             }
             else
             {
-                EmitVectorBinaryOpZx(Context, () => Context.Emit(OpCodes.Or));
+                EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Or));
             }
         }
 
-        public static void Orr_Vi(AILEmitterCtx Context)
+        public static void Orr_Vi(AilEmitterCtx context)
         {
-            EmitVectorImmBinaryOp(Context, () => Context.Emit(OpCodes.Or));
+            EmitVectorImmBinaryOp(context, () => context.Emit(OpCodes.Or));
         }
 
-        public static void Rbit_V(AILEmitterCtx Context)
+        public static void Rbit_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int Elems = Op.RegisterSize == ARegisterSize.SIMD128 ? 16 : 8;
+            int elems = op.RegisterSize == ARegisterSize.Simd128 ? 16 : 8;
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractZx(Context, Op.Rn, Index, 0);
+                EmitVectorExtractZx(context, op.Rn, index, 0);
 
-                Context.Emit(OpCodes.Conv_U4);
+                context.Emit(OpCodes.Conv_U4);
 
-                ASoftFallback.EmitCall(Context, nameof(ASoftFallback.ReverseBits8));
+                ASoftFallback.EmitCall(context, nameof(ASoftFallback.ReverseBits8));
 
-                Context.Emit(OpCodes.Conv_U8);
+                context.Emit(OpCodes.Conv_U8);
 
-                EmitVectorInsert(Context, Op.Rd, Index, 0);
+                EmitVectorInsert(context, op.Rd, index, 0);
             }
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            if (op.RegisterSize == ARegisterSize.Simd64)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        public static void Rev16_V(AILEmitterCtx Context)
+        public static void Rev16_V(AilEmitterCtx context)
         {
-            EmitRev_V(Context, ContainerSize: 1);
+            EmitRev_V(context, containerSize: 1);
         }
 
-        public static void Rev32_V(AILEmitterCtx Context)
+        public static void Rev32_V(AilEmitterCtx context)
         {
-            EmitRev_V(Context, ContainerSize: 2);
+            EmitRev_V(context, containerSize: 2);
         }
 
-        public static void Rev64_V(AILEmitterCtx Context)
+        public static void Rev64_V(AilEmitterCtx context)
         {
-            EmitRev_V(Context, ContainerSize: 3);
+            EmitRev_V(context, containerSize: 3);
         }
 
-        private static void EmitRev_V(AILEmitterCtx Context, int ContainerSize)
+        private static void EmitRev_V(AilEmitterCtx context, int containerSize)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            if (Op.Size >= ContainerSize)
+            if (op.Size >= containerSize)
             {
                 throw new InvalidOperationException();
             }
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> Op.Size;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> op.Size;
 
-            int ContainerMask = (1 << (ContainerSize - Op.Size)) - 1;
+            int containerMask = (1 << (containerSize - op.Size)) - 1;
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                int RevIndex = Index ^ ContainerMask;
+                int revIndex = index ^ containerMask;
 
-                EmitVectorExtractZx(Context, Op.Rn, RevIndex, Op.Size);
+                EmitVectorExtractZx(context, op.Rn, revIndex, op.Size);
 
-                EmitVectorInsertTmp(Context, Index, Op.Size);
+                EmitVectorInsertTmp(context, index, op.Size);
             }
 
-            Context.EmitLdvectmp();
-            Context.EmitStvec(Op.Rd);
+            context.EmitLdvectmp();
+            context.EmitStvec(op.Rd);
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            if (op.RegisterSize == ARegisterSize.Simd64)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
     }

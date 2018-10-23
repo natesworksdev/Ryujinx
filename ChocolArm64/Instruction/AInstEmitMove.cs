@@ -6,36 +6,36 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void Movk(AILEmitterCtx Context)
+        public static void Movk(AilEmitterCtx context)
         {
-            AOpCodeMov Op = (AOpCodeMov)Context.CurrOp;
+            AOpCodeMov op = (AOpCodeMov)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rd);
-            Context.EmitLdc_I(~(0xffffL << Op.Pos));
+            context.EmitLdintzr(op.Rd);
+            context.EmitLdc_I(~(0xffffL << op.Pos));
 
-            Context.Emit(OpCodes.And);
+            context.Emit(OpCodes.And);
 
-            Context.EmitLdc_I(Op.Imm);
+            context.EmitLdc_I(op.Imm);
 
-            Context.Emit(OpCodes.Or);
+            context.Emit(OpCodes.Or);
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        public static void Movn(AILEmitterCtx Context)
+        public static void Movn(AilEmitterCtx context)
         {
-            AOpCodeMov Op = (AOpCodeMov)Context.CurrOp;
+            AOpCodeMov op = (AOpCodeMov)context.CurrOp;
 
-            Context.EmitLdc_I(~Op.Imm);
-            Context.EmitStintzr(Op.Rd);
+            context.EmitLdc_I(~op.Imm);
+            context.EmitStintzr(op.Rd);
         }
 
-        public static void Movz(AILEmitterCtx Context)
+        public static void Movz(AilEmitterCtx context)
         {
-            AOpCodeMov Op = (AOpCodeMov)Context.CurrOp;
+            AOpCodeMov op = (AOpCodeMov)context.CurrOp;
 
-            Context.EmitLdc_I(Op.Imm);
-            Context.EmitStintzr(Op.Rd);
+            context.EmitLdc_I(op.Imm);
+            context.EmitStintzr(op.Rd);
         }
     }
 }

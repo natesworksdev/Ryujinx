@@ -7,7 +7,7 @@ namespace ChocolArm64.Decoder
         public struct BitMask
         {
             public long WMask;
-            public long TMask;
+            public long Mask;
             public int  Pos;
             public int  Shift;
             public bool IsUndefined;
@@ -15,93 +15,93 @@ namespace ChocolArm64.Decoder
             public static BitMask Invalid => new BitMask { IsUndefined = true };
         }
 
-        public static BitMask DecodeBitMask(int OpCode, bool Immediate)
+        public static BitMask DecodeBitMask(int opCode, bool immediate)
         {
-            int ImmS = (OpCode >> 10) & 0x3f;
-            int ImmR = (OpCode >> 16) & 0x3f;
+            int immS = (opCode >> 10) & 0x3f;
+            int immR = (opCode >> 16) & 0x3f;
 
-            int N  = (OpCode >> 22) & 1;
-            int SF = (OpCode >> 31) & 1;
+            int n  = (opCode >> 22) & 1;
+            int sf = (opCode >> 31) & 1;
 
-            int Length = ABitUtils.HighestBitSet32((~ImmS & 0x3f) | (N << 6));
+            int length = ABitUtils.HighestBitSet32((~immS & 0x3f) | (n << 6));
 
-            if (Length < 1 || (SF == 0 && N != 0))
+            if (length < 1 || (sf == 0 && n != 0))
             {
                 return BitMask.Invalid;
             }
 
-            int Size = 1 << Length;
+            int size = 1 << length;
 
-            int Levels = Size - 1;
+            int levels = size - 1;
 
-            int S = ImmS & Levels;
-            int R = ImmR & Levels;
+            int s = immS & levels;
+            int r = immR & levels;
 
-            if (Immediate && S == Levels)
+            if (immediate && s == levels)
             {
                 return BitMask.Invalid;
             }
 
-            long WMask = ABitUtils.FillWithOnes(S + 1);
-            long TMask = ABitUtils.FillWithOnes(((S - R) & Levels) + 1);
+            long wMask = ABitUtils.FillWithOnes(s + 1);
+            long mask = ABitUtils.FillWithOnes(((s - r) & levels) + 1);
 
-            if (R > 0)
+            if (r > 0)
             {
-                WMask  = ABitUtils.RotateRight(WMask, R, Size);
-                WMask &= ABitUtils.FillWithOnes(Size);
+                wMask  = ABitUtils.RotateRight(wMask, r, size);
+                wMask &= ABitUtils.FillWithOnes(size);
             }
 
             return new BitMask()
             {
-                WMask = ABitUtils.Replicate(WMask, Size),
-                TMask = ABitUtils.Replicate(TMask, Size),
+                WMask = ABitUtils.Replicate(wMask, size),
+                Mask = ABitUtils.Replicate(mask, size),
 
-                Pos   = ImmS,
-                Shift = ImmR
+                Pos   = immS,
+                Shift = immR
             };
         }
 
-        public static long DecodeImm8Float(long Imm, int Size)
+        public static long DecodeImm8Float(long imm, int size)
         {
-            int E = 0, F = 0;
+            int e = 0, f = 0;
 
-            switch (Size)
+            switch (size)
             {
-                case 0: E =  8; F = 23; break;
-                case 1: E = 11; F = 52; break;
+                case 0: e =  8; f = 23; break;
+                case 1: e = 11; f = 52; break;
 
-                default: throw new ArgumentOutOfRangeException(nameof(Size));
+                default: throw new ArgumentOutOfRangeException(nameof(size));
             }
 
-            long Value = (Imm & 0x3f) << F - 4;
+            long value = (imm & 0x3f) << f - 4;
 
-            long EBit = (Imm >> 6) & 1;
-            long SBit = (Imm >> 7) & 1;
+            long eBit = (imm >> 6) & 1;
+            long sBit = (imm >> 7) & 1;
 
-            if (EBit != 0)
+            if (eBit != 0)
             {
-                Value |= (1L << E - 3) - 1 << F + 2;
+                value |= (1L << e - 3) - 1 << f + 2;
             }
 
-            Value |= (EBit ^ 1) << F + E - 1;
-            Value |=  SBit      << F + E;
+            value |= (eBit ^ 1) << f + e - 1;
+            value |=  sBit      << f + e;
 
-            return Value;
+            return value;
         }
 
-        public static long DecodeImm26_2(int OpCode)
+        public static long DecodeImm26_2(int opCode)
         {
-            return ((long)OpCode << 38) >> 36;
+            return ((long)opCode << 38) >> 36;
         }
 
-        public static long DecodeImmS19_2(int OpCode)
+        public static long DecodeImmS19_2(int opCode)
         {
-            return (((long)OpCode << 40) >> 43) & ~3;
+            return (((long)opCode << 40) >> 43) & ~3;
         }
 
-        public static long DecodeImmS14_2(int OpCode)
+        public static long DecodeImmS14_2(int opCode)
         {
-            return (((long)OpCode << 45) >> 48) & ~3;
+            return (((long)opCode << 45) >> 48) & ~3;
         }
     }
 }

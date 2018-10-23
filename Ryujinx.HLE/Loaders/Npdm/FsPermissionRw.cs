@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         MountContentType4     = 0x8000000000000801,
         MountContentType6     = 0x8000000000000801,
         MountContentType7     = 0x8000000000000801,
-        Unknown0x6            = 0x8000000000000000,
+        Unknown0X6            = 0x8000000000000000,
         ContentStorageAccess  = 0x8000000000000800,
         ImageDirectoryAccess  = 0x8000000000001000,
         MountBisType28        = 0x8000000000000084,
@@ -37,9 +37,9 @@ namespace Ryujinx.HLE.Loaders.Npdm
         BisPartition30        = 0x8000000000000080,
         BisPartition31        = 0x8000000000000080,
         BisPartition32        = 0x8000000000000080,
-        Unknown0x23           = 0xC000000000200000,
-        GameCard_System       = 0x8000000000000100,
-        MountContent_System   = 0x8000000000100008,
+        Unknown0X23           = 0xC000000000200000,
+        GameCardSystem       = 0x8000000000000100,
+        MountContentSystem   = 0x8000000000100008,
         HostAccess            = 0xC000000000400000
     }
 }

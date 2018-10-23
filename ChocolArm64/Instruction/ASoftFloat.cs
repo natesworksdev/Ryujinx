@@ -18,7 +18,7 @@ namespace ChocolArm64.Instruction
 
         private static byte[] BuildRecipEstimateTable()
         {
-            byte[] Table = new byte[256];
+            byte[] table = new byte[256];
             for (ulong index = 0; index < 256; index++)
             {
                 ulong a = index | 0x100;
@@ -27,14 +27,14 @@ namespace ChocolArm64.Instruction
                 ulong b = 0x80000 / a;
                 b = (b + 1) >> 1;
 
-                Table[index] = (byte)(b & 0xFF);
+                table[index] = (byte)(b & 0xFF);
             }
-            return Table;
+            return table;
         }
 
         private static byte[] BuildInvSqrtEstimateTable()
         {
-            byte[] Table = new byte[512];
+            byte[] table = new byte[512];
             for (ulong index = 128; index < 512; index++)
             {
                 ulong a = index;
@@ -54,9 +54,9 @@ namespace ChocolArm64.Instruction
                 }
                 b = (b + 1) >> 1;
 
-                Table[index] = (byte)(b & 0xFF);
+                table[index] = (byte)(b & 0xFF);
             }
-            return Table;
+            return table;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,35 +67,35 @@ namespace ChocolArm64.Instruction
 
         public static double RecipEstimate(double x)
         {
-            ulong x_bits = (ulong)BitConverter.DoubleToInt64Bits(x);
-            ulong x_sign = x_bits & 0x8000000000000000;
-            ulong x_exp = (x_bits >> 52) & 0x7FF;
-            ulong scaled = x_bits & ((1ul << 52) - 1);
+            ulong xBits = (ulong)BitConverter.DoubleToInt64Bits(x);
+            ulong xSign = xBits & 0x8000000000000000;
+            ulong xExp = (xBits >> 52) & 0x7FF;
+            ulong scaled = xBits & ((1ul << 52) - 1);
 
-            if (x_exp >= 2045)
+            if (xExp >= 2045)
             {
-                if (x_exp == 0x7ff && scaled != 0)
+                if (xExp == 0x7ff && scaled != 0)
                 {
                     // NaN
-                    return BitConverter.Int64BitsToDouble((long)(x_bits | 0x0008000000000000));
+                    return BitConverter.Int64BitsToDouble((long)(xBits | 0x0008000000000000));
                 }
 
                 // Infinity, or Out of range -> Zero
-                return BitConverter.Int64BitsToDouble((long)x_sign);
+                return BitConverter.Int64BitsToDouble((long)xSign);
             }
 
-            if (x_exp == 0)
+            if (xExp == 0)
             {
                 if (scaled == 0)
                 {
                     // Zero -> Infinity
-                    return BitConverter.Int64BitsToDouble((long)(x_sign | 0x7FF0000000000000));
+                    return BitConverter.Int64BitsToDouble((long)(xSign | 0x7FF0000000000000));
                 }
 
                 // Denormal
                 if ((scaled & (1ul << 51)) == 0)
                 {
-                    x_exp = ~0ul;
+                    xExp = ~0ul;
                     scaled <<= 2;
                 }
                 else
@@ -107,23 +107,23 @@ namespace ChocolArm64.Instruction
             scaled >>= 44;
             scaled &= 0xFF;
 
-            ulong result_exp = (2045 - x_exp) & 0x7FF;
+            ulong resultExp = (2045 - xExp) & 0x7FF;
             ulong estimate = (ulong)RecipEstimateTable[scaled];
             ulong fraction = estimate << 44;
 
-            if (result_exp == 0)
+            if (resultExp == 0)
             {
                 fraction >>= 1;
                 fraction |= 1ul << 51;
             }
-            else if (result_exp == 0x7FF)
+            else if (resultExp == 0x7FF)
             {
-                result_exp = 0;
+                resultExp = 0;
                 fraction >>= 2;
                 fraction |= 1ul << 50;
             }
 
-            ulong result = x_sign | (result_exp << 52) | fraction;
+            ulong result = xSign | (resultExp << 52) | fraction;
             return BitConverter.Int64BitsToDouble((long)result);
         }
 
@@ -135,47 +135,47 @@ namespace ChocolArm64.Instruction
 
         public static double InvSqrtEstimate(double x)
         {
-            ulong x_bits = (ulong)BitConverter.DoubleToInt64Bits(x);
-            ulong x_sign = x_bits & 0x8000000000000000;
-            long x_exp = (long)((x_bits >> 52) & 0x7FF);
-            ulong scaled = x_bits & ((1ul << 52) - 1);
+            ulong xBits = (ulong)BitConverter.DoubleToInt64Bits(x);
+            ulong xSign = xBits & 0x8000000000000000;
+            long xExp = (long)((xBits >> 52) & 0x7FF);
+            ulong scaled = xBits & ((1ul << 52) - 1);
 
-            if (x_exp == 0x7FF && scaled != 0)
+            if (xExp == 0x7FF && scaled != 0)
             {
                 // NaN
-                return BitConverter.Int64BitsToDouble((long)(x_bits | 0x0008000000000000));
+                return BitConverter.Int64BitsToDouble((long)(xBits | 0x0008000000000000));
             }
 
-            if (x_exp == 0)
+            if (xExp == 0)
             {
                 if (scaled == 0)
                 {
                     // Zero -> Infinity
-                    return BitConverter.Int64BitsToDouble((long)(x_sign | 0x7FF0000000000000));
+                    return BitConverter.Int64BitsToDouble((long)(xSign | 0x7FF0000000000000));
                 }
 
                 // Denormal
                 while ((scaled & (1 << 51)) == 0)
                 {
                     scaled <<= 1;
-                    x_exp--;
+                    xExp--;
                 }
                 scaled <<= 1;
             }
 
-            if (x_sign != 0)
+            if (xSign != 0)
             {
                 // Negative -> NaN
                 return BitConverter.Int64BitsToDouble((long)0x7FF8000000000000);
             }
 
-            if (x_exp == 0x7ff && scaled == 0)
+            if (xExp == 0x7ff && scaled == 0)
             {
                 // Infinity -> Zero
-                return BitConverter.Int64BitsToDouble((long)x_sign);
+                return BitConverter.Int64BitsToDouble((long)xSign);
             }
 
-            if (((ulong)x_exp & 1) == 1)
+            if (((ulong)xExp & 1) == 1)
             {
                 scaled >>= 45;
                 scaled &= 0xFF;
@@ -188,1939 +188,1939 @@ namespace ChocolArm64.Instruction
                 scaled |= 0x100;
             }
 
-            ulong result_exp = ((ulong)(3068 - x_exp) / 2) & 0x7FF;
+            ulong resultExp = ((ulong)(3068 - xExp) / 2) & 0x7FF;
             ulong estimate = (ulong)InvSqrtEstimateTable[scaled];
             ulong fraction = estimate << 44;
 
-            ulong result = x_sign | (result_exp << 52) | fraction;
+            ulong result = xSign | (resultExp << 52) | fraction;
             return BitConverter.Int64BitsToDouble((long)result);
         }
     }
 
-    static class ASoftFloat16_32
+    static class ASoftFloat1632
     {
-        public static float FPConvert(ushort ValueBits, AThreadState State)
+        public static float FpConvert(ushort valueBits, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat16_32.FPConvert: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat16_32.FPConvert: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            double Real = ValueBits.FPUnpackCV(out FPType Type, out bool Sign, State);
+            double real = valueBits.FpUnpackCv(out FpType type, out bool sign, state);
 
-            float Result;
+            float result;
 
-            if (Type == FPType.SNaN || Type == FPType.QNaN)
+            if (type == FpType.SnaN || type == FpType.QnaN)
             {
-                if (State.GetFpcrFlag(FPCR.DN))
+                if (state.GetFpcrFlag(Fpcr.Dn))
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
                 }
                 else
                 {
-                    Result = FPConvertNaN(ValueBits);
+                    result = FpConvertNaN(valueBits);
                 }
 
-                if (Type == FPType.SNaN)
+                if (type == FpType.SnaN)
                 {
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
             }
-            else if (Type == FPType.Infinity)
+            else if (type == FpType.Infinity)
             {
-                Result = FPInfinity(Sign);
+                result = FpInfinity(sign);
             }
-            else if (Type == FPType.Zero)
+            else if (type == FpType.Zero)
             {
-                Result = FPZero(Sign);
+                result = FpZero(sign);
             }
             else
             {
-                Result = FPRoundCV(Real, State);
+                result = FpRoundCv(real, state);
             }
 
-            return Result;
+            return result;
         }
 
-        private static float FPDefaultNaN()
+        private static float FpDefaultNaN()
         {
             return -float.NaN;
         }
 
-        private static float FPInfinity(bool Sign)
+        private static float FpInfinity(bool sign)
         {
-            return Sign ? float.NegativeInfinity : float.PositiveInfinity;
+            return sign ? float.NegativeInfinity : float.PositiveInfinity;
         }
 
-        private static float FPZero(bool Sign)
+        private static float FpZero(bool sign)
         {
-            return Sign ? -0f : +0f;
+            return sign ? -0f : +0f;
         }
 
-        private static float FPMaxNormal(bool Sign)
+        private static float FpMaxNormal(bool sign)
         {
-            return Sign ? float.MinValue : float.MaxValue;
+            return sign ? float.MinValue : float.MaxValue;
         }
 
-        private static double FPUnpackCV(this ushort ValueBits, out FPType Type, out bool Sign, AThreadState State)
+        private static double FpUnpackCv(this ushort valueBits, out FpType type, out bool sign, AThreadState state)
         {
-            Sign = (~(uint)ValueBits & 0x8000u) == 0u;
+            sign = (~(uint)valueBits & 0x8000u) == 0u;
 
-            uint Exp16  = ((uint)ValueBits & 0x7C00u) >> 10;
-            uint Frac16 =  (uint)ValueBits & 0x03FFu;
+            uint exp16  = ((uint)valueBits & 0x7C00u) >> 10;
+            uint frac16 =  (uint)valueBits & 0x03FFu;
 
-            double Real;
+            double real;
 
-            if (Exp16 == 0u)
+            if (exp16 == 0u)
             {
-                if (Frac16 == 0u)
+                if (frac16 == 0u)
                 {
-                    Type = FPType.Zero;
-                    Real = 0d;
+                    type = FpType.Zero;
+                    real = 0d;
                 }
                 else
                 {
-                    Type = FPType.Nonzero; // Subnormal.
-                    Real = Math.Pow(2d, -14) * ((double)Frac16 * Math.Pow(2d, -10));
+                    type = FpType.Nonzero; // Subnormal.
+                    real = Math.Pow(2d, -14) * ((double)frac16 * Math.Pow(2d, -10));
                 }
             }
-            else if (Exp16 == 0x1Fu && !State.GetFpcrFlag(FPCR.AHP))
+            else if (exp16 == 0x1Fu && !state.GetFpcrFlag(Fpcr.Ahp))
             {
-                if (Frac16 == 0u)
+                if (frac16 == 0u)
                 {
-                    Type = FPType.Infinity;
-                    Real = Math.Pow(2d, 1000);
+                    type = FpType.Infinity;
+                    real = Math.Pow(2d, 1000);
                 }
                 else
                 {
-                    Type = (~Frac16 & 0x0200u) == 0u ? FPType.QNaN : FPType.SNaN;
-                    Real = 0d;
+                    type = (~frac16 & 0x0200u) == 0u ? FpType.QnaN : FpType.SnaN;
+                    real = 0d;
                 }
             }
             else
             {
-                Type = FPType.Nonzero; // Normal.
-                Real = Math.Pow(2d, (int)Exp16 - 15) * (1d + (double)Frac16 * Math.Pow(2d, -10));
+                type = FpType.Nonzero; // Normal.
+                real = Math.Pow(2d, (int)exp16 - 15) * (1d + (double)frac16 * Math.Pow(2d, -10));
             }
 
-            return Sign ? -Real : Real;
+            return sign ? -real : real;
         }
 
-        private static float FPRoundCV(double Real, AThreadState State)
+        private static float FpRoundCv(double real, AThreadState state)
         {
-            const int MinimumExp = -126;
+            const int minimumExp = -126;
 
-            const int E = 8;
-            const int F = 23;
+            const int e = 8;
+            const int f = 23;
 
-            bool   Sign;
-            double Mantissa;
+            bool   sign;
+            double mantissa;
 
-            if (Real < 0d)
+            if (real < 0d)
             {
-                Sign     = true;
-                Mantissa = -Real;
+                sign     = true;
+                mantissa = -real;
             }
             else
             {
-                Sign     = false;
-                Mantissa = Real;
+                sign     = false;
+                mantissa = real;
             }
 
-            int Exponent = 0;
+            int exponent = 0;
 
-            while (Mantissa < 1d)
+            while (mantissa < 1d)
             {
-                Mantissa *= 2d;
-                Exponent--;
+                mantissa *= 2d;
+                exponent--;
             }
 
-            while (Mantissa >= 2d)
+            while (mantissa >= 2d)
             {
-                Mantissa /= 2d;
-                Exponent++;
+                mantissa /= 2d;
+                exponent++;
             }
 
-            if (State.GetFpcrFlag(FPCR.FZ) && Exponent < MinimumExp)
+            if (state.GetFpcrFlag(Fpcr.Fz) && exponent < minimumExp)
             {
-                State.SetFpsrFlag(FPSR.UFC);
+                state.SetFpsrFlag(Fpsr.Ufc);
 
-                return FPZero(Sign);
+                return FpZero(sign);
             }
 
-            uint BiasedExp = (uint)Math.Max(Exponent - MinimumExp + 1, 0);
+            uint biasedExp = (uint)Math.Max(exponent - minimumExp + 1, 0);
 
-            if (BiasedExp == 0u)
+            if (biasedExp == 0u)
             {
-                Mantissa /= Math.Pow(2d, MinimumExp - Exponent);
+                mantissa /= Math.Pow(2d, minimumExp - exponent);
             }
 
-            uint IntMant = (uint)Math.Floor(Mantissa * Math.Pow(2d, F));
-            double Error = Mantissa * Math.Pow(2d, F) - (double)IntMant;
+            uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
+            double error = mantissa * Math.Pow(2d, f) - (double)intMant;
 
-            if (BiasedExp == 0u && (Error != 0d || State.GetFpcrFlag(FPCR.UFE)))
+            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(Fpcr.Ufe)))
             {
-                FPProcessException(FPExc.Underflow, State);
+                FpProcessException(FpExc.Underflow, state);
             }
 
-            bool OverflowToInf;
-            bool RoundUp;
+            bool overflowToInf;
+            bool roundUp;
 
-            switch (State.FPRoundingMode())
+            switch (state.FpRoundingMode())
             {
                 default:
                 case ARoundMode.ToNearest:
-                    RoundUp       = (Error > 0.5d || (Error == 0.5d && (IntMant & 1u) == 1u));
-                    OverflowToInf = true;
+                    roundUp       = (error > 0.5d || (error == 0.5d && (intMant & 1u) == 1u));
+                    overflowToInf = true;
                     break;
 
                 case ARoundMode.TowardsPlusInfinity:
-                    RoundUp       = (Error != 0d && !Sign);
-                    OverflowToInf = !Sign;
+                    roundUp       = (error != 0d && !sign);
+                    overflowToInf = !sign;
                     break;
 
                 case ARoundMode.TowardsMinusInfinity:
-                    RoundUp       = (Error != 0d && Sign);
-                    OverflowToInf = Sign;
+                    roundUp       = (error != 0d && sign);
+                    overflowToInf = sign;
                     break;
 
                 case ARoundMode.TowardsZero:
-                    RoundUp       = false;
-                    OverflowToInf = false;
+                    roundUp       = false;
+                    overflowToInf = false;
                     break;
             }
 
-            if (RoundUp)
+            if (roundUp)
             {
-                IntMant++;
+                intMant++;
 
-                if (IntMant == (uint)Math.Pow(2d, F))
+                if (intMant == (uint)Math.Pow(2d, f))
                 {
-                    BiasedExp = 1u;
+                    biasedExp = 1u;
                 }
 
-                if (IntMant == (uint)Math.Pow(2d, F + 1))
+                if (intMant == (uint)Math.Pow(2d, f + 1))
                 {
-                    BiasedExp++;
-                    IntMant >>= 1;
+                    biasedExp++;
+                    intMant >>= 1;
                 }
             }
 
-            float Result;
+            float result;
 
-            if (BiasedExp >= (uint)Math.Pow(2d, E) - 1u)
+            if (biasedExp >= (uint)Math.Pow(2d, e) - 1u)
             {
-                Result = OverflowToInf ? FPInfinity(Sign) : FPMaxNormal(Sign);
+                result = overflowToInf ? FpInfinity(sign) : FpMaxNormal(sign);
 
-                FPProcessException(FPExc.Overflow, State);
+                FpProcessException(FpExc.Overflow, state);
 
-                Error = 1d;
+                error = 1d;
             }
             else
             {
-                Result = BitConverter.Int32BitsToSingle(
-                    (int)((Sign ? 1u : 0u) << 31 | (BiasedExp & 0xFFu) << 23 | (IntMant & 0x007FFFFFu)));
+                result = BitConverter.Int32BitsToSingle(
+                    (int)((sign ? 1u : 0u) << 31 | (biasedExp & 0xFFu) << 23 | (intMant & 0x007FFFFFu)));
             }
 
-            if (Error != 0d)
+            if (error != 0d)
             {
-                FPProcessException(FPExc.Inexact, State);
+                FpProcessException(FpExc.Inexact, state);
             }
 
-            return Result;
+            return result;
         }
 
-        private static float FPConvertNaN(ushort ValueBits)
+        private static float FpConvertNaN(ushort valueBits)
         {
             return BitConverter.Int32BitsToSingle(
-                (int)(((uint)ValueBits & 0x8000u) << 16 | 0x7FC00000u | ((uint)ValueBits & 0x01FFu) << 13));
+                (int)(((uint)valueBits & 0x8000u) << 16 | 0x7FC00000u | ((uint)valueBits & 0x01FFu) << 13));
         }
 
-        private static void FPProcessException(FPExc Exc, AThreadState State)
+        private static void FpProcessException(FpExc exc, AThreadState state)
         {
-            int Enable = (int)Exc + 8;
+            int enable = (int)exc + 8;
 
-            if ((State.Fpcr & (1 << Enable)) != 0)
+            if ((state.Fpcr & (1 << enable)) != 0)
             {
                 throw new NotImplementedException("floating-point trap handling");
             }
             else
             {
-                State.Fpsr |= 1 << (int)Exc;
+                state.Fpsr |= 1 << (int)exc;
             }
         }
     }
 
-    static class ASoftFloat32_16
+    static class ASoftFloat3216
     {
-        public static ushort FPConvert(float Value, AThreadState State)
+        public static ushort FpConvert(float value, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat32_16.FPConvert: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat32_16.FPConvert: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            double Real = Value.FPUnpackCV(out FPType Type, out bool Sign, State, out uint ValueBits);
+            double real = value.FpUnpackCv(out FpType type, out bool sign, state, out uint valueBits);
 
-            bool AltHp = State.GetFpcrFlag(FPCR.AHP);
+            bool altHp = state.GetFpcrFlag(Fpcr.Ahp);
 
-            ushort ResultBits;
+            ushort resultBits;
 
-            if (Type == FPType.SNaN || Type == FPType.QNaN)
+            if (type == FpType.SnaN || type == FpType.QnaN)
             {
-                if (AltHp)
+                if (altHp)
                 {
-                    ResultBits = FPZero(Sign);
+                    resultBits = FpZero(sign);
                 }
-                else if (State.GetFpcrFlag(FPCR.DN))
+                else if (state.GetFpcrFlag(Fpcr.Dn))
                 {
-                    ResultBits = FPDefaultNaN();
+                    resultBits = FpDefaultNaN();
                 }
                 else
                 {
-                    ResultBits = FPConvertNaN(ValueBits);
+                    resultBits = FpConvertNaN(valueBits);
                 }
 
-                if (Type == FPType.SNaN || AltHp)
+                if (type == FpType.SnaN || altHp)
                 {
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
             }
-            else if (Type == FPType.Infinity)
+            else if (type == FpType.Infinity)
             {
-                if (AltHp)
+                if (altHp)
                 {
-                    ResultBits = (ushort)((Sign ? 1u : 0u) << 15 | 0x7FFFu);
+                    resultBits = (ushort)((sign ? 1u : 0u) << 15 | 0x7FFFu);
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
                 else
                 {
-                    ResultBits = FPInfinity(Sign);
+                    resultBits = FpInfinity(sign);
                 }
             }
-            else if (Type == FPType.Zero)
+            else if (type == FpType.Zero)
             {
-                ResultBits = FPZero(Sign);
+                resultBits = FpZero(sign);
             }
             else
             {
-                ResultBits = FPRoundCV(Real, State);
+                resultBits = FpRoundCv(real, state);
             }
 
-            return ResultBits;
+            return resultBits;
         }
 
-        private static ushort FPDefaultNaN()
+        private static ushort FpDefaultNaN()
         {
             return (ushort)0x7E00u;
         }
 
-        private static ushort FPInfinity(bool Sign)
+        private static ushort FpInfinity(bool sign)
         {
-            return Sign ? (ushort)0xFC00u : (ushort)0x7C00u;
+            return sign ? (ushort)0xFC00u : (ushort)0x7C00u;
         }
 
-        private static ushort FPZero(bool Sign)
+        private static ushort FpZero(bool sign)
         {
-            return Sign ? (ushort)0x8000u : (ushort)0x0000u;
+            return sign ? (ushort)0x8000u : (ushort)0x0000u;
         }
 
-        private static ushort FPMaxNormal(bool Sign)
+        private static ushort FpMaxNormal(bool sign)
         {
-            return Sign ? (ushort)0xFBFFu : (ushort)0x7BFFu;
+            return sign ? (ushort)0xFBFFu : (ushort)0x7BFFu;
         }
 
-        private static double FPUnpackCV(this float Value, out FPType Type, out bool Sign, AThreadState State, out uint ValueBits)
+        private static double FpUnpackCv(this float value, out FpType type, out bool sign, AThreadState state, out uint valueBits)
         {
-            ValueBits = (uint)BitConverter.SingleToInt32Bits(Value);
+            valueBits = (uint)BitConverter.SingleToInt32Bits(value);
 
-            Sign = (~ValueBits & 0x80000000u) == 0u;
+            sign = (~valueBits & 0x80000000u) == 0u;
 
-            uint Exp32  = (ValueBits & 0x7F800000u) >> 23;
-            uint Frac32 =  ValueBits & 0x007FFFFFu;
+            uint exp32  = (valueBits & 0x7F800000u) >> 23;
+            uint frac32 =  valueBits & 0x007FFFFFu;
 
-            double Real;
+            double real;
 
-            if (Exp32 == 0u)
+            if (exp32 == 0u)
             {
-                if (Frac32 == 0u || State.GetFpcrFlag(FPCR.FZ))
+                if (frac32 == 0u || state.GetFpcrFlag(Fpcr.Fz))
                 {
-                    Type = FPType.Zero;
-                    Real = 0d;
+                    type = FpType.Zero;
+                    real = 0d;
 
-                    if (Frac32 != 0u) FPProcessException(FPExc.InputDenorm, State);
+                    if (frac32 != 0u) FpProcessException(FpExc.InputDenorm, state);
                 }
                 else
                 {
-                    Type = FPType.Nonzero; // Subnormal.
-                    Real = Math.Pow(2d, -126) * ((double)Frac32 * Math.Pow(2d, -23));
+                    type = FpType.Nonzero; // Subnormal.
+                    real = Math.Pow(2d, -126) * ((double)frac32 * Math.Pow(2d, -23));
                 }
             }
-            else if (Exp32 == 0xFFu)
+            else if (exp32 == 0xFFu)
             {
-                if (Frac32 == 0u)
+                if (frac32 == 0u)
                 {
-                    Type = FPType.Infinity;
-                    Real = Math.Pow(2d, 1000);
+                    type = FpType.Infinity;
+                    real = Math.Pow(2d, 1000);
                 }
                 else
                 {
-                    Type = (~Frac32 & 0x00400000u) == 0u ? FPType.QNaN : FPType.SNaN;
-                    Real = 0d;
+                    type = (~frac32 & 0x00400000u) == 0u ? FpType.QnaN : FpType.SnaN;
+                    real = 0d;
                 }
             }
             else
             {
-                Type = FPType.Nonzero; // Normal.
-                Real = Math.Pow(2d, (int)Exp32 - 127) * (1d + (double)Frac32 * Math.Pow(2d, -23));
+                type = FpType.Nonzero; // Normal.
+                real = Math.Pow(2d, (int)exp32 - 127) * (1d + (double)frac32 * Math.Pow(2d, -23));
             }
 
-            return Sign ? -Real : Real;
+            return sign ? -real : real;
         }
 
-        private static ushort FPRoundCV(double Real, AThreadState State)
+        private static ushort FpRoundCv(double real, AThreadState state)
         {
-            const int MinimumExp = -14;
+            const int minimumExp = -14;
 
-            const int E = 5;
-            const int F = 10;
+            const int e = 5;
+            const int f = 10;
 
-            bool   Sign;
-            double Mantissa;
+            bool   sign;
+            double mantissa;
 
-            if (Real < 0d)
+            if (real < 0d)
             {
-                Sign     = true;
-                Mantissa = -Real;
+                sign     = true;
+                mantissa = -real;
             }
             else
             {
-                Sign     = false;
-                Mantissa = Real;
+                sign     = false;
+                mantissa = real;
             }
 
-            int Exponent = 0;
+            int exponent = 0;
 
-            while (Mantissa < 1d)
+            while (mantissa < 1d)
             {
-                Mantissa *= 2d;
-                Exponent--;
+                mantissa *= 2d;
+                exponent--;
             }
 
-            while (Mantissa >= 2d)
+            while (mantissa >= 2d)
             {
-                Mantissa /= 2d;
-                Exponent++;
+                mantissa /= 2d;
+                exponent++;
             }
 
-            uint BiasedExp = (uint)Math.Max(Exponent - MinimumExp + 1, 0);
+            uint biasedExp = (uint)Math.Max(exponent - minimumExp + 1, 0);
 
-            if (BiasedExp == 0u)
+            if (biasedExp == 0u)
             {
-                Mantissa /= Math.Pow(2d, MinimumExp - Exponent);
+                mantissa /= Math.Pow(2d, minimumExp - exponent);
             }
 
-            uint IntMant = (uint)Math.Floor(Mantissa * Math.Pow(2d, F));
-            double Error = Mantissa * Math.Pow(2d, F) - (double)IntMant;
+            uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
+            double error = mantissa * Math.Pow(2d, f) - (double)intMant;
 
-            if (BiasedExp == 0u && (Error != 0d || State.GetFpcrFlag(FPCR.UFE)))
+            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(Fpcr.Ufe)))
             {
-                FPProcessException(FPExc.Underflow, State);
+                FpProcessException(FpExc.Underflow, state);
             }
 
-            bool OverflowToInf;
-            bool RoundUp;
+            bool overflowToInf;
+            bool roundUp;
 
-            switch (State.FPRoundingMode())
+            switch (state.FpRoundingMode())
             {
                 default:
                 case ARoundMode.ToNearest:
-                    RoundUp       = (Error > 0.5d || (Error == 0.5d && (IntMant & 1u) == 1u));
-                    OverflowToInf = true;
+                    roundUp       = (error > 0.5d || (error == 0.5d && (intMant & 1u) == 1u));
+                    overflowToInf = true;
                     break;
 
                 case ARoundMode.TowardsPlusInfinity:
-                    RoundUp       = (Error != 0d && !Sign);
-                    OverflowToInf = !Sign;
+                    roundUp       = (error != 0d && !sign);
+                    overflowToInf = !sign;
                     break;
 
                 case ARoundMode.TowardsMinusInfinity:
-                    RoundUp       = (Error != 0d && Sign);
-                    OverflowToInf = Sign;
+                    roundUp       = (error != 0d && sign);
+                    overflowToInf = sign;
                     break;
 
                 case ARoundMode.TowardsZero:
-                    RoundUp       = false;
-                    OverflowToInf = false;
+                    roundUp       = false;
+                    overflowToInf = false;
                     break;
             }
 
-            if (RoundUp)
+            if (roundUp)
             {
-                IntMant++;
+                intMant++;
 
-                if (IntMant == (uint)Math.Pow(2d, F))
+                if (intMant == (uint)Math.Pow(2d, f))
                 {
-                    BiasedExp = 1u;
+                    biasedExp = 1u;
                 }
 
-                if (IntMant == (uint)Math.Pow(2d, F + 1))
+                if (intMant == (uint)Math.Pow(2d, f + 1))
                 {
-                    BiasedExp++;
-                    IntMant >>= 1;
+                    biasedExp++;
+                    intMant >>= 1;
                 }
             }
 
-            ushort ResultBits;
+            ushort resultBits;
 
-            if (!State.GetFpcrFlag(FPCR.AHP))
+            if (!state.GetFpcrFlag(Fpcr.Ahp))
             {
-                if (BiasedExp >= (uint)Math.Pow(2d, E) - 1u)
+                if (biasedExp >= (uint)Math.Pow(2d, e) - 1u)
                 {
-                    ResultBits = OverflowToInf ? FPInfinity(Sign) : FPMaxNormal(Sign);
+                    resultBits = overflowToInf ? FpInfinity(sign) : FpMaxNormal(sign);
 
-                    FPProcessException(FPExc.Overflow, State);
+                    FpProcessException(FpExc.Overflow, state);
 
-                    Error = 1d;
+                    error = 1d;
                 }
                 else
                 {
-                    ResultBits = (ushort)((Sign ? 1u : 0u) << 15 | (BiasedExp & 0x1Fu) << 10 | (IntMant & 0x03FFu));
+                    resultBits = (ushort)((sign ? 1u : 0u) << 15 | (biasedExp & 0x1Fu) << 10 | (intMant & 0x03FFu));
                 }
             }
             else
             {
-                if (BiasedExp >= (uint)Math.Pow(2d, E))
+                if (biasedExp >= (uint)Math.Pow(2d, e))
                 {
-                    ResultBits = (ushort)((Sign ? 1u : 0u) << 15 | 0x7FFFu);
+                    resultBits = (ushort)((sign ? 1u : 0u) << 15 | 0x7FFFu);
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
 
-                    Error = 0d;
+                    error = 0d;
                 }
                 else
                 {
-                    ResultBits = (ushort)((Sign ? 1u : 0u) << 15 | (BiasedExp & 0x1Fu) << 10 | (IntMant & 0x03FFu));
+                    resultBits = (ushort)((sign ? 1u : 0u) << 15 | (biasedExp & 0x1Fu) << 10 | (intMant & 0x03FFu));
                 }
             }
 
-            if (Error != 0d)
+            if (error != 0d)
             {
-                FPProcessException(FPExc.Inexact, State);
+                FpProcessException(FpExc.Inexact, state);
             }
 
-            return ResultBits;
+            return resultBits;
         }
 
-        private static ushort FPConvertNaN(uint ValueBits)
+        private static ushort FpConvertNaN(uint valueBits)
         {
-            return (ushort)((ValueBits & 0x80000000u) >> 16 | 0x7E00u | (ValueBits & 0x003FE000u) >> 13);
+            return (ushort)((valueBits & 0x80000000u) >> 16 | 0x7E00u | (valueBits & 0x003FE000u) >> 13);
         }
 
-        private static void FPProcessException(FPExc Exc, AThreadState State)
+        private static void FpProcessException(FpExc exc, AThreadState state)
         {
-            int Enable = (int)Exc + 8;
+            int enable = (int)exc + 8;
 
-            if ((State.Fpcr & (1 << Enable)) != 0)
+            if ((state.Fpcr & (1 << enable)) != 0)
             {
                 throw new NotImplementedException("floating-point trap handling");
             }
             else
             {
-                State.Fpsr |= 1 << (int)Exc;
+                state.Fpsr |= 1 << (int)exc;
             }
         }
     }
 
-    static class ASoftFloat_32
+    static class ASoftFloat32
     {
-        public static float FPAdd(float Value1, float Value2, AThreadState State)
+        public static float FpAdd(float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPAdd: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPAdd: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if (Inf1 && Inf2 && Sign1 == !Sign2)
+                if (inf1 && inf2 && sign1 == !sign2)
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
-                else if ((Inf1 && !Sign1) || (Inf2 && !Sign2))
+                else if ((inf1 && !sign1) || (inf2 && !sign2))
                 {
-                    Result = FPInfinity(false);
+                    result = FpInfinity(false);
                 }
-                else if ((Inf1 && Sign1) || (Inf2 && Sign2))
+                else if ((inf1 && sign1) || (inf2 && sign2))
                 {
-                    Result = FPInfinity(true);
+                    result = FpInfinity(true);
                 }
-                else if (Zero1 && Zero2 && Sign1 == Sign2)
+                else if (zero1 && zero2 && sign1 == sign2)
                 {
-                    Result = FPZero(Sign1);
+                    result = FpZero(sign1);
                 }
                 else
                 {
-                    Result = Value1 + Value2;
+                    result = value1 + value2;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static float FPDiv(float Value1, float Value2, AThreadState State)
+        public static float FpDiv(float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPDiv: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPDiv: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if ((Inf1 && Inf2) || (Zero1 && Zero2))
+                if ((inf1 && inf2) || (zero1 && zero2))
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
-                else if (Inf1 || Zero2)
+                else if (inf1 || zero2)
                 {
-                    Result = FPInfinity(Sign1 ^ Sign2);
+                    result = FpInfinity(sign1 ^ sign2);
 
-                    if (!Inf1) FPProcessException(FPExc.DivideByZero, State);
+                    if (!inf1) FpProcessException(FpExc.DivideByZero, state);
                 }
-                else if (Zero1 || Inf2)
+                else if (zero1 || inf2)
                 {
-                    Result = FPZero(Sign1 ^ Sign2);
+                    result = FpZero(sign1 ^ sign2);
                 }
                 else
                 {
-                    Result = Value1 / Value2;
+                    result = value1 / value2;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static float FPMax(float Value1, float Value2, AThreadState State)
+        public static float FpMax(float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPMax: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPMax: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                if (Value1 > Value2)
+                if (value1 > value2)
                 {
-                    if (Type1 == FPType.Infinity)
+                    if (type1 == FpType.Infinity)
                     {
-                        Result = FPInfinity(Sign1);
+                        result = FpInfinity(sign1);
                     }
-                    else if (Type1 == FPType.Zero)
+                    else if (type1 == FpType.Zero)
                     {
-                        Result = FPZero(Sign1 && Sign2);
+                        result = FpZero(sign1 && sign2);
                     }
                     else
                     {
-                        Result = Value1;
+                        result = value1;
                     }
                 }
                 else
                 {
-                    if (Type2 == FPType.Infinity)
+                    if (type2 == FpType.Infinity)
                     {
-                        Result = FPInfinity(Sign2);
+                        result = FpInfinity(sign2);
                     }
-                    else if (Type2 == FPType.Zero)
+                    else if (type2 == FpType.Zero)
                     {
-                        Result = FPZero(Sign1 && Sign2);
+                        result = FpZero(sign1 && sign2);
                     }
                     else
                     {
-                        Result = Value2;
+                        result = value2;
                     }
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static float FPMaxNum(float Value1, float Value2, AThreadState State)
+        public static float FpMaxNum(float value1, float value2, AThreadState state)
         {
-            Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_32.FPMaxNum: ");
+            Debug.WriteIf(state.Fpcr != 0, "ASoftFloat_32.FPMaxNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out _, out _);
-            Value2.FPUnpack(out FPType Type2, out _, out _);
+            value1.FpUnpack(out FpType type1, out _, out _);
+            value2.FpUnpack(out FpType type2, out _, out _);
 
-            if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
+            if (type1 == FpType.QnaN && type2 != FpType.QnaN)
             {
-                Value1 = FPInfinity(true);
+                value1 = FpInfinity(true);
             }
-            else if (Type1 != FPType.QNaN && Type2 == FPType.QNaN)
+            else if (type1 != FpType.QnaN && type2 == FpType.QnaN)
             {
-                Value2 = FPInfinity(true);
+                value2 = FpInfinity(true);
             }
 
-            return FPMax(Value1, Value2, State);
+            return FpMax(value1, value2, state);
         }
 
-        public static float FPMin(float Value1, float Value2, AThreadState State)
+        public static float FpMin(float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPMin: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPMin: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                if (Value1 < Value2)
+                if (value1 < value2)
                 {
-                    if (Type1 == FPType.Infinity)
+                    if (type1 == FpType.Infinity)
                     {
-                        Result = FPInfinity(Sign1);
+                        result = FpInfinity(sign1);
                     }
-                    else if (Type1 == FPType.Zero)
+                    else if (type1 == FpType.Zero)
                     {
-                        Result = FPZero(Sign1 || Sign2);
+                        result = FpZero(sign1 || sign2);
                     }
                     else
                     {
-                        Result = Value1;
+                        result = value1;
                     }
                 }
                 else
                 {
-                    if (Type2 == FPType.Infinity)
+                    if (type2 == FpType.Infinity)
                     {
-                        Result = FPInfinity(Sign2);
+                        result = FpInfinity(sign2);
                     }
-                    else if (Type2 == FPType.Zero)
+                    else if (type2 == FpType.Zero)
                     {
-                        Result = FPZero(Sign1 || Sign2);
+                        result = FpZero(sign1 || sign2);
                     }
                     else
                     {
-                        Result = Value2;
+                        result = value2;
                     }
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static float FPMinNum(float Value1, float Value2, AThreadState State)
+        public static float FpMinNum(float value1, float value2, AThreadState state)
         {
-            Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_32.FPMinNum: ");
+            Debug.WriteIf(state.Fpcr != 0, "ASoftFloat_32.FPMinNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out _, out _);
-            Value2.FPUnpack(out FPType Type2, out _, out _);
+            value1.FpUnpack(out FpType type1, out _, out _);
+            value2.FpUnpack(out FpType type2, out _, out _);
 
-            if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
+            if (type1 == FpType.QnaN && type2 != FpType.QnaN)
             {
-                Value1 = FPInfinity(false);
+                value1 = FpInfinity(false);
             }
-            else if (Type1 != FPType.QNaN && Type2 == FPType.QNaN)
+            else if (type1 != FpType.QnaN && type2 == FpType.QnaN)
             {
-                Value2 = FPInfinity(false);
+                value2 = FpInfinity(false);
             }
 
-            return FPMin(Value1, Value2, State);
+            return FpMin(value1, value2, state);
         }
 
-        public static float FPMul(float Value1, float Value2, AThreadState State)
+        public static float FpMul(float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPMul: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPMul: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if ((Inf1 && Zero2) || (Zero1 && Inf2))
+                if ((inf1 && zero2) || (zero1 && inf2))
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
-                else if (Inf1 || Inf2)
+                else if (inf1 || inf2)
                 {
-                    Result = FPInfinity(Sign1 ^ Sign2);
+                    result = FpInfinity(sign1 ^ sign2);
                 }
-                else if (Zero1 || Zero2)
+                else if (zero1 || zero2)
                 {
-                    Result = FPZero(Sign1 ^ Sign2);
+                    result = FpZero(sign1 ^ sign2);
                 }
                 else
                 {
-                    Result = Value1 * Value2;
+                    result = value1 * value2;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static float FPMulAdd(float ValueA, float Value1, float Value2, AThreadState State)
+        public static float FpMulAdd(float valueA, float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPMulAdd: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPMulAdd: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            ValueA = ValueA.FPUnpack(out FPType TypeA, out bool SignA, out uint Addend);
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            valueA = valueA.FpUnpack(out FpType typeA, out bool signA, out uint addend);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-            bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+            bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+            bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-            float Result = FPProcessNaNs3(TypeA, Type1, Type2, Addend, Op1, Op2, State, out bool Done);
+            float result = FpProcessNaNs3(typeA, type1, type2, addend, op1, op2, state, out bool done);
 
-            if (TypeA == FPType.QNaN && ((Inf1 && Zero2) || (Zero1 && Inf2)))
+            if (typeA == FpType.QnaN && ((inf1 && zero2) || (zero1 && inf2)))
             {
-                Result = FPDefaultNaN();
+                result = FpDefaultNaN();
 
-                FPProcessException(FPExc.InvalidOp, State);
+                FpProcessException(FpExc.InvalidOp, state);
             }
 
-            if (!Done)
+            if (!done)
             {
-                bool InfA = TypeA == FPType.Infinity; bool ZeroA = TypeA == FPType.Zero;
+                bool infA = typeA == FpType.Infinity; bool zeroA = typeA == FpType.Zero;
 
-                bool SignP = Sign1 ^  Sign2;
-                bool InfP  = Inf1  || Inf2;
-                bool ZeroP = Zero1 || Zero2;
+                bool signP = sign1 ^  sign2;
+                bool infP  = inf1  || inf2;
+                bool zeroP = zero1 || zero2;
 
-                if ((Inf1 && Zero2) || (Zero1 && Inf2) || (InfA && InfP && SignA != SignP))
+                if ((inf1 && zero2) || (zero1 && inf2) || (infA && infP && signA != signP))
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
-                else if ((InfA && !SignA) || (InfP && !SignP))
+                else if ((infA && !signA) || (infP && !signP))
                 {
-                    Result = FPInfinity(false);
+                    result = FpInfinity(false);
                 }
-                else if ((InfA && SignA) || (InfP && SignP))
+                else if ((infA && signA) || (infP && signP))
                 {
-                    Result = FPInfinity(true);
+                    result = FpInfinity(true);
                 }
-                else if (ZeroA && ZeroP && SignA == SignP)
+                else if (zeroA && zeroP && signA == signP)
                 {
-                    Result = FPZero(SignA);
+                    result = FpZero(signA);
                 }
                 else
                 {
                     // TODO: When available, use: T MathF.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
 
-                    Result = ValueA + (Value1 * Value2);
+                    result = valueA + (value1 * value2);
                 }
             }
 
-            return Result;
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float FPMulSub(float ValueA, float Value1, float Value2, AThreadState State)
+        public static float FpMulSub(float valueA, float value1, float value2, AThreadState state)
         {
-            Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_32.FPMulSub: ");
+            Debug.WriteIf(state.Fpcr != 0, "ASoftFloat_32.FPMulSub: ");
 
-            Value1 = Value1.FPNeg();
+            value1 = value1.FpNeg();
 
-            return FPMulAdd(ValueA, Value1, Value2, State);
+            return FpMulAdd(valueA, value1, value2, state);
         }
 
-        public static float FPMulX(float Value1, float Value2, AThreadState State)
+        public static float FpMulX(float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPMulX: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPMulX: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if ((Inf1 && Zero2) || (Zero1 && Inf2))
+                if ((inf1 && zero2) || (zero1 && inf2))
                 {
-                    Result = FPTwo(Sign1 ^ Sign2);
+                    result = FpTwo(sign1 ^ sign2);
                 }
-                else if (Inf1 || Inf2)
+                else if (inf1 || inf2)
                 {
-                    Result = FPInfinity(Sign1 ^ Sign2);
+                    result = FpInfinity(sign1 ^ sign2);
                 }
-                else if (Zero1 || Zero2)
+                else if (zero1 || zero2)
                 {
-                    Result = FPZero(Sign1 ^ Sign2);
+                    result = FpZero(sign1 ^ sign2);
                 }
                 else
                 {
-                    Result = Value1 * Value2;
+                    result = value1 * value2;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static float FPRecipStepFused(float Value1, float Value2, AThreadState State)
+        public static float FpRecipStepFused(float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPRecipStepFused: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPRecipStepFused: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPNeg();
+            value1 = value1.FpNeg();
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if ((Inf1 && Zero2) || (Zero1 && Inf2))
+                if ((inf1 && zero2) || (zero1 && inf2))
                 {
-                    Result = FPTwo(false);
+                    result = FpTwo(false);
                 }
-                else if (Inf1 || Inf2)
+                else if (inf1 || inf2)
                 {
-                    Result = FPInfinity(Sign1 ^ Sign2);
-                }
-                else
-                {
-                    // TODO: When available, use: T MathF.FusedMultiplyAdd(T, T, T);
-                    // https://github.com/dotnet/corefx/issues/31903
-
-                    Result = 2f + (Value1 * Value2);
-                }
-            }
-
-            return Result;
-        }
-
-        public static float FPRecpX(float Value, AThreadState State)
-        {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPRecpX: State.Fpcr = 0x{State.Fpcr:X8}");
-
-            Value.FPUnpack(out FPType Type, out bool Sign, out uint Op);
-
-            float Result;
-
-            if (Type == FPType.SNaN || Type == FPType.QNaN)
-            {
-                Result = FPProcessNaN(Type, Op, State);
-            }
-            else
-            {
-                uint NotExp = (~Op >> 23) & 0xFFu;
-                uint MaxExp = 0xFEu;
-
-                Result = BitConverter.Int32BitsToSingle(
-                    (int)((Sign ? 1u : 0u) << 31 | (NotExp == 0xFFu ? MaxExp : NotExp) << 23));
-            }
-
-            return Result;
-        }
-
-        public static float FPRSqrtStepFused(float Value1, float Value2, AThreadState State)
-        {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPRSqrtStepFused: State.Fpcr = 0x{State.Fpcr:X8}");
-
-            Value1 = Value1.FPNeg();
-
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
-
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
-
-            if (!Done)
-            {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
-
-                if ((Inf1 && Zero2) || (Zero1 && Inf2))
-                {
-                    Result = FPOnePointFive(false);
-                }
-                else if (Inf1 || Inf2)
-                {
-                    Result = FPInfinity(Sign1 ^ Sign2);
+                    result = FpInfinity(sign1 ^ sign2);
                 }
                 else
                 {
                     // TODO: When available, use: T MathF.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
 
-                    Result = (3f + (Value1 * Value2)) / 2f;
+                    result = 2f + (value1 * value2);
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static float FPSqrt(float Value, AThreadState State)
+        public static float FpRecpX(float value, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPSqrt: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPRecpX: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value = Value.FPUnpack(out FPType Type, out bool Sign, out uint Op);
+            value.FpUnpack(out FpType type, out bool sign, out uint op);
 
-            float Result;
+            float result;
 
-            if (Type == FPType.SNaN || Type == FPType.QNaN)
+            if (type == FpType.SnaN || type == FpType.QnaN)
             {
-                Result = FPProcessNaN(Type, Op, State);
-            }
-            else if (Type == FPType.Zero)
-            {
-                Result = FPZero(Sign);
-            }
-            else if (Type == FPType.Infinity && !Sign)
-            {
-                Result = FPInfinity(Sign);
-            }
-            else if (Sign)
-            {
-                Result = FPDefaultNaN();
-
-                FPProcessException(FPExc.InvalidOp, State);
+                result = FpProcessNaN(type, op, state);
             }
             else
             {
-                Result = MathF.Sqrt(Value);
+                uint notExp = (~op >> 23) & 0xFFu;
+                uint maxExp = 0xFEu;
+
+                result = BitConverter.Int32BitsToSingle(
+                    (int)((sign ? 1u : 0u) << 31 | (notExp == 0xFFu ? maxExp : notExp) << 23));
             }
 
-            return Result;
+            return result;
         }
 
-        public static float FPSub(float Value1, float Value2, AThreadState State)
+        public static float FprSqrtStepFused(float value1, float value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_32.FPSub: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPRSqrtStepFused: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out uint Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out uint Op2);
+            value1 = value1.FpNeg();
 
-            float Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
 
-            if (!Done)
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
+
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if (Inf1 && Inf2 && Sign1 == Sign2)
+                if ((inf1 && zero2) || (zero1 && inf2))
                 {
-                    Result = FPDefaultNaN();
-
-                    FPProcessException(FPExc.InvalidOp, State);
+                    result = FpOnePointFive(false);
                 }
-                else if ((Inf1 && !Sign1) || (Inf2 && Sign2))
+                else if (inf1 || inf2)
                 {
-                    Result = FPInfinity(false);
-                }
-                else if ((Inf1 && Sign1) || (Inf2 && !Sign2))
-                {
-                    Result = FPInfinity(true);
-                }
-                else if (Zero1 && Zero2 && Sign1 == !Sign2)
-                {
-                    Result = FPZero(Sign1);
+                    result = FpInfinity(sign1 ^ sign2);
                 }
                 else
                 {
-                    Result = Value1 - Value2;
+                    // TODO: When available, use: T MathF.FusedMultiplyAdd(T, T, T);
+                    // https://github.com/dotnet/corefx/issues/31903
+
+                    result = (3f + (value1 * value2)) / 2f;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        private static float FPDefaultNaN()
+        public static float FpSqrt(float value, AThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPSqrt: State.Fpcr = 0x{state.Fpcr:X8}");
+
+            value = value.FpUnpack(out FpType type, out bool sign, out uint op);
+
+            float result;
+
+            if (type == FpType.SnaN || type == FpType.QnaN)
+            {
+                result = FpProcessNaN(type, op, state);
+            }
+            else if (type == FpType.Zero)
+            {
+                result = FpZero(sign);
+            }
+            else if (type == FpType.Infinity && !sign)
+            {
+                result = FpInfinity(sign);
+            }
+            else if (sign)
+            {
+                result = FpDefaultNaN();
+
+                FpProcessException(FpExc.InvalidOp, state);
+            }
+            else
+            {
+                result = MathF.Sqrt(value);
+            }
+
+            return result;
+        }
+
+        public static float FpSub(float value1, float value2, AThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_32.FPSub: State.Fpcr = 0x{state.Fpcr:X8}");
+
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out uint op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out uint op2);
+
+            float result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
+
+            if (!done)
+            {
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
+
+                if (inf1 && inf2 && sign1 == sign2)
+                {
+                    result = FpDefaultNaN();
+
+                    FpProcessException(FpExc.InvalidOp, state);
+                }
+                else if ((inf1 && !sign1) || (inf2 && sign2))
+                {
+                    result = FpInfinity(false);
+                }
+                else if ((inf1 && sign1) || (inf2 && !sign2))
+                {
+                    result = FpInfinity(true);
+                }
+                else if (zero1 && zero2 && sign1 == !sign2)
+                {
+                    result = FpZero(sign1);
+                }
+                else
+                {
+                    result = value1 - value2;
+                }
+            }
+
+            return result;
+        }
+
+        private static float FpDefaultNaN()
         {
             return -float.NaN;
         }
 
-        private static float FPInfinity(bool Sign)
+        private static float FpInfinity(bool sign)
         {
-            return Sign ? float.NegativeInfinity : float.PositiveInfinity;
+            return sign ? float.NegativeInfinity : float.PositiveInfinity;
         }
 
-        private static float FPZero(bool Sign)
+        private static float FpZero(bool sign)
         {
-            return Sign ? -0f : +0f;
+            return sign ? -0f : +0f;
         }
 
-        private static float FPTwo(bool Sign)
+        private static float FpTwo(bool sign)
         {
-            return Sign ? -2f : +2f;
+            return sign ? -2f : +2f;
         }
 
-        private static float FPOnePointFive(bool Sign)
+        private static float FpOnePointFive(bool sign)
         {
-            return Sign ? -1.5f : +1.5f;
+            return sign ? -1.5f : +1.5f;
         }
 
-        private static float FPNeg(this float Value)
+        private static float FpNeg(this float value)
         {
-            return -Value;
+            return -value;
         }
 
-        private static float FPUnpack(this float Value, out FPType Type, out bool Sign, out uint ValueBits)
+        private static float FpUnpack(this float value, out FpType type, out bool sign, out uint valueBits)
         {
-            ValueBits = (uint)BitConverter.SingleToInt32Bits(Value);
+            valueBits = (uint)BitConverter.SingleToInt32Bits(value);
 
-            Sign = (~ValueBits & 0x80000000u) == 0u;
+            sign = (~valueBits & 0x80000000u) == 0u;
 
-            if ((ValueBits & 0x7F800000u) == 0u)
+            if ((valueBits & 0x7F800000u) == 0u)
             {
-                if ((ValueBits & 0x007FFFFFu) == 0u)
+                if ((valueBits & 0x007FFFFFu) == 0u)
                 {
-                    Type = FPType.Zero;
+                    type = FpType.Zero;
                 }
                 else
                 {
-                    Type = FPType.Nonzero;
+                    type = FpType.Nonzero;
                 }
             }
-            else if ((~ValueBits & 0x7F800000u) == 0u)
+            else if ((~valueBits & 0x7F800000u) == 0u)
             {
-                if ((ValueBits & 0x007FFFFFu) == 0u)
+                if ((valueBits & 0x007FFFFFu) == 0u)
                 {
-                    Type = FPType.Infinity;
+                    type = FpType.Infinity;
                 }
                 else
                 {
-                    Type = (~ValueBits & 0x00400000u) == 0u
-                        ? FPType.QNaN
-                        : FPType.SNaN;
+                    type = (~valueBits & 0x00400000u) == 0u
+                        ? FpType.QnaN
+                        : FpType.SnaN;
 
-                    return FPZero(Sign);
+                    return FpZero(sign);
                 }
             }
             else
             {
-                Type = FPType.Nonzero;
+                type = FpType.Nonzero;
             }
 
-            return Value;
+            return value;
         }
 
-        private static float FPProcessNaNs(
-            FPType Type1,
-            FPType Type2,
-            uint Op1,
-            uint Op2,
-            AThreadState State,
-            out bool Done)
+        private static float FpProcessNaNs(
+            FpType type1,
+            FpType type2,
+            uint op1,
+            uint op2,
+            AThreadState state,
+            out bool done)
         {
-            Done = true;
+            done = true;
 
-            if (Type1 == FPType.SNaN)
+            if (type1 == FpType.SnaN)
             {
-                return FPProcessNaN(Type1, Op1, State);
+                return FpProcessNaN(type1, op1, state);
             }
-            else if (Type2 == FPType.SNaN)
+            else if (type2 == FpType.SnaN)
             {
-                return FPProcessNaN(Type2, Op2, State);
+                return FpProcessNaN(type2, op2, state);
             }
-            else if (Type1 == FPType.QNaN)
+            else if (type1 == FpType.QnaN)
             {
-                return FPProcessNaN(Type1, Op1, State);
+                return FpProcessNaN(type1, op1, state);
             }
-            else if (Type2 == FPType.QNaN)
+            else if (type2 == FpType.QnaN)
             {
-                return FPProcessNaN(Type2, Op2, State);
+                return FpProcessNaN(type2, op2, state);
             }
 
-            Done = false;
+            done = false;
 
-            return FPZero(false);
+            return FpZero(false);
         }
 
-        private static float FPProcessNaNs3(
-            FPType Type1,
-            FPType Type2,
-            FPType Type3,
-            uint Op1,
-            uint Op2,
-            uint Op3,
-            AThreadState State,
-            out bool Done)
+        private static float FpProcessNaNs3(
+            FpType type1,
+            FpType type2,
+            FpType type3,
+            uint op1,
+            uint op2,
+            uint op3,
+            AThreadState state,
+            out bool done)
         {
-            Done = true;
+            done = true;
 
-            if (Type1 == FPType.SNaN)
+            if (type1 == FpType.SnaN)
             {
-                return FPProcessNaN(Type1, Op1, State);
+                return FpProcessNaN(type1, op1, state);
             }
-            else if (Type2 == FPType.SNaN)
+            else if (type2 == FpType.SnaN)
             {
-                return FPProcessNaN(Type2, Op2, State);
+                return FpProcessNaN(type2, op2, state);
             }
-            else if (Type3 == FPType.SNaN)
+            else if (type3 == FpType.SnaN)
             {
-                return FPProcessNaN(Type3, Op3, State);
+                return FpProcessNaN(type3, op3, state);
             }
-            else if (Type1 == FPType.QNaN)
+            else if (type1 == FpType.QnaN)
             {
-                return FPProcessNaN(Type1, Op1, State);
+                return FpProcessNaN(type1, op1, state);
             }
-            else if (Type2 == FPType.QNaN)
+            else if (type2 == FpType.QnaN)
             {
-                return FPProcessNaN(Type2, Op2, State);
+                return FpProcessNaN(type2, op2, state);
             }
-            else if (Type3 == FPType.QNaN)
+            else if (type3 == FpType.QnaN)
             {
-                return FPProcessNaN(Type3, Op3, State);
+                return FpProcessNaN(type3, op3, state);
             }
 
-            Done = false;
+            done = false;
 
-            return FPZero(false);
+            return FpZero(false);
         }
 
-        private static float FPProcessNaN(FPType Type, uint Op, AThreadState State)
+        private static float FpProcessNaN(FpType type, uint op, AThreadState state)
         {
-            if (Type == FPType.SNaN)
+            if (type == FpType.SnaN)
             {
-                Op |= 1u << 22;
+                op |= 1u << 22;
 
-                FPProcessException(FPExc.InvalidOp, State);
+                FpProcessException(FpExc.InvalidOp, state);
             }
 
-            if (State.GetFpcrFlag(FPCR.DN))
+            if (state.GetFpcrFlag(Fpcr.Dn))
             {
-                return FPDefaultNaN();
+                return FpDefaultNaN();
             }
 
-            return BitConverter.Int32BitsToSingle((int)Op);
+            return BitConverter.Int32BitsToSingle((int)op);
         }
 
-        private static void FPProcessException(FPExc Exc, AThreadState State)
+        private static void FpProcessException(FpExc exc, AThreadState state)
         {
-            int Enable = (int)Exc + 8;
+            int enable = (int)exc + 8;
 
-            if ((State.Fpcr & (1 << Enable)) != 0)
+            if ((state.Fpcr & (1 << enable)) != 0)
             {
                 throw new NotImplementedException("floating-point trap handling");
             }
             else
             {
-                State.Fpsr |= 1 << (int)Exc;
+                state.Fpsr |= 1 << (int)exc;
             }
         }
     }
 
-    static class ASoftFloat_64
+    static class ASoftFloat64
     {
-        public static double FPAdd(double Value1, double Value2, AThreadState State)
+        public static double FpAdd(double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPAdd: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPAdd: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if (Inf1 && Inf2 && Sign1 == !Sign2)
+                if (inf1 && inf2 && sign1 == !sign2)
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
-                else if ((Inf1 && !Sign1) || (Inf2 && !Sign2))
+                else if ((inf1 && !sign1) || (inf2 && !sign2))
                 {
-                    Result = FPInfinity(false);
+                    result = FpInfinity(false);
                 }
-                else if ((Inf1 && Sign1) || (Inf2 && Sign2))
+                else if ((inf1 && sign1) || (inf2 && sign2))
                 {
-                    Result = FPInfinity(true);
+                    result = FpInfinity(true);
                 }
-                else if (Zero1 && Zero2 && Sign1 == Sign2)
+                else if (zero1 && zero2 && sign1 == sign2)
                 {
-                    Result = FPZero(Sign1);
+                    result = FpZero(sign1);
                 }
                 else
                 {
-                    Result = Value1 + Value2;
+                    result = value1 + value2;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static double FPDiv(double Value1, double Value2, AThreadState State)
+        public static double FpDiv(double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPDiv: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPDiv: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if ((Inf1 && Inf2) || (Zero1 && Zero2))
+                if ((inf1 && inf2) || (zero1 && zero2))
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
-                else if (Inf1 || Zero2)
+                else if (inf1 || zero2)
                 {
-                    Result = FPInfinity(Sign1 ^ Sign2);
+                    result = FpInfinity(sign1 ^ sign2);
 
-                    if (!Inf1) FPProcessException(FPExc.DivideByZero, State);
+                    if (!inf1) FpProcessException(FpExc.DivideByZero, state);
                 }
-                else if (Zero1 || Inf2)
+                else if (zero1 || inf2)
                 {
-                    Result = FPZero(Sign1 ^ Sign2);
+                    result = FpZero(sign1 ^ sign2);
                 }
                 else
                 {
-                    Result = Value1 / Value2;
+                    result = value1 / value2;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static double FPMax(double Value1, double Value2, AThreadState State)
+        public static double FpMax(double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPMax: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPMax: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                if (Value1 > Value2)
+                if (value1 > value2)
                 {
-                    if (Type1 == FPType.Infinity)
+                    if (type1 == FpType.Infinity)
                     {
-                        Result = FPInfinity(Sign1);
+                        result = FpInfinity(sign1);
                     }
-                    else if (Type1 == FPType.Zero)
+                    else if (type1 == FpType.Zero)
                     {
-                        Result = FPZero(Sign1 && Sign2);
+                        result = FpZero(sign1 && sign2);
                     }
                     else
                     {
-                        Result = Value1;
+                        result = value1;
                     }
                 }
                 else
                 {
-                    if (Type2 == FPType.Infinity)
+                    if (type2 == FpType.Infinity)
                     {
-                        Result = FPInfinity(Sign2);
+                        result = FpInfinity(sign2);
                     }
-                    else if (Type2 == FPType.Zero)
+                    else if (type2 == FpType.Zero)
                     {
-                        Result = FPZero(Sign1 && Sign2);
+                        result = FpZero(sign1 && sign2);
                     }
                     else
                     {
-                        Result = Value2;
+                        result = value2;
                     }
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static double FPMaxNum(double Value1, double Value2, AThreadState State)
+        public static double FpMaxNum(double value1, double value2, AThreadState state)
         {
-            Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_64.FPMaxNum: ");
+            Debug.WriteIf(state.Fpcr != 0, "ASoftFloat_64.FPMaxNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out _, out _);
-            Value2.FPUnpack(out FPType Type2, out _, out _);
+            value1.FpUnpack(out FpType type1, out _, out _);
+            value2.FpUnpack(out FpType type2, out _, out _);
 
-            if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
+            if (type1 == FpType.QnaN && type2 != FpType.QnaN)
             {
-                Value1 = FPInfinity(true);
+                value1 = FpInfinity(true);
             }
-            else if (Type1 != FPType.QNaN && Type2 == FPType.QNaN)
+            else if (type1 != FpType.QnaN && type2 == FpType.QnaN)
             {
-                Value2 = FPInfinity(true);
+                value2 = FpInfinity(true);
             }
 
-            return FPMax(Value1, Value2, State);
+            return FpMax(value1, value2, state);
         }
 
-        public static double FPMin(double Value1, double Value2, AThreadState State)
+        public static double FpMin(double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPMin: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPMin: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                if (Value1 < Value2)
+                if (value1 < value2)
                 {
-                    if (Type1 == FPType.Infinity)
+                    if (type1 == FpType.Infinity)
                     {
-                        Result = FPInfinity(Sign1);
+                        result = FpInfinity(sign1);
                     }
-                    else if (Type1 == FPType.Zero)
+                    else if (type1 == FpType.Zero)
                     {
-                        Result = FPZero(Sign1 || Sign2);
+                        result = FpZero(sign1 || sign2);
                     }
                     else
                     {
-                        Result = Value1;
+                        result = value1;
                     }
                 }
                 else
                 {
-                    if (Type2 == FPType.Infinity)
+                    if (type2 == FpType.Infinity)
                     {
-                        Result = FPInfinity(Sign2);
+                        result = FpInfinity(sign2);
                     }
-                    else if (Type2 == FPType.Zero)
+                    else if (type2 == FpType.Zero)
                     {
-                        Result = FPZero(Sign1 || Sign2);
+                        result = FpZero(sign1 || sign2);
                     }
                     else
                     {
-                        Result = Value2;
+                        result = value2;
                     }
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static double FPMinNum(double Value1, double Value2, AThreadState State)
+        public static double FpMinNum(double value1, double value2, AThreadState state)
         {
-            Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_64.FPMinNum: ");
+            Debug.WriteIf(state.Fpcr != 0, "ASoftFloat_64.FPMinNum: ");
 
-            Value1.FPUnpack(out FPType Type1, out _, out _);
-            Value2.FPUnpack(out FPType Type2, out _, out _);
+            value1.FpUnpack(out FpType type1, out _, out _);
+            value2.FpUnpack(out FpType type2, out _, out _);
 
-            if (Type1 == FPType.QNaN && Type2 != FPType.QNaN)
+            if (type1 == FpType.QnaN && type2 != FpType.QnaN)
             {
-                Value1 = FPInfinity(false);
+                value1 = FpInfinity(false);
             }
-            else if (Type1 != FPType.QNaN && Type2 == FPType.QNaN)
+            else if (type1 != FpType.QnaN && type2 == FpType.QnaN)
             {
-                Value2 = FPInfinity(false);
+                value2 = FpInfinity(false);
             }
 
-            return FPMin(Value1, Value2, State);
+            return FpMin(value1, value2, state);
         }
 
-        public static double FPMul(double Value1, double Value2, AThreadState State)
+        public static double FpMul(double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPMul: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPMul: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if ((Inf1 && Zero2) || (Zero1 && Inf2))
+                if ((inf1 && zero2) || (zero1 && inf2))
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
-                else if (Inf1 || Inf2)
+                else if (inf1 || inf2)
                 {
-                    Result = FPInfinity(Sign1 ^ Sign2);
+                    result = FpInfinity(sign1 ^ sign2);
                 }
-                else if (Zero1 || Zero2)
+                else if (zero1 || zero2)
                 {
-                    Result = FPZero(Sign1 ^ Sign2);
+                    result = FpZero(sign1 ^ sign2);
                 }
                 else
                 {
-                    Result = Value1 * Value2;
+                    result = value1 * value2;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static double FPMulAdd(double ValueA, double Value1, double Value2, AThreadState State)
+        public static double FpMulAdd(double valueA, double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPMulAdd: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPMulAdd: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            ValueA = ValueA.FPUnpack(out FPType TypeA, out bool SignA, out ulong Addend);
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            valueA = valueA.FpUnpack(out FpType typeA, out bool signA, out ulong addend);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-            bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+            bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+            bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-            double Result = FPProcessNaNs3(TypeA, Type1, Type2, Addend, Op1, Op2, State, out bool Done);
+            double result = FpProcessNaNs3(typeA, type1, type2, addend, op1, op2, state, out bool done);
 
-            if (TypeA == FPType.QNaN && ((Inf1 && Zero2) || (Zero1 && Inf2)))
+            if (typeA == FpType.QnaN && ((inf1 && zero2) || (zero1 && inf2)))
             {
-                Result = FPDefaultNaN();
+                result = FpDefaultNaN();
 
-                FPProcessException(FPExc.InvalidOp, State);
+                FpProcessException(FpExc.InvalidOp, state);
             }
 
-            if (!Done)
+            if (!done)
             {
-                bool InfA = TypeA == FPType.Infinity; bool ZeroA = TypeA == FPType.Zero;
+                bool infA = typeA == FpType.Infinity; bool zeroA = typeA == FpType.Zero;
 
-                bool SignP = Sign1 ^  Sign2;
-                bool InfP  = Inf1  || Inf2;
-                bool ZeroP = Zero1 || Zero2;
+                bool signP = sign1 ^  sign2;
+                bool infP  = inf1  || inf2;
+                bool zeroP = zero1 || zero2;
 
-                if ((Inf1 && Zero2) || (Zero1 && Inf2) || (InfA && InfP && SignA != SignP))
+                if ((inf1 && zero2) || (zero1 && inf2) || (infA && infP && signA != signP))
                 {
-                    Result = FPDefaultNaN();
+                    result = FpDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, State);
+                    FpProcessException(FpExc.InvalidOp, state);
                 }
-                else if ((InfA && !SignA) || (InfP && !SignP))
+                else if ((infA && !signA) || (infP && !signP))
                 {
-                    Result = FPInfinity(false);
+                    result = FpInfinity(false);
                 }
-                else if ((InfA && SignA) || (InfP && SignP))
+                else if ((infA && signA) || (infP && signP))
                 {
-                    Result = FPInfinity(true);
+                    result = FpInfinity(true);
                 }
-                else if (ZeroA && ZeroP && SignA == SignP)
+                else if (zeroA && zeroP && signA == signP)
                 {
-                    Result = FPZero(SignA);
+                    result = FpZero(signA);
                 }
                 else
                 {
                     // TODO: When available, use: T Math.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
 
-                    Result = ValueA + (Value1 * Value2);
+                    result = valueA + (value1 * value2);
                 }
             }
 
-            return Result;
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double FPMulSub(double ValueA, double Value1, double Value2, AThreadState State)
+        public static double FpMulSub(double valueA, double value1, double value2, AThreadState state)
         {
-            Debug.WriteIf(State.Fpcr != 0, "ASoftFloat_64.FPMulSub: ");
+            Debug.WriteIf(state.Fpcr != 0, "ASoftFloat_64.FPMulSub: ");
 
-            Value1 = Value1.FPNeg();
+            value1 = value1.FpNeg();
 
-            return FPMulAdd(ValueA, Value1, Value2, State);
+            return FpMulAdd(valueA, value1, value2, state);
         }
 
-        public static double FPMulX(double Value1, double Value2, AThreadState State)
+        public static double FpMulX(double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPMulX: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPMulX: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if ((Inf1 && Zero2) || (Zero1 && Inf2))
+                if ((inf1 && zero2) || (zero1 && inf2))
                 {
-                    Result = FPTwo(Sign1 ^ Sign2);
+                    result = FpTwo(sign1 ^ sign2);
                 }
-                else if (Inf1 || Inf2)
+                else if (inf1 || inf2)
                 {
-                    Result = FPInfinity(Sign1 ^ Sign2);
+                    result = FpInfinity(sign1 ^ sign2);
                 }
-                else if (Zero1 || Zero2)
+                else if (zero1 || zero2)
                 {
-                    Result = FPZero(Sign1 ^ Sign2);
+                    result = FpZero(sign1 ^ sign2);
                 }
                 else
                 {
-                    Result = Value1 * Value2;
+                    result = value1 * value2;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static double FPRecipStepFused(double Value1, double Value2, AThreadState State)
+        public static double FpRecipStepFused(double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPRecipStepFused: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPRecipStepFused: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPNeg();
+            value1 = value1.FpNeg();
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
 
-            if (!Done)
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if ((Inf1 && Zero2) || (Zero1 && Inf2))
+                if ((inf1 && zero2) || (zero1 && inf2))
                 {
-                    Result = FPTwo(false);
+                    result = FpTwo(false);
                 }
-                else if (Inf1 || Inf2)
+                else if (inf1 || inf2)
                 {
-                    Result = FPInfinity(Sign1 ^ Sign2);
-                }
-                else
-                {
-                    // TODO: When available, use: T Math.FusedMultiplyAdd(T, T, T);
-                    // https://github.com/dotnet/corefx/issues/31903
-
-                    Result = 2d + (Value1 * Value2);
-                }
-            }
-
-            return Result;
-        }
-
-        public static double FPRecpX(double Value, AThreadState State)
-        {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPRecpX: State.Fpcr = 0x{State.Fpcr:X8}");
-
-            Value.FPUnpack(out FPType Type, out bool Sign, out ulong Op);
-
-            double Result;
-
-            if (Type == FPType.SNaN || Type == FPType.QNaN)
-            {
-                Result = FPProcessNaN(Type, Op, State);
-            }
-            else
-            {
-                ulong NotExp = (~Op >> 52) & 0x7FFul;
-                ulong MaxExp = 0x7FEul;
-
-                Result = BitConverter.Int64BitsToDouble(
-                    (long)((Sign ? 1ul : 0ul) << 63 | (NotExp == 0x7FFul ? MaxExp : NotExp) << 52));
-            }
-
-            return Result;
-        }
-
-        public static double FPRSqrtStepFused(double Value1, double Value2, AThreadState State)
-        {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPRSqrtStepFused: State.Fpcr = 0x{State.Fpcr:X8}");
-
-            Value1 = Value1.FPNeg();
-
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
-
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
-
-            if (!Done)
-            {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
-
-                if ((Inf1 && Zero2) || (Zero1 && Inf2))
-                {
-                    Result = FPOnePointFive(false);
-                }
-                else if (Inf1 || Inf2)
-                {
-                    Result = FPInfinity(Sign1 ^ Sign2);
+                    result = FpInfinity(sign1 ^ sign2);
                 }
                 else
                 {
                     // TODO: When available, use: T Math.FusedMultiplyAdd(T, T, T);
                     // https://github.com/dotnet/corefx/issues/31903
 
-                    Result = (3d + (Value1 * Value2)) / 2d;
+                    result = 2d + (value1 * value2);
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        public static double FPSqrt(double Value, AThreadState State)
+        public static double FpRecpX(double value, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPSqrt: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPRecpX: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value = Value.FPUnpack(out FPType Type, out bool Sign, out ulong Op);
+            value.FpUnpack(out FpType type, out bool sign, out ulong op);
 
-            double Result;
+            double result;
 
-            if (Type == FPType.SNaN || Type == FPType.QNaN)
+            if (type == FpType.SnaN || type == FpType.QnaN)
             {
-                Result = FPProcessNaN(Type, Op, State);
-            }
-            else if (Type == FPType.Zero)
-            {
-                Result = FPZero(Sign);
-            }
-            else if (Type == FPType.Infinity && !Sign)
-            {
-                Result = FPInfinity(Sign);
-            }
-            else if (Sign)
-            {
-                Result = FPDefaultNaN();
-
-                FPProcessException(FPExc.InvalidOp, State);
+                result = FpProcessNaN(type, op, state);
             }
             else
             {
-                Result = Math.Sqrt(Value);
+                ulong notExp = (~op >> 52) & 0x7FFul;
+                ulong maxExp = 0x7FEul;
+
+                result = BitConverter.Int64BitsToDouble(
+                    (long)((sign ? 1ul : 0ul) << 63 | (notExp == 0x7FFul ? maxExp : notExp) << 52));
             }
 
-            return Result;
+            return result;
         }
 
-        public static double FPSub(double Value1, double Value2, AThreadState State)
+        public static double FprSqrtStepFused(double value1, double value2, AThreadState state)
         {
-            Debug.WriteLineIf(State.Fpcr != 0, $"ASoftFloat_64.FPSub: State.Fpcr = 0x{State.Fpcr:X8}");
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPRSqrtStepFused: State.Fpcr = 0x{state.Fpcr:X8}");
 
-            Value1 = Value1.FPUnpack(out FPType Type1, out bool Sign1, out ulong Op1);
-            Value2 = Value2.FPUnpack(out FPType Type2, out bool Sign2, out ulong Op2);
+            value1 = value1.FpNeg();
 
-            double Result = FPProcessNaNs(Type1, Type2, Op1, Op2, State, out bool Done);
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
 
-            if (!Done)
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
+
+            if (!done)
             {
-                bool Inf1 = Type1 == FPType.Infinity; bool Zero1 = Type1 == FPType.Zero;
-                bool Inf2 = Type2 == FPType.Infinity; bool Zero2 = Type2 == FPType.Zero;
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
 
-                if (Inf1 && Inf2 && Sign1 == Sign2)
+                if ((inf1 && zero2) || (zero1 && inf2))
                 {
-                    Result = FPDefaultNaN();
-
-                    FPProcessException(FPExc.InvalidOp, State);
+                    result = FpOnePointFive(false);
                 }
-                else if ((Inf1 && !Sign1) || (Inf2 && Sign2))
+                else if (inf1 || inf2)
                 {
-                    Result = FPInfinity(false);
-                }
-                else if ((Inf1 && Sign1) || (Inf2 && !Sign2))
-                {
-                    Result = FPInfinity(true);
-                }
-                else if (Zero1 && Zero2 && Sign1 == !Sign2)
-                {
-                    Result = FPZero(Sign1);
+                    result = FpInfinity(sign1 ^ sign2);
                 }
                 else
                 {
-                    Result = Value1 - Value2;
+                    // TODO: When available, use: T Math.FusedMultiplyAdd(T, T, T);
+                    // https://github.com/dotnet/corefx/issues/31903
+
+                    result = (3d + (value1 * value2)) / 2d;
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        private static double FPDefaultNaN()
+        public static double FpSqrt(double value, AThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPSqrt: State.Fpcr = 0x{state.Fpcr:X8}");
+
+            value = value.FpUnpack(out FpType type, out bool sign, out ulong op);
+
+            double result;
+
+            if (type == FpType.SnaN || type == FpType.QnaN)
+            {
+                result = FpProcessNaN(type, op, state);
+            }
+            else if (type == FpType.Zero)
+            {
+                result = FpZero(sign);
+            }
+            else if (type == FpType.Infinity && !sign)
+            {
+                result = FpInfinity(sign);
+            }
+            else if (sign)
+            {
+                result = FpDefaultNaN();
+
+                FpProcessException(FpExc.InvalidOp, state);
+            }
+            else
+            {
+                result = Math.Sqrt(value);
+            }
+
+            return result;
+        }
+
+        public static double FpSub(double value1, double value2, AThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"ASoftFloat_64.FPSub: State.Fpcr = 0x{state.Fpcr:X8}");
+
+            value1 = value1.FpUnpack(out FpType type1, out bool sign1, out ulong op1);
+            value2 = value2.FpUnpack(out FpType type2, out bool sign2, out ulong op2);
+
+            double result = FpProcessNaNs(type1, type2, op1, op2, state, out bool done);
+
+            if (!done)
+            {
+                bool inf1 = type1 == FpType.Infinity; bool zero1 = type1 == FpType.Zero;
+                bool inf2 = type2 == FpType.Infinity; bool zero2 = type2 == FpType.Zero;
+
+                if (inf1 && inf2 && sign1 == sign2)
+                {
+                    result = FpDefaultNaN();
+
+                    FpProcessException(FpExc.InvalidOp, state);
+                }
+                else if ((inf1 && !sign1) || (inf2 && sign2))
+                {
+                    result = FpInfinity(false);
+                }
+                else if ((inf1 && sign1) || (inf2 && !sign2))
+                {
+                    result = FpInfinity(true);
+                }
+                else if (zero1 && zero2 && sign1 == !sign2)
+                {
+                    result = FpZero(sign1);
+                }
+                else
+                {
+                    result = value1 - value2;
+                }
+            }
+
+            return result;
+        }
+
+        private static double FpDefaultNaN()
         {
             return -double.NaN;
         }
 
-        private static double FPInfinity(bool Sign)
+        private static double FpInfinity(bool sign)
         {
-            return Sign ? double.NegativeInfinity : double.PositiveInfinity;
+            return sign ? double.NegativeInfinity : double.PositiveInfinity;
         }
 
-        private static double FPZero(bool Sign)
+        private static double FpZero(bool sign)
         {
-            return Sign ? -0d : +0d;
+            return sign ? -0d : +0d;
         }
 
-        private static double FPTwo(bool Sign)
+        private static double FpTwo(bool sign)
         {
-            return Sign ? -2d : +2d;
+            return sign ? -2d : +2d;
         }
 
-        private static double FPOnePointFive(bool Sign)
+        private static double FpOnePointFive(bool sign)
         {
-            return Sign ? -1.5d : +1.5d;
+            return sign ? -1.5d : +1.5d;
         }
 
-        private static double FPNeg(this double Value)
+        private static double FpNeg(this double value)
         {
-            return -Value;
+            return -value;
         }
 
-        private static double FPUnpack(this double Value, out FPType Type, out bool Sign, out ulong ValueBits)
+        private static double FpUnpack(this double value, out FpType type, out bool sign, out ulong valueBits)
         {
-            ValueBits = (ulong)BitConverter.DoubleToInt64Bits(Value);
+            valueBits = (ulong)BitConverter.DoubleToInt64Bits(value);
 
-            Sign = (~ValueBits & 0x8000000000000000ul) == 0ul;
+            sign = (~valueBits & 0x8000000000000000ul) == 0ul;
 
-            if ((ValueBits & 0x7FF0000000000000ul) == 0ul)
+            if ((valueBits & 0x7FF0000000000000ul) == 0ul)
             {
-                if ((ValueBits & 0x000FFFFFFFFFFFFFul) == 0ul)
+                if ((valueBits & 0x000FFFFFFFFFFFFFul) == 0ul)
                 {
-                    Type = FPType.Zero;
+                    type = FpType.Zero;
                 }
                 else
                 {
-                    Type = FPType.Nonzero;
+                    type = FpType.Nonzero;
                 }
             }
-            else if ((~ValueBits & 0x7FF0000000000000ul) == 0ul)
+            else if ((~valueBits & 0x7FF0000000000000ul) == 0ul)
             {
-                if ((ValueBits & 0x000FFFFFFFFFFFFFul) == 0ul)
+                if ((valueBits & 0x000FFFFFFFFFFFFFul) == 0ul)
                 {
-                    Type = FPType.Infinity;
+                    type = FpType.Infinity;
                 }
                 else
                 {
-                    Type = (~ValueBits & 0x0008000000000000ul) == 0ul
-                        ? FPType.QNaN
-                        : FPType.SNaN;
+                    type = (~valueBits & 0x0008000000000000ul) == 0ul
+                        ? FpType.QnaN
+                        : FpType.SnaN;
 
-                    return FPZero(Sign);
+                    return FpZero(sign);
                 }
             }
             else
             {
-                Type = FPType.Nonzero;
+                type = FpType.Nonzero;
             }
 
-            return Value;
+            return value;
         }
 
-        private static double FPProcessNaNs(
-            FPType Type1,
-            FPType Type2,
-            ulong Op1,
-            ulong Op2,
-            AThreadState State,
-            out bool Done)
+        private static double FpProcessNaNs(
+            FpType type1,
+            FpType type2,
+            ulong op1,
+            ulong op2,
+            AThreadState state,
+            out bool done)
         {
-            Done = true;
+            done = true;
 
-            if (Type1 == FPType.SNaN)
+            if (type1 == FpType.SnaN)
             {
-                return FPProcessNaN(Type1, Op1, State);
+                return FpProcessNaN(type1, op1, state);
             }
-            else if (Type2 == FPType.SNaN)
+            else if (type2 == FpType.SnaN)
             {
-                return FPProcessNaN(Type2, Op2, State);
+                return FpProcessNaN(type2, op2, state);
             }
-            else if (Type1 == FPType.QNaN)
+            else if (type1 == FpType.QnaN)
             {
-                return FPProcessNaN(Type1, Op1, State);
+                return FpProcessNaN(type1, op1, state);
             }
-            else if (Type2 == FPType.QNaN)
+            else if (type2 == FpType.QnaN)
             {
-                return FPProcessNaN(Type2, Op2, State);
+                return FpProcessNaN(type2, op2, state);
             }
 
-            Done = false;
+            done = false;
 
-            return FPZero(false);
+            return FpZero(false);
         }
 
-        private static double FPProcessNaNs3(
-            FPType Type1,
-            FPType Type2,
-            FPType Type3,
-            ulong Op1,
-            ulong Op2,
-            ulong Op3,
-            AThreadState State,
-            out bool Done)
+        private static double FpProcessNaNs3(
+            FpType type1,
+            FpType type2,
+            FpType type3,
+            ulong op1,
+            ulong op2,
+            ulong op3,
+            AThreadState state,
+            out bool done)
         {
-            Done = true;
+            done = true;
 
-            if (Type1 == FPType.SNaN)
+            if (type1 == FpType.SnaN)
             {
-                return FPProcessNaN(Type1, Op1, State);
+                return FpProcessNaN(type1, op1, state);
             }
-            else if (Type2 == FPType.SNaN)
+            else if (type2 == FpType.SnaN)
             {
-                return FPProcessNaN(Type2, Op2, State);
+                return FpProcessNaN(type2, op2, state);
             }
-            else if (Type3 == FPType.SNaN)
+            else if (type3 == FpType.SnaN)
             {
-                return FPProcessNaN(Type3, Op3, State);
+                return FpProcessNaN(type3, op3, state);
             }
-            else if (Type1 == FPType.QNaN)
+            else if (type1 == FpType.QnaN)
             {
-                return FPProcessNaN(Type1, Op1, State);
+                return FpProcessNaN(type1, op1, state);
             }
-            else if (Type2 == FPType.QNaN)
+            else if (type2 == FpType.QnaN)
             {
-                return FPProcessNaN(Type2, Op2, State);
+                return FpProcessNaN(type2, op2, state);
             }
-            else if (Type3 == FPType.QNaN)
+            else if (type3 == FpType.QnaN)
             {
-                return FPProcessNaN(Type3, Op3, State);
+                return FpProcessNaN(type3, op3, state);
             }
 
-            Done = false;
+            done = false;
 
-            return FPZero(false);
+            return FpZero(false);
         }
 
-        private static double FPProcessNaN(FPType Type, ulong Op, AThreadState State)
+        private static double FpProcessNaN(FpType type, ulong op, AThreadState state)
         {
-            if (Type == FPType.SNaN)
+            if (type == FpType.SnaN)
             {
-                Op |= 1ul << 51;
+                op |= 1ul << 51;
 
-                FPProcessException(FPExc.InvalidOp, State);
+                FpProcessException(FpExc.InvalidOp, state);
             }
 
-            if (State.GetFpcrFlag(FPCR.DN))
+            if (state.GetFpcrFlag(Fpcr.Dn))
             {
-                return FPDefaultNaN();
+                return FpDefaultNaN();
             }
 
-            return BitConverter.Int64BitsToDouble((long)Op);
+            return BitConverter.Int64BitsToDouble((long)op);
         }
 
-        private static void FPProcessException(FPExc Exc, AThreadState State)
+        private static void FpProcessException(FpExc exc, AThreadState state)
         {
-            int Enable = (int)Exc + 8;
+            int enable = (int)exc + 8;
 
-            if ((State.Fpcr & (1 << Enable)) != 0)
+            if ((state.Fpcr & (1 << enable)) != 0)
             {
                 throw new NotImplementedException("floating-point trap handling");
             }
             else
             {
-                State.Fpsr |= 1 << (int)Exc;
+                state.Fpsr |= 1 << (int)exc;
             }
         }
     }

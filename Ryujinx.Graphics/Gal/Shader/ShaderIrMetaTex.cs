@@ -4,9 +4,9 @@ namespace Ryujinx.Graphics.Gal.Shader
     {
         public int Elem { get; private set; }
 
-        public ShaderIrMetaTex(int Elem)
+        public ShaderIrMetaTex(int elem)
         {
-            this.Elem = Elem;
+            this.Elem = elem;
         }
     }
 }

@@ -2,13 +2,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KSharedMemory
     {
-        public long PA   { get; private set; }
+        public long Pa   { get; private set; }
         public long Size { get; private set; }
 
-        public KSharedMemory(long PA, long Size)
+        public KSharedMemory(long pa, long size)
         {
-            this.PA   = PA;
-            this.Size = Size;
+            this.Pa   = pa;
+            this.Size = size;
         }
     }
 }

@@ -8,15 +8,15 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public bool  IsNormal { get; private set; }
 
         public KernelAccessControlMmio(
-            ulong Address,
-            ulong Size,
-            bool  IsRo,
-            bool  IsNormal)
+            ulong address,
+            ulong size,
+            bool  isRo,
+            bool  isNormal)
         {
-            this.Address  = Address;
-            this.Size     = Size;
-            this.IsRo     = IsRo;
-            this.IsNormal = IsNormal;
+            this.Address  = address;
+            this.Size     = size;
+            this.IsRo     = isRo;
+            this.IsNormal = isNormal;
         }
     }
 }

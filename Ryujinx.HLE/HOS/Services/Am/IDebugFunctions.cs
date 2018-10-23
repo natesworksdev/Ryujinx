@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    class IDebugFunctions : IpcService
+    class DebugFunctions : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IDebugFunctions()
+        public DebugFunctions()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 //...
             };

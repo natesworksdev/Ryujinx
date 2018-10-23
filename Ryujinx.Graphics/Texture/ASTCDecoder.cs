@@ -6,13 +6,13 @@ using System.IO;
 
 namespace Ryujinx.Graphics.Texture
 {
-    public class ASTCDecoderException : Exception
+    public class AstcDecoderException : Exception
     {
-        public ASTCDecoderException(string ExMsg) : base(ExMsg) { }
+        public AstcDecoderException(string exMsg) : base(exMsg) { }
     }
 
     //https://github.com/GammaUNC/FasTC/blob/master/ASTCEncoder/src/Decompressor.cpp
-    public static class ASTCDecoder
+    public static class AstcDecoder
     {
         struct TexelWeightParams
         {
@@ -21,423 +21,423 @@ namespace Ryujinx.Graphics.Texture
             public bool DualPlane;
             public int  MaxWeight;
             public bool Error;
-            public bool VoidExtentLDR;
-            public bool VoidExtentHDR;
+            public bool VoidExtentLdr;
+            public bool VoidExtentHdr;
 
             public int GetPackedBitSize()
             {
                 // How many indices do we have?
-                int Indices = Height * Width;
+                int indices = Height * Width;
 
                 if (DualPlane)
                 {
-                    Indices *= 2;
+                    indices *= 2;
                 }
 
-                IntegerEncoded IntEncoded = IntegerEncoded.CreateEncoding(MaxWeight);
+                IntegerEncoded intEncoded = IntegerEncoded.CreateEncoding(MaxWeight);
 
-                return IntEncoded.GetBitLength(Indices);
+                return intEncoded.GetBitLength(indices);
             }
 
             public int GetNumWeightValues()
             {
-                int Ret = Width * Height;
+                int ret = Width * Height;
 
                 if (DualPlane)
                 {
-                    Ret *= 2;
+                    ret *= 2;
                 }
 
-                return Ret;
+                return ret;
             }
         }
 
-        public static byte[] DecodeToRGBA8888(
-            byte[] InputBuffer, 
-            int    BlockX, 
-            int    BlockY, 
-            int    BlockZ, 
-            int    X, 
-            int    Y, 
-            int    Z)
+        public static byte[] DecodeToRgba8888(
+            byte[] inputBuffer, 
+            int    blockX, 
+            int    blockY, 
+            int    blockZ, 
+            int    x, 
+            int    y, 
+            int    z)
         {
-            using (MemoryStream InputStream = new MemoryStream(InputBuffer))
+            using (MemoryStream inputStream = new MemoryStream(inputBuffer))
             {
-                BinaryReader BinReader = new BinaryReader(InputStream);
+                BinaryReader binReader = new BinaryReader(inputStream);
 
-                if (BlockX > 12 || BlockY > 12)
+                if (blockX > 12 || blockY > 12)
                 {
-                    throw new ASTCDecoderException("Block size unsupported!");
+                    throw new AstcDecoderException("Block size unsupported!");
                 }
 
-                if (BlockZ != 1 || Z != 1)
+                if (blockZ != 1 || z != 1)
                 {
-                    throw new ASTCDecoderException("3D compressed textures unsupported!");
+                    throw new AstcDecoderException("3D compressed textures unsupported!");
                 }
 
-                using (MemoryStream OutputStream = new MemoryStream())
+                using (MemoryStream outputStream = new MemoryStream())
                 {
-                    int BlockIndex = 0;
+                    int blockIndex = 0;
 
-                    for (int j = 0; j < Y; j += BlockY)
+                    for (int j = 0; j < y; j += blockY)
                     {
-                        for (int i = 0; i < X; i += BlockX)
+                        for (int i = 0; i < x; i += blockX)
                         {
-                            int[] DecompressedData = new int[144];
+                            int[] decompressedData = new int[144];
 
-                            DecompressBlock(BinReader.ReadBytes(0x10), DecompressedData, BlockX, BlockY);
+                            DecompressBlock(binReader.ReadBytes(0x10), decompressedData, blockX, blockY);
 
-                            int DecompressedWidth = Math.Min(BlockX, X - i);
-                            int DecompressedHeight = Math.Min(BlockY, Y - j);
-                            int BaseOffsets = (j * X + i) * 4;
+                            int decompressedWidth = Math.Min(blockX, x - i);
+                            int decompressedHeight = Math.Min(blockY, y - j);
+                            int baseOffsets = (j * x + i) * 4;
 
-                            for (int jj = 0; jj < DecompressedHeight; jj++)
+                            for (int jj = 0; jj < decompressedHeight; jj++)
                             {
-                                OutputStream.Seek(BaseOffsets + jj * X * 4, SeekOrigin.Begin);
+                                outputStream.Seek(baseOffsets + jj * x * 4, SeekOrigin.Begin);
 
-                                byte[] OutputBuffer = new byte[DecompressedData.Length * sizeof(int)];
-                                Buffer.BlockCopy(DecompressedData, 0, OutputBuffer, 0, OutputBuffer.Length);
+                                byte[] outputBuffer = new byte[decompressedData.Length * sizeof(int)];
+                                Buffer.BlockCopy(decompressedData, 0, outputBuffer, 0, outputBuffer.Length);
 
-                                OutputStream.Write(OutputBuffer, jj * BlockX * 4, DecompressedWidth * 4);
+                                outputStream.Write(outputBuffer, jj * blockX * 4, decompressedWidth * 4);
                             }
 
-                            BlockIndex++;
+                            blockIndex++;
                         }
                     }
 
-                    return OutputStream.ToArray();
+                    return outputStream.ToArray();
                 }
             }
         }
 
         public static bool DecompressBlock(
-            byte[] InputBuffer, 
-            int[]  OutputBuffer, 
-            int    BlockWidth, 
-            int    BlockHeight)
+            byte[] inputBuffer, 
+            int[]  outputBuffer, 
+            int    blockWidth, 
+            int    blockHeight)
         {
-            BitArrayStream    BitStream   = new BitArrayStream(new BitArray(InputBuffer));
-            TexelWeightParams TexelParams = DecodeBlockInfo(BitStream);
+            BitArrayStream    bitStream   = new BitArrayStream(new BitArray(inputBuffer));
+            TexelWeightParams texelParams = DecodeBlockInfo(bitStream);
 
-            if (TexelParams.Error)
+            if (texelParams.Error)
             {
-                throw new ASTCDecoderException("Invalid block mode");
+                throw new AstcDecoderException("Invalid block mode");
             }
 
-            if (TexelParams.VoidExtentLDR)
+            if (texelParams.VoidExtentLdr)
             {
-                FillVoidExtentLDR(BitStream, OutputBuffer, BlockWidth, BlockHeight);
+                FillVoidExtentLdr(bitStream, outputBuffer, blockWidth, blockHeight);
 
                 return true;
             }
 
-            if (TexelParams.VoidExtentHDR)
+            if (texelParams.VoidExtentHdr)
             {
-                throw new ASTCDecoderException("HDR void extent blocks are unsupported!");
+                throw new AstcDecoderException("HDR void extent blocks are unsupported!");
             }
 
-            if (TexelParams.Width > BlockWidth)
+            if (texelParams.Width > blockWidth)
             {
-                throw new ASTCDecoderException("Texel weight grid width should be smaller than block width");
+                throw new AstcDecoderException("Texel weight grid width should be smaller than block width");
             }
 
-            if (TexelParams.Height > BlockHeight)
+            if (texelParams.Height > blockHeight)
             {
-                throw new ASTCDecoderException("Texel weight grid height should be smaller than block height");
+                throw new AstcDecoderException("Texel weight grid height should be smaller than block height");
             }
 
             // Read num partitions
-            int NumberPartitions = BitStream.ReadBits(2) + 1;
-            Debug.Assert(NumberPartitions <= 4);
+            int numberPartitions = bitStream.ReadBits(2) + 1;
+            Debug.Assert(numberPartitions <= 4);
 
-            if (NumberPartitions == 4 && TexelParams.DualPlane)
+            if (numberPartitions == 4 && texelParams.DualPlane)
             {
-                throw new ASTCDecoderException("Dual plane mode is incompatible with four partition blocks");
+                throw new AstcDecoderException("Dual plane mode is incompatible with four partition blocks");
             }
 
             // Based on the number of partitions, read the color endpoint mode for
             // each partition.
 
             // Determine partitions, partition index, and color endpoint modes
-            int    PlaneIndices      = -1;
-            int    PartitionIndex;
-            uint[] ColorEndpointMode = { 0, 0, 0, 0 };
+            int    planeIndices      = -1;
+            int    partitionIndex;
+            uint[] colorEndpointMode = { 0, 0, 0, 0 };
 
-            BitArrayStream ColorEndpointStream = new BitArrayStream(new BitArray(16 * 8));
+            BitArrayStream colorEndpointStream = new BitArrayStream(new BitArray(16 * 8));
 
             // Read extra config data...
-            uint BaseColorEndpointMode = 0;
+            uint baseColorEndpointMode = 0;
 
-            if (NumberPartitions == 1)
+            if (numberPartitions == 1)
             {
-                ColorEndpointMode[0] = (uint)BitStream.ReadBits(4);
-                PartitionIndex       = 0;
+                colorEndpointMode[0] = (uint)bitStream.ReadBits(4);
+                partitionIndex       = 0;
             }
             else
             {
-                PartitionIndex        = BitStream.ReadBits(10);
-                BaseColorEndpointMode = (uint)BitStream.ReadBits(6);
+                partitionIndex        = bitStream.ReadBits(10);
+                baseColorEndpointMode = (uint)bitStream.ReadBits(6);
             }
 
-            uint BaseMode = (BaseColorEndpointMode & 3);
+            uint baseMode = (baseColorEndpointMode & 3);
 
             // Remaining bits are color endpoint data...
-            int NumberWeightBits = TexelParams.GetPackedBitSize();
-            int RemainingBits    = 128 - NumberWeightBits - BitStream.Position;
+            int numberWeightBits = texelParams.GetPackedBitSize();
+            int remainingBits    = 128 - numberWeightBits - bitStream.Position;
 
             // Consider extra bits prior to texel data...
-            uint ExtraColorEndpointModeBits = 0;
+            uint extraColorEndpointModeBits = 0;
 
-            if (BaseMode != 0)
+            if (baseMode != 0)
             {
-                switch (NumberPartitions)
+                switch (numberPartitions)
                 {
-                    case 2:  ExtraColorEndpointModeBits += 2; break;
-                    case 3:  ExtraColorEndpointModeBits += 5; break;
-                    case 4:  ExtraColorEndpointModeBits += 8; break;
+                    case 2:  extraColorEndpointModeBits += 2; break;
+                    case 3:  extraColorEndpointModeBits += 5; break;
+                    case 4:  extraColorEndpointModeBits += 8; break;
                     default: Debug.Assert(false); break;
                 }
             }
 
-            RemainingBits -= (int)ExtraColorEndpointModeBits;
+            remainingBits -= (int)extraColorEndpointModeBits;
 
             // Do we have a dual plane situation?
-            int PlaneSelectorBits = 0;
+            int planeSelectorBits = 0;
 
-            if (TexelParams.DualPlane)
+            if (texelParams.DualPlane)
             {
-                PlaneSelectorBits = 2;
+                planeSelectorBits = 2;
             }
 
-            RemainingBits -= PlaneSelectorBits;
+            remainingBits -= planeSelectorBits;
 
             // Read color data...
-            int ColorDataBits = RemainingBits;
+            int colorDataBits = remainingBits;
 
-            while (RemainingBits > 0)
+            while (remainingBits > 0)
             {
-                int NumberBits = Math.Min(RemainingBits, 8);
-                int Bits = BitStream.ReadBits(NumberBits);
-                ColorEndpointStream.WriteBits(Bits, NumberBits);
-                RemainingBits -= 8;
+                int numberBits = Math.Min(remainingBits, 8);
+                int bits = bitStream.ReadBits(numberBits);
+                colorEndpointStream.WriteBits(bits, numberBits);
+                remainingBits -= 8;
             }
 
             // Read the plane selection bits
-            PlaneIndices = BitStream.ReadBits(PlaneSelectorBits);
+            planeIndices = bitStream.ReadBits(planeSelectorBits);
 
             // Read the rest of the CEM
-            if (BaseMode != 0)
+            if (baseMode != 0)
             {
-                uint ExtraColorEndpointMode = (uint)BitStream.ReadBits((int)ExtraColorEndpointModeBits);
-                uint TempColorEndpointMode  = (ExtraColorEndpointMode << 6) | BaseColorEndpointMode;
-                TempColorEndpointMode     >>= 2;
+                uint extraColorEndpointMode = (uint)bitStream.ReadBits((int)extraColorEndpointModeBits);
+                uint tempColorEndpointMode  = (extraColorEndpointMode << 6) | baseColorEndpointMode;
+                tempColorEndpointMode     >>= 2;
 
-                bool[] C = new bool[4];
+                bool[] c = new bool[4];
 
-                for (int i = 0; i < NumberPartitions; i++)
+                for (int i = 0; i < numberPartitions; i++)
                 {
-                    C[i] = (TempColorEndpointMode & 1) != 0;
-                    TempColorEndpointMode >>= 1;
+                    c[i] = (tempColorEndpointMode & 1) != 0;
+                    tempColorEndpointMode >>= 1;
                 }
 
-                byte[] M = new byte[4];
+                byte[] m = new byte[4];
 
-                for (int i = 0; i < NumberPartitions; i++)
+                for (int i = 0; i < numberPartitions; i++)
                 {
-                    M[i] = (byte)(TempColorEndpointMode & 3);
-                    TempColorEndpointMode >>= 2;
-                    Debug.Assert(M[i] <= 3);
+                    m[i] = (byte)(tempColorEndpointMode & 3);
+                    tempColorEndpointMode >>= 2;
+                    Debug.Assert(m[i] <= 3);
                 }
 
-                for (int i = 0; i < NumberPartitions; i++)
+                for (int i = 0; i < numberPartitions; i++)
                 {
-                    ColorEndpointMode[i] = BaseMode;
-                    if (!(C[i])) ColorEndpointMode[i] -= 1;
-                    ColorEndpointMode[i] <<= 2;
-                    ColorEndpointMode[i] |= M[i];
+                    colorEndpointMode[i] = baseMode;
+                    if (!(c[i])) colorEndpointMode[i] -= 1;
+                    colorEndpointMode[i] <<= 2;
+                    colorEndpointMode[i] |= m[i];
                 }
             }
-            else if (NumberPartitions > 1)
+            else if (numberPartitions > 1)
             {
-                uint TempColorEndpointMode = BaseColorEndpointMode >> 2;
+                uint tempColorEndpointMode = baseColorEndpointMode >> 2;
 
-                for (uint i = 0; i < NumberPartitions; i++)
+                for (uint i = 0; i < numberPartitions; i++)
                 {
-                    ColorEndpointMode[i] = TempColorEndpointMode;
+                    colorEndpointMode[i] = tempColorEndpointMode;
                 }
             }
 
             // Make sure everything up till here is sane.
-            for (int i = 0; i < NumberPartitions; i++)
+            for (int i = 0; i < numberPartitions; i++)
             {
-                Debug.Assert(ColorEndpointMode[i] < 16);
+                Debug.Assert(colorEndpointMode[i] < 16);
             }
-            Debug.Assert(BitStream.Position + TexelParams.GetPackedBitSize() == 128);
+            Debug.Assert(bitStream.Position + texelParams.GetPackedBitSize() == 128);
 
             // Decode both color data and texel weight data
-            int[] ColorValues = new int[32]; // Four values * two endpoints * four maximum partitions
-            DecodeColorValues(ColorValues, ColorEndpointStream.ToByteArray(), ColorEndpointMode, NumberPartitions, ColorDataBits);
+            int[] colorValues = new int[32]; // Four values * two endpoints * four maximum partitions
+            DecodeColorValues(colorValues, colorEndpointStream.ToByteArray(), colorEndpointMode, numberPartitions, colorDataBits);
 
-            ASTCPixel[][] EndPoints = new ASTCPixel[4][];
-            EndPoints[0] = new ASTCPixel[2];
-            EndPoints[1] = new ASTCPixel[2];
-            EndPoints[2] = new ASTCPixel[2];
-            EndPoints[3] = new ASTCPixel[2];
+            AstcPixel[][] endPoints = new AstcPixel[4][];
+            endPoints[0] = new AstcPixel[2];
+            endPoints[1] = new AstcPixel[2];
+            endPoints[2] = new AstcPixel[2];
+            endPoints[3] = new AstcPixel[2];
 
-            int ColorValuesPosition = 0;
+            int colorValuesPosition = 0;
 
-            for (int i = 0; i < NumberPartitions; i++)
+            for (int i = 0; i < numberPartitions; i++)
             {
-                ComputeEndpoints(EndPoints[i], ColorValues, ColorEndpointMode[i], ref ColorValuesPosition);
+                ComputeEndpoints(endPoints[i], colorValues, colorEndpointMode[i], ref colorValuesPosition);
             }
 
             // Read the texel weight data.
-            byte[] TexelWeightData = (byte[])InputBuffer.Clone();
+            byte[] texelWeightData = (byte[])inputBuffer.Clone();
 
             // Reverse everything
             for (int i = 0; i < 8; i++)
             {
-                byte a = ReverseByte(TexelWeightData[i]);
-                byte b = ReverseByte(TexelWeightData[15 - i]);
+                byte a = ReverseByte(texelWeightData[i]);
+                byte b = ReverseByte(texelWeightData[15 - i]);
 
-                TexelWeightData[i]      = b;
-                TexelWeightData[15 - i] = a;
+                texelWeightData[i]      = b;
+                texelWeightData[15 - i] = a;
             }
 
             // Make sure that higher non-texel bits are set to zero
-            int ClearByteStart                   = (TexelParams.GetPackedBitSize() >> 3) + 1;
-            TexelWeightData[ClearByteStart - 1] &= (byte)((1 << (TexelParams.GetPackedBitSize() % 8)) - 1);
+            int clearByteStart                   = (texelParams.GetPackedBitSize() >> 3) + 1;
+            texelWeightData[clearByteStart - 1] &= (byte)((1 << (texelParams.GetPackedBitSize() % 8)) - 1);
 
-            int cLen = 16 - ClearByteStart;
-            for (int i = ClearByteStart; i < ClearByteStart + cLen; i++) TexelWeightData[i] = 0;
+            int cLen = 16 - clearByteStart;
+            for (int i = clearByteStart; i < clearByteStart + cLen; i++) texelWeightData[i] = 0;
 
-            List<IntegerEncoded> TexelWeightValues = new List<IntegerEncoded>();
-            BitArrayStream WeightBitStream         = new BitArrayStream(new BitArray(TexelWeightData));
+            List<IntegerEncoded> texelWeightValues = new List<IntegerEncoded>();
+            BitArrayStream weightBitStream         = new BitArrayStream(new BitArray(texelWeightData));
 
-            IntegerEncoded.DecodeIntegerSequence(TexelWeightValues, WeightBitStream, TexelParams.MaxWeight, TexelParams.GetNumWeightValues());
+            IntegerEncoded.DecodeIntegerSequence(texelWeightValues, weightBitStream, texelParams.MaxWeight, texelParams.GetNumWeightValues());
             
             // Blocks can be at most 12x12, so we can have as many as 144 weights
-            int[][] Weights = new int[2][];
-            Weights[0] = new int[144];
-            Weights[1] = new int[144];
+            int[][] weights = new int[2][];
+            weights[0] = new int[144];
+            weights[1] = new int[144];
 
-            UnquantizeTexelWeights(Weights, TexelWeightValues, TexelParams, BlockWidth, BlockHeight);
+            UnquantizeTexelWeights(weights, texelWeightValues, texelParams, blockWidth, blockHeight);
 
             // Now that we have endpoints and weights, we can interpolate and generate
             // the proper decoding...
-            for (int j = 0; j < BlockHeight; j++)
+            for (int j = 0; j < blockHeight; j++)
             {
-                for (int i = 0; i < BlockWidth; i++)
+                for (int i = 0; i < blockWidth; i++)
                 {
-                    int Partition = Select2DPartition(PartitionIndex, i, j, NumberPartitions, ((BlockHeight * BlockWidth) < 32));
-                    Debug.Assert(Partition < NumberPartitions);
+                    int partition = Select2DPartition(partitionIndex, i, j, numberPartitions, ((blockHeight * blockWidth) < 32));
+                    Debug.Assert(partition < numberPartitions);
 
-                    ASTCPixel Pixel = new ASTCPixel(0, 0, 0, 0);
-                    for (int Component = 0; Component < 4; Component++)
+                    AstcPixel pixel = new AstcPixel(0, 0, 0, 0);
+                    for (int component = 0; component < 4; component++)
                     {
-                        int Component0 = EndPoints[Partition][0].GetComponent(Component);
-                        Component0     = BitArrayStream.Replicate(Component0, 8, 16);
-                        int Component1 = EndPoints[Partition][1].GetComponent(Component);
-                        Component1     = BitArrayStream.Replicate(Component1, 8, 16);
+                        int component0 = endPoints[partition][0].GetComponent(component);
+                        component0     = BitArrayStream.Replicate(component0, 8, 16);
+                        int component1 = endPoints[partition][1].GetComponent(component);
+                        component1     = BitArrayStream.Replicate(component1, 8, 16);
 
-                        int Plane = 0;
+                        int plane = 0;
 
-                        if (TexelParams.DualPlane && (((PlaneIndices + 1) & 3) == Component))
+                        if (texelParams.DualPlane && (((planeIndices + 1) & 3) == component))
                         {
-                            Plane = 1;
+                            plane = 1;
                         }
 
-                        int Weight = Weights[Plane][j * BlockWidth + i];
-                        int FinalComponent = (Component0 * (64 - Weight) + Component1 * Weight + 32) / 64;
+                        int weight = weights[plane][j * blockWidth + i];
+                        int finalComponent = (component0 * (64 - weight) + component1 * weight + 32) / 64;
 
-                        if (FinalComponent == 65535)
+                        if (finalComponent == 65535)
                         {
-                            Pixel.SetComponent(Component, 255);
+                            pixel.SetComponent(component, 255);
                         }
                         else
                         {
-                            double FinalComponentFloat = FinalComponent;
-                            Pixel.SetComponent(Component, (int)(255.0 * (FinalComponentFloat / 65536.0) + 0.5));
+                            double finalComponentFloat = finalComponent;
+                            pixel.SetComponent(component, (int)(255.0 * (finalComponentFloat / 65536.0) + 0.5));
                         }
                     }
 
-                    OutputBuffer[j * BlockWidth + i] = Pixel.Pack();
+                    outputBuffer[j * blockWidth + i] = pixel.Pack();
                 }
             }
 
             return true;
         }
 
-        private static int Select2DPartition(int Seed, int X, int Y, int PartitionCount, bool IsSmallBlock)
+        private static int Select2DPartition(int seed, int x, int y, int partitionCount, bool isSmallBlock)
         {
-            return SelectPartition(Seed, X, Y, 0, PartitionCount, IsSmallBlock);
+            return SelectPartition(seed, x, y, 0, partitionCount, isSmallBlock);
         }
 
-        private static int SelectPartition(int Seed, int X, int Y, int Z, int PartitionCount, bool IsSmallBlock)
+        private static int SelectPartition(int seed, int x, int y, int z, int partitionCount, bool isSmallBlock)
         {
-            if (PartitionCount == 1)
+            if (partitionCount == 1)
             {
                 return 0;
             }
 
-            if (IsSmallBlock)
+            if (isSmallBlock)
             {
-                X <<= 1;
-                Y <<= 1;
-                Z <<= 1;
+                x <<= 1;
+                y <<= 1;
+                z <<= 1;
             }
 
-            Seed += (PartitionCount - 1) * 1024;
+            seed += (partitionCount - 1) * 1024;
 
-            int  RightNum = Hash52((uint)Seed);
-            byte Seed01   = (byte)(RightNum & 0xF);
-            byte Seed02   = (byte)((RightNum >> 4) & 0xF);
-            byte Seed03   = (byte)((RightNum >> 8) & 0xF);
-            byte Seed04   = (byte)((RightNum >> 12) & 0xF);
-            byte Seed05   = (byte)((RightNum >> 16) & 0xF);
-            byte Seed06   = (byte)((RightNum >> 20) & 0xF);
-            byte Seed07   = (byte)((RightNum >> 24) & 0xF);
-            byte Seed08   = (byte)((RightNum >> 28) & 0xF);
-            byte Seed09   = (byte)((RightNum >> 18) & 0xF);
-            byte Seed10   = (byte)((RightNum >> 22) & 0xF);
-            byte Seed11   = (byte)((RightNum >> 26) & 0xF);
-            byte Seed12   = (byte)(((RightNum >> 30) | (RightNum << 2)) & 0xF);
+            int  rightNum = Hash52((uint)seed);
+            byte seed01   = (byte)(rightNum & 0xF);
+            byte seed02   = (byte)((rightNum >> 4) & 0xF);
+            byte seed03   = (byte)((rightNum >> 8) & 0xF);
+            byte seed04   = (byte)((rightNum >> 12) & 0xF);
+            byte seed05   = (byte)((rightNum >> 16) & 0xF);
+            byte seed06   = (byte)((rightNum >> 20) & 0xF);
+            byte seed07   = (byte)((rightNum >> 24) & 0xF);
+            byte seed08   = (byte)((rightNum >> 28) & 0xF);
+            byte seed09   = (byte)((rightNum >> 18) & 0xF);
+            byte seed10   = (byte)((rightNum >> 22) & 0xF);
+            byte seed11   = (byte)((rightNum >> 26) & 0xF);
+            byte seed12   = (byte)(((rightNum >> 30) | (rightNum << 2)) & 0xF);
 
-            Seed01 *= Seed01; Seed02 *= Seed02;
-            Seed03 *= Seed03; Seed04 *= Seed04;
-            Seed05 *= Seed05; Seed06 *= Seed06;
-            Seed07 *= Seed07; Seed08 *= Seed08;
-            Seed09 *= Seed09; Seed10 *= Seed10;
-            Seed11 *= Seed11; Seed12 *= Seed12;
+            seed01 *= seed01; seed02 *= seed02;
+            seed03 *= seed03; seed04 *= seed04;
+            seed05 *= seed05; seed06 *= seed06;
+            seed07 *= seed07; seed08 *= seed08;
+            seed09 *= seed09; seed10 *= seed10;
+            seed11 *= seed11; seed12 *= seed12;
 
-            int SeedHash1, SeedHash2, SeedHash3;
+            int seedHash1, seedHash2, seedHash3;
 
-            if ((Seed & 1) != 0)
+            if ((seed & 1) != 0)
             {
-                SeedHash1 = (Seed & 2) != 0 ? 4 : 5;
-                SeedHash2 = (PartitionCount == 3) ? 6 : 5;
+                seedHash1 = (seed & 2) != 0 ? 4 : 5;
+                seedHash2 = (partitionCount == 3) ? 6 : 5;
             }
             else
             {
-                SeedHash1 = (PartitionCount == 3) ? 6 : 5;
-                SeedHash2 = (Seed & 2) != 0 ? 4 : 5;
+                seedHash1 = (partitionCount == 3) ? 6 : 5;
+                seedHash2 = (seed & 2) != 0 ? 4 : 5;
             }
 
-            SeedHash3 = (Seed & 0x10) != 0 ? SeedHash1 : SeedHash2;
+            seedHash3 = (seed & 0x10) != 0 ? seedHash1 : seedHash2;
 
-            Seed01 >>= SeedHash1; Seed02 >>= SeedHash2; Seed03 >>= SeedHash1; Seed04 >>= SeedHash2;
-            Seed05 >>= SeedHash1; Seed06 >>= SeedHash2; Seed07 >>= SeedHash1; Seed08 >>= SeedHash2;
-            Seed09 >>= SeedHash3; Seed10 >>= SeedHash3; Seed11 >>= SeedHash3; Seed12 >>= SeedHash3;
+            seed01 >>= seedHash1; seed02 >>= seedHash2; seed03 >>= seedHash1; seed04 >>= seedHash2;
+            seed05 >>= seedHash1; seed06 >>= seedHash2; seed07 >>= seedHash1; seed08 >>= seedHash2;
+            seed09 >>= seedHash3; seed10 >>= seedHash3; seed11 >>= seedHash3; seed12 >>= seedHash3;
 
-            int a = Seed01 * X + Seed02 * Y + Seed11 * Z + (RightNum >> 14);
-            int b = Seed03 * X + Seed04 * Y + Seed12 * Z + (RightNum >> 10);
-            int c = Seed05 * X + Seed06 * Y + Seed09 * Z + (RightNum >> 6);
-            int d = Seed07 * X + Seed08 * Y + Seed10 * Z + (RightNum >> 2);
+            int a = seed01 * x + seed02 * y + seed11 * z + (rightNum >> 14);
+            int b = seed03 * x + seed04 * y + seed12 * z + (rightNum >> 10);
+            int c = seed05 * x + seed06 * y + seed09 * z + (rightNum >> 6);
+            int d = seed07 * x + seed08 * y + seed10 * z + (rightNum >> 2);
 
             a &= 0x3F; b &= 0x3F; c &= 0x3F; d &= 0x3F;
 
-            if (PartitionCount < 4) d = 0;
-            if (PartitionCount < 3) c = 0;
+            if (partitionCount < 4) d = 0;
+            if (partitionCount < 3) c = 0;
 
             if (a >= b && a >= c && a >= d) return 0;
             else if (b >= c && b >= d) return 1;
@@ -445,62 +445,62 @@ namespace Ryujinx.Graphics.Texture
             return 3;
         }
 
-        static int Hash52(uint Val)
+        static int Hash52(uint val)
         {
-            Val ^= Val >> 15; Val -= Val << 17; Val += Val << 7; Val += Val << 4;
-            Val ^= Val >> 5;  Val += Val << 16; Val ^= Val >> 7; Val ^= Val >> 3;
-            Val ^= Val << 6;  Val ^= Val >> 17;
+            val ^= val >> 15; val -= val << 17; val += val << 7; val += val << 4;
+            val ^= val >> 5;  val += val << 16; val ^= val >> 7; val ^= val >> 3;
+            val ^= val << 6;  val ^= val >> 17;
 
-            return (int)Val;
+            return (int)val;
         }
 
         static void UnquantizeTexelWeights(
-            int[][]              OutputBuffer, 
-            List<IntegerEncoded> Weights, 
-            TexelWeightParams    TexelParams, 
-            int                  BlockWidth, 
-            int                  BlockHeight)
+            int[][]              outputBuffer, 
+            List<IntegerEncoded> weights, 
+            TexelWeightParams    texelParams, 
+            int                  blockWidth, 
+            int                  blockHeight)
         {
-            int WeightIndices   = 0;
-            int[][] Unquantized = new int[2][];
-            Unquantized[0]      = new int[144];
-            Unquantized[1]      = new int[144];
+            int weightIndices   = 0;
+            int[][] unquantized = new int[2][];
+            unquantized[0]      = new int[144];
+            unquantized[1]      = new int[144];
 
-            for (int i = 0; i < Weights.Count; i++)
+            for (int i = 0; i < weights.Count; i++)
             {
-                Unquantized[0][WeightIndices] = UnquantizeTexelWeight(Weights[i]);
+                unquantized[0][weightIndices] = UnquantizeTexelWeight(weights[i]);
 
-                if (TexelParams.DualPlane)
+                if (texelParams.DualPlane)
                 {
                     i++;
-                    Unquantized[1][WeightIndices] = UnquantizeTexelWeight(Weights[i]);
+                    unquantized[1][weightIndices] = UnquantizeTexelWeight(weights[i]);
 
-                    if (i == Weights.Count)
+                    if (i == weights.Count)
                     {
                         break;
                     }
                 }
 
-                if (++WeightIndices >= (TexelParams.Width * TexelParams.Height)) break;
+                if (++weightIndices >= (texelParams.Width * texelParams.Height)) break;
             }
 
             // Do infill if necessary (Section C.2.18) ...
-            int Ds = (1024 + (BlockWidth / 2)) / (BlockWidth - 1);
-            int Dt = (1024 + (BlockHeight / 2)) / (BlockHeight - 1);
+            int ds = (1024 + (blockWidth / 2)) / (blockWidth - 1);
+            int dt = (1024 + (blockHeight / 2)) / (blockHeight - 1);
 
-            int PlaneScale = TexelParams.DualPlane ? 2 : 1;
+            int planeScale = texelParams.DualPlane ? 2 : 1;
 
-            for (int Plane = 0; Plane < PlaneScale; Plane++)
+            for (int plane = 0; plane < planeScale; plane++)
             {
-                for (int t = 0; t < BlockHeight; t++)
+                for (int t = 0; t < blockHeight; t++)
                 {
-                    for (int s = 0; s < BlockWidth; s++)
+                    for (int s = 0; s < blockWidth; s++)
                     {
-                        int cs = Ds * s;
-                        int ct = Dt * t;
+                        int cs = ds * s;
+                        int ct = dt * t;
 
-                        int gs = (cs * (TexelParams.Width - 1) + 32) >> 6;
-                        int gt = (ct * (TexelParams.Height - 1) + 32) >> 6;
+                        int gs = (cs * (texelParams.Width - 1) + 32) >> 6;
+                        int gt = (ct * (texelParams.Height - 1) + 32) >> 6;
 
                         int js = gs >> 4;
                         int fs = gs & 0xF;
@@ -513,96 +513,96 @@ namespace Ryujinx.Graphics.Texture
                         int w01 = fs - w11;
                         int w00 = 16 - fs - ft + w11;
 
-                        int v0 = js + jt * TexelParams.Width;
+                        int v0 = js + jt * texelParams.Width;
 
                         int p00 = 0;
                         int p01 = 0;
                         int p10 = 0;
                         int p11 = 0;
 
-                        if (v0 < (TexelParams.Width * TexelParams.Height))
+                        if (v0 < (texelParams.Width * texelParams.Height))
                         {
-                            p00 = Unquantized[Plane][v0];
+                            p00 = unquantized[plane][v0];
                         }
 
-                        if (v0 + 1 < (TexelParams.Width * TexelParams.Height))
+                        if (v0 + 1 < (texelParams.Width * texelParams.Height))
                         {
-                            p01 = Unquantized[Plane][v0 + 1];
+                            p01 = unquantized[plane][v0 + 1];
                         }
                         
-                        if (v0 + TexelParams.Width < (TexelParams.Width * TexelParams.Height))
+                        if (v0 + texelParams.Width < (texelParams.Width * texelParams.Height))
                         {
-                            p10 = Unquantized[Plane][v0 + TexelParams.Width];
+                            p10 = unquantized[plane][v0 + texelParams.Width];
                         }
                         
-                        if (v0 + TexelParams.Width + 1 < (TexelParams.Width * TexelParams.Height))
+                        if (v0 + texelParams.Width + 1 < (texelParams.Width * texelParams.Height))
                         {
-                            p11 = Unquantized[Plane][v0 + TexelParams.Width + 1];
+                            p11 = unquantized[plane][v0 + texelParams.Width + 1];
                         }
 
-                        OutputBuffer[Plane][t * BlockWidth + s] = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11 + 8) >> 4;
+                        outputBuffer[plane][t * blockWidth + s] = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11 + 8) >> 4;
                     }
                 }
             }
         }
 
-        static int UnquantizeTexelWeight(IntegerEncoded IntEncoded)
+        static int UnquantizeTexelWeight(IntegerEncoded intEncoded)
         {
-            int BitValue  = IntEncoded.BitValue;
-            int BitLength = IntEncoded.NumberBits;
+            int bitValue  = intEncoded.BitValue;
+            int bitLength = intEncoded.NumberBits;
 
-            int A = BitArrayStream.Replicate(BitValue & 1, 1, 7);
-            int B = 0, C = 0, D = 0;
+            int a = BitArrayStream.Replicate(bitValue & 1, 1, 7);
+            int rb = 0, rc = 0, rd = 0;
 
-            int Result = 0;
+            int result = 0;
 
-            switch (IntEncoded.GetEncoding())
+            switch (intEncoded.GetEncoding())
             {
                 case IntegerEncoded.EIntegerEncoding.JustBits:
-                    Result = BitArrayStream.Replicate(BitValue, BitLength, 6);
+                    result = BitArrayStream.Replicate(bitValue, bitLength, 6);
                     break;
 
                 case IntegerEncoded.EIntegerEncoding.Trit:
                 {
-                    D = IntEncoded.TritValue;
-                    Debug.Assert(D < 3);
+                    rd = intEncoded.TritValue;
+                    Debug.Assert(rd < 3);
 
-                    switch (BitLength)
+                    switch (bitLength)
                     {
                         case 0:
                         {
-                            int[] Results = { 0, 32, 63 };
-                            Result = Results[D];
+                            int[] results = { 0, 32, 63 };
+                            result = results[rd];
 
                             break;
                         }
 
                         case 1:
                         {
-                            C = 50;
+                            rc = 50;
                             break;
                         }
 
                         case 2:
                         {
-                            C = 23;
-                            int b = (BitValue >> 1) & 1;
-                            B = (b << 6) | (b << 2) | b;
+                            rc = 23;
+                            int b = (bitValue >> 1) & 1;
+                            rb = (b << 6) | (b << 2) | b;
 
                             break;
                         }
 
                         case 3:
                         {
-                            C = 11;
-                            int cb = (BitValue >> 1) & 3;
-                            B = (cb << 5) | cb;
+                            rc = 11;
+                            int cb = (bitValue >> 1) & 3;
+                            rb = (cb << 5) | cb;
 
                             break;
                         }
 
                         default:
-                            throw new ASTCDecoderException("Invalid trit encoding for texel weight");
+                            throw new AstcDecoderException("Invalid trit encoding for texel weight");
                     }
 
                     break;
@@ -610,60 +610,60 @@ namespace Ryujinx.Graphics.Texture
 
                 case IntegerEncoded.EIntegerEncoding.Quint:
                 {
-                    D = IntEncoded.QuintValue;
-                    Debug.Assert(D < 5);
+                    rd = intEncoded.QuintValue;
+                    Debug.Assert(rd < 5);
 
-                    switch (BitLength)
+                    switch (bitLength)
                     {
                         case 0:
                         {
-                            int[] Results = { 0, 16, 32, 47, 63 };
-                            Result = Results[D];
+                            int[] results = { 0, 16, 32, 47, 63 };
+                            result = results[rd];
 
                             break;
                         }
 
                         case 1:
                         {
-                            C = 28;
+                            rc = 28;
 
                             break;
                         }
 
                         case 2:
                         {
-                            C = 13;
-                            int b = (BitValue >> 1) & 1;
-                            B = (b << 6) | (b << 1);
+                            rc = 13;
+                            int b = (bitValue >> 1) & 1;
+                            rb = (b << 6) | (b << 1);
 
                             break;
                         }
                                 
                         default:
-                            throw new ASTCDecoderException("Invalid quint encoding for texel weight");
+                            throw new AstcDecoderException("Invalid quint encoding for texel weight");
                     }
 
                     break;
                 }    
             }
 
-            if (IntEncoded.GetEncoding() != IntegerEncoded.EIntegerEncoding.JustBits && BitLength > 0)
+            if (intEncoded.GetEncoding() != IntegerEncoded.EIntegerEncoding.JustBits && bitLength > 0)
             {
                 // Decode the value...
-                Result  = D * C + B;
-                Result ^= A;
-                Result  = (A & 0x20) | (Result >> 2);
+                result  = rd * rc + rb;
+                result ^= a;
+                result  = (a & 0x20) | (result >> 2);
             }
 
-            Debug.Assert(Result < 64);
+            Debug.Assert(result < 64);
 
             // Change from [0,63] to [0,64]
-            if (Result > 32)
+            if (result > 32)
             {
-                Result += 1;
+                result += 1;
             }
 
-            return Result;
+            return result;
         }
 
         static byte ReverseByte(byte b)
@@ -672,44 +672,44 @@ namespace Ryujinx.Graphics.Texture
             return (byte)((((b) * 0x80200802L) & 0x0884422110L) * 0x0101010101L >> 32);
         }
 
-        static uint[] ReadUintColorValues(int Number, int[] ColorValues, ref int ColorValuesPosition)
+        static uint[] ReadUintColorValues(int number, int[] colorValues, ref int colorValuesPosition)
         {
-            uint[] Ret = new uint[Number];
+            uint[] ret = new uint[number];
 
-            for (int i = 0; i < Number; i++)
+            for (int i = 0; i < number; i++)
             {
-                Ret[i] = (uint)ColorValues[ColorValuesPosition++];
+                ret[i] = (uint)colorValues[colorValuesPosition++];
             }
 
-            return Ret;
+            return ret;
         }
 
-        static int[] ReadIntColorValues(int Number, int[] ColorValues, ref int ColorValuesPosition)
+        static int[] ReadIntColorValues(int number, int[] colorValues, ref int colorValuesPosition)
         {
-            int[] Ret = new int[Number];
+            int[] ret = new int[number];
 
-            for (int i = 0; i < Number; i++)
+            for (int i = 0; i < number; i++)
             {
-                Ret[i] = ColorValues[ColorValuesPosition++];
+                ret[i] = colorValues[colorValuesPosition++];
             }
 
-            return Ret;
+            return ret;
         }
 
         static void ComputeEndpoints(
-            ASTCPixel[] EndPoints, 
-            int[]       ColorValues, 
-            uint        ColorEndpointMode, 
-            ref int     ColorValuesPosition)
+            AstcPixel[] endPoints, 
+            int[]       colorValues, 
+            uint        colorEndpointMode, 
+            ref int     colorValuesPosition)
         {
-            switch (ColorEndpointMode)
+            switch (colorEndpointMode)
             {
                 case 0:
                 {
-                    uint[] Val = ReadUintColorValues(2, ColorValues, ref ColorValuesPosition);
+                    uint[] val = ReadUintColorValues(2, colorValues, ref colorValuesPosition);
 
-                    EndPoints[0] = new ASTCPixel(0xFF, (short)Val[0], (short)Val[0], (short)Val[0]);
-                    EndPoints[1] = new ASTCPixel(0xFF, (short)Val[1], (short)Val[1], (short)Val[1]);
+                    endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[0], (short)val[0]);
+                    endPoints[1] = new AstcPixel(0xFF, (short)val[1], (short)val[1], (short)val[1]);
 
                     break;
                 }
@@ -717,65 +717,65 @@ namespace Ryujinx.Graphics.Texture
 
                 case 1:
                 {
-                    uint[] Val = ReadUintColorValues(2, ColorValues, ref ColorValuesPosition);
-                    int L0     = (int)((Val[0] >> 2) | (Val[1] & 0xC0));
-                    int L1     = (int)Math.Max(L0 + (Val[1] & 0x3F), 0xFFU);
+                    uint[] val = ReadUintColorValues(2, colorValues, ref colorValuesPosition);
+                    int l0     = (int)((val[0] >> 2) | (val[1] & 0xC0));
+                    int l1     = (int)Math.Max(l0 + (val[1] & 0x3F), 0xFFU);
 
-                    EndPoints[0] = new ASTCPixel(0xFF, (short)L0, (short)L0, (short)L0);
-                    EndPoints[1] = new ASTCPixel(0xFF, (short)L1, (short)L1, (short)L1);
+                    endPoints[0] = new AstcPixel(0xFF, (short)l0, (short)l0, (short)l0);
+                    endPoints[1] = new AstcPixel(0xFF, (short)l1, (short)l1, (short)l1);
 
                     break;
                 }
 
                 case 4:
                 {
-                    uint[] Val = ReadUintColorValues(4, ColorValues, ref ColorValuesPosition);
+                    uint[] val = ReadUintColorValues(4, colorValues, ref colorValuesPosition);
 
-                    EndPoints[0] = new ASTCPixel((short)Val[2], (short)Val[0], (short)Val[0], (short)Val[0]);
-                    EndPoints[1] = new ASTCPixel((short)Val[3], (short)Val[1], (short)Val[1], (short)Val[1]);
+                    endPoints[0] = new AstcPixel((short)val[2], (short)val[0], (short)val[0], (short)val[0]);
+                    endPoints[1] = new AstcPixel((short)val[3], (short)val[1], (short)val[1], (short)val[1]);
 
                     break;
                 }
 
                 case 5:
                 {
-                    int[] Val = ReadIntColorValues(4, ColorValues, ref ColorValuesPosition);
+                    int[] val = ReadIntColorValues(4, colorValues, ref colorValuesPosition);
 
-                    BitArrayStream.BitTransferSigned(ref Val[1], ref Val[0]);
-                    BitArrayStream.BitTransferSigned(ref Val[3], ref Val[2]);
+                    BitArrayStream.BitTransferSigned(ref val[1], ref val[0]);
+                    BitArrayStream.BitTransferSigned(ref val[3], ref val[2]);
 
-                    EndPoints[0] = new ASTCPixel((short)Val[2], (short)Val[0], (short)Val[0], (short)Val[0]);
-                    EndPoints[1] = new ASTCPixel((short)(Val[2] + Val[3]), (short)(Val[0] + Val[1]), (short)(Val[0] + Val[1]), (short)(Val[0] + Val[1]));
+                    endPoints[0] = new AstcPixel((short)val[2], (short)val[0], (short)val[0], (short)val[0]);
+                    endPoints[1] = new AstcPixel((short)(val[2] + val[3]), (short)(val[0] + val[1]), (short)(val[0] + val[1]), (short)(val[0] + val[1]));
 
-                    EndPoints[0].ClampByte();
-                    EndPoints[1].ClampByte();
+                    endPoints[0].ClampByte();
+                    endPoints[1].ClampByte();
 
                     break;
                 }
 
                 case 6:
                 {
-                    uint[] Val = ReadUintColorValues(4, ColorValues, ref ColorValuesPosition);
+                    uint[] val = ReadUintColorValues(4, colorValues, ref colorValuesPosition);
 
-                    EndPoints[0] = new ASTCPixel(0xFF, (short)(Val[0] * Val[3] >> 8), (short)(Val[1] * Val[3] >> 8), (short)(Val[2] * Val[3] >> 8));
-                    EndPoints[1] = new ASTCPixel(0xFF, (short)Val[0], (short)Val[1], (short)Val[2]);
+                    endPoints[0] = new AstcPixel(0xFF, (short)(val[0] * val[3] >> 8), (short)(val[1] * val[3] >> 8), (short)(val[2] * val[3] >> 8));
+                    endPoints[1] = new AstcPixel(0xFF, (short)val[0], (short)val[1], (short)val[2]);
 
                     break;
                 }
 
                 case 8:
                 {
-                    uint[] Val = ReadUintColorValues(6, ColorValues, ref ColorValuesPosition);
+                    uint[] val = ReadUintColorValues(6, colorValues, ref colorValuesPosition);
 
-                    if (Val[1] + Val[3] + Val[5] >= Val[0] + Val[2] + Val[4])
+                    if (val[1] + val[3] + val[5] >= val[0] + val[2] + val[4])
                     {
-                        EndPoints[0] = new ASTCPixel(0xFF, (short)Val[0], (short)Val[2], (short)Val[4]);
-                        EndPoints[1] = new ASTCPixel(0xFF, (short)Val[1], (short)Val[3], (short)Val[5]);
+                        endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[2], (short)val[4]);
+                        endPoints[1] = new AstcPixel(0xFF, (short)val[1], (short)val[3], (short)val[5]);
                     }
                     else
                     {
-                        EndPoints[0] = ASTCPixel.BlueContract(0xFF, (short)Val[1], (short)Val[3], (short)Val[5]);
-                        EndPoints[1] = ASTCPixel.BlueContract(0xFF, (short)Val[0], (short)Val[2], (short)Val[4]);
+                        endPoints[0] = AstcPixel.BlueContract(0xFF, (short)val[1], (short)val[3], (short)val[5]);
+                        endPoints[1] = AstcPixel.BlueContract(0xFF, (short)val[0], (short)val[2], (short)val[4]);
                     }
 
                     break;
@@ -783,52 +783,52 @@ namespace Ryujinx.Graphics.Texture
 
                 case 9:
                 {
-                    int[] Val = ReadIntColorValues(6, ColorValues, ref ColorValuesPosition);
+                    int[] val = ReadIntColorValues(6, colorValues, ref colorValuesPosition);
 
-                    BitArrayStream.BitTransferSigned(ref Val[1], ref Val[0]);
-                    BitArrayStream.BitTransferSigned(ref Val[3], ref Val[2]);
-                    BitArrayStream.BitTransferSigned(ref Val[5], ref Val[4]);
+                    BitArrayStream.BitTransferSigned(ref val[1], ref val[0]);
+                    BitArrayStream.BitTransferSigned(ref val[3], ref val[2]);
+                    BitArrayStream.BitTransferSigned(ref val[5], ref val[4]);
 
-                    if (Val[1] + Val[3] + Val[5] >= 0)
+                    if (val[1] + val[3] + val[5] >= 0)
                     {
-                        EndPoints[0] = new ASTCPixel(0xFF, (short)Val[0], (short)Val[2], (short)Val[4]);
-                        EndPoints[1] = new ASTCPixel(0xFF, (short)(Val[0] + Val[1]), (short)(Val[2] + Val[3]), (short)(Val[4] + Val[5]));
+                        endPoints[0] = new AstcPixel(0xFF, (short)val[0], (short)val[2], (short)val[4]);
+                        endPoints[1] = new AstcPixel(0xFF, (short)(val[0] + val[1]), (short)(val[2] + val[3]), (short)(val[4] + val[5]));
                     }
                     else
                     {
-                        EndPoints[0] = ASTCPixel.BlueContract(0xFF, Val[0] + Val[1], Val[2] + Val[3], Val[4] + Val[5]);
-                        EndPoints[1] = ASTCPixel.BlueContract(0xFF, Val[0], Val[2], Val[4]);
+                        endPoints[0] = AstcPixel.BlueContract(0xFF, val[0] + val[1], val[2] + val[3], val[4] + val[5]);
+                        endPoints[1] = AstcPixel.BlueContract(0xFF, val[0], val[2], val[4]);
                     }
 
-                    EndPoints[0].ClampByte();
-                    EndPoints[1].ClampByte();
+                    endPoints[0].ClampByte();
+                    endPoints[1].ClampByte();
 
                     break;
                 }
 
                 case 10:
                 {
-                    uint[] Val = ReadUintColorValues(6, ColorValues, ref ColorValuesPosition);
+                    uint[] val = ReadUintColorValues(6, colorValues, ref colorValuesPosition);
 
-                    EndPoints[0] = new ASTCPixel((short)Val[4], (short)(Val[0] * Val[3] >> 8), (short)(Val[1] * Val[3] >> 8), (short)(Val[2] * Val[3] >> 8));
-                    EndPoints[1] = new ASTCPixel((short)Val[5], (short)Val[0], (short)Val[1], (short)Val[2]);
+                    endPoints[0] = new AstcPixel((short)val[4], (short)(val[0] * val[3] >> 8), (short)(val[1] * val[3] >> 8), (short)(val[2] * val[3] >> 8));
+                    endPoints[1] = new AstcPixel((short)val[5], (short)val[0], (short)val[1], (short)val[2]);
 
                     break;
                 }
 
                 case 12:
                 {
-                    uint[] Val = ReadUintColorValues(8, ColorValues, ref ColorValuesPosition);
+                    uint[] val = ReadUintColorValues(8, colorValues, ref colorValuesPosition);
 
-                    if (Val[1] + Val[3] + Val[5] >= Val[0] + Val[2] + Val[4])
+                    if (val[1] + val[3] + val[5] >= val[0] + val[2] + val[4])
                     {
-                        EndPoints[0] = new ASTCPixel((short)Val[6], (short)Val[0], (short)Val[2], (short)Val[4]);
-                        EndPoints[1] = new ASTCPixel((short)Val[7], (short)Val[1], (short)Val[3], (short)Val[5]);
+                        endPoints[0] = new AstcPixel((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
+                        endPoints[1] = new AstcPixel((short)val[7], (short)val[1], (short)val[3], (short)val[5]);
                     }
                     else
                     {
-                        EndPoints[0] = ASTCPixel.BlueContract((short)Val[7], (short)Val[1], (short)Val[3], (short)Val[5]);
-                        EndPoints[1] = ASTCPixel.BlueContract((short)Val[6], (short)Val[0], (short)Val[2], (short)Val[4]);
+                        endPoints[0] = AstcPixel.BlueContract((short)val[7], (short)val[1], (short)val[3], (short)val[5]);
+                        endPoints[1] = AstcPixel.BlueContract((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
                     }
 
                     break;
@@ -836,136 +836,136 @@ namespace Ryujinx.Graphics.Texture
 
                 case 13:
                 {
-                    int[] Val = ReadIntColorValues(8, ColorValues, ref ColorValuesPosition);
+                    int[] val = ReadIntColorValues(8, colorValues, ref colorValuesPosition);
 
-                    BitArrayStream.BitTransferSigned(ref Val[1], ref Val[0]);
-                    BitArrayStream.BitTransferSigned(ref Val[3], ref Val[2]);
-                    BitArrayStream.BitTransferSigned(ref Val[5], ref Val[4]);
-                    BitArrayStream.BitTransferSigned(ref Val[7], ref Val[6]);
+                    BitArrayStream.BitTransferSigned(ref val[1], ref val[0]);
+                    BitArrayStream.BitTransferSigned(ref val[3], ref val[2]);
+                    BitArrayStream.BitTransferSigned(ref val[5], ref val[4]);
+                    BitArrayStream.BitTransferSigned(ref val[7], ref val[6]);
 
-                    if (Val[1] + Val[3] + Val[5] >= 0)
+                    if (val[1] + val[3] + val[5] >= 0)
                     {
-                        EndPoints[0] = new ASTCPixel((short)Val[6], (short)Val[0], (short)Val[2], (short)Val[4]);
-                        EndPoints[1] = new ASTCPixel((short)(Val[7] + Val[6]), (short)(Val[0] + Val[1]), (short)(Val[2] + Val[3]), (short)(Val[4] + Val[5]));
+                        endPoints[0] = new AstcPixel((short)val[6], (short)val[0], (short)val[2], (short)val[4]);
+                        endPoints[1] = new AstcPixel((short)(val[7] + val[6]), (short)(val[0] + val[1]), (short)(val[2] + val[3]), (short)(val[4] + val[5]));
                     }
                     else
                     {
-                        EndPoints[0] = ASTCPixel.BlueContract(Val[6] + Val[7], Val[0] + Val[1], Val[2] + Val[3], Val[4] + Val[5]);
-                        EndPoints[1] = ASTCPixel.BlueContract(Val[6], Val[0], Val[2], Val[4]);
+                        endPoints[0] = AstcPixel.BlueContract(val[6] + val[7], val[0] + val[1], val[2] + val[3], val[4] + val[5]);
+                        endPoints[1] = AstcPixel.BlueContract(val[6], val[0], val[2], val[4]);
                     }
 
-                    EndPoints[0].ClampByte();
-                    EndPoints[1].ClampByte();
+                    endPoints[0].ClampByte();
+                    endPoints[1].ClampByte();
 
                     break;
                 }
 
                 default:
-                    throw new ASTCDecoderException("Unsupported color endpoint mode (is it HDR?)");
+                    throw new AstcDecoderException("Unsupported color endpoint mode (is it HDR?)");
             }
         }
 
         static void DecodeColorValues(
-            int[]  OutputValues, 
-            byte[] InputData, 
-            uint[] Modes, 
-            int    NumberPartitions, 
-            int    NumberBitsForColorData)
+            int[]  outputValues, 
+            byte[] inputData, 
+            uint[] modes, 
+            int    numberPartitions, 
+            int    numberBitsForColorData)
         {
             // First figure out how many color values we have
-            int NumberValues = 0;
+            int numberValues = 0;
 
-            for (int i = 0; i < NumberPartitions; i++)
+            for (int i = 0; i < numberPartitions; i++)
             {
-                NumberValues += (int)((Modes[i] >> 2) + 1) << 1;
+                numberValues += (int)((modes[i] >> 2) + 1) << 1;
             }
 
             // Then based on the number of values and the remaining number of bits,
             // figure out the max value for each of them...
-            int Range = 256;
+            int range = 256;
 
-            while (--Range > 0)
+            while (--range > 0)
             {
-                IntegerEncoded IntEncoded = IntegerEncoded.CreateEncoding(Range);
-                int BitLength             = IntEncoded.GetBitLength(NumberValues);
+                IntegerEncoded intEncoded = IntegerEncoded.CreateEncoding(range);
+                int bitLength             = intEncoded.GetBitLength(numberValues);
 
-                if (BitLength <= NumberBitsForColorData)
+                if (bitLength <= numberBitsForColorData)
                 {
                     // Find the smallest possible range that matches the given encoding
-                    while (--Range > 0)
+                    while (--range > 0)
                     {
-                        IntegerEncoded NewIntEncoded = IntegerEncoded.CreateEncoding(Range);
-                        if (!NewIntEncoded.MatchesEncoding(IntEncoded))
+                        IntegerEncoded newIntEncoded = IntegerEncoded.CreateEncoding(range);
+                        if (!newIntEncoded.MatchesEncoding(intEncoded))
                         {
                             break;
                         }
                     }
 
                     // Return to last matching range.
-                    Range++;
+                    range++;
                     break;
                 }
             }
 
             // We now have enough to decode our integer sequence.
-            List<IntegerEncoded> IntegerEncodedSequence = new List<IntegerEncoded>();
-            BitArrayStream ColorBitStream               = new BitArrayStream(new BitArray(InputData));
+            List<IntegerEncoded> integerEncodedSequence = new List<IntegerEncoded>();
+            BitArrayStream colorBitStream               = new BitArrayStream(new BitArray(inputData));
 
-            IntegerEncoded.DecodeIntegerSequence(IntegerEncodedSequence, ColorBitStream, Range, NumberValues);
+            IntegerEncoded.DecodeIntegerSequence(integerEncodedSequence, colorBitStream, range, numberValues);
 
             // Once we have the decoded values, we need to dequantize them to the 0-255 range
             // This procedure is outlined in ASTC spec C.2.13
-            int OutputIndices = 0;
+            int outputIndices = 0;
 
-            foreach (IntegerEncoded IntEncoded in IntegerEncodedSequence)
+            foreach (IntegerEncoded intEncoded in integerEncodedSequence)
             {
-                int BitLength = IntEncoded.NumberBits;
-                int BitValue  = IntEncoded.BitValue;
+                int bitLength = intEncoded.NumberBits;
+                int bitValue  = intEncoded.BitValue;
 
-                Debug.Assert(BitLength >= 1);
+                Debug.Assert(bitLength >= 1);
 
-                int A = 0, B = 0, C = 0, D = 0;
+                int a = 0, rb = 0, c = 0, d = 0;
                 // A is just the lsb replicated 9 times.
-                A = BitArrayStream.Replicate(BitValue & 1, 1, 9);
+                a = BitArrayStream.Replicate(bitValue & 1, 1, 9);
 
-                switch (IntEncoded.GetEncoding())
+                switch (intEncoded.GetEncoding())
                 {
                     case IntegerEncoded.EIntegerEncoding.JustBits:
                     {
-                        OutputValues[OutputIndices++] = BitArrayStream.Replicate(BitValue, BitLength, 8);
+                        outputValues[outputIndices++] = BitArrayStream.Replicate(bitValue, bitLength, 8);
 
                         break;
                     }
 
                     case IntegerEncoded.EIntegerEncoding.Trit:
                     {
-                        D = IntEncoded.TritValue;
+                        d = intEncoded.TritValue;
 
-                        switch (BitLength)
+                        switch (bitLength)
                         {
                             case 1:
                             {
-                                C = 204;
+                                c = 204;
 
                                 break;
                             }
                                     
                             case 2:
                             {
-                                C = 93;
+                                c = 93;
                                 // B = b000b0bb0
-                                int b = (BitValue >> 1) & 1;
-                                B = (b << 8) | (b << 4) | (b << 2) | (b << 1);
+                                int b = (bitValue >> 1) & 1;
+                                rb = (b << 8) | (b << 4) | (b << 2) | (b << 1);
 
                                 break;
                             }
 
                             case 3:
                             {
-                                C = 44;
+                                c = 44;
                                 // B = cb000cbcb
-                                int cb = (BitValue >> 1) & 3;
-                                B = (cb << 7) | (cb << 2) | cb;
+                                int cb = (bitValue >> 1) & 3;
+                                rb = (cb << 7) | (cb << 2) | cb;
 
                                 break;
                             }
@@ -973,36 +973,36 @@ namespace Ryujinx.Graphics.Texture
 
                             case 4:
                             {
-                                C = 22;
+                                c = 22;
                                 // B = dcb000dcb
-                                int dcb = (BitValue >> 1) & 7;
-                                B = (dcb << 6) | dcb;
+                                int dcb = (bitValue >> 1) & 7;
+                                rb = (dcb << 6) | dcb;
 
                                 break;
                             }
 
                             case 5:
                             {
-                                C = 11;
+                                c = 11;
                                 // B = edcb000ed
-                                int edcb = (BitValue >> 1) & 0xF;
-                                B = (edcb << 5) | (edcb >> 2);
+                                int edcb = (bitValue >> 1) & 0xF;
+                                rb = (edcb << 5) | (edcb >> 2);
 
                                 break;
                             }
 
                             case 6:
                             {
-                                C = 5;
+                                c = 5;
                                 // B = fedcb000f
-                                int fedcb = (BitValue >> 1) & 0x1F;
-                                B = (fedcb << 4) | (fedcb >> 4);
+                                int fedcb = (bitValue >> 1) & 0x1F;
+                                rb = (fedcb << 4) | (fedcb >> 4);
 
                                 break;
                             }
 
                             default:
-                                throw new ASTCDecoderException("Unsupported trit encoding for color values!");
+                                throw new AstcDecoderException("Unsupported trit encoding for color values!");
                         }
 
                         break;
@@ -1010,375 +1010,375 @@ namespace Ryujinx.Graphics.Texture
                         
                     case IntegerEncoded.EIntegerEncoding.Quint:
                     {
-                        D = IntEncoded.QuintValue;
+                        d = intEncoded.QuintValue;
 
-                        switch (BitLength)
+                        switch (bitLength)
                         {
                             case 1:
                             {
-                                C = 113;
+                                c = 113;
 
                                 break;
                             }
                                     
                             case 2:
                             {
-                                C = 54;
+                                c = 54;
                                 // B = b0000bb00
-                                int b = (BitValue >> 1) & 1;
-                                B = (b << 8) | (b << 3) | (b << 2);
+                                int b = (bitValue >> 1) & 1;
+                                rb = (b << 8) | (b << 3) | (b << 2);
 
                                 break;
                             }
                                     
                             case 3:
                             {
-                                C = 26;
+                                c = 26;
                                 // B = cb0000cbc
-                                int cb = (BitValue >> 1) & 3;
-                                B = (cb << 7) | (cb << 1) | (cb >> 1);
+                                int cb = (bitValue >> 1) & 3;
+                                rb = (cb << 7) | (cb << 1) | (cb >> 1);
 
                                 break;
                             }
 
                             case 4:
                             {
-                                C = 13;
+                                c = 13;
                                 // B = dcb0000dc
-                                int dcb = (BitValue >> 1) & 7;
-                                B = (dcb << 6) | (dcb >> 1);
+                                int dcb = (bitValue >> 1) & 7;
+                                rb = (dcb << 6) | (dcb >> 1);
 
                                 break;
                             }
                                   
                             case 5:
                             {
-                                C = 6;
+                                c = 6;
                                 // B = edcb0000e
-                                int edcb = (BitValue >> 1) & 0xF;
-                                B = (edcb << 5) | (edcb >> 3);
+                                int edcb = (bitValue >> 1) & 0xF;
+                                rb = (edcb << 5) | (edcb >> 3);
 
                                 break;
                             }
 
                             default:
-                                throw new ASTCDecoderException("Unsupported quint encoding for color values!");
+                                throw new AstcDecoderException("Unsupported quint encoding for color values!");
                         }
                         break;
                     }   
                 }
 
-                if (IntEncoded.GetEncoding() != IntegerEncoded.EIntegerEncoding.JustBits)
+                if (intEncoded.GetEncoding() != IntegerEncoded.EIntegerEncoding.JustBits)
                 {
-                    int T = D * C + B;
-                    T    ^= A;
-                    T     = (A & 0x80) | (T >> 2);
+                    int T = d * c + rb;
+                    T    ^= a;
+                    T     = (a & 0x80) | (T >> 2);
 
-                    OutputValues[OutputIndices++] = T;
+                    outputValues[outputIndices++] = T;
                 }
             }
 
             // Make sure that each of our values is in the proper range...
-            for (int i = 0; i < NumberValues; i++)
+            for (int i = 0; i < numberValues; i++)
             {
-                Debug.Assert(OutputValues[i] <= 255);
+                Debug.Assert(outputValues[i] <= 255);
             }
         }
 
-        static void FillVoidExtentLDR(BitArrayStream BitStream, int[] OutputBuffer, int BlockWidth, int BlockHeight)
+        static void FillVoidExtentLdr(BitArrayStream bitStream, int[] outputBuffer, int blockWidth, int blockHeight)
         {
             // Don't actually care about the void extent, just read the bits...
             for (int i = 0; i < 4; ++i)
             {
-                BitStream.ReadBits(13);
+                bitStream.ReadBits(13);
             }
 
             // Decode the RGBA components and renormalize them to the range [0, 255]
-            ushort R = (ushort)BitStream.ReadBits(16);
-            ushort G = (ushort)BitStream.ReadBits(16);
-            ushort B = (ushort)BitStream.ReadBits(16);
-            ushort A = (ushort)BitStream.ReadBits(16);
+            ushort r = (ushort)bitStream.ReadBits(16);
+            ushort g = (ushort)bitStream.ReadBits(16);
+            ushort b = (ushort)bitStream.ReadBits(16);
+            ushort a = (ushort)bitStream.ReadBits(16);
 
-            int RGBA = (R >> 8) | (G & 0xFF00) | ((B) & 0xFF00) << 8 | ((A) & 0xFF00) << 16;
+            int rgba = (r >> 8) | (g & 0xFF00) | ((b) & 0xFF00) << 8 | ((a) & 0xFF00) << 16;
 
-            for (int j = 0; j < BlockHeight; j++)
+            for (int j = 0; j < blockHeight; j++)
             {
-                for (int i = 0; i < BlockWidth; i++)
+                for (int i = 0; i < blockWidth; i++)
                 {
-                    OutputBuffer[j * BlockWidth + i] = RGBA;
+                    outputBuffer[j * blockWidth + i] = rgba;
                 }
             }
         }
 
-        static TexelWeightParams DecodeBlockInfo(BitArrayStream BitStream)
+        static TexelWeightParams DecodeBlockInfo(BitArrayStream bitStream)
         {
-            TexelWeightParams TexelParams = new TexelWeightParams();
+            TexelWeightParams texelParams = new TexelWeightParams();
 
             // Read the entire block mode all at once
-            ushort ModeBits = (ushort)BitStream.ReadBits(11);
+            ushort modeBits = (ushort)bitStream.ReadBits(11);
 
             // Does this match the void extent block mode?
-            if ((ModeBits & 0x01FF) == 0x1FC)
+            if ((modeBits & 0x01FF) == 0x1FC)
             {
-                if ((ModeBits & 0x200) != 0)
+                if ((modeBits & 0x200) != 0)
                 {
-                    TexelParams.VoidExtentHDR = true;
+                    texelParams.VoidExtentHdr = true;
                 }
                 else
                 {
-                    TexelParams.VoidExtentLDR = true;
+                    texelParams.VoidExtentLdr = true;
                 }
 
                 // Next two bits must be one.
-                if ((ModeBits & 0x400) == 0 || BitStream.ReadBits(1) == 0)
+                if ((modeBits & 0x400) == 0 || bitStream.ReadBits(1) == 0)
                 {
-                    TexelParams.Error = true;
+                    texelParams.Error = true;
                 }
 
-                return TexelParams;
+                return texelParams;
             }
 
             // First check if the last four bits are zero
-            if ((ModeBits & 0xF) == 0)
+            if ((modeBits & 0xF) == 0)
             {
-                TexelParams.Error = true;
-                return TexelParams;
+                texelParams.Error = true;
+                return texelParams;
             }
 
             // If the last two bits are zero, then if bits
             // [6-8] are all ones, this is also reserved.
-            if ((ModeBits & 0x3) == 0 && (ModeBits & 0x1C0) == 0x1C0)
+            if ((modeBits & 0x3) == 0 && (modeBits & 0x1C0) == 0x1C0)
             {
-                TexelParams.Error = true;
+                texelParams.Error = true;
 
-                return TexelParams;
+                return texelParams;
             }
 
             // Otherwise, there is no error... Figure out the layout
             // of the block mode. Layout is determined by a number
             // between 0 and 9 corresponding to table C.2.8 of the
             // ASTC spec.
-            int Layout = 0;
+            int layout = 0;
 
-            if ((ModeBits & 0x1) != 0 || (ModeBits & 0x2) != 0)
+            if ((modeBits & 0x1) != 0 || (modeBits & 0x2) != 0)
             {
                 // layout is in [0-4]
-                if ((ModeBits & 0x8) != 0)
+                if ((modeBits & 0x8) != 0)
                 {
                     // layout is in [2-4]
-                    if ((ModeBits & 0x4) != 0)
+                    if ((modeBits & 0x4) != 0)
                     {
                         // layout is in [3-4]
-                        if ((ModeBits & 0x100) != 0)
+                        if ((modeBits & 0x100) != 0)
                         {
-                            Layout = 4;
+                            layout = 4;
                         }
                         else
                         {
-                            Layout = 3;
+                            layout = 3;
                         }
                     }
                     else
                     {
-                        Layout = 2;
+                        layout = 2;
                     }
                 }
                 else
                 {
                     // layout is in [0-1]
-                    if ((ModeBits & 0x4) != 0)
+                    if ((modeBits & 0x4) != 0)
                     {
-                        Layout = 1;
+                        layout = 1;
                     }
                     else
                     {
-                        Layout = 0;
+                        layout = 0;
                     }
                 }
             }
             else
             {
                 // layout is in [5-9]
-                if ((ModeBits & 0x100) != 0)
+                if ((modeBits & 0x100) != 0)
                 {
                     // layout is in [7-9]
-                    if ((ModeBits & 0x80) != 0)
+                    if ((modeBits & 0x80) != 0)
                     {
                         // layout is in [7-8]
-                        Debug.Assert((ModeBits & 0x40) == 0);
+                        Debug.Assert((modeBits & 0x40) == 0);
 
-                        if ((ModeBits & 0x20) != 0)
+                        if ((modeBits & 0x20) != 0)
                         {
-                            Layout = 8;
+                            layout = 8;
                         }
                         else
                         {
-                            Layout = 7;
+                            layout = 7;
                         }
                     }
                     else
                     {
-                        Layout = 9;
+                        layout = 9;
                     }
                 }
                 else
                 {
                     // layout is in [5-6]
-                    if ((ModeBits & 0x80) != 0)
+                    if ((modeBits & 0x80) != 0)
                     {
-                        Layout = 6;
+                        layout = 6;
                     }
                     else
                     {
-                        Layout = 5;
+                        layout = 5;
                     }
                 }
             }
 
-            Debug.Assert(Layout < 10);
+            Debug.Assert(layout < 10);
 
             // Determine R
-            int R = (ModeBits >> 4) & 1;
-            if (Layout < 5)
+            int r = (modeBits >> 4) & 1;
+            if (layout < 5)
             {
-                R |= (ModeBits & 0x3) << 1;
+                r |= (modeBits & 0x3) << 1;
             }
             else
             {
-                R |= (ModeBits & 0xC) >> 1;
+                r |= (modeBits & 0xC) >> 1;
             }
 
-            Debug.Assert(2 <= R && R <= 7);
+            Debug.Assert(2 <= r && r <= 7);
 
             // Determine width & height
-            switch (Layout)
+            switch (layout)
             {
                 case 0:
                 {
-                    int A = (ModeBits >> 5) & 0x3;
-                    int B = (ModeBits >> 7) & 0x3;
+                    int a = (modeBits >> 5) & 0x3;
+                    int b = (modeBits >> 7) & 0x3;
 
-                    TexelParams.Width  = B + 4;
-                    TexelParams.Height = A + 2;
+                    texelParams.Width  = b + 4;
+                    texelParams.Height = a + 2;
 
                     break;
                 }
 
                 case 1:
                 {
-                    int A = (ModeBits >> 5) & 0x3;
-                    int B = (ModeBits >> 7) & 0x3;
+                    int a = (modeBits >> 5) & 0x3;
+                    int b = (modeBits >> 7) & 0x3;
 
-                    TexelParams.Width  = B + 8;
-                    TexelParams.Height = A + 2;
+                    texelParams.Width  = b + 8;
+                    texelParams.Height = a + 2;
 
                     break;
                 }
 
                 case 2:
                 {
-                    int A = (ModeBits >> 5) & 0x3;
-                    int B = (ModeBits >> 7) & 0x3;
+                    int a = (modeBits >> 5) & 0x3;
+                    int b = (modeBits >> 7) & 0x3;
 
-                    TexelParams.Width  = A + 2;
-                    TexelParams.Height = B + 8;
+                    texelParams.Width  = a + 2;
+                    texelParams.Height = b + 8;
 
                     break;
                 }
 
                 case 3:
                 {
-                    int A = (ModeBits >> 5) & 0x3;
-                    int B = (ModeBits >> 7) & 0x1;
+                    int a = (modeBits >> 5) & 0x3;
+                    int b = (modeBits >> 7) & 0x1;
 
-                    TexelParams.Width  = A + 2;
-                    TexelParams.Height = B + 6;
+                    texelParams.Width  = a + 2;
+                    texelParams.Height = b + 6;
 
                     break;
                 }
 
                 case 4:
                 {
-                    int A = (ModeBits >> 5) & 0x3;
-                    int B = (ModeBits >> 7) & 0x1;
+                    int a = (modeBits >> 5) & 0x3;
+                    int b = (modeBits >> 7) & 0x1;
 
-                    TexelParams.Width  = B + 2;
-                    TexelParams.Height = A + 2;
+                    texelParams.Width  = b + 2;
+                    texelParams.Height = a + 2;
 
                     break;
                 }
 
                 case 5:
                 {
-                    int A = (ModeBits >> 5) & 0x3;
+                    int a = (modeBits >> 5) & 0x3;
 
-                    TexelParams.Width  = 12;
-                    TexelParams.Height = A + 2;
+                    texelParams.Width  = 12;
+                    texelParams.Height = a + 2;
 
                     break;
                 }
 
                 case 6:
                 {
-                    int A = (ModeBits >> 5) & 0x3;
+                    int a = (modeBits >> 5) & 0x3;
 
-                    TexelParams.Width  = A + 2;
-                    TexelParams.Height = 12;
+                    texelParams.Width  = a + 2;
+                    texelParams.Height = 12;
 
                     break;
                 }
 
                 case 7:
                 {
-                    TexelParams.Width  = 6;
-                    TexelParams.Height = 10;
+                    texelParams.Width  = 6;
+                    texelParams.Height = 10;
 
                     break;
                 }
 
                 case 8:
                 {
-                    TexelParams.Width  = 10;
-                    TexelParams.Height = 6;
+                    texelParams.Width  = 10;
+                    texelParams.Height = 6;
                     break;
                 }
 
                 case 9:
                 {
-                    int A = (ModeBits >> 5) & 0x3;
-                    int B = (ModeBits >> 9) & 0x3;
+                    int a = (modeBits >> 5) & 0x3;
+                    int b = (modeBits >> 9) & 0x3;
 
-                    TexelParams.Width  = A + 6;
-                    TexelParams.Height = B + 6;
+                    texelParams.Width  = a + 6;
+                    texelParams.Height = b + 6;
 
                     break;
                 }
 
                 default:
                     //Don't know this layout...
-                    TexelParams.Error = true;
+                    texelParams.Error = true;
                     break;
             }
 
             // Determine whether or not we're using dual planes
             // and/or high precision layouts.
-            bool D = ((Layout != 9) && ((ModeBits & 0x400) != 0));
-            bool H = (Layout != 9) && ((ModeBits & 0x200) != 0);
+            bool d = ((layout != 9) && ((modeBits & 0x400) != 0));
+            bool h = (layout != 9) && ((modeBits & 0x200) != 0);
 
-            if (H)
+            if (h)
             {
-                int[] MaxWeights = { 9, 11, 15, 19, 23, 31 };
-                TexelParams.MaxWeight = MaxWeights[R - 2];
+                int[] maxWeights = { 9, 11, 15, 19, 23, 31 };
+                texelParams.MaxWeight = maxWeights[r - 2];
             }
             else
             {
-                int[] MaxWeights = { 1, 2, 3, 4, 5, 7 };
-                TexelParams.MaxWeight = MaxWeights[R - 2];
+                int[] maxWeights = { 1, 2, 3, 4, 5, 7 };
+                texelParams.MaxWeight = maxWeights[r - 2];
             }
 
-            TexelParams.DualPlane = D;
+            texelParams.DualPlane = d;
 
-            return TexelParams;
+            return texelParams;
         }
     }
 }

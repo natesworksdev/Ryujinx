@@ -18,18 +18,18 @@ namespace ChocolArm64.Decoder
             Unsigned
         }
 
-        public AOpCodeMemImm(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeMemImm(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Extend64 = ((OpCode >> 22) & 3) == 2;
-            WBack    = ((OpCode >> 24) & 1) == 0;
+            Extend64 = ((opCode >> 22) & 3) == 2;
+            WBack    = ((opCode >> 24) & 1) == 0;
 
             //The type is not valid for the Unsigned Immediate 12-bits encoding,
             //because the bits 11:10 are used for the larger Immediate offset.
-            MemOp Type = WBack ? (MemOp)((OpCode >> 10) & 3) : MemOp.Unsigned;
+            MemOp type = WBack ? (MemOp)((opCode >> 10) & 3) : MemOp.Unsigned;
 
-            PostIdx  = Type == MemOp.PostIndexed;
-            Unscaled = Type == MemOp.Unscaled ||
-                       Type == MemOp.Unprivileged;
+            PostIdx  = type == MemOp.PostIndexed;
+            Unscaled = type == MemOp.Unscaled ||
+                       type == MemOp.Unprivileged;
 
             //Unscaled and Unprivileged doesn't write back,
             //but they do use the 9-bits Signed Immediate.
@@ -41,12 +41,12 @@ namespace ChocolArm64.Decoder
             if (WBack || Unscaled)
             {
                 //9-bits Signed Immediate.
-                Imm = (OpCode << 43) >> 55;
+                Imm = (opCode << 43) >> 55;
             }
             else
             {
                 //12-bits Unsigned Immediate.
-                Imm = ((OpCode >> 10) & 0xfff) << Size;
+                Imm = ((opCode >> 10) & 0xfff) << Size;
             }
         }
     }

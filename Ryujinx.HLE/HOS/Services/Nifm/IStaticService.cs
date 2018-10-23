@@ -3,31 +3,31 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm
 {
-    class IStaticService : IpcService
+    class StaticService : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IStaticService()
+        public StaticService()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 4, CreateGeneralServiceOld },
                 { 5, CreateGeneralService    }
             };
         }
 
-        public long CreateGeneralServiceOld(ServiceCtx Context)
+        public long CreateGeneralServiceOld(ServiceCtx context)
         {
-            MakeObject(Context, new IGeneralService());
+            MakeObject(context, new GeneralService());
 
             return 0;
         }
 
-        public long CreateGeneralService(ServiceCtx Context)
+        public long CreateGeneralService(ServiceCtx context)
         {
-            MakeObject(Context, new IGeneralService());
+            MakeObject(context, new GeneralService());
 
             return 0;
         }

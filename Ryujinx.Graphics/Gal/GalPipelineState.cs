@@ -2,17 +2,15 @@
 {
     public struct ColorMaskRgba
     {
-        private static readonly ColorMaskRgba _Default = new ColorMaskRgba()
+	    public static ColorMaskRgba Default { get; } = new ColorMaskRgba()
         {
-            Red   = true,
-            Green = true,
-            Blue  = true,
-            Alpha = true
+	        Red   = true,
+	        Green = true,
+	        Blue  = true,
+	        Alpha = true
         };
 
-        public static ColorMaskRgba Default => _Default;
-
-        public bool Red;
+	    public bool Red;
         public bool Green;
         public bool Blue;
         public bool Alpha;
@@ -82,9 +80,9 @@
         {
             ConstBufferKeys = new long[Stages][];
 
-            for (int Stage = 0; Stage < Stages; Stage++)
+            for (int stage = 0; stage < Stages; stage++)
             {
-                ConstBufferKeys[Stage] = new long[ConstBuffersPerStage];
+                ConstBufferKeys[stage] = new long[ConstBuffersPerStage];
             }
 
             ColorMasks = new ColorMaskRgba[RenderTargetsCount];

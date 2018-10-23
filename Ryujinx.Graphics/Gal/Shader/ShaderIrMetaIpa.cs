@@ -4,9 +4,9 @@
     {
         public ShaderIpaMode Mode { get; private set; }
 
-        public ShaderIrMetaIpa(ShaderIpaMode Mode)
+        public ShaderIrMetaIpa(ShaderIpaMode mode)
         {
-            this.Mode = Mode;
+            this.Mode = mode;
         }
     }
 }

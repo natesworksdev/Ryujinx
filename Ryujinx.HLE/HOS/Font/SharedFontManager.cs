@@ -8,73 +8,73 @@ namespace Ryujinx.HLE.HOS.Font
 {
     class SharedFontManager
     {
-        private DeviceMemory Memory;
+        private DeviceMemory _memory;
 
-        private long PhysicalAddress;
+        private long _physicalAddress;
 
-        private string FontsPath;
+        private string _fontsPath;
 
         private struct FontInfo
         {
             public int Offset;
             public int Size;
 
-            public FontInfo(int Offset, int Size)
+            public FontInfo(int offset, int size)
             {
-                this.Offset = Offset;
-                this.Size   = Size;
+                this.Offset = offset;
+                this.Size   = size;
             }
         }
 
-        private Dictionary<SharedFontType, FontInfo> FontData;
+        private Dictionary<SharedFontType, FontInfo> _fontData;
 
-        public SharedFontManager(Switch Device, long PhysicalAddress)
+        public SharedFontManager(Switch device, long physicalAddress)
         {
-            this.PhysicalAddress = PhysicalAddress;
+            this._physicalAddress = physicalAddress;
 
-            Memory = Device.Memory;
+            _memory = device.Memory;
 
-            FontsPath = Path.Combine(Device.FileSystem.GetSystemPath(), "fonts");
+            _fontsPath = Path.Combine(device.FileSystem.GetSystemPath(), "fonts");
         }
 
         public void EnsureInitialized()
         {
-            if (FontData == null)
+            if (_fontData == null)
             {
-                Memory.FillWithZeros(PhysicalAddress, Horizon.FontSize);
+                _memory.FillWithZeros(_physicalAddress, Horizon.FontSize);
 
-                uint FontOffset = 0;
+                uint fontOffset = 0;
 
-                FontInfo CreateFont(string Name)
+                FontInfo CreateFont(string name)
                 {
-                    string FontFilePath = Path.Combine(FontsPath, Name + ".ttf");
+                    string fontFilePath = Path.Combine(_fontsPath, name + ".ttf");
 
-                    if (File.Exists(FontFilePath))
+                    if (File.Exists(fontFilePath))
                     {
-                        byte[] Data = File.ReadAllBytes(FontFilePath);
+                        byte[] data = File.ReadAllBytes(fontFilePath);
 
-                        FontInfo Info = new FontInfo((int)FontOffset, Data.Length);
+                        FontInfo info = new FontInfo((int)fontOffset, data.Length);
 
-                        WriteMagicAndSize(PhysicalAddress + FontOffset, Data.Length);
+                        WriteMagicAndSize(_physicalAddress + fontOffset, data.Length);
 
-                        FontOffset += 8;
+                        fontOffset += 8;
 
-                        uint Start = FontOffset;
+                        uint start = fontOffset;
 
-                        for (; FontOffset - Start < Data.Length; FontOffset++)
+                        for (; fontOffset - start < data.Length; fontOffset++)
                         {
-                            Memory.WriteByte(PhysicalAddress + FontOffset, Data[FontOffset - Start]);
+                            _memory.WriteByte(_physicalAddress + fontOffset, data[fontOffset - start]);
                         }
 
-                        return Info;
+                        return info;
                     }
                     else
                     {
-                        throw new InvalidSystemResourceException($"Font \"{Name}.ttf\" not found. Please provide it in \"{FontsPath}\".");
+                        throw new InvalidSystemResourceException($"Font \"{name}.ttf\" not found. Please provide it in \"{_fontsPath}\".");
                     }
                 }
 
-                FontData = new Dictionary<SharedFontType, FontInfo>()
+                _fontData = new Dictionary<SharedFontType, FontInfo>()
                 {
                     { SharedFontType.JapanUsEurope,       CreateFont("FontStandard")                  },
                     { SharedFontType.SimplifiedChinese,   CreateFont("FontChineseSimplified")         },
@@ -84,39 +84,39 @@ namespace Ryujinx.HLE.HOS.Font
                     { SharedFontType.NintendoEx,          CreateFont("FontNintendoExtended")          }
                 };
 
-                if (FontOffset > Horizon.FontSize)
+                if (fontOffset > Horizon.FontSize)
                 {
                     throw new InvalidSystemResourceException(
                         $"The sum of all fonts size exceed the shared memory size. " +
                         $"Please make sure that the fonts don't exceed {Horizon.FontSize} bytes in total. " +
-                        $"(actual size: {FontOffset} bytes).");
+                        $"(actual size: {fontOffset} bytes).");
                 }
             }
         }
 
-        private void WriteMagicAndSize(long Position, int Size)
+        private void WriteMagicAndSize(long position, int size)
         {
-            const int DecMagic = 0x18029a7f;
-            const int Key      = 0x49621806;
+            const int decMagic = 0x18029a7f;
+            const int key      = 0x49621806;
 
-            int EncryptedSize = EndianSwap.Swap32(Size ^ Key);
+            int encryptedSize = EndianSwap.Swap32(size ^ key);
 
-            Memory.WriteInt32(Position + 0, DecMagic);
-            Memory.WriteInt32(Position + 4, EncryptedSize);
+            _memory.WriteInt32(position + 0, decMagic);
+            _memory.WriteInt32(position + 4, encryptedSize);
         }
 
-        public int GetFontSize(SharedFontType FontType)
+        public int GetFontSize(SharedFontType fontType)
         {
             EnsureInitialized();
 
-            return FontData[FontType].Size;
+            return _fontData[fontType].Size;
         }
 
-        public int GetSharedMemoryAddressOffset(SharedFontType FontType)
+        public int GetSharedMemoryAddressOffset(SharedFontType fontType)
         {
             EnsureInitialized();
 
-            return FontData[FontType].Offset + 8;
+            return _fontData[fontType].Offset + 8;
         }
     }
 }

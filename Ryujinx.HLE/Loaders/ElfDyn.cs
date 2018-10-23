@@ -6,10 +6,10 @@ namespace Ryujinx.HLE.Loaders
 
         public long Value { get; private set; }
 
-        public ElfDyn(ElfDynTag Tag, long Value)
+        public ElfDyn(ElfDynTag tag, long value)
         {
-            this.Tag   = Tag;
-            this.Value = Value;
+            this.Tag   = tag;
+            this.Value = value;
         }
     }
 }

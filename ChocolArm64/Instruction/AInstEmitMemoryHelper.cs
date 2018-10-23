@@ -15,124 +15,124 @@ namespace ChocolArm64.Instruction
             Sx64
         }
 
-        public static void EmitReadZxCall(AILEmitterCtx Context, int Size)
+        public static void EmitReadZxCall(AilEmitterCtx context, int size)
         {
-            EmitReadCall(Context, Extension.Zx, Size);
+            EmitReadCall(context, Extension.Zx, size);
         }
 
-        public static void EmitReadSx32Call(AILEmitterCtx Context, int Size)
+        public static void EmitReadSx32Call(AilEmitterCtx context, int size)
         {
-            EmitReadCall(Context, Extension.Sx32, Size);
+            EmitReadCall(context, Extension.Sx32, size);
         }
 
-        public static void EmitReadSx64Call(AILEmitterCtx Context, int Size)
+        public static void EmitReadSx64Call(AilEmitterCtx context, int size)
         {
-            EmitReadCall(Context, Extension.Sx64, Size);
+            EmitReadCall(context, Extension.Sx64, size);
         }
 
-        private static void EmitReadCall(AILEmitterCtx Context, Extension Ext, int Size)
+        private static void EmitReadCall(AilEmitterCtx context, Extension ext, int size)
         {
-            bool IsSimd = GetIsSimd(Context);
+            bool isSimd = GetIsSimd(context);
 
-            string Name = null;
+            string name = null;
 
-            if (Size < 0 || Size > (IsSimd ? 4 : 3))
+            if (size < 0 || size > (isSimd ? 4 : 3))
             {
-                throw new ArgumentOutOfRangeException(nameof(Size));
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
 
-            if (IsSimd)
+            if (isSimd)
             {
-                switch (Size)
+                switch (size)
                 {
-                    case 0: Name = nameof(AMemory.ReadVector8);   break;
-                    case 1: Name = nameof(AMemory.ReadVector16);  break;
-                    case 2: Name = nameof(AMemory.ReadVector32);  break;
-                    case 3: Name = nameof(AMemory.ReadVector64);  break;
-                    case 4: Name = nameof(AMemory.ReadVector128); break;
+                    case 0: name = nameof(AMemory.ReadVector8);   break;
+                    case 1: name = nameof(AMemory.ReadVector16);  break;
+                    case 2: name = nameof(AMemory.ReadVector32);  break;
+                    case 3: name = nameof(AMemory.ReadVector64);  break;
+                    case 4: name = nameof(AMemory.ReadVector128); break;
                 }
             }
             else
             {
-                switch (Size)
+                switch (size)
                 {
-                    case 0: Name = nameof(AMemory.ReadByte);   break;
-                    case 1: Name = nameof(AMemory.ReadUInt16); break;
-                    case 2: Name = nameof(AMemory.ReadUInt32); break;
-                    case 3: Name = nameof(AMemory.ReadUInt64); break;
+                    case 0: name = nameof(AMemory.ReadByte);   break;
+                    case 1: name = nameof(AMemory.ReadUInt16); break;
+                    case 2: name = nameof(AMemory.ReadUInt32); break;
+                    case 3: name = nameof(AMemory.ReadUInt64); break;
                 }
             }
 
-            Context.EmitCall(typeof(AMemory), Name);
+            context.EmitCall(typeof(AMemory), name);
 
-            if (!IsSimd)
+            if (!isSimd)
             {
-                if (Ext == Extension.Sx32 ||
-                    Ext == Extension.Sx64)
+                if (ext == Extension.Sx32 ||
+                    ext == Extension.Sx64)
                 {
-                    switch (Size)
+                    switch (size)
                     {
-                        case 0: Context.Emit(OpCodes.Conv_I1); break;
-                        case 1: Context.Emit(OpCodes.Conv_I2); break;
-                        case 2: Context.Emit(OpCodes.Conv_I4); break;
+                        case 0: context.Emit(OpCodes.Conv_I1); break;
+                        case 1: context.Emit(OpCodes.Conv_I2); break;
+                        case 2: context.Emit(OpCodes.Conv_I4); break;
                     }
                 }
 
-                if (Size < 3)
+                if (size < 3)
                 {
-                    Context.Emit(Ext == Extension.Sx64
+                    context.Emit(ext == Extension.Sx64
                         ? OpCodes.Conv_I8
                         : OpCodes.Conv_U8);
                 }
             }
         }
 
-        public static void EmitWriteCall(AILEmitterCtx Context, int Size)
+        public static void EmitWriteCall(AilEmitterCtx context, int size)
         {
-            bool IsSimd = GetIsSimd(Context);
+            bool isSimd = GetIsSimd(context);
 
-            string Name = null;
+            string name = null;
 
-            if (Size < 0 || Size > (IsSimd ? 4 : 3))
+            if (size < 0 || size > (isSimd ? 4 : 3))
             {
-                throw new ArgumentOutOfRangeException(nameof(Size));
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
 
-            if (Size < 3 && !IsSimd)
+            if (size < 3 && !isSimd)
             {
-                Context.Emit(OpCodes.Conv_I4);
+                context.Emit(OpCodes.Conv_I4);
             }
 
-            if (IsSimd)
+            if (isSimd)
             {
-                switch (Size)
+                switch (size)
                 {
-                    case 0: Name = nameof(AMemory.WriteVector8);   break;
-                    case 1: Name = nameof(AMemory.WriteVector16);  break;
-                    case 2: Name = nameof(AMemory.WriteVector32);  break;
-                    case 3: Name = nameof(AMemory.WriteVector64);  break;
-                    case 4: Name = nameof(AMemory.WriteVector128); break;
+                    case 0: name = nameof(AMemory.WriteVector8);   break;
+                    case 1: name = nameof(AMemory.WriteVector16);  break;
+                    case 2: name = nameof(AMemory.WriteVector32);  break;
+                    case 3: name = nameof(AMemory.WriteVector64);  break;
+                    case 4: name = nameof(AMemory.WriteVector128); break;
                 }
             }
             else
             {
-                switch (Size)
+                switch (size)
                 {
-                    case 0: Name = nameof(AMemory.WriteByte);   break;
-                    case 1: Name = nameof(AMemory.WriteUInt16); break;
-                    case 2: Name = nameof(AMemory.WriteUInt32); break;
-                    case 3: Name = nameof(AMemory.WriteUInt64); break;
+                    case 0: name = nameof(AMemory.WriteByte);   break;
+                    case 1: name = nameof(AMemory.WriteUInt16); break;
+                    case 2: name = nameof(AMemory.WriteUInt32); break;
+                    case 3: name = nameof(AMemory.WriteUInt64); break;
                 }
             }
 
-            Context.EmitCall(typeof(AMemory), Name);
+            context.EmitCall(typeof(AMemory), name);
         }
 
-        private static bool GetIsSimd(AILEmitterCtx Context)
+        private static bool GetIsSimd(AilEmitterCtx context)
         {
-            return Context.CurrOp is IAOpCodeSimd &&
-                 !(Context.CurrOp is AOpCodeSimdMemMs ||
-                   Context.CurrOp is AOpCodeSimdMemSs);
+            return context.CurrOp is IAOpCodeSimd &&
+                 !(context.CurrOp is AOpCodeSimdMemMs ||
+                   context.CurrOp is AOpCodeSimdMemSs);
         }
     }
 }

@@ -4,37 +4,37 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class IntegerLiteral : BaseNode
     {
-        private string LitteralName;
-        private string LitteralValue;
+        private string _litteralName;
+        private string _litteralValue;
 
-        public IntegerLiteral(string LitteralName, string LitteralValue) : base(NodeType.IntegerLiteral)
+        public IntegerLiteral(string litteralName, string litteralValue) : base(NodeType.IntegerLiteral)
         {
-            this.LitteralValue = LitteralValue;
-            this.LitteralName  = LitteralName;
+            this._litteralValue = litteralValue;
+            this._litteralName  = litteralName;
         }
 
-        public override void PrintLeft(TextWriter Writer)
+        public override void PrintLeft(TextWriter writer)
         {
-            if (LitteralName.Length > 3)
+            if (_litteralName.Length > 3)
             {
-                Writer.Write("(");
-                Writer.Write(LitteralName);
-                Writer.Write(")");
+                writer.Write("(");
+                writer.Write(_litteralName);
+                writer.Write(")");
             }
 
-            if (LitteralValue[0] == 'n')
+            if (_litteralValue[0] == 'n')
             {
-                Writer.Write("-");
-                Writer.Write(LitteralValue.Substring(1));
+                writer.Write("-");
+                writer.Write(_litteralValue.Substring(1));
             }
             else
             {
-                Writer.Write(LitteralValue);
+                writer.Write(_litteralValue);
             }
 
-            if (LitteralName.Length <= 3)
+            if (_litteralName.Length <= 3)
             {
-                Writer.Write(LitteralName);
+                writer.Write(_litteralName);
             }
         }
     }

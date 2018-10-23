@@ -1,11 +1,11 @@
 namespace ChocolArm64.State
 {
-    enum FPCR
+    enum Fpcr
     {
-        UFE   = 11,
+        Ufe   = 11,
         RMode = 22,
-        FZ    = 24,
-        DN    = 25,
-        AHP   = 26
+        Fz    = 24,
+        Dn    = 25,
+        Ahp   = 26
     }
 }

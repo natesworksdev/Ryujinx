@@ -10,56 +10,56 @@ namespace ChocolArm64.Decoder
         public bool Replicate { get; private set; }
         public bool WBack     { get; private set; }
 
-        public AOpCodeSimdMemSs(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdMemSs(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            int Size   = (OpCode >> 10) & 3;
-            int S      = (OpCode >> 12) & 1;
-            int SElems = (OpCode >> 12) & 2;
-            int Scale  = (OpCode >> 14) & 3;
-            int L      = (OpCode >> 22) & 1;
-            int Q      = (OpCode >> 30) & 1;
+            int size   = (opCode >> 10) & 3;
+            int s      = (opCode >> 12) & 1;
+            int sElems = (opCode >> 12) & 2;
+            int scale  = (opCode >> 14) & 3;
+            int l      = (opCode >> 22) & 1;
+            int q      = (opCode >> 30) & 1;
 
-            SElems |= (OpCode >> 21) & 1;
+            sElems |= (opCode >> 21) & 1;
 
-            SElems++;
+            sElems++;
 
-            int Index = (Q << 3) | (S << 2) | Size;
+            int index = (q << 3) | (s << 2) | size;
 
-            switch (Scale)
+            switch (scale)
             {
                 case 1:
                 {
-                    if ((Size & 1) != 0)
+                    if ((size & 1) != 0)
                     {
-                        Inst = AInst.Undefined;
+                        inst = AInst.Undefined;
 
                         return;
                     }
 
-                    Index >>= 1;
+                    index >>= 1;
 
                     break;
                 }
 
                 case 2:
                 {
-                    if ((Size & 2) != 0 ||
-                       ((Size & 1) != 0 && S != 0))
+                    if ((size & 2) != 0 ||
+                       ((size & 1) != 0 && s != 0))
                     {
-                        Inst = AInst.Undefined;
+                        inst = AInst.Undefined;
 
                         return;
                     }
 
-                    if ((Size & 1) != 0)
+                    if ((size & 1) != 0)
                     {
-                        Index >>= 3;
+                        index >>= 3;
 
-                        Scale = 3;
+                        scale = 3;
                     }
                     else
                     {
-                        Index >>= 2;
+                        index >>= 2;
                     }
 
                     break;
@@ -67,14 +67,14 @@ namespace ChocolArm64.Decoder
 
                 case 3:
                 {
-                    if (L == 0 || S != 0)
+                    if (l == 0 || s != 0)
                     {
-                        Inst = AInst.Undefined;
+                        inst = AInst.Undefined;
 
                         return;
                     }
 
-                    Scale = Size;
+                    scale = size;
 
                     Replicate = true;
 
@@ -82,17 +82,17 @@ namespace ChocolArm64.Decoder
                 }
             }
 
-            this.Index  = Index;
-            this.SElems = SElems;
-            this.Size   = Scale;
+            this.Index  = index;
+            this.SElems = sElems;
+            this.Size   = scale;
 
             Extend64 = false;
 
-            WBack = ((OpCode >> 23) & 1) != 0;
+            WBack = ((opCode >> 23) & 1) != 0;
 
-            RegisterSize = Q != 0
-                ? ARegisterSize.SIMD128
-                : ARegisterSize.SIMD64;
+            RegisterSize = q != 0
+                ? ARegisterSize.Simd128
+                : ARegisterSize.Simd64;
         }
     }
 }

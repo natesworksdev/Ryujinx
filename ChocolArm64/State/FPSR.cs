@@ -1,8 +1,8 @@
 namespace ChocolArm64.State
 {
-    enum FPSR
+    enum Fpsr
     {
-        UFC = 3,
-        QC  = 27
+        Ufc = 3,
+        Qc  = 27
     }
 }

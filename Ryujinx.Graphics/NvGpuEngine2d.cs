@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics
 {
-    public class NvGpuEngine2d : INvGpuEngine
+    public class NvGpuEngine2D : INvGpuEngine
     {
         private enum CopyOperation
         {
@@ -20,138 +20,138 @@ namespace Ryujinx.Graphics
 
         public int[] Registers { get; private set; }
 
-        private NvGpu Gpu;
+        private NvGpu _gpu;
 
-        private Dictionary<int, NvGpuMethod> Methods;
+        private Dictionary<int, NvGpuMethod> _methods;
 
-        public NvGpuEngine2d(NvGpu Gpu)
+        public NvGpuEngine2D(NvGpu gpu)
         {
-            this.Gpu = Gpu;
+            this._gpu = gpu;
 
             Registers = new int[0xe00];
 
-            Methods = new Dictionary<int, NvGpuMethod>();
+            _methods = new Dictionary<int, NvGpuMethod>();
 
-            void AddMethod(int Meth, int Count, int Stride, NvGpuMethod Method)
+            void AddMethod(int meth, int count, int stride, NvGpuMethod method)
             {
-                while (Count-- > 0)
+                while (count-- > 0)
                 {
-                    Methods.Add(Meth, Method);
+                    _methods.Add(meth, method);
 
-                    Meth += Stride;
+                    meth += stride;
                 }
             }
 
             AddMethod(0xb5, 1, 1, TextureCopy);
         }
 
-        public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        public void CallMethod(NvGpuVmm vmm, NvGpuPbEntry pbEntry)
         {
-            if (Methods.TryGetValue(PBEntry.Method, out NvGpuMethod Method))
+            if (_methods.TryGetValue(pbEntry.Method, out NvGpuMethod method))
             {
-                Method(Vmm, PBEntry);
+                method(vmm, pbEntry);
             }
             else
             {
-                WriteRegister(PBEntry);
+                WriteRegister(pbEntry);
             }
         }
 
-        private void TextureCopy(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void TextureCopy(NvGpuVmm vmm, NvGpuPbEntry pbEntry)
         {
-            CopyOperation Operation = (CopyOperation)ReadRegister(NvGpuEngine2dReg.CopyOperation);
+            CopyOperation operation = (CopyOperation)ReadRegister(NvGpuEngine2DReg.CopyOperation);
 
-            int  SrcFormat = ReadRegister(NvGpuEngine2dReg.SrcFormat);
-            bool SrcLinear = ReadRegister(NvGpuEngine2dReg.SrcLinear) != 0;
-            int  SrcWidth  = ReadRegister(NvGpuEngine2dReg.SrcWidth);
-            int  SrcHeight = ReadRegister(NvGpuEngine2dReg.SrcHeight);
-            int  SrcPitch  = ReadRegister(NvGpuEngine2dReg.SrcPitch);
-            int  SrcBlkDim = ReadRegister(NvGpuEngine2dReg.SrcBlockDimensions);
+            int  srcFormat = ReadRegister(NvGpuEngine2DReg.SrcFormat);
+            bool srcLinear = ReadRegister(NvGpuEngine2DReg.SrcLinear) != 0;
+            int  srcWidth  = ReadRegister(NvGpuEngine2DReg.SrcWidth);
+            int  srcHeight = ReadRegister(NvGpuEngine2DReg.SrcHeight);
+            int  srcPitch  = ReadRegister(NvGpuEngine2DReg.SrcPitch);
+            int  srcBlkDim = ReadRegister(NvGpuEngine2DReg.SrcBlockDimensions);
 
-            int  DstFormat = ReadRegister(NvGpuEngine2dReg.DstFormat);
-            bool DstLinear = ReadRegister(NvGpuEngine2dReg.DstLinear) != 0;
-            int  DstWidth  = ReadRegister(NvGpuEngine2dReg.DstWidth);
-            int  DstHeight = ReadRegister(NvGpuEngine2dReg.DstHeight);
-            int  DstPitch  = ReadRegister(NvGpuEngine2dReg.DstPitch);
-            int  DstBlkDim = ReadRegister(NvGpuEngine2dReg.DstBlockDimensions);
+            int  dstFormat = ReadRegister(NvGpuEngine2DReg.DstFormat);
+            bool dstLinear = ReadRegister(NvGpuEngine2DReg.DstLinear) != 0;
+            int  dstWidth  = ReadRegister(NvGpuEngine2DReg.DstWidth);
+            int  dstHeight = ReadRegister(NvGpuEngine2DReg.DstHeight);
+            int  dstPitch  = ReadRegister(NvGpuEngine2DReg.DstPitch);
+            int  dstBlkDim = ReadRegister(NvGpuEngine2DReg.DstBlockDimensions);
 
-            GalImageFormat SrcImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)SrcFormat);
-            GalImageFormat DstImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)DstFormat);
+            GalImageFormat srcImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)srcFormat);
+            GalImageFormat dstImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)dstFormat);
 
-            GalMemoryLayout SrcLayout = GetLayout(SrcLinear);
-            GalMemoryLayout DstLayout = GetLayout(DstLinear);
+            GalMemoryLayout srcLayout = GetLayout(srcLinear);
+            GalMemoryLayout dstLayout = GetLayout(dstLinear);
 
-            int SrcBlockHeight = 1 << ((SrcBlkDim >> 4) & 0xf);
-            int DstBlockHeight = 1 << ((DstBlkDim >> 4) & 0xf);
+            int srcBlockHeight = 1 << ((srcBlkDim >> 4) & 0xf);
+            int dstBlockHeight = 1 << ((dstBlkDim >> 4) & 0xf);
 
-            long SrcAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress);
-            long DstAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.DstAddress);
+            long srcAddress = MakeInt64From2XInt32(NvGpuEngine2DReg.SrcAddress);
+            long dstAddress = MakeInt64From2XInt32(NvGpuEngine2DReg.DstAddress);
 
-            long SrcKey = Vmm.GetPhysicalAddress(SrcAddress);
-            long DstKey = Vmm.GetPhysicalAddress(DstAddress);
+            long srcKey = vmm.GetPhysicalAddress(srcAddress);
+            long dstKey = vmm.GetPhysicalAddress(dstAddress);
 
-            GalImage SrcTexture = new GalImage(
-                SrcWidth,
-                SrcHeight, 1,
-                SrcBlockHeight,
-                SrcLayout,
-                SrcImgFormat);
+            GalImage srcTexture = new GalImage(
+                srcWidth,
+                srcHeight, 1,
+                srcBlockHeight,
+                srcLayout,
+                srcImgFormat);
 
-            GalImage DstTexture = new GalImage(
-                DstWidth,
-                DstHeight, 1,
-                DstBlockHeight,
-                DstLayout,
-                DstImgFormat);
+            GalImage dstTexture = new GalImage(
+                dstWidth,
+                dstHeight, 1,
+                dstBlockHeight,
+                dstLayout,
+                dstImgFormat);
 
-            Gpu.ResourceManager.SendTexture(Vmm, SrcKey, SrcTexture);
-            Gpu.ResourceManager.SendTexture(Vmm, DstKey, DstTexture);
+            _gpu.ResourceManager.SendTexture(vmm, srcKey, srcTexture);
+            _gpu.ResourceManager.SendTexture(vmm, dstKey, dstTexture);
 
-            Gpu.Renderer.RenderTarget.Copy(
-                SrcKey,
-                DstKey,
+            _gpu.Renderer.RenderTarget.Copy(
+                srcKey,
+                dstKey,
                 0,
                 0,
-                SrcWidth,
-                SrcHeight,
+                srcWidth,
+                srcHeight,
                 0,
                 0,
-                DstWidth,
-                DstHeight);
+                dstWidth,
+                dstHeight);
         }
 
-        private static GalMemoryLayout GetLayout(bool Linear)
+        private static GalMemoryLayout GetLayout(bool linear)
         {
-            return Linear
+            return linear
                 ? GalMemoryLayout.Pitch
                 : GalMemoryLayout.BlockLinear;
         }
 
-        private long MakeInt64From2xInt32(NvGpuEngine2dReg Reg)
+        private long MakeInt64From2XInt32(NvGpuEngine2DReg reg)
         {
             return
-                (long)Registers[(int)Reg + 0] << 32 |
-                (uint)Registers[(int)Reg + 1];
+                (long)Registers[(int)reg + 0] << 32 |
+                (uint)Registers[(int)reg + 1];
         }
 
-        private void WriteRegister(NvGpuPBEntry PBEntry)
+        private void WriteRegister(NvGpuPbEntry pbEntry)
         {
-            int ArgsCount = PBEntry.Arguments.Count;
+            int argsCount = pbEntry.Arguments.Count;
 
-            if (ArgsCount > 0)
+            if (argsCount > 0)
             {
-                Registers[PBEntry.Method] = PBEntry.Arguments[ArgsCount - 1];
+                Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
             }
         }
 
-        private int ReadRegister(NvGpuEngine2dReg Reg)
+        private int ReadRegister(NvGpuEngine2DReg reg)
         {
-            return Registers[(int)Reg];
+            return Registers[(int)reg];
         }
 
-        private void WriteRegister(NvGpuEngine2dReg Reg, int Value)
+        private void WriteRegister(NvGpuEngine2DReg reg, int value)
         {
-            Registers[(int)Reg] = Value;
+            Registers[(int)reg] = value;
         }
     }
 }

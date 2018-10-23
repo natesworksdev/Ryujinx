@@ -7,182 +7,182 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void B(AILEmitterCtx Context)
+        public static void B(AilEmitterCtx context)
         {
-            AOpCodeBImmAl Op = (AOpCodeBImmAl)Context.CurrOp;
+            AOpCodeBImmAl op = (AOpCodeBImmAl)context.CurrOp;
 
-            if (Context.CurrBlock.Branch != null)
+            if (context.CurrBlock.Branch != null)
             {
-                Context.Emit(OpCodes.Br, Context.GetLabel(Op.Imm));
+                context.Emit(OpCodes.Br, context.GetLabel(op.Imm));
             }
             else
             {
-                Context.EmitStoreState();
-                Context.EmitLdc_I8(Op.Imm);
+                context.EmitStoreState();
+                context.EmitLdc_I8(op.Imm);
 
-                Context.Emit(OpCodes.Ret);
+                context.Emit(OpCodes.Ret);
             }
         }
 
-        public static void B_Cond(AILEmitterCtx Context)
+        public static void B_Cond(AilEmitterCtx context)
         {
-            AOpCodeBImmCond Op = (AOpCodeBImmCond)Context.CurrOp;
+            AOpCodeBImmCond op = (AOpCodeBImmCond)context.CurrOp;
 
-            EmitBranch(Context, Op.Cond);
+            EmitBranch(context, op.Cond);
         }
 
-        public static void Bl(AILEmitterCtx Context)
+        public static void Bl(AilEmitterCtx context)
         {
-            AOpCodeBImmAl Op = (AOpCodeBImmAl)Context.CurrOp;
+            AOpCodeBImmAl op = (AOpCodeBImmAl)context.CurrOp;
 
-            Context.EmitLdc_I(Op.Position + 4);
-            Context.EmitStint(AThreadState.LRIndex);
-            Context.EmitStoreState();
+            context.EmitLdc_I(op.Position + 4);
+            context.EmitStint(AThreadState.LrIndex);
+            context.EmitStoreState();
 
-            if (Context.TryOptEmitSubroutineCall())
+            if (context.TryOptEmitSubroutineCall())
             {
                 //Note: the return value of the called method will be placed
                 //at the Stack, the return value is always a Int64 with the
                 //return address of the function. We check if the address is
                 //correct, if it isn't we keep returning until we reach the dispatcher.
-                Context.Emit(OpCodes.Dup);
+                context.Emit(OpCodes.Dup);
 
-                Context.EmitLdc_I8(Op.Position + 4);
+                context.EmitLdc_I8(op.Position + 4);
 
-                AILLabel LblContinue = new AILLabel();
+                AilLabel lblContinue = new AilLabel();
 
-                Context.Emit(OpCodes.Beq_S, LblContinue);
-                Context.Emit(OpCodes.Ret);
+                context.Emit(OpCodes.Beq_S, lblContinue);
+                context.Emit(OpCodes.Ret);
 
-                Context.MarkLabel(LblContinue);
+                context.MarkLabel(lblContinue);
 
-                Context.Emit(OpCodes.Pop);
+                context.Emit(OpCodes.Pop);
 
-                Context.EmitLoadState(Context.CurrBlock.Next);
+                context.EmitLoadState(context.CurrBlock.Next);
             }
             else
             {
-                Context.EmitLdc_I8(Op.Imm);
+                context.EmitLdc_I8(op.Imm);
 
-                Context.Emit(OpCodes.Ret);
+                context.Emit(OpCodes.Ret);
             }
         }
 
-        public static void Blr(AILEmitterCtx Context)
+        public static void Blr(AilEmitterCtx context)
         {
-            AOpCodeBReg Op = (AOpCodeBReg)Context.CurrOp;
+            AOpCodeBReg op = (AOpCodeBReg)context.CurrOp;
 
-            Context.EmitLdc_I(Op.Position + 4);
-            Context.EmitStint(AThreadState.LRIndex);
-            Context.EmitStoreState();
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdc_I(op.Position + 4);
+            context.EmitStint(AThreadState.LrIndex);
+            context.EmitStoreState();
+            context.EmitLdintzr(op.Rn);
 
-            Context.Emit(OpCodes.Ret);
+            context.Emit(OpCodes.Ret);
         }
 
-        public static void Br(AILEmitterCtx Context)
+        public static void Br(AilEmitterCtx context)
         {
-            AOpCodeBReg Op = (AOpCodeBReg)Context.CurrOp;
+            AOpCodeBReg op = (AOpCodeBReg)context.CurrOp;
 
-            Context.EmitStoreState();
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitStoreState();
+            context.EmitLdintzr(op.Rn);
 
-            Context.Emit(OpCodes.Ret);
+            context.Emit(OpCodes.Ret);
         }
 
-        public static void Cbnz(AILEmitterCtx Context) => EmitCb(Context, OpCodes.Bne_Un);
-        public static void Cbz(AILEmitterCtx Context)  => EmitCb(Context, OpCodes.Beq);
+        public static void Cbnz(AilEmitterCtx context) => EmitCb(context, OpCodes.Bne_Un);
+        public static void Cbz(AilEmitterCtx context)  => EmitCb(context, OpCodes.Beq);
 
-        private static void EmitCb(AILEmitterCtx Context, OpCode ILOp)
+        private static void EmitCb(AilEmitterCtx context, OpCode ilOp)
         {
-            AOpCodeBImmCmp Op = (AOpCodeBImmCmp)Context.CurrOp;
+            AOpCodeBImmCmp op = (AOpCodeBImmCmp)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rt);
-            Context.EmitLdc_I(0);
+            context.EmitLdintzr(op.Rt);
+            context.EmitLdc_I(0);
 
-            EmitBranch(Context, ILOp);
+            EmitBranch(context, ilOp);
         }
 
-        public static void Ret(AILEmitterCtx Context)
+        public static void Ret(AilEmitterCtx context)
         {
-            Context.EmitStoreState();
-            Context.EmitLdint(AThreadState.LRIndex);
+            context.EmitStoreState();
+            context.EmitLdint(AThreadState.LrIndex);
 
-            Context.Emit(OpCodes.Ret);
+            context.Emit(OpCodes.Ret);
         }
 
-        public static void Tbnz(AILEmitterCtx Context) => EmitTb(Context, OpCodes.Bne_Un);
-        public static void Tbz(AILEmitterCtx Context)  => EmitTb(Context, OpCodes.Beq);
+        public static void Tbnz(AilEmitterCtx context) => EmitTb(context, OpCodes.Bne_Un);
+        public static void Tbz(AilEmitterCtx context)  => EmitTb(context, OpCodes.Beq);
 
-        private static void EmitTb(AILEmitterCtx Context, OpCode ILOp)
+        private static void EmitTb(AilEmitterCtx context, OpCode ilOp)
         {
-            AOpCodeBImmTest Op = (AOpCodeBImmTest)Context.CurrOp;
+            AOpCodeBImmTest op = (AOpCodeBImmTest)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rt);
-            Context.EmitLdc_I(1L << Op.Pos);
+            context.EmitLdintzr(op.Rt);
+            context.EmitLdc_I(1L << op.Pos);
 
-            Context.Emit(OpCodes.And);
+            context.Emit(OpCodes.And);
 
-            Context.EmitLdc_I(0);
+            context.EmitLdc_I(0);
 
-            EmitBranch(Context, ILOp);
+            EmitBranch(context, ilOp);
         }
 
-        private static void EmitBranch(AILEmitterCtx Context, ACond Cond)
+        private static void EmitBranch(AilEmitterCtx context, ACond cond)
         {
-            AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
+            AOpCodeBImm op = (AOpCodeBImm)context.CurrOp;
 
-            if (Context.CurrBlock.Next   != null &&
-                Context.CurrBlock.Branch != null)
+            if (context.CurrBlock.Next   != null &&
+                context.CurrBlock.Branch != null)
             {
-                Context.EmitCondBranch(Context.GetLabel(Op.Imm), Cond);
-            }
-            else
-            {
-                Context.EmitStoreState();
-
-                AILLabel LblTaken = new AILLabel();
-
-                Context.EmitCondBranch(LblTaken, Cond);
-
-                Context.EmitLdc_I8(Op.Position + 4);
-
-                Context.Emit(OpCodes.Ret);
-
-                Context.MarkLabel(LblTaken);
-
-                Context.EmitLdc_I8(Op.Imm);
-
-                Context.Emit(OpCodes.Ret);
-            }
-        }
-
-        private static void EmitBranch(AILEmitterCtx Context, OpCode ILOp)
-        {
-            AOpCodeBImm Op = (AOpCodeBImm)Context.CurrOp;
-
-            if (Context.CurrBlock.Next   != null &&
-                Context.CurrBlock.Branch != null)
-            {
-                Context.Emit(ILOp, Context.GetLabel(Op.Imm));
+                context.EmitCondBranch(context.GetLabel(op.Imm), cond);
             }
             else
             {
-                Context.EmitStoreState();
+                context.EmitStoreState();
 
-                AILLabel LblTaken = new AILLabel();
+                AilLabel lblTaken = new AilLabel();
 
-                Context.Emit(ILOp, LblTaken);
+                context.EmitCondBranch(lblTaken, cond);
 
-                Context.EmitLdc_I8(Op.Position + 4);
+                context.EmitLdc_I8(op.Position + 4);
 
-                Context.Emit(OpCodes.Ret);
+                context.Emit(OpCodes.Ret);
 
-                Context.MarkLabel(LblTaken);
+                context.MarkLabel(lblTaken);
 
-                Context.EmitLdc_I8(Op.Imm);
+                context.EmitLdc_I8(op.Imm);
 
-                Context.Emit(OpCodes.Ret);
+                context.Emit(OpCodes.Ret);
+            }
+        }
+
+        private static void EmitBranch(AilEmitterCtx context, OpCode ilOp)
+        {
+            AOpCodeBImm op = (AOpCodeBImm)context.CurrOp;
+
+            if (context.CurrBlock.Next   != null &&
+                context.CurrBlock.Branch != null)
+            {
+                context.Emit(ilOp, context.GetLabel(op.Imm));
+            }
+            else
+            {
+                context.EmitStoreState();
+
+                AilLabel lblTaken = new AilLabel();
+
+                context.Emit(ilOp, lblTaken);
+
+                context.EmitLdc_I8(op.Position + 4);
+
+                context.Emit(OpCodes.Ret);
+
+                context.MarkLabel(lblTaken);
+
+                context.EmitLdc_I8(op.Imm);
+
+                context.Emit(OpCodes.Ret);
             }
         }
     }

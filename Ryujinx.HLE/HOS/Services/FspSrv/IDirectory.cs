@@ -6,96 +6,96 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
-    class IDirectory : IpcService, IDisposable
+    class Directory : IpcService, IDisposable
     {
         private const int DirectoryEntrySize = 0x310;
 
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        private List<string> DirectoryEntries;
+        private List<string> _directoryEntries;
 
-        private int CurrentItemIndex;
+        private int _currentItemIndex;
 
         public event EventHandler<EventArgs> Disposed;
 
         public string HostPath { get; private set; }
 
-        public IDirectory(string HostPath, int Flags)
+        public Directory(string hostPath, int flags)
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, Read          },
                 { 1, GetEntryCount }
             };
 
-            this.HostPath = HostPath;
+            this.HostPath = hostPath;
 
-            DirectoryEntries = new List<string>();
+            _directoryEntries = new List<string>();
 
-            if ((Flags & 1) != 0)
+            if ((flags & 1) != 0)
             {
-                DirectoryEntries.AddRange(Directory.GetDirectories(HostPath));
+                _directoryEntries.AddRange(System.IO.Directory.GetDirectories(hostPath));
             }
 
-            if ((Flags & 2) != 0)
+            if ((flags & 2) != 0)
             {
-                DirectoryEntries.AddRange(Directory.GetFiles(HostPath));
+                _directoryEntries.AddRange(System.IO.Directory.GetFiles(hostPath));
             }
 
-            CurrentItemIndex = 0;
+            _currentItemIndex = 0;
         }
 
-        public long Read(ServiceCtx Context)
+        public long Read(ServiceCtx context)
         {
-            long BufferPosition = Context.Request.ReceiveBuff[0].Position;
-            long BufferLen      = Context.Request.ReceiveBuff[0].Size;
+            long bufferPosition = context.Request.ReceiveBuff[0].Position;
+            long bufferLen      = context.Request.ReceiveBuff[0].Size;
 
-            int MaxReadCount = (int)(BufferLen / DirectoryEntrySize);
+            int maxReadCount = (int)(bufferLen / DirectoryEntrySize);
 
-            int Count = Math.Min(DirectoryEntries.Count - CurrentItemIndex, MaxReadCount);
+            int count = Math.Min(_directoryEntries.Count - _currentItemIndex, maxReadCount);
 
-            for (int Index = 0; Index < Count; Index++)
+            for (int index = 0; index < count; index++)
             {
-                long Position = BufferPosition + Index * DirectoryEntrySize;
+                long position = bufferPosition + index * DirectoryEntrySize;
 
-                WriteDirectoryEntry(Context, Position, DirectoryEntries[CurrentItemIndex++]);
+                WriteDirectoryEntry(context, position, _directoryEntries[_currentItemIndex++]);
             }
 
-            Context.ResponseData.Write((long)Count);
+            context.ResponseData.Write((long)count);
 
             return 0;
         }
 
-        private void WriteDirectoryEntry(ServiceCtx Context, long Position, string FullPath)
+        private void WriteDirectoryEntry(ServiceCtx context, long position, string fullPath)
         {
-            for (int Offset = 0; Offset < 0x300; Offset += 8)
+            for (int offset = 0; offset < 0x300; offset += 8)
             {
-                Context.Memory.WriteInt64(Position + Offset, 0);
+                context.Memory.WriteInt64(position + offset, 0);
             }
 
-            byte[] NameBuffer = Encoding.UTF8.GetBytes(Path.GetFileName(FullPath));
+            byte[] nameBuffer = Encoding.UTF8.GetBytes(Path.GetFileName(fullPath));
 
-            Context.Memory.WriteBytes(Position, NameBuffer);
+            context.Memory.WriteBytes(position, nameBuffer);
 
-            int  Type = 0;
-            long Size = 0;
+            int  type = 0;
+            long size = 0;
 
-            if (File.Exists(FullPath))
+            if (System.IO.File.Exists(fullPath))
             {
-                Type = 1;
-                Size = new FileInfo(FullPath).Length;
+                type = 1;
+                size = new FileInfo(fullPath).Length;
             }
 
-            Context.Memory.WriteInt32(Position + 0x300, 0); //Padding?
-            Context.Memory.WriteInt32(Position + 0x304, Type);
-            Context.Memory.WriteInt64(Position + 0x308, Size);
+            context.Memory.WriteInt32(position + 0x300, 0); //Padding?
+            context.Memory.WriteInt32(position + 0x304, type);
+            context.Memory.WriteInt64(position + 0x308, size);
         }
 
-        public long GetEntryCount(ServiceCtx Context)
+        public long GetEntryCount(ServiceCtx context)
         {
-            Context.ResponseData.Write((long)DirectoryEntries.Count);
+            context.ResponseData.Write((long)_directoryEntries.Count);
 
             return 0;
         }

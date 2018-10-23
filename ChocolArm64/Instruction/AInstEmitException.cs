@@ -7,79 +7,79 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void Brk(AILEmitterCtx Context)
+        public static void Brk(AilEmitterCtx context)
         {
-            EmitExceptionCall(Context, nameof(AThreadState.OnBreak));
+            EmitExceptionCall(context, nameof(AThreadState.OnBreak));
         }
 
-        public static void Svc(AILEmitterCtx Context)
+        public static void Svc(AilEmitterCtx context)
         {
-            EmitExceptionCall(Context, nameof(AThreadState.OnSvcCall));
+            EmitExceptionCall(context, nameof(AThreadState.OnSvcCall));
         }
 
-        private static void EmitExceptionCall(AILEmitterCtx Context, string MthdName)
+        private static void EmitExceptionCall(AilEmitterCtx context, string mthdName)
         {
-            AOpCodeException Op = (AOpCodeException)Context.CurrOp;
+            AOpCodeException op = (AOpCodeException)context.CurrOp;
 
-            Context.EmitStoreState();
+            context.EmitStoreState();
 
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-            Context.EmitLdc_I8(Op.Position);
-            Context.EmitLdc_I4(Op.Id);
+            context.EmitLdc_I8(op.Position);
+            context.EmitLdc_I4(op.Id);
 
-            Context.EmitPrivateCall(typeof(AThreadState), MthdName);
+            context.EmitPrivateCall(typeof(AThreadState), mthdName);
 
             //Check if the thread should still be running, if it isn't then we return 0
             //to force a return to the dispatcher and then exit the thread.
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-            Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Running));
+            context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Running));
 
-            AILLabel LblEnd = new AILLabel();
+            AilLabel lblEnd = new AilLabel();
 
-            Context.Emit(OpCodes.Brtrue_S, LblEnd);
+            context.Emit(OpCodes.Brtrue_S, lblEnd);
 
-            Context.EmitLdc_I8(0);
+            context.EmitLdc_I8(0);
 
-            Context.Emit(OpCodes.Ret);
+            context.Emit(OpCodes.Ret);
 
-            Context.MarkLabel(LblEnd);
+            context.MarkLabel(lblEnd);
 
-            if (Context.CurrBlock.Next != null)
+            if (context.CurrBlock.Next != null)
             {
-                Context.EmitLoadState(Context.CurrBlock.Next);
+                context.EmitLoadState(context.CurrBlock.Next);
             }
             else
             {
-                Context.EmitLdc_I8(Op.Position + 4);
+                context.EmitLdc_I8(op.Position + 4);
 
-                Context.Emit(OpCodes.Ret);
+                context.Emit(OpCodes.Ret);
             }
         }
 
-        public static void Und(AILEmitterCtx Context)
+        public static void Und(AilEmitterCtx context)
         {
-            AOpCode Op = Context.CurrOp;
+            AOpCode op = context.CurrOp;
 
-            Context.EmitStoreState();
+            context.EmitStoreState();
 
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-            Context.EmitLdc_I8(Op.Position);
-            Context.EmitLdc_I4(Op.RawOpCode);
+            context.EmitLdc_I8(op.Position);
+            context.EmitLdc_I4(op.RawOpCode);
 
-            Context.EmitPrivateCall(typeof(AThreadState), nameof(AThreadState.OnUndefined));
+            context.EmitPrivateCall(typeof(AThreadState), nameof(AThreadState.OnUndefined));
 
-            if (Context.CurrBlock.Next != null)
+            if (context.CurrBlock.Next != null)
             {
-                Context.EmitLoadState(Context.CurrBlock.Next);
+                context.EmitLoadState(context.CurrBlock.Next);
             }
             else
             {
-                Context.EmitLdc_I8(Op.Position + 4);
+                context.EmitLdc_I8(op.Position + 4);
 
-                Context.Emit(OpCodes.Ret);
+                context.Emit(OpCodes.Ret);
             }
         }
     }

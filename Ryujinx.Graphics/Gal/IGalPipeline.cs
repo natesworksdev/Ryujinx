@@ -2,9 +2,9 @@
 {
     public interface IGalPipeline
     {
-        void Bind(GalPipelineState State);
+        void Bind(GalPipelineState state);
 
         void ResetDepthMask();
-        void ResetColorMask(int Index);
+        void ResetColorMask(int index);
     }
 }

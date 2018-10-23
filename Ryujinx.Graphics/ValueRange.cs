@@ -7,11 +7,11 @@ namespace Ryujinx.Graphics
 
         public T Value { get; set; }
 
-        public ValueRange(long Start, long End, T Value = default(T))
+        public ValueRange(long start, long end, T value = default(T))
         {
-            this.Start = Start;
-            this.End   = End;
-            this.Value = Value;
+            this.Start = start;
+            this.End   = end;
+            this.Value = value;
         }
     }
 }

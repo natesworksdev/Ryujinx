@@ -16,40 +16,40 @@ namespace Ryujinx.HLE.FileSystem
 
         public Stream RomFs { get; private set; }
 
-        public void LoadRomFs(string FileName)
+        public void LoadRomFs(string fileName)
         {
-            RomFs = new FileStream(FileName, FileMode.Open, FileAccess.Read);
+            RomFs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
         }
 
-        public void SetRomFs(Stream RomfsStream)
+        public void SetRomFs(Stream romfsStream)
         {
             RomFs?.Close();
-            RomFs = RomfsStream;
+            RomFs = romfsStream;
         }
 
-        public string GetFullPath(string BasePath, string FileName)
+        public string GetFullPath(string basePath, string fileName)
         {
-            if (FileName.StartsWith("//"))
+            if (fileName.StartsWith("//"))
             {
-                FileName = FileName.Substring(2);
+                fileName = fileName.Substring(2);
             }
-            else if (FileName.StartsWith('/'))
+            else if (fileName.StartsWith('/'))
             {
-                FileName = FileName.Substring(1);
+                fileName = fileName.Substring(1);
             }
             else
             {
                 return null;
             }
 
-            string FullPath = Path.GetFullPath(Path.Combine(BasePath, FileName));
+            string fullPath = Path.GetFullPath(Path.Combine(basePath, fileName));
 
-            if (!FullPath.StartsWith(GetBasePath()))
+            if (!fullPath.StartsWith(GetBasePath()))
             {
                 return null;
             }
 
-            return FullPath;
+            return fullPath;
         }
 
         public string GetSdCardPath() => MakeDirAndGetFullPath(SdCardPath);
@@ -58,50 +58,50 @@ namespace Ryujinx.HLE.FileSystem
 
         public string GetSystemPath() => MakeDirAndGetFullPath(SystemPath);
 
-        public string GetGameSavePath(SaveInfo Save, ServiceCtx Context)
+        public string GetGameSavePath(SaveInfo save, ServiceCtx context)
         {
-            return MakeDirAndGetFullPath(SaveHelper.GetSavePath(Save, Context));
+            return MakeDirAndGetFullPath(SaveHelper.GetSavePath(save, context));
         }
 
-        public string SwitchPathToSystemPath(string SwitchPath)
+        public string SwitchPathToSystemPath(string switchPath)
         {
-            string[] Parts = SwitchPath.Split(":");
-            if (Parts.Length != 2)
+            string[] parts = switchPath.Split(":");
+            if (parts.Length != 2)
             {
                 return null;
             }
-            return GetFullPath(MakeDirAndGetFullPath(Parts[0]), Parts[1]);
+            return GetFullPath(MakeDirAndGetFullPath(parts[0]), parts[1]);
         }
 
-        public string SystemPathToSwitchPath(string SystemPath)
+        public string SystemPathToSwitchPath(string systemPath)
         {
-            string BaseSystemPath = GetBasePath() + Path.DirectorySeparatorChar;
-            if (SystemPath.StartsWith(BaseSystemPath))
+            string baseSystemPath = GetBasePath() + Path.DirectorySeparatorChar;
+            if (systemPath.StartsWith(baseSystemPath))
             {
-                string RawPath = SystemPath.Replace(BaseSystemPath, "");
-                int FirstSeparatorOffset = RawPath.IndexOf(Path.DirectorySeparatorChar);
-                if (FirstSeparatorOffset == -1)
+                string rawPath = systemPath.Replace(baseSystemPath, "");
+                int firstSeparatorOffset = rawPath.IndexOf(Path.DirectorySeparatorChar);
+                if (firstSeparatorOffset == -1)
                 {
-                    return $"{RawPath}:/";
+                    return $"{rawPath}:/";
                 }
 
-                string BasePath = RawPath.Substring(0, FirstSeparatorOffset);
-                string FileName = RawPath.Substring(FirstSeparatorOffset + 1);
-                return $"{BasePath}:/{FileName}";
+                string basePath = rawPath.Substring(0, firstSeparatorOffset);
+                string fileName = rawPath.Substring(firstSeparatorOffset + 1);
+                return $"{basePath}:/{fileName}";
             }
             return null;
         }
 
-        private string MakeDirAndGetFullPath(string Dir)
+        private string MakeDirAndGetFullPath(string dir)
         {
-            string FullPath = Path.Combine(GetBasePath(), Dir);
+            string fullPath = Path.Combine(GetBasePath(), dir);
 
-            if (!Directory.Exists(FullPath))
+            if (!Directory.Exists(fullPath))
             {
-                Directory.CreateDirectory(FullPath);
+                Directory.CreateDirectory(fullPath);
             }
 
-            return FullPath;
+            return fullPath;
         }
 
         public DriveInfo GetDrive()
@@ -111,9 +111,9 @@ namespace Ryujinx.HLE.FileSystem
 
         public string GetBasePath()
         {
-            string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            return Path.Combine(AppDataPath, BasePath);
+            return Path.Combine(appDataPath, BasePath);
         }
 
         public void Dispose()

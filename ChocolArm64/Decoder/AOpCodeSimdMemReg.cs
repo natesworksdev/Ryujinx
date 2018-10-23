@@ -4,9 +4,9 @@ namespace ChocolArm64.Decoder
 {
     class AOpCodeSimdMemReg : AOpCodeMemReg, IAOpCodeSimd
     {
-        public AOpCodeSimdMemReg(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdMemReg(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Size |= (OpCode >> 21) & 4;
+            Size |= (opCode >> 21) & 4;
 
             Extend64 = false;
         }

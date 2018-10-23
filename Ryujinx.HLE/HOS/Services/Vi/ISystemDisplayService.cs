@@ -4,15 +4,15 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
-    class ISystemDisplayService : IpcService
+    class SystemDisplayService : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public ISystemDisplayService()
+        public SystemDisplayService()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 2205, SetLayerZ },
                 { 2207, SetLayerVisibility },
@@ -20,27 +20,27 @@ namespace Ryujinx.HLE.HOS.Services.Vi
             };
         }
 
-        public static long SetLayerZ(ServiceCtx Context)
+        public static long SetLayerZ(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceVi, "Stubbed.");
 
             return 0;
         }
 
-        public static long SetLayerVisibility(ServiceCtx Context)
+        public static long SetLayerVisibility(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceVi, "Stubbed.");
 
             return 0;
         }
 
-        public static long GetDisplayMode(ServiceCtx Context)
+        public static long GetDisplayMode(ServiceCtx context)
         {
             //TODO: De-hardcode resolution.
-            Context.ResponseData.Write(1280);
-            Context.ResponseData.Write(720);
-            Context.ResponseData.Write(60.0f);
-            Context.ResponseData.Write(0);
+            context.ResponseData.Write(1280);
+            context.ResponseData.Write(720);
+            context.ResponseData.Write(60.0f);
+            context.ResponseData.Write(0);
 
             return 0;
         }

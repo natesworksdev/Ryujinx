@@ -4,14 +4,14 @@ namespace ChocolArm64.Decoder
 {
     class AOpCodeSimdFcond : AOpCodeSimdReg, IAOpCodeCond
     {
-        public int NZCV { get; private set; }
+        public int Nzcv { get; private set; }
 
         public ACond Cond { get; private set; }
 
-        public AOpCodeSimdFcond(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdFcond(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            NZCV =         (OpCode >>  0) & 0xf;
-            Cond = (ACond)((OpCode >> 12) & 0xf);
+            Nzcv =         (opCode >>  0) & 0xf;
+            Cond = (ACond)((opCode >> 12) & 0xf);
         }
     }
 }

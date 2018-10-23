@@ -3,27 +3,27 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    class IStorage : IpcService
+    class Storage : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
         public byte[] Data { get; private set; }
 
-        public IStorage(byte[] Data)
+        public Storage(byte[] data)
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, Open }
             };
 
-            this.Data = Data;
+            this.Data = data;
         }
 
-        public long Open(ServiceCtx Context)
+        public long Open(ServiceCtx context)
         {
-            MakeObject(Context, new IStorageAccessor(this));
+            MakeObject(context, new StorageAccessor(this));
 
             return 0;
         }

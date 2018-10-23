@@ -8,12 +8,12 @@ namespace Ryujinx.HLE.Loaders
         public ElfSym     Symbol { get; private set; }
         public ElfRelType Type   { get; private set; }
 
-        public ElfRel(long Offset, long Addend, ElfSym Symbol, ElfRelType Type)
+        public ElfRel(long offset, long addend, ElfSym symbol, ElfRelType type)
         {
-            this.Offset = Offset;
-            this.Addend = Addend;
-            this.Symbol = Symbol;
-            this.Type   = Type;
+            this.Offset = offset;
+            this.Addend = addend;
+            this.Symbol = symbol;
+            this.Type   = type;
         }
     }
 }

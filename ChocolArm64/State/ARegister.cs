@@ -9,10 +9,10 @@ namespace ChocolArm64.State
 
         public ARegisterType Type;
 
-        public ARegister(int Index, ARegisterType Type)
+        public ARegister(int index, ARegisterType type)
         {
-            this.Index = Index;
-            this.Type  = Type;
+            this.Index = index;
+            this.Type  = type;
         }
 
         public override int GetHashCode()
@@ -20,11 +20,11 @@ namespace ChocolArm64.State
             return (ushort)Index | ((ushort)Type << 16);
         }
 
-        public override bool Equals(object Obj)
+        public override bool Equals(object obj)
         {
-            return Obj is ARegister Reg &&
-                   Reg.Index == Index &&
-                   Reg.Type  == Type;
+            return obj is ARegister reg &&
+                   reg.Index == Index &&
+                   reg.Type  == Type;
         }
 
         public FieldInfo GetField()
@@ -41,12 +41,12 @@ namespace ChocolArm64.State
 
         private FieldInfo GetFieldFlag()
         {
-            switch ((APState)Index)
+            switch ((ApState)Index)
             {
-                case APState.VBit: return GetField(nameof(AThreadState.Overflow));
-                case APState.CBit: return GetField(nameof(AThreadState.Carry));
-                case APState.ZBit: return GetField(nameof(AThreadState.Zero));
-                case APState.NBit: return GetField(nameof(AThreadState.Negative));
+                case ApState.VBit: return GetField(nameof(AThreadState.Overflow));
+                case ApState.CBit: return GetField(nameof(AThreadState.Carry));
+                case ApState.ZBit: return GetField(nameof(AThreadState.Zero));
+                case ApState.NBit: return GetField(nameof(AThreadState.Negative));
             }
 
             throw new InvalidOperationException();
@@ -134,9 +134,9 @@ namespace ChocolArm64.State
             throw new InvalidOperationException();
         }
 
-        private FieldInfo GetField(string Name)
+        private FieldInfo GetField(string name)
         {
-            return typeof(AThreadState).GetField(Name);
+            return typeof(AThreadState).GetField(name);
         }
     }
 }

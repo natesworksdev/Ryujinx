@@ -15,101 +15,101 @@ namespace Ryujinx.Graphics
             ZetaBuffer
         }
 
-        private NvGpu Gpu;
+        private NvGpu _gpu;
 
-        private HashSet<long>[] UploadedKeys;
+        private HashSet<long>[] _uploadedKeys;
 
-        private Dictionary<long, ImageType> ImageTypes;
+        private Dictionary<long, ImageType> _imageTypes;
 
-        public GpuResourceManager(NvGpu Gpu)
+        public GpuResourceManager(NvGpu gpu)
         {
-            this.Gpu = Gpu;
+            this._gpu = gpu;
 
-            UploadedKeys = new HashSet<long>[(int)NvGpuBufferType.Count];
+            _uploadedKeys = new HashSet<long>[(int)NvGpuBufferType.Count];
 
-            for (int Index = 0; Index < UploadedKeys.Length; Index++)
+            for (int index = 0; index < _uploadedKeys.Length; index++)
             {
-                UploadedKeys[Index] = new HashSet<long>();
+                _uploadedKeys[index] = new HashSet<long>();
             }
 
-            ImageTypes = new Dictionary<long, ImageType>();
+            _imageTypes = new Dictionary<long, ImageType>();
         }
 
-        public void SendColorBuffer(NvGpuVmm Vmm, long Position, int Attachment, GalImage NewImage)
+        public void SendColorBuffer(NvGpuVmm vmm, long position, int attachment, GalImage newImage)
         {
-            long Size = (uint)ImageUtils.GetSize(NewImage);
+            long size = (uint)ImageUtils.GetSize(newImage);
 
-            ImageTypes[Position] = ImageType.ColorBuffer;
+            _imageTypes[position] = ImageType.ColorBuffer;
 
-            if (!TryReuse(Vmm, Position, NewImage))
+            if (!TryReuse(vmm, position, newImage))
             {
-                Gpu.Renderer.Texture.Create(Position, (int)Size, NewImage);
+                _gpu.Renderer.Texture.Create(position, (int)size, newImage);
             }
 
-            Gpu.Renderer.RenderTarget.BindColor(Position, Attachment);
+            _gpu.Renderer.RenderTarget.BindColor(position, attachment);
         }
 
-        public void SendZetaBuffer(NvGpuVmm Vmm, long Position, GalImage NewImage)
+        public void SendZetaBuffer(NvGpuVmm vmm, long position, GalImage newImage)
         {
-            long Size = (uint)ImageUtils.GetSize(NewImage);
+            long size = (uint)ImageUtils.GetSize(newImage);
 
-            ImageTypes[Position] = ImageType.ZetaBuffer;
+            _imageTypes[position] = ImageType.ZetaBuffer;
 
-            if (!TryReuse(Vmm, Position, NewImage))
+            if (!TryReuse(vmm, position, newImage))
             {
-                Gpu.Renderer.Texture.Create(Position, (int)Size, NewImage);
+                _gpu.Renderer.Texture.Create(position, (int)size, newImage);
             }
 
-            Gpu.Renderer.RenderTarget.BindZeta(Position);
+            _gpu.Renderer.RenderTarget.BindZeta(position);
         }
 
-        public void SendTexture(NvGpuVmm Vmm, long Position, GalImage NewImage, int TexIndex = -1)
+        public void SendTexture(NvGpuVmm vmm, long position, GalImage newImage, int texIndex = -1)
         {
-            PrepareSendTexture(Vmm, Position, NewImage);
+            PrepareSendTexture(vmm, position, newImage);
 
-            if (TexIndex >= 0)
+            if (texIndex >= 0)
             {
-                Gpu.Renderer.Texture.Bind(Position, TexIndex, NewImage);
+                _gpu.Renderer.Texture.Bind(position, texIndex, newImage);
             }
 
-            ImageTypes[Position] = ImageType.Texture;
+            _imageTypes[position] = ImageType.Texture;
         }
 
-        private void PrepareSendTexture(NvGpuVmm Vmm, long Position, GalImage NewImage)
+        private void PrepareSendTexture(NvGpuVmm vmm, long position, GalImage newImage)
         {
-            long Size = ImageUtils.GetSize(NewImage);
+            long size = ImageUtils.GetSize(newImage);
 
-            bool SkipCheck = false;
+            bool skipCheck = false;
 
-            if (ImageTypes.TryGetValue(Position, out ImageType OldType))
+            if (_imageTypes.TryGetValue(position, out ImageType oldType))
             {
-                if (OldType == ImageType.ColorBuffer || OldType == ImageType.ZetaBuffer)
+                if (oldType == ImageType.ColorBuffer || oldType == ImageType.ZetaBuffer)
                 {
                     //Avoid data destruction
-                    MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture);
+                    MemoryRegionModified(vmm, position, size, NvGpuBufferType.Texture);
 
-                    SkipCheck = true;
+                    skipCheck = true;
                 }
             }
 
-            if (SkipCheck || !MemoryRegionModified(Vmm, Position, Size, NvGpuBufferType.Texture))
+            if (skipCheck || !MemoryRegionModified(vmm, position, size, NvGpuBufferType.Texture))
             {
-                if (TryReuse(Vmm, Position, NewImage))
+                if (TryReuse(vmm, position, newImage))
                 {
                     return;
                 }
             }
 
-            byte[] Data = ImageUtils.ReadTexture(Vmm, NewImage, Position);
+            byte[] data = ImageUtils.ReadTexture(vmm, newImage, position);
 
-            Gpu.Renderer.Texture.Create(Position, Data, NewImage);
+            _gpu.Renderer.Texture.Create(position, data, newImage);
         }
 
-        private bool TryReuse(NvGpuVmm Vmm, long Position, GalImage NewImage)
+        private bool TryReuse(NvGpuVmm vmm, long position, GalImage newImage)
         {
-            if (Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage) && CachedImage.SizeMatches(NewImage))
+            if (_gpu.Renderer.Texture.TryGetImage(position, out GalImage cachedImage) && cachedImage.SizeMatches(newImage))
             {
-                Gpu.Renderer.RenderTarget.Reinterpret(Position, NewImage);
+                _gpu.Renderer.RenderTarget.Reinterpret(position, newImage);
 
                 return true;
             }
@@ -117,23 +117,23 @@ namespace Ryujinx.Graphics
             return false;
         }
 
-        private bool MemoryRegionModified(NvGpuVmm Vmm, long Position, long Size, NvGpuBufferType Type)
+        private bool MemoryRegionModified(NvGpuVmm vmm, long position, long size, NvGpuBufferType type)
         {
-            HashSet<long> Uploaded = UploadedKeys[(int)Type];
+            HashSet<long> uploaded = _uploadedKeys[(int)type];
 
-            if (!Uploaded.Add(Position))
+            if (!uploaded.Add(position))
             {
                 return false;
             }
 
-            return Vmm.IsRegionModified(Position, Size, Type);
+            return vmm.IsRegionModified(position, size, type);
         }
 
         public void ClearPbCache()
         {
-            for (int Index = 0; Index < UploadedKeys.Length; Index++)
+            for (int index = 0; index < _uploadedKeys.Length; index++)
             {
-                UploadedKeys[Index].Clear();
+                _uploadedKeys[index].Clear();
             }
         }
     }

@@ -6,42 +6,42 @@ namespace ChocolArm64.Translation
     {
         private class PathIo
         {
-            private Dictionary<AILBlock, long> AllInputs;
-            private Dictionary<AILBlock, long> CmnOutputs;
+            private Dictionary<AilBlock, long> _allInputs;
+            private Dictionary<AilBlock, long> _cmnOutputs;
 
-            private long AllOutputs;
+            private long _allOutputs;
 
             public PathIo()
             {
-                AllInputs  = new Dictionary<AILBlock, long>();
-                CmnOutputs = new Dictionary<AILBlock, long>();
+                _allInputs  = new Dictionary<AilBlock, long>();
+                _cmnOutputs = new Dictionary<AilBlock, long>();
             }
 
-            public PathIo(AILBlock Root, long Inputs, long Outputs) : this()
+            public PathIo(AilBlock root, long inputs, long outputs) : this()
             {
-                Set(Root, Inputs, Outputs);
+                Set(root, inputs, outputs);
             }
 
-            public void Set(AILBlock Root, long Inputs, long Outputs)
+            public void Set(AilBlock root, long inputs, long outputs)
             {
-                if (!AllInputs.TryAdd(Root, Inputs))
+                if (!_allInputs.TryAdd(root, inputs))
                 {
-                    AllInputs[Root] |= Inputs;
+                    _allInputs[root] |= inputs;
                 }
 
-                if (!CmnOutputs.TryAdd(Root, Outputs))
+                if (!_cmnOutputs.TryAdd(root, outputs))
                 {
-                    CmnOutputs[Root] &= Outputs;
+                    _cmnOutputs[root] &= outputs;
                 }
 
-                AllOutputs |= Outputs;
+                _allOutputs |= outputs;
             }
 
-            public long GetInputs(AILBlock Root)
+            public long GetInputs(AilBlock root)
             {
-                if (AllInputs.TryGetValue(Root, out long Inputs))
+                if (_allInputs.TryGetValue(root, out long inputs))
                 {
-                    return Inputs | (AllOutputs & ~CmnOutputs[Root]);
+                    return inputs | (_allOutputs & ~_cmnOutputs[root]);
                 }
 
                 return 0;
@@ -49,17 +49,17 @@ namespace ChocolArm64.Translation
 
             public long GetOutputs()
             {
-                return AllOutputs;
+                return _allOutputs;
             }
         }
 
-        private Dictionary<AILBlock, PathIo> IntPaths;
-        private Dictionary<AILBlock, PathIo> VecPaths;
+        private Dictionary<AilBlock, PathIo> _intPaths;
+        private Dictionary<AilBlock, PathIo> _vecPaths;
 
         private struct BlockIo
         {
-            public AILBlock Block;
-            public AILBlock Entry;
+            public AilBlock Block;
+            public AilBlock Entry;
 
             public long IntInputs;
             public long VecInputs;
@@ -69,23 +69,23 @@ namespace ChocolArm64.Translation
 
         private const int MaxOptGraphLength = 40;
 
-        public ALocalAlloc(AILBlock[] Graph, AILBlock Root)
+        public ALocalAlloc(AilBlock[] graph, AilBlock root)
         {
-            IntPaths = new Dictionary<AILBlock, PathIo>();
-            VecPaths = new Dictionary<AILBlock, PathIo>();
+            _intPaths = new Dictionary<AilBlock, PathIo>();
+            _vecPaths = new Dictionary<AilBlock, PathIo>();
 
-            if (Graph.Length > 1 &&
-                Graph.Length < MaxOptGraphLength)
+            if (graph.Length > 1 &&
+                graph.Length < MaxOptGraphLength)
             {
-                InitializeOptimal(Graph, Root);
+                InitializeOptimal(graph, root);
             }
             else
             {
-                InitializeFast(Graph);
+                InitializeFast(graph);
             }
         }
 
-        private void InitializeOptimal(AILBlock[] Graph, AILBlock Root)
+        private void InitializeOptimal(AilBlock[] graph, AilBlock root)
         {
             //This will go through all possible paths on the graph,
             //and store all inputs/outputs for each block. A register
@@ -96,134 +96,134 @@ namespace ChocolArm64.Translation
             //when doing input elimination. Each block chain have a root, that's where
             //the code starts executing. They are present on the subroutine start point,
             //and on call return points too (address written to X30 by BL).
-            HashSet<BlockIo> Visited = new HashSet<BlockIo>();
+            HashSet<BlockIo> visited = new HashSet<BlockIo>();
 
-            Queue<BlockIo> Unvisited = new Queue<BlockIo>();
+            Queue<BlockIo> unvisited = new Queue<BlockIo>();
 
-            void Enqueue(BlockIo Block)
+            void Enqueue(BlockIo block)
             {
-                if (!Visited.Contains(Block))
+                if (!visited.Contains(block))
                 {
-                    Unvisited.Enqueue(Block);
+                    unvisited.Enqueue(block);
 
-                    Visited.Add(Block);
+                    visited.Add(block);
                 }
             }
 
             Enqueue(new BlockIo()
             {
-                Block = Root,
-                Entry = Root
+                Block = root,
+                Entry = root
             });
 
-            while (Unvisited.Count > 0)
+            while (unvisited.Count > 0)
             {
-                BlockIo Current = Unvisited.Dequeue();
+                BlockIo current = unvisited.Dequeue();
 
-                Current.IntInputs  |= Current.Block.IntInputs & ~Current.IntOutputs;
-                Current.VecInputs  |= Current.Block.VecInputs & ~Current.VecOutputs;
-                Current.IntOutputs |= Current.Block.IntOutputs;
-                Current.VecOutputs |= Current.Block.VecOutputs;
+                current.IntInputs  |= current.Block.IntInputs & ~current.IntOutputs;
+                current.VecInputs  |= current.Block.VecInputs & ~current.VecOutputs;
+                current.IntOutputs |= current.Block.IntOutputs;
+                current.VecOutputs |= current.Block.VecOutputs;
 
                 //Check if this is a exit block
                 //(a block that returns or calls another sub).
-                if ((Current.Block.Next   == null &&
-                     Current.Block.Branch == null) || Current.Block.HasStateStore)
+                if ((current.Block.Next   == null &&
+                     current.Block.Branch == null) || current.Block.HasStateStore)
                 {
-                    if (!IntPaths.TryGetValue(Current.Block, out PathIo IntPath))
+                    if (!_intPaths.TryGetValue(current.Block, out PathIo intPath))
                     {
-                        IntPaths.Add(Current.Block, IntPath = new PathIo());
+                        _intPaths.Add(current.Block, intPath = new PathIo());
                     }
 
-                    if (!VecPaths.TryGetValue(Current.Block, out PathIo VecPath))
+                    if (!_vecPaths.TryGetValue(current.Block, out PathIo vecPath))
                     {
-                        VecPaths.Add(Current.Block, VecPath = new PathIo());
+                        _vecPaths.Add(current.Block, vecPath = new PathIo());
                     }
 
-                    IntPath.Set(Current.Entry, Current.IntInputs, Current.IntOutputs);
-                    VecPath.Set(Current.Entry, Current.VecInputs, Current.VecOutputs);
+                    intPath.Set(current.Entry, current.IntInputs, current.IntOutputs);
+                    vecPath.Set(current.Entry, current.VecInputs, current.VecOutputs);
                 }
 
-                void EnqueueFromCurrent(AILBlock Block, bool RetTarget)
+                void EnqueueFromCurrent(AilBlock block, bool retTarget)
                 {
-                    BlockIo BlkIO = new BlockIo() { Block = Block };
+                    BlockIo blkIo = new BlockIo() { Block = block };
 
-                    if (RetTarget)
+                    if (retTarget)
                     {
-                        BlkIO.Entry = Block;
+                        blkIo.Entry = block;
                     }
                     else
                     {
-                        BlkIO.Entry      = Current.Entry;
-                        BlkIO.IntInputs  = Current.IntInputs;
-                        BlkIO.VecInputs  = Current.VecInputs;
-                        BlkIO.IntOutputs = Current.IntOutputs;
-                        BlkIO.VecOutputs = Current.VecOutputs;
+                        blkIo.Entry      = current.Entry;
+                        blkIo.IntInputs  = current.IntInputs;
+                        blkIo.VecInputs  = current.VecInputs;
+                        blkIo.IntOutputs = current.IntOutputs;
+                        blkIo.VecOutputs = current.VecOutputs;
                     }
 
-                    Enqueue(BlkIO);
+                    Enqueue(blkIo);
                 }
 
-                if (Current.Block.Next != null)
+                if (current.Block.Next != null)
                 {
-                    EnqueueFromCurrent(Current.Block.Next, Current.Block.HasStateStore);
+                    EnqueueFromCurrent(current.Block.Next, current.Block.HasStateStore);
                 }
 
-                if (Current.Block.Branch != null)
+                if (current.Block.Branch != null)
                 {
-                    EnqueueFromCurrent(Current.Block.Branch, false);
+                    EnqueueFromCurrent(current.Block.Branch, false);
                 }
             }
         }
 
-        private void InitializeFast(AILBlock[] Graph)
+        private void InitializeFast(AilBlock[] graph)
         {
             //This is WAY faster than InitializeOptimal, but results in
             //uneeded loads and stores, so the resulting code will be slower.
-            long IntInputs = 0, IntOutputs = 0;
-            long VecInputs = 0, VecOutputs = 0;
+            long intInputs = 0, intOutputs = 0;
+            long vecInputs = 0, vecOutputs = 0;
 
-            foreach (AILBlock Block in Graph)
+            foreach (AilBlock block in graph)
             {
-                IntInputs  |= Block.IntInputs;
-                IntOutputs |= Block.IntOutputs;
-                VecInputs  |= Block.VecInputs;
-                VecOutputs |= Block.VecOutputs;
+                intInputs  |= block.IntInputs;
+                intOutputs |= block.IntOutputs;
+                vecInputs  |= block.VecInputs;
+                vecOutputs |= block.VecOutputs;
             }
 
             //It's possible that not all code paths writes to those output registers,
             //in those cases if we attempt to write an output registers that was
             //not written, we will be just writing zero and messing up the old register value.
             //So we just need to ensure that all outputs are loaded.
-            if (Graph.Length > 1)
+            if (graph.Length > 1)
             {
-                IntInputs |= IntOutputs;
-                VecInputs |= VecOutputs;
+                intInputs |= intOutputs;
+                vecInputs |= vecOutputs;
             }
 
-            foreach (AILBlock Block in Graph)
+            foreach (AilBlock block in graph)
             {
-                IntPaths.Add(Block, new PathIo(Block, IntInputs, IntOutputs));
-                VecPaths.Add(Block, new PathIo(Block, VecInputs, VecOutputs));
+                _intPaths.Add(block, new PathIo(block, intInputs, intOutputs));
+                _vecPaths.Add(block, new PathIo(block, vecInputs, vecOutputs));
             }
         }
 
-        public long GetIntInputs(AILBlock Root) => GetInputsImpl(Root, IntPaths.Values);
-        public long GetVecInputs(AILBlock Root) => GetInputsImpl(Root, VecPaths.Values);
+        public long GetIntInputs(AilBlock root) => GetInputsImpl(root, _intPaths.Values);
+        public long GetVecInputs(AilBlock root) => GetInputsImpl(root, _vecPaths.Values);
 
-        private long GetInputsImpl(AILBlock Root, IEnumerable<PathIo> Values)
+        private long GetInputsImpl(AilBlock root, IEnumerable<PathIo> values)
         {
-            long Inputs = 0;
+            long inputs = 0;
 
-            foreach (PathIo Path in Values)
+            foreach (PathIo path in values)
             {
-                Inputs |= Path.GetInputs(Root);
+                inputs |= path.GetInputs(root);
             }
 
-            return Inputs;
+            return inputs;
         }
 
-        public long GetIntOutputs(AILBlock Block) => IntPaths[Block].GetOutputs();
-        public long GetVecOutputs(AILBlock Block) => VecPaths[Block].GetOutputs();
+        public long GetIntOutputs(AilBlock block) => _intPaths[block].GetOutputs();
+        public long GetVecOutputs(AilBlock block) => _vecPaths[block].GetOutputs();
     }
 }

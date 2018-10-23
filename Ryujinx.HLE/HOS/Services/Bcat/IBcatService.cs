@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Bcat
 {
-    class IBcatService : IpcService
+    class BcatService : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IBcatService()
+        public BcatService()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 //...
             };

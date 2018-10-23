@@ -14,103 +14,103 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             public long TimePoint { get; private set; }
 
-            public WaitingObject(IKFutureSchedulerObject Object, long TimePoint)
+            public WaitingObject(IKFutureSchedulerObject Object, long timePoint)
             {
                 this.Object    = Object;
-                this.TimePoint = TimePoint;
+                this.TimePoint = timePoint;
             }
         }
 
-        private List<WaitingObject> WaitingObjects;
+        private List<WaitingObject> _waitingObjects;
 
-        private AutoResetEvent WaitEvent;
+        private AutoResetEvent _waitEvent;
 
-        private Stopwatch Counter;
+        private Stopwatch _counter;
 
-        private bool KeepRunning;
+        private bool _keepRunning;
 
         public KTimeManager()
         {
-            WaitingObjects = new List<WaitingObject>();
+            _waitingObjects = new List<WaitingObject>();
 
-            Counter = new Stopwatch();
+            _counter = new Stopwatch();
 
-            Counter.Start();
+            _counter.Start();
 
-            KeepRunning = true;
+            _keepRunning = true;
 
-            Thread Work = new Thread(WaitAndCheckScheduledObjects);
+            Thread work = new Thread(WaitAndCheckScheduledObjects);
 
-            Work.Start();
+            work.Start();
         }
 
-        public void ScheduleFutureInvocation(IKFutureSchedulerObject Object, long Timeout)
+        public void ScheduleFutureInvocation(IKFutureSchedulerObject Object, long timeout)
         {
-            lock (WaitingObjects)
+            lock (_waitingObjects)
             {
-                long TimePoint = Counter.ElapsedMilliseconds + ConvertNanosecondsToMilliseconds(Timeout);
+                long timePoint = _counter.ElapsedMilliseconds + ConvertNanosecondsToMilliseconds(timeout);
 
-                WaitingObjects.Add(new WaitingObject(Object, TimePoint));
+                _waitingObjects.Add(new WaitingObject(Object, timePoint));
             }
 
-            WaitEvent.Set();
+            _waitEvent.Set();
         }
 
-        private long ConvertNanosecondsToMilliseconds(long Timeout)
+        private long ConvertNanosecondsToMilliseconds(long timeout)
         {
-            Timeout /= 1000000;
+            timeout /= 1000000;
 
-            if ((ulong)Timeout > int.MaxValue)
+            if ((ulong)timeout > int.MaxValue)
             {
                 return int.MaxValue;
             }
 
-            return Timeout;
+            return timeout;
         }
 
         public void UnscheduleFutureInvocation(IKFutureSchedulerObject Object)
         {
-            lock (WaitingObjects)
+            lock (_waitingObjects)
             {
-                WaitingObjects.RemoveAll(x => x.Object == Object);
+                _waitingObjects.RemoveAll(x => x.Object == Object);
             }
         }
 
         private void WaitAndCheckScheduledObjects()
         {
-            using (WaitEvent = new AutoResetEvent(false))
+            using (_waitEvent = new AutoResetEvent(false))
             {
-                while (KeepRunning)
+                while (_keepRunning)
                 {
-                    Monitor.Enter(WaitingObjects);
+                    Monitor.Enter(_waitingObjects);
 
-                    WaitingObject Next = WaitingObjects.OrderBy(x => x.TimePoint).FirstOrDefault();
+                    WaitingObject next = _waitingObjects.OrderBy(x => x.TimePoint).FirstOrDefault();
 
-                    Monitor.Exit(WaitingObjects);
+                    Monitor.Exit(_waitingObjects);
 
-                    if (Next != null)
+                    if (next != null)
                     {
-                        long TimePoint = Counter.ElapsedMilliseconds;
+                        long timePoint = _counter.ElapsedMilliseconds;
 
-                        if (Next.TimePoint > TimePoint)
+                        if (next.TimePoint > timePoint)
                         {
-                            WaitEvent.WaitOne((int)(Next.TimePoint - TimePoint));
+                            _waitEvent.WaitOne((int)(next.TimePoint - timePoint));
                         }
 
-                        Monitor.Enter(WaitingObjects);
+                        Monitor.Enter(_waitingObjects);
 
-                        bool TimeUp = Counter.ElapsedMilliseconds >= Next.TimePoint && WaitingObjects.Remove(Next);
+                        bool timeUp = _counter.ElapsedMilliseconds >= next.TimePoint && _waitingObjects.Remove(next);
 
-                        Monitor.Exit(WaitingObjects);
+                        Monitor.Exit(_waitingObjects);
 
-                        if (TimeUp)
+                        if (timeUp)
                         {
-                            Next.Object.TimeUp();
+                            next.Object.TimeUp();
                         }
                     }
                     else
                     {
-                        WaitEvent.WaitOne();
+                        _waitEvent.WaitOne();
                     }
                 }
             }
@@ -121,13 +121,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing)
+            if (disposing)
             {
-                KeepRunning = false;
+                _keepRunning = false;
 
-                WaitEvent?.Set();
+                _waitEvent?.Set();
             }
         }
     }

@@ -1,6 +1,6 @@
 namespace ChocolArm64.State
 {
-    enum FPExc
+    enum FpExc
     {
         InvalidOp    = 0,
         DivideByZero = 1,

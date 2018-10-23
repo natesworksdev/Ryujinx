@@ -12,17 +12,17 @@ namespace Ryujinx.HLE.FileSystem
         public SaveSpaceId  SaveSpaceId  { get; private set; }
 
         public SaveInfo(
-            long         TitleId,
-            long         SaveId,
-            SaveDataType SaveDataType,
-            UInt128       UserId,
-            SaveSpaceId  SaveSpaceId)
+            long         titleId,
+            long         saveId,
+            SaveDataType saveDataType,
+            UInt128       userId,
+            SaveSpaceId  saveSpaceId)
         {
-            this.TitleId      = TitleId;
-            this.UserId       = UserId;
-            this.SaveId       = SaveId;
-            this.SaveDataType = SaveDataType;
-            this.SaveSpaceId  = SaveSpaceId;
+            this.TitleId      = titleId;
+            this.UserId       = userId;
+            this.SaveId       = saveId;
+            this.SaveDataType = saveDataType;
+            this.SaveSpaceId  = saveSpaceId;
         }
     }
 }

@@ -4,15 +4,15 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
-    class IManagerDisplayService : IpcService
+    class ManagerDisplayService : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IManagerDisplayService()
+        public ManagerDisplayService()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 2010, CreateManagedLayer  },
                 { 2011, DestroyManagedLayer },
@@ -21,30 +21,30 @@ namespace Ryujinx.HLE.HOS.Services.Vi
             };
         }
 
-        public static long CreateManagedLayer(ServiceCtx Context)
+        public static long CreateManagedLayer(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceVi, "Stubbed.");
 
-            Context.ResponseData.Write(0L); //LayerId
+            context.ResponseData.Write(0L); //LayerId
 
             return 0;
         }
 
-        public long DestroyManagedLayer(ServiceCtx Context)
-        {
-            Logger.PrintStub(LogClass.ServiceVi, "Stubbed.");
-
-            return 0;
-        }
-
-        public static long AddToLayerStack(ServiceCtx Context)
+        public long DestroyManagedLayer(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceVi, "Stubbed.");
 
             return 0;
         }
 
-        public static long SetLayerVisibility(ServiceCtx Context)
+        public static long AddToLayerStack(ServiceCtx context)
+        {
+            Logger.PrintStub(LogClass.ServiceVi, "Stubbed.");
+
+            return 0;
+        }
+
+        public static long SetLayerVisibility(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceVi, "Stubbed.");
 

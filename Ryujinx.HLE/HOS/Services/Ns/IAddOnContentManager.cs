@@ -4,37 +4,37 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Ns
 {
-    class IAddOnContentManager : IpcService
+    class AddOnContentManager : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IAddOnContentManager()
+        public AddOnContentManager()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 2, CountAddOnContent },
                 { 3, ListAddOnContent  }
             };
         }
 
-        public static long CountAddOnContent(ServiceCtx Context)
+        public static long CountAddOnContent(ServiceCtx context)
         {
-            Context.ResponseData.Write(0);
+            context.ResponseData.Write(0);
 
             Logger.PrintStub(LogClass.ServiceNs, "Stubbed.");
 
             return 0;
         }
 
-        public static long ListAddOnContent(ServiceCtx Context)
+        public static long ListAddOnContent(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceNs, "Stubbed.");
 
             //TODO: This is supposed to write a u32 array aswell.
             //It's unknown what it contains.
-            Context.ResponseData.Write(0);
+            context.ResponseData.Write(0);
 
             return 0;
         }

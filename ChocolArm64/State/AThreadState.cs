@@ -8,8 +8,8 @@ namespace ChocolArm64.State
 {
     public class AThreadState
     {
-        internal const int LRIndex = 30;
-        internal const int ZRIndex = 31;
+        internal const int LrIndex = 30;
+        internal const int ZrIndex = 31;
 
         internal const int ErgSizeLog2 = 4;
         internal const int DczSizeLog2 = 4;
@@ -45,9 +45,9 @@ namespace ChocolArm64.State
         public bool Running { get; set; }
         public int  Core    { get; set; }
 
-        private bool Interrupted;
+        private bool _interrupted;
 
-        private int SyncCount;
+        private int _syncCount;
 
         public long TpidrEl0 { get; set; }
         public long Tpidr    { get; set; }
@@ -59,10 +59,10 @@ namespace ChocolArm64.State
         {
             get
             {
-                return (Negative ? (int)APState.N : 0) |
-                       (Zero     ? (int)APState.Z : 0) |
-                       (Carry    ? (int)APState.C : 0) |
-                       (Overflow ? (int)APState.V : 0);
+                return (Negative ? (int)ApState.N : 0) |
+                       (Zero     ? (int)ApState.Z : 0) |
+                       (Carry    ? (int)ApState.C : 0) |
+                       (Overflow ? (int)ApState.V : 0);
             }
         }
 
@@ -74,9 +74,9 @@ namespace ChocolArm64.State
         {
             get
             {
-                double Ticks = TickCounter.ElapsedTicks * HostTickFreq;
+                double ticks = _tickCounter.ElapsedTicks * _hostTickFreq;
 
-                return (ulong)(Ticks * CntfrqEl0);
+                return (ulong)(ticks * CntfrqEl0);
             }
         }
 
@@ -85,27 +85,27 @@ namespace ChocolArm64.State
         public event EventHandler<AInstExceptionEventArgs> SvcCall;
         public event EventHandler<AInstUndefinedEventArgs> Undefined;
 
-        private static Stopwatch TickCounter;
+        private static Stopwatch _tickCounter;
 
-        private static double HostTickFreq;
+        private static double _hostTickFreq;
 
         static AThreadState()
         {
-            HostTickFreq = 1.0 / Stopwatch.Frequency;
+            _hostTickFreq = 1.0 / Stopwatch.Frequency;
 
-            TickCounter = new Stopwatch();
+            _tickCounter = new Stopwatch();
 
-            TickCounter.Start();
+            _tickCounter.Start();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal bool Synchronize(int BbWeight)
+        internal bool Synchronize(int bbWeight)
         {
             //Firing a interrupt frequently is expensive, so we only
             //do it after a given number of instructions has executed.
-            SyncCount += BbWeight;
+            _syncCount += bbWeight;
 
-            if (SyncCount >= MinInstForCheck)
+            if (_syncCount >= MinInstForCheck)
             {
                 CheckInterrupt();
             }
@@ -115,50 +115,50 @@ namespace ChocolArm64.State
 
         internal void RequestInterrupt()
         {
-            Interrupted = true;
+            _interrupted = true;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void CheckInterrupt()
         {
-            SyncCount = 0;
+            _syncCount = 0;
 
-            if (Interrupted)
+            if (_interrupted)
             {
-                Interrupted = false;
+                _interrupted = false;
 
                 Interrupt?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        internal void OnBreak(long Position, int Imm)
+        internal void OnBreak(long position, int imm)
         {
-            Break?.Invoke(this, new AInstExceptionEventArgs(Position, Imm));
+            Break?.Invoke(this, new AInstExceptionEventArgs(position, imm));
         }
 
-        internal void OnSvcCall(long Position, int Imm)
+        internal void OnSvcCall(long position, int imm)
         {
-            SvcCall?.Invoke(this, new AInstExceptionEventArgs(Position, Imm));
+            SvcCall?.Invoke(this, new AInstExceptionEventArgs(position, imm));
         }
 
-        internal void OnUndefined(long Position, int RawOpCode)
+        internal void OnUndefined(long position, int rawOpCode)
         {
-            Undefined?.Invoke(this, new AInstUndefinedEventArgs(Position, RawOpCode));
+            Undefined?.Invoke(this, new AInstUndefinedEventArgs(position, rawOpCode));
         }
 
-        internal bool GetFpcrFlag(FPCR Flag)
+        internal bool GetFpcrFlag(Fpcr flag)
         {
-            return (Fpcr & (1 << (int)Flag)) != 0;
+            return (Fpcr & (1 << (int)flag)) != 0;
         }
 
-        internal void SetFpsrFlag(FPSR Flag)
+        internal void SetFpsrFlag(Fpsr flag)
         {
-            Fpsr |= 1 << (int)Flag;
+            Fpsr |= 1 << (int)flag;
         }
 
-        internal ARoundMode FPRoundingMode()
+        internal ARoundMode FpRoundingMode()
         {
-            return (ARoundMode)((Fpcr >> (int)FPCR.RMode) & 3);
+            return (ARoundMode)((Fpcr >> (int)State.Fpcr.RMode) & 3);
         }
     }
 }

@@ -8,11 +8,11 @@ namespace ChocolArm64.Decoder
         public int  Ra   { get; private   set; }
         public int  Rm   { get; protected set; }
 
-        public AOpCodeSimdReg(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdReg(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Bit3 = ((OpCode >>  3) & 0x1) != 0;
-            Ra   =  (OpCode >> 10) & 0x1f;
-            Rm   =  (OpCode >> 16) & 0x1f;
+            Bit3 = ((opCode >>  3) & 0x1) != 0;
+            Ra   =  (opCode >> 10) & 0x1f;
+            Rm   =  (opCode >> 16) & 0x1f;
         }
     }
 }

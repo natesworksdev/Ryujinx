@@ -7,32 +7,32 @@ namespace ChocolArm64.Decoder
     {
         public long Imm { get; private set; }
 
-        public AOpCodeAluImm(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeAluImm(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
             if (DataOp == ADataOp.Arithmetic)
             {
-                Imm = (OpCode >> 10) & 0xfff;
+                Imm = (opCode >> 10) & 0xfff;
 
-                int Shift = (OpCode >> 22) & 3;
+                int shift = (opCode >> 22) & 3;
 
-                Imm <<= Shift * 12;
+                Imm <<= shift * 12;
             }
             else if (DataOp == ADataOp.Logical)
             {
-                var BM = ADecoderHelper.DecodeBitMask(OpCode, true);
+                var bm = ADecoderHelper.DecodeBitMask(opCode, true);
 
-                if (BM.IsUndefined)
+                if (bm.IsUndefined)
                 {
                     Emitter = AInstEmit.Und;
 
                     return;
                 }
 
-                Imm = BM.WMask;
+                Imm = bm.WMask;
             }
             else
             {
-                throw new ArgumentException(nameof(OpCode));
+                throw new ArgumentException(nameof(opCode));
             }
         }
     }

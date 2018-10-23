@@ -9,11 +9,11 @@ namespace ChocolArm64.Decoder
 
         public AIntType IntType { get; private set; }
 
-        public AOpCodeAluRx(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeAluRx(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Shift   =            (OpCode >> 10) & 0x7;
-            IntType = (AIntType)((OpCode >> 13) & 0x7);
-            Rm      =            (OpCode >> 16) & 0x1f;
+            Shift   =            (opCode >> 10) & 0x7;
+            IntType = (AIntType)((opCode >> 13) & 0x7);
+            Rm      =            (opCode >> 16) & 0x1f;
         }
     }
 }

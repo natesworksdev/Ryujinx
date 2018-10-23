@@ -5,15 +5,15 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
-    class IFileSystemProxy : IpcService
+    class FileSystemProxy : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IFileSystemProxy()
+        public FileSystemProxy()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 1,    SetCurrentProcess                        },
                 { 18,   OpenSdCardFileSystem                     },
@@ -25,70 +25,70 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             };
         }
 
-        public long SetCurrentProcess(ServiceCtx Context)
+        public long SetCurrentProcess(ServiceCtx context)
         {
             return 0;
         }
 
-        public long OpenSdCardFileSystem(ServiceCtx Context)
+        public long OpenSdCardFileSystem(ServiceCtx context)
         {
-            MakeObject(Context, new IFileSystem(Context.Device.FileSystem.GetSdCardPath()));
+            MakeObject(context, new FileSystem(context.Device.FileSystem.GetSdCardPath()));
 
             return 0;
         }
 
-        public long OpenSaveDataFileSystem(ServiceCtx Context)
+        public long OpenSaveDataFileSystem(ServiceCtx context)
         {
-            LoadSaveDataFileSystem(Context);
+            LoadSaveDataFileSystem(context);
 
             return 0;
         }
 
-        public long OpenSaveDataFileSystemBySystemSaveDataId(ServiceCtx Context)
+        public long OpenSaveDataFileSystemBySystemSaveDataId(ServiceCtx context)
         {
-            LoadSaveDataFileSystem(Context);
+            LoadSaveDataFileSystem(context);
 
             return 0;
         }
 
-        public long OpenDataStorageByCurrentProcess(ServiceCtx Context)
+        public long OpenDataStorageByCurrentProcess(ServiceCtx context)
         {
-            MakeObject(Context, new IStorage(Context.Device.FileSystem.RomFs));
+            MakeObject(context, new Storage(context.Device.FileSystem.RomFs));
 
             return 0;
         }
 
-        public long OpenPatchDataStorageByCurrentProcess(ServiceCtx Context)
+        public long OpenPatchDataStorageByCurrentProcess(ServiceCtx context)
         {
-            MakeObject(Context, new IStorage(Context.Device.FileSystem.RomFs));
+            MakeObject(context, new Storage(context.Device.FileSystem.RomFs));
 
             return 0;
         }
 
-        public long GetGlobalAccessLogMode(ServiceCtx Context)
+        public long GetGlobalAccessLogMode(ServiceCtx context)
         {
-            Context.ResponseData.Write(0);
+            context.ResponseData.Write(0);
 
             return 0;
         }
 
-        public void LoadSaveDataFileSystem(ServiceCtx Context)
+        public void LoadSaveDataFileSystem(ServiceCtx context)
         {
-            SaveSpaceId SaveSpaceId = (SaveSpaceId)Context.RequestData.ReadInt64();
+            SaveSpaceId saveSpaceId = (SaveSpaceId)context.RequestData.ReadInt64();
 
-            long TitleId = Context.RequestData.ReadInt64();
+            long titleId = context.RequestData.ReadInt64();
 
-            UInt128 UserId = new UInt128(
-                Context.RequestData.ReadInt64(), 
-                Context.RequestData.ReadInt64());
+            UInt128 userId = new UInt128(
+                context.RequestData.ReadInt64(), 
+                context.RequestData.ReadInt64());
 
-            long SaveId = Context.RequestData.ReadInt64();
+            long saveId = context.RequestData.ReadInt64();
 
-            SaveDataType SaveDataType = (SaveDataType)Context.RequestData.ReadByte();
+            SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadByte();
 
-            SaveInfo SaveInfo = new SaveInfo(TitleId, SaveId, SaveDataType, UserId, SaveSpaceId);
+            SaveInfo saveInfo = new SaveInfo(titleId, saveId, saveDataType, userId, saveSpaceId);
 
-            MakeObject(Context, new IFileSystem(Context.Device.FileSystem.GetGameSavePath(SaveInfo, Context)));
+            MakeObject(context, new FileSystem(context.Device.FileSystem.GetGameSavePath(saveInfo, context)));
         }
     }
 }

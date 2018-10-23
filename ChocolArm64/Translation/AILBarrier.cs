@@ -1,7 +1,7 @@
 namespace ChocolArm64.Translation
 {
-    struct AILBarrier : IAILEmit
+    struct AilBarrier : IAilEmit
     {
-        public void Emit(AILEmitter Context) { }
+        public void Emit(AilEmitter context) { }
     }
 }

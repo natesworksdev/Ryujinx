@@ -13,32 +13,32 @@ namespace Ryujinx.Graphics.Memory
             IncrementOnce   = 5
         }
 
-        public static NvGpuPBEntry[] Decode(byte[] Data)
+        public static NvGpuPbEntry[] Decode(byte[] data)
         {
-            using (MemoryStream MS = new MemoryStream(Data))
+            using (MemoryStream ms = new MemoryStream(data))
             {
-                BinaryReader Reader = new BinaryReader(MS);
+                BinaryReader reader = new BinaryReader(ms);
 
-                List<NvGpuPBEntry> PushBuffer = new List<NvGpuPBEntry>();
+                List<NvGpuPbEntry> pushBuffer = new List<NvGpuPbEntry>();
 
-                bool CanRead() => MS.Position + 4 <= MS.Length;
+                bool CanRead() => ms.Position + 4 <= ms.Length;
 
                 while (CanRead())
                 {
-                    int Packed = Reader.ReadInt32();
+                    int packed = reader.ReadInt32();
 
-                    int Meth = (Packed >> 0)  & 0x1fff;
-                    int SubC = (Packed >> 13) & 7;
-                    int Args = (Packed >> 16) & 0x1fff;
-                    int Mode = (Packed >> 29) & 7;
+                    int meth = (packed >> 0)  & 0x1fff;
+                    int subC = (packed >> 13) & 7;
+                    int args = (packed >> 16) & 0x1fff;
+                    int mode = (packed >> 29) & 7;
 
-                    switch ((SubmissionMode)Mode)
+                    switch ((SubmissionMode)mode)
                     {
                         case SubmissionMode.Incrementing:
                         {
-                            for (int Index = 0; Index < Args && CanRead(); Index++, Meth++)
+                            for (int index = 0; index < args && CanRead(); index++, meth++)
                             {
-                                PushBuffer.Add(new NvGpuPBEntry(Meth, SubC, Reader.ReadInt32()));
+                                pushBuffer.Add(new NvGpuPbEntry(meth, subC, reader.ReadInt32()));
                             }
 
                             break;
@@ -46,26 +46,26 @@ namespace Ryujinx.Graphics.Memory
 
                         case SubmissionMode.NonIncrementing:
                         {
-                            int[] Arguments = new int[Args];
+                            int[] arguments = new int[args];
 
-                            for (int Index = 0; Index < Arguments.Length; Index++)
+                            for (int index = 0; index < arguments.Length; index++)
                             {
                                 if (!CanRead())
                                 {
                                     break;
                                 }
 
-                                Arguments[Index] = Reader.ReadInt32();
+                                arguments[index] = reader.ReadInt32();
                             }
 
-                            PushBuffer.Add(new NvGpuPBEntry(Meth, SubC, Arguments));
+                            pushBuffer.Add(new NvGpuPbEntry(meth, subC, arguments));
 
                             break;
                         }
 
                         case SubmissionMode.Immediate:
                         {
-                            PushBuffer.Add(new NvGpuPBEntry(Meth, SubC, Args));
+                            pushBuffer.Add(new NvGpuPbEntry(meth, subC, args));
 
                             break;
                         }
@@ -74,19 +74,19 @@ namespace Ryujinx.Graphics.Memory
                         {
                             if (CanRead())
                             {
-                                PushBuffer.Add(new NvGpuPBEntry(Meth, SubC, Reader.ReadInt32()));
+                                pushBuffer.Add(new NvGpuPbEntry(meth, subC, reader.ReadInt32()));
                             }
 
-                            if (CanRead() && Args > 1)
+                            if (CanRead() && args > 1)
                             {
-                                int[] Arguments = new int[Args - 1];
+                                int[] arguments = new int[args - 1];
 
-                                for (int Index = 0; Index < Arguments.Length && CanRead(); Index++)
+                                for (int index = 0; index < arguments.Length && CanRead(); index++)
                                 {
-                                    Arguments[Index] = Reader.ReadInt32();
+                                    arguments[index] = reader.ReadInt32();
                                 }
 
-                                PushBuffer.Add(new NvGpuPBEntry(Meth + 1, SubC, Arguments));
+                                pushBuffer.Add(new NvGpuPbEntry(meth + 1, subC, arguments));
                             }
 
                             break;
@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Memory
                     }
                 }
 
-                return PushBuffer.ToArray();
+                return pushBuffer.ToArray();
             }
         }
     }

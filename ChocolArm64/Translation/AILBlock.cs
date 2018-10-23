@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ChocolArm64.Translation
 {
-    class AILBlock : IAILEmit
+    class AilBlock : IAilEmit
     {
         public long IntInputs    { get; private set; }
         public long IntOutputs   { get; private set; }
@@ -14,19 +14,19 @@ namespace ChocolArm64.Translation
 
         public bool HasStateStore { get; private set; }
 
-        public List<IAILEmit> ILEmitters { get; private set; }
+        public List<IAilEmit> IlEmitters { get; private set; }
 
-        public AILBlock Next   { get; set; }
-        public AILBlock Branch { get; set; }
+        public AilBlock Next   { get; set; }
+        public AilBlock Branch { get; set; }
 
-        public AILBlock()
+        public AilBlock()
         {
-            ILEmitters = new List<IAILEmit>();
+            IlEmitters = new List<IAilEmit>();
         }
 
-        public void Add(IAILEmit ILEmitter)
+        public void Add(IAilEmit ilEmitter)
         {
-            if (ILEmitter is AILBarrier)
+            if (ilEmitter is AilBarrier)
             {
                 //Those barriers are used to separate the groups of CIL
                 //opcodes emitted by each ARM instruction.
@@ -35,41 +35,41 @@ namespace ChocolArm64.Translation
                 IntAwOutputs = IntOutputs;
                 VecAwOutputs = VecOutputs;
             }
-            else if (ILEmitter is AILOpCodeLoad Ld && AILEmitter.IsRegIndex(Ld.Index))
+            else if (ilEmitter is AilOpCodeLoad ld && AilEmitter.IsRegIndex(ld.Index))
             {
-                switch (Ld.IoType)
+                switch (ld.IoType)
                 {
-                    case AIoType.Flag:   IntInputs |= ((1L << Ld.Index) << 32) & ~IntAwOutputs; break;
-                    case AIoType.Int:    IntInputs |=  (1L << Ld.Index)        & ~IntAwOutputs; break;
-                    case AIoType.Vector: VecInputs |=  (1L << Ld.Index)        & ~VecAwOutputs; break;
+                    case AIoType.Flag:   IntInputs |= ((1L << ld.Index) << 32) & ~IntAwOutputs; break;
+                    case AIoType.Int:    IntInputs |=  (1L << ld.Index)        & ~IntAwOutputs; break;
+                    case AIoType.Vector: VecInputs |=  (1L << ld.Index)        & ~VecAwOutputs; break;
                 }
             }
-            else if (ILEmitter is AILOpCodeStore St)
+            else if (ilEmitter is AilOpCodeStore st)
             {
-                if (AILEmitter.IsRegIndex(St.Index))
+                if (AilEmitter.IsRegIndex(st.Index))
                 {
-                    switch (St.IoType)
+                    switch (st.IoType)
                     {
-                        case AIoType.Flag:   IntOutputs |= (1L << St.Index) << 32; break;
-                        case AIoType.Int:    IntOutputs |=  1L << St.Index;        break;
-                        case AIoType.Vector: VecOutputs |=  1L << St.Index;        break;
+                        case AIoType.Flag:   IntOutputs |= (1L << st.Index) << 32; break;
+                        case AIoType.Int:    IntOutputs |=  1L << st.Index;        break;
+                        case AIoType.Vector: VecOutputs |=  1L << st.Index;        break;
                     }
                 }
 
-                if (St.IoType == AIoType.Fields)
+                if (st.IoType == AIoType.Fields)
                 {
                     HasStateStore = true;
                 }
             }
 
-            ILEmitters.Add(ILEmitter);
+            IlEmitters.Add(ilEmitter);
         }
 
-        public void Emit(AILEmitter Context)
+        public void Emit(AilEmitter context)
         {
-            foreach (IAILEmit ILEmitter in ILEmitters)
+            foreach (IAilEmit ilEmitter in IlEmitters)
             {
-                ILEmitter.Emit(Context);
+                ilEmitter.Emit(context);
             }
         }
     }

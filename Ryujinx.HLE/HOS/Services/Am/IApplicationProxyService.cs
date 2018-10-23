@@ -3,23 +3,23 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    class IApplicationProxyService : IpcService
+    class ApplicationProxyService : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IApplicationProxyService()
+        public ApplicationProxyService()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, OpenApplicationProxy }
             };
         }
 
-        public long OpenApplicationProxy(ServiceCtx Context)
+        public long OpenApplicationProxy(ServiceCtx context)
         {
-            MakeObject(Context, new IApplicationProxy());
+            MakeObject(context, new ApplicationProxy());
 
             return 0;
         }

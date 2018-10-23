@@ -4,189 +4,189 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics
 {
-    public class NvGpuEngineM2mf : INvGpuEngine
+    public class NvGpuEngineM2Mf : INvGpuEngine
     {
         public int[] Registers { get; private set; }
 
-        private NvGpu Gpu;
+        private NvGpu _gpu;
 
-        private Dictionary<int, NvGpuMethod> Methods;
+        private Dictionary<int, NvGpuMethod> _methods;
 
-        public NvGpuEngineM2mf(NvGpu Gpu)
+        public NvGpuEngineM2Mf(NvGpu gpu)
         {
-            this.Gpu = Gpu;
+            this._gpu = gpu;
 
             Registers = new int[0x1d6];
 
-            Methods = new Dictionary<int, NvGpuMethod>();
+            _methods = new Dictionary<int, NvGpuMethod>();
 
-            void AddMethod(int Meth, int Count, int Stride, NvGpuMethod Method)
+            void AddMethod(int meth, int count, int stride, NvGpuMethod method)
             {
-                while (Count-- > 0)
+                while (count-- > 0)
                 {
-                    Methods.Add(Meth, Method);
+                    _methods.Add(meth, method);
 
-                    Meth += Stride;
+                    meth += stride;
                 }
             }
 
             AddMethod(0xc0, 1, 1, Execute);
         }
 
-        public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        public void CallMethod(NvGpuVmm vmm, NvGpuPbEntry pbEntry)
         {
-            if (Methods.TryGetValue(PBEntry.Method, out NvGpuMethod Method))
+            if (_methods.TryGetValue(pbEntry.Method, out NvGpuMethod method))
             {
-                Method(Vmm, PBEntry);
+                method(vmm, pbEntry);
             }
             else
             {
-                WriteRegister(PBEntry);
+                WriteRegister(pbEntry);
             }
         }
 
-        private void Execute(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void Execute(NvGpuVmm vmm, NvGpuPbEntry pbEntry)
         {
             //TODO: Some registers and copy modes are still not implemented.
-            int Control = PBEntry.Arguments[0];
+            int control = pbEntry.Arguments[0];
 
-            bool SrcLinear = ((Control >> 7) & 1) != 0;
-            bool DstLinear = ((Control >> 8) & 1) != 0;
-            bool Copy2d    = ((Control >> 9) & 1) != 0;
+            bool srcLinear = ((control >> 7) & 1) != 0;
+            bool dstLinear = ((control >> 8) & 1) != 0;
+            bool copy2D    = ((control >> 9) & 1) != 0;
 
-            long SrcAddress = MakeInt64From2xInt32(NvGpuEngineM2mfReg.SrcAddress);
-            long DstAddress = MakeInt64From2xInt32(NvGpuEngineM2mfReg.DstAddress);
+            long srcAddress = MakeInt64From2XInt32(NvGpuEngineM2MfReg.SrcAddress);
+            long dstAddress = MakeInt64From2XInt32(NvGpuEngineM2MfReg.DstAddress);
 
-            int SrcPitch = ReadRegister(NvGpuEngineM2mfReg.SrcPitch);
-            int DstPitch = ReadRegister(NvGpuEngineM2mfReg.DstPitch);
+            int srcPitch = ReadRegister(NvGpuEngineM2MfReg.SrcPitch);
+            int dstPitch = ReadRegister(NvGpuEngineM2MfReg.DstPitch);
 
-            int XCount = ReadRegister(NvGpuEngineM2mfReg.XCount);
-            int YCount = ReadRegister(NvGpuEngineM2mfReg.YCount);
+            int xCount = ReadRegister(NvGpuEngineM2MfReg.XCount);
+            int yCount = ReadRegister(NvGpuEngineM2MfReg.YCount);
 
-            int Swizzle = ReadRegister(NvGpuEngineM2mfReg.Swizzle);
+            int swizzle = ReadRegister(NvGpuEngineM2MfReg.Swizzle);
 
-            int DstBlkDim = ReadRegister(NvGpuEngineM2mfReg.DstBlkDim);
-            int DstSizeX  = ReadRegister(NvGpuEngineM2mfReg.DstSizeX);
-            int DstSizeY  = ReadRegister(NvGpuEngineM2mfReg.DstSizeY);
-            int DstSizeZ  = ReadRegister(NvGpuEngineM2mfReg.DstSizeZ);
-            int DstPosXY  = ReadRegister(NvGpuEngineM2mfReg.DstPosXY);
-            int DstPosZ   = ReadRegister(NvGpuEngineM2mfReg.DstPosZ);
+            int dstBlkDim = ReadRegister(NvGpuEngineM2MfReg.DstBlkDim);
+            int dstSizeX  = ReadRegister(NvGpuEngineM2MfReg.DstSizeX);
+            int dstSizeY  = ReadRegister(NvGpuEngineM2MfReg.DstSizeY);
+            int dstSizeZ  = ReadRegister(NvGpuEngineM2MfReg.DstSizeZ);
+            int dstPosXy  = ReadRegister(NvGpuEngineM2MfReg.DstPosXy);
+            int dstPosZ   = ReadRegister(NvGpuEngineM2MfReg.DstPosZ);
 
-            int SrcBlkDim = ReadRegister(NvGpuEngineM2mfReg.SrcBlkDim);
-            int SrcSizeX  = ReadRegister(NvGpuEngineM2mfReg.SrcSizeX);
-            int SrcSizeY  = ReadRegister(NvGpuEngineM2mfReg.SrcSizeY);
-            int SrcSizeZ  = ReadRegister(NvGpuEngineM2mfReg.SrcSizeZ);
-            int SrcPosXY  = ReadRegister(NvGpuEngineM2mfReg.SrcPosXY);
-            int SrcPosZ   = ReadRegister(NvGpuEngineM2mfReg.SrcPosZ);
+            int srcBlkDim = ReadRegister(NvGpuEngineM2MfReg.SrcBlkDim);
+            int srcSizeX  = ReadRegister(NvGpuEngineM2MfReg.SrcSizeX);
+            int srcSizeY  = ReadRegister(NvGpuEngineM2MfReg.SrcSizeY);
+            int srcSizeZ  = ReadRegister(NvGpuEngineM2MfReg.SrcSizeZ);
+            int srcPosXy  = ReadRegister(NvGpuEngineM2MfReg.SrcPosXy);
+            int srcPosZ   = ReadRegister(NvGpuEngineM2MfReg.SrcPosZ);
 
-            int SrcCpp = ((Swizzle >> 20) & 7) + 1;
-            int DstCpp = ((Swizzle >> 24) & 7) + 1;
+            int srcCpp = ((swizzle >> 20) & 7) + 1;
+            int dstCpp = ((swizzle >> 24) & 7) + 1;
 
-            int DstPosX = (DstPosXY >>  0) & 0xffff;
-            int DstPosY = (DstPosXY >> 16) & 0xffff;
+            int dstPosX = (dstPosXy >>  0) & 0xffff;
+            int dstPosY = (dstPosXy >> 16) & 0xffff;
 
-            int SrcPosX = (SrcPosXY >>  0) & 0xffff;
-            int SrcPosY = (SrcPosXY >> 16) & 0xffff;
+            int srcPosX = (srcPosXy >>  0) & 0xffff;
+            int srcPosY = (srcPosXy >> 16) & 0xffff;
 
-            int SrcBlockHeight = 1 << ((SrcBlkDim >> 4) & 0xf);
-            int DstBlockHeight = 1 << ((DstBlkDim >> 4) & 0xf);
+            int srcBlockHeight = 1 << ((srcBlkDim >> 4) & 0xf);
+            int dstBlockHeight = 1 << ((dstBlkDim >> 4) & 0xf);
 
-            long SrcPA = Vmm.GetPhysicalAddress(SrcAddress);
-            long DstPA = Vmm.GetPhysicalAddress(DstAddress);
+            long srcPa = vmm.GetPhysicalAddress(srcAddress);
+            long dstPa = vmm.GetPhysicalAddress(dstAddress);
 
-            if (Copy2d)
+            if (copy2D)
             {
-                if (SrcLinear)
+                if (srcLinear)
                 {
-                    SrcPosX = SrcPosY = SrcPosZ = 0;
+                    srcPosX = srcPosY = srcPosZ = 0;
                 }
 
-                if (DstLinear)
+                if (dstLinear)
                 {
-                    DstPosX = DstPosY = DstPosZ = 0;
+                    dstPosX = dstPosY = dstPosZ = 0;
                 }
 
-                if (SrcLinear && DstLinear)
+                if (srcLinear && dstLinear)
                 {
-                    for (int Y = 0; Y < YCount; Y++)
+                    for (int y = 0; y < yCount; y++)
                     {
-                        int SrcOffset = (SrcPosY + Y) * SrcPitch + SrcPosX * SrcCpp;
-                        int DstOffset = (DstPosY + Y) * DstPitch + DstPosX * DstCpp;
+                        int srcOffset = (srcPosY + y) * srcPitch + srcPosX * srcCpp;
+                        int dstOffset = (dstPosY + y) * dstPitch + dstPosX * dstCpp;
 
-                        long Src = SrcPA + (uint)SrcOffset;
-                        long Dst = DstPA + (uint)DstOffset;
+                        long src = srcPa + (uint)srcOffset;
+                        long dst = dstPa + (uint)dstOffset;
 
-                        Vmm.Memory.CopyBytes(Src, Dst, XCount * SrcCpp);
+                        vmm.Memory.CopyBytes(src, dst, xCount * srcCpp);
                     }
                 }
                 else
                 {
-                    ISwizzle SrcSwizzle;
+                    ISwizzle srcSwizzle;
 
-                    if (SrcLinear)
+                    if (srcLinear)
                     {
-                        SrcSwizzle = new LinearSwizzle(SrcPitch, SrcCpp);
+                        srcSwizzle = new LinearSwizzle(srcPitch, srcCpp);
                     }
                     else
                     {
-                        SrcSwizzle = new BlockLinearSwizzle(SrcSizeX, SrcCpp, SrcBlockHeight);
+                        srcSwizzle = new BlockLinearSwizzle(srcSizeX, srcCpp, srcBlockHeight);
                     }
 
-                    ISwizzle DstSwizzle;
+                    ISwizzle dstSwizzle;
 
-                    if (DstLinear)
+                    if (dstLinear)
                     {
-                        DstSwizzle = new LinearSwizzle(DstPitch, DstCpp);
+                        dstSwizzle = new LinearSwizzle(dstPitch, dstCpp);
                     }
                     else
                     {
-                        DstSwizzle = new BlockLinearSwizzle(DstSizeX, DstCpp, DstBlockHeight);
+                        dstSwizzle = new BlockLinearSwizzle(dstSizeX, dstCpp, dstBlockHeight);
                     }
 
-                    for (int Y = 0; Y < YCount; Y++)
-                    for (int X = 0; X < XCount; X++)
+                    for (int y = 0; y < yCount; y++)
+                    for (int x = 0; x < xCount; x++)
                     {
-                        int SrcOffset = SrcSwizzle.GetSwizzleOffset(SrcPosX + X, SrcPosY + Y);
-                        int DstOffset = DstSwizzle.GetSwizzleOffset(DstPosX + X, DstPosY + Y);
+                        int srcOffset = srcSwizzle.GetSwizzleOffset(srcPosX + x, srcPosY + y);
+                        int dstOffset = dstSwizzle.GetSwizzleOffset(dstPosX + x, dstPosY + y);
 
-                        long Src = SrcPA + (uint)SrcOffset;
-                        long Dst = DstPA + (uint)DstOffset;
+                        long src = srcPa + (uint)srcOffset;
+                        long dst = dstPa + (uint)dstOffset;
 
-                        Vmm.Memory.CopyBytes(Src, Dst, SrcCpp);
+                        vmm.Memory.CopyBytes(src, dst, srcCpp);
                     }
                 }
             }
             else
             {
-                Vmm.Memory.CopyBytes(SrcPA, DstPA, XCount);
+                vmm.Memory.CopyBytes(srcPa, dstPa, xCount);
             }
         }
 
-        private long MakeInt64From2xInt32(NvGpuEngineM2mfReg Reg)
+        private long MakeInt64From2XInt32(NvGpuEngineM2MfReg reg)
         {
             return
-                (long)Registers[(int)Reg + 0] << 32 |
-                (uint)Registers[(int)Reg + 1];
+                (long)Registers[(int)reg + 0] << 32 |
+                (uint)Registers[(int)reg + 1];
         }
 
-        private void WriteRegister(NvGpuPBEntry PBEntry)
+        private void WriteRegister(NvGpuPbEntry pbEntry)
         {
-            int ArgsCount = PBEntry.Arguments.Count;
+            int argsCount = pbEntry.Arguments.Count;
 
-            if (ArgsCount > 0)
+            if (argsCount > 0)
             {
-                Registers[PBEntry.Method] = PBEntry.Arguments[ArgsCount - 1];
+                Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
             }
         }
 
-        private int ReadRegister(NvGpuEngineM2mfReg Reg)
+        private int ReadRegister(NvGpuEngineM2MfReg reg)
         {
-            return Registers[(int)Reg];
+            return Registers[(int)reg];
         }
 
-        private void WriteRegister(NvGpuEngineM2mfReg Reg, int Value)
+        private void WriteRegister(NvGpuEngineM2MfReg reg, int value)
         {
-            Registers[(int)Reg] = Value;
+            Registers[(int)reg] = value;
         }
     }
 }

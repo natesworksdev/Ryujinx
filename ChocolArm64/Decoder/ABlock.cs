@@ -17,9 +17,9 @@ namespace ChocolArm64.Decoder
             OpCodes = new List<AOpCode>();
         }
 
-        public ABlock(long Position) : this()
+        public ABlock(long position) : this()
         {
-            this.Position = Position;
+            this.Position = position;
         }
 
         public AOpCode GetLastOp()

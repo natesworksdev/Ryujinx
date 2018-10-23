@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    class IApplicationProxy : IpcService
+    class ApplicationProxy : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IApplicationProxy()
+        public ApplicationProxy()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0,    GetCommonStateGetter    },
                 { 1,    GetSelfController       },
@@ -24,58 +24,58 @@ namespace Ryujinx.HLE.HOS.Services.Am
             };
         }
 
-        public long GetCommonStateGetter(ServiceCtx Context)
+        public long GetCommonStateGetter(ServiceCtx context)
         {
-            MakeObject(Context, new ICommonStateGetter(Context.Device.System));
+            MakeObject(context, new CommonStateGetter(context.Device.System));
 
             return 0;
         }
 
-        public long GetSelfController(ServiceCtx Context)
+        public long GetSelfController(ServiceCtx context)
         {
-            MakeObject(Context, new ISelfController(Context.Device.System));
+            MakeObject(context, new SelfController(context.Device.System));
 
             return 0;
         }
 
-        public long GetWindowController(ServiceCtx Context)
+        public long GetWindowController(ServiceCtx context)
         {
-            MakeObject(Context, new IWindowController());
+            MakeObject(context, new WindowController());
 
             return 0;
         }
 
-        public long GetAudioController(ServiceCtx Context)
+        public long GetAudioController(ServiceCtx context)
         {
-            MakeObject(Context, new IAudioController());
+            MakeObject(context, new AudioController());
 
             return 0;
         }
 
-        public long GetDisplayController(ServiceCtx Context)
+        public long GetDisplayController(ServiceCtx context)
         {
-            MakeObject(Context, new IDisplayController());
+            MakeObject(context, new DisplayController());
 
             return 0;
         }
 
-        public long GetLibraryAppletCreator(ServiceCtx Context)
+        public long GetLibraryAppletCreator(ServiceCtx context)
         {
-            MakeObject(Context, new ILibraryAppletCreator());
+            MakeObject(context, new LibraryAppletCreator());
 
             return 0;
         }
 
-        public long GetApplicationFunctions(ServiceCtx Context)
+        public long GetApplicationFunctions(ServiceCtx context)
         {
-            MakeObject(Context, new IApplicationFunctions());
+            MakeObject(context, new ApplicationFunctions());
 
             return 0;
         }
 
-        public long GetDebugFunctions(ServiceCtx Context)
+        public long GetDebugFunctions(ServiceCtx context)
         {
-            MakeObject(Context, new IDebugFunctions());
+            MakeObject(context, new DebugFunctions());
 
             return 0;
         }

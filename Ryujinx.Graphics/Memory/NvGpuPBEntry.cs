@@ -3,21 +3,21 @@ using System.Collections.ObjectModel;
 
 namespace Ryujinx.Graphics.Memory
 {
-    public struct NvGpuPBEntry
+    public struct NvGpuPbEntry
     {
         public int Method { get; private set; }
 
         public int SubChannel { get; private set; }
 
-        private int[] m_Arguments;
+        private int[] _mArguments;
 
-        public ReadOnlyCollection<int> Arguments => Array.AsReadOnly(m_Arguments);
+        public ReadOnlyCollection<int> Arguments => Array.AsReadOnly(_mArguments);
 
-        public NvGpuPBEntry(int Method, int SubChannel, params int[] Arguments)
+        public NvGpuPbEntry(int method, int subChannel, params int[] arguments)
         {
-            this.Method      = Method;
-            this.SubChannel  = SubChannel;
-            this.m_Arguments = Arguments;
+            this.Method      = method;
+            this.SubChannel  = subChannel;
+            this._mArguments = arguments;
         }
     }
 }

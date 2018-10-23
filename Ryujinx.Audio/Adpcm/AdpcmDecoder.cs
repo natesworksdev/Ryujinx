@@ -5,87 +5,87 @@ namespace Ryujinx.Audio.Adpcm
         private const int SamplesPerFrame = 14;
         private const int BytesPerFrame   = 8;
 
-        public static int[] Decode(byte[] Buffer, AdpcmDecoderContext Context)
+        public static int[] Decode(byte[] buffer, AdpcmDecoderContext context)
         {
-            int Samples = GetSamplesCountFromSize(Buffer.Length);
+            int samples = GetSamplesCountFromSize(buffer.Length);
 
-            int[] Pcm = new int[Samples * 2];
+            int[] pcm = new int[samples * 2];
 
-            short History0 = Context.History0;
-            short History1 = Context.History1;
+            short history0 = context.History0;
+            short history1 = context.History1;
 
-            int InputOffset  = 0;
-            int OutputOffset = 0;
+            int inputOffset  = 0;
+            int outputOffset = 0;
 
-            while (InputOffset < Buffer.Length)
+            while (inputOffset < buffer.Length)
             {
-                byte Header = Buffer[InputOffset++];
+                byte header = buffer[inputOffset++];
 
-                int Scale = 0x800 << (Header & 0xf);
+                int scale = 0x800 << (header & 0xf);
 
-                int CoeffIndex = (Header >> 4) & 7;
+                int coeffIndex = (header >> 4) & 7;
 
-                short Coeff0 = Context.Coefficients[CoeffIndex * 2 + 0];
-                short Coeff1 = Context.Coefficients[CoeffIndex * 2 + 1];
+                short coeff0 = context.Coefficients[coeffIndex * 2 + 0];
+                short coeff1 = context.Coefficients[coeffIndex * 2 + 1];
 
-                int FrameSamples = SamplesPerFrame;
+                int frameSamples = SamplesPerFrame;
 
-                if (FrameSamples > Samples)
+                if (frameSamples > samples)
                 {
-                    FrameSamples = Samples;
+                    frameSamples = samples;
                 }
 
-                int Value = 0;
+                int value = 0;
 
-                for (int SampleIndex = 0; SampleIndex < FrameSamples; SampleIndex++)
+                for (int sampleIndex = 0; sampleIndex < frameSamples; sampleIndex++)
                 {
-                    int Sample;
+                    int sample;
 
-                    if ((SampleIndex & 1) == 0)
+                    if ((sampleIndex & 1) == 0)
                     {
-                        Value = Buffer[InputOffset++];
+                        value = buffer[inputOffset++];
 
-                        Sample = (Value << 24) >> 28;
+                        sample = (value << 24) >> 28;
                     }
                     else
                     {
-                        Sample = (Value << 28) >> 28;
+                        sample = (value << 28) >> 28;
                     }
 
-                    int Prediction = Coeff0 * History0 + Coeff1 * History1;
+                    int prediction = coeff0 * history0 + coeff1 * history1;
 
-                    Sample = (Sample * Scale + Prediction + 0x400) >> 11;
+                    sample = (sample * scale + prediction + 0x400) >> 11;
 
-                    short SaturatedSample = DspUtils.Saturate(Sample);
+                    short saturatedSample = DspUtils.Saturate(sample);
 
-                    History1 = History0;
-                    History0 = SaturatedSample;
+                    history1 = history0;
+                    history0 = saturatedSample;
 
-                    Pcm[OutputOffset++] = SaturatedSample;
-                    Pcm[OutputOffset++] = SaturatedSample;
+                    pcm[outputOffset++] = saturatedSample;
+                    pcm[outputOffset++] = saturatedSample;
                 }
 
-                Samples -= FrameSamples;
+                samples -= frameSamples;
             }
 
-            Context.History0 = History0;
-            Context.History1 = History1;
+            context.History0 = history0;
+            context.History1 = history1;
 
-            return Pcm;
+            return pcm;
         }
 
-        public static long GetSizeFromSamplesCount(int SamplesCount)
+        public static long GetSizeFromSamplesCount(int samplesCount)
         {
-            int Frames = SamplesCount / SamplesPerFrame;
+            int frames = samplesCount / SamplesPerFrame;
 
-            return Frames * BytesPerFrame;
+            return frames * BytesPerFrame;
         }
 
-        public static int GetSamplesCountFromSize(long Size)
+        public static int GetSamplesCountFromSize(long size)
         {
-            int Frames = (int)(Size / BytesPerFrame);
+            int frames = (int)(size / BytesPerFrame);
 
-            return Frames * SamplesPerFrame;
+            return frames * SamplesPerFrame;
         }
     }
 }

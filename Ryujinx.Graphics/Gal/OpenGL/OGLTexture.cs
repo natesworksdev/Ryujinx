@@ -4,198 +4,198 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLTexture : IGalTexture
+    class OglTexture : IGalTexture
     {
-        private OGLCachedResource<ImageHandler> TextureCache;
+        private OglCachedResource<ImageHandler> _textureCache;
 
-        public OGLTexture()
+        public OglTexture()
         {
-            TextureCache = new OGLCachedResource<ImageHandler>(DeleteTexture);
+            _textureCache = new OglCachedResource<ImageHandler>(DeleteTexture);
         }
 
         public void LockCache()
         {
-            TextureCache.Lock();
+            _textureCache.Lock();
         }
 
         public void UnlockCache()
         {
-            TextureCache.Unlock();
+            _textureCache.Unlock();
         }
 
-        private static void DeleteTexture(ImageHandler CachedImage)
+        private static void DeleteTexture(ImageHandler cachedImage)
         {
-            GL.DeleteTexture(CachedImage.Handle);
+            GL.DeleteTexture(cachedImage.Handle);
         }
 
-        public void Create(long Key, int Size, GalImage Image)
+        public void Create(long key, int size, GalImage image)
         {
-            int Handle = GL.GenTexture();
+            int handle = GL.GenTexture();
 
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.BindTexture(TextureTarget.Texture2D, handle);
 
-            const int Level  = 0; //TODO: Support mipmap textures.
-            const int Border = 0;
+            const int level  = 0; //TODO: Support mipmap textures.
+            const int border = 0;
 
-            TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Size);
+            _textureCache.AddOrUpdate(key, new ImageHandler(handle, image), (uint)size);
 
-            if (ImageUtils.IsCompressed(Image.Format))
+            if (ImageUtils.IsCompressed(image.Format))
             {
                 throw new InvalidOperationException("Surfaces with compressed formats are not supported!");
             }
 
-            (PixelInternalFormat InternalFmt,
-             PixelFormat         Format,
-             PixelType           Type) = OGLEnumConverter.GetImageFormat(Image.Format);
+            (PixelInternalFormat internalFmt,
+             PixelFormat         format,
+             PixelType           type) = OglEnumConverter.GetImageFormat(image.Format);
 
             GL.TexImage2D(
                 TextureTarget.Texture2D,
-                Level,
-                InternalFmt,
-                Image.Width,
-                Image.Height,
-                Border,
-                Format,
-                Type,
+                level,
+                internalFmt,
+                image.Width,
+                image.Height,
+                border,
+                format,
+                type,
                 IntPtr.Zero);
         }
 
-        public void Create(long Key, byte[] Data, GalImage Image)
+        public void Create(long key, byte[] data, GalImage image)
         {
-            int Handle = GL.GenTexture();
+            int handle = GL.GenTexture();
 
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.BindTexture(TextureTarget.Texture2D, handle);
 
-            const int Level  = 0; //TODO: Support mipmap textures.
-            const int Border = 0;
+            const int level  = 0; //TODO: Support mipmap textures.
+            const int border = 0;
 
-            TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Data.Length);
+            _textureCache.AddOrUpdate(key, new ImageHandler(handle, image), (uint)data.Length);
 
-            if (ImageUtils.IsCompressed(Image.Format) && !IsAstc(Image.Format))
+            if (ImageUtils.IsCompressed(image.Format) && !IsAstc(image.Format))
             {
-                InternalFormat InternalFmt = OGLEnumConverter.GetCompressedImageFormat(Image.Format);
+                InternalFormat internalFmt = OglEnumConverter.GetCompressedImageFormat(image.Format);
 
                 GL.CompressedTexImage2D(
                     TextureTarget.Texture2D,
-                    Level,
-                    InternalFmt,
-                    Image.Width,
-                    Image.Height,
-                    Border,
-                    Data.Length,
-                    Data);
+                    level,
+                    internalFmt,
+                    image.Width,
+                    image.Height,
+                    border,
+                    data.Length,
+                    data);
             }
             else
             {
                 //TODO: Use KHR_texture_compression_astc_hdr when available
-                if (IsAstc(Image.Format))
+                if (IsAstc(image.Format))
                 {
-                    int TextureBlockWidth  = ImageUtils.GetBlockWidth(Image.Format);
-                    int TextureBlockHeight = ImageUtils.GetBlockHeight(Image.Format);
+                    int textureBlockWidth  = ImageUtils.GetBlockWidth(image.Format);
+                    int textureBlockHeight = ImageUtils.GetBlockHeight(image.Format);
 
-                    Data = ASTCDecoder.DecodeToRGBA8888(
-                        Data,
-                        TextureBlockWidth,
-                        TextureBlockHeight, 1,
-                        Image.Width,
-                        Image.Height, 1);
+                    data = AstcDecoder.DecodeToRgba8888(
+                        data,
+                        textureBlockWidth,
+                        textureBlockHeight, 1,
+                        image.Width,
+                        image.Height, 1);
 
-                    Image.Format = GalImageFormat.RGBA8 | GalImageFormat.Unorm;
+                    image.Format = GalImageFormat.Rgba8 | GalImageFormat.Unorm;
                 }
 
-                (PixelInternalFormat InternalFmt,
-                 PixelFormat         Format,
-                 PixelType           Type) = OGLEnumConverter.GetImageFormat(Image.Format);
+                (PixelInternalFormat internalFmt,
+                 PixelFormat         format,
+                 PixelType           type) = OglEnumConverter.GetImageFormat(image.Format);
 
                 GL.TexImage2D(
                     TextureTarget.Texture2D,
-                    Level,
-                    InternalFmt,
-                    Image.Width,
-                    Image.Height,
-                    Border,
-                    Format,
-                    Type,
-                    Data);
+                    level,
+                    internalFmt,
+                    image.Width,
+                    image.Height,
+                    border,
+                    format,
+                    type,
+                    data);
             }
         }
 
-        private static bool IsAstc(GalImageFormat Format)
+        private static bool IsAstc(GalImageFormat format)
         {
-            Format &= GalImageFormat.FormatMask;
+            format &= GalImageFormat.FormatMask;
 
-            return Format > GalImageFormat.Astc2DStart && Format < GalImageFormat.Astc2DEnd;
+            return format > GalImageFormat.Astc2DStart && format < GalImageFormat.Astc2DEnd;
         }
 
-        public bool TryGetImage(long Key, out GalImage Image)
+        public bool TryGetImage(long key, out GalImage image)
         {
-            if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
+            if (_textureCache.TryGetValue(key, out ImageHandler cachedImage))
             {
-                Image = CachedImage.Image;
+                image = cachedImage.Image;
 
                 return true;
             }
 
-            Image = default(GalImage);
+            image = default(GalImage);
 
             return false;
         }
 
-        public bool TryGetImageHandler(long Key, out ImageHandler CachedImage)
+        public bool TryGetImageHandler(long key, out ImageHandler cachedImage)
         {
-            if (TextureCache.TryGetValue(Key, out CachedImage))
+            if (_textureCache.TryGetValue(key, out cachedImage))
             {
                 return true;
             }
 
-            CachedImage = null;
+            cachedImage = null;
 
             return false;
         }
 
-        public void Bind(long Key, int Index, GalImage Image)
+        public void Bind(long key, int index, GalImage image)
         {
-            if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
+            if (_textureCache.TryGetValue(key, out ImageHandler cachedImage))
             {
-                GL.ActiveTexture(TextureUnit.Texture0 + Index);
+                GL.ActiveTexture(TextureUnit.Texture0 + index);
 
-                GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
+                GL.BindTexture(TextureTarget.Texture2D, cachedImage.Handle);
 
-                int[] SwizzleRgba = new int[]
+                int[] swizzleRgba = new int[]
                 {
-                    (int)OGLEnumConverter.GetTextureSwizzle(Image.XSource),
-                    (int)OGLEnumConverter.GetTextureSwizzle(Image.YSource),
-                    (int)OGLEnumConverter.GetTextureSwizzle(Image.ZSource),
-                    (int)OGLEnumConverter.GetTextureSwizzle(Image.WSource)
+                    (int)OglEnumConverter.GetTextureSwizzle(image.XSource),
+                    (int)OglEnumConverter.GetTextureSwizzle(image.YSource),
+                    (int)OglEnumConverter.GetTextureSwizzle(image.ZSource),
+                    (int)OglEnumConverter.GetTextureSwizzle(image.WSource)
                 };
 
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, SwizzleRgba);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleRgba, swizzleRgba);
             }
         }
 
-        public void SetSampler(GalTextureSampler Sampler)
+        public void SetSampler(GalTextureSampler sampler)
         {
-            int WrapS = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressU);
-            int WrapT = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressV);
+            int wrapS = (int)OglEnumConverter.GetTextureWrapMode(sampler.AddressU);
+            int wrapT = (int)OglEnumConverter.GetTextureWrapMode(sampler.AddressV);
 
-            int MinFilter = (int)OGLEnumConverter.GetTextureMinFilter(Sampler.MinFilter, Sampler.MipFilter);
-            int MagFilter = (int)OGLEnumConverter.GetTextureMagFilter(Sampler.MagFilter);
+            int minFilter = (int)OglEnumConverter.GetTextureMinFilter(sampler.MinFilter, sampler.MipFilter);
+            int magFilter = (int)OglEnumConverter.GetTextureMagFilter(sampler.MagFilter);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, WrapS);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, WrapT);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, wrapS);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, wrapT);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, MinFilter);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, MagFilter);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, minFilter);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, magFilter);
 
-            float[] Color = new float[]
+            float[] color = new float[]
             {
-                Sampler.BorderColor.Red,
-                Sampler.BorderColor.Green,
-                Sampler.BorderColor.Blue,
-                Sampler.BorderColor.Alpha
+                sampler.BorderColor.Red,
+                sampler.BorderColor.Green,
+                sampler.BorderColor.Blue,
+                sampler.BorderColor.Alpha
             };
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, Color);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, color);
         }
     }
 }

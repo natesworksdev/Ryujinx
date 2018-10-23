@@ -60,156 +60,156 @@ namespace Ryujinx.HLE.Input
 
         private const int HidEntryCount = 17;
 
-        private Switch Device;
+        private Switch _device;
 
-        private long HidPosition;
+        private long _hidPosition;
 
-        public Hid(Switch Device, long HidPosition)
+        public Hid(Switch device, long hidPosition)
         {
-            this.Device      = Device;
-            this.HidPosition = HidPosition;
+            this._device      = device;
+            this._hidPosition = hidPosition;
 
-            Device.Memory.FillWithZeros(HidPosition, Horizon.HidSize);
+            device.Memory.FillWithZeros(hidPosition, Horizon.HidSize);
 
             InitializeJoyconPair(
-                JoyConColor.Body_Neon_Red,
-                JoyConColor.Buttons_Neon_Red,
-                JoyConColor.Body_Neon_Blue,
-                JoyConColor.Buttons_Neon_Blue);
+                JoyConColor.BodyNeonRed,
+                JoyConColor.ButtonsNeonRed,
+                JoyConColor.BodyNeonBlue,
+                JoyConColor.ButtonsNeonBlue);
         }
 
         private void InitializeJoyconPair(
-            JoyConColor LeftColorBody,
-            JoyConColor LeftColorButtons,
-            JoyConColor RightColorBody,
-            JoyConColor RightColorButtons)
+            JoyConColor leftColorBody,
+            JoyConColor leftColorButtons,
+            JoyConColor rightColorBody,
+            JoyConColor rightColorButtons)
         {
-            long BaseControllerOffset = HidPosition + HidControllersOffset + 8 * HidControllerSize;
+            long baseControllerOffset = _hidPosition + HidControllersOffset + 8 * HidControllerSize;
 
-            HidControllerType Type = HidControllerType.ControllerType_Handheld;
+            HidControllerType type = HidControllerType.ControllerTypeHandheld;
 
-            bool IsHalf = false;
+            bool isHalf = false;
 
-            HidControllerColorDesc SingleColorDesc =
-                HidControllerColorDesc.ColorDesc_ColorsNonexistent;
+            HidControllerColorDesc singleColorDesc =
+                HidControllerColorDesc.ColorDescColorsNonexistent;
 
-            JoyConColor SingleColorBody    = JoyConColor.Black;
-            JoyConColor SingleColorButtons = JoyConColor.Black;
+            JoyConColor singleColorBody    = JoyConColor.Black;
+            JoyConColor singleColorButtons = JoyConColor.Black;
 
-            HidControllerColorDesc SplitColorDesc = 0;
+            HidControllerColorDesc splitColorDesc = 0;
 
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x0,  (int)Type);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x0,  (int)type);
 
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x4,  IsHalf ? 1 : 0);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x4,  isHalf ? 1 : 0);
 
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x8,  (int)SingleColorDesc);
-            Device.Memory.WriteInt32(BaseControllerOffset + 0xc,  (int)SingleColorBody);
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x10, (int)SingleColorButtons);
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x14, (int)SplitColorDesc);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x8,  (int)singleColorDesc);
+            _device.Memory.WriteInt32(baseControllerOffset + 0xc,  (int)singleColorBody);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x10, (int)singleColorButtons);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x14, (int)splitColorDesc);
 
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x18, (int)LeftColorBody);
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x1c, (int)LeftColorButtons);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x18, (int)leftColorBody);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x1c, (int)leftColorButtons);
 
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x20, (int)RightColorBody);
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x24, (int)RightColorButtons);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x20, (int)rightColorBody);
+            _device.Memory.WriteInt32(baseControllerOffset + 0x24, (int)rightColorButtons);
         }
 
         public void SetJoyconButton(
-            HidControllerId      ControllerId,
-            HidControllerLayouts ControllerLayout,
-            HidControllerButtons Buttons,
-            HidJoystickPosition  LeftStick,
-            HidJoystickPosition  RightStick)
+            HidControllerId      controllerId,
+            HidControllerLayouts controllerLayout,
+            HidControllerButtons buttons,
+            HidJoystickPosition  leftStick,
+            HidJoystickPosition  rightStick)
         {
-            long ControllerOffset = HidPosition + HidControllersOffset;
+            long controllerOffset = _hidPosition + HidControllersOffset;
 
-            ControllerOffset += (int)ControllerId * HidControllerSize;
+            controllerOffset += (int)controllerId * HidControllerSize;
 
-            ControllerOffset += HidControllerHeaderSize;
+            controllerOffset += HidControllerHeaderSize;
 
-            ControllerOffset += (int)ControllerLayout * HidControllerLayoutsSize;
+            controllerOffset += (int)controllerLayout * HidControllerLayoutsSize;
 
-            long LastEntry = Device.Memory.ReadInt64(ControllerOffset + 0x10);
+            long lastEntry = _device.Memory.ReadInt64(controllerOffset + 0x10);
 
-            long CurrEntry = (LastEntry + 1) % HidEntryCount;
+            long currEntry = (lastEntry + 1) % HidEntryCount;
 
-            long Timestamp = GetTimestamp();
+            long timestamp = GetTimestamp();
 
-            Device.Memory.WriteInt64(ControllerOffset + 0x0,  Timestamp);
-            Device.Memory.WriteInt64(ControllerOffset + 0x8,  HidEntryCount);
-            Device.Memory.WriteInt64(ControllerOffset + 0x10, CurrEntry);
-            Device.Memory.WriteInt64(ControllerOffset + 0x18, HidEntryCount - 1);
+            _device.Memory.WriteInt64(controllerOffset + 0x0,  timestamp);
+            _device.Memory.WriteInt64(controllerOffset + 0x8,  HidEntryCount);
+            _device.Memory.WriteInt64(controllerOffset + 0x10, currEntry);
+            _device.Memory.WriteInt64(controllerOffset + 0x18, HidEntryCount - 1);
 
-            ControllerOffset += HidControllersLayoutHeaderSize;
+            controllerOffset += HidControllersLayoutHeaderSize;
 
-            long LastEntryOffset = ControllerOffset + LastEntry * HidControllersInputEntrySize;
+            long lastEntryOffset = controllerOffset + lastEntry * HidControllersInputEntrySize;
 
-            ControllerOffset += CurrEntry * HidControllersInputEntrySize;
+            controllerOffset += currEntry * HidControllersInputEntrySize;
 
-            long SampleCounter = Device.Memory.ReadInt64(LastEntryOffset) + 1;
+            long sampleCounter = _device.Memory.ReadInt64(lastEntryOffset) + 1;
 
-            Device.Memory.WriteInt64(ControllerOffset + 0x0, SampleCounter);
-            Device.Memory.WriteInt64(ControllerOffset + 0x8, SampleCounter);
+            _device.Memory.WriteInt64(controllerOffset + 0x0, sampleCounter);
+            _device.Memory.WriteInt64(controllerOffset + 0x8, sampleCounter);
 
-            Device.Memory.WriteInt64(ControllerOffset + 0x10, (uint)Buttons);
+            _device.Memory.WriteInt64(controllerOffset + 0x10, (uint)buttons);
 
-            Device.Memory.WriteInt32(ControllerOffset + 0x18, LeftStick.DX);
-            Device.Memory.WriteInt32(ControllerOffset + 0x1c, LeftStick.DY);
+            _device.Memory.WriteInt32(controllerOffset + 0x18, leftStick.Dx);
+            _device.Memory.WriteInt32(controllerOffset + 0x1c, leftStick.Dy);
 
-            Device.Memory.WriteInt32(ControllerOffset + 0x20, RightStick.DX);
-            Device.Memory.WriteInt32(ControllerOffset + 0x24, RightStick.DY);
+            _device.Memory.WriteInt32(controllerOffset + 0x20, rightStick.Dx);
+            _device.Memory.WriteInt32(controllerOffset + 0x24, rightStick.Dy);
 
-            Device.Memory.WriteInt64(ControllerOffset + 0x28,
-                (uint)HidControllerConnState.Controller_State_Connected |
-                (uint)HidControllerConnState.Controller_State_Wired);
+            _device.Memory.WriteInt64(controllerOffset + 0x28,
+                (uint)HidControllerConnState.ControllerStateConnected |
+                (uint)HidControllerConnState.ControllerStateWired);
         }
 
-        public void SetTouchPoints(params HidTouchPoint[] Points)
+        public void SetTouchPoints(params HidTouchPoint[] points)
         {
-            long TouchScreenOffset = HidPosition + HidTouchScreenOffset;
+            long touchScreenOffset = _hidPosition + HidTouchScreenOffset;
 
-            long LastEntry = Device.Memory.ReadInt64(TouchScreenOffset + 0x10);
+            long lastEntry = _device.Memory.ReadInt64(touchScreenOffset + 0x10);
 
-            long CurrEntry = (LastEntry + 1) % HidEntryCount;
+            long currEntry = (lastEntry + 1) % HidEntryCount;
 
-            long Timestamp = GetTimestamp();
+            long timestamp = GetTimestamp();
 
-            Device.Memory.WriteInt64(TouchScreenOffset + 0x0,  Timestamp);
-            Device.Memory.WriteInt64(TouchScreenOffset + 0x8,  HidEntryCount);
-            Device.Memory.WriteInt64(TouchScreenOffset + 0x10, CurrEntry);
-            Device.Memory.WriteInt64(TouchScreenOffset + 0x18, HidEntryCount - 1);
-            Device.Memory.WriteInt64(TouchScreenOffset + 0x20, Timestamp);
+            _device.Memory.WriteInt64(touchScreenOffset + 0x0,  timestamp);
+            _device.Memory.WriteInt64(touchScreenOffset + 0x8,  HidEntryCount);
+            _device.Memory.WriteInt64(touchScreenOffset + 0x10, currEntry);
+            _device.Memory.WriteInt64(touchScreenOffset + 0x18, HidEntryCount - 1);
+            _device.Memory.WriteInt64(touchScreenOffset + 0x20, timestamp);
 
-            long TouchEntryOffset = TouchScreenOffset + HidTouchHeaderSize;
+            long touchEntryOffset = touchScreenOffset + HidTouchHeaderSize;
 
-            long LastEntryOffset = TouchEntryOffset + LastEntry * HidTouchEntrySize;
+            long lastEntryOffset = touchEntryOffset + lastEntry * HidTouchEntrySize;
 
-            long SampleCounter = Device.Memory.ReadInt64(LastEntryOffset) + 1;
+            long sampleCounter = _device.Memory.ReadInt64(lastEntryOffset) + 1;
 
-            TouchEntryOffset += CurrEntry * HidTouchEntrySize;
+            touchEntryOffset += currEntry * HidTouchEntrySize;
 
-            Device.Memory.WriteInt64(TouchEntryOffset + 0x0, SampleCounter);
-            Device.Memory.WriteInt64(TouchEntryOffset + 0x8, Points.Length);
+            _device.Memory.WriteInt64(touchEntryOffset + 0x0, sampleCounter);
+            _device.Memory.WriteInt64(touchEntryOffset + 0x8, points.Length);
 
-            TouchEntryOffset += HidTouchEntryHeaderSize;
+            touchEntryOffset += HidTouchEntryHeaderSize;
 
-            const int Padding = 0;
+            const int padding = 0;
 
-            int Index = 0;
+            int index = 0;
 
-            foreach (HidTouchPoint Point in Points)
+            foreach (HidTouchPoint point in points)
             {
-                Device.Memory.WriteInt64(TouchEntryOffset + 0x0,  Timestamp);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0x8,  Padding);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0xc,  Index++);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0x10, Point.X);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0x14, Point.Y);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0x18, Point.DiameterX);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0x1c, Point.DiameterY);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0x20, Point.Angle);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0x24, Padding);
+                _device.Memory.WriteInt64(touchEntryOffset + 0x0,  timestamp);
+                _device.Memory.WriteInt32(touchEntryOffset + 0x8,  padding);
+                _device.Memory.WriteInt32(touchEntryOffset + 0xc,  index++);
+                _device.Memory.WriteInt32(touchEntryOffset + 0x10, point.X);
+                _device.Memory.WriteInt32(touchEntryOffset + 0x14, point.Y);
+                _device.Memory.WriteInt32(touchEntryOffset + 0x18, point.DiameterX);
+                _device.Memory.WriteInt32(touchEntryOffset + 0x1c, point.DiameterY);
+                _device.Memory.WriteInt32(touchEntryOffset + 0x20, point.Angle);
+                _device.Memory.WriteInt32(touchEntryOffset + 0x24, padding);
 
-                TouchEntryOffset += HidTouchEntryTouchSize;
+                touchEntryOffset += HidTouchEntryTouchSize;
             }
         }
 

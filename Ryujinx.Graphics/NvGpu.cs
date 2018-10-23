@@ -10,23 +10,23 @@ namespace Ryujinx.Graphics
 
         public NvGpuFifo Fifo { get; private set; }
 
-        internal NvGpuEngine2d   Engine2d   { get; private set; }
-        internal NvGpuEngine3d   Engine3d   { get; private set; }
-        internal NvGpuEngineM2mf EngineM2mf { get; private set; }
-        internal NvGpuEngineP2mf EngineP2mf { get; private set; }
+        internal NvGpuEngine2D   Engine2D   { get; private set; }
+        internal NvGpuEngine3D   Engine3D   { get; private set; }
+        internal NvGpuEngineM2Mf EngineM2Mf { get; private set; }
+        internal NvGpuEngineP2Mf EngineP2Mf { get; private set; }
 
-        public NvGpu(IGalRenderer Renderer)
+        public NvGpu(IGalRenderer renderer)
         {
-            this.Renderer = Renderer;
+            this.Renderer = renderer;
 
             ResourceManager = new GpuResourceManager(this);
 
             Fifo = new NvGpuFifo(this);
 
-            Engine2d   = new NvGpuEngine2d(this);
-            Engine3d   = new NvGpuEngine3d(this);
-            EngineM2mf = new NvGpuEngineM2mf(this);
-            EngineP2mf = new NvGpuEngineP2mf(this);
+            Engine2D   = new NvGpuEngine2D(this);
+            Engine3D   = new NvGpuEngine3D(this);
+            EngineM2Mf = new NvGpuEngineM2Mf(this);
+            EngineP2Mf = new NvGpuEngineP2Mf(this);
         }
     }
 }

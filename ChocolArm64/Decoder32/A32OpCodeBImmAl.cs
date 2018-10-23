@@ -7,10 +7,10 @@ namespace ChocolArm64.Decoder32
         public int Imm;
         public int H;
 
-        public A32OpCodeBImmAl(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public A32OpCodeBImmAl(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Imm = (OpCode <<  8) >> 6;
-            H   = (OpCode >> 23) &  2;
+            Imm = (opCode <<  8) >> 6;
+            H   = (opCode >> 23) &  2;
         }
     }
 }

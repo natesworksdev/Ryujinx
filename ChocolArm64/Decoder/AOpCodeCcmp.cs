@@ -5,27 +5,27 @@ namespace ChocolArm64.Decoder
 {
     class AOpCodeCcmp : AOpCodeAlu, IAOpCodeCond
     {
-        public    int NZCV { get; private set; }
+        public    int Nzcv { get; private set; }
         protected int RmImm;
 
         public ACond Cond { get; private set; }
 
-        public AOpCodeCcmp(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeCcmp(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            int O3 = (OpCode >> 4) & 1;
+            int o3 = (opCode >> 4) & 1;
 
-            if (O3 != 0)
+            if (o3 != 0)
             {
                 Emitter = AInstEmit.Und;
 
                 return;
             }
 
-            NZCV  =         (OpCode >>  0) & 0xf;
-            Cond  = (ACond)((OpCode >> 12) & 0xf);
-            RmImm =         (OpCode >> 16) & 0x1f;
+            Nzcv  =         (opCode >>  0) & 0xf;
+            Cond  = (ACond)((opCode >> 12) & 0xf);
+            RmImm =         (opCode >> 16) & 0x1f;
 
-            Rd = AThreadState.ZRIndex;
+            Rd = AThreadState.ZrIndex;
         }
     }
 }

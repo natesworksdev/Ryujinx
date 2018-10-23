@@ -6,23 +6,23 @@ namespace ChocolArm64.Decoder
     {
         public int Index { get; private set; }
 
-        public AOpCodeSimdRegElemF(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdRegElemF(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            switch ((OpCode >> 21) & 3) // sz:L
+            switch ((opCode >> 21) & 3) // sz:L
             {
                 case 0: // H:0
-                    Index = (OpCode >> 10) & 2; // 0, 2
+                    Index = (opCode >> 10) & 2; // 0, 2
 
                     break;
 
                 case 1: // H:1
-                    Index = (OpCode >> 10) & 2;
+                    Index = (opCode >> 10) & 2;
                     Index++; // 1, 3
 
                     break;
 
                 case 2: // H
-                    Index = (OpCode >> 11) & 1; // 0, 1
+                    Index = (opCode >> 11) & 1; // 0, 1
 
                     break;
 

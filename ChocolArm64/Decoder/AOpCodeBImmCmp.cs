@@ -7,13 +7,13 @@ namespace ChocolArm64.Decoder
     {
         public int Rt { get; private set; }
 
-        public AOpCodeBImmCmp(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeBImmCmp(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Rt = OpCode & 0x1f;
+            Rt = opCode & 0x1f;
 
-            Imm = Position + ADecoderHelper.DecodeImmS19_2(OpCode);
+            Imm = position + ADecoderHelper.DecodeImmS19_2(opCode);
 
-            RegisterSize = (OpCode >> 31) != 0
+            RegisterSize = (opCode >> 31) != 0
                 ? ARegisterSize.Int64
                 : ARegisterSize.Int32;
         }

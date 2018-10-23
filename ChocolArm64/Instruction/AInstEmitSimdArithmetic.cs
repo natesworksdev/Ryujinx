@@ -13,860 +13,835 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void Abs_S(AILEmitterCtx Context)
+        public static void Abs_S(AilEmitterCtx context)
         {
-            EmitScalarUnaryOpSx(Context, () => EmitAbs(Context));
+            EmitScalarUnaryOpSx(context, () => EmitAbs(context));
         }
 
-        public static void Abs_V(AILEmitterCtx Context)
+        public static void Abs_V(AilEmitterCtx context)
         {
-            EmitVectorUnaryOpSx(Context, () => EmitAbs(Context));
+            EmitVectorUnaryOpSx(context, () => EmitAbs(context));
         }
 
-        public static void Add_S(AILEmitterCtx Context)
+        public static void Add_S(AilEmitterCtx context)
         {
-            EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Add));
+            EmitScalarBinaryOpZx(context, () => context.Emit(OpCodes.Add));
         }
 
-        public static void Add_V(AILEmitterCtx Context)
+        public static void Add_V(AilEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
             {
-                EmitSse2Op(Context, nameof(Sse2.Add));
+                EmitSse2Op(context, nameof(Sse2.Add));
             }
             else
             {
-                EmitVectorBinaryOpZx(Context, () => Context.Emit(OpCodes.Add));
+                EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Add));
             }
         }
 
-        public static void Addhn_V(AILEmitterCtx Context)
+        public static void Addhn_V(AilEmitterCtx context)
         {
-            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Add), Round: false);
+            EmitHighNarrow(context, () => context.Emit(OpCodes.Add), round: false);
         }
 
-        public static void Addp_S(AILEmitterCtx Context)
+        public static void Addp_S(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
-            EmitVectorExtractZx(Context, Op.Rn, 1, Op.Size);
+            EmitVectorExtractZx(context, op.Rn, 0, op.Size);
+            EmitVectorExtractZx(context, op.Rn, 1, op.Size);
 
-            Context.Emit(OpCodes.Add);
+            context.Emit(OpCodes.Add);
 
-            EmitScalarSet(Context, Op.Rd, Op.Size);
+            EmitScalarSet(context, op.Rd, op.Size);
         }
 
-        public static void Addp_V(AILEmitterCtx Context)
+        public static void Addp_V(AilEmitterCtx context)
         {
-            EmitVectorPairwiseOpZx(Context, () => Context.Emit(OpCodes.Add));
+            EmitVectorPairwiseOpZx(context, () => context.Emit(OpCodes.Add));
         }
 
-        public static void Addv_V(AILEmitterCtx Context)
+        public static void Addv_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> Op.Size;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> op.Size;
 
-            EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
+            EmitVectorExtractZx(context, op.Rn, 0, op.Size);
 
-            for (int Index = 1; Index < Elems; Index++)
+            for (int index = 1; index < elems; index++)
             {
-                EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
+                EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
             }
 
-            EmitScalarSet(Context, Op.Rd, Op.Size);
+            EmitScalarSet(context, op.Rd, op.Size);
         }
 
-        public static void Cls_V(AILEmitterCtx Context)
+        public static void Cls_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> Op.Size;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> op.Size;
 
-            int ESize = 8 << Op.Size;
+            int eSize = 8 << op.Size;
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
+                EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                Context.EmitLdc_I4(ESize);
+                context.EmitLdc_I4(eSize);
 
-                ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CountLeadingSigns));
+                ASoftFallback.EmitCall(context, nameof(ASoftFallback.CountLeadingSigns));
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                EmitVectorInsert(context, op.Rd, index, op.Size);
             }
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            if (op.RegisterSize == ARegisterSize.Simd64)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        public static void Clz_V(AILEmitterCtx Context)
+        public static void Clz_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> Op.Size;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> op.Size;
 
-            int ESize = 8 << Op.Size;
+            int eSize = 8 << op.Size;
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
+                EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                if (Lzcnt.IsSupported && ESize == 32)
+                if (Lzcnt.IsSupported && eSize == 32)
                 {
-                    Context.Emit(OpCodes.Conv_U4);
+                    context.Emit(OpCodes.Conv_U4);
 
-                    Context.EmitCall(typeof(Lzcnt).GetMethod(nameof(Lzcnt.LeadingZeroCount), new Type[] { typeof(uint) }));
+                    context.EmitCall(typeof(Lzcnt).GetMethod(nameof(Lzcnt.LeadingZeroCount), new Type[] { typeof(uint) }));
 
-                    Context.Emit(OpCodes.Conv_U8);
+                    context.Emit(OpCodes.Conv_U8);
                 }
                 else
                 {
-                    Context.EmitLdc_I4(ESize);
+                    context.EmitLdc_I4(eSize);
 
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CountLeadingZeros));
+                    ASoftFallback.EmitCall(context, nameof(ASoftFallback.CountLeadingZeros));
                 }
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size);
+                EmitVectorInsert(context, op.Rd, index, op.Size);
             }
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            if (op.RegisterSize == ARegisterSize.Simd64)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        public static void Cnt_V(AILEmitterCtx Context)
+        public static void Cnt_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int Elems = Op.RegisterSize == ARegisterSize.SIMD128 ? 16 : 8;
+            int elems = op.RegisterSize == ARegisterSize.Simd128 ? 16 : 8;
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractZx(Context, Op.Rn, Index, 0);
+                EmitVectorExtractZx(context, op.Rn, index, 0);
 
                 if (Popcnt.IsSupported)
                 {
-                    Context.EmitCall(typeof(Popcnt).GetMethod(nameof(Popcnt.PopCount), new Type[] { typeof(ulong) }));
+                    context.EmitCall(typeof(Popcnt).GetMethod(nameof(Popcnt.PopCount), new Type[] { typeof(ulong) }));
                 }
                 else
                 {
-                    ASoftFallback.EmitCall(Context, nameof(ASoftFallback.CountSetBits8));
+                    ASoftFallback.EmitCall(context, nameof(ASoftFallback.CountSetBits8));
                 }
 
-                EmitVectorInsert(Context, Op.Rd, Index, 0);
+                EmitVectorInsert(context, op.Rd, index, 0);
             }
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            if (op.RegisterSize == ARegisterSize.Simd64)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        public static void Fabd_S(AILEmitterCtx Context)
+        public static void Fabd_S(AilEmitterCtx context)
         {
-            EmitScalarBinaryOpF(Context, () =>
+            EmitScalarBinaryOpF(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
+                context.Emit(OpCodes.Sub);
 
-                EmitUnaryMathCall(Context, nameof(Math.Abs));
+                EmitUnaryMathCall(context, nameof(Math.Abs));
             });
         }
 
-        public static void Fabs_S(AILEmitterCtx Context)
+        public static void Fabs_S(AilEmitterCtx context)
         {
-            EmitScalarUnaryOpF(Context, () =>
+            EmitScalarUnaryOpF(context, () =>
             {
-                EmitUnaryMathCall(Context, nameof(Math.Abs));
+                EmitUnaryMathCall(context, nameof(Math.Abs));
             });
         }
 
-        public static void Fabs_V(AILEmitterCtx Context)
+        public static void Fabs_V(AilEmitterCtx context)
         {
-            EmitVectorUnaryOpF(Context, () =>
+            EmitVectorUnaryOpF(context, () =>
             {
-                EmitUnaryMathCall(Context, nameof(Math.Abs));
+                EmitUnaryMathCall(context, nameof(Math.Abs));
             });
         }
 
-        public static void Fadd_S(AILEmitterCtx Context)
+        public static void Fadd_S(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.AddScalar));
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.AddScalar));
             }
             else
             {
-                EmitScalarBinaryOpF(Context, () =>
+                EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPAdd));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpAdd));
                 });
             }
         }
 
-        public static void Fadd_V(AILEmitterCtx Context)
+        public static void Fadd_V(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.Add));
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.Add));
             }
             else
             {
-                EmitVectorBinaryOpF(Context, () =>
+                EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPAdd));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpAdd));
                 });
             }
         }
 
-        public static void Faddp_S(AILEmitterCtx Context)
+        public static void Faddp_S(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
+            int sizeF = op.Size & 1;
 
-            EmitVectorExtractF(Context, Op.Rn, 0, SizeF);
-            EmitVectorExtractF(Context, Op.Rn, 1, SizeF);
+            EmitVectorExtractF(context, op.Rn, 0, sizeF);
+            EmitVectorExtractF(context, op.Rn, 1, sizeF);
 
-            Context.Emit(OpCodes.Add);
+            context.Emit(OpCodes.Add);
 
-            EmitScalarSetF(Context, Op.Rd, SizeF);
+            EmitScalarSetF(context, op.Rd, sizeF);
         }
 
-        public static void Faddp_V(AILEmitterCtx Context)
+        public static void Faddp_V(AilEmitterCtx context)
         {
-            EmitVectorPairwiseOpF(Context, () => Context.Emit(OpCodes.Add));
+            EmitVectorPairwiseOpF(context, () => context.Emit(OpCodes.Add));
         }
 
-        public static void Fdiv_S(AILEmitterCtx Context)
+        public static void Fdiv_S(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.DivideScalar));
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.DivideScalar));
             }
             else
             {
-                EmitScalarBinaryOpF(Context, () =>
+                EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPDiv));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpDiv));
                 });
             }
         }
 
-        public static void Fdiv_V(AILEmitterCtx Context)
+        public static void Fdiv_V(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.Divide));
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.Divide));
             }
             else
             {
-                EmitVectorBinaryOpF(Context, () =>
+                EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPDiv));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpDiv));
                 });
             }
         }
 
-        public static void Fmadd_S(AILEmitterCtx Context)
+        public static void Fmadd_S(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse2)
+            if (AOptimizations.FastFp && AOptimizations.UseSse2)
             {
-                AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+                AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-                if (Op.Size == 0)
+                if (op.Size == 0)
                 {
-                    Type[] Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                    Type[] types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
-                    Context.EmitLdvec(Op.Ra);
-                    Context.EmitLdvec(Op.Rn);
-                    Context.EmitLdvec(Op.Rm);
+                    context.EmitLdvec(op.Ra);
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
 
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AddScalar),      Types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AddScalar),      types));
 
-                    Context.EmitStvec(Op.Rd);
+                    context.EmitStvec(op.Rd);
 
-                    EmitVectorZero32_128(Context, Op.Rd);
-                }
-                else /* if (Op.Size == 1) */
-                {
-                    Type[] Types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
-
-                    EmitLdvecWithCastToDouble(Context, Op.Ra);
-                    EmitLdvecWithCastToDouble(Context, Op.Rn);
-                    EmitLdvecWithCastToDouble(Context, Op.Rm);
-
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AddScalar),      Types));
-
-                    EmitStvecWithCastFromDouble(Context, Op.Rd);
-
-                    EmitVectorZeroUpper(Context, Op.Rd);
-                }
-            }
-            else
-            {
-                EmitScalarTernaryRaOpF(Context, () =>
-                {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulAdd));
-                });
-            }
-        }
-
-        public static void Fmax_S(AILEmitterCtx Context)
-        {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
-                                      && AOptimizations.UseSse2)
-            {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.MaxScalar));
-            }
-            else
-            {
-                EmitScalarBinaryOpF(Context, () =>
-                {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMax));
-                });
-            }
-        }
-
-        public static void Fmax_V(AILEmitterCtx Context)
-        {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
-                                      && AOptimizations.UseSse2)
-            {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.Max));
-            }
-            else
-            {
-                EmitVectorBinaryOpF(Context, () =>
-                {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMax));
-                });
-            }
-        }
-
-        public static void Fmaxnm_S(AILEmitterCtx Context)
-        {
-            EmitScalarBinaryOpF(Context, () =>
-            {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMaxNum));
-            });
-        }
-
-        public static void Fmaxnm_V(AILEmitterCtx Context)
-        {
-            EmitVectorBinaryOpF(Context, () =>
-            {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMaxNum));
-            });
-        }
-
-        public static void Fmaxp_V(AILEmitterCtx Context)
-        {
-            EmitVectorPairwiseOpF(Context, () =>
-            {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMax));
-            });
-        }
-
-        public static void Fmin_S(AILEmitterCtx Context)
-        {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
-                                      && AOptimizations.UseSse2)
-            {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.MinScalar));
-            }
-            else
-            {
-                EmitScalarBinaryOpF(Context, () =>
-                {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMin));
-                });
-            }
-        }
-
-        public static void Fmin_V(AILEmitterCtx Context)
-        {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
-                                      && AOptimizations.UseSse2)
-            {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.Min));
-            }
-            else
-            {
-                EmitVectorBinaryOpF(Context, () =>
-                {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMin));
-                });
-            }
-        }
-
-        public static void Fminnm_S(AILEmitterCtx Context)
-        {
-            EmitScalarBinaryOpF(Context, () =>
-            {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMinNum));
-            });
-        }
-
-        public static void Fminnm_V(AILEmitterCtx Context)
-        {
-            EmitVectorBinaryOpF(Context, () =>
-            {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMinNum));
-            });
-        }
-
-        public static void Fminp_V(AILEmitterCtx Context)
-        {
-            EmitVectorPairwiseOpF(Context, () =>
-            {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMin));
-            });
-        }
-
-        public static void Fmla_Se(AILEmitterCtx Context)
-        {
-            EmitScalarTernaryOpByElemF(Context, () =>
-            {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Add);
-            });
-        }
-
-        public static void Fmla_V(AILEmitterCtx Context)
-        {
-            EmitVectorTernaryOpF(Context, () =>
-            {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Add);
-            });
-        }
-
-        public static void Fmla_Ve(AILEmitterCtx Context)
-        {
-            EmitVectorTernaryOpByElemF(Context, () =>
-            {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Add);
-            });
-        }
-
-        public static void Fmls_Se(AILEmitterCtx Context)
-        {
-            EmitScalarTernaryOpByElemF(Context, () =>
-            {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Sub);
-            });
-        }
-
-        public static void Fmls_V(AILEmitterCtx Context)
-        {
-            EmitVectorTernaryOpF(Context, () =>
-            {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Sub);
-            });
-        }
-
-        public static void Fmls_Ve(AILEmitterCtx Context)
-        {
-            EmitVectorTernaryOpByElemF(Context, () =>
-            {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Sub);
-            });
-        }
-
-        public static void Fmsub_S(AILEmitterCtx Context)
-        {
-            if (AOptimizations.FastFP && AOptimizations.UseSse2)
-            {
-                AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
-
-                if (Op.Size == 0)
-                {
-                    Type[] Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
-
-                    Context.EmitLdvec(Op.Ra);
-                    Context.EmitLdvec(Op.Rn);
-                    Context.EmitLdvec(Op.Rm);
-
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), Types));
-
-                    Context.EmitStvec(Op.Rd);
-
-                    EmitVectorZero32_128(Context, Op.Rd);
+                    EmitVectorZero32_128(context, op.Rd);
                 }
                 else /* if (Op.Size == 1) */
                 {
-                    Type[] Types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    Type[] types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                    EmitLdvecWithCastToDouble(Context, Op.Ra);
-                    EmitLdvecWithCastToDouble(Context, Op.Rn);
-                    EmitLdvecWithCastToDouble(Context, Op.Rm);
+                    EmitLdvecWithCastToDouble(context, op.Ra);
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rm);
 
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), Types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AddScalar),      types));
 
-                    EmitStvecWithCastFromDouble(Context, Op.Rd);
+                    EmitStvecWithCastFromDouble(context, op.Rd);
 
-                    EmitVectorZeroUpper(Context, Op.Rd);
+                    EmitVectorZeroUpper(context, op.Rd);
                 }
             }
             else
             {
-                EmitScalarTernaryRaOpF(Context, () =>
+                EmitScalarTernaryRaOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulSub));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMulAdd));
                 });
             }
         }
 
-        public static void Fmul_S(AILEmitterCtx Context)
+        public static void Fmax_S(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.MultiplyScalar));
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.MaxScalar));
             }
             else
             {
-                EmitScalarBinaryOpF(Context, () =>
+                EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMul));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMax));
                 });
             }
         }
 
-        public static void Fmul_Se(AILEmitterCtx Context)
+        public static void Fmax_V(AilEmitterCtx context)
         {
-            EmitScalarBinaryOpByElemF(Context, () => Context.Emit(OpCodes.Mul));
-        }
-
-        public static void Fmul_V(AILEmitterCtx Context)
-        {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.Multiply));
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.Max));
             }
             else
             {
-                EmitVectorBinaryOpF(Context, () =>
+                EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMul));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMax));
                 });
             }
         }
 
-        public static void Fmul_Ve(AILEmitterCtx Context)
+        public static void Fmaxnm_S(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpByElemF(Context, () => Context.Emit(OpCodes.Mul));
-        }
-
-        public static void Fmulx_S(AILEmitterCtx Context)
-        {
-            EmitScalarBinaryOpF(Context, () =>
+            EmitScalarBinaryOpF(context, () =>
             {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMaxNum));
             });
         }
 
-        public static void Fmulx_Se(AILEmitterCtx Context)
+        public static void Fmaxnm_V(AilEmitterCtx context)
         {
-            EmitScalarBinaryOpByElemF(Context, () =>
+            EmitVectorBinaryOpF(context, () =>
             {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMaxNum));
             });
         }
 
-        public static void Fmulx_V(AILEmitterCtx Context)
+        public static void Fmaxp_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpF(Context, () =>
+            EmitVectorPairwiseOpF(context, () =>
             {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMax));
             });
         }
 
-        public static void Fmulx_Ve(AILEmitterCtx Context)
+        public static void Fmin_S(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpByElemF(Context, () =>
+            if (AOptimizations.FastFp && AOptimizations.UseSse
+                                      && AOptimizations.UseSse2)
             {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPMulX));
-            });
-        }
-
-        public static void Fneg_S(AILEmitterCtx Context)
-        {
-            EmitScalarUnaryOpF(Context, () => Context.Emit(OpCodes.Neg));
-        }
-
-        public static void Fneg_V(AILEmitterCtx Context)
-        {
-            EmitVectorUnaryOpF(Context, () => Context.Emit(OpCodes.Neg));
-        }
-
-        public static void Fnmadd_S(AILEmitterCtx Context)
-        {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
-
-            int SizeF = Op.Size & 1;
-
-            EmitVectorExtractF(Context, Op.Rn, 0, SizeF);
-
-            Context.Emit(OpCodes.Neg);
-
-            EmitVectorExtractF(Context, Op.Rm, 0, SizeF);
-
-            Context.Emit(OpCodes.Mul);
-
-            EmitVectorExtractF(Context, Op.Ra, 0, SizeF);
-
-            Context.Emit(OpCodes.Sub);
-
-            EmitScalarSetF(Context, Op.Rd, SizeF);
-        }
-
-        public static void Fnmsub_S(AILEmitterCtx Context)
-        {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
-
-            int SizeF = Op.Size & 1;
-
-            EmitVectorExtractF(Context, Op.Rn, 0, SizeF);
-            EmitVectorExtractF(Context, Op.Rm, 0, SizeF);
-
-            Context.Emit(OpCodes.Mul);
-
-            EmitVectorExtractF(Context, Op.Ra, 0, SizeF);
-
-            Context.Emit(OpCodes.Sub);
-
-            EmitScalarSetF(Context, Op.Rd, SizeF);
-        }
-
-        public static void Fnmul_S(AILEmitterCtx Context)
-        {
-            EmitScalarBinaryOpF(Context, () =>
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.MinScalar));
+            }
+            else
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Neg);
-            });
-        }
-
-        public static void Frecpe_S(AILEmitterCtx Context)
-        {
-            EmitScalarUnaryOpF(Context, () =>
-            {
-                EmitUnarySoftFloatCall(Context, nameof(ASoftFloat.RecipEstimate));
-            });
-        }
-
-        public static void Frecpe_V(AILEmitterCtx Context)
-        {
-            EmitVectorUnaryOpF(Context, () =>
-            {
-                EmitUnarySoftFloatCall(Context, nameof(ASoftFloat.RecipEstimate));
-            });
-        }
-
-        public static void Frecps_S(AILEmitterCtx Context)
-        {
-            if (AOptimizations.FastFP && AOptimizations.UseSse2)
-            {
-                AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
-
-                int SizeF = Op.Size & 1;
-
-                if (SizeF == 0)
+                EmitScalarBinaryOpF(context, () =>
                 {
-                    Type[] Types = new Type[] { typeof(float) };
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMin));
+                });
+            }
+        }
 
-                    Context.EmitLdc_R4(2f);
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), Types));
+        public static void Fmin_V(AilEmitterCtx context)
+        {
+            if (AOptimizations.FastFp && AOptimizations.UseSse
+                                      && AOptimizations.UseSse2)
+            {
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.Min));
+            }
+            else
+            {
+                EmitVectorBinaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMin));
+                });
+            }
+        }
 
-                    Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+        public static void Fminnm_S(AilEmitterCtx context)
+        {
+            EmitScalarBinaryOpF(context, () =>
+            {
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMinNum));
+            });
+        }
 
-                    Context.EmitLdvec(Op.Rn);
-                    Context.EmitLdvec(Op.Rm);
+        public static void Fminnm_V(AilEmitterCtx context)
+        {
+            EmitVectorBinaryOpF(context, () =>
+            {
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMinNum));
+            });
+        }
 
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), Types));
+        public static void Fminp_V(AilEmitterCtx context)
+        {
+            EmitVectorPairwiseOpF(context, () =>
+            {
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMin));
+            });
+        }
 
-                    Context.EmitStvec(Op.Rd);
+        public static void Fmla_Se(AilEmitterCtx context)
+        {
+            EmitScalarTernaryOpByElemF(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
+            });
+        }
 
-                    EmitVectorZero32_128(Context, Op.Rd);
+        public static void Fmla_V(AilEmitterCtx context)
+        {
+            EmitVectorTernaryOpF(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
+            });
+        }
+
+        public static void Fmla_Ve(AilEmitterCtx context)
+        {
+            EmitVectorTernaryOpByElemF(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
+            });
+        }
+
+        public static void Fmls_Se(AilEmitterCtx context)
+        {
+            EmitScalarTernaryOpByElemF(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
+            });
+        }
+
+        public static void Fmls_V(AilEmitterCtx context)
+        {
+            EmitVectorTernaryOpF(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
+            });
+        }
+
+        public static void Fmls_Ve(AilEmitterCtx context)
+        {
+            EmitVectorTernaryOpByElemF(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
+            });
+        }
+
+        public static void Fmsub_S(AilEmitterCtx context)
+        {
+            if (AOptimizations.FastFp && AOptimizations.UseSse2)
+            {
+                AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
+
+                if (op.Size == 0)
+                {
+                    Type[] types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    context.EmitLdvec(op.Ra);
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), types));
+
+                    context.EmitStvec(op.Rd);
+
+                    EmitVectorZero32_128(context, op.Rd);
+                }
+                else /* if (Op.Size == 1) */
+                {
+                    Type[] types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+
+                    EmitLdvecWithCastToDouble(context, op.Ra);
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rm);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), types));
+
+                    EmitStvecWithCastFromDouble(context, op.Rd);
+
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+            else
+            {
+                EmitScalarTernaryRaOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMulSub));
+                });
+            }
+        }
+
+        public static void Fmul_S(AilEmitterCtx context)
+        {
+            if (AOptimizations.FastFp && AOptimizations.UseSse
+                                      && AOptimizations.UseSse2)
+            {
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.MultiplyScalar));
+            }
+            else
+            {
+                EmitScalarBinaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMul));
+                });
+            }
+        }
+
+        public static void Fmul_Se(AilEmitterCtx context)
+        {
+            EmitScalarBinaryOpByElemF(context, () => context.Emit(OpCodes.Mul));
+        }
+
+        public static void Fmul_V(AilEmitterCtx context)
+        {
+            if (AOptimizations.FastFp && AOptimizations.UseSse
+                                      && AOptimizations.UseSse2)
+            {
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.Multiply));
+            }
+            else
+            {
+                EmitVectorBinaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMul));
+                });
+            }
+        }
+
+        public static void Fmul_Ve(AilEmitterCtx context)
+        {
+            EmitVectorBinaryOpByElemF(context, () => context.Emit(OpCodes.Mul));
+        }
+
+        public static void Fmulx_S(AilEmitterCtx context)
+        {
+            EmitScalarBinaryOpF(context, () =>
+            {
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMulX));
+            });
+        }
+
+        public static void Fmulx_Se(AilEmitterCtx context)
+        {
+            EmitScalarBinaryOpByElemF(context, () =>
+            {
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMulX));
+            });
+        }
+
+        public static void Fmulx_V(AilEmitterCtx context)
+        {
+            EmitVectorBinaryOpF(context, () =>
+            {
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMulX));
+            });
+        }
+
+        public static void Fmulx_Ve(AilEmitterCtx context)
+        {
+            EmitVectorBinaryOpByElemF(context, () =>
+            {
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpMulX));
+            });
+        }
+
+        public static void Fneg_S(AilEmitterCtx context)
+        {
+            EmitScalarUnaryOpF(context, () => context.Emit(OpCodes.Neg));
+        }
+
+        public static void Fneg_V(AilEmitterCtx context)
+        {
+            EmitVectorUnaryOpF(context, () => context.Emit(OpCodes.Neg));
+        }
+
+        public static void Fnmadd_S(AilEmitterCtx context)
+        {
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+
+            EmitVectorExtractF(context, op.Rn, 0, sizeF);
+
+            context.Emit(OpCodes.Neg);
+
+            EmitVectorExtractF(context, op.Rm, 0, sizeF);
+
+            context.Emit(OpCodes.Mul);
+
+            EmitVectorExtractF(context, op.Ra, 0, sizeF);
+
+            context.Emit(OpCodes.Sub);
+
+            EmitScalarSetF(context, op.Rd, sizeF);
+        }
+
+        public static void Fnmsub_S(AilEmitterCtx context)
+        {
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+
+            EmitVectorExtractF(context, op.Rn, 0, sizeF);
+            EmitVectorExtractF(context, op.Rm, 0, sizeF);
+
+            context.Emit(OpCodes.Mul);
+
+            EmitVectorExtractF(context, op.Ra, 0, sizeF);
+
+            context.Emit(OpCodes.Sub);
+
+            EmitScalarSetF(context, op.Rd, sizeF);
+        }
+
+        public static void Fnmul_S(AilEmitterCtx context)
+        {
+            EmitScalarBinaryOpF(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Neg);
+            });
+        }
+
+        public static void Frecpe_S(AilEmitterCtx context)
+        {
+            EmitScalarUnaryOpF(context, () =>
+            {
+                EmitUnarySoftFloatCall(context, nameof(ASoftFloat.RecipEstimate));
+            });
+        }
+
+        public static void Frecpe_V(AilEmitterCtx context)
+        {
+            EmitVectorUnaryOpF(context, () =>
+            {
+                EmitUnarySoftFloatCall(context, nameof(ASoftFloat.RecipEstimate));
+            });
+        }
+
+        public static void Frecps_S(AilEmitterCtx context)
+        {
+            if (AOptimizations.FastFp && AOptimizations.UseSse2)
+            {
+                AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
+
+                int sizeF = op.Size & 1;
+
+                if (sizeF == 0)
+                {
+                    Type[] types = new Type[] { typeof(float) };
+
+                    context.EmitLdc_R4(2f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), types));
+
+                    types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), types));
+
+                    context.EmitStvec(op.Rd);
+
+                    EmitVectorZero32_128(context, op.Rd);
                 }
                 else /* if (SizeF == 1) */
                 {
-                    Type[] Types = new Type[] { typeof(double) };
+                    Type[] types = new Type[] { typeof(double) };
 
-                    Context.EmitLdc_R8(2d);
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), Types));
+                    context.EmitLdc_R8(2d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), types));
 
-                    Types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                    EmitLdvecWithCastToDouble(Context, Op.Rn);
-                    EmitLdvecWithCastToDouble(Context, Op.Rm);
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rm);
 
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), Types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), types));
 
-                    EmitStvecWithCastFromDouble(Context, Op.Rd);
+                    EmitStvecWithCastFromDouble(context, op.Rd);
 
-                    EmitVectorZeroUpper(Context, Op.Rd);
+                    EmitVectorZeroUpper(context, op.Rd);
                 }
             }
             else
             {
-                EmitScalarBinaryOpF(Context, () =>
+                EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPRecipStepFused));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpRecipStepFused));
                 });
             }
         }
 
-        public static void Frecps_V(AILEmitterCtx Context)
+        public static void Frecps_V(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse2)
+            if (AOptimizations.FastFp && AOptimizations.UseSse2)
             {
-                AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+                AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-                int SizeF = Op.Size & 1;
+                int sizeF = op.Size & 1;
 
-                if (SizeF == 0)
+                if (sizeF == 0)
                 {
-                    Type[] Types = new Type[] { typeof(float) };
+                    Type[] types = new Type[] { typeof(float) };
 
-                    Context.EmitLdc_R4(2f);
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), Types));
+                    context.EmitLdc_R4(2f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), types));
 
-                    Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                    types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
-                    Context.EmitLdvec(Op.Rn);
-                    Context.EmitLdvec(Op.Rm);
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
 
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), Types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), types));
 
-                    Context.EmitStvec(Op.Rd);
+                    context.EmitStvec(op.Rd);
 
-                    if (Op.RegisterSize == ARegisterSize.SIMD64)
+                    if (op.RegisterSize == ARegisterSize.Simd64)
                     {
-                        EmitVectorZeroUpper(Context, Op.Rd);
+                        EmitVectorZeroUpper(context, op.Rd);
                     }
                 }
                 else /* if (SizeF == 1) */
                 {
-                    Type[] Types = new Type[] { typeof(double) };
+                    Type[] types = new Type[] { typeof(double) };
 
-                    Context.EmitLdc_R8(2d);
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), Types));
+                    context.EmitLdc_R8(2d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), types));
 
-                    Types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                    EmitLdvecWithCastToDouble(Context, Op.Rn);
-                    EmitLdvecWithCastToDouble(Context, Op.Rm);
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rm);
 
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), Types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), types));
 
-                    EmitStvecWithCastFromDouble(Context, Op.Rd);
+                    EmitStvecWithCastFromDouble(context, op.Rd);
                 }
             }
             else
             {
-                EmitVectorBinaryOpF(Context, () =>
+                EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPRecipStepFused));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpRecipStepFused));
                 });
             }
         }
 
-        public static void Frecpx_S(AILEmitterCtx Context)
+        public static void Frecpx_S(AilEmitterCtx context)
         {
-            EmitScalarUnaryOpF(Context, () =>
+            EmitScalarUnaryOpF(context, () =>
             {
-                EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPRecpX));
+                EmitSoftFloatCall(context, nameof(ASoftFloat32.FpRecpX));
             });
         }
 
-        public static void Frinta_S(AILEmitterCtx Context)
+        public static void Frinta_S(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            EmitVectorExtractF(Context, Op.Rn, 0, Op.Size);
+            EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
-            EmitRoundMathCall(Context, MidpointRounding.AwayFromZero);
+            EmitRoundMathCall(context, MidpointRounding.AwayFromZero);
 
-            EmitScalarSetF(Context, Op.Rd, Op.Size);
+            EmitScalarSetF(context, op.Rd, op.Size);
         }
 
-        public static void Frinta_V(AILEmitterCtx Context)
+        public static void Frinta_V(AilEmitterCtx context)
         {
-            EmitVectorUnaryOpF(Context, () =>
+            EmitVectorUnaryOpF(context, () =>
             {
-                EmitRoundMathCall(Context, MidpointRounding.AwayFromZero);
+                EmitRoundMathCall(context, MidpointRounding.AwayFromZero);
             });
         }
 
-        public static void Frinti_S(AILEmitterCtx Context)
+        public static void Frinti_S(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            EmitScalarUnaryOpF(Context, () =>
+            EmitScalarUnaryOpF(context, () =>
             {
-                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+                context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-                if (Op.Size == 0)
+                if (op.Size == 0)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.RoundF));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.RoundF));
                 }
-                else if (Op.Size == 1)
+                else if (op.Size == 1)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.Round));
-                }
-                else
-                {
-                    throw new InvalidOperationException();
-                }
-            });
-        }
-
-        public static void Frinti_V(AILEmitterCtx Context)
-        {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            int SizeF = Op.Size & 1;
-
-            EmitVectorUnaryOpF(Context, () =>
-            {
-                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-
-                if (SizeF == 0)
-                {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.RoundF));
-                }
-                else if (SizeF == 1)
-                {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.Round));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.Round));
                 }
                 else
                 {
@@ -875,72 +850,23 @@ namespace ChocolArm64.Instruction
             });
         }
 
-        public static void Frintm_S(AILEmitterCtx Context)
+        public static void Frinti_V(AilEmitterCtx context)
         {
-            EmitScalarUnaryOpF(Context, () =>
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+
+            EmitVectorUnaryOpF(context, () =>
             {
-                EmitUnaryMathCall(Context, nameof(Math.Floor));
-            });
-        }
+                context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-        public static void Frintm_V(AILEmitterCtx Context)
-        {
-            EmitVectorUnaryOpF(Context, () =>
-            {
-                EmitUnaryMathCall(Context, nameof(Math.Floor));
-            });
-        }
-
-        public static void Frintn_S(AILEmitterCtx Context)
-        {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            EmitVectorExtractF(Context, Op.Rn, 0, Op.Size);
-
-            EmitRoundMathCall(Context, MidpointRounding.ToEven);
-
-            EmitScalarSetF(Context, Op.Rd, Op.Size);
-        }
-
-        public static void Frintn_V(AILEmitterCtx Context)
-        {
-            EmitVectorUnaryOpF(Context, () =>
-            {
-                EmitRoundMathCall(Context, MidpointRounding.ToEven);
-            });
-        }
-
-        public static void Frintp_S(AILEmitterCtx Context)
-        {
-            EmitScalarUnaryOpF(Context, () =>
-            {
-                EmitUnaryMathCall(Context, nameof(Math.Ceiling));
-            });
-        }
-
-        public static void Frintp_V(AILEmitterCtx Context)
-        {
-            EmitVectorUnaryOpF(Context, () =>
-            {
-                EmitUnaryMathCall(Context, nameof(Math.Ceiling));
-            });
-        }
-
-        public static void Frintx_S(AILEmitterCtx Context)
-        {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            EmitScalarUnaryOpF(Context, () =>
-            {
-                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-
-                if (Op.Size == 0)
+                if (sizeF == 0)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.RoundF));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.RoundF));
                 }
-                else if (Op.Size == 1)
+                else if (sizeF == 1)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.Round));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.Round));
                 }
                 else
                 {
@@ -949,21 +875,72 @@ namespace ChocolArm64.Instruction
             });
         }
 
-        public static void Frintx_V(AILEmitterCtx Context)
+        public static void Frintm_S(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
-
-            EmitVectorUnaryOpF(Context, () =>
+            EmitScalarUnaryOpF(context, () =>
             {
-                Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+                EmitUnaryMathCall(context, nameof(Math.Floor));
+            });
+        }
 
-                if (Op.Size == 0)
+        public static void Frintm_V(AilEmitterCtx context)
+        {
+            EmitVectorUnaryOpF(context, () =>
+            {
+                EmitUnaryMathCall(context, nameof(Math.Floor));
+            });
+        }
+
+        public static void Frintn_S(AilEmitterCtx context)
+        {
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
+
+            EmitVectorExtractF(context, op.Rn, 0, op.Size);
+
+            EmitRoundMathCall(context, MidpointRounding.ToEven);
+
+            EmitScalarSetF(context, op.Rd, op.Size);
+        }
+
+        public static void Frintn_V(AilEmitterCtx context)
+        {
+            EmitVectorUnaryOpF(context, () =>
+            {
+                EmitRoundMathCall(context, MidpointRounding.ToEven);
+            });
+        }
+
+        public static void Frintp_S(AilEmitterCtx context)
+        {
+            EmitScalarUnaryOpF(context, () =>
+            {
+                EmitUnaryMathCall(context, nameof(Math.Ceiling));
+            });
+        }
+
+        public static void Frintp_V(AilEmitterCtx context)
+        {
+            EmitVectorUnaryOpF(context, () =>
+            {
+                EmitUnaryMathCall(context, nameof(Math.Ceiling));
+            });
+        }
+
+        public static void Frintx_S(AilEmitterCtx context)
+        {
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
+
+            EmitScalarUnaryOpF(context, () =>
+            {
+                context.EmitLdarg(ATranslatedSub.StateArgIdx);
+
+                if (op.Size == 0)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.RoundF));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.RoundF));
                 }
-                else if (Op.Size == 1)
+                else if (op.Size == 1)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.Round));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.Round));
                 }
                 else
                 {
@@ -972,909 +949,932 @@ namespace ChocolArm64.Instruction
             });
         }
 
-        public static void Frsqrte_S(AILEmitterCtx Context)
+        public static void Frintx_V(AilEmitterCtx context)
         {
-            EmitScalarUnaryOpF(Context, () =>
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
+
+            EmitVectorUnaryOpF(context, () =>
             {
-                EmitUnarySoftFloatCall(Context, nameof(ASoftFloat.InvSqrtEstimate));
-            });
-        }
+                context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-        public static void Frsqrte_V(AILEmitterCtx Context)
-        {
-            EmitVectorUnaryOpF(Context, () =>
-            {
-                EmitUnarySoftFloatCall(Context, nameof(ASoftFloat.InvSqrtEstimate));
-            });
-        }
-
-        public static void Frsqrts_S(AILEmitterCtx Context)
-        {
-            if (AOptimizations.FastFP && AOptimizations.UseSse2)
-            {
-                AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
-
-                int SizeF = Op.Size & 1;
-
-                if (SizeF == 0)
+                if (op.Size == 0)
                 {
-                    Type[] Types = new Type[] { typeof(float) };
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.RoundF));
+                }
+                else if (op.Size == 1)
+                {
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.Round));
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
+            });
+        }
 
-                    Context.EmitLdc_R4(0.5f);
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), Types));
+        public static void Frsqrte_S(AilEmitterCtx context)
+        {
+            EmitScalarUnaryOpF(context, () =>
+            {
+                EmitUnarySoftFloatCall(context, nameof(ASoftFloat.InvSqrtEstimate));
+            });
+        }
 
-                    Context.EmitLdc_R4(3f);
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), Types));
+        public static void Frsqrte_V(AilEmitterCtx context)
+        {
+            EmitVectorUnaryOpF(context, () =>
+            {
+                EmitUnarySoftFloatCall(context, nameof(ASoftFloat.InvSqrtEstimate));
+            });
+        }
 
-                    Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+        public static void Frsqrts_S(AilEmitterCtx context)
+        {
+            if (AOptimizations.FastFp && AOptimizations.UseSse2)
+            {
+                AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-                    Context.EmitLdvec(Op.Rn);
-                    Context.EmitLdvec(Op.Rm);
+                int sizeF = op.Size & 1;
 
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), Types));
+                if (sizeF == 0)
+                {
+                    Type[] types = new Type[] { typeof(float) };
 
-                    Context.EmitStvec(Op.Rd);
+                    context.EmitLdc_R4(0.5f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), types));
 
-                    EmitVectorZero32_128(Context, Op.Rd);
+                    context.EmitLdc_R4(3f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), types));
+
+                    types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MultiplyScalar), types));
+
+                    context.EmitStvec(op.Rd);
+
+                    EmitVectorZero32_128(context, op.Rd);
                 }
                 else /* if (SizeF == 1) */
                 {
-                    Type[] Types = new Type[] { typeof(double) };
+                    Type[] types = new Type[] { typeof(double) };
 
-                    Context.EmitLdc_R8(0.5d);
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), Types));
+                    context.EmitLdc_R8(0.5d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), types));
 
-                    Context.EmitLdc_R8(3d);
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), Types));
+                    context.EmitLdc_R8(3d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), types));
 
-                    Types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                    EmitLdvecWithCastToDouble(Context, Op.Rn);
-                    EmitLdvecWithCastToDouble(Context, Op.Rm);
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rm);
 
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), Types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MultiplyScalar), types));
 
-                    EmitStvecWithCastFromDouble(Context, Op.Rd);
+                    EmitStvecWithCastFromDouble(context, op.Rd);
 
-                    EmitVectorZeroUpper(Context, Op.Rd);
+                    EmitVectorZeroUpper(context, op.Rd);
                 }
             }
             else
             {
-                EmitScalarBinaryOpF(Context, () =>
+                EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPRSqrtStepFused));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FprSqrtStepFused));
                 });
             }
         }
 
-        public static void Frsqrts_V(AILEmitterCtx Context)
+        public static void Frsqrts_V(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse2)
+            if (AOptimizations.FastFp && AOptimizations.UseSse2)
             {
-                AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+                AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-                int SizeF = Op.Size & 1;
+                int sizeF = op.Size & 1;
 
-                if (SizeF == 0)
+                if (sizeF == 0)
                 {
-                    Type[] Types = new Type[] { typeof(float) };
+                    Type[] types = new Type[] { typeof(float) };
 
-                    Context.EmitLdc_R4(0.5f);
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), Types));
+                    context.EmitLdc_R4(0.5f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), types));
 
-                    Context.EmitLdc_R4(3f);
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), Types));
+                    context.EmitLdc_R4(3f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), types));
 
-                    Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                    types = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
-                    Context.EmitLdvec(Op.Rn);
-                    Context.EmitLdvec(Op.Rm);
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
 
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), Types));
-                    Context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), Types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), types));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), types));
 
-                    Context.EmitStvec(Op.Rd);
+                    context.EmitStvec(op.Rd);
 
-                    if (Op.RegisterSize == ARegisterSize.SIMD64)
+                    if (op.RegisterSize == ARegisterSize.Simd64)
                     {
-                        EmitVectorZeroUpper(Context, Op.Rd);
+                        EmitVectorZeroUpper(context, op.Rd);
                     }
                 }
                 else /* if (SizeF == 1) */
                 {
-                    Type[] Types = new Type[] { typeof(double) };
+                    Type[] types = new Type[] { typeof(double) };
 
-                    Context.EmitLdc_R8(0.5d);
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), Types));
+                    context.EmitLdc_R8(0.5d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), types));
 
-                    Context.EmitLdc_R8(3d);
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), Types));
+                    context.EmitLdc_R8(3d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), types));
 
-                    Types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                    EmitLdvecWithCastToDouble(Context, Op.Rn);
-                    EmitLdvecWithCastToDouble(Context, Op.Rm);
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rm);
 
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), Types));
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), Types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), types));
 
-                    EmitStvecWithCastFromDouble(Context, Op.Rd);
+                    EmitStvecWithCastFromDouble(context, op.Rd);
                 }
             }
             else
             {
-                EmitVectorBinaryOpF(Context, () =>
+                EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPRSqrtStepFused));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FprSqrtStepFused));
                 });
             }
         }
 
-        public static void Fsqrt_S(AILEmitterCtx Context)
+        public static void Fsqrt_S(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.SqrtScalar));
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.SqrtScalar));
             }
             else
             {
-                EmitScalarUnaryOpF(Context, () =>
+                EmitScalarUnaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPSqrt));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpSqrt));
                 });
             }
         }
 
-        public static void Fsqrt_V(AILEmitterCtx Context)
+        public static void Fsqrt_V(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.Sqrt));
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.Sqrt));
             }
             else
             {
-                EmitVectorUnaryOpF(Context, () =>
+                EmitVectorUnaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPSqrt));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpSqrt));
                 });
             }
         }
 
-        public static void Fsub_S(AILEmitterCtx Context)
+        public static void Fsub_S(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.SubtractScalar));
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.SubtractScalar));
             }
             else
             {
-                EmitScalarBinaryOpF(Context, () =>
+                EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPSub));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpSub));
                 });
             }
         }
 
-        public static void Fsub_V(AILEmitterCtx Context)
+        public static void Fsub_V(AilEmitterCtx context)
         {
-            if (AOptimizations.FastFP && AOptimizations.UseSse
+            if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
             {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.Subtract));
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.Subtract));
             }
             else
             {
-                EmitVectorBinaryOpF(Context, () =>
+                EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(Context, nameof(ASoftFloat_32.FPSub));
+                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FpSub));
                 });
             }
         }
 
-        public static void Mla_V(AILEmitterCtx Context)
+        public static void Mla_V(AilEmitterCtx context)
         {
-            EmitVectorTernaryOpZx(Context, () =>
+            EmitVectorTernaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
             });
         }
 
-        public static void Mla_Ve(AILEmitterCtx Context)
+        public static void Mla_Ve(AilEmitterCtx context)
         {
-            EmitVectorTernaryOpByElemZx(Context, () =>
+            EmitVectorTernaryOpByElemZx(context, () =>
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
             });
         }
 
-        public static void Mls_V(AILEmitterCtx Context)
+        public static void Mls_V(AilEmitterCtx context)
         {
-            EmitVectorTernaryOpZx(Context, () =>
+            EmitVectorTernaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Sub);
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
             });
         }
 
-        public static void Mls_Ve(AILEmitterCtx Context)
+        public static void Mls_Ve(AilEmitterCtx context)
         {
-            EmitVectorTernaryOpByElemZx(Context, () =>
+            EmitVectorTernaryOpByElemZx(context, () =>
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Sub);
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
             });
         }
 
-        public static void Mul_V(AILEmitterCtx Context)
+        public static void Mul_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpZx(Context, () => Context.Emit(OpCodes.Mul));
+            EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Mul));
         }
 
-        public static void Mul_Ve(AILEmitterCtx Context)
+        public static void Mul_Ve(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpByElemZx(Context, () => Context.Emit(OpCodes.Mul));
+            EmitVectorBinaryOpByElemZx(context, () => context.Emit(OpCodes.Mul));
         }
 
-        public static void Neg_S(AILEmitterCtx Context)
+        public static void Neg_S(AilEmitterCtx context)
         {
-            EmitScalarUnaryOpSx(Context, () => Context.Emit(OpCodes.Neg));
+            EmitScalarUnaryOpSx(context, () => context.Emit(OpCodes.Neg));
         }
 
-        public static void Neg_V(AILEmitterCtx Context)
+        public static void Neg_V(AilEmitterCtx context)
         {
-            EmitVectorUnaryOpSx(Context, () => Context.Emit(OpCodes.Neg));
+            EmitVectorUnaryOpSx(context, () => context.Emit(OpCodes.Neg));
         }
 
-        public static void Raddhn_V(AILEmitterCtx Context)
+        public static void Raddhn_V(AilEmitterCtx context)
         {
-            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Add), Round: true);
+            EmitHighNarrow(context, () => context.Emit(OpCodes.Add), round: true);
         }
 
-        public static void Rsubhn_V(AILEmitterCtx Context)
+        public static void Rsubhn_V(AilEmitterCtx context)
         {
-            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Sub), Round: true);
+            EmitHighNarrow(context, () => context.Emit(OpCodes.Sub), round: true);
         }
 
-        public static void Saba_V(AILEmitterCtx Context)
+        public static void Saba_V(AilEmitterCtx context)
         {
-            EmitVectorTernaryOpSx(Context, () =>
+            EmitVectorTernaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
-                EmitAbs(Context);
+                context.Emit(OpCodes.Sub);
+                EmitAbs(context);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
             });
         }
 
-        public static void Sabal_V(AILEmitterCtx Context)
+        public static void Sabal_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmTernaryOpSx(Context, () =>
+            EmitVectorWidenRnRmTernaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
-                EmitAbs(Context);
+                context.Emit(OpCodes.Sub);
+                EmitAbs(context);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
             });
         }
 
-        public static void Sabd_V(AILEmitterCtx Context)
+        public static void Sabd_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpSx(Context, () =>
+            EmitVectorBinaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
-                EmitAbs(Context);
+                context.Emit(OpCodes.Sub);
+                EmitAbs(context);
             });
         }
 
-        public static void Sabdl_V(AILEmitterCtx Context)
+        public static void Sabdl_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmBinaryOpSx(Context, () =>
+            EmitVectorWidenRnRmBinaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
-                EmitAbs(Context);
+                context.Emit(OpCodes.Sub);
+                EmitAbs(context);
             });
         }
 
-        public static void Sadalp_V(AILEmitterCtx Context)
+        public static void Sadalp_V(AilEmitterCtx context)
         {
-            EmitAddLongPairwise(Context, Signed: true, Accumulate: true);
+            EmitAddLongPairwise(context, signed: true, accumulate: true);
         }
 
-        public static void Saddl_V(AILEmitterCtx Context)
+        public static void Saddl_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Add));
+            EmitVectorWidenRnRmBinaryOpSx(context, () => context.Emit(OpCodes.Add));
         }
 
-        public static void Saddlp_V(AILEmitterCtx Context)
+        public static void Saddlp_V(AilEmitterCtx context)
         {
-            EmitAddLongPairwise(Context, Signed: true, Accumulate: false);
+            EmitAddLongPairwise(context, signed: true, accumulate: false);
         }
 
-        public static void Saddw_V(AILEmitterCtx Context)
+        public static void Saddw_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Add));
+            EmitVectorWidenRmBinaryOpSx(context, () => context.Emit(OpCodes.Add));
         }
 
-        public static void Shadd_V(AILEmitterCtx Context)
+        public static void Shadd_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpSx(Context, () =>
+            EmitVectorBinaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
 
-                Context.Emit(OpCodes.Ldc_I4_1);
-                Context.Emit(OpCodes.Shr);
+                context.Emit(OpCodes.Ldc_I4_1);
+                context.Emit(OpCodes.Shr);
             });
         }
 
-        public static void Shsub_V(AILEmitterCtx Context)
+        public static void Shsub_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpSx(Context, () =>
+            EmitVectorBinaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
+                context.Emit(OpCodes.Sub);
 
-                Context.Emit(OpCodes.Ldc_I4_1);
-                Context.Emit(OpCodes.Shr);
+                context.Emit(OpCodes.Ldc_I4_1);
+                context.Emit(OpCodes.Shr);
             });
         }
 
-        public static void Smax_V(AILEmitterCtx Context)
+        public static void Smax_V(AilEmitterCtx context)
         {
-            Type[] Types = new Type[] { typeof(long), typeof(long) };
+            Type[] types = new Type[] { typeof(long), typeof(long) };
 
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Max), Types);
+            MethodInfo mthdInfo = typeof(Math).GetMethod(nameof(Math.Max), types);
 
-            EmitVectorBinaryOpSx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorBinaryOpSx(context, () => context.EmitCall(mthdInfo));
         }
 
-        public static void Smaxp_V(AILEmitterCtx Context)
+        public static void Smaxp_V(AilEmitterCtx context)
         {
-            Type[] Types = new Type[] { typeof(long), typeof(long) };
+            Type[] types = new Type[] { typeof(long), typeof(long) };
 
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Max), Types);
+            MethodInfo mthdInfo = typeof(Math).GetMethod(nameof(Math.Max), types);
 
-            EmitVectorPairwiseOpSx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorPairwiseOpSx(context, () => context.EmitCall(mthdInfo));
         }
 
-        public static void Smin_V(AILEmitterCtx Context)
+        public static void Smin_V(AilEmitterCtx context)
         {
-            Type[] Types = new Type[] { typeof(long), typeof(long) };
+            Type[] types = new Type[] { typeof(long), typeof(long) };
 
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Min), Types);
+            MethodInfo mthdInfo = typeof(Math).GetMethod(nameof(Math.Min), types);
 
-            EmitVectorBinaryOpSx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorBinaryOpSx(context, () => context.EmitCall(mthdInfo));
         }
 
-        public static void Sminp_V(AILEmitterCtx Context)
+        public static void Sminp_V(AilEmitterCtx context)
         {
-            Type[] Types = new Type[] { typeof(long), typeof(long) };
+            Type[] types = new Type[] { typeof(long), typeof(long) };
 
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Min), Types);
+            MethodInfo mthdInfo = typeof(Math).GetMethod(nameof(Math.Min), types);
 
-            EmitVectorPairwiseOpSx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorPairwiseOpSx(context, () => context.EmitCall(mthdInfo));
         }
 
-        public static void Smlal_V(AILEmitterCtx Context)
+        public static void Smlal_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmTernaryOpSx(Context, () =>
+            EmitVectorWidenRnRmTernaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
             });
         }
 
-        public static void Smlsl_V(AILEmitterCtx Context)
+        public static void Smlsl_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmTernaryOpSx(Context, () =>
+            EmitVectorWidenRnRmTernaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Sub);
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
             });
         }
 
-        public static void Smull_V(AILEmitterCtx Context)
+        public static void Smull_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Mul));
+            EmitVectorWidenRnRmBinaryOpSx(context, () => context.Emit(OpCodes.Mul));
         }
 
-        public static void Sqabs_S(AILEmitterCtx Context)
+        public static void Sqabs_S(AilEmitterCtx context)
         {
-            EmitScalarSaturatingUnaryOpSx(Context, () => EmitAbs(Context));
+            EmitScalarSaturatingUnaryOpSx(context, () => EmitAbs(context));
         }
 
-        public static void Sqabs_V(AILEmitterCtx Context)
+        public static void Sqabs_V(AilEmitterCtx context)
         {
-            EmitVectorSaturatingUnaryOpSx(Context, () => EmitAbs(Context));
+            EmitVectorSaturatingUnaryOpSx(context, () => EmitAbs(context));
         }
 
-        public static void Sqadd_S(AILEmitterCtx Context)
+        public static void Sqadd_S(AilEmitterCtx context)
         {
-            EmitScalarSaturatingBinaryOpSx(Context, SaturatingFlags.Add);
+            EmitScalarSaturatingBinaryOpSx(context, SaturatingFlags.Add);
         }
 
-        public static void Sqadd_V(AILEmitterCtx Context)
+        public static void Sqadd_V(AilEmitterCtx context)
         {
-            EmitVectorSaturatingBinaryOpSx(Context, SaturatingFlags.Add);
+            EmitVectorSaturatingBinaryOpSx(context, SaturatingFlags.Add);
         }
 
-        public static void Sqdmulh_S(AILEmitterCtx Context)
+        public static void Sqdmulh_S(AilEmitterCtx context)
         {
-            EmitSaturatingBinaryOp(Context, () => EmitDoublingMultiplyHighHalf(Context, Round: false), SaturatingFlags.ScalarSx);
+            EmitSaturatingBinaryOp(context, () => EmitDoublingMultiplyHighHalf(context, round: false), SaturatingFlags.ScalarSx);
         }
 
-        public static void Sqdmulh_V(AILEmitterCtx Context)
+        public static void Sqdmulh_V(AilEmitterCtx context)
         {
-            EmitSaturatingBinaryOp(Context, () => EmitDoublingMultiplyHighHalf(Context, Round: false), SaturatingFlags.VectorSx);
+            EmitSaturatingBinaryOp(context, () => EmitDoublingMultiplyHighHalf(context, round: false), SaturatingFlags.VectorSx);
         }
 
-        public static void Sqneg_S(AILEmitterCtx Context)
+        public static void Sqneg_S(AilEmitterCtx context)
         {
-            EmitScalarSaturatingUnaryOpSx(Context, () => Context.Emit(OpCodes.Neg));
+            EmitScalarSaturatingUnaryOpSx(context, () => context.Emit(OpCodes.Neg));
         }
 
-        public static void Sqneg_V(AILEmitterCtx Context)
+        public static void Sqneg_V(AilEmitterCtx context)
         {
-            EmitVectorSaturatingUnaryOpSx(Context, () => Context.Emit(OpCodes.Neg));
+            EmitVectorSaturatingUnaryOpSx(context, () => context.Emit(OpCodes.Neg));
         }
 
-        public static void Sqrdmulh_S(AILEmitterCtx Context)
+        public static void Sqrdmulh_S(AilEmitterCtx context)
         {
-            EmitSaturatingBinaryOp(Context, () => EmitDoublingMultiplyHighHalf(Context, Round: true), SaturatingFlags.ScalarSx);
+            EmitSaturatingBinaryOp(context, () => EmitDoublingMultiplyHighHalf(context, round: true), SaturatingFlags.ScalarSx);
         }
 
-        public static void Sqrdmulh_V(AILEmitterCtx Context)
+        public static void Sqrdmulh_V(AilEmitterCtx context)
         {
-            EmitSaturatingBinaryOp(Context, () => EmitDoublingMultiplyHighHalf(Context, Round: true), SaturatingFlags.VectorSx);
+            EmitSaturatingBinaryOp(context, () => EmitDoublingMultiplyHighHalf(context, round: true), SaturatingFlags.VectorSx);
         }
 
-        public static void Sqsub_S(AILEmitterCtx Context)
+        public static void Sqsub_S(AilEmitterCtx context)
         {
-            EmitScalarSaturatingBinaryOpSx(Context, SaturatingFlags.Sub);
+            EmitScalarSaturatingBinaryOpSx(context, SaturatingFlags.Sub);
         }
 
-        public static void Sqsub_V(AILEmitterCtx Context)
+        public static void Sqsub_V(AilEmitterCtx context)
         {
-            EmitVectorSaturatingBinaryOpSx(Context, SaturatingFlags.Sub);
+            EmitVectorSaturatingBinaryOpSx(context, SaturatingFlags.Sub);
         }
 
-        public static void Sqxtn_S(AILEmitterCtx Context)
+        public static void Sqxtn_S(AilEmitterCtx context)
         {
-            EmitSaturatingNarrowOp(Context, SaturatingNarrowFlags.ScalarSxSx);
+            EmitSaturatingNarrowOp(context, SaturatingNarrowFlags.ScalarSxSx);
         }
 
-        public static void Sqxtn_V(AILEmitterCtx Context)
+        public static void Sqxtn_V(AilEmitterCtx context)
         {
-            EmitSaturatingNarrowOp(Context, SaturatingNarrowFlags.VectorSxSx);
+            EmitSaturatingNarrowOp(context, SaturatingNarrowFlags.VectorSxSx);
         }
 
-        public static void Sqxtun_S(AILEmitterCtx Context)
+        public static void Sqxtun_S(AilEmitterCtx context)
         {
-            EmitSaturatingNarrowOp(Context, SaturatingNarrowFlags.ScalarSxZx);
+            EmitSaturatingNarrowOp(context, SaturatingNarrowFlags.ScalarSxZx);
         }
 
-        public static void Sqxtun_V(AILEmitterCtx Context)
+        public static void Sqxtun_V(AilEmitterCtx context)
         {
-            EmitSaturatingNarrowOp(Context, SaturatingNarrowFlags.VectorSxZx);
+            EmitSaturatingNarrowOp(context, SaturatingNarrowFlags.VectorSxZx);
         }
 
-        public static void Srhadd_V(AILEmitterCtx Context)
+        public static void Srhadd_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpSx(Context, () =>
+            EmitVectorBinaryOpSx(context, () =>
             {
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
 
-                Context.Emit(OpCodes.Ldc_I4_1);
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Ldc_I4_1);
+                context.Emit(OpCodes.Add);
 
-                Context.Emit(OpCodes.Ldc_I4_1);
-                Context.Emit(OpCodes.Shr);
+                context.Emit(OpCodes.Ldc_I4_1);
+                context.Emit(OpCodes.Shr);
             });
         }
 
-        public static void Ssubl_V(AILEmitterCtx Context)
+        public static void Ssubl_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Sub));
+            EmitVectorWidenRnRmBinaryOpSx(context, () => context.Emit(OpCodes.Sub));
         }
 
-        public static void Ssubw_V(AILEmitterCtx Context)
+        public static void Ssubw_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRmBinaryOpSx(Context, () => Context.Emit(OpCodes.Sub));
+            EmitVectorWidenRmBinaryOpSx(context, () => context.Emit(OpCodes.Sub));
         }
 
-        public static void Sub_S(AILEmitterCtx Context)
+        public static void Sub_S(AilEmitterCtx context)
         {
-            EmitScalarBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
+            EmitScalarBinaryOpZx(context, () => context.Emit(OpCodes.Sub));
         }
 
-        public static void Sub_V(AILEmitterCtx Context)
+        public static void Sub_V(AilEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
             {
-                EmitSse2Op(Context, nameof(Sse2.Subtract));
+                EmitSse2Op(context, nameof(Sse2.Subtract));
             }
             else
             {
-                EmitVectorBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
+                EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Sub));
             }
         }
 
-        public static void Subhn_V(AILEmitterCtx Context)
+        public static void Subhn_V(AilEmitterCtx context)
         {
-            EmitHighNarrow(Context, () => Context.Emit(OpCodes.Sub), Round: false);
+            EmitHighNarrow(context, () => context.Emit(OpCodes.Sub), round: false);
         }
 
-        public static void Suqadd_S(AILEmitterCtx Context)
+        public static void Suqadd_S(AilEmitterCtx context)
         {
-            EmitScalarSaturatingBinaryOpSx(Context, SaturatingFlags.Accumulate);
+            EmitScalarSaturatingBinaryOpSx(context, SaturatingFlags.Accumulate);
         }
 
-        public static void Suqadd_V(AILEmitterCtx Context)
+        public static void Suqadd_V(AilEmitterCtx context)
         {
-            EmitVectorSaturatingBinaryOpSx(Context, SaturatingFlags.Accumulate);
+            EmitVectorSaturatingBinaryOpSx(context, SaturatingFlags.Accumulate);
         }
 
-        public static void Uaba_V(AILEmitterCtx Context)
+        public static void Uaba_V(AilEmitterCtx context)
         {
-            EmitVectorTernaryOpZx(Context, () =>
+            EmitVectorTernaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
-                EmitAbs(Context);
+                context.Emit(OpCodes.Sub);
+                EmitAbs(context);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
             });
         }
 
-        public static void Uabal_V(AILEmitterCtx Context)
+        public static void Uabal_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmTernaryOpZx(Context, () =>
+            EmitVectorWidenRnRmTernaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
-                EmitAbs(Context);
+                context.Emit(OpCodes.Sub);
+                EmitAbs(context);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
             });
         }
 
-        public static void Uabd_V(AILEmitterCtx Context)
+        public static void Uabd_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpZx(Context, () =>
+            EmitVectorBinaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
-                EmitAbs(Context);
+                context.Emit(OpCodes.Sub);
+                EmitAbs(context);
             });
         }
 
-        public static void Uabdl_V(AILEmitterCtx Context)
+        public static void Uabdl_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmBinaryOpZx(Context, () =>
+            EmitVectorWidenRnRmBinaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
-                EmitAbs(Context);
+                context.Emit(OpCodes.Sub);
+                EmitAbs(context);
             });
         }
 
-        public static void Uadalp_V(AILEmitterCtx Context)
+        public static void Uadalp_V(AilEmitterCtx context)
         {
-            EmitAddLongPairwise(Context, Signed: false, Accumulate: true);
+            EmitAddLongPairwise(context, signed: false, accumulate: true);
         }
 
-        public static void Uaddl_V(AILEmitterCtx Context)
+        public static void Uaddl_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Add));
+            EmitVectorWidenRnRmBinaryOpZx(context, () => context.Emit(OpCodes.Add));
         }
 
-        public static void Uaddlp_V(AILEmitterCtx Context)
+        public static void Uaddlp_V(AilEmitterCtx context)
         {
-            EmitAddLongPairwise(Context, Signed: false, Accumulate: false);
+            EmitAddLongPairwise(context, signed: false, accumulate: false);
         }
 
-        public static void Uaddlv_V(AILEmitterCtx Context)
+        public static void Uaddlv_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> Op.Size;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> op.Size;
 
-            EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size);
+            EmitVectorExtractZx(context, op.Rn, 0, op.Size);
 
-            for (int Index = 1; Index < Elems; Index++)
+            for (int index = 1; index < elems; index++)
             {
-                EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
+                EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
             }
 
-            EmitScalarSet(Context, Op.Rd, Op.Size + 1);
+            EmitScalarSet(context, op.Rd, op.Size + 1);
         }
 
-        public static void Uaddw_V(AILEmitterCtx Context)
+        public static void Uaddw_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Add));
+            EmitVectorWidenRmBinaryOpZx(context, () => context.Emit(OpCodes.Add));
         }
 
-        public static void Uhadd_V(AILEmitterCtx Context)
+        public static void Uhadd_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpZx(Context, () =>
+            EmitVectorBinaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
 
-                Context.Emit(OpCodes.Ldc_I4_1);
-                Context.Emit(OpCodes.Shr_Un);
+                context.Emit(OpCodes.Ldc_I4_1);
+                context.Emit(OpCodes.Shr_Un);
             });
         }
 
-        public static void Uhsub_V(AILEmitterCtx Context)
+        public static void Uhsub_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpZx(Context, () =>
+            EmitVectorBinaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Sub);
+                context.Emit(OpCodes.Sub);
 
-                Context.Emit(OpCodes.Ldc_I4_1);
-                Context.Emit(OpCodes.Shr_Un);
+                context.Emit(OpCodes.Ldc_I4_1);
+                context.Emit(OpCodes.Shr_Un);
             });
         }
 
-        public static void Umax_V(AILEmitterCtx Context)
+        public static void Umax_V(AilEmitterCtx context)
         {
-            Type[] Types = new Type[] { typeof(ulong), typeof(ulong) };
+            Type[] types = new Type[] { typeof(ulong), typeof(ulong) };
 
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Max), Types);
+            MethodInfo mthdInfo = typeof(Math).GetMethod(nameof(Math.Max), types);
 
-            EmitVectorBinaryOpZx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorBinaryOpZx(context, () => context.EmitCall(mthdInfo));
         }
 
-        public static void Umaxp_V(AILEmitterCtx Context)
+        public static void Umaxp_V(AilEmitterCtx context)
         {
-            Type[] Types = new Type[] { typeof(ulong), typeof(ulong) };
+            Type[] types = new Type[] { typeof(ulong), typeof(ulong) };
 
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Max), Types);
+            MethodInfo mthdInfo = typeof(Math).GetMethod(nameof(Math.Max), types);
 
-            EmitVectorPairwiseOpZx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorPairwiseOpZx(context, () => context.EmitCall(mthdInfo));
         }
 
-        public static void Umin_V(AILEmitterCtx Context)
+        public static void Umin_V(AilEmitterCtx context)
         {
-            Type[] Types = new Type[] { typeof(ulong), typeof(ulong) };
+            Type[] types = new Type[] { typeof(ulong), typeof(ulong) };
 
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Min), Types);
+            MethodInfo mthdInfo = typeof(Math).GetMethod(nameof(Math.Min), types);
 
-            EmitVectorBinaryOpZx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorBinaryOpZx(context, () => context.EmitCall(mthdInfo));
         }
 
-        public static void Uminp_V(AILEmitterCtx Context)
+        public static void Uminp_V(AilEmitterCtx context)
         {
-            Type[] Types = new Type[] { typeof(ulong), typeof(ulong) };
+            Type[] types = new Type[] { typeof(ulong), typeof(ulong) };
 
-            MethodInfo MthdInfo = typeof(Math).GetMethod(nameof(Math.Min), Types);
+            MethodInfo mthdInfo = typeof(Math).GetMethod(nameof(Math.Min), types);
 
-            EmitVectorPairwiseOpZx(Context, () => Context.EmitCall(MthdInfo));
+            EmitVectorPairwiseOpZx(context, () => context.EmitCall(mthdInfo));
         }
 
-        public static void Umlal_V(AILEmitterCtx Context)
+        public static void Umlal_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmTernaryOpZx(Context, () =>
+            EmitVectorWidenRnRmTernaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
             });
         }
 
-        public static void Umlsl_V(AILEmitterCtx Context)
+        public static void Umlsl_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmTernaryOpZx(Context, () =>
+            EmitVectorWidenRnRmTernaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Mul);
-                Context.Emit(OpCodes.Sub);
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
             });
         }
 
-        public static void Umull_V(AILEmitterCtx Context)
+        public static void Umull_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Mul));
+            EmitVectorWidenRnRmBinaryOpZx(context, () => context.Emit(OpCodes.Mul));
         }
 
-        public static void Uqadd_S(AILEmitterCtx Context)
+        public static void Uqadd_S(AilEmitterCtx context)
         {
-            EmitScalarSaturatingBinaryOpZx(Context, SaturatingFlags.Add);
+            EmitScalarSaturatingBinaryOpZx(context, SaturatingFlags.Add);
         }
 
-        public static void Uqadd_V(AILEmitterCtx Context)
+        public static void Uqadd_V(AilEmitterCtx context)
         {
-            EmitVectorSaturatingBinaryOpZx(Context, SaturatingFlags.Add);
+            EmitVectorSaturatingBinaryOpZx(context, SaturatingFlags.Add);
         }
 
-        public static void Uqsub_S(AILEmitterCtx Context)
+        public static void Uqsub_S(AilEmitterCtx context)
         {
-            EmitScalarSaturatingBinaryOpZx(Context, SaturatingFlags.Sub);
+            EmitScalarSaturatingBinaryOpZx(context, SaturatingFlags.Sub);
         }
 
-        public static void Uqsub_V(AILEmitterCtx Context)
+        public static void Uqsub_V(AilEmitterCtx context)
         {
-            EmitVectorSaturatingBinaryOpZx(Context, SaturatingFlags.Sub);
+            EmitVectorSaturatingBinaryOpZx(context, SaturatingFlags.Sub);
         }
 
-        public static void Uqxtn_S(AILEmitterCtx Context)
+        public static void Uqxtn_S(AilEmitterCtx context)
         {
-            EmitSaturatingNarrowOp(Context, SaturatingNarrowFlags.ScalarZxZx);
+            EmitSaturatingNarrowOp(context, SaturatingNarrowFlags.ScalarZxZx);
         }
 
-        public static void Uqxtn_V(AILEmitterCtx Context)
+        public static void Uqxtn_V(AilEmitterCtx context)
         {
-            EmitSaturatingNarrowOp(Context, SaturatingNarrowFlags.VectorZxZx);
+            EmitSaturatingNarrowOp(context, SaturatingNarrowFlags.VectorZxZx);
         }
 
-        public static void Urhadd_V(AILEmitterCtx Context)
+        public static void Urhadd_V(AilEmitterCtx context)
         {
-            EmitVectorBinaryOpZx(Context, () =>
+            EmitVectorBinaryOpZx(context, () =>
             {
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
 
-                Context.Emit(OpCodes.Ldc_I4_1);
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Ldc_I4_1);
+                context.Emit(OpCodes.Add);
 
-                Context.Emit(OpCodes.Ldc_I4_1);
-                Context.Emit(OpCodes.Shr_Un);
+                context.Emit(OpCodes.Ldc_I4_1);
+                context.Emit(OpCodes.Shr_Un);
             });
         }
 
-        public static void Usqadd_S(AILEmitterCtx Context)
+        public static void Usqadd_S(AilEmitterCtx context)
         {
-            EmitScalarSaturatingBinaryOpZx(Context, SaturatingFlags.Accumulate);
+            EmitScalarSaturatingBinaryOpZx(context, SaturatingFlags.Accumulate);
         }
 
-        public static void Usqadd_V(AILEmitterCtx Context)
+        public static void Usqadd_V(AilEmitterCtx context)
         {
-            EmitVectorSaturatingBinaryOpZx(Context, SaturatingFlags.Accumulate);
+            EmitVectorSaturatingBinaryOpZx(context, SaturatingFlags.Accumulate);
         }
 
-        public static void Usubl_V(AILEmitterCtx Context)
+        public static void Usubl_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRnRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
+            EmitVectorWidenRnRmBinaryOpZx(context, () => context.Emit(OpCodes.Sub));
         }
 
-        public static void Usubw_V(AILEmitterCtx Context)
+        public static void Usubw_V(AilEmitterCtx context)
         {
-            EmitVectorWidenRmBinaryOpZx(Context, () => Context.Emit(OpCodes.Sub));
+            EmitVectorWidenRmBinaryOpZx(context, () => context.Emit(OpCodes.Sub));
         }
 
-        private static void EmitAbs(AILEmitterCtx Context)
+        private static void EmitAbs(AilEmitterCtx context)
         {
-            AILLabel LblTrue = new AILLabel();
+            AilLabel lblTrue = new AilLabel();
 
-            Context.Emit(OpCodes.Dup);
-            Context.Emit(OpCodes.Ldc_I4_0);
-            Context.Emit(OpCodes.Bge_S, LblTrue);
+            context.Emit(OpCodes.Dup);
+            context.Emit(OpCodes.Ldc_I4_0);
+            context.Emit(OpCodes.Bge_S, lblTrue);
 
-            Context.Emit(OpCodes.Neg);
+            context.Emit(OpCodes.Neg);
 
-            Context.MarkLabel(LblTrue);
+            context.MarkLabel(lblTrue);
         }
 
-        private static void EmitAddLongPairwise(AILEmitterCtx Context, bool Signed, bool Accumulate)
+        private static void EmitAddLongPairwise(AilEmitterCtx context, bool signed, bool accumulate)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int Words = Op.GetBitsCount() >> 4;
-            int Pairs = Words >> Op.Size;
+            int words = op.GetBitsCount() >> 4;
+            int pairs = words >> op.Size;
 
-            for (int Index = 0; Index < Pairs; Index++)
+            for (int index = 0; index < pairs; index++)
             {
-                int Idx = Index << 1;
+                int idx = index << 1;
 
-                EmitVectorExtract(Context, Op.Rn, Idx,     Op.Size, Signed);
-                EmitVectorExtract(Context, Op.Rn, Idx + 1, Op.Size, Signed);
+                EmitVectorExtract(context, op.Rn, idx,     op.Size, signed);
+                EmitVectorExtract(context, op.Rn, idx + 1, op.Size, signed);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
 
-                if (Accumulate)
+                if (accumulate)
                 {
-                    EmitVectorExtract(Context, Op.Rd, Index, Op.Size + 1, Signed);
+                    EmitVectorExtract(context, op.Rd, index, op.Size + 1, signed);
 
-                    Context.Emit(OpCodes.Add);
+                    context.Emit(OpCodes.Add);
                 }
 
-                EmitVectorInsertTmp(Context, Index, Op.Size + 1);
+                EmitVectorInsertTmp(context, index, op.Size + 1);
             }
 
-            Context.EmitLdvectmp();
-            Context.EmitStvec(Op.Rd);
+            context.EmitLdvectmp();
+            context.EmitStvec(op.Rd);
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            if (op.RegisterSize == ARegisterSize.Simd64)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        private static void EmitDoublingMultiplyHighHalf(AILEmitterCtx Context, bool Round)
+        private static void EmitDoublingMultiplyHighHalf(AilEmitterCtx context, bool round)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            int ESize = 8 << Op.Size;
+            int eSize = 8 << op.Size;
 
-            Context.Emit(OpCodes.Mul);
+            context.Emit(OpCodes.Mul);
 
-            if (!Round)
+            if (!round)
             {
-                Context.EmitAsr(ESize - 1);
+                context.EmitAsr(eSize - 1);
             }
             else
             {
-                long RoundConst = 1L << (ESize - 1);
+                long roundConst = 1L << (eSize - 1);
 
-                AILLabel LblTrue = new AILLabel();
+                AilLabel lblTrue = new AilLabel();
 
-                Context.EmitLsl(1);
+                context.EmitLsl(1);
 
-                Context.EmitLdc_I8(RoundConst);
+                context.EmitLdc_I8(roundConst);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
 
-                Context.EmitAsr(ESize);
+                context.EmitAsr(eSize);
 
-                Context.Emit(OpCodes.Dup);
-                Context.EmitLdc_I8((long)int.MinValue);
-                Context.Emit(OpCodes.Bne_Un_S, LblTrue);
+                context.Emit(OpCodes.Dup);
+                context.EmitLdc_I8((long)int.MinValue);
+                context.Emit(OpCodes.Bne_Un_S, lblTrue);
 
-                Context.Emit(OpCodes.Neg);
+                context.Emit(OpCodes.Neg);
 
-                Context.MarkLabel(LblTrue);
+                context.MarkLabel(lblTrue);
             }
         }
 
-        private static void EmitHighNarrow(AILEmitterCtx Context, Action Emit, bool Round)
+        private static void EmitHighNarrow(AilEmitterCtx context, Action emit, bool round)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            int Elems = 8 >> Op.Size;
+            int elems = 8 >> op.Size;
 
-            int ESize = 8 << Op.Size;
+            int eSize = 8 << op.Size;
 
-            int Part = Op.RegisterSize == ARegisterSize.SIMD128 ? Elems : 0;
+            int part = op.RegisterSize == ARegisterSize.Simd128 ? elems : 0;
 
-            long RoundConst = 1L << (ESize - 1);
+            long roundConst = 1L << (eSize - 1);
 
-            if (Part != 0)
+            if (part != 0)
             {
-                Context.EmitLdvec(Op.Rd);
-                Context.EmitStvectmp();
+                context.EmitLdvec(op.Rd);
+                context.EmitStvectmp();
             }
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size + 1);
-                EmitVectorExtractZx(Context, Op.Rm, Index, Op.Size + 1);
+                EmitVectorExtractZx(context, op.Rn, index, op.Size + 1);
+                EmitVectorExtractZx(context, op.Rm, index, op.Size + 1);
 
-                Emit();
+                emit();
 
-                if (Round)
+                if (round)
                 {
-                    Context.EmitLdc_I8(RoundConst);
+                    context.EmitLdc_I8(roundConst);
 
-                    Context.Emit(OpCodes.Add);
+                    context.Emit(OpCodes.Add);
                 }
 
-                Context.EmitLsr(ESize);
+                context.EmitLsr(eSize);
 
-                EmitVectorInsertTmp(Context, Part + Index, Op.Size);
+                EmitVectorInsertTmp(context, part + index, op.Size);
             }
 
-            Context.EmitLdvectmp();
-            Context.EmitStvec(Op.Rd);
+            context.EmitLdvectmp();
+            context.EmitStvec(op.Rd);
 
-            if (Part == 0)
+            if (part == 0)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
     }

@@ -1,11 +1,11 @@
 namespace ChocolArm64.State
 {
-    enum FPType
+    enum FpType
     {
         Nonzero,
         Zero,
         Infinity,
-        QNaN,
-        SNaN
+        QnaN,
+        SnaN
     }
 }

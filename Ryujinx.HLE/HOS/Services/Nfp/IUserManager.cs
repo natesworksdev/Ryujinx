@@ -3,23 +3,23 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nfp
 {
-    class IUserManager : IpcService
+    class UserManager : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IUserManager()
+        public UserManager()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, GetUserInterface }
             };
         }
 
-        public long GetUserInterface(ServiceCtx Context)
+        public long GetUserInterface(ServiceCtx context)
         {
-            MakeObject(Context, new IUser(Context.Device.System));
+            MakeObject(context, new User(context.Device.System));
 
             return 0;
         }

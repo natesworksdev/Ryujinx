@@ -2,15 +2,15 @@ namespace Ryujinx.Audio.Adpcm
 {
     public static class DspUtils
     {
-        public static short Saturate(int Value)
+        public static short Saturate(int value)
         {
-            if (Value > short.MaxValue)
-                Value = short.MaxValue;
+            if (value > short.MaxValue)
+                value = short.MaxValue;
 
-            if (Value < short.MinValue)
-                Value = short.MinValue;
+            if (value < short.MinValue)
+                value = short.MinValue;
 
-            return (short)Value;
+            return (short)value;
         }
     }
 }

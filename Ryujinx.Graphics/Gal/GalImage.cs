@@ -18,46 +18,46 @@ namespace Ryujinx.Graphics.Gal
         public GalTextureSource WSource;
 
         public GalImage(
-            int              Width,
-            int              Height,
-            int              TileWidth,
-            int              GobBlockHeight,
-            GalMemoryLayout  Layout,
-            GalImageFormat   Format,
-            GalTextureSource XSource = GalTextureSource.Red,
-            GalTextureSource YSource = GalTextureSource.Green,
-            GalTextureSource ZSource = GalTextureSource.Blue,
-            GalTextureSource WSource = GalTextureSource.Alpha)
+            int              width,
+            int              height,
+            int              tileWidth,
+            int              gobBlockHeight,
+            GalMemoryLayout  layout,
+            GalImageFormat   format,
+            GalTextureSource xSource = GalTextureSource.Red,
+            GalTextureSource ySource = GalTextureSource.Green,
+            GalTextureSource zSource = GalTextureSource.Blue,
+            GalTextureSource wSource = GalTextureSource.Alpha)
         {
-            this.Width          = Width;
-            this.Height         = Height;
-            this.TileWidth      = TileWidth;
-            this.GobBlockHeight = GobBlockHeight;
-            this.Layout         = Layout;
-            this.Format         = Format;
-            this.XSource        = XSource;
-            this.YSource        = YSource;
-            this.ZSource        = ZSource;
-            this.WSource        = WSource;
+            this.Width          = width;
+            this.Height         = height;
+            this.TileWidth      = tileWidth;
+            this.GobBlockHeight = gobBlockHeight;
+            this.Layout         = layout;
+            this.Format         = format;
+            this.XSource        = xSource;
+            this.YSource        = ySource;
+            this.ZSource        = zSource;
+            this.WSource        = wSource;
 
-            Pitch = ImageUtils.GetPitch(Format, Width);
+            Pitch = ImageUtils.GetPitch(format, width);
         }
 
-        public bool SizeMatches(GalImage Image)
+        public bool SizeMatches(GalImage image)
         {
             if (ImageUtils.GetBytesPerPixel(Format) !=
-                ImageUtils.GetBytesPerPixel(Image.Format))
+                ImageUtils.GetBytesPerPixel(image.Format))
             {
                 return false;
             }
 
             if (ImageUtils.GetAlignedWidth(this) !=
-                ImageUtils.GetAlignedWidth(Image))
+                ImageUtils.GetAlignedWidth(image))
             {
                 return false;
             }
 
-            return Height == Image.Height;
+            return Height == image.Height;
         }
     }
 }

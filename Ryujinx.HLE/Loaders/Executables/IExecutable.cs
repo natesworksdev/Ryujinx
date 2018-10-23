@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.Loaders.Executables
         string FilePath { get; }
 
         byte[] Text { get; }
-        byte[] RO   { get; }
+        byte[] Ro   { get; }
         byte[] Data { get; }
 
         long SourceAddress { get; }
@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
         int Mod0Offset { get; }
         int TextOffset { get; }
-        int ROOffset   { get; }
+        int RoOffset   { get; }
         int DataOffset { get; }
         int BssSize    { get; }
     }

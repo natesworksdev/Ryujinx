@@ -10,11 +10,11 @@ namespace ChocolArm64.Instruction
 
         public static AInst Undefined => new AInst(null, AInstEmit.Und, null);
 
-        public AInst(AInstInterpreter Interpreter, AInstEmitter Emitter, Type Type)
+        public AInst(AInstInterpreter interpreter, AInstEmitter emitter, Type type)
         {
-            this.Interpreter = Interpreter;
-            this.Emitter     = Emitter;
-            this.Type        = Type;
+            this.Interpreter = interpreter;
+            this.Emitter     = emitter;
+            this.Type        = type;
         }
     }
 }

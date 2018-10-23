@@ -29,168 +29,168 @@ namespace Ryujinx.HLE.HOS.Services
 {
     static class ServiceFactory
     {
-        public static IpcService MakeService(Horizon System, string Name)
+        public static IpcService MakeService(Horizon system, string name)
         {
-            switch (Name)
+            switch (name)
             {
                 case "acc:u0":
-                    return new IAccountService();
+                    return new AccountService();
 
                 case "acc:u1":
-                    return new IAccountService();
+                    return new AccountService();
 
                 case "aoc:u":
-                    return new IAddOnContentManager();
+                    return new AddOnContentManager();
 
                 case "apm":
-                    return new IManager();
+                    return new Manager();
 
                 case "apm:p":
-                    return new IManager();
+                    return new Manager();
 
                 case "appletAE":
-                    return new IAllSystemAppletProxiesService();
+                    return new AllSystemAppletProxiesService();
 
                 case "appletOE":
-                    return new IApplicationProxyService();
+                    return new ApplicationProxyService();
 
                 case "audout:u":
-                    return new IAudioOutManager();
+                    return new AudioOutManager();
 
                 case "audren:u":
-                    return new IAudioRendererManager();
+                    return new AudioRendererManager();
 
                 case "bcat:a":
-                    return new Bcat.IServiceCreator();
+                    return new Bcat.ServiceCreator();
 
                 case "bcat:m":
-                    return new Bcat.IServiceCreator();
+                    return new Bcat.ServiceCreator();
 
                 case "bcat:u":
-                    return new Bcat.IServiceCreator();
+                    return new Bcat.ServiceCreator();
 
                 case "bcat:s":
-                    return new Bcat.IServiceCreator();
+                    return new Bcat.ServiceCreator();
 
                 case "bsd:s":
-                    return new IClient(true);
+                    return new Client(true);
 
                 case "bsd:u":
-                    return new IClient(false);
+                    return new Client(false);
 
                 case "caps:a":
-                    return new IAlbumAccessorService();
+                    return new AlbumAccessorService();
 
                 case "caps:ss":
-                    return new IScreenshotService();
+                    return new ScreenshotService();
 
                 case "csrng":
-                    return new IRandomInterface();
+                    return new RandomInterface();
 
                 case "friend:a":
-                    return new Friend.IServiceCreator();
+                    return new Friend.ServiceCreator();
 
                 case "friend:u":
-                    return new Friend.IServiceCreator();
+                    return new Friend.ServiceCreator();
 
                 case "fsp-srv":
-                    return new IFileSystemProxy();
+                    return new FileSystemProxy();
 
                 case "hid":
-                    return new IHidServer(System);
+                    return new HidServer(system);
 
                 case "irs":
-                    return new IIrSensorServer();
+                    return new IrSensorServer();
 
                 case "ldr:ro":
-                    return new IRoInterface();
+                    return new RoInterface();
 
                 case "lm":
-                    return new ILogService();
+                    return new LogService();
 
                 case "mm:u":
-                    return new IRequest();
+                    return new Request();
 
                 case "nfp:user":
-                    return new IUserManager();
+                    return new UserManager();
 
                 case "nifm:u":
-                    return new Nifm.IStaticService();
+                    return new Nifm.StaticService();
 
                 case "ns:ec":
-                    return new IServiceGetterInterface();
+                    return new ServiceGetterInterface();
 
                 case "ns:su":
-                    return new ISystemUpdateInterface();
+                    return new SystemUpdateInterface();
 
                 case "ns:vm":
-                    return new IVulnerabilityManagerInterface();
+                    return new VulnerabilityManagerInterface();
 
                 case "nvdrv":
-                    return new INvDrvServices(System);
+                    return new NvDrvServices(system);
 
                 case "nvdrv:a":
-                    return new INvDrvServices(System);
+                    return new NvDrvServices(system);
 
                 case "pctl:s":
-                    return new IParentalControlServiceFactory();
+                    return new ParentalControlServiceFactory();
 
                 case "pctl:r":
-                    return new IParentalControlServiceFactory();
+                    return new ParentalControlServiceFactory();
 
                 case "pctl:a":
-                    return new IParentalControlServiceFactory();
+                    return new ParentalControlServiceFactory();
 
                 case "pctl":
-                    return new IParentalControlServiceFactory();
+                    return new ParentalControlServiceFactory();
 
                 case "pl:u":
-                    return new ISharedFontManager();
+                    return new SharedFontManager();
 
                 case "prepo:a":
-                    return new IPrepoService();
+                    return new PrepoService();
 
                 case "prepo:u":
-                    return new IPrepoService();
+                    return new PrepoService();
 
                 case "psm":
-                    return new IPsmServer();
+                    return new PsmServer();
 
                 case "set":
-                    return new ISettingsServer();
+                    return new SettingsServer();
 
                 case "set:sys":
-                    return new ISystemSettingsServer();
+                    return new SystemSettingsServer();
 
                 case "sfdnsres":
-                    return new IResolver();
+                    return new Resolver();
 
                 case "sm:":
-                    return new IUserInterface();
+                    return new UserInterface();
 
                 case "ssl":
-                    return new ISslService();
+                    return new SslService();
 
                 case "time:a":
-                    return new Time.IStaticService();
+                    return new Time.StaticService();
 
                 case "time:s":
-                    return new Time.IStaticService();
+                    return new Time.StaticService();
 
                 case "time:u":
-                    return new Time.IStaticService();
+                    return new Time.StaticService();
 
                 case "vi:m":
-                    return new IManagerRootService();
+                    return new ManagerRootService();
 
                 case "vi:s":
-                    return new ISystemRootService();
+                    return new SystemRootService();
 
                 case "vi:u":
-                    return new IApplicationRootService();
+                    return new ApplicationRootService();
             }
 
-            throw new NotImplementedException(Name);
+            throw new NotImplementedException(name);
         }
     }
 }

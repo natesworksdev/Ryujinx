@@ -4,31 +4,31 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    class IWindowController : IpcService
+    class WindowController : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        public IWindowController()
+        public WindowController()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 1,  GetAppletResourceUserId },
                 { 10, AcquireForegroundRights }
             };
         }
 
-        public long GetAppletResourceUserId(ServiceCtx Context)
+        public long GetAppletResourceUserId(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
-            Context.ResponseData.Write(0L);
+            context.ResponseData.Write(0L);
 
             return 0;
         }
 
-        public long AcquireForegroundRights(ServiceCtx Context)
+        public long AcquireForegroundRights(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
