@@ -252,9 +252,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                 _sb.AppendLine(IdentationStr + "int " + GlslDecl.InstanceUniformName + ";");
 
                 _sb.AppendLine("};");
+                _sb.AppendLine();
             }
-
-            _sb.AppendLine();
 
             foreach (ShaderDeclInfo declInfo in _decl.Uniforms.Values.OrderBy(DeclKeySelector))
             {
@@ -312,17 +311,27 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             if (_decl.ShaderType == GalShaderType.Fragment)
             {
+                int count = 0;
+              
                 for (int attachment = 0; attachment < 8; attachment++)
                 {
                     if (_header.OmapTargets[attachment].Enabled)
                     {
                         _sb.AppendLine("layout (location = " + attachment + ") out vec4 " + GlslDecl.FragmentOutputName + attachment + ";");
+                        
+                        count++;
                     }
+                }
+
+                if (count > 0)
+                {
+                    _sb.AppendLine();
                 }
             }
             else
             {
                 _sb.AppendLine("layout (location = " + GlslDecl.PositionOutAttrLocation + ") out vec4 " + GlslDecl.PositionOutAttrName + ";");
+                _sb.AppendLine();
             }
 
             PrintDeclAttributes(_decl.OutAttributes.Values, "out");
@@ -558,6 +567,39 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
+        private void PrintNodes(ShaderIrBlock block, ShaderIrNode[] nodes)
+        {
+            foreach (ShaderIrNode node in nodes)
+            {
+                PrintNode(block, node, IdentationStr);
+            }
+
+            if (nodes.Length > 0)
+            {
+                ShaderIrNode last = nodes[nodes.Length - 1];
+
+                bool unconditionalFlowChange = false;
+
+                if (last is ShaderIrOp op)
+                {
+                    switch (op.Inst)
+                    {
+                        case ShaderIrInst.Bra:
+                        case ShaderIrInst.Exit:
+                        case ShaderIrInst.Kil:
+                        case ShaderIrInst.Sync:
+                            unconditionalFlowChange = true;
+                            break;
+                    }
+                }
+
+                if (!unconditionalFlowChange)
+                {
+                    _sb.AppendLine(IdentationStr + "return " + GetBlockPosition(block.Next) + ";");
+                }
+            }
+        }
+
         private void PrintNode(ShaderIrBlock block, ShaderIrNode node, string identation)
         {
             if (node is ShaderIrCond cond)
@@ -652,39 +694,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             else
             {
                 throw new InvalidOperationException();
-            }
-        }
-
-        private void PrintNodes(ShaderIrBlock block, ShaderIrNode[] nodes)
-        {
-            foreach (ShaderIrNode node in nodes)
-            {
-                PrintNode(block, node, IdentationStr);
-            }
-
-            if (nodes.Length > 0)
-            {
-                ShaderIrNode last = nodes[nodes.Length - 1];
-
-                bool unconditionalFlowChange = false;
-
-                if (last is ShaderIrOp op)
-                {
-                    switch (op.Inst)
-                    {
-                        case ShaderIrInst.Bra:
-                        case ShaderIrInst.Exit:
-                        case ShaderIrInst.Kil:
-                        case ShaderIrInst.Sync:
-                            unconditionalFlowChange = true;
-                            break;
-                    }
-                }
-
-                if (!unconditionalFlowChange)
-                {
-                    _sb.AppendLine(IdentationStr + "return " + GetBlockPosition(block.Next) + ";");
-                }
             }
         }
 

@@ -7,7 +7,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
     class OglTexture : IGalTexture
     {
         private OglCachedResource<ImageHandler> _textureCache;
-
+        public EventHandler<int> TextureDeleted { get; set; }
+        
         public OglTexture()
         {
             _textureCache = new OglCachedResource<ImageHandler>(DeleteTexture);
@@ -26,6 +27,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private static void DeleteTexture(ImageHandler cachedImage)
         {
             GL.DeleteTexture(cachedImage.Handle);
+            TextureDeleted?.Invoke(this, cachedImage.Handle);
         }
 
         public void Create(long key, int size, GalImage image)
