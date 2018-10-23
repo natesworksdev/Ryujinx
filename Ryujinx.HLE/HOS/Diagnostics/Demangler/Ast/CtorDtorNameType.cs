@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public CtorDtorNameType(BaseNode name, bool isDestructor) : base(NodeType.CtorDtorNameType, name)
         {
-            this._isDestructor = isDestructor;
+            _isDestructor = isDestructor;
         }
 
         public override void PrintLeft(TextWriter writer)

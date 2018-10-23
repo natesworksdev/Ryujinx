@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 { 3, SetSystemClockContext }
             };
 
-            this._clockType           = clockType;
+            _clockType           = clockType;
             _systemClockContextEpoch  = System.Diagnostics.Process.GetCurrentProcess().StartTime;
             _systemClockContextEnding = new byte[0x10];
             _timeOffset               = 0;

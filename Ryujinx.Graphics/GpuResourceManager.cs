@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics
 
         public GpuResourceManager(NvGpu gpu)
         {
-            this._gpu = gpu;
+            _gpu = gpu;
 
             _uploadedKeys = new HashSet<long>[(int)NvGpuBufferType.Count];
 

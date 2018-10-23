@@ -32,10 +32,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             IEnumerable<ShaderDeclInfo> constBufferUsage,
             IEnumerable<ShaderDeclInfo> textureUsage)
         {
-            this.Type             = type;
-            this.Code             = code;
-            this.ConstBufferUsage = constBufferUsage;
-            this.TextureUsage     = textureUsage;
+            Type             = type;
+            Code             = code;
+            ConstBufferUsage = constBufferUsage;
+            TextureUsage     = textureUsage;
         }
 
         public void Compile()

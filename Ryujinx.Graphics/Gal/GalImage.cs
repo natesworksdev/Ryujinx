@@ -29,16 +29,16 @@ namespace Ryujinx.Graphics.Gal
             GalTextureSource zSource = GalTextureSource.Blue,
             GalTextureSource wSource = GalTextureSource.Alpha)
         {
-            this.Width          = width;
-            this.Height         = height;
-            this.TileWidth      = tileWidth;
-            this.GobBlockHeight = gobBlockHeight;
-            this.Layout         = layout;
-            this.Format         = format;
-            this.XSource        = xSource;
-            this.YSource        = ySource;
-            this.ZSource        = zSource;
-            this.WSource        = wSource;
+            Width          = width;
+            Height         = height;
+            TileWidth      = tileWidth;
+            GobBlockHeight = gobBlockHeight;
+            Layout         = layout;
+            Format         = format;
+            XSource        = xSource;
+            YSource        = ySource;
+            ZSource        = zSource;
+            WSource        = wSource;
 
             Pitch = ImageUtils.GetPitch(format, width);
         }

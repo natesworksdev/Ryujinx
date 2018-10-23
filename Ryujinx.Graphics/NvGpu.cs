@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics
 
         public NvGpu(IGalRenderer renderer)
         {
-            this.Renderer = renderer;
+            Renderer = renderer;
 
             ResourceManager = new GpuResourceManager(this);
 

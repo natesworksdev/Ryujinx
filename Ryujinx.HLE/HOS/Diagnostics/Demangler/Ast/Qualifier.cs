@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public CvType(Cv qualifier, BaseNode child) : base(NodeType.CvQualifierType, child)
         {
-            this.Qualifier = qualifier;
+            Qualifier = qualifier;
         }
 
         public void PrintQualifier(TextWriter writer)
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public SimpleReferenceType(Reference qualifier, BaseNode child) : base(NodeType.SimpleReferenceType, child)
         {
-            this.Qualifier = qualifier;
+            Qualifier = qualifier;
         }
 
         public void PrintQualifier(TextWriter writer)

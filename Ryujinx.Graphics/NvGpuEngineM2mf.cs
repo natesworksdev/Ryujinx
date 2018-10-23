@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics
 
         public NvGpuEngineM2Mf(NvGpu gpu)
         {
-            this._gpu = gpu;
+            _gpu = gpu;
 
             Registers = new int[0x1d6];
 

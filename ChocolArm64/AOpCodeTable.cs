@@ -565,9 +565,9 @@ namespace ChocolArm64
 
             public InstInfo(int mask, int value, AInst inst)
             {
-                this.Mask  = mask;
-                this.Value = value;
-                this.Inst  = inst;
+                Mask  = mask;
+                Value = value;
+                Inst  = inst;
             }
         }
 

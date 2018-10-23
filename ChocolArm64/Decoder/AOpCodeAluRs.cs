@@ -20,7 +20,7 @@ namespace ChocolArm64.Decoder
                 return;
             }
 
-            this.Shift = shift;
+            Shift = shift;
 
             Rm        =              (opCode >> 16) & 0x1f;
             ShiftType = (AShiftType)((opCode >> 22) & 0x3);

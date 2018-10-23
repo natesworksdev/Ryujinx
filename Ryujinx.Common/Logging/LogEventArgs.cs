@@ -11,9 +11,9 @@ namespace Ryujinx.Common.Logging
 
         public LogEventArgs(LogLevel level, TimeSpan time, string message)
         {
-            this.Level   = level;
-            this.Time    = time;
-            this.Message = message;
+            Level   = level;
+            Time    = time;
+            Message = message;
         }
     }
 }

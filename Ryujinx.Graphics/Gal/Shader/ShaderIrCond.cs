@@ -9,9 +9,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrCond(ShaderIrNode pred, ShaderIrNode child, bool not)
         {
-            this.Pred  = pred;
-            this.Child = child;
-            this.Not   = not;
+            Pred  = pred;
+            Child = child;
+            Not   = not;
         }
     }
 }

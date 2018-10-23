@@ -21,9 +21,9 @@ namespace Ryujinx.HLE.Loaders.Executables
 
         public Nro(Stream input, string filePath, long sourceAddress = 0, long bssAddress = 0)
         {
-            this.FilePath      = filePath;
-            this.SourceAddress = sourceAddress;
-            this.BssAddress    = bssAddress;
+            FilePath      = filePath;
+            SourceAddress = sourceAddress;
+            BssAddress    = bssAddress;
 
             BinaryReader reader = new BinaryReader(input);
 
@@ -44,11 +44,11 @@ namespace Ryujinx.HLE.Loaders.Executables
             int dataSize   = reader.ReadInt32();
             int bssSize    = reader.ReadInt32();
 
-            this.Mod0Offset = mod0Offset;
-            this.TextOffset = textOffset;
-            this.RoOffset   = roOffset;
-            this.DataOffset = dataOffset;
-            this.BssSize    = bssSize;
+            Mod0Offset = mod0Offset;
+            TextOffset = textOffset;
+            RoOffset   = roOffset;
+            DataOffset = dataOffset;
+            BssSize    = bssSize;
 
             byte[] Read(long position, int size)
             {

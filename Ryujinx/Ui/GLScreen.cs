@@ -40,8 +40,8 @@ namespace Ryujinx
             DisplayDevice.Default, 3, 3,
             GraphicsContextFlags.ForwardCompatible)
         {
-            this._device   = device;
-            this._renderer = renderer;
+            _device   = device;
+            _renderer = renderer;
 
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
@@ -140,7 +140,7 @@ namespace Ryujinx
             //Keyboard Input
             if (_keyboard.HasValue)
             {
-                KeyboardState keyboard = this._keyboard.Value;
+                KeyboardState keyboard = _keyboard.Value;
 
                 currentButton = Config.JoyConKeyboard.GetButtons(keyboard);
 
@@ -181,7 +181,7 @@ namespace Ryujinx
             //OpenTK always captures mouse events, even if out of focus, so check if window is focused.
             if (Focused && _mouse?.LeftButton == ButtonState.Pressed)
             {
-                MouseState mouse = this._mouse.Value;
+                MouseState mouse = _mouse.Value;
 
                 int scrnWidth  = Width;
                 int scrnHeight = Height;

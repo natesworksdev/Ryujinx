@@ -8,7 +8,7 @@ namespace ChocolArm64.Events
 
         public AInvalidAccessEventArgs(long position)
         {
-            this.Position = position;
+            Position = position;
         }
     }
 }

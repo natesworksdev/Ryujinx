@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ForwardTemplateReference(int index) : base(NodeType.ForwardTemplateReference)
         {
-            this._index = index;
+            _index = index;
         }
 
         public override string GetName()

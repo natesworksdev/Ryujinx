@@ -22,9 +22,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             public CacheBucket(T value, long dataSize, LinkedListNode<long> node)
             {
-                this.Value    = value;
-                this.DataSize = dataSize;
-                this.Node     = node;
+                Value    = value;
+                DataSize = dataSize;
+                Node     = node;
 
                 Timestamp = Environment.TickCount;
             }
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 throw new ArgumentNullException(nameof(deleteValueCallback));
             }
 
-            this._deleteValueCallback = deleteValueCallback;
+            _deleteValueCallback = deleteValueCallback;
 
             _cache = new Dictionary<long, CacheBucket>();
 

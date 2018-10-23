@@ -30,8 +30,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                 long physicalAddress,
                 bool vaAllocated) : base(position, size)
             {
-                this.PhysicalAddress = physicalAddress;
-                this.VaAllocated     = vaAllocated;
+                PhysicalAddress = physicalAddress;
+                VaAllocated     = vaAllocated;
             }
         }
 

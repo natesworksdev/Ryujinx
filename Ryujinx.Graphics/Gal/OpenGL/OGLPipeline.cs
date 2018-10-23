@@ -85,9 +85,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OglPipeline(OglConstBuffer buffer, OglRasterizer rasterizer, OglShader shader)
         {
-            this._buffer     = buffer;
-            this._rasterizer = rasterizer;
-            this._shader     = shader;
+            _buffer     = buffer;
+            _rasterizer = rasterizer;
+            _shader     = shader;
 
             //These values match OpenGL's defaults
             _old = new GalPipelineState

@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 1, GetEntryCount }
             };
 
-            this.HostPath = hostPath;
+            HostPath = hostPath;
 
             _directoryEntries = new List<string>();
 

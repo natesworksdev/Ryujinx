@@ -79,7 +79,7 @@ namespace ChocolArm64.Decoder
                 Size = 0;
             }
 
-            this.Imm = imm;
+            Imm = imm;
 
             RegisterSize = ((opCode >> 30) & 1) != 0
                 ? ARegisterSize.Simd128

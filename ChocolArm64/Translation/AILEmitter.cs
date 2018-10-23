@@ -27,7 +27,7 @@ namespace ChocolArm64.Translation
 
         public AilEmitter(ABlock[] graph, ABlock root, string subName)
         {
-            this._subName = subName;
+            _subName = subName;
 
             _locals = new Dictionary<ARegister, int>();
 
@@ -56,7 +56,7 @@ namespace ChocolArm64.Translation
                 block.Branch = GetBlock(Array.IndexOf(graph, graph[index].Branch));
             }
 
-            this._root = _ilBlocks[Array.IndexOf(graph, root)];
+            _root = _ilBlocks[Array.IndexOf(graph, root)];
         }
 
         public AilBlock GetIlBlock(int index) => _ilBlocks[index];

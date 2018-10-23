@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 
         public NvMapHandle(int size) : this()
         {
-            this.Size = size;
+            Size = size;
         }
 
         public void IncrementRefCount()

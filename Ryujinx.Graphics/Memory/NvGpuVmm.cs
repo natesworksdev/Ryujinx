@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Memory
 
         public NvGpuVmm(AMemory memory)
         {
-            this.Memory = memory;
+            Memory = memory;
 
             _cache = new NvGpuVmmCache();
 

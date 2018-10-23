@@ -24,8 +24,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KProcessHandleTable(Horizon system, int size = 1024)
         {
-            this._system = system;
-            this._size   = size;
+            _system = system;
+            _size   = size;
 
             _idCounter = 1;
 

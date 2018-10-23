@@ -31,15 +31,15 @@ namespace ChocolArm64
 
             public CacheBucket(ATranslatedSub subroutine, LinkedListNode<long> node, int size)
             {
-                this.Subroutine = subroutine;
-                this.Size       = size;
+                Subroutine = subroutine;
+                Size       = size;
 
                 UpdateNode(node);
             }
 
             public void UpdateNode(LinkedListNode<long> node)
             {
-                this.Node = node;
+                Node = node;
 
                 Timestamp = Environment.TickCount;
             }

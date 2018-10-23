@@ -9,7 +9,7 @@ namespace ChocolArm64.Translation
 
         public AilOpCodeCall(MethodInfo mthdInfo)
         {
-            this._mthdInfo = mthdInfo;
+            _mthdInfo = mthdInfo;
         }
 
         public void Emit(AilEmitter context)

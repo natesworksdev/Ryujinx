@@ -9,8 +9,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public IntegerLiteral(string litteralName, string litteralValue) : base(NodeType.IntegerLiteral)
         {
-            this._litteralValue = litteralValue;
-            this._litteralName  = litteralName;
+            _litteralValue = litteralValue;
+            _litteralName  = litteralName;
         }
 
         public override void PrintLeft(TextWriter writer)

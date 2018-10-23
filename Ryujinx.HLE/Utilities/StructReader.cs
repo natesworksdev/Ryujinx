@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.Utilities
 
         public StructReader(AMemory memory, long position)
         {
-            this._memory   = memory;
-            this.Position = position;
+            _memory   = memory;
+            Position = position;
         }
 
         public T Read<T>() where T : struct

@@ -61,9 +61,9 @@ namespace Ryujinx.HLE.HOS
 
         public Process(Switch device, int processId, Npdm metaData)
         {
-            this.Device    = device;
-            this.MetaData  = metaData;
-            this.ProcessId = processId;
+            Device    = device;
+            MetaData  = metaData;
+            ProcessId = processId;
 
             Memory = new AMemory(device.Memory.RamPointer);
 
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS
                 throw new ObjectDisposedException(nameof(Process));
             }
 
-            this.NeedsHbAbi = needsHbAbi;
+            NeedsHbAbi = needsHbAbi;
 
             if (_executables.Count == 0)
             {

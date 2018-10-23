@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.Memory
 
             public Region(long position, long size)
             {
-                this.Position = position;
-                this.Size     = size;
+                Position = position;
+                Size     = size;
             }
         }
 

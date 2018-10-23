@@ -28,27 +28,27 @@ namespace ChocolArm64.Translation
 
         private AilOpCodeConst(ConstType type)
         {
-            this._type = type;
+            _type = type;
         }
 
         public AilOpCodeConst(int value) : this(ConstType.Int32)
         {
-            this._value = new ImmVal { I4 = value };
+            _value = new ImmVal { I4 = value };
         }
 
         public AilOpCodeConst(long value) : this(ConstType.Int64)
         {
-            this._value = new ImmVal { I8 = value };
+            _value = new ImmVal { I8 = value };
         }
 
         public AilOpCodeConst(float value) : this(ConstType.Single)
         {
-            this._value = new ImmVal { R4 = value };
+            _value = new ImmVal { R4 = value };
         }
 
         public AilOpCodeConst(double value) : this(ConstType.Double)
         {
-            this._value = new ImmVal { R8 = value };
+            _value = new ImmVal { R8 = value };
         }
 
         public void Emit(AilEmitter context)

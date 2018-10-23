@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public PointerType(BaseNode child) : base(NodeType.PointerType)
         {
-            this._child = child;
+            _child = child;
         }
 
         public override bool HasRightPart()

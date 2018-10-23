@@ -9,8 +9,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ArraySubscriptingExpression(BaseNode leftNode, BaseNode subscript) : base(NodeType.ArraySubscriptingExpression)
         {
-            this._leftNode  = leftNode;
-            this._subscript = subscript;
+            _leftNode  = leftNode;
+            _subscript = subscript;
         }
 
         public override void PrintLeft(TextWriter writer)

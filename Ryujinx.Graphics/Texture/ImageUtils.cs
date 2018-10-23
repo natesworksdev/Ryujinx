@@ -28,10 +28,10 @@ namespace Ryujinx.Graphics.Texture
 
             public ImageDescriptor(int bytesPerPixel, int blockWidth, int blockHeight, TargetBuffer target)
             {
-                this.BytesPerPixel = bytesPerPixel;
-                this.BlockWidth    = blockWidth;
-                this.BlockHeight   = blockHeight;
-                this.Target        = target;
+                BytesPerPixel = bytesPerPixel;
+                BlockWidth    = blockWidth;
+                BlockHeight   = blockHeight;
+                Target        = target;
             }
         }
 
@@ -265,7 +265,7 @@ namespace Ryujinx.Graphics.Texture
 
             ImageDescriptor desc = GetImageDescriptor(image.Format);
 
-            (int width, int height) = ImageUtils.GetImageSizeInBlocks(image);
+            (int width, int height) = GetImageSizeInBlocks(image);
 
             int bytesPerPixel = desc.BytesPerPixel;
 

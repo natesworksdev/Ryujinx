@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KScheduler(Horizon system)
         {
-            this._system = system;
+            _system = system;
 
             SchedulingData = new KSchedulingData();
 

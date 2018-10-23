@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrOperGpr(int index)
         {
-            this.Index = index;
+            Index = index;
         }
 
         public static ShaderIrOperGpr MakeTemporary(int index = 0)

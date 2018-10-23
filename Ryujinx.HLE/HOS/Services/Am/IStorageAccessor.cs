@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
                 { 11, Read    }
             };
 
-            this._storage = storage;
+            _storage = storage;
         }
 
         public long GetSize(ServiceCtx context)

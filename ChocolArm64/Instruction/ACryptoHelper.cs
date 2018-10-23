@@ -49,7 +49,7 @@ namespace ChocolArm64.Instruction
             0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
         };
 
-        private static byte[] _gfMul02 =
+        private static byte[] _gfMul_02 =
         {
             0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c, 0x0e, 0x10, 0x12, 0x14, 0x16, 0x18, 0x1a, 0x1c, 0x1e,
             0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e, 0x30, 0x32, 0x34, 0x36, 0x38, 0x3a, 0x3c, 0x3e,
@@ -69,7 +69,7 @@ namespace ChocolArm64.Instruction
             0xfb, 0xf9, 0xff, 0xfd, 0xf3, 0xf1, 0xf7, 0xf5, 0xeb, 0xe9, 0xef, 0xed, 0xe3, 0xe1, 0xe7, 0xe5
         };
 
-        private static byte[] _gfMul03 =
+        private static byte[] _gfMul_03 =
         {
             0x00, 0x03, 0x06, 0x05, 0x0c, 0x0f, 0x0a, 0x09, 0x18, 0x1b, 0x1e, 0x1d, 0x14, 0x17, 0x12, 0x11,
             0x30, 0x33, 0x36, 0x35, 0x3c, 0x3f, 0x3a, 0x39, 0x28, 0x2b, 0x2e, 0x2d, 0x24, 0x27, 0x22, 0x21,
@@ -89,7 +89,7 @@ namespace ChocolArm64.Instruction
             0x0b, 0x08, 0x0d, 0x0e, 0x07, 0x04, 0x01, 0x02, 0x13, 0x10, 0x15, 0x16, 0x1f, 0x1c, 0x19, 0x1a
         };
 
-        private static byte[] _gfMul09 =
+        private static byte[] _gfMul_09 =
         {
             0x00, 0x09, 0x12, 0x1b, 0x24, 0x2d, 0x36, 0x3f, 0x48, 0x41, 0x5a, 0x53, 0x6c, 0x65, 0x7e, 0x77,
             0x90, 0x99, 0x82, 0x8b, 0xb4, 0xbd, 0xa6, 0xaf, 0xd8, 0xd1, 0xca, 0xc3, 0xfc, 0xf5, 0xee, 0xe7,
@@ -190,10 +190,10 @@ namespace ChocolArm64.Instruction
                 byte row2 = inState[idx + 2]; // C, G, K, O: [Row2, Col0-Col3]
                 byte row3 = inState[idx + 3]; // D, H, L, P: [Row3, Col0-Col3]
 
-                outState[idx + 0] = (byte)((uint)_gfMul_0E[row0] ^ _gfMul_0B[row1] ^ _gfMul_0D[row2] ^ _gfMul09[row3]);
-                outState[idx + 1] = (byte)((uint)_gfMul09[row0] ^ _gfMul_0E[row1] ^ _gfMul_0B[row2] ^ _gfMul_0D[row3]);
-                outState[idx + 2] = (byte)((uint)_gfMul_0D[row0] ^ _gfMul09[row1] ^ _gfMul_0E[row2] ^ _gfMul_0B[row3]);
-                outState[idx + 3] = (byte)((uint)_gfMul_0B[row0] ^ _gfMul_0D[row1] ^ _gfMul09[row2] ^ _gfMul_0E[row3]);
+                outState[idx + 0] = (byte)((uint)_gfMul_0E[row0] ^ _gfMul_0B[row1] ^ _gfMul_0D[row2] ^ _gfMul_09[row3]);
+                outState[idx + 1] = (byte)((uint)_gfMul_09[row0] ^ _gfMul_0E[row1] ^ _gfMul_0B[row2] ^ _gfMul_0D[row3]);
+                outState[idx + 2] = (byte)((uint)_gfMul_0D[row0] ^ _gfMul_09[row1] ^ _gfMul_0E[row2] ^ _gfMul_0B[row3]);
+                outState[idx + 3] = (byte)((uint)_gfMul_0B[row0] ^ _gfMul_0D[row1] ^ _gfMul_09[row2] ^ _gfMul_0E[row3]);
             }
 
             FromByteArrayToVector(outState, ref op);
@@ -251,10 +251,10 @@ namespace ChocolArm64.Instruction
                 byte row2 = inState[idx + 2]; // C, G, K, O: [Row2, Col0-Col3]
                 byte row3 = inState[idx + 3]; // D, H, L, P: [Row3, Col0-Col3]
 
-                outState[idx + 0] = (byte)((uint)_gfMul02[row0] ^ _gfMul03[row1] ^ row2 ^ row3);
-                outState[idx + 1] = (byte)((uint)row0 ^ _gfMul02[row1] ^ _gfMul03[row2] ^ row3);
-                outState[idx + 2] = (byte)((uint)row0 ^ row1 ^ _gfMul02[row2] ^ _gfMul03[row3]);
-                outState[idx + 3] = (byte)((uint)_gfMul03[row0] ^ row1 ^ row2 ^ _gfMul02[row3]);
+                outState[idx + 0] = (byte)((uint)_gfMul_02[row0] ^ _gfMul_03[row1] ^ row2 ^ row3);
+                outState[idx + 1] = (byte)((uint)row0 ^ _gfMul_02[row1] ^ _gfMul_03[row2] ^ row3);
+                outState[idx + 2] = (byte)((uint)row0 ^ row1 ^ _gfMul_02[row2] ^ _gfMul_03[row3]);
+                outState[idx + 3] = (byte)((uint)_gfMul_03[row0] ^ row1 ^ row2 ^ _gfMul_02[row3]);
             }
 
             FromByteArrayToVector(outState, ref op);

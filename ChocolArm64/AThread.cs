@@ -20,8 +20,8 @@ namespace ChocolArm64
 
         public AThread(ATranslator translator, AMemory memory, long entryPoint)
         {
-            this._translator = translator;
-            this.Memory     = memory;
+            _translator = translator;
+            Memory     = memory;
 
             ThreadState = new AThreadState();
 

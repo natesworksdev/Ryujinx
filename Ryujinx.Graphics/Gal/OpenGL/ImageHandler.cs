@@ -19,8 +19,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public ImageHandler(int handle, GalImage image)
         {
-            this.Handle = handle;
-            this.Image  = image;
+            Handle = handle;
+            Image  = image;
         }
     }
 }

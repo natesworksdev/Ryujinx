@@ -9,9 +9,9 @@ namespace Ryujinx.Graphics
 
         public ValueRange(long start, long end, T value = default(T))
         {
-            this.Start = start;
-            this.End   = end;
-            this.Value = value;
+            Start = start;
+            End   = end;
+            Value = value;
         }
     }
 }

@@ -9,8 +9,8 @@ namespace ChocolArm64.Translation
 
         public AilOpCodeBranch(OpCode ilOp, AilLabel label)
         {
-            this._ilOp  = ilOp;
-            this._label = label;
+            _ilOp  = ilOp;
+            _label = label;
         }
 
         public void Emit(AilEmitter context)

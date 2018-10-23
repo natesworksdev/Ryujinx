@@ -45,9 +45,9 @@ namespace ChocolArm64.Translation
             ABlock           root,
             string           subName)
         {
-            this._cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            this._graph = graph ?? throw new ArgumentNullException(nameof(graph));
-            this._root  = root  ?? throw new ArgumentNullException(nameof(root));
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _graph = graph ?? throw new ArgumentNullException(nameof(graph));
+            _root  = root  ?? throw new ArgumentNullException(nameof(root));
 
             _labels = new Dictionary<long, AilLabel>();
 

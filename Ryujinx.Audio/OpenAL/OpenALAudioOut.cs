@@ -38,9 +38,9 @@ namespace Ryujinx.Audio.OpenAL
 
             public Track(int sampleRate, ALFormat format, ReleaseCallback callback)
             {
-                this.SampleRate = sampleRate;
-                this.Format     = format;
-                this._callback   = callback;
+                SampleRate = sampleRate;
+                Format     = format;
+                _callback   = callback;
 
                 State = PlaybackState.Stopped;
 

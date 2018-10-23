@@ -83,8 +83,8 @@ namespace Ryujinx.HLE.HOS.Services.Android
                 { ("android.gui.IGraphicBufferProducer", 0xe), GbpPreallocBuffer }
             };
 
-            this._renderer    = renderer;
-            this._binderEvent = binderEvent;
+            _renderer    = renderer;
+            _binderEvent = binderEvent;
 
             _bufferQueue = new BufferEntry[0x40];
 

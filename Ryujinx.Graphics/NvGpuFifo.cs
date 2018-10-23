@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics
 
             public CachedMacro(NvGpuFifo pFifo, INvGpuEngine engine, int position)
             {
-                this.Position = position;
+                Position = position;
 
                 _interpreter = new MacroInterpreter(pFifo, engine);
             }
@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics
 
         public NvGpuFifo(NvGpu gpu)
         {
-            this._gpu = gpu;
+            _gpu = gpu;
 
             _bufferQueue = new ConcurrentQueue<(NvGpuVmm, NvGpuPbEntry[])>();
 

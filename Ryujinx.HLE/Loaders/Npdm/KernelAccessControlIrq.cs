@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.Loaders.Npdm
 
         public KernelAccessControlIrq(uint irq0, uint irq1)
         {
-            this.Irq0 = irq0;
-            this.Irq1 = irq1;
+            Irq0 = irq0;
+            Irq1 = irq1;
         }
     }
 }

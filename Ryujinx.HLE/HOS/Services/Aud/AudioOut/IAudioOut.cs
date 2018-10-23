@@ -34,9 +34,9 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
                 { 8, GetReleasedAudioOutBufferAuto }
             };
 
-            this._audioOut     = audioOut;
-            this._releaseEvent = releaseEvent;
-            this._track        = track;
+            _audioOut     = audioOut;
+            _releaseEvent = releaseEvent;
+            _track        = track;
         }
 
         public long GetAudioOutState(ServiceCtx context)

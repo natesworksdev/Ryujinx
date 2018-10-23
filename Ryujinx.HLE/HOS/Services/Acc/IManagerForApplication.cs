@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
                 { 1, GetAccountId      }
             };
 
-            this._uuid = uuid;
+            _uuid = uuid;
         }
 
         // CheckAvailability()

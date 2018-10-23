@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ThrowExpression(BaseNode expression) : base(NodeType.ThrowExpression)
         {
-            this._expression = expression;
+            _expression = expression;
         }
 
         public override void PrintLeft(TextWriter writer)

@@ -8,7 +8,7 @@ namespace ChocolArm64.Translation
 
         public AilOpCode(OpCode ilOp)
         {
-            this._ilOp = ilOp;
+            _ilOp = ilOp;
         }
 
         public void Emit(AilEmitter context)

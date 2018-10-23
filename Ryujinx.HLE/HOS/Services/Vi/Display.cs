@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         public Display(string name)
         {
-            this.Name = name;
+            Name = name;
         }
     }
 }

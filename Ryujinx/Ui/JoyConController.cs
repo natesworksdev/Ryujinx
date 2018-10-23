@@ -76,17 +76,17 @@ namespace Ryujinx.UI.Input
             JoyConControllerLeft  left,
             JoyConControllerRight right)
         {
-            this.Enabled          = enabled;
-            this.Index            = index;
-            this.Deadzone         = deadzone;
-            this.TriggerThreshold = triggerThreshold;
-            this.Left             = left;
-            this.Right            = right;
+            Enabled          = enabled;
+            Index            = index;
+            Deadzone         = deadzone;
+            TriggerThreshold = triggerThreshold;
+            Left             = left;
+            Right            = right;
 
             //Unmapped controllers are problematic, skip them
             if (GamePad.GetName(index) == "Unmapped Controller")
             {
-                this.Enabled = false;
+                Enabled = false;
             }
         }
 

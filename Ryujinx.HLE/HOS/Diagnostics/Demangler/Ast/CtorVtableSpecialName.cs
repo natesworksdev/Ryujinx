@@ -9,8 +9,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public CtorVtableSpecialName(BaseNode firstType, BaseNode secondType) : base(NodeType.CtorVtableSpecialName)
         {
-            this._firstType  = firstType;
-            this._secondType = secondType;
+            _firstType  = firstType;
+            _secondType = secondType;
         }
 
         public override void PrintLeft(TextWriter writer)

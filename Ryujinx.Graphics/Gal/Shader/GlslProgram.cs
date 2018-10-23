@@ -14,9 +14,9 @@ namespace Ryujinx.Graphics.Gal.Shader
             IEnumerable<ShaderDeclInfo> textures,
             IEnumerable<ShaderDeclInfo> uniforms)
         {
-            this.Code     = code;
-            this.Textures = textures;
-            this.Uniforms = uniforms;
+            Code     = code;
+            Textures = textures;
+            Uniforms = uniforms;
         }
     }
 }
