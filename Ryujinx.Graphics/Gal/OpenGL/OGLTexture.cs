@@ -24,10 +24,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             _textureCache.Unlock();
         }
 
-        private static void DeleteTexture(ImageHandler cachedImage)
+        private void DeleteTexture(ImageHandler cachedImage)
         {
-            GL.DeleteTexture(cachedImage.Handle);
-            TextureDeleted?.Invoke(this, cachedImage.Handle);
+	        TextureDeleted?.Invoke(this, cachedImage.Handle);
+			GL.DeleteTexture(cachedImage.Handle);
         }
 
         public void Create(long key, int size, GalImage image)

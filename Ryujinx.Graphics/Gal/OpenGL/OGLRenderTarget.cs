@@ -48,9 +48,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 for (int index = 0; index < RenderTargetsCount; index++)
                 {
-                    Map[index] = Source.Map[index];
+                    Map[index] = source.Map[index];
 
-                    Colors[index] = Source.Colors[index];
+                    Colors[index] = source.Colors[index];
                 }
 
                 MapCount = source.MapCount;
@@ -164,9 +164,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
            // if (_attachments.Zeta != _oldAttachments.Zeta)
             //{
-            if (_attachments.Zeta != 0 && _texture.TryGetImageHandler(_attachments.Zeta, out cachedImage)
+            if (_attachments.Zeta != 0 && _texture.TryGetImageHandler(_attachments.Zeta, out cachedImage))
             {
-                if (_cachedImage.Handle != _zetaHandle)
+                if (cachedImage.Handle != _zetaHandle)
                 {
                     if (cachedImage.HasDepth && cachedImage.HasStencil)
                     {
@@ -192,10 +192,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     }
                     else
                     {
-                        throw new InvalidOperationException("Invalid image format \"" + CachedImage.Format + "\" used as Zeta!");
+                        throw new InvalidOperationException("Invalid image format \"" + cachedImage.Format + "\" used as Zeta!");
                     }
 
-                    _zetaHandle = CachedImage.Handle;
+                    _zetaHandle = cachedImage.Handle;
                 }
             }
             else if (_zetaHandle != 0)
@@ -206,7 +206,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     0,
                     0);
 
-                ZetaHandle = 0;
+                _zetaHandle = 0;
             }
 
             if (OglExtension.ViewportArray)
@@ -235,7 +235,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 GL.DrawBuffer(DrawBufferMode.None);
             }
 
-            _oldAttachments.SetAndClear(_attachments);
+            _oldAttachments.Update(_attachments);
         }
 
         public void BindColor(long key, int attachment)
