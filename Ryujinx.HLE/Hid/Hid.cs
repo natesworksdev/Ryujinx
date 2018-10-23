@@ -135,7 +135,7 @@ namespace Ryujinx.HLE.Input
                 Result |= HidControllerButtons.KEY_RSTICK_DOWN;
             }
 
-            if (LeftStick.DY > 0)
+            if (RightStick.DY > 0)
             {
                 Result |= HidControllerButtons.KEY_RSTICK_UP;
             }
