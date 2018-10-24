@@ -4,15 +4,6 @@ namespace Ryujinx.Common
 {
     public static class PerformanceCounter
     {
-        static PerformanceCounter()
-        {
-            TicksPerMillisecond = Stopwatch.Frequency / 1000;
-            TicksPerSecond = Stopwatch.Frequency;
-            TicksPerMinute = TicksPerSecond * 60;
-            TicksPerHour = TicksPerMinute * 60;
-            TicksPerDay = TicksPerHour * 24;
-        }
-
         /// <summary>
         /// Represents the number of ticks in 1 day.
         /// </summary>
@@ -45,9 +36,7 @@ namespace Ryujinx.Common
         {
             get
             {
-                long timestamp = Stopwatch.GetTimestamp();
-
-                return timestamp;
+                return Stopwatch.GetTimestamp();
             }
         }
 
@@ -62,6 +51,15 @@ namespace Ryujinx.Common
 
                 return timestamp / TicksPerMillisecond;
             }
+        }
+
+        static PerformanceCounter()
+        {
+            TicksPerMillisecond = Stopwatch.Frequency / 1000;
+            TicksPerSecond = Stopwatch.Frequency;
+            TicksPerMinute = TicksPerSecond * 60;
+            TicksPerHour = TicksPerMinute * 60;
+            TicksPerDay = TicksPerHour * 24;
         }
     }
 }
