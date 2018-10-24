@@ -851,7 +851,7 @@ namespace Ryujinx.Graphics
                     //TODO: Implement counters.
                     long Counter = 1;
 
-                    long Timestamp = PerformanceCounter.ElapsedTicks;
+                    long Timestamp = PerformanceCounter.ElapsedMilliseconds;
 
                     Timestamp = (long)(Timestamp * 615384.615385);
 

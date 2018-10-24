@@ -216,7 +216,7 @@ namespace Ryujinx.HLE.Input
 
         private static long GetTimestamp()
         {
-            return PerformanceCounter.ElapsedTicks * 19200;
+            return PerformanceCounter.ElapsedMilliseconds * 19200;
         }
     }
 }

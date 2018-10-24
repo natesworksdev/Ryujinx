@@ -138,7 +138,7 @@ namespace ChocolArm64
 
                     CacheBucket Bucket = Cache[Node.Value];
 
-                    long TimeDelta = RingDelta(Bucket.Timestamp, Timestamp);
+                    long TimeDelta = Bucket.Timestamp - Timestamp;
 
                     if (TimeDelta <= MinTimeDelta)
                     {
@@ -159,12 +159,7 @@ namespace ChocolArm64
         {
             long timestamp = Stopwatch.GetTimestamp();
 
-            return (long)(timestamp * (1000.0f / Stopwatch.Frequency));
-        }
-
-        private static long RingDelta(long Old, long New)
-        {
-            return New - Old;
+            return timestamp / (Stopwatch.Frequency / 1000);
         }
     }
 }

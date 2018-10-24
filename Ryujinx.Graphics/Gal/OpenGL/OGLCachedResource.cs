@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 this.DataSize = DataSize;
                 this.Node     = Node;
 
-                Timestamp = PerformanceCounter.ElapsedTicks;
+                Timestamp = PerformanceCounter.ElapsedMilliseconds;
             }
         }
 
@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private void ClearCacheIfNeeded()
         {
-            long Timestamp = PerformanceCounter.ElapsedTicks;
+            long Timestamp = PerformanceCounter.ElapsedMilliseconds;
 
             int Count = 0;
 
@@ -157,7 +157,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 CacheBucket Bucket = Cache[Node.Value];
 
-                long TimeDelta = RingDelta(Bucket.Timestamp, Timestamp);
+                long TimeDelta = Bucket.Timestamp - Timestamp;
 
                 if ((uint)TimeDelta <= (uint)MaxTimeDelta)
                 {
@@ -170,11 +170,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 DeleteValueCallback(Bucket.Value);
             }
-        }
-
-        private long RingDelta(long Old, long New)
-        {
-            return New - Old;
         }
     }
 }
