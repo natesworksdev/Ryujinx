@@ -12,14 +12,14 @@ namespace ChocolArm64.Instruction32
             {
                 case ACond.Eq:    return  state.Zero;
                 case ACond.Ne:    return !state.Zero;
-                case ACond.GeUn: return  state.Carry;
-                case ACond.LtUn: return !state.Carry;
+                case ACond.GeUn:  return  state.Carry;
+                case ACond.LtUn:  return !state.Carry;
                 case ACond.Mi:    return  state.Negative;
                 case ACond.Pl:    return !state.Negative;
                 case ACond.Vs:    return  state.Overflow;
                 case ACond.Vc:    return !state.Overflow;
-                case ACond.GtUn: return  state.Carry    && !state.Zero;
-                case ACond.LeUn: return !state.Carry    &&  state.Zero;
+                case ACond.GtUn:  return  state.Carry    && !state.Zero;
+                case ACond.LeUn:  return !state.Carry    &&  state.Zero;
                 case ACond.Ge:    return  state.Negative ==  state.Overflow;
                 case ACond.Lt:    return  state.Negative !=  state.Overflow;
                 case ACond.Gt:    return  state.Negative ==  state.Overflow && !state.Zero;

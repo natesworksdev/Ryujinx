@@ -171,15 +171,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        private int RingDelta(int old, int New)
+        private int RingDelta(int oldValue, int newValue)
         {
-            if ((uint)New < (uint)old)
+            if ((uint)newValue < (uint)oldValue)
             {
-                return New + (~old + 1);
+                return newValue + (~oldValue + 1);
             }
             else
             {
-                return New - old;
+                return newValue - oldValue;
             }
         }
     }

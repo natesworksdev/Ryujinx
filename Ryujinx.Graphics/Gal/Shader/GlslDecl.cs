@@ -55,29 +55,29 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string _stagePrefix;
 
-        private Dictionary<ShaderIrOp, ShaderDeclInfo> _mCbTextures;
+        private Dictionary<ShaderIrOp, ShaderDeclInfo> _cbTextures;
 
-        private Dictionary<int, ShaderDeclInfo> _mTextures;
-        private Dictionary<int, ShaderDeclInfo> _mUniforms;
+        private Dictionary<int, ShaderDeclInfo> _Textures;
+        private Dictionary<int, ShaderDeclInfo> _uniforms;
 
-        private Dictionary<int, ShaderDeclInfo> _mAttributes;
-        private Dictionary<int, ShaderDeclInfo> _mInAttributes;
-        private Dictionary<int, ShaderDeclInfo> _mOutAttributes;
+        private Dictionary<int, ShaderDeclInfo> _attributes;
+        private Dictionary<int, ShaderDeclInfo> _inAttributes;
+        private Dictionary<int, ShaderDeclInfo> _outAttributes;
 
-        private Dictionary<int, ShaderDeclInfo> _mGprs;
-        private Dictionary<int, ShaderDeclInfo> _mPreds;
+        private Dictionary<int, ShaderDeclInfo> _gprs;
+        private Dictionary<int, ShaderDeclInfo> _preds;
 
-        public IReadOnlyDictionary<ShaderIrOp, ShaderDeclInfo> CbTextures => _mCbTextures;
+        public IReadOnlyDictionary<ShaderIrOp, ShaderDeclInfo> CbTextures => _cbTextures;
 
-        public IReadOnlyDictionary<int, ShaderDeclInfo> Textures => _mTextures;
-        public IReadOnlyDictionary<int, ShaderDeclInfo> Uniforms => _mUniforms;
+        public IReadOnlyDictionary<int, ShaderDeclInfo> Textures => _Textures;
+        public IReadOnlyDictionary<int, ShaderDeclInfo> Uniforms => _uniforms;
 
-        public IReadOnlyDictionary<int, ShaderDeclInfo> Attributes    => _mAttributes;
-        public IReadOnlyDictionary<int, ShaderDeclInfo> InAttributes  => _mInAttributes;
-        public IReadOnlyDictionary<int, ShaderDeclInfo> OutAttributes => _mOutAttributes;
+        public IReadOnlyDictionary<int, ShaderDeclInfo> Attributes    => _attributes;
+        public IReadOnlyDictionary<int, ShaderDeclInfo> InAttributes  => _inAttributes;
+        public IReadOnlyDictionary<int, ShaderDeclInfo> OutAttributes => _outAttributes;
 
-        public IReadOnlyDictionary<int, ShaderDeclInfo> Gprs  => _mGprs;
-        public IReadOnlyDictionary<int, ShaderDeclInfo> Preds => _mPreds;
+        public IReadOnlyDictionary<int, ShaderDeclInfo> Gprs  => _gprs;
+        public IReadOnlyDictionary<int, ShaderDeclInfo> Preds => _preds;
 
         public GalShaderType ShaderType { get; private set; }
 
@@ -85,17 +85,17 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             ShaderType = shaderType;
 
-            _mCbTextures = new Dictionary<ShaderIrOp, ShaderDeclInfo>();
+            _cbTextures = new Dictionary<ShaderIrOp, ShaderDeclInfo>();
 
-            _mTextures = new Dictionary<int, ShaderDeclInfo>();
-            _mUniforms = new Dictionary<int, ShaderDeclInfo>();
+            _Textures = new Dictionary<int, ShaderDeclInfo>();
+            _uniforms = new Dictionary<int, ShaderDeclInfo>();
 
-            _mAttributes    = new Dictionary<int, ShaderDeclInfo>();
-            _mInAttributes  = new Dictionary<int, ShaderDeclInfo>();
-            _mOutAttributes = new Dictionary<int, ShaderDeclInfo>();
+            _attributes    = new Dictionary<int, ShaderDeclInfo>();
+            _inAttributes  = new Dictionary<int, ShaderDeclInfo>();
+            _outAttributes = new Dictionary<int, ShaderDeclInfo>();
 
-            _mGprs  = new Dictionary<int, ShaderDeclInfo>();
-            _mPreds = new Dictionary<int, ShaderDeclInfo>();
+            _gprs  = new Dictionary<int, ShaderDeclInfo>();
+            _preds = new Dictionary<int, ShaderDeclInfo>();
         }
 
         public GlslDecl(ShaderIrBlock[] blocks, GalShaderType shaderType, ShaderHeader header)
@@ -113,7 +113,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         if (header.OmapTargets[attachment].ComponentEnabled(component))
                         {
-                            _mGprs.TryAdd(index, new ShaderDeclInfo(GetGprName(index), index));
+                            _gprs.TryAdd(index, new ShaderDeclInfo(GetGprName(index), index));
 
                             index++;
                         }
@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     index = header.DepthRegister;
 
-                    _mGprs.TryAdd(index, new ShaderDeclInfo(GetGprName(index), index));
+                    _gprs.TryAdd(index, new ShaderDeclInfo(GetGprName(index), index));
                 }
             }
 
@@ -143,31 +143,31 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             GlslDecl combined = new GlslDecl(GalShaderType.Vertex);
 
-            Merge(combined._mTextures, vpA._mTextures, vpB._mTextures);
-            Merge(combined._mUniforms, vpA._mUniforms, vpB._mUniforms);
+            Merge(combined._Textures, vpA._Textures, vpB._Textures);
+            Merge(combined._uniforms, vpA._uniforms, vpB._uniforms);
 
-            Merge(combined._mAttributes,    vpA._mAttributes,    vpB._mAttributes);
-            Merge(combined._mOutAttributes, vpA._mOutAttributes, vpB._mOutAttributes);
+            Merge(combined._attributes,    vpA._attributes,    vpB._attributes);
+            Merge(combined._outAttributes, vpA._outAttributes, vpB._outAttributes);
 
-            Merge(combined._mGprs,  vpA._mGprs,  vpB._mGprs);
-            Merge(combined._mPreds, vpA._mPreds, vpB._mPreds);
+            Merge(combined._gprs,  vpA._gprs,  vpB._gprs);
+            Merge(combined._preds, vpA._preds, vpB._preds);
 
             //Merge input attributes.
-            foreach (KeyValuePair<int, ShaderDeclInfo> kv in vpA._mInAttributes)
+            foreach (KeyValuePair<int, ShaderDeclInfo> kv in vpA._inAttributes)
             {
-                combined._mInAttributes.TryAdd(kv.Key, kv.Value);
+                combined._inAttributes.TryAdd(kv.Key, kv.Value);
             }
 
-            foreach (KeyValuePair<int, ShaderDeclInfo> kv in vpB._mInAttributes)
+            foreach (KeyValuePair<int, ShaderDeclInfo> kv in vpB._inAttributes)
             {
                 //If Vertex Program A already writes to this attribute,
                 //then we don't need to add it as an input attribute since
                 //Vertex Program A will already have written to it anyway,
                 //and there's no guarantee that there is an input attribute
                 //for this slot.
-                if (!vpA._mOutAttributes.ContainsKey(kv.Key))
+                if (!vpA._outAttributes.ContainsKey(kv.Key))
                 {
-                    combined._mInAttributes.TryAdd(kv.Key, kv.Value);
+                    combined._inAttributes.TryAdd(kv.Key, kv.Value);
                 }
             }
 
@@ -231,7 +231,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         string name = _stagePrefix + TextureName + index;
 
-                        _mTextures.TryAdd(handle, new ShaderDeclInfo(name, handle));
+                        _Textures.TryAdd(handle, new ShaderDeclInfo(name, handle));
                     }
                     else if (op.Inst == ShaderIrInst.Texb)
                     {
@@ -258,7 +258,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         {
                             string name = _stagePrefix + TextureName + "_cb" + cbuf.Index + "_" + cbuf.Pos;
 
-                            _mCbTextures.Add(op, new ShaderDeclInfo(name, cbuf.Pos, true, cbuf.Index));
+                            _cbTextures.Add(op, new ShaderDeclInfo(name, cbuf.Pos, true, cbuf.Index));
                         }
                         else
                         {
@@ -270,13 +270,13 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 case ShaderIrOperCbuf cbuf:
                 {
-                    if (!_mUniforms.ContainsKey(cbuf.Index))
+                    if (!_uniforms.ContainsKey(cbuf.Index))
                     {
                         string name = _stagePrefix + UniformName + cbuf.Index;
 
                         ShaderDeclInfo declInfo = new ShaderDeclInfo(name, cbuf.Pos, true, cbuf.Index);
 
-                        _mUniforms.Add(cbuf.Index, declInfo);
+                        _uniforms.Add(cbuf.Index, declInfo);
                     }
                     break;
                 }
@@ -309,30 +309,30 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                     if (parent is ShaderIrAsg asg && asg.Dst == node)
                     {
-                        if (!_mOutAttributes.TryGetValue(index, out declInfo))
+                        if (!_outAttributes.TryGetValue(index, out declInfo))
                         {
                             declInfo = new ShaderDeclInfo(OutAttrName + glslIndex, glslIndex);
 
-                            _mOutAttributes.Add(index, declInfo);
+                            _outAttributes.Add(index, declInfo);
                         }
                     }
                     else
                     {
-                        if (!_mInAttributes.TryGetValue(index, out declInfo))
+                        if (!_inAttributes.TryGetValue(index, out declInfo))
                         {
                             declInfo = new ShaderDeclInfo(InAttrName + glslIndex, glslIndex);
 
-                            _mInAttributes.Add(index, declInfo);
+                            _inAttributes.Add(index, declInfo);
                         }
                     }
 
                     declInfo.Enlarge(elem + 1);
 
-                    if (!_mAttributes.ContainsKey(index))
+                    if (!_attributes.ContainsKey(index))
                     {
                         declInfo = new ShaderDeclInfo(AttrName + glslIndex, glslIndex, false, 0, 4);
 
-                        _mAttributes.Add(index, declInfo);
+                        _attributes.Add(index, declInfo);
                     }
 
                     Traverse(nodes, abuf, abuf.Vertex);
@@ -346,18 +346,18 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         string name = GetGprName(gpr.Index);
 
-                        _mGprs.TryAdd(gpr.Index, new ShaderDeclInfo(name, gpr.Index));
+                        _gprs.TryAdd(gpr.Index, new ShaderDeclInfo(name, gpr.Index));
                     }
                     break;
                 }
 
                 case ShaderIrOperPred pred:
                 {
-                    if (!pred.IsConst && !HasName(_mPreds, pred.Index))
+                    if (!pred.IsConst && !HasName(_preds, pred.Index))
                     {
                         string name = PredName + pred.Index;
 
-                        _mPreds.TryAdd(pred.Index, new ShaderDeclInfo(name, pred.Index));
+                        _preds.TryAdd(pred.Index, new ShaderDeclInfo(name, pred.Index));
                     }
                     break;
                 }

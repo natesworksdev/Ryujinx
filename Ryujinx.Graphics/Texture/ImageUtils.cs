@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Texture
         private const GalImageFormat Float = GalImageFormat.Float;
         private const GalImageFormat Srgb  = GalImageFormat.Srgb;
 
-        private static readonly Dictionary<GalTextureFormat, GalImageFormat> STextureTable =
+        private static readonly Dictionary<GalTextureFormat, GalImageFormat> TextureTable =
                             new Dictionary<GalTextureFormat, GalImageFormat>()
         {
             { GalTextureFormat.Rgba32,     GalImageFormat.Rgba32                    | Sint | Uint | Float        },
@@ -89,7 +89,7 @@ namespace Ryujinx.Graphics.Texture
             { GalTextureFormat.Astc2D10X6,  GalImageFormat.Astc2D10X6  | Unorm                 | Srgb }
         };
 
-        private static readonly Dictionary<GalImageFormat, ImageDescriptor> SImageTable =
+        private static readonly Dictionary<GalImageFormat, ImageDescriptor> ImageTable =
                             new Dictionary<GalImageFormat, ImageDescriptor>()
         {
             { GalImageFormat.Rgba32,      new ImageDescriptor(16, 1,  1,  TargetBuffer.Color) },
@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Texture
                 throw new NotImplementedException("Per component types are not implemented!");
             }
 
-            if (!STextureTable.TryGetValue(format, out GalImageFormat imageFormat))
+            if (!TextureTable.TryGetValue(format, out GalImageFormat imageFormat))
             {
                 throw new NotImplementedException($"Format 0x{((int)format):x} not implemented!");
             }
@@ -375,7 +375,7 @@ namespace Ryujinx.Graphics.Texture
         {
             GalImageFormat pixelFormat = format & GalImageFormat.FormatMask;
 
-            if (SImageTable.TryGetValue(pixelFormat, out ImageDescriptor descriptor))
+            if (ImageTable.TryGetValue(pixelFormat, out ImageDescriptor descriptor))
             {
                 return descriptor;
             }

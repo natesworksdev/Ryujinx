@@ -90,50 +90,51 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             _shader     = shader;
 
             //These values match OpenGL's defaults
-            _old = new GalPipelineState
-            {
-                FrontFace = GalFrontFace.Ccw,
+	        _old = new GalPipelineState
+	        {
+		        FrontFace = GalFrontFace.Ccw,
 
-                CullFaceEnabled = false,
-                CullFace = GalCullFace.Back,
+		        CullFaceEnabled = false,
+		        CullFace        = GalCullFace.Back,
 
-                DepthTestEnabled = false,
-                DepthWriteEnabled = true,
-                DepthFunc = GalComparisonOp.Less,
-
+		        DepthTestEnabled  = false,
+		        DepthWriteEnabled = true,
+		        DepthFunc         = GalComparisonOp.Less,
+		        DepthRangeNear    = 0,
+				DepthRangeFar     = 1,
                 StencilTestEnabled = false,
 
-                StencilBackFuncFunc = GalComparisonOp.Always,
-                StencilBackFuncRef = 0,
-                StencilBackFuncMask = UInt32.MaxValue,
-                StencilBackOpFail = GalStencilOp.Keep,
-                StencilBackOpZFail = GalStencilOp.Keep,
-                StencilBackOpZPass = GalStencilOp.Keep,
-                StencilBackMask = UInt32.MaxValue,
+		        StencilBackFuncFunc = GalComparisonOp.Always,
+		        StencilBackFuncRef  = 0,
+		        StencilBackFuncMask = UInt32.MaxValue,
+		        StencilBackOpFail   = GalStencilOp.Keep,
+		        StencilBackOpZFail  = GalStencilOp.Keep,
+		        StencilBackOpZPass  = GalStencilOp.Keep,
+		        StencilBackMask     = UInt32.MaxValue,
 
-                StencilFrontFuncFunc = GalComparisonOp.Always,
-                StencilFrontFuncRef = 0,
-                StencilFrontFuncMask = UInt32.MaxValue,
-                StencilFrontOpFail = GalStencilOp.Keep,
-                StencilFrontOpZFail = GalStencilOp.Keep,
-                StencilFrontOpZPass = GalStencilOp.Keep,
-                StencilFrontMask = UInt32.MaxValue,
+		        StencilFrontFuncFunc = GalComparisonOp.Always,
+		        StencilFrontFuncRef  = 0,
+		        StencilFrontFuncMask = UInt32.MaxValue,
+		        StencilFrontOpFail   = GalStencilOp.Keep,
+		        StencilFrontOpZFail  = GalStencilOp.Keep,
+		        StencilFrontOpZPass  = GalStencilOp.Keep,
+		        StencilFrontMask     = UInt32.MaxValue,
 
-                BlendEnabled = false,
-                BlendSeparateAlpha = false,
+		        BlendEnabled       = false,
+		        BlendSeparateAlpha = false,
 
-                BlendEquationRgb = 0,
-                BlendFuncSrcRgb = GalBlendFactor.One,
-                BlendFuncDstRgb = GalBlendFactor.Zero,
-                BlendEquationAlpha = 0,
-                BlendFuncSrcAlpha = GalBlendFactor.One,
-                BlendFuncDstAlpha = GalBlendFactor.Zero,
+		        BlendEquationRgb   = 0,
+		        BlendFuncSrcRgb    = GalBlendFactor.One,
+		        BlendFuncDstRgb    = GalBlendFactor.Zero,
+		        BlendEquationAlpha = 0,
+		        BlendFuncSrcAlpha  = GalBlendFactor.One,
+		        BlendFuncDstAlpha  = GalBlendFactor.Zero,
 
-                ColorMask = ColorMaskRgba.Default,
+		        ColorMask = ColorMaskRgba.Default,
 
-                PrimitiveRestartEnabled = false,
-                PrimitiveRestartIndex = 0
-            };
+		        PrimitiveRestartEnabled = false,
+		        PrimitiveRestartIndex   = 0
+	        };
 
             for (int index = 0; index < GalPipelineState.RenderTargetsCount; index++)
             {
@@ -195,11 +196,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
             }
 
-	        if (New.DepthRangeNear != _old.DepthRangeNear ||
-	            New.DepthRangeFar != _old.DepthRangeFar)
-	        {
-		        GL.DepthRange(New.DepthRangeNear, New.DepthRangeFar);
-	        }
+            if (New.DepthRangeNear != _old.DepthRangeNear ||
+                New.DepthRangeFar != _old.DepthRangeFar)
+            {
+                GL.DepthRange(New.DepthRangeNear, New.DepthRangeFar);
+            }
 
 			if (New.StencilTestEnabled != _old.StencilTestEnabled)
             {

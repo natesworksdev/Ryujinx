@@ -14,13 +14,13 @@ namespace ChocolArm64.Instruction
             EmitBfmLoadRn(context);
 
             context.EmitLdintzr(op.Rd);
-            context.EmitLdc_I(~op.WMask & op.Mask);
+            context.EmitLdc_I(~op.WMask & op.TMask);
 
             context.Emit(OpCodes.And);
             context.Emit(OpCodes.Or);
 
             context.EmitLdintzr(op.Rd);
-            context.EmitLdc_I(~op.Mask);
+            context.EmitLdc_I(~op.TMask);
 
             context.Emit(OpCodes.And);
             context.Emit(OpCodes.Or);
@@ -63,7 +63,7 @@ namespace ChocolArm64.Instruction
                 context.EmitLsl(bitsCount - 1 - op.Pos);
                 context.EmitAsr(bitsCount - 1);
 
-                context.EmitLdc_I(~op.Mask);
+                context.EmitLdc_I(~op.TMask);
 
                 context.Emit(OpCodes.And);
                 context.Emit(OpCodes.Or);
@@ -200,7 +200,7 @@ namespace ChocolArm64.Instruction
 
             context.EmitRor(op.Shift);
 
-            context.EmitLdc_I(op.WMask & op.Mask);
+            context.EmitLdc_I(op.WMask & op.TMask);
 
             context.Emit(OpCodes.And);
         }

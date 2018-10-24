@@ -2,7 +2,7 @@
 {
     public struct ColorMaskRgba
     {
-	    public static ColorMaskRgba Default { get; } = new ColorMaskRgba()
+        public static ColorMaskRgba Default { get; } = new ColorMaskRgba()
         {
 	        Red   = true,
 	        Green = true,
@@ -11,8 +11,8 @@
         };
 
 	    public bool Red;
-        public bool Green;
-        public bool Blue;
+	    public bool Green;
+	    public bool Blue;
         public bool Alpha;
     }
 

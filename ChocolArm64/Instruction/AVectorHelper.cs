@@ -9,7 +9,7 @@ namespace ChocolArm64.Instruction
 {
     static class AVectorHelper
     {
-        private static readonly Vector128<float> Zero32128Mask;
+        private static readonly Vector128<float> Zero32_128Mask;
 
         static AVectorHelper()
         {
@@ -18,7 +18,7 @@ namespace ChocolArm64.Instruction
                 throw new PlatformNotSupportedException();
             }
 
-            Zero32128Mask = Sse.StaticCast<uint, float>(Sse2.SetVector128(0, 0, 0, 0xffffffff));
+            Zero32_128Mask = Sse.StaticCast<uint, float>(Sse2.SetVector128(0, 0, 0, 0xffffffff));
         }
 
         public static void EmitCall(AilEmitterCtx context, string name64, string name128)
@@ -583,7 +583,7 @@ namespace ChocolArm64.Instruction
         {
             if (Sse.IsSupported)
             {
-                return Sse.And(vector, Zero32128Mask);
+                return Sse.And(vector, Zero32_128Mask);
             }
 
             throw new PlatformNotSupportedException();

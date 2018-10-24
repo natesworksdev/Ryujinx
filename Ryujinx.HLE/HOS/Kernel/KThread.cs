@@ -75,9 +75,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             ThreadId = threadId;
 
-            Context        = thread;
-            Owner          = process;
-            PreferredCore  = processorId;
+            Context         = thread;
+            Owner           = process;
+            PreferredCore   = processorId;
             _scheduler      = system.Scheduler;
             _schedulingData = system.Scheduler.SchedulingData;
 

@@ -543,17 +543,17 @@ namespace ChocolArm64.Instruction
             return Sha256Hash(hashAbcd, hashEfgh, wk, false);
         }
 
-        public static Vector128<float> SchedulePart1(Vector128<float> w03, Vector128<float> w47)
+        public static Vector128<float> SchedulePart1(Vector128<float> w0_3, Vector128<float> w4_7)
         {
             Vector128<float> result = new Vector128<float>();
 
             for (int e = 0; e <= 3; e++)
             {
-                uint elt = (uint)VectorExtractIntZx(e <= 2 ? w03 : w47, (byte)(e <= 2 ? e + 1 : 0), 2);
+                uint elt = (uint)VectorExtractIntZx(e <= 2 ? w0_3 : w4_7, (byte)(e <= 2 ? e + 1 : 0), 2);
 
                 elt = elt.Ror(7) ^ elt.Ror(18) ^ elt.Lsr(3);
 
-                elt += (uint)VectorExtractIntZx(w03, (byte)e, 2);
+                elt += (uint)VectorExtractIntZx(w0_3, (byte)e, 2);
 
                 result = VectorInsertInt((ulong)elt, result, (byte)e, 2);
             }
@@ -561,11 +561,11 @@ namespace ChocolArm64.Instruction
             return result;
         }
 
-        public static Vector128<float> SchedulePart2(Vector128<float> w03, Vector128<float> w811, Vector128<float> w1215)
+        public static Vector128<float> SchedulePart2(Vector128<float> w0_3, Vector128<float> w8_11, Vector128<float> w1_215)
         {
             Vector128<float> result = new Vector128<float>();
 
-            ulong t1 = VectorExtractIntZx(w1215, (byte)1, 3);
+            ulong t1 = VectorExtractIntZx(w1_215, (byte)1, 3);
 
             for (int e = 0; e <= 1; e++)
             {
@@ -573,8 +573,8 @@ namespace ChocolArm64.Instruction
 
                 elt = elt.Ror(17) ^ elt.Ror(19) ^ elt.Lsr(10);
 
-                elt += (uint)VectorExtractIntZx(w03, (byte)e, 2);
-                elt += (uint)VectorExtractIntZx(w811, (byte)(e + 1), 2);
+                elt += (uint)VectorExtractIntZx(w0_3, (byte)e, 2);
+                elt += (uint)VectorExtractIntZx(w8_11, (byte)(e + 1), 2);
 
                 result = VectorInsertInt((ulong)elt, result, (byte)e, 2);
             }
@@ -587,8 +587,8 @@ namespace ChocolArm64.Instruction
 
                 elt = elt.Ror(17) ^ elt.Ror(19) ^ elt.Lsr(10);
 
-                elt += (uint)VectorExtractIntZx(w03, (byte)e, 2);
-                elt += (uint)VectorExtractIntZx(e == 2 ? w811 : w1215, (byte)(e == 2 ? 3 : 0), 2);
+                elt += (uint)VectorExtractIntZx(w0_3, (byte)e, 2);
+                elt += (uint)VectorExtractIntZx(e == 2 ? w8_11 : w1_215, (byte)(e == 2 ? 3 : 0), 2);
 
                 result = VectorInsertInt((ulong)elt, result, (byte)e, 2);
             }
@@ -600,21 +600,21 @@ namespace ChocolArm64.Instruction
         {
             for (int e = 0; e <= 3; e++)
             {
-                uint chs = ShAchoose((uint)VectorExtractIntZx(y, (byte)0, 2),
+                uint chs = ShaChoose((uint)VectorExtractIntZx(y, (byte)0, 2),
                                      (uint)VectorExtractIntZx(y, (byte)1, 2),
                                      (uint)VectorExtractIntZx(y, (byte)2, 2));
 
-                uint maj = ShAmajority((uint)VectorExtractIntZx(x, (byte)0, 2),
+                uint maj = ShaMajority((uint)VectorExtractIntZx(x, (byte)0, 2),
                                        (uint)VectorExtractIntZx(x, (byte)1, 2),
                                        (uint)VectorExtractIntZx(x, (byte)2, 2));
 
                 uint t1 = (uint)VectorExtractIntZx(y, (byte)3, 2);
-                t1 += ShAhashSigma1((uint)VectorExtractIntZx(y, (byte)0, 2)) + chs;
+                t1 += ShaHashSigma1((uint)VectorExtractIntZx(y, (byte)0, 2)) + chs;
                 t1 += (uint)VectorExtractIntZx(w, (byte)e, 2);
 
                 uint t2 = t1 + (uint)VectorExtractIntZx(x, (byte)3, 2);
                 x = VectorInsertInt((ulong)t2, x, (byte)3, 2);
-                t2 = t1 + ShAhashSigma0((uint)VectorExtractIntZx(x, (byte)0, 2)) + maj;
+                t2 = t1 + ShaHashSigma0((uint)VectorExtractIntZx(x, (byte)0, 2)) + maj;
                 y = VectorInsertInt((ulong)t2, y, (byte)3, 2);
 
                 Rol32_256(ref y, ref x);
@@ -640,22 +640,22 @@ namespace ChocolArm64.Instruction
             x = VectorInsertInt((ulong)yE3, x, (byte)0, 2);
         }
 
-        private static uint ShAhashSigma0(uint x)
+        private static uint ShaHashSigma0(uint x)
         {
             return x.Ror(2) ^ x.Ror(13) ^ x.Ror(22);
         }
 
-        private static uint ShAhashSigma1(uint x)
+        private static uint ShaHashSigma1(uint x)
         {
             return x.Ror(6) ^ x.Ror(11) ^ x.Ror(25);
         }
 
-        private static uint ShAmajority(uint x, uint y, uint z)
+        private static uint ShaMajority(uint x, uint y, uint z)
         {
             return (x & y) | ((x | y) & z);
         }
 
-        private static uint ShAchoose(uint x, uint y, uint z)
+        private static uint ShaChoose(uint x, uint y, uint z)
         {
             return ((y ^ z) & x) ^ z;
         }

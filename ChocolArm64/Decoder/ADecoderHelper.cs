@@ -7,7 +7,7 @@ namespace ChocolArm64.Decoder
         public struct BitMask
         {
             public long WMask;
-            public long Mask;
+            public long TMask;
             public int  Pos;
             public int  Shift;
             public bool IsUndefined;
@@ -54,7 +54,7 @@ namespace ChocolArm64.Decoder
             return new BitMask()
             {
                 WMask = ABitUtils.Replicate(wMask, size),
-                Mask = ABitUtils.Replicate(mask, size),
+                TMask = ABitUtils.Replicate(mask, size),
 
                 Pos   = immS,
                 Shift = immR
