@@ -13,7 +13,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintLeft(TextWriter writer)
         {
-            if (_isDestructor) writer.Write("~");
+            if (_isDestructor)
+            {
+                writer.Write("~");
+            }
 
             writer.Write(Child.GetName());
         }

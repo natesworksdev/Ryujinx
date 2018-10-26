@@ -32,7 +32,10 @@ namespace Ryujinx.HLE.HOS.Services.Am
         {
             _stateChangedEvent.ReadableEvent.Signal();
 
-            if (context.Process.HandleTable.GenerateHandle(_stateChangedEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_stateChangedEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 

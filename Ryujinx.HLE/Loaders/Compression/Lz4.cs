@@ -16,11 +16,13 @@ namespace Ryujinx.HLE.Loaders.Compression
                 byte sum;
 
                 if (length == 0xf)
+                {
                     do
                     {
                         length += sum = cmp[cmpPos++];
                     }
                     while (sum == 0xff);
+                }
 
                 return length;
             }
@@ -40,7 +42,10 @@ namespace Ryujinx.HLE.Loaders.Compression
                 cmpPos += litCount;
                 decPos += litCount;
 
-                if (cmpPos >= cmp.Length) break;
+                if (cmpPos >= cmp.Length)
+                {
+                    break;
+                }
 
                 //Copy compressed chunck
                 int back = (cmp[cmpPos++] << 0) |
@@ -58,7 +63,10 @@ namespace Ryujinx.HLE.Loaders.Compression
                 }
                 else
                 {
-                    while (encCount-- > 0) dec[decPos++] = dec[encPos++];
+                    while (encCount-- > 0)
+                    {
+                        dec[decPos++] = dec[encPos++];
+                    }
                 }
             }
             while (cmpPos < cmp.Length &&

@@ -99,7 +99,10 @@ namespace ChocolArm64.State
             //do it after a given number of instructions has executed.
             _syncCount += bbWeight;
 
-            if (_syncCount >= MinInstForCheck) CheckInterrupt();
+            if (_syncCount >= MinInstForCheck)
+            {
+                CheckInterrupt();
+            }
 
             return Running;
         }

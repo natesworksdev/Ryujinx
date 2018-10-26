@@ -144,15 +144,24 @@ namespace Ryujinx.Graphics.Texture
             GalTextureType   aType,
             bool             convSrgb)
         {
-            if (rType != gType || rType != bType || rType != aType) throw new NotImplementedException("Per component types are not implemented!");
+            if (rType != gType || rType != bType || rType != aType)
+            {
+                throw new NotImplementedException("Per component types are not implemented!");
+            }
 
-            if (!_textureTable.TryGetValue(format, out GalImageFormat imageFormat)) throw new NotImplementedException($"Format 0x{(int)format:x} not implemented!");
+            if (!_textureTable.TryGetValue(format, out GalImageFormat imageFormat))
+            {
+                throw new NotImplementedException($"Format 0x{(int)format:x} not implemented!");
+            }
 
             GalImageFormat formatType = convSrgb ? Srgb : GetFormatType(rType);
 
             GalImageFormat combinedFormat = (imageFormat & GalImageFormat.FormatMask) | formatType;
 
-            if (!imageFormat.HasFlag(formatType)) throw new NotImplementedException($"Format \"{combinedFormat}\" not implemented!");
+            if (!imageFormat.HasFlag(formatType))
+            {
+                throw new NotImplementedException($"Format \"{combinedFormat}\" not implemented!");
+            }
 
             return combinedFormat;
         }
@@ -212,9 +221,13 @@ namespace Ryujinx.Graphics.Texture
             AMemory cpuMemory;
 
             if (memory is NvGpuVmm vmm)
+            {
                 cpuMemory = vmm.Memory;
+            }
             else
+            {
                 cpuMemory = (AMemory)memory;
+            }
 
             ISwizzle swizzle = TextureHelper.GetSwizzle(image);
 
@@ -259,13 +272,15 @@ namespace Ryujinx.Graphics.Texture
             int inOffs = 0;
 
             for (int y = 0; y < height; y++)
-            for (int x = 0; x < width;  x++)
+            {
+                for (int x = 0; x < width;  x++)
             {
                 long offset = (uint)swizzle.GetSwizzleOffset(x, y);
 
                 vmm.Memory.WriteBytes(position + offset, data, inOffs, bytesPerPixel);
 
                 inOffs += bytesPerPixel;
+            }
             }
         }
 
@@ -307,9 +322,13 @@ namespace Ryujinx.Graphics.Texture
              int alignMask;
 
             if (image.Layout == GalMemoryLayout.BlockLinear)
+            {
                 alignMask = image.TileWidth * (64 / desc.BytesPerPixel) - 1;
+            }
             else
+            {
                 alignMask = 32 / desc.BytesPerPixel - 1;
+            }
 
             return (image.Width + alignMask) & ~alignMask;
         }
@@ -358,7 +377,10 @@ namespace Ryujinx.Graphics.Texture
         {
             GalImageFormat pixelFormat = format & GalImageFormat.FormatMask;
 
-            if (_imageTable.TryGetValue(pixelFormat, out ImageDescriptor descriptor)) return descriptor;
+            if (_imageTable.TryGetValue(pixelFormat, out ImageDescriptor descriptor))
+            {
+                return descriptor;
+            }
 
             throw new NotImplementedException($"Format \"{pixelFormat}\" not implemented!");
         }

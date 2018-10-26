@@ -105,7 +105,10 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
                 long remainder = ms.Position & 0xf;
 
-                if (remainder != 0) ms.Seek(0x10 - remainder, SeekOrigin.Current);
+                if (remainder != 0)
+                {
+                    ms.Seek(0x10 - remainder, SeekOrigin.Current);
+                }
 
                 ms.Seek(0x50, SeekOrigin.Begin);
 
@@ -197,7 +200,10 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
             SendFrameBuffer(context, slot);
 
-            if (context.Device.EnableDeviceVsync) context.Device.VsyncEvent.WaitOne();
+            if (context.Device.EnableDeviceVsync)
+            {
+                context.Device.VsyncEvent.WaitOne();
+            }
 
             return MakeReplyParcel(context, 1280, 720, 0, 0, 0);
         }
@@ -258,7 +264,10 @@ namespace Ryujinx.HLE.HOS.Services.Android
             {
                 BinaryWriter writer = new BinaryWriter(ms);
 
-                foreach (int Int in ints) writer.Write(Int);
+                foreach (int Int in ints)
+                {
+                    writer.Write(Int);
+                }
 
                 return MakeReplyParcel(context, ms.ToArray());
             }
@@ -307,11 +316,13 @@ namespace Ryujinx.HLE.HOS.Services.Android
             _renderer.QueueAction(() =>
             {
                 if (!_renderer.Texture.TryGetImage(fbAddr, out GalImage image))
+                {
                     image = new GalImage(
                         fbWidth,
                         fbHeight, 1, 16,
                         GalMemoryLayout.BlockLinear,
                         GalImageFormat.Rgba8 | GalImageFormat.Unorm);
+                }
 
                 context.Device.Gpu.ResourceManager.ClearPbCache();
                 context.Device.Gpu.ResourceManager.SendTexture(vmm, fbAddr, image);
@@ -338,9 +349,15 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
             do
             {
-                if ((slot = GetFreeSlot(width, height)) != -1) break;
+                if ((slot = GetFreeSlot(width, height)) != -1)
+                {
+                    break;
+                }
 
-                if (_disposed) break;
+                if (_disposed)
+                {
+                    break;
+                }
 
                 _waitBufferFree.WaitOne();
             }
@@ -355,7 +372,10 @@ namespace Ryujinx.HLE.HOS.Services.Android
             {
                 for (int slot = 0; slot < _bufferQueue.Length; slot++)
                 {
-                    if (_bufferQueue[slot].State != BufferState.Free) continue;
+                    if (_bufferQueue[slot].State != BufferState.Free)
+                    {
+                        continue;
+                    }
 
                     GbpBuffer data = _bufferQueue[slot].Data;
 

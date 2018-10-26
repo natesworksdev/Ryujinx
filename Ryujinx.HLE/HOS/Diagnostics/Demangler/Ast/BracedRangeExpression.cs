@@ -23,7 +23,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             _lastNode.Print(writer);
             writer.Write("]");
 
-            if (!_expression.GetType().Equals(NodeType.BracedExpression) || !_expression.GetType().Equals(NodeType.BracedRangeExpression)) writer.Write(" = ");
+            if (!_expression.GetType().Equals(NodeType.BracedExpression) || !_expression.GetType().Equals(NodeType.BracedRangeExpression))
+            {
+                writer.Write(" = ");
+            }
 
             _expression.Print(writer);
         }

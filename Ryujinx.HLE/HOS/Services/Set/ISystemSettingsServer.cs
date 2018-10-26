@@ -115,17 +115,27 @@ namespace Ryujinx.HLE.HOS.Services.Set
                 if (nxSetting is string stringValue)
                 {
                     if (stringValue.Length + 1 > replySize)
+                    {
                         Logger.PrintError(LogClass.ServiceSet, $"{askedSetting} String value size is too big!");
+                    }
                     else
+                    {
                         settingBuffer = Encoding.ASCII.GetBytes(stringValue + "\0");
+                    }
                 }
 
                 if (nxSetting is int intValue)
+                {
                     settingBuffer = BitConverter.GetBytes(intValue);
+                }
                 else if (nxSetting is bool boolValue)
+                {
                     settingBuffer[0] = boolValue ? (byte)1 : (byte)0;
+                }
                 else
+                {
                     throw new NotImplementedException(nxSetting.GetType().Name);
+                }
 
                 context.Memory.WriteBytes(replyPos, settingBuffer);
 

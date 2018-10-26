@@ -35,9 +35,15 @@ namespace ChocolArm64.Translation
 
             AILBlock GetBlock(int index)
             {
-                if (index < 0 || index >= _ilBlocks.Length) return null;
+                if (index < 0 || index >= _ilBlocks.Length)
+                {
+                    return null;
+                }
 
-                if (_ilBlocks[index] == null) _ilBlocks[index] = new AILBlock();
+                if (_ilBlocks[index] == null)
+                {
+                    _ilBlocks[index] = new AILBlock();
+                }
 
                 return _ilBlocks[index];
             }
@@ -65,7 +71,10 @@ namespace ChocolArm64.Translation
             InitSubroutine();
             InitLocals();
 
-            foreach (AILBlock ilBlock in _ilBlocks) ilBlock.Emit(this);
+            foreach (AILBlock ilBlock in _ilBlocks)
+            {
+                ilBlock.Emit(this);
+            }
 
             return _subroutine;
         }
@@ -80,7 +89,10 @@ namespace ChocolArm64.Translation
                 {
                     long mask = 1L << bit;
 
-                    if ((inputs & mask) != 0) Params.Add(GetRegFromBit(bit, baseType));
+                    if ((inputs & mask) != 0)
+                    {
+                        Params.Add(GetRegFromBit(bit, baseType));
+                    }
                 }
             }
 
@@ -119,7 +131,10 @@ namespace ChocolArm64.Translation
 
             int typeIdx = fixedArgs.Length;
 
-            for (int index = 0; index < Params.Count; index++) output[typeIdx++] = GetFieldType(Params[index].Type);
+            for (int index = 0; index < Params.Count; index++)
+            {
+                output[typeIdx++] = GetFieldType(Params[index].Type);
+            }
 
             return output;
         }
@@ -158,11 +173,17 @@ namespace ChocolArm64.Translation
         public static ARegister GetRegFromBit(int bit, ARegisterType baseType)
         {
             if (bit < 32)
+            {
                 return new ARegister(bit, baseType);
+            }
             else if (baseType == ARegisterType.Int)
+            {
                 return new ARegister(bit & 0x1f, ARegisterType.Flag);
+            }
             else
+            {
                 throw new ArgumentOutOfRangeException(nameof(bit));
+            }
         }
 
         public static bool IsRegIndex(int index)

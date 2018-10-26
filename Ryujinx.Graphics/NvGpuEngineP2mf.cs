@@ -39,9 +39,13 @@ namespace Ryujinx.Graphics
         public void CallMethod(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
         {
             if (_methods.TryGetValue(pbEntry.Method, out NvGpuMethod method))
+            {
                 method(vmm, pbEntry);
+            }
             else
+            {
                 WriteRegister(pbEntry);
+            }
         }
 
         private void Execute(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
@@ -57,7 +61,10 @@ namespace Ryujinx.Graphics
 
             _gpu.Fifo.Step();
 
-            for (int offset = 0; offset < lineLengthIn; offset += 4) vmm.WriteInt32(dstAddress + offset, _dataBuffer[offset >> 2]);
+            for (int offset = 0; offset < lineLengthIn; offset += 4)
+            {
+                vmm.WriteInt32(dstAddress + offset, _dataBuffer[offset >> 2]);
+            }
         }
 
         private void PushData(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
@@ -76,7 +83,10 @@ namespace Ryujinx.Graphics
         {
             int argsCount = pbEntry.Arguments.Count;
 
-            if (argsCount > 0) Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
+            if (argsCount > 0)
+            {
+                Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
+            }
         }
 
         private int ReadRegister(NvGpuEngineP2mfReg reg)

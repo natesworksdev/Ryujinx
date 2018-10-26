@@ -28,7 +28,10 @@ namespace Ryujinx.HLE.Loaders.Npdm
             Rsa2048Signature = reader.ReadBytes(0x100);
             Rsa2048Modulus   = reader.ReadBytes(0x100);
 
-            if (reader.ReadInt32() != AcidMagic) throw new InvalidNpdmException("ACID Stream doesn't contain ACID section!");
+            if (reader.ReadInt32() != AcidMagic)
+            {
+                throw new InvalidNpdmException("ACID Stream doesn't contain ACID section!");
+            }
 
             //Size field used with the above signature (?).
             Unknown1 = reader.ReadInt32();

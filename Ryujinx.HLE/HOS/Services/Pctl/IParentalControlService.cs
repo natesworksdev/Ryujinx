@@ -27,9 +27,13 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
         public long Initialize(ServiceCtx context)
         {
             if (_needInitialize && !_initialized)
+            {
                 _initialized = true;
+            }
             else
+            {
                 Logger.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
+            }
 
             return 0;
         }

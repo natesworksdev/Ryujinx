@@ -25,9 +25,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             threadState.X0 = (ulong)result;
 
             if (result == 0)
+            {
                 threadState.X1 = (ulong)position;
+            }
             else
+            {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
         }
 
         private void SvcSetMemoryAttribute(AThreadState threadState)
@@ -75,9 +79,13 @@ namespace Ryujinx.HLE.HOS.Kernel
                 attributeValue);
 
             if (result != 0)
+            {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
             else
+            {
                 _memory.StopObservingRegion(position, size);
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -135,7 +143,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = _process.MemoryManager.Map(src, dst, size);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -193,7 +204,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = _process.MemoryManager.Unmap(src, dst, size);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -293,7 +307,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = _process.MemoryManager.MapSharedMemory(sharedMemory, permission, position);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -353,7 +370,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = _process.MemoryManager.UnmapSharedMemory(position, size);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -454,7 +474,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = _process.MemoryManager.MapPhysicalMemory(position, size);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -502,7 +525,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = _process.MemoryManager.UnmapPhysicalMemory(position, size);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }

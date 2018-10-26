@@ -28,9 +28,13 @@ namespace ChocolArm64.Instruction
                 else /* if (Shift == 64) */
                 {
                     if (value < 0L)
+                    {
                         return -1L;
+                    }
                     else
+                    {
                         return 0L;
+                    }
                 }
             }
             else /* if (RoundConst == 1L << (Shift - 1)) */
@@ -40,9 +44,13 @@ namespace ChocolArm64.Instruction
                     long add = value + roundConst;
 
                     if ((~value & (value ^ add)) < 0L)
+                    {
                         return (long)((ulong)add >> shift);
+                    }
                     else
+                    {
                         return add >> shift;
+                    }
                 }
                 else /* if (Shift == 64) */
                 {
@@ -56,9 +64,13 @@ namespace ChocolArm64.Instruction
             if (roundConst == 0L)
             {
                 if (shift <= 63)
+                {
                     return value >> shift;
+                }
                 else /* if (Shift == 64) */
+                {
                     return 0UL;
+                }
             }
             else /* if (RoundConst == 1L << (Shift - 1)) */
             {
@@ -67,16 +79,24 @@ namespace ChocolArm64.Instruction
                 if (add < value && add < (ulong)roundConst)
                 {
                     if (shift <= 63)
+                    {
                         return (add >> shift) | (0x8000000000000000UL >> (shift - 1));
+                    }
                     else /* if (Shift == 64) */
+                    {
                         return 1UL;
+                    }
                 }
                 else
                 {
                     if (shift <= 63)
+                    {
                         return add >> shift;
+                    }
                     else /* if (Shift == 64) */
+                    {
                         return 0UL;
+                    }
                 }
             }
         }
@@ -192,9 +212,13 @@ namespace ChocolArm64.Instruction
                 state.SetFpsrFlag(FPSR.Qc);
 
                 if (op1 < 0L)
+                {
                     return long.MinValue;
+                }
                 else
+                {
                     return long.MaxValue;
+                }
             }
             else
             {
@@ -227,9 +251,13 @@ namespace ChocolArm64.Instruction
                 state.SetFpsrFlag(FPSR.Qc);
 
                 if (op1 < 0L)
+                {
                     return long.MinValue;
+                }
                 else
+                {
                     return long.MaxValue;
+                }
             }
             else
             {
@@ -358,7 +386,12 @@ namespace ChocolArm64.Instruction
             int highBit = size - 2;
 
             for (int bit = highBit; bit >= 0; bit--)
-                if (((value >> bit) & 0b1) != 0) return (ulong)(highBit - bit);
+            {
+                if (((value >> bit) & 0b1) != 0)
+                {
+                    return (ulong)(highBit - bit);
+                }
+            }
 
             return (ulong)(size - 1);
         }
@@ -367,7 +400,10 @@ namespace ChocolArm64.Instruction
 
         public static ulong CountLeadingZeros(ulong value, int size) // Size is 8, 16, 32 or 64 (SIMD&FP or Base Inst.).
         {
-            if (value == 0ul) return (ulong)size;
+            if (value == 0ul)
+            {
+                return (ulong)size;
+            }
 
             int nibbleIdx = size;
             int preCount, count = 0;
@@ -385,7 +421,10 @@ namespace ChocolArm64.Instruction
 
         public static ulong CountSetBits8(ulong value) // "Size" is 8 (SIMD&FP Inst.).
         {
-            if (value == 0xfful) return 8ul;
+            if (value == 0xfful)
+            {
+                return 8ul;
+            }
 
             value = ((value >> 1) & 0x55ul) + (value & 0x55ul);
             value = ((value >> 2) & 0x33ul) + (value & 0x33ul);
@@ -489,7 +528,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> Decrypt(Vector128<float> value, Vector128<float> roundKey)
         {
-            if (!Sse.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return ACryptoHelper.AesInvSubBytes(ACryptoHelper.AesInvShiftRows(Sse.Xor(value, roundKey)));
         }
@@ -497,7 +539,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> Encrypt(Vector128<float> value, Vector128<float> roundKey)
         {
-            if (!Sse.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return ACryptoHelper.AesSubBytes(ACryptoHelper.AesShiftRows(Sse.Xor(value, roundKey)));
         }
@@ -610,7 +655,10 @@ namespace ChocolArm64.Instruction
 
         private static void Rol32_256(ref Vector128<float> y, ref Vector128<float> x)
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             uint yE3 = (uint)VectorExtractIntZx(y, (byte)3, 2);
             uint xE3 = (uint)VectorExtractIntZx(x, (byte)3, 2);
@@ -726,15 +774,24 @@ namespace ChocolArm64.Instruction
         {
             value = ((value & 0xff00ff00ff00ff00) >> 8) | ((value & 0x00ff00ff00ff00ff) << 8);
 
-            if (size == RevSize.Rev16) return value;
+            if (size == RevSize.Rev16)
+            {
+                return value;
+            }
 
             value = ((value & 0xffff0000ffff0000) >> 16) | ((value & 0x0000ffff0000ffff) << 16);
 
-            if (size == RevSize.Rev32) return value;
+            if (size == RevSize.Rev32)
+            {
+                return value;
+            }
 
             value = ((value & 0xffffffff00000000) >> 32) | ((value & 0x00000000ffffffff) << 32);
 
-            if (size == RevSize.Rev64) return value;
+            if (size == RevSize.Rev64)
+            {
+                return value;
+            }
 
             throw new ArgumentException(nameof(size));
         }
@@ -744,8 +801,15 @@ namespace ChocolArm64.Instruction
         public static long SMulHi128(long lhs, long rhs)
         {
             long result = (long)UMulHi128((ulong)lhs, (ulong)rhs);
-            if (lhs < 0) result -= rhs;
-            if (rhs < 0) result -= lhs;
+            if (lhs < 0)
+            {
+                result -= rhs;
+            }
+
+            if (rhs < 0)
+            {
+                result -= lhs;
+            }
 
             return result;
         }

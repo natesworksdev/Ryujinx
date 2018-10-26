@@ -9,18 +9,29 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintLeft(TextWriter writer)
         {
-            foreach (BaseNode node in Nodes) node.PrintLeft(writer);
+            foreach (BaseNode node in Nodes)
+            {
+                node.PrintLeft(writer);
+            }
         }
 
         public override void PrintRight(TextWriter writer)
         {
-            foreach (BaseNode node in Nodes) node.PrintLeft(writer);
+            foreach (BaseNode node in Nodes)
+            {
+                node.PrintLeft(writer);
+            }
         }
 
         public override bool HasRightPart()
         {
             foreach (BaseNode node in Nodes)
-                if (node.HasRightPart()) return true;
+            {
+                if (node.HasRightPart())
+                {
+                    return true;
+                }
+            }
 
             return false;
         }

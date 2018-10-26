@@ -73,9 +73,12 @@ namespace Ryujinx.HLE.HOS.Ipc
                         {
                             int unknown = reqReader.ReadInt32();
 
-                            if (process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+                            if (process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
+                                {
+                                    throw new InvalidOperationException("Out of handles!");
+                                }
 
-                            response.HandleDesc = IpcHandleDesc.MakeMove(handle);
+                                response.HandleDesc = IpcHandleDesc.MakeMove(handle);
 
                             request = FillResponse(response, 0);
 
@@ -106,7 +109,10 @@ namespace Ryujinx.HLE.HOS.Ipc
             {
                 BinaryWriter writer = new BinaryWriter(ms);
 
-                foreach (int value in values) writer.Write(value);
+                foreach (int value in values)
+                {
+                    writer.Write(value);
+                }
 
                 return FillResponse(response, result, ms.ToArray());
             }
@@ -123,7 +129,10 @@ namespace Ryujinx.HLE.HOS.Ipc
                 writer.Write(IpcMagic.Sfco);
                 writer.Write(result);
 
-                if (data != null) writer.Write(data);
+                if (data != null)
+                {
+                    writer.Write(data);
+                }
 
                 response.RawData = ms.ToArray();
             }

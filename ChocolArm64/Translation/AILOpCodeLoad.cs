@@ -67,7 +67,9 @@ namespace ChocolArm64.Translation
 
             if (registerType == ARegisterType.Int &&
                 RegisterSize == ARegisterSize.Int32)
+            {
                 context.Generator.Emit(OpCodes.Conv_U4);
+            }
         }
     }
 }

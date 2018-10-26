@@ -42,7 +42,9 @@ namespace ChocolArm64.Instruction
 
             if (propInfo.PropertyType != typeof(long) &&
                 propInfo.PropertyType != typeof(ulong))
+            {
                 context.Emit(OpCodes.Conv_U8);
+            }
 
             context.EmitStintzr(op.Rt);
         }
@@ -69,7 +71,9 @@ namespace ChocolArm64.Instruction
 
             if (propInfo.PropertyType != typeof(long) &&
                 propInfo.PropertyType != typeof(ulong))
+            {
                 context.Emit(OpCodes.Conv_U4);
+            }
 
             context.EmitCallPropSet(typeof(AThreadState), propName);
         }

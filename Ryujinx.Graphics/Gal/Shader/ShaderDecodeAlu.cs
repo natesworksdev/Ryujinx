@@ -351,9 +351,15 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrNode operA = opCode.Pred12();
             ShaderIrNode operB = opCode.Pred29();
 
-            if (negA) operA = new ShaderIrOp(ShaderIrInst.Bnot, operA);
+            if (negA)
+            {
+                operA = new ShaderIrOp(ShaderIrInst.Bnot, operA);
+            }
 
-            if (negB) operB = new ShaderIrOp(ShaderIrInst.Bnot, operB);
+            if (negB)
+            {
+                operB = new ShaderIrOp(ShaderIrInst.Bnot, operB);
+            }
 
             ShaderIrOp op = new ShaderIrOp(lopInst, operA, operB);
 
@@ -365,11 +371,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             lopInst = opCode.BLop45();
 
-            if (lopInst == ShaderIrInst.Band && p1Node.IsConst && p2Node.IsConst) return;
+            if (lopInst == ShaderIrInst.Band && p1Node.IsConst && p2Node.IsConst)
+            {
+                return;
+            }
 
             ShaderIrNode p2NNode = p2Node;
 
-            if (negP) p2NNode = new ShaderIrOp(ShaderIrInst.Bnot, p2NNode);
+            if (negP)
+            {
+                p2NNode = new ShaderIrOp(ShaderIrInst.Bnot, p2NNode);
+            }
 
             op = new ShaderIrOp(ShaderIrInst.Bnot, p0Node);
 
@@ -441,9 +453,13 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrNode operB;
 
             if (opCode.Read(50))
+            {
                 operB = opCode.Gpr20();
+            }
             else
+            {
                 operB = opCode.Imm19_20();
+            }
 
             ShaderIrOperGpr operC = opCode.Gpr39();
 
@@ -635,9 +651,13 @@ namespace Ryujinx.Graphics.Gal.Shader
             operB = GetAluFneg(operB, negB);
 
             if (oper == ShaderOper.Rc)
+            {
                 operC = GetAluFneg(opCode.Cbuf34(), negC);
+            }
             else
+            {
                 operC = GetAluFneg(opCode.Gpr39(), negC);
+            }
 
             ShaderIrOp op = new ShaderIrOp(ShaderIrInst.Ffma, operA, operB, operC);
 
@@ -694,7 +714,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             ShaderIrNode ApplyHeight(ShaderIrNode src, int height)
             {
-                if (oper != ShaderOper.Rr) return src;
+                if (oper != ShaderOper.Rr)
+                {
+                    return src;
+                }
 
                 switch (height)
                 {
@@ -713,11 +736,13 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrOp sum = new ShaderIrOp(ShaderIrInst.Add, src1, src2);
 
             if (oper == ShaderOper.Rr)
+            {
                 switch (mode)
                 {
                     case 1: sum = new ShaderIrOp(ShaderIrInst.Lsr, sum, new ShaderIrOperImm(16)); break;
                     case 2: sum = new ShaderIrOp(ShaderIrInst.Lsl, sum, new ShaderIrOperImm(16)); break;
                 }
+            }
 
             //Note: Here there should be a "+ 1" when carry flag is set
             //but since carry is mostly ignored by other instructions, it's excluded for now
@@ -772,9 +797,13 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrNode operA = opCode.Gpr8(), operB;
 
             if (isFloat)
+            {
                 operA = GetAluFabsFneg(operA, absA, negA);
+            }
             else
+            {
                 operA = GetAluIabsIneg(operA, absA, negA);
+            }
 
             switch (oper)
             {
@@ -787,9 +816,13 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             if (isFloat)
+            {
                 operB = GetAluFabsFneg(operB, absB, negB);
+            }
             else
+            {
                 operB = GetAluIabsIneg(operB, absB, negB);
+            }
 
             ShaderIrOperPred pred = opCode.Pred39();
 
@@ -985,11 +1018,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             ShaderIrInst lopInst = opCode.BLop45();
 
-            if (lopInst == ShaderIrInst.Band && p1Node.IsConst && p2Node.IsConst) return;
+            if (lopInst == ShaderIrInst.Band && p1Node.IsConst && p2Node.IsConst)
+            {
+                return;
+            }
 
             ShaderIrNode p2NNode = p2Node;
 
-            if (negP) p2NNode = new ShaderIrOp(ShaderIrInst.Bnot, p2NNode);
+            if (negP)
+            {
+                p2NNode = new ShaderIrOp(ShaderIrInst.Bnot, p2NNode);
+            }
 
             op = new ShaderIrOp(ShaderIrInst.Bnot, p0Node);
 
@@ -1035,9 +1074,13 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrNode op;
 
             if (subOp < 3)
+            {
                 op = new ShaderIrOp(inst, operA, operB);
+            }
             else
+            {
                 op = operB;
+            }
 
             ShaderIrNode compare = new ShaderIrOp(ShaderIrInst.Cne, op, new ShaderIrOperImm(0));
 
@@ -1065,7 +1108,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrInst shiftAb = signAb ? ShaderIrInst.Asr : ShaderIrInst.Lsr;
             ShaderIrInst shiftC  = signC  ? ShaderIrInst.Asr : ShaderIrInst.Lsr;
 
-            if (highA) operA = new ShaderIrOp(shiftAb, operA, imm16);
+            if (highA)
+            {
+                operA = new ShaderIrOp(shiftAb, operA, imm16);
+            }
 
             switch (oper)
             {
@@ -1102,11 +1148,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             ShaderIrNode operBh = operB;
 
-            if (highB) operBh = new ShaderIrOp(shiftAb, operBh, imm16);
+            if (highB)
+            {
+                operBh = new ShaderIrOp(shiftAb, operBh, imm16);
+            }
 
             ShaderIrOp mulOp = new ShaderIrOp(ShaderIrInst.Mul, operA, operBh);
 
-            if (productShiftLeft) mulOp = new ShaderIrOp(ShaderIrInst.Lsl, mulOp, imm16);
+            if (productShiftLeft)
+            {
+                mulOp = new ShaderIrOp(ShaderIrInst.Lsl, mulOp, imm16);
+            }
 
             ShaderIrOp addOp = new ShaderIrOp(ShaderIrInst.Add, mulOp, operC);
 

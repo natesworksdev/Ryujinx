@@ -41,8 +41,14 @@ namespace Ryujinx.Graphics.Texture
         {
             int totalBits = NumberBits * numberVals;
             if (_encoding == EIntegerEncoding.Trit)
+            {
                 totalBits += (numberVals * 8 + 4) / 5;
-            else if (_encoding == EIntegerEncoding.Quint) totalBits += (numberVals * 7 + 2) / 3;
+            }
+            else if (_encoding == EIntegerEncoding.Quint)
+            {
+                totalBits += (numberVals * 7 + 2) / 3;
+            }
+
             return totalBits;
         }
 
@@ -53,13 +59,22 @@ namespace Ryujinx.Graphics.Texture
                 int check = maxVal + 1;
 
                 // Is maxVal a power of two?
-                if ((check & (check - 1)) == 0) return new IntegerEncoded(EIntegerEncoding.JustBits, BitArrayStream.PopCnt(maxVal));
+                if ((check & (check - 1)) == 0)
+                {
+                    return new IntegerEncoded(EIntegerEncoding.JustBits, BitArrayStream.PopCnt(maxVal));
+                }
 
                 // Is maxVal of the type 3*2^n - 1?
-                if (check % 3 == 0 && ((check / 3) & (check / 3 - 1)) == 0) return new IntegerEncoded(EIntegerEncoding.Trit, BitArrayStream.PopCnt(check / 3 - 1));
+                if (check % 3 == 0 && ((check / 3) & (check / 3 - 1)) == 0)
+                {
+                    return new IntegerEncoded(EIntegerEncoding.Trit, BitArrayStream.PopCnt(check / 3 - 1));
+                }
 
                 // Is maxVal of the type 5*2^n - 1?
-                if (check % 5 == 0 && ((check / 5) & (check / 5 - 1)) == 0) return new IntegerEncoded(EIntegerEncoding.Quint, BitArrayStream.PopCnt(check / 5 - 1));
+                if (check % 5 == 0 && ((check / 5) & (check / 5 - 1)) == 0)
+                {
+                    return new IntegerEncoded(EIntegerEncoding.Quint, BitArrayStream.PopCnt(check / 5 - 1));
+                }
 
                 // Apparently it can't be represented with a bounded integer sequence...
                 // just iterate.
@@ -221,6 +236,7 @@ namespace Ryujinx.Graphics.Texture
             // Start decoding
             int numberValuesDecoded = 0;
             while (numberValuesDecoded < numberValues)
+            {
                 switch (intEncoded.GetEncoding())
                 {
                     case EIntegerEncoding.Quint:
@@ -248,6 +264,7 @@ namespace Ryujinx.Graphics.Texture
                         break;
                     }
                 }
+            }
         }
     }
 }

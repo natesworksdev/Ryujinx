@@ -29,7 +29,10 @@ namespace Ryujinx.Graphics.Texture
         {
             int count = 0;
 
-            while (((value >> count) & 1) == 0) count++;
+            while (((value >> count) & 1) == 0)
+            {
+                count++;
+            }
 
             return count;
         }

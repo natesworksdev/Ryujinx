@@ -73,21 +73,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             string code = program.Code;
 
-            if (ShaderDumper.IsDumpEnabled()) code = "//Shader " + shaderDumpIndex + Environment.NewLine + code;
+            if (ShaderDumper.IsDumpEnabled())
+            {
+                code = "//Shader " + shaderDumpIndex + Environment.NewLine + code;
+            }
 
             return new OGLShaderStage(type, code, program.Uniforms, program.Textures);
         }
 
         public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long key)
         {
-            if (_stages.TryGetValue(key, out OGLShaderStage stage)) return stage.ConstBufferUsage;
+            if (_stages.TryGetValue(key, out OGLShaderStage stage))
+            {
+                return stage.ConstBufferUsage;
+            }
 
             return Enumerable.Empty<ShaderDeclInfo>();
         }
 
         public IEnumerable<ShaderDeclInfo> GetTextureUsage(long key)
         {
-            if (_stages.TryGetValue(key, out OGLShaderStage stage)) return stage.TextureUsage;
+            if (_stages.TryGetValue(key, out OGLShaderStage stage))
+            {
+                return stage.TextureUsage;
+            }
 
             return Enumerable.Empty<ShaderDeclInfo>();
         }
@@ -113,13 +122,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Bind(long key)
         {
-            if (_stages.TryGetValue(key, out OGLShaderStage stage)) Bind(stage);
+            if (_stages.TryGetValue(key, out OGLShaderStage stage))
+            {
+                Bind(stage);
+            }
         }
 
         private void Bind(OGLShaderStage stage)
         {
             if (stage.Type == GalShaderType.Geometry)
-                if (!OGLExtension.EnhancedLayouts) return;
+            {
+                if (!OGLExtension.EnhancedLayouts)
+                {
+                    return;
+                }
+            }
 
             switch (stage.Type)
             {
@@ -147,7 +164,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (Current.Vertex   == null ||
                 Current.Fragment == null)
+            {
                 return;
+            }
 
             if (!_programs.TryGetValue(Current, out int handle))
             {
@@ -209,16 +228,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             void BindUniformBlocksIfNotNull(OGLShaderStage stage)
             {
                 if (stage != null)
+                {
                     foreach (ShaderDeclInfo declInfo in stage.ConstBufferUsage)
                     {
                         int blockIndex = GL.GetUniformBlockIndex(programHandle, declInfo.Name);
 
-                        if (blockIndex < 0) throw new InvalidOperationException();
+                        if (blockIndex < 0)
+                        {
+                            throw new InvalidOperationException();
+                        }
 
                         GL.UniformBlockBinding(programHandle, blockIndex, freeBinding);
 
                         freeBinding++;
                     }
+                }
             }
 
             BindUniformBlocksIfNotNull(Current.Vertex);
@@ -235,6 +259,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             void BindTexturesIfNotNull(OGLShaderStage stage)
             {
                 if (stage != null)
+                {
                     foreach (ShaderDeclInfo decl in stage.TextureUsage)
                     {
                         int location = GL.GetUniformLocation(programHandle, decl.Name);
@@ -243,6 +268,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                         index++;
                     }
+                }
             }
 
             GL.UseProgram(programHandle);
@@ -260,7 +286,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.GetProgram(handle, GetProgramParameterName.LinkStatus, out status);
 
-            if (status == 0) throw new ShaderException(GL.GetProgramInfoLog(handle));
+            if (status == 0)
+            {
+                throw new ShaderException(GL.GetProgramInfoLog(handle));
+            }
         }
     }
 }

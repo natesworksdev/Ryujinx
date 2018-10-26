@@ -47,14 +47,23 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             {
                 byte chr = context.RequestData.ReadByte();
 
-                if (chr >= 0x20 && chr < 0x7f) name += (char)chr;
+                if (chr >= 0x20 && chr < 0x7f)
+                {
+                    name += (char)chr;
+                }
             }
 
-            if (name == string.Empty) return 0;
+            if (name == string.Empty)
+            {
+                return 0;
+            }
 
             KSession session = new KSession(ServiceFactory.MakeService(context.Device.System, name), name);
 
-            if (context.Process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
 

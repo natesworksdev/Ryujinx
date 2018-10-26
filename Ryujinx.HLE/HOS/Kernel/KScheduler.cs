@@ -30,7 +30,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             CoreContexts = new KCoreContext[CpuCoresCount];
 
-            for (int core = 0; core < CpuCoresCount; core++) CoreContexts[core] = new KCoreContext(this, _coreManager);
+            for (int core = 0; core < CpuCoresCount; core++)
+            {
+                CoreContexts[core] = new KCoreContext(this, _coreManager);
+            }
         }
 
         private void PreemptThreads()
@@ -52,7 +55,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             KThread selectedThread = scheduledThreads.FirstOrDefault(x => x.DynamicPriority == prio);
 
             //Yield priority queue.
-            if (selectedThread != null) SchedulingData.Reschedule(prio, core, selectedThread);
+            if (selectedThread != null)
+            {
+                SchedulingData.Reschedule(prio, core, selectedThread);
+            }
 
             IEnumerable<KThread> SuitableCandidates()
             {
@@ -64,13 +70,22 @@ namespace Ryujinx.HLE.HOS.Kernel
                     {
                         KThread highestPrioSrcCore = SchedulingData.ScheduledThreads(srcCore).FirstOrDefault();
 
-                        if (highestPrioSrcCore != null && highestPrioSrcCore.DynamicPriority < 2) break;
+                        if (highestPrioSrcCore != null && highestPrioSrcCore.DynamicPriority < 2)
+                        {
+                            break;
+                        }
 
-                        if (highestPrioSrcCore == thread) continue;
+                        if (highestPrioSrcCore == thread)
+                        {
+                            continue;
+                        }
                     }
 
                     //If the candidate was scheduled after the current thread, then it's not worth it.
-                    if (selectedThread == null || selectedThread.LastScheduledTicks >= thread.LastScheduledTicks) yield return thread;
+                    if (selectedThread == null || selectedThread.LastScheduledTicks >= thread.LastScheduledTicks)
+                    {
+                        yield return thread;
+                    }
                 }
             }
 
@@ -93,7 +108,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 dst = SuitableCandidates().FirstOrDefault(predicate);
 
-                if (dst != null) SchedulingData.TransferToCore(dst.DynamicPriority, core, dst);
+                if (dst != null)
+                {
+                    SchedulingData.TransferToCore(dst.DynamicPriority, core, dst);
+                }
             }
 
             ThreadReselectionRequested = true;
@@ -114,7 +132,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 //If the core is not idle (there's already a thread running on it),
                 //then we don't need to attempt load balancing.
-                if (SchedulingData.ScheduledThreads(core).Any()) continue;
+                if (SchedulingData.ScheduledThreads(core).Any())
+                {
+                    continue;
+                }
 
                 int[] srcCoresHighestPrioThreads = new int[CpuCoresCount];
 
@@ -180,7 +201,12 @@ namespace Ryujinx.HLE.HOS.Kernel
             lock (CoreContexts)
             {
                 for (int core = 0; core < CpuCoresCount; core++)
-                    if (CoreContexts[core].CurrentThread?.Context.IsCurrentThread() ?? false) return CoreContexts[core].CurrentThread;
+                {
+                    if (CoreContexts[core].CurrentThread?.Context.IsCurrentThread() ?? false)
+                    {
+                        return CoreContexts[core].CurrentThread;
+                    }
+                }
             }
 
             throw new InvalidOperationException("Current thread is not scheduled!");
@@ -193,7 +219,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing) _keepPreempting = false;
+            if (disposing)
+            {
+                _keepPreempting = false;
+            }
         }
     }
 }

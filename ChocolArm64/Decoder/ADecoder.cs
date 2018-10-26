@@ -74,14 +74,20 @@ namespace ChocolArm64.Decoder
                     if (lastOp is AOpCodeBImm op)
                     {
                         if (op.Emitter == AInstEmit.Bl)
+                        {
                             hasCachedSub = cache.HasSubroutine(op.Imm);
+                        }
                         else
+                        {
                             current.Branch = Enqueue(op.Imm);
+                        }
                     }
 
                     if (!(lastOp is AOpCodeBImmAl ||
                           lastOp is AOpCodeBReg) || hasCachedSub)
+                    {
                         current.Next = Enqueue(current.EndPosition);
+                    }
                 }
 
                 //If we have on the graph two blocks with the same end position,
@@ -120,8 +126,12 @@ namespace ChocolArm64.Decoder
                 ulong firstPos = ulong.MaxValue;
 
                 foreach (ABlock block in visited.Values)
+                {
                     if (firstPos > (ulong)block.Position)
+                    {
                         firstPos = (ulong)block.Position;
+                    }
+                }
 
                 ABlock current = visited[(long)firstPos];
 
@@ -180,20 +190,30 @@ namespace ChocolArm64.Decoder
             AInst inst;
 
             if (state.ExecutionMode == AExecutionMode.AArch64)
+            {
                 inst = AOpCodeTable.GetInstA64(opCode);
+            }
             else
+            {
                 inst = AOpCodeTable.GetInstA32(opCode);
+            }
 
             AOpCode decodedOpCode = new AOpCode(AInst.Undefined, position, opCode);
 
-            if (inst.Type != null) decodedOpCode = MakeOpCode(inst.Type, inst, position, opCode);
+            if (inst.Type != null)
+            {
+                decodedOpCode = MakeOpCode(inst.Type, inst, position, opCode);
+            }
 
             return decodedOpCode;
         }
 
         private static AOpCode MakeOpCode(Type type, AInst inst, long position, int opCode)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
 
             OpActivator createInstance = _opActivators.GetOrAdd(type, CacheOpActivator);
 

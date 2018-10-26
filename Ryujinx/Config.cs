@@ -38,18 +38,35 @@ namespace Ryujinx
             //So, first disable everything, then enable
             //the classes that the user added to the list.
             if (filteredLogClasses.Length > 0)
-                foreach (LogClass Class in Enum.GetValues(typeof(LogClass))) Logger.SetEnable(Class, false);
+            {
+                foreach (LogClass Class in Enum.GetValues(typeof(LogClass)))
+                {
+                    Logger.SetEnable(Class, false);
+                }
+            }
 
             foreach (string logClass in filteredLogClasses)
+            {
                 if (!string.IsNullOrEmpty(logClass.Trim()))
+                {
                     foreach (LogClass Class in Enum.GetValues(typeof(LogClass)))
-                        if (Class.ToString().ToLower().Contains(logClass.Trim().ToLower())) Logger.SetEnable(Class, true);
+                    {
+                        if (Class.ToString().ToLower().Contains(logClass.Trim().ToLower()))
+                        {
+                            Logger.SetEnable(Class, true);
+                        }
+                    }
+                }
+            }
 
             device.System.State.DockedMode = Convert.ToBoolean(parser.Value("Docked_Mode"));
 
             device.EnableDeviceVsync = Convert.ToBoolean(parser.Value("Enable_Vsync"));
 
-            if (Convert.ToBoolean(parser.Value("Enable_MultiCore_Scheduling"))) device.System.EnableMultiCoreScheduling();
+            if (Convert.ToBoolean(parser.Value("Enable_MultiCore_Scheduling")))
+            {
+                device.System.EnableMultiCoreScheduling();
+            }
 
             device.System.EnableFsIntegrityChecks = Convert.ToBoolean(parser.Value("Enable_FS_Integrity_Checks"));
 

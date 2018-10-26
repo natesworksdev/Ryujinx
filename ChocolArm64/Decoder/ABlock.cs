@@ -24,7 +24,10 @@ namespace ChocolArm64.Decoder
 
         public AOpCode GetLastOp()
         {
-            if (OpCodes.Count > 0) return OpCodes[OpCodes.Count - 1];
+            if (OpCodes.Count > 0)
+            {
+                return OpCodes[OpCodes.Count - 1];
+            }
 
             return null;
         }

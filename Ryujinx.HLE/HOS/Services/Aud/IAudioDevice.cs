@@ -95,16 +95,23 @@ namespace Ryujinx.HLE.HOS.Services.Aud
             byte[] deviceNameBuffer = Encoding.ASCII.GetBytes(name + "\0");
 
             if ((ulong)deviceNameBuffer.Length <= (ulong)size)
+            {
                 context.Memory.WriteBytes(position, deviceNameBuffer);
+            }
             else
+            {
                 Logger.PrintError(LogClass.ServiceAudio, $"Output buffer size {size} too small!");
+            }
 
             return 0;
         }
 
         public long QueryAudioDeviceSystemEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
@@ -184,16 +191,23 @@ namespace Ryujinx.HLE.HOS.Services.Aud
             byte[] deviceNameBuffer = Encoding.UTF8.GetBytes(name + '\0');
 
             if ((ulong)deviceNameBuffer.Length <= (ulong)size)
+            {
                 context.Memory.WriteBytes(position, deviceNameBuffer);
+            }
             else
+            {
                 Logger.PrintError(LogClass.ServiceAudio, $"Output buffer size {size} too small!");
+            }
 
             return 0;
         }
 
         public long QueryAudioDeviceInputEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
@@ -204,7 +218,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud
 
         public long QueryAudioDeviceOutputEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 

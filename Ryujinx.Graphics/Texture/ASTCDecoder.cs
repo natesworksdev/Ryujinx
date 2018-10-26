@@ -29,7 +29,10 @@ namespace Ryujinx.Graphics.Texture
                 // How many indices do we have?
                 int indices = Height * Width;
 
-                if (DualPlane) indices *= 2;
+                if (DualPlane)
+                {
+                    indices *= 2;
+                }
 
                 IntegerEncoded intEncoded = IntegerEncoded.CreateEncoding(MaxWeight);
 
@@ -40,7 +43,10 @@ namespace Ryujinx.Graphics.Texture
             {
                 int ret = Width * Height;
 
-                if (DualPlane) ret *= 2;
+                if (DualPlane)
+                {
+                    ret *= 2;
+                }
 
                 return ret;
             }
@@ -59,16 +65,23 @@ namespace Ryujinx.Graphics.Texture
             {
                 BinaryReader binReader = new BinaryReader(inputStream);
 
-                if (blockX > 12 || blockY > 12) throw new ASTCDecoderException("Block size unsupported!");
+                if (blockX > 12 || blockY > 12)
+                {
+                    throw new ASTCDecoderException("Block size unsupported!");
+                }
 
-                if (blockZ != 1 || z != 1) throw new ASTCDecoderException("3D compressed textures unsupported!");
+                if (blockZ != 1 || z != 1)
+                {
+                    throw new ASTCDecoderException("3D compressed textures unsupported!");
+                }
 
                 using (MemoryStream outputStream = new MemoryStream())
                 {
                     int blockIndex = 0;
 
                     for (int j = 0; j < y; j += blockY)
-                    for (int i = 0; i < x; i += blockX)
+                    {
+                        for (int i = 0; i < x; i += blockX)
                     {
                         int[] decompressedData = new int[144];
 
@@ -90,6 +103,7 @@ namespace Ryujinx.Graphics.Texture
 
                         blockIndex++;
                     }
+                    }
 
                     return outputStream.ToArray();
                 }
@@ -105,7 +119,10 @@ namespace Ryujinx.Graphics.Texture
             BitArrayStream    bitStream   = new BitArrayStream(new BitArray(inputBuffer));
             TexelWeightParams texelParams = DecodeBlockInfo(bitStream);
 
-            if (texelParams.Error) throw new ASTCDecoderException("Invalid block mode");
+            if (texelParams.Error)
+            {
+                throw new ASTCDecoderException("Invalid block mode");
+            }
 
             if (texelParams.VoidExtentLdr)
             {
@@ -114,17 +131,29 @@ namespace Ryujinx.Graphics.Texture
                 return true;
             }
 
-            if (texelParams.VoidExtentHdr) throw new ASTCDecoderException("HDR void extent blocks are unsupported!");
+            if (texelParams.VoidExtentHdr)
+            {
+                throw new ASTCDecoderException("HDR void extent blocks are unsupported!");
+            }
 
-            if (texelParams.Width > blockWidth) throw new ASTCDecoderException("Texel weight grid width should be smaller than block width");
+            if (texelParams.Width > blockWidth)
+            {
+                throw new ASTCDecoderException("Texel weight grid width should be smaller than block width");
+            }
 
-            if (texelParams.Height > blockHeight) throw new ASTCDecoderException("Texel weight grid height should be smaller than block height");
+            if (texelParams.Height > blockHeight)
+            {
+                throw new ASTCDecoderException("Texel weight grid height should be smaller than block height");
+            }
 
             // Read num partitions
             int numberPartitions = bitStream.ReadBits(2) + 1;
             Debug.Assert(numberPartitions <= 4);
 
-            if (numberPartitions == 4 && texelParams.DualPlane) throw new ASTCDecoderException("Dual plane mode is incompatible with four partition blocks");
+            if (numberPartitions == 4 && texelParams.DualPlane)
+            {
+                throw new ASTCDecoderException("Dual plane mode is incompatible with four partition blocks");
+            }
 
             // Based on the number of partitions, read the color endpoint mode for
             // each partition.
@@ -160,6 +189,7 @@ namespace Ryujinx.Graphics.Texture
             uint extraColorEndpointModeBits = 0;
 
             if (baseMode != 0)
+            {
                 switch (numberPartitions)
                 {
                     case 2:  extraColorEndpointModeBits += 2; break;
@@ -167,13 +197,17 @@ namespace Ryujinx.Graphics.Texture
                     case 4:  extraColorEndpointModeBits += 8; break;
                     default: Debug.Assert(false); break;
                 }
+            }
 
             remainingBits -= (int)extraColorEndpointModeBits;
 
             // Do we have a dual plane situation?
             int planeSelectorBits = 0;
 
-            if (texelParams.DualPlane) planeSelectorBits = 2;
+            if (texelParams.DualPlane)
+            {
+                planeSelectorBits = 2;
+            }
 
             remainingBits -= planeSelectorBits;
 
@@ -218,7 +252,11 @@ namespace Ryujinx.Graphics.Texture
                 for (int i = 0; i < numberPartitions; i++)
                 {
                     colorEndpointMode[i] = baseMode;
-                    if (!c[i]) colorEndpointMode[i] -= 1;
+                    if (!c[i])
+                    {
+                        colorEndpointMode[i] -= 1;
+                    }
+
                     colorEndpointMode[i] <<= 2;
                     colorEndpointMode[i] |= m[i];
                 }
@@ -227,11 +265,18 @@ namespace Ryujinx.Graphics.Texture
             {
                 uint tempColorEndpointMode = baseColorEndpointMode >> 2;
 
-                for (uint i = 0; i < numberPartitions; i++) colorEndpointMode[i] = tempColorEndpointMode;
+                for (uint i = 0; i < numberPartitions; i++)
+                {
+                    colorEndpointMode[i] = tempColorEndpointMode;
+                }
             }
 
             // Make sure everything up till here is sane.
-            for (int i = 0; i < numberPartitions; i++) Debug.Assert(colorEndpointMode[i] < 16);
+            for (int i = 0; i < numberPartitions; i++)
+            {
+                Debug.Assert(colorEndpointMode[i] < 16);
+            }
+
             Debug.Assert(bitStream.Position + texelParams.GetPackedBitSize() == 128);
 
             // Decode both color data and texel weight data
@@ -246,7 +291,10 @@ namespace Ryujinx.Graphics.Texture
 
             int colorValuesPosition = 0;
 
-            for (int i = 0; i < numberPartitions; i++) ComputeEndpoints(endPoints[i], colorValues, colorEndpointMode[i], ref colorValuesPosition);
+            for (int i = 0; i < numberPartitions; i++)
+            {
+                ComputeEndpoints(endPoints[i], colorValues, colorEndpointMode[i], ref colorValuesPosition);
+            }
 
             // Read the texel weight data.
             byte[] texelWeightData = (byte[])inputBuffer.Clone();
@@ -266,7 +314,10 @@ namespace Ryujinx.Graphics.Texture
             texelWeightData[clearByteStart - 1] &= (byte)((1 << (texelParams.GetPackedBitSize() % 8)) - 1);
 
             int cLen = 16 - clearByteStart;
-            for (int i = clearByteStart; i < clearByteStart + cLen; i++) texelWeightData[i] = 0;
+            for (int i = clearByteStart; i < clearByteStart + cLen; i++)
+            {
+                texelWeightData[i] = 0;
+            }
 
             List<IntegerEncoded> texelWeightValues = new List<IntegerEncoded>();
             BitArrayStream weightBitStream         = new BitArrayStream(new BitArray(texelWeightData));
@@ -283,7 +334,8 @@ namespace Ryujinx.Graphics.Texture
             // Now that we have endpoints and weights, we can interpolate and generate
             // the proper decoding...
             for (int j = 0; j < blockHeight; j++)
-            for (int i = 0; i < blockWidth; i++)
+            {
+                for (int i = 0; i < blockWidth; i++)
             {
                 int partition = Select2DPartition(partitionIndex, i, j, numberPartitions, blockHeight * blockWidth < 32);
                 Debug.Assert(partition < numberPartitions);
@@ -298,9 +350,12 @@ namespace Ryujinx.Graphics.Texture
 
                     int plane = 0;
 
-                    if (texelParams.DualPlane && ((planeIndices + 1) & 3) == component) plane = 1;
+                    if (texelParams.DualPlane && ((planeIndices + 1) & 3) == component)
+                        {
+                            plane = 1;
+                        }
 
-                    int weight         = weights[plane][j * blockWidth + i];
+                        int weight         = weights[plane][j * blockWidth + i];
                     int finalComponent = (component0 * (64 - weight) + component1 * weight + 32) / 64;
 
                     if (finalComponent == 65535)
@@ -316,6 +371,7 @@ namespace Ryujinx.Graphics.Texture
 
                 outputBuffer[j * blockWidth + i] = pixel.Pack();
             }
+            }
 
             return true;
         }
@@ -327,7 +383,10 @@ namespace Ryujinx.Graphics.Texture
 
         private static int SelectPartition(int seed, int x, int y, int z, int partitionCount, bool isSmallBlock)
         {
-            if (partitionCount == 1) return 0;
+            if (partitionCount == 1)
+            {
+                return 0;
+            }
 
             if (isSmallBlock)
             {
@@ -385,12 +444,29 @@ namespace Ryujinx.Graphics.Texture
 
             a &= 0x3F; b &= 0x3F; c &= 0x3F; d &= 0x3F;
 
-            if (partitionCount < 4) d = 0;
-            if (partitionCount < 3) c = 0;
+            if (partitionCount < 4)
+            {
+                d = 0;
+            }
 
-            if (a >= b && a >= c && a >= d) return 0;
-            else if (b >= c && b >= d) return 1;
-            else if (c >= d) return 2;
+            if (partitionCount < 3)
+            {
+                c = 0;
+            }
+
+            if (a >= b && a >= c && a >= d)
+            {
+                return 0;
+            }
+            else if (b >= c && b >= d)
+            {
+                return 1;
+            }
+            else if (c >= d)
+            {
+                return 2;
+            }
+
             return 3;
         }
 
@@ -424,10 +500,16 @@ namespace Ryujinx.Graphics.Texture
                     i++;
                     unquantized[1][weightIndices] = UnquantizeTexelWeight(weights[i]);
 
-                    if (i == weights.Count) break;
+                    if (i == weights.Count)
+                    {
+                        break;
+                    }
                 }
 
-                if (++weightIndices >= texelParams.Width * texelParams.Height) break;
+                if (++weightIndices >= texelParams.Width * texelParams.Height)
+                {
+                    break;
+                }
             }
 
             // Do infill if necessary (Section C.2.18) ...
@@ -437,8 +519,10 @@ namespace Ryujinx.Graphics.Texture
             int planeScale = texelParams.DualPlane ? 2 : 1;
 
             for (int plane = 0; plane < planeScale; plane++)
-            for (int t = 0; t < blockHeight; t++)
-            for (int s = 0; s < blockWidth; s++)
+            {
+                for (int t = 0; t < blockHeight; t++)
+                {
+                    for (int s = 0; s < blockWidth; s++)
             {
                 int cs = ds * s;
                 int ct = dt * t;
@@ -464,15 +548,29 @@ namespace Ryujinx.Graphics.Texture
                 int p10 = 0;
                 int p11 = 0;
 
-                if (v0 < texelParams.Width * texelParams.Height) p00 = unquantized[plane][v0];
+                if (v0 < texelParams.Width * texelParams.Height)
+                        {
+                            p00 = unquantized[plane][v0];
+                        }
 
-                if (v0 + 1 < texelParams.Width * texelParams.Height) p01 = unquantized[plane][v0 + 1];
+                        if (v0 + 1 < texelParams.Width * texelParams.Height)
+                        {
+                            p01 = unquantized[plane][v0 + 1];
+                        }
 
-                if (v0 + texelParams.Width < texelParams.Width * texelParams.Height) p10 = unquantized[plane][v0 + texelParams.Width];
+                        if (v0 + texelParams.Width < texelParams.Width * texelParams.Height)
+                        {
+                            p10 = unquantized[plane][v0 + texelParams.Width];
+                        }
 
-                if (v0 + texelParams.Width + 1 < texelParams.Width * texelParams.Height) p11 = unquantized[plane][v0 + texelParams.Width + 1];
+                        if (v0 + texelParams.Width + 1 < texelParams.Width * texelParams.Height)
+                        {
+                            p11 = unquantized[plane][v0 + texelParams.Width + 1];
+                        }
 
-                outputBuffer[plane][t * blockWidth + s] = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11 + 8) >> 4;
+                        outputBuffer[plane][t * blockWidth + s] = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11 + 8) >> 4;
+            }
+                }
             }
         }
 
@@ -588,7 +686,10 @@ namespace Ryujinx.Graphics.Texture
             Debug.Assert(result < 64);
 
             // Change from [0,63] to [0,64]
-            if (result > 32) result += 1;
+            if (result > 32)
+            {
+                result += 1;
+            }
 
             return result;
         }
@@ -603,7 +704,10 @@ namespace Ryujinx.Graphics.Texture
         {
             uint[] ret = new uint[number];
 
-            for (int i = 0; i < number; i++) ret[i] = (uint)colorValues[colorValuesPosition++];
+            for (int i = 0; i < number; i++)
+            {
+                ret[i] = (uint)colorValues[colorValuesPosition++];
+            }
 
             return ret;
         }
@@ -612,7 +716,10 @@ namespace Ryujinx.Graphics.Texture
         {
             int[] ret = new int[number];
 
-            for (int i = 0; i < number; i++) ret[i] = colorValues[colorValuesPosition++];
+            for (int i = 0; i < number; i++)
+            {
+                ret[i] = colorValues[colorValuesPosition++];
+            }
 
             return ret;
         }
@@ -796,7 +903,10 @@ namespace Ryujinx.Graphics.Texture
             // First figure out how many color values we have
             int numberValues = 0;
 
-            for (int i = 0; i < numberPartitions; i++) numberValues += (int)((modes[i] >> 2) + 1) << 1;
+            for (int i = 0; i < numberPartitions; i++)
+            {
+                numberValues += (int)((modes[i] >> 2) + 1) << 1;
+            }
 
             // Then based on the number of values and the remaining number of bits,
             // figure out the max value for each of them...
@@ -813,7 +923,10 @@ namespace Ryujinx.Graphics.Texture
                     while (--range > 0)
                     {
                         IntegerEncoded newIntEncoded = IntegerEncoded.CreateEncoding(range);
-                        if (!newIntEncoded.MatchesEncoding(intEncoded)) break;
+                        if (!newIntEncoded.MatchesEncoding(intEncoded))
+                        {
+                            break;
+                        }
                     }
 
                     // Return to last matching range.
@@ -994,13 +1107,19 @@ namespace Ryujinx.Graphics.Texture
             }
 
             // Make sure that each of our values is in the proper range...
-            for (int i = 0; i < numberValues; i++) Debug.Assert(outputValues[i] <= 255);
+            for (int i = 0; i < numberValues; i++)
+            {
+                Debug.Assert(outputValues[i] <= 255);
+            }
         }
 
         private static void FillVoidExtentLdr(BitArrayStream bitStream, int[] outputBuffer, int blockWidth, int blockHeight)
         {
             // Don't actually care about the void extent, just read the bits...
-            for (int i = 0; i < 4; ++i) bitStream.ReadBits(13);
+            for (int i = 0; i < 4; ++i)
+            {
+                bitStream.ReadBits(13);
+            }
 
             // Decode the RGBA components and renormalize them to the range [0, 255]
             ushort r = (ushort)bitStream.ReadBits(16);
@@ -1011,7 +1130,12 @@ namespace Ryujinx.Graphics.Texture
             int rgba = (r >> 8) | (g & 0xFF00) | ((b & 0xFF00) << 8) | ((a & 0xFF00) << 16);
 
             for (int j = 0; j < blockHeight; j++)
-            for (int i = 0; i < blockWidth; i++) outputBuffer[j * blockWidth + i] = rgba;
+            {
+                for (int i = 0; i < blockWidth; i++)
+                {
+                    outputBuffer[j * blockWidth + i] = rgba;
+                }
+            }
         }
 
         private static TexelWeightParams DecodeBlockInfo(BitArrayStream bitStream)
@@ -1025,12 +1149,19 @@ namespace Ryujinx.Graphics.Texture
             if ((modeBits & 0x01FF) == 0x1FC)
             {
                 if ((modeBits & 0x200) != 0)
+                {
                     texelParams.VoidExtentHdr = true;
+                }
                 else
+                {
                     texelParams.VoidExtentLdr = true;
+                }
 
                 // Next two bits must be one.
-                if ((modeBits & 0x400) == 0 || bitStream.ReadBits(1) == 0) texelParams.Error = true;
+                if ((modeBits & 0x400) == 0 || bitStream.ReadBits(1) == 0)
+                {
+                    texelParams.Error = true;
+                }
 
                 return texelParams;
             }
@@ -1067,9 +1198,13 @@ namespace Ryujinx.Graphics.Texture
                     {
                         // layout is in [3-4]
                         if ((modeBits & 0x100) != 0)
+                        {
                             layout = 4;
+                        }
                         else
+                        {
                             layout = 3;
+                        }
                     }
                     else
                     {
@@ -1080,9 +1215,13 @@ namespace Ryujinx.Graphics.Texture
                 {
                     // layout is in [0-1]
                     if ((modeBits & 0x4) != 0)
+                    {
                         layout = 1;
+                    }
                     else
+                    {
                         layout = 0;
+                    }
                 }
             }
             else
@@ -1097,9 +1236,13 @@ namespace Ryujinx.Graphics.Texture
                         Debug.Assert((modeBits & 0x40) == 0);
 
                         if ((modeBits & 0x20) != 0)
+                        {
                             layout = 8;
+                        }
                         else
+                        {
                             layout = 7;
+                        }
                     }
                     else
                     {
@@ -1110,9 +1253,13 @@ namespace Ryujinx.Graphics.Texture
                 {
                     // layout is in [5-6]
                     if ((modeBits & 0x80) != 0)
+                    {
                         layout = 6;
+                    }
                     else
+                    {
                         layout = 5;
+                    }
                 }
             }
 
@@ -1121,9 +1268,13 @@ namespace Ryujinx.Graphics.Texture
             // Determine R
             int r = (modeBits >> 4) & 1;
             if (layout < 5)
+            {
                 r |= (modeBits & 0x3) << 1;
+            }
             else
+            {
                 r |= (modeBits & 0xC) >> 1;
+            }
 
             Debug.Assert(2 <= r && r <= 7);
 

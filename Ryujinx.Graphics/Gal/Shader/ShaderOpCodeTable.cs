@@ -130,7 +130,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static void Set(string encoding, ShaderDecodeFunc func)
         {
-            if (encoding.Length != EncodingBits) throw new ArgumentException(nameof(encoding));
+            if (encoding.Length != EncodingBits)
+            {
+                throw new ArgumentException(nameof(encoding));
+            }
 
             int bit   = encoding.Length - 1;
             int value = 0;
@@ -163,9 +166,15 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 value &= xMask;
 
-                for (int x = 0; x < xBits; x++) value |= ((index >> x) & 1) << xPos[x];
+                for (int x = 0; x < xBits; x++)
+                {
+                    value |= ((index >> x) & 1) << xPos[x];
+                }
 
-                if (_opCodes[value] == null || _opCodes[value].XBits > xBits) _opCodes[value] = entry;
+                if (_opCodes[value] == null || _opCodes[value].XBits > xBits)
+                {
+                    _opCodes[value] = entry;
+                }
             }
         }
 

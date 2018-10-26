@@ -34,7 +34,10 @@ namespace Ryujinx.Tests.Cpu
         {
             _unicornAvailable = UnicornAArch64.IsAvailable();
 
-            if (!_unicornAvailable) Console.WriteLine("WARNING: Could not find Unicorn.");
+            if (!_unicornAvailable)
+            {
+                Console.WriteLine("WARNING: Could not find Unicorn.");
+            }
         }
 
         [SetUp]
@@ -78,7 +81,10 @@ namespace Ryujinx.Tests.Cpu
         {
             _thread.Memory.WriteUInt32(Position, opcode);
 
-            if (_unicornAvailable) _unicornEmu.MemoryWrite32((ulong)Position, opcode);
+            if (_unicornAvailable)
+            {
+                _unicornEmu.MemoryWrite32((ulong)Position, opcode);
+            }
 
             Position += 4;
         }
@@ -146,7 +152,10 @@ namespace Ryujinx.Tests.Cpu
                 wait.WaitOne();
             }
 
-            if (_unicornAvailable) _unicornEmu.RunForCount((ulong)(Position - _entryPoint - 8) / 4);
+            if (_unicornAvailable)
+            {
+                _unicornEmu.RunForCount((ulong)(Position - _entryPoint - 8) / 4);
+            }
         }
 
         protected AThreadState GetThreadState()
@@ -244,9 +253,15 @@ namespace Ryujinx.Tests.Cpu
             FpSkips      fpSkips      = FpSkips.None,
             FpTolerances fpTolerances = FpTolerances.None)
         {
-            if (!_unicornAvailable) return;
+            if (!_unicornAvailable)
+            {
+                return;
+            }
 
-            if (fpSkips != FpSkips.None) ManageFpSkips(fpSkips);
+            if (fpSkips != FpSkips.None)
+            {
+                ManageFpSkips(fpSkips);
+            }
 
             Assert.That(_thread.ThreadState.X0,  Is.EqualTo(_unicornEmu.X[0]));
             Assert.That(_thread.ThreadState.X1,  Is.EqualTo(_unicornEmu.X[1]));
@@ -283,9 +298,14 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(_thread.ThreadState.X31, Is.EqualTo(_unicornEmu.Sp));
 
             if (fpTolerances == FpTolerances.None)
+            {
                 Assert.That(_thread.ThreadState.V0, Is.EqualTo(_unicornEmu.Q[0]));
+            }
             else
+            {
                 ManageFpTolerances(fpTolerances);
+            }
+
             Assert.That(_thread.ThreadState.V1,  Is.EqualTo(_unicornEmu.Q[1]));
             Assert.That(_thread.ThreadState.V2,  Is.EqualTo(_unicornEmu.Q[2]));
             Assert.That(_thread.ThreadState.V3,  Is.EqualTo(_unicornEmu.Q[3]));
@@ -332,18 +352,34 @@ namespace Ryujinx.Tests.Cpu
         {
             if (fpSkips.HasFlag(FpSkips.IfNaNS))
             {
-                if (float.IsNaN(VectorExtractSingle(_unicornEmu.Q[0], (byte)0))) Assert.Ignore("NaN test.");
+                if (float.IsNaN(VectorExtractSingle(_unicornEmu.Q[0], (byte)0)))
+                {
+                    Assert.Ignore("NaN test.");
+                }
             }
             else if (fpSkips.HasFlag(FpSkips.IfNaND))
             {
-                if (double.IsNaN(VectorExtractDouble(_unicornEmu.Q[0], (byte)0))) Assert.Ignore("NaN test.");
+                if (double.IsNaN(VectorExtractDouble(_unicornEmu.Q[0], (byte)0)))
+                {
+                    Assert.Ignore("NaN test.");
+                }
             }
 
             if (fpSkips.HasFlag(FpSkips.IfUnderflow))
-                if ((_unicornEmu.Fpsr & (int)FPSR.Ufc) != 0) Assert.Ignore("Underflow test.");
+            {
+                if ((_unicornEmu.Fpsr & (int)FPSR.Ufc) != 0)
+                {
+                    Assert.Ignore("Underflow test.");
+                }
+            }
 
             if (fpSkips.HasFlag(FpSkips.IfOverflow))
-                if ((_unicornEmu.Fpsr & (int)FPSR.Ofc) != 0) Assert.Ignore("Overflow test.");
+            {
+                if ((_unicornEmu.Fpsr & (int)FPSR.Ofc) != 0)
+                {
+                    Assert.Ignore("Overflow test.");
+                }
+            }
         }
 
         private void ManageFpTolerances(FpTolerances fpTolerances)
@@ -404,14 +440,20 @@ namespace Ryujinx.Tests.Cpu
 
         protected static Vector128<float> MakeVectorE0(double e0)
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return Sse.StaticCast<long, float>(Sse2.SetVector128(0, BitConverter.DoubleToInt64Bits(e0)));
         }
 
         protected static Vector128<float> MakeVectorE0E1(double e0, double e1)
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return Sse.StaticCast<long, float>(
                 Sse2.SetVector128(BitConverter.DoubleToInt64Bits(e1), BitConverter.DoubleToInt64Bits(e0)));
@@ -419,14 +461,20 @@ namespace Ryujinx.Tests.Cpu
 
         protected static Vector128<float> MakeVectorE1(double e1)
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return Sse.StaticCast<long, float>(Sse2.SetVector128(BitConverter.DoubleToInt64Bits(e1), 0));
         }
 
         protected static float VectorExtractSingle(Vector128<float> vector, byte index)
         {
-            if (!Sse41.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse41.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             int value = Sse41.Extract(Sse.StaticCast<float, int>(vector), index);
 
@@ -435,7 +483,10 @@ namespace Ryujinx.Tests.Cpu
 
         protected static double VectorExtractDouble(Vector128<float> vector, byte index)
         {
-            if (!Sse41.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse41.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             long value = Sse41.Extract(Sse.StaticCast<float, long>(vector), index);
 
@@ -444,35 +495,50 @@ namespace Ryujinx.Tests.Cpu
 
         protected static Vector128<float> MakeVectorE0(ulong e0)
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return Sse.StaticCast<ulong, float>(Sse2.SetVector128(0, e0));
         }
 
         protected static Vector128<float> MakeVectorE0E1(ulong e0, ulong e1)
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return Sse.StaticCast<ulong, float>(Sse2.SetVector128(e1, e0));
         }
 
         protected static Vector128<float> MakeVectorE1(ulong e1)
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return Sse.StaticCast<ulong, float>(Sse2.SetVector128(e1, 0));
         }
 
         protected static ulong GetVectorE0(Vector128<float> vector)
         {
-            if (!Sse41.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse41.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return Sse41.Extract(Sse.StaticCast<float, ulong>(vector), (byte)0);
         }
 
         protected static ulong GetVectorE1(Vector128<float> vector)
         {
-            if (!Sse41.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse41.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             return Sse41.Extract(Sse.StaticCast<float, ulong>(vector), (byte)1);
         }

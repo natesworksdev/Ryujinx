@@ -45,7 +45,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -101,7 +104,10 @@ namespace ChocolArm64.Instruction
                 EmitVectorInsert(context, op.Rd, index, op.Size);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void Sqrshrn_S(AILEmitterCtx context)
@@ -182,7 +188,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -230,7 +239,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -271,7 +283,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -304,7 +319,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -369,7 +387,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -416,7 +437,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -456,7 +480,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -488,7 +515,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -550,9 +580,13 @@ namespace ChocolArm64.Instruction
             };
 
             if (signed)
+            {
                 EmitVectorBinaryOpSx(context, emit);
+            }
             else
+            {
                 EmitVectorBinaryOpZx(context, emit);
+            }
         }
 
         [Flags]
@@ -642,7 +676,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64 || scalar) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64 || scalar)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         private static void EmitVectorShrImmNarrowOpZx(AILEmitterCtx context, bool round)
@@ -684,7 +721,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (part == 0) EmitVectorZeroUpper(context, op.Rd);
+            if (part == 0)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         [Flags]
@@ -727,7 +767,10 @@ namespace ChocolArm64.Instruction
 
             int part = !scalar && op.RegisterSize == ARegisterSize.Simd128 ? elems : 0;
 
-            if (scalar) EmitVectorZeroLowerTmp(context);
+            if (scalar)
+            {
+                EmitVectorZeroLowerTmp(context);
+            }
 
             if (part != 0)
             {
@@ -765,7 +808,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (part == 0) EmitVectorZeroUpper(context, op.Rd);
+            if (part == 0)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         // Dst_64 = (Int(Src_64, Signed) + RoundConst) >> Shift;

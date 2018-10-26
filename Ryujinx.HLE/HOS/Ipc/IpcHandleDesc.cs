@@ -23,9 +23,15 @@ namespace Ryujinx.HLE.HOS.Ipc
 
             PId = HasPId ? reader.ReadInt64() : 0;
 
-            for (int index = 0; index < ToCopy.Length; index++) ToCopy[index] = reader.ReadInt32();
+            for (int index = 0; index < ToCopy.Length; index++)
+            {
+                ToCopy[index] = reader.ReadInt32();
+            }
 
-            for (int index = 0; index < ToMove.Length; index++) ToMove[index] = reader.ReadInt32();
+            for (int index = 0; index < ToMove.Length; index++)
+            {
+                ToMove[index] = reader.ReadInt32();
+            }
         }
 
         public IpcHandleDesc(int[] copy, int[] move)
@@ -64,11 +70,20 @@ namespace Ryujinx.HLE.HOS.Ipc
 
                 writer.Write(word);
 
-                if (HasPId) writer.Write((long)PId);
+                if (HasPId)
+                {
+                    writer.Write((long)PId);
+                }
 
-                foreach (int handle in ToCopy) writer.Write(handle);
+                foreach (int handle in ToCopy)
+                {
+                    writer.Write(handle);
+                }
 
-                foreach (int handle in ToMove) writer.Write(handle);
+                foreach (int handle in ToMove)
+                {
+                    writer.Write(handle);
+                }
 
                 return ms.ToArray();
             }

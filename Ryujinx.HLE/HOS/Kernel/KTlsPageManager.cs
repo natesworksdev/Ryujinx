@@ -47,7 +47,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void FreeTlsSlot(int slot)
         {
-            if ((uint)slot > _slots.Length) throw new ArgumentOutOfRangeException(nameof(slot));
+            if ((uint)slot > _slots.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(slot));
+            }
 
             _slots[slot] = false;
 

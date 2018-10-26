@@ -68,18 +68,23 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
             bufferPosition += 4;
 
             if (addresses != null)
+            {
                 foreach (IPAddress ip in addresses)
                 {
                     context.Memory.WriteInt32(bufferPosition, IPAddress.HostToNetworkOrder(BitConverter.ToInt32(ip.GetAddressBytes(), 0)));
                     bufferPosition += 4;
                 }
+            }
 
             return bufferPosition - originalBufferPosition;
         }
 
         private string GetGaiStringErrorFromErrorCode(GaiError errorCode)
         {
-            if (errorCode > GaiError.Max) errorCode = GaiError.Max;
+            if (errorCode > GaiError.Max)
+            {
+                errorCode = GaiError.Max;
+            }
 
             switch (errorCode)
             {
@@ -120,7 +125,10 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
 
         private string GetHostStringErrorFromErrorCode(NetDBError errorCode)
         {
-            if (errorCode <= NetDBError.Internal) return "Resolver internal error";
+            if (errorCode <= NetDBError.Internal)
+            {
+                return "Resolver internal error";
+            }
 
             switch (errorCode)
             {
@@ -143,8 +151,13 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
         {
             List<IPAddress> result = new List<IPAddress>();
             foreach (IPAddress ip in hostEntry.AddressList)
+            {
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
                     result.Add(ip);
+                }
+            }
+
             return result;
         }
 
@@ -190,6 +203,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
             long       serializedSize = 0;
 
             if (name.Length <= 255)
+            {
                 try
                 {
                     hostEntry = Dns.GetHostEntry(name);
@@ -220,8 +234,11 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
                         errno = GaiError.Again;
                     }
                 }
+            }
             else
+            {
                 netDbErrorCode = NetDBError.HostNotFound;
+            }
 
             if (hostEntry != null)
             {
@@ -265,6 +282,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
             long       serializedSize = 0;
 
             if (rawIp.Length == 4)
+            {
                 try
                 {
                     IPAddress address = new IPAddress(rawIp);
@@ -296,8 +314,11 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
                         errno = GaiError.Again;
                     }
                 }
+            }
             else
+            {
                 netDbErrorCode = NetDBError.NoAddress;
+            }
 
             if (hostEntry != null)
             {

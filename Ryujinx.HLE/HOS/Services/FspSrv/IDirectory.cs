@@ -34,9 +34,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             _directoryEntries = new List<string>();
 
-            if ((flags & 1) != 0) _directoryEntries.AddRange(Directory.GetDirectories(hostPath));
+            if ((flags & 1) != 0)
+            {
+                _directoryEntries.AddRange(Directory.GetDirectories(hostPath));
+            }
 
-            if ((flags & 2) != 0) _directoryEntries.AddRange(Directory.GetFiles(hostPath));
+            if ((flags & 2) != 0)
+            {
+                _directoryEntries.AddRange(Directory.GetFiles(hostPath));
+            }
 
             _currentItemIndex = 0;
         }
@@ -64,7 +70,10 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         private void WriteDirectoryEntry(ServiceCtx context, long position, string fullPath)
         {
-            for (int offset = 0; offset < 0x300; offset += 8) context.Memory.WriteInt64(position + offset, 0);
+            for (int offset = 0; offset < 0x300; offset += 8)
+            {
+                context.Memory.WriteInt64(position + offset, 0);
+            }
 
             byte[] nameBuffer = Encoding.UTF8.GetBytes(Path.GetFileName(fullPath));
 
@@ -98,7 +107,10 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing) Disposed?.Invoke(this, EventArgs.Empty);
+            if (disposing)
+            {
+                Disposed?.Invoke(this, EventArgs.Empty);
+            }
         }
     }
 }

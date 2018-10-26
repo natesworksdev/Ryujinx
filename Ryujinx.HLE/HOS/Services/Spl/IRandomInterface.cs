@@ -41,7 +41,10 @@ namespace Ryujinx.HLE.HOS.Services.Spl
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing) _rng.Dispose();
+            if (disposing)
+            {
+                _rng.Dispose();
+            }
         }
     }
 }

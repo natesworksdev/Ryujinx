@@ -45,7 +45,10 @@ namespace Ryujinx.Graphics.Memory
         {
             lock (_pageTable)
             {
-                for (long offset = 0; offset < size; offset += PageSize) SetPte(va + offset, pa + offset);
+                for (long offset = 0; offset < size; offset += PageSize)
+                {
+                    SetPte(va + offset, pa + offset);
+                }
             }
 
             return va;
@@ -58,7 +61,12 @@ namespace Ryujinx.Graphics.Memory
                 long va = GetFreePosition(size);
 
                 if (va != -1)
-                    for (long offset = 0; offset < size; offset += PageSize) SetPte(va + offset, pa + offset);
+                {
+                    for (long offset = 0; offset < size; offset += PageSize)
+                    {
+                        SetPte(va + offset, pa + offset);
+                    }
+                }
 
                 return va;
             }
@@ -69,9 +77,17 @@ namespace Ryujinx.Graphics.Memory
             lock (_pageTable)
             {
                 for (long offset = 0; offset < size; offset += PageSize)
-                    if (IsPageInUse(va + offset)) return -1;
+                {
+                    if (IsPageInUse(va + offset))
+                    {
+                        return -1;
+                    }
+                }
 
-                for (long offset = 0; offset < size; offset += PageSize) SetPte(va + offset, PteReserved);
+                for (long offset = 0; offset < size; offset += PageSize)
+                {
+                    SetPte(va + offset, PteReserved);
+                }
             }
 
             return va;
@@ -84,7 +100,12 @@ namespace Ryujinx.Graphics.Memory
                 long position = GetFreePosition(size, align);
 
                 if (position != -1)
-                    for (long offset = 0; offset < size; offset += PageSize) SetPte(position + offset, PteReserved);
+                {
+                    for (long offset = 0; offset < size; offset += PageSize)
+                    {
+                        SetPte(position + offset, PteReserved);
+                    }
+                }
 
                 return position;
             }
@@ -94,7 +115,10 @@ namespace Ryujinx.Graphics.Memory
         {
             lock (_pageTable)
             {
-                for (long offset = 0; offset < size; offset += PageSize) SetPte(va + offset, PteUnmapped);
+                for (long offset = 0; offset < size; offset += PageSize)
+                {
+                    SetPte(va + offset, PteUnmapped);
+                }
             }
         }
 
@@ -105,16 +129,23 @@ namespace Ryujinx.Graphics.Memory
             long position = PageSize;
             long freeSize = 0;
 
-            if (align < 1) align = 1;
+            if (align < 1)
+            {
+                align = 1;
+            }
 
             align = (align + PageMask) & ~PageMask;
 
             while (position + freeSize < AddrSize)
+            {
                 if (!IsPageInUse(position + freeSize))
                 {
                     freeSize += PageSize;
 
-                    if (freeSize >= size) return position;
+                    if (freeSize >= size)
+                    {
+                        return position;
+                    }
                 }
                 else
                 {
@@ -123,8 +154,12 @@ namespace Ryujinx.Graphics.Memory
 
                     long remainder = position % align;
 
-                    if (remainder != 0) position = position - remainder + align;
+                    if (remainder != 0)
+                    {
+                        position = position - remainder + align;
+                    }
                 }
+            }
 
             return -1;
         }
@@ -133,7 +168,10 @@ namespace Ryujinx.Graphics.Memory
         {
             long basePos = GetPte(va);
 
-            if (basePos < 0) return -1;
+            if (basePos < 0)
+            {
+                return -1;
+            }
 
             return basePos + (va & PageMask);
         }
@@ -141,19 +179,30 @@ namespace Ryujinx.Graphics.Memory
         public bool IsRegionFree(long va, long size)
         {
             for (long offset = 0; offset < size; offset += PageSize)
-                if (IsPageInUse(va + offset)) return false;
+            {
+                if (IsPageInUse(va + offset))
+                {
+                    return false;
+                }
+            }
 
             return true;
         }
 
         private bool IsPageInUse(long va)
         {
-            if (va >> (PtLvl0Bits + PtLvl1Bits + PtPageBits) != 0) return false;
+            if (va >> (PtLvl0Bits + PtLvl1Bits + PtPageBits) != 0)
+            {
+                return false;
+            }
 
             long l0 = (va >> PtLvl0Bit) & PtLvl0Mask;
             long l1 = (va >> PtLvl1Bit) & PtLvl1Mask;
 
-            if (_pageTable[l0] == null) return false;
+            if (_pageTable[l0] == null)
+            {
+                return false;
+            }
 
             return _pageTable[l0][l1] != PteUnmapped;
         }
@@ -163,7 +212,10 @@ namespace Ryujinx.Graphics.Memory
             long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
             long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
 
-            if (_pageTable[l0] == null) return -1;
+            if (_pageTable[l0] == null)
+            {
+                return -1;
+            }
 
             return _pageTable[l0][l1];
         }
@@ -177,7 +229,10 @@ namespace Ryujinx.Graphics.Memory
             {
                 _pageTable[l0] = new long[PtLvl1Size];
 
-                for (int index = 0; index < PtLvl1Size; index++) _pageTable[l0][index] = PteUnmapped;
+                for (int index = 0; index < PtLvl1Size; index++)
+                {
+                    _pageTable[l0][index] = PteUnmapped;
+                }
             }
 
             _pageTable[l0][l1] = tgtAddr;

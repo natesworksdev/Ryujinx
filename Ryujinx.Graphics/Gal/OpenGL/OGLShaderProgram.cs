@@ -77,7 +77,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.GetShader(handle, ShaderParameter.CompileStatus, out status);
 
-            if (status == 0) throw new ShaderException(GL.GetShaderInfoLog(handle));
+            if (status == 0)
+            {
+                throw new ShaderException(GL.GetShaderInfoLog(handle));
+            }
         }
     }
 }

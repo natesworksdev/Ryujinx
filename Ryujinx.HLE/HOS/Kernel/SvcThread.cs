@@ -59,7 +59,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 long result = thread.Start();
 
-                if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+                if (result != 0)
+                {
+                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+                }
 
                 threadState.X0 = (ulong)result;
             }
@@ -229,7 +232,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = thread.SetCoreAndAffinityMask(prefferedCore, affinityMask);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -285,7 +291,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = thread.SetActivity(pause);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }

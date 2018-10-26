@@ -30,9 +30,13 @@ namespace Ryujinx.Tests.Cpu
             AThreadState threadState;
 
             if (rn != 31)
+            {
                 threadState = SingleOpcode(opcode, x1: xnSp);
+            }
             else
+            {
                 threadState = SingleOpcode(opcode, x31: xnSp);
+            }
 
             CompareAgainstUnicorn();
         }
@@ -52,9 +56,13 @@ namespace Ryujinx.Tests.Cpu
             AThreadState threadState;
 
             if (rn != 31)
+            {
                 threadState = SingleOpcode(opcode, x1: wnWsp);
+            }
             else
+            {
                 threadState = SingleOpcode(opcode, x31: wnWsp);
+            }
 
             CompareAgainstUnicorn();
         }
@@ -74,9 +82,13 @@ namespace Ryujinx.Tests.Cpu
             AThreadState threadState;
 
             if (rn != 31)
+            {
                 threadState = SingleOpcode(opcode, x1: xnSp);
+            }
             else
+            {
                 threadState = SingleOpcode(opcode, x31: xnSp);
+            }
 
             CompareAgainstUnicorn();
         }
@@ -96,9 +108,13 @@ namespace Ryujinx.Tests.Cpu
             AThreadState threadState;
 
             if (rn != 31)
+            {
                 threadState = SingleOpcode(opcode, x1: wnWsp);
+            }
             else
+            {
                 threadState = SingleOpcode(opcode, x31: wnWsp);
+            }
 
             CompareAgainstUnicorn();
         }
@@ -346,9 +362,13 @@ namespace Ryujinx.Tests.Cpu
             AThreadState threadState;
 
             if (rn != 31)
+            {
                 threadState = SingleOpcode(opcode, x1: xnSp);
+            }
             else
+            {
                 threadState = SingleOpcode(opcode, x31: xnSp);
+            }
 
             CompareAgainstUnicorn();
         }
@@ -368,9 +388,13 @@ namespace Ryujinx.Tests.Cpu
             AThreadState threadState;
 
             if (rn != 31)
+            {
                 threadState = SingleOpcode(opcode, x1: wnWsp);
+            }
             else
+            {
                 threadState = SingleOpcode(opcode, x31: wnWsp);
+            }
 
             CompareAgainstUnicorn();
         }
@@ -390,9 +414,13 @@ namespace Ryujinx.Tests.Cpu
             AThreadState threadState;
 
             if (rn != 31)
+            {
                 threadState = SingleOpcode(opcode, x1: xnSp);
+            }
             else
+            {
                 threadState = SingleOpcode(opcode, x31: xnSp);
+            }
 
             CompareAgainstUnicorn();
         }
@@ -412,9 +440,13 @@ namespace Ryujinx.Tests.Cpu
             AThreadState threadState;
 
             if (rn != 31)
+            {
                 threadState = SingleOpcode(opcode, x1: wnWsp);
+            }
             else
+            {
                 threadState = SingleOpcode(opcode, x31: wnWsp);
+            }
 
             CompareAgainstUnicorn();
         }

@@ -18,7 +18,12 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             int numExtensions = GL.GetInteger(GetPName.NumExtensions);
 
             for (int extension = 0; extension < numExtensions; extension++)
-                if (GL.GetString(StringNameIndexed.Extensions, extension) == name) return true;
+            {
+                if (GL.GetString(StringNameIndexed.Extensions, extension) == name)
+                {
+                    return true;
+                }
+            }
 
             return false;
         }

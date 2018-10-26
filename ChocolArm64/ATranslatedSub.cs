@@ -36,9 +36,15 @@ namespace ChocolArm64
 
         public ATranslatedSub(DynamicMethod method, List<ARegister> Params)
         {
-            if (method == null) throw new ArgumentNullException(nameof(method));
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
 
-            if (Params == null) throw new ArgumentNullException(nameof(Params));
+            if (Params == null)
+            {
+                throw new ArgumentNullException(nameof(Params));
+            }
 
             Method = method;
             this.Params = Params.AsReadOnly();
@@ -63,8 +69,13 @@ namespace ChocolArm64
                 FixedArgTypes[index] = paramType;
 
                 if (paramType == typeof(AThreadState))
+                {
                     StateArgIdx = index;
-                else if (paramType == typeof(AMemory)) MemoryArgIdx = index;
+                }
+                else if (paramType == typeof(AMemory))
+                {
+                    MemoryArgIdx = index;
+                }
             }
         }
 
@@ -128,7 +139,10 @@ namespace ChocolArm64
         {
             _type = type;
 
-            if (type == ATranslatedSubType.SubTier0) _needsReJit = true;
+            if (type == ATranslatedSubType.SubTier0)
+            {
+                _needsReJit = true;
+            }
         }
 
         public void MarkForReJit()

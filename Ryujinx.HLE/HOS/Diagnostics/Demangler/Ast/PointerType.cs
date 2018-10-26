@@ -19,16 +19,25 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override void PrintLeft(TextWriter writer)
         {
             _child.PrintLeft(writer);
-            if (_child.IsArray()) writer.Write(" ");
+            if (_child.IsArray())
+            {
+                writer.Write(" ");
+            }
 
-            if (_child.IsArray() || _child.HasFunctions()) writer.Write("(");
+            if (_child.IsArray() || _child.HasFunctions())
+            {
+                writer.Write("(");
+            }
 
             writer.Write("*");
         }
 
         public override void PrintRight(TextWriter writer)
         {
-            if (_child.IsArray() || _child.HasFunctions()) writer.Write(")");
+            if (_child.IsArray() || _child.HasFunctions())
+            {
+                writer.Write(")");
+            }
 
             _child.PrintRight(writer);
         }

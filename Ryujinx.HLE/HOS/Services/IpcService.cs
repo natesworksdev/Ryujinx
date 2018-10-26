@@ -26,7 +26,10 @@ namespace Ryujinx.HLE.HOS.Services
 
         public int ConvertToDomain()
         {
-            if (_selfId == -1) _selfId = _domainObjects.Add(this);
+            if (_selfId == -1)
+            {
+                _selfId = _domainObjects.Add(this);
+            }
 
             _isDomain = true;
 
@@ -53,7 +56,10 @@ namespace Ryujinx.HLE.HOS.Services
 
                 context.RequestData.BaseStream.Seek(0x10 + dataPayloadSize, SeekOrigin.Begin);
 
-                for (int index = 0; index < inputObjCount; index++) context.Request.ObjectIds.Add(context.RequestData.ReadInt32());
+                for (int index = 0; index < inputObjCount; index++)
+                {
+                    context.Request.ObjectIds.Add(context.RequestData.ReadInt32());
+                }
 
                 context.RequestData.BaseStream.Seek(0x10, SeekOrigin.Begin);
 
@@ -91,7 +97,10 @@ namespace Ryujinx.HLE.HOS.Services
 
                 if (_isDomain)
                 {
-                    foreach (int id in context.Response.ObjectIds) context.ResponseData.Write(id);
+                    foreach (int id in context.Response.ObjectIds)
+                    {
+                        context.ResponseData.Write(id);
+                    }
 
                     context.ResponseData.BaseStream.Seek(0, SeekOrigin.Begin);
 
@@ -123,7 +132,10 @@ namespace Ryujinx.HLE.HOS.Services
             {
                 KSession session = new KSession(obj, context.Session.ServiceName);
 
-                if (context.Process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
 
                 context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
             }
@@ -158,7 +170,10 @@ namespace Ryujinx.HLE.HOS.Services
         {
             object obj = _domainObjects.Delete(id);
 
-            if (obj is IDisposable disposableObj) disposableObj.Dispose();
+            if (obj is IDisposable disposableObj)
+            {
+                disposableObj.Dispose();
+            }
 
             return obj != null;
         }

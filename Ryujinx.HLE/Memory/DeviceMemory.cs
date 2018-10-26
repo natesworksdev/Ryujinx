@@ -106,9 +106,15 @@ namespace Ryujinx.HLE.Memory
         {
             int size8 = size & ~(8 - 1);
 
-            for (int offs = 0; offs < size8; offs += 8) WriteInt64(position + offs, 0);
+            for (int offs = 0; offs < size8; offs += 8)
+            {
+                WriteInt64(position + offs, 0);
+            }
 
-            for (int offs = size8; offs < size - size8; offs++) WriteByte(position + offs, 0);
+            for (int offs = size8; offs < size - size8; offs++)
+            {
+                WriteByte(position + offs, 0);
+            }
         }
 
         public void Dispose()

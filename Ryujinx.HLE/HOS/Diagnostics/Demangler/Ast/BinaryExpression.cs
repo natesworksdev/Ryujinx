@@ -17,7 +17,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintLeft(TextWriter writer)
         {
-            if (_name.Equals(">")) writer.Write("(");
+            if (_name.Equals(">"))
+            {
+                writer.Write("(");
+            }
 
             writer.Write("(");
             _leftPart.Print(writer);
@@ -29,7 +32,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             _rightPart.Print(writer);
             writer.Write(")");
 
-            if (_name.Equals(">")) writer.Write(")");
+            if (_name.Equals(">"))
+            {
+                writer.Write(")");
+            }
         }
     }
 }

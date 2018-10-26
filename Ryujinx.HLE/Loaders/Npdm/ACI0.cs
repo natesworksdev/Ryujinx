@@ -21,7 +21,10 @@ namespace Ryujinx.HLE.Loaders.Npdm
 
             BinaryReader reader = new BinaryReader(stream);
 
-            if (reader.ReadInt32() != Aci0Magic) throw new InvalidNpdmException("ACI0 Stream doesn't contain ACI0 section!");
+            if (reader.ReadInt32() != Aci0Magic)
+            {
+                throw new InvalidNpdmException("ACI0 Stream doesn't contain ACI0 section!");
+            }
 
             stream.Seek(0xc, SeekOrigin.Current);
 

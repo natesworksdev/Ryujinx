@@ -30,7 +30,10 @@ namespace Ryujinx.Audio.Adpcm
 
                 int frameSamples = SamplesPerFrame;
 
-                if (frameSamples > samples) frameSamples = samples;
+                if (frameSamples > samples)
+                {
+                    frameSamples = samples;
+                }
 
                 int value = 0;
 

@@ -42,7 +42,10 @@ namespace Ryujinx.HLE.HOS.Services.Am
             {
                 long maxSize = _storage.Data.Length - writePosition;
 
-                if (size > maxSize) size = maxSize;
+                if (size > maxSize)
+                {
+                    size = maxSize;
+                }
 
                 byte[] data = context.Memory.ReadBytes(position, size);
 

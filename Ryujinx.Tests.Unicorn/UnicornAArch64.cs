@@ -292,7 +292,10 @@ namespace Ryujinx.Tests.Unicorn
         {
             Native.Interface.Checked(Native.Interface.uc_mem_regions(Uc, out IntPtr regionsRaw, out uint length));
             Native.Interface.MarshalArrayOf<Native.UnicornMemoryRegion>(regionsRaw, (int)length, out var regions);
-            foreach (var region in regions) Console.WriteLine("region: begin {0:X16} end {1:X16} perms {2:X8}", region.begin, region.end, region.perms);
+            foreach (var region in regions)
+            {
+                Console.WriteLine("region: begin {0:X16} end {1:X16} perms {2:X8}", region.begin, region.end, region.perms);
+            }
         }
 
         public static bool IsAvailable()

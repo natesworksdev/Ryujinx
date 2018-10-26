@@ -27,7 +27,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             {
                 _ret.PrintLeft(writer);
 
-                if (!_ret.HasRightPart()) writer.Write(" ");
+                if (!_ret.HasRightPart())
+                {
+                    writer.Write(" ");
+                }
             }
 
             _name.Print(writer);
@@ -43,17 +46,32 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             writer.Write("(");
 
-            if (_params != null) _params.Print(writer);
+            if (_params != null)
+            {
+                _params.Print(writer);
+            }
 
             writer.Write(")");
 
-            if (_ret != null) _ret.PrintRight(writer);
+            if (_ret != null)
+            {
+                _ret.PrintRight(writer);
+            }
 
-            if (_cv != null) _cv.Print(writer);
+            if (_cv != null)
+            {
+                _cv.Print(writer);
+            }
 
-            if (_ref != null) _ref.Print(writer);
+            if (_ref != null)
+            {
+                _ref.Print(writer);
+            }
 
-            if (_attrs != null) _attrs.Print(writer);
+            if (_attrs != null)
+            {
+                _attrs.Print(writer);
+            }
         }
     }
 }

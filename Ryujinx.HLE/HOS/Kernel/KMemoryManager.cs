@@ -53,7 +53,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             AddressSpaceType addrType = AddressSpaceType.Addr39Bits;
 
-            if (process.MetaData != null) addrType = (AddressSpaceType)process.MetaData.AddressSpaceWidth;
+            if (process.MetaData != null)
+            {
+                addrType = (AddressSpaceType)process.MetaData.AddressSpaceWidth;
+            }
 
             switch (addrType)
             {
@@ -132,7 +135,10 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             long pagesCount = size / PageSize;
 
-            if (!_allocator.TryAllocate(size, out long pa)) throw new InvalidOperationException();
+            if (!_allocator.TryAllocate(size, out long pa))
+            {
+                throw new InvalidOperationException();
+            }
 
             lock (_blocks)
             {
@@ -232,7 +238,10 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             long pagesCount = size / PageSize;
 
-            if (!_allocator.TryAllocate(size, out long pa)) throw new InvalidOperationException();
+            if (!_allocator.TryAllocate(size, out long pa))
+            {
+                throw new InvalidOperationException();
+            }
 
             lock (_blocks)
             {
@@ -256,7 +265,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                     {
                         InsertBlock(position, 1, MemoryState.ThreadLocal, MemoryPermission.ReadAndWrite);
 
-                        if (!_allocator.TryAllocate(PageSize, out long pa)) throw new InvalidOperationException();
+                        if (!_allocator.TryAllocate(PageSize, out long pa))
+                        {
+                            throw new InvalidOperationException();
+                        }
 
                         _cpuMemory.Map(position, pa, PageSize);
 
@@ -274,7 +286,10 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             position = 0;
 
-            if ((ulong)size > (ulong)(HeapRegionEnd - HeapRegionStart)) return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
+            if ((ulong)size > (ulong)(HeapRegionEnd - HeapRegionStart))
+            {
+                return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
+            }
 
             bool success = false;
 
@@ -289,7 +304,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     if (success = IsUnmapped(_currentHeapAddr, diffSize))
                     {
-                        if (!_allocator.TryAllocate(diffSize, out long pa)) return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
+                        if (!_allocator.TryAllocate(diffSize, out long pa))
+                        {
+                            return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
+                        }
 
                         long pagesCount = diffSize / PageSize;
 
@@ -391,11 +409,14 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             if ((ulong)position >= (ulong)AddrSpaceStart &&
                 (ulong)position <  (ulong)AddrSpaceEnd)
+            {
                 lock (_blocks)
                 {
                     return FindBlock(position).GetInfo();
                 }
+            }
             else
+            {
                 return new KMemoryInfo(
                     AddrSpaceEnd,
                     -AddrSpaceEnd,
@@ -404,6 +425,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     MemoryAttribute.None,
                     0,
                     0);
+            }
         }
 
         public long Map(long src, long dst, long size)
@@ -623,11 +645,17 @@ namespace Ryujinx.HLE.HOS.Kernel
                     out _))
                 {
                     if (state == MemoryState.CodeStatic)
+                    {
                         state = MemoryState.CodeMutable;
+                    }
                     else if (state == MemoryState.ModCodeStatic)
+                    {
                         state = MemoryState.ModCodeMutable;
+                    }
                     else
+                    {
                         throw new InvalidOperationException();
+                    }
 
                     long pagesCount = size / PageSize;
 
@@ -658,17 +686,26 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     info = node.Value.GetInfo();
 
-                    if (info.State != MemoryState.Unmapped) mappedSize += GetSizeInRange(info, position, end);
+                    if (info.State != MemoryState.Unmapped)
+                    {
+                        mappedSize += GetSizeInRange(info, position, end);
+                    }
 
                     node = node.Next;
                 }
                 while ((ulong)(info.Position + info.Size) < (ulong)end && node != null);
 
-                if (mappedSize == size) return 0;
+                if (mappedSize == size)
+                {
+                    return 0;
+                }
 
                 long remainingSize = size - mappedSize;
 
-                if (!_allocator.TryAllocate(remainingSize, out long pa)) return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
+                if (!_allocator.TryAllocate(remainingSize, out long pa))
+                {
+                    return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
+                }
 
                 node = baseNode;
 
@@ -682,7 +719,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                         long mapPosition = info.Position;
 
-                        if ((ulong)mapPosition < (ulong)position) mapPosition = position;
+                        if ((ulong)mapPosition < (ulong)position)
+                        {
+                            mapPosition = position;
+                        }
 
                         _cpuMemory.Map(mapPosition, pa, currSize);
 
@@ -731,7 +771,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     if (info.State == MemoryState.Heap)
                     {
-                        if (info.Attribute != MemoryAttribute.None) return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                        if (info.Attribute != MemoryAttribute.None)
+                        {
+                            return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                        }
 
                         heapMappedSize += GetSizeInRange(info, position, end);
                     }
@@ -744,7 +787,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
                 while ((ulong)(info.Position + info.Size) < (ulong)end && node != null);
 
-                if (heapMappedSize == 0) return 0;
+                if (heapMappedSize == 0)
+                {
+                    return 0;
+                }
 
                 PersonalMmHeapUsage -= heapMappedSize;
 
@@ -765,9 +811,15 @@ namespace Ryujinx.HLE.HOS.Kernel
             long currEnd  = info.Size + info.Position;
             long currSize = info.Size;
 
-            if ((ulong)info.Position < (ulong)start) currSize -= start - info.Position;
+            if ((ulong)info.Position < (ulong)start)
+            {
+                currSize -= start - info.Position;
+            }
 
-            if ((ulong)currEnd > (ulong)end) currSize -= currEnd - end;
+            if ((ulong)currEnd > (ulong)end)
+            {
+                currSize -= currEnd - end;
+            }
 
             return currSize;
         }
@@ -778,7 +830,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 long va = position + page * PageSize;
 
-                if (!_cpuMemory.IsMapped(va)) continue;
+                if (!_cpuMemory.IsMapped(va))
+                {
+                    continue;
+                }
 
                 long pa = _cpuMemory.GetPhysicalAddress(va);
 
@@ -835,6 +890,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             ulong end   = (ulong)size + start;
 
             if (end <= (ulong)(blkInfo.Position + blkInfo.Size))
+            {
                 if ((blkInfo.Attribute  & attributeMask)  == attributeExpected &&
                     (blkInfo.State      & stateMask)      == stateExpected     &&
                     (blkInfo.Permission & permissionMask) == permissionExpected)
@@ -845,6 +901,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     return true;
                 }
+            }
 
             outState      = MemoryState.Unmapped;
             outPermission = MemoryPermission.None;
@@ -990,7 +1047,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 if (start < currEnd && currStart < end)
                 {
-                    if (start >= currStart && end <= currEnd) block.Attribute |= currBlock.Attribute & MemoryAttribute.IpcAndDeviceMapped;
+                    if (start >= currStart && end <= currEnd)
+                    {
+                        block.Attribute |= currBlock.Attribute & MemoryAttribute.IpcAndDeviceMapped;
+                    }
 
                     if (start > currStart && end < currEnd)
                     {
@@ -1015,17 +1075,26 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                         currBlock.PagesCount = (long)((currEnd - end) / PageSize);
 
-                        if (newNode == null) newNode = _blocks.AddBefore(node, block);
+                        if (newNode == null)
+                        {
+                            newNode = _blocks.AddBefore(node, block);
+                        }
                     }
                     else if (start > currStart && end >= currEnd)
                     {
                         currBlock.PagesCount = (long)((start - currStart) / PageSize);
 
-                        if (newNode == null) newNode = _blocks.AddAfter(node, block);
+                        if (newNode == null)
+                        {
+                            newNode = _blocks.AddAfter(node, block);
+                        }
                     }
                     else
                     {
-                        if (newNode == null) newNode = _blocks.AddBefore(node, block);
+                        if (newNode == null)
+                        {
+                            newNode = _blocks.AddBefore(node, block);
+                        }
 
                         _blocks.Remove(node);
                     }
@@ -1034,7 +1103,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 node = nextNode;
             }
 
-            if (newNode == null) newNode = _blocks.AddFirst(block);
+            if (newNode == null)
+            {
+                newNode = _blocks.AddFirst(block);
+            }
 
             MergeEqualStateNeighbours(newNode);
         }
@@ -1104,7 +1176,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                     ulong start = (ulong)block.BasePosition;
                     ulong end   = (ulong)block.PagesCount * PageSize + start;
 
-                    if (start <= addr && end - 1 >= addr) return node;
+                    if (start <= addr && end - 1 >= addr)
+                    {
+                        return node;
+                    }
 
                     node = node.Next;
                 }

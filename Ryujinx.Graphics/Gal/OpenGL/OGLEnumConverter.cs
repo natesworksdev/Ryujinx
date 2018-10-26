@@ -50,7 +50,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             //Looks like the GPU can take it's own values (described in GalComparisonOp) and OpenGL values alike
             if ((int)func >= (int)DepthFunction.Never &&
                 (int)func <= (int)DepthFunction.Always)
+            {
                 return (DepthFunction)func;
+            }
 
             switch (func)
             {
@@ -229,19 +231,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
 
             if (OGLExtension.TextureMirrorClamp)
+            {
                 switch (wrap)
                 {
                     case GalTextureWrap.MirrorClampToEdge:   return (TextureWrapMode)ExtTextureMirrorClamp.MirrorClampToEdgeExt;
                     case GalTextureWrap.MirrorClampToBorder: return (TextureWrapMode)ExtTextureMirrorClamp.MirrorClampToBorderExt;
                     case GalTextureWrap.MirrorClamp:         return (TextureWrapMode)ExtTextureMirrorClamp.MirrorClampExt;
                 }
+            }
             else
+            {
                 switch (wrap)
                 {
                     case GalTextureWrap.MirrorClampToEdge:   return TextureWrapMode.ClampToEdge;
                     case GalTextureWrap.MirrorClampToBorder: return TextureWrapMode.ClampToBorder;
                     case GalTextureWrap.MirrorClamp:         return TextureWrapMode.Clamp;
                 }
+            }
 
             throw new ArgumentException(nameof(wrap) + " \"" + wrap + "\" is not valid!");
         }

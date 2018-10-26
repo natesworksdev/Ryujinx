@@ -30,15 +30,24 @@ namespace Ryujinx.HLE.FileSystem
         public string GetFullPath(string basePath, string fileName)
         {
             if (fileName.StartsWith("//"))
+            {
                 fileName = fileName.Substring(2);
+            }
             else if (fileName.StartsWith('/'))
+            {
                 fileName = fileName.Substring(1);
+            }
             else
+            {
                 return null;
+            }
 
             string fullPath = Path.GetFullPath(Path.Combine(basePath, fileName));
 
-            if (!fullPath.StartsWith(GetBasePath())) return null;
+            if (!fullPath.StartsWith(GetBasePath()))
+            {
+                return null;
+            }
 
             return fullPath;
         }
@@ -66,7 +75,11 @@ namespace Ryujinx.HLE.FileSystem
         public string SwitchPathToSystemPath(string switchPath)
         {
             string[] parts = switchPath.Split(":");
-            if (parts.Length != 2) return null;
+            if (parts.Length != 2)
+            {
+                return null;
+            }
+
             return GetFullPath(MakeDirAndGetFullPath(parts[0]), parts[1]);
         }
 
@@ -77,7 +90,10 @@ namespace Ryujinx.HLE.FileSystem
             {
                 string rawPath = systemPath.Replace(baseSystemPath, "");
                 int firstSeparatorOffset = rawPath.IndexOf(Path.DirectorySeparatorChar);
-                if (firstSeparatorOffset == -1) return $"{rawPath}:/";
+                if (firstSeparatorOffset == -1)
+                {
+                    return $"{rawPath}:/";
+                }
 
                 string basePath = rawPath.Substring(0, firstSeparatorOffset);
                 string fileName = rawPath.Substring(firstSeparatorOffset + 1);
@@ -90,7 +106,10 @@ namespace Ryujinx.HLE.FileSystem
         {
             string fullPath = Path.Combine(GetBasePath(), dir);
 
-            if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
+            if (!Directory.Exists(fullPath))
+            {
+                Directory.CreateDirectory(fullPath);
+            }
 
             return fullPath;
         }
@@ -114,7 +133,10 @@ namespace Ryujinx.HLE.FileSystem
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing) RomFs?.Dispose();
+            if (disposing)
+            {
+                RomFs?.Dispose();
+            }
         }
     }
 }

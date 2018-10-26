@@ -22,7 +22,10 @@ namespace Ryujinx.HLE.Loaders.Npdm
                 uint descriptor = reader.ReadUInt32();
 
                 //Ignore the descriptor.
-                if (descriptor == 0xffffffff) continue;
+                if (descriptor == 0xffffffff)
+                {
+                    continue;
+                }
 
                 items[index] = new KernelAccessControlItem();
 
@@ -77,13 +80,19 @@ namespace Ryujinx.HLE.Loaders.Npdm
                         ulong address = (descriptor & 0xffffff) << 12;
                         bool  isRo    = descriptor >> 24 != 0;
 
-                        if (index == size / 4 - 1) throw new InvalidNpdmException("Invalid Kernel Access Control Descriptors!");
+                        if (index == size / 4 - 1)
+                            {
+                                throw new InvalidNpdmException("Invalid Kernel Access Control Descriptors!");
+                            }
 
-                        descriptor = reader.ReadUInt32();
+                            descriptor = reader.ReadUInt32();
 
-                        if ((descriptor & 0x7f) != 0x3f) throw new InvalidNpdmException("Invalid Kernel Access Control Descriptors!");
+                        if ((descriptor & 0x7f) != 0x3f)
+                            {
+                                throw new InvalidNpdmException("Invalid Kernel Access Control Descriptors!");
+                            }
 
-                        descriptor >>= 7;
+                            descriptor >>= 7;
 
                         ulong mmioSize = (descriptor & 0xffffff) << 12;
                         bool  isNormal = descriptor >> 24 != 0;

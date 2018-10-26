@@ -101,7 +101,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud
                 sendPosition,
                 sendSize);
 
-            if (deviceName == string.Empty) deviceName = DefaultAudioOutput;
+            if (deviceName == string.Empty)
+            {
+                deviceName = DefaultAudioOutput;
+            }
 
             if (deviceName != DefaultAudioOutput)
             {
@@ -113,14 +116,21 @@ namespace Ryujinx.HLE.HOS.Services.Aud
             byte[] deviceNameBuffer = Encoding.ASCII.GetBytes(deviceName + "\0");
 
             if ((ulong)deviceNameBuffer.Length <= (ulong)receiveSize)
+            {
                 context.Memory.WriteBytes(receivePosition, deviceNameBuffer);
+            }
             else
+            {
                 Logger.PrintError(LogClass.ServiceAudio, $"Output buffer size {receiveSize} too small!");
+            }
 
             int sampleRate = context.RequestData.ReadInt32();
             int channels   = context.RequestData.ReadInt32();
 
-            if (sampleRate == 0) sampleRate = DefaultSampleRate;
+            if (sampleRate == 0)
+            {
+                sampleRate = DefaultSampleRate;
+            }
 
             if (sampleRate != DefaultSampleRate)
             {
@@ -131,7 +141,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud
 
             channels = (ushort)channels;
 
-            if (channels == 0) channels = DefaultChannelsCount;
+            if (channels == 0)
+            {
+                channels = DefaultChannelsCount;
+            }
 
             KEvent releaseEvent = new KEvent(context.Device.System);
 

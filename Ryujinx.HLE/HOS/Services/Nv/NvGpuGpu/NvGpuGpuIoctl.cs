@@ -142,7 +142,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 
             NvGpuGpuGetTpcMasks args = AMemoryHelper.Read<NvGpuGpuGetTpcMasks>(context.Memory, inputPosition);
 
-            if (args.MaskBufferSize != 0) args.TpcMask = 3;
+            if (args.MaskBufferSize != 0)
+            {
+                args.TpcMask = 3;
+            }
 
             AMemoryHelper.Write(context.Memory, outputPosition, args);
 

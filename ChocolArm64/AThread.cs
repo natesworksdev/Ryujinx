@@ -41,7 +41,10 @@ namespace ChocolArm64
 
         public bool Execute()
         {
-            if (Interlocked.Exchange(ref _isExecuting, 1) == 1) return false;
+            if (Interlocked.Exchange(ref _isExecuting, 1) == 1)
+            {
+                return false;
+            }
 
             Work.Start();
 

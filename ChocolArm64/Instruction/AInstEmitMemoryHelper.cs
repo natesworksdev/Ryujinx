@@ -36,9 +36,13 @@ namespace ChocolArm64.Instruction
 
             string name = null;
 
-            if (size < 0 || size > (isSimd ? 4 : 3)) throw new ArgumentOutOfRangeException(nameof(size));
+            if (size < 0 || size > (isSimd ? 4 : 3))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
             if (isSimd)
+            {
                 switch (size)
                 {
                     case 0: name = nameof(AMemory.ReadVector8);   break;
@@ -47,7 +51,9 @@ namespace ChocolArm64.Instruction
                     case 3: name = nameof(AMemory.ReadVector64);  break;
                     case 4: name = nameof(AMemory.ReadVector128); break;
                 }
+            }
             else
+            {
                 switch (size)
                 {
                     case 0: name = nameof(AMemory.ReadByte);   break;
@@ -55,6 +61,7 @@ namespace ChocolArm64.Instruction
                     case 2: name = nameof(AMemory.ReadUInt32); break;
                     case 3: name = nameof(AMemory.ReadUInt64); break;
                 }
+            }
 
             context.EmitCall(typeof(AMemory), name);
 
@@ -62,17 +69,21 @@ namespace ChocolArm64.Instruction
             {
                 if (ext == Extension.Sx32 ||
                     ext == Extension.Sx64)
+                {
                     switch (size)
                     {
                         case 0: context.Emit(OpCodes.Conv_I1); break;
                         case 1: context.Emit(OpCodes.Conv_I2); break;
                         case 2: context.Emit(OpCodes.Conv_I4); break;
                     }
+                }
 
                 if (size < 3)
+                {
                     context.Emit(ext == Extension.Sx64
                         ? OpCodes.Conv_I8
                         : OpCodes.Conv_U8);
+                }
             }
         }
 
@@ -82,11 +93,18 @@ namespace ChocolArm64.Instruction
 
             string name = null;
 
-            if (size < 0 || size > (isSimd ? 4 : 3)) throw new ArgumentOutOfRangeException(nameof(size));
+            if (size < 0 || size > (isSimd ? 4 : 3))
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
-            if (size < 3 && !isSimd) context.Emit(OpCodes.Conv_I4);
+            if (size < 3 && !isSimd)
+            {
+                context.Emit(OpCodes.Conv_I4);
+            }
 
             if (isSimd)
+            {
                 switch (size)
                 {
                     case 0: name = nameof(AMemory.WriteVector8);   break;
@@ -95,7 +113,9 @@ namespace ChocolArm64.Instruction
                     case 3: name = nameof(AMemory.WriteVector64);  break;
                     case 4: name = nameof(AMemory.WriteVector128); break;
                 }
+            }
             else
+            {
                 switch (size)
                 {
                     case 0: name = nameof(AMemory.WriteByte);   break;
@@ -103,6 +123,7 @@ namespace ChocolArm64.Instruction
                     case 2: name = nameof(AMemory.WriteUInt32); break;
                     case 3: name = nameof(AMemory.WriteUInt64); break;
                 }
+            }
 
             context.EmitCall(typeof(AMemory), name);
         }

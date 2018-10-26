@@ -25,7 +25,10 @@ namespace ChocolArm64.Decoder
 
             int length = ABitUtils.HighestBitSet32((~immS & 0x3f) | (n << 6));
 
-            if (length < 1 || sf == 0 && n != 0) return BitMask.Invalid;
+            if (length < 1 || sf == 0 && n != 0)
+            {
+                return BitMask.Invalid;
+            }
 
             int size = 1 << length;
 
@@ -34,7 +37,10 @@ namespace ChocolArm64.Decoder
             int s = immS & levels;
             int r = immR & levels;
 
-            if (immediate && s == levels) return BitMask.Invalid;
+            if (immediate && s == levels)
+            {
+                return BitMask.Invalid;
+            }
 
             long wMask = ABitUtils.FillWithOnes(s + 1);
             long mask = ABitUtils.FillWithOnes(((s - r) & levels) + 1);
@@ -72,7 +78,10 @@ namespace ChocolArm64.Decoder
             long eBit = (imm >> 6) & 1;
             long sBit = (imm >> 7) & 1;
 
-            if (eBit != 0) value |= ((1L << (e - 3)) - 1) << (f + 2);
+            if (eBit != 0)
+            {
+                value |= ((1L << (e - 3)) - 1) << (f + 2);
+            }
 
             value |= (eBit ^ 1) << (f + e - 1);
             value |=  sBit      << (f + e);

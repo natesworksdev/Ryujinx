@@ -71,7 +71,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             PrintLeft(writer);
 
-            if (HasRightPart()) PrintRight(writer);
+            if (HasRightPart())
+            {
+                PrintRight(writer);
+            }
         }
 
         public abstract void PrintLeft(TextWriter writer);

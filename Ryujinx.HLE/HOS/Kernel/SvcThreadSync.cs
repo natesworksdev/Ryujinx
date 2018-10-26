@@ -34,7 +34,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 KSynchronizationObject syncObj = _process.HandleTable.GetObject<KSynchronizationObject>(handle);
 
-                if (syncObj == null) break;
+                if (syncObj == null)
+                {
+                    break;
+                }
 
                 syncObjs.Add(syncObj);
             }
@@ -49,9 +52,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 if (result == MakeError(ErrorModule.Kernel, KernelErr.Timeout) ||
                     result == MakeError(ErrorModule.Kernel, KernelErr.Cancelled))
+                {
                     Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+                }
                 else
+                {
                     Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+                }
             }
 
             threadState.X0 = (ulong)result;
@@ -116,7 +123,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 mutexAddress,
                 requesterHandle);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -147,7 +157,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = _system.AddressArbiter.ArbitrateUnlock(_memory, mutexAddress);
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -193,9 +206,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (result != 0)
             {
                 if (result == MakeError(ErrorModule.Kernel, KernelErr.Timeout))
+                {
                     Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+                }
                 else
+                {
                     Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+                }
             }
 
             threadState.X0 = (ulong)result;
@@ -267,7 +284,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
             }
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }
@@ -324,7 +344,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
             }
 
-            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            if (result != 0)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
+            }
 
             threadState.X0 = (ulong)result;
         }

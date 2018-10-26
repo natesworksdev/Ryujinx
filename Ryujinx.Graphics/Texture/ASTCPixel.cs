@@ -20,7 +20,9 @@ namespace Ryujinx.Graphics.Texture
             B = b;
 
             for (int i = 0; i < 4; i++)
+            {
                 _bitDepth[i] = 8;
+            }
         }
 
         public void ClampByte()

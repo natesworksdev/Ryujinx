@@ -48,9 +48,13 @@ namespace Ryujinx.Graphics
         public void CallMethod(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
         {
             if (_methods.TryGetValue(pbEntry.Method, out NvGpuMethod method))
+            {
                 method(vmm, pbEntry);
+            }
             else
+            {
                 WriteRegister(pbEntry);
+            }
         }
 
         private void TextureCopy(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
@@ -134,7 +138,10 @@ namespace Ryujinx.Graphics
         {
             int argsCount = pbEntry.Arguments.Count;
 
-            if (argsCount > 0) Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
+            if (argsCount > 0)
+            {
+                Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
+            }
         }
 
         private int ReadRegister(NvGpuEngine2dReg reg)

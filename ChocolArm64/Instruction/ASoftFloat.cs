@@ -39,12 +39,20 @@ namespace ChocolArm64.Instruction
             {
                 ulong a = index;
                 if (a < 256)
+                {
                     a = (a << 1) + 1;
+                }
                 else
+                {
                     a = (a | 1) << 1;
+                }
 
                 ulong b = 256;
-                while (a * (b + 1) * (b + 1) < 1ul << 28) b++;
+                while (a * (b + 1) * (b + 1) < 1ul << 28)
+                {
+                    b++;
+                }
+
                 b = (b + 1) >> 1;
 
                 table[index] = (byte)(b & 0xFF);
@@ -67,7 +75,10 @@ namespace ChocolArm64.Instruction
 
             if (xExp >= 2045)
             {
-                if (xExp == 0x7ff && scaled != 0) return BitConverter.Int64BitsToDouble((long)(xBits | 0x0008000000000000));
+                if (xExp == 0x7ff && scaled != 0)
+                {
+                    return BitConverter.Int64BitsToDouble((long)(xBits | 0x0008000000000000));
+                }
 
                 // Infinity, or Out of range -> Zero
                 return BitConverter.Int64BitsToDouble((long)xSign);
@@ -75,7 +86,10 @@ namespace ChocolArm64.Instruction
 
             if (xExp == 0)
             {
-                if (scaled == 0) return BitConverter.Int64BitsToDouble((long)(xSign | 0x7FF0000000000000));
+                if (scaled == 0)
+                {
+                    return BitConverter.Int64BitsToDouble((long)(xSign | 0x7FF0000000000000));
+                }
 
                 // Denormal
                 if ((scaled & (1ul << 51)) == 0)
@@ -125,11 +139,17 @@ namespace ChocolArm64.Instruction
             long xExp = (long)((xBits >> 52) & 0x7FF);
             ulong scaled = xBits & ((1ul << 52) - 1);
 
-            if (xExp == 0x7FF && scaled != 0) return BitConverter.Int64BitsToDouble((long)(xBits | 0x0008000000000000));
+            if (xExp == 0x7FF && scaled != 0)
+            {
+                return BitConverter.Int64BitsToDouble((long)(xBits | 0x0008000000000000));
+            }
 
             if (xExp == 0)
             {
-                if (scaled == 0) return BitConverter.Int64BitsToDouble((long)(xSign | 0x7FF0000000000000));
+                if (scaled == 0)
+                {
+                    return BitConverter.Int64BitsToDouble((long)(xSign | 0x7FF0000000000000));
+                }
 
                 // Denormal
                 while ((scaled & (1 << 51)) == 0)
@@ -140,9 +160,15 @@ namespace ChocolArm64.Instruction
                 scaled <<= 1;
             }
 
-            if (xSign != 0) return BitConverter.Int64BitsToDouble((long)0x7FF8000000000000);
+            if (xSign != 0)
+            {
+                return BitConverter.Int64BitsToDouble((long)0x7FF8000000000000);
+            }
 
-            if (xExp == 0x7ff && scaled == 0) return BitConverter.Int64BitsToDouble((long)xSign);
+            if (xExp == 0x7ff && scaled == 0)
+            {
+                return BitConverter.Int64BitsToDouble((long)xSign);
+            }
 
             if (((ulong)xExp & 1) == 1)
             {
@@ -179,11 +205,18 @@ namespace ChocolArm64.Instruction
             if (type == FPType.SnaN || type == FPType.QnaN)
             {
                 if (state.GetFpcrFlag(FPCR.Dn))
+                {
                     result = FpDefaultNaN();
+                }
                 else
+                {
                     result = FpConvertNaN(valueBits);
+                }
 
-                if (type == FPType.SnaN) FpProcessException(FPExc.InvalidOp, state);
+                if (type == FPType.SnaN)
+                {
+                    FpProcessException(FPExc.InvalidOp, state);
+                }
             }
             else if (type == FPType.Infinity)
             {
@@ -309,12 +342,18 @@ namespace ChocolArm64.Instruction
 
             uint biasedExp = (uint)Math.Max(exponent - minimumExp + 1, 0);
 
-            if (biasedExp == 0u) mantissa /= Math.Pow(2d, minimumExp - exponent);
+            if (biasedExp == 0u)
+            {
+                mantissa /= Math.Pow(2d, minimumExp - exponent);
+            }
 
             uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
             double error = mantissa * Math.Pow(2d, f) - (double)intMant;
 
-            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(FPCR.Ufe))) FpProcessException(FPExc.Underflow, state);
+            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(FPCR.Ufe)))
+            {
+                FpProcessException(FPExc.Underflow, state);
+            }
 
             bool overflowToInf;
             bool roundUp;
@@ -347,7 +386,10 @@ namespace ChocolArm64.Instruction
             {
                 intMant++;
 
-                if (intMant == (uint)Math.Pow(2d, f)) biasedExp = 1u;
+                if (intMant == (uint)Math.Pow(2d, f))
+                {
+                    biasedExp = 1u;
+                }
 
                 if (intMant == (uint)Math.Pow(2d, f + 1))
                 {
@@ -372,7 +414,10 @@ namespace ChocolArm64.Instruction
                     (int)(((sign ? 1u : 0u) << 31) | ((biasedExp & 0xFFu) << 23) | (intMant & 0x007FFFFFu)));
             }
 
-            if (error != 0d) FpProcessException(FPExc.Inexact, state);
+            if (error != 0d)
+            {
+                FpProcessException(FPExc.Inexact, state);
+            }
 
             return result;
         }
@@ -388,9 +433,13 @@ namespace ChocolArm64.Instruction
             int enable = (int)exc + 8;
 
             if ((state.Fpcr & (1 << enable)) != 0)
+            {
                 throw new NotImplementedException("floating-point trap handling");
+            }
             else
+            {
                 state.Fpsr |= 1 << (int)exc;
+            }
         }
     }
 
@@ -409,13 +458,22 @@ namespace ChocolArm64.Instruction
             if (type == FPType.SnaN || type == FPType.QnaN)
             {
                 if (altHp)
+                {
                     resultBits = FpZero(sign);
+                }
                 else if (state.GetFpcrFlag(FPCR.Dn))
+                {
                     resultBits = FpDefaultNaN();
+                }
                 else
+                {
                     resultBits = FpConvertNaN(valueBits);
+                }
 
-                if (type == FPType.SnaN || altHp) FpProcessException(FPExc.InvalidOp, state);
+                if (type == FPType.SnaN || altHp)
+                {
+                    FpProcessException(FPExc.InvalidOp, state);
+                }
             }
             else if (type == FPType.Infinity)
             {
@@ -480,7 +538,10 @@ namespace ChocolArm64.Instruction
                     type = FPType.Zero;
                     real = 0d;
 
-                    if (frac32 != 0u) FpProcessException(FPExc.InputDenorm, state);
+                    if (frac32 != 0u)
+                    {
+                        FpProcessException(FPExc.InputDenorm, state);
+                    }
                 }
                 else
                 {
@@ -547,12 +608,18 @@ namespace ChocolArm64.Instruction
 
             uint biasedExp = (uint)Math.Max(exponent - minimumExp + 1, 0);
 
-            if (biasedExp == 0u) mantissa /= Math.Pow(2d, minimumExp - exponent);
+            if (biasedExp == 0u)
+            {
+                mantissa /= Math.Pow(2d, minimumExp - exponent);
+            }
 
             uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
             double error = mantissa * Math.Pow(2d, f) - (double)intMant;
 
-            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(FPCR.Ufe))) FpProcessException(FPExc.Underflow, state);
+            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(FPCR.Ufe)))
+            {
+                FpProcessException(FPExc.Underflow, state);
+            }
 
             bool overflowToInf;
             bool roundUp;
@@ -585,7 +652,10 @@ namespace ChocolArm64.Instruction
             {
                 intMant++;
 
-                if (intMant == (uint)Math.Pow(2d, f)) biasedExp = 1u;
+                if (intMant == (uint)Math.Pow(2d, f))
+                {
+                    biasedExp = 1u;
+                }
 
                 if (intMant == (uint)Math.Pow(2d, f + 1))
                 {
@@ -627,7 +697,10 @@ namespace ChocolArm64.Instruction
                 }
             }
 
-            if (error != 0d) FpProcessException(FPExc.Inexact, state);
+            if (error != 0d)
+            {
+                FpProcessException(FPExc.Inexact, state);
+            }
 
             return resultBits;
         }
@@ -642,9 +715,13 @@ namespace ChocolArm64.Instruction
             int enable = (int)exc + 8;
 
             if ((state.Fpcr & (1 << enable)) != 0)
+            {
                 throw new NotImplementedException("floating-point trap handling");
+            }
             else
+            {
                 state.Fpsr |= 1 << (int)exc;
+            }
         }
     }
 
@@ -715,7 +792,10 @@ namespace ChocolArm64.Instruction
                 {
                     result = FpInfinity(sign1 ^ sign2);
 
-                    if (!inf1) FpProcessException(FPExc.DivideByZero, state);
+                    if (!inf1)
+                    {
+                        FpProcessException(FPExc.DivideByZero, state);
+                    }
                 }
                 else if (zero1 || inf2)
                 {
@@ -744,20 +824,32 @@ namespace ChocolArm64.Instruction
                 if (value1 > value2)
                 {
                     if (type1 == FPType.Infinity)
+                    {
                         result = FpInfinity(sign1);
+                    }
                     else if (type1 == FPType.Zero)
+                    {
                         result = FpZero(sign1 && sign2);
+                    }
                     else
+                    {
                         result = value1;
+                    }
                 }
                 else
                 {
                     if (type2 == FPType.Infinity)
+                    {
                         result = FpInfinity(sign2);
+                    }
                     else if (type2 == FPType.Zero)
+                    {
                         result = FpZero(sign1 && sign2);
+                    }
                     else
+                    {
                         result = value2;
+                    }
                 }
             }
 
@@ -772,8 +864,13 @@ namespace ChocolArm64.Instruction
             value2.FpUnpack(out FPType type2, out _, out _);
 
             if (type1 == FPType.QnaN && type2 != FPType.QnaN)
+            {
                 value1 = FpInfinity(true);
-            else if (type1 != FPType.QnaN && type2 == FPType.QnaN) value2 = FpInfinity(true);
+            }
+            else if (type1 != FPType.QnaN && type2 == FPType.QnaN)
+            {
+                value2 = FpInfinity(true);
+            }
 
             return FpMax(value1, value2, state);
         }
@@ -792,20 +889,32 @@ namespace ChocolArm64.Instruction
                 if (value1 < value2)
                 {
                     if (type1 == FPType.Infinity)
+                    {
                         result = FpInfinity(sign1);
+                    }
                     else if (type1 == FPType.Zero)
+                    {
                         result = FpZero(sign1 || sign2);
+                    }
                     else
+                    {
                         result = value1;
+                    }
                 }
                 else
                 {
                     if (type2 == FPType.Infinity)
+                    {
                         result = FpInfinity(sign2);
+                    }
                     else if (type2 == FPType.Zero)
+                    {
                         result = FpZero(sign1 || sign2);
+                    }
                     else
+                    {
                         result = value2;
+                    }
                 }
             }
 
@@ -820,8 +929,13 @@ namespace ChocolArm64.Instruction
             value2.FpUnpack(out FPType type2, out _, out _);
 
             if (type1 == FPType.QnaN && type2 != FPType.QnaN)
+            {
                 value1 = FpInfinity(false);
-            else if (type1 != FPType.QnaN && type2 == FPType.QnaN) value2 = FpInfinity(false);
+            }
+            else if (type1 != FPType.QnaN && type2 == FPType.QnaN)
+            {
+                value2 = FpInfinity(false);
+            }
 
             return FpMin(value1, value2, state);
         }
@@ -946,13 +1060,21 @@ namespace ChocolArm64.Instruction
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 if (inf1 && zero2 || zero1 && inf2)
+                {
                     result = FpTwo(sign1 ^ sign2);
+                }
                 else if (inf1 || inf2)
+                {
                     result = FpInfinity(sign1 ^ sign2);
+                }
                 else if (zero1 || zero2)
+                {
                     result = FpZero(sign1 ^ sign2);
+                }
                 else
+                {
                     result = value1 * value2;
+                }
             }
 
             return result;
@@ -975,11 +1097,17 @@ namespace ChocolArm64.Instruction
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 if (inf1 && zero2 || zero1 && inf2)
+                {
                     result = FpTwo(false);
+                }
                 else if (inf1 || inf2)
+                {
                     result = FpInfinity(sign1 ^ sign2);
+                }
                 else
+                {
                     result = 2f + value1 * value2;
+                }
             }
 
             return result;
@@ -1026,11 +1154,17 @@ namespace ChocolArm64.Instruction
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 if (inf1 && zero2 || zero1 && inf2)
+                {
                     result = FpOnePointFive(false);
+                }
                 else if (inf1 || inf2)
+                {
                     result = FpInfinity(sign1 ^ sign2);
+                }
                 else
+                {
                     result = (3f + value1 * value2) / 2f;
+                }
             }
 
             return result;
@@ -1150,9 +1284,13 @@ namespace ChocolArm64.Instruction
             if ((valueBits & 0x7F800000u) == 0u)
             {
                 if ((valueBits & 0x007FFFFFu) == 0u)
+                {
                     type = FPType.Zero;
+                }
                 else
+                {
                     type = FPType.Nonzero;
+                }
             }
             else if ((~valueBits & 0x7F800000u) == 0u)
             {
@@ -1188,12 +1326,21 @@ namespace ChocolArm64.Instruction
             done = true;
 
             if (type1 == FPType.SnaN)
+            {
                 return FpProcessNaN(type1, op1, state);
+            }
             else if (type2 == FPType.SnaN)
+            {
                 return FpProcessNaN(type2, op2, state);
+            }
             else if (type1 == FPType.QnaN)
+            {
                 return FpProcessNaN(type1, op1, state);
-            else if (type2 == FPType.QnaN) return FpProcessNaN(type2, op2, state);
+            }
+            else if (type2 == FPType.QnaN)
+            {
+                return FpProcessNaN(type2, op2, state);
+            }
 
             done = false;
 
@@ -1213,16 +1360,29 @@ namespace ChocolArm64.Instruction
             done = true;
 
             if (type1 == FPType.SnaN)
+            {
                 return FpProcessNaN(type1, op1, state);
+            }
             else if (type2 == FPType.SnaN)
+            {
                 return FpProcessNaN(type2, op2, state);
+            }
             else if (type3 == FPType.SnaN)
+            {
                 return FpProcessNaN(type3, op3, state);
+            }
             else if (type1 == FPType.QnaN)
+            {
                 return FpProcessNaN(type1, op1, state);
+            }
             else if (type2 == FPType.QnaN)
+            {
                 return FpProcessNaN(type2, op2, state);
-            else if (type3 == FPType.QnaN) return FpProcessNaN(type3, op3, state);
+            }
+            else if (type3 == FPType.QnaN)
+            {
+                return FpProcessNaN(type3, op3, state);
+            }
 
             done = false;
 
@@ -1238,7 +1398,10 @@ namespace ChocolArm64.Instruction
                 FpProcessException(FPExc.InvalidOp, state);
             }
 
-            if (state.GetFpcrFlag(FPCR.Dn)) return FpDefaultNaN();
+            if (state.GetFpcrFlag(FPCR.Dn))
+            {
+                return FpDefaultNaN();
+            }
 
             return BitConverter.Int32BitsToSingle((int)op);
         }
@@ -1248,9 +1411,13 @@ namespace ChocolArm64.Instruction
             int enable = (int)exc + 8;
 
             if ((state.Fpcr & (1 << enable)) != 0)
+            {
                 throw new NotImplementedException("floating-point trap handling");
+            }
             else
+            {
                 state.Fpsr |= 1 << (int)exc;
+            }
         }
     }
 
@@ -1321,7 +1488,10 @@ namespace ChocolArm64.Instruction
                 {
                     result = FpInfinity(sign1 ^ sign2);
 
-                    if (!inf1) FpProcessException(FPExc.DivideByZero, state);
+                    if (!inf1)
+                    {
+                        FpProcessException(FPExc.DivideByZero, state);
+                    }
                 }
                 else if (zero1 || inf2)
                 {
@@ -1350,20 +1520,32 @@ namespace ChocolArm64.Instruction
                 if (value1 > value2)
                 {
                     if (type1 == FPType.Infinity)
+                    {
                         result = FpInfinity(sign1);
+                    }
                     else if (type1 == FPType.Zero)
+                    {
                         result = FpZero(sign1 && sign2);
+                    }
                     else
+                    {
                         result = value1;
+                    }
                 }
                 else
                 {
                     if (type2 == FPType.Infinity)
+                    {
                         result = FpInfinity(sign2);
+                    }
                     else if (type2 == FPType.Zero)
+                    {
                         result = FpZero(sign1 && sign2);
+                    }
                     else
+                    {
                         result = value2;
+                    }
                 }
             }
 
@@ -1378,8 +1560,13 @@ namespace ChocolArm64.Instruction
             value2.FpUnpack(out FPType type2, out _, out _);
 
             if (type1 == FPType.QnaN && type2 != FPType.QnaN)
+            {
                 value1 = FpInfinity(true);
-            else if (type1 != FPType.QnaN && type2 == FPType.QnaN) value2 = FpInfinity(true);
+            }
+            else if (type1 != FPType.QnaN && type2 == FPType.QnaN)
+            {
+                value2 = FpInfinity(true);
+            }
 
             return FpMax(value1, value2, state);
         }
@@ -1398,20 +1585,32 @@ namespace ChocolArm64.Instruction
                 if (value1 < value2)
                 {
                     if (type1 == FPType.Infinity)
+                    {
                         result = FpInfinity(sign1);
+                    }
                     else if (type1 == FPType.Zero)
+                    {
                         result = FpZero(sign1 || sign2);
+                    }
                     else
+                    {
                         result = value1;
+                    }
                 }
                 else
                 {
                     if (type2 == FPType.Infinity)
+                    {
                         result = FpInfinity(sign2);
+                    }
                     else if (type2 == FPType.Zero)
+                    {
                         result = FpZero(sign1 || sign2);
+                    }
                     else
+                    {
                         result = value2;
+                    }
                 }
             }
 
@@ -1426,8 +1625,13 @@ namespace ChocolArm64.Instruction
             value2.FpUnpack(out FPType type2, out _, out _);
 
             if (type1 == FPType.QnaN && type2 != FPType.QnaN)
+            {
                 value1 = FpInfinity(false);
-            else if (type1 != FPType.QnaN && type2 == FPType.QnaN) value2 = FpInfinity(false);
+            }
+            else if (type1 != FPType.QnaN && type2 == FPType.QnaN)
+            {
+                value2 = FpInfinity(false);
+            }
 
             return FpMin(value1, value2, state);
         }
@@ -1552,13 +1756,21 @@ namespace ChocolArm64.Instruction
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 if (inf1 && zero2 || zero1 && inf2)
+                {
                     result = FpTwo(sign1 ^ sign2);
+                }
                 else if (inf1 || inf2)
+                {
                     result = FpInfinity(sign1 ^ sign2);
+                }
                 else if (zero1 || zero2)
+                {
                     result = FpZero(sign1 ^ sign2);
+                }
                 else
+                {
                     result = value1 * value2;
+                }
             }
 
             return result;
@@ -1581,11 +1793,17 @@ namespace ChocolArm64.Instruction
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 if (inf1 && zero2 || zero1 && inf2)
+                {
                     result = FpTwo(false);
+                }
                 else if (inf1 || inf2)
+                {
                     result = FpInfinity(sign1 ^ sign2);
+                }
                 else
+                {
                     result = 2d + value1 * value2;
+                }
             }
 
             return result;
@@ -1632,11 +1850,17 @@ namespace ChocolArm64.Instruction
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 if (inf1 && zero2 || zero1 && inf2)
+                {
                     result = FpOnePointFive(false);
+                }
                 else if (inf1 || inf2)
+                {
                     result = FpInfinity(sign1 ^ sign2);
+                }
                 else
+                {
                     result = (3d + value1 * value2) / 2d;
+                }
             }
 
             return result;
@@ -1756,9 +1980,13 @@ namespace ChocolArm64.Instruction
             if ((valueBits & 0x7FF0000000000000ul) == 0ul)
             {
                 if ((valueBits & 0x000FFFFFFFFFFFFFul) == 0ul)
+                {
                     type = FPType.Zero;
+                }
                 else
+                {
                     type = FPType.Nonzero;
+                }
             }
             else if ((~valueBits & 0x7FF0000000000000ul) == 0ul)
             {
@@ -1794,12 +2022,21 @@ namespace ChocolArm64.Instruction
             done = true;
 
             if (type1 == FPType.SnaN)
+            {
                 return FpProcessNaN(type1, op1, state);
+            }
             else if (type2 == FPType.SnaN)
+            {
                 return FpProcessNaN(type2, op2, state);
+            }
             else if (type1 == FPType.QnaN)
+            {
                 return FpProcessNaN(type1, op1, state);
-            else if (type2 == FPType.QnaN) return FpProcessNaN(type2, op2, state);
+            }
+            else if (type2 == FPType.QnaN)
+            {
+                return FpProcessNaN(type2, op2, state);
+            }
 
             done = false;
 
@@ -1819,16 +2056,29 @@ namespace ChocolArm64.Instruction
             done = true;
 
             if (type1 == FPType.SnaN)
+            {
                 return FpProcessNaN(type1, op1, state);
+            }
             else if (type2 == FPType.SnaN)
+            {
                 return FpProcessNaN(type2, op2, state);
+            }
             else if (type3 == FPType.SnaN)
+            {
                 return FpProcessNaN(type3, op3, state);
+            }
             else if (type1 == FPType.QnaN)
+            {
                 return FpProcessNaN(type1, op1, state);
+            }
             else if (type2 == FPType.QnaN)
+            {
                 return FpProcessNaN(type2, op2, state);
-            else if (type3 == FPType.QnaN) return FpProcessNaN(type3, op3, state);
+            }
+            else if (type3 == FPType.QnaN)
+            {
+                return FpProcessNaN(type3, op3, state);
+            }
 
             done = false;
 
@@ -1844,7 +2094,10 @@ namespace ChocolArm64.Instruction
                 FpProcessException(FPExc.InvalidOp, state);
             }
 
-            if (state.GetFpcrFlag(FPCR.Dn)) return FpDefaultNaN();
+            if (state.GetFpcrFlag(FPCR.Dn))
+            {
+                return FpDefaultNaN();
+            }
 
             return BitConverter.Int64BitsToDouble((long)op);
         }
@@ -1854,9 +2107,13 @@ namespace ChocolArm64.Instruction
             int enable = (int)exc + 8;
 
             if ((state.Fpcr & (1 << enable)) != 0)
+            {
                 throw new NotImplementedException("floating-point trap handling");
+            }
             else
+            {
                 state.Fpsr |= 1 << (int)exc;
+            }
         }
     }
 }

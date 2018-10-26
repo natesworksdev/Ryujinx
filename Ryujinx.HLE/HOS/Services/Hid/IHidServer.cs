@@ -218,7 +218,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long xpadId = context.RequestData.ReadInt64();
 
-            if (context.Process.HandleTable.GenerateHandle(_xpadIdEvent, out _xpadIdEventHandle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_xpadIdEvent, out _xpadIdEventHandle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_xpadIdEventHandle);
 
@@ -711,7 +714,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             int  npadId               = context.RequestData.ReadInt32();
             long npadStyleSet         = context.RequestData.ReadInt64();
 
-            if (context.Process.HandleTable.GenerateHandle(_npadStyleSetUpdateEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_npadStyleSetUpdateEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
@@ -1350,7 +1356,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             int palmaConnectionHandle = context.RequestData.ReadInt32();
 
-            if (context.Process.HandleTable.GenerateHandle(_palmaOperationCompleteEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_palmaOperationCompleteEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 

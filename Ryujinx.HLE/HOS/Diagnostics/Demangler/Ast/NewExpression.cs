@@ -23,11 +23,17 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintLeft(TextWriter writer)
         {
-            if (_isGlobal) writer.Write("::operator ");
+            if (_isGlobal)
+            {
+                writer.Write("::operator ");
+            }
 
             writer.Write("new ");
 
-            if (_isArrayExpression) writer.Write("[] ");
+            if (_isArrayExpression)
+            {
+                writer.Write("[] ");
+            }
 
             if (_expressions.Nodes.Count != 0)
             {

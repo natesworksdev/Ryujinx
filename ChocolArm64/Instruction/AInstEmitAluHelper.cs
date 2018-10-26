@@ -136,9 +136,13 @@ namespace ChocolArm64.Instruction
             IAOpCodeAlu op = (IAOpCodeAlu)context.CurrOp;
 
             if (op.DataOp == ADataOp.Logical || op is IAOpCodeAluRs)
+            {
                 context.EmitLdintzr(op.Rn);
+            }
             else
+            {
                 context.EmitLdint(op.Rn);
+            }
         }
 
         public static void EmitDataLoadOper2(AILEmitterCtx context)
@@ -184,9 +188,13 @@ namespace ChocolArm64.Instruction
             IAOpCodeAlu op = (IAOpCodeAlu)context.CurrOp;
 
             if (setFlags || op is IAOpCodeAluRs)
+            {
                 context.EmitStintzr(op.Rd);
+            }
             else
+            {
                 context.EmitStint(op.Rd);
+            }
         }
 
         public static void EmitSetNzcv(AILEmitterCtx context, int nzcv)

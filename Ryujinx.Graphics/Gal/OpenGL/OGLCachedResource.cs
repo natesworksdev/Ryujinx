@@ -42,7 +42,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLCachedResource(DeleteValue deleteValueCallback)
         {
-            if (deleteValueCallback == null) throw new ArgumentNullException(nameof(deleteValueCallback));
+            if (deleteValueCallback == null)
+            {
+                throw new ArgumentNullException(nameof(deleteValueCallback));
+            }
 
             _deleteValueCallback = deleteValueCallback;
 
@@ -62,14 +65,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             _locked = false;
 
-            while (_deletePending.TryDequeue(out T value)) _deleteValueCallback(value);
+            while (_deletePending.TryDequeue(out T value))
+            {
+                _deleteValueCallback(value);
+            }
 
             ClearCacheIfNeeded();
         }
 
         public void AddOrUpdate(long key, T value, long size)
         {
-            if (!_locked) ClearCacheIfNeeded();
+            if (!_locked)
+            {
+                ClearCacheIfNeeded();
+            }
 
             LinkedListNode<long> node = _sortedCache.AddLast(key);
 
@@ -78,9 +87,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
                 if (_locked)
+                {
                     _deletePending.Enqueue(bucket.Value);
+                }
                 else
+                {
                     _deleteValueCallback(bucket.Value);
+                }
 
                 _sortedCache.Remove(bucket.Node);
 
@@ -136,13 +149,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 LinkedListNode<long> node = _sortedCache.First;
 
-                if (node == null) break;
+                if (node == null)
+                {
+                    break;
+                }
 
                 CacheBucket bucket = _cache[node.Value];
 
                 int timeDelta = RingDelta(bucket.Timestamp, timestamp);
 
-                if ((uint)timeDelta <= (uint)MaxTimeDelta) break;
+                if ((uint)timeDelta <= (uint)MaxTimeDelta)
+                {
+                    break;
+                }
 
                 _sortedCache.Remove(node);
 
@@ -155,9 +174,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private int RingDelta(int old, int New)
         {
             if ((uint)New < (uint)old)
+            {
                 return New + ~old + 1;
+            }
             else
+            {
                 return New - old;
+            }
         }
     }
 }

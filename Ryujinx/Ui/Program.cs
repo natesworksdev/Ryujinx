@@ -31,7 +31,10 @@ namespace Ryujinx
                 {
                     string[] romFsFiles = Directory.GetFiles(args[0], "*.istorage");
 
-                    if (romFsFiles.Length == 0) romFsFiles = Directory.GetFiles(args[0], "*.romfs");
+                    if (romFsFiles.Length == 0)
+                    {
+                        romFsFiles = Directory.GetFiles(args[0], "*.romfs");
+                    }
 
                     if (romFsFiles.Length > 0)
                     {

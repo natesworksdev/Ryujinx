@@ -57,12 +57,19 @@ namespace Ryujinx.HLE.Memory
 
                         _freeRegions.Remove(node.Next);
 
-                        while (node != null && (ulong)node.Value.Size > (ulong)rg.Size) node = node.Previous;
+                        while (node != null && (ulong)node.Value.Size > (ulong)rg.Size)
+                        {
+                            node = node.Previous;
+                        }
 
                         if (node != null)
+                        {
                             _freeRegions.AddAfter(node, rg);
+                        }
                         else
+                        {
                             _freeRegions.AddFirst(rg);
+                        }
                     }
 
                     TotalUsedSize += size;
@@ -115,19 +122,27 @@ namespace Ryujinx.HLE.Memory
                 else
                 {
                     if (prevSz == null)
+                    {
                         prevSz = node;
+                    }
                     else if ((ulong)rg.Size < (ulong)newRg.Size &&
                              (ulong)rg.Size > (ulong)prevSz.Value.Size)
+                    {
                         prevSz = node;
+                    }
                 }
 
                 node = nextNode;
             }
 
             if (prevSz != null && (ulong)prevSz.Value.Size < (ulong)size)
+            {
                 _freeRegions.AddAfter(prevSz, newRg);
+            }
             else
+            {
                 _freeRegions.AddFirst(newRg);
+            }
 
             TotalUsedSize -= size;
         }

@@ -24,16 +24,25 @@ namespace ChocolArm64.Translation
 
             public void Set(AILBlock root, long inputs, long outputs)
             {
-                if (!_allInputs.TryAdd(root, inputs)) _allInputs[root] |= inputs;
+                if (!_allInputs.TryAdd(root, inputs))
+                {
+                    _allInputs[root] |= inputs;
+                }
 
-                if (!_cmnOutputs.TryAdd(root, outputs)) _cmnOutputs[root] &= outputs;
+                if (!_cmnOutputs.TryAdd(root, outputs))
+                {
+                    _cmnOutputs[root] &= outputs;
+                }
 
                 _allOutputs |= outputs;
             }
 
             public long GetInputs(AILBlock root)
             {
-                if (_allInputs.TryGetValue(root, out long inputs)) return inputs | (_allOutputs & ~_cmnOutputs[root]);
+                if (_allInputs.TryGetValue(root, out long inputs))
+                {
+                    return inputs | (_allOutputs & ~_cmnOutputs[root]);
+                }
 
                 return 0;
             }
@@ -67,9 +76,13 @@ namespace ChocolArm64.Translation
 
             if (graph.Length > 1 &&
                 graph.Length < MaxOptGraphLength)
+            {
                 InitializeOptimal(graph, root);
+            }
             else
+            {
                 InitializeFast(graph);
+            }
         }
 
         private void InitializeOptimal(AILBlock[] graph, AILBlock root)
@@ -117,9 +130,15 @@ namespace ChocolArm64.Translation
                 if (current.Block.Next   == null &&
                     current.Block.Branch == null || current.Block.HasStateStore)
                 {
-                    if (!_intPaths.TryGetValue(current.Block, out PathIo intPath)) _intPaths.Add(current.Block, intPath = new PathIo());
+                    if (!_intPaths.TryGetValue(current.Block, out PathIo intPath))
+                    {
+                        _intPaths.Add(current.Block, intPath = new PathIo());
+                    }
 
-                    if (!_vecPaths.TryGetValue(current.Block, out PathIo vecPath)) _vecPaths.Add(current.Block, vecPath = new PathIo());
+                    if (!_vecPaths.TryGetValue(current.Block, out PathIo vecPath))
+                    {
+                        _vecPaths.Add(current.Block, vecPath = new PathIo());
+                    }
 
                     intPath.Set(current.Entry, current.IntInputs, current.IntOutputs);
                     vecPath.Set(current.Entry, current.VecInputs, current.VecOutputs);
@@ -145,9 +164,15 @@ namespace ChocolArm64.Translation
                     Enqueue(blkIo);
                 }
 
-                if (current.Block.Next != null) EnqueueFromCurrent(current.Block.Next, current.Block.HasStateStore);
+                if (current.Block.Next != null)
+                {
+                    EnqueueFromCurrent(current.Block.Next, current.Block.HasStateStore);
+                }
 
-                if (current.Block.Branch != null) EnqueueFromCurrent(current.Block.Branch, false);
+                if (current.Block.Branch != null)
+                {
+                    EnqueueFromCurrent(current.Block.Branch, false);
+                }
             }
         }
 
@@ -197,7 +222,10 @@ namespace ChocolArm64.Translation
         {
             long inputs = 0;
 
-            foreach (PathIo path in values) inputs |= path.GetInputs(root);
+            foreach (PathIo path in values)
+            {
+                inputs |= path.GetInputs(root);
+            }
 
             return inputs;
         }

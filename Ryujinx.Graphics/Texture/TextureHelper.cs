@@ -31,7 +31,10 @@ namespace Ryujinx.Graphics.Texture
             IAMemory memory,
             long     position)
         {
-            if (memory is NvGpuVmm vmm) return (vmm.Memory, vmm.GetPhysicalAddress(position));
+            if (memory is NvGpuVmm vmm)
+            {
+                return (vmm.Memory, vmm.GetPhysicalAddress(position));
+            }
 
             return ((AMemory)memory, position);
         }

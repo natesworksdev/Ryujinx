@@ -103,7 +103,10 @@ namespace ChocolArm64.Instruction
 
             EmitStvecWithSignedCast(context, op.Rd, op.Size);
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void EmitLdvecWithSignedCast(AILEmitterCtx context, int reg, int size)
@@ -200,7 +203,10 @@ namespace ChocolArm64.Instruction
             {
                 context.EmitLdvec(reg);
 
-                if (sizeF == 1) AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorSingleToDouble));
+                if (sizeF == 1)
+                {
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorSingleToDouble));
+                }
             }
 
             Ldvec(op.Rn);
@@ -230,16 +236,23 @@ namespace ChocolArm64.Instruction
                 context.EmitCall(type.GetMethod(name, new Type[] { baseType }));
             }
 
-            if (sizeF == 1) AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorDoubleToSingle));
+            if (sizeF == 1)
+            {
+                AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorDoubleToSingle));
+            }
 
             context.EmitStvec(op.Rd);
 
             if (scalar)
             {
                 if (sizeF == 0)
+                {
                     EmitVectorZero32_128(context, op.Rd);
+                }
                 else /* if (SizeF == 1) */
+                {
                     EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else if (op.RegisterSize == ARegisterSize.Simd64)
             {
@@ -256,9 +269,13 @@ namespace ChocolArm64.Instruction
             MethodInfo mthdInfo;
 
             if (sizeF == 0)
+            {
                 mthdInfo = typeof(MathF).GetMethod(name, new Type[] { typeof(float) });
+            }
             else /* if (SizeF == 1) */
+            {
                 mthdInfo = typeof(Math).GetMethod(name, new Type[] { typeof(double) });
+            }
 
             context.EmitCall(mthdInfo);
         }
@@ -272,9 +289,13 @@ namespace ChocolArm64.Instruction
             MethodInfo mthdInfo;
 
             if (sizeF == 0)
+            {
                 mthdInfo = typeof(MathF).GetMethod(name, new Type[] { typeof(float), typeof(float) });
+            }
             else /* if (SizeF == 1) */
+            {
                 mthdInfo = typeof(Math).GetMethod(name, new Type[] { typeof(double), typeof(double) });
+            }
 
             context.EmitCall(mthdInfo);
         }
@@ -288,9 +309,13 @@ namespace ChocolArm64.Instruction
             MethodInfo mthdInfo;
 
             if (sizeF == 0)
+            {
                 mthdInfo = typeof(MathF).GetMethod(nameof(MathF.Round), new Type[] { typeof(float), typeof(MidpointRounding) });
+            }
             else /* if (SizeF == 1) */
+            {
                 mthdInfo = typeof(Math).GetMethod(nameof(Math.Round), new Type[] { typeof(double), typeof(MidpointRounding) });
+            }
 
             context.EmitLdc_I4((int)roundMode);
 
@@ -306,9 +331,13 @@ namespace ChocolArm64.Instruction
             MethodInfo mthdInfo;
 
             if (sizeF == 0)
+            {
                 mthdInfo = typeof(ASoftFloat).GetMethod(name, new Type[] { typeof(float) });
+            }
             else /* if (SizeF == 1) */
+            {
                 mthdInfo = typeof(ASoftFloat).GetMethod(name, new Type[] { typeof(double) });
+            }
 
             context.EmitCall(mthdInfo);
         }
@@ -346,7 +375,10 @@ namespace ChocolArm64.Instruction
 
             int sizeF = op.Size & 1;
 
-            if (ternary) EmitVectorExtractF(context, op.Rd, 0, sizeF);
+            if (ternary)
+            {
+                EmitVectorExtractF(context, op.Rd, 0, sizeF);
+            }
 
             EmitVectorExtractF(context, op.Rn, 0,    sizeF);
             EmitVectorExtractF(context, op.Rm, elem, sizeF);
@@ -389,11 +421,20 @@ namespace ChocolArm64.Instruction
             bool rn = (opers & OperFlags.Rn) != 0;
             bool rm = (opers & OperFlags.Rm) != 0;
 
-            if (rd) EmitVectorExtract(context, op.Rd, 0, op.Size, signed);
+            if (rd)
+            {
+                EmitVectorExtract(context, op.Rd, 0, op.Size, signed);
+            }
 
-            if (rn) EmitVectorExtract(context, op.Rn, 0, op.Size, signed);
+            if (rn)
+            {
+                EmitVectorExtract(context, op.Rn, 0, op.Size, signed);
+            }
 
-            if (rm) EmitVectorExtract(context, ((AOpCodeSimdReg)op).Rm, 0, op.Size, signed);
+            if (rm)
+            {
+                EmitVectorExtract(context, ((AOpCodeSimdReg)op).Rm, 0, op.Size, signed);
+            }
 
             emit();
 
@@ -425,11 +466,20 @@ namespace ChocolArm64.Instruction
             bool rn = (opers & OperFlags.Rn) != 0;
             bool rm = (opers & OperFlags.Rm) != 0;
 
-            if (ra) EmitVectorExtractF(context, ((AOpCodeSimdReg)op).Ra, 0, sizeF);
+            if (ra)
+            {
+                EmitVectorExtractF(context, ((AOpCodeSimdReg)op).Ra, 0, sizeF);
+            }
 
-            if (rn) EmitVectorExtractF(context, op.Rn, 0, sizeF);
+            if (rn)
+            {
+                EmitVectorExtractF(context, op.Rn, 0, sizeF);
+            }
 
-            if (rm) EmitVectorExtractF(context, ((AOpCodeSimdReg)op).Rm, 0, sizeF);
+            if (rm)
+            {
+                EmitVectorExtractF(context, ((AOpCodeSimdReg)op).Rm, 0, sizeF);
+            }
 
             emit();
 
@@ -466,18 +516,30 @@ namespace ChocolArm64.Instruction
 
             for (int index = 0; index < elems; index++)
             {
-                if (rd) EmitVectorExtractF(context, op.Rd, index, sizeF);
+                if (rd)
+                {
+                    EmitVectorExtractF(context, op.Rd, index, sizeF);
+                }
 
-                if (rn) EmitVectorExtractF(context, op.Rn, index, sizeF);
+                if (rn)
+                {
+                    EmitVectorExtractF(context, op.Rn, index, sizeF);
+                }
 
-                if (rm) EmitVectorExtractF(context, ((AOpCodeSimdReg)op).Rm, index, sizeF);
+                if (rm)
+                {
+                    EmitVectorExtractF(context, ((AOpCodeSimdReg)op).Rm, index, sizeF);
+                }
 
                 emit();
 
                 EmitVectorInsertF(context, op.Rd, index, sizeF);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void EmitVectorBinaryOpByElemF(AILEmitterCtx context, Action emit)
@@ -505,7 +567,10 @@ namespace ChocolArm64.Instruction
 
             for (int index = 0; index < elems; index++)
             {
-                if (ternary) EmitVectorExtractF(context, op.Rd, index, sizeF);
+                if (ternary)
+                {
+                    EmitVectorExtractF(context, op.Rd, index, sizeF);
+                }
 
                 EmitVectorExtractF(context, op.Rn, index, sizeF);
                 EmitVectorExtractF(context, op.Rm, elem,  sizeF);
@@ -518,7 +583,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void EmitVectorUnaryOpSx(AILEmitterCtx context, Action emit)
@@ -564,18 +632,30 @@ namespace ChocolArm64.Instruction
 
             for (int index = 0; index < elems; index++)
             {
-                if (rd) EmitVectorExtract(context, op.Rd, index, op.Size, signed);
+                if (rd)
+                {
+                    EmitVectorExtract(context, op.Rd, index, op.Size, signed);
+                }
 
-                if (rn) EmitVectorExtract(context, op.Rn, index, op.Size, signed);
+                if (rn)
+                {
+                    EmitVectorExtract(context, op.Rn, index, op.Size, signed);
+                }
 
-                if (rm) EmitVectorExtract(context, ((AOpCodeSimdReg)op).Rm, index, op.Size, signed);
+                if (rm)
+                {
+                    EmitVectorExtract(context, ((AOpCodeSimdReg)op).Rm, index, op.Size, signed);
+                }
 
                 emit();
 
                 EmitVectorInsert(context, op.Rd, index, op.Size);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void EmitVectorBinaryOpByElemSx(AILEmitterCtx context, Action emit)
@@ -611,7 +691,10 @@ namespace ChocolArm64.Instruction
 
             for (int index = 0; index < elems; index++)
             {
-                if (ternary) EmitVectorExtract(context, op.Rd, index, op.Size, signed);
+                if (ternary)
+                {
+                    EmitVectorExtract(context, op.Rd, index, op.Size, signed);
+                }
 
                 EmitVectorExtract(context, op.Rn, index, op.Size, signed);
                 context.EmitLdtmp();
@@ -624,7 +707,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void EmitVectorImmUnaryOp(AILEmitterCtx context, Action emit)
@@ -646,7 +732,10 @@ namespace ChocolArm64.Instruction
 
             for (int index = 0; index < elems; index++)
             {
-                if (binary) EmitVectorExtractZx(context, op.Rd, index, op.Size);
+                if (binary)
+                {
+                    EmitVectorExtractZx(context, op.Rd, index, op.Size);
+                }
 
                 context.EmitLdc_I8(op.Imm);
 
@@ -655,7 +744,10 @@ namespace ChocolArm64.Instruction
                 EmitVectorInsert(context, op.Rd, index, op.Size);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void EmitVectorWidenRmBinaryOpSx(AILEmitterCtx context, Action emit)
@@ -720,7 +812,10 @@ namespace ChocolArm64.Instruction
 
             for (int index = 0; index < elems; index++)
             {
-                if (ternary) EmitVectorExtract(context, op.Rd, index, op.Size + 1, signed);
+                if (ternary)
+                {
+                    EmitVectorExtract(context, op.Rd, index, op.Size + 1, signed);
+                }
 
                 EmitVectorExtract(context, op.Rn, part + index, op.Size, signed);
                 EmitVectorExtract(context, op.Rm, part + index, op.Size, signed);
@@ -772,7 +867,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void EmitVectorPairwiseOpF(AILEmitterCtx context, Action emit)
@@ -805,7 +903,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         [Flags]
@@ -845,7 +946,10 @@ namespace ChocolArm64.Instruction
             int bytes = op.GetBitsCount() >> 3;
             int elems = !scalar ? bytes >> op.Size : 1;
 
-            if (scalar) EmitVectorZeroLowerTmp(context);
+            if (scalar)
+            {
+                EmitVectorZeroLowerTmp(context);
+            }
 
             for (int index = 0; index < elems; index++)
             {
@@ -854,9 +958,13 @@ namespace ChocolArm64.Instruction
                 emit();
 
                 if (op.Size <= 2)
+                {
                     EmitSatQ(context, op.Size, true, true);
+                }
                 else /* if (Op.Size == 3) */
+                {
                     EmitUnarySignedSatQAbsOrNeg(context);
+                }
 
                 EmitVectorInsertTmp(context, index, op.Size);
             }
@@ -864,7 +972,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64 || scalar) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64 || scalar)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void EmitScalarSaturatingBinaryOpSx(AILEmitterCtx context, SaturatingFlags flags)
@@ -902,9 +1013,13 @@ namespace ChocolArm64.Instruction
             int bytes = op.GetBitsCount() >> 3;
             int elems = !scalar ? bytes >> op.Size : 1;
 
-            if (scalar) EmitVectorZeroLowerTmp(context);
+            if (scalar)
+            {
+                EmitVectorZeroLowerTmp(context);
+            }
 
             if (add || sub)
+            {
                 for (int index = 0; index < elems; index++)
                 {
                     EmitVectorExtract(context,                   op.Rn, index, op.Size, signed);
@@ -919,14 +1034,20 @@ namespace ChocolArm64.Instruction
                     else /* if (Op.Size == 3) */
                     {
                         if (add)
+                        {
                             EmitBinarySatQAdd(context, signed);
+                        }
                         else /* if (Sub) */
+                        {
                             EmitBinarySatQSub(context, signed);
+                        }
                     }
 
                     EmitVectorInsertTmp(context, index, op.Size);
                 }
+            }
             else if (accumulate)
+            {
                 for (int index = 0; index < elems; index++)
                 {
                     EmitVectorExtract(context, op.Rn, index, op.Size, !signed);
@@ -945,7 +1066,9 @@ namespace ChocolArm64.Instruction
 
                     EmitVectorInsertTmp(context, index, op.Size);
                 }
+            }
             else
+            {
                 for (int index = 0; index < elems; index++)
                 {
                     EmitVectorExtract(context,                   op.Rn, index, op.Size, signed);
@@ -957,11 +1080,15 @@ namespace ChocolArm64.Instruction
 
                     EmitVectorInsertTmp(context, index, op.Size);
                 }
+            }
 
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64 || scalar) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64 || scalar)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         [Flags]
@@ -992,7 +1119,10 @@ namespace ChocolArm64.Instruction
 
             int part = !scalar && op.RegisterSize == ARegisterSize.Simd128 ? elems : 0;
 
-            if (scalar) EmitVectorZeroLowerTmp(context);
+            if (scalar)
+            {
+                EmitVectorZeroLowerTmp(context);
+            }
 
             if (part != 0)
             {
@@ -1012,7 +1142,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (part == 0) EmitVectorZeroUpper(context, op.Rd);
+            if (part == 0)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         // TSrc (16bit, 32bit, 64bit; signed, unsigned) > TDst (8bit, 16bit, 32bit; signed, unsigned).
@@ -1022,25 +1155,35 @@ namespace ChocolArm64.Instruction
             bool signedSrc,
             bool signedDst)
         {
-            if (sizeDst > 2) throw new ArgumentOutOfRangeException(nameof(sizeDst));
+            if (sizeDst > 2)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sizeDst));
+            }
 
             context.EmitLdc_I4(sizeDst);
             context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
             if (signedSrc)
+            {
                 ASoftFallback.EmitCall(context, signedDst
                     ? nameof(ASoftFallback.SignedSrcSignedDstSatQ)
                     : nameof(ASoftFallback.SignedSrcUnsignedDstSatQ));
+            }
             else
+            {
                 ASoftFallback.EmitCall(context, signedDst
                     ? nameof(ASoftFallback.UnsignedSrcSignedDstSatQ)
                     : nameof(ASoftFallback.UnsignedSrcUnsignedDstSatQ));
+            }
         }
 
         // TSrc (64bit) == TDst (64bit); signed.
         public static void EmitUnarySignedSatQAbsOrNeg(AILEmitterCtx context)
         {
-            if (((AOpCodeSimd)context.CurrOp).Size < 3) throw new InvalidOperationException();
+            if (((AOpCodeSimd)context.CurrOp).Size < 3)
+            {
+                throw new InvalidOperationException();
+            }
 
             context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
@@ -1050,7 +1193,10 @@ namespace ChocolArm64.Instruction
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQAdd(AILEmitterCtx context, bool signed)
         {
-            if (((AOpCodeSimdReg)context.CurrOp).Size < 3) throw new InvalidOperationException();
+            if (((AOpCodeSimdReg)context.CurrOp).Size < 3)
+            {
+                throw new InvalidOperationException();
+            }
 
             context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
@@ -1062,7 +1208,10 @@ namespace ChocolArm64.Instruction
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQSub(AILEmitterCtx context, bool signed)
         {
-            if (((AOpCodeSimdReg)context.CurrOp).Size < 3) throw new InvalidOperationException();
+            if (((AOpCodeSimdReg)context.CurrOp).Size < 3)
+            {
+                throw new InvalidOperationException();
+            }
 
             context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
@@ -1074,7 +1223,10 @@ namespace ChocolArm64.Instruction
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQAccumulate(AILEmitterCtx context, bool signed)
         {
-            if (((AOpCodeSimd)context.CurrOp).Size < 3) throw new InvalidOperationException();
+            if (((AOpCodeSimd)context.CurrOp).Size < 3)
+            {
+                throw new InvalidOperationException();
+            }
 
             context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
@@ -1139,11 +1291,17 @@ namespace ChocolArm64.Instruction
             context.EmitLdc_I4(index);
 
             if (size == 0)
+            {
                 AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorExtractSingle));
+            }
             else if (size == 1)
+            {
                 AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorExtractDouble));
+            }
             else
+            {
                 throw new ArgumentOutOfRangeException(nameof(size));
+            }
         }
 
         public static void EmitVectorZeroAll(AILEmitterCtx context, int rd)
@@ -1270,11 +1428,17 @@ namespace ChocolArm64.Instruction
             context.EmitLdc_I4(index);
 
             if (size == 0)
+            {
                 AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorInsertSingle));
+            }
             else if (size == 1)
+            {
                 AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorInsertDouble));
+            }
             else
+            {
                 throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
             context.EmitStvec(reg);
         }
@@ -1287,27 +1451,45 @@ namespace ChocolArm64.Instruction
             context.EmitLdc_I4(index);
 
             if (size == 0)
+            {
                 AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorInsertSingle));
+            }
             else if (size == 1)
+            {
                 AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorInsertDouble));
+            }
             else
+            {
                 throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
             context.EmitStvectmp();
         }
 
         private static void ThrowIfInvalid(int index, int size)
         {
-            if ((uint)size > 3u) throw new ArgumentOutOfRangeException(nameof(size));
+            if ((uint)size > 3u)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
-            if ((uint)index >= 16u >> size) throw new ArgumentOutOfRangeException(nameof(index));
+            if ((uint)index >= 16u >> size)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
         }
 
         private static void ThrowIfInvalidF(int index, int size)
         {
-            if ((uint)size > 1u) throw new ArgumentOutOfRangeException(nameof(size));
+            if ((uint)size > 1u)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
-            if ((uint)index >= 4u >> size) throw new ArgumentOutOfRangeException(nameof(index));
+            if ((uint)index >= 4u >> size)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
         }
     }
 }

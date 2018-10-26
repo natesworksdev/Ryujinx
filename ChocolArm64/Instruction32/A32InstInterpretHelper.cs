@@ -31,7 +31,10 @@ namespace ChocolArm64.Instruction32
 
         public static unsafe uint GetReg(AThreadState state, int reg)
         {
-            if ((uint)reg > 15) throw new ArgumentOutOfRangeException(nameof(reg));
+            if ((uint)reg > 15)
+            {
+                throw new ArgumentOutOfRangeException(nameof(reg));
+            }
 
             fixed (uint* ptr = &state.R0)
             {
@@ -41,7 +44,10 @@ namespace ChocolArm64.Instruction32
 
         public static unsafe void SetReg(AThreadState state, int reg, uint value)
         {
-            if ((uint)reg > 15) throw new ArgumentOutOfRangeException(nameof(reg));
+            if ((uint)reg > 15)
+            {
+                throw new ArgumentOutOfRangeException(nameof(reg));
+            }
 
             fixed (uint* ptr = &state.R0)
             {

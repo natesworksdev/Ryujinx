@@ -40,7 +40,10 @@ namespace Ryujinx.HLE.Utilities
 
             byte[] output = new byte[bytesInHex];
 
-            for (int index = 0; index < bytesInHex; index++) output[index] = byte.Parse(hexString.Substring(index * 2, 2), NumberStyles.HexNumber);
+            for (int index = 0; index < bytesInHex; index++)
+            {
+                output[index] = byte.Parse(hexString.Substring(index * 2, 2), NumberStyles.HexNumber);
+            }
 
             return output;
         }

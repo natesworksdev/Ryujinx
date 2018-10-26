@@ -45,7 +45,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int count = _actionsQueue.Count;
 
-            while (count-- > 0 && _actionsQueue.TryDequeue(out Action renderAction)) renderAction();
+            while (count-- > 0 && _actionsQueue.TryDequeue(out Action renderAction))
+            {
+                renderAction();
+            }
         }
     }
 }

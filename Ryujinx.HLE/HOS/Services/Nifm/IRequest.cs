@@ -49,9 +49,15 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
 
         public long GetSystemEventReadableHandles(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_event0.ReadableEvent, out int handle0) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_event0.ReadableEvent, out int handle0) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
-            if (context.Process.HandleTable.GenerateHandle(_event1.ReadableEvent, out int handle1) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_event1.ReadableEvent, out int handle1) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle0, handle1);
 

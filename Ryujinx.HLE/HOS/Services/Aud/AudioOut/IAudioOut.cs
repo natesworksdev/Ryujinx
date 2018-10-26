@@ -67,7 +67,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
 
         public long RegisterBufferEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_releaseEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_releaseEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
@@ -132,7 +135,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
             {
                 long tag = 0;
 
-                if (index < releasedBuffers.Length) tag = releasedBuffers[index];
+                if (index < releasedBuffers.Length)
+                {
+                    tag = releasedBuffers[index];
+                }
 
                 context.Memory.WriteInt64(position + index * 8, tag);
             }
@@ -149,7 +155,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing) _audioOut.CloseTrack(_track);
+            if (disposing)
+            {
+                _audioOut.CloseTrack(_track);
+            }
         }
     }
 }

@@ -47,11 +47,15 @@ namespace Ryujinx.Graphics.Gal
         {
             if (ImageUtils.GetBytesPerPixel(Format) !=
                 ImageUtils.GetBytesPerPixel(image.Format))
+            {
                 return false;
+            }
 
             if (ImageUtils.GetAlignedWidth(this) !=
                 ImageUtils.GetAlignedWidth(image))
+            {
                 return false;
+            }
 
             return Height == image.Height;
         }

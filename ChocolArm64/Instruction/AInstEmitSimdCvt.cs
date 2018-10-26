@@ -155,7 +155,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (part == 0) EmitVectorZeroUpper(context, op.Rd);
+            if (part == 0)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void Fcvtns_S(AILEmitterCtx context)
@@ -234,7 +237,10 @@ namespace ChocolArm64.Instruction
 
             context.EmitLdintzr(op.Rn);
 
-            if (context.CurrOp.RegisterSize == ARegisterSize.Int32) context.Emit(OpCodes.Conv_U4);
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U4);
+            }
 
             EmitFloatCast(context, op.Size);
 
@@ -263,7 +269,10 @@ namespace ChocolArm64.Instruction
 
             context.EmitLdintzr(op.Rn);
 
-            if (context.CurrOp.RegisterSize == ARegisterSize.Int32) context.Emit(OpCodes.Conv_U4);
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U4);
+            }
 
             context.Emit(OpCodes.Conv_R_Un);
 
@@ -292,7 +301,10 @@ namespace ChocolArm64.Instruction
 
         private static int GetFBits(AILEmitterCtx context)
         {
-            if (context.CurrOp is AOpCodeSimdShImm op) return GetImmShr(op);
+            if (context.CurrOp is AOpCodeSimdShImm op)
+            {
+                return GetImmShr(op);
+            }
 
             return 0;
         }
@@ -300,11 +312,17 @@ namespace ChocolArm64.Instruction
         private static void EmitFloatCast(AILEmitterCtx context, int size)
         {
             if (size == 0)
+            {
                 context.Emit(OpCodes.Conv_R4);
+            }
             else if (size == 1)
+            {
                 context.Emit(OpCodes.Conv_R8);
+            }
             else
+            {
                 throw new ArgumentOutOfRangeException(nameof(size));
+            }
         }
 
         private static void EmitFcvtn(AILEmitterCtx context, bool signed, bool scalar)
@@ -317,7 +335,10 @@ namespace ChocolArm64.Instruction
             int bytes = op.GetBitsCount() >> 3;
             int elems = !scalar ? bytes >> sizeI : 1;
 
-            if (scalar && sizeF == 0) EmitVectorZeroLowerTmp(context);
+            if (scalar && sizeF == 0)
+            {
+                EmitVectorZeroLowerTmp(context);
+            }
 
             for (int index = 0; index < elems; index++)
             {
@@ -346,7 +367,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64 || scalar) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64 || scalar)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         private static void EmitFcvt_s_Gp(AILEmitterCtx context, Action emit)
@@ -368,11 +392,18 @@ namespace ChocolArm64.Instruction
             emit();
 
             if (signed)
+            {
                 EmitScalarFcvts(context, op.Size, 0);
+            }
             else
+            {
                 EmitScalarFcvtu(context, op.Size, 0);
+            }
 
-            if (context.CurrOp.RegisterSize == ARegisterSize.Int32) context.Emit(OpCodes.Conv_U8);
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
 
             context.EmitStintzr(op.Rd);
         }
@@ -394,11 +425,18 @@ namespace ChocolArm64.Instruction
             EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
             if (signed)
+            {
                 EmitScalarFcvts(context, op.Size, op.FBits);
+            }
             else
+            {
                 EmitScalarFcvtu(context, op.Size, op.FBits);
+            }
 
-            if (context.CurrOp.RegisterSize == ARegisterSize.Int32) context.Emit(OpCodes.Conv_U8);
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
 
             context.EmitStintzr(op.Rd);
         }
@@ -429,7 +467,10 @@ namespace ChocolArm64.Instruction
             {
                 EmitVectorExtract(context, op.Rn, index, sizeI, signed);
 
-                if (!signed) context.Emit(OpCodes.Conv_R_Un);
+                if (!signed)
+                {
+                    context.Emit(OpCodes.Conv_R_Un);
+                }
 
                 context.Emit(sizeF == 0
                     ? OpCodes.Conv_R4
@@ -440,7 +481,10 @@ namespace ChocolArm64.Instruction
                 EmitVectorInsertF(context, op.Rd, index, sizeF);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         private static void EmitScalarFcvtzs(AILEmitterCtx context)
@@ -467,15 +511,22 @@ namespace ChocolArm64.Instruction
             EmitF2iFBitsMul(context, sizeF, fBits);
 
             if (sizeF == 0)
+            {
                 AVectorHelper.EmitCall(context, signed
                     ? nameof(AVectorHelper.SatF32ToS32)
                     : nameof(AVectorHelper.SatF32ToU32));
+            }
             else /* if (SizeF == 1) */
+            {
                 AVectorHelper.EmitCall(context, signed
                     ? nameof(AVectorHelper.SatF64ToS64)
                     : nameof(AVectorHelper.SatF64ToU64));
+            }
 
-            if (sizeF == 0) context.Emit(OpCodes.Conv_U8);
+            if (sizeF == 0)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
 
             EmitScalarSet(context, op.Rd, sizeI);
         }
@@ -509,63 +560,95 @@ namespace ChocolArm64.Instruction
                 EmitF2iFBitsMul(context, sizeF, fBits);
 
                 if (sizeF == 0)
+                {
                     AVectorHelper.EmitCall(context, signed
                         ? nameof(AVectorHelper.SatF32ToS32)
                         : nameof(AVectorHelper.SatF32ToU32));
+                }
                 else /* if (SizeF == 1) */
+                {
                     AVectorHelper.EmitCall(context, signed
                         ? nameof(AVectorHelper.SatF64ToS64)
                         : nameof(AVectorHelper.SatF64ToU64));
+                }
 
-                if (sizeF == 0) context.Emit(OpCodes.Conv_U8);
+                if (sizeF == 0)
+                {
+                    context.Emit(OpCodes.Conv_U8);
+                }
 
                 EmitVectorInsert(context, op.Rd, index, sizeI);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         private static void EmitScalarFcvts(AILEmitterCtx context, int size, int fBits)
         {
-            if (size < 0 || size > 1) throw new ArgumentOutOfRangeException(nameof(size));
+            if (size < 0 || size > 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
             EmitF2iFBitsMul(context, size, fBits);
 
             if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
             {
                 if (size == 0)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF32ToS32));
+                }
                 else /* if (Size == 1) */
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF64ToS32));
+                }
             }
             else
             {
                 if (size == 0)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF32ToS64));
+                }
                 else /* if (Size == 1) */
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF64ToS64));
+                }
             }
         }
 
         private static void EmitScalarFcvtu(AILEmitterCtx context, int size, int fBits)
         {
-            if (size < 0 || size > 1) throw new ArgumentOutOfRangeException(nameof(size));
+            if (size < 0 || size > 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
             EmitF2iFBitsMul(context, size, fBits);
 
             if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
             {
                 if (size == 0)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF32ToU32));
+                }
                 else /* if (Size == 1) */
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF64ToU32));
+                }
             }
             else
             {
                 if (size == 0)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF32ToU64));
+                }
                 else /* if (Size == 1) */
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF64ToU64));
+                }
             }
         }
 
@@ -574,11 +657,17 @@ namespace ChocolArm64.Instruction
             if (fBits != 0)
             {
                 if (size == 0)
+                {
                     context.EmitLdc_R4(MathF.Pow(2f, fBits));
+                }
                 else if (size == 1)
+                {
                     context.EmitLdc_R8(Math.Pow(2d, fBits));
+                }
                 else
+                {
                     throw new ArgumentOutOfRangeException(nameof(size));
+                }
 
                 context.Emit(OpCodes.Mul);
             }
@@ -589,11 +678,17 @@ namespace ChocolArm64.Instruction
             if (fBits != 0)
             {
                 if (size == 0)
+                {
                     context.EmitLdc_R4(1f / MathF.Pow(2f, fBits));
+                }
                 else if (size == 1)
+                {
                     context.EmitLdc_R8(1d / Math.Pow(2d, fBits));
+                }
                 else
+                {
                     throw new ArgumentOutOfRangeException(nameof(size));
+                }
 
                 context.Emit(OpCodes.Mul);
             }

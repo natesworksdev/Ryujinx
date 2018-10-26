@@ -35,11 +35,18 @@ namespace ChocolArm64
 
                 default:
                     if ((uint)index <= byte.MaxValue)
+                    {
                         generator.Emit(OpCodes.Ldarg_S, (byte)index);
+                    }
                     else if ((uint)index < ushort.MaxValue)
+                    {
                         generator.Emit(OpCodes.Ldarg, (short)index);
+                    }
                     else
+                    {
                         throw new ArgumentOutOfRangeException(nameof(index));
+                    }
+
                     break;
             }
         }
@@ -47,11 +54,17 @@ namespace ChocolArm64
         public static void EmitStarg(this ILGenerator generator, int index)
         {
             if ((uint)index <= byte.MaxValue)
+            {
                 generator.Emit(OpCodes.Starg_S, (byte)index);
+            }
             else if ((uint)index < ushort.MaxValue)
+            {
                 generator.Emit(OpCodes.Starg, (short)index);
+            }
             else
+            {
                 throw new ArgumentOutOfRangeException(nameof(index));
+            }
         }
 
         public static void EmitLdloc(this ILGenerator generator, int index)
@@ -65,11 +78,18 @@ namespace ChocolArm64
 
                 default:
                     if ((uint)index <= byte.MaxValue)
+                    {
                         generator.Emit(OpCodes.Ldloc_S, (byte)index);
+                    }
                     else if ((uint)index < ushort.MaxValue)
+                    {
                         generator.Emit(OpCodes.Ldloc, (short)index);
+                    }
                     else
+                    {
                         throw new ArgumentOutOfRangeException(nameof(index));
+                    }
+
                     break;
             }
         }
@@ -85,18 +105,28 @@ namespace ChocolArm64
 
                 default:
                     if ((uint)index <= byte.MaxValue)
+                    {
                         generator.Emit(OpCodes.Stloc_S, (byte)index);
+                    }
                     else if ((uint)index < ushort.MaxValue)
+                    {
                         generator.Emit(OpCodes.Stloc, (short)index);
+                    }
                     else
+                    {
                         throw new ArgumentOutOfRangeException(nameof(index));
+                    }
+
                     break;
             }
         }
 
         public static void EmitLdargSeq(this ILGenerator generator, int count)
         {
-            for (int index = 0; index < count; index++) generator.EmitLdarg(index);
+            for (int index = 0; index < count; index++)
+            {
+                generator.EmitLdarg(index);
+            }
         }
     }
 }

@@ -59,7 +59,10 @@ namespace Ryujinx.HLE
         {
             double frameRate = 0;
 
-            if (_accumulatedFrameTime[frameType] > 0) frameRate = _framesRendered[frameType] / _accumulatedFrameTime[frameType];
+            if (_accumulatedFrameTime[frameType] > 0)
+            {
+                frameRate = _framesRendered[frameType] / _accumulatedFrameTime[frameType];
+            }
 
             lock (_frameLock[frameType])
             {

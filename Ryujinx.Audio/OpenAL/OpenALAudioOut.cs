@@ -56,7 +56,12 @@ namespace Ryujinx.Audio.OpenAL
             public bool ContainsBuffer(long tag)
             {
                 foreach (long queuedTag in _queuedTagsQueue)
-                    if (queuedTag == tag) return true;
+                {
+                    if (queuedTag == tag)
+                    {
+                        return true;
+                    }
+                }
 
                 return false;
             }
@@ -67,11 +72,17 @@ namespace Ryujinx.Audio.OpenAL
 
                 releasedCount += _releasedTagsQueue.Count;
 
-                if (count > releasedCount) count = releasedCount;
+                if (count > releasedCount)
+                {
+                    count = releasedCount;
+                }
 
                 List<long> tags = new List<long>();
 
-                while (count-- > 0 && _releasedTagsQueue.TryDequeue(out long tag)) tags.Add(tag);
+                while (count-- > 0 && _releasedTagsQueue.TryDequeue(out long tag))
+                {
+                    tags.Add(tag);
+                }
 
                 while (count-- > 0 && _queuedTagsQueue.TryDequeue(out long tag))
                 {
@@ -85,7 +96,10 @@ namespace Ryujinx.Audio.OpenAL
 
             public int AppendBuffer(long tag)
             {
-                if (_disposed) throw new ObjectDisposedException(nameof(Track));
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(nameof(Track));
+                }
 
                 int id = AL.GenBuffer();
 
@@ -135,7 +149,10 @@ namespace Ryujinx.Audio.OpenAL
 
                     AL.DeleteSource(SourceId);
 
-                    foreach (int id in _buffers.Values) AL.DeleteBuffer(id);
+                    foreach (int id in _buffers.Values)
+                    {
+                        AL.DeleteBuffer(id);
+                    }
                 }
             }
         }
@@ -164,17 +181,22 @@ namespace Ryujinx.Audio.OpenAL
             do
             {
                 foreach (Track td in _tracks.Values)
+                {
                     lock (td)
                     {
                         td.CallReleaseCallbackIfNeeded();
                     }
+                }
 
                 //If it's not slept it will waste cycles.
                 Thread.Sleep(10);
             }
             while (_keepPolling);
 
-            foreach (Track td in _tracks.Values) td.Dispose();
+            foreach (Track td in _tracks.Values)
+            {
+                td.Dispose();
+            }
 
             _tracks.Clear();
         }
@@ -184,7 +206,12 @@ namespace Ryujinx.Audio.OpenAL
             Track td = new Track(sampleRate, GetAlFormat(channels), callback);
 
             for (int id = 0; id < MaxTracks; id++)
-                if (_tracks.TryAdd(id, td)) return id;
+            {
+                if (_tracks.TryAdd(id, td))
+                {
+                    return id;
+                }
+            }
 
             return -1;
         }
@@ -204,19 +231,23 @@ namespace Ryujinx.Audio.OpenAL
         public void CloseTrack(int track)
         {
             if (_tracks.TryRemove(track, out Track td))
+            {
                 lock (td)
                 {
                     td.Dispose();
                 }
+            }
         }
 
         public bool ContainsBuffer(int track, long tag)
         {
             if (_tracks.TryGetValue(track, out Track td))
+            {
                 lock (td)
                 {
                     return td.ContainsBuffer(tag);
                 }
+            }
 
             return false;
         }
@@ -224,10 +255,12 @@ namespace Ryujinx.Audio.OpenAL
         public long[] GetReleasedBuffers(int track, int maxCount)
         {
             if (_tracks.TryGetValue(track, out Track td))
+            {
                 lock (td)
                 {
                     return td.GetReleasedBuffers(maxCount);
                 }
+            }
 
             return null;
         }
@@ -235,6 +268,7 @@ namespace Ryujinx.Audio.OpenAL
         public void AppendBuffer<T>(int track, long tag, T[] buffer) where T : struct
         {
             if (_tracks.TryGetValue(track, out Track td))
+            {
                 lock (td)
                 {
                     int bufferId = td.AppendBuffer(tag);
@@ -247,17 +281,20 @@ namespace Ryujinx.Audio.OpenAL
 
                     StartPlaybackIfNeeded(td);
                 }
+            }
         }
 
         public void Start(int track)
         {
             if (_tracks.TryGetValue(track, out Track td))
+            {
                 lock (td)
                 {
                     td.State = PlaybackState.Playing;
 
                     StartPlaybackIfNeeded(td);
                 }
+            }
         }
 
         private void StartPlaybackIfNeeded(Track td)
@@ -266,23 +303,31 @@ namespace Ryujinx.Audio.OpenAL
 
             ALSourceState state = (ALSourceState)stateInt;
 
-            if (state != ALSourceState.Playing && td.State == PlaybackState.Playing) AL.SourcePlay(td.SourceId);
+            if (state != ALSourceState.Playing && td.State == PlaybackState.Playing)
+            {
+                AL.SourcePlay(td.SourceId);
+            }
         }
 
         public void Stop(int track)
         {
             if (_tracks.TryGetValue(track, out Track td))
+            {
                 lock (td)
                 {
                     td.State = PlaybackState.Stopped;
 
                     AL.SourceStop(td.SourceId);
                 }
+            }
         }
 
         public PlaybackState GetState(int track)
         {
-            if (_tracks.TryGetValue(track, out Track td)) return td.State;
+            if (_tracks.TryGetValue(track, out Track td))
+            {
+                return td.State;
+            }
 
             return PlaybackState.Stopped;
         }
@@ -294,7 +339,10 @@ namespace Ryujinx.Audio.OpenAL
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing) _keepPolling = false;
+            if (disposing)
+            {
+                _keepPolling = false;
+            }
         }
     }
 }

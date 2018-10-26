@@ -77,7 +77,9 @@ namespace Ryujinx.HLE.HOS
 
             if (!device.Memory.Allocator.TryAllocate(HidSize,  out long hidPa) ||
                 !device.Memory.Allocator.TryAllocate(FontSize, out long fontPa))
+            {
                 throw new InvalidOperationException();
+            }
 
             HidSharedMem  = new KSharedMemory(hidPa, HidSize);
             FontSharedMem = new KSharedMemory(fontPa, FontSize);
@@ -91,7 +93,10 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
         {
-            if (romFsFile != null) _device.FileSystem.LoadRomFs(romFsFile);
+            if (romFsFile != null)
+            {
+                _device.FileSystem.LoadRomFs(romFsFile);
+            }
 
             string npdmFileName = Path.Combine(exeFsDir, "main.npdm");
 
@@ -117,7 +122,10 @@ namespace Ryujinx.HLE.HOS
             {
                 foreach (string file in Directory.GetFiles(exeFsDir, fileName))
                 {
-                    if (Path.GetExtension(file) != string.Empty) continue;
+                    if (Path.GetExtension(file) != string.Empty)
+                    {
+                        continue;
+                    }
 
                     Logger.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(file)}...");
 
@@ -132,7 +140,10 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            if (!(mainProcess.MetaData?.Is64Bits ?? true)) throw new NotImplementedException("32-bit titles are unsupported!");
+            if (!(mainProcess.MetaData?.Is64Bits ?? true))
+            {
+                throw new NotImplementedException("32-bit titles are unsupported!");
+            }
 
             CurrentTitle = mainProcess.MetaData.Aci0.TitleId.ToString("x16");
 
@@ -167,7 +178,10 @@ namespace Ryujinx.HLE.HOS
 
         private (Nca Main, Nca Control) GetXciGameData(Xci xci)
         {
-            if (xci.SecurePartition == null) throw new InvalidDataException("Could not find XCI secure partition");
+            if (xci.SecurePartition == null)
+            {
+                throw new InvalidDataException("Could not find XCI secure partition");
+            }
 
             Nca mainNca    = null;
             Nca patchNca   = null;
@@ -182,8 +196,13 @@ namespace Ryujinx.HLE.HOS
                 if (nca.Header.ContentType == ContentType.Program)
                 {
                     if (nca.Sections.Any(x => x?.Type == SectionType.Romfs))
+                    {
                         mainNca = nca;
-                    else if (nca.Sections.Any(x => x?.Type == SectionType.Bktr)) patchNca = nca;
+                    }
+                    else if (nca.Sections.Any(x => x?.Type == SectionType.Bktr))
+                    {
+                        patchNca = nca;
+                    }
                 }
                 else if (nca.Header.ContentType == ContentType.Control)
                 {
@@ -191,11 +210,17 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            if (mainNca == null) Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
+            if (mainNca == null)
+            {
+                Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
+            }
 
             mainNca.SetBaseNca(patchNca);
 
-            if (controlNca != null) ReadControlData(controlNca);
+            if (controlNca != null)
+            {
+                ReadControlData(controlNca);
+            }
 
             if (patchNca != null)
             {
@@ -251,8 +276,13 @@ namespace Ryujinx.HLE.HOS
                 Nca nca = new Nca(KeySet, nsp.OpenFile(ncaFile), true);
 
                 if (nca.Header.ContentType == ContentType.Program)
+                {
                     mainNca = nca;
-                else if (nca.Header.ContentType == ContentType.Control) controlNca = nca;
+                }
+                else if (nca.Header.ContentType == ContentType.Control)
+                {
+                    controlNca = nca;
+                }
             }
 
             if (mainNca != null)
@@ -311,7 +341,10 @@ namespace Ryujinx.HLE.HOS
             {
                 foreach (PfsFileEntry file in exefs.Files.Where(x => x.Name.StartsWith(filename)))
                 {
-                    if (Path.GetExtension(file.Name) != string.Empty) continue;
+                    if (Path.GetExtension(file.Name) != string.Empty)
+                    {
+                        continue;
+                    }
 
                     Logger.PrintInfo(LogClass.Loader, $"Loading {filename}...");
 
@@ -335,17 +368,27 @@ namespace Ryujinx.HLE.HOS
 
                 CurrentTitle = controlData.Languages[(int)State.DesiredTitleLanguage].Title;
 
-                if (string.IsNullOrWhiteSpace(CurrentTitle)) CurrentTitle = controlData.Languages.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                if (string.IsNullOrWhiteSpace(CurrentTitle))
+                {
+                    CurrentTitle = controlData.Languages.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                }
 
                 return controlData;
             }
 
             if (controlNca != null)
+            {
                 mainProcess.ControlData = ReadControlData();
+            }
             else
+            {
                 CurrentTitle = mainProcess.MetaData.Aci0.TitleId.ToString("x16");
+            }
 
-            if (!mainProcess.MetaData.Is64Bits) throw new NotImplementedException("32-bit titles are unsupported!");
+            if (!mainProcess.MetaData.Is64Bits)
+            {
+                throw new NotImplementedException("32-bit titles are unsupported!");
+            }
 
             LoadNso("rtld");
 
@@ -372,7 +415,10 @@ namespace Ryujinx.HLE.HOS
 
                 string switchDir = Path.GetDirectoryName(tempPath);
 
-                if (!Directory.Exists(switchDir)) Directory.CreateDirectory(switchDir);
+                if (!Directory.Exists(switchDir))
+                {
+                    Directory.CreateDirectory(switchDir);
+                }
 
                 File.Copy(filePath, tempPath, true);
 
@@ -411,11 +457,20 @@ namespace Ryujinx.HLE.HOS
                 string localTitleKeyFile   = Path.Combine(basePath,   "title.keys");
                 string localConsoleKeyFile = Path.Combine(basePath, "console.keys");
 
-                if (File.Exists(localKeyFile)) keyFile = localKeyFile;
+                if (File.Exists(localKeyFile))
+                {
+                    keyFile = localKeyFile;
+                }
 
-                if (File.Exists(localTitleKeyFile)) titleKeyFile = localTitleKeyFile;
+                if (File.Exists(localTitleKeyFile))
+                {
+                    titleKeyFile = localTitleKeyFile;
+                }
 
-                if (File.Exists(localConsoleKeyFile)) consoleKeyFile = localConsoleKeyFile;
+                if (File.Exists(localConsoleKeyFile))
+                {
+                    consoleKeyFile = localConsoleKeyFile;
+                }
             }
         }
 
@@ -434,7 +489,10 @@ namespace Ryujinx.HLE.HOS
             {
                 int processId = 0;
 
-                while (_processes.ContainsKey(processId)) processId++;
+                while (_processes.ContainsKey(processId))
+                {
+                    processId++;
+                }
 
                 process = new Process(_device, processId, metaData);
 
@@ -470,12 +528,18 @@ namespace Ryujinx.HLE.HOS
 
         public void EnableMultiCoreScheduling()
         {
-            if (!_hasStarted) Scheduler.MultiCoreScheduling = true;
+            if (!_hasStarted)
+            {
+                Scheduler.MultiCoreScheduling = true;
+            }
         }
 
         public void DisableMultiCoreScheduling()
         {
-            if (!_hasStarted) Scheduler.MultiCoreScheduling = false;
+            if (!_hasStarted)
+            {
+                Scheduler.MultiCoreScheduling = false;
+            }
         }
 
         public void Dispose()
@@ -486,7 +550,12 @@ namespace Ryujinx.HLE.HOS
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
-                foreach (Process process in _processes.Values) process.Dispose();
+            {
+                foreach (Process process in _processes.Values)
+                {
+                    process.Dispose();
+                }
+            }
         }
     }
 }

@@ -56,7 +56,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             int cbufIndex = opCode.Read(36, 0x1f);
             int type      = opCode.Read(48, 7);
 
-            if (type > 5) throw new InvalidOperationException();
+            if (type > 5)
+            {
+                throw new InvalidOperationException();
+            }
 
             ShaderIrOperGpr temp = ShaderIrOperGpr.MakeTemporary();
 
@@ -73,7 +76,10 @@ namespace Ryujinx.Graphics.Gal.Shader
                 operA.Pos   += index;
                 operD.Index += index;
 
-                if (!operD.IsValidRegister) break;
+                if (!operD.IsValidRegister)
+                {
+                    break;
+                }
 
                 ShaderIrNode node = operA;
 
@@ -147,7 +153,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 coords[index].Index += index;
 
-                if (coords[index].Index > ShaderIrOperGpr.ZrIndex) coords[index].Index = ShaderIrOperGpr.ZrIndex;
+                if (coords[index].Index > ShaderIrOperGpr.ZrIndex)
+                {
+                    coords[index].Index = ShaderIrOperGpr.ZrIndex;
+                }
             }
 
             int chMask = opCode.Read(31, 0xf);
@@ -173,7 +182,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             for (int ch = 0; ch < 4; ch++)
             {
-                if (!IsChannelUsed(chMask, ch)) continue;
+                if (!IsChannelUsed(chMask, ch))
+                {
+                    continue;
+                }
 
                 ShaderIrOperGpr src = new ShaderIrOperGpr(TempRegStart + ch);
 
@@ -181,7 +193,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 dst.Index += regInc++;
 
-                if (dst.Index >= ShaderIrOperGpr.ZrIndex) continue;
+                if (dst.Index >= ShaderIrOperGpr.ZrIndex)
+                {
+                    continue;
+                }
 
                 block.AddNode(opCode.PredNode(new ShaderIrAsg(dst, src)));
             }
@@ -209,7 +224,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             lutIndex  = opCode.Gpr0 ().Index != ShaderIrOperGpr.ZrIndex ? 1 : 0;
             lutIndex |= opCode.Gpr28().Index != ShaderIrOperGpr.ZrIndex ? 2 : 0;
 
-            if (lutIndex == 0) return;
+            if (lutIndex == 0)
+            {
+                return;
+            }
 
             int chMask = _maskLut[lutIndex, opCode.Read(50, 7)];
 
@@ -248,13 +266,19 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             for (int ch = 0; ch < 4; ch++)
             {
-                if (!IsChannelUsed(chMask, ch)) continue;
+                if (!IsChannelUsed(chMask, ch))
+                {
+                    continue;
+                }
 
                 ShaderIrOperGpr src = new ShaderIrOperGpr(TempRegStart + ch);
 
                 ShaderIrOperGpr dst = GetDst();
 
-                if (dst.Index != ShaderIrOperGpr.ZrIndex) block.AddNode(opCode.PredNode(new ShaderIrAsg(dst, src)));
+                if (dst.Index != ShaderIrOperGpr.ZrIndex)
+                {
+                    block.AddNode(opCode.PredNode(new ShaderIrAsg(dst, src)));
+                }
             }
         }
 

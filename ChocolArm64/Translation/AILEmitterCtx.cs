@@ -58,7 +58,10 @@ namespace ChocolArm64.Translation
 
             _opcIndex = -1;
 
-            if (graph.Length == 0 || !AdvanceOpCode()) throw new ArgumentException(nameof(graph));
+            if (graph.Length == 0 || !AdvanceOpCode())
+            {
+                throw new ArgumentException(nameof(graph));
+            }
         }
 
         public ATranslatedSub GetSubroutine()
@@ -70,7 +73,9 @@ namespace ChocolArm64.Translation
         {
             if (_opcIndex + 1 == CurrBlock.OpCodes.Count &&
                 _blkIndex + 1 == _graph.Length)
+            {
                 return false;
+            }
 
             while (++_opcIndex >= (CurrBlock?.OpCodes.Count ?? 0))
             {
@@ -123,21 +128,35 @@ namespace ChocolArm64.Translation
 
         public bool TryOptEmitSubroutineCall()
         {
-            if (CurrBlock.Next == null) return false;
+            if (CurrBlock.Next == null)
+            {
+                return false;
+            }
 
-            if (CurrOp.Emitter != AInstEmit.Bl) return false;
+            if (CurrOp.Emitter != AInstEmit.Bl)
+            {
+                return false;
+            }
 
-            if (!_cache.TryGetSubroutine(((AOpCodeBImmAl)CurrOp).Imm, out ATranslatedSub subroutine)) return false;
+            if (!_cache.TryGetSubroutine(((AOpCodeBImmAl)CurrOp).Imm, out ATranslatedSub subroutine))
+            {
+                return false;
+            }
 
-            for (int index = 0; index < ATranslatedSub.FixedArgTypes.Length; index++) EmitLdarg(index);
+            for (int index = 0; index < ATranslatedSub.FixedArgTypes.Length; index++)
+            {
+                EmitLdarg(index);
+            }
 
             foreach (ARegister reg in subroutine.Params)
+            {
                 switch (reg.Type)
                 {
                     case ARegisterType.Flag:   Ldloc(reg.Index, AIoType.Flag);   break;
                     case ARegisterType.Int:    Ldloc(reg.Index, AIoType.Int);    break;
                     case ARegisterType.Vector: Ldloc(reg.Index, AIoType.Vector); break;
                 }
+            }
 
             EmitCall(subroutine.Method);
 
@@ -250,14 +269,20 @@ namespace ChocolArm64.Translation
 
             if (sz64 == (intType == AIntType.UInt64 ||
                          intType == AIntType.Int64))
+            {
                 return;
+            }
 
             if (sz64)
+            {
                 Emit(intType >= AIntType.Int8
                     ? OpCodes.Conv_I8
                     : OpCodes.Conv_U8);
+            }
             else
+            {
                 Emit(OpCodes.Conv_U4);
+            }
         }
 
         public void EmitLsl(int amount)
@@ -345,17 +370,25 @@ namespace ChocolArm64.Translation
         public void EmitLdintzr(int index)
         {
             if (index != AThreadState.ZrIndex)
+            {
                 EmitLdint(index);
+            }
             else
+            {
                 EmitLdc_I(0);
+            }
         }
 
         public void EmitStintzr(int index)
         {
             if (index != AThreadState.ZrIndex)
+            {
                 EmitStint(index);
+            }
             else
+            {
                 Emit(OpCodes.Pop);
+            }
         }
 
         public void EmitLoadState(ABlock retBlk)
@@ -447,43 +480,70 @@ namespace ChocolArm64.Translation
 
         public void EmitCallPropGet(Type objType, string propName)
         {
-            if (objType == null) throw new ArgumentNullException(nameof(objType));
+            if (objType == null)
+            {
+                throw new ArgumentNullException(nameof(objType));
+            }
 
-            if (propName == null) throw new ArgumentNullException(nameof(propName));
+            if (propName == null)
+            {
+                throw new ArgumentNullException(nameof(propName));
+            }
 
             EmitCall(objType.GetMethod($"get_{propName}"));
         }
 
         public void EmitCallPropSet(Type objType, string propName)
         {
-            if (objType == null) throw new ArgumentNullException(nameof(objType));
+            if (objType == null)
+            {
+                throw new ArgumentNullException(nameof(objType));
+            }
 
-            if (propName == null) throw new ArgumentNullException(nameof(propName));
+            if (propName == null)
+            {
+                throw new ArgumentNullException(nameof(propName));
+            }
 
             EmitCall(objType.GetMethod($"set_{propName}"));
         }
 
         public void EmitCall(Type objType, string mthdName)
         {
-            if (objType == null) throw new ArgumentNullException(nameof(objType));
+            if (objType == null)
+            {
+                throw new ArgumentNullException(nameof(objType));
+            }
 
-            if (mthdName == null) throw new ArgumentNullException(nameof(mthdName));
+            if (mthdName == null)
+            {
+                throw new ArgumentNullException(nameof(mthdName));
+            }
 
             EmitCall(objType.GetMethod(mthdName));
         }
 
         public void EmitPrivateCall(Type objType, string mthdName)
         {
-            if (objType == null) throw new ArgumentNullException(nameof(objType));
+            if (objType == null)
+            {
+                throw new ArgumentNullException(nameof(objType));
+            }
 
-            if (mthdName == null) throw new ArgumentNullException(nameof(mthdName));
+            if (mthdName == null)
+            {
+                throw new ArgumentNullException(nameof(mthdName));
+            }
 
             EmitCall(objType.GetMethod(mthdName, BindingFlags.Instance | BindingFlags.NonPublic));
         }
 
         public void EmitCall(MethodInfo mthdInfo)
         {
-            if (mthdInfo == null) throw new ArgumentNullException(nameof(mthdInfo));
+            if (mthdInfo == null)
+            {
+                throw new ArgumentNullException(nameof(mthdInfo));
+            }
 
             _ilBlock.Add(new AILOpCodeCall(mthdInfo));
         }
@@ -491,9 +551,13 @@ namespace ChocolArm64.Translation
         public void EmitLdc_I(long value)
         {
             if (CurrOp.RegisterSize == ARegisterSize.Int32)
+            {
                 EmitLdc_I4((int)value);
+            }
             else
+            {
                 EmitLdc_I8(value);
+            }
         }
 
         public void EmitLdc_I4(int value)
@@ -527,7 +591,10 @@ namespace ChocolArm64.Translation
             Emit(OpCodes.Dup);
             Emit(OpCodes.Ldc_I4_0);
 
-            if (CurrOp.RegisterSize != ARegisterSize.Int32) Emit(OpCodes.Conv_I8);
+            if (CurrOp.RegisterSize != ARegisterSize.Int32)
+            {
+                Emit(OpCodes.Conv_I8);
+            }
 
             Emit(ilCmpOp);
 

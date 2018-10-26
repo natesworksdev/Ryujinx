@@ -43,16 +43,26 @@ namespace ChocolArm64.Instruction
             EmitLoadAddress(context);
 
             if (signed && op.Extend64)
+            {
                 EmitReadSx64Call(context, op.Size);
+            }
             else if (signed)
+            {
                 EmitReadSx32Call(context, op.Size);
+            }
             else
+            {
                 EmitReadZxCall(context, op.Size);
+            }
 
             if (op is IAOpCodeSimd)
+            {
                 context.EmitStvec(op.Rt);
+            }
             else
+            {
                 context.EmitStintzr(op.Rt);
+            }
 
             EmitWBackIfNeeded(context);
         }
@@ -61,20 +71,31 @@ namespace ChocolArm64.Instruction
         {
             IAOpCodeLit op = (IAOpCodeLit)context.CurrOp;
 
-            if (op.Prefetch) return;
+            if (op.Prefetch)
+            {
+                return;
+            }
 
             context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
             context.EmitLdc_I8(op.Imm);
 
             if (op.Signed)
+            {
                 EmitReadSx64Call(context, op.Size);
+            }
             else
+            {
                 EmitReadZxCall(context, op.Size);
+            }
 
             if (op is IAOpCodeSimd)
+            {
                 context.EmitStvec(op.Rt);
+            }
             else
+            {
                 context.EmitStint(op.Rt);
+            }
         }
 
         public static void Ldp(AILEmitterCtx context)
@@ -84,14 +105,22 @@ namespace ChocolArm64.Instruction
             void EmitReadAndStore(int rt)
             {
                 if (op.Extend64)
+                {
                     EmitReadSx64Call(context, op.Size);
+                }
                 else
+                {
                     EmitReadZxCall(context, op.Size);
+                }
 
                 if (op is IAOpCodeSimd)
+                {
                     context.EmitStvec(rt);
+                }
                 else
+                {
                     context.EmitStintzr(rt);
+                }
             }
 
             context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
@@ -120,9 +149,13 @@ namespace ChocolArm64.Instruction
             EmitLoadAddress(context);
 
             if (op is IAOpCodeSimd)
+            {
                 context.EmitLdvec(op.Rt);
+            }
             else
+            {
                 context.EmitLdintzr(op.Rt);
+            }
 
             EmitWriteCall(context, op.Size);
 
@@ -138,9 +171,13 @@ namespace ChocolArm64.Instruction
             EmitLoadAddress(context);
 
             if (op is IAOpCodeSimd)
+            {
                 context.EmitLdvec(op.Rt);
+            }
             else
+            {
                 context.EmitLdintzr(op.Rt);
+            }
 
             EmitWriteCall(context, op.Size);
 
@@ -151,9 +188,13 @@ namespace ChocolArm64.Instruction
             context.Emit(OpCodes.Add);
 
             if (op is IAOpCodeSimd)
+            {
                 context.EmitLdvec(op.Rt2);
+            }
             else
+            {
                 context.EmitLdintzr(op.Rt2);
+            }
 
             EmitWriteCall(context, op.Size);
 
@@ -181,7 +222,10 @@ namespace ChocolArm64.Instruction
                     context.EmitLdintzr(op.Rm);
                     context.EmitCast(op.IntType);
 
-                    if (op.Shift) context.EmitLsl(op.Size);
+                    if (op.Shift)
+                    {
+                        context.EmitLsl(op.Size);
+                    }
 
                     context.Emit(OpCodes.Add);
                     break;

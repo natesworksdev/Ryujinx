@@ -11,7 +11,10 @@ namespace Ryujinx.Graphics.Gal
 
         public static void Dump(IGalMemory memory, long position, GalShaderType type, string extSuffix = "")
         {
-            if (!IsDumpEnabled()) return;
+            if (!IsDumpEnabled())
+            {
+                return;
+            }
 
             string fileName = "Shader" + DumpIndex.ToString("d4") + "." + ShaderExtension(type) + extSuffix + ".bin";
 
@@ -26,7 +29,10 @@ namespace Ryujinx.Graphics.Gal
                 BinaryWriter fullWriter = new BinaryWriter(fullFile);
                 BinaryWriter codeWriter = new BinaryWriter(codeFile);
 
-                for (long i = 0; i < 0x50; i += 4) fullWriter.Write(memory.ReadInt32(position + i));
+                for (long i = 0; i < 0x50; i += 4)
+                {
+                    fullWriter.Write(memory.ReadInt32(position + i));
+                }
 
                 long offset = 0;
 
@@ -42,7 +48,10 @@ namespace Ryujinx.Graphics.Gal
 
                     //Zero instructions (other kind of NOP) stop immediatly,
                     //this is to avoid two rows of zeroes
-                    if (instruction == 0) break;
+                    if (instruction == 0)
+                    {
+                        break;
+                    }
 
                     fullWriter.Write(instruction);
                     codeWriter.Write(instruction);
@@ -98,7 +107,10 @@ namespace Ryujinx.Graphics.Gal
 
         private static string CreateAndReturn(string dir)
         {
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
 
             return dir;
         }

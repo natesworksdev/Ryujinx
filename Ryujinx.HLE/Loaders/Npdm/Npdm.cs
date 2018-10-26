@@ -29,7 +29,10 @@ namespace Ryujinx.HLE.Loaders.Npdm
         {
             BinaryReader reader = new BinaryReader(stream);
 
-            if (reader.ReadInt32() != MetaMagic) throw new InvalidNpdmException("NPDM Stream doesn't contain NPDM file!");
+            if (reader.ReadInt32() != MetaMagic)
+            {
+                throw new InvalidNpdmException("NPDM Stream doesn't contain NPDM file!");
+            }
 
             reader.ReadInt64();
 

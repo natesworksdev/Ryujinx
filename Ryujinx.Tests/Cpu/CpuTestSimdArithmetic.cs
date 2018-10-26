@@ -73,7 +73,10 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0(a);
 
             int fpcrTemp = 0x0;
-            if (defaultNaN) fpcrTemp = 0x2000000;
+            if (defaultNaN)
+            {
+                fpcrTemp = 0x2000000;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -99,7 +102,10 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0E1(a, b);
 
             int fpcrTemp = 0x0;
-            if (defaultNaN) fpcrTemp = 0x2000000;
+            if (defaultNaN)
+            {
+                fpcrTemp = 0x2000000;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -166,7 +172,10 @@ namespace Ryujinx.Tests.Cpu
                 case 'M': fpcrTemp = 0x800000; break;
                 case 'Z': fpcrTemp = 0xC00000; break;
             }
-            if (defaultNaN) fpcrTemp |= 1 << 25;
+            if (defaultNaN)
+            {
+                fpcrTemp |= 1 << 25;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -219,7 +228,10 @@ namespace Ryujinx.Tests.Cpu
                 case 'M': fpcrTemp = 0x800000; break;
                 case 'Z': fpcrTemp = 0xC00000; break;
             }
-            if (defaultNaN) fpcrTemp |= 1 << 25;
+            if (defaultNaN)
+            {
+                fpcrTemp |= 1 << 25;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -277,7 +289,10 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0(a);
 
             int fpcrTemp = 0x0;
-            if (defaultNaN) fpcrTemp = 0x2000000;
+            if (defaultNaN)
+            {
+                fpcrTemp = 0x2000000;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -299,7 +314,10 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0E1(a, b);
 
             int fpcrTemp = 0x0;
-            if (defaultNaN) fpcrTemp = 0x2000000;
+            if (defaultNaN)
+            {
+                fpcrTemp = 0x2000000;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -358,7 +376,10 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0(a);
 
             int fpcrTemp = 0x0;
-            if (defaultNaN) fpcrTemp = 0x2000000;
+            if (defaultNaN)
+            {
+                fpcrTemp = 0x2000000;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -383,7 +404,10 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0E1(a, b);
 
             int fpcrTemp = 0x0;
-            if (defaultNaN) fpcrTemp = 0x2000000;
+            if (defaultNaN)
+            {
+                fpcrTemp = 0x2000000;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -441,7 +465,10 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0(a);
 
             int fpcrTemp = 0x0;
-            if (defaultNaN) fpcrTemp = 0x2000000;
+            if (defaultNaN)
+            {
+                fpcrTemp = 0x2000000;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -463,7 +490,10 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0E1(a, b);
 
             int fpcrTemp = 0x0;
-            if (defaultNaN) fpcrTemp = 0x2000000;
+            if (defaultNaN)
+            {
+                fpcrTemp = 0x2000000;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
@@ -530,9 +560,12 @@ namespace Ryujinx.Tests.Cpu
         		case 'M': fpcrTemp = 0x800000; break;
         		case 'Z': fpcrTemp = 0xC00000; break;
         	}
-        	if (defaultNaN) fpcrTemp |= 1 << 25;
+        	if (defaultNaN)
+            {
+                fpcrTemp |= 1 << 25;
+            }
 
-	        AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
+            AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 
         	Assert.That(GetVectorE0(threadState.V0), Is.EqualTo(result));
 
@@ -583,7 +616,10 @@ namespace Ryujinx.Tests.Cpu
                 case 'M': fpcrTemp = 0x800000; break;
                 case 'Z': fpcrTemp = 0xC00000; break;
             }
-            if (defaultNaN) fpcrTemp |= 1 << 25;
+            if (defaultNaN)
+            {
+                fpcrTemp |= 1 << 25;
+            }
 
             AThreadState threadState = SingleOpcode(opcode, v1: v1, fpcr: fpcrTemp);
 

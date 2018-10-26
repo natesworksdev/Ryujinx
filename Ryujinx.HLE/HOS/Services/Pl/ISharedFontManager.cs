@@ -67,7 +67,10 @@ namespace Ryujinx.HLE.HOS.Services.Pl
         {
             context.Device.System.Font.EnsureInitialized();
 
-            if (context.Process.HandleTable.GenerateHandle(context.Device.System.FontSharedMem, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(context.Device.System.FontSharedMem, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
@@ -83,7 +86,10 @@ namespace Ryujinx.HLE.HOS.Services.Pl
             {
                 int offset = (int)type * 4;
 
-                if (!AddFontToOrderOfPriorityList(context, (SharedFontType)type, offset)) break;
+                if (!AddFontToOrderOfPriorityList(context, (SharedFontType)type, offset))
+                {
+                    break;
+                }
 
                 loadedCount++;
             }
@@ -108,7 +114,9 @@ namespace Ryujinx.HLE.HOS.Services.Pl
             if ((uint)offset + 4 > (uint)typesSize   ||
                 (uint)offset + 4 > (uint)offsetsSize ||
                 (uint)offset + 4 > (uint)fontSizeBufferSize)
+            {
                 return false;
+            }
 
             context.Memory.WriteInt32(typesPosition + offset, (int)fontType);
 

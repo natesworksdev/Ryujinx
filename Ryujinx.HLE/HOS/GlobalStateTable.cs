@@ -28,28 +28,40 @@ namespace Ryujinx.HLE.HOS
 
         public object GetData(Process process, int id)
         {
-            if (_dictByProcess.TryGetValue(process, out IdDictionary dict)) return dict.GetData(id);
+            if (_dictByProcess.TryGetValue(process, out IdDictionary dict))
+            {
+                return dict.GetData(id);
+            }
 
             return null;
         }
 
         public T GetData<T>(Process process, int id)
         {
-            if (_dictByProcess.TryGetValue(process, out IdDictionary dict)) return dict.GetData<T>(id);
+            if (_dictByProcess.TryGetValue(process, out IdDictionary dict))
+            {
+                return dict.GetData<T>(id);
+            }
 
             return default(T);
         }
 
         public object Delete(Process process, int id)
         {
-            if (_dictByProcess.TryGetValue(process, out IdDictionary dict)) return dict.Delete(id);
+            if (_dictByProcess.TryGetValue(process, out IdDictionary dict))
+            {
+                return dict.Delete(id);
+            }
 
             return null;
         }
 
         public ICollection<object> DeleteProcess(Process process)
         {
-            if (_dictByProcess.TryRemove(process, out IdDictionary dict)) return dict.Clear();
+            if (_dictByProcess.TryRemove(process, out IdDictionary dict))
+            {
+                return dict.Clear();
+            }
 
             return null;
         }

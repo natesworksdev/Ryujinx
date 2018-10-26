@@ -90,11 +90,13 @@ namespace Ryujinx.HLE.HOS.Services.Aud
                        IntUtils.AlignUp(size, 64) + 0x40;
 
                 if (Params.PerformanceManagerCount >= 1)
+                {
                     size += (((Params.EffectCount +
                                Params.SinkCount +
                                Params.VoiceCount +
                                Params.MixCount + 1) * 16 + 0x658) *
                              (Params.PerformanceManagerCount + 1) + 0x13F) & ~0x3FL;
+                }
 
                 size = (size + 0x1907D) & ~0xFFFL;
 
@@ -139,7 +141,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud
         {
             int result = IntUtils.AlignUp(value, 64);
 
-            if (result < 0) result |= 7;
+            if (result < 0)
+            {
+                result |= 7;
+            }
 
             return 4 * value * value + 0x12 * value + 2 * (result / 8);
         }
@@ -148,7 +153,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud
         {
             int result = IntUtils.AlignUp(value * value, 64);
 
-            if (result < 0) result |= 7;
+            if (result < 0)
+            {
+                result |= 7;
+            }
 
             return result / 8;
         }

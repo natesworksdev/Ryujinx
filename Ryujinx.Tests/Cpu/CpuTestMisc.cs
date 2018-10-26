@@ -147,7 +147,10 @@ namespace Ryujinx.Tests.Cpu
             {
                 ulong a = 0, b = 1, c;
 
-                if (n == 0) return a;
+                if (n == 0)
+                {
+                    return a;
+                }
 
                 for (uint i = 2; i <= n; i++)
                 {

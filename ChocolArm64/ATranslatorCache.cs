@@ -92,7 +92,9 @@ namespace ChocolArm64
             if (_cache.TryGetValue(position, out CacheBucket bucket))
             {
                 if (bucket.CallCount++ > MinCallCountForUpdate)
+                {
                     if (Monitor.TryEnter(_sortedCache))
+                    {
                         try
                         {
                             bucket.CallCount = 0;
@@ -105,6 +107,8 @@ namespace ChocolArm64
                         {
                             Monitor.Exit(_sortedCache);
                         }
+                    }
+                }
 
                 subroutine = bucket.Subroutine;
 
@@ -121,17 +125,24 @@ namespace ChocolArm64
             int timestamp = Environment.TickCount;
 
             while (_totalSize > MaxTotalSize)
+            {
                 lock (_sortedCache)
                 {
                     LinkedListNode<long> node = _sortedCache.First;
 
-                    if (node == null) break;
+                    if (node == null)
+                    {
+                        break;
+                    }
 
                     CacheBucket bucket = _cache[node.Value];
 
                     int timeDelta = RingDelta(bucket.Timestamp, timestamp);
 
-                    if ((uint)timeDelta <= (uint)MinTimeDelta) break;
+                    if ((uint)timeDelta <= (uint)MinTimeDelta)
+                    {
+                        break;
+                    }
 
                     if (_cache.TryRemove(node.Value, out bucket))
                     {
@@ -140,14 +151,19 @@ namespace ChocolArm64
                         _sortedCache.Remove(bucket.Node);
                     }
                 }
+            }
         }
 
         private static int RingDelta(int old, int New)
         {
             if ((uint)New < (uint)old)
+            {
                 return New + ~old + 1;
+            }
             else
+            {
                 return New - old;
+            }
         }
     }
 }

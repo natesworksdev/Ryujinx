@@ -23,7 +23,10 @@ namespace Ryujinx.HLE.Loaders.Npdm
             {
                 byte controlByte = reader.ReadByte();
 
-                if (controlByte == 0) break;
+                if (controlByte == 0)
+                {
+                    break;
+                }
 
                 int  length          = (controlByte & 0x07) + 1;
                 bool registerAllowed = (controlByte & 0x80) != 0;

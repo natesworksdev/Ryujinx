@@ -22,7 +22,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             //Check if objects are already signaled before waiting.
             for (int index = 0; index < syncObjs.Length; index++)
             {
-                if (!syncObjs[index].IsSignaled()) continue;
+                if (!syncObjs[index].IsSignaled())
+                {
+                    continue;
+                }
 
                 hndIndex = index;
 
@@ -55,7 +58,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 LinkedListNode<KThread>[] syncNodes = new LinkedListNode<KThread>[syncObjs.Length];
 
-                for (int index = 0; index < syncObjs.Length; index++) syncNodes[index] = syncObjs[index].AddWaitingThread(currentThread);
+                for (int index = 0; index < syncObjs.Length; index++)
+                {
+                    syncNodes[index] = syncObjs[index].AddWaitingThread(currentThread);
+                }
 
                 currentThread.WaitingSync   = true;
                 currentThread.SignaledObj   = null;
@@ -63,13 +69,19 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (timeout > 0) _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                if (timeout > 0)
+                {
+                    _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                }
 
                 _system.CriticalSectionLock.Unlock();
 
                 currentThread.WaitingSync = false;
 
-                if (timeout > 0) _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+                if (timeout > 0)
+                {
+                    _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+                }
 
                 _system.CriticalSectionLock.Lock();
 
@@ -81,7 +93,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     syncObjs[index].RemoveWaitingThread(syncNodes[index]);
 
-                    if (syncObjs[index] == currentThread.SignaledObj) hndIndex = index;
+                    if (syncObjs[index] == currentThread.SignaledObj)
+                    {
+                        hndIndex = index;
+                    }
                 }
             }
 

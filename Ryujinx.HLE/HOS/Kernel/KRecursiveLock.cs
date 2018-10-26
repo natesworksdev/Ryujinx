@@ -27,17 +27,24 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void Unlock()
         {
-            if (_recursionCount == 0) return;
+            if (_recursionCount == 0)
+            {
+                return;
+            }
 
             bool doContextSwitch = false;
 
             if (--_recursionCount == 0)
             {
-                if (_system.Scheduler.ThreadReselectionRequested) _system.Scheduler.SelectThreads();
+                if (_system.Scheduler.ThreadReselectionRequested)
+                {
+                    _system.Scheduler.SelectThreads();
+                }
 
                 Monitor.Exit(LockObj);
 
                 if (_system.Scheduler.MultiCoreScheduling)
+                {
                     lock (_system.Scheduler.CoreContexts)
                     {
                         for (int core = 0; core < KScheduler.CpuCoresCount; core++)
@@ -49,23 +56,35 @@ namespace Ryujinx.HLE.HOS.Kernel
                                 AThread currentHleThread = coreContext.CurrentThread?.Context;
 
                                 if (currentHleThread == null)
+                                {
                                     coreContext.ContextSwitch();
+                                }
                                 else if (currentHleThread.IsCurrentThread())
+                                {
                                     doContextSwitch = true;
+                                }
                                 else
+                                {
                                     currentHleThread.RequestInterrupt();
+                                }
                             }
                         }
                     }
+                }
                 else
+                {
                     doContextSwitch = true;
+                }
             }
             else
             {
                 Monitor.Exit(LockObj);
             }
 
-            if (doContextSwitch) _system.Scheduler.ContextSwitch();
+            if (doContextSwitch)
+            {
+                _system.Scheduler.ContextSwitch();
+            }
         }
     }
 }

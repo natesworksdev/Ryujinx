@@ -53,11 +53,20 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             string fileName = context.Device.FileSystem.GetFullPath(_path, name);
 
-            if (fileName == null) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (fileName == null)
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
-            if (File.Exists(fileName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyExists);
+            if (File.Exists(fileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyExists);
+            }
 
-            if (IsPathAlreadyInUse(fileName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            if (IsPathAlreadyInUse(fileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            }
 
             using (FileStream newFile = File.Create(fileName))
             {
@@ -73,9 +82,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             string fileName = context.Device.FileSystem.GetFullPath(_path, name);
 
-            if (!File.Exists(fileName)) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (!File.Exists(fileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
-            if (IsPathAlreadyInUse(fileName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            if (IsPathAlreadyInUse(fileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            }
 
             File.Delete(fileName);
 
@@ -88,11 +103,20 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             string dirName = context.Device.FileSystem.GetFullPath(_path, name);
 
-            if (dirName == null) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (dirName == null)
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
-            if (Directory.Exists(dirName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyExists);
+            if (Directory.Exists(dirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyExists);
+            }
 
-            if (IsPathAlreadyInUse(dirName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            if (IsPathAlreadyInUse(dirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            }
 
             Directory.CreateDirectory(dirName);
 
@@ -115,9 +139,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             string dirName = context.Device.FileSystem.GetFullPath(_path, name);
 
-            if (!Directory.Exists(dirName)) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (!Directory.Exists(dirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
-            if (IsPathAlreadyInUse(dirName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            if (IsPathAlreadyInUse(dirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            }
 
             Directory.Delete(dirName, recursive);
 
@@ -132,11 +162,20 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             string oldFileName = context.Device.FileSystem.GetFullPath(_path, oldName);
             string newFileName = context.Device.FileSystem.GetFullPath(_path, newName);
 
-            if (!File.Exists(oldFileName)) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (!File.Exists(oldFileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
-            if (File.Exists(newFileName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyExists);
+            if (File.Exists(newFileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyExists);
+            }
 
-            if (IsPathAlreadyInUse(oldFileName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            if (IsPathAlreadyInUse(oldFileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            }
 
             File.Move(oldFileName, newFileName);
 
@@ -151,11 +190,20 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             string oldDirName = context.Device.FileSystem.GetFullPath(_path, oldName);
             string newDirName = context.Device.FileSystem.GetFullPath(_path, newName);
 
-            if (!Directory.Exists(oldDirName)) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (!Directory.Exists(oldDirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
-            if (Directory.Exists(newDirName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyExists);
+            if (Directory.Exists(newDirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyExists);
+            }
 
-            if (IsPathAlreadyInUse(oldDirName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            if (IsPathAlreadyInUse(oldDirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            }
 
             Directory.Move(oldDirName, newDirName);
 
@@ -194,9 +242,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             string fileName = context.Device.FileSystem.GetFullPath(_path, name);
 
-            if (!File.Exists(fileName)) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (!File.Exists(fileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
-            if (IsPathAlreadyInUse(fileName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            if (IsPathAlreadyInUse(fileName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            }
 
             FileStream stream = new FileStream(fileName, FileMode.Open);
 
@@ -222,7 +276,10 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             string dirName = context.Device.FileSystem.GetFullPath(_path, name);
 
-            if (!Directory.Exists(dirName)) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (!Directory.Exists(dirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
             IDirectory dirInterface = new IDirectory(dirName, filterFlags);
 
@@ -267,14 +324,27 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             string dirName = context.Device.FileSystem.GetFullPath(_path, name);
 
-            if (!Directory.Exists(dirName)) return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            if (!Directory.Exists(dirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
 
-            if (IsPathAlreadyInUse(dirName)) return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            if (IsPathAlreadyInUse(dirName))
+            {
+                return MakeError(ErrorModule.Fs, FsErr.PathAlreadyInUse);
+            }
 
             foreach (string entry in Directory.EnumerateFileSystemEntries(dirName))
+            {
                 if (Directory.Exists(entry))
+                {
                     Directory.Delete(entry, true);
-                else if (File.Exists(entry)) File.Delete(entry);
+                }
+                else if (File.Exists(entry))
+                {
+                    File.Delete(entry);
+                }
+            }
 
             return 0;
         }
@@ -322,7 +392,10 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 {
                     byte value = context.Memory.ReadByte(position++);
 
-                    if (value == 0) break;
+                    if (value == 0)
+                    {
+                        break;
+                    }
 
                     ms.WriteByte(value);
                 }

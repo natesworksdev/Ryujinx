@@ -79,7 +79,10 @@ namespace Ryujinx.Graphics
 
             FetchOpCode(mme);
 
-            while (Step(vmm, mme));
+            while (Step(vmm, mme))
+            {
+                ;
+            }
 
             //Due to the delay slot, we still need to execute
             //one more instruction before we actually exit.
@@ -88,7 +91,10 @@ namespace Ryujinx.Graphics
 
         private void Reset()
         {
-            for (int index = 0; index < _gprs.Length; index++) _gprs[index] = 0;
+            for (int index = 0; index < _gprs.Length; index++)
+            {
+                _gprs[index] = 0;
+            }
 
             _methAddr = 0;
             _methIncr = 0;
@@ -207,7 +213,10 @@ namespace Ryujinx.Graphics
 
                     bool noDelays = (_opCode & 0x20) != 0;
 
-                    if (noDelays) FetchOpCode(mme);
+                    if (noDelays)
+                    {
+                        FetchOpCode(mme);
+                    }
 
                     return true;
                 }
@@ -385,7 +394,12 @@ namespace Ryujinx.Graphics
             //If we don't have any parameters in the FIFO,
             //keep running the PFIFO engine until it writes the parameters.
             while (!Fifo.TryDequeue(out value))
-                if (!_pFifo.Step()) return 0;
+            {
+                if (!_pFifo.Step())
+                {
+                    return 0;
+                }
+            }
 
             return value;
         }

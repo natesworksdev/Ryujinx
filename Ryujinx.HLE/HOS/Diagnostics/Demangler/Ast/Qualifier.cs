@@ -28,16 +28,28 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public void PrintQualifier(TextWriter writer)
         {
-            if ((Qualifier & CV.Const) != 0) writer.Write(" const");
+            if ((Qualifier & CV.Const) != 0)
+            {
+                writer.Write(" const");
+            }
 
-            if ((Qualifier & CV.Volatile) != 0) writer.Write(" volatile");
+            if ((Qualifier & CV.Volatile) != 0)
+            {
+                writer.Write(" volatile");
+            }
 
-            if ((Qualifier & CV.Restricted) != 0) writer.Write(" restrict");
+            if ((Qualifier & CV.Restricted) != 0)
+            {
+                writer.Write(" restrict");
+            }
         }
 
         public override void PrintLeft(TextWriter writer)
         {
-            if (Child != null) Child.PrintLeft(writer);
+            if (Child != null)
+            {
+                Child.PrintLeft(writer);
+            }
 
             PrintQualifier(writer);
         }
@@ -49,7 +61,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintRight(TextWriter writer)
         {
-            if (Child != null) Child.PrintRight(writer);
+            if (Child != null)
+            {
+                Child.PrintRight(writer);
+            }
         }
     }
 
@@ -64,16 +79,27 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public void PrintQualifier(TextWriter writer)
         {
-            if ((Qualifier & Reference.LValue) != 0) writer.Write("&");
+            if ((Qualifier & Reference.LValue) != 0)
+            {
+                writer.Write("&");
+            }
 
-            if ((Qualifier & Reference.RValue) != 0) writer.Write("&&");
+            if ((Qualifier & Reference.RValue) != 0)
+            {
+                writer.Write("&&");
+            }
         }
 
         public override void PrintLeft(TextWriter writer)
         {
             if (Child != null)
+            {
                 Child.PrintLeft(writer);
-            else if (Qualifier != Reference.None) writer.Write(" ");
+            }
+            else if (Qualifier != Reference.None)
+            {
+                writer.Write(" ");
+            }
 
             PrintQualifier(writer);
         }
@@ -85,7 +111,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintRight(TextWriter writer)
         {
-            if (Child != null) Child.PrintRight(writer);
+            if (Child != null)
+            {
+                Child.PrintRight(writer);
+            }
         }
     }
 }

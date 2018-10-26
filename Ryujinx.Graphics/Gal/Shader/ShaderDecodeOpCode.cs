@@ -28,7 +28,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             ShaderIrOperAbuf[] opers = new ShaderIrOperAbuf[size + 1];
 
-            for (int index = 0; index <= size; index++) opers[index] = new ShaderIrOperAbuf(abuf + index * 4, vertex);
+            for (int index = 0; index <= size; index++)
+            {
+                opers[index] = new ShaderIrOperAbuf(abuf + index * 4, vertex);
+            }
 
             return opers;
         }
@@ -98,7 +101,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             bool neg = opCode.Read(56);
 
-            if (neg) value = -value;
+            if (neg)
+            {
+                value = -value;
+            }
 
             return new ShaderIrOperImm(value);
         }
@@ -111,7 +117,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             imm <<= 12;
 
-            if (neg) imm |= 0x80000000;
+            if (neg)
+            {
+                imm |= 0x80000000;
+            }
 
             float value = BitConverter.Int32BitsToSingle((int)imm);
 
@@ -142,7 +151,10 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             ShaderIrNode node = opCode.Pred39();
 
-            if (opCode.Read(42)) node = new ShaderIrOp(ShaderIrInst.Bnot, node);
+            if (opCode.Read(42))
+            {
+                node = new ShaderIrOp(ShaderIrInst.Bnot, node);
+            }
 
             return node;
         }
@@ -237,7 +249,10 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             int pred = opCode.Read(16, 0xf);
 
-            if (pred != 0xf) pred &= 7;
+            if (pred != 0xf)
+            {
+                pred &= 7;
+            }
 
             return new ShaderIrOperPred(pred);
         }

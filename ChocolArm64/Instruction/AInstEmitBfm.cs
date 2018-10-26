@@ -125,9 +125,13 @@ namespace ChocolArm64.Instruction
             context.EmitLsl(op.GetBitsCount() - width);
 
             if (signed)
+            {
                 context.EmitAsr(op.Shift - width);
+            }
             else
+            {
                 context.EmitLsr(op.Shift - width);
+            }
 
             context.EmitStintzr(op.Rd);
         }
@@ -151,9 +155,11 @@ namespace ChocolArm64.Instruction
             context.Emit(ilOp);
 
             if (op.RegisterSize != ARegisterSize.Int32)
+            {
                 context.Emit(signed
                     ? OpCodes.Conv_I8
                     : OpCodes.Conv_U8);
+            }
 
             context.EmitStintzr(op.Rd);
         }

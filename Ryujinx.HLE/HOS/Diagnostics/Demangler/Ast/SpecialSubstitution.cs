@@ -35,7 +35,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
                 case SpecialType.BasicString:
                     return "basic_string";
                 case SpecialType.String:
-                    if (Type == NodeType.ExpandedSpecialSubstitution) return "basic_string";
+                    if (Type == NodeType.ExpandedSpecialSubstitution)
+                    {
+                        return "basic_string";
+                    }
 
                     return "string";
                 case SpecialType.Stream:

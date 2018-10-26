@@ -28,7 +28,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             context.ResponseData.Write((long)(System.Diagnostics.Process.GetCurrentProcess().StartTime - DateTime.Now).TotalSeconds);
 
-            for (int i = 0; i < 0x10; i++) context.ResponseData.Write((byte)0);
+            for (int i = 0; i < 0x10; i++)
+            {
+                context.ResponseData.Write((byte)0);
+            }
 
             return 0;
         }

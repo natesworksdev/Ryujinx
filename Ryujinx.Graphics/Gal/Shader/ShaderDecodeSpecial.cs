@@ -11,9 +11,15 @@
 
             int type = opCode.Read(39, 3);
 
-            if ((type & 1) != 0) block.AddNode(opCode.PredNode(new ShaderIrOp(ShaderIrInst.Emit)));
+            if ((type & 1) != 0)
+            {
+                block.AddNode(opCode.PredNode(new ShaderIrOp(ShaderIrInst.Emit)));
+            }
 
-            if ((type & 2) != 0) block.AddNode(opCode.PredNode(new ShaderIrOp(ShaderIrInst.Cut)));
+            if ((type & 2) != 0)
+            {
+                block.AddNode(opCode.PredNode(new ShaderIrOp(ShaderIrInst.Cut)));
+            }
         }
     }
 }

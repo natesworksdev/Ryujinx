@@ -11,9 +11,15 @@ namespace ChocolArm64.Memory
         {
             int size8 = size & ~(8 - 1);
 
-            for (int offs = 0; offs < size8; offs += 8) memory.WriteInt64(position + offs, 0);
+            for (int offs = 0; offs < size8; offs += 8)
+            {
+                memory.WriteInt64(position + offs, 0);
+            }
 
-            for (int offs = size8; offs < size - size8; offs++) memory.WriteByte(position + offs, 0);
+            for (int offs = size8; offs < size - size8; offs++)
+            {
+                memory.WriteByte(position + offs, 0);
+            }
         }
 
         public static unsafe T Read<T>(AMemory memory, long position) where T : struct
@@ -46,7 +52,10 @@ namespace ChocolArm64.Memory
                 {
                     byte value = (byte)memory.ReadByte(position + offs);
 
-                    if (value == 0) break;
+                    if (value == 0)
+                    {
+                        break;
+                    }
 
                     ms.WriteByte(value);
                 }

@@ -55,16 +55,26 @@ namespace Ryujinx.Graphics.Memory
                 long rgEnd   = Math.Min(current.End,   newCached.End);
 
                 if ((current.Value & mask) == 0)
+                {
                     _cachedRanges.Add(new ValueRange<int>(rgStart, rgEnd, current.Value | mask));
+                }
                 else
+                {
                     coverage += rgEnd - rgStart;
+                }
 
-                if (rgStart > lastEnd) _cachedRanges.Add(new ValueRange<int>(lastEnd, rgStart, mask));
+                if (rgStart > lastEnd)
+                {
+                    _cachedRanges.Add(new ValueRange<int>(lastEnd, rgStart, mask));
+                }
 
                 lastEnd = rgEnd;
             }
 
-            if (lastEnd < newCached.End) _cachedRanges.Add(new ValueRange<int>(lastEnd, newCached.End, mask));
+            if (lastEnd < newCached.End)
+            {
+                _cachedRanges.Add(new ValueRange<int>(lastEnd, newCached.End, mask));
+            }
 
             return coverage != size;
         }

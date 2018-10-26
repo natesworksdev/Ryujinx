@@ -121,7 +121,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
         {
             T[] output = new T[size];
 
-            for (int index = 0; index < size; index++) output[index] = new T();
+            for (int index = 0; index < size; index++)
+            {
+                output[index] = new T();
+            }
 
             return output;
         }
@@ -158,8 +161,13 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                 MemoryPoolIn memoryPool = memoryPoolsIn[index];
 
                 if (memoryPool.State == MemoryPoolState.RequestAttach)
+                {
                     _memoryPools[index].OutStatus.State = MemoryPoolState.Attached;
-                else if (memoryPool.State == MemoryPoolState.RequestDetach) _memoryPools[index].OutStatus.State = MemoryPoolState.Detached;
+                }
+                else if (memoryPool.State == MemoryPoolState.RequestDetach)
+                {
+                    _memoryPools[index].OutStatus.State = MemoryPoolState.Detached;
+                }
             }
 
             reader.Read<VoiceChannelResourceIn>(inputHeader.VoiceResourceSize);
@@ -174,7 +182,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
                 voiceCtx.SetAcquireState(voice.Acquired != 0);
 
-                if (voice.Acquired == 0) continue;
+                if (voice.Acquired == 0)
+                {
+                    continue;
+                }
 
                 if (voice.FirstUpdate != 0)
                 {
@@ -220,9 +231,15 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
             writer.Write(outputHeader);
 
-            foreach (MemoryPoolContext memoryPool in _memoryPools) writer.Write(memoryPool.OutStatus);
+            foreach (MemoryPoolContext memoryPool in _memoryPools)
+            {
+                writer.Write(memoryPool.OutStatus);
+            }
 
-            foreach (VoiceContext voice in _voices) writer.Write(voice.OutStatus);
+            foreach (VoiceContext voice in _voices)
+            {
+                writer.Write(voice.OutStatus);
+            }
 
             return 0;
         }
@@ -247,7 +264,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         public long QuerySystemEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_updateEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_updateEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
@@ -256,13 +276,19 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         private AdpcmDecoderContext GetAdpcmDecoderContext(long position, long size)
         {
-            if (size == 0) return null;
+            if (size == 0)
+            {
+                return null;
+            }
 
             AdpcmDecoderContext context = new AdpcmDecoderContext();
 
             context.Coefficients = new short[size >> 1];
 
-            for (int offset = 0; offset < size; offset += 2) context.Coefficients[offset >> 1] = _memory.ReadInt16(position + offset);
+            for (int offset = 0; offset < size; offset += 2)
+            {
+                context.Coefficients[offset >> 1] = _memory.ReadInt16(position + offset);
+            }
 
             return context;
         }
@@ -271,7 +297,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
         {
             long[] released = _audioOut.GetReleasedBuffers(_track, 2);
 
-            for (int index = 0; index < released.Length; index++) AppendMixedBuffer(released[index]);
+            for (int index = 0; index < released.Length; index++)
+            {
+                AppendMixedBuffer(released[index]);
+            }
         }
 
         private void AppendMixedBuffer(long tag)
@@ -280,7 +309,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
             foreach (VoiceContext voice in _voices)
             {
-                if (!voice.Playing) continue;
+                if (!voice.Playing)
+                {
+                    continue;
+                }
 
                 int outOffset = 0;
 
@@ -290,7 +322,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                 {
                     int[] samples = voice.GetBufferData(_memory, pendingSamples, out int returnedSamples);
 
-                    if (returnedSamples == 0) break;
+                    if (returnedSamples == 0)
+                    {
+                        break;
+                    }
 
                     pendingSamples -= returnedSamples;
 
@@ -310,7 +345,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
         {
             short[] output = new short[buffer.Length];
 
-            for (int offset = 0; offset < buffer.Length; offset++) output[offset] = DspUtils.Saturate(buffer[offset]);
+            for (int offset = 0; offset < buffer.Length; offset++)
+            {
+                output[offset] = DspUtils.Saturate(buffer[offset]);
+            }
 
             return output;
         }
@@ -322,7 +360,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing) _audioOut.CloseTrack(_track);
+            if (disposing)
+            {
+                _audioOut.CloseTrack(_track);
+            }
         }
     }
 }

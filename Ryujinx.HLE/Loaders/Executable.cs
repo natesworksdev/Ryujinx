@@ -34,7 +34,10 @@ namespace Ryujinx.HLE.Loaders
 
             FilePath = exe.FilePath;
 
-            if (FilePath != null) Name = Path.GetFileNameWithoutExtension(FilePath.Replace(Homebrew.TemporaryNroSuffix, ""));
+            if (FilePath != null)
+            {
+                Name = Path.GetFileNameWithoutExtension(FilePath.Replace(Homebrew.TemporaryNroSuffix, ""));
+            }
 
             _memory        = memory;
             _memoryManager = memoryManager;
@@ -69,7 +72,10 @@ namespace Ryujinx.HLE.Loaders
             {
                 long result = memoryManager.MapProcessCodeMemory(textPosition, exe.SourceAddress, textSize + roSize + dataSize);
 
-                if (result != 0) throw new InvalidOperationException();
+                if (result != 0)
+                {
+                    throw new InvalidOperationException();
+                }
 
                 memoryManager.SetProcessMemoryPermission(roPosition, roSize, MemoryPermission.Read);
                 memoryManager.SetProcessMemoryPermission(dataPosition, dataSize, MemoryPermission.ReadAndWrite);
@@ -78,13 +84,19 @@ namespace Ryujinx.HLE.Loaders
                 {
                     result = memoryManager.MapProcessCodeMemory(dataPosition + dataSize, exe.BssAddress, bssSize);
 
-                    if (result != 0) throw new InvalidOperationException();
+                    if (result != 0)
+                    {
+                        throw new InvalidOperationException();
+                    }
 
                     memoryManager.SetProcessMemoryPermission(dataPosition + dataSize, bssSize, MemoryPermission.ReadAndWrite);
                 }
             }
 
-            if (exe.Mod0Offset == 0) return;
+            if (exe.Mod0Offset == 0)
+            {
+                return;
+            }
 
             long mod0Offset = imageBase + exe.Mod0Offset;
 
@@ -105,7 +117,10 @@ namespace Ryujinx.HLE.Loaders
 
                 ElfDynTag tag = (ElfDynTag)tagVal;
 
-                if (tag == ElfDynTag.DtNull) break;
+                if (tag == ElfDynTag.DtNull)
+                {
+                    break;
+                }
 
                 _dynamic.Add(new ElfDyn(tag, value));
             }
@@ -166,7 +181,10 @@ namespace Ryujinx.HLE.Loaders
 
             string name = string.Empty;
 
-            for (int chr; (chr = _memory.ReadByte(strTblAddr + nameIndex++)) != 0;) name += (char)chr;
+            for (int chr; (chr = _memory.ReadByte(strTblAddr + nameIndex++)) != 0;)
+            {
+                name += (char)chr;
+            }
 
             return new ElfSym(name, info, other, shIdx, value, size);
         }
@@ -174,7 +192,12 @@ namespace Ryujinx.HLE.Loaders
         private long GetFirstValue(ElfDynTag tag)
         {
             foreach (ElfDyn entry in _dynamic)
-                if (entry.Tag == tag) return entry.Value;
+            {
+                if (entry.Tag == tag)
+                {
+                    return entry.Value;
+                }
+            }
 
             return 0;
         }

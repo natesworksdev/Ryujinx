@@ -13,7 +13,10 @@ namespace ChocolArm64.Instruction
 
         static AVectorHelper()
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             _zero32_128Mask = Sse.StaticCast<uint, float>(Sse2.SetVector128(0, 0, 0, 0xffffffff));
         }
@@ -33,7 +36,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SatF32ToS32(float value)
         {
-            if (float.IsNaN(value)) return 0;
+            if (float.IsNaN(value))
+            {
+                return 0;
+            }
 
             return value > int.MaxValue ? int.MaxValue :
                    value < int.MinValue ? int.MinValue : (int)value;
@@ -42,7 +48,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long SatF32ToS64(float value)
         {
-            if (float.IsNaN(value)) return 0;
+            if (float.IsNaN(value))
+            {
+                return 0;
+            }
 
             return value > long.MaxValue ? long.MaxValue :
                    value < long.MinValue ? long.MinValue : (long)value;
@@ -51,7 +60,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint SatF32ToU32(float value)
         {
-            if (float.IsNaN(value)) return 0;
+            if (float.IsNaN(value))
+            {
+                return 0;
+            }
 
             return value > uint.MaxValue ? uint.MaxValue :
                    value < uint.MinValue ? uint.MinValue : (uint)value;
@@ -60,7 +72,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong SatF32ToU64(float value)
         {
-            if (float.IsNaN(value)) return 0;
+            if (float.IsNaN(value))
+            {
+                return 0;
+            }
 
             return value > ulong.MaxValue ? ulong.MaxValue :
                    value < ulong.MinValue ? ulong.MinValue : (ulong)value;
@@ -69,7 +84,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SatF64ToS32(double value)
         {
-            if (double.IsNaN(value)) return 0;
+            if (double.IsNaN(value))
+            {
+                return 0;
+            }
 
             return value > int.MaxValue ? int.MaxValue :
                    value < int.MinValue ? int.MinValue : (int)value;
@@ -78,7 +96,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long SatF64ToS64(double value)
         {
-            if (double.IsNaN(value)) return 0;
+            if (double.IsNaN(value))
+            {
+                return 0;
+            }
 
             return value > long.MaxValue ? long.MaxValue :
                    value < long.MinValue ? long.MinValue : (long)value;
@@ -87,7 +108,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint SatF64ToU32(double value)
         {
-            if (double.IsNaN(value)) return 0;
+            if (double.IsNaN(value))
+            {
+                return 0;
+            }
 
             return value > uint.MaxValue ? uint.MaxValue :
                    value < uint.MinValue ? uint.MinValue : (uint)value;
@@ -96,7 +120,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong SatF64ToU64(double value)
         {
-            if (double.IsNaN(value)) return 0;
+            if (double.IsNaN(value))
+            {
+                return 0;
+            }
 
             return value > ulong.MaxValue ? ulong.MaxValue :
                    value < ulong.MinValue ? ulong.MinValue : (ulong)value;
@@ -203,14 +230,21 @@ namespace ChocolArm64.Instruction
             byte[] table = new byte[tb.Length * 16];
 
             for (byte index  = 0; index  < tb.Length; index++)
-            for (byte index2 = 0; index2 < 16;        index2++)
-                table[index * 16 + index2] = (byte)VectorExtractIntZx(tb[index], index2, 0);
+            {
+                for (byte index2 = 0; index2 < 16;        index2++)
+                {
+                    table[index * 16 + index2] = (byte)VectorExtractIntZx(tb[index], index2, 0);
+                }
+            }
 
             for (byte index = 0; index < bytes; index++)
             {
                 byte tblIdx = (byte)VectorExtractIntZx(vector, index, 0);
 
-                if (tblIdx < table.Length) res = VectorInsertInt(table[tblIdx], res, index, 0);
+                if (tblIdx < table.Length)
+                {
+                    res = VectorInsertInt(table[tblIdx], res, index, 0);
+                }
             }
 
             return res;
@@ -220,8 +254,13 @@ namespace ChocolArm64.Instruction
         public static double VectorExtractDouble(Vector128<float> vector, byte index)
         {
             if (Sse41.IsSupported)
+            {
                 return BitConverter.Int64BitsToDouble(Sse41.Extract(Sse.StaticCast<float, long>(vector), index));
-            else if (Sse2.IsSupported) return BitConverter.Int64BitsToDouble((long)VectorExtractIntZx(vector, index, 3));
+            }
+            else if (Sse2.IsSupported)
+            {
+                return BitConverter.Int64BitsToDouble((long)VectorExtractIntZx(vector, index, 3));
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -232,28 +271,48 @@ namespace ChocolArm64.Instruction
             if (Sse41.IsSupported)
             {
                 if (size == 0)
+                {
                     return (sbyte)Sse41.Extract(Sse.StaticCast<float, byte>(vector), index);
+                }
                 else if (size == 1)
+                {
                     return (short)Sse2.Extract(Sse.StaticCast<float, ushort>(vector), index);
+                }
                 else if (size == 2)
+                {
                     return Sse41.Extract(Sse.StaticCast<float, int>(vector), index);
+                }
                 else if (size == 3)
+                {
                     return Sse41.Extract(Sse.StaticCast<float, long>(vector), index);
+                }
                 else
+                {
                     throw new ArgumentOutOfRangeException(nameof(size));
+                }
             }
             else if (Sse2.IsSupported)
             {
                 if (size == 0)
+                {
                     return (sbyte)VectorExtractIntZx(vector, index, size);
+                }
                 else if (size == 1)
+                {
                     return (short)VectorExtractIntZx(vector, index, size);
+                }
                 else if (size == 2)
+                {
                     return (int)VectorExtractIntZx(vector, index, size);
+                }
                 else if (size == 3)
+                {
                     return (long)VectorExtractIntZx(vector, index, size);
+                }
                 else
+                {
                     throw new ArgumentOutOfRangeException(nameof(size));
+                }
             }
 
             throw new PlatformNotSupportedException();
@@ -265,15 +324,25 @@ namespace ChocolArm64.Instruction
             if (Sse41.IsSupported)
             {
                 if (size == 0)
+                {
                     return Sse41.Extract(Sse.StaticCast<float, byte>(vector), index);
+                }
                 else if (size == 1)
+                {
                     return Sse2.Extract(Sse.StaticCast<float, ushort>(vector), index);
+                }
                 else if (size == 2)
+                {
                     return Sse41.Extract(Sse.StaticCast<float, uint>(vector), index);
+                }
                 else if (size == 3)
+                {
                     return Sse41.Extract(Sse.StaticCast<float, ulong>(vector), index);
+                }
                 else
+                {
                     throw new ArgumentOutOfRangeException(nameof(size));
+                }
             }
             else if (Sse2.IsSupported)
             {
@@ -295,7 +364,10 @@ namespace ChocolArm64.Instruction
                 {
                     ushort value1 = Sse2.Extract(Sse.StaticCast<float, ushort>(vector), (byte)(shortIdx + 1));
 
-                    if (size == 2) return (uint)(value | (value1 << 16));
+                    if (size == 2)
+                    {
+                        return (uint)(value | (value1 << 16));
+                    }
 
                     ushort value2 = Sse2.Extract(Sse.StaticCast<float, ushort>(vector), (byte)(shortIdx + 2));
                     ushort value3 = Sse2.Extract(Sse.StaticCast<float, ushort>(vector), (byte)(shortIdx + 3));
@@ -346,15 +418,25 @@ namespace ChocolArm64.Instruction
             if (Sse41.IsSupported)
             {
                 if (size == 0)
+                {
                     return Sse.StaticCast<byte, float>(Sse41.Insert(Sse.StaticCast<float, byte>(vector), (byte)value, index));
+                }
                 else if (size == 1)
+                {
                     return Sse.StaticCast<ushort, float>(Sse2.Insert(Sse.StaticCast<float, ushort>(vector), (ushort)value, index));
+                }
                 else if (size == 2)
+                {
                     return Sse.StaticCast<uint, float>(Sse41.Insert(Sse.StaticCast<float, uint>(vector), (uint)value, index));
+                }
                 else if (size == 3)
+                {
                     return Sse.StaticCast<ulong, float>(Sse41.Insert(Sse.StaticCast<float, ulong>(vector), value, index));
+                }
                 else
+                {
                     throw new ArgumentOutOfRangeException(nameof(size));
+                }
             }
             else if (Sse2.IsSupported)
             {
@@ -411,15 +493,25 @@ namespace ChocolArm64.Instruction
                 //produce a single INSERTPS instruction instead of the
                 //jump table fallback.
                 if (index == 0)
+                {
                     return Sse41.Insert(vector, value, 0x00);
+                }
                 else if (index == 1)
+                {
                     return Sse41.Insert(vector, value, 0x10);
+                }
                 else if (index == 2)
+                {
                     return Sse41.Insert(vector, value, 0x20);
+                }
                 else if (index == 3)
+                {
                     return Sse41.Insert(vector, value, 0x30);
+                }
                 else
+                {
                     throw new ArgumentOutOfRangeException(nameof(index));
+                }
             }
             else if (Sse2.IsSupported)
             {
@@ -449,7 +541,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<sbyte> VectorSByteZero()
         {
-            if (Sse2.IsSupported) return Sse2.SetZeroVector128<sbyte>();
+            if (Sse2.IsSupported)
+            {
+                return Sse2.SetZeroVector128<sbyte>();
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -457,7 +552,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<short> VectorInt16Zero()
         {
-            if (Sse2.IsSupported) return Sse2.SetZeroVector128<short>();
+            if (Sse2.IsSupported)
+            {
+                return Sse2.SetZeroVector128<short>();
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -465,7 +563,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<int> VectorInt32Zero()
         {
-            if (Sse2.IsSupported) return Sse2.SetZeroVector128<int>();
+            if (Sse2.IsSupported)
+            {
+                return Sse2.SetZeroVector128<int>();
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -473,7 +574,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<long> VectorInt64Zero()
         {
-            if (Sse2.IsSupported) return Sse2.SetZeroVector128<long>();
+            if (Sse2.IsSupported)
+            {
+                return Sse2.SetZeroVector128<long>();
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -481,7 +585,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorSingleZero()
         {
-            if (Sse.IsSupported) return Sse.SetZeroVector128();
+            if (Sse.IsSupported)
+            {
+                return Sse.SetZeroVector128();
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -489,7 +596,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<double> VectorDoubleZero()
         {
-            if (Sse2.IsSupported) return Sse2.SetZeroVector128<double>();
+            if (Sse2.IsSupported)
+            {
+                return Sse2.SetZeroVector128<double>();
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -497,7 +607,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorZero32_128(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.And(vector, _zero32_128Mask);
+            if (Sse.IsSupported)
+            {
+                return Sse.And(vector, _zero32_128Mask);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -505,7 +618,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<sbyte> VectorSingleToSByte(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, sbyte>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, sbyte>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -513,7 +629,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<short> VectorSingleToInt16(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, short>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, short>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -521,7 +640,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<int> VectorSingleToInt32(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, int>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, int>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -529,7 +651,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<long> VectorSingleToInt64(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, long>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, long>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -537,7 +662,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<byte> VectorSingleToByte(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, byte>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, byte>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -545,7 +673,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<ushort> VectorSingleToUInt16(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, ushort>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, ushort>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -553,7 +684,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<uint> VectorSingleToUInt32(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, uint>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, uint>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -561,7 +695,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<ulong> VectorSingleToUInt64(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, ulong>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, ulong>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -569,7 +706,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<double> VectorSingleToDouble(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<float, double>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<float, double>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -577,7 +717,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorSByteToSingle(Vector128<sbyte> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<sbyte, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<sbyte, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -585,7 +728,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorInt16ToSingle(Vector128<short> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<short, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<short, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -593,7 +739,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorInt32ToSingle(Vector128<int> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<int, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<int, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -601,7 +750,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorInt64ToSingle(Vector128<long> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<long, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<long, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -609,7 +761,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorByteToSingle(Vector128<byte> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<byte, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<byte, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -617,7 +772,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorUInt16ToSingle(Vector128<ushort> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<ushort, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<ushort, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -625,7 +783,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorUInt32ToSingle(Vector128<uint> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<uint, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<uint, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -633,7 +794,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorUInt64ToSingle(Vector128<ulong> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<ulong, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<ulong, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }
@@ -641,7 +805,10 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorDoubleToSingle(Vector128<double> vector)
         {
-            if (Sse.IsSupported) return Sse.StaticCast<double, float>(vector);
+            if (Sse.IsSupported)
+            {
+                return Sse.StaticCast<double, float>(vector);
+            }
 
             throw new PlatformNotSupportedException();
         }

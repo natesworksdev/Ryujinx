@@ -15,7 +15,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             writer.Write("fp ");
 
-            if (_number != null) writer.Write(_number);
+            if (_number != null)
+            {
+                writer.Write(_number);
+            }
         }
     }
 }

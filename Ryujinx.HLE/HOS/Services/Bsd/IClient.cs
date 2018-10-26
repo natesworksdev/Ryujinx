@@ -144,7 +144,10 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
         {
             LinuxError errno;
 
-            if (!_errorMap.TryGetValue(errorCode, out errno)) errno = (LinuxError)errorCode;
+            if (!_errorMap.TryGetValue(errorCode, out errno))
+            {
+                errno = (LinuxError)errorCode;
+            }
 
             return errno;
         }
@@ -156,7 +159,10 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
 
         private long WriteBsdResult(ServiceCtx context, int result, LinuxError errorCode = 0)
         {
-            if (errorCode != LinuxError.Success) result = -1;
+            if (errorCode != LinuxError.Success)
+            {
+                result = -1;
+            }
 
             context.ResponseData.Write(result);
             context.ResponseData.Write((int)errorCode);
@@ -166,7 +172,10 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
 
         private BsdSocket RetrieveSocket(int socketFd)
         {
-            if (socketFd >= 0 && _sockets.Count > socketFd) return _sockets[socketFd];
+            if (socketFd >= 0 && _sockets.Count > socketFd)
+            {
+                return _sockets[socketFd];
+            }
 
             return null;
         }
@@ -178,7 +187,10 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
 
         private AddressFamily ConvertFromBsd(int domain)
         {
-            if (domain == 2) return AddressFamily.InterNetwork;
+            if (domain == 2)
+            {
+                return AddressFamily.InterNetwork;
+            }
 
             // FIXME: AF_ROUTE ignored, is that really needed?
             return AddressFamily.Unknown;
@@ -191,9 +203,16 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
             ProtocolType  protocol = (ProtocolType)context.RequestData.ReadInt32();
 
             if (domain == AddressFamily.Unknown)
+            {
                 return WriteBsdResult(context, -1, LinuxError.Eprotonosupport);
+            }
             else if ((type == SocketType.Seqpacket || type == SocketType.Raw) && !_isPrivileged)
-                if (domain != AddressFamily.InterNetwork || type != SocketType.Raw || protocol != ProtocolType.Icmp) return WriteBsdResult(context, -1, LinuxError.Enoent);
+            {
+                if (domain != AddressFamily.InterNetwork || type != SocketType.Raw || protocol != ProtocolType.Icmp)
+                {
+                    return WriteBsdResult(context, -1, LinuxError.Enoent);
+                }
+            }
 
             BsdSocket newBsdSocket = new BsdSocket
             {
@@ -205,7 +224,10 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
 
             _sockets.Add(newBsdSocket);
 
-            if (exempt) newBsdSocket.Handle.Disconnect(true);
+            if (exempt)
+            {
+                newBsdSocket.Handle.Disconnect(true);
+            }
 
             return WriteBsdResult(context, _sockets.Count - 1);
         }
@@ -319,7 +341,10 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
             (long bufferPosition, long bufferSize) = context.Request.GetBufferType0X21();
 
 
-            if (timeout < -1 || fdsCount < 0 || fdsCount * 8 > bufferSize) return WriteBsdResult(context, -1, LinuxError.Einval);
+            if (timeout < -1 || fdsCount < 0 || fdsCount * 8 > bufferSize)
+            {
+                return WriteBsdResult(context, -1, LinuxError.Einval);
+            }
 
             PollEvent[] events = new PollEvent[fdsCount];
 
@@ -329,7 +354,10 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
 
                 BsdSocket socket = RetrieveSocket(socketFd);
 
-                if (socket == null) return WriteBsdResult(context, -1, LinuxError.Ebadf);
+                if (socket == null)
+                {
+                    return WriteBsdResult(context, -1, LinuxError.Ebadf);
+                }
 
                 PollEvent.EventTypeMask inputEvents  = (PollEvent.EventTypeMask)context.Memory.ReadInt16(bufferPosition + i * 8 + 4);
                 PollEvent.EventTypeMask outputEvents = (PollEvent.EventTypeMask)context.Memory.ReadInt16(bufferPosition + i * 8 + 6);
@@ -405,13 +433,24 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                 {
                     outputEvents |= PollEvent.EventTypeMask.Error;
 
-                    if (!socket.Connected || !socket.IsBound) outputEvents |= PollEvent.EventTypeMask.Disconnected;
+                    if (!socket.Connected || !socket.IsBound)
+                    {
+                        outputEvents |= PollEvent.EventTypeMask.Disconnected;
+                    }
                 }
 
                 if (readEvents.Contains(socket))
-                    if ((Event.InputEvents & PollEvent.EventTypeMask.Input) != 0) outputEvents |= PollEvent.EventTypeMask.Input;
+                {
+                    if ((Event.InputEvents & PollEvent.EventTypeMask.Input) != 0)
+                    {
+                        outputEvents |= PollEvent.EventTypeMask.Input;
+                    }
+                }
 
-                if (writeEvents.Contains(socket)) outputEvents |= PollEvent.EventTypeMask.Output;
+                if (writeEvents.Contains(socket))
+                {
+                    outputEvents |= PollEvent.EventTypeMask.Output;
+                }
 
                 context.Memory.WriteInt16(bufferPosition + i * 8 + 6, (short)outputEvents);
             }
@@ -764,9 +803,13 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                 errno = LinuxError.Enoprotoopt;
 
                 if (level == 0xFFFF)
+                {
                     errno = HandleGetSocketOption(context, socket, (SocketOptionName)optionName, bufferPosition, bufferSize);
+                }
                 else
+                {
                     Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported GetSockOpt Level: {(SocketOptionLevel)level}");
+                }
             }
 
             return WriteBsdResult(context, 0, errno);
@@ -809,6 +852,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
             BsdSocket  socket = RetrieveSocket(socketFd);
 
             if (socket != null)
+            {
                 switch (cmd)
                 {
                     case BsdIoctl.AtMark:
@@ -826,6 +870,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                         Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported Ioctl Cmd: {cmd}");
                         break;
                 }
+            }
 
             return WriteBsdResult(context, 0, errno);
         }
@@ -968,9 +1013,13 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                 errno = LinuxError.Enoprotoopt;
 
                 if (level == 0xFFFF)
+                {
                     errno = HandleSetSocketOption(context, socket, (SocketOptionName)optionName, bufferPos, bufferSize);
+                }
                 else
+                {
                     Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported SetSockOpt Level: {(SocketOptionLevel)level}");
+                }
             }
 
             return WriteBsdResult(context, 0, errno);
@@ -1019,7 +1068,9 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                 errno = LinuxError.Success;
 
                 foreach (BsdSocket socket in _sockets)
+                {
                     if (socket != null)
+                    {
                         try
                         {
                             socket.Handle.Shutdown((SocketShutdown)how);
@@ -1029,6 +1080,8 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                             errno = ConvertError((WSAError)exception.ErrorCode);
                             break;
                         }
+                    }
+                }
             }
 
             return WriteBsdResult(context, 0, errno);

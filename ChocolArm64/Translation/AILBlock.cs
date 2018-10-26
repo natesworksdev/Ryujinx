@@ -47,14 +47,19 @@ namespace ChocolArm64.Translation
             else if (ilEmitter is AILOpCodeStore st)
             {
                 if (AILEmitter.IsRegIndex(st.Index))
+                {
                     switch (st.IoType)
                     {
                         case AIoType.Flag:   IntOutputs |= 1L << st.Index << 32; break;
                         case AIoType.Int:    IntOutputs |= 1L << st.Index;        break;
                         case AIoType.Vector: VecOutputs |= 1L << st.Index;        break;
                     }
+                }
 
-                if (st.IoType == AIoType.Fields) HasStateStore = true;
+                if (st.IoType == AIoType.Fields)
+                {
+                    HasStateStore = true;
+                }
             }
 
             IlEmitters.Add(ilEmitter);
@@ -62,7 +67,10 @@ namespace ChocolArm64.Translation
 
         public void Emit(AILEmitter context)
         {
-            foreach (IAilEmit ilEmitter in IlEmitters) ilEmitter.Emit(context);
+            foreach (IAilEmit ilEmitter in IlEmitters)
+            {
+                ilEmitter.Emit(context);
+            }
         }
     }
 }

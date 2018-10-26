@@ -34,9 +34,15 @@ namespace Ryujinx.HLE
 
         public Switch(IGalRenderer renderer, IAalOutput audioOut)
         {
-            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+            if (renderer == null)
+            {
+                throw new ArgumentNullException(nameof(renderer));
+            }
 
-            if (audioOut == null) throw new ArgumentNullException(nameof(audioOut));
+            if (audioOut == null)
+            {
+                throw new ArgumentNullException(nameof(audioOut));
+            }
 
             AudioOut = audioOut;
 

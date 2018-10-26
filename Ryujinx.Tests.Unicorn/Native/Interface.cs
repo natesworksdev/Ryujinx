@@ -7,7 +7,10 @@ namespace Ryujinx.Tests.Unicorn.Native
     {
         public static void Checked(UnicornError error)
         {
-            if (error != UnicornError.UcErrOk) throw new UnicornException(error);
+            if (error != UnicornError.UcErrOk)
+            {
+                throw new UnicornException(error);
+            }
         }
 
         public static void MarshalArrayOf<T>(IntPtr input, int length, out T[] output)

@@ -89,21 +89,30 @@ namespace Ryujinx.HLE.Loaders.Executables
 
             Text = reader.ReadBytes(textSize);
 
-            if (flags.HasFlag(NsoFlags.IsTextCompressed) || true) Text = Lz4.Decompress(Text, textDecSize);
+            if (flags.HasFlag(NsoFlags.IsTextCompressed) || true)
+            {
+                Text = Lz4.Decompress(Text, textDecSize);
+            }
 
             //Read-only data segment
             input.Seek(roOffset, SeekOrigin.Begin);
 
             Ro = reader.ReadBytes(roSize);
 
-            if (flags.HasFlag(NsoFlags.IsRoCompressed) || true) Ro = Lz4.Decompress(Ro, roDecSize);
+            if (flags.HasFlag(NsoFlags.IsRoCompressed) || true)
+            {
+                Ro = Lz4.Decompress(Ro, roDecSize);
+            }
 
             //Data segment
             input.Seek(dataOffset, SeekOrigin.Begin);
 
             Data = reader.ReadBytes(dataSize);
 
-            if (flags.HasFlag(NsoFlags.IsDataCompressed) || true) Data = Lz4.Decompress(Data, dataDecSize);
+            if (flags.HasFlag(NsoFlags.IsDataCompressed) || true)
+            {
+                Data = Lz4.Decompress(Data, dataDecSize);
+            }
 
             using (MemoryStream textMs = new MemoryStream(Text))
             {

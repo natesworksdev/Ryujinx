@@ -40,7 +40,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         public void SetAcquireState(bool newState)
         {
-            if (_acquired && !newState) Reset();
+            if (_acquired && !newState)
+            {
+                Reset();
+            }
 
             _acquired = newState;
         }
@@ -79,7 +82,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
             int size = maxSamples * AudioConsts.HostChannelsCount;
 
-            if (size > maxSize) size = maxSize;
+            if (size > maxSize)
+            {
+                size = maxSize;
+            }
 
             int[] output = new int[size];
 
@@ -95,11 +101,17 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             {
                 _offset = 0;
 
-                if (wb.Looping == 0) SetBufferIndex((_bufferIndex + 1) & 3);
+                if (wb.Looping == 0)
+                {
+                    SetBufferIndex((_bufferIndex + 1) & 3);
+                }
 
                 OutStatus.PlayedWaveBuffersCount++;
 
-                if (wb.LastBuffer != 0) PlayState = PlayState.Paused;
+                if (wb.LastBuffer != 0)
+                {
+                    PlayState = PlayState.Paused;
+                }
             }
 
             return output;
@@ -126,6 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                 _samples = new int[samplesCount * AudioConsts.HostChannelsCount];
 
                 if (ChannelsCount == 1)
+                {
                     for (int index = 0; index < samplesCount; index++)
                     {
                         short sample = memory.ReadInt16(wb.Position + index * 2);
@@ -133,8 +146,14 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                         _samples[index * 2 + 0] = sample;
                         _samples[index * 2 + 1] = sample;
                     }
+                }
                 else
-                    for (int index = 0; index < samplesCount * 2; index++) _samples[index] = memory.ReadInt16(wb.Position + index * 2);
+                {
+                    for (int index = 0; index < samplesCount * 2; index++)
+                    {
+                        _samples[index] = memory.ReadInt16(wb.Position + index * 2);
+                    }
+                }
             }
             else if (SampleFormat == SampleFormat.Adpcm)
             {

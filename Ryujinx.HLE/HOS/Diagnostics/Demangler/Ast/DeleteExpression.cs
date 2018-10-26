@@ -15,11 +15,17 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintLeft(TextWriter writer)
         {
-            if (_isGlobal) writer.Write("::");
+            if (_isGlobal)
+            {
+                writer.Write("::");
+            }
 
             writer.Write("delete");
 
-            if (_isArrayExpression) writer.Write("[] ");
+            if (_isArrayExpression)
+            {
+                writer.Write("[] ");
+            }
 
             Child.Print(writer);
         }

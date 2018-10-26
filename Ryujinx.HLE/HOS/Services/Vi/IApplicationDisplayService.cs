@@ -180,7 +180,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi
         {
             string name = GetDisplayName(context);
 
-            if (context.Process.HandleTable.GenerateHandle(context.Device.System.VsyncEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(context.Device.System.VsyncEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
@@ -227,7 +230,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi
             {
                 byte chr = context.RequestData.ReadByte();
 
-                if (chr >= 0x20 && chr < 0x7f) name += (char)chr;
+                if (chr >= 0x20 && chr < 0x7f)
+                {
+                    name += (char)chr;
+                }
             }
 
             return name;

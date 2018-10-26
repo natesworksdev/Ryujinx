@@ -19,7 +19,12 @@ namespace Ryujinx.Graphics.Texture
         {
             int retValue = 0;
             for (int i = Position; i < Position + length; i++)
-                if (BitsArray[i]) retValue |= 1 << (i - Position);
+            {
+                if (BitsArray[i])
+                {
+                    retValue |= 1 << (i - Position);
+                }
+            }
 
             Position += length;
             return (short)retValue;
@@ -29,7 +34,12 @@ namespace Ryujinx.Graphics.Texture
         {
             int retValue = 0;
             for (int i = start; i <= end; i++)
-                if (BitsArray[i]) retValue |= 1 << (i - start);
+            {
+                if (BitsArray[i])
+                {
+                    retValue |= 1 << (i - start);
+                }
+            }
 
             return retValue;
         }
@@ -41,7 +51,10 @@ namespace Ryujinx.Graphics.Texture
 
         public void WriteBits(int value, int length)
         {
-            for (int i = Position; i < Position + length; i++) BitsArray[i] = ((value >> (i - Position)) & 1) != 0;
+            for (int i = Position; i < Position + length; i++)
+            {
+                BitsArray[i] = ((value >> (i - Position)) & 1) != 0;
+            }
 
             Position += length;
         }
@@ -55,8 +68,15 @@ namespace Ryujinx.Graphics.Texture
 
         public static int Replicate(int value, int numberBits, int toBit)
         {
-            if (numberBits == 0) return 0;
-            if (toBit == 0) return 0;
+            if (numberBits == 0)
+            {
+                return 0;
+            }
+
+            if (toBit == 0)
+            {
+                return 0;
+            }
 
             int tempValue = value & ((1 << numberBits) - 1);
             int retValue  = tempValue;
@@ -81,7 +101,11 @@ namespace Ryujinx.Graphics.Texture
         public static int PopCnt(int number)
         {
             int counter;
-            for (counter = 0; number != 0; counter++) number &= number - 1;
+            for (counter = 0; number != 0; counter++)
+            {
+                number &= number - 1;
+            }
+
             return counter;
         }
 
@@ -99,7 +123,10 @@ namespace Ryujinx.Graphics.Texture
             b |= a & 0x80;
             a >>= 1;
             a &= 0x3F;
-            if ((a & 0x20) != 0) a -= 0x40;
+            if ((a & 0x20) != 0)
+            {
+                a -= 0x40;
+            }
         }
     }
 }

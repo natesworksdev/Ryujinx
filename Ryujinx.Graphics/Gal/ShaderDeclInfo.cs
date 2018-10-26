@@ -25,7 +25,10 @@ namespace Ryujinx.Graphics.Gal
 
         internal void Enlarge(int newSize)
         {
-            if (Size < newSize) Size = newSize;
+            if (Size < newSize)
+            {
+                Size = newSize;
+            }
         }
     }
 }

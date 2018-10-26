@@ -44,7 +44,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 result = KernelResult.InvalidHandle;
             }
 
-            if (result != KernelResult.Success) Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
+            if (result != KernelResult.Success)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
+            }
 
             return result;
         }
@@ -71,7 +74,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 result = writableEvent.Clear();
             }
 
-            if (result != KernelResult.Success) Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
+            if (result != KernelResult.Success)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
+            }
 
             return result;
         }
@@ -94,11 +100,15 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             if (obj is KSession session)
+            {
                 session.Dispose();
+            }
             else if (obj is KTransferMemory transferMemory)
+            {
                 _process.MemoryManager.ResetTransferMemory(
                     transferMemory.Position,
                     transferMemory.Size);
+            }
 
             threadState.X0 = 0;
         }
@@ -116,13 +126,22 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             //TODO: KProcess support.
             if (readableEvent != null)
+            {
                 result = readableEvent.ClearIfSignaled();
+            }
             else
+            {
                 result = KernelResult.InvalidHandle;
+            }
 
             if (result == KernelResult.InvalidState)
+            {
                 Logger.PrintDebug(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
-            else if (result != KernelResult.Success) Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
+            }
+            else if (result != KernelResult.Success)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
+            }
 
             return result;
         }
@@ -143,7 +162,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             //actually exists, return error codes otherwise.
             KSession session = new KSession(ServiceFactory.MakeService(_system, name), name);
 
-            if (_process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (_process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             threadState.X0 = 0;
             threadState.X1 = (uint)handle;
@@ -363,7 +385,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 result = _process.HandleTable.GenerateHandle(Event.ReadableEvent, out rEventHandle);
 
-                if (result != KernelResult.Success) _process.HandleTable.CloseHandle(wEventHandle);
+                if (result != KernelResult.Success)
+                {
+                    _process.HandleTable.CloseHandle(wEventHandle);
+                }
             }
             else
             {

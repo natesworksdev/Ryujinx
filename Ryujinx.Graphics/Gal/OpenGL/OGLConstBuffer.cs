@@ -36,7 +36,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void SetData(long key, long size, IntPtr hostAddress)
         {
-            if (_cache.TryGetValue(key, out OGLStreamBuffer buffer)) buffer.SetData(size, hostAddress);
+            if (_cache.TryGetValue(key, out OGLStreamBuffer buffer))
+            {
+                buffer.SetData(size, hostAddress);
+            }
         }
 
         public bool TryGetUbo(long key, out int uboHandle)

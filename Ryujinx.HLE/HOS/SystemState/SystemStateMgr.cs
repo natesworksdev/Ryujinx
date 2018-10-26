@@ -96,12 +96,18 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         public void OpenUser(UInt128 uuid)
         {
-            if (_profiles.TryGetValue(uuid.ToString(), out UserProfile profile)) (LastOpenUser = profile).AccountState = OpenCloseState.Open;
+            if (_profiles.TryGetValue(uuid.ToString(), out UserProfile profile))
+            {
+                (LastOpenUser = profile).AccountState = OpenCloseState.Open;
+            }
         }
 
         public void CloseUser(UInt128 uuid)
         {
-            if (_profiles.TryGetValue(uuid.ToString(), out UserProfile profile)) profile.AccountState = OpenCloseState.Closed;
+            if (_profiles.TryGetValue(uuid.ToString(), out UserProfile profile))
+            {
+                profile.AccountState = OpenCloseState.Closed;
+            }
         }
 
         public int GetUserCount()
@@ -126,12 +132,18 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         internal static long GetLanguageCode(int index)
         {
-            if ((uint)index >= LanguageCodes.Length) throw new ArgumentOutOfRangeException(nameof(index));
+            if ((uint)index >= LanguageCodes.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
 
             long code  = 0;
             int  shift = 0;
 
-            foreach (char chr in LanguageCodes[index]) code |= (long)(byte)chr << (shift++ * 8);
+            foreach (char chr in LanguageCodes[index])
+            {
+                code |= (long)(byte)chr << (shift++ * 8);
+            }
 
             return code;
         }

@@ -62,7 +62,10 @@ namespace Ryujinx
 
             while (Exists && !IsExiting)
             {
-                if (_device.WaitFifo()) _device.ProcessFrame();
+                if (_device.WaitFifo())
+                {
+                    _device.ProcessFrame();
+                }
 
                 _renderer.RunActions();
 
@@ -150,9 +153,15 @@ namespace Ryujinx
             currentButton |= Config.JoyConController.GetButtons();
 
             //Keyboard has priority stick-wise
-            if (leftJoystickDx == 0 && leftJoystickDy == 0) (leftJoystickDx, leftJoystickDy) = Config.JoyConController.GetLeftStick();
+            if (leftJoystickDx == 0 && leftJoystickDy == 0)
+            {
+                (leftJoystickDx, leftJoystickDy) = Config.JoyConController.GetLeftStick();
+            }
 
-            if (rightJoystickDx == 0 && rightJoystickDy == 0) (rightJoystickDx, rightJoystickDy) = Config.JoyConController.GetRightStick();
+            if (rightJoystickDx == 0 && rightJoystickDy == 0)
+            {
+                (rightJoystickDx, rightJoystickDy) = Config.JoyConController.GetRightStick();
+            }
 
             leftJoystick = new HidJoystickPosition
             {
@@ -178,9 +187,13 @@ namespace Ryujinx
                 int scrnHeight = Height;
 
                 if (Width > Height * TouchScreenWidth / TouchScreenHeight)
+                {
                     scrnWidth = Height * TouchScreenWidth / TouchScreenHeight;
+                }
                 else
+                {
                     scrnHeight = Width * TouchScreenHeight / TouchScreenWidth;
+                }
 
                 int startX = (Width  - scrnWidth)  >> 1;
                 int startY = (Height - scrnHeight) >> 1;
@@ -216,7 +229,10 @@ namespace Ryujinx
                 }
             }
 
-            if (!hasTouch) _device.Hid.SetTouchPoints();
+            if (!hasTouch)
+            {
+                _device.Hid.SetTouchPoints();
+            }
 
             _device.Hid.SetJoyconButton(
                 HidControllerId.ControllerHandheld,
@@ -276,13 +292,22 @@ namespace Ryujinx
 
             if (WindowState == WindowState.Fullscreen)
             {
-                if (e.Key == Key.Escape || toggleFullscreen) WindowState = WindowState.Normal;
+                if (e.Key == Key.Escape || toggleFullscreen)
+                {
+                    WindowState = WindowState.Normal;
+                }
             }
             else
             {
-                if (e.Key == Key.Escape) Exit();
+                if (e.Key == Key.Escape)
+                {
+                    Exit();
+                }
 
-                if (toggleFullscreen) WindowState = WindowState.Fullscreen;
+                if (toggleFullscreen)
+                {
+                    WindowState = WindowState.Fullscreen;
+                }
             }
 
             _keyboard = e.Keyboard;

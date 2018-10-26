@@ -110,14 +110,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             //Texture was deleted, the handle is no longer valid, so
             //reset all uses of this handle on a render target.
             for (int attachment = 0; attachment < RenderTargetsCount; attachment++)
-                if (_colorHandles[attachment] == handle) _colorHandles[attachment] = 0;
+            {
+                if (_colorHandles[attachment] == handle)
+                {
+                    _colorHandles[attachment] = 0;
+                }
+            }
 
-            if (_zetaHandle == handle) _zetaHandle = 0;
+            if (_zetaHandle == handle)
+            {
+                _zetaHandle = 0;
+            }
         }
 
         public void Bind()
         {
-            if (_dummyFrameBuffer == 0) _dummyFrameBuffer = GL.GenFramebuffer();
+            if (_dummyFrameBuffer == 0)
+            {
+                _dummyFrameBuffer = GL.GenFramebuffer();
+            }
 
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _dummyFrameBuffer);
 
@@ -129,9 +140,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 int handle = 0;
 
-                if (key != 0 && _texture.TryGetImageHandler(key, out cachedImage)) handle = cachedImage.Handle;
+                if (key != 0 && _texture.TryGetImageHandler(key, out cachedImage))
+                {
+                    handle = cachedImage.Handle;
+                }
 
-                if (handle == _colorHandles[attachment]) continue;
+                if (handle == _colorHandles[attachment])
+                {
+                    continue;
+                }
 
                 GL.FramebufferTexture(
                     FramebufferTarget.DrawFramebuffer,
@@ -188,20 +205,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
 
             if (OGLExtension.ViewportArray)
+            {
                 GL.ViewportArray(0, RenderTargetsCount, _viewports);
+            }
             else
+            {
                 GL.Viewport(
                     (int)_viewports[0],
                     (int)_viewports[1],
                     (int)_viewports[2],
                     (int)_viewports[3]);
+            }
 
             if (_attachments.MapCount > 1)
+            {
                 GL.DrawBuffers(_attachments.MapCount, _attachments.Map);
+            }
             else if (_attachments.MapCount == 1)
+            {
                 GL.DrawBuffer((DrawBufferMode)_attachments.Map[0]);
+            }
             else
+            {
                 GL.DrawBuffer(DrawBufferMode.None);
+            }
 
             _oldAttachments.Update(_attachments);
         }
@@ -237,7 +264,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 _attachments.MapCount = map.Length;
 
-                for (int attachment = 0; attachment < _attachments.MapCount; attachment++) _attachments.Map[attachment] = DrawBuffersEnum.ColorAttachment0 + map[attachment];
+                for (int attachment = 0; attachment < _attachments.MapCount; attachment++)
+                {
+                    _attachments.Map[attachment] = DrawBuffersEnum.ColorAttachment0 + map[attachment];
+                }
             }
             else
             {
@@ -273,7 +303,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Render()
         {
-            if (_readTex == null) return;
+            if (_readTex == null)
+            {
+                return;
+            }
 
             int srcX0, srcX1, srcY0, srcY1;
 
@@ -316,7 +349,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.Viewport(0, 0, _window.Width, _window.Height);
 
-            if (_srcFb == 0) _srcFb = GL.GenFramebuffer();
+            if (_srcFb == 0)
+            {
+                _srcFb = GL.GenFramebuffer();
+            }
 
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _srcFb);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
@@ -352,11 +388,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 if (srcTex.HasColor   != dstTex.HasColor ||
                     srcTex.HasDepth   != dstTex.HasDepth ||
                     srcTex.HasStencil != dstTex.HasStencil)
+                {
                     throw new NotImplementedException();
+                }
 
-                if (_srcFb == 0) _srcFb = GL.GenFramebuffer();
+                if (_srcFb == 0)
+                {
+                    _srcFb = GL.GenFramebuffer();
+                }
 
-                if (_dstFb == 0) _dstFb = GL.GenFramebuffer();
+                if (_dstFb == 0)
+                {
+                    _dstFb = GL.GenFramebuffer();
+                }
 
                 GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _srcFb);
                 GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _dstFb);
@@ -385,17 +429,29 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Reinterpret(long key, GalImage newImage)
         {
-            if (!_texture.TryGetImage(key, out GalImage oldImage)) return;
+            if (!_texture.TryGetImage(key, out GalImage oldImage))
+            {
+                return;
+            }
 
-            if (newImage.Format == oldImage.Format) return;
+            if (newImage.Format == oldImage.Format)
+            {
+                return;
+            }
 
-            if (_copyPbo == 0) _copyPbo = GL.GenBuffer();
+            if (_copyPbo == 0)
+            {
+                _copyPbo = GL.GenBuffer();
+            }
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPbo);
 
             GL.BufferData(BufferTarget.PixelPackBuffer, Math.Max(ImageUtils.GetSize(oldImage), ImageUtils.GetSize(newImage)), IntPtr.Zero, BufferUsageHint.StreamCopy);
 
-            if (!_texture.TryGetImageHandler(key, out ImageHandler cachedImage)) throw new InvalidOperationException();
+            if (!_texture.TryGetImageHandler(key, out ImageHandler cachedImage))
+            {
+                throw new InvalidOperationException();
+            }
 
             (_, PixelFormat format, PixelType type) = OGLEnumConverter.GetImageFormat(cachedImage.Format);
 
@@ -414,15 +470,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private static FramebufferAttachment GetAttachment(ImageHandler cachedImage)
         {
             if (cachedImage.HasColor)
+            {
                 return FramebufferAttachment.ColorAttachment0;
+            }
             else if (cachedImage.HasDepth && cachedImage.HasStencil)
+            {
                 return FramebufferAttachment.DepthStencilAttachment;
+            }
             else if (cachedImage.HasDepth)
+            {
                 return FramebufferAttachment.DepthAttachment;
+            }
             else if (cachedImage.HasStencil)
+            {
                 return FramebufferAttachment.StencilAttachment;
+            }
             else
+            {
                 throw new InvalidOperationException();
+            }
         }
 
         private static ClearBufferMask GetClearMask(ImageHandler cachedImage)

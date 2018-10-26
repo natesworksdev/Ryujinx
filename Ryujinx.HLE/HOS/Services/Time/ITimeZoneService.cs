@@ -42,7 +42,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             int padding = 0x24 - tzName.Length;
 
-            for (int index = 0; index < padding; index++) context.ResponseData.Write((byte)0);
+            for (int index = 0; index < padding; index++)
+            {
+                context.ResponseData.Write((byte)0);
+            }
 
             return 0;
         }
@@ -89,7 +92,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
                 int padding = 0x24 - tzData.Length;
 
-                for (int index = 0; index < padding; index++) context.ResponseData.Write((byte)0);
+                for (int index = 0; index < padding; index++)
+                {
+                    context.ResponseData.Write((byte)0);
+                }
 
                 offset += 0x24;
             }
@@ -102,7 +108,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
             long bufferSize     = context.Request.ReceiveBuff[0].Size;
 
-            if (bufferSize != 0x4000) Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+            if (bufferSize != 0x4000)
+            {
+                Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+            }
 
             long resultCode = 0;
 
@@ -159,7 +168,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
             long bufferPosition = context.Request.SendBuff[0].Position;
             long bufferSize     = context.Request.SendBuff[0].Size;
 
-            if (bufferSize != 0x4000) Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+            if (bufferSize != 0x4000)
+            {
+                Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+            }
 
             // TODO: Reverse the TZif2 conversion in PCV to make this match with real hardware.
             byte[] tzData = context.Memory.ReadBytes(bufferPosition, 0x24);
@@ -206,7 +218,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             DateTime calendarTime = new DateTime(year, month, day, hour, minute, second);
 
-            if (bufferSize != 0x4000) Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+            if (bufferSize != 0x4000)
+            {
+                Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+            }
 
             // TODO: Reverse the TZif2 conversion in PCV to make this match with real hardware.
             byte[] tzData = context.Memory.ReadBytes(bufferPosition, 0x24);

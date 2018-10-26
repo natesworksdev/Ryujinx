@@ -121,11 +121,20 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             int     samplesCount,
             ref int fracPart)
         {
-            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
 
-            if (srcSampleRate <= 0) throw new ArgumentOutOfRangeException(nameof(srcSampleRate));
+            if (srcSampleRate <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(srcSampleRate));
+            }
 
-            if (dstSampleRate <= 0) throw new ArgumentOutOfRangeException(nameof(dstSampleRate));
+            if (dstSampleRate <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dstSampleRate));
+            }
 
             double ratio = (double)srcSampleRate / dstSampleRate;
 
@@ -138,11 +147,17 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             short[] lut;
 
             if (step > 0xaaaa)
+            {
                 lut = _curveLut0;
+            }
             else if (step <= 0x8000)
+            {
                 lut = _curveLut1;
+            }
             else
+            {
                 lut = _curveLut2;
+            }
 
             int inOffs = 0;
 

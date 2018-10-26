@@ -530,7 +530,10 @@ namespace ChocolArm64
 
 #region "Generate InstA64FastLookup Table (AArch64)"
             var tmp = new List<InstInfo>[_fastLookupSize];
-            for (int i = 0; i < _fastLookupSize; i++) tmp[i] = new List<InstInfo>();
+            for (int i = 0; i < _fastLookupSize; i++)
+            {
+                tmp[i] = new List<InstInfo>();
+            }
 
             foreach (var inst in _allInstA64)
             {
@@ -538,10 +541,18 @@ namespace ChocolArm64
                 int value = ToFastLookupIndex(inst.Value);
 
                 for (int i = 0; i < _fastLookupSize; i++)
-                    if ((i & mask) == value) tmp[i].Add(inst);
+                {
+                    if ((i & mask) == value)
+                    {
+                        tmp[i].Add(inst);
+                    }
+                }
             }
 
-            for (int i = 0; i < _fastLookupSize; i++) _instA64FastLookup[i] = tmp[i].ToArray();
+            for (int i = 0; i < _fastLookupSize; i++)
+            {
+                _instA64FastLookup[i] = tmp[i].ToArray();
+            }
 
             #endregion
         }
@@ -635,9 +646,15 @@ namespace ChocolArm64
             {
                 int mask = 0;
 
-                for (int x = 0; x < xBits; x++) mask |= ((index >> x) & 1) << xPos[x];
+                for (int x = 0; x < xBits; x++)
+                {
+                    mask |= ((index >> x) & 1) << xPos[x];
+                }
 
-                if (mask != blacklisted) InsertInst(xMask, value | mask, inst, mode);
+                if (mask != blacklisted)
+                {
+                    InsertInst(xMask, value | mask, inst, mode);
+                }
             }
         }
 
@@ -650,9 +667,13 @@ namespace ChocolArm64
             InstInfo info = new InstInfo(xMask, value, inst);
 
             if (mode == AExecutionMode.AArch64)
+            {
                 _allInstA64.Add(info);
+            }
             else
+            {
                 _allInstA32.Add(info);
+            }
         }
 
         public static AInst GetInstA32(int opCode)
@@ -673,7 +694,12 @@ namespace ChocolArm64
         private static AInst GetInstFromList(IEnumerable<InstInfo> instList, int opCode)
         {
             foreach (var node in instList)
-                if ((opCode & node.Mask) == node.Value) return node.Inst;
+            {
+                if ((opCode & node.Mask) == node.Value)
+                {
+                    return node.Inst;
+                }
+            }
 
             return AInst.Undefined;
         }

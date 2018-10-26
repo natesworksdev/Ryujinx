@@ -77,7 +77,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi
             int  id  = context.RequestData.ReadInt32();
             uint unk = context.RequestData.ReadUInt32();
 
-            if (context.Process.HandleTable.GenerateHandle(_binderEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_binderEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
 
@@ -91,7 +94,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing) _flinger.Dispose();
+            if (disposing)
+            {
+                _flinger.Dispose();
+            }
         }
     }
 }

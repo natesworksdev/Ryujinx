@@ -6,7 +6,10 @@ namespace Ryujinx.Graphics.Gal.Shader
     {
         public static void Bra(ShaderIrBlock block, long opCode, int position)
         {
-            if ((opCode & 0x20) != 0) throw new NotImplementedException();
+            if ((opCode & 0x20) != 0)
+            {
+                throw new NotImplementedException();
+            }
 
             ShaderIrOperImm imm = new ShaderIrOperImm(position + opCode.Branch());
 
@@ -18,7 +21,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             int cCode = (int)opCode & 0x1f;
 
             //TODO: Figure out what the other condition codes mean...
-            if (cCode == 0xf) block.AddNode(opCode.PredNode(new ShaderIrOp(ShaderIrInst.Exit)));
+            if (cCode == 0xf)
+            {
+                block.AddNode(opCode.PredNode(new ShaderIrOp(ShaderIrInst.Exit)));
+            }
         }
 
         public static void Kil(ShaderIrBlock block, long opCode, int position)
@@ -28,7 +34,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static void Ssy(ShaderIrBlock block, long opCode, int position)
         {
-            if ((opCode & 0x20) != 0) throw new NotImplementedException();
+            if ((opCode & 0x20) != 0)
+            {
+                throw new NotImplementedException();
+            }
 
             ShaderIrOperImm imm = new ShaderIrOperImm(position + opCode.Branch());
 

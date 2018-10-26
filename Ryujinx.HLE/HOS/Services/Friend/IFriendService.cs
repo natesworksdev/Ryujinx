@@ -66,7 +66,10 @@ namespace Ryujinx.HLE.HOS.Services.Friend
                 context.RequestData.ReadInt64(),
                 context.RequestData.ReadInt64());
 
-            if (context.Device.System.State.TryGetUser(uuid, out UserProfile profile)) profile.OnlinePlayState = OpenCloseState.Closed;
+            if (context.Device.System.State.TryGetUser(uuid, out UserProfile profile))
+            {
+                profile.OnlinePlayState = OpenCloseState.Closed;
+            }
 
             Logger.PrintStub(LogClass.ServiceFriend, $"Stubbed. Uuid: {uuid.ToString()} - " +
                                                      $"OnlinePlayState: {profile.OnlinePlayState}");

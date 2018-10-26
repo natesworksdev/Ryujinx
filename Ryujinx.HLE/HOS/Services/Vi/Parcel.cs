@@ -7,7 +7,10 @@ namespace Ryujinx.HLE.HOS.Services.Android
     {
         public static byte[] GetParcelData(byte[] parcel)
         {
-            if (parcel == null) throw new ArgumentNullException(nameof(parcel));
+            if (parcel == null)
+            {
+                throw new ArgumentNullException(nameof(parcel));
+            }
 
             using (MemoryStream ms = new MemoryStream(parcel))
             {
@@ -26,9 +29,15 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
         public static byte[] MakeParcel(byte[] data, byte[] objs)
         {
-            if (data == null) throw new ArgumentNullException(nameof(data));
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
 
-            if (objs == null) throw new ArgumentNullException(nameof(objs));
+            if (objs == null)
+            {
+                throw new ArgumentNullException(nameof(objs));
+            }
 
             using (MemoryStream ms = new MemoryStream())
             {

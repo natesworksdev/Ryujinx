@@ -76,13 +76,17 @@ namespace Ryujinx.HLE.HOS
             int handleTableSize = 1024;
 
             if (metaData != null)
+            {
                 foreach (KernelAccessControlItem item in metaData.Aci0.KernelAccessControl.Items)
+                {
                     if (item.HasHandleTableSize)
                     {
                         handleTableSize = item.HandleTableSize;
 
                         break;
                     }
+                }
+            }
 
             HandleTable = new KProcessHandleTable(device.System, handleTableSize);
 
@@ -99,7 +103,10 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadProgram(IExecutable program)
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(Process));
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Process));
+            }
 
             long imageEnd = LoadProgram(program, _imageBase);
 
@@ -108,7 +115,10 @@ namespace Ryujinx.HLE.HOS
 
         public long LoadProgram(IExecutable program, long executableBase)
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(Process));
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Process));
+            }
 
             Logger.PrintInfo(LogClass.Loader, $"Image base at 0x{executableBase:x16}.");
 
@@ -122,11 +132,13 @@ namespace Ryujinx.HLE.HOS
         public void RemoveProgram(long executableBase)
         {
             foreach (Executable executable in _executables)
+            {
                 if (executable.ImageBase == executableBase)
                 {
                     _executables.Remove(executable);
                     break;
                 }
+            }
         }
 
         public void SetEmptyArgs()
@@ -137,11 +149,17 @@ namespace Ryujinx.HLE.HOS
 
         public bool Run(bool needsHbAbi = false)
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(Process));
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Process));
+            }
 
             NeedsHbAbi = needsHbAbi;
 
-            if (_executables.Count == 0) return false;
+            if (_executables.Count == 0)
+            {
+                return false;
+            }
 
             long mainStackTop = MemoryManager.CodeRegionEnd - KMemoryManager.PageSize;
 
@@ -157,7 +175,10 @@ namespace Ryujinx.HLE.HOS
 
             int handle = MakeThread(_executables[0].ImageBase, mainStackTop, 0, 44, 0);
 
-            if (handle == -1) return false;
+            if (handle == -1)
+            {
+                return false;
+            }
 
             KThread mainThread = HandleTable.GetKThread(handle);
 
@@ -195,7 +216,10 @@ namespace Ryujinx.HLE.HOS
             int  priority,
             int  processorId)
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(Process));
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Process));
+            }
 
             AThread cpuThread = new AThread(GetTranslator(), Memory, entryPoint);
 
@@ -235,7 +259,12 @@ namespace Ryujinx.HLE.HOS
             lock (_tlsPages)
             {
                 for (int index = 0; index < _tlsPages.Count; index++)
-                    if (_tlsPages[index].TryGetFreeTlsAddr(out position)) return position;
+                {
+                    if (_tlsPages[index].TryGetFreeTlsAddr(out position))
+                    {
+                        return position;
+                    }
+                }
 
                 long pagePosition = MemoryManager.HleMapTlsPage();
 
@@ -282,9 +311,15 @@ namespace Ryujinx.HLE.HOS
         {
             Executable exe = GetExecutable(e.Position);
 
-            if (exe == null) return;
+            if (exe == null)
+            {
+                return;
+            }
 
-            if (!TryGetSubName(exe, e.Position, out string subName)) subName = string.Empty;
+            if (!TryGetSubName(exe, e.Position, out string subName))
+            {
+                subName = string.Empty;
+            }
 
             long offset = e.Position - exe.ImageBase;
 
@@ -313,12 +348,14 @@ namespace Ryujinx.HLE.HOS
         private void PrintStackTraceForCurrentThread()
         {
             foreach (KThread thread in _threads.Values)
+            {
                 if (thread.Context.IsCurrentThread())
                 {
                     PrintStackTrace(thread.Context.ThreadState);
 
                     break;
                 }
+            }
         }
 
         public void PrintStackTrace(AThreadState threadState)
@@ -331,11 +368,19 @@ namespace Ryujinx.HLE.HOS
             {
                 Executable exe = GetExecutable(position);
 
-                if (exe == null) return;
+                if (exe == null)
+                {
+                    return;
+                }
 
                 if (!TryGetSubName(exe, position, out string subName))
+                {
                     subName = $"Sub{position:x16}";
-                else if (subName.StartsWith("_Z")) subName = Demangler.Parse(subName);
+                }
+                else if (subName.StartsWith("_Z"))
+                {
+                    subName = Demangler.Parse(subName);
+                }
 
                 long offset = position - exe.ImageBase;
 
@@ -381,9 +426,13 @@ namespace Ryujinx.HLE.HOS
                 }
 
                 if ((ulong)position < (ulong)symbol.Value)
+                {
                     right = middle - 1;
+                }
                 else
+                {
                     left = middle + 1;
+                }
             }
 
             name = null;
@@ -396,7 +445,12 @@ namespace Ryujinx.HLE.HOS
             string name = string.Empty;
 
             for (int index = _executables.Count - 1; index >= 0; index--)
-                if ((ulong)position >= (ulong)_executables[index].ImageBase) return _executables[index];
+            {
+                if ((ulong)position >= (ulong)_executables[index].ImageBase)
+                {
+                    return _executables[index];
+                }
+            }
 
             return null;
         }
@@ -404,21 +458,35 @@ namespace Ryujinx.HLE.HOS
         private void ThreadFinished(object sender, EventArgs e)
         {
             if (sender is AThread thread)
-                if (_threads.TryRemove(thread.ThreadState.Tpidr, out KThread kernelThread)) Device.System.Scheduler.RemoveThread(kernelThread);
+            {
+                if (_threads.TryRemove(thread.ThreadState.Tpidr, out KThread kernelThread))
+                {
+                    Device.System.Scheduler.RemoveThread(kernelThread);
+                }
+            }
 
-            if (_threads.Count == 0) Device.System.ExitProcess(ProcessId);
+            if (_threads.Count == 0)
+            {
+                Device.System.ExitProcess(ProcessId);
+            }
         }
 
         public KThread GetThread(long tpidr)
         {
-            if (!_threads.TryGetValue(tpidr, out KThread thread)) throw new InvalidOperationException();
+            if (!_threads.TryGetValue(tpidr, out KThread thread))
+            {
+                throw new InvalidOperationException();
+            }
 
             return thread;
         }
 
         private void Unload()
         {
-            if (_disposed || _threads.Count > 0) return;
+            if (_disposed || _threads.Count > 0)
+            {
+                return;
+            }
 
             _disposed = true;
 
@@ -426,7 +494,10 @@ namespace Ryujinx.HLE.HOS
 
             INvDrvServices.UnloadProcess(this);
 
-            if (NeedsHbAbi && _executables.Count > 0 && _executables[0].FilePath.EndsWith(Homebrew.TemporaryNroSuffix)) File.Delete(_executables[0].FilePath);
+            if (NeedsHbAbi && _executables.Count > 0 && _executables[0].FilePath.EndsWith(Homebrew.TemporaryNroSuffix))
+            {
+                File.Delete(_executables[0].FilePath);
+            }
 
             Logger.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
         }
@@ -441,9 +512,16 @@ namespace Ryujinx.HLE.HOS
             if (disposing)
             {
                 if (_threads.Count > 0)
-                    foreach (KThread thread in _threads.Values) Device.System.Scheduler.StopThread(thread);
+                {
+                    foreach (KThread thread in _threads.Values)
+                    {
+                        Device.System.Scheduler.StopThread(thread);
+                    }
+                }
                 else
+                {
                     Unload();
+                }
             }
         }
     }

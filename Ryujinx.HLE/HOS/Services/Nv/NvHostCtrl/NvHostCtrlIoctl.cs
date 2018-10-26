@@ -17,7 +17,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
         {
             _userCtxs = new ConcurrentDictionary<Process, NvHostCtrlUserCtx>();
 
-            if (Set.NxSettings.Settings.TryGetValue("nv!rmos_set_production_mode", out object productionModeSetting)) _isProductionMode = (string)productionModeSetting != "0"; // Default value is ""
+            if (Set.NxSettings.Settings.TryGetValue("nv!rmos_set_production_mode", out object productionModeSetting))
+            {
+                _isProductionMode = (string)productionModeSetting != "0"; // Default value is ""
+            }
         }
 
         public static int ProcessIoctl(ServiceCtx context, int cmd)
@@ -49,7 +52,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             int id = context.Memory.ReadInt32(inputPosition);
 
-            if ((uint)id >= NvHostSyncpt.SyncptsCount) return NvResult.InvalidInput;
+            if ((uint)id >= NvHostSyncpt.SyncptsCount)
+            {
+                return NvResult.InvalidInput;
+            }
 
             GetUserCtx(context).Syncpt.Increment(id);
 
@@ -88,17 +94,27 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                     if (nvSetting is string stringValue)
                     {
                         if (stringValue.Length > 0x100)
+                        {
                             Logger.PrintError(LogClass.ServiceNv, $"{domain}!{name} String value size is too big!");
+                        }
                         else
+                        {
                             settingBuffer = Encoding.ASCII.GetBytes(stringValue + "\0");
+                        }
                     }
 
                     if (nvSetting is int intValue)
+                    {
                         settingBuffer = BitConverter.GetBytes(intValue);
+                    }
                     else if (nvSetting is bool boolValue)
+                    {
                         settingBuffer[0] = boolValue ? (byte)1 : (byte)0;
+                    }
                     else
+                    {
                         throw new NotImplementedException(nvSetting.GetType().Name);
+                    }
 
                     context.Memory.WriteBytes(outputPosition + 0x82, settingBuffer);
 
@@ -140,12 +156,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             NvHostCtrlSyncptRead args = AMemoryHelper.Read<NvHostCtrlSyncptRead>(context.Memory, inputPosition);
 
-            if ((uint)args.Id >= NvHostSyncpt.SyncptsCount) return NvResult.InvalidInput;
+            if ((uint)args.Id >= NvHostSyncpt.SyncptsCount)
+            {
+                return NvResult.InvalidInput;
+            }
 
             if (max)
+            {
                 args.Value = GetUserCtx(context).Syncpt.GetMax(args.Id);
+            }
             else
+            {
                 args.Value = GetUserCtx(context).Syncpt.GetMin(args.Id);
+            }
 
             AMemoryHelper.Write(context.Memory, outputPosition, args);
 
@@ -161,7 +184,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             NvHostSyncpt syncpt = GetUserCtx(context).Syncpt;
 
-            if ((uint)args.Id >= NvHostSyncpt.SyncptsCount) return NvResult.InvalidInput;
+            if ((uint)args.Id >= NvHostSyncpt.SyncptsCount)
+            {
+                return NvResult.InvalidInput;
+            }
 
             int result;
 
@@ -185,7 +211,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                     //in this case we just use the maximum timeout possible.
                     int timeout = args.Timeout;
 
-                    if (timeout < -1) timeout = int.MaxValue;
+                    if (timeout < -1)
+                    {
+                        timeout = int.MaxValue;
+                    }
 
                     if (timeout == -1)
                     {
@@ -206,7 +235,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                 Logger.PrintDebug(LogClass.ServiceNv, "Resuming...");
             }
 
-            if (extended) context.Memory.WriteInt32(outputPosition + 0xc, syncpt.GetMin(args.Id));
+            if (extended)
+            {
+                context.Memory.WriteInt32(outputPosition + 0xc, syncpt.GetMin(args.Id));
+            }
 
             return result;
         }
@@ -218,7 +250,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             NvHostCtrlSyncptWaitEx args = AMemoryHelper.Read<NvHostCtrlSyncptWaitEx>(context.Memory, inputPosition);
 
-            if ((uint)args.Id >= NvHostSyncpt.SyncptsCount) return NvResult.InvalidInput;
+            if ((uint)args.Id >= NvHostSyncpt.SyncptsCount)
+            {
+                return NvResult.InvalidInput;
+            }
 
             void WriteArgs()
             {
@@ -236,7 +271,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                 return NvResult.Success;
             }
 
-            if (!async) args.Value = 0;
+            if (!async)
+            {
+                args.Value = 0;
+            }
 
             if (args.Timeout == 0)
             {
@@ -253,7 +291,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
             {
                 eventIndex = args.Value;
 
-                if ((uint)eventIndex >= NvHostCtrlUserCtx.EventsCount) return NvResult.InvalidInput;
+                if ((uint)eventIndex >= NvHostCtrlUserCtx.EventsCount)
+                {
+                    return NvResult.InvalidInput;
+                }
 
                 Event = GetUserCtx(context).Events[eventIndex];
             }
@@ -272,9 +313,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                 Event.State = NvHostEventState.Waiting;
 
                 if (!async)
+                {
                     args.Value = ((args.Id & 0xfff) << 16) | 0x10000000;
+                }
                 else
+                {
                     args.Value = args.Id << 4;
+                }
 
                 args.Value |= eventIndex;
 
@@ -313,7 +358,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                     {
                         eventIndex = index;
 
-                        if (Event.Id == id) return Event;
+                        if (Event.Id == id)
+                        {
+                            return Event;
+                        }
                     }
                 }
                 else if (nullIndex == NvHostCtrlUserCtx.EventsCount)
@@ -329,7 +377,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                 return events[nullIndex] = new NvHostEvent();
             }
 
-            if (eventIndex < NvHostCtrlUserCtx.EventsCount) return events[eventIndex];
+            if (eventIndex < NvHostCtrlUserCtx.EventsCount)
+            {
+                return events[eventIndex];
+            }
 
             return null;
         }

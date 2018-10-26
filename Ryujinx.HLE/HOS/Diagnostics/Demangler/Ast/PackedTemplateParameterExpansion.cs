@@ -10,7 +10,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             if (Child is PackedTemplateParameter)
             {
-                if (((PackedTemplateParameter)Child).Nodes.Count !=  0) Child.Print(writer);
+                if (((PackedTemplateParameter)Child).Nodes.Count !=  0)
+                {
+                    Child.Print(writer);
+                }
             }
             else
             {

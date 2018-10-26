@@ -13,7 +13,10 @@ namespace ChocolArm64.Instruction32
         {
             A32OpCodeBImmAl op = (A32OpCodeBImmAl)opCode;
 
-            if (IsConditionTrue(state, op.Cond)) BranchWritePc(state, GetPc(state) + (uint)op.Imm);
+            if (IsConditionTrue(state, op.Cond))
+            {
+                BranchWritePc(state, GetPc(state) + (uint)op.Imm);
+            }
         }
 
         public static void Bl(AThreadState state, AMemory memory, AOpCode opCode)
@@ -35,13 +38,23 @@ namespace ChocolArm64.Instruction32
                 uint pc = GetPc(state);
 
                 if (state.Thumb)
+                {
                     state.R14 = pc | 1;
+                }
                 else
+                {
                     state.R14 = pc - 4U;
+                }
 
-                if (x) state.Thumb = !state.Thumb;
+                if (x)
+                {
+                    state.Thumb = !state.Thumb;
+                }
 
-                if (!state.Thumb) pc &= ~3U;
+                if (!state.Thumb)
+                {
+                    pc &= ~3U;
+                }
 
                 BranchWritePc(state, pc + (uint)op.Imm);
             }

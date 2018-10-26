@@ -43,7 +43,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             _textureCache.AddOrUpdate(key, new ImageHandler(handle, image), (uint)size);
 
-            if (ImageUtils.IsCompressed(image.Format)) throw new InvalidOperationException("Surfaces with compressed formats are not supported!");
+            if (ImageUtils.IsCompressed(image.Format))
+            {
+                throw new InvalidOperationException("Surfaces with compressed formats are not supported!");
+            }
 
             (PixelInternalFormat internalFmt,
              PixelFormat         format,
@@ -144,7 +147,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public bool TryGetImageHandler(long key, out ImageHandler cachedImage)
         {
-            if (_textureCache.TryGetValue(key, out cachedImage)) return true;
+            if (_textureCache.TryGetValue(key, out cachedImage))
+            {
+                return true;
+            }
 
             cachedImage = null;
 

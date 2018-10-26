@@ -76,7 +76,10 @@ namespace Ryujinx.Graphics
 
         public void DispatchCalls()
         {
-            while (Step());
+            while (Step())
+            {
+                ;
+            }
         }
 
         private (NvGpuVmm Vmm, NvGpuPBEntry[] Pb) _curr;
@@ -87,7 +90,10 @@ namespace Ryujinx.Graphics
         {
             while (_curr.Pb == null || _curr.Pb.Length <= _currPbEntryIndex)
             {
-                if (!_bufferQueue.TryDequeue(out _curr)) return false;
+                if (!_bufferQueue.TryDequeue(out _curr))
+                {
+                    return false;
+                }
 
                 _gpu.Engine3D.ResetCache();
 
@@ -141,8 +147,12 @@ namespace Ryujinx.Graphics
 
                     case NvGpuFifoMeth.SendMacroCodeData:
                     {
-                        foreach (int arg in pbEntry.Arguments) _mme[_currMacroPosition++] = arg;
-                        break;
+                        foreach (int arg in pbEntry.Arguments)
+                            {
+                                _mme[_currMacroPosition++] = arg;
+                            }
+
+                            break;
                     }
 
                     case NvGpuFifoMeth.SetMacroBindingIndex:
@@ -171,9 +181,16 @@ namespace Ryujinx.Graphics
                 int macroIndex = (pbEntry.Method >> 1) & MacroIndexMask;
 
                 if ((pbEntry.Method & 1) != 0)
-                    foreach (int arg in pbEntry.Arguments) _macros[macroIndex].PushParam(arg);
+                {
+                    foreach (int arg in pbEntry.Arguments)
+                    {
+                        _macros[macroIndex].PushParam(arg);
+                    }
+                }
                 else
+                {
                     _macros[macroIndex].Execute(vmm, _mme, pbEntry.Arguments[0]);
+                }
             }
         }
 

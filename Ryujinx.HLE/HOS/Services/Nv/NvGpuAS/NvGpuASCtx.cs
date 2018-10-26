@@ -51,18 +51,30 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
             long mapEnd = position + size;
 
             //Check if size is valid (0 is also not allowed).
-            if ((ulong)mapEnd <= (ulong)position) return false;
+            if ((ulong)mapEnd <= (ulong)position)
+            {
+                return false;
+            }
 
             //Check if address is page aligned.
-            if ((position & NvGpuVmm.PageMask) != 0) return false;
+            if ((position & NvGpuVmm.PageMask) != 0)
+            {
+                return false;
+            }
 
             //Check if region is reserved.
-            if (BinarySearch(_reservations, position) == null) return false;
+            if (BinarySearch(_reservations, position) == null)
+            {
+                return false;
+            }
 
             //Check for overlap with already mapped buffers.
             Range map = BinarySearchLt(_maps, mapEnd);
 
-            if (map != null && map.End > (ulong)position) return false;
+            if (map != null && map.End > (ulong)position)
+            {
+                return false;
+            }
 
             return true;
         }
@@ -84,7 +96,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
             {
                 MappedMemory map = (MappedMemory)value;
 
-                if (map.VaAllocated) size = (long)(map.End - map.Start);
+                if (map.VaAllocated)
+                {
+                    size = (long)(map.End - map.Start);
+                }
 
                 return true;
             }
@@ -131,12 +146,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
                 Range rg = lst.Values[middle];
 
-                if ((ulong)position >= rg.Start && (ulong)position < rg.End) return rg;
+                if ((ulong)position >= rg.Start && (ulong)position < rg.End)
+                {
+                    return rg;
+                }
 
                 if ((ulong)position < rg.Start)
+                {
                     right = middle - 1;
+                }
                 else
+                {
                     left = middle + 1;
+                }
             }
 
             return null;
@@ -165,7 +187,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                 {
                     left = middle + 1;
 
-                    if ((ulong)position > rg.Start) ltRg = rg;
+                    if ((ulong)position > rg.Start)
+                    {
+                        ltRg = rg;
+                    }
                 }
             }
 

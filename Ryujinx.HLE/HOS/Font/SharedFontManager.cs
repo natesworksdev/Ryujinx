@@ -61,7 +61,10 @@ namespace Ryujinx.HLE.HOS.Font
 
                         uint start = fontOffset;
 
-                        for (; fontOffset - start < data.Length; fontOffset++) _memory.WriteByte(_physicalAddress + fontOffset, data[fontOffset - start]);
+                        for (; fontOffset - start < data.Length; fontOffset++)
+                        {
+                            _memory.WriteByte(_physicalAddress + fontOffset, data[fontOffset - start]);
+                        }
 
                         return info;
                     }
@@ -82,10 +85,12 @@ namespace Ryujinx.HLE.HOS.Font
                 };
 
                 if (fontOffset > Horizon.FontSize)
+                {
                     throw new InvalidSystemResourceException(
                         $"The sum of all fonts size exceed the shared memory size. " +
                         $"Please make sure that the fonts don't exceed {Horizon.FontSize} bytes in total. " +
                         $"(actual size: {fontOffset} bytes).");
+                }
             }
         }
 

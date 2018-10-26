@@ -30,9 +30,13 @@ namespace ChocolArm64
             AMemory      memory = thread.Memory;
 
             if (state.ExecutionMode == AExecutionMode.AArch32)
+            {
                 ExecuteSubroutineA32(state, memory);
+            }
             else
+            {
                 ExecuteSubroutineA64(state, memory, position);
+            }
         }
 
         private void ExecuteSubroutineA32(AThreadState state, AMemory memory)
@@ -50,11 +54,20 @@ namespace ChocolArm64
         {
             do
             {
-                if (EnableCpuTrace) CpuTrace?.Invoke(this, new ACpuTraceEventArgs(position));
+                if (EnableCpuTrace)
+                {
+                    CpuTrace?.Invoke(this, new ACpuTraceEventArgs(position));
+                }
 
-                if (!_cache.TryGetSubroutine(position, out ATranslatedSub sub)) sub = TranslateTier0(state, memory, position);
+                if (!_cache.TryGetSubroutine(position, out ATranslatedSub sub))
+                {
+                    sub = TranslateTier0(state, memory, position);
+                }
 
-                if (sub.ShouldReJit()) TranslateTier1(state, memory, position);
+                if (sub.ShouldReJit())
+                {
+                    TranslateTier1(state, memory, position);
+                }
 
                 position = sub.Execute(state, memory);
             }
@@ -101,7 +114,10 @@ namespace ChocolArm64
 
             AILEmitterCtx context = new AILEmitterCtx(_cache, graph, root, subName);
 
-            if (context.CurrBlock.Position != position) context.Emit(OpCodes.Br, context.GetLabel(position));
+            if (context.CurrBlock.Position != position)
+            {
+                context.Emit(OpCodes.Br, context.GetLabel(position));
+            }
 
             do
             {
@@ -112,8 +128,15 @@ namespace ChocolArm64
             //Mark all methods that calls this method for ReJiting,
             //since we can now call it directly which is faster.
             if (_cache.TryGetSubroutine(position, out ATranslatedSub oldSub))
+            {
                 foreach (long callerPos in oldSub.GetCallerPositions())
-                    if (_cache.TryGetSubroutine(position, out ATranslatedSub callerSub)) callerSub.MarkForReJit();
+                {
+                    if (_cache.TryGetSubroutine(position, out ATranslatedSub callerSub))
+                    {
+                        callerSub.MarkForReJit();
+                    }
+                }
+            }
 
             ATranslatedSub subroutine = context.GetSubroutine();
 
@@ -131,7 +154,10 @@ namespace ChocolArm64
         {
             int size = 0;
 
-            foreach (ABlock block in graph) size += block.OpCodes.Count;
+            foreach (ABlock block in graph)
+            {
+                size += block.OpCodes.Count;
+            }
 
             return size;
         }

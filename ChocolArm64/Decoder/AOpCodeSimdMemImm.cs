@@ -8,7 +8,10 @@ namespace ChocolArm64.Decoder
         {
             Size |= (opCode >> 21) & 4;
 
-            if (!WBack && !Unscaled && Size >= 4) Imm <<= 4;
+            if (!WBack && !Unscaled && Size >= 4)
+            {
+                Imm <<= 4;
+            }
 
             Extend64 = false;
         }

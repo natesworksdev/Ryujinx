@@ -23,7 +23,10 @@ namespace Ryujinx.Common.Logging
             _enabledLevels[(int)LogLevel.Warning] = true;
             _enabledLevels[(int)LogLevel.Error]   = true;
 
-            for (int index = 0; index < _enabledClasses.Length; index++) _enabledClasses[index] = true;
+            for (int index = 0; index < _enabledClasses.Length; index++)
+            {
+                _enabledClasses[index] = true;
+            }
 
             _time = new Stopwatch();
 
@@ -67,7 +70,10 @@ namespace Ryujinx.Common.Logging
 
         private static void Print(LogLevel level, LogClass Class, string message)
         {
-            if (_enabledLevels[(int)level] && _enabledClasses[(int)Class]) Updated?.Invoke(null, new LogEventArgs(level, _time.Elapsed, message));
+            if (_enabledLevels[(int)level] && _enabledClasses[(int)Class])
+            {
+                Updated?.Invoke(null, new LogEventArgs(level, _time.Elapsed, message));
+            }
         }
 
         private static string GetFormattedMessage(LogClass Class, string message, string caller)

@@ -208,7 +208,10 @@ namespace ChocolArm64.Instruction
 
             FromVectorToByteArray(inState, ref op);
 
-            for (int idx = 0; idx <= 15; idx++) outState[_isrPerm[idx]] = inState[idx];
+            for (int idx = 0; idx <= 15; idx++)
+            {
+                outState[_isrPerm[idx]] = inState[idx];
+            }
 
             FromByteArrayToVector(outState, ref op);
 
@@ -222,7 +225,10 @@ namespace ChocolArm64.Instruction
 
             FromVectorToByteArray(inState, ref op);
 
-            for (int idx = 0; idx <= 15; idx++) outState[idx] = _invSBox[inState[idx]];
+            for (int idx = 0; idx <= 15; idx++)
+            {
+                outState[idx] = _invSBox[inState[idx]];
+            }
 
             FromByteArrayToVector(outState, ref op);
 
@@ -263,7 +269,10 @@ namespace ChocolArm64.Instruction
 
             FromVectorToByteArray(inState, ref op);
 
-            for (int idx = 0; idx <= 15; idx++) outState[_srPerm[idx]] = inState[idx];
+            for (int idx = 0; idx <= 15; idx++)
+            {
+                outState[_srPerm[idx]] = inState[idx];
+            }
 
             FromByteArrayToVector(outState, ref op);
 
@@ -277,7 +286,10 @@ namespace ChocolArm64.Instruction
 
             FromVectorToByteArray(inState, ref op);
 
-            for (int idx = 0; idx <= 15; idx++) outState[idx] = _sBox[inState[idx]];
+            for (int idx = 0; idx <= 15; idx++)
+            {
+                outState[idx] = _sBox[inState[idx]];
+            }
 
             FromByteArrayToVector(outState, ref op);
 
@@ -301,7 +313,10 @@ namespace ChocolArm64.Instruction
 
         private static void FromByteArrayToVector(byte[] state, ref Vector128<float> op)
         {
-            if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             op = Sse.StaticCast<byte, float>(Sse2.SetVector128(
                 state[15], state[14], state[13], state[12],

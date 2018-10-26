@@ -23,9 +23,15 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             SelectedThread = thread;
 
-            if (thread != null) thread.LastScheduledTicks = (uint)Environment.TickCount;
+            if (thread != null)
+            {
+                thread.LastScheduledTicks = (uint)Environment.TickCount;
+            }
 
-            if (SelectedThread != CurrentThread) ContextSwitchNeeded = true;
+            if (SelectedThread != CurrentThread)
+            {
+                ContextSwitchNeeded = true;
+            }
         }
 
         public void UpdateCurrentThread()
@@ -39,7 +45,10 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             ContextSwitchNeeded = false;
 
-            if (CurrentThread != null) _coreManager.GetThread(CurrentThread.Context.Work).Reset();
+            if (CurrentThread != null)
+            {
+                _coreManager.GetThread(CurrentThread.Context.Work).Reset();
+            }
 
             CurrentThread = SelectedThread;
 

@@ -70,7 +70,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             _system.CriticalSectionLock.Unlock();
             _system.CriticalSectionLock.Lock();
 
-            if (currentThread.MutexOwner != null) currentThread.MutexOwner.RemoveMutexWaiter(currentThread);
+            if (currentThread.MutexOwner != null)
+            {
+                currentThread.MutexOwner.RemoveMutexWaiter(currentThread);
+            }
 
             _system.CriticalSectionLock.Unlock();
 
@@ -137,16 +140,25 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (timeout > 0) _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                if (timeout > 0)
+                {
+                    _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                }
             }
 
             _system.CriticalSectionLock.Unlock();
 
-            if (timeout > 0) _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+            if (timeout > 0)
+            {
+                _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+            }
 
             _system.CriticalSectionLock.Lock();
 
-            if (currentThread.MutexOwner != null) currentThread.MutexOwner.RemoveMutexWaiter(currentThread);
+            if (currentThread.MutexOwner != null)
+            {
+                currentThread.MutexOwner.RemoveMutexWaiter(currentThread);
+            }
 
             CondVarThreads.Remove(currentThread);
 
@@ -165,7 +177,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 mutexValue = newOwnerThread.ThreadHandleForUserMutex;
 
-                if (count >= 2) mutexValue |= HasListenersMask;
+                if (count >= 2)
+                {
+                    mutexValue |= HasListenersMask;
+                }
 
                 newOwnerThread.SignaledObj   = null;
                 newOwnerThread.ObjSyncResult = 0;
@@ -175,7 +190,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long result = 0;
 
-            if (!KernelToUserInt32(memory, mutexAddress, mutexValue)) result = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+            if (!KernelToUserInt32(memory, mutexAddress, mutexValue))
+            {
+                result = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+            }
 
             return (result, newOwnerThread);
         }
@@ -195,10 +213,16 @@ namespace Ryujinx.HLE.HOS.Kernel
                 signaledThreads.Enqueue(thread);
 
                 //If the count is <= 0, we should signal all threads waiting.
-                if (count >= 1 && --count == 0) break;
+                if (count >= 1 && --count == 0)
+                {
+                    break;
+                }
             }
 
-            while (signaledThreads.TryDequeue(out KThread thread)) CondVarThreads.Remove(thread);
+            while (signaledThreads.TryDequeue(out KThread thread))
+            {
+                CondVarThreads.Remove(thread);
+            }
 
             _system.CriticalSectionLock.Unlock();
         }
@@ -225,9 +249,13 @@ namespace Ryujinx.HLE.HOS.Kernel
                 if (memory.TestExclusive(0, address))
                 {
                     if (mutexValue != 0)
+                    {
                         memory.WriteInt32(address, mutexValue | HasListenersMask);
+                    }
                     else
+                    {
                         memory.WriteInt32(address, requester.ThreadHandleForUserMutex);
+                    }
 
                     memory.ClearExclusiveForStore(0);
 
@@ -311,11 +339,17 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (timeout > 0) _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                if (timeout > 0)
+                {
+                    _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                }
 
                 _system.CriticalSectionLock.Unlock();
 
-                if (timeout > 0) _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+                if (timeout > 0)
+                {
+                    _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+                }
 
                 _system.CriticalSectionLock.Lock();
 
@@ -369,6 +403,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             if (shouldDecrement)
+            {
                 while (currentValue < value)
                 {
                     if (memory.TestExclusive(0, address))
@@ -384,6 +419,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     currentValue = memory.ReadInt32(address);
                 }
+            }
 
             memory.ClearExclusive(0);
 
@@ -403,11 +439,17 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (timeout > 0) _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                if (timeout > 0)
+                {
+                    _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                }
 
                 _system.CriticalSectionLock.Unlock();
 
-                if (timeout > 0) _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+                if (timeout > 0)
+                {
+                    _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+                }
 
                 _system.CriticalSectionLock.Lock();
 
@@ -433,17 +475,23 @@ namespace Ryujinx.HLE.HOS.Kernel
             int nextIndex = -1;
 
             for (int index = 0; index < threads.Count; index++)
+            {
                 if (threads[index].DynamicPriority > thread.DynamicPriority)
                 {
                     nextIndex = index;
 
                     break;
                 }
+            }
 
             if (nextIndex != -1)
+            {
                 threads.Insert(nextIndex, thread);
+            }
             else
+            {
                 threads.Add(thread);
+            }
         }
 
         public long Signal(long address, int count)
@@ -514,12 +562,21 @@ namespace Ryujinx.HLE.HOS.Kernel
             int waitingCount = 0;
 
             foreach (KThread thread in ArbiterThreads.Where(x => x.MutexAddress == address))
-                if (++waitingCount > count) break;
+            {
+                if (++waitingCount > count)
+                {
+                    break;
+                }
+            }
 
             if (waitingCount > 0)
+            {
                 offset = waitingCount <= count || count <= 0 ? -1 : 0;
+            }
             else
+            {
                 offset = 1;
+            }
 
             memory.SetExclusive(0, address);
 
@@ -571,7 +628,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 signaledThreads.Enqueue(thread);
 
                 //If the count is <= 0, we should signal all threads waiting.
-                if (count >= 1 && --count == 0) break;
+                if (count >= 1 && --count == 0)
+                {
+                    break;
+                }
             }
 
             while (signaledThreads.TryDequeue(out KThread thread))

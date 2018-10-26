@@ -108,13 +108,17 @@ namespace Ryujinx.Graphics.Gal.Shader
                 int index = 0;
 
                 for (int attachment = 0; attachment < 8; attachment++)
-                for (int component = 0; component < 4; component++)
-                    if (header.OmapTargets[attachment].ComponentEnabled(component))
+                {
+                    for (int component = 0; component < 4; component++)
+                    {
+                        if (header.OmapTargets[attachment].ComponentEnabled(component))
                     {
                         _gprs.TryAdd(index, new ShaderDeclInfo(GetGprName(index), index));
 
                         index++;
                     }
+                    }
+                }
 
                 if (header.OmapDepth)
                 {
@@ -128,7 +132,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 ShaderIrNode[] nodes = block.GetNodes();
 
-                foreach (ShaderIrNode node in nodes) Traverse(nodes, null, node);
+                foreach (ShaderIrNode node in nodes)
+                {
+                    Traverse(nodes, null, node);
+                }
             }
         }
 
@@ -146,15 +153,23 @@ namespace Ryujinx.Graphics.Gal.Shader
             Merge(combined._preds, vpA._preds, vpB._preds);
 
             //Merge input attributes.
-            foreach (KeyValuePair<int, ShaderDeclInfo> kv in vpA._inAttributes) combined._inAttributes.TryAdd(kv.Key, kv.Value);
+            foreach (KeyValuePair<int, ShaderDeclInfo> kv in vpA._inAttributes)
+            {
+                combined._inAttributes.TryAdd(kv.Key, kv.Value);
+            }
 
             foreach (KeyValuePair<int, ShaderDeclInfo> kv in vpB._inAttributes)
-            //If Vertex Program A already writes to this attribute,
+            {
+                //If Vertex Program A already writes to this attribute,
                 //then we don't need to add it as an input attribute since
                 //Vertex Program A will already have written to it anyway,
                 //and there's no guarantee that there is an input attribute
                 //for this slot.
-                if (!vpA._outAttributes.ContainsKey(kv.Key)) combined._inAttributes.TryAdd(kv.Key, kv.Value);
+                if (!vpA._outAttributes.ContainsKey(kv.Key))
+                {
+                    combined._inAttributes.TryAdd(kv.Key, kv.Value);
+                }
+            }
 
             return combined;
         }
@@ -169,9 +184,15 @@ namespace Ryujinx.Graphics.Gal.Shader
             Dictionary<int, ShaderDeclInfo> a,
             Dictionary<int, ShaderDeclInfo> b)
         {
-            foreach (KeyValuePair<int, ShaderDeclInfo> kv in a) c.TryAdd(kv.Key, kv.Value);
+            foreach (KeyValuePair<int, ShaderDeclInfo> kv in a)
+            {
+                c.TryAdd(kv.Key, kv.Value);
+            }
 
-            foreach (KeyValuePair<int, ShaderDeclInfo> kv in b) c.TryAdd(kv.Key, kv.Value);
+            foreach (KeyValuePair<int, ShaderDeclInfo> kv in b)
+            {
+                c.TryAdd(kv.Key, kv.Value);
+            }
         }
 
         private void Traverse(ShaderIrNode[] nodes, ShaderIrNode parent, ShaderIrNode node)
@@ -223,13 +244,15 @@ namespace Ryujinx.Graphics.Gal.Shader
                             ShaderIrNode curr = nodes[index];
 
                             if (curr is ShaderIrAsg asg && asg.Dst is ShaderIrOperGpr gpr)
-                                if (gpr.Index == ((ShaderIrOperGpr)op.OperandC).Index)
+                                {
+                                    if (gpr.Index == ((ShaderIrOperGpr)op.OperandC).Index)
                                 {
                                     handleSrc = asg.Src;
 
                                     break;
                                 }
-                        }
+                                }
+                            }
 
                         if (handleSrc != null && handleSrc is ShaderIrOperCbuf cbuf)
                         {
@@ -268,16 +291,21 @@ namespace Ryujinx.Graphics.Gal.Shader
                         abuf.Offs == VertexIdAttr    ||
                         abuf.Offs == InstanceIdAttr  ||
                         abuf.Offs == FaceAttr)
-                        break;
+                        {
+                            break;
+                        }
 
-                    int index =  abuf.Offs >> 4;
+                        int index =  abuf.Offs >> 4;
                     int elem  = (abuf.Offs >> 2) & 3;
 
                     int glslIndex = index - AttrStartIndex;
 
-                    if (glslIndex < 0) return;
+                    if (glslIndex < 0)
+                        {
+                            return;
+                        }
 
-                    ShaderDeclInfo declInfo;
+                        ShaderDeclInfo declInfo;
 
                     if (parent is ShaderIrAsg asg && asg.Dst == node)
                     {
@@ -344,7 +372,12 @@ namespace Ryujinx.Graphics.Gal.Shader
             int vecIndex = index & ~3;
 
             if (decls.TryGetValue(vecIndex, out ShaderDeclInfo declInfo))
-                if (declInfo.Size > 1 && index < vecIndex + declInfo.Size) return true;
+            {
+                if (declInfo.Size > 1 && index < vecIndex + declInfo.Size)
+                {
+                    return true;
+                }
+            }
 
             return decls.ContainsKey(index);
         }

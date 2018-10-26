@@ -38,8 +38,10 @@ namespace ChocolArm64.Instruction
             int offset = 0;
 
             for (int rep   = 0; rep   < op.Reps;   rep++)
-            for (int elem  = 0; elem  < op.Elems;  elem++)
-            for (int sElem = 0; sElem < op.SElems; sElem++)
+            {
+                for (int elem  = 0; elem  < op.Elems;  elem++)
+                {
+                    for (int sElem = 0; sElem < op.SElems; sElem++)
             {
                 int rtt = (op.Rt + rep + sElem) & 0x1f;
 
@@ -55,8 +57,11 @@ namespace ChocolArm64.Instruction
 
                     EmitVectorInsert(context, rtt, elem, op.Size);
 
-                    if (op.RegisterSize == ARegisterSize.Simd64 && elem == op.Elems - 1) EmitVectorZeroUpper(context, rtt);
-                }
+                    if (op.RegisterSize == ARegisterSize.Simd64 && elem == op.Elems - 1)
+                            {
+                                EmitVectorZeroUpper(context, rtt);
+                            }
+                        }
                 else
                 {
                     context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
@@ -72,8 +77,13 @@ namespace ChocolArm64.Instruction
 
                 offset += 1 << op.Size;
             }
+                }
+            }
 
-            if (op.WBack) EmitSimdMemWBack(context, offset);
+            if (op.WBack)
+            {
+                EmitSimdMemWBack(context, offset);
+            }
         }
 
         private static void EmitSimdMemSs(AILEmitterCtx context, bool isLoad)
@@ -94,7 +104,10 @@ namespace ChocolArm64.Instruction
             if (op.Replicate)
             {
                 //Only loads uses the replicate mode.
-                if (!isLoad) throw new InvalidOperationException();
+                if (!isLoad)
+                {
+                    throw new InvalidOperationException();
+                }
 
                 int bytes = op.GetBitsCount() >> 3;
                 int elems = bytes >> op.Size;
@@ -112,7 +125,10 @@ namespace ChocolArm64.Instruction
                         EmitVectorInsert(context, rt, index, op.Size);
                     }
 
-                    if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, rt);
+                    if (op.RegisterSize == ARegisterSize.Simd64)
+                    {
+                        EmitVectorZeroUpper(context, rt);
+                    }
 
                     offset += 1 << op.Size;
                 }
@@ -144,7 +160,10 @@ namespace ChocolArm64.Instruction
                 }
             }
 
-            if (op.WBack) EmitSimdMemWBack(context, offset);
+            if (op.WBack)
+            {
+                EmitSimdMemWBack(context, offset);
+            }
         }
 
         private static void EmitSimdMemWBack(AILEmitterCtx context, int offset)
@@ -154,9 +173,13 @@ namespace ChocolArm64.Instruction
             context.EmitLdint(op.Rn);
 
             if (op.Rm != AThreadState.ZrIndex)
+            {
                 context.EmitLdint(op.Rm);
+            }
             else
+            {
                 context.EmitLdc_I8(offset);
+            }
 
             context.Emit(OpCodes.Add);
 

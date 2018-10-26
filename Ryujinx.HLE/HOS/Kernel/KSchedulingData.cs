@@ -72,9 +72,15 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             int count = 0;
 
-            while (((value >> count) & 0xf) == 0 && count < 64) count += 4;
+            while (((value >> count) & 0xf) == 0 && count < 64)
+            {
+                count += 4;
+            }
 
-            while (((value >> count) & 1) == 0 && count < 64) count++;
+            while (((value >> count) & 1) == 0 && count < 64)
+            {
+                count++;
+            }
 
             return count;
         }
@@ -87,9 +93,15 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             thread.CurrentCore = dstCore;
 
-            if (srcCore == dstCore || !schedulable) return;
+            if (srcCore == dstCore || !schedulable)
+            {
+                return;
+            }
 
-            if (srcCore >= 0) Unschedule(prio, srcCore, thread);
+            if (srcCore >= 0)
+            {
+                Unschedule(prio, srcCore, thread);
+            }
 
             if (dstCore >= 0)
             {
@@ -97,12 +109,18 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Schedule(prio, dstCore, thread);
             }
 
-            if (srcCore >= 0) Suggest(prio, srcCore, thread);
+            if (srcCore >= 0)
+            {
+                Suggest(prio, srcCore, thread);
+            }
         }
 
         public void Suggest(int prio, int core, KThread thread)
         {
-            if (prio >= KScheduler.PrioritiesCount) return;
+            if (prio >= KScheduler.PrioritiesCount)
+            {
+                return;
+            }
 
             thread.SiblingsPerCore[core] = SuggestedQueue(prio, core).AddFirst(thread);
 
@@ -111,18 +129,27 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void Unsuggest(int prio, int core, KThread thread)
         {
-            if (prio >= KScheduler.PrioritiesCount) return;
+            if (prio >= KScheduler.PrioritiesCount)
+            {
+                return;
+            }
 
             LinkedList<KThread> queue = SuggestedQueue(prio, core);
 
             queue.Remove(thread.SiblingsPerCore[core]);
 
-            if (queue.First == null) _suggestedPrioritiesPerCore[core] &= ~(1L << prio);
+            if (queue.First == null)
+            {
+                _suggestedPrioritiesPerCore[core] &= ~(1L << prio);
+            }
         }
 
         public void Schedule(int prio, int core, KThread thread)
         {
-            if (prio >= KScheduler.PrioritiesCount) return;
+            if (prio >= KScheduler.PrioritiesCount)
+            {
+                return;
+            }
 
             thread.SiblingsPerCore[core] = ScheduledQueue(prio, core).AddLast(thread);
 
@@ -131,7 +158,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void SchedulePrepend(int prio, int core, KThread thread)
         {
-            if (prio >= KScheduler.PrioritiesCount) return;
+            if (prio >= KScheduler.PrioritiesCount)
+            {
+                return;
+            }
 
             thread.SiblingsPerCore[core] = ScheduledQueue(prio, core).AddFirst(thread);
 
@@ -149,13 +179,19 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void Unschedule(int prio, int core, KThread thread)
         {
-            if (prio >= KScheduler.PrioritiesCount) return;
+            if (prio >= KScheduler.PrioritiesCount)
+            {
+                return;
+            }
 
             LinkedList<KThread> queue = ScheduledQueue(prio, core);
 
             queue.Remove(thread.SiblingsPerCore[core]);
 
-            if (queue.First == null) _scheduledPrioritiesPerCore[core] &= ~(1L << prio);
+            if (queue.First == null)
+            {
+                _scheduledPrioritiesPerCore[core] &= ~(1L << prio);
+            }
         }
 
         private LinkedList<KThread> SuggestedQueue(int prio, int core)

@@ -28,7 +28,10 @@ namespace Ryujinx.Graphics.Gal.Shader
                     visited.Add(position, output);
                 }
 
-                if (source != null) output.Sources.Add(source);
+                if (source != null)
+                {
+                    output.Sources.Add(source);
+                }
 
                 return output;
             }
@@ -70,7 +73,10 @@ namespace Ryujinx.Graphics.Gal.Shader
                         }
                     }
 
-                    if (NodeHasNext(lastNode)) current.Next = Enqueue(current.EndPosition);
+                    if (NodeHasNext(lastNode))
+                    {
+                        current.Next = Enqueue(current.EndPosition);
+                    }
                 }
 
                 //If we have on the graph two blocks with the same end position,
@@ -109,8 +115,12 @@ namespace Ryujinx.Graphics.Gal.Shader
                 uint firstPos = uint.MaxValue;
 
                 foreach (ShaderIrBlock block in visited.Values)
+                {
                     if (firstPos > (uint)block.Position)
+                    {
                         firstPos = (uint)block.Position;
+                    }
+                }
 
                 ShaderIrBlock current = visited[(int)firstPos];
 
@@ -169,7 +179,10 @@ namespace Ryujinx.Graphics.Gal.Shader
                     block.AddNode(new ShaderIrCmnt(dbgOpCode));
                 }
 
-                if (decode == null) continue;
+                if (decode == null)
+                {
+                    continue;
+                }
 
                 decode(block, opCode, position);
             }
@@ -185,14 +198,20 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static ShaderIrOp GetInnermostOp(ShaderIrNode node)
         {
-            if (node is ShaderIrCond cond) node = cond.Child;
+            if (node is ShaderIrCond cond)
+            {
+                node = cond.Child;
+            }
 
             return node is ShaderIrOp op ? op : null;
         }
 
         private static bool NodeHasNext(ShaderIrNode node)
         {
-            if (!(node is ShaderIrOp op)) return true;
+            if (!(node is ShaderIrOp op))
+            {
+                return true;
+            }
 
             return op.Inst != ShaderIrInst.Exit &&
                    op.Inst != ShaderIrInst.Bra;

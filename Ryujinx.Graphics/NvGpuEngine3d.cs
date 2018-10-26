@@ -53,11 +53,17 @@ namespace Ryujinx.Graphics
 
             _constBuffers = new ConstBuffer[6][];
 
-            for (int index = 0; index < _constBuffers.Length; index++) _constBuffers[index] = new ConstBuffer[18];
+            for (int index = 0; index < _constBuffers.Length; index++)
+            {
+                _constBuffers[index] = new ConstBuffer[18];
+            }
 
             _uploadedKeys = new List<long>[(int)NvGpuBufferType.Count];
 
-            for (int i = 0; i < _uploadedKeys.Length; i++) _uploadedKeys[i] = new List<long>();
+            for (int i = 0; i < _uploadedKeys.Length; i++)
+            {
+                _uploadedKeys[i] = new List<long>();
+            }
 
             //Ensure that all components are enabled by default.
             //FIXME: Is this correct?
@@ -67,14 +73,21 @@ namespace Ryujinx.Graphics
         public void CallMethod(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
         {
             if (_methods.TryGetValue(pbEntry.Method, out NvGpuMethod method))
+            {
                 method(vmm, pbEntry);
+            }
             else
+            {
                 WriteRegister(pbEntry);
+            }
         }
 
         public void ResetCache()
         {
-            foreach (List<long> uploaded in _uploadedKeys) uploaded.Clear();
+            foreach (List<long> uploaded in _uploadedKeys)
+            {
+                uploaded.Clear();
+            }
         }
 
         private void VertexEndGl(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
@@ -92,7 +105,10 @@ namespace Ryujinx.Graphics
             SetColorMask(state);
             SetPrimitiveRestart(state);
 
-            for (int fbIndex = 0; fbIndex < 8; fbIndex++) SetFrameBuffer(vmm, fbIndex);
+            for (int fbIndex = 0; fbIndex < 8; fbIndex++)
+            {
+                SetFrameBuffer(vmm, fbIndex);
+            }
 
             SetZeta(vmm);
 
@@ -328,11 +344,13 @@ namespace Ryujinx.Graphics
 
             //Flipping breaks facing. Flipping front facing too fixes it
             if (signX != signY)
+            {
                 switch (frontFace)
                 {
                     case GalFrontFace.Cw:  frontFace = GalFrontFace.Ccw; break;
                     case GalFrontFace.Ccw: frontFace = GalFrontFace.Cw;  break;
                 }
+            }
 
             state.FrontFace = frontFace;
         }
@@ -341,7 +359,10 @@ namespace Ryujinx.Graphics
         {
             state.CullFaceEnabled = ReadRegisterBool(NvGpuEngine3dReg.CullFaceEnable);
 
-            if (state.CullFaceEnabled) state.CullFace = (GalCullFace)ReadRegister(NvGpuEngine3dReg.CullFace);
+            if (state.CullFaceEnabled)
+            {
+                state.CullFace = (GalCullFace)ReadRegister(NvGpuEngine3dReg.CullFace);
+            }
         }
 
         private void SetDepth(GalPipelineState state)
@@ -350,7 +371,10 @@ namespace Ryujinx.Graphics
 
             state.DepthWriteEnabled = ReadRegisterBool(NvGpuEngine3dReg.DepthWriteEnable);
 
-            if (state.DepthTestEnabled) state.DepthFunc = (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.DepthTestFunction);
+            if (state.DepthTestEnabled)
+            {
+                state.DepthFunc = (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.DepthTestFunction);
+            }
 
             state.DepthRangeNear = ReadRegisterFloat(NvGpuEngine3dReg.DepthRangeNNear);
             state.DepthRangeFar  = ReadRegisterFloat(NvGpuEngine3dReg.DepthRangeNFar);
@@ -419,7 +443,10 @@ namespace Ryujinx.Graphics
         {
             state.PrimitiveRestartEnabled = ReadRegisterBool(NvGpuEngine3dReg.PrimRestartEnable);
 
-            if (state.PrimitiveRestartEnabled) state.PrimitiveRestartIndex = (uint)ReadRegister(NvGpuEngine3dReg.PrimRestartIndex);
+            if (state.PrimitiveRestartEnabled)
+            {
+                state.PrimitiveRestartIndex = (uint)ReadRegister(NvGpuEngine3dReg.PrimRestartIndex);
+            }
         }
 
         private void SetRenderTargets()
@@ -459,14 +486,19 @@ namespace Ryujinx.Graphics
             int texIndex = 0;
 
             for (int index = 0; index < keys.Length; index++)
+            {
                 foreach (ShaderDeclInfo declInfo in _gpu.Renderer.Shader.GetTextureUsage(keys[index]))
                 {
                     long position;
 
                     if (declInfo.IsCb)
+                    {
                         position = _constBuffers[index][declInfo.Cbuf].Position;
+                    }
                     else
+                    {
                         position = _constBuffers[index][textureCbIndex].Position;
+                    }
 
                     int textureHandle = vmm.ReadInt32(position + declInfo.Index * 4);
 
@@ -474,11 +506,15 @@ namespace Ryujinx.Graphics
 
                     texIndex++;
                 }
+            }
         }
 
         private void UploadTexture(NvGpuVmm vmm, int texIndex, int textureHandle)
         {
-            if (textureHandle == 0) return;
+            if (textureHandle == 0)
+            {
+                return;
+            }
 
             int ticIndex = (textureHandle >>  0) & 0xfffff;
             int tscIndex = (textureHandle >> 20) & 0xfff;
@@ -496,12 +532,20 @@ namespace Ryujinx.Graphics
             long key = vmm.ReadInt64(ticPosition + 4) & 0xffffffffffff;
 
             if (image.Layout == GalMemoryLayout.BlockLinear)
+            {
                 key &= ~0x1ffL;
-            else if (image.Layout == GalMemoryLayout.Pitch) key &= ~0x1fL;
+            }
+            else if (image.Layout == GalMemoryLayout.Pitch)
+            {
+                key &= ~0x1fL;
+            }
 
             key = vmm.GetPhysicalAddress(key);
 
-            if (key == -1) return;
+            if (key == -1)
+            {
+                return;
+            }
 
             _gpu.ResourceManager.SendTexture(vmm, key, image, texIndex);
 
@@ -511,11 +555,15 @@ namespace Ryujinx.Graphics
         private void UploadConstBuffers(NvGpuVmm vmm, GalPipelineState state, long[] keys)
         {
             for (int stage = 0; stage < keys.Length; stage++)
+            {
                 foreach (ShaderDeclInfo declInfo in _gpu.Renderer.Shader.GetConstBufferUsage(keys[stage]))
                 {
                     ConstBuffer cb = _constBuffers[stage][declInfo.Cbuf];
 
-                    if (!cb.Enabled) continue;
+                    if (!cb.Enabled)
+                    {
+                        continue;
+                    }
 
                     long key = vmm.GetPhysicalAddress(cb.Position);
 
@@ -528,6 +576,7 @@ namespace Ryujinx.Graphics
 
                     state.ConstBufferKeys[stage][declInfo.Cbuf] = key;
                 }
+            }
         }
 
         private void UploadVertexArrays(NvGpuVmm vmm, GalPipelineState state)
@@ -546,7 +595,10 @@ namespace Ryujinx.Graphics
 
             int indexEntrySize = 1 << indexEntryFmt;
 
-            if (indexEntrySize > 4) throw new InvalidOperationException();
+            if (indexEntrySize > 4)
+            {
+                throw new InvalidOperationException();
+            }
 
             if (indexCount != 0)
             {
@@ -571,9 +623,13 @@ namespace Ryujinx.Graphics
                         byte[] buffer = vmm.ReadBytes(ibPosition, ibSize);
 
                         if (primType == GalPrimitiveType.Quads)
+                        {
                             buffer = QuadHelper.ConvertIbQuadsToTris(buffer, indexEntrySize, indexCount);
+                        }
                         else /* if (PrimType == GalPrimitiveType.QuadStrip) */
+                        {
                             buffer = QuadHelper.ConvertIbQuadStripToTris(buffer, indexEntrySize, indexCount);
+                        }
 
                         _gpu.Renderer.Rasterizer.CreateIbo(iboKey, ibSize, buffer);
                     }
@@ -586,9 +642,13 @@ namespace Ryujinx.Graphics
                 else
                 {
                     if (primType == GalPrimitiveType.Quads)
+                    {
                         _gpu.Renderer.Rasterizer.SetIndexArray(QuadHelper.ConvertIbSizeQuadsToTris(ibSize), indexFormat);
+                    }
                     else /* if (PrimType == GalPrimitiveType.QuadStrip) */
+                    {
                         _gpu.Renderer.Rasterizer.SetIndexArray(QuadHelper.ConvertIbSizeQuadStripToTris(ibSize), indexFormat);
+                    }
                 }
             }
 
@@ -600,7 +660,10 @@ namespace Ryujinx.Graphics
 
                 int arrayIndex = packed & 0x1f;
 
-                if (attribs[arrayIndex] == null) attribs[arrayIndex] = new List<GalVertexAttrib>();
+                if (attribs[arrayIndex] == null)
+                {
+                    attribs[arrayIndex] = new List<GalVertexAttrib>();
+                }
 
                 long vertexPosition = MakeInt64From2XInt32(NvGpuEngine3dReg.VertexArrayNAddress + arrayIndex * 4);
 
@@ -624,13 +687,19 @@ namespace Ryujinx.Graphics
 
             for (int index = 0; index < 32; index++)
             {
-                if (attribs[index] == null) continue;
+                if (attribs[index] == null)
+                {
+                    continue;
+                }
 
                 int control = ReadRegister(NvGpuEngine3dReg.VertexArrayNControl + index * 4);
 
                 bool enable = (control & 0x1000) != 0;
 
-                if (!enable) continue;
+                if (!enable)
+                {
+                    continue;
+                }
 
                 long vertexPosition = MakeInt64From2XInt32(NvGpuEngine3dReg.VertexArrayNAddress + index * 4);
                 long vertexEndPos   = MakeInt64From2XInt32(NvGpuEngine3dReg.VertexArrayNEndAddr + index * 2);
@@ -641,9 +710,15 @@ namespace Ryujinx.Graphics
 
                 int stride = control & 0xfff;
 
-                if (instanced && vertexDivisor != 0) vertexPosition += stride * (_currentInstance / vertexDivisor);
+                if (instanced && vertexDivisor != 0)
+                {
+                    vertexPosition += stride * (_currentInstance / vertexDivisor);
+                }
 
-                if (vertexPosition > vertexEndPos) continue;
+                if (vertexPosition > vertexEndPos)
+                {
+                    continue;
+                }
 
                 long vboKey = vmm.GetPhysicalAddress(vertexPosition);
 
@@ -677,11 +752,19 @@ namespace Ryujinx.Graphics
             bool instanceNext = ((primCtrl >> 26) & 1) != 0;
             bool instanceCont = ((primCtrl >> 27) & 1) != 0;
 
-            if (instanceNext && instanceCont) throw new InvalidOperationException("GPU tried to increase and reset instance count at the same time");
+            if (instanceNext && instanceCont)
+            {
+                throw new InvalidOperationException("GPU tried to increase and reset instance count at the same time");
+            }
 
             if (instanceNext)
+            {
                 _currentInstance++;
-            else if (!instanceCont) _currentInstance = 0;
+            }
+            else if (!instanceCont)
+            {
+                _currentInstance = 0;
+            }
 
             state.Instance = _currentInstance;
 
@@ -711,9 +794,13 @@ namespace Ryujinx.Graphics
                     //vertex of a quad, if it points to the middle of a
                     //quad (First % 4 != 0 for Quads) then it will not work properly.
                     if (primType == GalPrimitiveType.Quads)
+                    {
                         indexFirst = QuadHelper.ConvertIbSizeQuadsToTris(indexFirst);
+                    }
                     else /* if (PrimType == GalPrimitiveType.QuadStrip) */
+                    {
                         indexFirst = QuadHelper.ConvertIbSizeQuadStripToTris(indexFirst);
+                    }
                 }
 
                 _gpu.Renderer.Rasterizer.DrawElements(iboKey, indexFirst, vertexBase, primType);
@@ -804,7 +891,10 @@ namespace Ryujinx.Graphics
 
             int size = ReadRegister(NvGpuEngine3dReg.ConstBufferSize);
 
-            if (!_gpu.Renderer.Buffer.IsCached(cbKey, size)) _gpu.Renderer.Buffer.Create(cbKey, size);
+            if (!_gpu.Renderer.Buffer.IsCached(cbKey, size))
+            {
+                _gpu.Renderer.Buffer.Create(cbKey, size);
+            }
 
             ConstBuffer cb = _constBuffers[stage][index];
 
@@ -832,7 +922,10 @@ namespace Ryujinx.Graphics
         {
             int argsCount = pbEntry.Arguments.Count;
 
-            if (argsCount > 0) Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
+            if (argsCount > 0)
+            {
+                Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
+            }
         }
 
         private int ReadRegister(NvGpuEngine3dReg reg)
@@ -859,7 +952,10 @@ namespace Ryujinx.Graphics
         {
             List<long> uploaded = _uploadedKeys[(int)type];
 
-            if (uploaded.Contains(key)) return false;
+            if (uploaded.Contains(key))
+            {
+                return false;
+            }
 
             uploaded.Add(key);
 

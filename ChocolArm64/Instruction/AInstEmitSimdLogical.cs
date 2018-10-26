@@ -14,9 +14,13 @@ namespace ChocolArm64.Instruction
         public static void And_V(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
+            {
                 EmitSse2Op(context, nameof(Sse2.And));
+            }
             else
+            {
                 EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.And));
+            }
         }
 
         public static void Bic_V(AILEmitterCtx context)
@@ -38,7 +42,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -97,7 +104,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -113,7 +123,10 @@ namespace ChocolArm64.Instruction
 
                     EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                    if (notRm) context.Emit(OpCodes.Not);
+                    if (notRm)
+                    {
+                        context.Emit(OpCodes.Not);
+                    }
 
                     context.Emit(OpCodes.And);
 
@@ -124,7 +137,10 @@ namespace ChocolArm64.Instruction
                     EmitVectorInsert(context, op.Rd, index, op.Size);
                 }
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
         }
 
@@ -155,7 +171,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -177,9 +196,13 @@ namespace ChocolArm64.Instruction
         public static void Eor_V(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
+            {
                 EmitSse2Op(context, nameof(Sse2.Xor));
+            }
             else
+            {
                 EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Xor));
+            }
         }
 
         public static void Not_V(AILEmitterCtx context)
@@ -199,9 +222,13 @@ namespace ChocolArm64.Instruction
         public static void Orr_V(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
+            {
                 EmitSse2Op(context, nameof(Sse2.Or));
+            }
             else
+            {
                 EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Or));
+            }
         }
 
         public static void Orr_Vi(AILEmitterCtx context)
@@ -228,7 +255,10 @@ namespace ChocolArm64.Instruction
                 EmitVectorInsert(context, op.Rd, index, 0);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void Rev16_V(AILEmitterCtx context)
@@ -250,7 +280,10 @@ namespace ChocolArm64.Instruction
         {
             AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            if (op.Size >= containerSize) throw new InvalidOperationException();
+            if (op.Size >= containerSize)
+            {
+                throw new InvalidOperationException();
+            }
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -269,7 +302,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
     }
 }

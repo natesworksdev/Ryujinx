@@ -27,7 +27,10 @@ namespace Ryujinx.Graphics
 
             _uploadedKeys = new HashSet<long>[(int)NvGpuBufferType.Count];
 
-            for (int index = 0; index < _uploadedKeys.Length; index++) _uploadedKeys[index] = new HashSet<long>();
+            for (int index = 0; index < _uploadedKeys.Length; index++)
+            {
+                _uploadedKeys[index] = new HashSet<long>();
+            }
 
             _imageTypes = new Dictionary<long, ImageType>();
         }
@@ -38,7 +41,10 @@ namespace Ryujinx.Graphics
 
             _imageTypes[position] = ImageType.ColorBuffer;
 
-            if (!TryReuse(vmm, position, newImage)) _gpu.Renderer.Texture.Create(position, (int)size, newImage);
+            if (!TryReuse(vmm, position, newImage))
+            {
+                _gpu.Renderer.Texture.Create(position, (int)size, newImage);
+            }
 
             _gpu.Renderer.RenderTarget.BindColor(position, attachment);
         }
@@ -49,7 +55,10 @@ namespace Ryujinx.Graphics
 
             _imageTypes[position] = ImageType.ZetaBuffer;
 
-            if (!TryReuse(vmm, position, newImage)) _gpu.Renderer.Texture.Create(position, (int)size, newImage);
+            if (!TryReuse(vmm, position, newImage))
+            {
+                _gpu.Renderer.Texture.Create(position, (int)size, newImage);
+            }
 
             _gpu.Renderer.RenderTarget.BindZeta(position);
         }
@@ -58,7 +67,10 @@ namespace Ryujinx.Graphics
         {
             PrepareSendTexture(vmm, position, newImage);
 
-            if (texIndex >= 0) _gpu.Renderer.Texture.Bind(position, texIndex, newImage);
+            if (texIndex >= 0)
+            {
+                _gpu.Renderer.Texture.Bind(position, texIndex, newImage);
+            }
 
             _imageTypes[position] = ImageType.Texture;
         }
@@ -70,6 +82,7 @@ namespace Ryujinx.Graphics
             bool skipCheck = false;
 
             if (_imageTypes.TryGetValue(position, out ImageType oldType))
+            {
                 if (oldType == ImageType.ColorBuffer || oldType == ImageType.ZetaBuffer)
                 {
                     //Avoid data destruction
@@ -77,9 +90,15 @@ namespace Ryujinx.Graphics
 
                     skipCheck = true;
                 }
+            }
 
             if (skipCheck || !MemoryRegionModified(vmm, position, size, NvGpuBufferType.Texture))
-                if (TryReuse(vmm, position, newImage)) return;
+            {
+                if (TryReuse(vmm, position, newImage))
+                {
+                    return;
+                }
+            }
 
             byte[] data = ImageUtils.ReadTexture(vmm, newImage, position);
 
@@ -102,14 +121,20 @@ namespace Ryujinx.Graphics
         {
             HashSet<long> uploaded = _uploadedKeys[(int)type];
 
-            if (!uploaded.Add(position)) return false;
+            if (!uploaded.Add(position))
+            {
+                return false;
+            }
 
             return vmm.IsRegionModified(position, size, type);
         }
 
         public void ClearPbCache()
         {
-            for (int index = 0; index < _uploadedKeys.Length; index++) _uploadedKeys[index].Clear();
+            for (int index = 0; index < _uploadedKeys.Length; index++)
+            {
+                _uploadedKeys[index].Clear();
+            }
         }
     }
 }

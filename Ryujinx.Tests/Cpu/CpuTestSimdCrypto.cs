@@ -98,11 +98,13 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE1(threadState.V0), Is.EqualTo(resultH));
             });
             if (rn == 1u)
+            {
                 Assert.Multiple(() =>
                 {
                     Assert.That(GetVectorE0(threadState.V1), Is.EqualTo(valueL));
                     Assert.That(GetVectorE1(threadState.V1), Is.EqualTo(valueH));
                 });
+            }
 
             CompareAgainstUnicorn();
         }
@@ -131,11 +133,13 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE1(threadState.V0), Is.EqualTo(resultH));
             });
             if (rn == 1u)
+            {
                 Assert.Multiple(() =>
                 {
                     Assert.That(GetVectorE0(threadState.V1), Is.EqualTo(valueL));
                     Assert.That(GetVectorE1(threadState.V1), Is.EqualTo(valueH));
                 });
+            }
 
             CompareAgainstUnicorn();
         }

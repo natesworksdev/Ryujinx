@@ -36,9 +36,13 @@ namespace Ryujinx.Graphics
         public void CallMethod(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
         {
             if (_methods.TryGetValue(pbEntry.Method, out NvGpuMethod method))
+            {
                 method(vmm, pbEntry);
+            }
             else
+            {
                 WriteRegister(pbEntry);
+            }
         }
 
         private void Execute(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
@@ -92,9 +96,15 @@ namespace Ryujinx.Graphics
 
             if (copy2D)
             {
-                if (srcLinear) srcPosX = srcPosY = srcPosZ = 0;
+                if (srcLinear)
+                {
+                    srcPosX = srcPosY = srcPosZ = 0;
+                }
 
-                if (dstLinear) dstPosX = dstPosY = dstPosZ = 0;
+                if (dstLinear)
+                {
+                    dstPosX = dstPosY = dstPosZ = 0;
+                }
 
                 if (srcLinear && dstLinear)
                 {
@@ -114,19 +124,28 @@ namespace Ryujinx.Graphics
                     ISwizzle srcSwizzle;
 
                     if (srcLinear)
+                    {
                         srcSwizzle = new LinearSwizzle(srcPitch, srcCpp);
+                    }
                     else
+                    {
                         srcSwizzle = new BlockLinearSwizzle(srcSizeX, srcCpp, srcBlockHeight);
+                    }
 
                     ISwizzle dstSwizzle;
 
                     if (dstLinear)
+                    {
                         dstSwizzle = new LinearSwizzle(dstPitch, dstCpp);
+                    }
                     else
+                    {
                         dstSwizzle = new BlockLinearSwizzle(dstSizeX, dstCpp, dstBlockHeight);
+                    }
 
                     for (int y = 0; y < yCount; y++)
-                    for (int x = 0; x < xCount; x++)
+                    {
+                        for (int x = 0; x < xCount; x++)
                     {
                         int srcOffset = srcSwizzle.GetSwizzleOffset(srcPosX + x, srcPosY + y);
                         int dstOffset = dstSwizzle.GetSwizzleOffset(dstPosX + x, dstPosY + y);
@@ -135,6 +154,7 @@ namespace Ryujinx.Graphics
                         long dst = dstPa + (uint)dstOffset;
 
                         vmm.Memory.CopyBytes(src, dst, srcCpp);
+                    }
                     }
                 }
             }
@@ -155,7 +175,10 @@ namespace Ryujinx.Graphics
         {
             int argsCount = pbEntry.Arguments.Count;
 
-            if (argsCount > 0) Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
+            if (argsCount > 0)
+            {
+                Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
+            }
         }
 
         private int ReadRegister(NvGpuEngineM2mfReg reg)

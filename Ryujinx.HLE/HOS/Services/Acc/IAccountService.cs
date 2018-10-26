@@ -72,7 +72,10 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
             foreach (UserProfile profile in profiles)
             {
-                if ((ulong)offset + 16 > (ulong)outputSize) break;
+                if ((ulong)offset + 16 > (ulong)outputSize)
+                {
+                    break;
+                }
 
                 context.Memory.WriteInt64(outputPosition, profile.Uuid.Low);
                 context.Memory.WriteInt64(outputPosition + 8, profile.Uuid.High);

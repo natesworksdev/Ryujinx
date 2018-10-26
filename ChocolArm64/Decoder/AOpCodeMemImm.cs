@@ -33,12 +33,19 @@ namespace ChocolArm64.Decoder
 
             //Unscaled and Unprivileged doesn't write back,
             //but they do use the 9-bits Signed Immediate.
-            if (Unscaled) WBack = false;
+            if (Unscaled)
+            {
+                WBack = false;
+            }
 
             if (WBack || Unscaled)
+            {
                 Imm = (opCode << 43) >> 55;
+            }
             else
+            {
                 Imm = ((opCode >> 10) & 0xfff) << Size;
+            }
         }
     }
 }

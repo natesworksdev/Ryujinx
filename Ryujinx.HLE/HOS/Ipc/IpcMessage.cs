@@ -56,13 +56,22 @@ namespace Ryujinx.HLE.HOS.Ipc
             int  recvListFlags =  (word1 >> 10) & 0xf;
             bool hndDescEnable = ((word1 >> 31) & 0x1) != 0;
 
-            if (hndDescEnable) HandleDesc = new IpcHandleDesc(reader);
+            if (hndDescEnable)
+            {
+                HandleDesc = new IpcHandleDesc(reader);
+            }
 
-            for (int index = 0; index < ptrBuffCount; index++) PtrBuff.Add(new IpcPtrBuffDesc(reader));
+            for (int index = 0; index < ptrBuffCount; index++)
+            {
+                PtrBuff.Add(new IpcPtrBuffDesc(reader));
+            }
 
             void ReadBuff(List<IpcBuffDesc> buff, int count)
             {
-                for (int index = 0; index < count; index++) buff.Add(new IpcBuffDesc(reader));
+                for (int index = 0; index < count; index++)
+                {
+                    buff.Add(new IpcBuffDesc(reader));
+                }
             }
 
             ReadBuff(SendBuff,     sendBuffCount);
@@ -80,14 +89,22 @@ namespace Ryujinx.HLE.HOS.Ipc
             int recvListCount = recvListFlags - 2;
 
             if (recvListCount == 0)
+            {
                 recvListCount = 1;
-            else if (recvListCount < 0) recvListCount = 0;
+            }
+            else if (recvListCount < 0)
+            {
+                recvListCount = 0;
+            }
 
             RawData = reader.ReadBytes(rawDataSize);
 
             reader.BaseStream.Seek(recvListPos, SeekOrigin.Begin);
 
-            for (int index = 0; index < recvListCount; index++) RecvListBuff.Add(new IpcRecvListBuffDesc(reader));
+            for (int index = 0; index < recvListCount; index++)
+            {
+                RecvListBuff.Add(new IpcRecvListBuffDesc(reader));
+            }
         }
 
         public byte[] GetBytes(long cmdPtr)
@@ -107,7 +124,10 @@ namespace Ryujinx.HLE.HOS.Ipc
 
                 byte[] handleData = new byte[0];
 
-                if (HandleDesc != null) handleData = HandleDesc.GetBytes();
+                if (HandleDesc != null)
+                {
+                    handleData = HandleDesc.GetBytes();
+                }
 
                 int dataLength = RawData?.Length ?? 0;
 
@@ -122,7 +142,10 @@ namespace Ryujinx.HLE.HOS.Ipc
 
                 word1 = dataLength & 0x3ff;
 
-                if (HandleDesc != null) word1 |= 1 << 31;
+                if (HandleDesc != null)
+                {
+                    word1 |= 1 << 31;
+                }
 
                 writer.Write(word0);
                 writer.Write(word1);
@@ -130,7 +153,10 @@ namespace Ryujinx.HLE.HOS.Ipc
 
                 ms.Seek(pad0, SeekOrigin.Current);
 
-                if (RawData != null) writer.Write(RawData);
+                if (RawData != null)
+                {
+                    writer.Write(RawData);
+                }
 
                 writer.Write(new byte[pad1]);
 
@@ -140,7 +166,10 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         private long GetPadSize16(long position)
         {
-            if ((position & 0xf) != 0) return 0x10 - (position & 0xf);
+            if ((position & 0xf) != 0)
+            {
+                return 0x10 - (position & 0xf);
+            }
 
             return 0;
         }
@@ -150,12 +179,16 @@ namespace Ryujinx.HLE.HOS.Ipc
             if (PtrBuff.Count > index &&
                 PtrBuff[index].Position != 0 &&
                 PtrBuff[index].Size     != 0)
+            {
                 return (PtrBuff[index].Position, PtrBuff[index].Size);
+            }
 
             if (SendBuff.Count > index &&
                 SendBuff[index].Position != 0 &&
                 SendBuff[index].Size     != 0)
+            {
                 return (SendBuff[index].Position, SendBuff[index].Size);
+            }
 
             return (0, 0);
         }
@@ -165,12 +198,16 @@ namespace Ryujinx.HLE.HOS.Ipc
             if (RecvListBuff.Count > index &&
                 RecvListBuff[index].Position != 0 &&
                 RecvListBuff[index].Size     != 0)
+            {
                 return (RecvListBuff[index].Position, RecvListBuff[index].Size);
+            }
 
             if (ReceiveBuff.Count > index &&
                 ReceiveBuff[index].Position != 0 &&
                 ReceiveBuff[index].Size     != 0)
+            {
                 return (ReceiveBuff[index].Position, ReceiveBuff[index].Size);
+            }
 
             return (0, 0);
         }

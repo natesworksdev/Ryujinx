@@ -28,7 +28,12 @@ namespace Ryujinx.HLE.FileSystem
             baseSavePath = Path.Combine(baseSavePath, "save");
 
             if (saveMetaData.TitleId == 0 && saveMetaData.SaveDataType == SaveDataType.SaveData)
-                if (context.Process.MetaData != null) currentTitleId = context.Process.MetaData.Aci0.TitleId;
+            {
+                if (context.Process.MetaData != null)
+                {
+                    currentTitleId = context.Process.MetaData.Aci0.TitleId;
+                }
+            }
 
             string saveAccount = saveMetaData.UserId.IsZero() ? "savecommon" : saveMetaData.UserId.ToString();
 

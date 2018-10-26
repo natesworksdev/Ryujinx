@@ -84,7 +84,10 @@
         {
             ConstBufferKeys = new long[Stages][];
 
-            for (int stage = 0; stage < Stages; stage++) ConstBufferKeys[stage] = new long[ConstBuffersPerStage];
+            for (int stage = 0; stage < Stages; stage++)
+            {
+                ConstBufferKeys[stage] = new long[ConstBuffersPerStage];
+            }
 
             ColorMasks = new ColorMaskRgba[RenderTargetsCount];
         }

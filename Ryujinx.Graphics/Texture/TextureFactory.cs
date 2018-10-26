@@ -23,9 +23,13 @@ namespace Ryujinx.Graphics.Texture
 
             if (swizzle == TextureSwizzle.BlockLinear ||
                 swizzle == TextureSwizzle.BlockLinearColorKey)
+            {
                 layout = GalMemoryLayout.BlockLinear;
+            }
             else
+            {
                 layout = GalMemoryLayout.Pitch;
+            }
 
             int blockHeightLog2 = (tic[3] >> 3)  & 7;
             int tileWidthLog2   = (tic[3] >> 10) & 7;
@@ -48,7 +52,10 @@ namespace Ryujinx.Graphics.Texture
                 zSource,
                 wSource);
 
-            if (layout == GalMemoryLayout.Pitch) image.Pitch = (tic[3] & 0xffff) << 5;
+            if (layout == GalMemoryLayout.Pitch)
+            {
+                image.Pitch = (tic[3] & 0xffff) << 5;
+            }
 
             return image;
         }
@@ -99,7 +106,10 @@ namespace Ryujinx.Graphics.Texture
         {
             int[] words = new int[count];
 
-            for (int index = 0; index < count; index++, position += 4) words[index] = vmm.ReadInt32(position);
+            for (int index = 0; index < count; index++, position += 4)
+            {
+                words[index] = vmm.ReadInt32(position);
+            }
 
             return words;
         }

@@ -66,7 +66,10 @@ namespace ChocolArm64.Memory
 
             _pageTable = (byte***)Marshal.AllocHGlobal(PtLvl0Size * IntPtr.Size);
 
-            for (int l0 = 0; l0 < PtLvl0Size; l0++) _pageTable[l0] = null;
+            for (int l0 = 0; l0 < PtLvl0Size; l0++)
+            {
+                _pageTable[l0] = null;
+            }
         }
 
         public void RemoveMonitor(int core)
@@ -86,7 +89,12 @@ namespace ChocolArm64.Memory
             lock (_monitors)
             {
                 foreach (ArmMonitor mon in _monitors.Values)
-                    if (mon.Position == position && mon.ExState) mon.ExState = false;
+                {
+                    if (mon.Position == position && mon.ExState)
+                    {
+                        mon.ExState = false;
+                    }
+                }
 
                 if (!_monitors.TryGetValue(core, out ArmMonitor threadMon))
                 {
@@ -108,18 +116,27 @@ namespace ChocolArm64.Memory
 
             Monitor.Enter(_monitors);
 
-            if (!_monitors.TryGetValue(core, out ArmMonitor threadMon)) return false;
+            if (!_monitors.TryGetValue(core, out ArmMonitor threadMon))
+            {
+                return false;
+            }
 
             bool exState = threadMon.HasExclusiveAccess(position);
 
-            if (!exState) Monitor.Exit(_monitors);
+            if (!exState)
+            {
+                Monitor.Exit(_monitors);
+            }
 
             return exState;
         }
 
         public void ClearExclusiveForStore(int core)
         {
-            if (_monitors.TryGetValue(core, out ArmMonitor threadMon)) threadMon.ExState = false;
+            if (_monitors.TryGetValue(core, out ArmMonitor threadMon))
+            {
+                threadMon.ExState = false;
+            }
 
             Monitor.Exit(_monitors);
         }
@@ -128,7 +145,10 @@ namespace ChocolArm64.Memory
         {
             lock (_monitors)
             {
-                if (_monitors.TryGetValue(core, out ArmMonitor threadMon)) threadMon.ExState = false;
+                if (_monitors.TryGetValue(core, out ArmMonitor threadMon))
+                {
+                    threadMon.ExState = false;
+                }
             }
         }
 
@@ -139,7 +159,12 @@ namespace ChocolArm64.Memory
             lock (_monitors)
             {
                 foreach (ArmMonitor mon in _monitors.Values)
-                    if (mon.Position == maskedPosition && mon.ExState) mon.ExState = false;
+                {
+                    if (mon.Position == maskedPosition && mon.ExState)
+                    {
+                        mon.ExState = false;
+                    }
+                }
 
                 WriteInt32(position, value);
             }
@@ -188,50 +213,73 @@ namespace ChocolArm64.Memory
         public Vector128<float> ReadVector8(long position)
         {
             if (Sse2.IsSupported)
+            {
                 return Sse.StaticCast<byte, float>(Sse2.SetVector128(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ReadByte(position)));
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector128<float> ReadVector16(long position)
         {
             if (Sse2.IsSupported)
+            {
                 return Sse.StaticCast<ushort, float>(Sse2.Insert(Sse2.SetZeroVector128<ushort>(), ReadUInt16(position), 0));
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector128<float> ReadVector32(long position)
         {
             if (Sse.IsSupported)
+            {
                 return Sse.LoadScalarVector128((float*)Translate(position));
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector128<float> ReadVector64(long position)
         {
             if (Sse2.IsSupported)
+            {
                 return Sse.StaticCast<double, float>(Sse2.LoadScalarVector128((double*)Translate(position)));
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector128<float> ReadVector128(long position)
         {
             if (Sse.IsSupported)
+            {
                 return Sse.LoadVector128((float*)Translate(position));
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         public byte[] ReadBytes(long position, long size)
         {
-            if ((uint)size > int.MaxValue) throw new ArgumentOutOfRangeException(nameof(size));
+            if ((uint)size > int.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
 
             EnsureRangeIsValid(position, size);
 
@@ -294,47 +342,69 @@ namespace ChocolArm64.Memory
         public void WriteVector8(long position, Vector128<float> value)
         {
             if (Sse41.IsSupported)
+            {
                 WriteByte(position, Sse41.Extract(Sse.StaticCast<float, byte>(value), 0));
+            }
             else if (Sse2.IsSupported)
+            {
                 WriteByte(position, (byte)Sse2.Extract(Sse.StaticCast<float, ushort>(value), 0));
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector16(long position, Vector128<float> value)
         {
             if (Sse2.IsSupported)
+            {
                 WriteUInt16(position, Sse2.Extract(Sse.StaticCast<float, ushort>(value), 0));
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector32(long position, Vector128<float> value)
         {
             if (Sse.IsSupported)
+            {
                 Sse.StoreScalar((float*)TranslateWrite(position), value);
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector64(long position, Vector128<float> value)
         {
             if (Sse2.IsSupported)
+            {
                 Sse2.StoreScalar((double*)TranslateWrite(position), Sse.StaticCast<float, double>(value));
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteVector128(long position, Vector128<float> value)
         {
             if (Sse.IsSupported)
+            {
                 Sse.Store((float*)TranslateWrite(position), value);
+            }
             else
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         public void WriteBytes(long position, byte[] data)
@@ -379,12 +449,18 @@ namespace ChocolArm64.Memory
 
         public bool IsMapped(long position)
         {
-            if (!IsValidPosition(position)) return false;
+            if (!IsValidPosition(position))
+            {
+                return false;
+            }
 
             long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
             long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
 
-            if (_pageTable[l0] == null) return false;
+            if (_pageTable[l0] == null)
+            {
+                return false;
+            }
 
             return _pageTable[l0][l1] != null || _observedPages.ContainsKey(position >> PtPageBits);
         }
@@ -405,15 +481,24 @@ namespace ChocolArm64.Memory
 
             byte** lvl1 = _pageTable[l0];
 
-            if (position >> (PtLvl0Bit + PtLvl0Bits) != 0) goto Unmapped;
+            if (position >> (PtLvl0Bit + PtLvl0Bits) != 0)
+            {
+                goto Unmapped;
+            }
 
-            if (lvl1 == null) goto Unmapped;
+            if (lvl1 == null)
+            {
+                goto Unmapped;
+            }
 
             position &= PageMask;
 
             byte* ptr = lvl1[l1];
 
-            if (ptr == null) goto Unmapped;
+            if (ptr == null)
+            {
+                goto Unmapped;
+            }
 
             return ptr + position;
 
@@ -425,7 +510,10 @@ Unmapped:
         {
             long key = position >> PtPageBits;
 
-            if (_observedPages.TryGetValue(key, out IntPtr ptr)) return (byte*)ptr + (position & PageMask);
+            if (_observedPages.TryGetValue(key, out IntPtr ptr))
+            {
+                return (byte*)ptr + (position & PageMask);
+            }
 
             InvalidAccess?.Invoke(this, new AInvalidAccessEventArgs(position));
 
@@ -441,15 +529,24 @@ Unmapped:
 
             byte** lvl1 = _pageTable[l0];
 
-            if (position >> (PtLvl0Bit + PtLvl0Bits) != 0) goto Unmapped;
+            if (position >> (PtLvl0Bit + PtLvl0Bits) != 0)
+            {
+                goto Unmapped;
+            }
 
-            if (lvl1 == null) goto Unmapped;
+            if (lvl1 == null)
+            {
+                goto Unmapped;
+            }
 
             position &= PageMask;
 
             byte* ptr = lvl1[l1];
 
-            if (ptr == null) goto Unmapped;
+            if (ptr == null)
+            {
+                goto Unmapped;
+            }
 
             return ptr + position;
 
@@ -483,13 +580,19 @@ Unmapped:
 
                 va += PageSize;
 
-                if (ptr != null) ptr += PageSize;
+                if (ptr != null)
+                {
+                    ptr += PageSize;
+                }
             }
         }
 
         private void SetPtEntry(long position, byte* ptr)
         {
-            if (!IsValidPosition(position)) throw new ArgumentOutOfRangeException(nameof(position));
+            if (!IsValidPosition(position))
+            {
+                throw new ArgumentOutOfRangeException(nameof(position));
+            }
 
             long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
             long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
@@ -498,7 +601,10 @@ Unmapped:
             {
                 byte** lvl1 = (byte**)Marshal.AllocHGlobal(PtLvl1Size * IntPtr.Size);
 
-                for (int zl1 = 0; zl1 < PtLvl1Size; zl1++) lvl1[zl1] = null;
+                for (int zl1 = 0; zl1 < PtLvl1Size; zl1++)
+                {
+                    lvl1[zl1] = null;
+                }
 
                 Thread.MemoryBarrier();
 
@@ -540,7 +646,12 @@ Unmapped:
                         byte** lvl1 = _pageTable[l0];
 
                         if (lvl1 != null)
-                            if (modified[page] = lvl1[l1] != null) count++;
+                        {
+                            if (modified[page] = lvl1[l1] != null)
+                            {
+                                count++;
+                            }
+                        }
                     }
 
                     SetPtEntry(position, null);
@@ -560,7 +671,10 @@ Unmapped:
             {
                 lock (_observedPages)
                 {
-                    if (_observedPages.TryRemove(position >> PtPageBits, out IntPtr ptr)) SetPtEntry(position, (byte*)ptr);
+                    if (_observedPages.TryRemove(position >> PtPageBits, out IntPtr ptr))
+                    {
+                        SetPtEntry(position, (byte*)ptr);
+                    }
                 }
 
                 position += PageSize;
@@ -586,7 +700,10 @@ Unmapped:
             {
                 long pa = GetPhysicalAddress(position);
 
-                if (pa != expectedPa) throw new VmmAccessException(position, size);
+                if (pa != expectedPa)
+                {
+                    throw new VmmAccessException(position, size);
+                }
 
                 position   += PageSize;
                 expectedPa += PageSize;
@@ -605,11 +722,17 @@ Unmapped:
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_pageTable == null) return;
+            if (_pageTable == null)
+            {
+                return;
+            }
 
             for (int l0 = 0; l0 < PtLvl0Size; l0++)
             {
-                if (_pageTable[l0] != null) Marshal.FreeHGlobal((IntPtr)_pageTable[l0]);
+                if (_pageTable[l0] != null)
+                {
+                    Marshal.FreeHGlobal((IntPtr)_pageTable[l0]);
+                }
 
                 _pageTable[l0] = null;
             }

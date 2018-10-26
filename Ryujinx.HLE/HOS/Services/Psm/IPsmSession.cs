@@ -36,7 +36,10 @@ namespace Ryujinx.HLE.HOS.Services.Psm
             {
                 KernelResult resultCode = context.Process.HandleTable.GenerateHandle(_stateChangeEvent, out int stateChangeEventHandle);
 
-                if (resultCode != KernelResult.Success) return (long)resultCode;
+                if (resultCode != KernelResult.Success)
+                {
+                    return (long)resultCode;
+                }
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_stateChangeEventHandle);

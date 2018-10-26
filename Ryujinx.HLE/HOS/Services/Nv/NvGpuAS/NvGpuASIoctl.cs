@@ -66,9 +66,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                 //Note: When the fixed offset flag is not set,
                 //the Offset field holds the alignment size instead.
                 if ((args.Flags & FlagFixedOffset) != 0)
+                {
                     args.Offset = asCtx.Vmm.ReserveFixed(args.Offset, (long)size);
+                }
                 else
+                {
                     args.Offset = asCtx.Vmm.Reserve((long)size, args.Offset);
+                }
 
                 if (args.Offset < 0)
                 {
@@ -134,7 +138,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
             {
                 if (asCtx.RemoveMap(args.Offset, out long size))
                 {
-                    if (size != 0) asCtx.Vmm.Free(args.Offset, size);
+                    if (size != 0)
+                    {
+                        asCtx.Vmm.Free(args.Offset, size);
+                    }
                 }
                 else
                 {
@@ -168,6 +175,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
             long pa;
 
             if ((args.Flags & FlagRemapSubRange) != 0)
+            {
                 lock (asCtx)
                 {
                     if (asCtx.TryGetMapPhysicalAddress(args.Offset, out pa))
@@ -194,12 +202,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                         return NvResult.InvalidInput;
                     }
                 }
+            }
 
             pa = map.Address + args.BufferOffset;
 
             long size = args.MappingSize;
 
-            if (size == 0) size = (uint)map.Size;
+            if (size == 0)
+            {
+                size = (uint)map.Size;
+            }
 
             int result = NvResult.Success;
 

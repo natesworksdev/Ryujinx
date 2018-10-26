@@ -36,7 +36,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
         public int Increment(int id)
         {
-            if (((_eventMask >> id) & 1) != 0) Interlocked.Increment(ref _counterMax[id]);
+            if (((_eventMask >> id) & 1) != 0)
+            {
+                Interlocked.Increment(ref _counterMax[id]);
+            }
 
             return IncrementMin(id);
         }
@@ -57,7 +60,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
         public void AddWaiter(int threshold, EventWaitHandle waitEvent)
         {
-            if (!_waiters.TryAdd(waitEvent, threshold)) throw new InvalidOperationException();
+            if (!_waiters.TryAdd(waitEvent, threshold))
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         public bool RemoveWaiter(EventWaitHandle waitEvent)
@@ -68,12 +74,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
         private void WakeUpWaiters(int id, int newValue)
         {
             foreach (KeyValuePair<EventWaitHandle, int> kv in _waiters)
+            {
                 if (MinCompare(id, newValue, _counterMax[id], kv.Value))
                 {
                     kv.Key.Set();
 
                     _waiters.TryRemove(kv.Key, out _);
                 }
+            }
         }
 
         public bool MinCompare(int id, int threshold)
@@ -87,9 +95,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
             int maxDiff = max - threshold;
 
             if (((_eventMask >> id) & 1) != 0)
+            {
                 return minDiff >= 0;
+            }
             else
+            {
                 return (uint)maxDiff >= (uint)minDiff;
+            }
         }
     }
 }

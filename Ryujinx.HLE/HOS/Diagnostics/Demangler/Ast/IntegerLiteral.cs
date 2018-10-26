@@ -32,7 +32,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
                 writer.Write(_litteralValue);
             }
 
-            if (_litteralName.Length <= 3) writer.Write(_litteralName);
+            if (_litteralName.Length <= 3)
+            {
+                writer.Write(_litteralName);
+            }
         }
     }
 }

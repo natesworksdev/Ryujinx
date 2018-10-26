@@ -21,28 +21,42 @@ namespace Ryujinx.HLE.HOS
         public int Add(object data)
         {
             for (int id = 1; id < int.MaxValue; id++)
-                if (_objs.TryAdd(id, data)) return id;
+            {
+                if (_objs.TryAdd(id, data))
+                {
+                    return id;
+                }
+            }
 
             throw new InvalidOperationException();
         }
 
         public object GetData(int id)
         {
-            if (_objs.TryGetValue(id, out object data)) return data;
+            if (_objs.TryGetValue(id, out object data))
+            {
+                return data;
+            }
 
             return null;
         }
 
         public T GetData<T>(int id)
         {
-            if (_objs.TryGetValue(id, out object data) && data is T) return (T)data;
+            if (_objs.TryGetValue(id, out object data) && data is T)
+            {
+                return (T)data;
+            }
 
             return default(T);
         }
 
         public object Delete(int id)
         {
-            if (_objs.TryRemove(id, out object obj)) return obj;
+            if (_objs.TryRemove(id, out object obj))
+            {
+                return obj;
+            }
 
             return null;
         }

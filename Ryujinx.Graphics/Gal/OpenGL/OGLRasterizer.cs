@@ -64,9 +64,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.ColorMask(attachment, true, true, true, true);
             GL.DepthMask(true);
 
-            if (flags.HasFlag(GalClearBufferFlags.Depth)) GL.ClearBuffer(ClearBuffer.Depth, 0, ref depth);
+            if (flags.HasFlag(GalClearBufferFlags.Depth))
+            {
+                GL.ClearBuffer(ClearBuffer.Depth, 0, ref depth);
+            }
 
-            if (flags.HasFlag(GalClearBufferFlags.Stencil)) GL.ClearBuffer(ClearBuffer.Stencil, 0, ref stencil);
+            if (flags.HasFlag(GalClearBufferFlags.Stencil))
+            {
+                GL.ClearBuffer(ClearBuffer.Stencil, 0, ref stencil);
+            }
         }
 
         public bool IsVboCached(long key, long dataSize)
@@ -126,17 +132,26 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void DrawArrays(int first, int count, GalPrimitiveType primType)
         {
-            if (count == 0) return;
+            if (count == 0)
+            {
+                return;
+            }
 
             if (primType == GalPrimitiveType.Quads)
             {
-                for (int offset = 0; offset < count; offset += 4) GL.DrawArrays(PrimitiveType.TriangleFan, first + offset, 4);
+                for (int offset = 0; offset < count; offset += 4)
+                {
+                    GL.DrawArrays(PrimitiveType.TriangleFan, first + offset, 4);
+                }
             }
             else if (primType == GalPrimitiveType.QuadStrip)
             {
                 GL.DrawArrays(PrimitiveType.TriangleFan, first, 4);
 
-                for (int offset = 2; offset < count; offset += 2) GL.DrawArrays(PrimitiveType.TriangleFan, first + offset, 4);
+                for (int offset = 2; offset < count; offset += 2)
+                {
+                    GL.DrawArrays(PrimitiveType.TriangleFan, first + offset, 4);
+                }
             }
             else
             {
@@ -146,7 +161,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void DrawElements(long iboKey, int first, int vertexBase, GalPrimitiveType primType)
         {
-            if (!_iboCache.TryGetValue(iboKey, out int iboHandle)) return;
+            if (!_iboCache.TryGetValue(iboKey, out int iboHandle))
+            {
+                return;
+            }
 
             PrimitiveType mode = OGLEnumConverter.GetPrimitiveType(primType);
 

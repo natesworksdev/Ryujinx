@@ -13,7 +13,10 @@ namespace Ryujinx.Graphics
 
         public void Add(ValueRange<T> range)
         {
-            if (range.End <= range.Start) return;
+            if (range.End <= range.Start)
+            {
+                return;
+            }
 
             int first = BinarySearchFirstIntersection(range);
 
@@ -25,9 +28,13 @@ namespace Ryujinx.Graphics
                 int gtIndex = BinarySearchGt(range);
 
                 if (gtIndex != -1)
+                {
                     _ranges.Insert(gtIndex, range);
+                }
                 else
+                {
                     _ranges.Add(range);
+                }
 
                 return;
             }
@@ -82,7 +89,10 @@ namespace Ryujinx.Graphics
         {
             int first = BinarySearchFirstIntersection(range);
 
-            if (first == -1) return;
+            if (first == -1)
+            {
+                return;
+            }
 
             (int start, int end) = GetAllIntersectionRanges(range, first);
 
@@ -98,13 +108,19 @@ namespace Ryujinx.Graphics
         private void InsertNextNeighbour(int index, ValueRange<T> range, ValueRange<T> next)
         {
             //Split last intersection (ordered by Start) if necessary.
-            if (range.End < next.End) InsertNewRange(index, range.End, next.End, next.Value);
+            if (range.End < next.End)
+            {
+                InsertNewRange(index, range.End, next.End, next.Value);
+            }
         }
 
         private void InsertPrevNeighbour(int index, ValueRange<T> range, ValueRange<T> prev)
         {
             //Split first intersection (ordered by Start) if necessary.
-            if (range.Start > prev.Start) InsertNewRange(index, prev.Start, range.Start, prev.Value);
+            if (range.Start > prev.Start)
+            {
+                InsertNewRange(index, prev.Start, range.Start, prev.Value);
+            }
         }
 
         private void InsertNewRange(int index, long start, long end, T value)
@@ -116,7 +132,10 @@ namespace Ryujinx.Graphics
         {
             int first = BinarySearchFirstIntersection(range);
 
-            if (first == -1) return new ValueRange<T>[0];
+            if (first == -1)
+            {
+                return new ValueRange<T>[0];
+            }
 
             (int start, int end) = GetAllIntersectionRanges(range, first);
 
@@ -128,9 +147,15 @@ namespace Ryujinx.Graphics
             int start = baseIndex;
             int end   = baseIndex;
 
-            while (start > 0 && Intersects(range, _ranges[start - 1])) start--;
+            while (start > 0 && Intersects(range, _ranges[start - 1]))
+            {
+                start--;
+            }
 
-            while (end < _ranges.Count - 1 && Intersects(range, _ranges[end + 1])) end++;
+            while (end < _ranges.Count - 1 && Intersects(range, _ranges[end + 1]))
+            {
+                end++;
+            }
 
             return (start, end);
         }
@@ -148,12 +173,19 @@ namespace Ryujinx.Graphics
 
                 ValueRange<T> current = _ranges[middle];
 
-                if (Intersects(range, current)) return middle;
+                if (Intersects(range, current))
+                {
+                    return middle;
+                }
 
                 if (range.Start < current.Start)
+                {
                     right = middle - 1;
+                }
                 else
+                {
                     left = middle + 1;
+                }
             }
 
             return -1;
@@ -178,7 +210,10 @@ namespace Ryujinx.Graphics
                 {
                     right = middle - 1;
 
-                    if (gtIndex == -1 || current.Start < _ranges[gtIndex].Start) gtIndex = middle;
+                    if (gtIndex == -1 || current.Start < _ranges[gtIndex].Start)
+                    {
+                        gtIndex = middle;
+                    }
                 }
                 else
                 {

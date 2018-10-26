@@ -78,9 +78,15 @@ namespace ChocolArm64.Instruction
             bool ordered   = (accType & AccessType.Ordered)   != 0;
             bool exclusive = (accType & AccessType.Exclusive) != 0;
 
-            if (ordered) EmitBarrier(context);
+            if (ordered)
+            {
+                EmitBarrier(context);
+            }
 
-            if (exclusive) EmitMemoryCall(context, nameof(AMemory.SetExclusive), op.Rn);
+            if (exclusive)
+            {
+                EmitMemoryCall(context, nameof(AMemory.SetExclusive), op.Rn);
+            }
 
             context.EmitLdint(op.Rn);
             context.EmitSttmp();
@@ -153,7 +159,10 @@ namespace ChocolArm64.Instruction
             bool ordered   = (accType & AccessType.Ordered)   != 0;
             bool exclusive = (accType & AccessType.Exclusive) != 0;
 
-            if (ordered) EmitBarrier(context);
+            if (ordered)
+            {
+                EmitBarrier(context);
+            }
 
             AILLabel lblEx  = new AILLabel();
             AILLabel lblEnd = new AILLabel();
@@ -209,7 +218,10 @@ namespace ChocolArm64.Instruction
 
             context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Core));
 
-            if (rn != -1) context.EmitLdint(rn);
+            if (rn != -1)
+            {
+                context.EmitLdint(rn);
+            }
 
             context.EmitCall(typeof(AMemory), name);
         }

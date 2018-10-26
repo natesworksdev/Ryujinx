@@ -36,7 +36,10 @@ namespace ChocolArm64.Instruction
 
             context.EmitCall(mthdInfo);
 
-            if (context.CurrOp.RegisterSize != ARegisterSize.Int32) context.Emit(OpCodes.Conv_U8);
+            if (context.CurrOp.RegisterSize != ARegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
 
             context.Emit(OpCodes.Add);
 
@@ -230,7 +233,10 @@ namespace ChocolArm64.Instruction
 
             context.Emit(OpCodes.Xor);
 
-            if (context.CurrOp.RegisterSize != ARegisterSize.Int32) context.Emit(OpCodes.Conv_U8);
+            if (context.CurrOp.RegisterSize != ARegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
 
             context.Emit(OpCodes.Sub);
 
@@ -308,9 +314,13 @@ namespace ChocolArm64.Instruction
             context.EmitLdintzr(op.Rn);
 
             if (op.RegisterSize == ARegisterSize.Int32)
+            {
                 ASoftFallback.EmitCall(context, name32);
+            }
             else
+            {
                 ASoftFallback.EmitCall(context, name64);
+            }
 
             context.EmitStintzr(op.Rd);
         }
@@ -434,7 +444,10 @@ namespace ChocolArm64.Instruction
             //we need to cast it to a 32-bits integer. This is fine because we
             //AND the value and only keep the lower 5 or 6 bits anyway -- it
             //could very well fit on a byte.
-            if (context.CurrOp.RegisterSize != ARegisterSize.Int32) context.Emit(OpCodes.Conv_I4);
+            if (context.CurrOp.RegisterSize != ARegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_I4);
+            }
         }
 
         private static void EmitZeroCvFlags(AILEmitterCtx context)

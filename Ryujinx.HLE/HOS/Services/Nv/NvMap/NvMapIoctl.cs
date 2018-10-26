@@ -107,7 +107,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
                 return NvResult.InvalidInput;
             }
 
-            if ((uint)args.Align < NvGpuVmm.PageSize) args.Align = NvGpuVmm.PageSize;
+            if ((uint)args.Align < NvGpuVmm.PageSize)
+            {
+                args.Align = NvGpuVmm.PageSize;
+            }
 
             int result = NvResult.Success;
 
@@ -123,7 +126,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
                 long address = args.Address;
 
                 if (address == 0)
-                    if (!context.Device.Memory.Allocator.TryAllocate((uint)size, out address)) result = NvResult.OutOfMemory;
+                {
+                    if (!context.Device.Memory.Allocator.TryAllocate((uint)size, out address))
+                    {
+                        result = NvResult.OutOfMemory;
+                    }
+                }
 
                 if (result == NvResult.Success)
                 {
@@ -248,7 +256,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 
         private static bool DeleteNvMap(ServiceCtx context, int handle)
         {
-            if (_maps.TryGetValue(context.Process, out IdDictionary dict)) return dict.Delete(handle) != null;
+            if (_maps.TryGetValue(context.Process, out IdDictionary dict))
+            {
+                return dict.Delete(handle) != null;
+            }
 
             return false;
         }
@@ -262,14 +273,20 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 
         public static NvMapHandle GetNvMapWithFb(ServiceCtx context, int handle)
         {
-            if (_maps.TryGetValue(context.Process, out IdDictionary dict)) return dict.GetData<NvMapHandle>(handle);
+            if (_maps.TryGetValue(context.Process, out IdDictionary dict))
+            {
+                return dict.GetData<NvMapHandle>(handle);
+            }
 
             return null;
         }
 
         public static NvMapHandle GetNvMap(ServiceCtx context, int handle)
         {
-            if (handle != 0 && _maps.TryGetValue(context.Process, out IdDictionary dict)) return dict.GetData<NvMapHandle>(handle);
+            if (handle != 0 && _maps.TryGetValue(context.Process, out IdDictionary dict))
+            {
+                return dict.GetData<NvMapHandle>(handle);
+            }
 
             return null;
         }

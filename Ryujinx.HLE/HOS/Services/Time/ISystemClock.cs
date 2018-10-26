@@ -39,7 +39,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             if (clockType == SystemClockType.User ||
                 clockType == SystemClockType.Network)
+            {
                 _systemClockContextEpoch = _systemClockContextEpoch.ToUniversalTime();
+            }
 
             _systemClockTimePoint = (long)(_systemClockContextEpoch - _epoch).TotalSeconds;
         }
@@ -50,7 +52,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             if (_clockType == SystemClockType.User ||
                 _clockType == SystemClockType.Network)
+            {
                 currentTime = currentTime.ToUniversalTime();
+            }
 
             context.ResponseData.Write((long)(currentTime - _epoch).TotalSeconds + _timeOffset);
 
@@ -63,7 +67,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             if (_clockType == SystemClockType.User ||
                 _clockType == SystemClockType.Network)
+            {
                 currentTime = currentTime.ToUniversalTime();
+            }
 
             _timeOffset = context.RequestData.ReadInt64() - (long)(currentTime - _epoch).TotalSeconds;
 
@@ -78,7 +84,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
             context.ResponseData.Write(_systemClockTimePoint);
 
             // This seems to be some kind of identifier?
-            for (int i = 0; i < 0x10; i++) context.ResponseData.Write(_systemClockContextEnding[i]);
+            for (int i = 0; i < 0x10; i++)
+            {
+                context.ResponseData.Write(_systemClockContextEnding[i]);
+            }
 
             return 0;
         }

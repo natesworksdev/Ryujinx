@@ -36,17 +36,29 @@ namespace Ryujinx.HLE.HOS.Kernel
                     {
                         KCoreContext coreContext = CoreContexts[core];
 
-                        if (coreContext.ContextSwitchNeeded && (coreContext.CurrentThread?.Context.IsCurrentThread() ?? false)) coreContext.ContextSwitch();
+                        if (coreContext.ContextSwitchNeeded && (coreContext.CurrentThread?.Context.IsCurrentThread() ?? false))
+                        {
+                            coreContext.ContextSwitch();
+                        }
 
-                        if (coreContext.CurrentThread?.Context.IsCurrentThread() ?? false) selectedCount++;
+                        if (coreContext.CurrentThread?.Context.IsCurrentThread() ?? false)
+                        {
+                            selectedCount++;
+                        }
                     }
 
                     if (selectedCount == 0)
+                    {
                         _coreManager.GetThread(Thread.CurrentThread).Reset();
+                    }
                     else if (selectedCount == 1)
+                    {
                         _coreManager.GetThread(Thread.CurrentThread).Set();
+                    }
                     else
+                    {
                         throw new InvalidOperationException("Thread scheduled in more than one core!");
+                    }
                 }
                 else
                 {
@@ -92,7 +104,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     //If nothing was running before, then we are on a "external"
                     //HLE thread, we don't need to wait.
-                    if (!hasThreadExecuting) return;
+                    if (!hasThreadExecuting)
+                    {
+                        return;
+                    }
                 }
             }
 

@@ -37,7 +37,10 @@ namespace Ryujinx.HLE.HOS.Services.Am
         {
             KEvent Event = context.Process.AppletState.MessageEvent;
 
-            if (context.Process.HandleTable.GenerateHandle(Event.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(Event.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
@@ -46,7 +49,10 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long ReceiveMessage(ServiceCtx context)
         {
-            if (!context.Process.AppletState.TryDequeueMessage(out MessageInfo message)) return MakeError(ErrorModule.Am, AmErr.NoMessages);
+            if (!context.Process.AppletState.TryDequeueMessage(out MessageInfo message))
+            {
+                return MakeError(ErrorModule.Am, AmErr.NoMessages);
+            }
 
             context.ResponseData.Write((int)message);
 
@@ -101,7 +107,10 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long GetDefaultDisplayResolutionChangeEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_displayResolutionChangeEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_displayResolutionChangeEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 

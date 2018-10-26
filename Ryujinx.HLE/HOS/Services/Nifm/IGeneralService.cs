@@ -39,7 +39,10 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
 
         public long GetCurrentIpAddress(ServiceCtx context)
         {
-            if (!NetworkInterface.GetIsNetworkAvailable()) return MakeError(ErrorModule.Nifm, NifmErr.NoInternetConnection);
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                return MakeError(ErrorModule.Nifm, NifmErr.NoInternetConnection);
+            }
 
             IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
 

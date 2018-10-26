@@ -6,7 +6,10 @@ namespace ChocolArm64
         {
             int count = 0;
 
-            for (int bit = 0; bit < 64; bit++) count += (int)(value >> bit) & 1;
+            for (int bit = 0; bit < 64; bit++)
+            {
+                count += (int)(value >> bit) & 1;
+            }
 
             return count;
         }
@@ -14,7 +17,12 @@ namespace ChocolArm64
         public static int HighestBitSet32(int value)
         {
             for (int bit = 31; bit >= 0; bit--)
-                if (((value >> bit) & 1) != 0) return bit;
+            {
+                if (((value >> bit) & 1) != 0)
+                {
+                    return bit;
+                }
+            }
 
             return -1;
         }
@@ -30,7 +38,10 @@ namespace ChocolArm64
         {
             long output = 0;
 
-            for (int bit = 0; bit < 64; bit += size) output |= bits << bit;
+            for (int bit = 0; bit < 64; bit += size)
+            {
+                output |= bits << bit;
+            }
 
             return output;
         }

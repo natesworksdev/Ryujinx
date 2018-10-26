@@ -80,9 +80,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             int result;
 
             if (_ioctlProcessors.TryGetValue(fdData.Name, out IoctlProcessor process))
+            {
                 result = process(context, cmd);
+            }
             else
+            {
                 throw new NotImplementedException($"{fdData.Name} {cmd:x4}");
+            }
 
             //TODO: Verify if the error codes needs to be translated.
             context.ResponseData.Write(result);
@@ -119,7 +123,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             int eventId = context.RequestData.ReadInt32();
 
             //TODO: Use Fd/EventId, different channels have different events.
-            if (context.Process.HandleTable.GenerateHandle(_event.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+            if (context.Process.HandleTable.GenerateHandle(_event.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 

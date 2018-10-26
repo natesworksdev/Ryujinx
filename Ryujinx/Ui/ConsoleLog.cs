@@ -33,6 +33,7 @@ namespace Ryujinx
             _messageThread = new Thread(() =>
             {
                 while (!_messageQueue.IsCompleted)
+                {
                     try
                     {
                         PrintLog(_messageQueue.Take());
@@ -45,6 +46,7 @@ namespace Ryujinx
                         // We can simply catch the exception since the loop will break
                         // on the next iteration.
                     }
+                }
             });
 
             _messageThread.IsBackground = true;
@@ -60,6 +62,7 @@ namespace Ryujinx
             string message = formattedTime + " | " + currentThread + " " + e.Message;
 
             if (_logColors.TryGetValue(e.Level, out ConsoleColor color))
+            {
                 lock (_consoleLock)
                 {
                     Console.ForegroundColor = color;
@@ -67,13 +70,19 @@ namespace Ryujinx
                     Console.WriteLine(message);
                     Console.ResetColor();
                 }
+            }
             else
+            {
                 Console.WriteLine(message);
+            }
         }
 
         public static void Log(object sender, LogEventArgs e)
         {
-            if (!_messageQueue.IsAddingCompleted) _messageQueue.Add(e);
+            if (!_messageQueue.IsAddingCompleted)
+            {
+                _messageQueue.Add(e);
+            }
         }
     }
 }

@@ -35,7 +35,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrNode GetLastNode()
         {
-            if (Nodes.Count > 0) return Nodes[Nodes.Count - 1];
+            if (Nodes.Count > 0)
+            {
+                return Nodes[Nodes.Count - 1];
+            }
 
             return null;
         }

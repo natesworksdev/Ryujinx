@@ -168,7 +168,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             ShaderIrInst roundInst = GetRoundInst(opCode);
 
-            if (roundInst != ShaderIrInst.Invalid) operA = new ShaderIrOp(roundInst, operA);
+            if (roundInst != ShaderIrInst.Invalid)
+            {
+                operA = new ShaderIrOp(roundInst, operA);
+            }
 
             block.AddNode(opCode.PredNode(new ShaderIrAsg(opCode.Gpr0(), operA)));
         }
@@ -179,7 +182,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (type == IntType.U64 ||
                 type == IntType.S64)
+            {
                 throw new NotImplementedException();
+            }
 
             bool negA = opCode.Read(45);
             bool absA = opCode.Read(49);
@@ -199,7 +204,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             ShaderIrInst roundInst = GetRoundInst(opCode);
 
-            if (roundInst != ShaderIrInst.Invalid) operA = new ShaderIrOp(roundInst, operA);
+            if (roundInst != ShaderIrInst.Invalid)
+            {
+                operA = new ShaderIrOp(roundInst, operA);
+            }
 
             bool signed = type >= IntType.S8;
 
@@ -241,7 +249,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (type == IntType.U64 ||
                 type == IntType.S64)
+            {
                 throw new NotImplementedException();
+            }
 
             int sel = opCode.Read(41, 3);
 
@@ -267,9 +277,15 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             int size = 8 << ((int)type & 3);
 
-            if (shift != 0) operA = new ShaderIrOp(ShaderIrInst.Asr, operA, new ShaderIrOperImm(shift));
+            if (shift != 0)
+            {
+                operA = new ShaderIrOp(ShaderIrInst.Asr, operA, new ShaderIrOperImm(shift));
+            }
 
-            if (size < 32) operA = ExtendTo32(operA, signed, size);
+            if (size < 32)
+            {
+                operA = ExtendTo32(operA, signed, size);
+            }
 
             ShaderIrInst inst = signed
                 ? ShaderIrInst.Stof
@@ -286,7 +302,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (type == IntType.U64 ||
                 type == IntType.S64)
+            {
                 throw new NotImplementedException();
+            }
 
             int sel = opCode.Read(41, 3);
 
@@ -313,7 +331,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             int size = 8 << ((int)type & 3);
 
-            if (shift != 0) operA = new ShaderIrOp(ShaderIrInst.Asr, operA, new ShaderIrOperImm(shift));
+            if (shift != 0)
+            {
+                operA = new ShaderIrOp(ShaderIrInst.Asr, operA, new ShaderIrOperImm(shift));
+            }
 
             if (size < 32)
             {
@@ -376,7 +397,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             IntType type = (IntType)opCode.Read(10, 3);
 
-            if (signed) type += (int)IntType.S8;
+            if (signed)
+            {
+                type += (int)IntType.S8;
+            }
 
             return type;
         }

@@ -22,7 +22,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing && Service is IDisposable disposableService) disposableService.Dispose();
+            if (disposing && Service is IDisposable disposableService)
+            {
+                disposableService.Dispose();
+            }
         }
     }
 }

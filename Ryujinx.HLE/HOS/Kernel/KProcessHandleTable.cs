@@ -57,7 +57,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             lock (_lockObj)
             {
-                if (_activeSlotsCount >= _size) return KernelResult.HandleTableFull;
+                if (_activeSlotsCount >= _size)
+                {
+                    return KernelResult.HandleTableFull;
+                }
 
                 KHandleEntry entry = _nextFreeEntry;
 
@@ -71,9 +74,13 @@ namespace Ryujinx.HLE.HOS.Kernel
                 handle = (int)((_idCounter << 15) & (uint)0xffff8000) | entry.Index;
 
                 if ((short)(_idCounter + 1) >= 0)
+                {
                     _idCounter++;
+                }
                 else
+                {
                     _idCounter = 1;
+                }
             }
 
             return KernelResult.Success;
@@ -84,7 +91,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (handle >> 30 != 0 ||
                 handle == SelfThreadHandle ||
                 handle == SelfProcessHandle)
+            {
                 return false;
+            }
 
             int index    = (handle >>  0) & 0x7fff;
             int handleId = handle >> 15;
@@ -125,7 +134,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     KHandleEntry entry = _table[index];
 
-                    if (entry.HandleId == handleId && entry.Obj is T obj) return obj;
+                    if (entry.HandleId == handleId && entry.Obj is T obj)
+                    {
+                        return obj;
+                    }
                 }
             }
 
@@ -135,9 +147,13 @@ namespace Ryujinx.HLE.HOS.Kernel
         public KThread GetKThread(int handle)
         {
             if (handle == SelfThreadHandle)
+            {
                 return _system.Scheduler.GetCurrentThread();
+            }
             else
+            {
                 return GetObject<KThread>(handle);
+            }
         }
 
         public void Destroy()
@@ -150,7 +166,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     if (entry.Obj != null)
                     {
-                        if (entry.Obj is IDisposable disposableObj) disposableObj.Dispose();
+                        if (entry.Obj is IDisposable disposableObj)
+                        {
+                            disposableObj.Dispose();
+                        }
 
                         entry.Obj  = null;
                         entry.Next = _nextFreeEntry;

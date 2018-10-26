@@ -60,7 +60,10 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             timeout /= 1000000;
 
-            if ((ulong)timeout > int.MaxValue) return int.MaxValue;
+            if ((ulong)timeout > int.MaxValue)
+            {
+                return int.MaxValue;
+            }
 
             return timeout;
         }
@@ -89,7 +92,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                     {
                         long timePoint = _counter.ElapsedMilliseconds;
 
-                        if (next.TimePoint > timePoint) _waitEvent.WaitOne((int)(next.TimePoint - timePoint));
+                        if (next.TimePoint > timePoint)
+                        {
+                            _waitEvent.WaitOne((int)(next.TimePoint - timePoint));
+                        }
 
                         Monitor.Enter(_waitingObjects);
 
@@ -97,7 +103,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                         Monitor.Exit(_waitingObjects);
 
-                        if (timeUp) next.Object.TimeUp();
+                        if (timeUp)
+                        {
+                            next.Object.TimeUp();
+                        }
                     }
                     else
                     {

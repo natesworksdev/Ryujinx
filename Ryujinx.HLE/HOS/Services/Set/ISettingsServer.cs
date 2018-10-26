@@ -59,7 +59,10 @@ namespace Ryujinx.HLE.HOS.Services.Set
         {
             int count = (int)(size / 8);
 
-            if (count > SystemStateMgr.LanguageCodes.Length) count = SystemStateMgr.LanguageCodes.Length;
+            if (count > SystemStateMgr.LanguageCodes.Length)
+            {
+                count = SystemStateMgr.LanguageCodes.Length;
+            }
 
             for (int index = 0; index < count; index++)
             {

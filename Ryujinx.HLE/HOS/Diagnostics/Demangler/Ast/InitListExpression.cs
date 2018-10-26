@@ -16,7 +16,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public override void PrintLeft(TextWriter writer)
         {
-            if (_typeNode != null) _typeNode.Print(writer);
+            if (_typeNode != null)
+            {
+                _typeNode.Print(writer);
+            }
 
             writer.Write("{");
             writer.Write(string.Join<BaseNode>(", ", _nodes.ToArray()));

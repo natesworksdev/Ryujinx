@@ -33,9 +33,13 @@ namespace ChocolArm64.Instruction
         public static void Add_V(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
+            {
                 EmitSse2Op(context, nameof(Sse2.Add));
+            }
             else
+            {
                 EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Add));
+            }
         }
 
         public static void Addhn_V(AILEmitterCtx context)
@@ -99,7 +103,10 @@ namespace ChocolArm64.Instruction
                 EmitVectorInsert(context, op.Rd, index, op.Size);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void Clz_V(AILEmitterCtx context)
@@ -133,7 +140,10 @@ namespace ChocolArm64.Instruction
                 EmitVectorInsert(context, op.Rd, index, op.Size);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void Cnt_V(AILEmitterCtx context)
@@ -147,14 +157,21 @@ namespace ChocolArm64.Instruction
                 EmitVectorExtractZx(context, op.Rn, index, 0);
 
                 if (Popcnt.IsSupported)
+                {
                     context.EmitCall(typeof(Popcnt).GetMethod(nameof(Popcnt.PopCount), new Type[] { typeof(ulong) }));
+                }
                 else
+                {
                     ASoftFallback.EmitCall(context, nameof(ASoftFallback.CountSetBits8));
+                }
 
                 EmitVectorInsert(context, op.Rd, index, 0);
             }
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         public static void Fabd_S(AILEmitterCtx context)
@@ -187,24 +204,32 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.AddScalar));
+            }
             else
+            {
                 EmitScalarBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpAdd));
                 });
+            }
         }
 
         public static void Fadd_V(AILEmitterCtx context)
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Add));
+            }
             else
+            {
                 EmitVectorBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpAdd));
                 });
+            }
         }
 
         public static void Faddp_S(AILEmitterCtx context)
@@ -230,24 +255,32 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.DivideScalar));
+            }
             else
+            {
                 EmitScalarBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpDiv));
                 });
+            }
         }
 
         public static void Fdiv_V(AILEmitterCtx context)
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Divide));
+            }
             else
+            {
                 EmitVectorBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpDiv));
                 });
+            }
         }
 
         public static void Fmadd_S(AILEmitterCtx context)
@@ -300,24 +333,32 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.MaxScalar));
+            }
             else
+            {
                 EmitScalarBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpMax));
                 });
+            }
         }
 
         public static void Fmax_V(AILEmitterCtx context)
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Max));
+            }
             else
+            {
                 EmitVectorBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpMax));
                 });
+            }
         }
 
         public static void Fmaxnm_S(AILEmitterCtx context)
@@ -348,24 +389,32 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.MinScalar));
+            }
             else
+            {
                 EmitScalarBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpMin));
                 });
+            }
         }
 
         public static void Fmin_V(AILEmitterCtx context)
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Min));
+            }
             else
+            {
                 EmitVectorBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpMin));
                 });
+            }
         }
 
         public static void Fminnm_S(AILEmitterCtx context)
@@ -496,12 +545,16 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.MultiplyScalar));
+            }
             else
+            {
                 EmitScalarBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpMul));
                 });
+            }
         }
 
         public static void Fmul_Se(AILEmitterCtx context)
@@ -513,12 +566,16 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Multiply));
+            }
             else
+            {
                 EmitVectorBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpMul));
                 });
+            }
         }
 
         public static void Fmul_Ve(AILEmitterCtx context)
@@ -710,7 +767,10 @@ namespace ChocolArm64.Instruction
 
                     context.EmitStvec(op.Rd);
 
-                    if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                    if (op.RegisterSize == ARegisterSize.Simd64)
+                    {
+                        EmitVectorZeroUpper(context, op.Rd);
+                    }
                 }
                 else /* if (SizeF == 1) */
                 {
@@ -774,11 +834,17 @@ namespace ChocolArm64.Instruction
                 context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
                 if (op.Size == 0)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.RoundF));
+                }
                 else if (op.Size == 1)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.Round));
+                }
                 else
+                {
                     throw new InvalidOperationException();
+                }
             });
         }
 
@@ -793,11 +859,17 @@ namespace ChocolArm64.Instruction
                 context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
                 if (sizeF == 0)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.RoundF));
+                }
                 else if (sizeF == 1)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.Round));
+                }
                 else
+                {
                     throw new InvalidOperationException();
+                }
             });
         }
 
@@ -861,11 +933,17 @@ namespace ChocolArm64.Instruction
                 context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
                 if (op.Size == 0)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.RoundF));
+                }
                 else if (op.Size == 1)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.Round));
+                }
                 else
+                {
                     throw new InvalidOperationException();
+                }
             });
         }
 
@@ -878,11 +956,17 @@ namespace ChocolArm64.Instruction
                 context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
                 if (op.Size == 0)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.RoundF));
+                }
                 else if (op.Size == 1)
+                {
                     AVectorHelper.EmitCall(context, nameof(AVectorHelper.Round));
+                }
                 else
+                {
                     throw new InvalidOperationException();
+                }
             });
         }
 
@@ -992,7 +1076,10 @@ namespace ChocolArm64.Instruction
 
                     context.EmitStvec(op.Rd);
 
-                    if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                    if (op.RegisterSize == ARegisterSize.Simd64)
+                    {
+                        EmitVectorZeroUpper(context, op.Rd);
+                    }
                 }
                 else /* if (SizeF == 1) */
                 {
@@ -1028,48 +1115,64 @@ namespace ChocolArm64.Instruction
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.SqrtScalar));
+            }
             else
+            {
                 EmitScalarUnaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpSqrt));
                 });
+            }
         }
 
         public static void Fsqrt_V(AILEmitterCtx context)
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Sqrt));
+            }
             else
+            {
                 EmitVectorUnaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpSqrt));
                 });
+            }
         }
 
         public static void Fsub_S(AILEmitterCtx context)
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.SubtractScalar));
+            }
             else
+            {
                 EmitScalarBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpSub));
                 });
+            }
         }
 
         public static void Fsub_V(AILEmitterCtx context)
         {
             if (AOptimizations.FastFp && AOptimizations.UseSse
                                       && AOptimizations.UseSse2)
+            {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Subtract));
+            }
             else
+            {
                 EmitVectorBinaryOpF(context, () =>
                 {
                     EmitSoftFloatCall(context, nameof(ASoftFloat_32.FpSub));
                 });
+            }
         }
 
         public static void Mla_V(AILEmitterCtx context)
@@ -1267,7 +1370,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -1314,7 +1420,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -1582,7 +1691,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -1653,9 +1765,13 @@ namespace ChocolArm64.Instruction
         public static void Sub_V(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse2)
+            {
                 EmitSse2Op(context, nameof(Sse2.Subtract));
+            }
             else
+            {
                 EmitVectorBinaryOpZx(context, () => context.Emit(OpCodes.Sub));
+            }
         }
 
         public static void Subhn_V(AILEmitterCtx context)
@@ -1821,7 +1937,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -1854,7 +1973,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -2056,7 +2178,10 @@ namespace ChocolArm64.Instruction
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
 
-                if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+                if (op.RegisterSize == ARegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
             }
             else
             {
@@ -2171,7 +2296,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
+            if (op.RegisterSize == ARegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
 
         private static void EmitDoublingMultiplyHighHalf(AILEmitterCtx context, bool round)
@@ -2250,7 +2378,10 @@ namespace ChocolArm64.Instruction
             context.EmitLdvectmp();
             context.EmitStvec(op.Rd);
 
-            if (part == 0) EmitVectorZeroUpper(context, op.Rd);
+            if (part == 0)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
         }
     }
 }
