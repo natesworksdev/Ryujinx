@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
                 byteReaded += length + 1;
             }
 
-            this.Services = new ReadOnlyDictionary<string, bool>(services);
+            Services = new ReadOnlyDictionary<string, bool>(services);
         }
     }
 }

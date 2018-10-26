@@ -27,7 +27,7 @@ namespace ChocolArm64.Decoder
             Rd  = (opCode >>  0) & 0x1f;
             imm = (opCode >> 13) & 0xff;
 
-            this.Imm = ADecoderHelper.DecodeImm8Float(imm, type);
+            Imm = ADecoderHelper.DecodeImm8Float(imm, type);
         }
     }
 }

@@ -15,9 +15,9 @@ namespace Ryujinx.Graphics.Memory
 
         public NvGpuPBEntry(int method, int subChannel, params int[] arguments)
         {
-            this.Method      = method;
-            this.SubChannel  = subChannel;
-            this._mArguments = arguments;
+            Method      = method;
+            SubChannel  = subChannel;
+            _mArguments = arguments;
         }
     }
 }

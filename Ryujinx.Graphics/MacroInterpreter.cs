@@ -61,8 +61,8 @@ namespace Ryujinx.Graphics
 
         public MacroInterpreter(NvGpuFifo pFifo, INvGpuEngine engine)
         {
-            this._pFifo  = pFifo;
-            this._engine = engine;
+            _pFifo  = pFifo;
+            _engine = engine;
 
             Fifo = new Queue<int>();
 

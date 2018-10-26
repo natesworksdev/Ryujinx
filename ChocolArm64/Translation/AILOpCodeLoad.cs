@@ -13,9 +13,9 @@ namespace ChocolArm64.Translation
 
         public AILOpCodeLoad(int index, AIoType ioType, ARegisterSize registerSize = 0)
         {
-            this.Index        = index;
-            this.IoType       = ioType;
-            this.RegisterSize = registerSize;
+            Index        = index;
+            IoType       = ioType;
+            RegisterSize = registerSize;
         }
 
         public void Emit(AILEmitter context)

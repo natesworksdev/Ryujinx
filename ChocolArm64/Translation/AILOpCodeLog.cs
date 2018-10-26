@@ -6,7 +6,7 @@ namespace ChocolArm64.Translation
 
         public AILOpCodeLog(string text)
         {
-            this._text = text;
+            _text = text;
         }
 
         public void Emit(AILEmitter context)

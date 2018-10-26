@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     int selectedCount = 0;
 
-                    for (int core = 0; core < KScheduler.CpuCoresCount; core++)
+                    for (int core = 0; core < CpuCoresCount; core++)
                     {
                         KCoreContext coreContext = CoreContexts[core];
 

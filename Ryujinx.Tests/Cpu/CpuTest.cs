@@ -163,9 +163,9 @@ namespace Ryujinx.Tests.Cpu
                                             bool overflow = false, bool carry = false, bool zero = false, bool negative = false,
                                             int fpcr = 0x0, int fpsr = 0x0)
         {
-            this.Opcode(opcode);
-            this.Opcode(0xD4200000); // BRK #0
-            this.Opcode(0xD65F03C0); // RET
+            Opcode(opcode);
+            Opcode(0xD4200000); // BRK #0
+            Opcode(0xD65F03C0); // RET
             SetThreadState(x0, x1, x2, x3, x31, v0, v1, v2, v3, overflow, carry, zero, negative, fpcr, fpsr);
             ExecuteOpcodes();
 

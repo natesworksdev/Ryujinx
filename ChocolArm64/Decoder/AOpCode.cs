@@ -15,8 +15,8 @@ namespace ChocolArm64.Decoder
 
         public AOpCode(AInst inst, long position, int opCode)
         {
-            this.Position  = position;
-            this.RawOpCode = opCode;
+            Position  = position;
+            RawOpCode = opCode;
 
             RegisterSize = ARegisterSize.Int64;
 

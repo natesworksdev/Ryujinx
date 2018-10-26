@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KHandleEntry(int index)
         {
-            this.Index = index;
+            Index = index;
         }
     }
 }

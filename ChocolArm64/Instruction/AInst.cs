@@ -12,9 +12,9 @@ namespace ChocolArm64.Instruction
 
         public AInst(AInstInterpreter interpreter, AInstEmitter emitter, Type type)
         {
-            this.Interpreter = interpreter;
-            this.Emitter     = emitter;
-            this.Type        = type;
+            Interpreter = interpreter;
+            Emitter     = emitter;
+            Type        = type;
         }
     }
 }

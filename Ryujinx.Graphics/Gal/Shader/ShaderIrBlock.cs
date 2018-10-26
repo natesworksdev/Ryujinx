@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrBlock(int position)
         {
-            this.Position = position;
+            Position = position;
 
             Sources = new List<ShaderIrBlock>();
 

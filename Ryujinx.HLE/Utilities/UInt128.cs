@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.Utilities
 
         public UInt128(long low, long high)
         {
-            this.Low  = low;
-            this.High = high;
+            Low  = low;
+            High = high;
         }
 
         public UInt128(string uInt128Hex)

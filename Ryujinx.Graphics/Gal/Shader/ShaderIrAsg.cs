@@ -7,8 +7,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrAsg(ShaderIrNode dst, ShaderIrNode src)
         {
-            this.Dst = dst;
-            this.Src = src;
+            Dst = dst;
+            Src = src;
         }
     }
 }

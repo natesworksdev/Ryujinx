@@ -9,8 +9,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public LocalName(BaseNode encoding, BaseNode entity) : base(NodeType.LocalName)
         {
-            this._encoding = encoding;
-            this._entity   = entity;
+            _encoding = encoding;
+            _entity   = entity;
         }
 
         public override void PrintLeft(TextWriter writer)

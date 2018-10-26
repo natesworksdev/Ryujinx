@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             int     priority,
             int     threadId) : base(system)
         {
-            this.ThreadId = threadId;
+            ThreadId = threadId;
 
             Context        = thread;
             Owner          = process;

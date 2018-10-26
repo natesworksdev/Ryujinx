@@ -38,7 +38,7 @@ namespace ChocolArm64.Memory
 
             public bool HasExclusiveAccess(long position)
             {
-                return this.Position == position && ExState;
+                return Position == position && ExState;
             }
         }
 
@@ -60,7 +60,7 @@ namespace ChocolArm64.Memory
 
             _observedPages = new ConcurrentDictionary<long, IntPtr>();
 
-            this.Ram = ram;
+            Ram = ram;
 
             _ramPtr = (byte*)ram;
 

@@ -10,14 +10,14 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ArrayType(BaseNode Base, BaseNode dimensionExpression = null) : base(NodeType.ArrayType)
         {
-            this._base                = Base;
-            this._dimensionExpression = dimensionExpression;
+            _base                = Base;
+            _dimensionExpression = dimensionExpression;
         }
 
         public ArrayType(BaseNode Base, string dimensionString) : base(NodeType.ArrayType)
         {
-            this._base            = Base;
-            this._dimensionString = dimensionString;
+            _base            = Base;
+            _dimensionString = dimensionString;
         }
 
         public override bool HasRightPart()

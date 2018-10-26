@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public NestedName(BaseNode name, BaseNode type) : base(NodeType.NestedName, type)
         {
-            this._name = name;
+            _name = name;
         }
 
         public override string GetName()

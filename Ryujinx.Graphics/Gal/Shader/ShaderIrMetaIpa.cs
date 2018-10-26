@@ -6,7 +6,7 @@
 
         public ShaderIrMetaIpa(ShaderIpaMode mode)
         {
-            this.Mode = mode;
+            Mode = mode;
         }
     }
 }

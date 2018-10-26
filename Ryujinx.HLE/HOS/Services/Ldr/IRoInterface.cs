@@ -54,9 +54,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
         public NrrInfo(long nrrAddress, NrrHeader header, List<byte[]> hashes)
         {
-            this.NrrAddress = nrrAddress;
-            this.Header     = header;
-            this.Hashes     = hashes;
+            NrrAddress = nrrAddress;
+            Header     = header;
+            Hashes     = hashes;
         }
     }
 
@@ -70,9 +70,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
         public NroInfo(Nro executable, byte[] hash, long totalSize)
         {
-            this.Executable = executable;
-            this.Hash       = hash;
-            this.TotalSize = totalSize;
+            Executable = executable;
+            Hash       = hash;
+            TotalSize = totalSize;
         }
     }
 

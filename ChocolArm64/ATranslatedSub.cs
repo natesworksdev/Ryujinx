@@ -40,7 +40,7 @@ namespace ChocolArm64
 
             if (Params == null) throw new ArgumentNullException(nameof(Params));
 
-            this.Method = method;
+            Method = method;
             this.Params = Params.AsReadOnly();
 
             _callers = new HashSet<long>();
@@ -126,7 +126,7 @@ namespace ChocolArm64
 
         public void SetType(ATranslatedSubType type)
         {
-            this._type = type;
+            _type = type;
 
             if (type == ATranslatedSubType.SubTier0) _needsReJit = true;
         }

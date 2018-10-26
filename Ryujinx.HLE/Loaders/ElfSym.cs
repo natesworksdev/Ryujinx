@@ -28,13 +28,13 @@ namespace Ryujinx.HLE.Loaders
             long   value,
             long   size)
         {
-            this.Name       = name;
-            this.Type       = (ElfSymType)(info & 0xf);
-            this.Binding    = (ElfSymBinding)(info >> 4);
-            this.Visibility = (ElfSymVisibility)other;
-            this.ShIdx      = shIdx;
-            this.Value      = value;
-            this.Size       = size;
+            Name       = name;
+            Type       = (ElfSymType)(info & 0xf);
+            Binding    = (ElfSymBinding)(info >> 4);
+            Visibility = (ElfSymVisibility)other;
+            ShIdx      = shIdx;
+            Value      = value;
+            Size       = size;
         }
     }
 }

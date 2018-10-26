@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
                 { 0, Open }
             };
 
-            this.Data = data;
+            Data = data;
         }
 
         public long Open(ServiceCtx context)

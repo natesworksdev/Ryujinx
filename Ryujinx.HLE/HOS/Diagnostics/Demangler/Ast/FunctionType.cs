@@ -12,11 +12,11 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public FunctionType(BaseNode returnType, BaseNode Params, BaseNode cvQualifier, SimpleReferenceType referenceQualifier, BaseNode exceptionSpec) : base(NodeType.FunctionType)
         {
-            this._returnType         = returnType;
-            this._params             = Params;
-            this._cvQualifier        = cvQualifier;
-            this._referenceQualifier = referenceQualifier;
-            this._exceptionSpec      = exceptionSpec;
+            _returnType         = returnType;
+            _params             = Params;
+            _cvQualifier        = cvQualifier;
+            _referenceQualifier = referenceQualifier;
+            _exceptionSpec      = exceptionSpec;
         }
 
         public override void PrintLeft(TextWriter writer)

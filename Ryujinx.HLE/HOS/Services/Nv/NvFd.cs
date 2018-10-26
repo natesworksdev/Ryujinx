@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         public NvFd(string name)
         {
-            this.Name = name;
+            Name = name;
         }
     }
 }

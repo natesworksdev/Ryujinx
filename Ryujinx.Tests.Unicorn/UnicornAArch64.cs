@@ -102,7 +102,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public void RunForCount(ulong count)
         {
-            Native.Interface.Checked(Native.Interface.uc_emu_start(Uc, this.Pc, 0xFFFFFFFFFFFFFFFFu, 0, count));
+            Native.Interface.Checked(Native.Interface.uc_emu_start(Uc, Pc, 0xFFFFFFFFFFFFFFFFu, 0, count));
         }
 
         public void Step()

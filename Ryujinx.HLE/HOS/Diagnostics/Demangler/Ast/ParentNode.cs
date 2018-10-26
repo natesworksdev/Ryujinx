@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ParentNode(NodeType type, BaseNode child) : base(type)
         {
-            this.Child = child;
+            Child = child;
         }
 
         public override string GetName()

@@ -38,7 +38,7 @@ namespace Ryujinx.HLE
 
             if (audioOut == null) throw new ArgumentNullException(nameof(audioOut));
 
-            this.AudioOut = audioOut;
+            AudioOut = audioOut;
 
             Memory = new DeviceMemory();
 

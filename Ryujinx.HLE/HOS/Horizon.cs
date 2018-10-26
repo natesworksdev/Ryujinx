@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS
 
         public Horizon(Switch device)
         {
-            this._device = device;
+            _device = device;
 
             _processes = new ConcurrentDictionary<int, Process>();
 

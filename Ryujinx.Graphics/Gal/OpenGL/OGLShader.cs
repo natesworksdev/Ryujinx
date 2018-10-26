@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLShader(OGLConstBuffer buffer)
         {
-            this._buffer = buffer;
+            _buffer = buffer;
 
             _stages = new ConcurrentDictionary<long, OGLShaderStage>();
 

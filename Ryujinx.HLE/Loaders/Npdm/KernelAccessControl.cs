@@ -158,7 +158,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
                 }
             }
 
-            this.Items = Array.AsReadOnly(items);
+            Items = Array.AsReadOnly(items);
         }
     }
 }

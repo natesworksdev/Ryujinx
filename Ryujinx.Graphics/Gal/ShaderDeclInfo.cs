@@ -16,11 +16,11 @@ namespace Ryujinx.Graphics.Gal
             int    cbuf = 0,
             int    size = 1)
         {
-            this.Name  = name;
-            this.Index = index;
-            this.IsCb  = isCb;
-            this.Cbuf  = cbuf;
-            this.Size  = size;
+            Name  = name;
+            Index = index;
+            IsCb  = isCb;
+            Cbuf  = cbuf;
+            Size  = size;
         }
 
         internal void Enlarge(int newSize)

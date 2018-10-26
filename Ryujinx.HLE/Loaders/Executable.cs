@@ -36,10 +36,10 @@ namespace Ryujinx.HLE.Loaders
 
             if (FilePath != null) Name = Path.GetFileNameWithoutExtension(FilePath.Replace(Homebrew.TemporaryNroSuffix, ""));
 
-            this._memory        = memory;
-            this._memoryManager = memoryManager;
-            this.ImageBase     = imageBase;
-            this.ImageEnd      = imageBase;
+            _memory        = memory;
+            _memoryManager = memoryManager;
+            ImageBase     = imageBase;
+            ImageEnd      = imageBase;
 
             long textPosition = imageBase + (uint)exe.TextOffset;
             long roPosition   = imageBase + (uint)exe.RoOffset;

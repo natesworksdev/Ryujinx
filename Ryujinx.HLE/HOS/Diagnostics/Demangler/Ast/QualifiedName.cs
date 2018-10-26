@@ -9,8 +9,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public QualifiedName(BaseNode qualifier, BaseNode name) : base(NodeType.QualifiedName)
         {
-            this._qualifier = qualifier;
-            this._name      = name;
+            _qualifier = qualifier;
+            _name      = name;
         }
 
         public override void PrintLeft(TextWriter writer)

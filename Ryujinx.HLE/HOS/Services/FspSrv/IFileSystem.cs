@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             _openPaths = new HashSet<string>();
 
-            this._path = path;
+            _path = path;
         }
 
         public long CreateFile(ServiceCtx context)

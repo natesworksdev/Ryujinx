@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KReadableEvent(Horizon system, KEvent parent) : base(system)
         {
-            this._parent = parent;
+            _parent = parent;
         }
 
         public override void Signal()

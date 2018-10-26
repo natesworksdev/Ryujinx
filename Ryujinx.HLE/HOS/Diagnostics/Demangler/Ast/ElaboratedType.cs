@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public ElaboratedType(string elaborated, BaseNode type) : base(NodeType.ElaboratedType, type)
         {
-            this._elaborated = elaborated;
+            _elaborated = elaborated;
         }
 
         public override void PrintLeft(TextWriter writer)

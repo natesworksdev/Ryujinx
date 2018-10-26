@@ -7,8 +7,8 @@ namespace Ryujinx.Graphics.Texture
 
         public LinearSwizzle(int pitch, int bpp)
         {
-            this._pitch = pitch;
-            this._bpp   = bpp;
+            _pitch = pitch;
+            _bpp   = bpp;
         }
 
         public int GetSwizzleOffset(int x, int y)

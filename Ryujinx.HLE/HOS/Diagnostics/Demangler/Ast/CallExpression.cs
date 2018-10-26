@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public CallExpression(BaseNode callee, List<BaseNode> nodes) : base(nodes, NodeType.CallExpression)
         {
-            this._callee = callee;
+            _callee = callee;
         }
 
         public override void PrintLeft(TextWriter writer)

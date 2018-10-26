@@ -9,8 +9,8 @@ namespace ChocolArm64.Events
 
         public AInstUndefinedEventArgs(long position, int rawOpCode)
         {
-            this.Position  = position;
-            this.RawOpCode = rawOpCode;
+            Position  = position;
+            RawOpCode = rawOpCode;
         }
     }
 }

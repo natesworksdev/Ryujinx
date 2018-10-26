@@ -28,8 +28,8 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 4, GetSize }
             };
 
-            this._baseStream = baseStream;
-            this.HostPath   = hostPath;
+            _baseStream = baseStream;
+            HostPath   = hostPath;
         }
 
         public long Read(ServiceCtx context)

@@ -11,8 +11,8 @@ namespace ChocolArm64.State
 
         public ARegister(int index, ARegisterType type)
         {
-            this.Index = index;
-            this.Type  = type;
+            Index = index;
+            Type  = type;
         }
 
         public override int GetHashCode()

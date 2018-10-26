@@ -8,8 +8,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrMetaTexq(ShaderTexqInfo info, int elem)
         {
-            this.Info = info;
-            this.Elem = elem;
+            Info = info;
+            Elem = elem;
         }
     }
 }

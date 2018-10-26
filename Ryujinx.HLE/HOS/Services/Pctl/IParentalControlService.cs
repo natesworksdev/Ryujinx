@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
                 { 1, Initialize }
             };
 
-            this._needInitialize = needInitialize;
+            _needInitialize = needInitialize;
         }
 
         public long Initialize(ServiceCtx context)

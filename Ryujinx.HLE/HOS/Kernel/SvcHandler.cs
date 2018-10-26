@@ -32,10 +32,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 IpcMessage message,
                 long       messagePtr)
             {
-                this.Thread     = thread;
-                this.Session    = session;
-                this.Message    = message;
-                this.MessagePtr = messagePtr;
+                Thread     = thread;
+                Session    = session;
+                Message    = message;
+                MessagePtr = messagePtr;
             }
         }
 
@@ -90,10 +90,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 { 0x45, CreateEvent64                    }
             };
 
-            this._device  = device;
-            this._process = process;
-            this._system  = process.Device.System;
-            this._memory  = process.Memory;
+            _device  = device;
+            _process = process;
+            _system  = process.Device.System;
+            _memory  = process.Memory;
         }
 
         static SvcHandler()

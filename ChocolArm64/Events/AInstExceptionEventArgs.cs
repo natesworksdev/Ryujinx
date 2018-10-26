@@ -9,8 +9,8 @@ namespace ChocolArm64.Events
 
         public AInstExceptionEventArgs(long position, int id)
         {
-            this.Position = position;
-            this.Id       = id;
+            Position = position;
+            Id       = id;
         }
     }
 }

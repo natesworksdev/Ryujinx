@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 0, Read }
             };
 
-            this._baseStream = baseStream;
+            _baseStream = baseStream;
         }
 
         public long Read(ServiceCtx context)

@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrOperPred(int index)
         {
-            this.Index = index;
+            Index = index;
         }
     }
 }

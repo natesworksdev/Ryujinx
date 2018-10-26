@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public IpcHandleDesc(int[] copy, int[] move, long pId) : this(copy, move)
         {
-            this.PId = pId;
+            PId = pId;
 
             HasPId = true;
         }

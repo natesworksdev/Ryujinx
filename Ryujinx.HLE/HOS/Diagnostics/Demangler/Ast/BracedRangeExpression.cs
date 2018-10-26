@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public BracedRangeExpression(BaseNode firstNode, BaseNode lastNode, BaseNode expression) : base(NodeType.BracedRangeExpression)
         {
-            this._firstNode  = firstNode;
-            this._lastNode   = lastNode;
-            this._expression = expression;
+            _firstNode  = firstNode;
+            _lastNode   = lastNode;
+            _expression = expression;
         }
 
         public override void PrintLeft(TextWriter writer)

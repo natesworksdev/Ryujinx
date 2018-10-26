@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KWritableEvent(KEvent parent)
         {
-            this._parent = parent;
+            _parent = parent;
         }
 
         public void Signal()

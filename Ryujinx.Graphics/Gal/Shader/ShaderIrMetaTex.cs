@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrMetaTex(int elem)
         {
-            this.Elem = elem;
+            Elem = elem;
         }
     }
 }

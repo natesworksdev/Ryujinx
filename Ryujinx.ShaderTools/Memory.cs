@@ -11,7 +11,7 @@ namespace Ryujinx.ShaderTools
 
         public Memory(Stream baseStream)
         {
-            this._baseStream = baseStream;
+            _baseStream = baseStream;
 
             _reader = new BinaryReader(baseStream);
         }

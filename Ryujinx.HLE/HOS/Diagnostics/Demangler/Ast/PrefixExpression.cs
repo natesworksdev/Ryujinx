@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public PrefixExpression(string prefix, BaseNode child) : base(NodeType.PrefixExpression, child)
         {
-            this._prefix = prefix;
+            _prefix = prefix;
         }
 
         public override void PrintLeft(TextWriter writer)

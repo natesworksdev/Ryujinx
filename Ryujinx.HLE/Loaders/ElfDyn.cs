@@ -8,8 +8,8 @@ namespace Ryujinx.HLE.Loaders
 
         public ElfDyn(ElfDynTag tag, long value)
         {
-            this.Tag   = tag;
-            this.Value = value;
+            Tag   = tag;
+            Value = value;
         }
     }
 }

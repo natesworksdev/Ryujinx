@@ -21,13 +21,13 @@ namespace Ryujinx.Graphics.Gal
             GalTextureMipFilter mipFilter,
             GalColorF           borderColor)
         {
-            this.AddressU    = addressU;
-            this.AddressV    = addressV;
-            this.AddressP    = addressP;
-            this.MinFilter   = minFilter;
-            this.MagFilter   = magFilter;
-            this.MipFilter   = mipFilter;
-            this.BorderColor = borderColor;
+            AddressU    = addressU;
+            AddressV    = addressV;
+            AddressP    = addressP;
+            MinFilter   = minFilter;
+            MagFilter   = magFilter;
+            MipFilter   = mipFilter;
+            BorderColor = borderColor;
         }
     }
 }

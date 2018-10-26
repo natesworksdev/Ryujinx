@@ -19,10 +19,10 @@
 
         public PollEvent(int socketFd, BsdSocket socket, EventTypeMask inputEvents, EventTypeMask outputEvents)
         {
-            this.SocketFd     = socketFd;
-            this.Socket       = socket;
-            this.InputEvents  = inputEvents;
-            this.OutputEvents = outputEvents;
+            SocketFd     = socketFd;
+            Socket       = socket;
+            InputEvents  = inputEvents;
+            OutputEvents = outputEvents;
         }
     }
 }

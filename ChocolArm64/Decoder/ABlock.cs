@@ -19,7 +19,7 @@ namespace ChocolArm64.Decoder
 
         public ABlock(long position) : this()
         {
-            this.Position = position;
+            Position = position;
         }
 
         public AOpCode GetLastOp()

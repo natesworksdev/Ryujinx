@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public PostfixExpression(BaseNode type, string Operator) : base(NodeType.PostfixExpression, type)
         {
-            this._operator = Operator;
+            _operator = Operator;
         }
 
         public override void PrintLeft(TextWriter writer)

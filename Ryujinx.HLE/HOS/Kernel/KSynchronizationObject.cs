@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KSynchronizationObject(Horizon system)
         {
-            this.System = system;
+            System = system;
 
             WaitingThreads = new LinkedList<KThread>();
         }

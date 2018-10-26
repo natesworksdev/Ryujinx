@@ -13,10 +13,10 @@ namespace Ryujinx.HLE.Loaders.Npdm
             bool  isRo,
             bool  isNormal)
         {
-            this.Address  = address;
-            this.Size     = size;
-            this.IsRo     = isRo;
-            this.IsNormal = isNormal;
+            Address  = address;
+            Size     = size;
+            IsRo     = isRo;
+            IsNormal = isNormal;
         }
     }
 }

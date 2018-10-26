@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrOperImmf(float value)
         {
-            this.Value = value;
+            Value = value;
         }
     }
 }

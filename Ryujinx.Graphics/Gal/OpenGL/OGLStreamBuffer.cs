@@ -13,8 +13,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLStreamBuffer(BufferTarget target, long size)
         {
-            this.Target = target;
-            this.Size   = size;
+            Target = target;
+            Size   = size;
 
             Handle = GL.GenBuffer();
 

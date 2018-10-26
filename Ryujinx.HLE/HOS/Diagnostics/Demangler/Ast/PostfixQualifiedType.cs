@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public PostfixQualifiedType(string postfixQualifier, BaseNode type) : base(NodeType.PostfixQualifiedType, type)
         {
-            this._postfixQualifier = postfixQualifier;
+            _postfixQualifier = postfixQualifier;
         }
 
         public override void PrintLeft(TextWriter writer)

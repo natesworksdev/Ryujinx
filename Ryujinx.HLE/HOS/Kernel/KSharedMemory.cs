@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KSharedMemory(long pa, long size)
         {
-            this.Pa   = pa;
-            this.Size = size;
+            Pa   = pa;
+            Size = size;
         }
     }
 }

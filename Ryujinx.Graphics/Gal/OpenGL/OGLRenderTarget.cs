@@ -20,10 +20,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             public Rect(int x, int y, int width, int height)
             {
-                this.X      = x;
-                this.Y      = y;
-                this.Width  = width;
-                this.Height = height;
+                X      = x;
+                Y      = y;
+                Width  = width;
+                Height = height;
             }
         }
 
@@ -100,7 +100,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             _viewports = new float[RenderTargetsCount * 4];
 
-            this._texture = texture;
+            _texture = texture;
 
             texture.TextureDeleted += TextureDeletionHandler;
         }
@@ -247,8 +247,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void SetTransform(bool flipX, bool flipY, int top, int left, int right, int bottom)
         {
-            this._flipX = flipX;
-            this._flipY = flipY;
+            _flipX = flipX;
+            _flipY = flipY;
 
             _cropTop    = top;
             _cropLeft   = left;
