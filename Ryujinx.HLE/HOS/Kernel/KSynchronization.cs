@@ -4,132 +4,117 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KSynchronization
+    internal class KSynchronization
     {
-        private Horizon System;
+        private Horizon _system;
 
-        public KSynchronization(Horizon System)
+        public KSynchronization(Horizon system)
         {
-            this.System = System;
+            this._system = system;
         }
 
-        public long WaitFor(KSynchronizationObject[] SyncObjs, long Timeout, ref int HndIndex)
+        public long WaitFor(KSynchronizationObject[] syncObjs, long timeout, ref int hndIndex)
         {
-            long Result = MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+            long result = MakeError(ErrorModule.Kernel, KernelErr.Timeout);
 
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
             //Check if objects are already signaled before waiting.
-            for (int Index = 0; Index < SyncObjs.Length; Index++)
+            for (int index = 0; index < syncObjs.Length; index++)
             {
-                if (!SyncObjs[Index].IsSignaled())
-                {
-                    continue;
-                }
+                if (!syncObjs[index].IsSignaled()) continue;
 
-                HndIndex = Index;
+                hndIndex = index;
 
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return 0;
             }
 
-            if (Timeout == 0)
+            if (timeout == 0)
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
-                return Result;
+                return result;
             }
 
-            KThread CurrentThread = System.Scheduler.GetCurrentThread();
+            KThread currentThread = _system.Scheduler.GetCurrentThread();
 
-            if (CurrentThread.ShallBeTerminated ||
-                CurrentThread.SchedFlags == ThreadSchedState.TerminationPending)
+            if (currentThread.ShallBeTerminated ||
+                currentThread.SchedFlags == ThreadSchedState.TerminationPending)
             {
-                Result = MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
+                result = MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
             }
-            else if (CurrentThread.SyncCancelled)
+            else if (currentThread.SyncCancelled)
             {
-                CurrentThread.SyncCancelled = false;
+                currentThread.SyncCancelled = false;
 
-                Result = MakeError(ErrorModule.Kernel, KernelErr.Cancelled);
+                result = MakeError(ErrorModule.Kernel, KernelErr.Cancelled);
             }
             else
             {
-                LinkedListNode<KThread>[] SyncNodes = new LinkedListNode<KThread>[SyncObjs.Length];
+                LinkedListNode<KThread>[] syncNodes = new LinkedListNode<KThread>[syncObjs.Length];
 
-                for (int Index = 0; Index < SyncObjs.Length; Index++)
+                for (int index = 0; index < syncObjs.Length; index++) syncNodes[index] = syncObjs[index].AddWaitingThread(currentThread);
+
+                currentThread.WaitingSync   = true;
+                currentThread.SignaledObj   = null;
+                currentThread.ObjSyncResult = (int)result;
+
+                currentThread.Reschedule(ThreadSchedState.Paused);
+
+                if (timeout > 0) _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+
+                _system.CriticalSectionLock.Unlock();
+
+                currentThread.WaitingSync = false;
+
+                if (timeout > 0) _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+
+                _system.CriticalSectionLock.Lock();
+
+                result = (uint)currentThread.ObjSyncResult;
+
+                hndIndex = -1;
+
+                for (int index = 0; index < syncObjs.Length; index++)
                 {
-                    SyncNodes[Index] = SyncObjs[Index].AddWaitingThread(CurrentThread);
-                }
+                    syncObjs[index].RemoveWaitingThread(syncNodes[index]);
 
-                CurrentThread.WaitingSync   = true;
-                CurrentThread.SignaledObj   = null;
-                CurrentThread.ObjSyncResult = (int)Result;
-
-                CurrentThread.Reschedule(ThreadSchedState.Paused);
-
-                if (Timeout > 0)
-                {
-                    System.TimeManager.ScheduleFutureInvocation(CurrentThread, Timeout);
-                }
-
-                System.CriticalSectionLock.Unlock();
-
-                CurrentThread.WaitingSync = false;
-
-                if (Timeout > 0)
-                {
-                    System.TimeManager.UnscheduleFutureInvocation(CurrentThread);
-                }
-
-                System.CriticalSectionLock.Lock();
-
-                Result = (uint)CurrentThread.ObjSyncResult;
-
-                HndIndex = -1;
-
-                for (int Index = 0; Index < SyncObjs.Length; Index++)
-                {
-                    SyncObjs[Index].RemoveWaitingThread(SyncNodes[Index]);
-
-                    if (SyncObjs[Index] == CurrentThread.SignaledObj)
-                    {
-                        HndIndex = Index;
-                    }
+                    if (syncObjs[index] == currentThread.SignaledObj) hndIndex = index;
                 }
             }
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
-            return Result;
+            return result;
         }
 
-        public void SignalObject(KSynchronizationObject SyncObj)
+        public void SignalObject(KSynchronizationObject syncObj)
         {
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            if (SyncObj.IsSignaled())
+            if (syncObj.IsSignaled())
             {
-                LinkedListNode<KThread> Node = SyncObj.WaitingThreads.First;
+                LinkedListNode<KThread> node = syncObj.WaitingThreads.First;
 
-                while (Node != null)
+                while (node != null)
                 {
-                    KThread Thread = Node.Value;
+                    KThread thread = node.Value;
 
-                    if ((Thread.SchedFlags & ThreadSchedState.LowNibbleMask) == ThreadSchedState.Paused)
+                    if ((thread.SchedFlags & ThreadSchedState.LowNibbleMask) == ThreadSchedState.Paused)
                     {
-                        Thread.SignaledObj   = SyncObj;
-                        Thread.ObjSyncResult = 0;
+                        thread.SignaledObj   = syncObj;
+                        thread.ObjSyncResult = 0;
 
-                        Thread.Reschedule(ThreadSchedState.Running);
+                        thread.Reschedule(ThreadSchedState.Running);
                     }
 
-                    Node = Node.Next;
+                    node = node.Next;
                 }
             }
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
         }
     }
 }

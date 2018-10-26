@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    struct KernelAccessControlItem
+    internal struct KernelAccessControlItem
     {
         public bool HasKernelFlags        { get; set; }
         public uint LowestThreadPriority  { get; set; }

@@ -8,26 +8,26 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
-    class AILEmitterCtx
+    internal class AILEmitterCtx
     {
-        private ATranslatorCache Cache;
+        private ATranslatorCache _cache;
 
-        private Dictionary<long, AILLabel> Labels;
+        private Dictionary<long, AILLabel> _labels;
 
-        private int BlkIndex;
-        private int OpcIndex;
+        private int _blkIndex;
+        private int _opcIndex;
 
-        private ABlock[] Graph;
-        private ABlock   Root;
-        public  ABlock   CurrBlock => Graph[BlkIndex];
-        public  AOpCode  CurrOp    => Graph[BlkIndex].OpCodes[OpcIndex];
+        private ABlock[] _graph;
+        private ABlock   _root;
+        public  ABlock   CurrBlock => _graph[_blkIndex];
+        public  AOpCode  CurrOp    => _graph[_blkIndex].OpCodes[_opcIndex];
 
-        private AILEmitter Emitter;
+        private AILEmitter _emitter;
 
-        private AILBlock ILBlock;
+        private AILBlock _ilBlock;
 
-        private AOpCode OptOpLastCompare;
-        private AOpCode OptOpLastFlagSet;
+        private AOpCode _optOpLastCompare;
+        private AOpCode _optOpLastFlagSet;
 
         //This is the index of the temporary register, used to store temporary
         //values needed by some functions, since IL doesn't have a swap instruction.
@@ -41,51 +41,46 @@ namespace ChocolArm64.Translation
         private const int Tmp6Index = -6;
 
         public AILEmitterCtx(
-            ATranslatorCache Cache,
-            ABlock[]         Graph,
-            ABlock           Root,
-            string           SubName)
+            ATranslatorCache cache,
+            ABlock[]         graph,
+            ABlock           root,
+            string           subName)
         {
-            this.Cache = Cache ?? throw new ArgumentNullException(nameof(Cache));
-            this.Graph = Graph ?? throw new ArgumentNullException(nameof(Graph));
-            this.Root  = Root  ?? throw new ArgumentNullException(nameof(Root));
+            this._cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            this._graph = graph ?? throw new ArgumentNullException(nameof(graph));
+            this._root  = root  ?? throw new ArgumentNullException(nameof(root));
 
-            Labels = new Dictionary<long, AILLabel>();
+            _labels = new Dictionary<long, AILLabel>();
 
-            Emitter = new AILEmitter(Graph, Root, SubName);
+            _emitter = new AILEmitter(graph, root, subName);
 
-            ILBlock = Emitter.GetILBlock(0);
+            _ilBlock = _emitter.GetIlBlock(0);
 
-            OpcIndex = -1;
+            _opcIndex = -1;
 
-            if (Graph.Length == 0 || !AdvanceOpCode())
-            {
-                throw new ArgumentException(nameof(Graph));
-            }
+            if (graph.Length == 0 || !AdvanceOpCode()) throw new ArgumentException(nameof(graph));
         }
 
         public ATranslatedSub GetSubroutine()
         {
-            return Emitter.GetSubroutine();
+            return _emitter.GetSubroutine();
         }
 
         public bool AdvanceOpCode()
         {
-            if (OpcIndex + 1 == CurrBlock.OpCodes.Count &&
-                BlkIndex + 1 == Graph.Length)
-            {
+            if (_opcIndex + 1 == CurrBlock.OpCodes.Count &&
+                _blkIndex + 1 == _graph.Length)
                 return false;
-            }
 
-            while (++OpcIndex >= (CurrBlock?.OpCodes.Count ?? 0))
+            while (++_opcIndex >= (CurrBlock?.OpCodes.Count ?? 0))
             {
-                BlkIndex++;
-                OpcIndex = -1;
+                _blkIndex++;
+                _opcIndex = -1;
 
-                OptOpLastFlagSet = null;
-                OptOpLastCompare = null;
+                _optOpLastFlagSet = null;
+                _optOpLastCompare = null;
 
-                ILBlock = Emitter.GetILBlock(BlkIndex);
+                _ilBlock = _emitter.GetIlBlock(_blkIndex);
             }
 
             return true;
@@ -93,7 +88,7 @@ namespace ChocolArm64.Translation
 
         public void EmitOpCode()
         {
-            if (OpcIndex == 0)
+            if (_opcIndex == 0)
             {
                 MarkLabel(GetLabel(CurrBlock.Position));
 
@@ -102,7 +97,7 @@ namespace ChocolArm64.Translation
 
             CurrOp.Emitter(this);
 
-            ILBlock.Add(new AILBarrier());
+            _ilBlock.Add(new AILBarrier());
         }
 
         private void EmitSynchronization()
@@ -115,59 +110,45 @@ namespace ChocolArm64.Translation
 
             EmitLdc_I4(0);
 
-            AILLabel LblContinue = new AILLabel();
+            AILLabel lblContinue = new AILLabel();
 
-            Emit(OpCodes.Bne_Un_S, LblContinue);
+            Emit(OpCodes.Bne_Un_S, lblContinue);
 
             EmitLdc_I8(0);
 
             Emit(OpCodes.Ret);
 
-            MarkLabel(LblContinue);
+            MarkLabel(lblContinue);
         }
 
         public bool TryOptEmitSubroutineCall()
         {
-            if (CurrBlock.Next == null)
-            {
-                return false;
-            }
+            if (CurrBlock.Next == null) return false;
 
-            if (CurrOp.Emitter != AInstEmit.Bl)
-            {
-                return false;
-            }
+            if (CurrOp.Emitter != AInstEmit.Bl) return false;
 
-            if (!Cache.TryGetSubroutine(((AOpCodeBImmAl)CurrOp).Imm, out ATranslatedSub Subroutine))
-            {
-                return false;
-            }
+            if (!_cache.TryGetSubroutine(((AOpCodeBImmAl)CurrOp).Imm, out ATranslatedSub subroutine)) return false;
 
-            for (int Index = 0; Index < ATranslatedSub.FixedArgTypes.Length; Index++)
-            {
-                EmitLdarg(Index);
-            }
+            for (int index = 0; index < ATranslatedSub.FixedArgTypes.Length; index++) EmitLdarg(index);
 
-            foreach (ARegister Reg in Subroutine.Params)
-            {
-                switch (Reg.Type)
+            foreach (ARegister reg in subroutine.Params)
+                switch (reg.Type)
                 {
-                    case ARegisterType.Flag:   Ldloc(Reg.Index, AIoType.Flag);   break;
-                    case ARegisterType.Int:    Ldloc(Reg.Index, AIoType.Int);    break;
-                    case ARegisterType.Vector: Ldloc(Reg.Index, AIoType.Vector); break;
+                    case ARegisterType.Flag:   Ldloc(reg.Index, AIoType.Flag);   break;
+                    case ARegisterType.Int:    Ldloc(reg.Index, AIoType.Int);    break;
+                    case ARegisterType.Vector: Ldloc(reg.Index, AIoType.Vector); break;
                 }
-            }
 
-            EmitCall(Subroutine.Method);
+            EmitCall(subroutine.Method);
 
-            Subroutine.AddCaller(Root.Position);
+            subroutine.AddCaller(_root.Position);
 
             return true;
         }
 
         public void TryOptMarkCondWithoutCmp()
         {
-            OptOpLastCompare = CurrOp;
+            _optOpLastCompare = CurrOp;
 
             AInstEmitAluHelper.EmitDataLoadOpers(this);
 
@@ -175,39 +156,39 @@ namespace ChocolArm64.Translation
             Stloc(Tmp3Index, AIoType.Int);
         }
 
-        private Dictionary<ACond, OpCode> BranchOps = new Dictionary<ACond, OpCode>()
+        private Dictionary<ACond, OpCode> _branchOps = new Dictionary<ACond, OpCode>()
         {
             { ACond.Eq,    OpCodes.Beq    },
             { ACond.Ne,    OpCodes.Bne_Un },
-            { ACond.Ge_Un, OpCodes.Bge_Un },
-            { ACond.Lt_Un, OpCodes.Blt_Un },
-            { ACond.Gt_Un, OpCodes.Bgt_Un },
-            { ACond.Le_Un, OpCodes.Ble_Un },
+            { ACond.GeUn, OpCodes.Bge_Un },
+            { ACond.LtUn, OpCodes.Blt_Un },
+            { ACond.GtUn, OpCodes.Bgt_Un },
+            { ACond.LeUn, OpCodes.Ble_Un },
             { ACond.Ge,    OpCodes.Bge    },
             { ACond.Lt,    OpCodes.Blt    },
             { ACond.Gt,    OpCodes.Bgt    },
             { ACond.Le,    OpCodes.Ble    }
         };
 
-        public void EmitCondBranch(AILLabel Target, ACond Cond)
+        public void EmitCondBranch(AILLabel target, ACond cond)
         {
-            OpCode ILOp;
+            OpCode ilOp;
 
-            int IntCond = (int)Cond;
+            int intCond = (int)cond;
 
-            if (OptOpLastCompare != null &&
-                OptOpLastCompare == OptOpLastFlagSet && BranchOps.ContainsKey(Cond))
+            if (_optOpLastCompare != null &&
+                _optOpLastCompare == _optOpLastFlagSet && _branchOps.ContainsKey(cond))
             {
-                Ldloc(Tmp3Index, AIoType.Int, OptOpLastCompare.RegisterSize);
-                Ldloc(Tmp4Index, AIoType.Int, OptOpLastCompare.RegisterSize);
+                Ldloc(Tmp3Index, AIoType.Int, _optOpLastCompare.RegisterSize);
+                Ldloc(Tmp4Index, AIoType.Int, _optOpLastCompare.RegisterSize);
 
-                ILOp = BranchOps[Cond];
+                ilOp = _branchOps[cond];
             }
-            else if (IntCond < 14)
+            else if (intCond < 14)
             {
-                int CondTrue = IntCond >> 1;
+                int condTrue = intCond >> 1;
 
-                switch (CondTrue)
+                switch (condTrue)
                 {
                     case 0: EmitLdflg((int)APState.ZBit); break;
                     case 1: EmitLdflg((int)APState.CBit); break;
@@ -229,7 +210,7 @@ namespace ChocolArm64.Translation
 
                         Emit(OpCodes.Ceq);
 
-                        if (CondTrue == 6)
+                        if (condTrue == 6)
                         {
                             EmitLdflg((int)APState.ZBit);
 
@@ -239,21 +220,21 @@ namespace ChocolArm64.Translation
                         break;
                 }
 
-                ILOp = (IntCond & 1) != 0
+                ilOp = (intCond & 1) != 0
                     ? OpCodes.Brfalse
                     : OpCodes.Brtrue;
             }
             else
             {
-                ILOp = OpCodes.Br;
+                ilOp = OpCodes.Br;
             }
 
-            Emit(ILOp, Target);
+            Emit(ilOp, target);
         }
 
-        public void EmitCast(AIntType IntType)
+        public void EmitCast(AIntType intType)
         {
-            switch (IntType)
+            switch (intType)
             {
                 case AIntType.UInt8:  Emit(OpCodes.Conv_U1); break;
                 case AIntType.UInt16: Emit(OpCodes.Conv_U2); break;
@@ -265,290 +246,292 @@ namespace ChocolArm64.Translation
                 case AIntType.Int64:  Emit(OpCodes.Conv_I8); break;
             }
 
-            bool Sz64 = CurrOp.RegisterSize != ARegisterSize.Int32;
+            bool sz64 = CurrOp.RegisterSize != ARegisterSize.Int32;
 
-            if (Sz64 == (IntType == AIntType.UInt64 ||
-                         IntType == AIntType.Int64))
-            {
+            if (sz64 == (intType == AIntType.UInt64 ||
+                         intType == AIntType.Int64))
                 return;
-            }
 
-            if (Sz64)
-            {
-                Emit(IntType >= AIntType.Int8
+            if (sz64)
+                Emit(intType >= AIntType.Int8
                     ? OpCodes.Conv_I8
                     : OpCodes.Conv_U8);
-            }
             else
-            {
                 Emit(OpCodes.Conv_U4);
-            }
         }
 
-        public void EmitLsl(int Amount) => EmitILShift(Amount, OpCodes.Shl);
-        public void EmitLsr(int Amount) => EmitILShift(Amount, OpCodes.Shr_Un);
-        public void EmitAsr(int Amount) => EmitILShift(Amount, OpCodes.Shr);
-
-        private void EmitILShift(int Amount, OpCode ILOp)
+        public void EmitLsl(int amount)
         {
-            if (Amount > 0)
+            EmitIlShift(amount, OpCodes.Shl);
+        }
+
+        public void EmitLsr(int amount)
+        {
+            EmitIlShift(amount, OpCodes.Shr_Un);
+        }
+
+        public void EmitAsr(int amount)
+        {
+            EmitIlShift(amount, OpCodes.Shr);
+        }
+
+        private void EmitIlShift(int amount, OpCode ilOp)
+        {
+            if (amount > 0)
             {
-                EmitLdc_I4(Amount);
+                EmitLdc_I4(amount);
 
-                Emit(ILOp);
+                Emit(ilOp);
             }
         }
 
-        public void EmitRor(int Amount)
+        public void EmitRor(int amount)
         {
-            if (Amount > 0)
+            if (amount > 0)
             {
                 Stloc(Tmp2Index, AIoType.Int);
                 Ldloc(Tmp2Index, AIoType.Int);
 
-                EmitLdc_I4(Amount);
+                EmitLdc_I4(amount);
 
                 Emit(OpCodes.Shr_Un);
 
                 Ldloc(Tmp2Index, AIoType.Int);
 
-                EmitLdc_I4(CurrOp.GetBitsCount() - Amount);
+                EmitLdc_I4(CurrOp.GetBitsCount() - amount);
 
                 Emit(OpCodes.Shl);
                 Emit(OpCodes.Or);
             }
         }
 
-        public AILLabel GetLabel(long Position)
+        public AILLabel GetLabel(long position)
         {
-            if (!Labels.TryGetValue(Position, out AILLabel Output))
+            if (!_labels.TryGetValue(position, out AILLabel output))
             {
-                Output = new AILLabel();
+                output = new AILLabel();
 
-                Labels.Add(Position, Output);
+                _labels.Add(position, output);
             }
 
-            return Output;
+            return output;
         }
 
-        public void MarkLabel(AILLabel Label)
+        public void MarkLabel(AILLabel label)
         {
-            ILBlock.Add(Label);
+            _ilBlock.Add(label);
         }
 
-        public void Emit(OpCode ILOp)
+        public void Emit(OpCode ilOp)
         {
-            ILBlock.Add(new AILOpCode(ILOp));
+            _ilBlock.Add(new AILOpCode(ilOp));
         }
 
-        public void Emit(OpCode ILOp, AILLabel Label)
+        public void Emit(OpCode ilOp, AILLabel label)
         {
-            ILBlock.Add(new AILOpCodeBranch(ILOp, Label));
+            _ilBlock.Add(new AILOpCodeBranch(ilOp, label));
         }
 
-        public void Emit(string Text)
+        public void Emit(string text)
         {
-            ILBlock.Add(new AILOpCodeLog(Text));
+            _ilBlock.Add(new AILOpCodeLog(text));
         }
 
-        public void EmitLdarg(int Index)
+        public void EmitLdarg(int index)
         {
-            ILBlock.Add(new AILOpCodeLoad(Index, AIoType.Arg));
+            _ilBlock.Add(new AILOpCodeLoad(index, AIoType.Arg));
         }
 
-        public void EmitLdintzr(int Index)
+        public void EmitLdintzr(int index)
         {
-            if (Index != AThreadState.ZRIndex)
-            {
-                EmitLdint(Index);
-            }
+            if (index != AThreadState.ZrIndex)
+                EmitLdint(index);
             else
-            {
                 EmitLdc_I(0);
-            }
         }
 
-        public void EmitStintzr(int Index)
+        public void EmitStintzr(int index)
         {
-            if (Index != AThreadState.ZRIndex)
-            {
-                EmitStint(Index);
-            }
+            if (index != AThreadState.ZrIndex)
+                EmitStint(index);
             else
-            {
                 Emit(OpCodes.Pop);
-            }
         }
 
-        public void EmitLoadState(ABlock RetBlk)
+        public void EmitLoadState(ABlock retBlk)
         {
-            ILBlock.Add(new AILOpCodeLoad(Array.IndexOf(Graph, RetBlk), AIoType.Fields));
+            _ilBlock.Add(new AILOpCodeLoad(Array.IndexOf(_graph, retBlk), AIoType.Fields));
         }
 
         public void EmitStoreState()
         {
-            ILBlock.Add(new AILOpCodeStore(Array.IndexOf(Graph, CurrBlock), AIoType.Fields));
+            _ilBlock.Add(new AILOpCodeStore(Array.IndexOf(_graph, CurrBlock), AIoType.Fields));
         }
 
-        public void EmitLdtmp() => EmitLdint(Tmp1Index);
-        public void EmitSttmp() => EmitStint(Tmp1Index);
-
-        public void EmitLdvectmp() => EmitLdvec(Tmp5Index);
-        public void EmitStvectmp() => EmitStvec(Tmp5Index);
-
-        public void EmitLdvectmp2() => EmitLdvec(Tmp6Index);
-        public void EmitStvectmp2() => EmitStvec(Tmp6Index);
-
-        public void EmitLdint(int Index) => Ldloc(Index, AIoType.Int);
-        public void EmitStint(int Index) => Stloc(Index, AIoType.Int);
-
-        public void EmitLdvec(int Index) => Ldloc(Index, AIoType.Vector);
-        public void EmitStvec(int Index) => Stloc(Index, AIoType.Vector);
-
-        public void EmitLdflg(int Index) => Ldloc(Index, AIoType.Flag);
-        public void EmitStflg(int Index)
+        public void EmitLdtmp()
         {
-            OptOpLastFlagSet = CurrOp;
-
-            Stloc(Index, AIoType.Flag);
+            EmitLdint(Tmp1Index);
         }
 
-        private void Ldloc(int Index, AIoType IoType)
+        public void EmitSttmp()
         {
-            ILBlock.Add(new AILOpCodeLoad(Index, IoType, CurrOp.RegisterSize));
+            EmitStint(Tmp1Index);
         }
 
-        private void Ldloc(int Index, AIoType IoType, ARegisterSize RegisterSize)
+        public void EmitLdvectmp()
         {
-            ILBlock.Add(new AILOpCodeLoad(Index, IoType, RegisterSize));
+            EmitLdvec(Tmp5Index);
         }
 
-        private void Stloc(int Index, AIoType IoType)
+        public void EmitStvectmp()
         {
-            ILBlock.Add(new AILOpCodeStore(Index, IoType, CurrOp.RegisterSize));
+            EmitStvec(Tmp5Index);
         }
 
-        public void EmitCallPropGet(Type ObjType, string PropName)
+        public void EmitLdvectmp2()
         {
-            if (ObjType == null)
-            {
-                throw new ArgumentNullException(nameof(ObjType));
-            }
-
-            if (PropName == null)
-            {
-                throw new ArgumentNullException(nameof(PropName));
-            }
-
-            EmitCall(ObjType.GetMethod($"get_{PropName}"));
+            EmitLdvec(Tmp6Index);
         }
 
-        public void EmitCallPropSet(Type ObjType, string PropName)
+        public void EmitStvectmp2()
         {
-            if (ObjType == null)
-            {
-                throw new ArgumentNullException(nameof(ObjType));
-            }
-
-            if (PropName == null)
-            {
-                throw new ArgumentNullException(nameof(PropName));
-            }
-
-            EmitCall(ObjType.GetMethod($"set_{PropName}"));
+            EmitStvec(Tmp6Index);
         }
 
-        public void EmitCall(Type ObjType, string MthdName)
+        public void EmitLdint(int index)
         {
-            if (ObjType == null)
-            {
-                throw new ArgumentNullException(nameof(ObjType));
-            }
-
-            if (MthdName == null)
-            {
-                throw new ArgumentNullException(nameof(MthdName));
-            }
-
-            EmitCall(ObjType.GetMethod(MthdName));
+            Ldloc(index, AIoType.Int);
         }
 
-        public void EmitPrivateCall(Type ObjType, string MthdName)
+        public void EmitStint(int index)
         {
-            if (ObjType == null)
-            {
-                throw new ArgumentNullException(nameof(ObjType));
-            }
-
-            if (MthdName == null)
-            {
-                throw new ArgumentNullException(nameof(MthdName));
-            }
-
-            EmitCall(ObjType.GetMethod(MthdName, BindingFlags.Instance | BindingFlags.NonPublic));
+            Stloc(index, AIoType.Int);
         }
 
-        public void EmitCall(MethodInfo MthdInfo)
+        public void EmitLdvec(int index)
         {
-            if (MthdInfo == null)
-            {
-                throw new ArgumentNullException(nameof(MthdInfo));
-            }
-
-            ILBlock.Add(new AILOpCodeCall(MthdInfo));
+            Ldloc(index, AIoType.Vector);
         }
 
-        public void EmitLdc_I(long Value)
+        public void EmitStvec(int index)
+        {
+            Stloc(index, AIoType.Vector);
+        }
+
+        public void EmitLdflg(int index)
+        {
+            Ldloc(index, AIoType.Flag);
+        }
+
+        public void EmitStflg(int index)
+        {
+            _optOpLastFlagSet = CurrOp;
+
+            Stloc(index, AIoType.Flag);
+        }
+
+        private void Ldloc(int index, AIoType ioType)
+        {
+            _ilBlock.Add(new AILOpCodeLoad(index, ioType, CurrOp.RegisterSize));
+        }
+
+        private void Ldloc(int index, AIoType ioType, ARegisterSize registerSize)
+        {
+            _ilBlock.Add(new AILOpCodeLoad(index, ioType, registerSize));
+        }
+
+        private void Stloc(int index, AIoType ioType)
+        {
+            _ilBlock.Add(new AILOpCodeStore(index, ioType, CurrOp.RegisterSize));
+        }
+
+        public void EmitCallPropGet(Type objType, string propName)
+        {
+            if (objType == null) throw new ArgumentNullException(nameof(objType));
+
+            if (propName == null) throw new ArgumentNullException(nameof(propName));
+
+            EmitCall(objType.GetMethod($"get_{propName}"));
+        }
+
+        public void EmitCallPropSet(Type objType, string propName)
+        {
+            if (objType == null) throw new ArgumentNullException(nameof(objType));
+
+            if (propName == null) throw new ArgumentNullException(nameof(propName));
+
+            EmitCall(objType.GetMethod($"set_{propName}"));
+        }
+
+        public void EmitCall(Type objType, string mthdName)
+        {
+            if (objType == null) throw new ArgumentNullException(nameof(objType));
+
+            if (mthdName == null) throw new ArgumentNullException(nameof(mthdName));
+
+            EmitCall(objType.GetMethod(mthdName));
+        }
+
+        public void EmitPrivateCall(Type objType, string mthdName)
+        {
+            if (objType == null) throw new ArgumentNullException(nameof(objType));
+
+            if (mthdName == null) throw new ArgumentNullException(nameof(mthdName));
+
+            EmitCall(objType.GetMethod(mthdName, BindingFlags.Instance | BindingFlags.NonPublic));
+        }
+
+        public void EmitCall(MethodInfo mthdInfo)
+        {
+            if (mthdInfo == null) throw new ArgumentNullException(nameof(mthdInfo));
+
+            _ilBlock.Add(new AILOpCodeCall(mthdInfo));
+        }
+
+        public void EmitLdc_I(long value)
         {
             if (CurrOp.RegisterSize == ARegisterSize.Int32)
-            {
-                EmitLdc_I4((int)Value);
-            }
+                EmitLdc_I4((int)value);
             else
-            {
-                EmitLdc_I8(Value);
-            }
+                EmitLdc_I8(value);
         }
 
-        public void EmitLdc_I4(int Value)
+        public void EmitLdc_I4(int value)
         {
-            ILBlock.Add(new AILOpCodeConst(Value));
+            _ilBlock.Add(new AILOpCodeConst(value));
         }
 
-        public void EmitLdc_I8(long Value)
+        public void EmitLdc_I8(long value)
         {
-            ILBlock.Add(new AILOpCodeConst(Value));
+            _ilBlock.Add(new AILOpCodeConst(value));
         }
 
-        public void EmitLdc_R4(float Value)
+        public void EmitLdc_R4(float value)
         {
-            ILBlock.Add(new AILOpCodeConst(Value));
+            _ilBlock.Add(new AILOpCodeConst(value));
         }
 
-        public void EmitLdc_R8(double Value)
+        public void EmitLdc_R8(double value)
         {
-            ILBlock.Add(new AILOpCodeConst(Value));
+            _ilBlock.Add(new AILOpCodeConst(value));
         }
 
-        public void EmitZNFlagCheck()
+        public void EmitZnFlagCheck()
         {
-            EmitZNCheck(OpCodes.Ceq, (int)APState.ZBit);
-            EmitZNCheck(OpCodes.Clt, (int)APState.NBit);
+            EmitZnCheck(OpCodes.Ceq, (int)APState.ZBit);
+            EmitZnCheck(OpCodes.Clt, (int)APState.NBit);
         }
 
-        private void EmitZNCheck(OpCode ILCmpOp, int Flag)
+        private void EmitZnCheck(OpCode ilCmpOp, int flag)
         {
             Emit(OpCodes.Dup);
             Emit(OpCodes.Ldc_I4_0);
 
-            if (CurrOp.RegisterSize != ARegisterSize.Int32)
-            {
-                Emit(OpCodes.Conv_I8);
-            }
+            if (CurrOp.RegisterSize != ARegisterSize.Int32) Emit(OpCodes.Conv_I8);
 
-            Emit(ILCmpOp);
+            Emit(ilCmpOp);
 
-            EmitStflg(Flag);
+            EmitStflg(flag);
         }
     }
 }

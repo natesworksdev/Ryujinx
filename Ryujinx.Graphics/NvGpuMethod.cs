@@ -2,5 +2,5 @@ using Ryujinx.Graphics.Memory;
 
 namespace Ryujinx.Graphics
 {
-    delegate void NvGpuMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry);
+    internal delegate void NvGpuMethod(NvGpuVmm vmm, NvGpuPBEntry pbEntry);
 }

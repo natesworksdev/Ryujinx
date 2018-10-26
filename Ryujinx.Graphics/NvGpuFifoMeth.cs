@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics
 {
-    enum NvGpuFifoMeth
+    internal enum NvGpuFifoMeth
     {
         BindChannel           = 0,
         SetMacroUploadAddress = 0x45,

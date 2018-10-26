@@ -3,58 +3,58 @@ using ChocolArm64.Translation;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
 #region "Sha256"
-        public static void Sha256h_V(AILEmitterCtx Context)
+        public static void Sha256h_V(AILEmitterCtx context)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            Context.EmitLdvec(Op.Rn);
-            Context.EmitLdvec(Op.Rm);
+            context.EmitLdvec(op.Rd);
+            context.EmitLdvec(op.Rn);
+            context.EmitLdvec(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.HashLower));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.HashLower));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Sha256h2_V(AILEmitterCtx Context)
+        public static void Sha256h2_V(AILEmitterCtx context)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            Context.EmitLdvec(Op.Rn);
-            Context.EmitLdvec(Op.Rm);
+            context.EmitLdvec(op.Rd);
+            context.EmitLdvec(op.Rn);
+            context.EmitLdvec(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.HashUpper));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.HashUpper));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Sha256su0_V(AILEmitterCtx Context)
+        public static void Sha256su0_V(AILEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            Context.EmitLdvec(Op.Rn);
+            context.EmitLdvec(op.Rd);
+            context.EmitLdvec(op.Rn);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.SchedulePart1));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.SchedulePart1));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Sha256su1_V(AILEmitterCtx Context)
+        public static void Sha256su1_V(AILEmitterCtx context)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            Context.EmitLdvec(Op.Rn);
-            Context.EmitLdvec(Op.Rm);
+            context.EmitLdvec(op.Rd);
+            context.EmitLdvec(op.Rn);
+            context.EmitLdvec(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.SchedulePart2));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.SchedulePart2));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 #endregion
     }

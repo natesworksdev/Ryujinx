@@ -1,6 +1,6 @@
 namespace ChocolArm64.State
 {
-    enum AExecutionMode
+    internal enum AExecutionMode
     {
         AArch32,
         AArch64

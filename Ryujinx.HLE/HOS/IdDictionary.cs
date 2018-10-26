@@ -4,70 +4,56 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS
 {
-    class IdDictionary
+    internal class IdDictionary
     {
-        private ConcurrentDictionary<int, object> Objs;
+        private ConcurrentDictionary<int, object> _objs;
 
         public IdDictionary()
         {
-            Objs = new ConcurrentDictionary<int, object>();
+            _objs = new ConcurrentDictionary<int, object>();
         }
 
-        public bool Add(int Id, object Data)
+        public bool Add(int id, object data)
         {
-            return Objs.TryAdd(Id, Data);
+            return _objs.TryAdd(id, data);
         }
 
-        public int Add(object Data)
+        public int Add(object data)
         {
-            for (int Id = 1; Id < int.MaxValue; Id++)
-            {
-                if (Objs.TryAdd(Id, Data))
-                {
-                    return Id;
-                }
-            }
+            for (int id = 1; id < int.MaxValue; id++)
+                if (_objs.TryAdd(id, data)) return id;
 
             throw new InvalidOperationException();
         }
 
-        public object GetData(int Id)
+        public object GetData(int id)
         {
-            if (Objs.TryGetValue(Id, out object Data))
-            {
-                return Data;
-            }
+            if (_objs.TryGetValue(id, out object data)) return data;
 
             return null;
         }
 
-        public T GetData<T>(int Id)
+        public T GetData<T>(int id)
         {
-            if (Objs.TryGetValue(Id, out object Data) && Data is T)
-            {
-                return (T)Data;
-            }
+            if (_objs.TryGetValue(id, out object data) && data is T) return (T)data;
 
             return default(T);
         }
 
-        public object Delete(int Id)
+        public object Delete(int id)
         {
-            if (Objs.TryRemove(Id, out object Obj))
-            {
-                return Obj;
-            }
+            if (_objs.TryRemove(id, out object obj)) return obj;
 
             return null;
         }
 
         public ICollection<object> Clear()
         {
-            ICollection<object> Values = Objs.Values;
+            ICollection<object> values = _objs.Values;
 
-            Objs.Clear();
+            _objs.Clear();
 
-            return Values;
+            return values;
         }
     }
 }

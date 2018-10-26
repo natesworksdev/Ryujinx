@@ -9,27 +9,24 @@ namespace Ryujinx.HLE.Utilities
         public long High { get; private set; }
         public long Low  { get; private set; }
 
-        public UInt128(long Low, long High)
+        public UInt128(long low, long high)
         {
-            this.Low  = Low;
-            this.High = High;
+            this.Low  = low;
+            this.High = high;
         }
 
-        public UInt128(string UInt128Hex)
+        public UInt128(string uInt128Hex)
         {
-            if (UInt128Hex == null || UInt128Hex.Length != 32 || !UInt128Hex.All("0123456789abcdefABCDEF".Contains))
-            {
-                throw new ArgumentException("Invalid Hex value!", nameof(UInt128Hex));
-            }
+            if (uInt128Hex == null || uInt128Hex.Length != 32 || !uInt128Hex.All("0123456789abcdefABCDEF".Contains)) throw new ArgumentException("Invalid Hex value!", nameof(uInt128Hex));
 
-            Low  = Convert.ToInt64(UInt128Hex.Substring(16), 16);
-            High = Convert.ToInt64(UInt128Hex.Substring(0, 16), 16);
+            Low  = Convert.ToInt64(uInt128Hex.Substring(16), 16);
+            High = Convert.ToInt64(uInt128Hex.Substring(0, 16), 16);
         }
 
-        public void Write(BinaryWriter BinaryWriter)
+        public void Write(BinaryWriter binaryWriter)
         {
-            BinaryWriter.Write(Low);
-            BinaryWriter.Write(High);
+            binaryWriter.Write(Low);
+            binaryWriter.Write(High);
         }
 
         public override string ToString()

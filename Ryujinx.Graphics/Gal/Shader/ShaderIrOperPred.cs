@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    class ShaderIrOperPred : ShaderIrNode
+    internal class ShaderIrOperPred : ShaderIrNode
     {
         public const int UnusedIndex  = 0x7;
         public const int NeverExecute = 0xf;
@@ -9,9 +9,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public int Index { get; set; }
 
-        public ShaderIrOperPred(int Index)
+        public ShaderIrOperPred(int index)
         {
-            this.Index = Index;
+            this.Index = index;
         }
     }
 }

@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
-    class IAudioRenderer : IpcService, IDisposable
+    internal class IAudioRenderer : IpcService, IDisposable
     {
         //This is the amount of samples that are going to be appended
         //each time that RequestUpdateAudioRenderer is called. Ideally,
@@ -20,33 +20,33 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
         //high latency).
         private const int MixBufferSamplesCount = 960;
 
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        private KEvent UpdateEvent;
+        private KEvent _updateEvent;
 
-        private AMemory Memory;
+        private AMemory _memory;
 
-        private IAalOutput AudioOut;
+        private IAalOutput _audioOut;
 
-        private AudioRendererParameter Params;
+        private AudioRendererParameter _params;
 
-        private MemoryPoolContext[] MemoryPools;
+        private MemoryPoolContext[] _memoryPools;
 
-        private VoiceContext[] Voices;
+        private VoiceContext[] _voices;
 
-        private int Track;
+        private int _track;
 
-        private PlayState PlayState;
+        private PlayState _playState;
 
         public IAudioRenderer(
-            Horizon                System,
-            AMemory                Memory,
-            IAalOutput             AudioOut,
+            Horizon                system,
+            AMemory                memory,
+            IAalOutput             audioOut,
             AudioRendererParameter Params)
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, GetSampleRate              },
                 { 1, GetSampleCount             },
@@ -58,75 +58,72 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                 { 7, QuerySystemEvent           }
             };
 
-            UpdateEvent = new KEvent(System);
+            _updateEvent = new KEvent(system);
 
-            this.Memory   = Memory;
-            this.AudioOut = AudioOut;
-            this.Params   = Params;
+            this._memory   = memory;
+            this._audioOut = audioOut;
+            this._params   = Params;
 
-            Track = AudioOut.OpenTrack(
+            _track = audioOut.OpenTrack(
                 AudioConsts.HostSampleRate,
                 AudioConsts.HostChannelsCount,
                 AudioCallback);
 
-            MemoryPools = CreateArray<MemoryPoolContext>(Params.EffectCount + Params.VoiceCount * 4);
+            _memoryPools = CreateArray<MemoryPoolContext>(Params.EffectCount + Params.VoiceCount * 4);
 
-            Voices = CreateArray<VoiceContext>(Params.VoiceCount);
+            _voices = CreateArray<VoiceContext>(Params.VoiceCount);
 
             InitializeAudioOut();
 
-            PlayState = PlayState.Stopped;
+            _playState = PlayState.Stopped;
         }
 
         //  GetSampleRate() -> u32
-        public long GetSampleRate(ServiceCtx Context)
+        public long GetSampleRate(ServiceCtx context)
         {
-            Context.ResponseData.Write(Params.SampleRate);
+            context.ResponseData.Write(_params.SampleRate);
 
             return 0;
         }
 
         //  GetSampleCount() -> u32
-        public long GetSampleCount(ServiceCtx Context)
+        public long GetSampleCount(ServiceCtx context)
         {
-            Context.ResponseData.Write(Params.SampleCount);
+            context.ResponseData.Write(_params.SampleCount);
 
             return 0;
         }
 
         // GetMixBufferCount() -> u32
-        public long GetMixBufferCount(ServiceCtx Context)
+        public long GetMixBufferCount(ServiceCtx context)
         {
-            Context.ResponseData.Write(Params.MixCount);
+            context.ResponseData.Write(_params.MixCount);
 
             return 0;
         }
 
         // GetState() -> u32
-        private long GetState(ServiceCtx Context)
+        private long GetState(ServiceCtx context)
         {
-            Context.ResponseData.Write((int)PlayState);
+            context.ResponseData.Write((int)_playState);
 
-            Logger.PrintStub(LogClass.ServiceAudio, $"Stubbed. Renderer State: {Enum.GetName(typeof(PlayState), PlayState)}");
+            Logger.PrintStub(LogClass.ServiceAudio, $"Stubbed. Renderer State: {Enum.GetName(typeof(PlayState), _playState)}");
 
             return 0;
         }
 
         private void AudioCallback()
         {
-            UpdateEvent.ReadableEvent.Signal();
+            _updateEvent.ReadableEvent.Signal();
         }
 
-        private static T[] CreateArray<T>(int Size) where T : new()
+        private static T[] CreateArray<T>(int size) where T : new()
         {
-            T[] Output = new T[Size];
+            T[] output = new T[size];
 
-            for (int Index = 0; Index < Size; Index++)
-            {
-                Output[Index] = new T();
-            }
+            for (int index = 0; index < size; index++) output[index] = new T();
 
-            return Output;
+            return output;
         }
 
         private void InitializeAudioOut()
@@ -135,222 +132,187 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             AppendMixedBuffer(1);
             AppendMixedBuffer(2);
 
-            AudioOut.Start(Track);
+            _audioOut.Start(_track);
         }
 
-        public long RequestUpdateAudioRenderer(ServiceCtx Context)
+        public long RequestUpdateAudioRenderer(ServiceCtx context)
         {
-            long OutputPosition = Context.Request.ReceiveBuff[0].Position;
-            long OutputSize     = Context.Request.ReceiveBuff[0].Size;
+            long outputPosition = context.Request.ReceiveBuff[0].Position;
+            long outputSize     = context.Request.ReceiveBuff[0].Size;
 
-            AMemoryHelper.FillWithZeros(Context.Memory, OutputPosition, (int)OutputSize);
+            AMemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
-            long InputPosition = Context.Request.SendBuff[0].Position;
+            long inputPosition = context.Request.SendBuff[0].Position;
 
-            StructReader Reader = new StructReader(Context.Memory, InputPosition);
-            StructWriter Writer = new StructWriter(Context.Memory, OutputPosition);
+            StructReader reader = new StructReader(context.Memory, inputPosition);
+            StructWriter writer = new StructWriter(context.Memory, outputPosition);
 
-            UpdateDataHeader InputHeader = Reader.Read<UpdateDataHeader>();
+            UpdateDataHeader inputHeader = reader.Read<UpdateDataHeader>();
 
-            Reader.Read<BehaviorIn>(InputHeader.BehaviorSize);
+            reader.Read<BehaviorIn>(inputHeader.BehaviorSize);
 
-            MemoryPoolIn[] MemoryPoolsIn = Reader.Read<MemoryPoolIn>(InputHeader.MemoryPoolSize);
+            MemoryPoolIn[] memoryPoolsIn = reader.Read<MemoryPoolIn>(inputHeader.MemoryPoolSize);
 
-            for (int Index = 0; Index < MemoryPoolsIn.Length; Index++)
+            for (int index = 0; index < memoryPoolsIn.Length; index++)
             {
-                MemoryPoolIn MemoryPool = MemoryPoolsIn[Index];
+                MemoryPoolIn memoryPool = memoryPoolsIn[index];
 
-                if (MemoryPool.State == MemoryPoolState.RequestAttach)
-                {
-                    MemoryPools[Index].OutStatus.State = MemoryPoolState.Attached;
-                }
-                else if (MemoryPool.State == MemoryPoolState.RequestDetach)
-                {
-                    MemoryPools[Index].OutStatus.State = MemoryPoolState.Detached;
-                }
+                if (memoryPool.State == MemoryPoolState.RequestAttach)
+                    _memoryPools[index].OutStatus.State = MemoryPoolState.Attached;
+                else if (memoryPool.State == MemoryPoolState.RequestDetach) _memoryPools[index].OutStatus.State = MemoryPoolState.Detached;
             }
 
-            Reader.Read<VoiceChannelResourceIn>(InputHeader.VoiceResourceSize);
+            reader.Read<VoiceChannelResourceIn>(inputHeader.VoiceResourceSize);
 
-            VoiceIn[] VoicesIn = Reader.Read<VoiceIn>(InputHeader.VoiceSize);
+            VoiceIn[] voicesIn = reader.Read<VoiceIn>(inputHeader.VoiceSize);
 
-            for (int Index = 0; Index < VoicesIn.Length; Index++)
+            for (int index = 0; index < voicesIn.Length; index++)
             {
-                VoiceIn Voice = VoicesIn[Index];
+                VoiceIn voice = voicesIn[index];
 
-                VoiceContext VoiceCtx = Voices[Index];
+                VoiceContext voiceCtx = _voices[index];
 
-                VoiceCtx.SetAcquireState(Voice.Acquired != 0);
+                voiceCtx.SetAcquireState(voice.Acquired != 0);
 
-                if (Voice.Acquired == 0)
+                if (voice.Acquired == 0) continue;
+
+                if (voice.FirstUpdate != 0)
                 {
-                    continue;
+                    voiceCtx.AdpcmCtx = GetAdpcmDecoderContext(
+                        voice.AdpcmCoeffsPosition,
+                        voice.AdpcmCoeffsSize);
+
+                    voiceCtx.SampleFormat  = voice.SampleFormat;
+                    voiceCtx.SampleRate    = voice.SampleRate;
+                    voiceCtx.ChannelsCount = voice.ChannelsCount;
+
+                    voiceCtx.SetBufferIndex(voice.BaseWaveBufferIndex);
                 }
 
-                if (Voice.FirstUpdate != 0)
-                {
-                    VoiceCtx.AdpcmCtx = GetAdpcmDecoderContext(
-                        Voice.AdpcmCoeffsPosition,
-                        Voice.AdpcmCoeffsSize);
-
-                    VoiceCtx.SampleFormat  = Voice.SampleFormat;
-                    VoiceCtx.SampleRate    = Voice.SampleRate;
-                    VoiceCtx.ChannelsCount = Voice.ChannelsCount;
-
-                    VoiceCtx.SetBufferIndex(Voice.BaseWaveBufferIndex);
-                }
-
-                VoiceCtx.WaveBuffers[0] = Voice.WaveBuffer0;
-                VoiceCtx.WaveBuffers[1] = Voice.WaveBuffer1;
-                VoiceCtx.WaveBuffers[2] = Voice.WaveBuffer2;
-                VoiceCtx.WaveBuffers[3] = Voice.WaveBuffer3;
-                VoiceCtx.Volume         = Voice.Volume;
-                VoiceCtx.PlayState      = Voice.PlayState;
+                voiceCtx.WaveBuffers[0] = voice.WaveBuffer0;
+                voiceCtx.WaveBuffers[1] = voice.WaveBuffer1;
+                voiceCtx.WaveBuffers[2] = voice.WaveBuffer2;
+                voiceCtx.WaveBuffers[3] = voice.WaveBuffer3;
+                voiceCtx.Volume         = voice.Volume;
+                voiceCtx.PlayState      = voice.PlayState;
             }
 
             UpdateAudio();
 
-            UpdateDataHeader OutputHeader = new UpdateDataHeader();
+            UpdateDataHeader outputHeader = new UpdateDataHeader();
 
-            int UpdateHeaderSize = Marshal.SizeOf<UpdateDataHeader>();
+            int updateHeaderSize = Marshal.SizeOf<UpdateDataHeader>();
 
-            OutputHeader.Revision               = IAudioRendererManager.RevMagic;
-            OutputHeader.BehaviorSize           = 0xb0;
-            OutputHeader.MemoryPoolSize         = (Params.EffectCount + Params.VoiceCount * 4) * 0x10;
-            OutputHeader.VoiceSize              = Params.VoiceCount  * 0x10;
-            OutputHeader.EffectSize             = Params.EffectCount * 0x10;
-            OutputHeader.SinkSize               = Params.SinkCount   * 0x20;
-            OutputHeader.PerformanceManagerSize = 0x10;
-            OutputHeader.TotalSize              = UpdateHeaderSize             +
-                                                  OutputHeader.BehaviorSize    +
-                                                  OutputHeader.MemoryPoolSize +
-                                                  OutputHeader.VoiceSize      +
-                                                  OutputHeader.EffectSize     +
-                                                  OutputHeader.SinkSize       +
-                                                  OutputHeader.PerformanceManagerSize;
+            outputHeader.Revision               = IAudioRendererManager.RevMagic;
+            outputHeader.BehaviorSize           = 0xb0;
+            outputHeader.MemoryPoolSize         = (_params.EffectCount + _params.VoiceCount * 4) * 0x10;
+            outputHeader.VoiceSize              = _params.VoiceCount  * 0x10;
+            outputHeader.EffectSize             = _params.EffectCount * 0x10;
+            outputHeader.SinkSize               = _params.SinkCount   * 0x20;
+            outputHeader.PerformanceManagerSize = 0x10;
+            outputHeader.TotalSize              = updateHeaderSize             +
+                                                  outputHeader.BehaviorSize    +
+                                                  outputHeader.MemoryPoolSize +
+                                                  outputHeader.VoiceSize      +
+                                                  outputHeader.EffectSize     +
+                                                  outputHeader.SinkSize       +
+                                                  outputHeader.PerformanceManagerSize;
 
-            Writer.Write(OutputHeader);
+            writer.Write(outputHeader);
 
-            foreach (MemoryPoolContext MemoryPool in MemoryPools)
-            {
-                Writer.Write(MemoryPool.OutStatus);
-            }
+            foreach (MemoryPoolContext memoryPool in _memoryPools) writer.Write(memoryPool.OutStatus);
 
-            foreach (VoiceContext Voice in Voices)
-            {
-                Writer.Write(Voice.OutStatus);
-            }
+            foreach (VoiceContext voice in _voices) writer.Write(voice.OutStatus);
 
             return 0;
         }
 
-        public long StartAudioRenderer(ServiceCtx Context)
+        public long StartAudioRenderer(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
-            PlayState = PlayState.Playing;
+            _playState = PlayState.Playing;
 
             return 0;
         }
 
-        public long StopAudioRenderer(ServiceCtx Context)
+        public long StopAudioRenderer(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceAudio, "Stubbed.");
 
-            PlayState = PlayState.Stopped;
+            _playState = PlayState.Stopped;
 
             return 0;
         }
 
-        public long QuerySystemEvent(ServiceCtx Context)
+        public long QuerySystemEvent(ServiceCtx context)
         {
-            if (Context.Process.HandleTable.GenerateHandle(UpdateEvent.ReadableEvent, out int Handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
+            if (context.Process.HandleTable.GenerateHandle(_updateEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
 
-            Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
             return 0;
         }
 
-        private AdpcmDecoderContext GetAdpcmDecoderContext(long Position, long Size)
+        private AdpcmDecoderContext GetAdpcmDecoderContext(long position, long size)
         {
-            if (Size == 0)
-            {
-                return null;
-            }
+            if (size == 0) return null;
 
-            AdpcmDecoderContext Context = new AdpcmDecoderContext();
+            AdpcmDecoderContext context = new AdpcmDecoderContext();
 
-            Context.Coefficients = new short[Size >> 1];
+            context.Coefficients = new short[size >> 1];
 
-            for (int Offset = 0; Offset < Size; Offset += 2)
-            {
-                Context.Coefficients[Offset >> 1] = Memory.ReadInt16(Position + Offset);
-            }
+            for (int offset = 0; offset < size; offset += 2) context.Coefficients[offset >> 1] = _memory.ReadInt16(position + offset);
 
-            return Context;
+            return context;
         }
 
         private void UpdateAudio()
         {
-            long[] Released = AudioOut.GetReleasedBuffers(Track, 2);
+            long[] released = _audioOut.GetReleasedBuffers(_track, 2);
 
-            for (int Index = 0; Index < Released.Length; Index++)
-            {
-                AppendMixedBuffer(Released[Index]);
-            }
+            for (int index = 0; index < released.Length; index++) AppendMixedBuffer(released[index]);
         }
 
-        private void AppendMixedBuffer(long Tag)
+        private void AppendMixedBuffer(long tag)
         {
-            int[] MixBuffer = new int[MixBufferSamplesCount * AudioConsts.HostChannelsCount];
+            int[] mixBuffer = new int[MixBufferSamplesCount * AudioConsts.HostChannelsCount];
 
-            foreach (VoiceContext Voice in Voices)
+            foreach (VoiceContext voice in _voices)
             {
-                if (!Voice.Playing)
+                if (!voice.Playing) continue;
+
+                int outOffset = 0;
+
+                int pendingSamples = MixBufferSamplesCount;
+
+                while (pendingSamples > 0)
                 {
-                    continue;
-                }
+                    int[] samples = voice.GetBufferData(_memory, pendingSamples, out int returnedSamples);
 
-                int OutOffset = 0;
+                    if (returnedSamples == 0) break;
 
-                int PendingSamples = MixBufferSamplesCount;
+                    pendingSamples -= returnedSamples;
 
-                while (PendingSamples > 0)
-                {
-                    int[] Samples = Voice.GetBufferData(Memory, PendingSamples, out int ReturnedSamples);
-
-                    if (ReturnedSamples == 0)
+                    for (int offset = 0; offset < samples.Length; offset++)
                     {
-                        break;
-                    }
+                        int sample = (int)(samples[offset] * voice.Volume);
 
-                    PendingSamples -= ReturnedSamples;
-
-                    for (int Offset = 0; Offset < Samples.Length; Offset++)
-                    {
-                        int Sample = (int)(Samples[Offset] * Voice.Volume);
-
-                        MixBuffer[OutOffset++] += Sample;
+                        mixBuffer[outOffset++] += sample;
                     }
                 }
             }
 
-            AudioOut.AppendBuffer(Track, Tag, GetFinalBuffer(MixBuffer));
+            _audioOut.AppendBuffer(_track, tag, GetFinalBuffer(mixBuffer));
         }
 
-        private static short[] GetFinalBuffer(int[] Buffer)
+        private static short[] GetFinalBuffer(int[] buffer)
         {
-            short[] Output = new short[Buffer.Length];
+            short[] output = new short[buffer.Length];
 
-            for (int Offset = 0; Offset < Buffer.Length; Offset++)
-            {
-                Output[Offset] = DspUtils.Saturate(Buffer[Offset]);
-            }
+            for (int offset = 0; offset < buffer.Length; offset++) output[offset] = DspUtils.Saturate(buffer[offset]);
 
-            return Output;
+            return output;
         }
 
         public void Dispose()
@@ -358,12 +320,9 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing)
-            {
-                AudioOut.CloseTrack(Track);
-            }
+            if (disposing) _audioOut.CloseTrack(_track);
         }
     }
 }

@@ -2,58 +2,55 @@ using System;
 
 namespace Ryujinx.Graphics.Texture
 {
-    class BlockLinearSwizzle : ISwizzle
+    internal class BlockLinearSwizzle : ISwizzle
     {
-        private int BhShift;
-        private int BppShift;
-        private int BhMask;
+        private int _bhShift;
+        private int _bppShift;
+        private int _bhMask;
 
-        private int XShift;
-        private int GobStride;
+        private int _xShift;
+        private int _gobStride;
 
-        public BlockLinearSwizzle(int Width, int Bpp, int BlockHeight = 16)
+        public BlockLinearSwizzle(int width, int bpp, int blockHeight = 16)
         {
-            BhMask = (BlockHeight * 8) - 1;
+            _bhMask = blockHeight * 8 - 1;
 
-            BhShift  = CountLsbZeros(BlockHeight * 8);
-            BppShift = CountLsbZeros(Bpp);
+            _bhShift  = CountLsbZeros(blockHeight * 8);
+            _bppShift = CountLsbZeros(bpp);
 
-            int WidthInGobs = (int)MathF.Ceiling(Width * Bpp / 64f);
+            int widthInGobs = (int)MathF.Ceiling(width * bpp / 64f);
 
-            GobStride = 512 * BlockHeight * WidthInGobs;
+            _gobStride = 512 * blockHeight * widthInGobs;
 
-            XShift = CountLsbZeros(512 * BlockHeight);
+            _xShift = CountLsbZeros(512 * blockHeight);
         }
 
-        private int CountLsbZeros(int Value)
+        private int CountLsbZeros(int value)
         {
-            int Count = 0;
+            int count = 0;
 
-            while (((Value >> Count) & 1) == 0)
-            {
-                Count++;
-            }
+            while (((value >> count) & 1) == 0) count++;
 
-            return Count;
+            return count;
         }
 
-        public int GetSwizzleOffset(int X, int Y)
+        public int GetSwizzleOffset(int x, int y)
         {
-            X <<= BppShift;
+            x <<= _bppShift;
 
-            int Position = (Y >> BhShift) * GobStride;
+            int position = (y >> _bhShift) * _gobStride;
 
-            Position += (X >> 6) << XShift;
+            position += (x >> 6) << _xShift;
 
-            Position += ((Y & BhMask) >> 3) << 9;
+            position += ((y & _bhMask) >> 3) << 9;
 
-            Position += ((X & 0x3f) >> 5) << 8;
-            Position += ((Y & 0x07) >> 1) << 6;
-            Position += ((X & 0x1f) >> 4) << 5;
-            Position += ((Y & 0x01) >> 0) << 4;
-            Position += ((X & 0x0f) >> 0) << 0;
+            position += ((x & 0x3f) >> 5) << 8;
+            position += ((y & 0x07) >> 1) << 6;
+            position += ((x & 0x1f) >> 4) << 5;
+            position += ((y & 0x01) >> 0) << 4;
+            position += ((x & 0x0f) >> 0) << 0;
 
-            return Position;
+            return position;
         }
     }
 }

@@ -3,75 +3,75 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS
 {
-    static class Homebrew
+    internal static class Homebrew
     {
         public const string TemporaryNroSuffix = ".ryu_tmp.nro";
 
         //http://switchbrew.org/index.php?title=Homebrew_ABI
-        public static void WriteHbAbiData(AMemory Memory, long Position, int MainThreadHandle, string SwitchPath)
+        public static void WriteHbAbiData(AMemory memory, long position, int mainThreadHandle, string switchPath)
         {
             //MainThreadHandle.
-            WriteConfigEntry(Memory, ref Position, 1, 0, MainThreadHandle);
+            WriteConfigEntry(memory, ref position, 1, 0, mainThreadHandle);
 
             //NextLoadPath.
-            WriteConfigEntry(Memory, ref Position, 2, 0, Position + 0x200, Position + 0x400);
+            WriteConfigEntry(memory, ref position, 2, 0, position + 0x200, position + 0x400);
 
             //Argv.
-            long ArgvPosition = Position + 0xC00;
+            long argvPosition = position + 0xC00;
 
-            Memory.WriteBytes(ArgvPosition, Encoding.ASCII.GetBytes(SwitchPath + "\0"));
+            memory.WriteBytes(argvPosition, Encoding.ASCII.GetBytes(switchPath + "\0"));
 
-            WriteConfigEntry(Memory, ref Position, 5, 0, 0, ArgvPosition);
+            WriteConfigEntry(memory, ref position, 5, 0, 0, argvPosition);
 
             //AppletType.
-            WriteConfigEntry(Memory, ref Position, 7);
+            WriteConfigEntry(memory, ref position, 7);
 
             //EndOfList.
-            WriteConfigEntry(Memory, ref Position, 0);
+            WriteConfigEntry(memory, ref position, 0);
         }
 
         private static void WriteConfigEntry(
-            AMemory  Memory,
-            ref long Position,
-            int      Key,
-            int      Flags  = 0,
-            long     Value0 = 0,
-            long     Value1 = 0)
+            AMemory  memory,
+            ref long position,
+            int      key,
+            int      flags  = 0,
+            long     value0 = 0,
+            long     value1 = 0)
         {
-            Memory.WriteInt32(Position + 0x00, Key);
-            Memory.WriteInt32(Position + 0x04, Flags);
-            Memory.WriteInt64(Position + 0x08, Value0);
-            Memory.WriteInt64(Position + 0x10, Value1);
+            memory.WriteInt32(position + 0x00, key);
+            memory.WriteInt32(position + 0x04, flags);
+            memory.WriteInt64(position + 0x08, value0);
+            memory.WriteInt64(position + 0x10, value1);
 
-            Position += 0x18;
+            position += 0x18;
         }
 
-        public static string ReadHbAbiNextLoadPath(AMemory Memory, long Position)
+        public static string ReadHbAbiNextLoadPath(AMemory memory, long position)
         {
-            string FileName = null;
+            string fileName = null;
 
             while (true)
             {
-                long Key = Memory.ReadInt64(Position);
+                long key = memory.ReadInt64(position);
 
-                if (Key == 2)
+                if (key == 2)
                 {
-                    long Value0 = Memory.ReadInt64(Position + 0x08);
-                    long Value1 = Memory.ReadInt64(Position + 0x10);
+                    long value0 = memory.ReadInt64(position + 0x08);
+                    long value1 = memory.ReadInt64(position + 0x10);
 
-                    FileName = AMemoryHelper.ReadAsciiString(Memory, Value0, Value1 - Value0);
+                    fileName = AMemoryHelper.ReadAsciiString(memory, value0, value1 - value0);
 
                     break;
                 }
-                else if (Key == 0)
+                else if (key == 0)
                 {
                     break;
                 }
 
-                Position += 0x18;
+                position += 0x18;
             }
 
-            return FileName;
+            return fileName;
         }
     }
 }

@@ -2,17 +2,17 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeAdr : AOpCode
+    internal class AOpCodeAdr : AOpCode
     {
         public int  Rd  { get; private set; }
         public long Imm { get; private set; }
 
-         public AOpCodeAdr(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+         public AOpCodeAdr(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Rd = OpCode & 0x1f;
+            Rd = opCode & 0x1f;
 
-            Imm  = ADecoderHelper.DecodeImmS19_2(OpCode);
-            Imm |= ((long)OpCode >> 29) & 3;
+            Imm  = ADecoderHelper.DecodeImmS19_2(opCode);
+            Imm |= ((long)opCode >> 29) & 3;
         }
     }
 }

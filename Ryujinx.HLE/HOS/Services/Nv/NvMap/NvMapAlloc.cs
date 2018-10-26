@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 {
-    struct NvMapAlloc
+    internal struct NvMapAlloc
     {
         public int  Handle;
         public int  HeapMask;

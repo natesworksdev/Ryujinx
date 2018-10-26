@@ -18,9 +18,9 @@ namespace Ryujinx.HLE.HOS
         internal const int HidSize  = 0x40000;
         internal const int FontSize = 0x1100000;
 
-        private Switch Device;
+        private Switch _device;
 
-        private ConcurrentDictionary<int, Process> Processes;
+        private ConcurrentDictionary<int, Process> _processes;
 
         public SystemStateMgr State { get; private set; }
 
@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS
 
         internal Keyset KeySet { get; private set; }
 
-        private bool HasStarted;
+        private bool _hasStarted;
 
         public Nacp ControlData { get; set; }
 
@@ -53,11 +53,11 @@ namespace Ryujinx.HLE.HOS
 
         public bool EnableFsIntegrityChecks { get; set; }
 
-        public Horizon(Switch Device)
+        public Horizon(Switch device)
         {
-            this.Device = Device;
+            this._device = device;
 
-            Processes = new ConcurrentDictionary<int, Process>();
+            _processes = new ConcurrentDictionary<int, Process>();
 
             State = new SystemStateMgr();
 
@@ -75,40 +75,35 @@ namespace Ryujinx.HLE.HOS
 
             Scheduler.StartAutoPreemptionThread();
 
-            if (!Device.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
-                !Device.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
-            {
+            if (!device.Memory.Allocator.TryAllocate(HidSize,  out long hidPa) ||
+                !device.Memory.Allocator.TryAllocate(FontSize, out long fontPa))
                 throw new InvalidOperationException();
-            }
 
-            HidSharedMem  = new KSharedMemory(HidPA, HidSize);
-            FontSharedMem = new KSharedMemory(FontPA, FontSize);
+            HidSharedMem  = new KSharedMemory(hidPa, HidSize);
+            FontSharedMem = new KSharedMemory(fontPa, FontSize);
 
-            Font = new SharedFontManager(Device, FontSharedMem.PA);
+            Font = new SharedFontManager(device, FontSharedMem.Pa);
 
             VsyncEvent = new KEvent(this);
 
             LoadKeySet();
         }
 
-        public void LoadCart(string ExeFsDir, string RomFsFile = null)
+        public void LoadCart(string exeFsDir, string romFsFile = null)
         {
-            if (RomFsFile != null)
-            {
-                Device.FileSystem.LoadRomFs(RomFsFile);
-            }
+            if (romFsFile != null) _device.FileSystem.LoadRomFs(romFsFile);
 
-            string NpdmFileName = Path.Combine(ExeFsDir, "main.npdm");
+            string npdmFileName = Path.Combine(exeFsDir, "main.npdm");
 
-            Npdm MetaData = null;
+            Npdm metaData = null;
 
-            if (File.Exists(NpdmFileName))
+            if (File.Exists(npdmFileName))
             {
                 Logger.PrintInfo(LogClass.Loader, $"Loading main.npdm...");
 
-                using (FileStream Input = new FileStream(NpdmFileName, FileMode.Open))
+                using (FileStream input = new FileStream(npdmFileName, FileMode.Open))
                 {
-                    MetaData = new Npdm(Input);
+                    metaData = new Npdm(input);
                 }
             }
             else
@@ -116,178 +111,153 @@ namespace Ryujinx.HLE.HOS
                 Logger.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
             }
 
-            Process MainProcess = MakeProcess(MetaData);
+            Process mainProcess = MakeProcess(metaData);
 
-            void LoadNso(string FileName)
+            void LoadNso(string fileName)
             {
-                foreach (string File in Directory.GetFiles(ExeFsDir, FileName))
+                foreach (string file in Directory.GetFiles(exeFsDir, fileName))
                 {
-                    if (Path.GetExtension(File) != string.Empty)
+                    if (Path.GetExtension(file) != string.Empty) continue;
+
+                    Logger.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(file)}...");
+
+                    using (FileStream input = new FileStream(file, FileMode.Open))
                     {
-                        continue;
-                    }
+                        string name = Path.GetFileNameWithoutExtension(file);
 
-                    Logger.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(File)}...");
+                        Nso program = new Nso(input, name);
 
-                    using (FileStream Input = new FileStream(File, FileMode.Open))
-                    {
-                        string Name = Path.GetFileNameWithoutExtension(File);
-
-                        Nso Program = new Nso(Input, Name);
-
-                        MainProcess.LoadProgram(Program);
+                        mainProcess.LoadProgram(program);
                     }
                 }
             }
 
-            if (!(MainProcess.MetaData?.Is64Bits ?? true))
-            {
-                throw new NotImplementedException("32-bit titles are unsupported!");
-            }
+            if (!(mainProcess.MetaData?.Is64Bits ?? true)) throw new NotImplementedException("32-bit titles are unsupported!");
 
-            CurrentTitle = MainProcess.MetaData.ACI0.TitleId.ToString("x16");
+            CurrentTitle = mainProcess.MetaData.Aci0.TitleId.ToString("x16");
 
             LoadNso("rtld");
 
-            MainProcess.SetEmptyArgs();
+            mainProcess.SetEmptyArgs();
 
             LoadNso("main");
             LoadNso("subsdk*");
             LoadNso("sdk");
 
-            MainProcess.Run();
+            mainProcess.Run();
         }
 
-        public void LoadXci(string XciFile)
+        public void LoadXci(string xciFile)
         {
-            FileStream File = new FileStream(XciFile, FileMode.Open, FileAccess.Read);
+            FileStream file = new FileStream(xciFile, FileMode.Open, FileAccess.Read);
 
-            Xci Xci = new Xci(KeySet, File);
+            Xci xci = new Xci(KeySet, file);
 
-            (Nca MainNca, Nca ControlNca) = GetXciGameData(Xci);
+            (Nca mainNca, Nca controlNca) = GetXciGameData(xci);
 
-            if (MainNca == null)
+            if (mainNca == null)
             {
                 Logger.PrintError(LogClass.Loader, "Unable to load XCI");
 
                 return;
             }
 
-            LoadNca(MainNca, ControlNca);
+            LoadNca(mainNca, controlNca);
         }
 
-        private (Nca Main, Nca Control) GetXciGameData(Xci Xci)
+        private (Nca Main, Nca Control) GetXciGameData(Xci xci)
         {
-            if (Xci.SecurePartition == null)
+            if (xci.SecurePartition == null) throw new InvalidDataException("Could not find XCI secure partition");
+
+            Nca mainNca    = null;
+            Nca patchNca   = null;
+            Nca controlNca = null;
+
+            foreach (PfsFileEntry fileEntry in xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
             {
-                throw new InvalidDataException("Could not find XCI secure partition");
-            }
+                Stream ncaStream = xci.SecurePartition.OpenFile(fileEntry);
 
-            Nca MainNca    = null;
-            Nca PatchNca   = null;
-            Nca ControlNca = null;
+                Nca nca = new Nca(KeySet, ncaStream, true);
 
-            foreach (PfsFileEntry FileEntry in Xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
-            {
-                Stream NcaStream = Xci.SecurePartition.OpenFile(FileEntry);
-
-                Nca Nca = new Nca(KeySet, NcaStream, true);
-
-                if (Nca.Header.ContentType == ContentType.Program)
+                if (nca.Header.ContentType == ContentType.Program)
                 {
-                    if (Nca.Sections.Any(x => x?.Type == SectionType.Romfs))
-                    {
-                        MainNca = Nca;
-                    }
-                    else if (Nca.Sections.Any(x => x?.Type == SectionType.Bktr))
-                    {
-                        PatchNca = Nca;
-                    }
+                    if (nca.Sections.Any(x => x?.Type == SectionType.Romfs))
+                        mainNca = nca;
+                    else if (nca.Sections.Any(x => x?.Type == SectionType.Bktr)) patchNca = nca;
                 }
-                else if (Nca.Header.ContentType == ContentType.Control)
+                else if (nca.Header.ContentType == ContentType.Control)
                 {
-                    ControlNca = Nca;
+                    controlNca = nca;
                 }
             }
 
-            if (MainNca == null)
+            if (mainNca == null) Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
+
+            mainNca.SetBaseNca(patchNca);
+
+            if (controlNca != null) ReadControlData(controlNca);
+
+            if (patchNca != null)
             {
-                Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
+                patchNca.SetBaseNca(mainNca);
+
+                return (patchNca, controlNca);
             }
 
-            MainNca.SetBaseNca(PatchNca);
-
-            if (ControlNca != null)
-            {
-                ReadControlData(ControlNca);
-            }
-
-            if (PatchNca != null)
-            {
-                PatchNca.SetBaseNca(MainNca);
-
-                return (PatchNca, ControlNca);
-            }
-
-            return (MainNca, ControlNca);
+            return (mainNca, controlNca);
         }
 
-        public void ReadControlData(Nca ControlNca)
+        public void ReadControlData(Nca controlNca)
         {
-            Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false, EnableFsIntegrityChecks));
+            Romfs controlRomfs = new Romfs(controlNca.OpenSection(0, false, EnableFsIntegrityChecks));
 
-            byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
+            byte[] controlFile = controlRomfs.GetFile("/control.nacp");
 
-            BinaryReader Reader = new BinaryReader(new MemoryStream(ControlFile));
+            BinaryReader reader = new BinaryReader(new MemoryStream(controlFile));
 
-            ControlData = new Nacp(Reader);
+            ControlData = new Nacp(reader);
         }
 
-        public void LoadNca(string NcaFile)
+        public void LoadNca(string ncaFile)
         {
-            FileStream File = new FileStream(NcaFile, FileMode.Open, FileAccess.Read);
+            FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
 
-            Nca Nca = new Nca(KeySet, File, true);
+            Nca nca = new Nca(KeySet, file, true);
 
-            LoadNca(Nca, null);
+            LoadNca(nca, null);
         }
 
-        public void LoadNsp(string NspFile)
+        public void LoadNsp(string nspFile)
         {
-            FileStream File = new FileStream(NspFile, FileMode.Open, FileAccess.Read);
+            FileStream file = new FileStream(nspFile, FileMode.Open, FileAccess.Read);
 
-            Pfs Nsp = new Pfs(File);
+            Pfs nsp = new Pfs(file);
 
-            PfsFileEntry TicketFile = Nsp.Files.FirstOrDefault(x => x.Name.EndsWith(".tik"));
+            PfsFileEntry ticketFile = nsp.Files.FirstOrDefault(x => x.Name.EndsWith(".tik"));
 
             // Load title key from the NSP's ticket in case the user doesn't have a title key file
-            if (TicketFile != null)
+            if (ticketFile != null)
             {
-                Ticket Ticket = new Ticket(Nsp.OpenFile(TicketFile));
+                Ticket ticket = new Ticket(nsp.OpenFile(ticketFile));
 
-                KeySet.TitleKeys[Ticket.RightsId] = Ticket.GetTitleKey(KeySet);
+                KeySet.TitleKeys[ticket.RightsId] = ticket.GetTitleKey(KeySet);
             }
 
-            Nca MainNca    = null;
-            Nca ControlNca = null;
+            Nca mainNca    = null;
+            Nca controlNca = null;
 
-            foreach (PfsFileEntry NcaFile in Nsp.Files.Where(x => x.Name.EndsWith(".nca")))
+            foreach (PfsFileEntry ncaFile in nsp.Files.Where(x => x.Name.EndsWith(".nca")))
             {
-                Nca Nca = new Nca(KeySet, Nsp.OpenFile(NcaFile), true);
+                Nca nca = new Nca(KeySet, nsp.OpenFile(ncaFile), true);
 
-                if (Nca.Header.ContentType == ContentType.Program)
-                {
-                    MainNca = Nca;
-                }
-                else if (Nca.Header.ContentType == ContentType.Control)
-                {
-                    ControlNca = Nca;
-                }
+                if (nca.Header.ContentType == ContentType.Program)
+                    mainNca = nca;
+                else if (nca.Header.ContentType == ContentType.Control) controlNca = nca;
             }
 
-            if (MainNca != null)
+            if (mainNca != null)
             {
-                LoadNca(MainNca, ControlNca);
+                LoadNca(mainNca, controlNca);
 
                 return;
             }
@@ -295,182 +265,157 @@ namespace Ryujinx.HLE.HOS
             Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided NSP file");
         }
 
-        public void LoadNca(Nca MainNca, Nca ControlNca)
+        public void LoadNca(Nca mainNca, Nca controlNca)
         {
-            NcaSection RomfsSection = MainNca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs || x?.Type == SectionType.Bktr);
-            NcaSection ExefsSection = MainNca.Sections.FirstOrDefault(x => x?.IsExefs == true);
+            NcaSection romfsSection = mainNca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs || x?.Type == SectionType.Bktr);
+            NcaSection exefsSection = mainNca.Sections.FirstOrDefault(x => x?.IsExefs == true);
 
-            if (ExefsSection == null)
+            if (exefsSection == null)
             {
                 Logger.PrintError(LogClass.Loader, "No ExeFS found in NCA");
 
                 return;
             }
 
-            if (RomfsSection == null)
+            if (romfsSection == null)
             {
                 Logger.PrintWarning(LogClass.Loader, "No RomFS found in NCA");
             }
             else
             {
-                Stream RomfsStream = MainNca.OpenSection(RomfsSection.SectionNum, false, EnableFsIntegrityChecks);
+                Stream romfsStream = mainNca.OpenSection(romfsSection.SectionNum, false, EnableFsIntegrityChecks);
 
-                Device.FileSystem.SetRomFs(RomfsStream);
+                _device.FileSystem.SetRomFs(romfsStream);
             }
 
-            Stream ExefsStream = MainNca.OpenSection(ExefsSection.SectionNum, false, EnableFsIntegrityChecks);
+            Stream exefsStream = mainNca.OpenSection(exefsSection.SectionNum, false, EnableFsIntegrityChecks);
 
-            Pfs Exefs = new Pfs(ExefsStream);
+            Pfs exefs = new Pfs(exefsStream);
 
-            Npdm MetaData = null;
+            Npdm metaData = null;
 
-            if (Exefs.FileExists("main.npdm"))
+            if (exefs.FileExists("main.npdm"))
             {
                 Logger.PrintInfo(LogClass.Loader, "Loading main.npdm...");
 
-                MetaData = new Npdm(Exefs.OpenFile("main.npdm"));
+                metaData = new Npdm(exefs.OpenFile("main.npdm"));
             }
             else
             {
                 Logger.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
             }
 
-            Process MainProcess = MakeProcess(MetaData);
+            Process mainProcess = MakeProcess(metaData);
 
-            void LoadNso(string Filename)
+            void LoadNso(string filename)
             {
-                foreach (PfsFileEntry File in Exefs.Files.Where(x => x.Name.StartsWith(Filename)))
+                foreach (PfsFileEntry file in exefs.Files.Where(x => x.Name.StartsWith(filename)))
                 {
-                    if (Path.GetExtension(File.Name) != string.Empty)
-                    {
-                        continue;
-                    }
+                    if (Path.GetExtension(file.Name) != string.Empty) continue;
 
-                    Logger.PrintInfo(LogClass.Loader, $"Loading {Filename}...");
+                    Logger.PrintInfo(LogClass.Loader, $"Loading {filename}...");
 
-                    string Name = Path.GetFileNameWithoutExtension(File.Name);
+                    string name = Path.GetFileNameWithoutExtension(file.Name);
 
-                    Nso Program = new Nso(Exefs.OpenFile(File), Name);
+                    Nso program = new Nso(exefs.OpenFile(file), name);
 
-                    MainProcess.LoadProgram(Program);
+                    mainProcess.LoadProgram(program);
                 }
             }
 
             Nacp ReadControlData()
             {
-                Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false, EnableFsIntegrityChecks));
+                Romfs controlRomfs = new Romfs(controlNca.OpenSection(0, false, EnableFsIntegrityChecks));
 
-                byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
+                byte[] controlFile = controlRomfs.GetFile("/control.nacp");
 
-                BinaryReader Reader = new BinaryReader(new MemoryStream(ControlFile));
+                BinaryReader reader = new BinaryReader(new MemoryStream(controlFile));
 
-                Nacp ControlData = new Nacp(Reader);
+                Nacp controlData = new Nacp(reader);
 
-                CurrentTitle = ControlData.Languages[(int)State.DesiredTitleLanguage].Title;
+                CurrentTitle = controlData.Languages[(int)State.DesiredTitleLanguage].Title;
 
-                if (string.IsNullOrWhiteSpace(CurrentTitle))
-                {
-                    CurrentTitle = ControlData.Languages.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
-                }
+                if (string.IsNullOrWhiteSpace(CurrentTitle)) CurrentTitle = controlData.Languages.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
 
-                return ControlData;
+                return controlData;
             }
 
-            if (ControlNca != null)
-            {
-                MainProcess.ControlData = ReadControlData();
-            }
+            if (controlNca != null)
+                mainProcess.ControlData = ReadControlData();
             else
-            {
-                CurrentTitle = MainProcess.MetaData.ACI0.TitleId.ToString("x16");
-            }
+                CurrentTitle = mainProcess.MetaData.Aci0.TitleId.ToString("x16");
 
-            if (!MainProcess.MetaData.Is64Bits)
-            {
-                throw new NotImplementedException("32-bit titles are unsupported!");
-            }
+            if (!mainProcess.MetaData.Is64Bits) throw new NotImplementedException("32-bit titles are unsupported!");
 
             LoadNso("rtld");
 
-            MainProcess.SetEmptyArgs();
+            mainProcess.SetEmptyArgs();
 
             LoadNso("main");
             LoadNso("subsdk");
             LoadNso("sdk");
 
-            MainProcess.Run();
+            mainProcess.Run();
         }
 
-        public void LoadProgram(string FilePath)
+        public void LoadProgram(string filePath)
         {
-            bool IsNro = Path.GetExtension(FilePath).ToLower() == ".nro";
+            bool isNro = Path.GetExtension(filePath).ToLower() == ".nro";
 
-            string Name = Path.GetFileNameWithoutExtension(FilePath);
-            string SwitchFilePath = Device.FileSystem.SystemPathToSwitchPath(FilePath);
+            string name = Path.GetFileNameWithoutExtension(filePath);
+            string switchFilePath = _device.FileSystem.SystemPathToSwitchPath(filePath);
 
-            if (IsNro && (SwitchFilePath == null || !SwitchFilePath.StartsWith("sdmc:/")))
+            if (isNro && (switchFilePath == null || !switchFilePath.StartsWith("sdmc:/")))
             {
-                string SwitchPath = $"sdmc:/switch/{Name}{Homebrew.TemporaryNroSuffix}";
-                string TempPath = Device.FileSystem.SwitchPathToSystemPath(SwitchPath);
+                string switchPath = $"sdmc:/switch/{name}{Homebrew.TemporaryNroSuffix}";
+                string tempPath = _device.FileSystem.SwitchPathToSystemPath(switchPath);
 
-                string SwitchDir = Path.GetDirectoryName(TempPath);
+                string switchDir = Path.GetDirectoryName(tempPath);
 
-                if (!Directory.Exists(SwitchDir))
-                {
-                    Directory.CreateDirectory(SwitchDir);
-                }
+                if (!Directory.Exists(switchDir)) Directory.CreateDirectory(switchDir);
 
-                File.Copy(FilePath, TempPath, true);
+                File.Copy(filePath, tempPath, true);
 
-                FilePath = TempPath;
+                filePath = tempPath;
             }
 
-            Process MainProcess = MakeProcess();
+            Process mainProcess = MakeProcess();
 
-            using (FileStream Input = new FileStream(FilePath, FileMode.Open))
+            using (FileStream input = new FileStream(filePath, FileMode.Open))
             {
-                MainProcess.LoadProgram(IsNro
-                    ? (IExecutable)new Nro(Input, FilePath)
-                    : (IExecutable)new Nso(Input, FilePath));
+                mainProcess.LoadProgram(isNro
+                    ? (IExecutable)new Nro(input, filePath)
+                    : (IExecutable)new Nso(input, filePath));
             }
 
-            MainProcess.SetEmptyArgs();
-            MainProcess.Run(IsNro);
+            mainProcess.SetEmptyArgs();
+            mainProcess.Run(isNro);
         }
 
         public void LoadKeySet()
         {
-            string KeyFile        = null;
-            string TitleKeyFile   = null;
-            string ConsoleKeyFile = null;
+            string keyFile        = null;
+            string titleKeyFile   = null;
+            string consoleKeyFile = null;
 
-            string Home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            LoadSetAtPath(Path.Combine(Home, ".switch"));
-            LoadSetAtPath(Device.FileSystem.GetSystemPath());
+            LoadSetAtPath(Path.Combine(home, ".switch"));
+            LoadSetAtPath(_device.FileSystem.GetSystemPath());
 
-            KeySet = ExternalKeys.ReadKeyFile(KeyFile, TitleKeyFile, ConsoleKeyFile);
+            KeySet = ExternalKeys.ReadKeyFile(keyFile, titleKeyFile, consoleKeyFile);
 
-            void LoadSetAtPath(string BasePath)
+            void LoadSetAtPath(string basePath)
             {
-                string LocalKeyFile        = Path.Combine(BasePath,    "prod.keys");
-                string LocalTitleKeyFile   = Path.Combine(BasePath,   "title.keys");
-                string LocalConsoleKeyFile = Path.Combine(BasePath, "console.keys");
+                string localKeyFile        = Path.Combine(basePath,    "prod.keys");
+                string localTitleKeyFile   = Path.Combine(basePath,   "title.keys");
+                string localConsoleKeyFile = Path.Combine(basePath, "console.keys");
 
-                if (File.Exists(LocalKeyFile))
-                {
-                    KeyFile = LocalKeyFile;
-                }
+                if (File.Exists(localKeyFile)) keyFile = localKeyFile;
 
-                if (File.Exists(LocalTitleKeyFile))
-                {
-                    TitleKeyFile = LocalTitleKeyFile;
-                }
+                if (File.Exists(localTitleKeyFile)) titleKeyFile = localTitleKeyFile;
 
-                if (File.Exists(LocalConsoleKeyFile))
-                {
-                    ConsoleKeyFile = LocalConsoleKeyFile;
-                }
+                if (File.Exists(localConsoleKeyFile)) consoleKeyFile = localConsoleKeyFile;
             }
         }
 
@@ -479,67 +424,58 @@ namespace Ryujinx.HLE.HOS
             VsyncEvent.ReadableEvent.Signal();
         }
 
-        private Process MakeProcess(Npdm MetaData = null)
+        private Process MakeProcess(Npdm metaData = null)
         {
-            HasStarted = true;
+            _hasStarted = true;
 
-            Process Process;
+            Process process;
 
-            lock (Processes)
+            lock (_processes)
             {
-                int ProcessId = 0;
+                int processId = 0;
 
-                while (Processes.ContainsKey(ProcessId))
-                {
-                    ProcessId++;
-                }
+                while (_processes.ContainsKey(processId)) processId++;
 
-                Process = new Process(Device, ProcessId, MetaData);
+                process = new Process(_device, processId, metaData);
 
-                Processes.TryAdd(ProcessId, Process);
+                _processes.TryAdd(processId, process);
             }
 
-            InitializeProcess(Process);
+            InitializeProcess(process);
 
-            return Process;
+            return process;
         }
 
-        private void InitializeProcess(Process Process)
+        private void InitializeProcess(Process process)
         {
-            Process.AppletState.SetFocus(true);
+            process.AppletState.SetFocus(true);
         }
 
-        internal void ExitProcess(int ProcessId)
+        internal void ExitProcess(int processId)
         {
-            if (Processes.TryRemove(ProcessId, out Process Process))
+            if (_processes.TryRemove(processId, out Process process))
             {
-                Process.Dispose();
+                process.Dispose();
 
-                if (Processes.Count == 0)
+                if (_processes.Count == 0)
                 {
                     Scheduler.Dispose();
 
                     TimeManager.Dispose();
 
-                    Device.Unload();
+                    _device.Unload();
                 }
             }
         }
 
         public void EnableMultiCoreScheduling()
         {
-            if (!HasStarted)
-            {
-                Scheduler.MultiCoreScheduling = true;
-            }
+            if (!_hasStarted) Scheduler.MultiCoreScheduling = true;
         }
 
         public void DisableMultiCoreScheduling()
         {
-            if (!HasStarted)
-            {
-                Scheduler.MultiCoreScheduling = false;
-            }
+            if (!_hasStarted) Scheduler.MultiCoreScheduling = false;
         }
 
         public void Dispose()
@@ -547,15 +483,10 @@ namespace Ryujinx.HLE.HOS
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing)
-            {
-                foreach (Process Process in Processes.Values)
-                {
-                    Process.Dispose();
-                }
-            }
+            if (disposing)
+                foreach (Process process in _processes.Values) process.Dispose();
         }
     }
 }

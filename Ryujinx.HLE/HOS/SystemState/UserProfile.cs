@@ -3,9 +3,9 @@ using System;
 
 namespace Ryujinx.HLE.HOS.SystemState
 {
-    class UserProfile
+    internal class UserProfile
     {
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime _epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public UInt128 Uuid { get; private set; }
 
@@ -16,10 +16,10 @@ namespace Ryujinx.HLE.HOS.SystemState
         public OpenCloseState AccountState    { get; set; }
         public OpenCloseState OnlinePlayState { get; set; }
 
-        public UserProfile(UInt128 Uuid, string Name)
+        public UserProfile(UInt128 uuid, string name)
         {
-            this.Uuid = Uuid;
-            this.Name = Name;
+            this.Uuid = uuid;
+            this.Name = name;
 
             LastModifiedTimestamp = 0;
 
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         private void UpdateTimestamp()
         {
-            LastModifiedTimestamp = (long)(DateTime.Now - Epoch).TotalSeconds;
+            LastModifiedTimestamp = (long)(DateTime.Now - _epoch).TotalSeconds;
         }
     }
 }

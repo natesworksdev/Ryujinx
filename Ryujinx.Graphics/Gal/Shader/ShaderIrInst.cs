@@ -1,17 +1,17 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    enum ShaderIrInst
+    internal enum ShaderIrInst
     {
         Invalid,
 
-        B_Start,
+        BStart,
         Band,
         Bnot,
         Bor,
         Bxor,
-        B_End,
+        BEnd,
 
-        F_Start,
+        FStart,
         Ceil,
 
         Fabs,
@@ -50,9 +50,9 @@ namespace Ryujinx.Graphics.Gal.Shader
         Texb,
         Texs,
         Trunc,
-        F_End,
+        FEnd,
 
-        I_Start,
+        Start,
         Abs,
         Add,
         And,
@@ -79,7 +79,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         Txlf,
         Utof,
         Xor,
-        I_End,
+        End,
 
         Bra,
         Exit,

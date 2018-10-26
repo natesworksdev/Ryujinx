@@ -1,14 +1,14 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KTransferMemory
+    internal class KTransferMemory
     {
         public long Position { get; private set; }
         public long Size     { get; private set; }
 
-        public KTransferMemory(long Position, long Size)
+        public KTransferMemory(long position, long size)
         {
-            this.Position = Position;
-            this.Size     = Size;
+            this.Position = position;
+            this.Size     = size;
         }
     }
 }

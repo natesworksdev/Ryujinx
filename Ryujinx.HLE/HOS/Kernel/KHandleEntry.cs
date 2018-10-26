@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KHandleEntry
+    internal class KHandleEntry
     {
         public KHandleEntry Next { get; set; }
 
@@ -9,9 +9,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         public ushort HandleId { get; set; }
         public object Obj      { get; set; }
 
-        public KHandleEntry(int Index)
+        public KHandleEntry(int index)
         {
-            this.Index = Index;
+            this.Index = index;
         }
     }
 }

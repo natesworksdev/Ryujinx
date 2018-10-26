@@ -3,17 +3,17 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KRecursiveLock
+    internal class KRecursiveLock
     {
-        private Horizon System;
+        private Horizon _system;
 
         public object LockObj { get; private set; }
 
-        private int RecursionCount;
+        private int _recursionCount;
 
-        public KRecursiveLock(Horizon System)
+        public KRecursiveLock(Horizon system)
         {
-            this.System = System;
+            this._system = system;
 
             LockObj = new object();
         }
@@ -22,72 +22,50 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             Monitor.Enter(LockObj);
 
-            RecursionCount++;
+            _recursionCount++;
         }
 
         public void Unlock()
         {
-            if (RecursionCount == 0)
-            {
-                return;
-            }
+            if (_recursionCount == 0) return;
 
-            bool DoContextSwitch = false;
+            bool doContextSwitch = false;
 
-            if (--RecursionCount == 0)
+            if (--_recursionCount == 0)
             {
-                if (System.Scheduler.ThreadReselectionRequested)
-                {
-                    System.Scheduler.SelectThreads();
-                }
+                if (_system.Scheduler.ThreadReselectionRequested) _system.Scheduler.SelectThreads();
 
                 Monitor.Exit(LockObj);
 
-                if (System.Scheduler.MultiCoreScheduling)
-                {
-                    lock (System.Scheduler.CoreContexts)
+                if (_system.Scheduler.MultiCoreScheduling)
+                    lock (_system.Scheduler.CoreContexts)
                     {
-                        for (int Core = 0; Core < KScheduler.CpuCoresCount; Core++)
+                        for (int core = 0; core < KScheduler.CpuCoresCount; core++)
                         {
-                            KCoreContext CoreContext = System.Scheduler.CoreContexts[Core];
+                            KCoreContext coreContext = _system.Scheduler.CoreContexts[core];
 
-                            if (CoreContext.ContextSwitchNeeded)
+                            if (coreContext.ContextSwitchNeeded)
                             {
-                                AThread CurrentHleThread = CoreContext.CurrentThread?.Context;
+                                AThread currentHleThread = coreContext.CurrentThread?.Context;
 
-                                if (CurrentHleThread == null)
-                                {
-                                    //Nothing is running, we can perform the context switch immediately.
-                                    CoreContext.ContextSwitch();
-                                }
-                                else if (CurrentHleThread.IsCurrentThread())
-                                {
-                                    //Thread running on the current core, context switch will block.
-                                    DoContextSwitch = true;
-                                }
+                                if (currentHleThread == null)
+                                    coreContext.ContextSwitch();
+                                else if (currentHleThread.IsCurrentThread())
+                                    doContextSwitch = true;
                                 else
-                                {
-                                    //Thread running on another core, request a interrupt.
-                                    CurrentHleThread.RequestInterrupt();
-                                }
+                                    currentHleThread.RequestInterrupt();
                             }
                         }
                     }
-                }
                 else
-                {
-                    DoContextSwitch = true;
-                }
+                    doContextSwitch = true;
             }
             else
             {
                 Monitor.Exit(LockObj);
             }
 
-            if (DoContextSwitch)
-            {
-                System.Scheduler.ContextSwitch();
-            }
+            if (doContextSwitch) _system.Scheduler.ContextSwitch();
         }
     }
 }

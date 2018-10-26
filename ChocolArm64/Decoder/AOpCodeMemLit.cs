@@ -2,7 +2,7 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeMemLit : AOpCode, IAOpCodeLit
+    internal class AOpCodeMemLit : AOpCode, IAOpCodeLit
     {
         public int  Rt       { get; private set; }
         public long Imm      { get; private set; }
@@ -10,13 +10,13 @@ namespace ChocolArm64.Decoder
         public bool Signed   { get; private set; }
         public bool Prefetch { get; private set; }
 
-        public AOpCodeMemLit(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeMemLit(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Rt = OpCode & 0x1f;
+            Rt = opCode & 0x1f;
 
-            Imm = Position + ADecoderHelper.DecodeImmS19_2(OpCode);
+            Imm = position + ADecoderHelper.DecodeImmS19_2(opCode);
 
-            switch ((OpCode >> 30) & 3)
+            switch ((opCode >> 30) & 3)
             {
                 case 0: Size = 2; Signed = false; Prefetch = false; break;
                 case 1: Size = 3; Signed = false; Prefetch = false; break;

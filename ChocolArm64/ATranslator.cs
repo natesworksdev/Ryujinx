@@ -10,7 +10,7 @@ namespace ChocolArm64
 {
     public class ATranslator
     {
-        private ATranslatorCache Cache;
+        private ATranslatorCache _cache;
 
         public event EventHandler<ACpuTraceEventArgs> CpuTrace;
 
@@ -18,148 +18,122 @@ namespace ChocolArm64
 
         public ATranslator()
         {
-            Cache = new ATranslatorCache();
+            _cache = new ATranslatorCache();
         }
 
-        internal void ExecuteSubroutine(AThread Thread, long Position)
+        internal void ExecuteSubroutine(AThread thread, long position)
         {
             //TODO: Both the execute A32/A64 methods should be merged on the future,
             //when both ISAs are implemented with the interpreter and JIT.
             //As of now, A32 only has a interpreter and A64 a JIT.
-            AThreadState State  = Thread.ThreadState;
-            AMemory      Memory = Thread.Memory;
+            AThreadState state  = thread.ThreadState;
+            AMemory      memory = thread.Memory;
 
-            if (State.ExecutionMode == AExecutionMode.AArch32)
-            {
-                ExecuteSubroutineA32(State, Memory);
-            }
+            if (state.ExecutionMode == AExecutionMode.AArch32)
+                ExecuteSubroutineA32(state, memory);
             else
-            {
-                ExecuteSubroutineA64(State, Memory, Position);
-            }
+                ExecuteSubroutineA64(state, memory, position);
         }
 
-        private void ExecuteSubroutineA32(AThreadState State, AMemory Memory)
+        private void ExecuteSubroutineA32(AThreadState state, AMemory memory)
         {
             do
             {
-                AOpCode OpCode = ADecoder.DecodeOpCode(State, Memory, State.R15);
+                AOpCode opCode = ADecoder.DecodeOpCode(state, memory, state.R15);
 
-                OpCode.Interpreter(State, Memory, OpCode);
+                opCode.Interpreter(state, memory, opCode);
             }
-            while (State.R15 != 0 && State.Running);
+            while (state.R15 != 0 && state.Running);
         }
 
-        private void ExecuteSubroutineA64(AThreadState State, AMemory Memory, long Position)
+        private void ExecuteSubroutineA64(AThreadState state, AMemory memory, long position)
         {
             do
             {
-                if (EnableCpuTrace)
-                {
-                    CpuTrace?.Invoke(this, new ACpuTraceEventArgs(Position));
-                }
+                if (EnableCpuTrace) CpuTrace?.Invoke(this, new ACpuTraceEventArgs(position));
 
-                if (!Cache.TryGetSubroutine(Position, out ATranslatedSub Sub))
-                {
-                    Sub = TranslateTier0(State, Memory, Position);
-                }
+                if (!_cache.TryGetSubroutine(position, out ATranslatedSub sub)) sub = TranslateTier0(state, memory, position);
 
-                if (Sub.ShouldReJit())
-                {
-                    TranslateTier1(State, Memory, Position);
-                }
+                if (sub.ShouldReJit()) TranslateTier1(state, memory, position);
 
-                Position = Sub.Execute(State, Memory);
+                position = sub.Execute(state, memory);
             }
-            while (Position != 0 && State.Running);
+            while (position != 0 && state.Running);
         }
 
-        internal bool HasCachedSub(long Position)
+        internal bool HasCachedSub(long position)
         {
-            return Cache.HasSubroutine(Position);
+            return _cache.HasSubroutine(position);
         }
 
-        private ATranslatedSub TranslateTier0(AThreadState State, AMemory Memory, long Position)
+        private ATranslatedSub TranslateTier0(AThreadState state, AMemory memory, long position)
         {
-            ABlock Block = ADecoder.DecodeBasicBlock(State, Memory, Position);
+            ABlock block = ADecoder.DecodeBasicBlock(state, memory, position);
 
-            ABlock[] Graph = new ABlock[] { Block };
+            ABlock[] graph = new ABlock[] { block };
 
-            string SubName = GetSubroutineName(Position);
+            string subName = GetSubroutineName(position);
 
-            AILEmitterCtx Context = new AILEmitterCtx(Cache, Graph, Block, SubName);
+            AILEmitterCtx context = new AILEmitterCtx(_cache, graph, block, subName);
 
             do
             {
-                Context.EmitOpCode();
+                context.EmitOpCode();
             }
-            while (Context.AdvanceOpCode());
+            while (context.AdvanceOpCode());
 
-            ATranslatedSub Subroutine = Context.GetSubroutine();
+            ATranslatedSub subroutine = context.GetSubroutine();
 
-            Subroutine.SetType(ATranslatedSubType.SubTier0);
+            subroutine.SetType(ATranslatedSubType.SubTier0);
 
-            Cache.AddOrUpdate(Position, Subroutine, Block.OpCodes.Count);
+            _cache.AddOrUpdate(position, subroutine, block.OpCodes.Count);
 
-            AOpCode LastOp = Block.GetLastOp();
+            AOpCode lastOp = block.GetLastOp();
 
-            return Subroutine;
+            return subroutine;
         }
 
-        private void TranslateTier1(AThreadState State, AMemory Memory, long Position)
+        private void TranslateTier1(AThreadState state, AMemory memory, long position)
         {
-            (ABlock[] Graph, ABlock Root) = ADecoder.DecodeSubroutine(Cache, State, Memory, Position);
+            (ABlock[] graph, ABlock root) = ADecoder.DecodeSubroutine(_cache, state, memory, position);
 
-            string SubName = GetSubroutineName(Position);
+            string subName = GetSubroutineName(position);
 
-            AILEmitterCtx Context = new AILEmitterCtx(Cache, Graph, Root, SubName);
+            AILEmitterCtx context = new AILEmitterCtx(_cache, graph, root, subName);
 
-            if (Context.CurrBlock.Position != Position)
-            {
-                Context.Emit(OpCodes.Br, Context.GetLabel(Position));
-            }
+            if (context.CurrBlock.Position != position) context.Emit(OpCodes.Br, context.GetLabel(position));
 
             do
             {
-                Context.EmitOpCode();
+                context.EmitOpCode();
             }
-            while (Context.AdvanceOpCode());
+            while (context.AdvanceOpCode());
 
             //Mark all methods that calls this method for ReJiting,
             //since we can now call it directly which is faster.
-            if (Cache.TryGetSubroutine(Position, out ATranslatedSub OldSub))
-            {
-                foreach (long CallerPos in OldSub.GetCallerPositions())
-                {
-                    if (Cache.TryGetSubroutine(Position, out ATranslatedSub CallerSub))
-                    {
-                        CallerSub.MarkForReJit();
-                    }
-                }
-            }
+            if (_cache.TryGetSubroutine(position, out ATranslatedSub oldSub))
+                foreach (long callerPos in oldSub.GetCallerPositions())
+                    if (_cache.TryGetSubroutine(position, out ATranslatedSub callerSub)) callerSub.MarkForReJit();
 
-            ATranslatedSub Subroutine = Context.GetSubroutine();
+            ATranslatedSub subroutine = context.GetSubroutine();
 
-            Subroutine.SetType(ATranslatedSubType.SubTier1);
+            subroutine.SetType(ATranslatedSubType.SubTier1);
 
-            Cache.AddOrUpdate(Position, Subroutine, GetGraphInstCount(Graph));
+            _cache.AddOrUpdate(position, subroutine, GetGraphInstCount(graph));
         }
 
-        private string GetSubroutineName(long Position)
+        private string GetSubroutineName(long position)
         {
-            return $"Sub{Position:x16}";
+            return $"Sub{position:x16}";
         }
 
-        private int GetGraphInstCount(ABlock[] Graph)
+        private int GetGraphInstCount(ABlock[] graph)
         {
-            int Size = 0;
+            int size = 0;
 
-            foreach (ABlock Block in Graph)
-            {
-                Size += Block.OpCodes.Count;
-            }
+            foreach (ABlock block in graph) size += block.OpCodes.Count;
 
-            return Size;
+            return size;
         }
     }
 }

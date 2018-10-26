@@ -7,7 +7,7 @@ namespace Ryujinx.Tests.Unicorn
 {
     public class UnicornAArch64
     {
-        internal readonly IntPtr uc;
+        internal readonly IntPtr Uc;
 
         public IndexedProperty<int, ulong> X
         {
@@ -29,80 +29,80 @@ namespace Ryujinx.Tests.Unicorn
             }
         }
 
-        public ulong LR
+        public ulong Lr
         {
-            get { return GetRegister(Native.ArmRegister.LR); }
-            set { SetRegister(Native.ArmRegister.LR, value); }
+            get => GetRegister(Native.ArmRegister.Lr);
+            set => SetRegister(Native.ArmRegister.Lr, value);
         }
 
-        public ulong SP
+        public ulong Sp
         {
-            get { return GetRegister(Native.ArmRegister.SP); }
-            set { SetRegister(Native.ArmRegister.SP, value); }
+            get => GetRegister(Native.ArmRegister.Sp);
+            set => SetRegister(Native.ArmRegister.Sp, value);
         }
 
-        public ulong PC
+        public ulong Pc
         {
-            get { return GetRegister(Native.ArmRegister.PC); }
-            set { SetRegister(Native.ArmRegister.PC, value); }
+            get => GetRegister(Native.ArmRegister.Pc);
+            set => SetRegister(Native.ArmRegister.Pc, value);
         }
 
         public uint Pstate
         {
-            get { return (uint)GetRegister(Native.ArmRegister.PSTATE); }
-            set { SetRegister(Native.ArmRegister.PSTATE, (uint)value); }
+            get => (uint)GetRegister(Native.ArmRegister.Pstate);
+            set => SetRegister(Native.ArmRegister.Pstate, (uint)value);
         }
 
         public int Fpcr
         {
-            get { return (int)GetRegister(Native.ArmRegister.FPCR); }
-            set { SetRegister(Native.ArmRegister.FPCR, (uint)value); }
+            get => (int)GetRegister(Native.ArmRegister.Fpcr);
+            set => SetRegister(Native.ArmRegister.Fpcr, (uint)value);
         }
 
         public int Fpsr
         {
-            get { return (int)GetRegister(Native.ArmRegister.FPSR); }
-            set { SetRegister(Native.ArmRegister.FPSR, (uint)value); }
+            get => (int)GetRegister(Native.ArmRegister.Fpsr);
+            set => SetRegister(Native.ArmRegister.Fpsr, (uint)value);
         }
 
         public bool OverflowFlag
         {
-            get { return (Pstate & 0x10000000u) != 0; }
-            set { Pstate = (Pstate & ~0x10000000u) | (value ? 0x10000000u : 0u); }
+            get => (Pstate & 0x10000000u) != 0;
+            set => Pstate = (Pstate & ~0x10000000u) | (value ? 0x10000000u : 0u);
         }
 
         public bool CarryFlag
         {
-            get { return (Pstate & 0x20000000u) != 0; }
-            set { Pstate = (Pstate & ~0x20000000u) | (value ? 0x20000000u : 0u); }
+            get => (Pstate & 0x20000000u) != 0;
+            set => Pstate = (Pstate & ~0x20000000u) | (value ? 0x20000000u : 0u);
         }
 
         public bool ZeroFlag
         {
-            get { return (Pstate & 0x40000000u) != 0; }
-            set { Pstate = (Pstate & ~0x40000000u) | (value ? 0x40000000u : 0u); }
+            get => (Pstate & 0x40000000u) != 0;
+            set => Pstate = (Pstate & ~0x40000000u) | (value ? 0x40000000u : 0u);
         }
 
         public bool NegativeFlag
         {
-            get { return (Pstate & 0x80000000u) != 0; }
-            set { Pstate = (Pstate & ~0x80000000u) | (value ? 0x80000000u : 0u); }
+            get => (Pstate & 0x80000000u) != 0;
+            set => Pstate = (Pstate & ~0x80000000u) | (value ? 0x80000000u : 0u);
         }
 
         public UnicornAArch64()
         {
-            Native.Interface.Checked(Native.Interface.uc_open((uint)Native.UnicornArch.UC_ARCH_ARM64, (uint)Native.UnicornMode.UC_MODE_LITTLE_ENDIAN, out uc));
-            SetRegister(Native.ArmRegister.CPACR_EL1, 0x00300000);
+            Native.Interface.Checked(Native.Interface.uc_open((uint)Native.UnicornArch.UcArchArm64, (uint)Native.UnicornMode.UcModeLittleEndian, out Uc));
+            SetRegister(Native.ArmRegister.CpacrEl1, 0x00300000);
         }
 
         ~UnicornAArch64()
         {
-            Native.Interface.Checked(Native.Interface.uc_close(uc));
+            Native.Interface.Checked(Native.Interface.uc_close(Uc));
         }
 
         public void RunForCount(ulong count)
         {
-            Native.Interface.Checked(Native.Interface.uc_emu_start(uc, this.PC, 0xFFFFFFFFFFFFFFFFu, 0, count));
+            Native.Interface.Checked(Native.Interface.uc_emu_start(Uc, this.Pc, 0xFFFFFFFFFFFFFFFFu, 0, count));
         }
 
         public void Step()
@@ -110,7 +110,7 @@ namespace Ryujinx.Tests.Unicorn
             RunForCount(1);
         }
 
-        internal static Native.ArmRegister[] X_registers = new Native.ArmRegister[31]
+        internal static Native.ArmRegister[] XRegisters = new Native.ArmRegister[31]
         {
             Native.ArmRegister.X0,
             Native.ArmRegister.X1,
@@ -145,7 +145,7 @@ namespace Ryujinx.Tests.Unicorn
             Native.ArmRegister.X30,
         };
 
-        internal static Native.ArmRegister[] Q_registers = new Native.ArmRegister[32]
+        internal static Native.ArmRegister[] QRegisters = new Native.ArmRegister[32]
         {
             Native.ArmRegister.Q0,
             Native.ArmRegister.Q1,
@@ -183,24 +183,24 @@ namespace Ryujinx.Tests.Unicorn
 
         internal ulong GetRegister(Native.ArmRegister register)
         {
-            byte[] value_bytes = new byte[8];
-            Native.Interface.Checked(Native.Interface.uc_reg_read(uc, (int)register, value_bytes));
-            return (ulong)BitConverter.ToInt64(value_bytes, 0);
+            byte[] valueBytes = new byte[8];
+            Native.Interface.Checked(Native.Interface.uc_reg_read(Uc, (int)register, valueBytes));
+            return (ulong)BitConverter.ToInt64(valueBytes, 0);
         }
 
         internal void SetRegister(Native.ArmRegister register, ulong value)
         {
-            byte[] value_bytes = BitConverter.GetBytes(value);
-            Native.Interface.Checked(Native.Interface.uc_reg_write(uc, (int)register, value_bytes));
+            byte[] valueBytes = BitConverter.GetBytes(value);
+            Native.Interface.Checked(Native.Interface.uc_reg_write(Uc, (int)register, valueBytes));
         }
 
         internal Vector128<float> GetVector(Native.ArmRegister register)
         {
-            byte[] value_bytes = new byte[16];
-            Native.Interface.Checked(Native.Interface.uc_reg_read(uc, (int)register, value_bytes));
+            byte[] valueBytes = new byte[16];
+            Native.Interface.Checked(Native.Interface.uc_reg_read(Uc, (int)register, valueBytes));
             unsafe
             {
-                fixed (byte* p = &value_bytes[0])
+                fixed (byte* p = &valueBytes[0])
                 {
                     return Sse.LoadVector128((float*)p);
                 }
@@ -209,49 +209,49 @@ namespace Ryujinx.Tests.Unicorn
 
         internal void SetVector(Native.ArmRegister register, Vector128<float> value)
         {
-            byte[] value_bytes = new byte[16];
+            byte[] valueBytes = new byte[16];
             unsafe
             {
-                fixed (byte* p = &value_bytes[0])
+                fixed (byte* p = &valueBytes[0])
                 {
                     Sse.Store((float*)p, value);
                 }
             }
-            Native.Interface.Checked(Native.Interface.uc_reg_write(uc, (int)register, value_bytes));
+            Native.Interface.Checked(Native.Interface.uc_reg_write(Uc, (int)register, valueBytes));
         }
 
         public ulong GetX(int index)
         {
             Contract.Requires(index <= 30, "invalid register");
 
-            return GetRegister(X_registers[index]);
+            return GetRegister(XRegisters[index]);
         }
 
         public void SetX(int index, ulong value)
         {
             Contract.Requires(index <= 30, "invalid register");
 
-            SetRegister(X_registers[index], value);
+            SetRegister(XRegisters[index], value);
         }
 
         public Vector128<float> GetQ(int index)
         {
             Contract.Requires(index <= 31, "invalid vector");
 
-            return GetVector(Q_registers[index]);
+            return GetVector(QRegisters[index]);
         }
 
         public void SetQ(int index, Vector128<float> value)
         {
             Contract.Requires(index <= 31, "invalid vector");
 
-            SetVector(Q_registers[index], value);
+            SetVector(QRegisters[index], value);
         }
 
         public byte[] MemoryRead(ulong address, ulong size)
         {
             byte[] value = new byte[size];
-            Native.Interface.Checked(Native.Interface.uc_mem_read(uc, address, value, size));
+            Native.Interface.Checked(Native.Interface.uc_mem_read(Uc, address, value, size));
             return value;
         }
 
@@ -262,7 +262,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public void MemoryWrite(ulong address, byte[] value)
         {
-            Native.Interface.Checked(Native.Interface.uc_mem_write(uc, address, value, (ulong)value.Length));
+            Native.Interface.Checked(Native.Interface.uc_mem_write(Uc, address, value, (ulong)value.Length));
         }
 
         public void MemoryWrite8 (ulong address, byte value)   { MemoryWrite(address, new byte[]{value}); }
@@ -275,27 +275,24 @@ namespace Ryujinx.Tests.Unicorn
 
         public void MemoryMap(ulong address, ulong size, MemoryPermission permissions)
         {
-            Native.Interface.Checked(Native.Interface.uc_mem_map(uc, address, size, (uint)permissions));
+            Native.Interface.Checked(Native.Interface.uc_mem_map(Uc, address, size, (uint)permissions));
         }
 
         public void MemoryUnmap(ulong address, ulong size)
         {
-            Native.Interface.Checked(Native.Interface.uc_mem_unmap(uc, address, size));
+            Native.Interface.Checked(Native.Interface.uc_mem_unmap(Uc, address, size));
         }
 
         public void MemoryProtect(ulong address, ulong size, MemoryPermission permissions)
         {
-            Native.Interface.Checked(Native.Interface.uc_mem_protect(uc, address, size, (uint)permissions));
+            Native.Interface.Checked(Native.Interface.uc_mem_protect(Uc, address, size, (uint)permissions));
         }
 
         public void DumpMemoryInformation()
         {
-            Native.Interface.Checked(Native.Interface.uc_mem_regions(uc, out IntPtr regions_raw, out uint length));
-            Native.Interface.MarshalArrayOf<Native.UnicornMemoryRegion>(regions_raw, (int)length, out var regions);
-            foreach (var region in regions)
-            {
-                Console.WriteLine("region: begin {0:X16} end {1:X16} perms {2:X8}", region.begin, region.end, region.perms);
-            }
+            Native.Interface.Checked(Native.Interface.uc_mem_regions(Uc, out IntPtr regionsRaw, out uint length));
+            Native.Interface.MarshalArrayOf<Native.UnicornMemoryRegion>(regionsRaw, (int)length, out var regions);
+            foreach (var region in regions) Console.WriteLine("region: begin {0:X16} end {1:X16} perms {2:X8}", region.begin, region.end, region.perms);
         }
 
         public static bool IsAvailable()

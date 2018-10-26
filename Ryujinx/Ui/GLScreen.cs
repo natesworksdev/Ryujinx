@@ -16,76 +16,73 @@ namespace Ryujinx
         private const int TouchScreenWidth  = 1280;
         private const int TouchScreenHeight = 720;
 
-        private const int TargetFPS = 60;
+        private const int TargetFps = 60;
 
-        private Switch Device;
+        private Switch _device;
 
-        private IGalRenderer Renderer;
+        private IGalRenderer _renderer;
 
-        private KeyboardState? Keyboard = null;
+        private KeyboardState? _keyboard = null;
 
-        private MouseState? Mouse = null;
+        private MouseState? _mouse = null;
 
-        private Thread RenderThread;
+        private Thread _renderThread;
 
-        private bool ResizeEvent;
+        private bool _resizeEvent;
 
-        private bool TitleEvent;
+        private bool _titleEvent;
 
-        private string NewTitle;
+        private string _newTitle;
 
-        public GLScreen(Switch Device, IGalRenderer Renderer)
+        public GLScreen(Switch device, IGalRenderer renderer)
             : base(1280, 720,
             new GraphicsMode(), "Ryujinx", 0,
             DisplayDevice.Default, 3, 3,
             GraphicsContextFlags.ForwardCompatible)
         {
-            this.Device   = Device;
-            this.Renderer = Renderer;
+            this._device   = device;
+            this._renderer = renderer;
 
             Location = new Point(
-                (DisplayDevice.Default.Width  / 2) - (Width  / 2),
-                (DisplayDevice.Default.Height / 2) - (Height / 2));
+                DisplayDevice.Default.Width  / 2 - Width  / 2,
+                DisplayDevice.Default.Height / 2 - Height / 2);
         }
 
         private void RenderLoop()
         {
             MakeCurrent();
 
-            Stopwatch Chrono = new Stopwatch();
+            Stopwatch chrono = new Stopwatch();
 
-            Chrono.Start();
+            chrono.Start();
 
-            long TicksPerFrame = Stopwatch.Frequency / TargetFPS;
+            long ticksPerFrame = Stopwatch.Frequency / TargetFps;
 
-            long Ticks = 0;
+            long ticks = 0;
 
             while (Exists && !IsExiting)
             {
-                if (Device.WaitFifo())
+                if (_device.WaitFifo()) _device.ProcessFrame();
+
+                _renderer.RunActions();
+
+                if (_resizeEvent)
                 {
-                    Device.ProcessFrame();
+                    _resizeEvent = false;
+
+                    _renderer.RenderTarget.SetWindowSize(Width, Height);
                 }
 
-                Renderer.RunActions();
+                ticks += chrono.ElapsedTicks;
 
-                if (ResizeEvent)
-                {
-                    ResizeEvent = false;
+                chrono.Restart();
 
-                    Renderer.RenderTarget.SetWindowSize(Width, Height);
-                }
-
-                Ticks += Chrono.ElapsedTicks;
-
-                Chrono.Restart();
-
-                if (Ticks >= TicksPerFrame)
+                if (ticks >= ticksPerFrame)
                 {
                     RenderFrame();
 
                     //Queue max. 1 vsync
-                    Ticks = Math.Min(Ticks - TicksPerFrame, TicksPerFrame);
+                    ticks = Math.Min(ticks - ticksPerFrame, ticksPerFrame);
                 }
             }
         }
@@ -96,14 +93,14 @@ namespace Ryujinx
 
             Visible = true;
 
-            Renderer.RenderTarget.SetWindowSize(Width, Height);
+            _renderer.RenderTarget.SetWindowSize(Width, Height);
 
             Context.MakeCurrent(null);
 
             //OpenTK doesn't like sleeps in its thread, to avoid this a renderer thread is created
-            RenderThread = new Thread(RenderLoop);
+            _renderThread = new Thread(RenderLoop);
 
-            RenderThread.Start();
+            _renderThread.Start();
 
             while (Exists && !IsExiting)
             {
@@ -113,11 +110,11 @@ namespace Ryujinx
                 {
                     UpdateFrame();
 
-                    if (TitleEvent)
+                    if (_titleEvent)
                     {
-                        TitleEvent = false;
+                        _titleEvent = false;
 
-                        Title = NewTitle;
+                        Title = _newTitle;
                     }
                 }
 
@@ -128,94 +125,84 @@ namespace Ryujinx
 
         private new void UpdateFrame()
         {
-            HidControllerButtons CurrentButton = 0;
-            HidJoystickPosition  LeftJoystick;
-            HidJoystickPosition  RightJoystick;
+            HidControllerButtons currentButton = 0;
+            HidJoystickPosition  leftJoystick;
+            HidJoystickPosition  rightJoystick;
 
-            int LeftJoystickDX  = 0;
-            int LeftJoystickDY  = 0;
-            int RightJoystickDX = 0;
-            int RightJoystickDY = 0;
+            int leftJoystickDx  = 0;
+            int leftJoystickDy  = 0;
+            int rightJoystickDx = 0;
+            int rightJoystickDy = 0;
 
             //Keyboard Input
-            if (Keyboard.HasValue)
+            if (_keyboard.HasValue)
             {
-                KeyboardState Keyboard = this.Keyboard.Value;
+                KeyboardState keyboard = this._keyboard.Value;
 
-                CurrentButton = Config.JoyConKeyboard.GetButtons(Keyboard);
+                currentButton = Config.JoyConKeyboard.GetButtons(keyboard);
 
-                (LeftJoystickDX, LeftJoystickDY) = Config.JoyConKeyboard.GetLeftStick(Keyboard);
+                (leftJoystickDx, leftJoystickDy) = Config.JoyConKeyboard.GetLeftStick(keyboard);
 
-                (RightJoystickDX, RightJoystickDY) = Config.JoyConKeyboard.GetRightStick(Keyboard);
+                (rightJoystickDx, rightJoystickDy) = Config.JoyConKeyboard.GetRightStick(keyboard);
             }
 
             //Controller Input
-            CurrentButton |= Config.JoyConController.GetButtons();
+            currentButton |= Config.JoyConController.GetButtons();
 
             //Keyboard has priority stick-wise
-            if (LeftJoystickDX == 0 && LeftJoystickDY == 0)
-            {
-                (LeftJoystickDX, LeftJoystickDY) = Config.JoyConController.GetLeftStick();
-            }
+            if (leftJoystickDx == 0 && leftJoystickDy == 0) (leftJoystickDx, leftJoystickDy) = Config.JoyConController.GetLeftStick();
 
-            if (RightJoystickDX == 0 && RightJoystickDY == 0)
-            {
-                (RightJoystickDX, RightJoystickDY) = Config.JoyConController.GetRightStick();
-            }
+            if (rightJoystickDx == 0 && rightJoystickDy == 0) (rightJoystickDx, rightJoystickDy) = Config.JoyConController.GetRightStick();
 
-            LeftJoystick = new HidJoystickPosition
+            leftJoystick = new HidJoystickPosition
             {
-                DX = LeftJoystickDX,
-                DY = LeftJoystickDY
+                Dx = leftJoystickDx,
+                Dy = leftJoystickDy
             };
 
-            RightJoystick = new HidJoystickPosition
+            rightJoystick = new HidJoystickPosition
             {
-                DX = RightJoystickDX,
-                DY = RightJoystickDY
+                Dx = rightJoystickDx,
+                Dy = rightJoystickDy
             };
 
-            bool HasTouch = false;
+            bool hasTouch = false;
 
             //Get screen touch position from left mouse click
             //OpenTK always captures mouse events, even if out of focus, so check if window is focused.
-            if (Focused && Mouse?.LeftButton == ButtonState.Pressed)
+            if (Focused && _mouse?.LeftButton == ButtonState.Pressed)
             {
-                MouseState Mouse = this.Mouse.Value;
+                MouseState mouse = this._mouse.Value;
 
-                int ScrnWidth  = Width;
-                int ScrnHeight = Height;
+                int scrnWidth  = Width;
+                int scrnHeight = Height;
 
-                if (Width > (Height * TouchScreenWidth) / TouchScreenHeight)
-                {
-                    ScrnWidth = (Height * TouchScreenWidth) / TouchScreenHeight;
-                }
+                if (Width > Height * TouchScreenWidth / TouchScreenHeight)
+                    scrnWidth = Height * TouchScreenWidth / TouchScreenHeight;
                 else
+                    scrnHeight = Width * TouchScreenHeight / TouchScreenWidth;
+
+                int startX = (Width  - scrnWidth)  >> 1;
+                int startY = (Height - scrnHeight) >> 1;
+
+                int endX = startX + scrnWidth;
+                int endY = startY + scrnHeight;
+
+                if (mouse.X >= startX &&
+                    mouse.Y >= startY &&
+                    mouse.X <  endX   &&
+                    mouse.Y <  endY)
                 {
-                    ScrnHeight = (Width * TouchScreenHeight) / TouchScreenWidth;
-                }
+                    int scrnMouseX = mouse.X - startX;
+                    int scrnMouseY = mouse.Y - startY;
 
-                int StartX = (Width  - ScrnWidth)  >> 1;
-                int StartY = (Height - ScrnHeight) >> 1;
+                    int mx = scrnMouseX * TouchScreenWidth  / scrnWidth;
+                    int my = scrnMouseY * TouchScreenHeight / scrnHeight;
 
-                int EndX = StartX + ScrnWidth;
-                int EndY = StartY + ScrnHeight;
-
-                if (Mouse.X >= StartX &&
-                    Mouse.Y >= StartY &&
-                    Mouse.X <  EndX   &&
-                    Mouse.Y <  EndY)
-                {
-                    int ScrnMouseX = Mouse.X - StartX;
-                    int ScrnMouseY = Mouse.Y - StartY;
-
-                    int MX = (ScrnMouseX * TouchScreenWidth)  / ScrnWidth;
-                    int MY = (ScrnMouseY * TouchScreenHeight) / ScrnHeight;
-
-                    HidTouchPoint CurrentPoint = new HidTouchPoint
+                    HidTouchPoint currentPoint = new HidTouchPoint
                     {
-                        X = MX,
-                        Y = MY,
+                        X = mx,
+                        Y = my,
 
                         //Placeholder values till more data is acquired
                         DiameterX = 10,
@@ -223,114 +210,102 @@ namespace Ryujinx
                         Angle     = 90
                     };
 
-                    HasTouch = true;
+                    hasTouch = true;
 
-                    Device.Hid.SetTouchPoints(CurrentPoint);
+                    _device.Hid.SetTouchPoints(currentPoint);
                 }
             }
 
-            if (!HasTouch)
-            {
-                Device.Hid.SetTouchPoints();
-            }
+            if (!hasTouch) _device.Hid.SetTouchPoints();
 
-            Device.Hid.SetJoyconButton(
-                HidControllerId.CONTROLLER_HANDHELD,
-                HidControllerLayouts.Handheld_Joined,
-                CurrentButton,
-                LeftJoystick,
-                RightJoystick);
+            _device.Hid.SetJoyconButton(
+                HidControllerId.ControllerHandheld,
+                HidControllerLayouts.HandheldJoined,
+                currentButton,
+                leftJoystick,
+                rightJoystick);
 
-            Device.Hid.SetJoyconButton(
-                HidControllerId.CONTROLLER_HANDHELD,
+            _device.Hid.SetJoyconButton(
+                HidControllerId.ControllerHandheld,
                 HidControllerLayouts.Main,
-                CurrentButton,
-                LeftJoystick,
-                RightJoystick);
+                currentButton,
+                leftJoystick,
+                rightJoystick);
         }
 
         private new void RenderFrame()
         {
-            Renderer.RenderTarget.Render();
+            _renderer.RenderTarget.Render();
 
-            Device.Statistics.RecordSystemFrameTime();
+            _device.Statistics.RecordSystemFrameTime();
 
-            double HostFps = Device.Statistics.GetSystemFrameRate();
-            double GameFps = Device.Statistics.GetGameFrameRate();
+            double hostFps = _device.Statistics.GetSystemFrameRate();
+            double gameFps = _device.Statistics.GetGameFrameRate();
 
-            string TitleSection = string.IsNullOrWhiteSpace(Device.System.CurrentTitle) ? string.Empty
-                : " | " + Device.System.CurrentTitle;
+            string titleSection = string.IsNullOrWhiteSpace(_device.System.CurrentTitle) ? string.Empty
+                : " | " + _device.System.CurrentTitle;
 
-            NewTitle = $"Ryujinx{TitleSection} | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0} | " +
-                $"Game Vsync: {(Device.EnableDeviceVsync ? "On" : "Off")}";
+            _newTitle = $"Ryujinx{titleSection} | Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0} | " +
+                $"Game Vsync: {(_device.EnableDeviceVsync ? "On" : "Off")}";
 
-            TitleEvent = true;
+            _titleEvent = true;
 
             SwapBuffers();
 
-            Device.System.SignalVsync();
+            _device.System.SignalVsync();
 
-            Device.VsyncEvent.Set();
+            _device.VsyncEvent.Set();
         }
 
         protected override void OnUnload(EventArgs e)
         {
-            RenderThread.Join();
+            _renderThread.Join();
 
             base.OnUnload(e);
         }
 
         protected override void OnResize(EventArgs e)
         {
-            ResizeEvent = true;
+            _resizeEvent = true;
         }
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
         {
-            bool ToggleFullscreen = e.Key == Key.F11 ||
-                (e.Modifiers.HasFlag(KeyModifiers.Alt) && e.Key == Key.Enter);
+            bool toggleFullscreen = e.Key == Key.F11 ||
+                e.Modifiers.HasFlag(KeyModifiers.Alt) && e.Key == Key.Enter;
 
             if (WindowState == WindowState.Fullscreen)
             {
-                if (e.Key == Key.Escape || ToggleFullscreen)
-                {
-                    WindowState = WindowState.Normal;
-                }
+                if (e.Key == Key.Escape || toggleFullscreen) WindowState = WindowState.Normal;
             }
             else
             {
-                if (e.Key == Key.Escape)
-                {
-                    Exit();
-                }
+                if (e.Key == Key.Escape) Exit();
 
-                if (ToggleFullscreen)
-                {
-                    WindowState = WindowState.Fullscreen;
-                }
+                if (toggleFullscreen) WindowState = WindowState.Fullscreen;
             }
 
-            Keyboard = e.Keyboard;
+            _keyboard = e.Keyboard;
         }
 
         protected override void OnKeyUp(KeyboardKeyEventArgs e)
         {
-            Keyboard = e.Keyboard;
+            _keyboard = e.Keyboard;
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            Mouse = e.Mouse;
+            _mouse = e.Mouse;
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
-            Mouse = e.Mouse;
+            _mouse = e.Mouse;
         }
 
         protected override void OnMouseMove(MouseMoveEventArgs e)
         {
-            Mouse = e.Mouse;
+            _mouse = e.Mouse;
         }
     }
 }

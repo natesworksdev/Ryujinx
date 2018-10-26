@@ -1,10 +1,10 @@
 namespace Ryujinx.HLE.Loaders
 {
-    enum ElfSymVisibility
+    internal enum ElfSymVisibility
     {
-        STV_DEFAULT   = 0,
-        STV_INTERNAL  = 1,
-        STV_HIDDEN    = 2,
-        STV_PROTECTED = 3
+        StvDefault   = 0,
+        StvInternal  = 1,
+        StvHidden    = 2,
+        StvProtected = 3
     }
 }

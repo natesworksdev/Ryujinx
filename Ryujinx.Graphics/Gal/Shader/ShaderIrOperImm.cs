@@ -1,12 +1,12 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    class ShaderIrOperImm : ShaderIrNode
+    internal class ShaderIrOperImm : ShaderIrNode
     {
         public int Value { get; private set; }
 
-        public ShaderIrOperImm(int Value)
+        public ShaderIrOperImm(int value)
         {
-            this.Value = Value;
+            this.Value = value;
         }
     }
 }

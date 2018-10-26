@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ChocolArm64.Decoder
 {
-    class ABlock
+    internal class ABlock
     {
         public long Position    { get; set; }
         public long EndPosition { get; set; }
@@ -17,17 +17,14 @@ namespace ChocolArm64.Decoder
             OpCodes = new List<AOpCode>();
         }
 
-        public ABlock(long Position) : this()
+        public ABlock(long position) : this()
         {
-            this.Position = Position;
+            this.Position = position;
         }
 
         public AOpCode GetLastOp()
         {
-            if (OpCodes.Count > 0)
-            {
-                return OpCodes[OpCodes.Count - 1];
-            }
+            if (OpCodes.Count > 0) return OpCodes[OpCodes.Count - 1];
 
             return null;
         }

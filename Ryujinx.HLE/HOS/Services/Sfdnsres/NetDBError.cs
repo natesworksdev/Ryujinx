@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Sfdnsres
 {
-    enum NetDBError
+    internal enum NetDBError
     {
         Internal = -1,
         Success,

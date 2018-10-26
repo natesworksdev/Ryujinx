@@ -2,27 +2,27 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
-    class AILLabel : IAILEmit
+    internal class AILLabel : IAilEmit
     {
-        private bool HasLabel;
+        private bool _hasLabel;
 
-        private Label Lbl;
+        private Label _lbl;
 
-        public void Emit(AILEmitter Context)
+        public void Emit(AILEmitter context)
         {
-            Context.Generator.MarkLabel(GetLabel(Context));
+            context.Generator.MarkLabel(GetLabel(context));
         }
 
-        public Label GetLabel(AILEmitter Context)
+        public Label GetLabel(AILEmitter context)
         {
-            if (!HasLabel)
+            if (!_hasLabel)
             {
-                Lbl = Context.Generator.DefineLabel();
+                _lbl = context.Generator.DefineLabel();
 
-                HasLabel = true;
+                _hasLabel = true;
             }
 
-            return Lbl;
+            return _lbl;
         }
     }
 }

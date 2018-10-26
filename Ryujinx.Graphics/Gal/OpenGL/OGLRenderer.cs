@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public IGalTexture Texture { get; private set; }
 
-        private ConcurrentQueue<Action> ActionsQueue;
+        private ConcurrentQueue<Action> _actionsQueue;
 
         public OGLRenderer()
         {
@@ -33,22 +33,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             Pipeline = new OGLPipeline(Buffer as OGLConstBuffer, Rasterizer as OGLRasterizer, Shader as OGLShader);
 
-            ActionsQueue = new ConcurrentQueue<Action>();
+            _actionsQueue = new ConcurrentQueue<Action>();
         }
 
-        public void QueueAction(Action ActionMthd)
+        public void QueueAction(Action actionMthd)
         {
-            ActionsQueue.Enqueue(ActionMthd);
+            _actionsQueue.Enqueue(actionMthd);
         }
 
         public void RunActions()
         {
-            int Count = ActionsQueue.Count;
+            int count = _actionsQueue.Count;
 
-            while (Count-- > 0 && ActionsQueue.TryDequeue(out Action RenderAction))
-            {
-                RenderAction();
-            }
+            while (count-- > 0 && _actionsQueue.TryDequeue(out Action renderAction)) renderAction();
         }
     }
 }

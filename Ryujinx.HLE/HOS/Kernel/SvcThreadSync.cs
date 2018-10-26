@@ -6,360 +6,337 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    partial class SvcHandler
+    internal partial class SvcHandler
     {
-        private void SvcWaitSynchronization(AThreadState ThreadState)
+        private void SvcWaitSynchronization(AThreadState threadState)
         {
-            long HandlesPtr   = (long)ThreadState.X1;
-            int  HandlesCount =  (int)ThreadState.X2;
-            long Timeout      = (long)ThreadState.X3;
+            long handlesPtr   = (long)threadState.X1;
+            int  handlesCount =  (int)threadState.X2;
+            long timeout      = (long)threadState.X3;
 
             Logger.PrintDebug(LogClass.KernelSvc,
-                "HandlesPtr = 0x"   + HandlesPtr  .ToString("x16") + ", " +
-                "HandlesCount = 0x" + HandlesCount.ToString("x8")  + ", " +
-                "Timeout = 0x"      + Timeout     .ToString("x16"));
+                "HandlesPtr = 0x"   + handlesPtr  .ToString("x16") + ", " +
+                "HandlesCount = 0x" + handlesCount.ToString("x8")  + ", " +
+                "Timeout = 0x"      + timeout     .ToString("x16"));
 
-            if ((uint)HandlesCount > 0x40)
+            if ((uint)handlesCount > 0x40)
             {
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.CountOutOfRange);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.CountOutOfRange);
 
                 return;
             }
 
-            List<KSynchronizationObject> SyncObjs = new List<KSynchronizationObject>();
+            List<KSynchronizationObject> syncObjs = new List<KSynchronizationObject>();
 
-            for (int Index = 0; Index < HandlesCount; Index++)
+            for (int index = 0; index < handlesCount; index++)
             {
-                int Handle = Memory.ReadInt32(HandlesPtr + Index * 4);
+                int handle = _memory.ReadInt32(handlesPtr + index * 4);
 
-                KSynchronizationObject SyncObj = Process.HandleTable.GetObject<KSynchronizationObject>(Handle);
+                KSynchronizationObject syncObj = _process.HandleTable.GetObject<KSynchronizationObject>(handle);
 
-                if (SyncObj == null)
-                {
-                    break;
-                }
+                if (syncObj == null) break;
 
-                SyncObjs.Add(SyncObj);
+                syncObjs.Add(syncObj);
             }
 
-            int HndIndex = (int)ThreadState.X1;
+            int hndIndex = (int)threadState.X1;
 
-            ulong High = ThreadState.X1 & (0xffffffffUL << 32);
+            ulong high = threadState.X1 & (0xffffffffUL << 32);
 
-            long Result = System.Synchronization.WaitFor(SyncObjs.ToArray(), Timeout, ref HndIndex);
+            long result = _system.Synchronization.WaitFor(syncObjs.ToArray(), timeout, ref hndIndex);
 
-            if (Result != 0)
+            if (result != 0)
             {
-                if (Result == MakeError(ErrorModule.Kernel, KernelErr.Timeout) ||
-                    Result == MakeError(ErrorModule.Kernel, KernelErr.Cancelled))
-                {
-                    Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-                }
+                if (result == MakeError(ErrorModule.Kernel, KernelErr.Timeout) ||
+                    result == MakeError(ErrorModule.Kernel, KernelErr.Cancelled))
+                    Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
                 else
-                {
-                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-                }
+                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
             }
 
-            ThreadState.X0 = (ulong)Result;
-            ThreadState.X1 = (uint)HndIndex | High;
+            threadState.X0 = (ulong)result;
+            threadState.X1 = (uint)hndIndex | high;
         }
 
-        private void SvcCancelSynchronization(AThreadState ThreadState)
+        private void SvcCancelSynchronization(AThreadState threadState)
         {
-            int ThreadHandle = (int)ThreadState.X0;
+            int threadHandle = (int)threadState.X0;
 
-            Logger.PrintDebug(LogClass.KernelSvc, "ThreadHandle = 0x" + ThreadHandle.ToString("x8"));
+            Logger.PrintDebug(LogClass.KernelSvc, "ThreadHandle = 0x" + threadHandle.ToString("x8"));
 
-            KThread Thread = Process.HandleTable.GetKThread(ThreadHandle);
+            KThread thread = _process.HandleTable.GetKThread(threadHandle);
 
-            if (Thread == null)
+            if (thread == null)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{ThreadHandle:x8}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{threadHandle:x8}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
                 return;
             }
 
-            Thread.CancelSynchronization();
+            thread.CancelSynchronization();
 
-            ThreadState.X0 = 0;
+            threadState.X0 = 0;
         }
 
-        private void SvcArbitrateLock(AThreadState ThreadState)
+        private void SvcArbitrateLock(AThreadState threadState)
         {
-            int  OwnerHandle     =  (int)ThreadState.X0;
-            long MutexAddress    = (long)ThreadState.X1;
-            int  RequesterHandle =  (int)ThreadState.X2;
+            int  ownerHandle     =  (int)threadState.X0;
+            long mutexAddress    = (long)threadState.X1;
+            int  requesterHandle =  (int)threadState.X2;
 
             Logger.PrintDebug(LogClass.KernelSvc,
-                "OwnerHandle = 0x"     + OwnerHandle    .ToString("x8")  + ", " +
-                "MutexAddress = 0x"    + MutexAddress   .ToString("x16") + ", " +
-                "RequesterHandle = 0x" + RequesterHandle.ToString("x8"));
+                "OwnerHandle = 0x"     + ownerHandle    .ToString("x8")  + ", " +
+                "MutexAddress = 0x"    + mutexAddress   .ToString("x16") + ", " +
+                "RequesterHandle = 0x" + requesterHandle.ToString("x8"));
 
-            if (IsPointingInsideKernel(MutexAddress))
+            if (IsPointingInsideKernel(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{mutexAddress:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            if (IsAddressNotWordAligned(MutexAddress))
+            if (IsAddressNotWordAligned(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{mutexAddress:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
                 return;
             }
 
-            long Result = System.AddressArbiter.ArbitrateLock(
-                Process,
-                Memory,
-                OwnerHandle,
-                MutexAddress,
-                RequesterHandle);
+            long result = _system.AddressArbiter.ArbitrateLock(
+                _process,
+                _memory,
+                ownerHandle,
+                mutexAddress,
+                requesterHandle);
 
-            if (Result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-            }
+            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
 
-            ThreadState.X0 = (ulong)Result;
+            threadState.X0 = (ulong)result;
         }
 
-        private void SvcArbitrateUnlock(AThreadState ThreadState)
+        private void SvcArbitrateUnlock(AThreadState threadState)
         {
-            long MutexAddress = (long)ThreadState.X0;
+            long mutexAddress = (long)threadState.X0;
 
-            Logger.PrintDebug(LogClass.KernelSvc, "MutexAddress = 0x" + MutexAddress.ToString("x16"));
+            Logger.PrintDebug(LogClass.KernelSvc, "MutexAddress = 0x" + mutexAddress.ToString("x16"));
 
-            if (IsPointingInsideKernel(MutexAddress))
+            if (IsPointingInsideKernel(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{mutexAddress:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            if (IsAddressNotWordAligned(MutexAddress))
+            if (IsAddressNotWordAligned(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{mutexAddress:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
                 return;
             }
 
-            long Result = System.AddressArbiter.ArbitrateUnlock(Memory, MutexAddress);
+            long result = _system.AddressArbiter.ArbitrateUnlock(_memory, mutexAddress);
 
-            if (Result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-            }
+            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
 
-            ThreadState.X0 = (ulong)Result;
+            threadState.X0 = (ulong)result;
         }
 
-        private void SvcWaitProcessWideKeyAtomic(AThreadState ThreadState)
+        private void SvcWaitProcessWideKeyAtomic(AThreadState threadState)
         {
-            long  MutexAddress   = (long)ThreadState.X0;
-            long  CondVarAddress = (long)ThreadState.X1;
-            int   ThreadHandle   =  (int)ThreadState.X2;
-            long  Timeout        = (long)ThreadState.X3;
+            long  mutexAddress   = (long)threadState.X0;
+            long  condVarAddress = (long)threadState.X1;
+            int   threadHandle   =  (int)threadState.X2;
+            long  timeout        = (long)threadState.X3;
 
             Logger.PrintDebug(LogClass.KernelSvc,
-                "MutexAddress = 0x"   + MutexAddress  .ToString("x16") + ", " +
-                "CondVarAddress = 0x" + CondVarAddress.ToString("x16") + ", " +
-                "ThreadHandle = 0x"   + ThreadHandle  .ToString("x8")  + ", " +
-                "Timeout = 0x"        + Timeout       .ToString("x16"));
+                "MutexAddress = 0x"   + mutexAddress  .ToString("x16") + ", " +
+                "CondVarAddress = 0x" + condVarAddress.ToString("x16") + ", " +
+                "ThreadHandle = 0x"   + threadHandle  .ToString("x8")  + ", " +
+                "Timeout = 0x"        + timeout       .ToString("x16"));
 
-            if (IsPointingInsideKernel(MutexAddress))
+            if (IsPointingInsideKernel(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{mutexAddress:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            if (IsAddressNotWordAligned(MutexAddress))
+            if (IsAddressNotWordAligned(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{MutexAddress:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{mutexAddress:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
                 return;
             }
 
-            long Result = System.AddressArbiter.WaitProcessWideKeyAtomic(
-                Memory,
-                MutexAddress,
-                CondVarAddress,
-                ThreadHandle,
-                Timeout);
+            long result = _system.AddressArbiter.WaitProcessWideKeyAtomic(
+                _memory,
+                mutexAddress,
+                condVarAddress,
+                threadHandle,
+                timeout);
 
-            if (Result != 0)
+            if (result != 0)
             {
-                if (Result == MakeError(ErrorModule.Kernel, KernelErr.Timeout))
-                {
-                    Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-                }
+                if (result == MakeError(ErrorModule.Kernel, KernelErr.Timeout))
+                    Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
                 else
-                {
-                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-                }
+                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
             }
 
-            ThreadState.X0 = (ulong)Result;
+            threadState.X0 = (ulong)result;
         }
 
-        private void SvcSignalProcessWideKey(AThreadState ThreadState)
+        private void SvcSignalProcessWideKey(AThreadState threadState)
         {
-            long Address = (long)ThreadState.X0;
-            int  Count   =  (int)ThreadState.X1;
+            long address = (long)threadState.X0;
+            int  count   =  (int)threadState.X1;
 
             Logger.PrintDebug(LogClass.KernelSvc,
-                "Address = 0x" + Address.ToString("x16") + ", " +
-                "Count = 0x"   + Count  .ToString("x8"));
+                "Address = 0x" + address.ToString("x16") + ", " +
+                "Count = 0x"   + count  .ToString("x8"));
 
-            System.AddressArbiter.SignalProcessWideKey(Process, Memory, Address, Count);
+            _system.AddressArbiter.SignalProcessWideKey(_process, _memory, address, count);
 
-            ThreadState.X0 = 0;
+            threadState.X0 = 0;
         }
 
-        private void SvcWaitForAddress(AThreadState ThreadState)
+        private void SvcWaitForAddress(AThreadState threadState)
         {
-            long            Address =            (long)ThreadState.X0;
-            ArbitrationType Type    = (ArbitrationType)ThreadState.X1;
-            int             Value   =             (int)ThreadState.X2;
-            long            Timeout =            (long)ThreadState.X3;
+            long            address =            (long)threadState.X0;
+            ArbitrationType type    = (ArbitrationType)threadState.X1;
+            int             value   =             (int)threadState.X2;
+            long            timeout =            (long)threadState.X3;
 
             Logger.PrintDebug(LogClass.KernelSvc,
-                "Address = 0x" + Address.ToString("x16") + ", " +
-                "Type = "      + Type   .ToString()      + ", " +
-                "Value = 0x"   + Value  .ToString("x8")  + ", " +
-                "Timeout = 0x" + Timeout.ToString("x16"));
+                "Address = 0x" + address.ToString("x16") + ", " +
+                "Type = "      + type   .ToString()      + ", " +
+                "Value = 0x"   + value  .ToString("x8")  + ", " +
+                "Timeout = 0x" + timeout.ToString("x16"));
 
-            if (IsPointingInsideKernel(Address))
+            if (IsPointingInsideKernel(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{address:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            if (IsAddressNotWordAligned(Address))
+            if (IsAddressNotWordAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{address:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
                 return;
             }
 
-            long Result;
+            long result;
 
-            switch (Type)
+            switch (type)
             {
                 case ArbitrationType.WaitIfLessThan:
-                    Result = System.AddressArbiter.WaitForAddressIfLessThan(Memory, Address, Value, false, Timeout);
+                    result = _system.AddressArbiter.WaitForAddressIfLessThan(_memory, address, value, false, timeout);
                     break;
 
                 case ArbitrationType.DecrementAndWaitIfLessThan:
-                    Result = System.AddressArbiter.WaitForAddressIfLessThan(Memory, Address, Value, true, Timeout);
+                    result = _system.AddressArbiter.WaitForAddressIfLessThan(_memory, address, value, true, timeout);
                     break;
 
                 case ArbitrationType.WaitIfEqual:
-                    Result = System.AddressArbiter.WaitForAddressIfEqual(Memory, Address, Value, Timeout);
+                    result = _system.AddressArbiter.WaitForAddressIfEqual(_memory, address, value, timeout);
                     break;
 
                 default:
-                    Result = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
+                    result = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
                     break;
             }
 
-            if (Result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-            }
+            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
 
-            ThreadState.X0 = (ulong)Result;
+            threadState.X0 = (ulong)result;
         }
 
-        private void SvcSignalToAddress(AThreadState ThreadState)
+        private void SvcSignalToAddress(AThreadState threadState)
         {
-            long       Address =       (long)ThreadState.X0;
-            SignalType Type    = (SignalType)ThreadState.X1;
-            int        Value   =        (int)ThreadState.X2;
-            int        Count   =        (int)ThreadState.X3;
+            long       address =       (long)threadState.X0;
+            SignalType type    = (SignalType)threadState.X1;
+            int        value   =        (int)threadState.X2;
+            int        count   =        (int)threadState.X3;
 
             Logger.PrintDebug(LogClass.KernelSvc,
-                "Address = 0x" + Address.ToString("x16") + ", " +
-                "Type = "      + Type   .ToString()      + ", " +
-                "Value = 0x"   + Value  .ToString("x8")  + ", " +
-                "Count = 0x"   + Count  .ToString("x8"));
+                "Address = 0x" + address.ToString("x16") + ", " +
+                "Type = "      + type   .ToString()      + ", " +
+                "Value = 0x"   + value  .ToString("x8")  + ", " +
+                "Count = 0x"   + count  .ToString("x8"));
 
-            if (IsPointingInsideKernel(Address))
+            if (IsPointingInsideKernel(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{Address:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{address:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            if (IsAddressNotWordAligned(Address))
+            if (IsAddressNotWordAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{Address:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{address:x16}!");
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
+                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
                 return;
             }
 
-            long Result;
+            long result;
 
-            switch (Type)
+            switch (type)
             {
                 case SignalType.Signal:
-                    Result = System.AddressArbiter.Signal(Address, Count);
+                    result = _system.AddressArbiter.Signal(address, count);
                     break;
 
                 case SignalType.SignalAndIncrementIfEqual:
-                    Result = System.AddressArbiter.SignalAndIncrementIfEqual(Memory, Address, Value, Count);
+                    result = _system.AddressArbiter.SignalAndIncrementIfEqual(_memory, address, value, count);
                     break;
 
                 case SignalType.SignalAndModifyIfEqual:
-                    Result = System.AddressArbiter.SignalAndModifyIfEqual(Memory, Address, Value, Count);
+                    result = _system.AddressArbiter.SignalAndModifyIfEqual(_memory, address, value, count);
                     break;
 
                 default:
-                    Result = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
+                    result = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
                     break;
             }
 
-            if (Result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-            }
+            if (result != 0) Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
 
-            ThreadState.X0 = (ulong)Result;
+            threadState.X0 = (ulong)result;
         }
 
-        private bool IsPointingInsideKernel(long Address)
+        private bool IsPointingInsideKernel(long address)
         {
-            return ((ulong)Address + 0x1000000000) < 0xffffff000;
+            return (ulong)address + 0x1000000000 < 0xffffff000;
         }
 
-        private bool IsAddressNotWordAligned(long Address)
+        private bool IsAddressNotWordAligned(long address)
         {
-            return (Address & 3) != 0;
+            return (address & 3) != 0;
         }
     }
 }

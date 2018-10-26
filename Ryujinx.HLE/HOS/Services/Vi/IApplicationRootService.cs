@@ -3,25 +3,25 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
-    class IApplicationRootService : IpcService
+    internal class IApplicationRootService : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
         public IApplicationRootService()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, GetDisplayService }
             };
         }
 
-        public long GetDisplayService(ServiceCtx Context)
+        public long GetDisplayService(ServiceCtx context)
         {
-            int ServiceType = Context.RequestData.ReadInt32();
+            int serviceType = context.RequestData.ReadInt32();
 
-            MakeObject(Context, new IApplicationDisplayService());
+            MakeObject(context, new IApplicationDisplayService());
 
             return 0;
         }

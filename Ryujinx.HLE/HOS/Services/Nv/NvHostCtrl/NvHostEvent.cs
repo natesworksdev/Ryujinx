@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 {
-    class NvHostEvent
+    internal class NvHostEvent
     {
         public int Id;
         public int Thresh;

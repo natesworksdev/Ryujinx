@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLShader : IGalShader
+    internal class OGLShader : IGalShader
     {
         public const int ReservedCbufCount = 1;
 
@@ -15,144 +15,125 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLShaderProgram Current;
 
-        private ConcurrentDictionary<long, OGLShaderStage> Stages;
+        private ConcurrentDictionary<long, OGLShaderStage> _stages;
 
-        private Dictionary<OGLShaderProgram, int> Programs;
+        private Dictionary<OGLShaderProgram, int> _programs;
 
         public int CurrentProgramHandle { get; private set; }
 
-        private OGLConstBuffer Buffer;
+        private OGLConstBuffer _buffer;
 
-        private int ExtraUboHandle;
+        private int _extraUboHandle;
 
-        public OGLShader(OGLConstBuffer Buffer)
+        public OGLShader(OGLConstBuffer buffer)
         {
-            this.Buffer = Buffer;
+            this._buffer = buffer;
 
-            Stages = new ConcurrentDictionary<long, OGLShaderStage>();
+            _stages = new ConcurrentDictionary<long, OGLShaderStage>();
 
-            Programs = new Dictionary<OGLShaderProgram, int>();
+            _programs = new Dictionary<OGLShaderProgram, int>();
         }
 
-        public void Create(IGalMemory Memory, long Key, GalShaderType Type)
+        public void Create(IGalMemory memory, long key, GalShaderType type)
         {
-            Stages.GetOrAdd(Key, (Stage) => ShaderStageFactory(Memory, Key, 0, false, Type));
+            _stages.GetOrAdd(key, (stage) => ShaderStageFactory(memory, key, 0, false, type));
         }
 
-        public void Create(IGalMemory Memory, long VpAPos, long Key, GalShaderType Type)
+        public void Create(IGalMemory memory, long vpAPos, long key, GalShaderType type)
         {
-            Stages.GetOrAdd(Key, (Stage) => ShaderStageFactory(Memory, VpAPos, Key, true, Type));
+            _stages.GetOrAdd(key, (stage) => ShaderStageFactory(memory, vpAPos, key, true, type));
         }
 
         private OGLShaderStage ShaderStageFactory(
-            IGalMemory    Memory,
-            long          Position,
-            long          PositionB,
-            bool          IsDualVp,
-            GalShaderType Type)
+            IGalMemory    memory,
+            long          position,
+            long          positionB,
+            bool          isDualVp,
+            GalShaderType type)
         {
-            GlslProgram Program;
+            GlslProgram program;
 
-            GlslDecompiler Decompiler = new GlslDecompiler();
+            GlslDecompiler decompiler = new GlslDecompiler();
 
-            int ShaderDumpIndex = ShaderDumper.DumpIndex;
+            int shaderDumpIndex = ShaderDumper.DumpIndex;
 
-            if (IsDualVp)
+            if (isDualVp)
             {
-                ShaderDumper.Dump(Memory, Position,  Type, "a");
-                ShaderDumper.Dump(Memory, PositionB, Type, "b");
+                ShaderDumper.Dump(memory, position,  type, "a");
+                ShaderDumper.Dump(memory, positionB, type, "b");
 
-                Program = Decompiler.Decompile(Memory, Position, PositionB, Type);
+                program = decompiler.Decompile(memory, position, positionB, type);
             }
             else
             {
-                ShaderDumper.Dump(Memory, Position, Type);
+                ShaderDumper.Dump(memory, position, type);
 
-                Program = Decompiler.Decompile(Memory, Position, Type);
+                program = decompiler.Decompile(memory, position, type);
             }
 
-            string Code = Program.Code;
+            string code = program.Code;
 
-            if (ShaderDumper.IsDumpEnabled())
-            {
-                Code = "//Shader " + ShaderDumpIndex + Environment.NewLine + Code;
-            }
+            if (ShaderDumper.IsDumpEnabled()) code = "//Shader " + shaderDumpIndex + Environment.NewLine + code;
 
-            return new OGLShaderStage(Type, Code, Program.Uniforms, Program.Textures);
+            return new OGLShaderStage(type, code, program.Uniforms, program.Textures);
         }
 
-        public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long Key)
+        public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long key)
         {
-            if (Stages.TryGetValue(Key, out OGLShaderStage Stage))
-            {
-                return Stage.ConstBufferUsage;
-            }
+            if (_stages.TryGetValue(key, out OGLShaderStage stage)) return stage.ConstBufferUsage;
 
             return Enumerable.Empty<ShaderDeclInfo>();
         }
 
-        public IEnumerable<ShaderDeclInfo> GetTextureUsage(long Key)
+        public IEnumerable<ShaderDeclInfo> GetTextureUsage(long key)
         {
-            if (Stages.TryGetValue(Key, out OGLShaderStage Stage))
-            {
-                return Stage.TextureUsage;
-            }
+            if (_stages.TryGetValue(key, out OGLShaderStage stage)) return stage.TextureUsage;
 
             return Enumerable.Empty<ShaderDeclInfo>();
         }
 
-        public unsafe void SetExtraData(float FlipX, float FlipY, int Instance)
+        public unsafe void SetExtraData(float flipX, float flipY, int instance)
         {
             BindProgram();
 
             EnsureExtraBlock();
 
-            GL.BindBuffer(BufferTarget.UniformBuffer, ExtraUboHandle);
+            GL.BindBuffer(BufferTarget.UniformBuffer, _extraUboHandle);
 
-            float* Data = stackalloc float[ExtraDataSize];
-            Data[0] = FlipX;
-            Data[1] = FlipY;
-            Data[2] = BitConverter.Int32BitsToSingle(Instance);
+            float* data = stackalloc float[ExtraDataSize];
+            data[0] = flipX;
+            data[1] = flipY;
+            data[2] = BitConverter.Int32BitsToSingle(instance);
 
             //Invalidate buffer
             GL.BufferData(BufferTarget.UniformBuffer, ExtraDataSize * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
-            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, ExtraDataSize * sizeof(float), (IntPtr)Data);
+            GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, ExtraDataSize * sizeof(float), (IntPtr)data);
         }
 
-        public void Bind(long Key)
+        public void Bind(long key)
         {
-            if (Stages.TryGetValue(Key, out OGLShaderStage Stage))
+            if (_stages.TryGetValue(key, out OGLShaderStage stage)) Bind(stage);
+        }
+
+        private void Bind(OGLShaderStage stage)
+        {
+            if (stage.Type == GalShaderType.Geometry)
+                if (!OGLExtension.EnhancedLayouts) return;
+
+            switch (stage.Type)
             {
-                Bind(Stage);
+                case GalShaderType.Vertex:         Current.Vertex         = stage; break;
+                case GalShaderType.TessControl:    Current.TessControl    = stage; break;
+                case GalShaderType.TessEvaluation: Current.TessEvaluation = stage; break;
+                case GalShaderType.Geometry:       Current.Geometry       = stage; break;
+                case GalShaderType.Fragment:       Current.Fragment       = stage; break;
             }
         }
 
-        private void Bind(OGLShaderStage Stage)
+        public void Unbind(GalShaderType type)
         {
-            if (Stage.Type == GalShaderType.Geometry)
-            {
-                //Enhanced layouts are required for Geometry shaders
-                //skip this stage if current driver has no ARB_enhanced_layouts
-                if (!OGLExtension.EnhancedLayouts)
-                {
-                    return;
-                }
-            }
-
-            switch (Stage.Type)
-            {
-                case GalShaderType.Vertex:         Current.Vertex         = Stage; break;
-                case GalShaderType.TessControl:    Current.TessControl    = Stage; break;
-                case GalShaderType.TessEvaluation: Current.TessEvaluation = Stage; break;
-                case GalShaderType.Geometry:       Current.Geometry       = Stage; break;
-                case GalShaderType.Fragment:       Current.Fragment       = Stage; break;
-            }
-        }
-
-        public void Unbind(GalShaderType Type)
-        {
-            switch (Type)
+            switch (type)
             {
                 case GalShaderType.Vertex:         Current.Vertex         = null; break;
                 case GalShaderType.TessControl:    Current.TessControl    = null; break;
@@ -166,86 +147,78 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (Current.Vertex   == null ||
                 Current.Fragment == null)
-            {
                 return;
-            }
 
-            if (!Programs.TryGetValue(Current, out int Handle))
+            if (!_programs.TryGetValue(Current, out int handle))
             {
-                Handle = GL.CreateProgram();
+                handle = GL.CreateProgram();
 
-                AttachIfNotNull(Handle, Current.Vertex);
-                AttachIfNotNull(Handle, Current.TessControl);
-                AttachIfNotNull(Handle, Current.TessEvaluation);
-                AttachIfNotNull(Handle, Current.Geometry);
-                AttachIfNotNull(Handle, Current.Fragment);
+                AttachIfNotNull(handle, Current.Vertex);
+                AttachIfNotNull(handle, Current.TessControl);
+                AttachIfNotNull(handle, Current.TessEvaluation);
+                AttachIfNotNull(handle, Current.Geometry);
+                AttachIfNotNull(handle, Current.Fragment);
 
-                GL.LinkProgram(Handle);
+                GL.LinkProgram(handle);
 
-                CheckProgramLink(Handle);
+                CheckProgramLink(handle);
 
-                BindUniformBlocks(Handle);
-                BindTextureLocations(Handle);
+                BindUniformBlocks(handle);
+                BindTextureLocations(handle);
 
-                Programs.Add(Current, Handle);
+                _programs.Add(Current, handle);
             }
 
-            GL.UseProgram(Handle);
+            GL.UseProgram(handle);
 
-            CurrentProgramHandle = Handle;
+            CurrentProgramHandle = handle;
         }
 
         private void EnsureExtraBlock()
         {
-            if (ExtraUboHandle == 0)
+            if (_extraUboHandle == 0)
             {
-                ExtraUboHandle = GL.GenBuffer();
+                _extraUboHandle = GL.GenBuffer();
 
-                GL.BindBuffer(BufferTarget.UniformBuffer, ExtraUboHandle);
+                GL.BindBuffer(BufferTarget.UniformBuffer, _extraUboHandle);
 
                 GL.BufferData(BufferTarget.UniformBuffer, ExtraDataSize * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
-                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, ExtraUboHandle);
+                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, _extraUboHandle);
             }
         }
 
-        private void AttachIfNotNull(int ProgramHandle, OGLShaderStage Stage)
+        private void AttachIfNotNull(int programHandle, OGLShaderStage stage)
         {
-            if (Stage != null)
+            if (stage != null)
             {
-                Stage.Compile();
+                stage.Compile();
 
-                GL.AttachShader(ProgramHandle, Stage.Handle);
+                GL.AttachShader(programHandle, stage.Handle);
             }
         }
 
-        private void BindUniformBlocks(int ProgramHandle)
+        private void BindUniformBlocks(int programHandle)
         {
-            int ExtraBlockindex = GL.GetUniformBlockIndex(ProgramHandle, GlslDecl.ExtraUniformBlockName);
+            int extraBlockindex = GL.GetUniformBlockIndex(programHandle, GlslDecl.ExtraUniformBlockName);
 
-            GL.UniformBlockBinding(ProgramHandle, ExtraBlockindex, 0);
+            GL.UniformBlockBinding(programHandle, extraBlockindex, 0);
 
-            int FreeBinding = ReservedCbufCount;
+            int freeBinding = ReservedCbufCount;
 
-            void BindUniformBlocksIfNotNull(OGLShaderStage Stage)
+            void BindUniformBlocksIfNotNull(OGLShaderStage stage)
             {
-                if (Stage != null)
-                {
-                    foreach (ShaderDeclInfo DeclInfo in Stage.ConstBufferUsage)
+                if (stage != null)
+                    foreach (ShaderDeclInfo declInfo in stage.ConstBufferUsage)
                     {
-                        int BlockIndex = GL.GetUniformBlockIndex(ProgramHandle, DeclInfo.Name);
+                        int blockIndex = GL.GetUniformBlockIndex(programHandle, declInfo.Name);
 
-                        if (BlockIndex < 0)
-                        {
-                            //It is expected that its found, if it's not then driver might be in a malfunction
-                            throw new InvalidOperationException();
-                        }
+                        if (blockIndex < 0) throw new InvalidOperationException();
 
-                        GL.UniformBlockBinding(ProgramHandle, BlockIndex, FreeBinding);
+                        GL.UniformBlockBinding(programHandle, blockIndex, freeBinding);
 
-                        FreeBinding++;
+                        freeBinding++;
                     }
-                }
             }
 
             BindUniformBlocksIfNotNull(Current.Vertex);
@@ -255,26 +228,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             BindUniformBlocksIfNotNull(Current.Fragment);
         }
 
-        private void BindTextureLocations(int ProgramHandle)
+        private void BindTextureLocations(int programHandle)
         {
-            int Index = 0;
+            int index = 0;
 
-            void BindTexturesIfNotNull(OGLShaderStage Stage)
+            void BindTexturesIfNotNull(OGLShaderStage stage)
             {
-                if (Stage != null)
-                {
-                    foreach (ShaderDeclInfo Decl in Stage.TextureUsage)
+                if (stage != null)
+                    foreach (ShaderDeclInfo decl in stage.TextureUsage)
                     {
-                        int Location = GL.GetUniformLocation(ProgramHandle, Decl.Name);
+                        int location = GL.GetUniformLocation(programHandle, decl.Name);
 
-                        GL.Uniform1(Location, Index);
+                        GL.Uniform1(location, index);
 
-                        Index++;
+                        index++;
                     }
-                }
             }
 
-            GL.UseProgram(ProgramHandle);
+            GL.UseProgram(programHandle);
 
             BindTexturesIfNotNull(Current.Vertex);
             BindTexturesIfNotNull(Current.TessControl);
@@ -283,16 +254,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             BindTexturesIfNotNull(Current.Fragment);
         }
 
-        private static void CheckProgramLink(int Handle)
+        private static void CheckProgramLink(int handle)
         {
-            int Status = 0;
+            int status = 0;
 
-            GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out Status);
+            GL.GetProgram(handle, GetProgramParameterName.LinkStatus, out status);
 
-            if (Status == 0)
-            {
-                throw new ShaderException(GL.GetProgramInfoLog(Handle));
-            }
+            if (status == 0) throw new ShaderException(GL.GetProgramInfoLog(handle));
         }
     }
 }

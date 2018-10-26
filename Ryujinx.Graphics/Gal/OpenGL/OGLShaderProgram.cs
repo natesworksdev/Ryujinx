@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    struct OGLShaderProgram
+    internal struct OGLShaderProgram
     {
         public OGLShaderStage Vertex;
         public OGLShaderStage TessControl;
@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public OGLShaderStage Fragment;
     }
 
-    class OGLShaderStage : IDisposable
+    internal class OGLShaderStage : IDisposable
     {
         public int Handle { get; private set; }
 
@@ -27,15 +27,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public IEnumerable<ShaderDeclInfo> TextureUsage     { get; private set; }
 
         public OGLShaderStage(
-            GalShaderType               Type,
-            string                      Code,
-            IEnumerable<ShaderDeclInfo> ConstBufferUsage,
-            IEnumerable<ShaderDeclInfo> TextureUsage)
+            GalShaderType               type,
+            string                      code,
+            IEnumerable<ShaderDeclInfo> constBufferUsage,
+            IEnumerable<ShaderDeclInfo> textureUsage)
         {
-            this.Type             = Type;
-            this.Code             = Code;
-            this.ConstBufferUsage = ConstBufferUsage;
-            this.TextureUsage     = TextureUsage;
+            this.Type             = type;
+            this.Code             = code;
+            this.ConstBufferUsage = constBufferUsage;
+            this.TextureUsage     = textureUsage;
         }
 
         public void Compile()
@@ -53,9 +53,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing && Handle != 0)
+            if (disposing && Handle != 0)
             {
                 GL.DeleteShader(Handle);
 
@@ -63,24 +63,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public static void CompileAndCheck(int Handle, string Code)
+        public static void CompileAndCheck(int handle, string code)
         {
-            GL.ShaderSource(Handle, Code);
-            GL.CompileShader(Handle);
+            GL.ShaderSource(handle, code);
+            GL.CompileShader(handle);
 
-            CheckCompilation(Handle);
+            CheckCompilation(handle);
         }
 
-        private static void CheckCompilation(int Handle)
+        private static void CheckCompilation(int handle)
         {
-            int Status = 0;
+            int status = 0;
 
-            GL.GetShader(Handle, ShaderParameter.CompileStatus, out Status);
+            GL.GetShader(handle, ShaderParameter.CompileStatus, out status);
 
-            if (Status == 0)
-            {
-                throw new ShaderException(GL.GetShaderInfoLog(Handle));
-            }
+            if (status == 0) throw new ShaderException(GL.GetShaderInfoLog(handle));
         }
     }
 }

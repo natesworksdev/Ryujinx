@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
         private enum CselOperation
         {
@@ -14,45 +14,60 @@ namespace ChocolArm64.Instruction
             Negate
         }
 
-        public static void Csel(AILEmitterCtx Context)  => EmitCsel(Context, CselOperation.None);
-        public static void Csinc(AILEmitterCtx Context) => EmitCsel(Context, CselOperation.Increment);
-        public static void Csinv(AILEmitterCtx Context) => EmitCsel(Context, CselOperation.Invert);
-        public static void Csneg(AILEmitterCtx Context) => EmitCsel(Context, CselOperation.Negate);
-
-        private static void EmitCsel(AILEmitterCtx Context, CselOperation CselOp)
+        public static void Csel(AILEmitterCtx context)
         {
-            AOpCodeCsel Op = (AOpCodeCsel)Context.CurrOp;
+            EmitCsel(context, CselOperation.None);
+        }
 
-            AILLabel LblTrue = new AILLabel();
-            AILLabel LblEnd  = new AILLabel();
+        public static void Csinc(AILEmitterCtx context)
+        {
+            EmitCsel(context, CselOperation.Increment);
+        }
 
-            Context.EmitCondBranch(LblTrue, Op.Cond);
-            Context.EmitLdintzr(Op.Rm);
+        public static void Csinv(AILEmitterCtx context)
+        {
+            EmitCsel(context, CselOperation.Invert);
+        }
 
-            if (CselOp == CselOperation.Increment)
+        public static void Csneg(AILEmitterCtx context)
+        {
+            EmitCsel(context, CselOperation.Negate);
+        }
+
+        private static void EmitCsel(AILEmitterCtx context, CselOperation cselOp)
+        {
+            AOpCodeCsel op = (AOpCodeCsel)context.CurrOp;
+
+            AILLabel lblTrue = new AILLabel();
+            AILLabel lblEnd  = new AILLabel();
+
+            context.EmitCondBranch(lblTrue, op.Cond);
+            context.EmitLdintzr(op.Rm);
+
+            if (cselOp == CselOperation.Increment)
             {
-                Context.EmitLdc_I(1);
+                context.EmitLdc_I(1);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
             }
-            else if (CselOp == CselOperation.Invert)
+            else if (cselOp == CselOperation.Invert)
             {
-                Context.Emit(OpCodes.Not);
+                context.Emit(OpCodes.Not);
             }
-            else if (CselOp == CselOperation.Negate)
+            else if (cselOp == CselOperation.Negate)
             {
-                Context.Emit(OpCodes.Neg);
+                context.Emit(OpCodes.Neg);
             }
 
-            Context.Emit(OpCodes.Br_S, LblEnd);
+            context.Emit(OpCodes.Br_S, lblEnd);
 
-            Context.MarkLabel(LblTrue);
+            context.MarkLabel(lblTrue);
 
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdintzr(op.Rn);
 
-            Context.MarkLabel(LblEnd);
+            context.MarkLabel(lblEnd);
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
     }
 }

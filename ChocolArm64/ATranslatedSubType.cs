@@ -1,6 +1,6 @@
 namespace ChocolArm64
 {
-    enum ATranslatedSubType
+    internal enum ATranslatedSubType
     {
         SubTier0,
         SubTier1

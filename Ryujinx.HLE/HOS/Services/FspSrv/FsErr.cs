@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
-    static class FsErr
+    internal static class FsErr
     {
         public const int PathDoesNotExist  = 1;
         public const int PathAlreadyExists = 2;

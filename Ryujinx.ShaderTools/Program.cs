@@ -5,32 +5,32 @@ using System.IO;
 
 namespace Ryujinx.ShaderTools
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             if (args.Length == 2)
             {
-                GlslDecompiler Decompiler = new GlslDecompiler();
+                GlslDecompiler decompiler = new GlslDecompiler();
 
-                GalShaderType ShaderType = GalShaderType.Vertex;
+                GalShaderType shaderType = GalShaderType.Vertex;
 
                 switch (args[0].ToLower())
                 {
-                    case "v":  ShaderType = GalShaderType.Vertex;         break;
-                    case "tc": ShaderType = GalShaderType.TessControl;    break;
-                    case "te": ShaderType = GalShaderType.TessEvaluation; break;
-                    case "g":  ShaderType = GalShaderType.Geometry;       break;
-                    case "f":  ShaderType = GalShaderType.Fragment;       break;
+                    case "v":  shaderType = GalShaderType.Vertex;         break;
+                    case "tc": shaderType = GalShaderType.TessControl;    break;
+                    case "te": shaderType = GalShaderType.TessEvaluation; break;
+                    case "g":  shaderType = GalShaderType.Geometry;       break;
+                    case "f":  shaderType = GalShaderType.Fragment;       break;
                 }
 
-                using (FileStream FS = new FileStream(args[1], FileMode.Open, FileAccess.Read))
+                using (FileStream fs = new FileStream(args[1], FileMode.Open, FileAccess.Read))
                 {
-                    Memory Mem = new Memory(FS);
+                    Memory mem = new Memory(fs);
 
-                    GlslProgram Program = Decompiler.Decompile(Mem, 0, ShaderType);
+                    GlslProgram program = decompiler.Decompile(mem, 0, shaderType);
 
-                    Console.WriteLine(Program.Code);
+                    Console.WriteLine(program.Code);
                 }
             }
             else

@@ -5,204 +5,205 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
-        public static void Bfm(AILEmitterCtx Context)
+        public static void Bfm(AILEmitterCtx context)
         {
-            AOpCodeBfm Op = (AOpCodeBfm)Context.CurrOp;
+            AOpCodeBfm op = (AOpCodeBfm)context.CurrOp;
 
-            EmitBfmLoadRn(Context);
+            EmitBfmLoadRn(context);
 
-            Context.EmitLdintzr(Op.Rd);
-            Context.EmitLdc_I(~Op.WMask & Op.TMask);
+            context.EmitLdintzr(op.Rd);
+            context.EmitLdc_I(~op.WMask & op.Mask);
 
-            Context.Emit(OpCodes.And);
-            Context.Emit(OpCodes.Or);
+            context.Emit(OpCodes.And);
+            context.Emit(OpCodes.Or);
 
-            Context.EmitLdintzr(Op.Rd);
-            Context.EmitLdc_I(~Op.TMask);
+            context.EmitLdintzr(op.Rd);
+            context.EmitLdc_I(~op.Mask);
 
-            Context.Emit(OpCodes.And);
-            Context.Emit(OpCodes.Or);
+            context.Emit(OpCodes.And);
+            context.Emit(OpCodes.Or);
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        public static void Sbfm(AILEmitterCtx Context)
+        public static void Sbfm(AILEmitterCtx context)
         {
-            AOpCodeBfm Op = (AOpCodeBfm)Context.CurrOp;
+            AOpCodeBfm op = (AOpCodeBfm)context.CurrOp;
 
-            int BitsCount = Op.GetBitsCount();
+            int bitsCount = op.GetBitsCount();
 
-            if (Op.Pos + 1 == BitsCount)
+            if (op.Pos + 1 == bitsCount)
             {
-                EmitSbfmShift(Context);
+                EmitSbfmShift(context);
             }
-            else if (Op.Pos < Op.Shift)
+            else if (op.Pos < op.Shift)
             {
-                EmitSbfiz(Context);
+                EmitSbfiz(context);
             }
-            else if (Op.Pos == 7 && Op.Shift == 0)
+            else if (op.Pos == 7 && op.Shift == 0)
             {
-                EmitSbfmCast(Context, OpCodes.Conv_I1);
+                EmitSbfmCast(context, OpCodes.Conv_I1);
             }
-            else if (Op.Pos == 15 && Op.Shift == 0)
+            else if (op.Pos == 15 && op.Shift == 0)
             {
-                EmitSbfmCast(Context, OpCodes.Conv_I2);
+                EmitSbfmCast(context, OpCodes.Conv_I2);
             }
-            else if (Op.Pos == 31 && Op.Shift == 0)
+            else if (op.Pos == 31 && op.Shift == 0)
             {
-                EmitSbfmCast(Context, OpCodes.Conv_I4);
+                EmitSbfmCast(context, OpCodes.Conv_I4);
             }
             else
             {
-                EmitBfmLoadRn(Context);
+                EmitBfmLoadRn(context);
 
-                Context.EmitLdintzr(Op.Rn);
+                context.EmitLdintzr(op.Rn);
 
-                Context.EmitLsl(BitsCount - 1 - Op.Pos);
-                Context.EmitAsr(BitsCount - 1);
+                context.EmitLsl(bitsCount - 1 - op.Pos);
+                context.EmitAsr(bitsCount - 1);
 
-                Context.EmitLdc_I(~Op.TMask);
+                context.EmitLdc_I(~op.Mask);
 
-                Context.Emit(OpCodes.And);
-                Context.Emit(OpCodes.Or);
+                context.Emit(OpCodes.And);
+                context.Emit(OpCodes.Or);
 
-                Context.EmitStintzr(Op.Rd);
+                context.EmitStintzr(op.Rd);
             }
         }
 
-        public static void Ubfm(AILEmitterCtx Context)
+        public static void Ubfm(AILEmitterCtx context)
         {
-            AOpCodeBfm Op = (AOpCodeBfm)Context.CurrOp;
+            AOpCodeBfm op = (AOpCodeBfm)context.CurrOp;
 
-            if (Op.Pos + 1 == Op.GetBitsCount())
+            if (op.Pos + 1 == op.GetBitsCount())
             {
-                EmitUbfmShift(Context);
+                EmitUbfmShift(context);
             }
-            else if (Op.Pos < Op.Shift)
+            else if (op.Pos < op.Shift)
             {
-                EmitUbfiz(Context);
+                EmitUbfiz(context);
             }
-            else if (Op.Pos + 1 == Op.Shift)
+            else if (op.Pos + 1 == op.Shift)
             {
-                EmitBfmLsl(Context);
+                EmitBfmLsl(context);
             }
-            else if (Op.Pos == 7 && Op.Shift == 0)
+            else if (op.Pos == 7 && op.Shift == 0)
             {
-                EmitUbfmCast(Context, OpCodes.Conv_U1);
+                EmitUbfmCast(context, OpCodes.Conv_U1);
             }
-            else if (Op.Pos == 15 && Op.Shift == 0)
+            else if (op.Pos == 15 && op.Shift == 0)
             {
-                EmitUbfmCast(Context, OpCodes.Conv_U2);
+                EmitUbfmCast(context, OpCodes.Conv_U2);
             }
             else
             {
-                EmitBfmLoadRn(Context);
+                EmitBfmLoadRn(context);
 
-                Context.EmitStintzr(Op.Rd);
+                context.EmitStintzr(op.Rd);
             }
         }
 
-        private static void EmitSbfiz(AILEmitterCtx Context) => EmitBfiz(Context, true);
-        private static void EmitUbfiz(AILEmitterCtx Context) => EmitBfiz(Context, false);
-
-        private static void EmitBfiz(AILEmitterCtx Context, bool Signed)
+        private static void EmitSbfiz(AILEmitterCtx context)
         {
-            AOpCodeBfm Op = (AOpCodeBfm)Context.CurrOp;
+            EmitBfiz(context, true);
+        }
 
-            int Width = Op.Pos + 1;
+        private static void EmitUbfiz(AILEmitterCtx context)
+        {
+            EmitBfiz(context, false);
+        }
 
-            Context.EmitLdintzr(Op.Rn);
+        private static void EmitBfiz(AILEmitterCtx context, bool signed)
+        {
+            AOpCodeBfm op = (AOpCodeBfm)context.CurrOp;
 
-            Context.EmitLsl(Op.GetBitsCount() - Width);
+            int width = op.Pos + 1;
 
-            if (Signed)
-            {
-                Context.EmitAsr(Op.Shift - Width);
-            }
+            context.EmitLdintzr(op.Rn);
+
+            context.EmitLsl(op.GetBitsCount() - width);
+
+            if (signed)
+                context.EmitAsr(op.Shift - width);
             else
-            {
-                Context.EmitLsr(Op.Shift - Width);
-            }
+                context.EmitLsr(op.Shift - width);
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        private static void EmitSbfmCast(AILEmitterCtx Context, OpCode ILOp)
+        private static void EmitSbfmCast(AILEmitterCtx context, OpCode ilOp)
         {
-            EmitBfmCast(Context, ILOp, true);
+            EmitBfmCast(context, ilOp, true);
         }
 
-        private static void EmitUbfmCast(AILEmitterCtx Context, OpCode ILOp)
+        private static void EmitUbfmCast(AILEmitterCtx context, OpCode ilOp)
         {
-            EmitBfmCast(Context, ILOp, false);
+            EmitBfmCast(context, ilOp, false);
         }
 
-        private static void EmitBfmCast(AILEmitterCtx Context, OpCode ILOp, bool Signed)
+        private static void EmitBfmCast(AILEmitterCtx context, OpCode ilOp, bool signed)
         {
-            AOpCodeBfm Op = (AOpCodeBfm)Context.CurrOp;
+            AOpCodeBfm op = (AOpCodeBfm)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdintzr(op.Rn);
 
-            Context.Emit(ILOp);
+            context.Emit(ilOp);
 
-            if (Op.RegisterSize != ARegisterSize.Int32)
-            {
-                Context.Emit(Signed
+            if (op.RegisterSize != ARegisterSize.Int32)
+                context.Emit(signed
                     ? OpCodes.Conv_I8
                     : OpCodes.Conv_U8);
-            }
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        private static void EmitSbfmShift(AILEmitterCtx Context)
+        private static void EmitSbfmShift(AILEmitterCtx context)
         {
-            EmitBfmShift(Context, true);
+            EmitBfmShift(context, true);
         }
 
-        private static void EmitUbfmShift(AILEmitterCtx Context)
+        private static void EmitUbfmShift(AILEmitterCtx context)
         {
-            EmitBfmShift(Context, false);
+            EmitBfmShift(context, false);
         }
 
-        private static void EmitBfmShift(AILEmitterCtx Context, bool Signed)
+        private static void EmitBfmShift(AILEmitterCtx context, bool signed)
         {
-            AOpCodeBfm Op = (AOpCodeBfm)Context.CurrOp;
+            AOpCodeBfm op = (AOpCodeBfm)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
-            Context.EmitLdc_I4(Op.Shift);
+            context.EmitLdintzr(op.Rn);
+            context.EmitLdc_I4(op.Shift);
 
-            Context.Emit(Signed
+            context.Emit(signed
                 ? OpCodes.Shr
                 : OpCodes.Shr_Un);
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        private static void EmitBfmLsl(AILEmitterCtx Context)
+        private static void EmitBfmLsl(AILEmitterCtx context)
         {
-            AOpCodeBfm Op = (AOpCodeBfm)Context.CurrOp;
+            AOpCodeBfm op = (AOpCodeBfm)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdintzr(op.Rn);
 
-            Context.EmitLsl(Op.GetBitsCount() - Op.Shift);
+            context.EmitLsl(op.GetBitsCount() - op.Shift);
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        private static void EmitBfmLoadRn(AILEmitterCtx Context)
+        private static void EmitBfmLoadRn(AILEmitterCtx context)
         {
-            AOpCodeBfm Op = (AOpCodeBfm)Context.CurrOp;
+            AOpCodeBfm op = (AOpCodeBfm)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdintzr(op.Rn);
 
-            Context.EmitRor(Op.Shift);
+            context.EmitRor(op.Shift);
 
-            Context.EmitLdc_I(Op.WMask & Op.TMask);
+            context.EmitLdc_I(op.WMask & op.Mask);
 
-            Context.Emit(OpCodes.And);
+            context.Emit(OpCodes.And);
         }
     }
 }

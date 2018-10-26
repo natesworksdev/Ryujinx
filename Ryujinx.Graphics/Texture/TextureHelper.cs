@@ -4,39 +4,36 @@ using Ryujinx.Graphics.Memory;
 
 namespace Ryujinx.Graphics.Texture
 {
-    static class TextureHelper
+    internal static class TextureHelper
     {
-        public static ISwizzle GetSwizzle(GalImage Image)
+        public static ISwizzle GetSwizzle(GalImage image)
         {
-            int BlockWidth    = ImageUtils.GetBlockWidth   (Image.Format);
-            int BytesPerPixel = ImageUtils.GetBytesPerPixel(Image.Format);
+            int blockWidth    = ImageUtils.GetBlockWidth   (image.Format);
+            int bytesPerPixel = ImageUtils.GetBytesPerPixel(image.Format);
 
-            int Width = (Image.Width + (BlockWidth - 1)) / BlockWidth;
+            int width = (image.Width + (blockWidth - 1)) / blockWidth;
 
-            if (Image.Layout == GalMemoryLayout.BlockLinear)
+            if (image.Layout == GalMemoryLayout.BlockLinear)
             {
-                int AlignMask = Image.TileWidth * (64 / BytesPerPixel) - 1;
+                int alignMask = image.TileWidth * (64 / bytesPerPixel) - 1;
 
-                Width = (Width + AlignMask) & ~AlignMask;
+                width = (width + alignMask) & ~alignMask;
 
-                return new BlockLinearSwizzle(Width, BytesPerPixel, Image.GobBlockHeight);
+                return new BlockLinearSwizzle(width, bytesPerPixel, image.GobBlockHeight);
             }
             else
             {
-                return new LinearSwizzle(Image.Pitch, BytesPerPixel);
+                return new LinearSwizzle(image.Pitch, bytesPerPixel);
             }
         }
 
         public static (AMemory Memory, long Position) GetMemoryAndPosition(
-            IAMemory Memory,
-            long     Position)
+            IAMemory memory,
+            long     position)
         {
-            if (Memory is NvGpuVmm Vmm)
-            {
-                return (Vmm.Memory, Vmm.GetPhysicalAddress(Position));
-            }
+            if (memory is NvGpuVmm vmm) return (vmm.Memory, vmm.GetPhysicalAddress(position));
 
-            return ((AMemory)Memory, Position);
+            return ((AMemory)memory, position);
         }
     }
 }

@@ -11,11 +11,11 @@ using System.Linq;
 
 namespace Ryujinx.HLE.Loaders
 {
-    class Executable
+    internal class Executable
     {
-        private AMemory Memory;
+        private AMemory _memory;
 
-        private List<ElfDyn> Dynamic;
+        private List<ElfDyn> _dynamic;
 
         public ReadOnlyCollection<ElfSym> SymbolTable;
 
@@ -26,178 +26,155 @@ namespace Ryujinx.HLE.Loaders
         public long ImageBase { get; private set; }
         public long ImageEnd  { get; private set; }
 
-        private KMemoryManager MemoryManager;
+        private KMemoryManager _memoryManager;
 
-        public Executable(IExecutable Exe, KMemoryManager MemoryManager, AMemory Memory, long ImageBase)
+        public Executable(IExecutable exe, KMemoryManager memoryManager, AMemory memory, long imageBase)
         {
-            Dynamic = new List<ElfDyn>();
+            _dynamic = new List<ElfDyn>();
 
-            FilePath = Exe.FilePath;
+            FilePath = exe.FilePath;
 
-            if (FilePath != null)
+            if (FilePath != null) Name = Path.GetFileNameWithoutExtension(FilePath.Replace(Homebrew.TemporaryNroSuffix, ""));
+
+            this._memory        = memory;
+            this._memoryManager = memoryManager;
+            this.ImageBase     = imageBase;
+            this.ImageEnd      = imageBase;
+
+            long textPosition = imageBase + (uint)exe.TextOffset;
+            long roPosition   = imageBase + (uint)exe.RoOffset;
+            long dataPosition = imageBase + (uint)exe.DataOffset;
+
+            long textSize = (uint)IntUtils.AlignUp(exe.Text.Length, KMemoryManager.PageSize);
+            long roSize   = (uint)IntUtils.AlignUp(exe.Ro.Length, KMemoryManager.PageSize);
+            long dataSize = (uint)IntUtils.AlignUp(exe.Data.Length, KMemoryManager.PageSize);
+            long bssSize  = (uint)IntUtils.AlignUp(exe.BssSize, KMemoryManager.PageSize);
+
+            long dataAndBssSize = bssSize + dataSize;
+
+            ImageEnd = dataPosition + dataAndBssSize;
+
+            if (exe.SourceAddress == 0)
             {
-                Name = Path.GetFileNameWithoutExtension(FilePath.Replace(Homebrew.TemporaryNroSuffix, ""));
-            }
+                memoryManager.HleMapProcessCode(textPosition, textSize + roSize + dataAndBssSize);
 
-            this.Memory        = Memory;
-            this.MemoryManager = MemoryManager;
-            this.ImageBase     = ImageBase;
-            this.ImageEnd      = ImageBase;
+                memoryManager.SetProcessMemoryPermission(roPosition, roSize, MemoryPermission.Read);
+                memoryManager.SetProcessMemoryPermission(dataPosition, dataAndBssSize, MemoryPermission.ReadAndWrite);
 
-            long TextPosition = ImageBase + (uint)Exe.TextOffset;
-            long ROPosition   = ImageBase + (uint)Exe.ROOffset;
-            long DataPosition = ImageBase + (uint)Exe.DataOffset;
-
-            long TextSize = (uint)IntUtils.AlignUp(Exe.Text.Length, KMemoryManager.PageSize);
-            long ROSize   = (uint)IntUtils.AlignUp(Exe.RO.Length, KMemoryManager.PageSize);
-            long DataSize = (uint)IntUtils.AlignUp(Exe.Data.Length, KMemoryManager.PageSize);
-            long BssSize  = (uint)IntUtils.AlignUp(Exe.BssSize, KMemoryManager.PageSize);
-
-            long DataAndBssSize = BssSize + DataSize;
-
-            ImageEnd = DataPosition + DataAndBssSize;
-
-            if (Exe.SourceAddress == 0)
-            {
-                MemoryManager.HleMapProcessCode(TextPosition, TextSize + ROSize + DataAndBssSize);
-
-                MemoryManager.SetProcessMemoryPermission(ROPosition, ROSize, MemoryPermission.Read);
-                MemoryManager.SetProcessMemoryPermission(DataPosition, DataAndBssSize, MemoryPermission.ReadAndWrite);
-
-                Memory.WriteBytes(TextPosition, Exe.Text);
-                Memory.WriteBytes(ROPosition, Exe.RO);
-                Memory.WriteBytes(DataPosition, Exe.Data);
+                memory.WriteBytes(textPosition, exe.Text);
+                memory.WriteBytes(roPosition, exe.Ro);
+                memory.WriteBytes(dataPosition, exe.Data);
             }
             else
             {
-                long Result = MemoryManager.MapProcessCodeMemory(TextPosition, Exe.SourceAddress, TextSize + ROSize + DataSize);
+                long result = memoryManager.MapProcessCodeMemory(textPosition, exe.SourceAddress, textSize + roSize + dataSize);
 
-                if (Result != 0)
+                if (result != 0) throw new InvalidOperationException();
+
+                memoryManager.SetProcessMemoryPermission(roPosition, roSize, MemoryPermission.Read);
+                memoryManager.SetProcessMemoryPermission(dataPosition, dataSize, MemoryPermission.ReadAndWrite);
+
+                if (exe.BssAddress != 0 && exe.BssSize != 0)
                 {
-                    throw new InvalidOperationException();
-                }
+                    result = memoryManager.MapProcessCodeMemory(dataPosition + dataSize, exe.BssAddress, bssSize);
 
-                MemoryManager.SetProcessMemoryPermission(ROPosition, ROSize, MemoryPermission.Read);
-                MemoryManager.SetProcessMemoryPermission(DataPosition, DataSize, MemoryPermission.ReadAndWrite);
+                    if (result != 0) throw new InvalidOperationException();
 
-                if (Exe.BssAddress != 0 && Exe.BssSize != 0)
-                {
-                    Result = MemoryManager.MapProcessCodeMemory(DataPosition + DataSize, Exe.BssAddress, BssSize);
-
-                    if (Result != 0)
-                    {
-                        throw new InvalidOperationException();
-                    }
-
-                    MemoryManager.SetProcessMemoryPermission(DataPosition + DataSize, BssSize, MemoryPermission.ReadAndWrite);
+                    memoryManager.SetProcessMemoryPermission(dataPosition + dataSize, bssSize, MemoryPermission.ReadAndWrite);
                 }
             }
 
-            if (Exe.Mod0Offset == 0)
-            {
-                return;
-            }
+            if (exe.Mod0Offset == 0) return;
 
-            long Mod0Offset = ImageBase + Exe.Mod0Offset;
+            long mod0Offset = imageBase + exe.Mod0Offset;
 
-            int  Mod0Magic        = Memory.ReadInt32(Mod0Offset + 0x0);
-            long DynamicOffset    = Memory.ReadInt32(Mod0Offset + 0x4)  + Mod0Offset;
-            long BssStartOffset   = Memory.ReadInt32(Mod0Offset + 0x8)  + Mod0Offset;
-            long BssEndOffset     = Memory.ReadInt32(Mod0Offset + 0xc)  + Mod0Offset;
-            long EhHdrStartOffset = Memory.ReadInt32(Mod0Offset + 0x10) + Mod0Offset;
-            long EhHdrEndOffset   = Memory.ReadInt32(Mod0Offset + 0x14) + Mod0Offset;
-            long ModObjOffset     = Memory.ReadInt32(Mod0Offset + 0x18) + Mod0Offset;
+            int  mod0Magic        = memory.ReadInt32(mod0Offset + 0x0);
+            long dynamicOffset    = memory.ReadInt32(mod0Offset + 0x4)  + mod0Offset;
+            long bssStartOffset   = memory.ReadInt32(mod0Offset + 0x8)  + mod0Offset;
+            long bssEndOffset     = memory.ReadInt32(mod0Offset + 0xc)  + mod0Offset;
+            long ehHdrStartOffset = memory.ReadInt32(mod0Offset + 0x10) + mod0Offset;
+            long ehHdrEndOffset   = memory.ReadInt32(mod0Offset + 0x14) + mod0Offset;
+            long modObjOffset     = memory.ReadInt32(mod0Offset + 0x18) + mod0Offset;
 
             while (true)
             {
-                long TagVal = Memory.ReadInt64(DynamicOffset + 0);
-                long Value  = Memory.ReadInt64(DynamicOffset + 8);
+                long tagVal = memory.ReadInt64(dynamicOffset + 0);
+                long value  = memory.ReadInt64(dynamicOffset + 8);
 
-                DynamicOffset += 0x10;
+                dynamicOffset += 0x10;
 
-                ElfDynTag Tag = (ElfDynTag)TagVal;
+                ElfDynTag tag = (ElfDynTag)tagVal;
 
-                if (Tag == ElfDynTag.DT_NULL)
-                {
-                    break;
-                }
+                if (tag == ElfDynTag.DtNull) break;
 
-                Dynamic.Add(new ElfDyn(Tag, Value));
+                _dynamic.Add(new ElfDyn(tag, value));
             }
 
-            long StrTblAddr = ImageBase + GetFirstValue(ElfDynTag.DT_STRTAB);
-            long SymTblAddr = ImageBase + GetFirstValue(ElfDynTag.DT_SYMTAB);
+            long strTblAddr = imageBase + GetFirstValue(ElfDynTag.DtStrtab);
+            long symTblAddr = imageBase + GetFirstValue(ElfDynTag.DtSymtab);
 
-            long SymEntSize = GetFirstValue(ElfDynTag.DT_SYMENT);
+            long symEntSize = GetFirstValue(ElfDynTag.DtSyment);
 
-            List<ElfSym> Symbols = new List<ElfSym>();
+            List<ElfSym> symbols = new List<ElfSym>();
 
-            while ((ulong)SymTblAddr < (ulong)StrTblAddr)
+            while ((ulong)symTblAddr < (ulong)strTblAddr)
             {
-                ElfSym Sym = GetSymbol(SymTblAddr, StrTblAddr);
+                ElfSym sym = GetSymbol(symTblAddr, strTblAddr);
 
-                Symbols.Add(Sym);
+                symbols.Add(sym);
 
-                SymTblAddr += SymEntSize;
+                symTblAddr += symEntSize;
             }
 
-            SymbolTable = Array.AsReadOnly(Symbols.OrderBy(x => x.Value).ToArray());
+            SymbolTable = Array.AsReadOnly(symbols.OrderBy(x => x.Value).ToArray());
         }
 
-        private ElfRel GetRelocation(long Position)
+        private ElfRel GetRelocation(long position)
         {
-            long Offset = Memory.ReadInt64(Position + 0);
-            long Info   = Memory.ReadInt64(Position + 8);
-            long Addend = Memory.ReadInt64(Position + 16);
+            long offset = _memory.ReadInt64(position + 0);
+            long info   = _memory.ReadInt64(position + 8);
+            long addend = _memory.ReadInt64(position + 16);
 
-            int RelType = (int)(Info >> 0);
-            int SymIdx  = (int)(Info >> 32);
+            int relType = (int)(info >> 0);
+            int symIdx  = (int)(info >> 32);
 
-            ElfSym Symbol = GetSymbol(SymIdx);
+            ElfSym symbol = GetSymbol(symIdx);
 
-            return new ElfRel(Offset, Addend, Symbol, (ElfRelType)RelType);
+            return new ElfRel(offset, addend, symbol, (ElfRelType)relType);
         }
 
-        private ElfSym GetSymbol(int Index)
+        private ElfSym GetSymbol(int index)
         {
-            long StrTblAddr = ImageBase + GetFirstValue(ElfDynTag.DT_STRTAB);
-            long SymTblAddr = ImageBase + GetFirstValue(ElfDynTag.DT_SYMTAB);
+            long strTblAddr = ImageBase + GetFirstValue(ElfDynTag.DtStrtab);
+            long symTblAddr = ImageBase + GetFirstValue(ElfDynTag.DtSymtab);
 
-            long SymEntSize = GetFirstValue(ElfDynTag.DT_SYMENT);
+            long symEntSize = GetFirstValue(ElfDynTag.DtSyment);
 
-            long Position = SymTblAddr + Index * SymEntSize;
+            long position = symTblAddr + index * symEntSize;
 
-            return GetSymbol(Position, StrTblAddr);
+            return GetSymbol(position, strTblAddr);
         }
 
-        private ElfSym GetSymbol(long Position, long StrTblAddr)
+        private ElfSym GetSymbol(long position, long strTblAddr)
         {
-            int  NameIndex = Memory.ReadInt32(Position + 0);
-            int  Info      = Memory.ReadByte(Position + 4);
-            int  Other     = Memory.ReadByte(Position + 5);
-            int  SHIdx     = Memory.ReadInt16(Position + 6);
-            long Value     = Memory.ReadInt64(Position + 8);
-            long Size      = Memory.ReadInt64(Position + 16);
+            int  nameIndex = _memory.ReadInt32(position + 0);
+            int  info      = _memory.ReadByte(position + 4);
+            int  other     = _memory.ReadByte(position + 5);
+            int  shIdx     = _memory.ReadInt16(position + 6);
+            long value     = _memory.ReadInt64(position + 8);
+            long size      = _memory.ReadInt64(position + 16);
 
-            string Name = string.Empty;
+            string name = string.Empty;
 
-            for (int Chr; (Chr = Memory.ReadByte(StrTblAddr + NameIndex++)) != 0;)
-            {
-                Name += (char)Chr;
-            }
+            for (int chr; (chr = _memory.ReadByte(strTblAddr + nameIndex++)) != 0;) name += (char)chr;
 
-            return new ElfSym(Name, Info, Other, SHIdx, Value, Size);
+            return new ElfSym(name, info, other, shIdx, value, size);
         }
 
-        private long GetFirstValue(ElfDynTag Tag)
+        private long GetFirstValue(ElfDynTag tag)
         {
-            foreach (ElfDyn Entry in Dynamic)
-            {
-                if (Entry.Tag == Tag)
-                {
-                    return Entry.Value;
-                }
-            }
+            foreach (ElfDyn entry in _dynamic)
+                if (entry.Tag == tag) return entry.Value;
 
             return 0;
         }

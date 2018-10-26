@@ -8,7 +8,7 @@ using static ChocolArm64.Instruction.AInstEmitAluHelper;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
         private enum CcmpOp
         {
@@ -16,66 +16,73 @@ namespace ChocolArm64.Instruction
             Cmn
         }
 
-        public static void Ccmn(AILEmitterCtx Context) => EmitCcmp(Context, CcmpOp.Cmn);
-        public static void Ccmp(AILEmitterCtx Context) => EmitCcmp(Context, CcmpOp.Cmp);
-
-        private static void EmitCcmp(AILEmitterCtx Context, CcmpOp CmpOp)
+        public static void Ccmn(AILEmitterCtx context)
         {
-            AOpCodeCcmp Op = (AOpCodeCcmp)Context.CurrOp;
+            EmitCcmp(context, CcmpOp.Cmn);
+        }
 
-            AILLabel LblTrue = new AILLabel();
-            AILLabel LblEnd  = new AILLabel();
+        public static void Ccmp(AILEmitterCtx context)
+        {
+            EmitCcmp(context, CcmpOp.Cmp);
+        }
 
-            Context.EmitCondBranch(LblTrue, Op.Cond);
+        private static void EmitCcmp(AILEmitterCtx context, CcmpOp cmpOp)
+        {
+            AOpCodeCcmp op = (AOpCodeCcmp)context.CurrOp;
 
-            Context.EmitLdc_I4((Op.NZCV >> 0) & 1);
+            AILLabel lblTrue = new AILLabel();
+            AILLabel lblEnd  = new AILLabel();
 
-            Context.EmitStflg((int)APState.VBit);
+            context.EmitCondBranch(lblTrue, op.Cond);
 
-            Context.EmitLdc_I4((Op.NZCV >> 1) & 1);
+            context.EmitLdc_I4((op.Nzcv >> 0) & 1);
 
-            Context.EmitStflg((int)APState.CBit);
+            context.EmitStflg((int)APState.VBit);
 
-            Context.EmitLdc_I4((Op.NZCV >> 2) & 1);
+            context.EmitLdc_I4((op.Nzcv >> 1) & 1);
 
-            Context.EmitStflg((int)APState.ZBit);
+            context.EmitStflg((int)APState.CBit);
 
-            Context.EmitLdc_I4((Op.NZCV >> 3) & 1);
+            context.EmitLdc_I4((op.Nzcv >> 2) & 1);
 
-            Context.EmitStflg((int)APState.NBit);
+            context.EmitStflg((int)APState.ZBit);
 
-            Context.Emit(OpCodes.Br_S, LblEnd);
+            context.EmitLdc_I4((op.Nzcv >> 3) & 1);
 
-            Context.MarkLabel(LblTrue);
+            context.EmitStflg((int)APState.NBit);
 
-            EmitDataLoadOpers(Context);
+            context.Emit(OpCodes.Br_S, lblEnd);
 
-            if (CmpOp == CcmpOp.Cmp)
+            context.MarkLabel(lblTrue);
+
+            EmitDataLoadOpers(context);
+
+            if (cmpOp == CcmpOp.Cmp)
             {
-                Context.Emit(OpCodes.Sub);
+                context.Emit(OpCodes.Sub);
 
-                Context.EmitZNFlagCheck();
+                context.EmitZnFlagCheck();
 
-                EmitSubsCCheck(Context);
-                EmitSubsVCheck(Context);
+                EmitSubsCCheck(context);
+                EmitSubsVCheck(context);
             }
-            else if (CmpOp == CcmpOp.Cmn)
+            else if (cmpOp == CcmpOp.Cmn)
             {
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
 
-                Context.EmitZNFlagCheck();
+                context.EmitZnFlagCheck();
 
-                EmitAddsCCheck(Context);
-                EmitAddsVCheck(Context);
+                EmitAddsCCheck(context);
+                EmitAddsVCheck(context);
             }
             else
             {
-                throw new ArgumentException(nameof(CmpOp));
+                throw new ArgumentException(nameof(cmpOp));
             }
 
-            Context.Emit(OpCodes.Pop);
+            context.Emit(OpCodes.Pop);
 
-            Context.MarkLabel(LblEnd);
+            context.MarkLabel(lblEnd);
         }
     }
 }

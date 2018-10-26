@@ -1,6 +1,6 @@
 namespace ChocolArm64.Decoder
 {
-    enum AIntType
+    internal enum AIntType
     {
         UInt8  = 0,
         UInt16 = 1,

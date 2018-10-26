@@ -5,208 +5,207 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Instruction
 {
-    static class AInstEmitAluHelper
+    internal static class AInstEmitAluHelper
     {
-        public static void EmitAdcsCCheck(AILEmitterCtx Context)
+        public static void EmitAdcsCCheck(AILEmitterCtx context)
         {
             //C = (Rd == Rn && CIn) || Rd < Rn
-            Context.EmitSttmp();
-            Context.EmitLdtmp();
-            Context.EmitLdtmp();
+            context.EmitSttmp();
+            context.EmitLdtmp();
+            context.EmitLdtmp();
 
-            EmitDataLoadRn(Context);
+            EmitDataLoadRn(context);
 
-            Context.Emit(OpCodes.Ceq);
+            context.Emit(OpCodes.Ceq);
 
-            Context.EmitLdflg((int)APState.CBit);
+            context.EmitLdflg((int)APState.CBit);
 
-            Context.Emit(OpCodes.And);
+            context.Emit(OpCodes.And);
 
-            Context.EmitLdtmp();
+            context.EmitLdtmp();
 
-            EmitDataLoadRn(Context);
+            EmitDataLoadRn(context);
 
-            Context.Emit(OpCodes.Clt_Un);
-            Context.Emit(OpCodes.Or);
+            context.Emit(OpCodes.Clt_Un);
+            context.Emit(OpCodes.Or);
 
-            Context.EmitStflg((int)APState.CBit);
+            context.EmitStflg((int)APState.CBit);
         }
 
-        public static void EmitAddsCCheck(AILEmitterCtx Context)
+        public static void EmitAddsCCheck(AILEmitterCtx context)
         {
             //C = Rd < Rn
-            Context.Emit(OpCodes.Dup);
+            context.Emit(OpCodes.Dup);
 
-            EmitDataLoadRn(Context);
+            EmitDataLoadRn(context);
 
-            Context.Emit(OpCodes.Clt_Un);
+            context.Emit(OpCodes.Clt_Un);
 
-            Context.EmitStflg((int)APState.CBit);
+            context.EmitStflg((int)APState.CBit);
         }
 
-        public static void EmitAddsVCheck(AILEmitterCtx Context)
+        public static void EmitAddsVCheck(AILEmitterCtx context)
         {
             //V = (Rd ^ Rn) & ~(Rn ^ Rm) < 0
-            Context.Emit(OpCodes.Dup);
+            context.Emit(OpCodes.Dup);
 
-            EmitDataLoadRn(Context);
+            EmitDataLoadRn(context);
 
-            Context.Emit(OpCodes.Xor);
+            context.Emit(OpCodes.Xor);
 
-            EmitDataLoadOpers(Context);
+            EmitDataLoadOpers(context);
 
-            Context.Emit(OpCodes.Xor);
-            Context.Emit(OpCodes.Not);
-            Context.Emit(OpCodes.And);
+            context.Emit(OpCodes.Xor);
+            context.Emit(OpCodes.Not);
+            context.Emit(OpCodes.And);
 
-            Context.EmitLdc_I(0);
+            context.EmitLdc_I(0);
 
-            Context.Emit(OpCodes.Clt);
+            context.Emit(OpCodes.Clt);
 
-            Context.EmitStflg((int)APState.VBit);
+            context.EmitStflg((int)APState.VBit);
         }
 
-        public static void EmitSbcsCCheck(AILEmitterCtx Context)
+        public static void EmitSbcsCCheck(AILEmitterCtx context)
         {
             //C = (Rn == Rm && CIn) || Rn > Rm
-            EmitDataLoadOpers(Context);
+            EmitDataLoadOpers(context);
 
-            Context.Emit(OpCodes.Ceq);
+            context.Emit(OpCodes.Ceq);
 
-            Context.EmitLdflg((int)APState.CBit);
+            context.EmitLdflg((int)APState.CBit);
 
-            Context.Emit(OpCodes.And);
+            context.Emit(OpCodes.And);
 
-            EmitDataLoadOpers(Context);
+            EmitDataLoadOpers(context);
 
-            Context.Emit(OpCodes.Cgt_Un);
-            Context.Emit(OpCodes.Or);
+            context.Emit(OpCodes.Cgt_Un);
+            context.Emit(OpCodes.Or);
 
-            Context.EmitStflg((int)APState.CBit);
+            context.EmitStflg((int)APState.CBit);
         }
 
-        public static void EmitSubsCCheck(AILEmitterCtx Context)
+        public static void EmitSubsCCheck(AILEmitterCtx context)
         {
             //C = Rn == Rm || Rn > Rm = !(Rn < Rm)
-            EmitDataLoadOpers(Context);
+            EmitDataLoadOpers(context);
 
-            Context.Emit(OpCodes.Clt_Un);
+            context.Emit(OpCodes.Clt_Un);
 
-            Context.EmitLdc_I4(1);
+            context.EmitLdc_I4(1);
 
-            Context.Emit(OpCodes.Xor);
+            context.Emit(OpCodes.Xor);
 
-            Context.EmitStflg((int)APState.CBit);
+            context.EmitStflg((int)APState.CBit);
         }
 
-        public static void EmitSubsVCheck(AILEmitterCtx Context)
+        public static void EmitSubsVCheck(AILEmitterCtx context)
         {
             //V = (Rd ^ Rn) & (Rn ^ Rm) < 0
-            Context.Emit(OpCodes.Dup);
+            context.Emit(OpCodes.Dup);
 
-            EmitDataLoadRn(Context);
+            EmitDataLoadRn(context);
 
-            Context.Emit(OpCodes.Xor);
+            context.Emit(OpCodes.Xor);
 
-            EmitDataLoadOpers(Context);
+            EmitDataLoadOpers(context);
 
-            Context.Emit(OpCodes.Xor);
-            Context.Emit(OpCodes.And);
+            context.Emit(OpCodes.Xor);
+            context.Emit(OpCodes.And);
 
-            Context.EmitLdc_I(0);
+            context.EmitLdc_I(0);
 
-            Context.Emit(OpCodes.Clt);
+            context.Emit(OpCodes.Clt);
 
-            Context.EmitStflg((int)APState.VBit);
+            context.EmitStflg((int)APState.VBit);
         }
 
-        public static void EmitDataLoadRm(AILEmitterCtx Context)
+        public static void EmitDataLoadRm(AILEmitterCtx context)
         {
-            Context.EmitLdintzr(((IAOpCodeAluRs)Context.CurrOp).Rm);
+            context.EmitLdintzr(((IAOpCodeAluRs)context.CurrOp).Rm);
         }
 
-        public static void EmitDataLoadOpers(AILEmitterCtx Context)
+        public static void EmitDataLoadOpers(AILEmitterCtx context)
         {
-            EmitDataLoadRn(Context);
-            EmitDataLoadOper2(Context);
+            EmitDataLoadRn(context);
+            EmitDataLoadOper2(context);
         }
 
-        public static void EmitDataLoadRn(AILEmitterCtx Context)
+        public static void EmitDataLoadRn(AILEmitterCtx context)
         {
-            IAOpCodeAlu Op = (IAOpCodeAlu)Context.CurrOp;
+            IAOpCodeAlu op = (IAOpCodeAlu)context.CurrOp;
 
-            if (Op.DataOp == ADataOp.Logical || Op is IAOpCodeAluRs)
-            {
-                Context.EmitLdintzr(Op.Rn);
-            }
+            if (op.DataOp == ADataOp.Logical || op is IAOpCodeAluRs)
+                context.EmitLdintzr(op.Rn);
             else
-            {
-                Context.EmitLdint(Op.Rn);
-            }
+                context.EmitLdint(op.Rn);
         }
 
-        public static void EmitDataLoadOper2(AILEmitterCtx Context)
+        public static void EmitDataLoadOper2(AILEmitterCtx context)
         {
-            switch (Context.CurrOp)
+            switch (context.CurrOp)
             {
-                case IAOpCodeAluImm Op:
-                    Context.EmitLdc_I(Op.Imm);
+                case IAOpCodeAluImm op:
+                    context.EmitLdc_I(op.Imm);
                     break;
 
-                case IAOpCodeAluRs Op:
-                    Context.EmitLdintzr(Op.Rm);
+                case IAOpCodeAluRs op:
+                    context.EmitLdintzr(op.Rm);
 
-                    switch (Op.ShiftType)
+                    switch (op.ShiftType)
                     {
-                        case AShiftType.Lsl: Context.EmitLsl(Op.Shift); break;
-                        case AShiftType.Lsr: Context.EmitLsr(Op.Shift); break;
-                        case AShiftType.Asr: Context.EmitAsr(Op.Shift); break;
-                        case AShiftType.Ror: Context.EmitRor(Op.Shift); break;
+                        case AShiftType.Lsl: context.EmitLsl(op.Shift); break;
+                        case AShiftType.Lsr: context.EmitLsr(op.Shift); break;
+                        case AShiftType.Asr: context.EmitAsr(op.Shift); break;
+                        case AShiftType.Ror: context.EmitRor(op.Shift); break;
                     }
                     break;
 
-                case IAOpCodeAluRx Op:
-                    Context.EmitLdintzr(Op.Rm);
-                    Context.EmitCast(Op.IntType);
-                    Context.EmitLsl(Op.Shift);
+                case IAOpCodeAluRx op:
+                    context.EmitLdintzr(op.Rm);
+                    context.EmitCast(op.IntType);
+                    context.EmitLsl(op.Shift);
                     break;
             }
         }
 
-        public static void EmitDataStore(AILEmitterCtx Context)  => EmitDataStore(Context, false);
-        public static void EmitDataStoreS(AILEmitterCtx Context) => EmitDataStore(Context, true);
-
-        public static void EmitDataStore(AILEmitterCtx Context, bool SetFlags)
+        public static void EmitDataStore(AILEmitterCtx context)
         {
-            IAOpCodeAlu Op = (IAOpCodeAlu)Context.CurrOp;
-
-            if (SetFlags || Op is IAOpCodeAluRs)
-            {
-                Context.EmitStintzr(Op.Rd);
-            }
-            else
-            {
-                Context.EmitStint(Op.Rd);
-            }
+            EmitDataStore(context, false);
         }
 
-        public static void EmitSetNZCV(AILEmitterCtx Context, int NZCV)
+        public static void EmitDataStoreS(AILEmitterCtx context)
         {
-            Context.EmitLdc_I4((NZCV >> 0) & 1);
+            EmitDataStore(context, true);
+        }
 
-            Context.EmitStflg((int)APState.VBit);
+        public static void EmitDataStore(AILEmitterCtx context, bool setFlags)
+        {
+            IAOpCodeAlu op = (IAOpCodeAlu)context.CurrOp;
 
-            Context.EmitLdc_I4((NZCV >> 1) & 1);
+            if (setFlags || op is IAOpCodeAluRs)
+                context.EmitStintzr(op.Rd);
+            else
+                context.EmitStint(op.Rd);
+        }
 
-            Context.EmitStflg((int)APState.CBit);
+        public static void EmitSetNzcv(AILEmitterCtx context, int nzcv)
+        {
+            context.EmitLdc_I4((nzcv >> 0) & 1);
 
-            Context.EmitLdc_I4((NZCV >> 2) & 1);
+            context.EmitStflg((int)APState.VBit);
 
-            Context.EmitStflg((int)APState.ZBit);
+            context.EmitLdc_I4((nzcv >> 1) & 1);
 
-            Context.EmitLdc_I4((NZCV >> 3) & 1);
+            context.EmitStflg((int)APState.CBit);
 
-            Context.EmitStflg((int)APState.NBit);
+            context.EmitLdc_I4((nzcv >> 2) & 1);
+
+            context.EmitStflg((int)APState.ZBit);
+
+            context.EmitLdc_I4((nzcv >> 3) & 1);
+
+            context.EmitStflg((int)APState.NBit);
         }
     }
 }

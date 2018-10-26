@@ -3,23 +3,23 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    class IActiveApplicationDeviceList : IpcService
+    internal class IActiveApplicationDeviceList : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
         public IActiveApplicationDeviceList()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, ActivateVibrationDevice }
             };
         }
 
-        public long ActivateVibrationDevice(ServiceCtx Context)
+        public long ActivateVibrationDevice(ServiceCtx context)
         {
-            int VibrationDeviceHandle = Context.RequestData.ReadInt32();
+            int vibrationDeviceHandle = context.RequestData.ReadInt32();
 
             return 0;
         }

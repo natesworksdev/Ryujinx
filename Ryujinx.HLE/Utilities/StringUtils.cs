@@ -5,47 +5,44 @@ using System.Text;
 
 namespace Ryujinx.HLE.Utilities
 {
-    static class StringUtils
+    internal static class StringUtils
     {
-        public static byte[] GetFixedLengthBytes(string InputString, int Size, Encoding Encoding)
+        public static byte[] GetFixedLengthBytes(string inputString, int size, Encoding encoding)
         {
-            InputString = InputString + "\0";
+            inputString = inputString + "\0";
 
-            int BytesCount = Encoding.GetByteCount(InputString);
+            int bytesCount = encoding.GetByteCount(inputString);
 
-            byte[] Output = new byte[Size];
+            byte[] output = new byte[size];
 
-            if (BytesCount < Size)
+            if (bytesCount < size)
             {
-                Encoding.GetBytes(InputString, 0, InputString.Length, Output, 0);
+                encoding.GetBytes(inputString, 0, inputString.Length, output, 0);
             }
             else
             {
-                int NullSize = Encoding.GetByteCount("\0");
+                int nullSize = encoding.GetByteCount("\0");
 
-                Output = Encoding.GetBytes(InputString);
+                output = encoding.GetBytes(inputString);
 
-                Array.Resize(ref Output, Size - NullSize);
+                Array.Resize(ref output, size - nullSize);
 
-                Output = Output.Concat(Encoding.GetBytes("\0")).ToArray();
+                output = output.Concat(encoding.GetBytes("\0")).ToArray();
             }
 
-            return Output;
+            return output;
         }
 
-        public static byte[] HexToBytes(string HexString)
+        public static byte[] HexToBytes(string hexString)
         {
             //Ignore last charactor if HexLength % 2 != 0.
-            int BytesInHex = HexString.Length / 2;
+            int bytesInHex = hexString.Length / 2;
 
-            byte[] Output = new byte[BytesInHex];
+            byte[] output = new byte[bytesInHex];
 
-            for (int Index = 0; Index < BytesInHex; Index++)
-            {
-                Output[Index] = byte.Parse(HexString.Substring(Index * 2, 2), NumberStyles.HexNumber);
-            }
+            for (int index = 0; index < bytesInHex; index++) output[index] = byte.Parse(hexString.Substring(index * 2, 2), NumberStyles.HexNumber);
 
-            return Output;
+            return output;
         }
     }
 }

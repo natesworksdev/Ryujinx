@@ -42,7 +42,7 @@ namespace Ryujinx.UI.Input
         public ControllerInputID DPadRight;
         public ControllerInputID ButtonMinus;
         public ControllerInputID ButtonL;
-        public ControllerInputID ButtonZL;
+        public ControllerInputID ButtonZl;
     }
 
     public struct JoyConControllerRight
@@ -55,7 +55,7 @@ namespace Ryujinx.UI.Input
         public ControllerInputID ButtonY;
         public ControllerInputID ButtonPlus;
         public ControllerInputID ButtonR;
-        public ControllerInputID ButtonZR;
+        public ControllerInputID ButtonZr;
     }
 
     public class JoyConController
@@ -69,144 +69,128 @@ namespace Ryujinx.UI.Input
         public JoyConControllerRight Right { private set; get; }
 
         public JoyConController(
-            bool                  Enabled,
-            int                   Index,
-            float                 Deadzone,
-            float                 TriggerThreshold,
-            JoyConControllerLeft  Left,
-            JoyConControllerRight Right)
+            bool                  enabled,
+            int                   index,
+            float                 deadzone,
+            float                 triggerThreshold,
+            JoyConControllerLeft  left,
+            JoyConControllerRight right)
         {
-            this.Enabled          = Enabled;
-            this.Index            = Index;
-            this.Deadzone         = Deadzone;
-            this.TriggerThreshold = TriggerThreshold;
-            this.Left             = Left;
-            this.Right            = Right;
+            this.Enabled          = enabled;
+            this.Index            = index;
+            this.Deadzone         = deadzone;
+            this.TriggerThreshold = triggerThreshold;
+            this.Left             = left;
+            this.Right            = right;
 
             //Unmapped controllers are problematic, skip them
-            if (GamePad.GetName(Index) == "Unmapped Controller")
-            {
-                this.Enabled = false;
-            }
+            if (GamePad.GetName(index) == "Unmapped Controller") this.Enabled = false;
         }
 
         public HidControllerButtons GetButtons()
         {
-            if (!Enabled)
-            {
-                return 0;
-            }
+            if (!Enabled) return 0;
 
-            GamePadState GpState = GamePad.GetState(Index);
+            GamePadState gpState = GamePad.GetState(Index);
 
-            HidControllerButtons Buttons = 0;
+            HidControllerButtons buttons = 0;
 
-            if (IsPressed(GpState, Left.DPadUp))       Buttons |= HidControllerButtons.KEY_DUP;
-            if (IsPressed(GpState, Left.DPadDown))     Buttons |= HidControllerButtons.KEY_DDOWN;
-            if (IsPressed(GpState, Left.DPadLeft))     Buttons |= HidControllerButtons.KEY_DLEFT;
-            if (IsPressed(GpState, Left.DPadRight))    Buttons |= HidControllerButtons.KEY_DRIGHT;
-            if (IsPressed(GpState, Left.StickButton))  Buttons |= HidControllerButtons.KEY_LSTICK;
-            if (IsPressed(GpState, Left.ButtonMinus))  Buttons |= HidControllerButtons.KEY_MINUS;
-            if (IsPressed(GpState, Left.ButtonL))      Buttons |= HidControllerButtons.KEY_L;
-            if (IsPressed(GpState, Left.ButtonZL))     Buttons |= HidControllerButtons.KEY_ZL;
+            if (IsPressed(gpState, Left.DPadUp))       buttons |= HidControllerButtons.KeyDup;
+            if (IsPressed(gpState, Left.DPadDown))     buttons |= HidControllerButtons.KeyDdown;
+            if (IsPressed(gpState, Left.DPadLeft))     buttons |= HidControllerButtons.KeyDleft;
+            if (IsPressed(gpState, Left.DPadRight))    buttons |= HidControllerButtons.KeyDright;
+            if (IsPressed(gpState, Left.StickButton))  buttons |= HidControllerButtons.KeyLstick;
+            if (IsPressed(gpState, Left.ButtonMinus))  buttons |= HidControllerButtons.KeyMinus;
+            if (IsPressed(gpState, Left.ButtonL))      buttons |= HidControllerButtons.KeyL;
+            if (IsPressed(gpState, Left.ButtonZl))     buttons |= HidControllerButtons.KeyZl;
 
-            if (IsPressed(GpState, Right.ButtonA))     Buttons |= HidControllerButtons.KEY_A;
-            if (IsPressed(GpState, Right.ButtonB))     Buttons |= HidControllerButtons.KEY_B;
-            if (IsPressed(GpState, Right.ButtonX))     Buttons |= HidControllerButtons.KEY_X;
-            if (IsPressed(GpState, Right.ButtonY))     Buttons |= HidControllerButtons.KEY_Y;
-            if (IsPressed(GpState, Right.StickButton)) Buttons |= HidControllerButtons.KEY_RSTICK;
-            if (IsPressed(GpState, Right.ButtonPlus))  Buttons |= HidControllerButtons.KEY_PLUS;
-            if (IsPressed(GpState, Right.ButtonR))     Buttons |= HidControllerButtons.KEY_R;
-            if (IsPressed(GpState, Right.ButtonZR))    Buttons |= HidControllerButtons.KEY_ZR;
+            if (IsPressed(gpState, Right.ButtonA))     buttons |= HidControllerButtons.KeyA;
+            if (IsPressed(gpState, Right.ButtonB))     buttons |= HidControllerButtons.KeyB;
+            if (IsPressed(gpState, Right.ButtonX))     buttons |= HidControllerButtons.KeyX;
+            if (IsPressed(gpState, Right.ButtonY))     buttons |= HidControllerButtons.KeyY;
+            if (IsPressed(gpState, Right.StickButton)) buttons |= HidControllerButtons.KeyRstick;
+            if (IsPressed(gpState, Right.ButtonPlus))  buttons |= HidControllerButtons.KeyPlus;
+            if (IsPressed(gpState, Right.ButtonR))     buttons |= HidControllerButtons.KeyR;
+            if (IsPressed(gpState, Right.ButtonZr))    buttons |= HidControllerButtons.KeyZr;
 
-            return Buttons;
+            return buttons;
         }
 
         public (short, short) GetLeftStick()
         {
-            if (!Enabled)
-            {
-                return (0, 0);
-            }
+            if (!Enabled) return (0, 0);
 
             return GetStick(Left.Stick);
         }
 
         public (short, short) GetRightStick()
         {
-            if (!Enabled)
-            {
-                return (0, 0);
-            }
+            if (!Enabled) return (0, 0);
 
             return GetStick(Right.Stick);
         }
 
-        private (short, short) GetStick(ControllerInputID Joystick)
+        private (short, short) GetStick(ControllerInputID joystick)
         {
-            GamePadState GpState = GamePad.GetState(Index);
+            GamePadState gpState = GamePad.GetState(Index);
 
-            switch (Joystick)
+            switch (joystick)
             {
                 case ControllerInputID.LJoystick:
-                    return ApplyDeadzone(GpState.ThumbSticks.Left);
+                    return ApplyDeadzone(gpState.ThumbSticks.Left);
 
                 case ControllerInputID.RJoystick:
-                    return ApplyDeadzone(GpState.ThumbSticks.Right);
+                    return ApplyDeadzone(gpState.ThumbSticks.Right);
 
                 default:
                     return (0, 0);
             }
         }
 
-        private (short, short) ApplyDeadzone(Vector2 Axis)
+        private (short, short) ApplyDeadzone(Vector2 axis)
         {
-            return (ClampAxis(MathF.Abs(Axis.X) > Deadzone ? Axis.X : 0f),
-                    ClampAxis(MathF.Abs(Axis.Y) > Deadzone ? Axis.Y : 0f));
+            return (ClampAxis(MathF.Abs(axis.X) > Deadzone ? axis.X : 0f),
+                    ClampAxis(MathF.Abs(axis.Y) > Deadzone ? axis.Y : 0f));
         }
 
-        private static short ClampAxis(float Value)
+        private static short ClampAxis(float value)
         {
-            if (Value <= -short.MaxValue)
-            {
+            if (value <= -short.MaxValue)
                 return -short.MaxValue;
-            }
             else
-            {
-                return (short)(Value * short.MaxValue);
-            }
+                return (short)(value * short.MaxValue);
         }
 
-        private bool IsPressed(GamePadState GpState, ControllerInputID Button)
+        private bool IsPressed(GamePadState gpState, ControllerInputID button)
         {
-            switch (Button)
+            switch (button)
             {
-                case ControllerInputID.A:         return GpState.Buttons.A             == ButtonState.Pressed;
-                case ControllerInputID.B:         return GpState.Buttons.B             == ButtonState.Pressed;
-                case ControllerInputID.X:         return GpState.Buttons.X             == ButtonState.Pressed;
-                case ControllerInputID.Y:         return GpState.Buttons.Y             == ButtonState.Pressed;
-                case ControllerInputID.LStick:    return GpState.Buttons.LeftStick     == ButtonState.Pressed;
-                case ControllerInputID.RStick:    return GpState.Buttons.RightStick    == ButtonState.Pressed;
-                case ControllerInputID.LShoulder: return GpState.Buttons.LeftShoulder  == ButtonState.Pressed;
-                case ControllerInputID.RShoulder: return GpState.Buttons.RightShoulder == ButtonState.Pressed;
-                case ControllerInputID.DPadUp:    return GpState.DPad.Up               == ButtonState.Pressed;
-                case ControllerInputID.DPadDown:  return GpState.DPad.Down             == ButtonState.Pressed;
-                case ControllerInputID.DPadLeft:  return GpState.DPad.Left             == ButtonState.Pressed;
-                case ControllerInputID.DPadRight: return GpState.DPad.Right            == ButtonState.Pressed;
-                case ControllerInputID.Start:     return GpState.Buttons.Start         == ButtonState.Pressed;
-                case ControllerInputID.Back:      return GpState.Buttons.Back          == ButtonState.Pressed;
+                case ControllerInputID.A:         return gpState.Buttons.A             == ButtonState.Pressed;
+                case ControllerInputID.B:         return gpState.Buttons.B             == ButtonState.Pressed;
+                case ControllerInputID.X:         return gpState.Buttons.X             == ButtonState.Pressed;
+                case ControllerInputID.Y:         return gpState.Buttons.Y             == ButtonState.Pressed;
+                case ControllerInputID.LStick:    return gpState.Buttons.LeftStick     == ButtonState.Pressed;
+                case ControllerInputID.RStick:    return gpState.Buttons.RightStick    == ButtonState.Pressed;
+                case ControllerInputID.LShoulder: return gpState.Buttons.LeftShoulder  == ButtonState.Pressed;
+                case ControllerInputID.RShoulder: return gpState.Buttons.RightShoulder == ButtonState.Pressed;
+                case ControllerInputID.DPadUp:    return gpState.DPad.Up               == ButtonState.Pressed;
+                case ControllerInputID.DPadDown:  return gpState.DPad.Down             == ButtonState.Pressed;
+                case ControllerInputID.DPadLeft:  return gpState.DPad.Left             == ButtonState.Pressed;
+                case ControllerInputID.DPadRight: return gpState.DPad.Right            == ButtonState.Pressed;
+                case ControllerInputID.Start:     return gpState.Buttons.Start         == ButtonState.Pressed;
+                case ControllerInputID.Back:      return gpState.Buttons.Back          == ButtonState.Pressed;
 
-                case ControllerInputID.LTrigger: return GpState.Triggers.Left  >= TriggerThreshold;
-                case ControllerInputID.RTrigger: return GpState.Triggers.Right >= TriggerThreshold;
+                case ControllerInputID.LTrigger: return gpState.Triggers.Left  >= TriggerThreshold;
+                case ControllerInputID.RTrigger: return gpState.Triggers.Right >= TriggerThreshold;
 
                 //Using thumbsticks as buttons is not common, but it would be nice not to ignore them
                 case ControllerInputID.LJoystick:
-                    return GpState.ThumbSticks.Left.X >= Deadzone ||
-                           GpState.ThumbSticks.Left.Y >= Deadzone;
+                    return gpState.ThumbSticks.Left.X >= Deadzone ||
+                           gpState.ThumbSticks.Left.Y >= Deadzone;
 
                 case ControllerInputID.RJoystick:
-                    return GpState.ThumbSticks.Right.X >= Deadzone ||
-                           GpState.ThumbSticks.Right.Y >= Deadzone;
+                    return gpState.ThumbSticks.Right.X >= Deadzone ||
+                           gpState.ThumbSticks.Right.Y >= Deadzone;
 
                 default:
                     return false;

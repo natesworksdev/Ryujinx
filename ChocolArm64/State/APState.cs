@@ -3,7 +3,7 @@ using System;
 namespace ChocolArm64.State
 {
     [Flags]
-    enum APState
+    internal enum APState
     {
         VBit = 28,
         CBit = 29,
@@ -15,9 +15,9 @@ namespace ChocolArm64.State
         Z = 1 << ZBit,
         N = 1 << NBit,
 
-        NZ = N | Z,
-        CV = C | V,
+        Nz = N | Z,
+        Cv = C | V,
 
-        NZCV = NZ | CV
+        Nzcv = Nz | Cv
     }
 }

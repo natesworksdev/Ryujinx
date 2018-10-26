@@ -3,18 +3,18 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
-    struct AILOpCodeCall : IAILEmit
+    internal struct AILOpCodeCall : IAilEmit
     {
-        private MethodInfo MthdInfo;
+        private MethodInfo _mthdInfo;
 
-        public AILOpCodeCall(MethodInfo MthdInfo)
+        public AILOpCodeCall(MethodInfo mthdInfo)
         {
-            this.MthdInfo = MthdInfo;
+            this._mthdInfo = mthdInfo;
         }
 
-        public void Emit(AILEmitter Context)
+        public void Emit(AILEmitter context)
         {
-            Context.Generator.Emit(OpCodes.Call, MthdInfo);
+            context.Generator.Emit(OpCodes.Call, _mthdInfo);
         }
     }
 }

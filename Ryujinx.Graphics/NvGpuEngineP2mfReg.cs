@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics
 {
-    enum NvGpuEngineP2mfReg
+    internal enum NvGpuEngineP2mfReg
     {
         LineLengthIn = 0x60,
         LineCount    = 0x61,

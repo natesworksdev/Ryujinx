@@ -10,25 +10,22 @@ namespace Ryujinx.Graphics.Gal
         public int  Size  { get; private set; }
 
         public ShaderDeclInfo(
-            string Name,
-            int    Index,
-            bool   IsCb = false,
-            int    Cbuf = 0,
-            int    Size = 1)
+            string name,
+            int    index,
+            bool   isCb = false,
+            int    cbuf = 0,
+            int    size = 1)
         {
-            this.Name  = Name;
-            this.Index = Index;
-            this.IsCb  = IsCb;
-            this.Cbuf  = Cbuf;
-            this.Size  = Size;
+            this.Name  = name;
+            this.Index = index;
+            this.IsCb  = isCb;
+            this.Cbuf  = cbuf;
+            this.Size  = size;
         }
 
-        internal void Enlarge(int NewSize)
+        internal void Enlarge(int newSize)
         {
-            if (Size < NewSize)
-            {
-                Size = NewSize;
-            }
+            if (Size < newSize) Size = newSize;
         }
     }
 }

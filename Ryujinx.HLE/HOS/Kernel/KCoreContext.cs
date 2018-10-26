@@ -2,36 +2,30 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KCoreContext
+    internal class KCoreContext
     {
-        private KScheduler Scheduler;
+        private KScheduler _scheduler;
 
-        private HleCoreManager CoreManager;
+        private HleCoreManager _coreManager;
 
         public bool ContextSwitchNeeded { get; private set; }
 
         public KThread CurrentThread  { get; private set; }
         public KThread SelectedThread { get; private set; }
 
-        public KCoreContext(KScheduler Scheduler, HleCoreManager CoreManager)
+        public KCoreContext(KScheduler scheduler, HleCoreManager coreManager)
         {
-            this.Scheduler   = Scheduler;
-            this.CoreManager = CoreManager;
+            this._scheduler   = scheduler;
+            this._coreManager = coreManager;
         }
 
-        public void SelectThread(KThread Thread)
+        public void SelectThread(KThread thread)
         {
-            SelectedThread = Thread;
+            SelectedThread = thread;
 
-            if (Thread != null)
-            {
-                Thread.LastScheduledTicks = (uint)Environment.TickCount;
-            }
+            if (thread != null) thread.LastScheduledTicks = (uint)Environment.TickCount;
 
-            if (SelectedThread != CurrentThread)
-            {
-                ContextSwitchNeeded = true;
-            }
+            if (SelectedThread != CurrentThread) ContextSwitchNeeded = true;
         }
 
         public void UpdateCurrentThread()
@@ -45,10 +39,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             ContextSwitchNeeded = false;
 
-            if (CurrentThread != null)
-            {
-                CoreManager.GetThread(CurrentThread.Context.Work).Reset();
-            }
+            if (CurrentThread != null) _coreManager.GetThread(CurrentThread.Context.Work).Reset();
 
             CurrentThread = SelectedThread;
 
@@ -56,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 CurrentThread.ClearExclusive();
 
-                CoreManager.GetThread(CurrentThread.Context.Work).Set();
+                _coreManager.GetThread(CurrentThread.Context.Work).Set();
 
                 CurrentThread.Context.Execute();
             }

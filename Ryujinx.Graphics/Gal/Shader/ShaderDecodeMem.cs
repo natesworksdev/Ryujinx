@@ -4,289 +4,263 @@ using static Ryujinx.Graphics.Gal.Shader.ShaderDecodeHelper;
 
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    static partial class ShaderDecode
+    internal static partial class ShaderDecode
     {
         private const int TempRegStart = 0x100;
 
         private const int ____ = 0x0;
-        private const int R___ = 0x1;
-        private const int _G__ = 0x2;
-        private const int RG__ = 0x3;
-        private const int __B_ = 0x4;
-        private const int RGB_ = 0x7;
-        private const int ___A = 0x8;
-        private const int R__A = 0x9;
-        private const int _G_A = 0xa;
-        private const int RG_A = 0xb;
-        private const int __BA = 0xc;
-        private const int R_BA = 0xd;
-        private const int _GBA = 0xe;
-        private const int RGBA = 0xf;
+        private const int R = 0x1;
+        private const int G = 0x2;
+        private const int Rg = 0x3;
+        private const int B = 0x4;
+        private const int Rgb = 0x7;
+        private const int A = 0x8;
+        private const int RA = 0x9;
+        private const int GA = 0xa;
+        private const int RgA = 0xb;
+        private const int Ba = 0xc;
+        private const int RBa = 0xd;
+        private const int Gba = 0xe;
+        private const int Rgba = 0xf;
 
-        private static int[,] MaskLut = new int[,]
+        private static int[,] _maskLut = new int[,]
         {
             { ____, ____, ____, ____, ____, ____, ____, ____ },
-            { R___, _G__, __B_, ___A, RG__, R__A, _G_A, __BA },
-            { R___, _G__, __B_, ___A, RG__, ____, ____, ____ },
-            { RGB_, RG_A, R_BA, _GBA, RGBA, ____, ____, ____ }
+            { R, G, B, A, Rg, RA, GA, Ba },
+            { R, G, B, A, Rg, ____, ____, ____ },
+            { Rgb, RgA, RBa, Gba, Rgba, ____, ____, ____ }
         };
 
-        public static void Ld_A(ShaderIrBlock Block, long OpCode, int Position)
+        public static void Ld_A(ShaderIrBlock block, long opCode, int position)
         {
-            ShaderIrNode[] Opers = OpCode.Abuf20();
+            ShaderIrNode[] opers = opCode.Abuf20();
 
             //Used by GS
-            ShaderIrOperGpr Vertex = OpCode.Gpr39();
+            ShaderIrOperGpr vertex = opCode.Gpr39();
 
-            int Index = 0;
+            int index = 0;
 
-            foreach (ShaderIrNode OperA in Opers)
+            foreach (ShaderIrNode operA in opers)
             {
-                ShaderIrOperGpr OperD = OpCode.Gpr0();
+                ShaderIrOperGpr operD = opCode.Gpr0();
 
-                OperD.Index += Index++;
+                operD.Index += index++;
 
-                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(OperD, OperA)));
+                block.AddNode(opCode.PredNode(new ShaderIrAsg(operD, operA)));
             }
         }
 
-        public static void Ld_C(ShaderIrBlock Block, long OpCode, int Position)
+        public static void Ld_C(ShaderIrBlock block, long opCode, int position)
         {
-            int CbufPos   = OpCode.Read(22, 0x3fff);
-            int CbufIndex = OpCode.Read(36, 0x1f);
-            int Type      = OpCode.Read(48, 7);
+            int cbufPos   = opCode.Read(22, 0x3fff);
+            int cbufIndex = opCode.Read(36, 0x1f);
+            int type      = opCode.Read(48, 7);
 
-            if (Type > 5)
+            if (type > 5) throw new InvalidOperationException();
+
+            ShaderIrOperGpr temp = ShaderIrOperGpr.MakeTemporary();
+
+            block.AddNode(new ShaderIrAsg(temp, opCode.Gpr8()));
+
+            int count = type == 5 ? 2 : 1;
+
+            for (int index = 0; index < count; index++)
             {
-                throw new InvalidOperationException();
-            }
+                ShaderIrOperCbuf operA = new ShaderIrOperCbuf(cbufIndex, cbufPos, temp);
 
-            ShaderIrOperGpr Temp = ShaderIrOperGpr.MakeTemporary();
+                ShaderIrOperGpr operD = opCode.Gpr0();
 
-            Block.AddNode(new ShaderIrAsg(Temp, OpCode.Gpr8()));
+                operA.Pos   += index;
+                operD.Index += index;
 
-            int Count = Type == 5 ? 2 : 1;
+                if (!operD.IsValidRegister) break;
 
-            for (int Index = 0; Index < Count; Index++)
-            {
-                ShaderIrOperCbuf OperA = new ShaderIrOperCbuf(CbufIndex, CbufPos, Temp);
+                ShaderIrNode node = operA;
 
-                ShaderIrOperGpr OperD = OpCode.Gpr0();
-
-                OperA.Pos   += Index;
-                OperD.Index += Index;
-
-                if (!OperD.IsValidRegister)
-                {
-                    break;
-                }
-
-                ShaderIrNode Node = OperA;
-
-                if (Type < 4)
+                if (type < 4)
                 {
                     //This is a 8 or 16 bits type.
-                    bool Signed = (Type & 1) != 0;
+                    bool signed = (type & 1) != 0;
 
-                    int Size = 8 << (Type >> 1);
+                    int size = 8 << (type >> 1);
 
-                    Node = ExtendTo32(Node, Signed, Size);
+                    node = ExtendTo32(node, signed, size);
                 }
 
-                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(OperD, Node)));
+                block.AddNode(opCode.PredNode(new ShaderIrAsg(operD, node)));
             }
         }
 
-        public static void St_A(ShaderIrBlock Block, long OpCode, int Position)
+        public static void St_A(ShaderIrBlock block, long opCode, int position)
         {
-            ShaderIrNode[] Opers = OpCode.Abuf20();
+            ShaderIrNode[] opers = opCode.Abuf20();
 
-            int Index = 0;
+            int index = 0;
 
-            foreach (ShaderIrNode OperA in Opers)
+            foreach (ShaderIrNode operA in opers)
             {
-                ShaderIrOperGpr OperD = OpCode.Gpr0();
+                ShaderIrOperGpr operD = opCode.Gpr0();
 
-                OperD.Index += Index++;
+                operD.Index += index++;
 
-                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(OperA, OperD)));
+                block.AddNode(opCode.PredNode(new ShaderIrAsg(operA, operD)));
             }
         }
 
-        public static void Texq(ShaderIrBlock Block, long OpCode, int Position)
+        public static void Texq(ShaderIrBlock block, long opCode, int position)
         {
-            ShaderIrNode OperD = OpCode.Gpr0();
-            ShaderIrNode OperA = OpCode.Gpr8();
+            ShaderIrNode operD = opCode.Gpr0();
+            ShaderIrNode operA = opCode.Gpr8();
 
-            ShaderTexqInfo Info = (ShaderTexqInfo)(OpCode.Read(22, 0x1f));
+            ShaderTexqInfo info = (ShaderTexqInfo)opCode.Read(22, 0x1f);
 
-            ShaderIrMetaTexq Meta0 = new ShaderIrMetaTexq(Info, 0);
-            ShaderIrMetaTexq Meta1 = new ShaderIrMetaTexq(Info, 1);
+            ShaderIrMetaTexq meta0 = new ShaderIrMetaTexq(info, 0);
+            ShaderIrMetaTexq meta1 = new ShaderIrMetaTexq(info, 1);
 
-            ShaderIrNode OperC = OpCode.Imm13_36();
+            ShaderIrNode operC = opCode.Imm13_36();
 
-            ShaderIrOp Op0 = new ShaderIrOp(ShaderIrInst.Texq, OperA, null, OperC, Meta0);
-            ShaderIrOp Op1 = new ShaderIrOp(ShaderIrInst.Texq, OperA, null, OperC, Meta1);
+            ShaderIrOp op0 = new ShaderIrOp(ShaderIrInst.Texq, operA, null, operC, meta0);
+            ShaderIrOp op1 = new ShaderIrOp(ShaderIrInst.Texq, operA, null, operC, meta1);
 
-            Block.AddNode(OpCode.PredNode(new ShaderIrAsg(OperD, Op0)));
-            Block.AddNode(OpCode.PredNode(new ShaderIrAsg(OperA, Op1))); //Is this right?
+            block.AddNode(opCode.PredNode(new ShaderIrAsg(operD, op0)));
+            block.AddNode(opCode.PredNode(new ShaderIrAsg(operA, op1))); //Is this right?
         }
 
-        public static void Tex(ShaderIrBlock Block, long OpCode, int Position)
+        public static void Tex(ShaderIrBlock block, long opCode, int position)
         {
-            EmitTex(Block, OpCode, GprHandle: false);
+            EmitTex(block, opCode, false);
         }
 
-        public static void Tex_B(ShaderIrBlock Block, long OpCode, int Position)
+        public static void Tex_B(ShaderIrBlock block, long opCode, int position)
         {
-            EmitTex(Block, OpCode, GprHandle: true);
+            EmitTex(block, opCode, true);
         }
 
-        private static void EmitTex(ShaderIrBlock Block, long OpCode, bool GprHandle)
+        private static void EmitTex(ShaderIrBlock block, long opCode, bool gprHandle)
         {
             //TODO: Support other formats.
-            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[2];
+            ShaderIrOperGpr[] coords = new ShaderIrOperGpr[2];
 
-            for (int Index = 0; Index < Coords.Length; Index++)
+            for (int index = 0; index < coords.Length; index++)
             {
-                Coords[Index] = OpCode.Gpr8();
+                coords[index] = opCode.Gpr8();
 
-                Coords[Index].Index += Index;
+                coords[index].Index += index;
 
-                if (Coords[Index].Index > ShaderIrOperGpr.ZRIndex)
-                {
-                    Coords[Index].Index = ShaderIrOperGpr.ZRIndex;
-                }
+                if (coords[index].Index > ShaderIrOperGpr.ZrIndex) coords[index].Index = ShaderIrOperGpr.ZrIndex;
             }
 
-            int ChMask = OpCode.Read(31, 0xf);
+            int chMask = opCode.Read(31, 0xf);
 
-            ShaderIrNode OperC = GprHandle
-                ? (ShaderIrNode)OpCode.Gpr20()
-                : (ShaderIrNode)OpCode.Imm13_36();
+            ShaderIrNode operC = gprHandle
+                ? (ShaderIrNode)opCode.Gpr20()
+                : (ShaderIrNode)opCode.Imm13_36();
 
-            ShaderIrInst Inst = GprHandle ? ShaderIrInst.Texb : ShaderIrInst.Texs;
+            ShaderIrInst inst = gprHandle ? ShaderIrInst.Texb : ShaderIrInst.Texs;
 
-            for (int Ch = 0; Ch < 4; Ch++)
+            for (int ch = 0; ch < 4; ch++)
             {
-                ShaderIrOperGpr Dst = new ShaderIrOperGpr(TempRegStart + Ch);
+                ShaderIrOperGpr dst = new ShaderIrOperGpr(TempRegStart + ch);
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch);
+                ShaderIrMetaTex meta = new ShaderIrMetaTex(ch);
 
-                ShaderIrOp Op = new ShaderIrOp(Inst, Coords[0], Coords[1], OperC, Meta);
+                ShaderIrOp op = new ShaderIrOp(inst, coords[0], coords[1], operC, meta);
 
-                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Op)));
+                block.AddNode(opCode.PredNode(new ShaderIrAsg(dst, op)));
             }
 
-            int RegInc = 0;
+            int regInc = 0;
 
-            for (int Ch = 0; Ch < 4; Ch++)
+            for (int ch = 0; ch < 4; ch++)
             {
-                if (!IsChannelUsed(ChMask, Ch))
-                {
-                    continue;
-                }
+                if (!IsChannelUsed(chMask, ch)) continue;
 
-                ShaderIrOperGpr Src = new ShaderIrOperGpr(TempRegStart + Ch);
+                ShaderIrOperGpr src = new ShaderIrOperGpr(TempRegStart + ch);
 
-                ShaderIrOperGpr Dst = OpCode.Gpr0();
+                ShaderIrOperGpr dst = opCode.Gpr0();
 
-                Dst.Index += RegInc++;
+                dst.Index += regInc++;
 
-                if (Dst.Index >= ShaderIrOperGpr.ZRIndex)
-                {
-                    continue;
-                }
+                if (dst.Index >= ShaderIrOperGpr.ZrIndex) continue;
 
-                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Src)));
+                block.AddNode(opCode.PredNode(new ShaderIrAsg(dst, src)));
             }
         }
 
-        public static void Texs(ShaderIrBlock Block, long OpCode, int Position)
+        public static void Texs(ShaderIrBlock block, long opCode, int position)
         {
-            EmitTexs(Block, OpCode, ShaderIrInst.Texs);
+            EmitTexs(block, opCode, ShaderIrInst.Texs);
         }
 
-        public static void Tlds(ShaderIrBlock Block, long OpCode, int Position)
+        public static void Tlds(ShaderIrBlock block, long opCode, int position)
         {
-            EmitTexs(Block, OpCode, ShaderIrInst.Txlf);
+            EmitTexs(block, opCode, ShaderIrInst.Txlf);
         }
 
-        private static void EmitTexs(ShaderIrBlock Block, long OpCode, ShaderIrInst Inst)
+        private static void EmitTexs(ShaderIrBlock block, long opCode, ShaderIrInst inst)
         {
             //TODO: Support other formats.
-            ShaderIrNode OperA = OpCode.Gpr8();
-            ShaderIrNode OperB = OpCode.Gpr20();
-            ShaderIrNode OperC = OpCode.Imm13_36();
+            ShaderIrNode operA = opCode.Gpr8();
+            ShaderIrNode operB = opCode.Gpr20();
+            ShaderIrNode operC = opCode.Imm13_36();
 
-            int LutIndex;
+            int lutIndex;
 
-            LutIndex  = OpCode.Gpr0 ().Index != ShaderIrOperGpr.ZRIndex ? 1 : 0;
-            LutIndex |= OpCode.Gpr28().Index != ShaderIrOperGpr.ZRIndex ? 2 : 0;
+            lutIndex  = opCode.Gpr0 ().Index != ShaderIrOperGpr.ZrIndex ? 1 : 0;
+            lutIndex |= opCode.Gpr28().Index != ShaderIrOperGpr.ZrIndex ? 2 : 0;
 
-            if (LutIndex == 0)
+            if (lutIndex == 0) return;
+
+            int chMask = _maskLut[lutIndex, opCode.Read(50, 7)];
+
+            for (int ch = 0; ch < 4; ch++)
             {
-                //Both registers are RZ, color is not written anywhere.
-                //So, the intruction is basically a no-op.
-                return;
+                ShaderIrOperGpr dst = new ShaderIrOperGpr(TempRegStart + ch);
+
+                ShaderIrMetaTex meta = new ShaderIrMetaTex(ch);
+
+                ShaderIrOp op = new ShaderIrOp(inst, operA, operB, operC, meta);
+
+                block.AddNode(opCode.PredNode(new ShaderIrAsg(dst, op)));
             }
 
-            int ChMask = MaskLut[LutIndex, OpCode.Read(50, 7)];
-
-            for (int Ch = 0; Ch < 4; Ch++)
-            {
-                ShaderIrOperGpr Dst = new ShaderIrOperGpr(TempRegStart + Ch);
-
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch);
-
-                ShaderIrOp Op = new ShaderIrOp(Inst, OperA, OperB, OperC, Meta);
-
-                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Op)));
-            }
-
-            int RegInc = 0;
+            int regInc = 0;
 
             ShaderIrOperGpr GetDst()
             {
-                ShaderIrOperGpr Dst;
+                ShaderIrOperGpr dst;
 
-                switch (LutIndex)
+                switch (lutIndex)
                 {
-                    case 1: Dst = OpCode.Gpr0();  break;
-                    case 2: Dst = OpCode.Gpr28(); break;
-                    case 3: Dst = (RegInc >> 1) != 0
-                        ? OpCode.Gpr28()
-                        : OpCode.Gpr0 (); break;
+                    case 1: dst = opCode.Gpr0();  break;
+                    case 2: dst = opCode.Gpr28(); break;
+                    case 3: dst = regInc >> 1 != 0
+                        ? opCode.Gpr28()
+                        : opCode.Gpr0 (); break;
 
                     default: throw new InvalidOperationException();
                 }
 
-                Dst.Index += RegInc++ & 1;
+                dst.Index += regInc++ & 1;
 
-                return Dst;
+                return dst;
             }
 
-            for (int Ch = 0; Ch < 4; Ch++)
+            for (int ch = 0; ch < 4; ch++)
             {
-                if (!IsChannelUsed(ChMask, Ch))
-                {
-                    continue;
-                }
+                if (!IsChannelUsed(chMask, ch)) continue;
 
-                ShaderIrOperGpr Src = new ShaderIrOperGpr(TempRegStart + Ch);
+                ShaderIrOperGpr src = new ShaderIrOperGpr(TempRegStart + ch);
 
-                ShaderIrOperGpr Dst = GetDst();
+                ShaderIrOperGpr dst = GetDst();
 
-                if (Dst.Index != ShaderIrOperGpr.ZRIndex)
-                {
-                    Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Src)));
-                }
+                if (dst.Index != ShaderIrOperGpr.ZrIndex) block.AddNode(opCode.PredNode(new ShaderIrAsg(dst, src)));
             }
         }
 
-        private static bool IsChannelUsed(int ChMask, int Ch)
+        private static bool IsChannelUsed(int chMask, int ch)
         {
-            return (ChMask & (1 << Ch)) != 0;
+            return (chMask & (1 << ch)) != 0;
         }
     }
 }

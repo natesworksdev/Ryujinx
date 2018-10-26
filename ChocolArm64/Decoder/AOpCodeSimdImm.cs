@@ -3,75 +3,75 @@ using ChocolArm64.State;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeSimdImm : AOpCode, IAOpCodeSimd
+    internal class AOpCodeSimdImm : AOpCode, IAOpCodeSimd
     {
         public int  Rd   { get; private set; }
         public long Imm  { get; private set; }
         public int  Size { get; private set; }
 
-        public AOpCodeSimdImm(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdImm(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Rd = OpCode & 0x1f;
+            Rd = opCode & 0x1f;
 
-            int CMode = (OpCode >> 12) & 0xf;
-            int Op    = (OpCode >> 29) & 0x1;
+            int cMode = (opCode >> 12) & 0xf;
+            int op    = (opCode >> 29) & 0x1;
 
-            int ModeLow  = CMode &  1;
-            int ModeHigh = CMode >> 1;
+            int modeLow  = cMode &  1;
+            int modeHigh = cMode >> 1;
 
-            long Imm;
+            long imm;
 
-            Imm  = ((uint)OpCode >>  5) & 0x1f;
-            Imm |= ((uint)OpCode >> 11) & 0xe0;
+            imm  = ((uint)opCode >>  5) & 0x1f;
+            imm |= ((uint)opCode >> 11) & 0xe0;
 
-            if (ModeHigh == 0b111)
+            if (modeHigh == 0b111)
             {
-                Size = ModeLow != 0 ? Op : 3;
+                Size = modeLow != 0 ? op : 3;
 
-                switch (Op | (ModeLow << 1))
+                switch (op | (modeLow << 1))
                 {
                     case 0:
                         //64-bits Immediate.
                         //Transform abcd efgh into abcd efgh abcd efgh ...
-                        Imm = (long)((ulong)Imm * 0x0101010101010101);
+                        imm = (long)((ulong)imm * 0x0101010101010101);
                         break;
 
                     case 1:
                         //64-bits Immediate.
                         //Transform abcd efgh into aaaa aaaa bbbb bbbb ...
-                        Imm = (Imm & 0xf0) >> 4 | (Imm & 0x0f) << 4;
-                        Imm = (Imm & 0xcc) >> 2 | (Imm & 0x33) << 2;
-                        Imm = (Imm & 0xaa) >> 1 | (Imm & 0x55) << 1;
+                        imm = ((imm & 0xf0) >> 4) | ((imm & 0x0f) << 4);
+                        imm = ((imm & 0xcc) >> 2) | ((imm & 0x33) << 2);
+                        imm = ((imm & 0xaa) >> 1) | ((imm & 0x55) << 1);
 
-                        Imm = (long)((ulong)Imm * 0x8040201008040201);
-                        Imm = (long)((ulong)Imm & 0x8080808080808080);
+                        imm = (long)((ulong)imm * 0x8040201008040201);
+                        imm = (long)((ulong)imm & 0x8080808080808080);
 
-                        Imm |= Imm >> 4;
-                        Imm |= Imm >> 2;
-                        Imm |= Imm >> 1;
+                        imm |= imm >> 4;
+                        imm |= imm >> 2;
+                        imm |= imm >> 1;
                         break;
 
                     case 2:
                     case 3:
                         //Floating point Immediate.
-                        Imm = ADecoderHelper.DecodeImm8Float(Imm, Size);
+                        imm = ADecoderHelper.DecodeImm8Float(imm, Size);
                         break;
                 }
             }
-            else if ((ModeHigh & 0b110) == 0b100)
+            else if ((modeHigh & 0b110) == 0b100)
             {
                 //16-bits shifted Immediate.
-                Size = 1; Imm <<= (ModeHigh & 1) << 3; 
+                Size = 1; imm <<= (modeHigh & 1) << 3; 
             }
-            else if ((ModeHigh & 0b100) == 0b000)
+            else if ((modeHigh & 0b100) == 0b000)
             {
                 //32-bits shifted Immediate.
-                Size = 2; Imm <<= ModeHigh << 3; 
+                Size = 2; imm <<= modeHigh << 3; 
             }
-            else if ((ModeHigh & 0b111) == 0b110)
+            else if ((modeHigh & 0b111) == 0b110)
             {
                 //32-bits shifted Immediate (fill with ones).
-                Size = 2; Imm = ShlOnes(Imm, 8 << ModeLow);
+                Size = 2; imm = ShlOnes(imm, 8 << modeLow);
             }
             else
             {
@@ -79,23 +79,19 @@ namespace ChocolArm64.Decoder
                 Size = 0;
             }
 
-            this.Imm = Imm;
+            this.Imm = imm;
 
-            RegisterSize = ((OpCode >> 30) & 1) != 0
-                ? ARegisterSize.SIMD128
-                : ARegisterSize.SIMD64;
+            RegisterSize = ((opCode >> 30) & 1) != 0
+                ? ARegisterSize.Simd128
+                : ARegisterSize.Simd64;
         }
 
-        private static long ShlOnes(long Value, int Shift)
+        private static long ShlOnes(long value, int shift)
         {
-            if (Shift != 0)
-            {
-                return Value << Shift | (long)(ulong.MaxValue >> (64 - Shift));
-            }
+            if (shift != 0)
+                return (value << shift) | (long)(ulong.MaxValue >> (64 - shift));
             else
-            {
-                return Value;
-            }
+                return value;
         }
     }
 }

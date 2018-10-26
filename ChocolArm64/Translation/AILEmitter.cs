@@ -7,182 +7,167 @@ using System.Runtime.Intrinsics;
 
 namespace ChocolArm64.Translation
 {
-    class AILEmitter
+    internal class AILEmitter
     {
         public ALocalAlloc LocalAlloc { get; private set; }
 
         public ILGenerator Generator { get; private set; }
 
-        private Dictionary<ARegister, int> Locals;
+        private Dictionary<ARegister, int> _locals;
 
-        private AILBlock[] ILBlocks;
+        private AILBlock[] _ilBlocks;
 
-        private AILBlock Root;
+        private AILBlock _root;
 
-        private ATranslatedSub Subroutine;
+        private ATranslatedSub _subroutine;
 
-        private string SubName;
+        private string _subName;
 
-        private int LocalsCount;
+        private int _localsCount;
 
-        public AILEmitter(ABlock[] Graph, ABlock Root, string SubName)
+        public AILEmitter(ABlock[] graph, ABlock root, string subName)
         {
-            this.SubName = SubName;
+            this._subName = subName;
 
-            Locals = new Dictionary<ARegister, int>();
+            _locals = new Dictionary<ARegister, int>();
 
-            ILBlocks = new AILBlock[Graph.Length];
+            _ilBlocks = new AILBlock[graph.Length];
 
-            AILBlock GetBlock(int Index)
+            AILBlock GetBlock(int index)
             {
-                if (Index < 0 || Index >= ILBlocks.Length)
-                {
-                    return null;
-                }
+                if (index < 0 || index >= _ilBlocks.Length) return null;
 
-                if (ILBlocks[Index] == null)
-                {
-                    ILBlocks[Index] = new AILBlock();
-                }
+                if (_ilBlocks[index] == null) _ilBlocks[index] = new AILBlock();
 
-                return ILBlocks[Index];
+                return _ilBlocks[index];
             }
 
-            for (int Index = 0; Index < ILBlocks.Length; Index++)
+            for (int index = 0; index < _ilBlocks.Length; index++)
             {
-                AILBlock Block = GetBlock(Index);
+                AILBlock block = GetBlock(index);
 
-                Block.Next   = GetBlock(Array.IndexOf(Graph, Graph[Index].Next));
-                Block.Branch = GetBlock(Array.IndexOf(Graph, Graph[Index].Branch));
+                block.Next   = GetBlock(Array.IndexOf(graph, graph[index].Next));
+                block.Branch = GetBlock(Array.IndexOf(graph, graph[index].Branch));
             }
 
-            this.Root = ILBlocks[Array.IndexOf(Graph, Root)];
+            this._root = _ilBlocks[Array.IndexOf(graph, root)];
         }
 
-        public AILBlock GetILBlock(int Index) => ILBlocks[Index];
+        public AILBlock GetIlBlock(int index)
+        {
+            return _ilBlocks[index];
+        }
 
         public ATranslatedSub GetSubroutine()
         {
-            LocalAlloc = new ALocalAlloc(ILBlocks, Root);
+            LocalAlloc = new ALocalAlloc(_ilBlocks, _root);
 
             InitSubroutine();
             InitLocals();
 
-            foreach (AILBlock ILBlock in ILBlocks)
-            {
-                ILBlock.Emit(this);
-            }
+            foreach (AILBlock ilBlock in _ilBlocks) ilBlock.Emit(this);
 
-            return Subroutine;
+            return _subroutine;
         }
 
         private void InitSubroutine()
         {
             List<ARegister> Params = new List<ARegister>();
 
-            void SetParams(long Inputs, ARegisterType BaseType)
+            void SetParams(long inputs, ARegisterType baseType)
             {
-                for (int Bit = 0; Bit < 64; Bit++)
+                for (int bit = 0; bit < 64; bit++)
                 {
-                    long Mask = 1L << Bit;
+                    long mask = 1L << bit;
 
-                    if ((Inputs & Mask) != 0)
-                    {
-                        Params.Add(GetRegFromBit(Bit, BaseType));
-                    }
+                    if ((inputs & mask) != 0) Params.Add(GetRegFromBit(bit, baseType));
                 }
             }
 
-            SetParams(LocalAlloc.GetIntInputs(Root), ARegisterType.Int);
-            SetParams(LocalAlloc.GetVecInputs(Root), ARegisterType.Vector);
+            SetParams(LocalAlloc.GetIntInputs(_root), ARegisterType.Int);
+            SetParams(LocalAlloc.GetVecInputs(_root), ARegisterType.Vector);
 
-            DynamicMethod Mthd = new DynamicMethod(SubName, typeof(long), GetParamTypes(Params));
+            DynamicMethod mthd = new DynamicMethod(_subName, typeof(long), GetParamTypes(Params));
 
-            Generator = Mthd.GetILGenerator();
+            Generator = mthd.GetILGenerator();
 
-            Subroutine = new ATranslatedSub(Mthd, Params);
+            _subroutine = new ATranslatedSub(mthd, Params);
         }
 
         private void InitLocals()
         {
-            int ParamsStart = ATranslatedSub.FixedArgTypes.Length;
+            int paramsStart = ATranslatedSub.FixedArgTypes.Length;
 
-            Locals = new Dictionary<ARegister, int>();
+            _locals = new Dictionary<ARegister, int>();
 
-            for (int Index = 0; Index < Subroutine.Params.Count; Index++)
+            for (int index = 0; index < _subroutine.Params.Count; index++)
             {
-                ARegister Reg = Subroutine.Params[Index];
+                ARegister reg = _subroutine.Params[index];
 
-                Generator.EmitLdarg(Index + ParamsStart);
-                Generator.EmitStloc(GetLocalIndex(Reg));
+                Generator.EmitLdarg(index + paramsStart);
+                Generator.EmitStloc(GetLocalIndex(reg));
             }
         }
 
         private Type[] GetParamTypes(IList<ARegister> Params)
         {
-            Type[] FixedArgs = ATranslatedSub.FixedArgTypes;
+            Type[] fixedArgs = ATranslatedSub.FixedArgTypes;
 
-            Type[] Output = new Type[Params.Count + FixedArgs.Length];
+            Type[] output = new Type[Params.Count + fixedArgs.Length];
 
-            FixedArgs.CopyTo(Output, 0);
+            fixedArgs.CopyTo(output, 0);
 
-            int TypeIdx = FixedArgs.Length;
+            int typeIdx = fixedArgs.Length;
 
-            for (int Index = 0; Index < Params.Count; Index++)
-            {
-                Output[TypeIdx++] = GetFieldType(Params[Index].Type);
-            }
+            for (int index = 0; index < Params.Count; index++) output[typeIdx++] = GetFieldType(Params[index].Type);
 
-            return Output;
+            return output;
         }
 
-        public int GetLocalIndex(ARegister Reg)
+        public int GetLocalIndex(ARegister reg)
         {
-            if (!Locals.TryGetValue(Reg, out int Index))
+            if (!_locals.TryGetValue(reg, out int index))
             {
-                Generator.DeclareLocal(GetLocalType(Reg));
+                Generator.DeclareLocal(GetLocalType(reg));
 
-                Index = LocalsCount++;
+                index = _localsCount++;
 
-                Locals.Add(Reg, Index);
+                _locals.Add(reg, index);
             }
 
-            return Index;
+            return index;
         }
 
-        public Type GetLocalType(ARegister Reg) => GetFieldType(Reg.Type);
-
-        public Type GetFieldType(ARegisterType RegType)
+        public Type GetLocalType(ARegister reg)
         {
-            switch (RegType)
+            return GetFieldType(reg.Type);
+        }
+
+        public Type GetFieldType(ARegisterType regType)
+        {
+            switch (regType)
             {
                 case ARegisterType.Flag:   return typeof(bool);
                 case ARegisterType.Int:    return typeof(ulong);
                 case ARegisterType.Vector: return typeof(Vector128<float>);
             }
 
-            throw new ArgumentException(nameof(RegType));
+            throw new ArgumentException(nameof(regType));
         }
 
-        public static ARegister GetRegFromBit(int Bit, ARegisterType BaseType)
+        public static ARegister GetRegFromBit(int bit, ARegisterType baseType)
         {
-            if (Bit < 32)
-            {
-                return new ARegister(Bit, BaseType);
-            }
-            else if (BaseType == ARegisterType.Int)
-            {
-                return new ARegister(Bit & 0x1f, ARegisterType.Flag);
-            }
+            if (bit < 32)
+                return new ARegister(bit, baseType);
+            else if (baseType == ARegisterType.Int)
+                return new ARegister(bit & 0x1f, ARegisterType.Flag);
             else
-            {
-                throw new ArgumentOutOfRangeException(nameof(Bit));
-            }
+                throw new ArgumentOutOfRangeException(nameof(bit));
         }
 
-        public static bool IsRegIndex(int Index)
+        public static bool IsRegIndex(int index)
         {
-            return Index >= 0 && Index < 32;
+            return index >= 0 && index < 32;
         }
     }
 }

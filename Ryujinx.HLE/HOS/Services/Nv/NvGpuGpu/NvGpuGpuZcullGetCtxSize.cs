@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 {
-    struct NvGpuGpuZcullGetCtxSize
+    internal struct NvGpuGpuZcullGetCtxSize
     {
         public int Size;
     }

@@ -2,10 +2,10 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeBImm : AOpCode
+    internal class AOpCodeBImm : AOpCode
     {
         public long Imm { get; protected set; }
 
-        public AOpCodeBImm(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode) { }
+        public AOpCodeBImm(AInst inst, long position, int opCode) : base(inst, position, opCode) { }
     }
 }

@@ -1,15 +1,15 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    class ShaderIrMetaTexq : ShaderIrMeta
+    internal class ShaderIrMetaTexq : ShaderIrMeta
     {
         public ShaderTexqInfo Info { get; private set; }
 
         public int Elem { get; private set; }
 
-        public ShaderIrMetaTexq(ShaderTexqInfo Info, int Elem)
+        public ShaderIrMetaTexq(ShaderTexqInfo info, int elem)
         {
-            this.Info = Info;
-            this.Elem = Elem;
+            this.Info = info;
+            this.Elem = elem;
         }
     }
 }

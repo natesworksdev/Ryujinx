@@ -3,25 +3,25 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    partial class KScheduler
+    internal partial class KScheduler
     {
         private const int RoundRobinTimeQuantumMs = 10;
 
-        private int CurrentCore;
+        private int _currentCore;
 
         public bool MultiCoreScheduling { get; set; }
 
-        private HleCoreManager CoreManager;
+        private HleCoreManager _coreManager;
 
-        private bool KeepPreempting;
+        private bool _keepPreempting;
 
         public void StartAutoPreemptionThread()
         {
-            Thread PreemptionThread = new Thread(PreemptCurrentThread);
+            Thread preemptionThread = new Thread(PreemptCurrentThread);
 
-            KeepPreempting = true;
+            _keepPreempting = true;
 
-            PreemptionThread.Start();
+            preemptionThread.Start();
         }
 
         public void ContextSwitch()
@@ -30,73 +30,61 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 if (MultiCoreScheduling)
                 {
-                    int SelectedCount = 0;
+                    int selectedCount = 0;
 
-                    for (int Core = 0; Core < KScheduler.CpuCoresCount; Core++)
+                    for (int core = 0; core < KScheduler.CpuCoresCount; core++)
                     {
-                        KCoreContext CoreContext = CoreContexts[Core];
+                        KCoreContext coreContext = CoreContexts[core];
 
-                        if (CoreContext.ContextSwitchNeeded && (CoreContext.CurrentThread?.Context.IsCurrentThread() ?? false))
-                        {
-                            CoreContext.ContextSwitch();
-                        }
+                        if (coreContext.ContextSwitchNeeded && (coreContext.CurrentThread?.Context.IsCurrentThread() ?? false)) coreContext.ContextSwitch();
 
-                        if (CoreContext.CurrentThread?.Context.IsCurrentThread() ?? false)
-                        {
-                            SelectedCount++;
-                        }
+                        if (coreContext.CurrentThread?.Context.IsCurrentThread() ?? false) selectedCount++;
                     }
 
-                    if (SelectedCount == 0)
-                    {
-                        CoreManager.GetThread(Thread.CurrentThread).Reset();
-                    }
-                    else if (SelectedCount == 1)
-                    {
-                        CoreManager.GetThread(Thread.CurrentThread).Set();
-                    }
+                    if (selectedCount == 0)
+                        _coreManager.GetThread(Thread.CurrentThread).Reset();
+                    else if (selectedCount == 1)
+                        _coreManager.GetThread(Thread.CurrentThread).Set();
                     else
-                    {
                         throw new InvalidOperationException("Thread scheduled in more than one core!");
-                    }
                 }
                 else
                 {
-                    KThread CurrentThread = CoreContexts[CurrentCore].CurrentThread;
+                    KThread currentThread = CoreContexts[_currentCore].CurrentThread;
 
-                    bool HasThreadExecuting = CurrentThread != null;
+                    bool hasThreadExecuting = currentThread != null;
 
-                    if (HasThreadExecuting)
+                    if (hasThreadExecuting)
                     {
                         //If this is not the thread that is currently executing, we need
                         //to request an interrupt to allow safely starting another thread.
-                        if (!CurrentThread.Context.IsCurrentThread())
+                        if (!currentThread.Context.IsCurrentThread())
                         {
-                            CurrentThread.Context.RequestInterrupt();
+                            currentThread.Context.RequestInterrupt();
 
                             return;
                         }
 
-                        CoreManager.GetThread(CurrentThread.Context.Work).Reset();
+                        _coreManager.GetThread(currentThread.Context.Work).Reset();
                     }
 
                     //Advance current core and try picking a thread,
                     //keep advancing if it is null.
-                    for (int Core = 0; Core < 4; Core++)
+                    for (int core = 0; core < 4; core++)
                     {
-                        CurrentCore = (CurrentCore + 1) % CpuCoresCount;
+                        _currentCore = (_currentCore + 1) % CpuCoresCount;
 
-                        KCoreContext CoreContext = CoreContexts[CurrentCore];
+                        KCoreContext coreContext = CoreContexts[_currentCore];
 
-                        CoreContext.UpdateCurrentThread();
+                        coreContext.UpdateCurrentThread();
 
-                        if (CoreContext.CurrentThread != null)
+                        if (coreContext.CurrentThread != null)
                         {
-                            CoreContext.CurrentThread.ClearExclusive();
+                            coreContext.CurrentThread.ClearExclusive();
 
-                            CoreManager.GetThread(CoreContext.CurrentThread.Context.Work).Set();
+                            _coreManager.GetThread(coreContext.CurrentThread.Context.Work).Set();
 
-                            CoreContext.CurrentThread.Context.Execute();
+                            coreContext.CurrentThread.Context.Execute();
 
                             break;
                         }
@@ -104,14 +92,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     //If nothing was running before, then we are on a "external"
                     //HLE thread, we don't need to wait.
-                    if (!HasThreadExecuting)
-                    {
-                        return;
-                    }
+                    if (!hasThreadExecuting) return;
                 }
             }
 
-            CoreManager.GetThread(Thread.CurrentThread).WaitOne();
+            _coreManager.GetThread(Thread.CurrentThread).WaitOne();
         }
 
         private void PreemptCurrentThread()
@@ -119,13 +104,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             //Preempts current thread every 10 milliseconds on a round-robin fashion,
             //when multi core scheduling is disabled, to try ensuring that all threads
             //gets a chance to run.
-            while (KeepPreempting)
+            while (_keepPreempting)
             {
                 lock (CoreContexts)
                 {
-                    KThread CurrentThread = CoreContexts[CurrentCore].CurrentThread;
+                    KThread currentThread = CoreContexts[_currentCore].CurrentThread;
 
-                    CurrentThread?.Context.RequestInterrupt();
+                    currentThread?.Context.RequestInterrupt();
                 }
 
                 PreemptThreads();
@@ -134,16 +119,16 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        public void StopThread(KThread Thread)
+        public void StopThread(KThread thread)
         {
-            Thread.Context.StopExecution();
+            thread.Context.StopExecution();
 
-            CoreManager.GetThread(Thread.Context.Work).Set();
+            _coreManager.GetThread(thread.Context.Work).Set();
         }
 
-        public void RemoveThread(KThread Thread)
+        public void RemoveThread(KThread thread)
         {
-            CoreManager.RemoveThread(Thread.Context.Work);
+            _coreManager.RemoveThread(thread.Context.Work);
         }
     }
 }

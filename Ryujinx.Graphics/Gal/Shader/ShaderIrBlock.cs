@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    class ShaderIrBlock
+    internal class ShaderIrBlock
     {
         public int Position    { get; set; }
         public int EndPosition { get; set; }
@@ -14,18 +14,18 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public List<ShaderIrNode> Nodes { get; private set; }
 
-        public ShaderIrBlock(int Position)
+        public ShaderIrBlock(int position)
         {
-            this.Position = Position;
+            this.Position = position;
 
             Sources = new List<ShaderIrBlock>();
 
             Nodes = new List<ShaderIrNode>();
         }
 
-        public void AddNode(ShaderIrNode Node)
+        public void AddNode(ShaderIrNode node)
         {
-            Nodes.Add(Node);
+            Nodes.Add(node);
         }
 
         public ShaderIrNode[] GetNodes()
@@ -35,10 +35,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrNode GetLastNode()
         {
-            if (Nodes.Count > 0)
-            {
-                return Nodes[Nodes.Count - 1];
-            }
+            if (Nodes.Count > 0) return Nodes[Nodes.Count - 1];
 
             return null;
         }

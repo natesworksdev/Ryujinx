@@ -4,36 +4,32 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Pctl
 {
-    class IParentalControlService : IpcService
+    internal class IParentalControlService : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        private bool Initialized = false;
+        private bool _initialized = false;
 
-        private bool NeedInitialize;
+        private bool _needInitialize;
 
-        public IParentalControlService(bool NeedInitialize = true)
+        public IParentalControlService(bool needInitialize = true)
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 1, Initialize }
             };
 
-            this.NeedInitialize = NeedInitialize;
+            this._needInitialize = needInitialize;
         }
 
-        public long Initialize(ServiceCtx Context)
+        public long Initialize(ServiceCtx context)
         {
-            if (NeedInitialize && !Initialized)
-            {
-                Initialized = true;
-            }
+            if (_needInitialize && !_initialized)
+                _initialized = true;
             else
-            {
                 Logger.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
-            }
 
             return 0;
         }

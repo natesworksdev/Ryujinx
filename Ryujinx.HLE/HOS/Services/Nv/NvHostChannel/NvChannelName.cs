@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 {
-    enum NvChannelName
+    internal enum NvChannelName
     {
         Gpu
     }

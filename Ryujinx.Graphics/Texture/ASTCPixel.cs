@@ -3,24 +3,24 @@ using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Texture
 {
-    class ASTCPixel
+    internal class ASTCPixel
     {
         public short R { get; set; }
         public short G { get; set; }
         public short B { get; set; }
         public short A { get; set; }
 
-        byte[] BitDepth = new byte[4];
+        private byte[] _bitDepth = new byte[4];
 
-        public ASTCPixel(short _A, short _R, short _G, short _B)
+        public ASTCPixel(short a, short r, short g, short b)
         {
-            A = _A;
-            R = _R;
-            G = _G;
-            B = _B;
+            A = a;
+            R = r;
+            G = g;
+            B = b;
 
             for (int i = 0; i < 4; i++)
-                BitDepth[i] = 8;
+                _bitDepth[i] = 8;
         }
 
         public void ClampByte()
@@ -31,9 +31,9 @@ namespace Ryujinx.Graphics.Texture
             A = Math.Min(Math.Max(A, (short)0), (short)255);
         }
 
-        public short GetComponent(int Index)
+        public short GetComponent(int index)
         {
-            switch(Index)
+            switch(index)
             {
                 case 0: return A;
                 case 1: return R;
@@ -44,95 +44,95 @@ namespace Ryujinx.Graphics.Texture
             return 0;
         }
 
-        public void SetComponent(int Index, int Value)
+        public void SetComponent(int index, int value)
         {
-            switch (Index)
+            switch (index)
             {
                 case 0:
-                    A = (short)Value;
+                    A = (short)value;
                     break;
                 case 1:
-                    R = (short)Value;
+                    R = (short)value;
                     break;
                 case 2:
-                    G = (short)Value;
+                    G = (short)value;
                     break;
                 case 3:
-                    B = (short)Value;
+                    B = (short)value;
                     break;
             }
         }
 
-        public void ChangeBitDepth(byte[] Depth)
+        public void ChangeBitDepth(byte[] depth)
         {
             for(int i = 0; i< 4; i++)
             {
-                int Value = ChangeBitDepth(GetComponent(i), BitDepth[i], Depth[i]);
+                int value = ChangeBitDepth(GetComponent(i), _bitDepth[i], depth[i]);
 
-                SetComponent(i, Value);
-                BitDepth[i] = Depth[i];
+                SetComponent(i, value);
+                _bitDepth[i] = depth[i];
             }
         }
 
-        short ChangeBitDepth(short Value, byte OldDepth, byte NewDepth)
+        private short ChangeBitDepth(short value, byte oldDepth, byte newDepth)
         {
-            Debug.Assert(NewDepth <= 8);
-            Debug.Assert(OldDepth <= 8);
+            Debug.Assert(newDepth <= 8);
+            Debug.Assert(oldDepth <= 8);
 
-            if (OldDepth == NewDepth)
+            if (oldDepth == newDepth)
             {
                 // Do nothing
-                return Value;
+                return value;
             }
-            else if (OldDepth == 0 && NewDepth != 0)
+            else if (oldDepth == 0 && newDepth != 0)
             {
-                return (short)((1 << NewDepth) - 1);
+                return (short)((1 << newDepth) - 1);
             }
-            else if (NewDepth > OldDepth)
+            else if (newDepth > oldDepth)
             {
-                return (short)BitArrayStream.Replicate(Value, OldDepth, NewDepth);
+                return (short)BitArrayStream.Replicate(value, oldDepth, newDepth);
             }
             else
             {
                 // oldDepth > newDepth
-                if (NewDepth == 0)
+                if (newDepth == 0)
                 {
                     return 0xFF;
                 }
                 else
                 {
-                    byte BitsWasted = (byte)(OldDepth - NewDepth);
-                    short TempValue = Value;
+                    byte bitsWasted = (byte)(oldDepth - newDepth);
+                    short tempValue = value;
 
-                    TempValue = (short)((TempValue + (1 << (BitsWasted - 1))) >> BitsWasted);
-                    TempValue = Math.Min(Math.Max((short)0, TempValue), (short)((1 << NewDepth) - 1));
+                    tempValue = (short)((tempValue + (1 << (bitsWasted - 1))) >> bitsWasted);
+                    tempValue = Math.Min(Math.Max((short)0, tempValue), (short)((1 << newDepth) - 1));
 
-                    return (byte)(TempValue);
+                    return (byte)tempValue;
                 }
             }
         }
 
         public int Pack()
         {
-            ASTCPixel NewPixel   = new ASTCPixel(A, R, G, B);
+            ASTCPixel newPixel   = new ASTCPixel(A, R, G, B);
             byte[] eightBitDepth = { 8, 8, 8, 8 };
 
-            NewPixel.ChangeBitDepth(eightBitDepth);
+            newPixel.ChangeBitDepth(eightBitDepth);
 
-            return (byte)NewPixel.A << 24 |
-                   (byte)NewPixel.B << 16 |
-                   (byte)NewPixel.G << 8  |
-                   (byte)NewPixel.R << 0;
+            return ((byte)newPixel.A << 24) |
+                   ((byte)newPixel.B << 16) |
+                   ((byte)newPixel.G << 8)  |
+                   ((byte)newPixel.R << 0);
         }
 
         // Adds more precision to the blue channel as described
         // in C.2.14
         public static ASTCPixel BlueContract(int a, int r, int g, int b)
         {
-            return new ASTCPixel((short)(a),
+            return new ASTCPixel((short)a,
                                  (short)((r + b) >> 1),
                                  (short)((g + b) >> 1),
-                                 (short)(b));
+                                 (short)b);
         }
     }
 }

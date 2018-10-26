@@ -1,6 +1,6 @@
 namespace ChocolArm64.State
 {
-    enum ARegisterType
+    internal enum ARegisterType
     {
         Flag,
         Int,

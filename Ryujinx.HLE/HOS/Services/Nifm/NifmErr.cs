@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nifm
 {
-    static class NifmErr
+    internal static class NifmErr
     {
         public const int NoInternetConnection = 300;
     }

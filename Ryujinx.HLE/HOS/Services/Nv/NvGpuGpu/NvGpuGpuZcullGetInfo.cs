@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 {
-    struct NvGpuGpuZcullGetInfo
+    internal struct NvGpuGpuZcullGetInfo
     {
         public int WidthAlignPixels;
         public int HeightAlignPixels;

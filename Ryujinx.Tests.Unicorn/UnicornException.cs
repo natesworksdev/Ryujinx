@@ -12,12 +12,6 @@ namespace Ryujinx.Tests.Unicorn
             Error = error;
         }
 
-        public override string Message
-        {
-            get
-            {
-                return Marshal.PtrToStringAnsi(Native.Interface.uc_strerror(Error));
-            }
-        }
+        public override string Message => Marshal.PtrToStringAnsi(Native.Interface.uc_strerror(Error));
     }
 }

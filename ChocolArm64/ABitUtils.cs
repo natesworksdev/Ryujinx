@@ -1,61 +1,53 @@
 namespace ChocolArm64
 {
-    static class ABitUtils
+    internal static class ABitUtils
     {
-        public static int CountBitsSet(long Value)
+        public static int CountBitsSet(long value)
         {
-            int Count = 0;
+            int count = 0;
 
-            for (int Bit = 0; Bit < 64; Bit++)
-            {
-                Count += (int)(Value >> Bit) & 1;
-            }
+            for (int bit = 0; bit < 64; bit++) count += (int)(value >> bit) & 1;
 
-            return Count;
+            return count;
         }
 
-        public static int HighestBitSet32(int Value)
+        public static int HighestBitSet32(int value)
         {
-            for (int Bit = 31; Bit >= 0; Bit--)
-            {
-                if (((Value >> Bit) & 1) != 0)
-                {
-                    return Bit;
-                }
-            }
+            for (int bit = 31; bit >= 0; bit--)
+                if (((value >> bit) & 1) != 0) return bit;
 
             return -1;
         }
 
-        private static readonly sbyte[] HbsNibbleTbl = { -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3 };
+        private static readonly sbyte[] _hbsNibbleTbl = { -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3 };
 
-        public static int HighestBitSetNibble(int Value) => HbsNibbleTbl[Value & 0b1111];
-
-        public static long Replicate(long Bits, int Size)
+        public static int HighestBitSetNibble(int value)
         {
-            long Output = 0;
-
-            for (int Bit = 0; Bit < 64; Bit += Size)
-            {
-                Output |= Bits << Bit;
-            }
-
-            return Output;
+            return _hbsNibbleTbl[value & 0b1111];
         }
 
-        public static long FillWithOnes(int Bits)
+        public static long Replicate(long bits, int size)
         {
-            return Bits == 64 ? -1L : (1L << Bits) - 1;
+            long output = 0;
+
+            for (int bit = 0; bit < 64; bit += size) output |= bits << bit;
+
+            return output;
         }
 
-        public static long RotateRight(long Bits, int Shift, int Size)
+        public static long FillWithOnes(int bits)
         {
-            return (Bits >> Shift) | (Bits << (Size - Shift));
+            return bits == 64 ? -1L : (1L << bits) - 1;
         }
 
-        public static bool IsPow2(int Value)
+        public static long RotateRight(long bits, int shift, int size)
         {
-            return Value != 0 && (Value & (Value - 1)) == 0;
+            return (bits >> shift) | (bits << (size - shift));
+        }
+
+        public static bool IsPow2(int value)
+        {
+            return value != 0 && (value & (value - 1)) == 0;
         }
     }
 }

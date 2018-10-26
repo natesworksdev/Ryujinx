@@ -2,28 +2,28 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeBfm : AOpCodeAlu
+    internal class AOpCodeBfm : AOpCodeAlu
     {
         public long WMask { get; private set; }
-        public long TMask { get; private set; }
+        public long Mask { get; private set; }
         public int  Pos   { get; private set; }
         public int  Shift { get; private set; }
 
-        public AOpCodeBfm(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeBfm(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            var BM = ADecoderHelper.DecodeBitMask(OpCode, false);
+            var bm = ADecoderHelper.DecodeBitMask(opCode, false);
 
-            if (BM.IsUndefined)
+            if (bm.IsUndefined)
             {
                 Emitter = AInstEmit.Und;
 
                 return;
             }
 
-            WMask = BM.WMask;
-            TMask = BM.TMask;
-            Pos   = BM.Pos;
-            Shift = BM.Shift;
+            WMask = bm.WMask;
+            Mask = bm.Mask;
+            Pos   = bm.Pos;
+            Shift = bm.Shift;
         }
     }
 }

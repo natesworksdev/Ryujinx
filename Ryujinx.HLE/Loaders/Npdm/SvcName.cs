@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    enum SvcName
+    internal enum SvcName
     {
         Reserved0,
         SetHeapSize,

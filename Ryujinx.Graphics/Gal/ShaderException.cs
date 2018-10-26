@@ -2,10 +2,10 @@ using System;
 
 namespace Ryujinx.Graphics.Gal
 {
-    class ShaderException : Exception
+    internal class ShaderException : Exception
     {
         public ShaderException() : base() { }
 
-        public ShaderException(string Message) : base(Message) { }
+        public ShaderException(string message) : base(message) { }
     }
 }

@@ -3,80 +3,70 @@ using System;
 
 namespace Ryujinx.Graphics.Memory
 {
-    class NvGpuVmmCache
+    internal class NvGpuVmmCache
     {
-        private ValueRangeSet<int> CachedRanges;
+        private ValueRangeSet<int> _cachedRanges;
 
         public NvGpuVmmCache()
         {
-            CachedRanges = new ValueRangeSet<int>();
+            _cachedRanges = new ValueRangeSet<int>();
         }
 
-        public bool IsRegionModified(AMemory Memory, NvGpuBufferType BufferType, long PA, long Size)
+        public bool IsRegionModified(AMemory memory, NvGpuBufferType bufferType, long pa, long size)
         {
-            (bool[] Modified, long ModifiedCount) = Memory.IsRegionModified(PA, Size);
+            (bool[] modified, long modifiedCount) = memory.IsRegionModified(pa, size);
 
             //Remove all modified ranges.
-            int Index = 0;
+            int index = 0;
 
-            long Position = PA & ~NvGpuVmm.PageMask;
+            long position = pa & ~NvGpuVmm.PageMask;
 
-            while (ModifiedCount > 0)
+            while (modifiedCount > 0)
             {
-                if (Modified[Index++])
+                if (modified[index++])
                 {
-                    CachedRanges.Remove(new ValueRange<int>(Position, Position + NvGpuVmm.PageSize));
+                    _cachedRanges.Remove(new ValueRange<int>(position, position + NvGpuVmm.PageSize));
 
-                    ModifiedCount--;
+                    modifiedCount--;
                 }
 
-                Position += NvGpuVmm.PageSize;
+                position += NvGpuVmm.PageSize;
             }
 
             //Mask has the bit set for the current resource type.
             //If the region is not yet present on the list, then a new ValueRange
             //is directly added with the current resource type as the only bit set.
             //Otherwise, it just sets the bit for this new resource type on the current mask.
-            int Mask = 1 << (int)BufferType;
+            int mask = 1 << (int)bufferType;
 
-            ValueRange<int> NewCached = new ValueRange<int>(PA, PA + Size);
+            ValueRange<int> newCached = new ValueRange<int>(pa, pa + size);
 
-            ValueRange<int>[] Ranges = CachedRanges.GetAllIntersections(NewCached);
+            ValueRange<int>[] ranges = _cachedRanges.GetAllIntersections(newCached);
 
-            long LastEnd = NewCached.Start;
+            long lastEnd = newCached.Start;
 
-            long Coverage = 0;
+            long coverage = 0;
 
-            for (Index = 0; Index < Ranges.Length; Index++)
+            for (index = 0; index < ranges.Length; index++)
             {
-                ValueRange<int> Current = Ranges[Index];
+                ValueRange<int> current = ranges[index];
 
-                long RgStart = Math.Max(Current.Start, NewCached.Start);
-                long RgEnd   = Math.Min(Current.End,   NewCached.End);
+                long rgStart = Math.Max(current.Start, newCached.Start);
+                long rgEnd   = Math.Min(current.End,   newCached.End);
 
-                if ((Current.Value & Mask) == 0)
-                {
-                    CachedRanges.Add(new ValueRange<int>(RgStart, RgEnd, Current.Value | Mask));
-                }
+                if ((current.Value & mask) == 0)
+                    _cachedRanges.Add(new ValueRange<int>(rgStart, rgEnd, current.Value | mask));
                 else
-                {
-                    Coverage += RgEnd - RgStart;
-                }
+                    coverage += rgEnd - rgStart;
 
-                if (RgStart > LastEnd)
-                {
-                    CachedRanges.Add(new ValueRange<int>(LastEnd, RgStart, Mask));
-                }
+                if (rgStart > lastEnd) _cachedRanges.Add(new ValueRange<int>(lastEnd, rgStart, mask));
 
-                LastEnd = RgEnd;
+                lastEnd = rgEnd;
             }
 
-            if (LastEnd < NewCached.End)
-            {
-                CachedRanges.Add(new ValueRange<int>(LastEnd, NewCached.End, Mask));
-            }
+            if (lastEnd < newCached.End) _cachedRanges.Add(new ValueRange<int>(lastEnd, newCached.End, mask));
 
-            return Coverage != Size;
+            return coverage != size;
         }
     }
 }

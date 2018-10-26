@@ -7,21 +7,21 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
 {
-    class IAudioOut : IpcService, IDisposable
+    internal class IAudioOut : IpcService, IDisposable
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        private IAalOutput AudioOut;
+        private IAalOutput _audioOut;
 
-        private KEvent ReleaseEvent;
+        private KEvent _releaseEvent;
 
-        private int Track;
+        private int _track;
 
-        public IAudioOut(IAalOutput AudioOut, KEvent ReleaseEvent, int Track)
+        public IAudioOut(IAalOutput audioOut, KEvent releaseEvent, int track)
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, GetAudioOutState              },
                 { 1, StartAudioOut                 },
@@ -34,116 +34,110 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
                 { 8, GetReleasedAudioOutBufferAuto }
             };
 
-            this.AudioOut     = AudioOut;
-            this.ReleaseEvent = ReleaseEvent;
-            this.Track        = Track;
+            this._audioOut     = audioOut;
+            this._releaseEvent = releaseEvent;
+            this._track        = track;
         }
 
-        public long GetAudioOutState(ServiceCtx Context)
+        public long GetAudioOutState(ServiceCtx context)
         {
-            Context.ResponseData.Write((int)AudioOut.GetState(Track));
+            context.ResponseData.Write((int)_audioOut.GetState(_track));
 
             return 0;
         }
 
-        public long StartAudioOut(ServiceCtx Context)
+        public long StartAudioOut(ServiceCtx context)
         {
-            AudioOut.Start(Track);
+            _audioOut.Start(_track);
 
             return 0;
         }
 
-        public long StopAudioOut(ServiceCtx Context)
+        public long StopAudioOut(ServiceCtx context)
         {
-            AudioOut.Stop(Track);
+            _audioOut.Stop(_track);
 
             return 0;
         }
 
-        public long AppendAudioOutBuffer(ServiceCtx Context)
+        public long AppendAudioOutBuffer(ServiceCtx context)
         {
-            return AppendAudioOutBufferImpl(Context, Context.Request.SendBuff[0].Position);
+            return AppendAudioOutBufferImpl(context, context.Request.SendBuff[0].Position);
         }
 
-        public long RegisterBufferEvent(ServiceCtx Context)
+        public long RegisterBufferEvent(ServiceCtx context)
         {
-            if (Context.Process.HandleTable.GenerateHandle(ReleaseEvent.ReadableEvent, out int Handle) != KernelResult.Success)
+            if (context.Process.HandleTable.GenerateHandle(_releaseEvent.ReadableEvent, out int handle) != KernelResult.Success) throw new InvalidOperationException("Out of handles!");
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+
+            return 0;
+        }
+
+        public long GetReleasedAudioOutBuffer(ServiceCtx context)
+        {
+            long position = context.Request.ReceiveBuff[0].Position;
+            long size     = context.Request.ReceiveBuff[0].Size;
+
+            return GetReleasedAudioOutBufferImpl(context, position, size);
+        }
+
+        public long ContainsAudioOutBuffer(ServiceCtx context)
+        {
+            long tag = context.RequestData.ReadInt64();
+
+            context.ResponseData.Write(_audioOut.ContainsBuffer(_track, tag) ? 1 : 0);
+
+            return 0;
+        }
+
+        public long AppendAudioOutBufferAuto(ServiceCtx context)
+        {
+            (long position, long size) = context.Request.GetBufferType0X21();
+
+            return AppendAudioOutBufferImpl(context, position);
+        }
+
+        public long AppendAudioOutBufferImpl(ServiceCtx context, long position)
+        {
+            long tag = context.RequestData.ReadInt64();
+
+            AudioOutData data = AMemoryHelper.Read<AudioOutData>(
+                context.Memory,
+                position);
+
+            byte[] buffer = context.Memory.ReadBytes(
+                data.SampleBufferPtr,
+                data.SampleBufferSize);
+
+            _audioOut.AppendBuffer(_track, tag, buffer);
+
+            return 0;
+        }
+
+        public long GetReleasedAudioOutBufferAuto(ServiceCtx context)
+        {
+            (long position, long size) = context.Request.GetBufferType0X22();
+
+            return GetReleasedAudioOutBufferImpl(context, position, size);
+        }
+
+        public long GetReleasedAudioOutBufferImpl(ServiceCtx context, long position, long size)
+        {
+            uint count = (uint)((ulong)size >> 3);
+
+            long[] releasedBuffers = _audioOut.GetReleasedBuffers(_track, (int)count);
+
+            for (uint index = 0; index < count; index++)
             {
-                throw new InvalidOperationException("Out of handles!");
+                long tag = 0;
+
+                if (index < releasedBuffers.Length) tag = releasedBuffers[index];
+
+                context.Memory.WriteInt64(position + index * 8, tag);
             }
 
-            Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
-
-            return 0;
-        }
-
-        public long GetReleasedAudioOutBuffer(ServiceCtx Context)
-        {
-            long Position = Context.Request.ReceiveBuff[0].Position;
-            long Size     = Context.Request.ReceiveBuff[0].Size;
-
-            return GetReleasedAudioOutBufferImpl(Context, Position, Size);
-        }
-
-        public long ContainsAudioOutBuffer(ServiceCtx Context)
-        {
-            long Tag = Context.RequestData.ReadInt64();
-
-            Context.ResponseData.Write(AudioOut.ContainsBuffer(Track, Tag) ? 1 : 0);
-
-            return 0;
-        }
-
-        public long AppendAudioOutBufferAuto(ServiceCtx Context)
-        {
-            (long Position, long Size) = Context.Request.GetBufferType0x21();
-
-            return AppendAudioOutBufferImpl(Context, Position);
-        }
-
-        public long AppendAudioOutBufferImpl(ServiceCtx Context, long Position)
-        {
-            long Tag = Context.RequestData.ReadInt64();
-
-            AudioOutData Data = AMemoryHelper.Read<AudioOutData>(
-                Context.Memory,
-                Position);
-
-            byte[] Buffer = Context.Memory.ReadBytes(
-                Data.SampleBufferPtr,
-                Data.SampleBufferSize);
-
-            AudioOut.AppendBuffer(Track, Tag, Buffer);
-
-            return 0;
-        }
-
-        public long GetReleasedAudioOutBufferAuto(ServiceCtx Context)
-        {
-            (long Position, long Size) = Context.Request.GetBufferType0x22();
-
-            return GetReleasedAudioOutBufferImpl(Context, Position, Size);
-        }
-
-        public long GetReleasedAudioOutBufferImpl(ServiceCtx Context, long Position, long Size)
-        {
-            uint Count = (uint)((ulong)Size >> 3);
-
-            long[] ReleasedBuffers = AudioOut.GetReleasedBuffers(Track, (int)Count);
-
-            for (uint Index = 0; Index < Count; Index++)
-            {
-                long Tag = 0;
-
-                if (Index < ReleasedBuffers.Length)
-                {
-                    Tag = ReleasedBuffers[Index];
-                }
-
-                Context.Memory.WriteInt64(Position + Index * 8, Tag);
-            }
-
-            Context.ResponseData.Write(ReleasedBuffers.Length);
+            context.ResponseData.Write(releasedBuffers.Length);
 
             return 0;
         }
@@ -153,12 +147,9 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing)
-            {
-                AudioOut.CloseTrack(Track);
-            }
+            if (disposing) _audioOut.CloseTrack(_track);
         }
     }
 }

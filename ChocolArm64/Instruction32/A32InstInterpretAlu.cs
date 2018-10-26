@@ -1,6 +1,6 @@
 namespace ChocolArm64.Instruction32
 {
-    static partial class A32InstInterpret
+    internal static partial class A32InstInterpret
     {
 
     }

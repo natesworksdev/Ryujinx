@@ -2,28 +2,28 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeAluRs : AOpCodeAlu, IAOpCodeAluRs
+    internal class AOpCodeAluRs : AOpCodeAlu, IAOpCodeAluRs
     {
         public int Shift { get; private set; }
         public int Rm    { get; private set; }
 
         public AShiftType ShiftType { get; private set; }
 
-        public AOpCodeAluRs(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeAluRs(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            int Shift = (OpCode >> 10) & 0x3f;
+            int shift = (opCode >> 10) & 0x3f;
 
-            if (Shift >= GetBitsCount())
+            if (shift >= GetBitsCount())
             {
                 Emitter = AInstEmit.Und;
 
                 return;
             }
 
-            this.Shift = Shift;
+            this.Shift = shift;
 
-            Rm        =              (OpCode >> 16) & 0x1f;
-            ShiftType = (AShiftType)((OpCode >> 22) & 0x3);
+            Rm        =              (opCode >> 16) & 0x1f;
+            ShiftType = (AShiftType)((opCode >> 22) & 0x3);
         }
     }
 }

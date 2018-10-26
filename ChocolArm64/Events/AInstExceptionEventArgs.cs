@@ -7,10 +7,10 @@ namespace ChocolArm64.Events
         public long Position { get; private set; }
         public int  Id       { get; private set; }
 
-        public AInstExceptionEventArgs(long Position, int Id)
+        public AInstExceptionEventArgs(long position, int id)
         {
-            this.Position = Position;
-            this.Id       = Id;
+            this.Position = position;
+            this.Id       = id;
         }
     }
 }

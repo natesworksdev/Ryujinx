@@ -3,16 +3,16 @@ using ChocolArm64.State;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeSimdCvt : AOpCodeSimd
+    internal class AOpCodeSimdCvt : AOpCodeSimd
     {
         public int FBits { get; private set; }
 
-        public AOpCodeSimdCvt(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdCvt(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
             //TODO:
             //Und of Fixed Point variants.
-            int Scale = (OpCode >> 10) & 0x3f;
-            int SF    = (OpCode >> 31) & 0x1;
+            int scale = (opCode >> 10) & 0x3f;
+            int sf    = (opCode >> 31) & 0x1;
 
             /*if (Type != SF && !(Type == 2 && SF == 1))
             {
@@ -21,9 +21,9 @@ namespace ChocolArm64.Decoder
                 return;
             }*/
 
-            FBits = 64 - Scale;
+            FBits = 64 - scale;
 
-            RegisterSize = SF != 0
+            RegisterSize = sf != 0
                 ? ARegisterSize.Int64
                 : ARegisterSize.Int32;
         }

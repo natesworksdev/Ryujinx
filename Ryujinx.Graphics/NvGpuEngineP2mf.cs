@@ -8,27 +8,27 @@ namespace Ryujinx.Graphics
     {
         public int[] Registers { get; private set; }
 
-        private NvGpu Gpu;
+        private NvGpu _gpu;
 
-        private Dictionary<int, NvGpuMethod> Methods;
+        private Dictionary<int, NvGpuMethod> _methods;
 
-        private ReadOnlyCollection<int> DataBuffer;
+        private ReadOnlyCollection<int> _dataBuffer;
 
-        public NvGpuEngineP2mf(NvGpu Gpu)
+        public NvGpuEngineP2mf(NvGpu gpu)
         {
-            this.Gpu = Gpu;
+            this._gpu = gpu;
 
             Registers = new int[0x80];
 
-            Methods = new Dictionary<int, NvGpuMethod>();
+            _methods = new Dictionary<int, NvGpuMethod>();
 
-            void AddMethod(int Meth, int Count, int Stride, NvGpuMethod Method)
+            void AddMethod(int meth, int count, int stride, NvGpuMethod method)
             {
-                while (Count-- > 0)
+                while (count-- > 0)
                 {
-                    Methods.Add(Meth, Method);
+                    _methods.Add(meth, method);
 
-                    Meth += Stride;
+                    meth += stride;
                 }
             }
 
@@ -36,67 +36,57 @@ namespace Ryujinx.Graphics
             AddMethod(0x6d, 1, 1, PushData);
         }
 
-        public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        public void CallMethod(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
         {
-            if (Methods.TryGetValue(PBEntry.Method, out NvGpuMethod Method))
-            {
-                Method(Vmm, PBEntry);
-            }
+            if (_methods.TryGetValue(pbEntry.Method, out NvGpuMethod method))
+                method(vmm, pbEntry);
             else
-            {
-                WriteRegister(PBEntry);
-            }
+                WriteRegister(pbEntry);
         }
 
-        private void Execute(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void Execute(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
         {
             //TODO: Some registers and copy modes are still not implemented.
-            int Control = PBEntry.Arguments[0];
+            int control = pbEntry.Arguments[0];
 
-            long DstAddress = MakeInt64From2xInt32(NvGpuEngineP2mfReg.DstAddress);
+            long dstAddress = MakeInt64From2XInt32(NvGpuEngineP2mfReg.DstAddress);
 
-            int LineLengthIn = ReadRegister(NvGpuEngineP2mfReg.LineLengthIn);
+            int lineLengthIn = ReadRegister(NvGpuEngineP2mfReg.LineLengthIn);
 
-            DataBuffer = null;
+            _dataBuffer = null;
 
-            Gpu.Fifo.Step();
+            _gpu.Fifo.Step();
 
-            for (int Offset = 0; Offset < LineLengthIn; Offset += 4)
-            {
-                Vmm.WriteInt32(DstAddress + Offset, DataBuffer[Offset >> 2]);
-            }
+            for (int offset = 0; offset < lineLengthIn; offset += 4) vmm.WriteInt32(dstAddress + offset, _dataBuffer[offset >> 2]);
         }
 
-        private void PushData(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void PushData(NvGpuVmm vmm, NvGpuPBEntry pbEntry)
         {
-            DataBuffer = PBEntry.Arguments;
+            _dataBuffer = pbEntry.Arguments;
         }
 
-        private long MakeInt64From2xInt32(NvGpuEngineP2mfReg Reg)
+        private long MakeInt64From2XInt32(NvGpuEngineP2mfReg reg)
         {
             return
-                (long)Registers[(int)Reg + 0] << 32 |
-                (uint)Registers[(int)Reg + 1];
+                ((long)Registers[(int)reg + 0] << 32) |
+                (uint)Registers[(int)reg + 1];
         }
 
-        private void WriteRegister(NvGpuPBEntry PBEntry)
+        private void WriteRegister(NvGpuPBEntry pbEntry)
         {
-            int ArgsCount = PBEntry.Arguments.Count;
+            int argsCount = pbEntry.Arguments.Count;
 
-            if (ArgsCount > 0)
-            {
-                Registers[PBEntry.Method] = PBEntry.Arguments[ArgsCount - 1];
-            }
+            if (argsCount > 0) Registers[pbEntry.Method] = pbEntry.Arguments[argsCount - 1];
         }
 
-        private int ReadRegister(NvGpuEngineP2mfReg Reg)
+        private int ReadRegister(NvGpuEngineP2mfReg reg)
         {
-            return Registers[(int)Reg];
+            return Registers[(int)reg];
         }
 
-        private void WriteRegister(NvGpuEngineP2mfReg Reg, int Value)
+        private void WriteRegister(NvGpuEngineP2mfReg reg, int value)
         {
-            Registers[(int)Reg] = Value;
+            Registers[(int)reg] = value;
         }
     }
 }

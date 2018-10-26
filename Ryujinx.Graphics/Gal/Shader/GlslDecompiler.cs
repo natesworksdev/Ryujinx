@@ -8,9 +8,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 {
     public class GlslDecompiler
     {
-        private delegate string GetInstExpr(ShaderIrOp Op);
+        private delegate string GetInstExpr(ShaderIrOp op);
 
-        private Dictionary<ShaderIrInst, GetInstExpr> InstsExpr;
+        private Dictionary<ShaderIrInst, GetInstExpr> _instsExpr;
 
         private enum OperType
         {
@@ -23,17 +23,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private const int MaxVertexInput = 3;
 
-        private GlslDecl Decl;
+        private GlslDecl _decl;
 
-        private ShaderHeader Header, HeaderB;
+        private ShaderHeader _header, _headerB;
 
-        private ShaderIrBlock[] Blocks, BlocksB;
+        private ShaderIrBlock[] _blocks, _blocksB;
 
-        private StringBuilder SB;
+        private StringBuilder _sb;
 
         public GlslDecompiler()
         {
-            InstsExpr = new Dictionary<ShaderIrInst, GetInstExpr>()
+            _instsExpr = new Dictionary<ShaderIrInst, GetInstExpr>()
             {
                 { ShaderIrInst.Abs,    GetAbsExpr    },
                 { ShaderIrInst.Add,    GetAddExpr    },
@@ -109,43 +109,43 @@ namespace Ryujinx.Graphics.Gal.Shader
         }
 
         public GlslProgram Decompile(
-            IGalMemory    Memory,
-            long          VpAPosition,
-            long          VpBPosition,
-            GalShaderType ShaderType)
+            IGalMemory    memory,
+            long          vpAPosition,
+            long          vpBPosition,
+            GalShaderType shaderType)
         {
-            Header  = new ShaderHeader(Memory, VpAPosition);
-            HeaderB = new ShaderHeader(Memory, VpBPosition);
+            _header  = new ShaderHeader(memory, vpAPosition);
+            _headerB = new ShaderHeader(memory, vpBPosition);
 
-            Blocks  = ShaderDecoder.Decode(Memory, VpAPosition);
-            BlocksB = ShaderDecoder.Decode(Memory, VpBPosition);
+            _blocks  = ShaderDecoder.Decode(memory, vpAPosition);
+            _blocksB = ShaderDecoder.Decode(memory, vpBPosition);
 
-            GlslDecl DeclVpA = new GlslDecl(Blocks,  ShaderType, Header);
-            GlslDecl DeclVpB = new GlslDecl(BlocksB, ShaderType, HeaderB);
+            GlslDecl declVpA = new GlslDecl(_blocks,  shaderType, _header);
+            GlslDecl declVpB = new GlslDecl(_blocksB, shaderType, _headerB);
 
-            Decl = GlslDecl.Merge(DeclVpA, DeclVpB);
+            _decl = GlslDecl.Merge(declVpA, declVpB);
 
             return Decompile();
         }
 
-        public GlslProgram Decompile(IGalMemory Memory, long Position, GalShaderType ShaderType)
+        public GlslProgram Decompile(IGalMemory memory, long position, GalShaderType shaderType)
         {
-            Header  = new ShaderHeader(Memory, Position);
-            HeaderB = null;
+            _header  = new ShaderHeader(memory, position);
+            _headerB = null;
 
-            Blocks  = ShaderDecoder.Decode(Memory, Position);
-            BlocksB = null;
+            _blocks  = ShaderDecoder.Decode(memory, position);
+            _blocksB = null;
 
-            Decl = new GlslDecl(Blocks, ShaderType, Header);
+            _decl = new GlslDecl(_blocks, shaderType, _header);
 
             return Decompile();
         }
 
         private GlslProgram Decompile()
         {
-            SB = new StringBuilder();
+            _sb = new StringBuilder();
 
-            SB.AppendLine("#version 410 core");
+            _sb.AppendLine("#version 410 core");
 
             PrintDeclHeader();
             PrintDeclTextures();
@@ -157,542 +157,464 @@ namespace Ryujinx.Graphics.Gal.Shader
             PrintDeclPreds();
             PrintDeclSsy();
 
-            if (BlocksB != null)
+            if (_blocksB != null)
             {
-                PrintBlockScope(Blocks, GlslDecl.BasicBlockAName);
+                PrintBlockScope(_blocks, GlslDecl.BasicBlockAName);
 
-                SB.AppendLine();
+                _sb.AppendLine();
 
-                PrintBlockScope(BlocksB, GlslDecl.BasicBlockBName);
+                PrintBlockScope(_blocksB, GlslDecl.BasicBlockBName);
             }
             else
             {
-                PrintBlockScope(Blocks, GlslDecl.BasicBlockName);
+                PrintBlockScope(_blocks, GlslDecl.BasicBlockName);
             }
 
-            SB.AppendLine();
+            _sb.AppendLine();
 
             PrintMain();
 
-            string GlslCode = SB.ToString();
+            string glslCode = _sb.ToString();
 
-            List<ShaderDeclInfo> TextureInfo = new List<ShaderDeclInfo>();
+            List<ShaderDeclInfo> textureInfo = new List<ShaderDeclInfo>();
 
-            TextureInfo.AddRange(Decl.Textures.Values);
-            TextureInfo.AddRange(IterateCbTextures());
+            textureInfo.AddRange(_decl.Textures.Values);
+            textureInfo.AddRange(IterateCbTextures());
 
-            return new GlslProgram(GlslCode, TextureInfo, Decl.Uniforms.Values);
+            return new GlslProgram(glslCode, textureInfo, _decl.Uniforms.Values);
         }
 
         private void PrintDeclHeader()
         {
-            if (Decl.ShaderType == GalShaderType.Geometry)
+            if (_decl.ShaderType == GalShaderType.Geometry)
             {
-                int MaxVertices = Header.MaxOutputVertexCount;
+                int maxVertices = _header.MaxOutputVertexCount;
 
-                string OutputTopology;
+                string outputTopology;
 
-                switch (Header.OutputTopology)
+                switch (_header.OutputTopology)
                 {
-                    case ShaderHeader.PointList:     OutputTopology = "points";         break;
-                    case ShaderHeader.LineStrip:     OutputTopology = "line_strip";     break;
-                    case ShaderHeader.TriangleStrip: OutputTopology = "triangle_strip"; break;
+                    case ShaderHeader.PointList:     outputTopology = "points";         break;
+                    case ShaderHeader.LineStrip:     outputTopology = "line_strip";     break;
+                    case ShaderHeader.TriangleStrip: outputTopology = "triangle_strip"; break;
 
                     default: throw new InvalidOperationException();
                 }
 
-                SB.AppendLine("#extension GL_ARB_enhanced_layouts : require");
+                _sb.AppendLine("#extension GL_ARB_enhanced_layouts : require");
 
-                SB.AppendLine();
+                _sb.AppendLine();
 
-                SB.AppendLine("// Stubbed. Maxwell geometry shaders don't inform input geometry type");
+                _sb.AppendLine("// Stubbed. Maxwell geometry shaders don't inform input geometry type");
 
-                SB.AppendLine("layout(triangles) in;" + Environment.NewLine);
+                _sb.AppendLine("layout(triangles) in;" + Environment.NewLine);
 
-                SB.AppendLine($"layout({OutputTopology}, max_vertices = {MaxVertices}) out;");
+                _sb.AppendLine($"layout({outputTopology}, max_vertices = {maxVertices}) out;");
 
-                SB.AppendLine();
+                _sb.AppendLine();
             }
         }
 
         private void PrintDeclTextures()
         {
-            foreach (ShaderDeclInfo DeclInfo in IterateCbTextures())
-            {
-                SB.AppendLine("uniform sampler2D " + DeclInfo.Name + ";");
-            }
+            foreach (ShaderDeclInfo declInfo in IterateCbTextures()) _sb.AppendLine("uniform sampler2D " + declInfo.Name + ";");
 
-            PrintDecls(Decl.Textures, "uniform sampler2D");
+            PrintDecls(_decl.Textures, "uniform sampler2D");
         }
 
         private IEnumerable<ShaderDeclInfo> IterateCbTextures()
         {
-            HashSet<string> Names = new HashSet<string>();
+            HashSet<string> names = new HashSet<string>();
 
-            foreach (ShaderDeclInfo DeclInfo in Decl.CbTextures.Values.OrderBy(DeclKeySelector))
-            {
-                if (Names.Add(DeclInfo.Name))
-                {
-                    yield return DeclInfo;
-                }
-            }
+            foreach (ShaderDeclInfo declInfo in _decl.CbTextures.Values.OrderBy(DeclKeySelector))
+                if (names.Add(declInfo.Name)) yield return declInfo;
         }
 
         private void PrintDeclUniforms()
         {
-            if (Decl.ShaderType == GalShaderType.Vertex)
+            if (_decl.ShaderType == GalShaderType.Vertex)
             {
                 //Memory layout here is [flip_x, flip_y, instance, unused]
                 //It's using 4 bytes, not 8
 
-                SB.AppendLine("layout (std140) uniform " + GlslDecl.ExtraUniformBlockName + " {");
+                _sb.AppendLine("layout (std140) uniform " + GlslDecl.ExtraUniformBlockName + " {");
 
-                SB.AppendLine(IdentationStr + "vec2 " + GlslDecl.FlipUniformName + ";");
+                _sb.AppendLine(IdentationStr + "vec2 " + GlslDecl.FlipUniformName + ";");
 
-                SB.AppendLine(IdentationStr + "int " + GlslDecl.InstanceUniformName + ";");
+                _sb.AppendLine(IdentationStr + "int " + GlslDecl.InstanceUniformName + ";");
 
-                SB.AppendLine("};");
-                SB.AppendLine();
+                _sb.AppendLine("};");
+                _sb.AppendLine();
             }
 
-            foreach (ShaderDeclInfo DeclInfo in Decl.Uniforms.Values.OrderBy(DeclKeySelector))
+            foreach (ShaderDeclInfo declInfo in _decl.Uniforms.Values.OrderBy(DeclKeySelector))
             {
-                SB.AppendLine($"layout (std140) uniform {DeclInfo.Name} {{");
+                _sb.AppendLine($"layout (std140) uniform {declInfo.Name} {{");
 
-                SB.AppendLine($"{IdentationStr}vec4 {DeclInfo.Name}_data[{GlslDecl.MaxUboSize}];");
+                _sb.AppendLine($"{IdentationStr}vec4 {declInfo.Name}_data[{GlslDecl.MaxUboSize}];");
 
-                SB.AppendLine("};");
+                _sb.AppendLine("};");
             }
 
-            if (Decl.Uniforms.Count > 0)
-            {
-                SB.AppendLine();
-            }
+            if (_decl.Uniforms.Count > 0) _sb.AppendLine();
         }
 
         private void PrintDeclAttributes()
         {
-            string GeometryArray = (Decl.ShaderType == GalShaderType.Geometry) ? "[" + MaxVertexInput + "]" : "";
+            string geometryArray = _decl.ShaderType == GalShaderType.Geometry ? "[" + MaxVertexInput + "]" : "";
 
-            PrintDecls(Decl.Attributes, Suffix: GeometryArray);
+            PrintDecls(_decl.Attributes, suffix: geometryArray);
         }
 
         private void PrintDeclInAttributes()
         {
-            if (Decl.ShaderType == GalShaderType.Fragment)
-            {
-                SB.AppendLine("layout (location = " + GlslDecl.PositionOutAttrLocation + ") in vec4 " + GlslDecl.PositionOutAttrName + ";");
-            }
+            if (_decl.ShaderType == GalShaderType.Fragment) _sb.AppendLine("layout (location = " + GlslDecl.PositionOutAttrLocation + ") in vec4 " + GlslDecl.PositionOutAttrName + ";");
 
-            if (Decl.ShaderType == GalShaderType.Geometry)
+            if (_decl.ShaderType == GalShaderType.Geometry)
             {
-                if (Decl.InAttributes.Count > 0)
+                if (_decl.InAttributes.Count > 0)
                 {
-                    SB.AppendLine("in Vertex {");
+                    _sb.AppendLine("in Vertex {");
 
-                    foreach (ShaderDeclInfo DeclInfo in Decl.InAttributes.Values.OrderBy(DeclKeySelector))
-                    {
-                        if (DeclInfo.Index >= 0)
-                        {
-                            SB.AppendLine(IdentationStr + "layout (location = " + DeclInfo.Index + ") vec4 " + DeclInfo.Name + "; ");
-                        }
-                    }
+                    foreach (ShaderDeclInfo declInfo in _decl.InAttributes.Values.OrderBy(DeclKeySelector))
+                        if (declInfo.Index >= 0) _sb.AppendLine(IdentationStr + "layout (location = " + declInfo.Index + ") vec4 " + declInfo.Name + "; ");
 
-                    SB.AppendLine("} block_in[];" + Environment.NewLine);
+                    _sb.AppendLine("} block_in[];" + Environment.NewLine);
                 }
             }
             else
             {
-                PrintDeclAttributes(Decl.InAttributes.Values, "in");
+                PrintDeclAttributes(_decl.InAttributes.Values, "in");
             }
         }
 
         private void PrintDeclOutAttributes()
         {
-            if (Decl.ShaderType == GalShaderType.Fragment)
+            if (_decl.ShaderType == GalShaderType.Fragment)
             {
-                int Count = 0;
+                int count = 0;
 
-                for (int Attachment = 0; Attachment < 8; Attachment++)
-                {
-                    if (Header.OmapTargets[Attachment].Enabled)
+                for (int attachment = 0; attachment < 8; attachment++)
+                    if (_header.OmapTargets[attachment].Enabled)
                     {
-                        SB.AppendLine("layout (location = " + Attachment + ") out vec4 " + GlslDecl.FragmentOutputName + Attachment + ";");
+                        _sb.AppendLine("layout (location = " + attachment + ") out vec4 " + GlslDecl.FragmentOutputName + attachment + ";");
 
-                        Count++;
+                        count++;
                     }
-                }
 
-                if (Count > 0)
-                {
-                    SB.AppendLine();
-                }
+                if (count > 0) _sb.AppendLine();
             }
             else
             {
-                SB.AppendLine("layout (location = " + GlslDecl.PositionOutAttrLocation + ") out vec4 " + GlslDecl.PositionOutAttrName + ";");
-                SB.AppendLine();
+                _sb.AppendLine("layout (location = " + GlslDecl.PositionOutAttrLocation + ") out vec4 " + GlslDecl.PositionOutAttrName + ";");
+                _sb.AppendLine();
             }
 
-            PrintDeclAttributes(Decl.OutAttributes.Values, "out");
+            PrintDeclAttributes(_decl.OutAttributes.Values, "out");
         }
 
-        private void PrintDeclAttributes(IEnumerable<ShaderDeclInfo> Decls, string InOut)
+        private void PrintDeclAttributes(IEnumerable<ShaderDeclInfo> decls, string inOut)
         {
-            int Count = 0;
+            int count = 0;
 
-            foreach (ShaderDeclInfo DeclInfo in Decls.OrderBy(DeclKeySelector))
-            {
-                if (DeclInfo.Index >= 0)
+            foreach (ShaderDeclInfo declInfo in decls.OrderBy(DeclKeySelector))
+                if (declInfo.Index >= 0)
                 {
-                    SB.AppendLine("layout (location = " + DeclInfo.Index + ") " + InOut + " vec4 " + DeclInfo.Name + ";");
+                    _sb.AppendLine("layout (location = " + declInfo.Index + ") " + inOut + " vec4 " + declInfo.Name + ";");
 
-                    Count++;
+                    count++;
                 }
-            }
 
-            if (Count > 0)
-            {
-                SB.AppendLine();
-            }
+            if (count > 0) _sb.AppendLine();
         }
 
         private void PrintDeclGprs()
         {
-            PrintDecls(Decl.Gprs);
+            PrintDecls(_decl.Gprs);
         }
 
         private void PrintDeclPreds()
         {
-            PrintDecls(Decl.Preds, "bool");
+            PrintDecls(_decl.Preds, "bool");
         }
 
         private void PrintDeclSsy()
         {
-            SB.AppendLine("uint " + GlslDecl.SsyCursorName + " = 0;");
+            _sb.AppendLine("uint " + GlslDecl.SsyCursorName + " = 0;");
 
-            SB.AppendLine("uint " + GlslDecl.SsyStackName + "[" + GlslDecl.SsyStackSize + "];" + Environment.NewLine);
+            _sb.AppendLine("uint " + GlslDecl.SsyStackName + "[" + GlslDecl.SsyStackSize + "];" + Environment.NewLine);
         }
 
-        private void PrintDecls(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, string CustomType = null, string Suffix = "")
+        private void PrintDecls(IReadOnlyDictionary<int, ShaderDeclInfo> dict, string customType = null, string suffix = "")
         {
-            foreach (ShaderDeclInfo DeclInfo in Dict.Values.OrderBy(DeclKeySelector))
+            foreach (ShaderDeclInfo declInfo in dict.Values.OrderBy(DeclKeySelector))
             {
-                string Name;
+                string name;
 
-                if (CustomType != null)
-                {
-                    Name = CustomType + " " + DeclInfo.Name + Suffix + ";";
-                }
-                else if (DeclInfo.Name.Contains(GlslDecl.FragmentOutputName))
-                {
-                    Name = "layout (location = " + DeclInfo.Index / 4 + ") out vec4 " + DeclInfo.Name + Suffix + ";";
-                }
+                if (customType != null)
+                    name = customType + " " + declInfo.Name + suffix + ";";
+                else if (declInfo.Name.Contains(GlslDecl.FragmentOutputName))
+                    name = "layout (location = " + declInfo.Index / 4 + ") out vec4 " + declInfo.Name + suffix + ";";
                 else
-                {
-                    Name = GetDecl(DeclInfo) + Suffix + ";";
-                }
+                    name = GetDecl(declInfo) + suffix + ";";
 
-                SB.AppendLine(Name);
+                _sb.AppendLine(name);
             }
 
-            if (Dict.Count > 0)
-            {
-                SB.AppendLine();
-            }
+            if (dict.Count > 0) _sb.AppendLine();
         }
 
-        private int DeclKeySelector(ShaderDeclInfo DeclInfo)
+        private int DeclKeySelector(ShaderDeclInfo declInfo)
         {
-            return DeclInfo.Cbuf << 24 | DeclInfo.Index;
+            return (declInfo.Cbuf << 24) | declInfo.Index;
         }
 
-        private string GetDecl(ShaderDeclInfo DeclInfo)
+        private string GetDecl(ShaderDeclInfo declInfo)
         {
-            if (DeclInfo.Size == 4)
-            {
-                return "vec4 " + DeclInfo.Name;
-            }
+            if (declInfo.Size == 4)
+                return "vec4 " + declInfo.Name;
             else
-            {
-                return "float " + DeclInfo.Name;
-            }
+                return "float " + declInfo.Name;
         }
 
         private void PrintMain()
         {
-            SB.AppendLine("void main() {");
+            _sb.AppendLine("void main() {");
 
-            foreach (KeyValuePair<int, ShaderDeclInfo> KV in Decl.InAttributes)
+            foreach (KeyValuePair<int, ShaderDeclInfo> kv in _decl.InAttributes)
             {
-                if (!Decl.Attributes.TryGetValue(KV.Key, out ShaderDeclInfo Attr))
-                {
-                    continue;
-                }
+                if (!_decl.Attributes.TryGetValue(kv.Key, out ShaderDeclInfo attr)) continue;
 
-                ShaderDeclInfo DeclInfo = KV.Value;
+                ShaderDeclInfo declInfo = kv.Value;
 
-                if (Decl.ShaderType == GalShaderType.Geometry)
-                {
-                    for (int Vertex = 0; Vertex < MaxVertexInput; Vertex++)
+                if (_decl.ShaderType == GalShaderType.Geometry)
+                    for (int vertex = 0; vertex < MaxVertexInput; vertex++)
                     {
-                        string Dst = Attr.Name + "[" + Vertex + "]";
+                        string dst = attr.Name + "[" + vertex + "]";
 
-                        string Src = "block_in[" + Vertex + "]." + DeclInfo.Name;
+                        string src = "block_in[" + vertex + "]." + declInfo.Name;
 
-                        SB.AppendLine(IdentationStr + Dst + " = " + Src + ";");
+                        _sb.AppendLine(IdentationStr + dst + " = " + src + ";");
                     }
-                }
                 else
-                {
-                    SB.AppendLine(IdentationStr + Attr.Name + " = " + DeclInfo.Name + ";");
-                }
+                    _sb.AppendLine(IdentationStr + attr.Name + " = " + declInfo.Name + ";");
             }
 
-            SB.AppendLine(IdentationStr + "uint pc;");
+            _sb.AppendLine(IdentationStr + "uint pc;");
 
-            if (BlocksB != null)
+            if (_blocksB != null)
             {
-                PrintProgram(Blocks,  GlslDecl.BasicBlockAName);
-                PrintProgram(BlocksB, GlslDecl.BasicBlockBName);
+                PrintProgram(_blocks,  GlslDecl.BasicBlockAName);
+                PrintProgram(_blocksB, GlslDecl.BasicBlockBName);
             }
             else
             {
-                PrintProgram(Blocks, GlslDecl.BasicBlockName);
+                PrintProgram(_blocks, GlslDecl.BasicBlockName);
             }
 
-            if (Decl.ShaderType != GalShaderType.Geometry)
+            if (_decl.ShaderType != GalShaderType.Geometry) PrintAttrToOutput();
+
+            if (_decl.ShaderType == GalShaderType.Fragment)
             {
-                PrintAttrToOutput();
-            }
+                if (_header.OmapDepth) _sb.AppendLine(IdentationStr + "gl_FragDepth = " + GlslDecl.GetGprName(_header.DepthRegister) + ";");
 
-            if (Decl.ShaderType == GalShaderType.Fragment)
-            {
-                if (Header.OmapDepth)
+                int gprIndex = 0;
+
+                for (int attachment = 0; attachment < 8; attachment++)
                 {
-                    SB.AppendLine(IdentationStr + "gl_FragDepth = " + GlslDecl.GetGprName(Header.DepthRegister) + ";");
-                }
+                    string output = GlslDecl.FragmentOutputName + attachment;
 
-                int GprIndex = 0;
+                    OmapTarget target = _header.OmapTargets[attachment];
 
-                for (int Attachment = 0; Attachment < 8; Attachment++)
-                {
-                    string Output = GlslDecl.FragmentOutputName + Attachment;
-
-                    OmapTarget Target = Header.OmapTargets[Attachment];
-
-                    for (int Component = 0; Component < 4; Component++)
-                    {
-                        if (Target.ComponentEnabled(Component))
+                    for (int component = 0; component < 4; component++)
+                        if (target.ComponentEnabled(component))
                         {
-                            SB.AppendLine(IdentationStr + Output + "[" + Component + "] = " + GlslDecl.GetGprName(GprIndex) + ";");
+                            _sb.AppendLine(IdentationStr + output + "[" + component + "] = " + GlslDecl.GetGprName(gprIndex) + ";");
 
-                            GprIndex++;
+                            gprIndex++;
                         }
-                    }
                 }
             }
 
-            SB.AppendLine("}");
+            _sb.AppendLine("}");
         }
 
-        private void PrintProgram(ShaderIrBlock[] Blocks, string Name)
+        private void PrintProgram(ShaderIrBlock[] blocks, string name)
         {
-            const string Ident1 = IdentationStr;
-            const string Ident2 = Ident1 + IdentationStr;
-            const string Ident3 = Ident2 + IdentationStr;
-            const string Ident4 = Ident3 + IdentationStr;
+            const string ident1 = IdentationStr;
+            const string ident2 = ident1 + IdentationStr;
+            const string ident3 = ident2 + IdentationStr;
+            const string ident4 = ident3 + IdentationStr;
 
-            SB.AppendLine(Ident1 + "pc = " + GetBlockPosition(Blocks[0]) + ";");
-            SB.AppendLine(Ident1 + "do {");
-            SB.AppendLine(Ident2 + "switch (pc) {");
+            _sb.AppendLine(ident1 + "pc = " + GetBlockPosition(blocks[0]) + ";");
+            _sb.AppendLine(ident1 + "do {");
+            _sb.AppendLine(ident2 + "switch (pc) {");
 
-            foreach (ShaderIrBlock Block in Blocks)
+            foreach (ShaderIrBlock block in blocks)
             {
-                string FunctionName = Block.Position.ToString("x8");
+                string functionName = block.Position.ToString("x8");
 
-                SB.AppendLine(Ident3 + "case 0x" + FunctionName + ": pc = " + Name + "_" + FunctionName + "(); break;");
+                _sb.AppendLine(ident3 + "case 0x" + functionName + ": pc = " + name + "_" + functionName + "(); break;");
             }
 
-            SB.AppendLine(Ident3 + "default:");
-            SB.AppendLine(Ident4 + "pc = 0;");
-            SB.AppendLine(Ident4 + "break;");
+            _sb.AppendLine(ident3 + "default:");
+            _sb.AppendLine(ident4 + "pc = 0;");
+            _sb.AppendLine(ident4 + "break;");
 
-            SB.AppendLine(Ident2 + "}");
-            SB.AppendLine(Ident1 + "} while (pc != 0);");
+            _sb.AppendLine(ident2 + "}");
+            _sb.AppendLine(ident1 + "} while (pc != 0);");
         }
 
-        private void PrintAttrToOutput(string Identation = IdentationStr)
+        private void PrintAttrToOutput(string identation = IdentationStr)
         {
-            foreach (KeyValuePair<int, ShaderDeclInfo> KV in Decl.OutAttributes)
+            foreach (KeyValuePair<int, ShaderDeclInfo> kv in _decl.OutAttributes)
             {
-                if (!Decl.Attributes.TryGetValue(KV.Key, out ShaderDeclInfo Attr))
-                {
-                    continue;
-                }
+                if (!_decl.Attributes.TryGetValue(kv.Key, out ShaderDeclInfo attr)) continue;
 
-                ShaderDeclInfo DeclInfo = KV.Value;
+                ShaderDeclInfo declInfo = kv.Value;
 
-                string Name = Attr.Name;
+                string name = attr.Name;
 
-                if (Decl.ShaderType == GalShaderType.Geometry)
-                {
-                    Name += "[0]";
-                }
+                if (_decl.ShaderType == GalShaderType.Geometry) name += "[0]";
 
-                SB.AppendLine(Identation + DeclInfo.Name + " = " + Name + ";");
+                _sb.AppendLine(identation + declInfo.Name + " = " + name + ";");
             }
 
-            if (Decl.ShaderType == GalShaderType.Vertex)
-            {
-                SB.AppendLine(Identation + "gl_Position.xy *= " + GlslDecl.FlipUniformName + ";");
-            }
+            if (_decl.ShaderType == GalShaderType.Vertex) _sb.AppendLine(identation + "gl_Position.xy *= " + GlslDecl.FlipUniformName + ";");
 
-            if (Decl.ShaderType != GalShaderType.Fragment)
+            if (_decl.ShaderType != GalShaderType.Fragment)
             {
-                SB.AppendLine(Identation + GlslDecl.PositionOutAttrName + " = gl_Position;");
-                SB.AppendLine(Identation + GlslDecl.PositionOutAttrName + ".w = 1;");
+                _sb.AppendLine(identation + GlslDecl.PositionOutAttrName + " = gl_Position;");
+                _sb.AppendLine(identation + GlslDecl.PositionOutAttrName + ".w = 1;");
             }
         }
 
-        private void PrintBlockScope(ShaderIrBlock[] Blocks, string Name)
+        private void PrintBlockScope(ShaderIrBlock[] blocks, string name)
         {
-            foreach (ShaderIrBlock Block in Blocks)
+            foreach (ShaderIrBlock block in blocks)
             {
-                SB.AppendLine("uint " + Name + "_" + Block.Position.ToString("x8") + "() {");
+                _sb.AppendLine("uint " + name + "_" + block.Position.ToString("x8") + "() {");
 
-                PrintNodes(Block, Block.GetNodes());
+                PrintNodes(block, block.GetNodes());
 
-                SB.AppendLine("}" + Environment.NewLine);
+                _sb.AppendLine("}" + Environment.NewLine);
             }
         }
 
-        private void PrintNodes(ShaderIrBlock Block, ShaderIrNode[] Nodes)
+        private void PrintNodes(ShaderIrBlock block, ShaderIrNode[] nodes)
         {
-            foreach (ShaderIrNode Node in Nodes)
-            {
-                PrintNode(Block, Node, IdentationStr);
-            }
+            foreach (ShaderIrNode node in nodes) PrintNode(block, node, IdentationStr);
 
-            if (Nodes.Length == 0)
+            if (nodes.Length == 0)
             {
-                SB.AppendLine(IdentationStr + "return 0u;");
+                _sb.AppendLine(IdentationStr + "return 0u;");
 
                 return;
             }
 
-            ShaderIrNode Last = Nodes[Nodes.Length - 1];
+            ShaderIrNode last = nodes[nodes.Length - 1];
 
-            bool UnconditionalFlowChange = false;
+            bool unconditionalFlowChange = false;
 
-            if (Last is ShaderIrOp Op)
-            {
-                switch (Op.Inst)
+            if (last is ShaderIrOp op)
+                switch (op.Inst)
                 {
                     case ShaderIrInst.Bra:
                     case ShaderIrInst.Exit:
                     case ShaderIrInst.Sync:
-                        UnconditionalFlowChange = true;
+                        unconditionalFlowChange = true;
                         break;
                 }
-            }
 
-            if (!UnconditionalFlowChange)
+            if (!unconditionalFlowChange)
             {
-                if (Block.Next != null)
-                {
-                    SB.AppendLine(IdentationStr + "return " + GetBlockPosition(Block.Next) + ";");
-                }
+                if (block.Next != null)
+                    _sb.AppendLine(IdentationStr + "return " + GetBlockPosition(block.Next) + ";");
                 else
-                {
-                    SB.AppendLine(IdentationStr + "return 0u;");
-                }
+                    _sb.AppendLine(IdentationStr + "return 0u;");
             }
         }
 
-        private void PrintNode(ShaderIrBlock Block, ShaderIrNode Node, string Identation)
+        private void PrintNode(ShaderIrBlock block, ShaderIrNode node, string identation)
         {
-            if (Node is ShaderIrCond Cond)
+            if (node is ShaderIrCond cond)
             {
-                string IfExpr = GetSrcExpr(Cond.Pred, true);
+                string ifExpr = GetSrcExpr(cond.Pred, true);
 
-                if (Cond.Not)
-                {
-                    IfExpr = "!(" + IfExpr + ")";
-                }
+                if (cond.Not) ifExpr = "!(" + ifExpr + ")";
 
-                SB.AppendLine(Identation + "if (" + IfExpr + ") {");
+                _sb.AppendLine(identation + "if (" + ifExpr + ") {");
 
-                PrintNode(Block, Cond.Child, Identation + IdentationStr);
+                PrintNode(block, cond.Child, identation + IdentationStr);
 
-                SB.AppendLine(Identation + "}");
+                _sb.AppendLine(identation + "}");
             }
-            else if (Node is ShaderIrAsg Asg)
+            else if (node is ShaderIrAsg asg)
             {
-                if (IsValidOutOper(Asg.Dst))
+                if (IsValidOutOper(asg.Dst))
                 {
-                    string Expr = GetSrcExpr(Asg.Src, true);
+                    string expr = GetSrcExpr(asg.Src, true);
 
-                    Expr = GetExprWithCast(Asg.Dst, Asg.Src, Expr);
+                    expr = GetExprWithCast(asg.Dst, asg.Src, expr);
 
-                    SB.AppendLine(Identation + GetDstOperName(Asg.Dst) + " = " + Expr + ";");
+                    _sb.AppendLine(identation + GetDstOperName(asg.Dst) + " = " + expr + ";");
                 }
             }
-            else if (Node is ShaderIrOp Op)
+            else if (node is ShaderIrOp op)
             {
-                switch (Op.Inst)
+                switch (op.Inst)
                 {
                     case ShaderIrInst.Bra:
                     {
-                        SB.AppendLine(Identation + "return " + GetBlockPosition(Block.Branch) + ";");
+                        _sb.AppendLine(identation + "return " + GetBlockPosition(block.Branch) + ";");
 
                         break;
                     }
 
                     case ShaderIrInst.Emit:
                     {
-                        PrintAttrToOutput(Identation);
+                        PrintAttrToOutput(identation);
 
-                        SB.AppendLine(Identation + "EmitVertex();");
+                        _sb.AppendLine(identation + "EmitVertex();");
 
                         break;
                     }
 
                     case ShaderIrInst.Ssy:
                     {
-                        string StackIndex = GlslDecl.SsyStackName + "[" + GlslDecl.SsyCursorName + "]";
+                        string stackIndex = GlslDecl.SsyStackName + "[" + GlslDecl.SsyCursorName + "]";
 
-                        int TargetPosition = (Op.OperandA as ShaderIrOperImm).Value;
+                        int targetPosition = (op.OperandA as ShaderIrOperImm).Value;
 
-                        string Target = "0x" + TargetPosition.ToString("x8") + "u";
+                        string target = "0x" + targetPosition.ToString("x8") + "u";
 
-                        SB.AppendLine(Identation + StackIndex + " = " + Target + ";");
+                        _sb.AppendLine(identation + stackIndex + " = " + target + ";");
 
-                        SB.AppendLine(Identation + GlslDecl.SsyCursorName + "++;");
+                        _sb.AppendLine(identation + GlslDecl.SsyCursorName + "++;");
 
                         break;
                     }
 
                     case ShaderIrInst.Sync:
                     {
-                        SB.AppendLine(Identation + GlslDecl.SsyCursorName + "--;");
+                        _sb.AppendLine(identation + GlslDecl.SsyCursorName + "--;");
 
-                        string Target = GlslDecl.SsyStackName + "[" + GlslDecl.SsyCursorName + "]";
+                        string target = GlslDecl.SsyStackName + "[" + GlslDecl.SsyCursorName + "]";
 
-                        SB.AppendLine(Identation + "return " + Target + ";");
+                        _sb.AppendLine(identation + "return " + target + ";");
 
                         break;
                     }
 
                     default:
-                        SB.AppendLine(Identation + GetSrcExpr(Op, true) + ";");
+                        _sb.AppendLine(identation + GetSrcExpr(op, true) + ";");
 
                         break;
                 }
             }
-            else if (Node is ShaderIrCmnt Cmnt)
+            else if (node is ShaderIrCmnt cmnt)
             {
-                SB.AppendLine(Identation + "// " + Cmnt.Comment);
+                _sb.AppendLine(identation + "// " + cmnt.Comment);
             }
             else
             {
@@ -700,75 +622,56 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        private bool IsValidOutOper(ShaderIrNode Node)
+        private bool IsValidOutOper(ShaderIrNode node)
         {
-            if (Node is ShaderIrOperGpr Gpr && Gpr.IsConst)
-            {
+            if (node is ShaderIrOperGpr gpr && gpr.IsConst)
                 return false;
-            }
-            else if (Node is ShaderIrOperPred Pred && Pred.IsConst)
-            {
-                return false;
-            }
+            else if (node is ShaderIrOperPred pred && pred.IsConst) return false;
 
             return true;
         }
 
-        private string GetDstOperName(ShaderIrNode Node)
+        private string GetDstOperName(ShaderIrNode node)
         {
-            if (Node is ShaderIrOperAbuf Abuf)
-            {
-                return GetOutAbufName(Abuf);
-            }
-            else if (Node is ShaderIrOperGpr Gpr)
-            {
-                return GetName(Gpr);
-            }
-            else if (Node is ShaderIrOperPred Pred)
-            {
-                return GetName(Pred);
-            }
+            if (node is ShaderIrOperAbuf abuf)
+                return GetOutAbufName(abuf);
+            else if (node is ShaderIrOperGpr gpr)
+                return GetName(gpr);
+            else if (node is ShaderIrOperPred pred) return GetName(pred);
 
-            throw new ArgumentException(nameof(Node));
+            throw new ArgumentException(nameof(node));
         }
 
-        private string GetSrcExpr(ShaderIrNode Node, bool Entry = false)
+        private string GetSrcExpr(ShaderIrNode node, bool entry = false)
         {
-            switch (Node)
+            switch (node)
             {
-                case ShaderIrOperAbuf Abuf: return GetName (Abuf);
-                case ShaderIrOperCbuf Cbuf: return GetName (Cbuf);
-                case ShaderIrOperGpr  Gpr:  return GetName (Gpr);
-                case ShaderIrOperImm  Imm:  return GetValue(Imm);
-                case ShaderIrOperImmf Immf: return GetValue(Immf);
-                case ShaderIrOperPred Pred: return GetName (Pred);
+                case ShaderIrOperAbuf abuf: return GetName (abuf);
+                case ShaderIrOperCbuf cbuf: return GetName (cbuf);
+                case ShaderIrOperGpr  gpr:  return GetName (gpr);
+                case ShaderIrOperImm  imm:  return GetValue(imm);
+                case ShaderIrOperImmf immf: return GetValue(immf);
+                case ShaderIrOperPred pred: return GetName (pred);
 
-                case ShaderIrOp Op:
-                    string Expr;
+                case ShaderIrOp op:
+                    string expr;
 
-                    if (InstsExpr.TryGetValue(Op.Inst, out GetInstExpr GetExpr))
-                    {
-                        Expr = GetExpr(Op);
-                    }
+                    if (_instsExpr.TryGetValue(op.Inst, out GetInstExpr getExpr))
+                        expr = getExpr(op);
                     else
-                    {
-                        throw new NotImplementedException(Op.Inst.ToString());
-                    }
+                        throw new NotImplementedException(op.Inst.ToString());
 
-                    if (!Entry && NeedsParentheses(Op))
-                    {
-                        Expr = "(" + Expr + ")";
-                    }
+                    if (!entry && NeedsParentheses(op)) expr = "(" + expr + ")";
 
-                    return Expr;
+                    return expr;
 
-                default: throw new ArgumentException(nameof(Node));
+                default: throw new ArgumentException(nameof(node));
             }
         }
 
-        private static bool NeedsParentheses(ShaderIrOp Op)
+        private static bool NeedsParentheses(ShaderIrOp op)
         {
-            switch (Op.Inst)
+            switch (op.Inst)
             {
                 case ShaderIrInst.Ipa:
                 case ShaderIrInst.Texq:
@@ -780,63 +683,53 @@ namespace Ryujinx.Graphics.Gal.Shader
             return true;
         }
 
-        private string GetName(ShaderIrOperCbuf Cbuf)
+        private string GetName(ShaderIrOperCbuf cbuf)
         {
-            if (!Decl.Uniforms.TryGetValue(Cbuf.Index, out ShaderDeclInfo DeclInfo))
+            if (!_decl.Uniforms.TryGetValue(cbuf.Index, out ShaderDeclInfo declInfo)) throw new InvalidOperationException();
+
+            if (cbuf.Offs != null)
             {
-                throw new InvalidOperationException();
-            }
+                string offset = "floatBitsToInt(" + GetSrcExpr(cbuf.Offs) + ")";
 
-            if (Cbuf.Offs != null)
-            {
-                string Offset = "floatBitsToInt(" + GetSrcExpr(Cbuf.Offs) + ")";
+                string index = "(" + cbuf.Pos * 4 + " + " + offset + ")";
 
-                string Index = "(" + Cbuf.Pos * 4 + " + " + Offset + ")";
-
-                return $"{DeclInfo.Name}_data[{Index} / 16][({Index} / 4) % 4]";
+                return $"{declInfo.Name}_data[{index} / 16][({index} / 4) % 4]";
             }
             else
             {
-                return $"{DeclInfo.Name}_data[{Cbuf.Pos / 4}][{Cbuf.Pos % 4}]";
+                return $"{declInfo.Name}_data[{cbuf.Pos / 4}][{cbuf.Pos % 4}]";
             }
         }
 
-        private string GetOutAbufName(ShaderIrOperAbuf Abuf)
+        private string GetOutAbufName(ShaderIrOperAbuf abuf)
         {
-            if (Decl.ShaderType == GalShaderType.Geometry)
-            {
-                switch (Abuf.Offs)
+            if (_decl.ShaderType == GalShaderType.Geometry)
+                switch (abuf.Offs)
                 {
                     case GlslDecl.LayerAttr: return "gl_Layer";
                 }
-            }
 
-            return GetAttrTempName(Abuf);
+            return GetAttrTempName(abuf);
         }
 
-        private string GetName(ShaderIrOperAbuf Abuf)
+        private string GetName(ShaderIrOperAbuf abuf)
         {
             //Handle special scalar read-only attributes here.
-            if (Decl.ShaderType == GalShaderType.Vertex)
-            {
-                switch (Abuf.Offs)
+            if (_decl.ShaderType == GalShaderType.Vertex)
+                switch (abuf.Offs)
                 {
                     case GlslDecl.VertexIdAttr:   return "gl_VertexID";
                     case GlslDecl.InstanceIdAttr: return GlslDecl.InstanceUniformName;
                 }
-            }
-            else if (Decl.ShaderType == GalShaderType.TessEvaluation)
-            {
-                switch (Abuf.Offs)
+            else if (_decl.ShaderType == GalShaderType.TessEvaluation)
+                switch (abuf.Offs)
                 {
                     case GlslDecl.TessCoordAttrX: return "gl_TessCoord.x";
                     case GlslDecl.TessCoordAttrY: return "gl_TessCoord.y";
                     case GlslDecl.TessCoordAttrZ: return "gl_TessCoord.z";
                 }
-            }
-            else if (Decl.ShaderType == GalShaderType.Fragment)
-            {
-                switch (Abuf.Offs)
+            else if (_decl.ShaderType == GalShaderType.Fragment)
+                switch (abuf.Offs)
                 {
                     case GlslDecl.PointCoordAttrX: return "gl_PointCoord.x";
                     case GlslDecl.PointCoordAttrY: return "gl_PointCoord.y";
@@ -844,484 +737,591 @@ namespace Ryujinx.Graphics.Gal.Shader
                     //Note: It's a guess that Maxwell's face is 1 when gl_FrontFacing == true
                     case GlslDecl.FaceAttr: return "(gl_FrontFacing ? 1 : 0)";
                 }
-            }
 
-            return GetAttrTempName(Abuf);
+            return GetAttrTempName(abuf);
         }
 
-        private string GetAttrTempName(ShaderIrOperAbuf Abuf)
+        private string GetAttrTempName(ShaderIrOperAbuf abuf)
         {
-            int Index =  Abuf.Offs >> 4;
-            int Elem  = (Abuf.Offs >> 2) & 3;
+            int index =  abuf.Offs >> 4;
+            int elem  = (abuf.Offs >> 2) & 3;
 
-            string Swizzle = "." + GetAttrSwizzle(Elem);
+            string swizzle = "." + GetAttrSwizzle(elem);
 
-            if (!Decl.Attributes.TryGetValue(Index, out ShaderDeclInfo DeclInfo))
+            if (!_decl.Attributes.TryGetValue(index, out ShaderDeclInfo declInfo))
             {
                 //Handle special vec4 attributes here
                 //(for example, index 7 is always gl_Position).
-                if (Index == GlslDecl.GlPositionVec4Index)
+                if (index == GlslDecl.GlPositionVec4Index)
                 {
-                    string Name =
-                        Decl.ShaderType != GalShaderType.Vertex &&
-                        Decl.ShaderType != GalShaderType.Geometry ? GlslDecl.PositionOutAttrName : "gl_Position";
+                    string name =
+                        _decl.ShaderType != GalShaderType.Vertex &&
+                        _decl.ShaderType != GalShaderType.Geometry ? GlslDecl.PositionOutAttrName : "gl_Position";
 
-                    return Name + Swizzle;
+                    return name + swizzle;
                 }
-                else if (Abuf.Offs == GlslDecl.PointSizeAttr)
+                else if (abuf.Offs == GlslDecl.PointSizeAttr)
                 {
                     return "gl_PointSize";
                 }
             }
 
-            if (DeclInfo.Index >= 16)
-            {
-                throw new InvalidOperationException($"Shader attribute offset {Abuf.Offs} is invalid.");
-            }
+            if (declInfo.Index >= 16) throw new InvalidOperationException($"Shader attribute offset {abuf.Offs} is invalid.");
 
-            if (Decl.ShaderType == GalShaderType.Geometry)
+            if (_decl.ShaderType == GalShaderType.Geometry)
             {
-                string Vertex = "floatBitsToInt(" + GetSrcExpr(Abuf.Vertex) + ")";
+                string vertex = "floatBitsToInt(" + GetSrcExpr(abuf.Vertex) + ")";
 
-                return DeclInfo.Name + "[" + Vertex + "]" + Swizzle;
+                return declInfo.Name + "[" + vertex + "]" + swizzle;
             }
             else
             {
-                return DeclInfo.Name + Swizzle;
+                return declInfo.Name + swizzle;
             }
         }
 
-        private string GetName(ShaderIrOperGpr Gpr)
+        private string GetName(ShaderIrOperGpr gpr)
         {
-            return Gpr.IsConst ? "0" : GetNameWithSwizzle(Decl.Gprs, Gpr.Index);
+            return gpr.IsConst ? "0" : GetNameWithSwizzle(_decl.Gprs, gpr.Index);
         }
 
-        private string GetValue(ShaderIrOperImm Imm)
+        private string GetValue(ShaderIrOperImm imm)
         {
             //Only use hex is the value is too big and would likely be hard to read as int.
-            if (Imm.Value >  0xfff ||
-                Imm.Value < -0xfff)
-            {
-                return "0x" + Imm.Value.ToString("x8", CultureInfo.InvariantCulture);
-            }
+            if (imm.Value >  0xfff ||
+                imm.Value < -0xfff)
+                return "0x" + imm.Value.ToString("x8", CultureInfo.InvariantCulture);
             else
+                return GetIntConst(imm.Value);
+        }
+
+        private string GetValue(ShaderIrOperImmf immf)
+        {
+            return GetFloatConst(immf.Value);
+        }
+
+        private string GetName(ShaderIrOperPred pred)
+        {
+            return pred.IsConst ? "true" : GetNameWithSwizzle(_decl.Preds, pred.Index);
+        }
+
+        private string GetNameWithSwizzle(IReadOnlyDictionary<int, ShaderDeclInfo> dict, int index)
+        {
+            int vecIndex = index & ~3;
+
+            if (dict.TryGetValue(vecIndex, out ShaderDeclInfo declInfo))
+                if (declInfo.Size > 1 && index < vecIndex + declInfo.Size) return declInfo.Name + "." + GetAttrSwizzle(index & 3);
+
+            if (!dict.TryGetValue(index, out declInfo)) throw new InvalidOperationException();
+
+            return declInfo.Name;
+        }
+
+        private string GetAttrSwizzle(int elem)
+        {
+            return "xyzw".Substring(elem, 1);
+        }
+
+        private string GetAbsExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "abs");
+        }
+
+        private string GetAddExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "+");
+        }
+
+        private string GetAndExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "&");
+        }
+
+        private string GetAsrExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, ">>");
+        }
+
+        private string GetBandExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "&&");
+        }
+
+        private string GetBnotExpr(ShaderIrOp op)
+        {
+            return GetUnaryExpr(op, "!");
+        }
+
+        private string GetBorExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "||");
+        }
+
+        private string GetBxorExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "^^");
+        }
+
+        private string GetCeilExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "ceil");
+        }
+
+        private string GetClampsExpr(ShaderIrOp op)
+        {
+            return "clamp(" + GetOperExpr(op, op.OperandA) + ", " +
+                              GetOperExpr(op, op.OperandB) + ", " +
+                              GetOperExpr(op, op.OperandC) + ")";
+        }
+
+        private string GetClampuExpr(ShaderIrOp op)
+        {
+            return "int(clamp(uint(" + GetOperExpr(op, op.OperandA) + "), " +
+                             "uint(" + GetOperExpr(op, op.OperandB) + "), " +
+                             "uint(" + GetOperExpr(op, op.OperandC) + ")))";
+        }
+
+        private string GetCeqExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "==");
+        }
+
+        private string GetCequExpr(ShaderIrOp op)
+        {
+            return GetBinaryExprWithNaN(op, "==");
+        }
+
+        private string GetCgeExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, ">=");
+        }
+
+        private string GetCgeuExpr(ShaderIrOp op)
+        {
+            return GetBinaryExprWithNaN(op, ">=");
+        }
+
+        private string GetCgtExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, ">");
+        }
+
+        private string GetCgtuExpr(ShaderIrOp op)
+        {
+            return GetBinaryExprWithNaN(op, ">");
+        }
+
+        private string GetCleExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "<=");
+        }
+
+        private string GetCleuExpr(ShaderIrOp op)
+        {
+            return GetBinaryExprWithNaN(op, "<=");
+        }
+
+        private string GetCltExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "<");
+        }
+
+        private string GetCltuExpr(ShaderIrOp op)
+        {
+            return GetBinaryExprWithNaN(op, "<");
+        }
+
+        private string GetCnanExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "isnan");
+        }
+
+        private string GetCneExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "!=");
+        }
+
+        private string GetCutExpr(ShaderIrOp op)
+        {
+            return "EndPrimitive()";
+        }
+
+        private string GetCneuExpr(ShaderIrOp op)
+        {
+            return GetBinaryExprWithNaN(op, "!=");
+        }
+
+        private string GetCnumExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "!isnan");
+        }
+
+        private string GetExitExpr(ShaderIrOp op)
+        {
+            return "return 0u";
+        }
+
+        private string GetFcosExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "cos");
+        }
+
+        private string GetFex2Expr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "exp2");
+        }
+
+        private string GetFfmaExpr(ShaderIrOp op)
+        {
+            return GetTernaryExpr(op, "*", "+");
+        }
+
+        private string GetFclampExpr(ShaderIrOp op)
+        {
+            return GetTernaryCall(op, "clamp");
+        }
+
+        private string GetFlg2Expr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "log2");
+        }
+
+        private string GetFloorExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "floor");
+        }
+
+        private string GetFrcpExpr(ShaderIrOp op)
+        {
+            return GetUnaryExpr(op, "1 / ");
+        }
+
+        private string GetFrsqExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "inversesqrt");
+        }
+
+        private string GetFsinExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "sin");
+        }
+
+        private string GetFsqrtExpr(ShaderIrOp op)
+        {
+            return GetUnaryCall(op, "sqrt");
+        }
+
+        private string GetFtosExpr(ShaderIrOp op)
+        {
+            return "int(" + GetOperExpr(op, op.OperandA) + ")";
+        }
+
+        private string GetFtouExpr(ShaderIrOp op)
+        {
+            return "int(uint(" + GetOperExpr(op, op.OperandA) + "))";
+        }
+
+        private string GetIpaExpr(ShaderIrOp op)
+        {
+            ShaderIrMetaIpa meta = (ShaderIrMetaIpa)op.MetaData;
+
+            ShaderIrOperAbuf abuf = (ShaderIrOperAbuf)op.OperandA;
+
+            if (meta.Mode == ShaderIpaMode.Pass)
             {
-                return GetIntConst(Imm.Value);
-            }
-        }
+                int index = abuf.Offs >> 4;
+                int elem = (abuf.Offs >> 2) & 3;
 
-        private string GetValue(ShaderIrOperImmf Immf)
-        {
-            return GetFloatConst(Immf.Value);
-        }
-
-        private string GetName(ShaderIrOperPred Pred)
-        {
-            return Pred.IsConst ? "true" : GetNameWithSwizzle(Decl.Preds, Pred.Index);
-        }
-
-        private string GetNameWithSwizzle(IReadOnlyDictionary<int, ShaderDeclInfo> Dict, int Index)
-        {
-            int VecIndex = Index & ~3;
-
-            if (Dict.TryGetValue(VecIndex, out ShaderDeclInfo DeclInfo))
-            {
-                if (DeclInfo.Size > 1 && Index < VecIndex + DeclInfo.Size)
-                {
-                    return DeclInfo.Name + "." + GetAttrSwizzle(Index & 3);
-                }
-            }
-
-            if (!Dict.TryGetValue(Index, out DeclInfo))
-            {
-                throw new InvalidOperationException();
-            }
-
-            return DeclInfo.Name;
-        }
-
-        private string GetAttrSwizzle(int Elem)
-        {
-            return "xyzw".Substring(Elem, 1);
-        }
-
-        private string GetAbsExpr(ShaderIrOp Op) => GetUnaryCall(Op, "abs");
-
-        private string GetAddExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "+");
-
-        private string GetAndExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "&");
-
-        private string GetAsrExpr(ShaderIrOp Op) => GetBinaryExpr(Op, ">>");
-
-        private string GetBandExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "&&");
-
-        private string GetBnotExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "!");
-
-        private string GetBorExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "||");
-
-        private string GetBxorExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "^^");
-
-        private string GetCeilExpr(ShaderIrOp Op) => GetUnaryCall(Op, "ceil");
-
-        private string GetClampsExpr(ShaderIrOp Op)
-        {
-            return "clamp(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                              GetOperExpr(Op, Op.OperandB) + ", " +
-                              GetOperExpr(Op, Op.OperandC) + ")";
-        }
-
-        private string GetClampuExpr(ShaderIrOp Op)
-        {
-            return "int(clamp(uint(" + GetOperExpr(Op, Op.OperandA) + "), " +
-                             "uint(" + GetOperExpr(Op, Op.OperandB) + "), " +
-                             "uint(" + GetOperExpr(Op, Op.OperandC) + ")))";
-        }
-
-        private string GetCeqExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "==");
-
-        private string GetCequExpr(ShaderIrOp Op) => GetBinaryExprWithNaN(Op, "==");
-
-        private string GetCgeExpr(ShaderIrOp Op) => GetBinaryExpr(Op, ">=");
-
-        private string GetCgeuExpr(ShaderIrOp Op) => GetBinaryExprWithNaN(Op, ">=");
-
-        private string GetCgtExpr(ShaderIrOp Op) => GetBinaryExpr(Op, ">");
-
-        private string GetCgtuExpr(ShaderIrOp Op) => GetBinaryExprWithNaN(Op, ">");
-
-        private string GetCleExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "<=");
-
-        private string GetCleuExpr(ShaderIrOp Op) => GetBinaryExprWithNaN(Op, "<=");
-
-        private string GetCltExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "<");
-
-        private string GetCltuExpr(ShaderIrOp Op) => GetBinaryExprWithNaN(Op, "<");
-
-        private string GetCnanExpr(ShaderIrOp Op) => GetUnaryCall(Op, "isnan");
-
-        private string GetCneExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "!=");
-
-        private string GetCutExpr(ShaderIrOp Op) => "EndPrimitive()";
-
-        private string GetCneuExpr(ShaderIrOp Op) => GetBinaryExprWithNaN(Op, "!=");
-
-        private string GetCnumExpr(ShaderIrOp Op) => GetUnaryCall(Op, "!isnan");
-
-        private string GetExitExpr(ShaderIrOp Op) => "return 0u";
-
-        private string GetFcosExpr(ShaderIrOp Op) => GetUnaryCall(Op, "cos");
-
-        private string GetFex2Expr(ShaderIrOp Op) => GetUnaryCall(Op, "exp2");
-
-        private string GetFfmaExpr(ShaderIrOp Op) => GetTernaryExpr(Op, "*", "+");
-
-        private string GetFclampExpr(ShaderIrOp Op) => GetTernaryCall(Op, "clamp");
-
-        private string GetFlg2Expr(ShaderIrOp Op) => GetUnaryCall(Op, "log2");
-
-        private string GetFloorExpr(ShaderIrOp Op) => GetUnaryCall(Op, "floor");
-
-        private string GetFrcpExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "1 / ");
-
-        private string GetFrsqExpr(ShaderIrOp Op) => GetUnaryCall(Op, "inversesqrt");
-
-        private string GetFsinExpr(ShaderIrOp Op) => GetUnaryCall(Op, "sin");
-
-        private string GetFsqrtExpr(ShaderIrOp Op) => GetUnaryCall(Op, "sqrt");
-
-        private string GetFtosExpr(ShaderIrOp Op)
-        {
-            return "int(" + GetOperExpr(Op, Op.OperandA) + ")";
-        }
-
-        private string GetFtouExpr(ShaderIrOp Op)
-        {
-            return "int(uint(" + GetOperExpr(Op, Op.OperandA) + "))";
-        }
-
-        private string GetIpaExpr(ShaderIrOp Op)
-        {
-            ShaderIrMetaIpa Meta = (ShaderIrMetaIpa)Op.MetaData;
-
-            ShaderIrOperAbuf Abuf = (ShaderIrOperAbuf)Op.OperandA;
-
-            if (Meta.Mode == ShaderIpaMode.Pass)
-            {
-                int Index = Abuf.Offs >> 4;
-                int Elem = (Abuf.Offs >> 2) & 3;
-
-                if (Decl.ShaderType == GalShaderType.Fragment && Index == GlslDecl.GlPositionVec4Index)
-                {
-                    switch (Elem)
+                if (_decl.ShaderType == GalShaderType.Fragment && index == GlslDecl.GlPositionVec4Index)
+                    switch (elem)
                     {
                         case 0: return "gl_FragCoord.x";
                         case 1: return "gl_FragCoord.y";
                         case 2: return "gl_FragCoord.z";
                         case 3: return "1";
                     }
-                }
             }
 
-            return GetSrcExpr(Op.OperandA);
+            return GetSrcExpr(op.OperandA);
         }
 
-        private string GetKilExpr(ShaderIrOp Op) => "discard";
-
-        private string GetLslExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "<<");
-        private string GetLsrExpr(ShaderIrOp Op)
+        private string GetKilExpr(ShaderIrOp op)
         {
-            return "int(uint(" + GetOperExpr(Op, Op.OperandA) + ") >> " +
-                                 GetOperExpr(Op, Op.OperandB) + ")";
+            return "discard";
         }
 
-        private string GetMaxExpr(ShaderIrOp Op) => GetBinaryCall(Op, "max");
-        private string GetMinExpr(ShaderIrOp Op) => GetBinaryCall(Op, "min");
-
-        private string GetMulExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "*");
-
-        private string GetNegExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "-");
-
-        private string GetNotExpr(ShaderIrOp Op) => GetUnaryExpr(Op, "~");
-
-        private string GetOrExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "|");
-
-        private string GetStofExpr(ShaderIrOp Op)
+        private string GetLslExpr(ShaderIrOp op)
         {
-            return "float(" + GetOperExpr(Op, Op.OperandA) + ")";
+            return GetBinaryExpr(op, "<<");
         }
 
-        private string GetSubExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "-");
-
-        private string GetTexbExpr(ShaderIrOp Op)
+        private string GetLsrExpr(ShaderIrOp op)
         {
-            ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+            return "int(uint(" + GetOperExpr(op, op.OperandA) + ") >> " +
+                                 GetOperExpr(op, op.OperandB) + ")";
+        }
 
-            if (!Decl.CbTextures.TryGetValue(Op, out ShaderDeclInfo DeclInfo))
+        private string GetMaxExpr(ShaderIrOp op)
+        {
+            return GetBinaryCall(op, "max");
+        }
+
+        private string GetMinExpr(ShaderIrOp op)
+        {
+            return GetBinaryCall(op, "min");
+        }
+
+        private string GetMulExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "*");
+        }
+
+        private string GetNegExpr(ShaderIrOp op)
+        {
+            return GetUnaryExpr(op, "-");
+        }
+
+        private string GetNotExpr(ShaderIrOp op)
+        {
+            return GetUnaryExpr(op, "~");
+        }
+
+        private string GetOrExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "|");
+        }
+
+        private string GetStofExpr(ShaderIrOp op)
+        {
+            return "float(" + GetOperExpr(op, op.OperandA) + ")";
+        }
+
+        private string GetSubExpr(ShaderIrOp op)
+        {
+            return GetBinaryExpr(op, "-");
+        }
+
+        private string GetTexbExpr(ShaderIrOp op)
+        {
+            ShaderIrMetaTex meta = (ShaderIrMetaTex)op.MetaData;
+
+            if (!_decl.CbTextures.TryGetValue(op, out ShaderDeclInfo declInfo)) throw new InvalidOperationException();
+
+            string coords = GetTexSamplerCoords(op);
+
+            string ch = "rgba".Substring(meta.Elem, 1);
+
+            return "texture(" + declInfo.Name + ", " + coords + ")." + ch;
+        }
+
+        private string GetTexqExpr(ShaderIrOp op)
+        {
+            ShaderIrMetaTexq meta = (ShaderIrMetaTexq)op.MetaData;
+
+            string ch = "xyzw".Substring(meta.Elem, 1);
+
+            if (meta.Info == ShaderTexqInfo.Dimension)
             {
-                throw new InvalidOperationException();
-            }
+                string sampler = GetTexSamplerName(op);
 
-            string Coords = GetTexSamplerCoords(Op);
+                string lod = GetOperExpr(op, op.OperandA); //???
 
-            string Ch = "rgba".Substring(Meta.Elem, 1);
-
-            return "texture(" + DeclInfo.Name + ", " + Coords + ")." + Ch;
-        }
-
-        private string GetTexqExpr(ShaderIrOp Op)
-        {
-            ShaderIrMetaTexq Meta = (ShaderIrMetaTexq)Op.MetaData;
-
-            string Ch = "xyzw".Substring(Meta.Elem, 1);
-
-            if (Meta.Info == ShaderTexqInfo.Dimension)
-            {
-                string Sampler = GetTexSamplerName(Op);
-
-                string Lod = GetOperExpr(Op, Op.OperandA); //???
-
-                return "textureSize(" + Sampler + ", " + Lod + ")." + Ch;
+                return "textureSize(" + sampler + ", " + lod + ")." + ch;
             }
             else
             {
-                throw new NotImplementedException(Meta.Info.ToString());
+                throw new NotImplementedException(meta.Info.ToString());
             }
         }
 
-        private string GetTexsExpr(ShaderIrOp Op)
+        private string GetTexsExpr(ShaderIrOp op)
         {
-            ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+            ShaderIrMetaTex meta = (ShaderIrMetaTex)op.MetaData;
 
-            string Sampler = GetTexSamplerName(Op);
+            string sampler = GetTexSamplerName(op);
 
-            string Coords = GetTexSamplerCoords(Op);
+            string coords = GetTexSamplerCoords(op);
 
-            string Ch = "rgba".Substring(Meta.Elem, 1);
+            string ch = "rgba".Substring(meta.Elem, 1);
 
-            return "texture(" + Sampler + ", " + Coords + ")." + Ch;
+            return "texture(" + sampler + ", " + coords + ")." + ch;
         }
 
-        private string GetTxlfExpr(ShaderIrOp Op)
+        private string GetTxlfExpr(ShaderIrOp op)
         {
-            ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+            ShaderIrMetaTex meta = (ShaderIrMetaTex)op.MetaData;
 
-            string Sampler = GetTexSamplerName(Op);
+            string sampler = GetTexSamplerName(op);
 
-            string Coords = GetITexSamplerCoords(Op);
+            string coords = GetITexSamplerCoords(op);
 
-            string Ch = "rgba".Substring(Meta.Elem, 1);
+            string ch = "rgba".Substring(meta.Elem, 1);
 
-            return "texelFetch(" + Sampler + ", " + Coords + ", 0)." + Ch;
+            return "texelFetch(" + sampler + ", " + coords + ", 0)." + ch;
         }
 
-        private string GetTruncExpr(ShaderIrOp Op) => GetUnaryCall(Op, "trunc");
-
-        private string GetUtofExpr(ShaderIrOp Op)
+        private string GetTruncExpr(ShaderIrOp op)
         {
-            return "float(uint(" + GetOperExpr(Op, Op.OperandA) + "))";
+            return GetUnaryCall(op, "trunc");
         }
 
-        private string GetXorExpr(ShaderIrOp Op) => GetBinaryExpr(Op, "^");
-
-        private string GetUnaryCall(ShaderIrOp Op, string FuncName)
+        private string GetUtofExpr(ShaderIrOp op)
         {
-            return FuncName + "(" + GetOperExpr(Op, Op.OperandA) + ")";
+            return "float(uint(" + GetOperExpr(op, op.OperandA) + "))";
         }
 
-        private string GetBinaryCall(ShaderIrOp Op, string FuncName)
+        private string GetXorExpr(ShaderIrOp op)
         {
-            return FuncName + "(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                                    GetOperExpr(Op, Op.OperandB) + ")";
+            return GetBinaryExpr(op, "^");
         }
 
-        private string GetTernaryCall(ShaderIrOp Op, string FuncName)
+        private string GetUnaryCall(ShaderIrOp op, string funcName)
         {
-            return FuncName + "(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                                    GetOperExpr(Op, Op.OperandB) + ", " +
-                                    GetOperExpr(Op, Op.OperandC) + ")";
+            return funcName + "(" + GetOperExpr(op, op.OperandA) + ")";
         }
 
-        private string GetUnaryExpr(ShaderIrOp Op, string Opr)
+        private string GetBinaryCall(ShaderIrOp op, string funcName)
         {
-            return Opr + GetOperExpr(Op, Op.OperandA);
+            return funcName + "(" + GetOperExpr(op, op.OperandA) + ", " +
+                                    GetOperExpr(op, op.OperandB) + ")";
         }
 
-        private string GetBinaryExpr(ShaderIrOp Op, string Opr)
+        private string GetTernaryCall(ShaderIrOp op, string funcName)
         {
-            return GetOperExpr(Op, Op.OperandA) + " " + Opr + " " +
-                   GetOperExpr(Op, Op.OperandB);
+            return funcName + "(" + GetOperExpr(op, op.OperandA) + ", " +
+                                    GetOperExpr(op, op.OperandB) + ", " +
+                                    GetOperExpr(op, op.OperandC) + ")";
         }
 
-        private string GetBinaryExprWithNaN(ShaderIrOp Op, string Opr)
+        private string GetUnaryExpr(ShaderIrOp op, string opr)
         {
-            string A = GetOperExpr(Op, Op.OperandA);
-            string B = GetOperExpr(Op, Op.OperandB);
-
-            string NaNCheck =
-                " || isnan(" + A + ")" +
-                " || isnan(" + B + ")";
-
-            return A + " " + Opr + " " + B + NaNCheck;
+            return opr + GetOperExpr(op, op.OperandA);
         }
 
-        private string GetTernaryExpr(ShaderIrOp Op, string Opr1, string Opr2)
+        private string GetBinaryExpr(ShaderIrOp op, string opr)
         {
-            return GetOperExpr(Op, Op.OperandA) + " " + Opr1 + " " +
-                   GetOperExpr(Op, Op.OperandB) + " " + Opr2 + " " +
-                   GetOperExpr(Op, Op.OperandC);
+            return GetOperExpr(op, op.OperandA) + " " + opr + " " +
+                   GetOperExpr(op, op.OperandB);
         }
 
-        private string GetTexSamplerName(ShaderIrOp Op)
+        private string GetBinaryExprWithNaN(ShaderIrOp op, string opr)
         {
-            ShaderIrOperImm Node = (ShaderIrOperImm)Op.OperandC;
+            string a = GetOperExpr(op, op.OperandA);
+            string b = GetOperExpr(op, op.OperandB);
 
-            int Handle = ((ShaderIrOperImm)Op.OperandC).Value;
+            string naNCheck =
+                " || isnan(" + a + ")" +
+                " || isnan(" + b + ")";
 
-            if (!Decl.Textures.TryGetValue(Handle, out ShaderDeclInfo DeclInfo))
-            {
-                throw new InvalidOperationException();
-            }
-
-            return DeclInfo.Name;
+            return a + " " + opr + " " + b + naNCheck;
         }
 
-        private string GetTexSamplerCoords(ShaderIrOp Op)
+        private string GetTernaryExpr(ShaderIrOp op, string opr1, string opr2)
         {
-            return "vec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                             GetOperExpr(Op, Op.OperandB) + ")";
+            return GetOperExpr(op, op.OperandA) + " " + opr1 + " " +
+                   GetOperExpr(op, op.OperandB) + " " + opr2 + " " +
+                   GetOperExpr(op, op.OperandC);
         }
 
-        private string GetITexSamplerCoords(ShaderIrOp Op)
+        private string GetTexSamplerName(ShaderIrOp op)
         {
-            return "ivec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                              GetOperExpr(Op, Op.OperandB) + ")";
+            ShaderIrOperImm node = (ShaderIrOperImm)op.OperandC;
+
+            int handle = ((ShaderIrOperImm)op.OperandC).Value;
+
+            if (!_decl.Textures.TryGetValue(handle, out ShaderDeclInfo declInfo)) throw new InvalidOperationException();
+
+            return declInfo.Name;
         }
 
-        private string GetOperExpr(ShaderIrOp Op, ShaderIrNode Oper)
+        private string GetTexSamplerCoords(ShaderIrOp op)
         {
-            return GetExprWithCast(Op, Oper, GetSrcExpr(Oper));
+            return "vec2(" + GetOperExpr(op, op.OperandA) + ", " +
+                             GetOperExpr(op, op.OperandB) + ")";
         }
 
-        private static string GetExprWithCast(ShaderIrNode Dst, ShaderIrNode Src, string Expr)
+        private string GetITexSamplerCoords(ShaderIrOp op)
+        {
+            return "ivec2(" + GetOperExpr(op, op.OperandA) + ", " +
+                              GetOperExpr(op, op.OperandB) + ")";
+        }
+
+        private string GetOperExpr(ShaderIrOp op, ShaderIrNode oper)
+        {
+            return GetExprWithCast(op, oper, GetSrcExpr(oper));
+        }
+
+        private static string GetExprWithCast(ShaderIrNode dst, ShaderIrNode src, string expr)
         {
             //Note: The "DstType" (of the cast) is the type that the operation
             //uses on the source operands, while the "SrcType" is the destination
             //type of the operand result (if it is a operation) or just the type
             //of the variable for registers/uniforms/attributes.
-            OperType DstType = GetSrcNodeType(Dst);
-            OperType SrcType = GetDstNodeType(Src);
+            OperType dstType = GetSrcNodeType(dst);
+            OperType srcType = GetDstNodeType(src);
 
-            if (DstType != SrcType)
+            if (dstType != srcType)
             {
                 //Check for invalid casts
                 //(like bool to int/float and others).
-                if (SrcType != OperType.F32 &&
-                    SrcType != OperType.I32)
-                {
+                if (srcType != OperType.F32 &&
+                    srcType != OperType.I32)
                     throw new InvalidOperationException();
-                }
 
-                switch (Src)
+                switch (src)
                 {
-                    case ShaderIrOperGpr Gpr:
+                    case ShaderIrOperGpr gpr:
                     {
                         //When the Gpr is ZR, just return the 0 value directly,
                         //since the float encoding for 0 is 0.
-                        if (Gpr.IsConst)
-                        {
-                            return "0";
-                        }
+                        if (gpr.IsConst) return "0";
                         break;
                     }
 
-                    case ShaderIrOperImm Imm:
+                    case ShaderIrOperImm imm:
                     {
                         //For integer immediates being used as float,
                         //it's better (for readability) to just return the float value.
-                        if (DstType == OperType.F32)
+                        if (dstType == OperType.F32)
                         {
-                            float Value = BitConverter.Int32BitsToSingle(Imm.Value);
+                            float value = BitConverter.Int32BitsToSingle(imm.Value);
 
-                            if (!float.IsNaN(Value) && !float.IsInfinity(Value))
-                            {
-                                return GetFloatConst(Value);
-                            }
+                            if (!float.IsNaN(value) && !float.IsInfinity(value)) return GetFloatConst(value);
                         }
                         break;
                     }
                 }
 
-                switch (DstType)
+                switch (dstType)
                 {
-                    case OperType.F32: Expr = "intBitsToFloat(" + Expr + ")"; break;
-                    case OperType.I32: Expr = "floatBitsToInt(" + Expr + ")"; break;
+                    case OperType.F32: expr = "intBitsToFloat(" + expr + ")"; break;
+                    case OperType.I32: expr = "floatBitsToInt(" + expr + ")"; break;
                 }
             }
 
-            return Expr;
+            return expr;
         }
 
-        private static string GetIntConst(int Value)
+        private static string GetIntConst(int value)
         {
-            string Expr = Value.ToString(CultureInfo.InvariantCulture);
+            string expr = value.ToString(CultureInfo.InvariantCulture);
 
-            return Value < 0 ? "(" + Expr + ")" : Expr;
+            return value < 0 ? "(" + expr + ")" : expr;
         }
 
-        private static string GetFloatConst(float Value)
+        private static string GetFloatConst(float value)
         {
-            string Expr = Value.ToString(CultureInfo.InvariantCulture);
+            string expr = value.ToString(CultureInfo.InvariantCulture);
 
-            return Value < 0 ? "(" + Expr + ")" : Expr;
+            return value < 0 ? "(" + expr + ")" : expr;
         }
 
-        private static OperType GetDstNodeType(ShaderIrNode Node)
+        private static OperType GetDstNodeType(ShaderIrNode node)
         {
             //Special case instructions with the result type different
             //from the input types (like integer <-> float conversion) here.
-            if (Node is ShaderIrOp Op)
-            {
-                switch (Op.Inst)
+            if (node is ShaderIrOp op)
+                switch (op.Inst)
                 {
                     case ShaderIrInst.Stof:
                     case ShaderIrInst.Txlf:
@@ -1332,61 +1332,50 @@ namespace Ryujinx.Graphics.Gal.Shader
                     case ShaderIrInst.Ftou:
                         return OperType.I32;
                 }
-            }
 
-            return GetSrcNodeType(Node);
+            return GetSrcNodeType(node);
         }
 
-        private static OperType GetSrcNodeType(ShaderIrNode Node)
+        private static OperType GetSrcNodeType(ShaderIrNode node)
         {
-            switch (Node)
+            switch (node)
             {
-                case ShaderIrOperAbuf Abuf:
-                    return Abuf.Offs == GlslDecl.LayerAttr      ||
-                           Abuf.Offs == GlslDecl.InstanceIdAttr ||
-                           Abuf.Offs == GlslDecl.VertexIdAttr   ||
-                           Abuf.Offs == GlslDecl.FaceAttr
+                case ShaderIrOperAbuf abuf:
+                    return abuf.Offs == GlslDecl.LayerAttr      ||
+                           abuf.Offs == GlslDecl.InstanceIdAttr ||
+                           abuf.Offs == GlslDecl.VertexIdAttr   ||
+                           abuf.Offs == GlslDecl.FaceAttr
                         ? OperType.I32
                         : OperType.F32;
 
-                case ShaderIrOperCbuf Cbuf: return OperType.F32;
-                case ShaderIrOperGpr  Gpr:  return OperType.F32;
-                case ShaderIrOperImm  Imm:  return OperType.I32;
-                case ShaderIrOperImmf Immf: return OperType.F32;
-                case ShaderIrOperPred Pred: return OperType.Bool;
+                case ShaderIrOperCbuf cbuf: return OperType.F32;
+                case ShaderIrOperGpr  gpr:  return OperType.F32;
+                case ShaderIrOperImm  imm:  return OperType.I32;
+                case ShaderIrOperImmf immf: return OperType.F32;
+                case ShaderIrOperPred pred: return OperType.Bool;
 
-                case ShaderIrOp Op:
-                    if (Op.Inst > ShaderIrInst.B_Start &&
-                        Op.Inst < ShaderIrInst.B_End)
-                    {
+                case ShaderIrOp op:
+                    if (op.Inst > ShaderIrInst.BStart &&
+                        op.Inst < ShaderIrInst.BEnd)
                         return OperType.Bool;
-                    }
-                    else if (Op.Inst > ShaderIrInst.F_Start &&
-                             Op.Inst < ShaderIrInst.F_End)
-                    {
+                    else if (op.Inst > ShaderIrInst.FStart &&
+                             op.Inst < ShaderIrInst.FEnd)
                         return OperType.F32;
-                    }
-                    else if (Op.Inst > ShaderIrInst.I_Start &&
-                             Op.Inst < ShaderIrInst.I_End)
-                    {
+                    else if (op.Inst > ShaderIrInst.Start &&
+                             op.Inst < ShaderIrInst.End)
                         return OperType.I32;
-                    }
                     break;
             }
 
-            throw new ArgumentException(nameof(Node));
+            throw new ArgumentException(nameof(node));
         }
 
-        private static string GetBlockPosition(ShaderIrBlock Block)
+        private static string GetBlockPosition(ShaderIrBlock block)
         {
-            if (Block != null)
-            {
-                return "0x" + Block.Position.ToString("x8") + "u";
-            }
+            if (block != null)
+                return "0x" + block.Position.ToString("x8") + "u";
             else
-            {
                 return "0u";
-            }
         }
     }
 }

@@ -1,17 +1,17 @@
 namespace ChocolArm64.Translation
 {
-    struct AILOpCodeLog : IAILEmit
+    internal struct AILOpCodeLog : IAilEmit
     {
-        private string Text;
+        private string _text;
 
-        public AILOpCodeLog(string Text)
+        public AILOpCodeLog(string text)
         {
-            this.Text = Text;
+            this._text = text;
         }
 
-        public void Emit(AILEmitter Context)
+        public void Emit(AILEmitter context)
         {
-            Context.Generator.EmitWriteLine(Text);
+            context.Generator.EmitWriteLine(_text);
         }
     }
 }

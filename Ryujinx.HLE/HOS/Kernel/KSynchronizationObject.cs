@@ -2,27 +2,27 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KSynchronizationObject
+    internal class KSynchronizationObject
     {
         public LinkedList<KThread> WaitingThreads;
 
         protected Horizon System;
 
-        public KSynchronizationObject(Horizon System)
+        public KSynchronizationObject(Horizon system)
         {
-            this.System = System;
+            this.System = system;
 
             WaitingThreads = new LinkedList<KThread>();
         }
 
-        public LinkedListNode<KThread> AddWaitingThread(KThread Thread)
+        public LinkedListNode<KThread> AddWaitingThread(KThread thread)
         {
-            return WaitingThreads.AddLast(Thread);
+            return WaitingThreads.AddLast(thread);
         }
 
-        public void RemoveWaitingThread(LinkedListNode<KThread> Node)
+        public void RemoveWaitingThread(LinkedListNode<KThread> node)
         {
-            WaitingThreads.Remove(Node);
+            WaitingThreads.Remove(node);
         }
 
         public virtual void Signal()

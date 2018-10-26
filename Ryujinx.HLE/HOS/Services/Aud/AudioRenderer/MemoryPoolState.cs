@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
-    enum MemoryPoolState : int
+    internal enum MemoryPoolState : int
     {
         Invalid       = 0,
         Unknown       = 1,

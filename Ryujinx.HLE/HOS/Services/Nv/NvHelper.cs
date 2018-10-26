@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv
 {
-    static class NvHelper
+    internal static class NvHelper
     {
         public static void Crash()
         {

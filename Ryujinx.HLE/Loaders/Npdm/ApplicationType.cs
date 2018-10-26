@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    enum ApplicationType
+    internal enum ApplicationType
     {
         SystemModule,
         Application,

@@ -3,31 +3,31 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Pctl
 {
-    class IParentalControlServiceFactory : IpcService
+    internal class IParentalControlServiceFactory : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
         public IParentalControlServiceFactory()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, CreateService                  },
                 { 1, CreateServiceWithoutInitialize }
             };
         }
 
-        public long CreateService(ServiceCtx Context)
+        public long CreateService(ServiceCtx context)
         {
-            MakeObject(Context, new IParentalControlService());
+            MakeObject(context, new IParentalControlService());
 
             return 0;
         }
 
-        public long CreateServiceWithoutInitialize(ServiceCtx Context)
+        public long CreateServiceWithoutInitialize(ServiceCtx context)
         {
-            MakeObject(Context, new IParentalControlService(false));
+            MakeObject(context, new IParentalControlService(false));
 
             return 0;
         }

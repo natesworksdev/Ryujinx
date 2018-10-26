@@ -4,21 +4,18 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class CtorDtorNameType : ParentNode
     {
-        private bool IsDestructor;
+        private bool _isDestructor;
 
-        public CtorDtorNameType(BaseNode Name, bool IsDestructor) : base(NodeType.CtorDtorNameType, Name)
+        public CtorDtorNameType(BaseNode name, bool isDestructor) : base(NodeType.CtorDtorNameType, name)
         {
-            this.IsDestructor = IsDestructor;
+            this._isDestructor = isDestructor;
         }
 
-        public override void PrintLeft(TextWriter Writer)
+        public override void PrintLeft(TextWriter writer)
         {
-            if (IsDestructor)
-            {
-                Writer.Write("~");
-            }
+            if (_isDestructor) writer.Write("~");
 
-            Writer.Write(Child.GetName());
+            writer.Write(Child.GetName());
         }
     }
 }

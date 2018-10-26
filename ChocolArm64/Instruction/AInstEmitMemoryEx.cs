@@ -10,7 +10,7 @@ using static ChocolArm64.Instruction.AInstEmitMemoryHelper;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
         [Flags]
         private enum AccessType
@@ -21,172 +21,205 @@ namespace ChocolArm64.Instruction
             OrderedEx = Ordered | Exclusive
         }
 
-        public static void Clrex(AILEmitterCtx Context)
+        public static void Clrex(AILEmitterCtx context)
         {
-            EmitMemoryCall(Context, nameof(AMemory.ClearExclusive));
+            EmitMemoryCall(context, nameof(AMemory.ClearExclusive));
         }
 
-        public static void Dmb(AILEmitterCtx Context) => EmitBarrier(Context);
-        public static void Dsb(AILEmitterCtx Context) => EmitBarrier(Context);
-
-        public static void Ldar(AILEmitterCtx Context)  => EmitLdr(Context, AccessType.Ordered);
-        public static void Ldaxr(AILEmitterCtx Context) => EmitLdr(Context, AccessType.OrderedEx);
-        public static void Ldxr(AILEmitterCtx Context)  => EmitLdr(Context, AccessType.Exclusive);
-        public static void Ldxp(AILEmitterCtx Context)  => EmitLdp(Context, AccessType.Exclusive);
-        public static void Ldaxp(AILEmitterCtx Context) => EmitLdp(Context, AccessType.OrderedEx);
-
-        private static void EmitLdr(AILEmitterCtx Context, AccessType AccType)
+        public static void Dmb(AILEmitterCtx context)
         {
-            EmitLoad(Context, AccType, false);
+            EmitBarrier(context);
         }
 
-        private static void EmitLdp(AILEmitterCtx Context, AccessType AccType)
+        public static void Dsb(AILEmitterCtx context)
         {
-            EmitLoad(Context, AccType, true);
+            EmitBarrier(context);
         }
 
-        private static void EmitLoad(AILEmitterCtx Context, AccessType AccType, bool Pair)
+        public static void Ldar(AILEmitterCtx context)
         {
-            AOpCodeMemEx Op = (AOpCodeMemEx)Context.CurrOp;
+            EmitLdr(context, AccessType.Ordered);
+        }
 
-            bool Ordered   = (AccType & AccessType.Ordered)   != 0;
-            bool Exclusive = (AccType & AccessType.Exclusive) != 0;
+        public static void Ldaxr(AILEmitterCtx context)
+        {
+            EmitLdr(context, AccessType.OrderedEx);
+        }
 
-            if (Ordered)
+        public static void Ldxr(AILEmitterCtx context)
+        {
+            EmitLdr(context, AccessType.Exclusive);
+        }
+
+        public static void Ldxp(AILEmitterCtx context)
+        {
+            EmitLdp(context, AccessType.Exclusive);
+        }
+
+        public static void Ldaxp(AILEmitterCtx context)
+        {
+            EmitLdp(context, AccessType.OrderedEx);
+        }
+
+        private static void EmitLdr(AILEmitterCtx context, AccessType accType)
+        {
+            EmitLoad(context, accType, false);
+        }
+
+        private static void EmitLdp(AILEmitterCtx context, AccessType accType)
+        {
+            EmitLoad(context, accType, true);
+        }
+
+        private static void EmitLoad(AILEmitterCtx context, AccessType accType, bool pair)
+        {
+            AOpCodeMemEx op = (AOpCodeMemEx)context.CurrOp;
+
+            bool ordered   = (accType & AccessType.Ordered)   != 0;
+            bool exclusive = (accType & AccessType.Exclusive) != 0;
+
+            if (ordered) EmitBarrier(context);
+
+            if (exclusive) EmitMemoryCall(context, nameof(AMemory.SetExclusive), op.Rn);
+
+            context.EmitLdint(op.Rn);
+            context.EmitSttmp();
+
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdtmp();
+
+            EmitReadZxCall(context, op.Size);
+
+            context.EmitStintzr(op.Rt);
+
+            if (pair)
             {
-                EmitBarrier(Context);
-            }
+                context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+                context.EmitLdtmp();
+                context.EmitLdc_I8(1 << op.Size);
 
-            if (Exclusive)
-            {
-                EmitMemoryCall(Context, nameof(AMemory.SetExclusive), Op.Rn);
-            }
+                context.Emit(OpCodes.Add);
 
-            Context.EmitLdint(Op.Rn);
-            Context.EmitSttmp();
+                EmitReadZxCall(context, op.Size);
 
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-            Context.EmitLdtmp();
-
-            EmitReadZxCall(Context, Op.Size);
-
-            Context.EmitStintzr(Op.Rt);
-
-            if (Pair)
-            {
-                Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-                Context.EmitLdtmp();
-                Context.EmitLdc_I8(1 << Op.Size);
-
-                Context.Emit(OpCodes.Add);
-
-                EmitReadZxCall(Context, Op.Size);
-
-                Context.EmitStintzr(Op.Rt2);
+                context.EmitStintzr(op.Rt2);
             }
         }
 
-        public static void Pfrm(AILEmitterCtx Context)
+        public static void Pfrm(AILEmitterCtx context)
         {
             //Memory Prefetch, execute as no-op.
         }
 
-        public static void Stlr(AILEmitterCtx Context)  => EmitStr(Context, AccessType.Ordered);
-        public static void Stlxr(AILEmitterCtx Context) => EmitStr(Context, AccessType.OrderedEx);
-        public static void Stxr(AILEmitterCtx Context)  => EmitStr(Context, AccessType.Exclusive);
-        public static void Stxp(AILEmitterCtx Context)  => EmitStp(Context, AccessType.Exclusive);
-        public static void Stlxp(AILEmitterCtx Context) => EmitStp(Context, AccessType.OrderedEx);
-
-        private static void EmitStr(AILEmitterCtx Context, AccessType AccType)
+        public static void Stlr(AILEmitterCtx context)
         {
-            EmitStore(Context, AccType, false);
+            EmitStr(context, AccessType.Ordered);
         }
 
-        private static void EmitStp(AILEmitterCtx Context, AccessType AccType)
+        public static void Stlxr(AILEmitterCtx context)
         {
-            EmitStore(Context, AccType, true);
+            EmitStr(context, AccessType.OrderedEx);
         }
 
-        private static void EmitStore(AILEmitterCtx Context, AccessType AccType, bool Pair)
+        public static void Stxr(AILEmitterCtx context)
         {
-            AOpCodeMemEx Op = (AOpCodeMemEx)Context.CurrOp;
-
-            bool Ordered   = (AccType & AccessType.Ordered)   != 0;
-            bool Exclusive = (AccType & AccessType.Exclusive) != 0;
-
-            if (Ordered)
-            {
-                EmitBarrier(Context);
-            }
-
-            AILLabel LblEx  = new AILLabel();
-            AILLabel LblEnd = new AILLabel();
-
-            if (Exclusive)
-            {
-                EmitMemoryCall(Context, nameof(AMemory.TestExclusive), Op.Rn);
-
-                Context.Emit(OpCodes.Brtrue_S, LblEx);
-
-                Context.EmitLdc_I8(1);
-                Context.EmitStintzr(Op.Rs);
-
-                Context.Emit(OpCodes.Br_S, LblEnd);
-            }
-
-            Context.MarkLabel(LblEx);
-
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-            Context.EmitLdint(Op.Rn);
-            Context.EmitLdintzr(Op.Rt);
-
-            EmitWriteCall(Context, Op.Size);
-
-            if (Pair)
-            {
-                Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-                Context.EmitLdint(Op.Rn);
-                Context.EmitLdc_I8(1 << Op.Size);
-
-                Context.Emit(OpCodes.Add);
-
-                Context.EmitLdintzr(Op.Rt2);
-
-                EmitWriteCall(Context, Op.Size);
-            }
-
-            if (Exclusive)
-            {
-                Context.EmitLdc_I8(0);
-                Context.EmitStintzr(Op.Rs);
-
-                EmitMemoryCall(Context, nameof(AMemory.ClearExclusiveForStore));
-            }
-
-            Context.MarkLabel(LblEnd);
+            EmitStr(context, AccessType.Exclusive);
         }
 
-        private static void EmitMemoryCall(AILEmitterCtx Context, string Name, int Rn = -1)
+        public static void Stxp(AILEmitterCtx context)
         {
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-
-            Context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Core));
-
-            if (Rn != -1)
-            {
-                Context.EmitLdint(Rn);
-            }
-
-            Context.EmitCall(typeof(AMemory), Name);
+            EmitStp(context, AccessType.Exclusive);
         }
 
-        private static void EmitBarrier(AILEmitterCtx Context)
+        public static void Stlxp(AILEmitterCtx context)
+        {
+            EmitStp(context, AccessType.OrderedEx);
+        }
+
+        private static void EmitStr(AILEmitterCtx context, AccessType accType)
+        {
+            EmitStore(context, accType, false);
+        }
+
+        private static void EmitStp(AILEmitterCtx context, AccessType accType)
+        {
+            EmitStore(context, accType, true);
+        }
+
+        private static void EmitStore(AILEmitterCtx context, AccessType accType, bool pair)
+        {
+            AOpCodeMemEx op = (AOpCodeMemEx)context.CurrOp;
+
+            bool ordered   = (accType & AccessType.Ordered)   != 0;
+            bool exclusive = (accType & AccessType.Exclusive) != 0;
+
+            if (ordered) EmitBarrier(context);
+
+            AILLabel lblEx  = new AILLabel();
+            AILLabel lblEnd = new AILLabel();
+
+            if (exclusive)
+            {
+                EmitMemoryCall(context, nameof(AMemory.TestExclusive), op.Rn);
+
+                context.Emit(OpCodes.Brtrue_S, lblEx);
+
+                context.EmitLdc_I8(1);
+                context.EmitStintzr(op.Rs);
+
+                context.Emit(OpCodes.Br_S, lblEnd);
+            }
+
+            context.MarkLabel(lblEx);
+
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdint(op.Rn);
+            context.EmitLdintzr(op.Rt);
+
+            EmitWriteCall(context, op.Size);
+
+            if (pair)
+            {
+                context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+                context.EmitLdint(op.Rn);
+                context.EmitLdc_I8(1 << op.Size);
+
+                context.Emit(OpCodes.Add);
+
+                context.EmitLdintzr(op.Rt2);
+
+                EmitWriteCall(context, op.Size);
+            }
+
+            if (exclusive)
+            {
+                context.EmitLdc_I8(0);
+                context.EmitStintzr(op.Rs);
+
+                EmitMemoryCall(context, nameof(AMemory.ClearExclusiveForStore));
+            }
+
+            context.MarkLabel(lblEnd);
+        }
+
+        private static void EmitMemoryCall(AILEmitterCtx context, string name, int rn = -1)
+        {
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdarg(ATranslatedSub.StateArgIdx);
+
+            context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Core));
+
+            if (rn != -1) context.EmitLdint(rn);
+
+            context.EmitCall(typeof(AMemory), name);
+        }
+
+        private static void EmitBarrier(AILEmitterCtx context)
         {
             //Note: This barrier is most likely not necessary, and probably
             //doesn't make any difference since we need to do a ton of stuff
             //(software MMU emulation) to read or write anything anyway.
-            Context.EmitCall(typeof(Thread), nameof(Thread.MemoryBarrier));
+            context.EmitCall(typeof(Thread), nameof(Thread.MemoryBarrier));
         }
     }
 }

@@ -3,23 +3,23 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class HleCoreManager
+    internal class HleCoreManager
     {
-        private ConcurrentDictionary<Thread, ManualResetEvent> Threads;
+        private ConcurrentDictionary<Thread, ManualResetEvent> _threads;
 
         public HleCoreManager()
         {
-            Threads = new ConcurrentDictionary<Thread, ManualResetEvent>();
+            _threads = new ConcurrentDictionary<Thread, ManualResetEvent>();
         }
 
-        public ManualResetEvent GetThread(Thread Thread)
+        public ManualResetEvent GetThread(Thread thread)
         {
-            return Threads.GetOrAdd(Thread, (Key) => new ManualResetEvent(false));
+            return _threads.GetOrAdd(thread, (key) => new ManualResetEvent(false));
         }
 
-        public void RemoveThread(Thread Thread)
+        public void RemoveThread(Thread thread)
         {
-            if (Threads.TryRemove(Thread, out ManualResetEvent Event))
+            if (_threads.TryRemove(thread, out ManualResetEvent Event))
             {
                 Event.Set();
                 Event.Dispose();

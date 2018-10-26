@@ -9,13 +9,13 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64
 {
-    class ATranslatedSub
+    internal class ATranslatedSub
     {
-        private delegate long AA64Subroutine(AThreadState Register, AMemory Memory);
+        private delegate long AA64Subroutine(AThreadState register, AMemory memory);
 
         private const int MinCallCountForReJit = 250;
 
-        private AA64Subroutine ExecDelegate;
+        private AA64Subroutine _execDelegate;
 
         public static int StateArgIdx  { get; private set; }
         public static int MemoryArgIdx { get; private set; }
@@ -26,125 +26,114 @@ namespace ChocolArm64
 
         public ReadOnlyCollection<ARegister> Params { get; private set; }
 
-        private HashSet<long> Callers;
+        private HashSet<long> _callers;
 
-        private ATranslatedSubType Type;
+        private ATranslatedSubType _type;
 
-        private int CallCount;
+        private int _callCount;
 
-        private bool NeedsReJit;
+        private bool _needsReJit;
 
-        public ATranslatedSub(DynamicMethod Method, List<ARegister> Params)
+        public ATranslatedSub(DynamicMethod method, List<ARegister> Params)
         {
-            if (Method == null)
-            {
-                throw new ArgumentNullException(nameof(Method));
-            }
+            if (method == null) throw new ArgumentNullException(nameof(method));
 
-            if (Params == null)
-            {
-                throw new ArgumentNullException(nameof(Params));
-            }
+            if (Params == null) throw new ArgumentNullException(nameof(Params));
 
-            this.Method = Method;
+            this.Method = method;
             this.Params = Params.AsReadOnly();
 
-            Callers = new HashSet<long>();
+            _callers = new HashSet<long>();
 
             PrepareDelegate();
         }
 
         static ATranslatedSub()
         {
-            MethodInfo MthdInfo = typeof(AA64Subroutine).GetMethod("Invoke");
+            MethodInfo mthdInfo = typeof(AA64Subroutine).GetMethod("Invoke");
 
-            ParameterInfo[] Params = MthdInfo.GetParameters();
+            ParameterInfo[] Params = mthdInfo.GetParameters();
 
             FixedArgTypes = new Type[Params.Length];
 
-            for (int Index = 0; Index < Params.Length; Index++)
+            for (int index = 0; index < Params.Length; index++)
             {
-                Type ParamType = Params[Index].ParameterType;
+                Type paramType = Params[index].ParameterType;
 
-                FixedArgTypes[Index] = ParamType;
+                FixedArgTypes[index] = paramType;
 
-                if (ParamType == typeof(AThreadState))
-                {
-                    StateArgIdx = Index;
-                }
-                else if (ParamType == typeof(AMemory))
-                {
-                    MemoryArgIdx = Index;
-                }
+                if (paramType == typeof(AThreadState))
+                    StateArgIdx = index;
+                else if (paramType == typeof(AMemory)) MemoryArgIdx = index;
             }
         }
 
         private void PrepareDelegate()
         {
-            string Name = $"{Method.Name}_Dispatch";
+            string name = $"{Method.Name}_Dispatch";
 
-            DynamicMethod Mthd = new DynamicMethod(Name, typeof(long), FixedArgTypes);
+            DynamicMethod mthd = new DynamicMethod(name, typeof(long), FixedArgTypes);
 
-            ILGenerator Generator = Mthd.GetILGenerator();
+            ILGenerator generator = mthd.GetILGenerator();
 
-            Generator.EmitLdargSeq(FixedArgTypes.Length);
+            generator.EmitLdargSeq(FixedArgTypes.Length);
 
-            foreach (ARegister Reg in Params)
+            foreach (ARegister reg in Params)
             {
-                Generator.EmitLdarg(StateArgIdx);
+                generator.EmitLdarg(StateArgIdx);
 
-                Generator.Emit(OpCodes.Ldfld, Reg.GetField());
+                generator.Emit(OpCodes.Ldfld, reg.GetField());
             }
 
-            Generator.Emit(OpCodes.Call, Method);
-            Generator.Emit(OpCodes.Ret);
+            generator.Emit(OpCodes.Call, Method);
+            generator.Emit(OpCodes.Ret);
 
-            ExecDelegate = (AA64Subroutine)Mthd.CreateDelegate(typeof(AA64Subroutine));
+            _execDelegate = (AA64Subroutine)mthd.CreateDelegate(typeof(AA64Subroutine));
         }
 
         public bool ShouldReJit()
         {
-            if (NeedsReJit && CallCount < MinCallCountForReJit)
+            if (_needsReJit && _callCount < MinCallCountForReJit)
             {
-                CallCount++;
+                _callCount++;
 
                 return false;
             }
 
-            return NeedsReJit;
+            return _needsReJit;
         }
 
-        public long Execute(AThreadState ThreadState, AMemory Memory)
+        public long Execute(AThreadState threadState, AMemory memory)
         {
-            return ExecDelegate(ThreadState, Memory);
+            return _execDelegate(threadState, memory);
         }
 
-        public void AddCaller(long Position)
+        public void AddCaller(long position)
         {
-            lock (Callers)
+            lock (_callers)
             {
-                Callers.Add(Position);
+                _callers.Add(position);
             }
         }
 
         public long[] GetCallerPositions()
         {
-            lock (Callers)
+            lock (_callers)
             {
-                return Callers.ToArray();
+                return _callers.ToArray();
             }
         }
 
-        public void SetType(ATranslatedSubType Type)
+        public void SetType(ATranslatedSubType type)
         {
-            this.Type = Type;
+            this._type = type;
 
-            if (Type == ATranslatedSubType.SubTier0)
-            {
-                NeedsReJit = true;
-            }
+            if (type == ATranslatedSubType.SubTier0) _needsReJit = true;
         }
 
-        public void MarkForReJit() => NeedsReJit = true;
+        public void MarkForReJit()
+        {
+            _needsReJit = true;
+        }
     }
 }

@@ -1,10 +1,10 @@
 namespace Ryujinx.HLE.HOS
 {
-    static class ErrorCode
+    internal static class ErrorCode
     {
-        public static uint MakeError(ErrorModule Module, int Code)
+        public static uint MakeError(ErrorModule module, int code)
         {
-            return (uint)Module | ((uint)Code << 9);
+            return (uint)module | ((uint)code << 9);
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    enum MessageInfo
+    internal enum MessageInfo
     {
         FocusStateChanged      = 0xf,
         OperationModeChanged   = 0x1e,

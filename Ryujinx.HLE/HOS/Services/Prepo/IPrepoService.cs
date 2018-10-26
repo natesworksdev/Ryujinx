@@ -4,21 +4,21 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Prepo
 {
-    class IPrepoService : IpcService
+    internal class IPrepoService : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
         public IPrepoService()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 10101, SaveReportWithUser }
             };
         }
 
-        public static long SaveReportWithUser(ServiceCtx Context)
+        public static long SaveReportWithUser(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServicePrepo, "Stubbed.");
 

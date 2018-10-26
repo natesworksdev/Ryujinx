@@ -8,16 +8,16 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    partial class SvcHandler
+    internal partial class SvcHandler
     {
-        private delegate void SvcFunc(AThreadState ThreadState);
+        private delegate void SvcFunc(AThreadState threadState);
 
-        private Dictionary<int, SvcFunc> SvcFuncs;
+        private Dictionary<int, SvcFunc> _svcFuncs;
 
-        private Switch  Device;
-        private Process Process;
-        private Horizon System;
-        private AMemory Memory;
+        private Switch  _device;
+        private Process _process;
+        private Horizon _system;
+        private AMemory _memory;
 
         private struct HleIpcMessage
         {
@@ -27,23 +27,23 @@ namespace Ryujinx.HLE.HOS.Kernel
             public long       MessagePtr { get; private set; }
 
             public HleIpcMessage(
-                KThread    Thread,
-                KSession   Session,
-                IpcMessage Message,
-                long       MessagePtr)
+                KThread    thread,
+                KSession   session,
+                IpcMessage message,
+                long       messagePtr)
             {
-                this.Thread     = Thread;
-                this.Session    = Session;
-                this.Message    = Message;
-                this.MessagePtr = MessagePtr;
+                this.Thread     = thread;
+                this.Session    = session;
+                this.Message    = message;
+                this.MessagePtr = messagePtr;
             }
         }
 
-        private static Random Rng;
+        private static Random _rng;
 
-        public SvcHandler(Switch Device, Process Process)
+        public SvcHandler(Switch device, Process process)
         {
-            SvcFuncs = new Dictionary<int, SvcFunc>()
+            _svcFuncs = new Dictionary<int, SvcFunc>()
             {
                 { 0x01, SvcSetHeapSize                   },
                 { 0x03, SvcSetMemoryAttribute            },
@@ -90,34 +90,34 @@ namespace Ryujinx.HLE.HOS.Kernel
                 { 0x45, CreateEvent64                    }
             };
 
-            this.Device  = Device;
-            this.Process = Process;
-            this.System  = Process.Device.System;
-            this.Memory  = Process.Memory;
+            this._device  = device;
+            this._process = process;
+            this._system  = process.Device.System;
+            this._memory  = process.Memory;
         }
 
         static SvcHandler()
         {
-            Rng = new Random();
+            _rng = new Random();
         }
 
         public void SvcCall(object sender, AInstExceptionEventArgs e)
         {
-            AThreadState ThreadState = (AThreadState)sender;
+            AThreadState threadState = (AThreadState)sender;
 
-            Process.GetThread(ThreadState.Tpidr).LastPc = e.Position;
+            _process.GetThread(threadState.Tpidr).LastPc = e.Position;
 
-            if (SvcFuncs.TryGetValue(e.Id, out SvcFunc Func))
+            if (_svcFuncs.TryGetValue(e.Id, out SvcFunc func))
             {
-                Logger.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} called.");
+                Logger.PrintDebug(LogClass.KernelSvc, $"{func.Method.Name} called.");
 
-                Func(ThreadState);
+                func(threadState);
 
-                Logger.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} ended.");
+                Logger.PrintDebug(LogClass.KernelSvc, $"{func.Method.Name} ended.");
             }
             else
             {
-                Process.PrintStackTrace(ThreadState);
+                _process.PrintStackTrace(threadState);
 
                 throw new NotImplementedException($"0x{e.Id:x4}");
             }

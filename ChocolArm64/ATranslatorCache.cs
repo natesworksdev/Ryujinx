@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace ChocolArm64
 {
-    class ATranslatorCache
+    internal class ATranslatorCache
     {
         //Maximum size of the cache, in bytes, measured in ARM code size.
         private const int MaxTotalSize = 4 * 1024 * 256;
@@ -29,141 +29,125 @@ namespace ChocolArm64
 
             public int Timestamp { get; private set; }
 
-            public CacheBucket(ATranslatedSub Subroutine, LinkedListNode<long> Node, int Size)
+            public CacheBucket(ATranslatedSub subroutine, LinkedListNode<long> node, int size)
             {
-                this.Subroutine = Subroutine;
-                this.Size       = Size;
+                this.Subroutine = subroutine;
+                this.Size       = size;
 
-                UpdateNode(Node);
+                UpdateNode(node);
             }
 
-            public void UpdateNode(LinkedListNode<long> Node)
+            public void UpdateNode(LinkedListNode<long> node)
             {
-                this.Node = Node;
+                this.Node = node;
 
                 Timestamp = Environment.TickCount;
             }
         }
 
-        private ConcurrentDictionary<long, CacheBucket> Cache;
+        private ConcurrentDictionary<long, CacheBucket> _cache;
 
-        private LinkedList<long> SortedCache;
+        private LinkedList<long> _sortedCache;
 
-        private int TotalSize;
+        private int _totalSize;
 
         public ATranslatorCache()
         {
-            Cache = new ConcurrentDictionary<long, CacheBucket>();
+            _cache = new ConcurrentDictionary<long, CacheBucket>();
 
-            SortedCache = new LinkedList<long>();
+            _sortedCache = new LinkedList<long>();
         }
 
-        public void AddOrUpdate(long Position, ATranslatedSub Subroutine, int Size)
+        public void AddOrUpdate(long position, ATranslatedSub subroutine, int size)
         {
             ClearCacheIfNeeded();
 
-            TotalSize += Size;
+            _totalSize += size;
 
-            lock (SortedCache)
+            lock (_sortedCache)
             {
-                LinkedListNode<long> Node = SortedCache.AddLast(Position);
+                LinkedListNode<long> node = _sortedCache.AddLast(position);
 
-                CacheBucket NewBucket = new CacheBucket(Subroutine, Node, Size);
+                CacheBucket newBucket = new CacheBucket(subroutine, node, size);
 
-                Cache.AddOrUpdate(Position, NewBucket, (Key, Bucket) =>
+                _cache.AddOrUpdate(position, newBucket, (key, bucket) =>
                 {
-                    TotalSize -= Bucket.Size;
+                    _totalSize -= bucket.Size;
 
-                    SortedCache.Remove(Bucket.Node);
+                    _sortedCache.Remove(bucket.Node);
 
-                    return NewBucket;
+                    return newBucket;
                 });
             }
         }
 
-        public bool HasSubroutine(long Position)
+        public bool HasSubroutine(long position)
         {
-            return Cache.ContainsKey(Position);
+            return _cache.ContainsKey(position);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetSubroutine(long Position, out ATranslatedSub Subroutine)
+        public bool TryGetSubroutine(long position, out ATranslatedSub subroutine)
         {
-            if (Cache.TryGetValue(Position, out CacheBucket Bucket))
+            if (_cache.TryGetValue(position, out CacheBucket bucket))
             {
-                if (Bucket.CallCount++ > MinCallCountForUpdate)
-                {
-                    if (Monitor.TryEnter(SortedCache))
-                    {
+                if (bucket.CallCount++ > MinCallCountForUpdate)
+                    if (Monitor.TryEnter(_sortedCache))
                         try
                         {
-                            Bucket.CallCount = 0;
+                            bucket.CallCount = 0;
 
-                            SortedCache.Remove(Bucket.Node);
+                            _sortedCache.Remove(bucket.Node);
 
-                            Bucket.UpdateNode(SortedCache.AddLast(Position));
+                            bucket.UpdateNode(_sortedCache.AddLast(position));
                         }
                         finally
                         {
-                            Monitor.Exit(SortedCache);
+                            Monitor.Exit(_sortedCache);
                         }
-                    }
-                }
 
-                Subroutine = Bucket.Subroutine;
+                subroutine = bucket.Subroutine;
 
                 return true;
             }
 
-            Subroutine = default(ATranslatedSub);
+            subroutine = default(ATranslatedSub);
 
             return false;
         }
 
         private void ClearCacheIfNeeded()
         {
-            int Timestamp = Environment.TickCount;
+            int timestamp = Environment.TickCount;
 
-            while (TotalSize > MaxTotalSize)
-            {
-                lock (SortedCache)
+            while (_totalSize > MaxTotalSize)
+                lock (_sortedCache)
                 {
-                    LinkedListNode<long> Node = SortedCache.First;
+                    LinkedListNode<long> node = _sortedCache.First;
 
-                    if (Node == null)
+                    if (node == null) break;
+
+                    CacheBucket bucket = _cache[node.Value];
+
+                    int timeDelta = RingDelta(bucket.Timestamp, timestamp);
+
+                    if ((uint)timeDelta <= (uint)MinTimeDelta) break;
+
+                    if (_cache.TryRemove(node.Value, out bucket))
                     {
-                        break;
-                    }
+                        _totalSize -= bucket.Size;
 
-                    CacheBucket Bucket = Cache[Node.Value];
-
-                    int TimeDelta = RingDelta(Bucket.Timestamp, Timestamp);
-
-                    if ((uint)TimeDelta <= (uint)MinTimeDelta)
-                    {
-                        break;
-                    }
-
-                    if (Cache.TryRemove(Node.Value, out Bucket))
-                    {
-                        TotalSize -= Bucket.Size;
-
-                        SortedCache.Remove(Bucket.Node);
+                        _sortedCache.Remove(bucket.Node);
                     }
                 }
-            }
         }
 
-        private static int RingDelta(int Old, int New)
+        private static int RingDelta(int old, int New)
         {
-            if ((uint)New < (uint)Old)
-            {
-                return New + (~Old + 1);
-            }
+            if ((uint)New < (uint)old)
+                return New + ~old + 1;
             else
-            {
-                return New - Old;
-            }
+                return New - old;
         }
     }
 }

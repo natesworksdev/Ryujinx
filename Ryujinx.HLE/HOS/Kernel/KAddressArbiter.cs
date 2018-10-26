@@ -6,668 +6,606 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KAddressArbiter
+    internal class KAddressArbiter
     {
         private const int HasListenersMask = 0x40000000;
 
-        private Horizon System;
+        private Horizon _system;
 
         public List<KThread> CondVarThreads;
         public List<KThread> ArbiterThreads;
 
-        public KAddressArbiter(Horizon System)
+        public KAddressArbiter(Horizon system)
         {
-            this.System = System;
+            this._system = system;
 
             CondVarThreads = new List<KThread>();
             ArbiterThreads = new List<KThread>();
         }
 
         public long ArbitrateLock(
-            Process Process,
-            AMemory Memory,
-            int     OwnerHandle,
-            long    MutexAddress,
-            int     RequesterHandle)
+            Process process,
+            AMemory memory,
+            int     ownerHandle,
+            long    mutexAddress,
+            int     requesterHandle)
         {
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            KThread CurrentThread = System.Scheduler.GetCurrentThread();
+            KThread currentThread = _system.Scheduler.GetCurrentThread();
 
-            CurrentThread.SignaledObj   = null;
-            CurrentThread.ObjSyncResult = 0;
+            currentThread.SignaledObj   = null;
+            currentThread.ObjSyncResult = 0;
 
-            if (!UserToKernelInt32(Memory, MutexAddress, out int MutexValue))
+            if (!UserToKernelInt32(memory, mutexAddress, out int mutexValue))
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);;
             }
 
-            if (MutexValue != (OwnerHandle | HasListenersMask))
+            if (mutexValue != (ownerHandle | HasListenersMask))
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return 0;
             }
 
-            KThread MutexOwner = Process.HandleTable.GetObject<KThread>(OwnerHandle);
+            KThread mutexOwner = process.HandleTable.GetObject<KThread>(ownerHandle);
 
-            if (MutexOwner == null)
+            if (mutexOwner == null)
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
             }
 
-            CurrentThread.MutexAddress             = MutexAddress;
-            CurrentThread.ThreadHandleForUserMutex = RequesterHandle;
+            currentThread.MutexAddress             = mutexAddress;
+            currentThread.ThreadHandleForUserMutex = requesterHandle;
 
-            MutexOwner.AddMutexWaiter(CurrentThread);
+            mutexOwner.AddMutexWaiter(currentThread);
 
-            CurrentThread.Reschedule(ThreadSchedState.Paused);
+            currentThread.Reschedule(ThreadSchedState.Paused);
 
-            System.CriticalSectionLock.Unlock();
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Lock();
 
-            if (CurrentThread.MutexOwner != null)
-            {
-                CurrentThread.MutexOwner.RemoveMutexWaiter(CurrentThread);
-            }
+            if (currentThread.MutexOwner != null) currentThread.MutexOwner.RemoveMutexWaiter(currentThread);
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
-            return (uint)CurrentThread.ObjSyncResult;
+            return (uint)currentThread.ObjSyncResult;
         }
 
-        public long ArbitrateUnlock(AMemory Memory, long MutexAddress)
+        public long ArbitrateUnlock(AMemory memory, long mutexAddress)
         {
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            KThread CurrentThread = System.Scheduler.GetCurrentThread();
+            KThread currentThread = _system.Scheduler.GetCurrentThread();
 
-            (long Result, KThread NewOwnerThread) = MutexUnlock(Memory, CurrentThread, MutexAddress);
+            (long result, KThread newOwnerThread) = MutexUnlock(memory, currentThread, mutexAddress);
 
-            if (Result != 0 && NewOwnerThread != null)
+            if (result != 0 && newOwnerThread != null)
             {
-                NewOwnerThread.SignaledObj   = null;
-                NewOwnerThread.ObjSyncResult = (int)Result;
+                newOwnerThread.SignaledObj   = null;
+                newOwnerThread.ObjSyncResult = (int)result;
             }
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
-            return Result;
+            return result;
         }
 
         public long WaitProcessWideKeyAtomic(
-            AMemory Memory,
-            long    MutexAddress,
-            long    CondVarAddress,
-            int     ThreadHandle,
-            long    Timeout)
+            AMemory memory,
+            long    mutexAddress,
+            long    condVarAddress,
+            int     threadHandle,
+            long    timeout)
         {
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            KThread CurrentThread = System.Scheduler.GetCurrentThread();
+            KThread currentThread = _system.Scheduler.GetCurrentThread();
 
-            CurrentThread.SignaledObj   = null;
-            CurrentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+            currentThread.SignaledObj   = null;
+            currentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
 
-            if (CurrentThread.ShallBeTerminated ||
-                CurrentThread.SchedFlags == ThreadSchedState.TerminationPending)
+            if (currentThread.ShallBeTerminated ||
+                currentThread.SchedFlags == ThreadSchedState.TerminationPending)
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
             }
 
-            (long Result, _) = MutexUnlock(Memory, CurrentThread, MutexAddress);
+            (long result, _) = MutexUnlock(memory, currentThread, mutexAddress);
 
-            if (Result != 0)
+            if (result != 0)
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
-                return Result;
+                return result;
             }
 
-            CurrentThread.MutexAddress             = MutexAddress;
-            CurrentThread.ThreadHandleForUserMutex = ThreadHandle;
-            CurrentThread.CondVarAddress           = CondVarAddress;
+            currentThread.MutexAddress             = mutexAddress;
+            currentThread.ThreadHandleForUserMutex = threadHandle;
+            currentThread.CondVarAddress           = condVarAddress;
 
-            CondVarThreads.Add(CurrentThread);
+            CondVarThreads.Add(currentThread);
 
-            if (Timeout != 0)
+            if (timeout != 0)
             {
-                CurrentThread.Reschedule(ThreadSchedState.Paused);
+                currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (Timeout > 0)
-                {
-                    System.TimeManager.ScheduleFutureInvocation(CurrentThread, Timeout);
-                }
+                if (timeout > 0) _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
             }
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
-            if (Timeout > 0)
-            {
-                System.TimeManager.UnscheduleFutureInvocation(CurrentThread);
-            }
+            if (timeout > 0) _system.TimeManager.UnscheduleFutureInvocation(currentThread);
 
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            if (CurrentThread.MutexOwner != null)
-            {
-                CurrentThread.MutexOwner.RemoveMutexWaiter(CurrentThread);
-            }
+            if (currentThread.MutexOwner != null) currentThread.MutexOwner.RemoveMutexWaiter(currentThread);
 
-            CondVarThreads.Remove(CurrentThread);
+            CondVarThreads.Remove(currentThread);
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
-            return (uint)CurrentThread.ObjSyncResult;
+            return (uint)currentThread.ObjSyncResult;
         }
 
-        private (long, KThread) MutexUnlock(AMemory Memory, KThread CurrentThread, long MutexAddress)
+        private (long, KThread) MutexUnlock(AMemory memory, KThread currentThread, long mutexAddress)
         {
-            KThread NewOwnerThread = CurrentThread.RelinquishMutex(MutexAddress, out int Count);
+            KThread newOwnerThread = currentThread.RelinquishMutex(mutexAddress, out int count);
 
-            int MutexValue = 0;
+            int mutexValue = 0;
 
-            if (NewOwnerThread != null)
+            if (newOwnerThread != null)
             {
-                MutexValue = NewOwnerThread.ThreadHandleForUserMutex;
+                mutexValue = newOwnerThread.ThreadHandleForUserMutex;
 
-                if (Count >= 2)
-                {
-                    MutexValue |= HasListenersMask;
-                }
+                if (count >= 2) mutexValue |= HasListenersMask;
 
-                NewOwnerThread.SignaledObj   = null;
-                NewOwnerThread.ObjSyncResult = 0;
+                newOwnerThread.SignaledObj   = null;
+                newOwnerThread.ObjSyncResult = 0;
 
-                NewOwnerThread.ReleaseAndResume();
+                newOwnerThread.ReleaseAndResume();
             }
 
-            long Result = 0;
+            long result = 0;
 
-            if (!KernelToUserInt32(Memory, MutexAddress, MutexValue))
-            {
-                Result = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-            }
+            if (!KernelToUserInt32(memory, mutexAddress, mutexValue)) result = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
-            return (Result, NewOwnerThread);
+            return (result, newOwnerThread);
         }
 
-        public void SignalProcessWideKey(Process Process, AMemory Memory, long Address, int Count)
+        public void SignalProcessWideKey(Process process, AMemory memory, long address, int count)
         {
-            Queue<KThread> SignaledThreads = new Queue<KThread>();
+            Queue<KThread> signaledThreads = new Queue<KThread>();
 
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            IOrderedEnumerable<KThread> SortedThreads = CondVarThreads.OrderBy(x => x.DynamicPriority);
+            IOrderedEnumerable<KThread> sortedThreads = CondVarThreads.OrderBy(x => x.DynamicPriority);
 
-            foreach (KThread Thread in SortedThreads.Where(x => x.CondVarAddress == Address))
+            foreach (KThread thread in sortedThreads.Where(x => x.CondVarAddress == address))
             {
-                TryAcquireMutex(Process, Memory, Thread);
+                TryAcquireMutex(process, memory, thread);
 
-                SignaledThreads.Enqueue(Thread);
+                signaledThreads.Enqueue(thread);
 
                 //If the count is <= 0, we should signal all threads waiting.
-                if (Count >= 1 && --Count == 0)
-                {
-                    break;
-                }
+                if (count >= 1 && --count == 0) break;
             }
 
-            while (SignaledThreads.TryDequeue(out KThread Thread))
-            {
-                CondVarThreads.Remove(Thread);
-            }
+            while (signaledThreads.TryDequeue(out KThread thread)) CondVarThreads.Remove(thread);
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
         }
 
-        private KThread TryAcquireMutex(Process Process, AMemory Memory, KThread Requester)
+        private KThread TryAcquireMutex(Process process, AMemory memory, KThread requester)
         {
-            long Address = Requester.MutexAddress;
+            long address = requester.MutexAddress;
 
-            Memory.SetExclusive(0, Address);
+            memory.SetExclusive(0, address);
 
-            if (!UserToKernelInt32(Memory, Address, out int MutexValue))
+            if (!UserToKernelInt32(memory, address, out int mutexValue))
             {
                 //Invalid address.
-                Memory.ClearExclusive(0);
+                memory.ClearExclusive(0);
 
-                Requester.SignaledObj   = null;
-                Requester.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                requester.SignaledObj   = null;
+                requester.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return null;
             }
 
             while (true)
             {
-                if (Memory.TestExclusive(0, Address))
+                if (memory.TestExclusive(0, address))
                 {
-                    if (MutexValue != 0)
-                    {
-                        //Update value to indicate there is a mutex waiter now.
-                        Memory.WriteInt32(Address, MutexValue | HasListenersMask);
-                    }
+                    if (mutexValue != 0)
+                        memory.WriteInt32(address, mutexValue | HasListenersMask);
                     else
-                    {
-                        //No thread owning the mutex, assign to requesting thread.
-                        Memory.WriteInt32(Address, Requester.ThreadHandleForUserMutex);
-                    }
+                        memory.WriteInt32(address, requester.ThreadHandleForUserMutex);
 
-                    Memory.ClearExclusiveForStore(0);
+                    memory.ClearExclusiveForStore(0);
 
                     break;
                 }
 
-                Memory.SetExclusive(0, Address);
+                memory.SetExclusive(0, address);
 
-                MutexValue = Memory.ReadInt32(Address);
+                mutexValue = memory.ReadInt32(address);
             }
 
-            if (MutexValue == 0)
+            if (mutexValue == 0)
             {
                 //We now own the mutex.
-                Requester.SignaledObj   = null;
-                Requester.ObjSyncResult = 0;
+                requester.SignaledObj   = null;
+                requester.ObjSyncResult = 0;
 
-                Requester.ReleaseAndResume();
+                requester.ReleaseAndResume();
 
                 return null;
             }
 
-            MutexValue &= ~HasListenersMask;
+            mutexValue &= ~HasListenersMask;
 
-            KThread MutexOwner = Process.HandleTable.GetObject<KThread>(MutexValue);
+            KThread mutexOwner = process.HandleTable.GetObject<KThread>(mutexValue);
 
-            if (MutexOwner != null)
+            if (mutexOwner != null)
             {
                 //Mutex already belongs to another thread, wait for it.
-                MutexOwner.AddMutexWaiter(Requester);
+                mutexOwner.AddMutexWaiter(requester);
             }
             else
             {
                 //Invalid mutex owner.
-                Requester.SignaledObj   = null;
-                Requester.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+                requester.SignaledObj   = null;
+                requester.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
-                Requester.ReleaseAndResume();
+                requester.ReleaseAndResume();
             }
 
-            return MutexOwner;
+            return mutexOwner;
         }
 
-        public long WaitForAddressIfEqual(AMemory Memory, long Address, int Value, long Timeout)
+        public long WaitForAddressIfEqual(AMemory memory, long address, int value, long timeout)
         {
-            KThread CurrentThread = System.Scheduler.GetCurrentThread();
+            KThread currentThread = _system.Scheduler.GetCurrentThread();
 
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            if (CurrentThread.ShallBeTerminated ||
-                CurrentThread.SchedFlags == ThreadSchedState.TerminationPending)
+            if (currentThread.ShallBeTerminated ||
+                currentThread.SchedFlags == ThreadSchedState.TerminationPending)
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
             }
 
-            CurrentThread.SignaledObj   = null;
-            CurrentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+            currentThread.SignaledObj   = null;
+            currentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
 
-            if (!UserToKernelInt32(Memory, Address, out int CurrentValue))
+            if (!UserToKernelInt32(memory, address, out int currentValue))
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
             }
 
-            if (CurrentValue == Value)
+            if (currentValue == value)
             {
-                if (Timeout == 0)
+                if (timeout == 0)
                 {
-                    System.CriticalSectionLock.Unlock();
+                    _system.CriticalSectionLock.Unlock();
 
                     return MakeError(ErrorModule.Kernel, KernelErr.Timeout);
                 }
 
-                CurrentThread.MutexAddress         = Address;
-                CurrentThread.WaitingInArbitration = true;
+                currentThread.MutexAddress         = address;
+                currentThread.WaitingInArbitration = true;
 
-                InsertSortedByPriority(ArbiterThreads, CurrentThread);
+                InsertSortedByPriority(ArbiterThreads, currentThread);
 
-                CurrentThread.Reschedule(ThreadSchedState.Paused);
+                currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (Timeout > 0)
+                if (timeout > 0) _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+
+                _system.CriticalSectionLock.Unlock();
+
+                if (timeout > 0) _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+
+                _system.CriticalSectionLock.Lock();
+
+                if (currentThread.WaitingInArbitration)
                 {
-                    System.TimeManager.ScheduleFutureInvocation(CurrentThread, Timeout);
+                    ArbiterThreads.Remove(currentThread);
+
+                    currentThread.WaitingInArbitration = false;
                 }
 
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
-                if (Timeout > 0)
-                {
-                    System.TimeManager.UnscheduleFutureInvocation(CurrentThread);
-                }
-
-                System.CriticalSectionLock.Lock();
-
-                if (CurrentThread.WaitingInArbitration)
-                {
-                    ArbiterThreads.Remove(CurrentThread);
-
-                    CurrentThread.WaitingInArbitration = false;
-                }
-
-                System.CriticalSectionLock.Unlock();
-
-                return CurrentThread.ObjSyncResult;
+                return currentThread.ObjSyncResult;
             }
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
             return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
         }
 
         public long WaitForAddressIfLessThan(
-            AMemory Memory,
-            long    Address,
-            int     Value,
-            bool    ShouldDecrement,
-            long    Timeout)
+            AMemory memory,
+            long    address,
+            int     value,
+            bool    shouldDecrement,
+            long    timeout)
         {
-            KThread CurrentThread = System.Scheduler.GetCurrentThread();
+            KThread currentThread = _system.Scheduler.GetCurrentThread();
 
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            if (CurrentThread.ShallBeTerminated ||
-                CurrentThread.SchedFlags == ThreadSchedState.TerminationPending)
+            if (currentThread.ShallBeTerminated ||
+                currentThread.SchedFlags == ThreadSchedState.TerminationPending)
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
             }
 
-            CurrentThread.SignaledObj   = null;
-            CurrentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+            currentThread.SignaledObj   = null;
+            currentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
 
             //If ShouldDecrement is true, do atomic decrement of the value at Address.
-            Memory.SetExclusive(0, Address);
+            memory.SetExclusive(0, address);
 
-            if (!UserToKernelInt32(Memory, Address, out int CurrentValue))
+            if (!UserToKernelInt32(memory, address, out int currentValue))
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
             }
 
-            if (ShouldDecrement)
-            {
-                while (CurrentValue < Value)
+            if (shouldDecrement)
+                while (currentValue < value)
                 {
-                    if (Memory.TestExclusive(0, Address))
+                    if (memory.TestExclusive(0, address))
                     {
-                        Memory.WriteInt32(Address, CurrentValue - 1);
+                        memory.WriteInt32(address, currentValue - 1);
 
-                        Memory.ClearExclusiveForStore(0);
+                        memory.ClearExclusiveForStore(0);
 
                         break;
                     }
 
-                    Memory.SetExclusive(0, Address);
+                    memory.SetExclusive(0, address);
 
-                    CurrentValue = Memory.ReadInt32(Address);
+                    currentValue = memory.ReadInt32(address);
                 }
-            }
 
-            Memory.ClearExclusive(0);
+            memory.ClearExclusive(0);
 
-            if (CurrentValue < Value)
+            if (currentValue < value)
             {
-                if (Timeout == 0)
+                if (timeout == 0)
                 {
-                    System.CriticalSectionLock.Unlock();
+                    _system.CriticalSectionLock.Unlock();
 
                     return MakeError(ErrorModule.Kernel, KernelErr.Timeout);
                 }
 
-                CurrentThread.MutexAddress         = Address;
-                CurrentThread.WaitingInArbitration = true;
+                currentThread.MutexAddress         = address;
+                currentThread.WaitingInArbitration = true;
 
-                InsertSortedByPriority(ArbiterThreads, CurrentThread);
+                InsertSortedByPriority(ArbiterThreads, currentThread);
 
-                CurrentThread.Reschedule(ThreadSchedState.Paused);
+                currentThread.Reschedule(ThreadSchedState.Paused);
 
-                if (Timeout > 0)
+                if (timeout > 0) _system.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+
+                _system.CriticalSectionLock.Unlock();
+
+                if (timeout > 0) _system.TimeManager.UnscheduleFutureInvocation(currentThread);
+
+                _system.CriticalSectionLock.Lock();
+
+                if (currentThread.WaitingInArbitration)
                 {
-                    System.TimeManager.ScheduleFutureInvocation(CurrentThread, Timeout);
+                    ArbiterThreads.Remove(currentThread);
+
+                    currentThread.WaitingInArbitration = false;
                 }
 
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
-                if (Timeout > 0)
-                {
-                    System.TimeManager.UnscheduleFutureInvocation(CurrentThread);
-                }
-
-                System.CriticalSectionLock.Lock();
-
-                if (CurrentThread.WaitingInArbitration)
-                {
-                    ArbiterThreads.Remove(CurrentThread);
-
-                    CurrentThread.WaitingInArbitration = false;
-                }
-
-                System.CriticalSectionLock.Unlock();
-
-                return CurrentThread.ObjSyncResult;
+                return currentThread.ObjSyncResult;
             }
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
             return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
         }
 
-        private void InsertSortedByPriority(List<KThread> Threads, KThread Thread)
+        private void InsertSortedByPriority(List<KThread> threads, KThread thread)
         {
-            int NextIndex = -1;
+            int nextIndex = -1;
 
-            for (int Index = 0; Index < Threads.Count; Index++)
-            {
-                if (Threads[Index].DynamicPriority > Thread.DynamicPriority)
+            for (int index = 0; index < threads.Count; index++)
+                if (threads[index].DynamicPriority > thread.DynamicPriority)
                 {
-                    NextIndex = Index;
+                    nextIndex = index;
 
                     break;
                 }
-            }
 
-            if (NextIndex != -1)
-            {
-                Threads.Insert(NextIndex, Thread);
-            }
+            if (nextIndex != -1)
+                threads.Insert(nextIndex, thread);
             else
-            {
-                Threads.Add(Thread);
-            }
+                threads.Add(thread);
         }
 
-        public long Signal(long Address, int Count)
+        public long Signal(long address, int count)
         {
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            WakeArbiterThreads(Address, Count);
+            WakeArbiterThreads(address, count);
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
             return 0;
         }
 
-        public long SignalAndIncrementIfEqual(AMemory Memory, long Address, int Value, int Count)
+        public long SignalAndIncrementIfEqual(AMemory memory, long address, int value, int count)
         {
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            Memory.SetExclusive(0, Address);
+            memory.SetExclusive(0, address);
 
-            if (!UserToKernelInt32(Memory, Address, out int CurrentValue))
+            if (!UserToKernelInt32(memory, address, out int currentValue))
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
             }
 
-            while (CurrentValue == Value)
+            while (currentValue == value)
             {
-                if (Memory.TestExclusive(0, Address))
+                if (memory.TestExclusive(0, address))
                 {
-                    Memory.WriteInt32(Address, CurrentValue + 1);
+                    memory.WriteInt32(address, currentValue + 1);
 
-                    Memory.ClearExclusiveForStore(0);
+                    memory.ClearExclusiveForStore(0);
 
                     break;
                 }
 
-                Memory.SetExclusive(0, Address);
+                memory.SetExclusive(0, address);
 
-                CurrentValue = Memory.ReadInt32(Address);
+                currentValue = memory.ReadInt32(address);
             }
 
-            Memory.ClearExclusive(0);
+            memory.ClearExclusive(0);
 
-            if (CurrentValue != Value)
+            if (currentValue != value)
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
             }
 
-            WakeArbiterThreads(Address, Count);
+            WakeArbiterThreads(address, count);
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
             return 0;
         }
 
-        public long SignalAndModifyIfEqual(AMemory Memory, long Address, int Value, int Count)
+        public long SignalAndModifyIfEqual(AMemory memory, long address, int value, int count)
         {
-            System.CriticalSectionLock.Lock();
+            _system.CriticalSectionLock.Lock();
 
-            int Offset;
+            int offset;
 
             //The value is decremented if the number of threads waiting is less
             //or equal to the Count of threads to be signaled, or Count is zero
             //or negative. It is incremented if there are no threads waiting.
-            int WaitingCount = 0;
+            int waitingCount = 0;
 
-            foreach (KThread Thread in ArbiterThreads.Where(x => x.MutexAddress == Address))
-            {
-                if (++WaitingCount > Count)
-                {
-                    break;
-                }
-            }
+            foreach (KThread thread in ArbiterThreads.Where(x => x.MutexAddress == address))
+                if (++waitingCount > count) break;
 
-            if (WaitingCount > 0)
-            {
-                Offset = WaitingCount <= Count || Count <= 0 ? -1 : 0;
-            }
+            if (waitingCount > 0)
+                offset = waitingCount <= count || count <= 0 ? -1 : 0;
             else
-            {
-                Offset = 1;
-            }
+                offset = 1;
 
-            Memory.SetExclusive(0, Address);
+            memory.SetExclusive(0, address);
 
-            if (!UserToKernelInt32(Memory, Address, out int CurrentValue))
+            if (!UserToKernelInt32(memory, address, out int currentValue))
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
             }
 
-            while (CurrentValue == Value)
+            while (currentValue == value)
             {
-                if (Memory.TestExclusive(0, Address))
+                if (memory.TestExclusive(0, address))
                 {
-                    Memory.WriteInt32(Address, CurrentValue + Offset);
+                    memory.WriteInt32(address, currentValue + offset);
 
-                    Memory.ClearExclusiveForStore(0);
+                    memory.ClearExclusiveForStore(0);
 
                     break;
                 }
 
-                Memory.SetExclusive(0, Address);
+                memory.SetExclusive(0, address);
 
-                CurrentValue = Memory.ReadInt32(Address);
+                currentValue = memory.ReadInt32(address);
             }
 
-            Memory.ClearExclusive(0);
+            memory.ClearExclusive(0);
 
-            if (CurrentValue != Value)
+            if (currentValue != value)
             {
-                System.CriticalSectionLock.Unlock();
+                _system.CriticalSectionLock.Unlock();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
             }
 
-            WakeArbiterThreads(Address, Count);
+            WakeArbiterThreads(address, count);
 
-            System.CriticalSectionLock.Unlock();
+            _system.CriticalSectionLock.Unlock();
 
             return 0;
         }
 
-        private void WakeArbiterThreads(long Address, int Count)
+        private void WakeArbiterThreads(long address, int count)
         {
-            Queue<KThread> SignaledThreads = new Queue<KThread>();
+            Queue<KThread> signaledThreads = new Queue<KThread>();
 
-            foreach (KThread Thread in ArbiterThreads.Where(x => x.MutexAddress == Address))
+            foreach (KThread thread in ArbiterThreads.Where(x => x.MutexAddress == address))
             {
-                SignaledThreads.Enqueue(Thread);
+                signaledThreads.Enqueue(thread);
 
                 //If the count is <= 0, we should signal all threads waiting.
-                if (Count >= 1 && --Count == 0)
-                {
-                    break;
-                }
+                if (count >= 1 && --count == 0) break;
             }
 
-            while (SignaledThreads.TryDequeue(out KThread Thread))
+            while (signaledThreads.TryDequeue(out KThread thread))
             {
-                Thread.SignaledObj   = null;
-                Thread.ObjSyncResult = 0;
+                thread.SignaledObj   = null;
+                thread.ObjSyncResult = 0;
 
-                Thread.ReleaseAndResume();
+                thread.ReleaseAndResume();
 
-                Thread.WaitingInArbitration = false;
+                thread.WaitingInArbitration = false;
 
-                ArbiterThreads.Remove(Thread);
+                ArbiterThreads.Remove(thread);
             }
         }
 
-        private bool UserToKernelInt32(AMemory Memory, long Address, out int Value)
+        private bool UserToKernelInt32(AMemory memory, long address, out int value)
         {
-            if (Memory.IsMapped(Address))
+            if (memory.IsMapped(address))
             {
-                Value = Memory.ReadInt32(Address);
+                value = memory.ReadInt32(address);
 
                 return true;
             }
 
-            Value = 0;
+            value = 0;
 
             return false;
         }
 
-        private bool KernelToUserInt32(AMemory Memory, long Address, int Value)
+        private bool KernelToUserInt32(AMemory memory, long address, int value)
         {
-            if (Memory.IsMapped(Address))
+            if (memory.IsMapped(address))
             {
-                Memory.WriteInt32ToSharedAddr(Address, Value);
+                memory.WriteInt32ToSharedAddr(address, value);
 
                 return true;
             }

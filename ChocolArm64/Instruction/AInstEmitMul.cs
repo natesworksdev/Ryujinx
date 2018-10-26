@@ -4,77 +4,99 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
-        public static void Madd(AILEmitterCtx Context) => EmitMul(Context, OpCodes.Add);
-        public static void Msub(AILEmitterCtx Context) => EmitMul(Context, OpCodes.Sub);
-
-        private static void EmitMul(AILEmitterCtx Context, OpCode ILOp)
+        public static void Madd(AILEmitterCtx context)
         {
-            AOpCodeMul Op = (AOpCodeMul)Context.CurrOp;
-
-            Context.EmitLdintzr(Op.Ra);
-            Context.EmitLdintzr(Op.Rn);
-            Context.EmitLdintzr(Op.Rm);
-
-            Context.Emit(OpCodes.Mul);
-            Context.Emit(ILOp);
-
-            Context.EmitStintzr(Op.Rd);
+            EmitMul(context, OpCodes.Add);
         }
 
-        public static void Smaddl(AILEmitterCtx Context) => EmitMull(Context, OpCodes.Add, true);
-        public static void Smsubl(AILEmitterCtx Context) => EmitMull(Context, OpCodes.Sub, true);
-        public static void Umaddl(AILEmitterCtx Context) => EmitMull(Context, OpCodes.Add, false);
-        public static void Umsubl(AILEmitterCtx Context) => EmitMull(Context, OpCodes.Sub, false);
-
-        private static void EmitMull(AILEmitterCtx Context, OpCode AddSubOp, bool Signed)
+        public static void Msub(AILEmitterCtx context)
         {
-            AOpCodeMul Op = (AOpCodeMul)Context.CurrOp;
+            EmitMul(context, OpCodes.Sub);
+        }
 
-            OpCode CastOp = Signed
+        private static void EmitMul(AILEmitterCtx context, OpCode ilOp)
+        {
+            AOpCodeMul op = (AOpCodeMul)context.CurrOp;
+
+            context.EmitLdintzr(op.Ra);
+            context.EmitLdintzr(op.Rn);
+            context.EmitLdintzr(op.Rm);
+
+            context.Emit(OpCodes.Mul);
+            context.Emit(ilOp);
+
+            context.EmitStintzr(op.Rd);
+        }
+
+        public static void Smaddl(AILEmitterCtx context)
+        {
+            EmitMull(context, OpCodes.Add, true);
+        }
+
+        public static void Smsubl(AILEmitterCtx context)
+        {
+            EmitMull(context, OpCodes.Sub, true);
+        }
+
+        public static void Umaddl(AILEmitterCtx context)
+        {
+            EmitMull(context, OpCodes.Add, false);
+        }
+
+        public static void Umsubl(AILEmitterCtx context)
+        {
+            EmitMull(context, OpCodes.Sub, false);
+        }
+
+        private static void EmitMull(AILEmitterCtx context, OpCode addSubOp, bool signed)
+        {
+            AOpCodeMul op = (AOpCodeMul)context.CurrOp;
+
+            OpCode castOp = signed
                 ? OpCodes.Conv_I8
                 : OpCodes.Conv_U8;
 
-            Context.EmitLdintzr(Op.Ra);
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdintzr(op.Ra);
+            context.EmitLdintzr(op.Rn);
 
-            Context.Emit(OpCodes.Conv_I4);
-            Context.Emit(CastOp);
+            context.Emit(OpCodes.Conv_I4);
+            context.Emit(castOp);
 
-            Context.EmitLdintzr(Op.Rm);
+            context.EmitLdintzr(op.Rm);
 
-            Context.Emit(OpCodes.Conv_I4);
-            Context.Emit(CastOp);
-            Context.Emit(OpCodes.Mul);
+            context.Emit(OpCodes.Conv_I4);
+            context.Emit(castOp);
+            context.Emit(OpCodes.Mul);
 
-            Context.Emit(AddSubOp);
+            context.Emit(addSubOp);
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        public static void Smulh(AILEmitterCtx Context)
+        public static void Smulh(AILEmitterCtx context)
         {
-            AOpCodeMul Op = (AOpCodeMul)Context.CurrOp;
+            AOpCodeMul op = (AOpCodeMul)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
-            Context.EmitLdintzr(Op.Rm);
+            context.EmitLdintzr(op.Rn);
+            context.EmitLdintzr(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.SMulHi128));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.SMulHi128));
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        public static void Umulh(AILEmitterCtx Context)
+        public static void Umulh(AILEmitterCtx context)
         {
-            AOpCodeMul Op = (AOpCodeMul)Context.CurrOp;
+            AOpCodeMul op = (AOpCodeMul)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
-            Context.EmitLdintzr(Op.Rm);
+            context.EmitLdintzr(op.Rn);
+            context.EmitLdintzr(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.UMulHi128));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.UMulHi128));
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
     }
 }

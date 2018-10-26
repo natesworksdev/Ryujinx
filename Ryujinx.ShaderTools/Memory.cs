@@ -3,24 +3,24 @@ using System.IO;
 
 namespace Ryujinx.ShaderTools
 {
-    class Memory : IGalMemory
+    internal class Memory : IGalMemory
     {
-        private Stream BaseStream;
+        private Stream _baseStream;
 
-        private BinaryReader Reader;
+        private BinaryReader _reader;
 
-        public Memory(Stream BaseStream)
+        public Memory(Stream baseStream)
         {
-            this.BaseStream = BaseStream;
+            this._baseStream = baseStream;
 
-            Reader = new BinaryReader(BaseStream);
+            _reader = new BinaryReader(baseStream);
         }
 
-        public int ReadInt32(long Position)
+        public int ReadInt32(long position)
         {
-            BaseStream.Seek(Position, SeekOrigin.Begin);
+            _baseStream.Seek(position, SeekOrigin.Begin);
 
-            return Reader.ReadInt32();
+            return _reader.ReadInt32();
         }
     }
 }

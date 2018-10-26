@@ -1,4 +1,4 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    class ShaderIrMeta { }
+    internal class ShaderIrMeta { }
 }

@@ -1,14 +1,14 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    class ShaderIrAsg : ShaderIrNode
+    internal class ShaderIrAsg : ShaderIrNode
     {
         public ShaderIrNode Dst { get; set; }
         public ShaderIrNode Src { get; set; }
 
-        public ShaderIrAsg(ShaderIrNode Dst, ShaderIrNode Src)
+        public ShaderIrAsg(ShaderIrNode dst, ShaderIrNode src)
         {
-            this.Dst = Dst;
-            this.Src = Src;
+            this.Dst = dst;
+            this.Src = src;
         }
     }
 }

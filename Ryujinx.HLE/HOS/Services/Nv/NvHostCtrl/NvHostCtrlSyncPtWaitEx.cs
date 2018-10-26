@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 {
-    struct NvHostCtrlSyncptWaitEx
+    internal struct NvHostCtrlSyncptWaitEx
     {
         public int Id;
         public int Thresh;

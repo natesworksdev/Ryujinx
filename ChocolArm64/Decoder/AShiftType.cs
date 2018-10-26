@@ -1,6 +1,6 @@
 namespace ChocolArm64.Decoder
 {
-    enum AShiftType
+    internal enum AShiftType
     {
         Lsl,
         Lsr,

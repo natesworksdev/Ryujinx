@@ -4,5 +4,5 @@ using ChocolArm64.State;
 
 namespace ChocolArm64.Instruction
 {
-    delegate void AInstInterpreter(AThreadState State, AMemory Memory, AOpCode OpCode);
+    internal delegate void AInstInterpreter(AThreadState state, AMemory memory, AOpCode opCode);
 }

@@ -14,7 +14,7 @@ namespace Ryujinx.Audio.OpenAL
 
         private const int MaxReleased = 32;
 
-        private AudioContext Context;
+        private AudioContext _context;
 
         private class Track : IDisposable
         {
@@ -24,115 +24,101 @@ namespace Ryujinx.Audio.OpenAL
 
             public ALFormat Format { get; private set; }
 
-            private ReleaseCallback Callback;
+            private ReleaseCallback _callback;
 
             public PlaybackState State { get; set; }
 
-            private ConcurrentDictionary<long, int> Buffers;
+            private ConcurrentDictionary<long, int> _buffers;
 
-            private Queue<long> QueuedTagsQueue;
+            private Queue<long> _queuedTagsQueue;
 
-            private Queue<long> ReleasedTagsQueue;
+            private Queue<long> _releasedTagsQueue;
 
-            private bool Disposed;
+            private bool _disposed;
 
-            public Track(int SampleRate, ALFormat Format, ReleaseCallback Callback)
+            public Track(int sampleRate, ALFormat format, ReleaseCallback callback)
             {
-                this.SampleRate = SampleRate;
-                this.Format     = Format;
-                this.Callback   = Callback;
+                this.SampleRate = sampleRate;
+                this.Format     = format;
+                this._callback   = callback;
 
                 State = PlaybackState.Stopped;
 
                 SourceId = AL.GenSource();
 
-                Buffers = new ConcurrentDictionary<long, int>();
+                _buffers = new ConcurrentDictionary<long, int>();
 
-                QueuedTagsQueue = new Queue<long>();
+                _queuedTagsQueue = new Queue<long>();
 
-                ReleasedTagsQueue = new Queue<long>();
+                _releasedTagsQueue = new Queue<long>();
             }
 
-            public bool ContainsBuffer(long Tag)
+            public bool ContainsBuffer(long tag)
             {
-                foreach (long QueuedTag in QueuedTagsQueue)
-                {
-                    if (QueuedTag == Tag)
-                    {
-                        return true;
-                    }
-                }
+                foreach (long queuedTag in _queuedTagsQueue)
+                    if (queuedTag == tag) return true;
 
                 return false;
             }
 
-            public long[] GetReleasedBuffers(int Count)
+            public long[] GetReleasedBuffers(int count)
             {
-                AL.GetSource(SourceId, ALGetSourcei.BuffersProcessed, out int ReleasedCount);
+                AL.GetSource(SourceId, ALGetSourcei.BuffersProcessed, out int releasedCount);
 
-                ReleasedCount += ReleasedTagsQueue.Count;
+                releasedCount += _releasedTagsQueue.Count;
 
-                if (Count > ReleasedCount)
-                {
-                    Count = ReleasedCount;
-                }
+                if (count > releasedCount) count = releasedCount;
 
-                List<long> Tags = new List<long>();
+                List<long> tags = new List<long>();
 
-                while (Count-- > 0 && ReleasedTagsQueue.TryDequeue(out long Tag))
-                {
-                    Tags.Add(Tag);
-                }
+                while (count-- > 0 && _releasedTagsQueue.TryDequeue(out long tag)) tags.Add(tag);
 
-                while (Count-- > 0 && QueuedTagsQueue.TryDequeue(out long Tag))
+                while (count-- > 0 && _queuedTagsQueue.TryDequeue(out long tag))
                 {
                     AL.SourceUnqueueBuffers(SourceId, 1);
 
-                    Tags.Add(Tag);
+                    tags.Add(tag);
                 }
 
-                return Tags.ToArray();
+                return tags.ToArray();
             }
 
-            public int AppendBuffer(long Tag)
+            public int AppendBuffer(long tag)
             {
-                if (Disposed)
+                if (_disposed) throw new ObjectDisposedException(nameof(Track));
+
+                int id = AL.GenBuffer();
+
+                _buffers.AddOrUpdate(tag, id, (key, oldId) =>
                 {
-                    throw new ObjectDisposedException(nameof(Track));
-                }
+                    AL.DeleteBuffer(oldId);
 
-                int Id = AL.GenBuffer();
-
-                Buffers.AddOrUpdate(Tag, Id, (Key, OldId) =>
-                {
-                    AL.DeleteBuffer(OldId);
-
-                    return Id;
+                    return id;
                 });
 
-                QueuedTagsQueue.Enqueue(Tag);
+                _queuedTagsQueue.Enqueue(tag);
 
-                return Id;
+                return id;
             }
 
             public void CallReleaseCallbackIfNeeded()
             {
-                AL.GetSource(SourceId, ALGetSourcei.BuffersProcessed, out int ReleasedCount);
+                AL.GetSource(SourceId, ALGetSourcei.BuffersProcessed, out int releasedCount);
 
-                if (ReleasedCount > 0)
+                if (releasedCount > 0)
                 {
                     //If we signal, then we also need to have released buffers available
                     //to return when GetReleasedBuffers is called.
                     //If playback needs to be re-started due to all buffers being processed,
                     //then OpenAL zeros the counts (ReleasedCount), so we keep it on the queue.
-                    while (ReleasedCount-- > 0 && QueuedTagsQueue.TryDequeue(out long Tag))
+                    while (releasedCount-- > 0 && _queuedTagsQueue.TryDequeue(out long tag))
                     {
                         AL.SourceUnqueueBuffers(SourceId, 1);
 
-                        ReleasedTagsQueue.Enqueue(Tag);
+                        _releasedTagsQueue.Enqueue(tag);
                     }
 
-                    Callback();
+                    _callback();
                 }
             }
 
@@ -141,193 +127,162 @@ namespace Ryujinx.Audio.OpenAL
                 Dispose(true);
             }
 
-            protected virtual void Dispose(bool Disposing)
+            protected virtual void Dispose(bool disposing)
             {
-                if (Disposing && !Disposed)
+                if (disposing && !_disposed)
                 {
-                    Disposed = true;
+                    _disposed = true;
 
                     AL.DeleteSource(SourceId);
 
-                    foreach (int Id in Buffers.Values)
-                    {
-                        AL.DeleteBuffer(Id);
-                    }
+                    foreach (int id in _buffers.Values) AL.DeleteBuffer(id);
                 }
             }
         }
 
-        private ConcurrentDictionary<int, Track> Tracks;
+        private ConcurrentDictionary<int, Track> _tracks;
 
-        private Thread AudioPollerThread;
+        private Thread _audioPollerThread;
 
-        private bool KeepPolling;
+        private bool _keepPolling;
 
         public OpenALAudioOut()
         {
-            Context = new AudioContext();
+            _context = new AudioContext();
 
-            Tracks = new ConcurrentDictionary<int, Track>();
+            _tracks = new ConcurrentDictionary<int, Track>();
 
-            KeepPolling = true;
+            _keepPolling = true;
 
-            AudioPollerThread = new Thread(AudioPollerWork);
+            _audioPollerThread = new Thread(AudioPollerWork);
 
-            AudioPollerThread.Start();
+            _audioPollerThread.Start();
         }
 
         private void AudioPollerWork()
         {
             do
             {
-                foreach (Track Td in Tracks.Values)
-                {
-                    lock (Td)
+                foreach (Track td in _tracks.Values)
+                    lock (td)
                     {
-                        Td.CallReleaseCallbackIfNeeded();
+                        td.CallReleaseCallbackIfNeeded();
                     }
-                }
 
                 //If it's not slept it will waste cycles.
                 Thread.Sleep(10);
             }
-            while (KeepPolling);
+            while (_keepPolling);
 
-            foreach (Track Td in Tracks.Values)
-            {
-                Td.Dispose();
-            }
+            foreach (Track td in _tracks.Values) td.Dispose();
 
-            Tracks.Clear();
+            _tracks.Clear();
         }
 
-        public int OpenTrack(int SampleRate, int Channels, ReleaseCallback Callback)
+        public int OpenTrack(int sampleRate, int channels, ReleaseCallback callback)
         {
-            Track Td = new Track(SampleRate, GetALFormat(Channels), Callback);
+            Track td = new Track(sampleRate, GetAlFormat(channels), callback);
 
-            for (int Id = 0; Id < MaxTracks; Id++)
-            {
-                if (Tracks.TryAdd(Id, Td))
-                {
-                    return Id;
-                }
-            }
+            for (int id = 0; id < MaxTracks; id++)
+                if (_tracks.TryAdd(id, td)) return id;
 
             return -1;
         }
 
-        private ALFormat GetALFormat(int Channels)
+        private ALFormat GetAlFormat(int channels)
         {
-            switch (Channels)
+            switch (channels)
             {
                 case 1: return ALFormat.Mono16;
                 case 2: return ALFormat.Stereo16;
                 case 6: return ALFormat.Multi51Chn16Ext;
             }
 
-            throw new ArgumentOutOfRangeException(nameof(Channels));
+            throw new ArgumentOutOfRangeException(nameof(channels));
         }
 
-        public void CloseTrack(int Track)
+        public void CloseTrack(int track)
         {
-            if (Tracks.TryRemove(Track, out Track Td))
-            {
-                lock (Td)
+            if (_tracks.TryRemove(track, out Track td))
+                lock (td)
                 {
-                    Td.Dispose();
+                    td.Dispose();
                 }
-            }
         }
 
-        public bool ContainsBuffer(int Track, long Tag)
+        public bool ContainsBuffer(int track, long tag)
         {
-            if (Tracks.TryGetValue(Track, out Track Td))
-            {
-                lock (Td)
+            if (_tracks.TryGetValue(track, out Track td))
+                lock (td)
                 {
-                    return Td.ContainsBuffer(Tag);
+                    return td.ContainsBuffer(tag);
                 }
-            }
 
             return false;
         }
 
-        public long[] GetReleasedBuffers(int Track, int MaxCount)
+        public long[] GetReleasedBuffers(int track, int maxCount)
         {
-            if (Tracks.TryGetValue(Track, out Track Td))
-            {
-                lock (Td)
+            if (_tracks.TryGetValue(track, out Track td))
+                lock (td)
                 {
-                    return Td.GetReleasedBuffers(MaxCount);
+                    return td.GetReleasedBuffers(maxCount);
                 }
-            }
 
             return null;
         }
 
-        public void AppendBuffer<T>(int Track, long Tag, T[] Buffer) where T : struct
+        public void AppendBuffer<T>(int track, long tag, T[] buffer) where T : struct
         {
-            if (Tracks.TryGetValue(Track, out Track Td))
-            {
-                lock (Td)
+            if (_tracks.TryGetValue(track, out Track td))
+                lock (td)
                 {
-                    int BufferId = Td.AppendBuffer(Tag);
+                    int bufferId = td.AppendBuffer(tag);
 
-                    int Size = Buffer.Length * Marshal.SizeOf<T>();
+                    int size = buffer.Length * Marshal.SizeOf<T>();
 
-                    AL.BufferData<T>(BufferId, Td.Format, Buffer, Size, Td.SampleRate);
+                    AL.BufferData<T>(bufferId, td.Format, buffer, size, td.SampleRate);
 
-                    AL.SourceQueueBuffer(Td.SourceId, BufferId);
+                    AL.SourceQueueBuffer(td.SourceId, bufferId);
 
-                    StartPlaybackIfNeeded(Td);
+                    StartPlaybackIfNeeded(td);
                 }
-            }
         }
 
-        public void Start(int Track)
+        public void Start(int track)
         {
-            if (Tracks.TryGetValue(Track, out Track Td))
-            {
-                lock (Td)
+            if (_tracks.TryGetValue(track, out Track td))
+                lock (td)
                 {
-                    Td.State = PlaybackState.Playing;
+                    td.State = PlaybackState.Playing;
 
-                    StartPlaybackIfNeeded(Td);
+                    StartPlaybackIfNeeded(td);
                 }
-            }
         }
 
-        private void StartPlaybackIfNeeded(Track Td)
+        private void StartPlaybackIfNeeded(Track td)
         {
-            AL.GetSource(Td.SourceId, ALGetSourcei.SourceState, out int StateInt);
+            AL.GetSource(td.SourceId, ALGetSourcei.SourceState, out int stateInt);
 
-            ALSourceState State = (ALSourceState)StateInt;
+            ALSourceState state = (ALSourceState)stateInt;
 
-            if (State != ALSourceState.Playing && Td.State == PlaybackState.Playing)
-            {
-                AL.SourcePlay(Td.SourceId);
-            }
+            if (state != ALSourceState.Playing && td.State == PlaybackState.Playing) AL.SourcePlay(td.SourceId);
         }
 
-        public void Stop(int Track)
+        public void Stop(int track)
         {
-            if (Tracks.TryGetValue(Track, out Track Td))
-            {
-                lock (Td)
+            if (_tracks.TryGetValue(track, out Track td))
+                lock (td)
                 {
-                    Td.State = PlaybackState.Stopped;
+                    td.State = PlaybackState.Stopped;
 
-                    AL.SourceStop(Td.SourceId);
+                    AL.SourceStop(td.SourceId);
                 }
-            }
         }
 
-        public PlaybackState GetState(int Track)
+        public PlaybackState GetState(int track)
         {
-            if (Tracks.TryGetValue(Track, out Track Td))
-            {
-                return Td.State;
-            }
+            if (_tracks.TryGetValue(track, out Track td)) return td.State;
 
             return PlaybackState.Stopped;
         }
@@ -337,12 +292,9 @@ namespace Ryujinx.Audio.OpenAL
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing)
-            {
-                KeepPolling = false;
-            }
+            if (disposing) _keepPolling = false;
         }
     }
 }

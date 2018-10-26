@@ -10,18 +10,18 @@ namespace ChocolArm64
         public AThreadState ThreadState { get; private set; }
         public AMemory      Memory      { get; private set; }
 
-        private ATranslator Translator;
+        private ATranslator _translator;
 
         public Thread Work;
 
         public event EventHandler WorkFinished;
 
-        private int IsExecuting;
+        private int _isExecuting;
 
-        public AThread(ATranslator Translator, AMemory Memory, long EntryPoint)
+        public AThread(ATranslator translator, AMemory memory, long entryPoint)
         {
-            this.Translator = Translator;
-            this.Memory     = Memory;
+            this._translator = translator;
+            this.Memory     = memory;
 
             ThreadState = new AThreadState();
 
@@ -31,9 +31,9 @@ namespace ChocolArm64
 
             Work = new Thread(delegate()
             {
-                Translator.ExecuteSubroutine(this, EntryPoint);
+                translator.ExecuteSubroutine(this, entryPoint);
 
-                Memory.RemoveMonitor(ThreadState.Core);
+                memory.RemoveMonitor(ThreadState.Core);
 
                 WorkFinished?.Invoke(this, EventArgs.Empty);
             });
@@ -41,10 +41,7 @@ namespace ChocolArm64
 
         public bool Execute()
         {
-            if (Interlocked.Exchange(ref IsExecuting, 1) == 1)
-            {
-                return false;
-            }
+            if (Interlocked.Exchange(ref _isExecuting, 1) == 1) return false;
 
             Work.Start();
 

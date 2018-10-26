@@ -1,6 +1,6 @@
 namespace ChocolArm64.Decoder
 {
-    interface IAOpCodeLit : IAOpCode
+    internal interface IAOpCodeLit : IAOpCode
     {
         int  Rt       { get; }
         long Imm      { get; }

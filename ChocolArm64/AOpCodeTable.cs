@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace ChocolArm64
 {
-    static class AOpCodeTable
+    internal static class AOpCodeTable
     {
         static AOpCodeTable()
         {
@@ -65,14 +65,14 @@ namespace ChocolArm64
             SetA64("11010101000000110011xxxx01011111", AInstEmit.Clrex,         typeof(AOpCodeSystem));
             SetA64("x101101011000000000101xxxxxxxxxx", AInstEmit.Cls,           typeof(AOpCodeAlu));
             SetA64("x101101011000000000100xxxxxxxxxx", AInstEmit.Clz,           typeof(AOpCodeAlu));
-            SetA64("00011010110xxxxx010000xxxxxxxxxx", AInstEmit.Crc32b,        typeof(AOpCodeAluRs));
-            SetA64("00011010110xxxxx010001xxxxxxxxxx", AInstEmit.Crc32h,        typeof(AOpCodeAluRs));
-            SetA64("00011010110xxxxx010010xxxxxxxxxx", AInstEmit.Crc32w,        typeof(AOpCodeAluRs));
-            SetA64("10011010110xxxxx010011xxxxxxxxxx", AInstEmit.Crc32x,        typeof(AOpCodeAluRs));
-            SetA64("00011010110xxxxx010100xxxxxxxxxx", AInstEmit.Crc32cb,       typeof(AOpCodeAluRs));
-            SetA64("00011010110xxxxx010101xxxxxxxxxx", AInstEmit.Crc32ch,       typeof(AOpCodeAluRs));
-            SetA64("00011010110xxxxx010110xxxxxxxxxx", AInstEmit.Crc32cw,       typeof(AOpCodeAluRs));
-            SetA64("10011010110xxxxx010111xxxxxxxxxx", AInstEmit.Crc32cx,       typeof(AOpCodeAluRs));
+            SetA64("00011010110xxxxx010000xxxxxxxxxx", AInstEmit.Crc32B,        typeof(AOpCodeAluRs));
+            SetA64("00011010110xxxxx010001xxxxxxxxxx", AInstEmit.Crc32H,        typeof(AOpCodeAluRs));
+            SetA64("00011010110xxxxx010010xxxxxxxxxx", AInstEmit.Crc32W,        typeof(AOpCodeAluRs));
+            SetA64("10011010110xxxxx010011xxxxxxxxxx", AInstEmit.Crc32X,        typeof(AOpCodeAluRs));
+            SetA64("00011010110xxxxx010100xxxxxxxxxx", AInstEmit.Crc32Cb,       typeof(AOpCodeAluRs));
+            SetA64("00011010110xxxxx010101xxxxxxxxxx", AInstEmit.Crc32Ch,       typeof(AOpCodeAluRs));
+            SetA64("00011010110xxxxx010110xxxxxxxxxx", AInstEmit.Crc32Cw,       typeof(AOpCodeAluRs));
+            SetA64("10011010110xxxxx010111xxxxxxxxxx", AInstEmit.Crc32Cx,       typeof(AOpCodeAluRs));
             SetA64("x0011010100xxxxxxxxx00xxxxxxxxxx", AInstEmit.Csel,          typeof(AOpCodeCsel));
             SetA64("x0011010100xxxxxxxxx01xxxxxxxxxx", AInstEmit.Csinc,         typeof(AOpCodeCsel));
             SetA64("x1011010100xxxxxxxxx00xxxxxxxxxx", AInstEmit.Csinv,         typeof(AOpCodeCsel));
@@ -529,31 +529,21 @@ namespace ChocolArm64
 #endregion
 
 #region "Generate InstA64FastLookup Table (AArch64)"
-            var Tmp = new List<InstInfo>[FastLookupSize];
-            for (int i = 0; i < FastLookupSize; i++)
+            var tmp = new List<InstInfo>[_fastLookupSize];
+            for (int i = 0; i < _fastLookupSize; i++) tmp[i] = new List<InstInfo>();
+
+            foreach (var inst in _allInstA64)
             {
-                Tmp[i] = new List<InstInfo>();
+                int mask = ToFastLookupIndex(inst.Mask);
+                int value = ToFastLookupIndex(inst.Value);
+
+                for (int i = 0; i < _fastLookupSize; i++)
+                    if ((i & mask) == value) tmp[i].Add(inst);
             }
 
-            foreach (var Inst in AllInstA64)
-            {
-                int Mask = ToFastLookupIndex(Inst.Mask);
-                int Value = ToFastLookupIndex(Inst.Value);
+            for (int i = 0; i < _fastLookupSize; i++) _instA64FastLookup[i] = tmp[i].ToArray();
 
-                for (int i = 0; i < FastLookupSize; i++)
-                {
-                    if ((i & Mask) == Value)
-                    {
-                        Tmp[i].Add(Inst);
-                    }
-                }
-            }
-
-            for (int i = 0; i < FastLookupSize; i++)
-            {
-                InstA64FastLookup[i] = Tmp[i].ToArray();
-            }
-#endregion
+            #endregion
         }
 
         private class InstInfo
@@ -563,42 +553,42 @@ namespace ChocolArm64
 
             public AInst Inst;
 
-            public InstInfo(int Mask, int Value, AInst Inst)
+            public InstInfo(int mask, int value, AInst inst)
             {
-                this.Mask  = Mask;
-                this.Value = Value;
-                this.Inst  = Inst;
+                this.Mask  = mask;
+                this.Value = value;
+                this.Inst  = inst;
             }
         }
 
-        private static List<InstInfo> AllInstA32 = new List<InstInfo>();
-        private static List<InstInfo> AllInstA64 = new List<InstInfo>();
+        private static List<InstInfo> _allInstA32 = new List<InstInfo>();
+        private static List<InstInfo> _allInstA64 = new List<InstInfo>();
 
-        private static int FastLookupSize = 0x1000;
-        private static InstInfo[][] InstA64FastLookup = new InstInfo[FastLookupSize][];
+        private static int _fastLookupSize = 0x1000;
+        private static InstInfo[][] _instA64FastLookup = new InstInfo[_fastLookupSize][];
 
-        private static void SetA32(string Encoding, AInstInterpreter Interpreter, Type Type)
+        private static void SetA32(string encoding, AInstInterpreter interpreter, Type type)
         {
-            Set(Encoding, new AInst(Interpreter, null, Type), AExecutionMode.AArch32);
+            Set(encoding, new AInst(interpreter, null, type), AExecutionMode.AArch32);
         }
 
-        private static void SetA64(string Encoding, AInstEmitter Emitter, Type Type)
+        private static void SetA64(string encoding, AInstEmitter emitter, Type type)
         {
-            Set(Encoding, new AInst(null, Emitter, Type), AExecutionMode.AArch64);
+            Set(encoding, new AInst(null, emitter, type), AExecutionMode.AArch64);
         }
 
-        private static void Set(string Encoding, AInst Inst, AExecutionMode Mode)
+        private static void Set(string encoding, AInst inst, AExecutionMode mode)
         {
-            int Bit   = Encoding.Length - 1;
-            int Value = 0;
-            int XMask = 0;
-            int XBits = 0;
+            int bit   = encoding.Length - 1;
+            int value = 0;
+            int xMask = 0;
+            int xBits = 0;
 
-            int[] XPos = new int[Encoding.Length];
+            int[] xPos = new int[encoding.Length];
 
-            int Blacklisted = 0;
+            int blacklisted = 0;
 
-            for (int Index = 0; Index < Encoding.Length; Index++, Bit--)
+            for (int index = 0; index < encoding.Length; index++, bit--)
             {
                 //Note: < and > are used on special encodings.
                 //The < means that we should never have ALL bits with the '<' set.
@@ -606,99 +596,84 @@ namespace ChocolArm64
                 //but not 11. <<< is 000, 001, ..., 110 but NOT 111, and so on...
                 //For >, the invalid value is zero. So, for >> 01, 10 and 11 are valid,
                 //but 00 isn't.
-                char Chr = Encoding[Index];
+                char chr = encoding[index];
 
-                if (Chr == '1')
+                if (chr == '1')
                 {
-                    Value |= 1 << Bit;
+                    value |= 1 << bit;
                 }
-                else if (Chr == 'x')
+                else if (chr == 'x')
                 {
-                    XMask |= 1 << Bit;
+                    xMask |= 1 << bit;
                 }
-                else if (Chr == '>')
+                else if (chr == '>')
                 {
-                    XPos[XBits++] = Bit;
+                    xPos[xBits++] = bit;
                 }
-                else if (Chr == '<')
+                else if (chr == '<')
                 {
-                    XPos[XBits++] = Bit;
+                    xPos[xBits++] = bit;
 
-                    Blacklisted |= 1 << Bit;
+                    blacklisted |= 1 << bit;
                 }
-                else if (Chr != '0')
+                else if (chr != '0')
                 {
-                    throw new ArgumentException(nameof(Encoding));
+                    throw new ArgumentException(nameof(encoding));
                 }
             }
 
-            XMask = ~XMask;
+            xMask = ~xMask;
 
-            if (XBits == 0)
+            if (xBits == 0)
             {
-                InsertInst(XMask, Value, Inst, Mode);
+                InsertInst(xMask, value, inst, mode);
 
                 return;
             }
 
-            for (int Index = 0; Index < (1 << XBits); Index++)
+            for (int index = 0; index < 1 << xBits; index++)
             {
-                int Mask = 0;
+                int mask = 0;
 
-                for (int X = 0; X < XBits; X++)
-                {
-                    Mask |= ((Index >> X) & 1) << XPos[X];
-                }
+                for (int x = 0; x < xBits; x++) mask |= ((index >> x) & 1) << xPos[x];
 
-                if (Mask != Blacklisted)
-                {
-                    InsertInst(XMask, Value | Mask, Inst, Mode);
-                }
+                if (mask != blacklisted) InsertInst(xMask, value | mask, inst, mode);
             }
         }
 
         private static void InsertInst(
-            int            XMask,
-            int            Value,
-            AInst          Inst,
-            AExecutionMode Mode)
+            int            xMask,
+            int            value,
+            AInst          inst,
+            AExecutionMode mode)
         {
-            InstInfo Info = new InstInfo(XMask, Value, Inst);
+            InstInfo info = new InstInfo(xMask, value, inst);
 
-            if (Mode == AExecutionMode.AArch64)
-            {
-                AllInstA64.Add(Info);
-            }
+            if (mode == AExecutionMode.AArch64)
+                _allInstA64.Add(info);
             else
-            {
-                AllInstA32.Add(Info);
-            }
+                _allInstA32.Add(info);
         }
 
-        public static AInst GetInstA32(int OpCode)
+        public static AInst GetInstA32(int opCode)
         {
-            return GetInstFromList(AllInstA32, OpCode);
+            return GetInstFromList(_allInstA32, opCode);
         }
 
-        public static AInst GetInstA64(int OpCode)
+        public static AInst GetInstA64(int opCode)
         {
-            return GetInstFromList(InstA64FastLookup[ToFastLookupIndex(OpCode)], OpCode);
+            return GetInstFromList(_instA64FastLookup[ToFastLookupIndex(opCode)], opCode);
         }
 
-        private static int ToFastLookupIndex(int Value)
+        private static int ToFastLookupIndex(int value)
         {
-            return ((Value >> 10) & 0x00F) | ((Value >> 18) & 0xFF0);
+            return ((value >> 10) & 0x00F) | ((value >> 18) & 0xFF0);
         }
 
-        private static AInst GetInstFromList(IEnumerable<InstInfo> InstList, int OpCode)
+        private static AInst GetInstFromList(IEnumerable<InstInfo> instList, int opCode)
         {
-            foreach (var Node in InstList)
-            {
-                if ((OpCode & Node.Mask) == Node.Value)
-                {
-                    return Node.Inst;
-                }
-            }
+            foreach (var node in instList)
+                if ((opCode & node.Mask) == node.Value) return node.Inst;
 
             return AInst.Undefined;
         }

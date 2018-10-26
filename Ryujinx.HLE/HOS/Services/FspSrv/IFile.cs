@@ -5,21 +5,21 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
-    class IFile : IpcService, IDisposable
+    internal class IFile : IpcService, IDisposable
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _mCommands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _mCommands;
 
-        private Stream BaseStream;
+        private Stream _baseStream;
 
         public event EventHandler<EventArgs> Disposed;
 
         public string HostPath { get; private set; }
 
-        public IFile(Stream BaseStream, string HostPath)
+        public IFile(Stream baseStream, string hostPath)
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _mCommands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 0, Read    },
                 { 1, Write   },
@@ -28,66 +28,66 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 4, GetSize }
             };
 
-            this.BaseStream = BaseStream;
-            this.HostPath   = HostPath;
+            this._baseStream = baseStream;
+            this.HostPath   = hostPath;
         }
 
-        public long Read(ServiceCtx Context)
+        public long Read(ServiceCtx context)
         {
-            long Position = Context.Request.ReceiveBuff[0].Position;
+            long position = context.Request.ReceiveBuff[0].Position;
 
-            long Zero   = Context.RequestData.ReadInt64();
-            long Offset = Context.RequestData.ReadInt64();
-            long Size   = Context.RequestData.ReadInt64();
+            long zero   = context.RequestData.ReadInt64();
+            long offset = context.RequestData.ReadInt64();
+            long size   = context.RequestData.ReadInt64();
 
-            byte[] Data = new byte[Size];
+            byte[] data = new byte[size];
 
-            BaseStream.Seek(Offset, SeekOrigin.Begin);
+            _baseStream.Seek(offset, SeekOrigin.Begin);
 
-            int ReadSize = BaseStream.Read(Data, 0, (int)Size);
+            int readSize = _baseStream.Read(data, 0, (int)size);
 
-            Context.Memory.WriteBytes(Position, Data);
+            context.Memory.WriteBytes(position, data);
 
-            Context.ResponseData.Write((long)ReadSize);
+            context.ResponseData.Write((long)readSize);
 
             return 0;
         }
 
-        public long Write(ServiceCtx Context)
+        public long Write(ServiceCtx context)
         {
-            long Position = Context.Request.SendBuff[0].Position;
+            long position = context.Request.SendBuff[0].Position;
 
-            long Zero   = Context.RequestData.ReadInt64();
-            long Offset = Context.RequestData.ReadInt64();
-            long Size   = Context.RequestData.ReadInt64();
+            long zero   = context.RequestData.ReadInt64();
+            long offset = context.RequestData.ReadInt64();
+            long size   = context.RequestData.ReadInt64();
 
-            byte[] Data = Context.Memory.ReadBytes(Position, Size);
+            byte[] data = context.Memory.ReadBytes(position, size);
 
-            BaseStream.Seek(Offset, SeekOrigin.Begin);
-            BaseStream.Write(Data, 0, (int)Size);
+            _baseStream.Seek(offset, SeekOrigin.Begin);
+            _baseStream.Write(data, 0, (int)size);
 
             return 0;
         }
 
-        public long Flush(ServiceCtx Context)
+        public long Flush(ServiceCtx context)
         {
-            BaseStream.Flush();
+            _baseStream.Flush();
 
             return 0;
         }
 
-        public long SetSize(ServiceCtx Context)
+        public long SetSize(ServiceCtx context)
         {
-            long Size = Context.RequestData.ReadInt64();
+            long size = context.RequestData.ReadInt64();
 
-            BaseStream.SetLength(Size);
+            _baseStream.SetLength(size);
 
             return 0;
         }
 
-        public long GetSize(ServiceCtx Context)
+        public long GetSize(ServiceCtx context)
         {
-            Context.ResponseData.Write(BaseStream.Length);
+            context.ResponseData.Write(_baseStream.Length);
 
             return 0;
         }
@@ -99,9 +99,9 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing && BaseStream != null)
+            if (disposing && _baseStream != null)
             {
-                BaseStream.Dispose();
+                _baseStream.Dispose();
 
                 Disposed?.Invoke(this, EventArgs.Empty);
             }

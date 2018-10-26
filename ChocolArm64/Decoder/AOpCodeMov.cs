@@ -3,32 +3,32 @@ using ChocolArm64.State;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeMov : AOpCode
+    internal class AOpCodeMov : AOpCode
     {
         public int  Rd  { get; private set; }
         public long Imm { get; private set; }
         public int  Pos { get; private set; }
 
-        public AOpCodeMov(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeMov(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            int P1 = (OpCode >> 22) & 1;
-            int SF = (OpCode >> 31) & 1;
+            int p1 = (opCode >> 22) & 1;
+            int sf = (opCode >> 31) & 1;
 
-            if (SF == 0 && P1 != 0)
+            if (sf == 0 && p1 != 0)
             {
                 Emitter = AInstEmit.Und;
 
                 return;
             }
 
-            Rd  = (OpCode >>  0) & 0x1f;
-            Imm = (OpCode >>  5) & 0xffff;
-            Pos = (OpCode >> 21) & 0x3;
+            Rd  = (opCode >>  0) & 0x1f;
+            Imm = (opCode >>  5) & 0xffff;
+            Pos = (opCode >> 21) & 0x3;
 
             Pos <<= 4;
             Imm <<= Pos;
 
-            RegisterSize = (OpCode >> 31) != 0
+            RegisterSize = opCode >> 31 != 0
                 ? ARegisterSize.Int64
                 : ARegisterSize.Int32;
         }

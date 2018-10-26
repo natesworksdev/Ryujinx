@@ -7,105 +7,101 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
-        public static void Hint(AILEmitterCtx Context)
+        public static void Hint(AILEmitterCtx context)
         {
             //Execute as no-op.
         }
 
-        public static void Mrs(AILEmitterCtx Context)
+        public static void Mrs(AILEmitterCtx context)
         {
-            AOpCodeSystem Op = (AOpCodeSystem)Context.CurrOp;
+            AOpCodeSystem op = (AOpCodeSystem)context.CurrOp;
 
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-            string PropName;
+            string propName;
 
-            switch (GetPackedId(Op))
+            switch (GetPackedId(op))
             {
-                case 0b11_011_0000_0000_001: PropName = nameof(AThreadState.CtrEl0);    break;
-                case 0b11_011_0000_0000_111: PropName = nameof(AThreadState.DczidEl0);  break;
-                case 0b11_011_0100_0100_000: PropName = nameof(AThreadState.Fpcr);      break;
-                case 0b11_011_0100_0100_001: PropName = nameof(AThreadState.Fpsr);      break;
-                case 0b11_011_1101_0000_010: PropName = nameof(AThreadState.TpidrEl0);  break;
-                case 0b11_011_1101_0000_011: PropName = nameof(AThreadState.Tpidr);     break;
-                case 0b11_011_1110_0000_000: PropName = nameof(AThreadState.CntfrqEl0); break;
-                case 0b11_011_1110_0000_001: PropName = nameof(AThreadState.CntpctEl0); break;
+                case 0b11_011_0000_0000_001: propName = nameof(AThreadState.CtrEl0);    break;
+                case 0b11_011_0000_0000_111: propName = nameof(AThreadState.DczidEl0);  break;
+                case 0b11_011_0100_0100_000: propName = nameof(AThreadState.Fpcr);      break;
+                case 0b11_011_0100_0100_001: propName = nameof(AThreadState.Fpsr);      break;
+                case 0b11_011_1101_0000_010: propName = nameof(AThreadState.TpidrEl0);  break;
+                case 0b11_011_1101_0000_011: propName = nameof(AThreadState.Tpidr);     break;
+                case 0b11_011_1110_0000_000: propName = nameof(AThreadState.CntfrqEl0); break;
+                case 0b11_011_1110_0000_001: propName = nameof(AThreadState.CntpctEl0); break;
 
-                default: throw new NotImplementedException($"Unknown MRS at {Op.Position:x16}");
+                default: throw new NotImplementedException($"Unknown MRS at {op.Position:x16}");
             }
 
-            Context.EmitCallPropGet(typeof(AThreadState), PropName);
+            context.EmitCallPropGet(typeof(AThreadState), propName);
 
-            PropertyInfo PropInfo = typeof(AThreadState).GetProperty(PropName);
+            PropertyInfo propInfo = typeof(AThreadState).GetProperty(propName);
 
-            if (PropInfo.PropertyType != typeof(long) &&
-                PropInfo.PropertyType != typeof(ulong))
-            {
-                Context.Emit(OpCodes.Conv_U8);
-            }
+            if (propInfo.PropertyType != typeof(long) &&
+                propInfo.PropertyType != typeof(ulong))
+                context.Emit(OpCodes.Conv_U8);
 
-            Context.EmitStintzr(Op.Rt);
+            context.EmitStintzr(op.Rt);
         }
 
-        public static void Msr(AILEmitterCtx Context)
+        public static void Msr(AILEmitterCtx context)
         {
-            AOpCodeSystem Op = (AOpCodeSystem)Context.CurrOp;
+            AOpCodeSystem op = (AOpCodeSystem)context.CurrOp;
 
-            Context.EmitLdarg(ATranslatedSub.StateArgIdx);
-            Context.EmitLdintzr(Op.Rt);
+            context.EmitLdarg(ATranslatedSub.StateArgIdx);
+            context.EmitLdintzr(op.Rt);
 
-            string PropName;
+            string propName;
 
-            switch (GetPackedId(Op))
+            switch (GetPackedId(op))
             {
-                case 0b11_011_0100_0100_000: PropName = nameof(AThreadState.Fpcr);     break;
-                case 0b11_011_0100_0100_001: PropName = nameof(AThreadState.Fpsr);     break;
-                case 0b11_011_1101_0000_010: PropName = nameof(AThreadState.TpidrEl0); break;
+                case 0b11_011_0100_0100_000: propName = nameof(AThreadState.Fpcr);     break;
+                case 0b11_011_0100_0100_001: propName = nameof(AThreadState.Fpsr);     break;
+                case 0b11_011_1101_0000_010: propName = nameof(AThreadState.TpidrEl0); break;
 
-                default: throw new NotImplementedException($"Unknown MSR at {Op.Position:x16}");
+                default: throw new NotImplementedException($"Unknown MSR at {op.Position:x16}");
             }
 
-            PropertyInfo PropInfo = typeof(AThreadState).GetProperty(PropName);
+            PropertyInfo propInfo = typeof(AThreadState).GetProperty(propName);
 
-            if (PropInfo.PropertyType != typeof(long) &&
-                PropInfo.PropertyType != typeof(ulong))
-            {
-                Context.Emit(OpCodes.Conv_U4);
-            }
+            if (propInfo.PropertyType != typeof(long) &&
+                propInfo.PropertyType != typeof(ulong))
+                context.Emit(OpCodes.Conv_U4);
 
-            Context.EmitCallPropSet(typeof(AThreadState), PropName);
+            context.EmitCallPropSet(typeof(AThreadState), propName);
         }
 
-        public static void Nop(AILEmitterCtx Context)
+        public static void Nop(AILEmitterCtx context)
         {
             //Do nothing.
         }
 
-        public static void Sys(AILEmitterCtx Context)
+        public static void Sys(AILEmitterCtx context)
         {
             //This instruction is used to do some operations on the CPU like cache invalidation,
             //address translation and the like.
             //We treat it as no-op here since we don't have any cache being emulated anyway.
-            AOpCodeSystem Op = (AOpCodeSystem)Context.CurrOp;
+            AOpCodeSystem op = (AOpCodeSystem)context.CurrOp;
 
-            switch (GetPackedId(Op))
+            switch (GetPackedId(op))
             {
                 case 0b11_011_0111_0100_001:
                 {
                     //DC ZVA
-                    for (int Offs = 0; Offs < (4 << AThreadState.DczSizeLog2); Offs += 8)
+                    for (int offs = 0; offs < 4 << AThreadState.DczSizeLog2; offs += 8)
                     {
-                        Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-                        Context.EmitLdintzr(Op.Rt);
-                        Context.EmitLdc_I(Offs);
+                        context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+                        context.EmitLdintzr(op.Rt);
+                        context.EmitLdc_I(offs);
 
-                        Context.Emit(OpCodes.Add);
+                        context.Emit(OpCodes.Add);
 
-                        Context.EmitLdc_I8(0);
+                        context.EmitLdc_I8(0);
 
-                        AInstEmitMemoryHelper.EmitWriteCall(Context, 3);
+                        AInstEmitMemoryHelper.EmitWriteCall(context, 3);
                     }
 
                     break;
@@ -117,17 +113,17 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        private static int GetPackedId(AOpCodeSystem Op)
+        private static int GetPackedId(AOpCodeSystem op)
         {
-            int Id;
+            int id;
 
-            Id  = Op.Op2 << 0;
-            Id |= Op.CRm << 3;
-            Id |= Op.CRn << 7;
-            Id |= Op.Op1 << 11;
-            Id |= Op.Op0 << 14;
+            id  = op.Op2 << 0;
+            id |= op.CRm << 3;
+            id |= op.CRn << 7;
+            id |= op.Op1 << 11;
+            id |= op.Op0 << 14;
 
-            return Id;
+            return id;
         }
     }
 }

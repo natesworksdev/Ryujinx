@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    enum ThreadSchedState : byte
+    internal enum ThreadSchedState : byte
     {
         LowNibbleMask   = 0xf,
         HighNibbleMask  = 0xf0,

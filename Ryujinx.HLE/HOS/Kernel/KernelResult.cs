@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    enum KernelResult
+    internal enum KernelResult
     {
         Success         = 0,
         HandleTableFull = 0xd201,

@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace ChocolArm64.Translation
 {
-    class AILOpCodeConst : IAILEmit
+    internal class AILOpCodeConst : IAilEmit
     {
         [StructLayout(LayoutKind.Explicit, Size = 8)]
         private struct ImmVal
@@ -14,7 +14,7 @@ namespace ChocolArm64.Translation
             [FieldOffset(0)] public double R8;
         }
 
-        private ImmVal Value;
+        private ImmVal _value;
 
         private enum ConstType
         {
@@ -24,41 +24,41 @@ namespace ChocolArm64.Translation
             Double
         }
 
-        private ConstType Type;
+        private ConstType _type;
 
-        private AILOpCodeConst(ConstType Type)
+        private AILOpCodeConst(ConstType type)
         {
-            this.Type = Type;
+            this._type = type;
         }
 
-        public AILOpCodeConst(int Value) : this(ConstType.Int32)
+        public AILOpCodeConst(int value) : this(ConstType.Int32)
         {
-            this.Value = new ImmVal { I4 = Value };
+            this._value = new ImmVal { I4 = value };
         }
 
-        public AILOpCodeConst(long Value) : this(ConstType.Int64)
+        public AILOpCodeConst(long value) : this(ConstType.Int64)
         {
-            this.Value = new ImmVal { I8 = Value };
+            this._value = new ImmVal { I8 = value };
         }
 
-        public AILOpCodeConst(float Value) : this(ConstType.Single)
+        public AILOpCodeConst(float value) : this(ConstType.Single)
         {
-            this.Value = new ImmVal { R4 = Value };
+            this._value = new ImmVal { R4 = value };
         }
 
-        public AILOpCodeConst(double Value) : this(ConstType.Double)
+        public AILOpCodeConst(double value) : this(ConstType.Double)
         {
-            this.Value = new ImmVal { R8 = Value };
+            this._value = new ImmVal { R8 = value };
         }
 
-        public void Emit(AILEmitter Context)
+        public void Emit(AILEmitter context)
         {
-            switch (Type)
+            switch (_type)
             {
-                case ConstType.Int32:  Context.Generator.EmitLdc_I4(Value.I4);           break;
-                case ConstType.Int64:  Context.Generator.Emit(OpCodes.Ldc_I8, Value.I8); break;
-                case ConstType.Single: Context.Generator.Emit(OpCodes.Ldc_R4, Value.R4); break;
-                case ConstType.Double: Context.Generator.Emit(OpCodes.Ldc_R8, Value.R8); break;
+                case ConstType.Int32:  context.Generator.EmitLdc_I4(_value.I4);           break;
+                case ConstType.Int64:  context.Generator.Emit(OpCodes.Ldc_I8, _value.I8); break;
+                case ConstType.Single: context.Generator.Emit(OpCodes.Ldc_R4, _value.R4); break;
+                case ConstType.Double: context.Generator.Emit(OpCodes.Ldc_R8, _value.R8); break;
             }
         }
     }

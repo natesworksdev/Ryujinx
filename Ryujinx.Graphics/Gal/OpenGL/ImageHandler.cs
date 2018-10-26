@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class ImageHandler
+    internal class ImageHandler
     {
         public GalImage Image { get; private set; }
 
@@ -17,10 +17,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public bool HasDepth   => ImageUtils.HasDepth(Image.Format);
         public bool HasStencil => ImageUtils.HasStencil(Image.Format);
 
-        public ImageHandler(int Handle, GalImage Image)
+        public ImageHandler(int handle, GalImage image)
         {
-            this.Handle = Handle;
-            this.Image  = Image;
+            this.Handle = handle;
+            this.Image  = image;
         }
     }
 }

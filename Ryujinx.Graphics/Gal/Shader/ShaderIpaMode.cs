@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Graphics.Gal.Shader
 {
-    enum ShaderIpaMode
+    internal enum ShaderIpaMode
     {
         Pass     = 0,
         None     = 1,

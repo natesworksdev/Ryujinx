@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
-    struct NvGpuASAllocSpace
+    internal struct NvGpuASAllocSpace
     {
         public int  Pages;
         public int  PageSize;

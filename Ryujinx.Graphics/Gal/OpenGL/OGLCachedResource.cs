@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLCachedResource<T>
+    internal class OGLCachedResource<T>
     {
-        public delegate void DeleteValue(T Value);
+        public delegate void DeleteValue(T value);
 
         private const int MaxTimeDelta      = 5 * 60000;
         private const int MaxRemovalsPerRun = 10;
@@ -20,167 +20,144 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             public int Timestamp { get; private set; }
 
-            public CacheBucket(T Value, long DataSize, LinkedListNode<long> Node)
+            public CacheBucket(T value, long dataSize, LinkedListNode<long> node)
             {
-                this.Value    = Value;
-                this.DataSize = DataSize;
-                this.Node     = Node;
+                this.Value    = value;
+                this.DataSize = dataSize;
+                this.Node     = node;
 
                 Timestamp = Environment.TickCount;
             }
         }
 
-        private Dictionary<long, CacheBucket> Cache;
+        private Dictionary<long, CacheBucket> _cache;
 
-        private LinkedList<long> SortedCache;
+        private LinkedList<long> _sortedCache;
 
-        private DeleteValue DeleteValueCallback;
+        private DeleteValue _deleteValueCallback;
 
-        private Queue<T> DeletePending;
+        private Queue<T> _deletePending;
 
-        private bool Locked;
+        private bool _locked;
 
-        public OGLCachedResource(DeleteValue DeleteValueCallback)
+        public OGLCachedResource(DeleteValue deleteValueCallback)
         {
-            if (DeleteValueCallback == null)
-            {
-                throw new ArgumentNullException(nameof(DeleteValueCallback));
-            }
+            if (deleteValueCallback == null) throw new ArgumentNullException(nameof(deleteValueCallback));
 
-            this.DeleteValueCallback = DeleteValueCallback;
+            this._deleteValueCallback = deleteValueCallback;
 
-            Cache = new Dictionary<long, CacheBucket>();
+            _cache = new Dictionary<long, CacheBucket>();
 
-            SortedCache = new LinkedList<long>();
+            _sortedCache = new LinkedList<long>();
 
-            DeletePending = new Queue<T>();
+            _deletePending = new Queue<T>();
         }
 
         public void Lock()
         {
-            Locked = true;
+            _locked = true;
         }
 
         public void Unlock()
         {
-            Locked = false;
+            _locked = false;
 
-            while (DeletePending.TryDequeue(out T Value))
-            {
-                DeleteValueCallback(Value);
-            }
+            while (_deletePending.TryDequeue(out T value)) _deleteValueCallback(value);
 
             ClearCacheIfNeeded();
         }
 
-        public void AddOrUpdate(long Key, T Value, long Size)
+        public void AddOrUpdate(long key, T value, long size)
         {
-            if (!Locked)
+            if (!_locked) ClearCacheIfNeeded();
+
+            LinkedListNode<long> node = _sortedCache.AddLast(key);
+
+            CacheBucket newBucket = new CacheBucket(value, size, node);
+
+            if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
-                ClearCacheIfNeeded();
-            }
-
-            LinkedListNode<long> Node = SortedCache.AddLast(Key);
-
-            CacheBucket NewBucket = new CacheBucket(Value, Size, Node);
-
-            if (Cache.TryGetValue(Key, out CacheBucket Bucket))
-            {
-                if (Locked)
-                {
-                    DeletePending.Enqueue(Bucket.Value);
-                }
+                if (_locked)
+                    _deletePending.Enqueue(bucket.Value);
                 else
-                {
-                    DeleteValueCallback(Bucket.Value);
-                }
+                    _deleteValueCallback(bucket.Value);
 
-                SortedCache.Remove(Bucket.Node);
+                _sortedCache.Remove(bucket.Node);
 
-                Cache[Key] = NewBucket;
+                _cache[key] = newBucket;
             }
             else
             {
-                Cache.Add(Key, NewBucket);
+                _cache.Add(key, newBucket);
             }
         }
 
-        public bool TryGetValue(long Key, out T Value)
+        public bool TryGetValue(long key, out T value)
         {
-            if (Cache.TryGetValue(Key, out CacheBucket Bucket))
+            if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
-                Value = Bucket.Value;
+                value = bucket.Value;
 
-                SortedCache.Remove(Bucket.Node);
+                _sortedCache.Remove(bucket.Node);
 
-                LinkedListNode<long> Node = SortedCache.AddLast(Key);
+                LinkedListNode<long> node = _sortedCache.AddLast(key);
 
-                Cache[Key] = new CacheBucket(Value, Bucket.DataSize, Node);
+                _cache[key] = new CacheBucket(value, bucket.DataSize, node);
 
                 return true;
             }
 
-            Value = default(T);
+            value = default(T);
 
             return false;
         }
 
-        public bool TryGetSize(long Key, out long Size)
+        public bool TryGetSize(long key, out long size)
         {
-            if (Cache.TryGetValue(Key, out CacheBucket Bucket))
+            if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
-                Size = Bucket.DataSize;
+                size = bucket.DataSize;
 
                 return true;
             }
 
-            Size = 0;
+            size = 0;
 
             return false;
         }
 
         private void ClearCacheIfNeeded()
         {
-            int Timestamp = Environment.TickCount;
+            int timestamp = Environment.TickCount;
 
-            int Count = 0;
+            int count = 0;
 
-            while (Count++ < MaxRemovalsPerRun)
+            while (count++ < MaxRemovalsPerRun)
             {
-                LinkedListNode<long> Node = SortedCache.First;
+                LinkedListNode<long> node = _sortedCache.First;
 
-                if (Node == null)
-                {
-                    break;
-                }
+                if (node == null) break;
 
-                CacheBucket Bucket = Cache[Node.Value];
+                CacheBucket bucket = _cache[node.Value];
 
-                int TimeDelta = RingDelta(Bucket.Timestamp, Timestamp);
+                int timeDelta = RingDelta(bucket.Timestamp, timestamp);
 
-                if ((uint)TimeDelta <= (uint)MaxTimeDelta)
-                {
-                    break;
-                }
+                if ((uint)timeDelta <= (uint)MaxTimeDelta) break;
 
-                SortedCache.Remove(Node);
+                _sortedCache.Remove(node);
 
-                Cache.Remove(Node.Value);
+                _cache.Remove(node.Value);
 
-                DeleteValueCallback(Bucket.Value);
+                _deleteValueCallback(bucket.Value);
             }
         }
 
-        private int RingDelta(int Old, int New)
+        private int RingDelta(int old, int New)
         {
-            if ((uint)New < (uint)Old)
-            {
-                return New + (~Old + 1);
-            }
+            if ((uint)New < (uint)old)
+                return New + ~old + 1;
             else
-            {
-                return New - Old;
-            }
+                return New - old;
         }
     }
 }

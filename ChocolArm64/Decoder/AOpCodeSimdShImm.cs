@@ -2,13 +2,13 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeSimdShImm : AOpCodeSimd
+    internal class AOpCodeSimdShImm : AOpCodeSimd
     {
         public int Imm { get; private set; }
 
-        public AOpCodeSimdShImm(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdShImm(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Imm = (OpCode >> 16) & 0x7f;
+            Imm = (opCode >> 16) & 0x7f;
 
             Size = ABitUtils.HighestBitSetNibble(Imm >> 3);
         }

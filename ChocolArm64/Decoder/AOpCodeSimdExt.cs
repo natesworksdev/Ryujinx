@@ -2,13 +2,13 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeSimdExt : AOpCodeSimdReg
+    internal class AOpCodeSimdExt : AOpCodeSimdReg
     {
         public int Imm4 { get; private set; }
 
-        public AOpCodeSimdExt(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdExt(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Imm4 = (OpCode >> 11) & 0xf;
+            Imm4 = (opCode >> 11) & 0xf;
         }
     }
 }

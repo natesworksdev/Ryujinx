@@ -2,149 +2,134 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.Memory
 {
-    class ArenaAllocator
+    internal class ArenaAllocator
     {
         private class Region
         {
             public long Position { get; set; }
             public long Size     { get; set; }
 
-            public Region(long Position, long Size)
+            public Region(long position, long size)
             {
-                this.Position = Position;
-                this.Size     = Size;
+                this.Position = position;
+                this.Size     = size;
             }
         }
 
-        private LinkedList<Region> FreeRegions;
+        private LinkedList<Region> _freeRegions;
 
         public long TotalAvailableSize { get; private set; }
         public long TotalUsedSize      { get; private set; }
 
-        public ArenaAllocator(long ArenaSize)
+        public ArenaAllocator(long arenaSize)
         {
-            TotalAvailableSize = ArenaSize;
+            TotalAvailableSize = arenaSize;
 
-            FreeRegions = new LinkedList<Region>();
+            _freeRegions = new LinkedList<Region>();
 
-            FreeRegions.AddFirst(new Region(0, ArenaSize));
+            _freeRegions.AddFirst(new Region(0, arenaSize));
         }
 
-        public bool TryAllocate(long Size, out long Position)
+        public bool TryAllocate(long size, out long position)
         {
-            LinkedListNode<Region> Node = FreeRegions.First;
+            LinkedListNode<Region> node = _freeRegions.First;
 
-            while (Node != null)
+            while (node != null)
             {
-                Region Rg = Node.Value;
+                Region rg = node.Value;
 
-                if ((ulong)Rg.Size >= (ulong)Size)
+                if ((ulong)rg.Size >= (ulong)size)
                 {
-                    Position = Rg.Position;
+                    position = rg.Position;
 
-                    Rg.Position += Size;
-                    Rg.Size     -= Size;
+                    rg.Position += size;
+                    rg.Size     -= size;
 
-                    if (Rg.Size == 0)
+                    if (rg.Size == 0)
                     {
                         //Region is empty, just remove it.
-                        FreeRegions.Remove(Node);
+                        _freeRegions.Remove(node);
                     }
-                    else if (Node.Previous != null)
+                    else if (node.Previous != null)
                     {
                         //Re-sort based on size (smaller first).
-                        Node = Node.Previous;
+                        node = node.Previous;
 
-                        FreeRegions.Remove(Node.Next);
+                        _freeRegions.Remove(node.Next);
 
-                        while (Node != null && (ulong)Node.Value.Size > (ulong)Rg.Size)
-                        {
-                            Node = Node.Previous;
-                        }
+                        while (node != null && (ulong)node.Value.Size > (ulong)rg.Size) node = node.Previous;
 
-                        if (Node != null)
-                        {
-                            FreeRegions.AddAfter(Node, Rg);
-                        }
+                        if (node != null)
+                            _freeRegions.AddAfter(node, rg);
                         else
-                        {
-                            FreeRegions.AddFirst(Rg);
-                        }
+                            _freeRegions.AddFirst(rg);
                     }
 
-                    TotalUsedSize += Size;
+                    TotalUsedSize += size;
 
                     return true;
                 }
 
-                Node = Node.Next;
+                node = node.Next;
             }
 
-            Position = 0;
+            position = 0;
 
             return false;
         }
 
-        public void Free(long Position, long Size)
+        public void Free(long position, long size)
         {
-            long End = Position + Size;
+            long end = position + size;
 
-            Region NewRg = new Region(Position, Size);
+            Region newRg = new Region(position, size);
 
-            LinkedListNode<Region> Node   = FreeRegions.First;
-            LinkedListNode<Region> PrevSz = null;
+            LinkedListNode<Region> node   = _freeRegions.First;
+            LinkedListNode<Region> prevSz = null;
 
-            while (Node != null)
+            while (node != null)
             {
-                LinkedListNode<Region> NextNode = Node.Next;
+                LinkedListNode<Region> nextNode = node.Next;
 
-                Region Rg = Node.Value;
+                Region rg = node.Value;
 
-                long RgEnd = Rg.Position + Rg.Size;
+                long rgEnd = rg.Position + rg.Size;
 
-                if (Rg.Position == End)
+                if (rg.Position == end)
                 {
                     //Current region position matches the end of the freed region,
                     //just merge the two and remove the current region from the list.
-                    NewRg.Size += Rg.Size;
+                    newRg.Size += rg.Size;
 
-                    FreeRegions.Remove(Node);
+                    _freeRegions.Remove(node);
                 }
-                else if (RgEnd == Position)
+                else if (rgEnd == position)
                 {
                     //End of the current region matches the position of the freed region,
                     //just merge the two and remove the current region from the list.
-                    NewRg.Position  = Rg.Position;
-                    NewRg.Size     += Rg.Size;
+                    newRg.Position  = rg.Position;
+                    newRg.Size     += rg.Size;
 
-                    FreeRegions.Remove(Node);
+                    _freeRegions.Remove(node);
                 }
                 else
                 {
-                    if (PrevSz == null)
-                    {
-                        PrevSz = Node;
-                    }
-                    else if ((ulong)Rg.Size < (ulong)NewRg.Size &&
-                             (ulong)Rg.Size > (ulong)PrevSz.Value.Size)
-                    {
-                        PrevSz = Node;
-                    }
+                    if (prevSz == null)
+                        prevSz = node;
+                    else if ((ulong)rg.Size < (ulong)newRg.Size &&
+                             (ulong)rg.Size > (ulong)prevSz.Value.Size)
+                        prevSz = node;
                 }
 
-                Node = NextNode;
+                node = nextNode;
             }
 
-            if (PrevSz != null && (ulong)PrevSz.Value.Size < (ulong)Size)
-            {
-                FreeRegions.AddAfter(PrevSz, NewRg);
-            }
+            if (prevSz != null && (ulong)prevSz.Value.Size < (ulong)size)
+                _freeRegions.AddAfter(prevSz, newRg);
             else
-            {
-                FreeRegions.AddFirst(NewRg);
-            }
+                _freeRegions.AddFirst(newRg);
 
-            TotalUsedSize -= Size;
+            TotalUsedSize -= size;
         }
     }
 }

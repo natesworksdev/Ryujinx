@@ -2,11 +2,11 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeBImmAl : AOpCodeBImm
+    internal class AOpCodeBImmAl : AOpCodeBImm
     {
-        public AOpCodeBImmAl(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeBImmAl(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Imm = Position + ADecoderHelper.DecodeImm26_2(OpCode);
+            Imm = position + ADecoderHelper.DecodeImm26_2(opCode);
         }
     }
 }

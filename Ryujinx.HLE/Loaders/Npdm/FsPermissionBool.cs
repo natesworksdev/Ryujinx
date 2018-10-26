@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    enum FsPermissionBool : ulong
+    internal enum FsPermissionBool : ulong
     {
         BisCache                  = 0x8000000000000080,
         EraseMmc                  = 0x8000000000000080,
@@ -20,14 +20,14 @@ namespace Ryujinx.HLE.Loaders.Npdm
         SaveDataExtraData         = 0x8000000000004060,
         GlobalMode                = 0x8000000000080000,
         SpeedEmulation            = 0x8000000000080000,
-        NULL                      = 0,
+        Null                      = 0,
         PaddingFiles              = 0xC000000000800000,
-        SaveData_Debug            = 0xC000000001000000,
-        SaveData_SystemManagement = 0xC000000002000000,
-        Unknown0x16               = 0x8000000004000000,
-        Unknown0x17               = 0x8000000008000000,
-        Unknown0x18               = 0x8000000010000000,
-        Unknown0x19               = 0x8000000000000800,
-        Unknown0x1A               = 0x8000000000004020
+        SaveDataDebug            = 0xC000000001000000,
+        SaveDataSystemManagement = 0xC000000002000000,
+        Unknown0X16               = 0x8000000004000000,
+        Unknown0X17               = 0x8000000008000000,
+        Unknown0X18               = 0x8000000010000000,
+        Unknown0X19               = 0x8000000000000800,
+        Unknown0X1A               = 0x8000000000004020
     }
 }

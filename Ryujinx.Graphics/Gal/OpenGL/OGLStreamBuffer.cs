@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    class OGLStreamBuffer : IDisposable
+    internal class OGLStreamBuffer : IDisposable
     {
         public int Handle { get; protected set; }
 
@@ -11,23 +11,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         protected BufferTarget Target { get; private set; }
 
-        public OGLStreamBuffer(BufferTarget Target, long Size)
+        public OGLStreamBuffer(BufferTarget target, long size)
         {
-            this.Target = Target;
-            this.Size   = Size;
+            this.Target = target;
+            this.Size   = size;
 
             Handle = GL.GenBuffer();
 
-            GL.BindBuffer(Target, Handle);
+            GL.BindBuffer(target, Handle);
 
-            GL.BufferData(Target, (IntPtr)Size, IntPtr.Zero, BufferUsageHint.StreamDraw);
+            GL.BufferData(target, (IntPtr)size, IntPtr.Zero, BufferUsageHint.StreamDraw);
         }
 
-        public void SetData(long Size, IntPtr HostAddress)
+        public void SetData(long size, IntPtr hostAddress)
         {
             GL.BindBuffer(Target, Handle);
 
-            GL.BufferSubData(Target, IntPtr.Zero, (IntPtr)Size, HostAddress);
+            GL.BufferSubData(Target, IntPtr.Zero, (IntPtr)size, hostAddress);
         }
 
         public void Dispose()
@@ -35,9 +35,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing && Handle != 0)
+            if (disposing && Handle != 0)
             {
                 GL.DeleteBuffer(Handle);
 

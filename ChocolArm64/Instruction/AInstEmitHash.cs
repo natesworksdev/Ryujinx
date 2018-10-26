@@ -7,109 +7,87 @@ using System.Runtime.Intrinsics.X86;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
-        public static void Crc32b(AILEmitterCtx Context)
+        public static void Crc32B(AILEmitterCtx context)
         {
-            EmitCrc32(Context, nameof(ASoftFallback.Crc32b));
+            EmitCrc32(context, nameof(ASoftFallback.Crc32B));
         }
 
-        public static void Crc32h(AILEmitterCtx Context)
+        public static void Crc32H(AILEmitterCtx context)
         {
-            EmitCrc32(Context, nameof(ASoftFallback.Crc32h));
+            EmitCrc32(context, nameof(ASoftFallback.Crc32H));
         }
 
-        public static void Crc32w(AILEmitterCtx Context)
+        public static void Crc32W(AILEmitterCtx context)
         {
-            EmitCrc32(Context, nameof(ASoftFallback.Crc32w));
+            EmitCrc32(context, nameof(ASoftFallback.Crc32W));
         }
 
-        public static void Crc32x(AILEmitterCtx Context)
+        public static void Crc32X(AILEmitterCtx context)
         {
-            EmitCrc32(Context, nameof(ASoftFallback.Crc32x));
+            EmitCrc32(context, nameof(ASoftFallback.Crc32X));
         }
 
-        public static void Crc32cb(AILEmitterCtx Context)
+        public static void Crc32Cb(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse42)
-            {
-                EmitSse42Crc32(Context, typeof(uint), typeof(byte));
-            }
+                EmitSse42Crc32(context, typeof(uint), typeof(byte));
             else
-            {
-                EmitCrc32(Context, nameof(ASoftFallback.Crc32cb));
-            }
+                EmitCrc32(context, nameof(ASoftFallback.Crc32Cb));
         }
 
-        public static void Crc32ch(AILEmitterCtx Context)
+        public static void Crc32Ch(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse42)
-            {
-                EmitSse42Crc32(Context, typeof(uint), typeof(ushort));
-            }
+                EmitSse42Crc32(context, typeof(uint), typeof(ushort));
             else
-            {
-                EmitCrc32(Context, nameof(ASoftFallback.Crc32ch));
-            }
+                EmitCrc32(context, nameof(ASoftFallback.Crc32Ch));
         }
 
-        public static void Crc32cw(AILEmitterCtx Context)
+        public static void Crc32Cw(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse42)
-            {
-                EmitSse42Crc32(Context, typeof(uint), typeof(uint));
-            }
+                EmitSse42Crc32(context, typeof(uint), typeof(uint));
             else
-            {
-                EmitCrc32(Context, nameof(ASoftFallback.Crc32cw));
-            }
+                EmitCrc32(context, nameof(ASoftFallback.Crc32Cw));
         }
 
-        public static void Crc32cx(AILEmitterCtx Context)
+        public static void Crc32Cx(AILEmitterCtx context)
         {
             if (AOptimizations.UseSse42)
-            {
-                EmitSse42Crc32(Context, typeof(ulong), typeof(ulong));
-            }
+                EmitSse42Crc32(context, typeof(ulong), typeof(ulong));
             else
-            {
-                EmitCrc32(Context, nameof(ASoftFallback.Crc32cx));
-            }
+                EmitCrc32(context, nameof(ASoftFallback.Crc32Cx));
         }
 
-        private static void EmitSse42Crc32(AILEmitterCtx Context, Type TCrc, Type TData)
+        private static void EmitSse42Crc32(AILEmitterCtx context, Type crc, Type data)
         {
-            AOpCodeAluRs Op = (AOpCodeAluRs)Context.CurrOp;
+            AOpCodeAluRs op = (AOpCodeAluRs)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
-            Context.EmitLdintzr(Op.Rm);
+            context.EmitLdintzr(op.Rn);
+            context.EmitLdintzr(op.Rm);
 
-            Context.EmitCall(typeof(Sse42).GetMethod(nameof(Sse42.Crc32), new Type[] { TCrc, TData }));
+            context.EmitCall(typeof(Sse42).GetMethod(nameof(Sse42.Crc32), new Type[] { crc, data }));
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        private static void EmitCrc32(AILEmitterCtx Context, string Name)
+        private static void EmitCrc32(AILEmitterCtx context, string name)
         {
-            AOpCodeAluRs Op = (AOpCodeAluRs)Context.CurrOp;
+            AOpCodeAluRs op = (AOpCodeAluRs)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdintzr(op.Rn);
 
-            if (Op.RegisterSize != ARegisterSize.Int32)
-            {
-                Context.Emit(OpCodes.Conv_U4);
-            }
+            if (op.RegisterSize != ARegisterSize.Int32) context.Emit(OpCodes.Conv_U4);
 
-            Context.EmitLdintzr(Op.Rm);
+            context.EmitLdintzr(op.Rm);
 
-            ASoftFallback.EmitCall(Context, Name);
+            ASoftFallback.EmitCall(context, name);
 
-            if (Op.RegisterSize != ARegisterSize.Int32)
-            {
-                Context.Emit(OpCodes.Conv_U8);
-            }
+            if (op.RegisterSize != ARegisterSize.Int32) context.Emit(OpCodes.Conv_U8);
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
     }
 }

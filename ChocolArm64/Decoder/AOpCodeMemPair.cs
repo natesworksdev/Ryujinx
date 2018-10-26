@@ -2,24 +2,24 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeMemPair : AOpCodeMemImm
+    internal class AOpCodeMemPair : AOpCodeMemImm
     {
         public int Rt2 { get; private set; }
 
-        public AOpCodeMemPair(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeMemPair(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Rt2      =  (OpCode >> 10) & 0x1f;
-            WBack    = ((OpCode >> 23) & 0x1) != 0;
-            PostIdx  = ((OpCode >> 23) & 0x3) == 1;
-            Extend64 = ((OpCode >> 30) & 0x3) == 1;
-            Size     = ((OpCode >> 31) & 0x1) | 2;
+            Rt2      =  (opCode >> 10) & 0x1f;
+            WBack    = ((opCode >> 23) & 0x1) != 0;
+            PostIdx  = ((opCode >> 23) & 0x3) == 1;
+            Extend64 = ((opCode >> 30) & 0x3) == 1;
+            Size     = ((opCode >> 31) & 0x1) | 2;
 
-            DecodeImm(OpCode);
+            DecodeImm(opCode);
         }
 
-        protected void DecodeImm(int OpCode)
+        protected void DecodeImm(int opCode)
         {
-            Imm = ((long)(OpCode >> 15) << 57) >> (57 - Size);
+            Imm = ((long)(opCode >> 15) << 57) >> (57 - Size);
         }
     }
 }

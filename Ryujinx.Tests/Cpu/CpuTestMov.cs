@@ -12,100 +12,100 @@ namespace Ryujinx.Tests.Cpu
 #if Mov
         private const int RndCntImm = 2;
 
-        [Test, Pairwise, Description("MOVK <Xd>, #<imm>{, LSL #<shift>}")]
-        public void Movk_64bit([Values(0u, 31u)] uint Rd,
-                               [Random(RndCntImm)] ulong _Xd,
+        [Test][Pairwise][Description("MOVK <Xd>, #<imm>{, LSL #<shift>}")]
+        public void Movk_64bit([Values(0u, 31u)] uint rd,
+                               [Random(RndCntImm)] ulong xd,
                                [Values(0u, 65535u)] [Random(0u, 65535u, RndCntImm)] uint imm,
                                [Values(0u, 16u, 32u, 48u)] uint shift)
         {
-            uint Opcode = 0xF2800000; // MOVK X0, #0, LSL #0
-            Opcode |= ((Rd & 31) << 0);
-            Opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
+            uint opcode = 0xF2800000; // MOVK X0, #0, LSL #0
+            opcode |= (rd & 31) << 0;
+            opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
 
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
 
-            AThreadState ThreadState = SingleOpcode(Opcode, X0: _Xd, X31: _X31);
+            AThreadState threadState = SingleOpcode(opcode, xd, x31: x31);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("MOVK <Wd>, #<imm>{, LSL #<shift>}")]
-        public void Movk_32bit([Values(0u, 31u)] uint Rd,
-                               [Random(RndCntImm)] uint _Wd,
+        [Test][Pairwise][Description("MOVK <Wd>, #<imm>{, LSL #<shift>}")]
+        public void Movk_32bit([Values(0u, 31u)] uint rd,
+                               [Random(RndCntImm)] uint wd,
                                [Values(0u, 65535u)] [Random(0u, 65535u, RndCntImm)] uint imm,
                                [Values(0u, 16u)] uint shift)
         {
-            uint Opcode = 0x72800000; // MOVK W0, #0, LSL #0
-            Opcode |= ((Rd & 31) << 0);
-            Opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
+            uint opcode = 0x72800000; // MOVK W0, #0, LSL #0
+            opcode |= (rd & 31) << 0;
+            opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
 
-            uint _W31 = TestContext.CurrentContext.Random.NextUInt();
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
 
-            AThreadState ThreadState = SingleOpcode(Opcode, X0: _Wd, X31: _W31);
+            AThreadState threadState = SingleOpcode(opcode, wd, x31: w31);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("MOVN <Xd>, #<imm>{, LSL #<shift>}")]
-        public void Movn_64bit([Values(0u, 31u)] uint Rd,
+        [Test][Pairwise][Description("MOVN <Xd>, #<imm>{, LSL #<shift>}")]
+        public void Movn_64bit([Values(0u, 31u)] uint rd,
                                [Values(0u, 65535u)] [Random(0u, 65535u, RndCntImm)] uint imm,
                                [Values(0u, 16u, 32u, 48u)] uint shift)
         {
-            uint Opcode = 0x92800000; // MOVN X0, #0, LSL #0
-            Opcode |= ((Rd & 31) << 0);
-            Opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
+            uint opcode = 0x92800000; // MOVN X0, #0, LSL #0
+            opcode |= (rd & 31) << 0;
+            opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
 
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
 
-            AThreadState ThreadState = SingleOpcode(Opcode, X31: _X31);
+            AThreadState threadState = SingleOpcode(opcode, x31: x31);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("MOVN <Wd>, #<imm>{, LSL #<shift>}")]
-        public void Movn_32bit([Values(0u, 31u)] uint Rd,
+        [Test][Pairwise][Description("MOVN <Wd>, #<imm>{, LSL #<shift>}")]
+        public void Movn_32bit([Values(0u, 31u)] uint rd,
                                [Values(0u, 65535u)] [Random(0u, 65535u, RndCntImm)] uint imm,
                                [Values(0u, 16u)] uint shift)
         {
-            uint Opcode = 0x12800000; // MOVN W0, #0, LSL #0
-            Opcode |= ((Rd & 31) << 0);
-            Opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
+            uint opcode = 0x12800000; // MOVN W0, #0, LSL #0
+            opcode |= (rd & 31) << 0;
+            opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
 
-            uint _W31 = TestContext.CurrentContext.Random.NextUInt();
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
 
-            AThreadState ThreadState = SingleOpcode(Opcode, X31: _W31);
+            AThreadState threadState = SingleOpcode(opcode, x31: w31);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("MOVZ <Xd>, #<imm>{, LSL #<shift>}")]
-        public void Movz_64bit([Values(0u, 31u)] uint Rd,
+        [Test][Pairwise][Description("MOVZ <Xd>, #<imm>{, LSL #<shift>}")]
+        public void Movz_64bit([Values(0u, 31u)] uint rd,
                                [Values(0u, 65535u)] [Random(0u, 65535u, RndCntImm)] uint imm,
                                [Values(0u, 16u, 32u, 48u)] uint shift)
         {
-            uint Opcode = 0xD2800000; // MOVZ X0, #0, LSL #0
-            Opcode |= ((Rd & 31) << 0);
-            Opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
+            uint opcode = 0xD2800000; // MOVZ X0, #0, LSL #0
+            opcode |= (rd & 31) << 0;
+            opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
 
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
 
-            AThreadState ThreadState = SingleOpcode(Opcode, X31: _X31);
+            AThreadState threadState = SingleOpcode(opcode, x31: x31);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("MOVZ <Wd>, #<imm>{, LSL #<shift>}")]
-        public void Movz_32bit([Values(0u, 31u)] uint Rd,
+        [Test][Pairwise][Description("MOVZ <Wd>, #<imm>{, LSL #<shift>}")]
+        public void Movz_32bit([Values(0u, 31u)] uint rd,
                                [Values(0u, 65535u)] [Random(0u, 65535u, RndCntImm)] uint imm,
                                [Values(0u, 16u)] uint shift)
         {
-            uint Opcode = 0x52800000; // MOVZ W0, #0, LSL #0
-            Opcode |= ((Rd & 31) << 0);
-            Opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
+            uint opcode = 0x52800000; // MOVZ W0, #0, LSL #0
+            opcode |= (rd & 31) << 0;
+            opcode |= (((shift / 16) & 3) << 21) | ((imm & 65535) << 5);
 
-            uint _W31 = TestContext.CurrentContext.Random.NextUInt();
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
 
-            AThreadState ThreadState = SingleOpcode(Opcode, X31: _W31);
+            AThreadState threadState = SingleOpcode(opcode, x31: w31);
 
             CompareAgainstUnicorn();
         }

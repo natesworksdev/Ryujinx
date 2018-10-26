@@ -2,7 +2,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 {
-    class NvMapHandle
+    internal class NvMapHandle
     {
         public int  Handle;
         public int  Id;
@@ -12,26 +12,26 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
         public long Address;
         public bool Allocated;
 
-        private long Dupes;
+        private long _dupes;
 
         public NvMapHandle()
         {
-            Dupes = 1;
+            _dupes = 1;
         }
 
-        public NvMapHandle(int Size) : this()
+        public NvMapHandle(int size) : this()
         {
-            this.Size = Size;
+            this.Size = size;
         }
 
         public void IncrementRefCount()
         {
-            Interlocked.Increment(ref Dupes);
+            Interlocked.Increment(ref _dupes);
         }
 
         public long DecrementRefCount()
         {
-            return Interlocked.Decrement(ref Dupes);
+            return Interlocked.Decrement(ref _dupes);
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 {
-    class NvChannel
+    internal class NvChannel
     {
         public int Timeout;
     }

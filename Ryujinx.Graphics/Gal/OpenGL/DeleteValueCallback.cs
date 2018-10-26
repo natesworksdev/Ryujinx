@@ -1,4 +1,4 @@
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    delegate void DeleteValue<T>(T Value);
+    internal delegate void DeleteValue<T>(T value);
 }

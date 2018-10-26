@@ -3,7 +3,7 @@ using System;
 namespace ChocolArm64.Translation
 {
     [Flags]
-    enum AIoType
+    internal enum AIoType
     {
         Arg,
         Fields,

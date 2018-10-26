@@ -8,232 +8,213 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Decoder
 {
-    static class ADecoder
+    internal static class ADecoder
     {
-        private delegate object OpActivator(AInst Inst, long Position, int OpCode);
+        private delegate object OpActivator(AInst inst, long position, int opCode);
 
-        private static ConcurrentDictionary<Type, OpActivator> OpActivators;
+        private static ConcurrentDictionary<Type, OpActivator> _opActivators;
 
         static ADecoder()
         {
-            OpActivators = new ConcurrentDictionary<Type, OpActivator>();
+            _opActivators = new ConcurrentDictionary<Type, OpActivator>();
         }
 
-        public static ABlock DecodeBasicBlock(AThreadState State, AMemory Memory, long Start)
+        public static ABlock DecodeBasicBlock(AThreadState state, AMemory memory, long start)
         {
-            ABlock Block = new ABlock(Start);
+            ABlock block = new ABlock(start);
 
-            FillBlock(State, Memory, Block);
+            FillBlock(state, memory, block);
 
-            return Block;
+            return block;
         }
 
         public static (ABlock[] Graph, ABlock Root) DecodeSubroutine(
-            ATranslatorCache Cache,
-            AThreadState     State,
-            AMemory          Memory,
-            long             Start)
+            ATranslatorCache cache,
+            AThreadState     state,
+            AMemory          memory,
+            long             start)
         {
-            Dictionary<long, ABlock> Visited    = new Dictionary<long, ABlock>();
-            Dictionary<long, ABlock> VisitedEnd = new Dictionary<long, ABlock>();
+            Dictionary<long, ABlock> visited    = new Dictionary<long, ABlock>();
+            Dictionary<long, ABlock> visitedEnd = new Dictionary<long, ABlock>();
 
-            Queue<ABlock> Blocks = new Queue<ABlock>();
+            Queue<ABlock> blocks = new Queue<ABlock>();
 
-            ABlock Enqueue(long Position)
+            ABlock Enqueue(long position)
             {
-                if (!Visited.TryGetValue(Position, out ABlock Output))
+                if (!visited.TryGetValue(position, out ABlock output))
                 {
-                    Output = new ABlock(Position);
+                    output = new ABlock(position);
 
-                    Blocks.Enqueue(Output);
+                    blocks.Enqueue(output);
 
-                    Visited.Add(Position, Output);
+                    visited.Add(position, output);
                 }
 
-                return Output;
+                return output;
             }
 
-            ABlock Root = Enqueue(Start);
+            ABlock root = Enqueue(start);
 
-            while (Blocks.Count > 0)
+            while (blocks.Count > 0)
             {
-                ABlock Current = Blocks.Dequeue();
+                ABlock current = blocks.Dequeue();
 
-                FillBlock(State, Memory, Current);
+                FillBlock(state, memory, current);
 
                 //Set child blocks. "Branch" is the block the branch instruction
                 //points to (when taken), "Next" is the block at the next address,
                 //executed when the branch is not taken. For Unconditional Branches
                 //(except BL/BLR that are sub calls) or end of executable, Next is null.
-                if (Current.OpCodes.Count > 0)
+                if (current.OpCodes.Count > 0)
                 {
-                    bool HasCachedSub = false;
+                    bool hasCachedSub = false;
 
-                    AOpCode LastOp = Current.GetLastOp();
+                    AOpCode lastOp = current.GetLastOp();
 
-                    if (LastOp is AOpCodeBImm Op)
+                    if (lastOp is AOpCodeBImm op)
                     {
-                        if (Op.Emitter == AInstEmit.Bl)
-                        {
-                            HasCachedSub = Cache.HasSubroutine(Op.Imm);
-                        }
+                        if (op.Emitter == AInstEmit.Bl)
+                            hasCachedSub = cache.HasSubroutine(op.Imm);
                         else
-                        {
-                            Current.Branch = Enqueue(Op.Imm);
-                        }
+                            current.Branch = Enqueue(op.Imm);
                     }
 
-                    if (!((LastOp is AOpCodeBImmAl) ||
-                          (LastOp is AOpCodeBReg)) || HasCachedSub)
-                    {
-                        Current.Next = Enqueue(Current.EndPosition);
-                    }
+                    if (!(lastOp is AOpCodeBImmAl ||
+                          lastOp is AOpCodeBReg) || hasCachedSub)
+                        current.Next = Enqueue(current.EndPosition);
                 }
 
                 //If we have on the graph two blocks with the same end position,
                 //then we need to split the bigger block and have two small blocks,
                 //the end position of the bigger "Current" block should then be == to
                 //the position of the "Smaller" block.
-                while (VisitedEnd.TryGetValue(Current.EndPosition, out ABlock Smaller))
+                while (visitedEnd.TryGetValue(current.EndPosition, out ABlock smaller))
                 {
-                    if (Current.Position > Smaller.Position)
+                    if (current.Position > smaller.Position)
                     {
-                        ABlock Temp = Smaller;
+                        ABlock temp = smaller;
 
-                        Smaller = Current;
-                        Current = Temp;
+                        smaller = current;
+                        current = temp;
                     }
 
-                    Current.EndPosition = Smaller.Position;
-                    Current.Next        = Smaller;
-                    Current.Branch      = null;
+                    current.EndPosition = smaller.Position;
+                    current.Next        = smaller;
+                    current.Branch      = null;
 
-                    Current.OpCodes.RemoveRange(
-                        Current.OpCodes.Count - Smaller.OpCodes.Count,
-                        Smaller.OpCodes.Count);
+                    current.OpCodes.RemoveRange(
+                        current.OpCodes.Count - smaller.OpCodes.Count,
+                        smaller.OpCodes.Count);
 
-                    VisitedEnd[Smaller.EndPosition] = Smaller;
+                    visitedEnd[smaller.EndPosition] = smaller;
                 }
 
-                VisitedEnd.Add(Current.EndPosition, Current);
+                visitedEnd.Add(current.EndPosition, current);
             }
 
             //Make and sort Graph blocks array by position.
-            ABlock[] Graph = new ABlock[Visited.Count];
+            ABlock[] graph = new ABlock[visited.Count];
 
-            while (Visited.Count > 0)
+            while (visited.Count > 0)
             {
-                ulong FirstPos = ulong.MaxValue;
+                ulong firstPos = ulong.MaxValue;
 
-                foreach (ABlock Block in Visited.Values)
-                {
-                    if (FirstPos > (ulong)Block.Position)
-                        FirstPos = (ulong)Block.Position;
-                }
+                foreach (ABlock block in visited.Values)
+                    if (firstPos > (ulong)block.Position)
+                        firstPos = (ulong)block.Position;
 
-                ABlock Current = Visited[(long)FirstPos];
+                ABlock current = visited[(long)firstPos];
 
                 do
                 {
-                    Graph[Graph.Length - Visited.Count] = Current;
+                    graph[graph.Length - visited.Count] = current;
 
-                    Visited.Remove(Current.Position);
+                    visited.Remove(current.Position);
 
-                    Current = Current.Next;
+                    current = current.Next;
                 }
-                while (Current != null);
+                while (current != null);
             }
 
-            return (Graph, Root);
+            return (graph, root);
         }
 
-        private static void FillBlock(AThreadState State, AMemory Memory, ABlock Block)
+        private static void FillBlock(AThreadState state, AMemory memory, ABlock block)
         {
-            long Position = Block.Position;
+            long position = block.Position;
 
-            AOpCode OpCode;
+            AOpCode opCode;
 
             do
             {
                 //TODO: This needs to be changed to support both AArch32 and AArch64,
                 //once JIT support is introduced on AArch32 aswell.
-                OpCode = DecodeOpCode(State, Memory, Position);
+                opCode = DecodeOpCode(state, memory, position);
 
-                Block.OpCodes.Add(OpCode);
+                block.OpCodes.Add(opCode);
 
-                Position += 4;
+                position += 4;
             }
-            while (!(IsBranch(OpCode) || IsException(OpCode)));
+            while (!(IsBranch(opCode) || IsException(opCode)));
 
-            Block.EndPosition = Position;
+            block.EndPosition = position;
         }
 
-        private static bool IsBranch(AOpCode OpCode)
+        private static bool IsBranch(AOpCode opCode)
         {
-            return OpCode is AOpCodeBImm ||
-                   OpCode is AOpCodeBReg;
+            return opCode is AOpCodeBImm ||
+                   opCode is AOpCodeBReg;
         }
 
-        private static bool IsException(AOpCode OpCode)
+        private static bool IsException(AOpCode opCode)
         {
-            return OpCode.Emitter == AInstEmit.Brk ||
-                   OpCode.Emitter == AInstEmit.Svc ||
-                   OpCode.Emitter == AInstEmit.Und;
+            return opCode.Emitter == AInstEmit.Brk ||
+                   opCode.Emitter == AInstEmit.Svc ||
+                   opCode.Emitter == AInstEmit.Und;
         }
 
-        public static AOpCode DecodeOpCode(AThreadState State, AMemory Memory, long Position)
+        public static AOpCode DecodeOpCode(AThreadState state, AMemory memory, long position)
         {
-            int OpCode = Memory.ReadInt32(Position);
+            int opCode = memory.ReadInt32(position);
 
-            AInst Inst;
+            AInst inst;
 
-            if (State.ExecutionMode == AExecutionMode.AArch64)
-            {
-                Inst = AOpCodeTable.GetInstA64(OpCode);
-            }
+            if (state.ExecutionMode == AExecutionMode.AArch64)
+                inst = AOpCodeTable.GetInstA64(opCode);
             else
-            {
-                //TODO: Thumb support.
-                Inst = AOpCodeTable.GetInstA32(OpCode);
-            }
+                inst = AOpCodeTable.GetInstA32(opCode);
 
-            AOpCode DecodedOpCode = new AOpCode(AInst.Undefined, Position, OpCode);
+            AOpCode decodedOpCode = new AOpCode(AInst.Undefined, position, opCode);
 
-            if (Inst.Type != null)
-            {
-                DecodedOpCode = MakeOpCode(Inst.Type, Inst, Position, OpCode);
-            }
+            if (inst.Type != null) decodedOpCode = MakeOpCode(inst.Type, inst, position, opCode);
 
-            return DecodedOpCode;
+            return decodedOpCode;
         }
 
-        private static AOpCode MakeOpCode(Type Type, AInst Inst, long Position, int OpCode)
+        private static AOpCode MakeOpCode(Type type, AInst inst, long position, int opCode)
         {
-            if (Type == null)
-            {
-                throw new ArgumentNullException(nameof(Type));
-            }
+            if (type == null) throw new ArgumentNullException(nameof(type));
 
-            OpActivator CreateInstance = OpActivators.GetOrAdd(Type, CacheOpActivator);
+            OpActivator createInstance = _opActivators.GetOrAdd(type, CacheOpActivator);
 
-            return (AOpCode)CreateInstance(Inst, Position, OpCode);
+            return (AOpCode)createInstance(inst, position, opCode);
         }
 
-        private static OpActivator CacheOpActivator(Type Type)
+        private static OpActivator CacheOpActivator(Type type)
         {
-            Type[] ArgTypes = new Type[] { typeof(AInst), typeof(long), typeof(int) };
+            Type[] argTypes = new Type[] { typeof(AInst), typeof(long), typeof(int) };
 
-            DynamicMethod Mthd = new DynamicMethod($"Make{Type.Name}", Type, ArgTypes);
+            DynamicMethod mthd = new DynamicMethod($"Make{type.Name}", type, argTypes);
 
-            ILGenerator Generator = Mthd.GetILGenerator();
+            ILGenerator generator = mthd.GetILGenerator();
 
-            Generator.Emit(OpCodes.Ldarg_0);
-            Generator.Emit(OpCodes.Ldarg_1);
-            Generator.Emit(OpCodes.Ldarg_2);
-            Generator.Emit(OpCodes.Newobj, Type.GetConstructor(ArgTypes));
-            Generator.Emit(OpCodes.Ret);
+            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Ldarg_1);
+            generator.Emit(OpCodes.Ldarg_2);
+            generator.Emit(OpCodes.Newobj, type.GetConstructor(argTypes));
+            generator.Emit(OpCodes.Ret);
 
-            return (OpActivator)Mthd.CreateDelegate(typeof(OpActivator));
+            return (OpActivator)mthd.CreateDelegate(typeof(OpActivator));
         }
     }
 }

@@ -2,233 +2,196 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics
 {
-    class ValueRangeSet<T>
+    internal class ValueRangeSet<T>
     {
-        private List<ValueRange<T>> Ranges;
+        private List<ValueRange<T>> _ranges;
 
         public ValueRangeSet()
         {
-            Ranges = new List<ValueRange<T>>();
+            _ranges = new List<ValueRange<T>>();
         }
 
-        public void Add(ValueRange<T> Range)
+        public void Add(ValueRange<T> range)
         {
-            if (Range.End <= Range.Start)
-            {
-                //Empty or invalid range, do nothing.
-                return;
-            }
+            if (range.End <= range.Start) return;
 
-            int First = BinarySearchFirstIntersection(Range);
+            int first = BinarySearchFirstIntersection(range);
 
-            if (First == -1)
+            if (first == -1)
             {
                 //No intersections case.
                 //Find first greater than range (after the current one).
                 //If found, add before, otherwise add to the end of the list.
-                int GtIndex = BinarySearchGt(Range);
+                int gtIndex = BinarySearchGt(range);
 
-                if (GtIndex != -1)
-                {
-                    Ranges.Insert(GtIndex, Range);
-                }
+                if (gtIndex != -1)
+                    _ranges.Insert(gtIndex, range);
                 else
-                {
-                    Ranges.Add(Range);
-                }
+                    _ranges.Add(range);
 
                 return;
             }
 
-            (int Start, int End) = GetAllIntersectionRanges(Range, First);
+            (int start, int end) = GetAllIntersectionRanges(range, first);
 
-            ValueRange<T> Prev = Ranges[Start];
-            ValueRange<T> Next = Ranges[End];
+            ValueRange<T> prev = _ranges[start];
+            ValueRange<T> next = _ranges[end];
 
-            Ranges.RemoveRange(Start, (End - Start) + 1);
+            _ranges.RemoveRange(start, end - start + 1);
 
-            InsertNextNeighbour(Start, Range, Next);
+            InsertNextNeighbour(start, range, next);
 
-            int NewIndex = Start;
+            int newIndex = start;
 
-            Ranges.Insert(Start, Range);
+            _ranges.Insert(start, range);
 
-            InsertPrevNeighbour(Start, Range, Prev);
+            InsertPrevNeighbour(start, range, prev);
 
             //Try merging neighbours if the value is equal.
-            if (NewIndex > 0)
+            if (newIndex > 0)
             {
-                Prev = Ranges[NewIndex - 1];
+                prev = _ranges[newIndex - 1];
 
-                if (Prev.End == Range.Start && CompareValues(Prev, Range))
+                if (prev.End == range.Start && CompareValues(prev, range))
                 {
-                    Ranges.RemoveAt(--NewIndex);
+                    _ranges.RemoveAt(--newIndex);
 
-                    Ranges[NewIndex] = new ValueRange<T>(Prev.Start, Range.End, Range.Value);
+                    _ranges[newIndex] = new ValueRange<T>(prev.Start, range.End, range.Value);
                 }
             }
 
-            if (NewIndex < Ranges.Count - 1)
+            if (newIndex < _ranges.Count - 1)
             {
-                Next = Ranges[NewIndex + 1];
+                next = _ranges[newIndex + 1];
 
-                if (Next.Start == Range.End && CompareValues(Next, Range))
+                if (next.Start == range.End && CompareValues(next, range))
                 {
-                    Ranges.RemoveAt(NewIndex + 1);
+                    _ranges.RemoveAt(newIndex + 1);
 
-                    Ranges[NewIndex] = new ValueRange<T>(Range.Start, Next.End, Range.Value);
+                    _ranges[newIndex] = new ValueRange<T>(range.Start, next.End, range.Value);
                 }
             }
         }
 
-        private bool CompareValues(ValueRange<T> LHS, ValueRange<T> RHS)
+        private bool CompareValues(ValueRange<T> lhs, ValueRange<T> rhs)
         {
-            return LHS.Value?.Equals(RHS.Value) ?? RHS.Value == null;
+            return lhs.Value?.Equals(rhs.Value) ?? rhs.Value == null;
         }
 
-        public void Remove(ValueRange<T> Range)
+        public void Remove(ValueRange<T> range)
         {
-            int First = BinarySearchFirstIntersection(Range);
+            int first = BinarySearchFirstIntersection(range);
 
-            if (First == -1)
-            {
-                //Nothing to remove.
-                return;
-            }
+            if (first == -1) return;
 
-            (int Start, int End) = GetAllIntersectionRanges(Range, First);
+            (int start, int end) = GetAllIntersectionRanges(range, first);
 
-            ValueRange<T> Prev = Ranges[Start];
-            ValueRange<T> Next = Ranges[End];
+            ValueRange<T> prev = _ranges[start];
+            ValueRange<T> next = _ranges[end];
 
-            Ranges.RemoveRange(Start, (End - Start) + 1);
+            _ranges.RemoveRange(start, end - start + 1);
 
-            InsertNextNeighbour(Start, Range, Next);
-            InsertPrevNeighbour(Start, Range, Prev);
+            InsertNextNeighbour(start, range, next);
+            InsertPrevNeighbour(start, range, prev);
         }
 
-        private void InsertNextNeighbour(int Index, ValueRange<T> Range, ValueRange<T> Next)
+        private void InsertNextNeighbour(int index, ValueRange<T> range, ValueRange<T> next)
         {
             //Split last intersection (ordered by Start) if necessary.
-            if (Range.End < Next.End)
-            {
-                InsertNewRange(Index, Range.End, Next.End, Next.Value);
-            }
+            if (range.End < next.End) InsertNewRange(index, range.End, next.End, next.Value);
         }
 
-        private void InsertPrevNeighbour(int Index, ValueRange<T> Range, ValueRange<T> Prev)
+        private void InsertPrevNeighbour(int index, ValueRange<T> range, ValueRange<T> prev)
         {
             //Split first intersection (ordered by Start) if necessary.
-            if (Range.Start > Prev.Start)
-            {
-                InsertNewRange(Index, Prev.Start, Range.Start, Prev.Value);
-            }
+            if (range.Start > prev.Start) InsertNewRange(index, prev.Start, range.Start, prev.Value);
         }
 
-        private void InsertNewRange(int Index, long Start, long End, T Value)
+        private void InsertNewRange(int index, long start, long end, T value)
         {
-            Ranges.Insert(Index, new ValueRange<T>(Start, End, Value));
+            _ranges.Insert(index, new ValueRange<T>(start, end, value));
         }
 
-        public ValueRange<T>[] GetAllIntersections(ValueRange<T> Range)
+        public ValueRange<T>[] GetAllIntersections(ValueRange<T> range)
         {
-            int First = BinarySearchFirstIntersection(Range);
+            int first = BinarySearchFirstIntersection(range);
 
-            if (First == -1)
-            {
-                return new ValueRange<T>[0];
-            }
+            if (first == -1) return new ValueRange<T>[0];
 
-            (int Start, int End) = GetAllIntersectionRanges(Range, First);
+            (int start, int end) = GetAllIntersectionRanges(range, first);
 
-            return Ranges.GetRange(Start, (End - Start) + 1).ToArray();
+            return _ranges.GetRange(start, end - start + 1).ToArray();
         }
 
-        private (int Start, int End) GetAllIntersectionRanges(ValueRange<T> Range, int BaseIndex)
+        private (int Start, int End) GetAllIntersectionRanges(ValueRange<T> range, int baseIndex)
         {
-            int Start = BaseIndex;
-            int End   = BaseIndex;
+            int start = baseIndex;
+            int end   = baseIndex;
 
-            while (Start > 0 && Intersects(Range, Ranges[Start - 1]))
-            {
-                Start--;
-            }
+            while (start > 0 && Intersects(range, _ranges[start - 1])) start--;
 
-            while (End < Ranges.Count - 1 && Intersects(Range, Ranges[End + 1]))
-            {
-                End++;
-            }
+            while (end < _ranges.Count - 1 && Intersects(range, _ranges[end + 1])) end++;
 
-            return (Start, End);
+            return (start, end);
         }
 
-        private int BinarySearchFirstIntersection(ValueRange<T> Range)
+        private int BinarySearchFirstIntersection(ValueRange<T> range)
         {
-            int Left  = 0;
-            int Right = Ranges.Count - 1;
+            int left  = 0;
+            int right = _ranges.Count - 1;
 
-            while (Left <= Right)
+            while (left <= right)
             {
-                int Size = Right - Left;
+                int size = right - left;
 
-                int Middle = Left + (Size >> 1);
+                int middle = left + (size >> 1);
 
-                ValueRange<T> Current = Ranges[Middle];
+                ValueRange<T> current = _ranges[middle];
 
-                if (Intersects(Range, Current))
-                {
-                    return Middle;
-                }
+                if (Intersects(range, current)) return middle;
 
-                if (Range.Start < Current.Start)
-                {
-                    Right = Middle - 1;
-                }
+                if (range.Start < current.Start)
+                    right = middle - 1;
                 else
-                {
-                    Left = Middle + 1;
-                }
+                    left = middle + 1;
             }
 
             return -1;
         }
 
-        private int BinarySearchGt(ValueRange<T> Range)
+        private int BinarySearchGt(ValueRange<T> range)
         {
-            int GtIndex = -1;
+            int gtIndex = -1;
 
-            int Left  = 0;
-            int Right = Ranges.Count - 1;
+            int left  = 0;
+            int right = _ranges.Count - 1;
 
-            while (Left <= Right)
+            while (left <= right)
             {
-                int Size = Right - Left;
+                int size = right - left;
 
-                int Middle = Left + (Size >> 1);
+                int middle = left + (size >> 1);
 
-                ValueRange<T> Current = Ranges[Middle];
+                ValueRange<T> current = _ranges[middle];
 
-                if (Range.Start < Current.Start)
+                if (range.Start < current.Start)
                 {
-                    Right = Middle - 1;
+                    right = middle - 1;
 
-                    if (GtIndex == -1 || Current.Start < Ranges[GtIndex].Start)
-                    {
-                        GtIndex = Middle;
-                    }
+                    if (gtIndex == -1 || current.Start < _ranges[gtIndex].Start) gtIndex = middle;
                 }
                 else
                 {
-                    Left = Middle + 1;
+                    left = middle + 1;
                 }
             }
 
-            return GtIndex;
+            return gtIndex;
         }
 
-        private bool Intersects(ValueRange<T> LHS, ValueRange<T> RHS)
+        private bool Intersects(ValueRange<T> lhs, ValueRange<T> rhs)
         {
-            return LHS.Start < RHS.End && RHS.Start < LHS.End;
+            return lhs.Start < rhs.End && rhs.Start < lhs.End;
         }
     }
 }

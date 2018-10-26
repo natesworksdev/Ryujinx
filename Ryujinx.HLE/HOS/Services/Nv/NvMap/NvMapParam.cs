@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 {
-    struct NvMapParam
+    internal struct NvMapParam
     {
         public int Handle;
         public int Param;

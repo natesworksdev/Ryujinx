@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
 {
     [StructLayout(LayoutKind.Sequential)]
-    struct AudioOutData
+    internal struct AudioOutData
     {
         public long NextBufferPtr;
         public long SampleBufferPtr;

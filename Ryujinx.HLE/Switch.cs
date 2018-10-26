@@ -32,23 +32,17 @@ namespace Ryujinx.HLE
 
         public event EventHandler Finish;
 
-        public Switch(IGalRenderer Renderer, IAalOutput AudioOut)
+        public Switch(IGalRenderer renderer, IAalOutput audioOut)
         {
-            if (Renderer == null)
-            {
-                throw new ArgumentNullException(nameof(Renderer));
-            }
+            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
 
-            if (AudioOut == null)
-            {
-                throw new ArgumentNullException(nameof(AudioOut));
-            }
+            if (audioOut == null) throw new ArgumentNullException(nameof(audioOut));
 
-            this.AudioOut = AudioOut;
+            this.AudioOut = audioOut;
 
             Memory = new DeviceMemory();
 
-            Gpu = new NvGpu(Renderer);
+            Gpu = new NvGpu(renderer);
 
             FileSystem = new VirtualFileSystem();
 
@@ -56,34 +50,34 @@ namespace Ryujinx.HLE
 
             Statistics = new PerformanceStatistics();
 
-            Hid = new Hid(this, System.HidSharedMem.PA);
+            Hid = new Hid(this, System.HidSharedMem.Pa);
 
             VsyncEvent = new AutoResetEvent(true);
         }
 
-        public void LoadCart(string ExeFsDir, string RomFsFile = null)
+        public void LoadCart(string exeFsDir, string romFsFile = null)
         {
-            System.LoadCart(ExeFsDir, RomFsFile);
+            System.LoadCart(exeFsDir, romFsFile);
         }
 
-        public void LoadXci(string XciFile)
+        public void LoadXci(string xciFile)
         {
-            System.LoadXci(XciFile);
+            System.LoadXci(xciFile);
         }
 
-        public void LoadNca(string NcaFile)
+        public void LoadNca(string ncaFile)
         {
-            System.LoadNca(NcaFile);
+            System.LoadNca(ncaFile);
         }
 
-        public void LoadNsp(string NspFile)
+        public void LoadNsp(string nspFile)
         {
-            System.LoadNsp(NspFile);
+            System.LoadNsp(nspFile);
         }
 
-        public void LoadProgram(string FileName)
+        public void LoadProgram(string fileName)
         {
-            System.LoadProgram(FileName);
+            System.LoadProgram(fileName);
         }
 
         public bool WaitFifo()
@@ -108,9 +102,9 @@ namespace Ryujinx.HLE
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing)
+            if (disposing)
             {
                 System.Dispose();
 

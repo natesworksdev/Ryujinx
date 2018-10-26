@@ -7,64 +7,51 @@ using static ChocolArm64.Instruction32.A32InstInterpretHelper;
 
 namespace ChocolArm64.Instruction32
 {
-    static partial class A32InstInterpret
+    internal static partial class A32InstInterpret
     {
-        public static void B(AThreadState State, AMemory Memory, AOpCode OpCode)
+        public static void B(AThreadState state, AMemory memory, AOpCode opCode)
         {
-            A32OpCodeBImmAl Op = (A32OpCodeBImmAl)OpCode;
+            A32OpCodeBImmAl op = (A32OpCodeBImmAl)opCode;
 
-            if (IsConditionTrue(State, Op.Cond))
+            if (IsConditionTrue(state, op.Cond)) BranchWritePc(state, GetPc(state) + (uint)op.Imm);
+        }
+
+        public static void Bl(AThreadState state, AMemory memory, AOpCode opCode)
+        {
+            Blx(state, memory, opCode, false);
+        }
+
+        public static void Blx(AThreadState state, AMemory memory, AOpCode opCode)
+        {
+            Blx(state, memory, opCode, true);
+        }
+
+        public static void Blx(AThreadState state, AMemory memory, AOpCode opCode, bool x)
+        {
+            A32OpCodeBImmAl op = (A32OpCodeBImmAl)opCode;
+
+            if (IsConditionTrue(state, op.Cond))
             {
-                BranchWritePc(State, GetPc(State) + (uint)Op.Imm);
-            }
-        }
+                uint pc = GetPc(state);
 
-        public static void Bl(AThreadState State, AMemory Memory, AOpCode OpCode)
-        {
-            Blx(State, Memory, OpCode, false);
-        }
-
-        public static void Blx(AThreadState State, AMemory Memory, AOpCode OpCode)
-        {
-            Blx(State, Memory, OpCode, true);
-        }
-
-        public static void Blx(AThreadState State, AMemory Memory, AOpCode OpCode, bool X)
-        {
-            A32OpCodeBImmAl Op = (A32OpCodeBImmAl)OpCode;
-
-            if (IsConditionTrue(State, Op.Cond))
-            {
-                uint Pc = GetPc(State);
-
-                if (State.Thumb)
-                {
-                    State.R14 = Pc | 1;
-                }
+                if (state.Thumb)
+                    state.R14 = pc | 1;
                 else
-                {
-                    State.R14 = Pc - 4U;
-                }
+                    state.R14 = pc - 4U;
 
-                if (X)
-                {
-                    State.Thumb = !State.Thumb;
-                }
+                if (x) state.Thumb = !state.Thumb;
 
-                if (!State.Thumb)
-                {
-                    Pc &= ~3U;
-                }
+                if (!state.Thumb) pc &= ~3U;
 
-                BranchWritePc(State, Pc + (uint)Op.Imm);
+                BranchWritePc(state, pc + (uint)op.Imm);
             }
         }
 
-        private static void BranchWritePc(AThreadState State, uint Pc)
+        private static void BranchWritePc(AThreadState state, uint pc)
         {
-            State.R15 = State.Thumb
-                ? Pc & ~1U
-                : Pc & ~3U;
+            state.R15 = state.Thumb
+                ? pc & ~1U
+                : pc & ~3U;
         }
     }
 }

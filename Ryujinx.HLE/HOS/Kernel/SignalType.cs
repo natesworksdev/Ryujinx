@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    enum SignalType
+    internal enum SignalType
     {
         Signal                    = 0,
         SignalAndIncrementIfEqual = 1,

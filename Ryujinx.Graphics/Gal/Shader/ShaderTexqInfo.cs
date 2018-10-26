@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    enum ShaderTexqInfo
+    internal enum ShaderTexqInfo
     {
         Dimension   = 1,
         TextureType = 2,

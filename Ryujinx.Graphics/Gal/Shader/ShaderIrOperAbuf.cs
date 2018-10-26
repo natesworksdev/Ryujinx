@@ -1,15 +1,15 @@
 namespace Ryujinx.Graphics.Gal.Shader
 {
-    class ShaderIrOperAbuf : ShaderIrNode
+    internal class ShaderIrOperAbuf : ShaderIrNode
     {
         public int Offs { get; private set; }
 
         public ShaderIrNode Vertex { get; private set; }
 
-        public ShaderIrOperAbuf(int Offs, ShaderIrNode Vertex)
+        public ShaderIrOperAbuf(int offs, ShaderIrNode vertex)
         {
-            this.Offs   = Offs;
-            this.Vertex = Vertex;
+            this.Offs   = offs;
+            this.Vertex = vertex;
         }
     }
 }

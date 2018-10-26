@@ -6,9 +6,9 @@ namespace ChocolArm64.Events
     {
         public long Position { get; private set; }
 
-        public AInvalidAccessEventArgs(long Position)
+        public AInvalidAccessEventArgs(long position)
         {
-            this.Position = Position;
+            this.Position = position;
         }
     }
 }

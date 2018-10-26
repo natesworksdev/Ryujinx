@@ -10,517 +10,445 @@ using static ChocolArm64.Instruction.AInstEmitSimdHelper;
 
 namespace ChocolArm64.Instruction
 {
-    static partial class AInstEmit
+    internal static partial class AInstEmit
     {
-        public static void Cmeq_S(AILEmitterCtx Context)
+        public static void Cmeq_S(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Beq_S, Scalar: true);
+            EmitCmp(context, OpCodes.Beq_S, true);
         }
 
-        public static void Cmeq_V(AILEmitterCtx Context)
+        public static void Cmeq_V(AILEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdReg Op)
+            if (context.CurrOp is AOpCodeSimdReg op)
             {
-                if (Op.Size < 3 && AOptimizations.UseSse2)
-                {
-                    EmitSse2Op(Context, nameof(Sse2.CompareEqual));
-                }
-                else if (Op.Size == 3 && AOptimizations.UseSse41)
-                {
-                    EmitSse41Op(Context, nameof(Sse41.CompareEqual));
-                }
+                if (op.Size < 3 && AOptimizations.UseSse2)
+                    EmitSse2Op(context, nameof(Sse2.CompareEqual));
+                else if (op.Size == 3 && AOptimizations.UseSse41)
+                    EmitSse41Op(context, nameof(Sse41.CompareEqual));
                 else
-                {
-                    EmitCmp(Context, OpCodes.Beq_S, Scalar: false);
-                }
+                    EmitCmp(context, OpCodes.Beq_S, false);
             }
             else
             {
-                EmitCmp(Context, OpCodes.Beq_S, Scalar: false);
+                EmitCmp(context, OpCodes.Beq_S, false);
             }
         }
 
-        public static void Cmge_S(AILEmitterCtx Context)
+        public static void Cmge_S(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Bge_S, Scalar: true);
+            EmitCmp(context, OpCodes.Bge_S, true);
         }
 
-        public static void Cmge_V(AILEmitterCtx Context)
+        public static void Cmge_V(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Bge_S, Scalar: false);
+            EmitCmp(context, OpCodes.Bge_S, false);
         }
 
-        public static void Cmgt_S(AILEmitterCtx Context)
+        public static void Cmgt_S(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Bgt_S, Scalar: true);
+            EmitCmp(context, OpCodes.Bgt_S, true);
         }
 
-        public static void Cmgt_V(AILEmitterCtx Context)
+        public static void Cmgt_V(AILEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdReg Op)
+            if (context.CurrOp is AOpCodeSimdReg op)
             {
-                if (Op.Size < 3 && AOptimizations.UseSse2)
-                {
-                    EmitSse2Op(Context, nameof(Sse2.CompareGreaterThan));
-                }
-                else if (Op.Size == 3 && AOptimizations.UseSse42)
-                {
-                    EmitSse42Op(Context, nameof(Sse42.CompareGreaterThan));
-                }
+                if (op.Size < 3 && AOptimizations.UseSse2)
+                    EmitSse2Op(context, nameof(Sse2.CompareGreaterThan));
+                else if (op.Size == 3 && AOptimizations.UseSse42)
+                    EmitSse42Op(context, nameof(Sse42.CompareGreaterThan));
                 else
-                {
-                    EmitCmp(Context, OpCodes.Bgt_S, Scalar: false);
-                }
+                    EmitCmp(context, OpCodes.Bgt_S, false);
             }
             else
             {
-                EmitCmp(Context, OpCodes.Bgt_S, Scalar: false);
+                EmitCmp(context, OpCodes.Bgt_S, false);
             }
         }
 
-        public static void Cmhi_S(AILEmitterCtx Context)
+        public static void Cmhi_S(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Bgt_Un_S, Scalar: true);
+            EmitCmp(context, OpCodes.Bgt_Un_S, true);
         }
 
-        public static void Cmhi_V(AILEmitterCtx Context)
+        public static void Cmhi_V(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Bgt_Un_S, Scalar: false);
+            EmitCmp(context, OpCodes.Bgt_Un_S, false);
         }
 
-        public static void Cmhs_S(AILEmitterCtx Context)
+        public static void Cmhs_S(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Bge_Un_S, Scalar: true);
+            EmitCmp(context, OpCodes.Bge_Un_S, true);
         }
 
-        public static void Cmhs_V(AILEmitterCtx Context)
+        public static void Cmhs_V(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Bge_Un_S, Scalar: false);
+            EmitCmp(context, OpCodes.Bge_Un_S, false);
         }
 
-        public static void Cmle_S(AILEmitterCtx Context)
+        public static void Cmle_S(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Ble_S, Scalar: true);
+            EmitCmp(context, OpCodes.Ble_S, true);
         }
 
-        public static void Cmle_V(AILEmitterCtx Context)
+        public static void Cmle_V(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Ble_S, Scalar: false);
+            EmitCmp(context, OpCodes.Ble_S, false);
         }
 
-        public static void Cmlt_S(AILEmitterCtx Context)
+        public static void Cmlt_S(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Blt_S, Scalar: true);
+            EmitCmp(context, OpCodes.Blt_S, true);
         }
 
-        public static void Cmlt_V(AILEmitterCtx Context)
+        public static void Cmlt_V(AILEmitterCtx context)
         {
-            EmitCmp(Context, OpCodes.Blt_S, Scalar: false);
+            EmitCmp(context, OpCodes.Blt_S, false);
         }
 
-        public static void Cmtst_S(AILEmitterCtx Context)
+        public static void Cmtst_S(AILEmitterCtx context)
         {
-            EmitCmtst(Context, Scalar: true);
+            EmitCmtst(context, true);
         }
 
-        public static void Cmtst_V(AILEmitterCtx Context)
+        public static void Cmtst_V(AILEmitterCtx context)
         {
-            EmitCmtst(Context, Scalar: false);
+            EmitCmtst(context, false);
         }
 
-        public static void Fccmp_S(AILEmitterCtx Context)
+        public static void Fccmp_S(AILEmitterCtx context)
         {
-            AOpCodeSimdFcond Op = (AOpCodeSimdFcond)Context.CurrOp;
+            AOpCodeSimdFcond op = (AOpCodeSimdFcond)context.CurrOp;
 
-            AILLabel LblTrue = new AILLabel();
-            AILLabel LblEnd  = new AILLabel();
+            AILLabel lblTrue = new AILLabel();
+            AILLabel lblEnd  = new AILLabel();
 
-            Context.EmitCondBranch(LblTrue, Op.Cond);
+            context.EmitCondBranch(lblTrue, op.Cond);
 
-            EmitSetNZCV(Context, Op.NZCV);
+            EmitSetNzcv(context, op.Nzcv);
 
-            Context.Emit(OpCodes.Br, LblEnd);
+            context.Emit(OpCodes.Br, lblEnd);
 
-            Context.MarkLabel(LblTrue);
+            context.MarkLabel(lblTrue);
 
-            Fcmp_S(Context);
+            Fcmp_S(context);
 
-            Context.MarkLabel(LblEnd);
+            context.MarkLabel(lblEnd);
         }
 
-        public static void Fccmpe_S(AILEmitterCtx Context)
+        public static void Fccmpe_S(AILEmitterCtx context)
         {
-            Fccmp_S(Context);
+            Fccmp_S(context);
         }
 
-        public static void Fcmeq_S(AILEmitterCtx Context)
+        public static void Fcmeq_S(AILEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
+            if (context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
                                                  && AOptimizations.UseSse2)
-            {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.CompareEqualScalar));
-            }
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareEqualScalar));
             else
-            {
-                EmitScalarFcmp(Context, OpCodes.Beq_S);
-            }
+                EmitScalarFcmp(context, OpCodes.Beq_S);
         }
 
-        public static void Fcmeq_V(AILEmitterCtx Context)
+        public static void Fcmeq_V(AILEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
+            if (context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
                                                  && AOptimizations.UseSse2)
-            {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.CompareEqual));
-            }
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareEqual));
             else
-            {
-                EmitVectorFcmp(Context, OpCodes.Beq_S);
-            }
+                EmitVectorFcmp(context, OpCodes.Beq_S);
         }
 
-        public static void Fcmge_S(AILEmitterCtx Context)
+        public static void Fcmge_S(AILEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
+            if (context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
                                                  && AOptimizations.UseSse2)
-            {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.CompareGreaterThanOrEqualScalar));
-            }
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanOrEqualScalar));
             else
-            {
-                EmitScalarFcmp(Context, OpCodes.Bge_S);
-            }
+                EmitScalarFcmp(context, OpCodes.Bge_S);
         }
 
-        public static void Fcmge_V(AILEmitterCtx Context)
+        public static void Fcmge_V(AILEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
+            if (context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
                                                  && AOptimizations.UseSse2)
-            {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.CompareGreaterThanOrEqual));
-            }
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanOrEqual));
             else
-            {
-                EmitVectorFcmp(Context, OpCodes.Bge_S);
-            }
+                EmitVectorFcmp(context, OpCodes.Bge_S);
         }
 
-        public static void Fcmgt_S(AILEmitterCtx Context)
+        public static void Fcmgt_S(AILEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
+            if (context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
                                                  && AOptimizations.UseSse2)
-            {
-                EmitScalarSseOrSse2OpF(Context, nameof(Sse.CompareGreaterThanScalar));
-            }
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanScalar));
             else
-            {
-                EmitScalarFcmp(Context, OpCodes.Bgt_S);
-            }
+                EmitScalarFcmp(context, OpCodes.Bgt_S);
         }
 
-        public static void Fcmgt_V(AILEmitterCtx Context)
+        public static void Fcmgt_V(AILEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
+            if (context.CurrOp is AOpCodeSimdReg && AOptimizations.UseSse
                                                  && AOptimizations.UseSse2)
-            {
-                EmitVectorSseOrSse2OpF(Context, nameof(Sse.CompareGreaterThan));
-            }
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareGreaterThan));
             else
-            {
-                EmitVectorFcmp(Context, OpCodes.Bgt_S);
-            }
+                EmitVectorFcmp(context, OpCodes.Bgt_S);
         }
 
-        public static void Fcmle_S(AILEmitterCtx Context)
+        public static void Fcmle_S(AILEmitterCtx context)
         {
-            EmitScalarFcmp(Context, OpCodes.Ble_S);
+            EmitScalarFcmp(context, OpCodes.Ble_S);
         }
 
-        public static void Fcmle_V(AILEmitterCtx Context)
+        public static void Fcmle_V(AILEmitterCtx context)
         {
-            EmitVectorFcmp(Context, OpCodes.Ble_S);
+            EmitVectorFcmp(context, OpCodes.Ble_S);
         }
 
-        public static void Fcmlt_S(AILEmitterCtx Context)
+        public static void Fcmlt_S(AILEmitterCtx context)
         {
-            EmitScalarFcmp(Context, OpCodes.Blt_S);
+            EmitScalarFcmp(context, OpCodes.Blt_S);
         }
 
-        public static void Fcmlt_V(AILEmitterCtx Context)
+        public static void Fcmlt_V(AILEmitterCtx context)
         {
-            EmitVectorFcmp(Context, OpCodes.Blt_S);
+            EmitVectorFcmp(context, OpCodes.Blt_S);
         }
 
-        public static void Fcmp_S(AILEmitterCtx Context)
+        public static void Fcmp_S(AILEmitterCtx context)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            bool CmpWithZero = !(Op is AOpCodeSimdFcond) ? Op.Bit3 : false;
+            bool cmpWithZero = !(op is AOpCodeSimdFcond) ? op.Bit3 : false;
 
             //Handle NaN case.
             //If any number is NaN, then NZCV = 0011.
-            if (CmpWithZero)
+            if (cmpWithZero)
             {
-                EmitNaNCheck(Context, Op.Rn);
+                EmitNaNCheck(context, op.Rn);
             }
             else
             {
-                EmitNaNCheck(Context, Op.Rn);
-                EmitNaNCheck(Context, Op.Rm);
+                EmitNaNCheck(context, op.Rn);
+                EmitNaNCheck(context, op.Rm);
 
-                Context.Emit(OpCodes.Or);
+                context.Emit(OpCodes.Or);
             }
 
-            AILLabel LblNaN = new AILLabel();
-            AILLabel LblEnd = new AILLabel();
+            AILLabel lblNaN = new AILLabel();
+            AILLabel lblEnd = new AILLabel();
 
-            Context.Emit(OpCodes.Brtrue_S, LblNaN);
+            context.Emit(OpCodes.Brtrue_S, lblNaN);
 
             void EmitLoadOpers()
             {
-                EmitVectorExtractF(Context, Op.Rn, 0, Op.Size);
+                EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
-                if (CmpWithZero)
+                if (cmpWithZero)
                 {
-                    if (Op.Size == 0)
-                    {
-                        Context.EmitLdc_R4(0f);
-                    }
+                    if (op.Size == 0)
+                        context.EmitLdc_R4(0f);
                     else /* if (Op.Size == 1) */
-                    {
-                        Context.EmitLdc_R8(0d);
-                    }
+                        context.EmitLdc_R8(0d);
                 }
                 else
                 {
-                    EmitVectorExtractF(Context, Op.Rm, 0, Op.Size);
+                    EmitVectorExtractF(context, op.Rm, 0, op.Size);
                 }
             }
 
             //Z = Rn == Rm
             EmitLoadOpers();
 
-            Context.Emit(OpCodes.Ceq);
-            Context.Emit(OpCodes.Dup);
+            context.Emit(OpCodes.Ceq);
+            context.Emit(OpCodes.Dup);
 
-            Context.EmitStflg((int)APState.ZBit);
+            context.EmitStflg((int)APState.ZBit);
 
             //C = Rn >= Rm
             EmitLoadOpers();
 
-            Context.Emit(OpCodes.Cgt);
-            Context.Emit(OpCodes.Or);
+            context.Emit(OpCodes.Cgt);
+            context.Emit(OpCodes.Or);
 
-            Context.EmitStflg((int)APState.CBit);
+            context.EmitStflg((int)APState.CBit);
 
             //N = Rn < Rm
             EmitLoadOpers();
 
-            Context.Emit(OpCodes.Clt);
+            context.Emit(OpCodes.Clt);
 
-            Context.EmitStflg((int)APState.NBit);
+            context.EmitStflg((int)APState.NBit);
 
             //V = 0
-            Context.EmitLdc_I4(0);
+            context.EmitLdc_I4(0);
 
-            Context.EmitStflg((int)APState.VBit);
+            context.EmitStflg((int)APState.VBit);
 
-            Context.Emit(OpCodes.Br_S, LblEnd);
+            context.Emit(OpCodes.Br_S, lblEnd);
 
-            Context.MarkLabel(LblNaN);
+            context.MarkLabel(lblNaN);
 
-            EmitSetNZCV(Context, 0b0011);
+            EmitSetNzcv(context, 0b0011);
 
-            Context.MarkLabel(LblEnd);
+            context.MarkLabel(lblEnd);
         }
 
-        public static void Fcmpe_S(AILEmitterCtx Context)
+        public static void Fcmpe_S(AILEmitterCtx context)
         {
-            Fcmp_S(Context);
+            Fcmp_S(context);
         }
 
-        private static void EmitNaNCheck(AILEmitterCtx Context, int Reg)
+        private static void EmitNaNCheck(AILEmitterCtx context, int reg)
         {
-            IAOpCodeSimd Op = (IAOpCodeSimd)Context.CurrOp;
+            IAOpCodeSimd op = (IAOpCodeSimd)context.CurrOp;
 
-            EmitVectorExtractF(Context, Reg, 0, Op.Size);
+            EmitVectorExtractF(context, reg, 0, op.Size);
 
-            if (Op.Size == 0)
-            {
-                Context.EmitCall(typeof(float), nameof(float.IsNaN));
-            }
-            else if (Op.Size == 1)
-            {
-                Context.EmitCall(typeof(double), nameof(double.IsNaN));
-            }
+            if (op.Size == 0)
+                context.EmitCall(typeof(float), nameof(float.IsNaN));
+            else if (op.Size == 1)
+                context.EmitCall(typeof(double), nameof(double.IsNaN));
             else
-            {
                 throw new InvalidOperationException();
-            }
         }
 
-        private static void EmitCmp(AILEmitterCtx Context, OpCode ILOp, bool Scalar)
+        private static void EmitCmp(AILEmitterCtx context, OpCode ilOp, bool scalar)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = !Scalar ? Bytes >> Op.Size : 1;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = !scalar ? bytes >> op.Size : 1;
 
-            ulong SzMask = ulong.MaxValue >> (64 - (8 << Op.Size));
+            ulong szMask = ulong.MaxValue >> (64 - (8 << op.Size));
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractSx(Context, Op.Rn, Index, Op.Size);
+                EmitVectorExtractSx(context, op.Rn, index, op.Size);
 
-                if (Op is AOpCodeSimdReg BinOp)
-                {
-                    EmitVectorExtractSx(Context, BinOp.Rm, Index, Op.Size);
-                }
+                if (op is AOpCodeSimdReg binOp)
+                    EmitVectorExtractSx(context, binOp.Rm, index, op.Size);
                 else
-                {
-                    Context.EmitLdc_I8(0L);
-                }
+                    context.EmitLdc_I8(0L);
 
-                AILLabel LblTrue = new AILLabel();
-                AILLabel LblEnd  = new AILLabel();
+                AILLabel lblTrue = new AILLabel();
+                AILLabel lblEnd  = new AILLabel();
 
-                Context.Emit(ILOp, LblTrue);
+                context.Emit(ilOp, lblTrue);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size, 0);
+                EmitVectorInsert(context, op.Rd, index, op.Size, 0);
 
-                Context.Emit(OpCodes.Br_S, LblEnd);
+                context.Emit(OpCodes.Br_S, lblEnd);
 
-                Context.MarkLabel(LblTrue);
+                context.MarkLabel(lblTrue);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size, (long)SzMask);
+                EmitVectorInsert(context, op.Rd, index, op.Size, (long)szMask);
 
-                Context.MarkLabel(LblEnd);
+                context.MarkLabel(lblEnd);
             }
 
-            if ((Op.RegisterSize == ARegisterSize.SIMD64) || Scalar)
-            {
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
+            if (op.RegisterSize == ARegisterSize.Simd64 || scalar) EmitVectorZeroUpper(context, op.Rd);
         }
 
-        private static void EmitCmtst(AILEmitterCtx Context, bool Scalar)
+        private static void EmitCmtst(AILEmitterCtx context, bool scalar)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = !Scalar ? Bytes >> Op.Size : 1;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = !scalar ? bytes >> op.Size : 1;
 
-            ulong SzMask = ulong.MaxValue >> (64 - (8 << Op.Size));
+            ulong szMask = ulong.MaxValue >> (64 - (8 << op.Size));
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractZx(Context, Op.Rn, Index, Op.Size);
-                EmitVectorExtractZx(Context, Op.Rm, Index, Op.Size);
+                EmitVectorExtractZx(context, op.Rn, index, op.Size);
+                EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                AILLabel LblTrue = new AILLabel();
-                AILLabel LblEnd  = new AILLabel();
+                AILLabel lblTrue = new AILLabel();
+                AILLabel lblEnd  = new AILLabel();
 
-                Context.Emit(OpCodes.And);
+                context.Emit(OpCodes.And);
 
-                Context.EmitLdc_I8(0L);
+                context.EmitLdc_I8(0L);
 
-                Context.Emit(OpCodes.Bne_Un_S, LblTrue);
+                context.Emit(OpCodes.Bne_Un_S, lblTrue);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size, 0);
+                EmitVectorInsert(context, op.Rd, index, op.Size, 0);
 
-                Context.Emit(OpCodes.Br_S, LblEnd);
+                context.Emit(OpCodes.Br_S, lblEnd);
 
-                Context.MarkLabel(LblTrue);
+                context.MarkLabel(lblTrue);
 
-                EmitVectorInsert(Context, Op.Rd, Index, Op.Size, (long)SzMask);
+                EmitVectorInsert(context, op.Rd, index, op.Size, (long)szMask);
 
-                Context.MarkLabel(LblEnd);
+                context.MarkLabel(lblEnd);
             }
 
-            if ((Op.RegisterSize == ARegisterSize.SIMD64) || Scalar)
-            {
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
+            if (op.RegisterSize == ARegisterSize.Simd64 || scalar) EmitVectorZeroUpper(context, op.Rd);
         }
 
-        private static void EmitScalarFcmp(AILEmitterCtx Context, OpCode ILOp)
+        private static void EmitScalarFcmp(AILEmitterCtx context, OpCode ilOp)
         {
-            EmitFcmp(Context, ILOp, 0, Scalar: true);
+            EmitFcmp(context, ilOp, 0, true);
         }
 
-        private static void EmitVectorFcmp(AILEmitterCtx Context, OpCode ILOp)
+        private static void EmitVectorFcmp(AILEmitterCtx context, OpCode ilOp)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
+            int sizeF = op.Size & 1;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> SizeF + 2;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> (sizeF + 2);
 
-            for (int Index = 0; Index < Elems; Index++)
-            {
-                EmitFcmp(Context, ILOp, Index, Scalar: false);
-            }
+            for (int index = 0; index < elems; index++) EmitFcmp(context, ilOp, index, false);
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
-            {
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
+            if (op.RegisterSize == ARegisterSize.Simd64) EmitVectorZeroUpper(context, op.Rd);
         }
 
-        private static void EmitFcmp(AILEmitterCtx Context, OpCode ILOp, int Index, bool Scalar)
+        private static void EmitFcmp(AILEmitterCtx context, OpCode ilOp, int index, bool scalar)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
+            int sizeF = op.Size & 1;
 
-            ulong SzMask = ulong.MaxValue >> (64 - (32 << SizeF));
+            ulong szMask = ulong.MaxValue >> (64 - (32 << sizeF));
 
-            EmitVectorExtractF(Context, Op.Rn, Index, SizeF);
+            EmitVectorExtractF(context, op.Rn, index, sizeF);
 
-            if (Op is AOpCodeSimdReg BinOp)
-            {
-                EmitVectorExtractF(Context, BinOp.Rm, Index, SizeF);
-            }
-            else if (SizeF == 0)
-            {
-                Context.EmitLdc_R4(0f);
-            }
+            if (op is AOpCodeSimdReg binOp)
+                EmitVectorExtractF(context, binOp.Rm, index, sizeF);
+            else if (sizeF == 0)
+                context.EmitLdc_R4(0f);
             else /* if (SizeF == 1) */
+                context.EmitLdc_R8(0d);
+
+            AILLabel lblTrue = new AILLabel();
+            AILLabel lblEnd  = new AILLabel();
+
+            context.Emit(ilOp, lblTrue);
+
+            if (scalar)
+                EmitVectorZeroAll(context, op.Rd);
+            else
+                EmitVectorInsert(context, op.Rd, index, sizeF + 2, 0);
+
+            context.Emit(OpCodes.Br_S, lblEnd);
+
+            context.MarkLabel(lblTrue);
+
+            if (scalar)
             {
-                Context.EmitLdc_R8(0d);
-            }
+                EmitVectorInsert(context, op.Rd, index, 3, (long)szMask);
 
-            AILLabel LblTrue = new AILLabel();
-            AILLabel LblEnd  = new AILLabel();
-
-            Context.Emit(ILOp, LblTrue);
-
-            if (Scalar)
-            {
-                EmitVectorZeroAll(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
             else
             {
-                EmitVectorInsert(Context, Op.Rd, Index, SizeF + 2, 0);
+                EmitVectorInsert(context, op.Rd, index, sizeF + 2, (long)szMask);
             }
 
-            Context.Emit(OpCodes.Br_S, LblEnd);
-
-            Context.MarkLabel(LblTrue);
-
-            if (Scalar)
-            {
-                EmitVectorInsert(Context, Op.Rd, Index, 3, (long)SzMask);
-
-                EmitVectorZeroUpper(Context, Op.Rd);
-            }
-            else
-            {
-                EmitVectorInsert(Context, Op.Rd, Index, SizeF + 2, (long)SzMask);
-            }
-
-            Context.MarkLabel(LblEnd);
+            context.MarkLabel(lblEnd);
         }
     }
 }

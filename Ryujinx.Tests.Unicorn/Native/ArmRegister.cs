@@ -2,15 +2,15 @@ namespace Ryujinx.Tests.Unicorn.Native
 {
     public enum ArmRegister
     {
-        INVALID = 0,
+        Invalid = 0,
 
         X29,
         X30,
-        NZCV,
-        SP,
-        WSP,
-        WZR,
-        XZR,
+        Nzcv,
+        Sp,
+        Wsp,
+        Wzr,
+        Xzr,
         B0,
         B1,
         B2,
@@ -266,29 +266,29 @@ namespace Ryujinx.Tests.Unicorn.Native
         V31,
 
         //> pseudo registers
-        PC,            // program counter register
+        Pc,            // program counter register
 
-        CPACR_EL1,
-        ESR,
+        CpacrEl1,
+        Esr,
 
         //> thread registers
-        TPIDR_EL0,
-        TPIDRRO_EL0,
-        TPIDR_EL1,
+        TpidrEl0,
+        TpidrroEl0,
+        TpidrEl1,
 
-        PSTATE,        // PSTATE pseudoregister
+        Pstate,        // PSTATE pseudoregister
 
         //> floating point control and status registers
-        FPCR,
-        FPSR,
+        Fpcr,
+        Fpsr,
 
-        ENDING,        // <-- mark the end of the list of registers
+        Ending,        // <-- mark the end of the list of registers
 
         //> alias registers
 
-        IP0 =   X16,
-        IP1 =   X17,
-        FP =    X29,
-        LR =    X30,
+        Ip0 =   X16,
+        Ip1 =   X17,
+        Fp =    X29,
+        Lr =    X30,
     }
 }

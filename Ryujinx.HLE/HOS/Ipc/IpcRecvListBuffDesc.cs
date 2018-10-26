@@ -2,18 +2,18 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    struct IpcRecvListBuffDesc
+    internal struct IpcRecvListBuffDesc
     {
         public long Position { get; private set; }
         public long Size     { get; private set; }
 
-        public IpcRecvListBuffDesc(BinaryReader Reader)
+        public IpcRecvListBuffDesc(BinaryReader reader)
         {
-            long Value = Reader.ReadInt64();
+            long value = reader.ReadInt64();
 
-            Position = Value & 0xffffffffffff;
+            Position = value & 0xffffffffffff;
 
-            Size = (ushort)(Value >> 48);
+            Size = (ushort)(value >> 48);
         }
     }
 }

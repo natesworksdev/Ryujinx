@@ -2,10 +2,10 @@ using Ryujinx.Graphics.Memory;
 
 namespace Ryujinx.Graphics
 {
-    interface INvGpuEngine
+    internal interface INvGpuEngine
     {
         int[] Registers { get; }
 
-        void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry);
+        void CallMethod(NvGpuVmm vmm, NvGpuPBEntry pbEntry);
     }
 }

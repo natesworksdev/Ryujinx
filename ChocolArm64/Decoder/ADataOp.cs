@@ -1,6 +1,6 @@
 namespace ChocolArm64.Decoder
 {
-    enum ADataOp
+    internal enum ADataOp
     {
         Adr        = 0,
         Arithmetic = 1,
