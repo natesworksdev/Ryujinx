@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Texture
         private const GalImageFormat Float = GalImageFormat.Float;
         private const GalImageFormat Srgb  = GalImageFormat.Srgb;
 
-        private static readonly Dictionary<GalTextureFormat, GalImageFormat> _sTextureTable =
+        private static readonly Dictionary<GalTextureFormat, GalImageFormat> _textureTable =
                             new Dictionary<GalTextureFormat, GalImageFormat>()
         {
             { GalTextureFormat.Rgba32,     GalImageFormat.Rgba32                    | Sint | Uint | Float        },
@@ -89,7 +89,7 @@ namespace Ryujinx.Graphics.Texture
             { GalTextureFormat.Astc2D10X6,  GalImageFormat.Astc2D10X6  | Unorm                 | Srgb }
         };
 
-        private static readonly Dictionary<GalImageFormat, ImageDescriptor> _sImageTable =
+        private static readonly Dictionary<GalImageFormat, ImageDescriptor> _imageTable =
                             new Dictionary<GalImageFormat, ImageDescriptor>()
         {
             { GalImageFormat.Rgba32,      new ImageDescriptor(16, 1,  1,  TargetBuffer.Color) },
@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.Texture
         {
             if (rType != gType || rType != bType || rType != aType) throw new NotImplementedException("Per component types are not implemented!");
 
-            if (!_sTextureTable.TryGetValue(format, out GalImageFormat imageFormat)) throw new NotImplementedException($"Format 0x{(int)format:x} not implemented!");
+            if (!_textureTable.TryGetValue(format, out GalImageFormat imageFormat)) throw new NotImplementedException($"Format 0x{(int)format:x} not implemented!");
 
             GalImageFormat formatType = convSrgb ? Srgb : GetFormatType(rType);
 
@@ -358,7 +358,7 @@ namespace Ryujinx.Graphics.Texture
         {
             GalImageFormat pixelFormat = format & GalImageFormat.FormatMask;
 
-            if (_sImageTable.TryGetValue(pixelFormat, out ImageDescriptor descriptor)) return descriptor;
+            if (_imageTable.TryGetValue(pixelFormat, out ImageDescriptor descriptor)) return descriptor;
 
             throw new NotImplementedException($"Format \"{pixelFormat}\" not implemented!");
         }

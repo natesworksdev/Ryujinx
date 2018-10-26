@@ -5,7 +5,7 @@ namespace ChocolArm64.Decoder
     internal class AOpCodeBfm : AOpCodeAlu
     {
         public long WMask { get; private set; }
-        public long Mask { get; private set; }
+        public long TMask { get; private set; }
         public int  Pos   { get; private set; }
         public int  Shift { get; private set; }
 
@@ -21,7 +21,7 @@ namespace ChocolArm64.Decoder
             }
 
             WMask = bm.WMask;
-            Mask = bm.Mask;
+            TMask = bm.TMask;
             Pos   = bm.Pos;
             Shift = bm.Shift;
         }

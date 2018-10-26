@@ -387,14 +387,14 @@ namespace Ryujinx.Graphics
 
             if (state.BlendEnabled)
             {
-                state.BlendSeparateAlpha = ReadRegisterBool(NvGpuEngine3dReg.BlendNSeparateAlpha);
+                state.BlendSeparateAlpha = ReadRegisterBool(NvGpuEngine3dReg.IBlendNSeparateAlpha);
 
-                state.BlendEquationRgb   = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.BlendNEquationRgb);
-                state.BlendFuncSrcRgb    =   (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendNFuncSrcRgb);
-                state.BlendFuncDstRgb    =   (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendNFuncDstRgb);
-                state.BlendEquationAlpha = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.BlendNEquationAlpha);
-                state.BlendFuncSrcAlpha  =   (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendNFuncSrcAlpha);
-                state.BlendFuncDstAlpha  =   (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.BlendNFuncDstAlpha);
+                state.BlendEquationRgb   = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.IBlendNEquationRgb);
+                state.BlendFuncSrcRgb    =   (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncSrcRgb);
+                state.BlendFuncDstRgb    =   (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncDstRgb);
+                state.BlendEquationAlpha = (GalBlendEquation)ReadRegister(NvGpuEngine3dReg.IBlendNEquationAlpha);
+                state.BlendFuncSrcAlpha  =   (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncSrcAlpha);
+                state.BlendFuncDstAlpha  =   (GalBlendFactor)ReadRegister(NvGpuEngine3dReg.IBlendNFuncDstAlpha);
             }
         }
 

@@ -9,13 +9,13 @@ namespace ChocolArm64.Instruction
 {
     internal static class AVectorHelper
     {
-        private static readonly Vector128<float> _zero32128Mask;
+        private static readonly Vector128<float> _zero32_128Mask;
 
         static AVectorHelper()
         {
             if (!Sse2.IsSupported) throw new PlatformNotSupportedException();
 
-            _zero32128Mask = Sse.StaticCast<uint, float>(Sse2.SetVector128(0, 0, 0, 0xffffffff));
+            _zero32_128Mask = Sse.StaticCast<uint, float>(Sse2.SetVector128(0, 0, 0, 0xffffffff));
         }
 
         public static void EmitCall(AILEmitterCtx context, string name64, string name128)
@@ -497,7 +497,7 @@ namespace ChocolArm64.Instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorZero32_128(Vector128<float> vector)
         {
-            if (Sse.IsSupported) return Sse.And(vector, _zero32128Mask);
+            if (Sse.IsSupported) return Sse.And(vector, _zero32_128Mask);
 
             throw new PlatformNotSupportedException();
         }

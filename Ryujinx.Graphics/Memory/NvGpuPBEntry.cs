@@ -9,15 +9,15 @@ namespace Ryujinx.Graphics.Memory
 
         public int SubChannel { get; private set; }
 
-        private int[] _mArguments;
+        private int[] _arguments;
 
-        public ReadOnlyCollection<int> Arguments => Array.AsReadOnly(_mArguments);
+        public ReadOnlyCollection<int> Arguments => Array.AsReadOnly(_arguments);
 
         public NvGpuPBEntry(int method, int subChannel, params int[] arguments)
         {
             Method      = method;
             SubChannel  = subChannel;
-            _mArguments = arguments;
+            _arguments = arguments;
         }
     }
 }

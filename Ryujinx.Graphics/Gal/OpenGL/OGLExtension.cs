@@ -5,13 +5,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     internal static class OGLExtension
     {
-        private static Lazy<bool> _sEnhancedLayouts    = new Lazy<bool>(() => HasExtension("GL_ARB_enhanced_layouts"));
-        private static Lazy<bool> _sTextureMirrorClamp = new Lazy<bool>(() => HasExtension("GL_EXT_texture_mirror_clamp"));
-        private static Lazy<bool> _sViewportArray      = new Lazy<bool>(() => HasExtension("GL_ARB_viewport_array"));
+        private static Lazy<bool> _enhancedLayouts    = new Lazy<bool>(() => HasExtension("GL_ARB_enhanced_layouts"));
+        private static Lazy<bool> _textureMirrorClamp = new Lazy<bool>(() => HasExtension("GL_EXT_texture_mirror_clamp"));
+        private static Lazy<bool> _viewportArray      = new Lazy<bool>(() => HasExtension("GL_ARB_viewport_array"));
 
-        public static bool EnhancedLayouts    => _sEnhancedLayouts.Value;
-        public static bool TextureMirrorClamp => _sTextureMirrorClamp.Value;
-        public static bool ViewportArray      => _sViewportArray.Value;
+        public static bool EnhancedLayouts    => _enhancedLayouts.Value;
+        public static bool TextureMirrorClamp => _textureMirrorClamp.Value;
+        public static bool ViewportArray      => _viewportArray.Value;
 
         private static bool HasExtension(string name)
         {
