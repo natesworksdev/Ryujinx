@@ -63,8 +63,6 @@ namespace Ryujinx.Graphics
             GalMemoryLayout SrcLayout = GetLayout(SrcLinear);
             GalMemoryLayout DstLayout = GetLayout(DstLinear);
 
-            bool ClipEnable = ReadRegister(NvGpuEngine2dReg.ClipEnable) != 0;
-
             int SrcBlockHeight = 1 << ((SrcBlkDim >> 4) & 0xf);
             int DstBlockHeight = 1 << ((DstBlkDim >> 4) & 0xf);
 
