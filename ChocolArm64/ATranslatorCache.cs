@@ -30,93 +30,93 @@ namespace ChocolArm64
 
             public long Timestamp { get; private set; }
 
-            public CacheBucket(ATranslatedSub Subroutine, LinkedListNode<long> Node, int Size)
+            public CacheBucket(ATranslatedSub subroutine, LinkedListNode<long> node, int size)
             {
-                this.Subroutine = Subroutine;
-                this.Size       = Size;
+                Subroutine = subroutine;
+                Size       = size;
 
-                UpdateNode(Node);
+                UpdateNode(node);
             }
 
-            public void UpdateNode(LinkedListNode<long> Node)
+            public void UpdateNode(LinkedListNode<long> node)
             {
-                this.Node = Node;
+                Node = node;
 
                 Timestamp = GetTimestamp();
             }
         }
 
-        private ConcurrentDictionary<long, CacheBucket> Cache;
+        private ConcurrentDictionary<long, CacheBucket> _cache;
 
-        private LinkedList<long> SortedCache;
+        private LinkedList<long> _sortedCache;
 
-        private int TotalSize;
+        private int _totalSize;
 
         public ATranslatorCache()
         {
-            Cache = new ConcurrentDictionary<long, CacheBucket>();
+            _cache = new ConcurrentDictionary<long, CacheBucket>();
 
-            SortedCache = new LinkedList<long>();
+            _sortedCache = new LinkedList<long>();
         }
 
-        public void AddOrUpdate(long Position, ATranslatedSub Subroutine, int Size)
+        public void AddOrUpdate(long position, ATranslatedSub subroutine, int size)
         {
             ClearCacheIfNeeded();
 
-            TotalSize += Size;
+            _totalSize += size;
 
-            lock (SortedCache)
+            lock (_sortedCache)
             {
-                LinkedListNode<long> Node = SortedCache.AddLast(Position);
+                LinkedListNode<long> node = _sortedCache.AddLast(position);
 
-                CacheBucket NewBucket = new CacheBucket(Subroutine, Node, Size);
+                CacheBucket newBucket = new CacheBucket(subroutine, node, size);
 
-                Cache.AddOrUpdate(Position, NewBucket, (Key, Bucket) =>
+                _cache.AddOrUpdate(position, newBucket, (key, bucket) =>
                 {
-                    TotalSize -= Bucket.Size;
+                    _totalSize -= bucket.Size;
 
-                    SortedCache.Remove(Bucket.Node);
+                    _sortedCache.Remove(bucket.Node);
 
-                    return NewBucket;
+                    return newBucket;
                 });
             }
         }
 
-        public bool HasSubroutine(long Position)
+        public bool HasSubroutine(long position)
         {
-            return Cache.ContainsKey(Position);
+            return _cache.ContainsKey(position);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetSubroutine(long Position, out ATranslatedSub Subroutine)
+        public bool TryGetSubroutine(long position, out ATranslatedSub subroutine)
         {
-            if (Cache.TryGetValue(Position, out CacheBucket Bucket))
+            if (_cache.TryGetValue(position, out CacheBucket bucket))
             {
-                if (Bucket.CallCount++ > MinCallCountForUpdate)
+                if (bucket.CallCount++ > MinCallCountForUpdate)
                 {
-                    if (Monitor.TryEnter(SortedCache))
+                    if (Monitor.TryEnter(_sortedCache))
                     {
                         try
                         {
-                            Bucket.CallCount = 0;
+                            bucket.CallCount = 0;
 
-                            SortedCache.Remove(Bucket.Node);
+                            _sortedCache.Remove(bucket.Node);
 
-                            Bucket.UpdateNode(SortedCache.AddLast(Position));
+                            bucket.UpdateNode(_sortedCache.AddLast(position));
                         }
                         finally
                         {
-                            Monitor.Exit(SortedCache);
+                            Monitor.Exit(_sortedCache);
                         }
                     }
                 }
 
-                Subroutine = Bucket.Subroutine;
+                subroutine = bucket.Subroutine;
 
                 return true;
             }
 
-            Subroutine = default(ATranslatedSub);
+            subroutine = default(ATranslatedSub);
 
             return false;
         }
@@ -125,31 +125,31 @@ namespace ChocolArm64
         {
             long Timestamp = GetTimestamp();
 
-            while (TotalSize > MaxTotalSize)
+            while (_totalSize > MaxTotalSize)
             {
-                lock (SortedCache)
+                lock (_sortedCache)
                 {
-                    LinkedListNode<long> Node = SortedCache.First;
+                    LinkedListNode<long> node = _sortedCache.First;
 
-                    if (Node == null)
+                    if (node == null)
                     {
                         break;
                     }
 
-                    CacheBucket Bucket = Cache[Node.Value];
+                    CacheBucket bucket = _cache[node.Value];
 
-                    long TimeDelta = Timestamp - Bucket.Timestamp;
+                    long TimeDelta = Timestamp - bucket.Timestamp;
 
                     if (TimeDelta <= MinTimeDelta)
                     {
                         break;
                     }
 
-                    if (Cache.TryRemove(Node.Value, out Bucket))
+                    if (_cache.TryRemove(node.Value, out bucket))
                     {
-                        TotalSize -= Bucket.Size;
+                        _totalSize -= bucket.Size;
 
-                        SortedCache.Remove(Bucket.Node);
+                        _sortedCache.Remove(bucket.Node);
                     }
                 }
             }

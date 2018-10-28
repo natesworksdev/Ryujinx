@@ -2,18 +2,18 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
-    struct AILOpCode : IAILEmit
+    struct AilOpCode : IailEmit
     {
-        private OpCode ILOp;
+        private OpCode _ilOp;
 
-        public AILOpCode(OpCode ILOp)
+        public AilOpCode(OpCode ilOp)
         {
-            this.ILOp = ILOp;
+            _ilOp = ilOp;
         }
 
-        public void Emit(AILEmitter Context)
+        public void Emit(AilEmitter context)
         {
-            Context.Generator.Emit(ILOp);
+            context.Generator.Emit(_ilOp);
         }
     }
 }

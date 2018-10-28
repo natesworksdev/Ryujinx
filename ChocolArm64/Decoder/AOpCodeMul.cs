@@ -7,10 +7,10 @@ namespace ChocolArm64.Decoder
         public int Rm { get; private set; }
         public int Ra { get; private set; }
 
-        public AOpCodeMul(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeMul(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Ra = (OpCode >> 10) & 0x1f;
-            Rm = (OpCode >> 16) & 0x1f;
+            Ra = (opCode >> 10) & 0x1f;
+            Rm = (opCode >> 16) & 0x1f;
         }
     }
 }

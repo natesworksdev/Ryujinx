@@ -12,37 +12,37 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void Fcvt_S(AILEmitterCtx Context)
+        public static void Fcvt_S(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
             if (AOptimizations.UseSse2)
             {
-                if (Op.Size == 1 && Op.Opc == 0)
+                if (op.Size == 1 && op.Opc == 0)
                 {
                     //Double -> Single.
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.VectorSingleZero));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorSingleZero));
 
-                    EmitLdvecWithCastToDouble(Context, Op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rn);
 
-                    Type[] Types = new Type[] { typeof(Vector128<float>), typeof(Vector128<double>) };
+                    Type[] types = new Type[] { typeof(Vector128<float>), typeof(Vector128<double>) };
 
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Single), Types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Single), types));
 
-                    Context.EmitStvec(Op.Rd);
+                    context.EmitStvec(op.Rd);
                 }
-                else if (Op.Size == 0 && Op.Opc == 1)
+                else if (op.Size == 0 && op.Opc == 1)
                 {
                     //Single -> Double.
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.VectorDoubleZero));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.VectorDoubleZero));
 
-                    Context.EmitLdvec(Op.Rn);
+                    context.EmitLdvec(op.Rn);
 
-                    Type[] Types = new Type[] { typeof(Vector128<double>), typeof(Vector128<float>) };
+                    Type[] types = new Type[] { typeof(Vector128<double>), typeof(Vector128<float>) };
 
-                    Context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Double), Types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Double), types));
 
-                    EmitStvecWithCastFromDouble(Context, Op.Rd);
+                    EmitStvecWithCastFromDouble(context, op.Rd);
                 }
                 else
                 {
@@ -52,645 +52,645 @@ namespace ChocolArm64.Instruction
             }
             else
             {
-                EmitVectorExtractF(Context, Op.Rn, 0, Op.Size);
+                EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
-                EmitFloatCast(Context, Op.Opc);
+                EmitFloatCast(context, op.Opc);
 
-                EmitScalarSetF(Context, Op.Rd, Op.Opc);
+                EmitScalarSetF(context, op.Rd, op.Opc);
             }
         }
 
-        public static void Fcvtas_Gp(AILEmitterCtx Context)
+        public static void Fcvtas_Gp(AilEmitterCtx context)
         {
-            EmitFcvt_s_Gp(Context, () => EmitRoundMathCall(Context, MidpointRounding.AwayFromZero));
+            EmitFcvt_s_Gp(context, () => EmitRoundMathCall(context, MidpointRounding.AwayFromZero));
         }
 
-        public static void Fcvtau_Gp(AILEmitterCtx Context)
+        public static void Fcvtau_Gp(AilEmitterCtx context)
         {
-            EmitFcvt_u_Gp(Context, () => EmitRoundMathCall(Context, MidpointRounding.AwayFromZero));
+            EmitFcvt_u_Gp(context, () => EmitRoundMathCall(context, MidpointRounding.AwayFromZero));
         }
 
-        public static void Fcvtl_V(AILEmitterCtx Context)
+        public static void Fcvtl_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
+            int sizeF = op.Size & 1;
 
-            int Elems = 4 >> SizeF;
+            int elems = 4 >> sizeF;
 
-            int Part = Op.RegisterSize == ARegisterSize.SIMD128 ? Elems : 0;
+            int part = op.RegisterSize == ARegisterSize.Simd128 ? elems : 0;
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                if (SizeF == 0)
+                if (sizeF == 0)
                 {
-                    EmitVectorExtractZx(Context, Op.Rn, Part + Index, 1);
-                    Context.Emit(OpCodes.Conv_U2);
+                    EmitVectorExtractZx(context, op.Rn, part + index, 1);
+                    context.Emit(OpCodes.Conv_U2);
 
-                    Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+                    context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-                    Context.EmitCall(typeof(ASoftFloat16_32), nameof(ASoftFloat16_32.FPConvert));
+                    context.EmitCall(typeof(ASoftFloat1632), nameof(ASoftFloat1632.FPConvert));
                 }
                 else /* if (SizeF == 1) */
                 {
-                    EmitVectorExtractF(Context, Op.Rn, Part + Index, 0);
+                    EmitVectorExtractF(context, op.Rn, part + index, 0);
 
-                    Context.Emit(OpCodes.Conv_R8);
+                    context.Emit(OpCodes.Conv_R8);
                 }
 
-                EmitVectorInsertTmpF(Context, Index, SizeF);
+                EmitVectorInsertTmpF(context, index, sizeF);
             }
 
-            Context.EmitLdvectmp();
-            Context.EmitStvec(Op.Rd);
+            context.EmitLdvectmp();
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Fcvtms_Gp(AILEmitterCtx Context)
+        public static void Fcvtms_Gp(AilEmitterCtx context)
         {
-            EmitFcvt_s_Gp(Context, () => EmitUnaryMathCall(Context, nameof(Math.Floor)));
+            EmitFcvt_s_Gp(context, () => EmitUnaryMathCall(context, nameof(Math.Floor)));
         }
 
-        public static void Fcvtmu_Gp(AILEmitterCtx Context)
+        public static void Fcvtmu_Gp(AilEmitterCtx context)
         {
-            EmitFcvt_u_Gp(Context, () => EmitUnaryMathCall(Context, nameof(Math.Floor)));
+            EmitFcvt_u_Gp(context, () => EmitUnaryMathCall(context, nameof(Math.Floor)));
         }
 
-        public static void Fcvtn_V(AILEmitterCtx Context)
+        public static void Fcvtn_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
+            int sizeF = op.Size & 1;
 
-            int Elems = 4 >> SizeF;
+            int elems = 4 >> sizeF;
 
-            int Part = Op.RegisterSize == ARegisterSize.SIMD128 ? Elems : 0;
+            int part = op.RegisterSize == ARegisterSize.Simd128 ? elems : 0;
 
-            if (Part != 0)
+            if (part != 0)
             {
-                Context.EmitLdvec(Op.Rd);
-                Context.EmitStvectmp();
+                context.EmitLdvec(op.Rd);
+                context.EmitStvectmp();
             }
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractF(Context, Op.Rn, Index, SizeF);
+                EmitVectorExtractF(context, op.Rn, index, sizeF);
 
-                if (SizeF == 0)
+                if (sizeF == 0)
                 {
-                    Context.EmitLdarg(ATranslatedSub.StateArgIdx);
+                    context.EmitLdarg(ATranslatedSub.StateArgIdx);
 
-                    Context.EmitCall(typeof(ASoftFloat32_16), nameof(ASoftFloat32_16.FPConvert));
+                    context.EmitCall(typeof(ASoftFloat3216), nameof(ASoftFloat3216.FPConvert));
 
-                    Context.Emit(OpCodes.Conv_U8);
-                    EmitVectorInsertTmp(Context, Part + Index, 1);
+                    context.Emit(OpCodes.Conv_U8);
+                    EmitVectorInsertTmp(context, part + index, 1);
                 }
                 else /* if (SizeF == 1) */
                 {
-                    Context.Emit(OpCodes.Conv_R4);
+                    context.Emit(OpCodes.Conv_R4);
 
-                    EmitVectorInsertTmpF(Context, Part + Index, 0);
+                    EmitVectorInsertTmpF(context, part + index, 0);
                 }
             }
 
-            Context.EmitLdvectmp();
-            Context.EmitStvec(Op.Rd);
+            context.EmitLdvectmp();
+            context.EmitStvec(op.Rd);
 
-            if (Part == 0)
+            if (part == 0)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        public static void Fcvtns_S(AILEmitterCtx Context)
+        public static void Fcvtns_S(AilEmitterCtx context)
         {
-            EmitFcvtn(Context, Signed: true, Scalar: true);
+            EmitFcvtn(context, signed: true, scalar: true);
         }
 
-        public static void Fcvtns_V(AILEmitterCtx Context)
+        public static void Fcvtns_V(AilEmitterCtx context)
         {
-            EmitFcvtn(Context, Signed: true, Scalar: false);
+            EmitFcvtn(context, signed: true, scalar: false);
         }
 
-        public static void Fcvtnu_S(AILEmitterCtx Context)
+        public static void Fcvtnu_S(AilEmitterCtx context)
         {
-            EmitFcvtn(Context, Signed: false, Scalar: true);
+            EmitFcvtn(context, signed: false, scalar: true);
         }
 
-        public static void Fcvtnu_V(AILEmitterCtx Context)
+        public static void Fcvtnu_V(AilEmitterCtx context)
         {
-            EmitFcvtn(Context, Signed: false, Scalar: false);
+            EmitFcvtn(context, signed: false, scalar: false);
         }
 
-        public static void Fcvtps_Gp(AILEmitterCtx Context)
+        public static void Fcvtps_Gp(AilEmitterCtx context)
         {
-            EmitFcvt_s_Gp(Context, () => EmitUnaryMathCall(Context, nameof(Math.Ceiling)));
+            EmitFcvt_s_Gp(context, () => EmitUnaryMathCall(context, nameof(Math.Ceiling)));
         }
 
-        public static void Fcvtpu_Gp(AILEmitterCtx Context)
+        public static void Fcvtpu_Gp(AilEmitterCtx context)
         {
-            EmitFcvt_u_Gp(Context, () => EmitUnaryMathCall(Context, nameof(Math.Ceiling)));
+            EmitFcvt_u_Gp(context, () => EmitUnaryMathCall(context, nameof(Math.Ceiling)));
         }
 
-        public static void Fcvtzs_Gp(AILEmitterCtx Context)
+        public static void Fcvtzs_Gp(AilEmitterCtx context)
         {
-            EmitFcvt_s_Gp(Context, () => { });
+            EmitFcvt_s_Gp(context, () => { });
         }
 
-        public static void Fcvtzs_Gp_Fix(AILEmitterCtx Context)
+        public static void Fcvtzs_Gp_Fix(AilEmitterCtx context)
         {
-            EmitFcvtzs_Gp_Fix(Context);
+            EmitFcvtzs_Gp_Fix(context);
         }
 
-        public static void Fcvtzs_S(AILEmitterCtx Context)
+        public static void Fcvtzs_S(AilEmitterCtx context)
         {
-            EmitScalarFcvtzs(Context);
+            EmitScalarFcvtzs(context);
         }
 
-        public static void Fcvtzs_V(AILEmitterCtx Context)
+        public static void Fcvtzs_V(AilEmitterCtx context)
         {
-            EmitVectorFcvtzs(Context);
+            EmitVectorFcvtzs(context);
         }
 
-        public static void Fcvtzu_Gp(AILEmitterCtx Context)
+        public static void Fcvtzu_Gp(AilEmitterCtx context)
         {
-            EmitFcvt_u_Gp(Context, () => { });
+            EmitFcvt_u_Gp(context, () => { });
         }
 
-        public static void Fcvtzu_Gp_Fix(AILEmitterCtx Context)
+        public static void Fcvtzu_Gp_Fix(AilEmitterCtx context)
         {
-            EmitFcvtzu_Gp_Fix(Context);
+            EmitFcvtzu_Gp_Fix(context);
         }
 
-        public static void Fcvtzu_S(AILEmitterCtx Context)
+        public static void Fcvtzu_S(AilEmitterCtx context)
         {
-            EmitScalarFcvtzu(Context);
+            EmitScalarFcvtzu(context);
         }
 
-        public static void Fcvtzu_V(AILEmitterCtx Context)
+        public static void Fcvtzu_V(AilEmitterCtx context)
         {
-            EmitVectorFcvtzu(Context);
+            EmitVectorFcvtzu(context);
         }
 
-        public static void Scvtf_Gp(AILEmitterCtx Context)
+        public static void Scvtf_Gp(AilEmitterCtx context)
         {
-            AOpCodeSimdCvt Op = (AOpCodeSimdCvt)Context.CurrOp;
+            AOpCodeSimdCvt op = (AOpCodeSimdCvt)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdintzr(op.Rn);
 
-            if (Context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
             {
-                Context.Emit(OpCodes.Conv_U4);
+                context.Emit(OpCodes.Conv_U4);
             }
 
-            EmitFloatCast(Context, Op.Size);
+            EmitFloatCast(context, op.Size);
 
-            EmitScalarSetF(Context, Op.Rd, Op.Size);
+            EmitScalarSetF(context, op.Rd, op.Size);
         }
 
-        public static void Scvtf_S(AILEmitterCtx Context)
+        public static void Scvtf_S(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            EmitVectorExtractSx(Context, Op.Rn, 0, Op.Size + 2);
+            EmitVectorExtractSx(context, op.Rn, 0, op.Size + 2);
 
-            EmitFloatCast(Context, Op.Size);
+            EmitFloatCast(context, op.Size);
 
-            EmitScalarSetF(Context, Op.Rd, Op.Size);
+            EmitScalarSetF(context, op.Rd, op.Size);
         }
 
-        public static void Scvtf_V(AILEmitterCtx Context)
+        public static void Scvtf_V(AilEmitterCtx context)
         {
-            EmitVectorCvtf(Context, Signed: true);
+            EmitVectorCvtf(context, signed: true);
         }
 
-        public static void Ucvtf_Gp(AILEmitterCtx Context)
+        public static void Ucvtf_Gp(AilEmitterCtx context)
         {
-            AOpCodeSimdCvt Op = (AOpCodeSimdCvt)Context.CurrOp;
+            AOpCodeSimdCvt op = (AOpCodeSimdCvt)context.CurrOp;
 
-            Context.EmitLdintzr(Op.Rn);
+            context.EmitLdintzr(op.Rn);
 
-            if (Context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
             {
-                Context.Emit(OpCodes.Conv_U4);
+                context.Emit(OpCodes.Conv_U4);
             }
 
-            Context.Emit(OpCodes.Conv_R_Un);
+            context.Emit(OpCodes.Conv_R_Un);
 
-            EmitFloatCast(Context, Op.Size);
+            EmitFloatCast(context, op.Size);
 
-            EmitScalarSetF(Context, Op.Rd, Op.Size);
+            EmitScalarSetF(context, op.Rd, op.Size);
         }
 
-        public static void Ucvtf_S(AILEmitterCtx Context)
+        public static void Ucvtf_S(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            EmitVectorExtractZx(Context, Op.Rn, 0, Op.Size + 2);
+            EmitVectorExtractZx(context, op.Rn, 0, op.Size + 2);
 
-            Context.Emit(OpCodes.Conv_R_Un);
+            context.Emit(OpCodes.Conv_R_Un);
 
-            EmitFloatCast(Context, Op.Size);
+            EmitFloatCast(context, op.Size);
 
-            EmitScalarSetF(Context, Op.Rd, Op.Size);
+            EmitScalarSetF(context, op.Rd, op.Size);
         }
 
-        public static void Ucvtf_V(AILEmitterCtx Context)
+        public static void Ucvtf_V(AilEmitterCtx context)
         {
-            EmitVectorCvtf(Context, Signed: false);
+            EmitVectorCvtf(context, signed: false);
         }
 
-        private static int GetFBits(AILEmitterCtx Context)
+        private static int GetFBits(AilEmitterCtx context)
         {
-            if (Context.CurrOp is AOpCodeSimdShImm Op)
+            if (context.CurrOp is AOpCodeSimdShImm op)
             {
-                return GetImmShr(Op);
+                return GetImmShr(op);
             }
 
             return 0;
         }
 
-        private static void EmitFloatCast(AILEmitterCtx Context, int Size)
+        private static void EmitFloatCast(AilEmitterCtx context, int size)
         {
-            if (Size == 0)
+            if (size == 0)
             {
-                Context.Emit(OpCodes.Conv_R4);
+                context.Emit(OpCodes.Conv_R4);
             }
-            else if (Size == 1)
+            else if (size == 1)
             {
-                Context.Emit(OpCodes.Conv_R8);
+                context.Emit(OpCodes.Conv_R8);
             }
             else
             {
-                throw new ArgumentOutOfRangeException(nameof(Size));
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
         }
 
-        private static void EmitFcvtn(AILEmitterCtx Context, bool Signed, bool Scalar)
+        private static void EmitFcvtn(AilEmitterCtx context, bool signed, bool scalar)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
-            int SizeI = SizeF + 2;
+            int sizeF = op.Size & 1;
+            int sizeI = sizeF + 2;
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = !Scalar ? Bytes >> SizeI : 1;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = !scalar ? bytes >> sizeI : 1;
 
-            if (Scalar && (SizeF == 0))
+            if (scalar && (sizeF == 0))
             {
-                EmitVectorZeroLowerTmp(Context);
+                EmitVectorZeroLowerTmp(context);
             }
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractF(Context, Op.Rn, Index, SizeF);
+                EmitVectorExtractF(context, op.Rn, index, sizeF);
 
-                EmitRoundMathCall(Context, MidpointRounding.ToEven);
+                EmitRoundMathCall(context, MidpointRounding.ToEven);
 
-                if (SizeF == 0)
+                if (sizeF == 0)
                 {
-                    AVectorHelper.EmitCall(Context, Signed
+                    AVectorHelper.EmitCall(context, signed
                         ? nameof(AVectorHelper.SatF32ToS32)
                         : nameof(AVectorHelper.SatF32ToU32));
 
-                    Context.Emit(OpCodes.Conv_U8);
+                    context.Emit(OpCodes.Conv_U8);
                 }
                 else /* if (SizeF == 1) */
                 {
-                    AVectorHelper.EmitCall(Context, Signed
+                    AVectorHelper.EmitCall(context, signed
                         ? nameof(AVectorHelper.SatF64ToS64)
                         : nameof(AVectorHelper.SatF64ToU64));
                 }
 
-                EmitVectorInsertTmp(Context, Index, SizeI);
+                EmitVectorInsertTmp(context, index, sizeI);
             }
 
-            Context.EmitLdvectmp();
-            Context.EmitStvec(Op.Rd);
+            context.EmitLdvectmp();
+            context.EmitStvec(op.Rd);
 
-            if ((Op.RegisterSize == ARegisterSize.SIMD64) || Scalar)
+            if ((op.RegisterSize == ARegisterSize.Simd64) || scalar)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        private static void EmitFcvt_s_Gp(AILEmitterCtx Context, Action Emit)
+        private static void EmitFcvt_s_Gp(AilEmitterCtx context, Action emit)
         {
-            EmitFcvt___Gp(Context, Emit, true);
+            EmitFcvt___Gp(context, emit, true);
         }
 
-        private static void EmitFcvt_u_Gp(AILEmitterCtx Context, Action Emit)
+        private static void EmitFcvt_u_Gp(AilEmitterCtx context, Action emit)
         {
-            EmitFcvt___Gp(Context, Emit, false);
+            EmitFcvt___Gp(context, emit, false);
         }
 
-        private static void EmitFcvt___Gp(AILEmitterCtx Context, Action Emit, bool Signed)
+        private static void EmitFcvt___Gp(AilEmitterCtx context, Action emit, bool signed)
         {
-            AOpCodeSimdCvt Op = (AOpCodeSimdCvt)Context.CurrOp;
+            AOpCodeSimdCvt op = (AOpCodeSimdCvt)context.CurrOp;
 
-            EmitVectorExtractF(Context, Op.Rn, 0, Op.Size);
+            EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
-            Emit();
+            emit();
 
-            if (Signed)
+            if (signed)
             {
-                EmitScalarFcvts(Context, Op.Size, 0);
-            }
-            else
-            {
-                EmitScalarFcvtu(Context, Op.Size, 0);
-            }
-
-            if (Context.CurrOp.RegisterSize == ARegisterSize.Int32)
-            {
-                Context.Emit(OpCodes.Conv_U8);
-            }
-
-            Context.EmitStintzr(Op.Rd);
-        }
-
-        private static void EmitFcvtzs_Gp_Fix(AILEmitterCtx Context)
-        {
-            EmitFcvtz__Gp_Fix(Context, true);
-        }
-
-        private static void EmitFcvtzu_Gp_Fix(AILEmitterCtx Context)
-        {
-            EmitFcvtz__Gp_Fix(Context, false);
-        }
-
-        private static void EmitFcvtz__Gp_Fix(AILEmitterCtx Context, bool Signed)
-        {
-            AOpCodeSimdCvt Op = (AOpCodeSimdCvt)Context.CurrOp;
-
-            EmitVectorExtractF(Context, Op.Rn, 0, Op.Size);
-
-            if (Signed)
-            {
-                EmitScalarFcvts(Context, Op.Size, Op.FBits);
+                EmitScalarFcvts(context, op.Size, 0);
             }
             else
             {
-                EmitScalarFcvtu(Context, Op.Size, Op.FBits);
+                EmitScalarFcvtu(context, op.Size, 0);
             }
 
-            if (Context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
             {
-                Context.Emit(OpCodes.Conv_U8);
+                context.Emit(OpCodes.Conv_U8);
             }
 
-            Context.EmitStintzr(Op.Rd);
+            context.EmitStintzr(op.Rd);
         }
 
-        private static void EmitVectorScvtf(AILEmitterCtx Context)
+        private static void EmitFcvtzs_Gp_Fix(AilEmitterCtx context)
         {
-            EmitVectorCvtf(Context, true);
+            EmitFcvtz__Gp_Fix(context, true);
         }
 
-        private static void EmitVectorUcvtf(AILEmitterCtx Context)
+        private static void EmitFcvtzu_Gp_Fix(AilEmitterCtx context)
         {
-            EmitVectorCvtf(Context, false);
+            EmitFcvtz__Gp_Fix(context, false);
         }
 
-        private static void EmitVectorCvtf(AILEmitterCtx Context, bool Signed)
+        private static void EmitFcvtz__Gp_Fix(AilEmitterCtx context, bool signed)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimdCvt op = (AOpCodeSimdCvt)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
-            int SizeI = SizeF + 2;
+            EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
-            int FBits = GetFBits(Context);
-
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> SizeI;
-
-            for (int Index = 0; Index < Elems; Index++)
+            if (signed)
             {
-                EmitVectorExtract(Context, Op.Rn, Index, SizeI, Signed);
+                EmitScalarFcvts(context, op.Size, op.FBits);
+            }
+            else
+            {
+                EmitScalarFcvtu(context, op.Size, op.FBits);
+            }
 
-                if (!Signed)
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
+
+            context.EmitStintzr(op.Rd);
+        }
+
+        private static void EmitVectorScvtf(AilEmitterCtx context)
+        {
+            EmitVectorCvtf(context, true);
+        }
+
+        private static void EmitVectorUcvtf(AilEmitterCtx context)
+        {
+            EmitVectorCvtf(context, false);
+        }
+
+        private static void EmitVectorCvtf(AilEmitterCtx context, bool signed)
+        {
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+            int sizeI = sizeF + 2;
+
+            int fBits = GetFBits(context);
+
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> sizeI;
+
+            for (int index = 0; index < elems; index++)
+            {
+                EmitVectorExtract(context, op.Rn, index, sizeI, signed);
+
+                if (!signed)
                 {
-                    Context.Emit(OpCodes.Conv_R_Un);
+                    context.Emit(OpCodes.Conv_R_Un);
                 }
 
-                Context.Emit(SizeF == 0
+                context.Emit(sizeF == 0
                     ? OpCodes.Conv_R4
                     : OpCodes.Conv_R8);
 
-                EmitI2fFBitsMul(Context, SizeF, FBits);
+                EmitI2fFBitsMul(context, sizeF, fBits);
 
-                EmitVectorInsertF(Context, Op.Rd, Index, SizeF);
+                EmitVectorInsertF(context, op.Rd, index, sizeF);
             }
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            if (op.RegisterSize == ARegisterSize.Simd64)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        private static void EmitScalarFcvtzs(AILEmitterCtx Context)
+        private static void EmitScalarFcvtzs(AilEmitterCtx context)
         {
-            EmitScalarFcvtz(Context, true);
+            EmitScalarFcvtz(context, true);
         }
 
-        private static void EmitScalarFcvtzu(AILEmitterCtx Context)
+        private static void EmitScalarFcvtzu(AilEmitterCtx context)
         {
-            EmitScalarFcvtz(Context, false);
+            EmitScalarFcvtz(context, false);
         }
 
-        private static void EmitScalarFcvtz(AILEmitterCtx Context, bool Signed)
+        private static void EmitScalarFcvtz(AilEmitterCtx context, bool signed)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
-            int SizeI = SizeF + 2;
+            int sizeF = op.Size & 1;
+            int sizeI = sizeF + 2;
 
-            int FBits = GetFBits(Context);
+            int fBits = GetFBits(context);
 
-            EmitVectorExtractF(Context, Op.Rn, 0, SizeF);
+            EmitVectorExtractF(context, op.Rn, 0, sizeF);
 
-            EmitF2iFBitsMul(Context, SizeF, FBits);
+            EmitF2iFBitsMul(context, sizeF, fBits);
 
-            if (SizeF == 0)
+            if (sizeF == 0)
             {
-                AVectorHelper.EmitCall(Context, Signed
+                AVectorHelper.EmitCall(context, signed
                     ? nameof(AVectorHelper.SatF32ToS32)
                     : nameof(AVectorHelper.SatF32ToU32));
             }
             else /* if (SizeF == 1) */
             {
-                AVectorHelper.EmitCall(Context, Signed
+                AVectorHelper.EmitCall(context, signed
                     ? nameof(AVectorHelper.SatF64ToS64)
                     : nameof(AVectorHelper.SatF64ToU64));
             }
 
-            if (SizeF == 0)
+            if (sizeF == 0)
             {
-                Context.Emit(OpCodes.Conv_U8);
+                context.Emit(OpCodes.Conv_U8);
             }
 
-            EmitScalarSet(Context, Op.Rd, SizeI);
+            EmitScalarSet(context, op.Rd, sizeI);
         }
 
-        private static void EmitVectorFcvtzs(AILEmitterCtx Context)
+        private static void EmitVectorFcvtzs(AilEmitterCtx context)
         {
-            EmitVectorFcvtz(Context, true);
+            EmitVectorFcvtz(context, true);
         }
 
-        private static void EmitVectorFcvtzu(AILEmitterCtx Context)
+        private static void EmitVectorFcvtzu(AilEmitterCtx context)
         {
-            EmitVectorFcvtz(Context, false);
+            EmitVectorFcvtz(context, false);
         }
 
-        private static void EmitVectorFcvtz(AILEmitterCtx Context, bool Signed)
+        private static void EmitVectorFcvtz(AilEmitterCtx context, bool signed)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            int SizeF = Op.Size & 1;
-            int SizeI = SizeF + 2;
+            int sizeF = op.Size & 1;
+            int sizeI = sizeF + 2;
 
-            int FBits = GetFBits(Context);
+            int fBits = GetFBits(context);
 
-            int Bytes = Op.GetBitsCount() >> 3;
-            int Elems = Bytes >> SizeI;
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> sizeI;
 
-            for (int Index = 0; Index < Elems; Index++)
+            for (int index = 0; index < elems; index++)
             {
-                EmitVectorExtractF(Context, Op.Rn, Index, SizeF);
+                EmitVectorExtractF(context, op.Rn, index, sizeF);
 
-                EmitF2iFBitsMul(Context, SizeF, FBits);
+                EmitF2iFBitsMul(context, sizeF, fBits);
 
-                if (SizeF == 0)
+                if (sizeF == 0)
                 {
-                    AVectorHelper.EmitCall(Context, Signed
+                    AVectorHelper.EmitCall(context, signed
                         ? nameof(AVectorHelper.SatF32ToS32)
                         : nameof(AVectorHelper.SatF32ToU32));
                 }
                 else /* if (SizeF == 1) */
                 {
-                    AVectorHelper.EmitCall(Context, Signed
+                    AVectorHelper.EmitCall(context, signed
                         ? nameof(AVectorHelper.SatF64ToS64)
                         : nameof(AVectorHelper.SatF64ToU64));
                 }
 
-                if (SizeF == 0)
+                if (sizeF == 0)
                 {
-                    Context.Emit(OpCodes.Conv_U8);
+                    context.Emit(OpCodes.Conv_U8);
                 }
 
-                EmitVectorInsert(Context, Op.Rd, Index, SizeI);
+                EmitVectorInsert(context, op.Rd, index, sizeI);
             }
 
-            if (Op.RegisterSize == ARegisterSize.SIMD64)
+            if (op.RegisterSize == ARegisterSize.Simd64)
             {
-                EmitVectorZeroUpper(Context, Op.Rd);
+                EmitVectorZeroUpper(context, op.Rd);
             }
         }
 
-        private static void EmitScalarFcvts(AILEmitterCtx Context, int Size, int FBits)
+        private static void EmitScalarFcvts(AilEmitterCtx context, int size, int fBits)
         {
-            if (Size < 0 || Size > 1)
+            if (size < 0 || size > 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(Size));
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
 
-            EmitF2iFBitsMul(Context, Size, FBits);
+            EmitF2iFBitsMul(context, size, fBits);
 
-            if (Context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
             {
-                if (Size == 0)
+                if (size == 0)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.SatF32ToS32));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF32ToS32));
                 }
                 else /* if (Size == 1) */
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.SatF64ToS32));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF64ToS32));
                 }
             }
             else
             {
-                if (Size == 0)
+                if (size == 0)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.SatF32ToS64));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF32ToS64));
                 }
                 else /* if (Size == 1) */
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.SatF64ToS64));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF64ToS64));
                 }
             }
         }
 
-        private static void EmitScalarFcvtu(AILEmitterCtx Context, int Size, int FBits)
+        private static void EmitScalarFcvtu(AilEmitterCtx context, int size, int fBits)
         {
-            if (Size < 0 || Size > 1)
+            if (size < 0 || size > 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(Size));
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
 
-            EmitF2iFBitsMul(Context, Size, FBits);
+            EmitF2iFBitsMul(context, size, fBits);
 
-            if (Context.CurrOp.RegisterSize == ARegisterSize.Int32)
+            if (context.CurrOp.RegisterSize == ARegisterSize.Int32)
             {
-                if (Size == 0)
+                if (size == 0)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.SatF32ToU32));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF32ToU32));
                 }
                 else /* if (Size == 1) */
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.SatF64ToU32));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF64ToU32));
                 }
             }
             else
             {
-                if (Size == 0)
+                if (size == 0)
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.SatF32ToU64));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF32ToU64));
                 }
                 else /* if (Size == 1) */
                 {
-                    AVectorHelper.EmitCall(Context, nameof(AVectorHelper.SatF64ToU64));
+                    AVectorHelper.EmitCall(context, nameof(AVectorHelper.SatF64ToU64));
                 }
             }
         }
 
-        private static void EmitF2iFBitsMul(AILEmitterCtx Context, int Size, int FBits)
+        private static void EmitF2iFBitsMul(AilEmitterCtx context, int size, int fBits)
         {
-            if (FBits != 0)
+            if (fBits != 0)
             {
-                if (Size == 0)
+                if (size == 0)
                 {
-                    Context.EmitLdc_R4(MathF.Pow(2f, FBits));
+                    context.EmitLdc_R4(MathF.Pow(2f, fBits));
                 }
-                else if (Size == 1)
+                else if (size == 1)
                 {
-                    Context.EmitLdc_R8(Math.Pow(2d, FBits));
+                    context.EmitLdc_R8(Math.Pow(2d, fBits));
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException(nameof(Size));
+                    throw new ArgumentOutOfRangeException(nameof(size));
                 }
 
-                Context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Mul);
             }
         }
 
-        private static void EmitI2fFBitsMul(AILEmitterCtx Context, int Size, int FBits)
+        private static void EmitI2fFBitsMul(AilEmitterCtx context, int size, int fBits)
         {
-            if (FBits != 0)
+            if (fBits != 0)
             {
-                if (Size == 0)
+                if (size == 0)
                 {
-                    Context.EmitLdc_R4(1f / MathF.Pow(2f, FBits));
+                    context.EmitLdc_R4(1f / MathF.Pow(2f, fBits));
                 }
-                else if (Size == 1)
+                else if (size == 1)
                 {
-                    Context.EmitLdc_R8(1d / Math.Pow(2d, FBits));
+                    context.EmitLdc_R8(1d / Math.Pow(2d, fBits));
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException(nameof(Size));
+                    throw new ArgumentOutOfRangeException(nameof(size));
                 }
 
-                Context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Mul);
             }
         }
     }

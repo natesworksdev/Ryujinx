@@ -1,6 +1,6 @@
 namespace ChocolArm64.Decoder
 {
-    interface IAOpCodeAluRx : IAOpCodeAlu
+    interface IaOpCodeAluRx : IaOpCodeAlu
     {
         int Shift { get; }
         int Rm    { get; }

@@ -4,7 +4,7 @@ namespace ChocolArm64.State
     {
         Int32,
         Int64,
-        SIMD64,
-        SIMD128
+        Simd64,
+        Simd128
     }
 }

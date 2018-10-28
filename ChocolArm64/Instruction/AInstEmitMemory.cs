@@ -8,244 +8,244 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void Adr(AILEmitterCtx Context)
+        public static void Adr(AilEmitterCtx context)
         {
-            AOpCodeAdr Op = (AOpCodeAdr)Context.CurrOp;
+            AOpCodeAdr op = (AOpCodeAdr)context.CurrOp;
 
-            Context.EmitLdc_I(Op.Position + Op.Imm);
-            Context.EmitStintzr(Op.Rd);
+            context.EmitLdc_I(op.Position + op.Imm);
+            context.EmitStintzr(op.Rd);
         }
 
-        public static void Adrp(AILEmitterCtx Context)
+        public static void Adrp(AilEmitterCtx context)
         {
-            AOpCodeAdr Op = (AOpCodeAdr)Context.CurrOp;
+            AOpCodeAdr op = (AOpCodeAdr)context.CurrOp;
 
-            Context.EmitLdc_I((Op.Position & ~0xfffL) + (Op.Imm << 12));
-            Context.EmitStintzr(Op.Rd);
+            context.EmitLdc_I((op.Position & ~0xfffL) + (op.Imm << 12));
+            context.EmitStintzr(op.Rd);
         }
 
-        public static void Ldr(AILEmitterCtx Context)  => EmitLdr(Context, false);
-        public static void Ldrs(AILEmitterCtx Context) => EmitLdr(Context, true);
+        public static void Ldr(AilEmitterCtx context)  => EmitLdr(context, false);
+        public static void Ldrs(AilEmitterCtx context) => EmitLdr(context, true);
 
-        private static void EmitLdr(AILEmitterCtx Context, bool Signed)
+        private static void EmitLdr(AilEmitterCtx context, bool signed)
         {
-            AOpCodeMem Op = (AOpCodeMem)Context.CurrOp;
+            AOpCodeMem op = (AOpCodeMem)context.CurrOp;
 
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
 
-            EmitLoadAddress(Context);
+            EmitLoadAddress(context);
 
-            if (Signed && Op.Extend64)
+            if (signed && op.Extend64)
             {
-                EmitReadSx64Call(Context, Op.Size);
+                EmitReadSx64Call(context, op.Size);
             }
-            else if (Signed)
+            else if (signed)
             {
-                EmitReadSx32Call(Context, Op.Size);
+                EmitReadSx32Call(context, op.Size);
             }
             else
             {
-                EmitReadZxCall(Context, Op.Size);
+                EmitReadZxCall(context, op.Size);
             }
 
-            if (Op is IAOpCodeSimd)
+            if (op is IaOpCodeSimd)
             {
-                Context.EmitStvec(Op.Rt);
+                context.EmitStvec(op.Rt);
             }
             else
             {
-                Context.EmitStintzr(Op.Rt);
+                context.EmitStintzr(op.Rt);
             }
 
-            EmitWBackIfNeeded(Context);
+            EmitWBackIfNeeded(context);
         }
 
-        public static void LdrLit(AILEmitterCtx Context)
+        public static void LdrLit(AilEmitterCtx context)
         {
-            IAOpCodeLit Op = (IAOpCodeLit)Context.CurrOp;
+            IaOpCodeLit op = (IaOpCodeLit)context.CurrOp;
 
-            if (Op.Prefetch)
+            if (op.Prefetch)
             {
                 return;
             }
 
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-            Context.EmitLdc_I8(Op.Imm);
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdc_I8(op.Imm);
 
-            if (Op.Signed)
+            if (op.Signed)
             {
-                EmitReadSx64Call(Context, Op.Size);
+                EmitReadSx64Call(context, op.Size);
             }
             else
             {
-                EmitReadZxCall(Context, Op.Size);
+                EmitReadZxCall(context, op.Size);
             }
 
-            if (Op is IAOpCodeSimd)
+            if (op is IaOpCodeSimd)
             {
-                Context.EmitStvec(Op.Rt);
+                context.EmitStvec(op.Rt);
             }
             else
             {
-                Context.EmitStint(Op.Rt);
+                context.EmitStint(op.Rt);
             }
         }
 
-        public static void Ldp(AILEmitterCtx Context)
+        public static void Ldp(AilEmitterCtx context)
         {
-            AOpCodeMemPair Op = (AOpCodeMemPair)Context.CurrOp;
+            AOpCodeMemPair op = (AOpCodeMemPair)context.CurrOp;
 
-            void EmitReadAndStore(int Rt)
+            void EmitReadAndStore(int rt)
             {
-                if (Op.Extend64)
+                if (op.Extend64)
                 {
-                    EmitReadSx64Call(Context, Op.Size);
+                    EmitReadSx64Call(context, op.Size);
                 }
                 else
                 {
-                    EmitReadZxCall(Context, Op.Size);
+                    EmitReadZxCall(context, op.Size);
                 }
 
-                if (Op is IAOpCodeSimd)
+                if (op is IaOpCodeSimd)
                 {
-                    Context.EmitStvec(Rt);
+                    context.EmitStvec(rt);
                 }
                 else
                 {
-                    Context.EmitStintzr(Rt);
+                    context.EmitStintzr(rt);
                 }
             }
 
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
 
-            EmitLoadAddress(Context);
+            EmitLoadAddress(context);
 
-            EmitReadAndStore(Op.Rt);
+            EmitReadAndStore(op.Rt);
 
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-            Context.EmitLdtmp();
-            Context.EmitLdc_I8(1 << Op.Size);
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdtmp();
+            context.EmitLdc_I8(1 << op.Size);
 
-            Context.Emit(OpCodes.Add);
+            context.Emit(OpCodes.Add);
 
-            EmitReadAndStore(Op.Rt2);
+            EmitReadAndStore(op.Rt2);
 
-            EmitWBackIfNeeded(Context);
+            EmitWBackIfNeeded(context);
         }
 
-        public static void Str(AILEmitterCtx Context)
+        public static void Str(AilEmitterCtx context)
         {
-            AOpCodeMem Op = (AOpCodeMem)Context.CurrOp;
+            AOpCodeMem op = (AOpCodeMem)context.CurrOp;
 
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
 
-            EmitLoadAddress(Context);
+            EmitLoadAddress(context);
 
-            if (Op is IAOpCodeSimd)
+            if (op is IaOpCodeSimd)
             {
-                Context.EmitLdvec(Op.Rt);
+                context.EmitLdvec(op.Rt);
             }
             else
             {
-                Context.EmitLdintzr(Op.Rt);
+                context.EmitLdintzr(op.Rt);
             }
 
-            EmitWriteCall(Context, Op.Size);
+            EmitWriteCall(context, op.Size);
 
-            EmitWBackIfNeeded(Context);
+            EmitWBackIfNeeded(context);
         }
 
-        public static void Stp(AILEmitterCtx Context)
+        public static void Stp(AilEmitterCtx context)
         {
-            AOpCodeMemPair Op = (AOpCodeMemPair)Context.CurrOp;
+            AOpCodeMemPair op = (AOpCodeMemPair)context.CurrOp;
 
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
 
-            EmitLoadAddress(Context);
+            EmitLoadAddress(context);
 
-            if (Op is IAOpCodeSimd)
+            if (op is IaOpCodeSimd)
             {
-                Context.EmitLdvec(Op.Rt);
+                context.EmitLdvec(op.Rt);
             }
             else
             {
-                Context.EmitLdintzr(Op.Rt);
+                context.EmitLdintzr(op.Rt);
             }
 
-            EmitWriteCall(Context, Op.Size);
+            EmitWriteCall(context, op.Size);
 
-            Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-            Context.EmitLdtmp();
-            Context.EmitLdc_I8(1 << Op.Size);
+            context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+            context.EmitLdtmp();
+            context.EmitLdc_I8(1 << op.Size);
 
-            Context.Emit(OpCodes.Add);
+            context.Emit(OpCodes.Add);
 
-            if (Op is IAOpCodeSimd)
+            if (op is IaOpCodeSimd)
             {
-                Context.EmitLdvec(Op.Rt2);
+                context.EmitLdvec(op.Rt2);
             }
             else
             {
-                Context.EmitLdintzr(Op.Rt2);
+                context.EmitLdintzr(op.Rt2);
             }
 
-            EmitWriteCall(Context, Op.Size);
+            EmitWriteCall(context, op.Size);
 
-            EmitWBackIfNeeded(Context);
+            EmitWBackIfNeeded(context);
         }
 
-        private static void EmitLoadAddress(AILEmitterCtx Context)
+        private static void EmitLoadAddress(AilEmitterCtx context)
         {
-            switch (Context.CurrOp)
+            switch (context.CurrOp)
             {
-                case AOpCodeMemImm Op:
-                    Context.EmitLdint(Op.Rn);
+                case AOpCodeMemImm op:
+                    context.EmitLdint(op.Rn);
 
-                    if (!Op.PostIdx)
+                    if (!op.PostIdx)
                     {
                         //Pre-indexing.
-                        Context.EmitLdc_I(Op.Imm);
+                        context.EmitLdc_I(op.Imm);
 
-                        Context.Emit(OpCodes.Add);
+                        context.Emit(OpCodes.Add);
                     }
                     break;
 
-                case AOpCodeMemReg Op:
-                    Context.EmitLdint(Op.Rn);
-                    Context.EmitLdintzr(Op.Rm);
-                    Context.EmitCast(Op.IntType);
+                case AOpCodeMemReg op:
+                    context.EmitLdint(op.Rn);
+                    context.EmitLdintzr(op.Rm);
+                    context.EmitCast(op.IntType);
 
-                    if (Op.Shift)
+                    if (op.Shift)
                     {
-                        Context.EmitLsl(Op.Size);
+                        context.EmitLsl(op.Size);
                     }
 
-                    Context.Emit(OpCodes.Add);
+                    context.Emit(OpCodes.Add);
                     break;
             }
 
             //Save address to Scratch var since the register value may change.
-            Context.Emit(OpCodes.Dup);
+            context.Emit(OpCodes.Dup);
 
-            Context.EmitSttmp();
+            context.EmitSttmp();
         }
 
-        private static void EmitWBackIfNeeded(AILEmitterCtx Context)
+        private static void EmitWBackIfNeeded(AilEmitterCtx context)
         {
             //Check whenever the current OpCode has post-indexed write back, if so write it.
             //Note: AOpCodeMemPair inherits from AOpCodeMemImm, so this works for both.
-            if (Context.CurrOp is AOpCodeMemImm Op && Op.WBack)
+            if (context.CurrOp is AOpCodeMemImm op && op.WBack)
             {
-                Context.EmitLdtmp();
+                context.EmitLdtmp();
 
-                if (Op.PostIdx)
+                if (op.PostIdx)
                 {
-                    Context.EmitLdc_I(Op.Imm);
+                    context.EmitLdc_I(op.Imm);
 
-                    Context.Emit(OpCodes.Add);
+                    context.Emit(OpCodes.Add);
                 }
 
-                Context.EmitStint(Op.Rn);
+                context.EmitStint(op.Rn);
             }
         }
     }

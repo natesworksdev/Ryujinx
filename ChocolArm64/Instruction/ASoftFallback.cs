@@ -11,23 +11,23 @@ namespace ChocolArm64.Instruction
 
     static class ASoftFallback
     {
-        public static void EmitCall(AILEmitterCtx Context, string MthdName)
+        public static void EmitCall(AilEmitterCtx context, string mthdName)
         {
-            Context.EmitCall(typeof(ASoftFallback), MthdName);
+            context.EmitCall(typeof(ASoftFallback), mthdName);
         }
 
 #region "ShrImm_64"
-        public static long SignedShrImm_64(long Value, long RoundConst, int Shift)
+        public static long SignedShrImm_64(long value, long roundConst, int shift)
         {
-            if (RoundConst == 0L)
+            if (roundConst == 0L)
             {
-                if (Shift <= 63)
+                if (shift <= 63)
                 {
-                    return Value >> Shift;
+                    return value >> shift;
                 }
                 else /* if (Shift == 64) */
                 {
-                    if (Value < 0L)
+                    if (value < 0L)
                     {
                         return -1L;
                     }
@@ -39,17 +39,17 @@ namespace ChocolArm64.Instruction
             }
             else /* if (RoundConst == 1L << (Shift - 1)) */
             {
-                if (Shift <= 63)
+                if (shift <= 63)
                 {
-                    long Add = Value + RoundConst;
+                    long add = value + roundConst;
 
-                    if ((~Value & (Value ^ Add)) < 0L)
+                    if ((~value & (value ^ add)) < 0L)
                     {
-                        return (long)((ulong)Add >> Shift);
+                        return (long)((ulong)add >> shift);
                     }
                     else
                     {
-                        return Add >> Shift;
+                        return add >> shift;
                     }
                 }
                 else /* if (Shift == 64) */
@@ -59,13 +59,13 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static ulong UnsignedShrImm_64(ulong Value, long RoundConst, int Shift)
+        public static ulong UnsignedShrImm_64(ulong value, long roundConst, int shift)
         {
-            if (RoundConst == 0L)
+            if (roundConst == 0L)
             {
-                if (Shift <= 63)
+                if (shift <= 63)
                 {
-                    return Value >> Shift;
+                    return value >> shift;
                 }
                 else /* if (Shift == 64) */
                 {
@@ -74,13 +74,13 @@ namespace ChocolArm64.Instruction
             }
             else /* if (RoundConst == 1L << (Shift - 1)) */
             {
-                ulong Add = Value + (ulong)RoundConst;
+                ulong add = value + (ulong)roundConst;
 
-                if ((Add < Value) && (Add < (ulong)RoundConst))
+                if ((add < value) && (add < (ulong)roundConst))
                 {
-                    if (Shift <= 63)
+                    if (shift <= 63)
                     {
-                        return (Add >> Shift) | (0x8000000000000000UL >> (Shift - 1));
+                        return (add >> shift) | (0x8000000000000000UL >> (shift - 1));
                     }
                     else /* if (Shift == 64) */
                     {
@@ -89,9 +89,9 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
-                    if (Shift <= 63)
+                    if (shift <= 63)
                     {
-                        return Add >> Shift;
+                        return add >> shift;
                     }
                     else /* if (Shift == 64) */
                     {
@@ -103,115 +103,115 @@ namespace ChocolArm64.Instruction
 #endregion
 
 #region "Saturating"
-        public static long SignedSrcSignedDstSatQ(long Op, int Size, AThreadState State)
+        public static long SignedSrcSignedDstSatQ(long op, int size, AThreadState state)
         {
-            int ESize = 8 << Size;
+            int eSize = 8 << size;
 
-            long TMaxValue =  (1L << (ESize - 1)) - 1L;
-            long TMinValue = -(1L << (ESize - 1));
+            long tMaxValue =  (1L << (eSize - 1)) - 1L;
+            long tMinValue = -(1L << (eSize - 1));
 
-            if (Op > TMaxValue)
+            if (op > tMaxValue)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
-                return TMaxValue;
+                return tMaxValue;
             }
-            else if (Op < TMinValue)
+            else if (op < tMinValue)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
-                return TMinValue;
+                return tMinValue;
             }
             else
             {
-                return Op;
+                return op;
             }
         }
 
-        public static ulong SignedSrcUnsignedDstSatQ(long Op, int Size, AThreadState State)
+        public static ulong SignedSrcUnsignedDstSatQ(long op, int size, AThreadState state)
         {
-            int ESize = 8 << Size;
+            int eSize = 8 << size;
 
-            ulong TMaxValue = (1UL << ESize) - 1UL;
-            ulong TMinValue =  0UL;
+            ulong tMaxValue = (1UL << eSize) - 1UL;
+            ulong tMinValue =  0UL;
 
-            if (Op > (long)TMaxValue)
+            if (op > (long)tMaxValue)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
-                return TMaxValue;
+                return tMaxValue;
             }
-            else if (Op < (long)TMinValue)
+            else if (op < (long)tMinValue)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
-                return TMinValue;
+                return tMinValue;
             }
             else
             {
-                return (ulong)Op;
+                return (ulong)op;
             }
         }
 
-        public static long UnsignedSrcSignedDstSatQ(ulong Op, int Size, AThreadState State)
+        public static long UnsignedSrcSignedDstSatQ(ulong op, int size, AThreadState state)
         {
-            int ESize = 8 << Size;
+            int eSize = 8 << size;
 
-            long TMaxValue = (1L << (ESize - 1)) - 1L;
+            long tMaxValue = (1L << (eSize - 1)) - 1L;
 
-            if (Op > (ulong)TMaxValue)
+            if (op > (ulong)tMaxValue)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
-                return TMaxValue;
+                return tMaxValue;
             }
             else
             {
-                return (long)Op;
+                return (long)op;
             }
         }
 
-        public static ulong UnsignedSrcUnsignedDstSatQ(ulong Op, int Size, AThreadState State)
+        public static ulong UnsignedSrcUnsignedDstSatQ(ulong op, int size, AThreadState state)
         {
-            int ESize = 8 << Size;
+            int eSize = 8 << size;
 
-            ulong TMaxValue = (1UL << ESize) - 1UL;
+            ulong tMaxValue = (1UL << eSize) - 1UL;
 
-            if (Op > TMaxValue)
+            if (op > tMaxValue)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
-                return TMaxValue;
+                return tMaxValue;
             }
             else
             {
-                return Op;
+                return op;
             }
         }
 
-        public static long UnarySignedSatQAbsOrNeg(long Op, AThreadState State)
+        public static long UnarySignedSatQAbsOrNeg(long op, AThreadState state)
         {
-            if (Op == long.MinValue)
+            if (op == long.MinValue)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
                 return long.MaxValue;
             }
             else
             {
-                return Op;
+                return op;
             }
         }
 
-        public static long BinarySignedSatQAdd(long Op1, long Op2, AThreadState State)
+        public static long BinarySignedSatQAdd(long op1, long op2, AThreadState state)
         {
-            long Add = Op1 + Op2;
+            long add = op1 + op2;
 
-            if ((~(Op1 ^ Op2) & (Op1 ^ Add)) < 0L)
+            if ((~(op1 ^ op2) & (op1 ^ add)) < 0L)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
-                if (Op1 < 0L)
+                if (op1 < 0L)
                 {
                     return long.MinValue;
                 }
@@ -222,35 +222,35 @@ namespace ChocolArm64.Instruction
             }
             else
             {
-                return Add;
+                return add;
             }
         }
 
-        public static ulong BinaryUnsignedSatQAdd(ulong Op1, ulong Op2, AThreadState State)
+        public static ulong BinaryUnsignedSatQAdd(ulong op1, ulong op2, AThreadState state)
         {
-            ulong Add = Op1 + Op2;
+            ulong add = op1 + op2;
 
-            if ((Add < Op1) && (Add < Op2))
+            if ((add < op1) && (add < op2))
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
                 return ulong.MaxValue;
             }
             else
             {
-                return Add;
+                return add;
             }
         }
 
-        public static long BinarySignedSatQSub(long Op1, long Op2, AThreadState State)
+        public static long BinarySignedSatQSub(long op1, long op2, AThreadState state)
         {
-            long Sub = Op1 - Op2;
+            long sub = op1 - op2;
 
-            if (((Op1 ^ Op2) & (Op1 ^ Sub)) < 0L)
+            if (((op1 ^ op2) & (op1 ^ sub)) < 0L)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
-                if (Op1 < 0L)
+                if (op1 < 0L)
                 {
                     return long.MinValue;
                 }
@@ -261,52 +261,52 @@ namespace ChocolArm64.Instruction
             }
             else
             {
-                return Sub;
+                return sub;
             }
         }
 
-        public static ulong BinaryUnsignedSatQSub(ulong Op1, ulong Op2, AThreadState State)
+        public static ulong BinaryUnsignedSatQSub(ulong op1, ulong op2, AThreadState state)
         {
-            ulong Sub = Op1 - Op2;
+            ulong sub = op1 - op2;
 
-            if (Op1 < Op2)
+            if (op1 < op2)
             {
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
                 return ulong.MinValue;
             }
             else
             {
-                return Sub;
+                return sub;
             }
         }
 
-        public static long BinarySignedSatQAcc(ulong Op1, long Op2, AThreadState State)
+        public static long BinarySignedSatQAcc(ulong op1, long op2, AThreadState state)
         {
-            if (Op1 <= (ulong)long.MaxValue)
+            if (op1 <= (ulong)long.MaxValue)
             {
                 // Op1 from ulong.MinValue to (ulong)long.MaxValue
                 // Op2 from long.MinValue to long.MaxValue
 
-                long Add = (long)Op1 + Op2;
+                long add = (long)op1 + op2;
 
-                if ((~Op2 & Add) < 0L)
+                if ((~op2 & add) < 0L)
                 {
-                    State.SetFpsrFlag(FPSR.QC);
+                    state.SetFpsrFlag(Fpsr.Qc);
 
                     return long.MaxValue;
                 }
                 else
                 {
-                    return Add;
+                    return add;
                 }
             }
-            else if (Op2 >= 0L)
+            else if (op2 >= 0L)
             {
                 // Op1 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
                 // Op2 from (long)ulong.MinValue to long.MaxValue
 
-                State.SetFpsrFlag(FPSR.QC);
+                state.SetFpsrFlag(Fpsr.Qc);
 
                 return long.MaxValue;
             }
@@ -315,182 +315,182 @@ namespace ChocolArm64.Instruction
                 // Op1 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
                 // Op2 from long.MinValue to (long)ulong.MinValue - 1L
 
-                ulong Add = Op1 + (ulong)Op2;
+                ulong add = op1 + (ulong)op2;
 
-                if (Add > (ulong)long.MaxValue)
+                if (add > (ulong)long.MaxValue)
                 {
-                    State.SetFpsrFlag(FPSR.QC);
+                    state.SetFpsrFlag(Fpsr.Qc);
 
                     return long.MaxValue;
                 }
                 else
                 {
-                    return (long)Add;
+                    return (long)add;
                 }
             }
         }
 
-        public static ulong BinaryUnsignedSatQAcc(long Op1, ulong Op2, AThreadState State)
+        public static ulong BinaryUnsignedSatQAcc(long op1, ulong op2, AThreadState state)
         {
-            if (Op1 >= 0L)
+            if (op1 >= 0L)
             {
                 // Op1 from (long)ulong.MinValue to long.MaxValue
                 // Op2 from ulong.MinValue to ulong.MaxValue
 
-                ulong Add = (ulong)Op1 + Op2;
+                ulong add = (ulong)op1 + op2;
 
-                if ((Add < (ulong)Op1) && (Add < Op2))
+                if ((add < (ulong)op1) && (add < op2))
                 {
-                    State.SetFpsrFlag(FPSR.QC);
+                    state.SetFpsrFlag(Fpsr.Qc);
 
                     return ulong.MaxValue;
                 }
                 else
                 {
-                    return Add;
+                    return add;
                 }
             }
-            else if (Op2 > (ulong)long.MaxValue)
+            else if (op2 > (ulong)long.MaxValue)
             {
                 // Op1 from long.MinValue to (long)ulong.MinValue - 1L
                 // Op2 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
 
-                return (ulong)Op1 + Op2;
+                return (ulong)op1 + op2;
             }
             else
             {
                 // Op1 from long.MinValue to (long)ulong.MinValue - 1L
                 // Op2 from ulong.MinValue to (ulong)long.MaxValue
 
-                long Add = Op1 + (long)Op2;
+                long add = op1 + (long)op2;
 
-                if (Add < (long)ulong.MinValue)
+                if (add < (long)ulong.MinValue)
                 {
-                    State.SetFpsrFlag(FPSR.QC);
+                    state.SetFpsrFlag(Fpsr.Qc);
 
                     return ulong.MinValue;
                 }
                 else
                 {
-                    return (ulong)Add;
+                    return (ulong)add;
                 }
             }
         }
 #endregion
 
 #region "Count"
-        public static ulong CountLeadingSigns(ulong Value, int Size) // Size is 8, 16, 32 or 64 (SIMD&FP or Base Inst.).
+        public static ulong CountLeadingSigns(ulong value, int size) // Size is 8, 16, 32 or 64 (SIMD&FP or Base Inst.).
         {
-            Value ^= Value >> 1;
+            value ^= value >> 1;
 
-            int HighBit = Size - 2;
+            int highBit = size - 2;
 
-            for (int Bit = HighBit; Bit >= 0; Bit--)
+            for (int bit = highBit; bit >= 0; bit--)
             {
-                if (((Value >> Bit) & 0b1) != 0)
+                if (((value >> bit) & 0b1) != 0)
                 {
-                    return (ulong)(HighBit - Bit);
+                    return (ulong)(highBit - bit);
                 }
             }
 
-            return (ulong)(Size - 1);
+            return (ulong)(size - 1);
         }
 
         private static readonly byte[] ClzNibbleTbl = { 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-        public static ulong CountLeadingZeros(ulong Value, int Size) // Size is 8, 16, 32 or 64 (SIMD&FP or Base Inst.).
+        public static ulong CountLeadingZeros(ulong value, int size) // Size is 8, 16, 32 or 64 (SIMD&FP or Base Inst.).
         {
-            if (Value == 0ul)
+            if (value == 0ul)
             {
-                return (ulong)Size;
+                return (ulong)size;
             }
 
-            int NibbleIdx = Size;
-            int PreCount, Count = 0;
+            int nibbleIdx = size;
+            int preCount, count = 0;
 
             do
             {
-                NibbleIdx -= 4;
-                PreCount = ClzNibbleTbl[(Value >> NibbleIdx) & 0b1111];
-                Count += PreCount;
+                nibbleIdx -= 4;
+                preCount = ClzNibbleTbl[(value >> nibbleIdx) & 0b1111];
+                count += preCount;
             }
-            while (PreCount == 4);
+            while (preCount == 4);
 
-            return (ulong)Count;
+            return (ulong)count;
         }
 
-        public static ulong CountSetBits8(ulong Value) // "Size" is 8 (SIMD&FP Inst.).
+        public static ulong CountSetBits8(ulong value) // "Size" is 8 (SIMD&FP Inst.).
         {
-            if (Value == 0xfful)
+            if (value == 0xfful)
             {
                 return 8ul;
             }
 
-            Value = ((Value >> 1) & 0x55ul) + (Value & 0x55ul);
-            Value = ((Value >> 2) & 0x33ul) + (Value & 0x33ul);
+            value = ((value >> 1) & 0x55ul) + (value & 0x55ul);
+            value = ((value >> 2) & 0x33ul) + (value & 0x33ul);
 
-            return (Value >> 4) + (Value & 0x0ful);
+            return (value >> 4) + (value & 0x0ful);
         }
 #endregion
 
 #region "Crc32"
         private const uint Crc32RevPoly  = 0xedb88320;
-        private const uint Crc32cRevPoly = 0x82f63b78;
+        private const uint Crc32CRevPoly = 0x82f63b78;
 
-        public static uint Crc32b(uint Crc, byte   Val) => Crc32 (Crc, Crc32RevPoly, Val);
-        public static uint Crc32h(uint Crc, ushort Val) => Crc32h(Crc, Crc32RevPoly, Val);
-        public static uint Crc32w(uint Crc, uint   Val) => Crc32w(Crc, Crc32RevPoly, Val);
-        public static uint Crc32x(uint Crc, ulong  Val) => Crc32x(Crc, Crc32RevPoly, Val);
+        public static uint Crc32B(uint crc, byte   val) => Crc32 (crc, Crc32RevPoly, val);
+        public static uint Crc32H(uint crc, ushort val) => Crc32H(crc, Crc32RevPoly, val);
+        public static uint Crc32W(uint crc, uint   val) => Crc32W(crc, Crc32RevPoly, val);
+        public static uint Crc32X(uint crc, ulong  val) => Crc32X(crc, Crc32RevPoly, val);
 
-        public static uint Crc32cb(uint Crc, byte   Val) => Crc32 (Crc, Crc32cRevPoly, Val);
-        public static uint Crc32ch(uint Crc, ushort Val) => Crc32h(Crc, Crc32cRevPoly, Val);
-        public static uint Crc32cw(uint Crc, uint   Val) => Crc32w(Crc, Crc32cRevPoly, Val);
-        public static uint Crc32cx(uint Crc, ulong  Val) => Crc32x(Crc, Crc32cRevPoly, Val);
+        public static uint Crc32Cb(uint crc, byte   val) => Crc32 (crc, Crc32CRevPoly, val);
+        public static uint Crc32Ch(uint crc, ushort val) => Crc32H(crc, Crc32CRevPoly, val);
+        public static uint Crc32Cw(uint crc, uint   val) => Crc32W(crc, Crc32CRevPoly, val);
+        public static uint Crc32Cx(uint crc, ulong  val) => Crc32X(crc, Crc32CRevPoly, val);
 
-        private static uint Crc32h(uint Crc, uint Poly, ushort Val)
+        private static uint Crc32H(uint crc, uint poly, ushort val)
         {
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 0));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 8));
+            crc = Crc32(crc, poly, (byte)(val >> 0));
+            crc = Crc32(crc, poly, (byte)(val >> 8));
 
-            return Crc;
+            return crc;
         }
 
-        private static uint Crc32w(uint Crc, uint Poly, uint Val)
+        private static uint Crc32W(uint crc, uint poly, uint val)
         {
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 0 ));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 8 ));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 16));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 24));
+            crc = Crc32(crc, poly, (byte)(val >> 0 ));
+            crc = Crc32(crc, poly, (byte)(val >> 8 ));
+            crc = Crc32(crc, poly, (byte)(val >> 16));
+            crc = Crc32(crc, poly, (byte)(val >> 24));
 
-            return Crc;
+            return crc;
         }
 
-        private static uint Crc32x(uint Crc, uint Poly, ulong Val)
+        private static uint Crc32X(uint crc, uint poly, ulong val)
         {
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 0 ));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 8 ));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 16));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 24));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 32));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 40));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 48));
-            Crc = Crc32(Crc, Poly, (byte)(Val >> 56));
+            crc = Crc32(crc, poly, (byte)(val >> 0 ));
+            crc = Crc32(crc, poly, (byte)(val >> 8 ));
+            crc = Crc32(crc, poly, (byte)(val >> 16));
+            crc = Crc32(crc, poly, (byte)(val >> 24));
+            crc = Crc32(crc, poly, (byte)(val >> 32));
+            crc = Crc32(crc, poly, (byte)(val >> 40));
+            crc = Crc32(crc, poly, (byte)(val >> 48));
+            crc = Crc32(crc, poly, (byte)(val >> 56));
 
-            return Crc;
+            return crc;
         }
 
-        private static uint Crc32(uint Crc, uint Poly, byte Val)
+        private static uint Crc32(uint crc, uint poly, byte val)
         {
-            Crc ^= Val;
+            crc ^= val;
 
-            for (int Bit = 7; Bit >= 0; Bit--)
+            for (int bit = 7; bit >= 0; bit--)
             {
-                uint Mask = (uint)(-(int)(Crc & 1));
+                uint mask = (uint)(-(int)(crc & 1));
 
-                Crc = (Crc >> 1) ^ (Poly & Mask);
+                crc = (crc >> 1) ^ (poly & mask);
             }
 
-            return Crc;
+            return crc;
         }
 #endregion
 
@@ -503,7 +503,7 @@ namespace ChocolArm64.Instruction
                 throw new PlatformNotSupportedException();
             }
 
-            return ACryptoHelper.AESInvSubBytes(ACryptoHelper.AESInvShiftRows(Sse.Xor(value, roundKey)));
+            return ACryptoHelper.AesInvSubBytes(ACryptoHelper.AesInvShiftRows(Sse.Xor(value, roundKey)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -514,19 +514,19 @@ namespace ChocolArm64.Instruction
                 throw new PlatformNotSupportedException();
             }
 
-            return ACryptoHelper.AESSubBytes(ACryptoHelper.AESShiftRows(Sse.Xor(value, roundKey)));
+            return ACryptoHelper.AesSubBytes(ACryptoHelper.AesShiftRows(Sse.Xor(value, roundKey)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> InverseMixColumns(Vector128<float> value)
         {
-            return ACryptoHelper.AESInvMixColumns(value);
+            return ACryptoHelper.AesInvMixColumns(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> MixColumns(Vector128<float> value)
         {
-            return ACryptoHelper.AESMixColumns(value);
+            return ACryptoHelper.AesMixColumns(value);
         }
 #endregion
 
@@ -535,7 +535,7 @@ namespace ChocolArm64.Instruction
         {
             for (int e = 0; e <= 3; e++)
             {
-                uint t = SHAchoose((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
+                uint t = ShaChoose((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
                                    (uint)VectorExtractIntZx(hash_abcd, (byte)2, 2),
                                    (uint)VectorExtractIntZx(hash_abcd, (byte)3, 2));
 
@@ -560,7 +560,7 @@ namespace ChocolArm64.Instruction
         {
             for (int e = 0; e <= 3; e++)
             {
-                uint t = SHAmajority((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
+                uint t = ShaMajority((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
                                      (uint)VectorExtractIntZx(hash_abcd, (byte)2, 2),
                                      (uint)VectorExtractIntZx(hash_abcd, (byte)3, 2));
 
@@ -580,7 +580,7 @@ namespace ChocolArm64.Instruction
         {
             for (int e = 0; e <= 3; e++)
             {
-                uint t = SHAparity((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
+                uint t = ShaParity((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
                                    (uint)VectorExtractIntZx(hash_abcd, (byte)2, 2),
                                    (uint)VectorExtractIntZx(hash_abcd, (byte)3, 2));
 
@@ -653,17 +653,17 @@ namespace ChocolArm64.Instruction
             y = xE3;
         }
 
-        private static uint SHAchoose(uint x, uint y, uint z)
+        private static uint ShaChoose(uint x, uint y, uint z)
         {
             return ((y ^ z) & x) ^ z;
         }
 
-        private static uint SHAmajority(uint x, uint y, uint z)
+        private static uint ShaMajority(uint x, uint y, uint z)
         {
             return (x & y) | ((x | y) & z);
         }
 
-        private static uint SHAparity(uint x, uint y, uint z)
+        private static uint ShaParity(uint x, uint y, uint z)
         {
             return x ^ y ^ z;
         }
@@ -676,15 +676,15 @@ namespace ChocolArm64.Instruction
 
 #region "Sha256"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> HashLower(Vector128<float> hash_abcd, Vector128<float> hash_efgh, Vector128<float> wk)
+        public static Vector128<float> HashLower(Vector128<float> hashAbcd, Vector128<float> hashEfgh, Vector128<float> wk)
         {
-            return SHA256hash(hash_abcd, hash_efgh, wk, true);
+            return Sha256Hash(hashAbcd, hashEfgh, wk, true);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> HashUpper(Vector128<float> hash_efgh, Vector128<float> hash_abcd, Vector128<float> wk)
+        public static Vector128<float> HashUpper(Vector128<float> hashEfgh, Vector128<float> hashAbcd, Vector128<float> wk)
         {
-            return SHA256hash(hash_abcd, hash_efgh, wk, false);
+            return Sha256Hash(hashAbcd, hashEfgh, wk, false);
         }
 
         public static Vector128<float> Sha256SchedulePart1(Vector128<float> w0_3, Vector128<float> w4_7)
@@ -709,11 +709,11 @@ namespace ChocolArm64.Instruction
         {
             Vector128<float> result = new Vector128<float>();
 
-            ulong T1 = VectorExtractIntZx(w12_15, (byte)1, 3);
+            ulong t1 = VectorExtractIntZx(w12_15, (byte)1, 3);
 
             for (int e = 0; e <= 1; e++)
             {
-                uint elt = T1.ULongPart(e);
+                uint elt = t1.ULongPart(e);
 
                 elt = elt.Ror(17) ^ elt.Ror(19) ^ elt.Lsr(10);
 
@@ -723,11 +723,11 @@ namespace ChocolArm64.Instruction
                 result = VectorInsertInt((ulong)elt, result, (byte)e, 2);
             }
 
-            T1 = VectorExtractIntZx(result, (byte)0, 3);
+            t1 = VectorExtractIntZx(result, (byte)0, 3);
 
             for (int e = 2; e <= 3; e++)
             {
-                uint elt = T1.ULongPart(e - 2);
+                uint elt = t1.ULongPart(e - 2);
 
                 elt = elt.Ror(17) ^ elt.Ror(19) ^ elt.Lsr(10);
 
@@ -740,56 +740,56 @@ namespace ChocolArm64.Instruction
             return result;
         }
 
-        private static Vector128<float> SHA256hash(Vector128<float> X, Vector128<float> Y, Vector128<float> W, bool part1)
+        private static Vector128<float> Sha256Hash(Vector128<float> x, Vector128<float> y, Vector128<float> w, bool part1)
         {
             for (int e = 0; e <= 3; e++)
             {
-                uint chs = SHAchoose((uint)VectorExtractIntZx(Y, (byte)0, 2),
-                                     (uint)VectorExtractIntZx(Y, (byte)1, 2),
-                                     (uint)VectorExtractIntZx(Y, (byte)2, 2));
+                uint chs = ShaChoose((uint)VectorExtractIntZx(y, (byte)0, 2),
+                                     (uint)VectorExtractIntZx(y, (byte)1, 2),
+                                     (uint)VectorExtractIntZx(y, (byte)2, 2));
 
-                uint maj = SHAmajority((uint)VectorExtractIntZx(X, (byte)0, 2),
-                                       (uint)VectorExtractIntZx(X, (byte)1, 2),
-                                       (uint)VectorExtractIntZx(X, (byte)2, 2));
+                uint maj = ShaMajority((uint)VectorExtractIntZx(x, (byte)0, 2),
+                                       (uint)VectorExtractIntZx(x, (byte)1, 2),
+                                       (uint)VectorExtractIntZx(x, (byte)2, 2));
 
-                uint t1 = (uint)VectorExtractIntZx(Y, (byte)3, 2);
-                t1 += SHAhashSIGMA1((uint)VectorExtractIntZx(Y, (byte)0, 2)) + chs;
-                t1 += (uint)VectorExtractIntZx(W, (byte)e, 2);
+                uint t1 = (uint)VectorExtractIntZx(y, (byte)3, 2);
+                t1 += ShaHashSigma1((uint)VectorExtractIntZx(y, (byte)0, 2)) + chs;
+                t1 += (uint)VectorExtractIntZx(w, (byte)e, 2);
 
-                uint t2 = t1 + (uint)VectorExtractIntZx(X, (byte)3, 2);
-                X = VectorInsertInt((ulong)t2, X, (byte)3, 2);
-                t2 = t1 + SHAhashSIGMA0((uint)VectorExtractIntZx(X, (byte)0, 2)) + maj;
-                Y = VectorInsertInt((ulong)t2, Y, (byte)3, 2);
+                uint t2 = t1 + (uint)VectorExtractIntZx(x, (byte)3, 2);
+                x = VectorInsertInt((ulong)t2, x, (byte)3, 2);
+                t2 = t1 + ShaHashSigma0((uint)VectorExtractIntZx(x, (byte)0, 2)) + maj;
+                y = VectorInsertInt((ulong)t2, y, (byte)3, 2);
 
-                Rol32_256(ref Y, ref X);
+                Rol32_256(ref y, ref x);
             }
 
-            return part1 ? X : Y;
+            return part1 ? x : y;
         }
 
-        private static void Rol32_256(ref Vector128<float> Y, ref Vector128<float> X)
+        private static void Rol32_256(ref Vector128<float> y, ref Vector128<float> x)
         {
             if (!Sse2.IsSupported)
             {
                 throw new PlatformNotSupportedException();
             }
 
-            uint yE3 = (uint)VectorExtractIntZx(Y, (byte)3, 2);
-            uint xE3 = (uint)VectorExtractIntZx(X, (byte)3, 2);
+            uint yE3 = (uint)VectorExtractIntZx(y, (byte)3, 2);
+            uint xE3 = (uint)VectorExtractIntZx(x, (byte)3, 2);
 
-            Y = Sse.StaticCast<uint, float>(Sse2.ShiftLeftLogical128BitLane(Sse.StaticCast<float, uint>(Y), (byte)4));
-            X = Sse.StaticCast<uint, float>(Sse2.ShiftLeftLogical128BitLane(Sse.StaticCast<float, uint>(X), (byte)4));
+            y = Sse.StaticCast<uint, float>(Sse2.ShiftLeftLogical128BitLane(Sse.StaticCast<float, uint>(y), (byte)4));
+            x = Sse.StaticCast<uint, float>(Sse2.ShiftLeftLogical128BitLane(Sse.StaticCast<float, uint>(x), (byte)4));
 
-            Y = VectorInsertInt((ulong)xE3, Y, (byte)0, 2);
-            X = VectorInsertInt((ulong)yE3, X, (byte)0, 2);
+            y = VectorInsertInt((ulong)xE3, y, (byte)0, 2);
+            x = VectorInsertInt((ulong)yE3, x, (byte)0, 2);
         }
 
-        private static uint SHAhashSIGMA0(uint x)
+        private static uint ShaHashSigma0(uint x)
         {
             return x.Ror(2) ^ x.Ror(13) ^ x.Ror(22);
         }
 
-        private static uint SHAhashSIGMA1(uint x)
+        private static uint ShaHashSigma1(uint x)
         {
             return x.Ror(6) ^ x.Ror(11) ^ x.Ror(25);
         }
@@ -813,41 +813,41 @@ namespace ChocolArm64.Instruction
 #endregion
 
 #region "Reverse"
-        public static uint ReverseBits8(uint Value)
+        public static uint ReverseBits8(uint value)
         {
-            Value = ((Value & 0xaa) >> 1) | ((Value & 0x55) << 1);
-            Value = ((Value & 0xcc) >> 2) | ((Value & 0x33) << 2);
+            value = ((value & 0xaa) >> 1) | ((value & 0x55) << 1);
+            value = ((value & 0xcc) >> 2) | ((value & 0x33) << 2);
 
-            return (Value >> 4) | ((Value & 0x0f) << 4);
+            return (value >> 4) | ((value & 0x0f) << 4);
         }
 
-        public static uint ReverseBits32(uint Value)
+        public static uint ReverseBits32(uint value)
         {
-            Value = ((Value & 0xaaaaaaaa) >> 1) | ((Value & 0x55555555) << 1);
-            Value = ((Value & 0xcccccccc) >> 2) | ((Value & 0x33333333) << 2);
-            Value = ((Value & 0xf0f0f0f0) >> 4) | ((Value & 0x0f0f0f0f) << 4);
-            Value = ((Value & 0xff00ff00) >> 8) | ((Value & 0x00ff00ff) << 8);
+            value = ((value & 0xaaaaaaaa) >> 1) | ((value & 0x55555555) << 1);
+            value = ((value & 0xcccccccc) >> 2) | ((value & 0x33333333) << 2);
+            value = ((value & 0xf0f0f0f0) >> 4) | ((value & 0x0f0f0f0f) << 4);
+            value = ((value & 0xff00ff00) >> 8) | ((value & 0x00ff00ff) << 8);
 
-            return (Value >> 16) | (Value << 16);
+            return (value >> 16) | (value << 16);
         }
 
-        public static ulong ReverseBits64(ulong Value)
+        public static ulong ReverseBits64(ulong value)
         {
-            Value = ((Value & 0xaaaaaaaaaaaaaaaa) >> 1 ) | ((Value & 0x5555555555555555) << 1 );
-            Value = ((Value & 0xcccccccccccccccc) >> 2 ) | ((Value & 0x3333333333333333) << 2 );
-            Value = ((Value & 0xf0f0f0f0f0f0f0f0) >> 4 ) | ((Value & 0x0f0f0f0f0f0f0f0f) << 4 );
-            Value = ((Value & 0xff00ff00ff00ff00) >> 8 ) | ((Value & 0x00ff00ff00ff00ff) << 8 );
-            Value = ((Value & 0xffff0000ffff0000) >> 16) | ((Value & 0x0000ffff0000ffff) << 16);
+            value = ((value & 0xaaaaaaaaaaaaaaaa) >> 1 ) | ((value & 0x5555555555555555) << 1 );
+            value = ((value & 0xcccccccccccccccc) >> 2 ) | ((value & 0x3333333333333333) << 2 );
+            value = ((value & 0xf0f0f0f0f0f0f0f0) >> 4 ) | ((value & 0x0f0f0f0f0f0f0f0f) << 4 );
+            value = ((value & 0xff00ff00ff00ff00) >> 8 ) | ((value & 0x00ff00ff00ff00ff) << 8 );
+            value = ((value & 0xffff0000ffff0000) >> 16) | ((value & 0x0000ffff0000ffff) << 16);
 
-            return (Value >> 32) | (Value << 32);
+            return (value >> 32) | (value << 32);
         }
 
-        public static uint ReverseBytes16_32(uint Value) => (uint)ReverseBytes16_64(Value);
-        public static uint ReverseBytes32_32(uint Value) => (uint)ReverseBytes32_64(Value);
+        public static uint ReverseBytes16_32(uint value) => (uint)ReverseBytes16_64(value);
+        public static uint ReverseBytes32_32(uint value) => (uint)ReverseBytes32_64(value);
 
-        public static ulong ReverseBytes16_64(ulong Value) => ReverseBytes(Value, RevSize.Rev16);
-        public static ulong ReverseBytes32_64(ulong Value) => ReverseBytes(Value, RevSize.Rev32);
-        public static ulong ReverseBytes64(ulong Value)    => ReverseBytes(Value, RevSize.Rev64);
+        public static ulong ReverseBytes16_64(ulong value) => ReverseBytes(value, RevSize.Rev16);
+        public static ulong ReverseBytes32_64(ulong value) => ReverseBytes(value, RevSize.Rev32);
+        public static ulong ReverseBytes64(ulong value)    => ReverseBytes(value, RevSize.Rev64);
 
         private enum RevSize
         {
@@ -856,66 +856,65 @@ namespace ChocolArm64.Instruction
             Rev64
         }
 
-        private static ulong ReverseBytes(ulong Value, RevSize Size)
+        private static ulong ReverseBytes(ulong value, RevSize size)
         {
-            Value = ((Value & 0xff00ff00ff00ff00) >> 8) | ((Value & 0x00ff00ff00ff00ff) << 8);
+            value = ((value & 0xff00ff00ff00ff00) >> 8) | ((value & 0x00ff00ff00ff00ff) << 8);
 
-            if (Size == RevSize.Rev16)
+            if (size == RevSize.Rev16)
             {
-                return Value;
+                return value;
             }
 
-            Value = ((Value & 0xffff0000ffff0000) >> 16) | ((Value & 0x0000ffff0000ffff) << 16);
+            value = ((value & 0xffff0000ffff0000) >> 16) | ((value & 0x0000ffff0000ffff) << 16);
 
-            if (Size == RevSize.Rev32)
+            if (size == RevSize.Rev32)
             {
-                return Value;
+                return value;
             }
 
-            Value = ((Value & 0xffffffff00000000) >> 32) | ((Value & 0x00000000ffffffff) << 32);
+            value = ((value & 0xffffffff00000000) >> 32) | ((value & 0x00000000ffffffff) << 32);
 
-            if (Size == RevSize.Rev64)
+            if (size == RevSize.Rev64)
             {
-                return Value;
+                return value;
             }
 
-            throw new ArgumentException(nameof(Size));
+            throw new ArgumentException(nameof(size));
         }
 #endregion
 
 #region "MultiplyHigh"
-        public static long SMulHi128(long Left, long Right)
+        public static long SMulHi128(long left, long right)
         {
-            long Result = (long)UMulHi128((ulong)Left, (ulong)Right);
+            long result = (long)UMulHi128((ulong)left, (ulong)right);
 
-            if (Left < 0)
+            if (left < 0)
             {
-                Result -= Right;
+                result -= right;
             }
 
-            if (Right < 0)
+            if (right < 0)
             {
-                Result -= Left;
+                result -= left;
             }
 
-            return Result;
+            return result;
         }
 
-        public static ulong UMulHi128(ulong Left, ulong Right)
+        public static ulong UMulHi128(ulong left, ulong right)
         {
-            ulong LHigh = Left  >> 32;
-            ulong LLow  = Left  & 0xFFFFFFFF;
-            ulong RHigh = Right >> 32;
-            ulong RLow  = Right & 0xFFFFFFFF;
+            ulong lHigh = left  >> 32;
+            ulong lLow  = left  & 0xFFFFFFFF;
+            ulong rHigh = right >> 32;
+            ulong rLow  = right & 0xFFFFFFFF;
 
-            ulong Z2 = LLow  * RLow;
-            ulong T  = LHigh * RLow + (Z2 >> 32);
-            ulong Z1 = T & 0xFFFFFFFF;
-            ulong Z0 = T >> 32;
+            ulong z2 = lLow  * rLow;
+            ulong t  = lHigh * rLow + (z2 >> 32);
+            ulong z1 = t & 0xFFFFFFFF;
+            ulong z0 = t >> 32;
 
-            Z1 += LLow * RHigh;
 
-            return LHigh * RHigh + Z0 + (Z1 >> 32);
+            return lHigh * rHigh + z0 + (z1 >> 32);
         }
 #endregion
     }

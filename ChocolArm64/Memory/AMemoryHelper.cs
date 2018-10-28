@@ -7,60 +7,60 @@ namespace ChocolArm64.Memory
 {
     public static class AMemoryHelper
     {
-        public static void FillWithZeros(AMemory Memory, long Position, int Size)
+        public static void FillWithZeros(AMemory memory, long position, int size)
         {
-            int Size8 = Size & ~(8 - 1);
+            int size8 = size & ~(8 - 1);
 
-            for (int Offs = 0; Offs < Size8; Offs += 8)
+            for (int offs = 0; offs < size8; offs += 8)
             {
-                Memory.WriteInt64(Position + Offs, 0);
+                memory.WriteInt64(position + offs, 0);
             }
 
-            for (int Offs = Size8; Offs < (Size - Size8); Offs++)
+            for (int offs = size8; offs < (size - size8); offs++)
             {
-                Memory.WriteByte(Position + Offs, 0);
+                memory.WriteByte(position + offs, 0);
             }
         }
 
-        public unsafe static T Read<T>(AMemory Memory, long Position) where T : struct
+        public unsafe static T Read<T>(AMemory memory, long position) where T : struct
         {
-            long Size = Marshal.SizeOf<T>();
+            long size = Marshal.SizeOf<T>();
 
-            Memory.EnsureRangeIsValid(Position, Size);
+            memory.EnsureRangeIsValid(position, size);
 
-            IntPtr Ptr = (IntPtr)Memory.Translate(Position);
+            IntPtr ptr = (IntPtr)memory.Translate(position);
 
-            return Marshal.PtrToStructure<T>(Ptr);
+            return Marshal.PtrToStructure<T>(ptr);
         }
 
-        public unsafe static void Write<T>(AMemory Memory, long Position, T Value) where T : struct
+        public unsafe static void Write<T>(AMemory memory, long position, T value) where T : struct
         {
-            long Size = Marshal.SizeOf<T>();
+            long size = Marshal.SizeOf<T>();
 
-            Memory.EnsureRangeIsValid(Position, Size);
+            memory.EnsureRangeIsValid(position, size);
 
-            IntPtr Ptr = (IntPtr)Memory.TranslateWrite(Position);
+            IntPtr ptr = (IntPtr)memory.TranslateWrite(position);
 
-            Marshal.StructureToPtr<T>(Value, Ptr, false);
+            Marshal.StructureToPtr<T>(value, ptr, false);
         }
 
-        public static string ReadAsciiString(AMemory Memory, long Position, long MaxSize = -1)
+        public static string ReadAsciiString(AMemory memory, long position, long maxSize = -1)
         {
-            using (MemoryStream MS = new MemoryStream())
+            using (MemoryStream ms = new MemoryStream())
             {
-                for (long Offs = 0; Offs < MaxSize || MaxSize == -1; Offs++)
+                for (long offs = 0; offs < maxSize || maxSize == -1; offs++)
                 {
-                    byte Value = (byte)Memory.ReadByte(Position + Offs);
+                    byte value = (byte)memory.ReadByte(position + offs);
 
-                    if (Value == 0)
+                    if (value == 0)
                     {
                         break;
                     }
 
-                    MS.WriteByte(Value);
+                    ms.WriteByte(value);
                 }
 
-                return Encoding.ASCII.GetString(MS.ToArray());
+                return Encoding.ASCII.GetString(ms.ToArray());
             }
         }
     }

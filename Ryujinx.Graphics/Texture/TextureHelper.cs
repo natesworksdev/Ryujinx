@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Texture
         }
 
         public static (AMemory Memory, long Position) GetMemoryAndPosition(
-            IAMemory Memory,
+            IaMemory Memory,
             long     Position)
         {
             if (Memory is NvGpuVmm Vmm)

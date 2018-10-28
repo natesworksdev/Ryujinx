@@ -11,175 +11,175 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void Ld__Vms(AILEmitterCtx Context)
+        public static void Ld__Vms(AilEmitterCtx context)
         {
-            EmitSimdMemMs(Context, IsLoad: true);
+            EmitSimdMemMs(context, isLoad: true);
         }
 
-        public static void Ld__Vss(AILEmitterCtx Context)
+        public static void Ld__Vss(AilEmitterCtx context)
         {
-            EmitSimdMemSs(Context, IsLoad: true);
+            EmitSimdMemSs(context, isLoad: true);
         }
 
-        public static void St__Vms(AILEmitterCtx Context)
+        public static void St__Vms(AilEmitterCtx context)
         {
-            EmitSimdMemMs(Context, IsLoad: false);
+            EmitSimdMemMs(context, isLoad: false);
         }
 
-        public static void St__Vss(AILEmitterCtx Context)
+        public static void St__Vss(AilEmitterCtx context)
         {
-            EmitSimdMemSs(Context, IsLoad: false);
+            EmitSimdMemSs(context, isLoad: false);
         }
 
-        private static void EmitSimdMemMs(AILEmitterCtx Context, bool IsLoad)
+        private static void EmitSimdMemMs(AilEmitterCtx context, bool isLoad)
         {
-            AOpCodeSimdMemMs Op = (AOpCodeSimdMemMs)Context.CurrOp;
+            AOpCodeSimdMemMs op = (AOpCodeSimdMemMs)context.CurrOp;
 
-            int Offset = 0;
+            int offset = 0;
 
-            for (int Rep   = 0; Rep   < Op.Reps;   Rep++)
-            for (int Elem  = 0; Elem  < Op.Elems;  Elem++)
-            for (int SElem = 0; SElem < Op.SElems; SElem++)
+            for (int rep   = 0; rep   < op.Reps;   rep++)
+            for (int elem  = 0; elem  < op.Elems;  elem++)
+            for (int sElem = 0; sElem < op.SElems; sElem++)
             {
-                int Rtt = (Op.Rt + Rep + SElem) & 0x1f;
+                int rtt = (op.Rt + rep + sElem) & 0x1f;
 
-                if (IsLoad)
+                if (isLoad)
                 {
-                    Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-                    Context.EmitLdint(Op.Rn);
-                    Context.EmitLdc_I8(Offset);
+                    context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+                    context.EmitLdint(op.Rn);
+                    context.EmitLdc_I8(offset);
 
-                    Context.Emit(OpCodes.Add);
+                    context.Emit(OpCodes.Add);
 
-                    EmitReadZxCall(Context, Op.Size);
+                    EmitReadZxCall(context, op.Size);
 
-                    EmitVectorInsert(Context, Rtt, Elem, Op.Size);
+                    EmitVectorInsert(context, rtt, elem, op.Size);
 
-                    if (Op.RegisterSize == ARegisterSize.SIMD64 && Elem == Op.Elems - 1)
+                    if (op.RegisterSize == ARegisterSize.Simd64 && elem == op.Elems - 1)
                     {
-                        EmitVectorZeroUpper(Context, Rtt);
+                        EmitVectorZeroUpper(context, rtt);
                     }
                 }
                 else
                 {
-                    Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-                    Context.EmitLdint(Op.Rn);
-                    Context.EmitLdc_I8(Offset);
+                    context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+                    context.EmitLdint(op.Rn);
+                    context.EmitLdc_I8(offset);
 
-                    Context.Emit(OpCodes.Add);
+                    context.Emit(OpCodes.Add);
 
-                    EmitVectorExtractZx(Context, Rtt, Elem, Op.Size);
+                    EmitVectorExtractZx(context, rtt, elem, op.Size);
 
-                    EmitWriteCall(Context, Op.Size);
+                    EmitWriteCall(context, op.Size);
                 }
 
-                Offset += 1 << Op.Size;
+                offset += 1 << op.Size;
             }
 
-            if (Op.WBack)
+            if (op.WBack)
             {
-                EmitSimdMemWBack(Context, Offset);
+                EmitSimdMemWBack(context, offset);
             }
         }
 
-        private static void EmitSimdMemSs(AILEmitterCtx Context, bool IsLoad)
+        private static void EmitSimdMemSs(AilEmitterCtx context, bool isLoad)
         {
-            AOpCodeSimdMemSs Op = (AOpCodeSimdMemSs)Context.CurrOp;
+            AOpCodeSimdMemSs op = (AOpCodeSimdMemSs)context.CurrOp;
 
-            int Offset = 0;
+            int offset = 0;
 
             void EmitMemAddress()
             {
-                Context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
-                Context.EmitLdint(Op.Rn);
-                Context.EmitLdc_I8(Offset);
+                context.EmitLdarg(ATranslatedSub.MemoryArgIdx);
+                context.EmitLdint(op.Rn);
+                context.EmitLdc_I8(offset);
 
-                Context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Add);
             }
 
-            if (Op.Replicate)
+            if (op.Replicate)
             {
                 //Only loads uses the replicate mode.
-                if (!IsLoad)
+                if (!isLoad)
                 {
                     throw new InvalidOperationException();
                 }
 
-                int Bytes = Op.GetBitsCount() >> 3;
-                int Elems = Bytes >> Op.Size;
+                int bytes = op.GetBitsCount() >> 3;
+                int elems = bytes >> op.Size;
 
-                for (int SElem = 0; SElem < Op.SElems; SElem++)
+                for (int sElem = 0; sElem < op.SElems; sElem++)
                 {
-                    int Rt = (Op.Rt + SElem) & 0x1f;
+                    int rt = (op.Rt + sElem) & 0x1f;
 
-                    for (int Index = 0; Index < Elems; Index++)
+                    for (int index = 0; index < elems; index++)
                     {
                         EmitMemAddress();
 
-                        EmitReadZxCall(Context, Op.Size);
+                        EmitReadZxCall(context, op.Size);
 
-                        EmitVectorInsert(Context, Rt, Index, Op.Size);
+                        EmitVectorInsert(context, rt, index, op.Size);
                     }
 
-                    if (Op.RegisterSize == ARegisterSize.SIMD64)
+                    if (op.RegisterSize == ARegisterSize.Simd64)
                     {
-                        EmitVectorZeroUpper(Context, Rt);
+                        EmitVectorZeroUpper(context, rt);
                     }
 
-                    Offset += 1 << Op.Size;
+                    offset += 1 << op.Size;
                 }
             }
             else
             {
-                for (int SElem = 0; SElem < Op.SElems; SElem++)
+                for (int sElem = 0; sElem < op.SElems; sElem++)
                 {
-                    int Rt = (Op.Rt + SElem) & 0x1f;
+                    int rt = (op.Rt + sElem) & 0x1f;
 
-                    if (IsLoad)
+                    if (isLoad)
                     {
                         EmitMemAddress();
 
-                        EmitReadZxCall(Context, Op.Size);
+                        EmitReadZxCall(context, op.Size);
 
-                        EmitVectorInsert(Context, Rt, Op.Index, Op.Size);
+                        EmitVectorInsert(context, rt, op.Index, op.Size);
                     }
                     else
                     {
                         EmitMemAddress();
 
-                        EmitVectorExtractZx(Context, Rt, Op.Index, Op.Size);
+                        EmitVectorExtractZx(context, rt, op.Index, op.Size);
 
-                        EmitWriteCall(Context, Op.Size);
+                        EmitWriteCall(context, op.Size);
                     }
 
-                    Offset += 1 << Op.Size;
+                    offset += 1 << op.Size;
                 }
             }
 
-            if (Op.WBack)
+            if (op.WBack)
             {
-                EmitSimdMemWBack(Context, Offset);
+                EmitSimdMemWBack(context, offset);
             }
         }
 
-        private static void EmitSimdMemWBack(AILEmitterCtx Context, int Offset)
+        private static void EmitSimdMemWBack(AilEmitterCtx context, int offset)
         {
-            AOpCodeMemReg Op = (AOpCodeMemReg)Context.CurrOp;
+            AOpCodeMemReg op = (AOpCodeMemReg)context.CurrOp;
 
-            Context.EmitLdint(Op.Rn);
+            context.EmitLdint(op.Rn);
 
-            if (Op.Rm != AThreadState.ZRIndex)
+            if (op.Rm != AThreadState.ZrIndex)
             {
-                Context.EmitLdint(Op.Rm);
+                context.EmitLdint(op.Rm);
             }
             else
             {
-                Context.EmitLdc_I8(Offset);
+                context.EmitLdc_I8(offset);
             }
 
-            Context.Emit(OpCodes.Add);
+            context.Emit(OpCodes.Add);
 
-            Context.EmitStint(Op.Rn);
+            context.EmitStint(op.Rn);
         }
     }
 }

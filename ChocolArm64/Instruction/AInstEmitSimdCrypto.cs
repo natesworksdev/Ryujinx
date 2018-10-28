@@ -5,50 +5,50 @@ namespace ChocolArm64.Instruction
 {
     static partial class AInstEmit
     {
-        public static void Aesd_V(AILEmitterCtx Context)
+        public static void Aesd_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            Context.EmitLdvec(Op.Rn);
+            context.EmitLdvec(op.Rd);
+            context.EmitLdvec(op.Rn);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Decrypt));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.Decrypt));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Aese_V(AILEmitterCtx Context)
+        public static void Aese_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            Context.EmitLdvec(Op.Rn);
+            context.EmitLdvec(op.Rd);
+            context.EmitLdvec(op.Rn);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Encrypt));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.Encrypt));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Aesimc_V(AILEmitterCtx Context)
+        public static void Aesimc_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rn);
+            context.EmitLdvec(op.Rn);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.InverseMixColumns));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.InverseMixColumns));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Aesmc_V(AILEmitterCtx Context)
+        public static void Aesmc_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rn);
+            context.EmitLdvec(op.Rn);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.MixColumns));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.MixColumns));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
     }
 }

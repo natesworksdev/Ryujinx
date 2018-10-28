@@ -3,7 +3,7 @@ using ChocolArm64.State;
 
 namespace ChocolArm64.Decoder
 {
-    interface IAOpCode
+    interface IaOpCode
     {
         long Position { get; }
 

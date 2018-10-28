@@ -4,7 +4,7 @@ using System;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCode : IAOpCode
+    class AOpCode : IaOpCode
     {
         public long Position  { get; private set; }
         public int  RawOpCode { get; private set; }
@@ -13,15 +13,15 @@ namespace ChocolArm64.Decoder
         public AInstInterpreter Interpreter  { get; protected set; }
         public ARegisterSize    RegisterSize { get; protected set; }
 
-        public AOpCode(AInst Inst, long Position, int OpCode)
+        public AOpCode(AInst inst, long position, int opCode)
         {
-            this.Position  = Position;
-            this.RawOpCode = OpCode;
+            Position  = position;
+            RawOpCode = opCode;
 
             RegisterSize = ARegisterSize.Int64;
 
-            Emitter     = Inst.Emitter;
-            Interpreter = Inst.Interpreter;
+            Emitter     = inst.Emitter;
+            Interpreter = inst.Interpreter;
         }
 
         public int GetBitsCount()
@@ -30,8 +30,8 @@ namespace ChocolArm64.Decoder
             {
                 case ARegisterSize.Int32:   return 32;
                 case ARegisterSize.Int64:   return 64;
-                case ARegisterSize.SIMD64:  return 64;
-                case ARegisterSize.SIMD128: return 128;
+                case ARegisterSize.Simd64:  return 64;
+                case ARegisterSize.Simd128: return 128;
             }
 
             throw new InvalidOperationException();

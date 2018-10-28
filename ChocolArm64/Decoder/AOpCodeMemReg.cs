@@ -9,12 +9,12 @@ namespace ChocolArm64.Decoder
 
         public AIntType IntType { get; private set; }
 
-        public AOpCodeMemReg(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeMemReg(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Shift    =           ((OpCode >> 12) & 0x1) != 0;
-            IntType  = (AIntType)((OpCode >> 13) & 0x7);
-            Rm       =            (OpCode >> 16) & 0x1f;
-            Extend64 =           ((OpCode >> 22) & 0x3) == 2;
+            Shift    =           ((opCode >> 12) & 0x1) != 0;
+            IntType  = (AIntType)((opCode >> 13) & 0x7);
+            Rm       =            (opCode >> 16) & 0x1f;
+            Extend64 =           ((opCode >> 22) & 0x3) == 2;
         }
     }
 }

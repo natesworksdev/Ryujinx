@@ -2,20 +2,20 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
-    struct AILOpCodeBranch : IAILEmit
+    struct AilOpCodeBranch : IailEmit
     {
-        private OpCode   ILOp;
-        private AILLabel Label;
+        private OpCode   _ilOp;
+        private AilLabel _label;
 
-        public AILOpCodeBranch(OpCode ILOp, AILLabel Label)
+        public AilOpCodeBranch(OpCode ilOp, AilLabel label)
         {
-            this.ILOp  = ILOp;
-            this.Label = Label;
+            _ilOp  = ilOp;
+            _label = label;
         }
 
-        public void Emit(AILEmitter Context)
+        public void Emit(AilEmitter context)
         {
-            Context.Generator.Emit(ILOp, Label.GetLabel(Context));
+            context.Generator.Emit(_ilOp, _label.GetLabel(context));
         }
     }
 }

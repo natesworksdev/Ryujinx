@@ -1,7 +1,7 @@
 namespace ChocolArm64.Translation
 {
-    interface IAILEmit
+    interface IailEmit
     {
-        void Emit(AILEmitter Context);
+        void Emit(AilEmitter context);
     }
 }

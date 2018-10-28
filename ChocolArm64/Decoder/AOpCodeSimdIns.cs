@@ -7,19 +7,19 @@ namespace ChocolArm64.Decoder
         public int SrcIndex { get; private set; }
         public int DstIndex { get; private set; }
 
-        public AOpCodeSimdIns(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdIns(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            int Imm4 = (OpCode >> 11) & 0xf;
-            int Imm5 = (OpCode >> 16) & 0x1f;
+            int imm4 = (opCode >> 11) & 0xf;
+            int imm5 = (opCode >> 16) & 0x1f;
 
-            if (Imm5 == 0b10000)
+            if (imm5 == 0b10000)
             {
                 Emitter = AInstEmit.Und;
 
                 return;
             }
 
-            Size = Imm5 & -Imm5;
+            Size = imm5 & -imm5;
 
             switch (Size)
             {
@@ -29,8 +29,8 @@ namespace ChocolArm64.Decoder
                 case 8: Size = 3; break;
             }
 
-            SrcIndex = Imm4 >>  Size;
-            DstIndex = Imm5 >> (Size + 1);
+            SrcIndex = imm4 >>  Size;
+            DstIndex = imm5 >> (Size + 1);
         }
     }
 }

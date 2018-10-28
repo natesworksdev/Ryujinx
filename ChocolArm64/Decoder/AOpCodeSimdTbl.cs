@@ -4,9 +4,9 @@ namespace ChocolArm64.Decoder
 {
     class AOpCodeSimdTbl : AOpCodeSimdReg
     {
-        public AOpCodeSimdTbl(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdTbl(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Size = ((OpCode >> 13) & 3) + 1;
+            Size = ((opCode >> 13) & 3) + 1;
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
-    struct AILOpCodeLoad : IAILEmit
+    struct AilOpCodeLoad : IailEmit
     {
         public int Index { get; private set; }
 
@@ -11,64 +11,64 @@ namespace ChocolArm64.Translation
 
         public ARegisterSize RegisterSize { get; private set; }
 
-        public AILOpCodeLoad(int Index, AIoType IoType, ARegisterSize RegisterSize = 0)
+        public AilOpCodeLoad(int index, AIoType ioType, ARegisterSize registerSize = 0)
         {
-            this.Index        = Index;
-            this.IoType       = IoType;
-            this.RegisterSize = RegisterSize;
+            Index        = index;
+            IoType       = ioType;
+            RegisterSize = registerSize;
         }
 
-        public void Emit(AILEmitter Context)
+        public void Emit(AilEmitter context)
         {
             switch (IoType)
             {
-                case AIoType.Arg: Context.Generator.EmitLdarg(Index); break;
+                case AIoType.Arg: context.Generator.EmitLdarg(Index); break;
 
                 case AIoType.Fields:
                 {
-                    long IntInputs = Context.LocalAlloc.GetIntInputs(Context.GetILBlock(Index));
-                    long VecInputs = Context.LocalAlloc.GetVecInputs(Context.GetILBlock(Index));
+                    long intInputs = context.LocalAlloc.GetIntInputs(context.GetIlBlock(Index));
+                    long vecInputs = context.LocalAlloc.GetVecInputs(context.GetIlBlock(Index));
 
-                    LoadLocals(Context, IntInputs, ARegisterType.Int);
-                    LoadLocals(Context, VecInputs, ARegisterType.Vector);
+                    LoadLocals(context, intInputs, ARegisterType.Int);
+                    LoadLocals(context, vecInputs, ARegisterType.Vector);
 
                     break;
                 }
 
-                case AIoType.Flag:   EmitLdloc(Context, Index, ARegisterType.Flag);   break;
-                case AIoType.Int:    EmitLdloc(Context, Index, ARegisterType.Int);    break;
-                case AIoType.Vector: EmitLdloc(Context, Index, ARegisterType.Vector); break;
+                case AIoType.Flag:   EmitLdloc(context, Index, ARegisterType.Flag);   break;
+                case AIoType.Int:    EmitLdloc(context, Index, ARegisterType.Int);    break;
+                case AIoType.Vector: EmitLdloc(context, Index, ARegisterType.Vector); break;
             }
         }
 
-        private void LoadLocals(AILEmitter Context, long Inputs, ARegisterType BaseType)
+        private void LoadLocals(AilEmitter context, long inputs, ARegisterType baseType)
         {
-            for (int Bit = 0; Bit < 64; Bit++)
+            for (int bit = 0; bit < 64; bit++)
             {
-                long Mask = 1L << Bit;
+                long mask = 1L << bit;
 
-                if ((Inputs & Mask) != 0)
+                if ((inputs & mask) != 0)
                 {
-                    ARegister Reg = AILEmitter.GetRegFromBit(Bit, BaseType);
+                    ARegister reg = AilEmitter.GetRegFromBit(bit, baseType);
 
-                    Context.Generator.EmitLdarg(ATranslatedSub.StateArgIdx);
-                    Context.Generator.Emit(OpCodes.Ldfld, Reg.GetField());
+                    context.Generator.EmitLdarg(ATranslatedSub.StateArgIdx);
+                    context.Generator.Emit(OpCodes.Ldfld, reg.GetField());
 
-                    Context.Generator.EmitStloc(Context.GetLocalIndex(Reg));
+                    context.Generator.EmitStloc(context.GetLocalIndex(reg));
                 }
             }
         }
 
-        private void EmitLdloc(AILEmitter Context, int Index, ARegisterType RegisterType)
+        private void EmitLdloc(AilEmitter context, int index, ARegisterType registerType)
         {
-            ARegister Reg = new ARegister(Index, RegisterType);
+            ARegister reg = new ARegister(index, registerType);
 
-            Context.Generator.EmitLdloc(Context.GetLocalIndex(Reg));
+            context.Generator.EmitLdloc(context.GetLocalIndex(reg));
 
-            if (RegisterType == ARegisterType.Int &&
+            if (registerType == ARegisterType.Int &&
                 RegisterSize == ARegisterSize.Int32)
             {
-                Context.Generator.Emit(OpCodes.Conv_U4);
+                context.Generator.Emit(OpCodes.Conv_U4);
             }
         }
     }

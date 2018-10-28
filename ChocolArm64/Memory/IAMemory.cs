@@ -1,37 +1,37 @@
 namespace ChocolArm64.Memory
 {
-    public interface IAMemory
+    public interface IaMemory
     {
-        sbyte ReadSByte(long Position);
+        sbyte ReadSByte(long position);
 
-        short ReadInt16(long Position);
+        short ReadInt16(long position);
 
-        int ReadInt32(long Position);
+        int ReadInt32(long position);
 
-        long ReadInt64(long Position);
+        long ReadInt64(long position);
 
-        byte ReadByte(long Position);
+        byte ReadByte(long position);
 
-        ushort ReadUInt16(long Position);
+        ushort ReadUInt16(long position);
 
-        uint ReadUInt32(long Position);
+        uint ReadUInt32(long position);
 
-        ulong ReadUInt64(long Position);
+        ulong ReadUInt64(long position);
 
-        void WriteSByte(long Position, sbyte Value);
+        void WriteSByte(long position, sbyte value);
 
-        void WriteInt16(long Position, short Value);
+        void WriteInt16(long position, short value);
 
-        void WriteInt32(long Position, int Value);
+        void WriteInt32(long position, int value);
 
-        void WriteInt64(long Position, long Value);
+        void WriteInt64(long position, long value);
 
-        void WriteByte(long Position, byte Value);
+        void WriteByte(long position, byte value);
 
-        void WriteUInt16(long Position, ushort Value);
+        void WriteUInt16(long position, ushort value);
 
-        void WriteUInt32(long Position, uint Value);
+        void WriteUInt32(long position, uint value);
 
-        void WriteUInt64(long Position, ulong Value);
+        void WriteUInt64(long position, ulong value);
     }
 }

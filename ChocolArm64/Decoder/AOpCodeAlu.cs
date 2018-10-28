@@ -3,20 +3,20 @@ using ChocolArm64.State;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeAlu : AOpCode, IAOpCodeAlu
+    class AOpCodeAlu : AOpCode, IaOpCodeAlu
     {
         public int Rd { get; protected set; }
         public int Rn { get; private   set; }
 
         public ADataOp DataOp { get; private set; }
 
-        public AOpCodeAlu(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeAlu(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Rd     =           (OpCode >>  0) & 0x1f;
-            Rn     =           (OpCode >>  5) & 0x1f;
-            DataOp = (ADataOp)((OpCode >> 24) & 0x3);
+            Rd     =           (opCode >>  0) & 0x1f;
+            Rn     =           (opCode >>  5) & 0x1f;
+            DataOp = (ADataOp)((opCode >> 24) & 0x3);
 
-            RegisterSize = (OpCode >> 31) != 0
+            RegisterSize = (opCode >> 31) != 0
                 ? ARegisterSize.Int64
                 : ARegisterSize.Int32;
         }

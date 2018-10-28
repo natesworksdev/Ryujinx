@@ -2,10 +2,10 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeCcmpImm : AOpCodeCcmp, IAOpCodeAluImm
+    class AOpCodeCcmpImm : AOpCodeCcmp, IaOpCodeAluImm
     {
         public long Imm => RmImm;
 
-        public AOpCodeCcmpImm(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode) { }
+        public AOpCodeCcmpImm(AInst inst, long position, int opCode) : base(inst, position, opCode) { }
     }
 }

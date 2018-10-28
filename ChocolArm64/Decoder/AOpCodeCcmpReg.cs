@@ -2,7 +2,7 @@ using ChocolArm64.Instruction;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeCcmpReg : AOpCodeCcmp, IAOpCodeAluRs
+    class AOpCodeCcmpReg : AOpCodeCcmp, IaOpCodeAluRs
     {
         public int Rm => RmImm;
 
@@ -10,6 +10,6 @@ namespace ChocolArm64.Decoder
 
         public AShiftType ShiftType => AShiftType.Lsl;
 
-        public AOpCodeCcmpReg(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode) { }
+        public AOpCodeCcmpReg(AInst inst, long position, int opCode) : base(inst, position, opCode) { }
     }
 }

@@ -1,6 +1,6 @@
 namespace ChocolArm64.Decoder
 {
-    interface IAOpCodeSimd : IAOpCode
+    interface IaOpCodeSimd : IaOpCode
     {
         int Size { get; }
     }

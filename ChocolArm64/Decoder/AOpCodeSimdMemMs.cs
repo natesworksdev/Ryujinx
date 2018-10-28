@@ -3,16 +3,16 @@ using ChocolArm64.State;
 
 namespace ChocolArm64.Decoder
 {
-    class AOpCodeSimdMemMs : AOpCodeMemReg, IAOpCodeSimd
+    class AOpCodeSimdMemMs : AOpCodeMemReg, IaOpCodeSimd
     {
         public int  Reps   { get; private set; }
         public int  SElems { get; private set; }
         public int  Elems  { get; private set; }
         public bool WBack  { get; private set; }
 
-        public AOpCodeSimdMemMs(AInst Inst, long Position, int OpCode) : base(Inst, Position, OpCode)
+        public AOpCodeSimdMemMs(AInst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            switch ((OpCode >> 12) & 0xf)
+            switch ((opCode >> 12) & 0xf)
             {
                 case 0b0000: Reps = 1; SElems = 4; break;
                 case 0b0010: Reps = 4; SElems = 1; break;
@@ -22,26 +22,26 @@ namespace ChocolArm64.Decoder
                 case 0b1000: Reps = 1; SElems = 2; break;
                 case 0b1010: Reps = 2; SElems = 1; break;
 
-                default: Inst = AInst.Undefined; return;
+                default: inst = AInst.Undefined; return;
             }
 
-            Size  =  (OpCode >> 10) & 3;
-            WBack = ((OpCode >> 23) & 1) != 0;
+            Size  =  (opCode >> 10) & 3;
+            WBack = ((opCode >> 23) & 1) != 0;
 
-            bool Q = ((OpCode >> 30) & 1) != 0;
+            bool q = ((opCode >> 30) & 1) != 0;
 
-            if (!Q && Size == 3 && SElems != 1)
+            if (!q && Size == 3 && SElems != 1)
             {
-                Inst = AInst.Undefined;
+                inst = AInst.Undefined;
 
                 return;
             }
 
             Extend64 = false;
 
-            RegisterSize = Q
-                ? ARegisterSize.SIMD128
-                : ARegisterSize.SIMD64;
+            RegisterSize = q
+                ? ARegisterSize.Simd128
+                : ARegisterSize.Simd64;
 
             Elems = (GetBitsCount() >> 3) >> Size;
         }

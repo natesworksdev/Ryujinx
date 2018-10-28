@@ -5,7 +5,7 @@ namespace ChocolArm64.State
         Nonzero,
         Zero,
         Infinity,
-        QNaN,
-        SNaN
+        QnaN,
+        SnaN
     }
 }
