@@ -207,7 +207,7 @@ namespace ChocolArm64.Instruction
 
             float result;
 
-            if (type == FPType.SnaN || type == FPType.QnaN)
+            if (type == FPType.SNaN || type == FPType.QNaN)
             {
                 if (state.GetFpcrFlag(Fpcr.Dn))
                 {
@@ -218,7 +218,7 @@ namespace ChocolArm64.Instruction
                     result = FPConvertNaN(valueBits);
                 }
 
-                if (type == FPType.SnaN)
+                if (type == FPType.SNaN)
                 {
                     FPProcessException(FPExc.InvalidOp, state);
                 }
@@ -290,7 +290,7 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
-                    type = (~frac16 & 0x0200u) == 0u ? FPType.QnaN : FPType.SnaN;
+                    type = (~frac16 & 0x0200u) == 0u ? FPType.QNaN : FPType.SNaN;
                     real = 0d;
                 }
             }
@@ -460,7 +460,7 @@ namespace ChocolArm64.Instruction
 
             ushort resultBits;
 
-            if (type == FPType.SnaN || type == FPType.QnaN)
+            if (type == FPType.SNaN || type == FPType.QNaN)
             {
                 if (altHp)
                 {
@@ -475,7 +475,7 @@ namespace ChocolArm64.Instruction
                     resultBits = FPConvertNaN(valueBits);
                 }
 
-                if (type == FPType.SnaN || altHp)
+                if (type == FPType.SNaN || altHp)
                 {
                     FPProcessException(FPExc.InvalidOp, state);
                 }
@@ -560,7 +560,7 @@ namespace ChocolArm64.Instruction
                 }
                 else
                 {
-                    type = (~frac32 & 0x00400000u) == 0u ? FPType.QnaN : FPType.SnaN;
+                    type = (~frac32 & 0x00400000u) == 0u ? FPType.QNaN : FPType.SNaN;
                     real = 0d;
                 }
             }
@@ -862,11 +862,11 @@ namespace ChocolArm64.Instruction
             value1.FPUnpack(out FPType type1, out _, out _);
             value2.FPUnpack(out FPType type2, out _, out _);
 
-            if (type1 == FPType.QnaN && type2 != FPType.QnaN)
+            if (type1 == FPType.QNaN && type2 != FPType.QNaN)
             {
                 value1 = FPInfinity(true);
             }
-            else if (type1 != FPType.QnaN && type2 == FPType.QnaN)
+            else if (type1 != FPType.QNaN && type2 == FPType.QNaN)
             {
                 value2 = FPInfinity(true);
             }
@@ -927,11 +927,11 @@ namespace ChocolArm64.Instruction
             value1.FPUnpack(out FPType type1, out _, out _);
             value2.FPUnpack(out FPType type2, out _, out _);
 
-            if (type1 == FPType.QnaN && type2 != FPType.QnaN)
+            if (type1 == FPType.QNaN && type2 != FPType.QNaN)
             {
                 value1 = FPInfinity(false);
             }
-            else if (type1 != FPType.QnaN && type2 == FPType.QnaN)
+            else if (type1 != FPType.QNaN && type2 == FPType.QNaN)
             {
                 value2 = FPInfinity(false);
             }
@@ -989,7 +989,7 @@ namespace ChocolArm64.Instruction
 
             float result = FPProcessNaNs3(typeA, type1, type2, addend, op1, op2, state, out bool done);
 
-            if (typeA == FPType.QnaN && ((inf1 && zero2) || (zero1 && inf2)))
+            if (typeA == FPType.QNaN && ((inf1 && zero2) || (zero1 && inf2)))
             {
                 result = FPDefaultNaN();
 
@@ -1123,7 +1123,7 @@ namespace ChocolArm64.Instruction
 
             float result;
 
-            if (type == FPType.SnaN || type == FPType.QnaN)
+            if (type == FPType.SNaN || type == FPType.QNaN)
             {
                 result = FPProcessNaN(type, op, state);
             }
@@ -1183,7 +1183,7 @@ namespace ChocolArm64.Instruction
 
             float result;
 
-            if (type == FPType.SnaN || type == FPType.QnaN)
+            if (type == FPType.SNaN || type == FPType.QNaN)
             {
                 result = FPProcessNaN(type, op, state);
             }
@@ -1306,8 +1306,8 @@ namespace ChocolArm64.Instruction
                 else
                 {
                     type = (~valueBits & 0x00400000u) == 0u
-                        ? FPType.QnaN
-                        : FPType.SnaN;
+                        ? FPType.QNaN
+                        : FPType.SNaN;
 
                     return FPZero(sign);
                 }
@@ -1330,19 +1330,19 @@ namespace ChocolArm64.Instruction
         {
             done = true;
 
-            if (type1 == FPType.SnaN)
+            if (type1 == FPType.SNaN)
             {
                 return FPProcessNaN(type1, op1, state);
             }
-            else if (type2 == FPType.SnaN)
+            else if (type2 == FPType.SNaN)
             {
                 return FPProcessNaN(type2, op2, state);
             }
-            else if (type1 == FPType.QnaN)
+            else if (type1 == FPType.QNaN)
             {
                 return FPProcessNaN(type1, op1, state);
             }
-            else if (type2 == FPType.QnaN)
+            else if (type2 == FPType.QNaN)
             {
                 return FPProcessNaN(type2, op2, state);
             }
@@ -1364,27 +1364,27 @@ namespace ChocolArm64.Instruction
         {
             done = true;
 
-            if (type1 == FPType.SnaN)
+            if (type1 == FPType.SNaN)
             {
                 return FPProcessNaN(type1, op1, state);
             }
-            else if (type2 == FPType.SnaN)
+            else if (type2 == FPType.SNaN)
             {
                 return FPProcessNaN(type2, op2, state);
             }
-            else if (type3 == FPType.SnaN)
+            else if (type3 == FPType.SNaN)
             {
                 return FPProcessNaN(type3, op3, state);
             }
-            else if (type1 == FPType.QnaN)
+            else if (type1 == FPType.QNaN)
             {
                 return FPProcessNaN(type1, op1, state);
             }
-            else if (type2 == FPType.QnaN)
+            else if (type2 == FPType.QNaN)
             {
                 return FPProcessNaN(type2, op2, state);
             }
-            else if (type3 == FPType.QnaN)
+            else if (type3 == FPType.QNaN)
             {
                 return FPProcessNaN(type3, op3, state);
             }
@@ -1396,7 +1396,7 @@ namespace ChocolArm64.Instruction
 
         private static float FPProcessNaN(FPType type, uint op, AThreadState state)
         {
-            if (type == FPType.SnaN)
+            if (type == FPType.SNaN)
             {
                 op |= 1u << 22;
 
@@ -1561,11 +1561,11 @@ namespace ChocolArm64.Instruction
             value1.FPUnpack(out FPType type1, out _, out _);
             value2.FPUnpack(out FPType type2, out _, out _);
 
-            if (type1 == FPType.QnaN && type2 != FPType.QnaN)
+            if (type1 == FPType.QNaN && type2 != FPType.QNaN)
             {
                 value1 = FPInfinity(true);
             }
-            else if (type1 != FPType.QnaN && type2 == FPType.QnaN)
+            else if (type1 != FPType.QNaN && type2 == FPType.QNaN)
             {
                 value2 = FPInfinity(true);
             }
@@ -1626,11 +1626,11 @@ namespace ChocolArm64.Instruction
             value1.FPUnpack(out FPType type1, out _, out _);
             value2.FPUnpack(out FPType type2, out _, out _);
 
-            if (type1 == FPType.QnaN && type2 != FPType.QnaN)
+            if (type1 == FPType.QNaN && type2 != FPType.QNaN)
             {
                 value1 = FPInfinity(false);
             }
-            else if (type1 != FPType.QnaN && type2 == FPType.QnaN)
+            else if (type1 != FPType.QNaN && type2 == FPType.QNaN)
             {
                 value2 = FPInfinity(false);
             }
@@ -1688,7 +1688,7 @@ namespace ChocolArm64.Instruction
 
             double result = FPProcessNaNs3(typeA, type1, type2, addend, op1, op2, state, out bool done);
 
-            if (typeA == FPType.QnaN && ((inf1 && zero2) || (zero1 && inf2)))
+            if (typeA == FPType.QNaN && ((inf1 && zero2) || (zero1 && inf2)))
             {
                 result = FPDefaultNaN();
 
@@ -1822,7 +1822,7 @@ namespace ChocolArm64.Instruction
 
             double result;
 
-            if (type == FPType.SnaN || type == FPType.QnaN)
+            if (type == FPType.SNaN || type == FPType.QNaN)
             {
                 result = FPProcessNaN(type, op, state);
             }
@@ -1882,7 +1882,7 @@ namespace ChocolArm64.Instruction
 
             double result;
 
-            if (type == FPType.SnaN || type == FPType.QnaN)
+            if (type == FPType.SNaN || type == FPType.QNaN)
             {
                 result = FPProcessNaN(type, op, state);
             }
@@ -2005,8 +2005,8 @@ namespace ChocolArm64.Instruction
                 else
                 {
                     type = (~valueBits & 0x0008000000000000ul) == 0ul
-                        ? FPType.QnaN
-                        : FPType.SnaN;
+                        ? FPType.QNaN
+                        : FPType.SNaN;
 
                     return FPZero(sign);
                 }
@@ -2029,19 +2029,19 @@ namespace ChocolArm64.Instruction
         {
             done = true;
 
-            if (type1 == FPType.SnaN)
+            if (type1 == FPType.SNaN)
             {
                 return FPProcessNaN(type1, op1, state);
             }
-            else if (type2 == FPType.SnaN)
+            else if (type2 == FPType.SNaN)
             {
                 return FPProcessNaN(type2, op2, state);
             }
-            else if (type1 == FPType.QnaN)
+            else if (type1 == FPType.QNaN)
             {
                 return FPProcessNaN(type1, op1, state);
             }
-            else if (type2 == FPType.QnaN)
+            else if (type2 == FPType.QNaN)
             {
                 return FPProcessNaN(type2, op2, state);
             }
@@ -2063,27 +2063,27 @@ namespace ChocolArm64.Instruction
         {
             done = true;
 
-            if (type1 == FPType.SnaN)
+            if (type1 == FPType.SNaN)
             {
                 return FPProcessNaN(type1, op1, state);
             }
-            else if (type2 == FPType.SnaN)
+            else if (type2 == FPType.SNaN)
             {
                 return FPProcessNaN(type2, op2, state);
             }
-            else if (type3 == FPType.SnaN)
+            else if (type3 == FPType.SNaN)
             {
                 return FPProcessNaN(type3, op3, state);
             }
-            else if (type1 == FPType.QnaN)
+            else if (type1 == FPType.QNaN)
             {
                 return FPProcessNaN(type1, op1, state);
             }
-            else if (type2 == FPType.QnaN)
+            else if (type2 == FPType.QNaN)
             {
                 return FPProcessNaN(type2, op2, state);
             }
-            else if (type3 == FPType.QnaN)
+            else if (type3 == FPType.QNaN)
             {
                 return FPProcessNaN(type3, op3, state);
             }
@@ -2095,7 +2095,7 @@ namespace ChocolArm64.Instruction
 
         private static double FPProcessNaN(FPType type, ulong op, AThreadState state)
         {
-            if (type == FPType.SnaN)
+            if (type == FPType.SNaN)
             {
                 op |= 1ul << 51;
 
