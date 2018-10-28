@@ -44,8 +44,8 @@ namespace Ryujinx.UI.Input
             JoyConKeyboardLeft  left,
             JoyConKeyboardRight right)
         {
-            this.Left  = left;
-            this.Right = right;
+            Left  = left;
+            Right = right;
         }
 
         public HidControllerButtons GetButtons(KeyboardState keyboard)
