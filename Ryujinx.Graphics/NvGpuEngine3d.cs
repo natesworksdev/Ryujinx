@@ -550,7 +550,7 @@ namespace Ryujinx.Graphics
         {
             if (TextureHandle == 0)
             {
-                //FIXME: Some games like puyo puyo will handles with the value 0.
+                //FIXME: Some games like puyo puyo will use handles with the value 0.
                 //This is a bug, most likely caused by sync issues.
                 return;
             }

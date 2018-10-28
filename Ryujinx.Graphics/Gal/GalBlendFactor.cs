@@ -41,6 +41,5 @@ namespace Ryujinx.Graphics.Gal
         OneMinusSrc1ColorGl     = 0xc901,
         Src1AlphaGl             = 0xc902,
         OneMinusSrc1AlphaGl     = 0xc903
-
     }
 }
