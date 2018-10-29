@@ -531,69 +531,69 @@ namespace ChocolArm64.Instruction
 #endregion
 
 #region "Sha1"
-        public static Vector128<float> HashChoose(Vector128<float> hash_abcd, uint hash_e, Vector128<float> wk)
+        public static Vector128<float> HashChoose(Vector128<float> hashAbcd, uint hashE, Vector128<float> wk)
         {
             for (int e = 0; e <= 3; e++)
             {
-                uint t = ShaChoose((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
-                                   (uint)VectorExtractIntZx(hash_abcd, (byte)2, 2),
-                                   (uint)VectorExtractIntZx(hash_abcd, (byte)3, 2));
+                uint t = ShaChoose((uint)VectorExtractIntZx(hashAbcd, (byte)1, 2),
+                                   (uint)VectorExtractIntZx(hashAbcd, (byte)2, 2),
+                                   (uint)VectorExtractIntZx(hashAbcd, (byte)3, 2));
 
-                hash_e += Rol((uint)VectorExtractIntZx(hash_abcd, (byte)0, 2), 5) + t;
-                hash_e += (uint)VectorExtractIntZx(wk, (byte)e, 2);
+                hashE += Rol((uint)VectorExtractIntZx(hashAbcd, (byte)0, 2), 5) + t;
+                hashE += (uint)VectorExtractIntZx(wk, (byte)e, 2);
 
-                t = Rol((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2), 30);
-                hash_abcd = VectorInsertInt((ulong)t, hash_abcd, (byte)1, 2);
+                t = Rol((uint)VectorExtractIntZx(hashAbcd, (byte)1, 2), 30);
+                hashAbcd = VectorInsertInt((ulong)t, hashAbcd, (byte)1, 2);
 
-                Rol32_160(ref hash_e, ref hash_abcd);
+                Rol32_160(ref hashE, ref hashAbcd);
             }
 
-            return hash_abcd;
+            return hashAbcd;
         }
 
-        public static uint FixedRotate(uint hash_e)
+        public static uint FixedRotate(uint hashE)
         {
-            return hash_e.Rol(30);
+            return hashE.Rol(30);
         }
 
-        public static Vector128<float> HashMajority(Vector128<float> hash_abcd, uint hash_e, Vector128<float> wk)
-        {
-            for (int e = 0; e <= 3; e++)
-            {
-                uint t = ShaMajority((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
-                                     (uint)VectorExtractIntZx(hash_abcd, (byte)2, 2),
-                                     (uint)VectorExtractIntZx(hash_abcd, (byte)3, 2));
-
-                hash_e += Rol((uint)VectorExtractIntZx(hash_abcd, (byte)0, 2), 5) + t;
-                hash_e += (uint)VectorExtractIntZx(wk, (byte)e, 2);
-
-                t = Rol((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2), 30);
-                hash_abcd = VectorInsertInt((ulong)t, hash_abcd, (byte)1, 2);
-
-                Rol32_160(ref hash_e, ref hash_abcd);
-            }
-
-            return hash_abcd;
-        }
-
-        public static Vector128<float> HashParity(Vector128<float> hash_abcd, uint hash_e, Vector128<float> wk)
+        public static Vector128<float> HashMajority(Vector128<float> hashAbcd, uint hashE, Vector128<float> wk)
         {
             for (int e = 0; e <= 3; e++)
             {
-                uint t = ShaParity((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2),
-                                   (uint)VectorExtractIntZx(hash_abcd, (byte)2, 2),
-                                   (uint)VectorExtractIntZx(hash_abcd, (byte)3, 2));
+                uint t = ShaMajority((uint)VectorExtractIntZx(hashAbcd, (byte)1, 2),
+                                     (uint)VectorExtractIntZx(hashAbcd, (byte)2, 2),
+                                     (uint)VectorExtractIntZx(hashAbcd, (byte)3, 2));
 
-                hash_e += Rol((uint)VectorExtractIntZx(hash_abcd, (byte)0, 2), 5) + t;
-                hash_e += (uint)VectorExtractIntZx(wk, (byte)e, 2);
+                hashE += Rol((uint)VectorExtractIntZx(hashAbcd, (byte)0, 2), 5) + t;
+                hashE += (uint)VectorExtractIntZx(wk, (byte)e, 2);
 
-                t = Rol((uint)VectorExtractIntZx(hash_abcd, (byte)1, 2), 30);
-                hash_abcd = VectorInsertInt((ulong)t, hash_abcd, (byte)1, 2);
+                t = Rol((uint)VectorExtractIntZx(hashAbcd, (byte)1, 2), 30);
+                hashAbcd = VectorInsertInt((ulong)t, hashAbcd, (byte)1, 2);
 
-                Rol32_160(ref hash_e, ref hash_abcd);
+                Rol32_160(ref hashE, ref hashAbcd);
             }
 
-            return hash_abcd;
+            return hashAbcd;
+        }
+
+        public static Vector128<float> HashParity(Vector128<float> hashAbcd, uint hashE, Vector128<float> wk)
+        {
+            for (int e = 0; e <= 3; e++)
+            {
+                uint t = ShaParity((uint)VectorExtractIntZx(hashAbcd, (byte)1, 2),
+                                   (uint)VectorExtractIntZx(hashAbcd, (byte)2, 2),
+                                   (uint)VectorExtractIntZx(hashAbcd, (byte)3, 2));
+
+                hashE += Rol((uint)VectorExtractIntZx(hashAbcd, (byte)0, 2), 5) + t;
+                hashE += (uint)VectorExtractIntZx(wk, (byte)e, 2);
+
+                t = Rol((uint)VectorExtractIntZx(hashAbcd, (byte)1, 2), 30);
+                hashAbcd = VectorInsertInt((ulong)t, hashAbcd, (byte)1, 2);
+
+                Rol32_160(ref hashE, ref hashAbcd);
+            }
+
+            return hashAbcd;
         }
 
         public static Vector128<float> Sha1SchedulePart1(Vector128<float> w0_3, Vector128<float> w4_7, Vector128<float> w8_11)
@@ -623,13 +623,13 @@ namespace ChocolArm64.Instruction
 
             Vector128<float> result = new Vector128<float>();
 
-            Vector128<float> T = Sse.Xor(tw0_3, Sse.StaticCast<uint, float>(
+            Vector128<float> t = Sse.Xor(tw0_3, Sse.StaticCast<uint, float>(
                 Sse2.ShiftRightLogical128BitLane(Sse.StaticCast<float, uint>(w12_15), (byte)4)));
 
-            uint tE0 = (uint)VectorExtractIntZx(T, (byte)0, 2);
-            uint tE1 = (uint)VectorExtractIntZx(T, (byte)1, 2);
-            uint tE2 = (uint)VectorExtractIntZx(T, (byte)2, 2);
-            uint tE3 = (uint)VectorExtractIntZx(T, (byte)3, 2);
+            uint tE0 = (uint)VectorExtractIntZx(t, (byte)0, 2);
+            uint tE1 = (uint)VectorExtractIntZx(t, (byte)1, 2);
+            uint tE2 = (uint)VectorExtractIntZx(t, (byte)2, 2);
+            uint tE3 = (uint)VectorExtractIntZx(t, (byte)3, 2);
 
             result = VectorInsertInt((ulong)tE0.Rol(1), result, (byte)0, 2);
             result = VectorInsertInt((ulong)tE1.Rol(1), result, (byte)1, 2);
@@ -638,17 +638,17 @@ namespace ChocolArm64.Instruction
             return VectorInsertInt((ulong)(tE3.Rol(1) ^ tE0.Rol(2)), result, (byte)3, 2);
         }
 
-        private static void Rol32_160(ref uint y, ref Vector128<float> X)
+        private static void Rol32_160(ref uint y, ref Vector128<float> x)
         {
             if (!Sse2.IsSupported)
             {
                 throw new PlatformNotSupportedException();
             }
 
-            uint xE3 = (uint)VectorExtractIntZx(X, (byte)3, 2);
+            uint xE3 = (uint)VectorExtractIntZx(x, (byte)3, 2);
 
-            X = Sse.StaticCast<uint, float>(Sse2.ShiftLeftLogical128BitLane(Sse.StaticCast<float, uint>(X), (byte)4));
-            X = VectorInsertInt((ulong)y, X, (byte)0, 2);
+            x = Sse.StaticCast<uint, float>(Sse2.ShiftLeftLogical128BitLane(Sse.StaticCast<float, uint>(x), (byte)4));
+            x = VectorInsertInt((ulong)y, x, (byte)0, 2);
 
             y = xE3;
         }

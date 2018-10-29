@@ -123,7 +123,7 @@ namespace ChocolArm64
 
         private void ClearCacheIfNeeded()
         {
-            long Timestamp = GetTimestamp();
+            long timestamp = GetTimestamp();
 
             while (_totalSize > MaxTotalSize)
             {
@@ -138,9 +138,9 @@ namespace ChocolArm64
 
                     CacheBucket bucket = _cache[node.Value];
 
-                    long TimeDelta = Timestamp - bucket.Timestamp;
+                    long timeDelta = Timestamp - bucket.Timestamp;
 
-                    if (TimeDelta <= MinTimeDelta)
+                    if (timeDelta <= MinTimeDelta)
                     {
                         break;
                     }

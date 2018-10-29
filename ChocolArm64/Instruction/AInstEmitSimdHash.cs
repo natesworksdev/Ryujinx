@@ -8,79 +8,79 @@ namespace ChocolArm64.Instruction
     static partial class AInstEmit
     {
 #region "Sha1"
-        public static void Sha1c_V(AilEmitterCtx Context)
+        public static void Sha1c_V(AilEmitterCtx context)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            EmitVectorExtractZx(Context, Op.Rn, 0, 2);
-            Context.EmitLdvec(Op.Rm);
+            context.EmitLdvec(op.Rd);
+            EmitVectorExtractZx(context, op.Rn, 0, 2);
+            context.EmitLdvec(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.HashChoose));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.HashChoose));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Sha1h_V(AilEmitterCtx Context)
+        public static void Sha1h_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            EmitVectorExtractZx(Context, Op.Rn, 0, 2);
+            EmitVectorExtractZx(context, op.Rn, 0, 2);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.FixedRotate));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.FixedRotate));
 
-            EmitScalarSet(Context, Op.Rd, 2);
+            EmitScalarSet(context, op.Rd, 2);
         }
 
-        public static void Sha1m_V(AilEmitterCtx Context)
+        public static void Sha1m_V(AilEmitterCtx context)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            EmitVectorExtractZx(Context, Op.Rn, 0, 2);
-            Context.EmitLdvec(Op.Rm);
+            context.EmitLdvec(op.Rd);
+            EmitVectorExtractZx(context, op.Rn, 0, 2);
+            context.EmitLdvec(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.HashMajority));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.HashMajority));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Sha1p_V(AilEmitterCtx Context)
+        public static void Sha1p_V(AilEmitterCtx context)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            EmitVectorExtractZx(Context, Op.Rn, 0, 2);
-            Context.EmitLdvec(Op.Rm);
+            context.EmitLdvec(op.Rd);
+            EmitVectorExtractZx(context, op.Rn, 0, 2);
+            context.EmitLdvec(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.HashParity));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.HashParity));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Sha1su0_V(AilEmitterCtx Context)
+        public static void Sha1su0_V(AilEmitterCtx context)
         {
-            AOpCodeSimdReg Op = (AOpCodeSimdReg)Context.CurrOp;
+            AOpCodeSimdReg op = (AOpCodeSimdReg)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            Context.EmitLdvec(Op.Rn);
-            Context.EmitLdvec(Op.Rm);
+            context.EmitLdvec(op.Rd);
+            context.EmitLdvec(op.Rn);
+            context.EmitLdvec(op.Rm);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Sha1SchedulePart1));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.Sha1SchedulePart1));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 
-        public static void Sha1su1_V(AilEmitterCtx Context)
+        public static void Sha1su1_V(AilEmitterCtx context)
         {
-            AOpCodeSimd Op = (AOpCodeSimd)Context.CurrOp;
+            AOpCodeSimd op = (AOpCodeSimd)context.CurrOp;
 
-            Context.EmitLdvec(Op.Rd);
-            Context.EmitLdvec(Op.Rn);
+            context.EmitLdvec(op.Rd);
+            context.EmitLdvec(op.Rn);
 
-            ASoftFallback.EmitCall(Context, nameof(ASoftFallback.Sha1SchedulePart2));
+            ASoftFallback.EmitCall(context, nameof(ASoftFallback.Sha1SchedulePart2));
 
-            Context.EmitStvec(Op.Rd);
+            context.EmitStvec(op.Rd);
         }
 #endregion
 

@@ -41,9 +41,9 @@ namespace ChocolArm64
             return (long)RotateRight((ulong)bits, shift, size);
         }
 
-        public static ulong RotateRight(ulong Bits, int Shift, int Size)
+        public static ulong RotateRight(ulong bits, int shift, int size)
         {
-            return (Bits >> Shift) | (Bits << (Size - Shift));
+            return (bits >> shift) | (bits << (size - shift));
         }
     }
 }
