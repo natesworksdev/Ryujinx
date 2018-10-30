@@ -1,6 +1,6 @@
 namespace ChocolArm64.State
 {
-    enum FPType
+    enum AFpType
     {
         Nonzero,
         Zero,

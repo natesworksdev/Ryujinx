@@ -112,13 +112,13 @@ namespace ChocolArm64.Instruction
 
             if (op > tMaxValue)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return tMaxValue;
             }
             else if (op < tMinValue)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return tMinValue;
             }
@@ -137,13 +137,13 @@ namespace ChocolArm64.Instruction
 
             if (op > (long)tMaxValue)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return tMaxValue;
             }
             else if (op < (long)tMinValue)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return tMinValue;
             }
@@ -161,7 +161,7 @@ namespace ChocolArm64.Instruction
 
             if (op > (ulong)tMaxValue)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return tMaxValue;
             }
@@ -179,7 +179,7 @@ namespace ChocolArm64.Instruction
 
             if (op > tMaxValue)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return tMaxValue;
             }
@@ -193,7 +193,7 @@ namespace ChocolArm64.Instruction
         {
             if (op == long.MinValue)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return long.MaxValue;
             }
@@ -209,7 +209,7 @@ namespace ChocolArm64.Instruction
 
             if ((~(op1 ^ op2) & (op1 ^ add)) < 0L)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 if (op1 < 0L)
                 {
@@ -232,7 +232,7 @@ namespace ChocolArm64.Instruction
 
             if ((add < op1) && (add < op2))
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return ulong.MaxValue;
             }
@@ -248,7 +248,7 @@ namespace ChocolArm64.Instruction
 
             if (((op1 ^ op2) & (op1 ^ sub)) < 0L)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 if (op1 < 0L)
                 {
@@ -271,7 +271,7 @@ namespace ChocolArm64.Instruction
 
             if (op1 < op2)
             {
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return ulong.MinValue;
             }
@@ -292,7 +292,7 @@ namespace ChocolArm64.Instruction
 
                 if ((~op2 & add) < 0L)
                 {
-                    state.SetFpsrFlag(Fpsr.Qc);
+                    state.SetFpsrFlag(AFpsr.Qc);
 
                     return long.MaxValue;
                 }
@@ -306,7 +306,7 @@ namespace ChocolArm64.Instruction
                 // Op1 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
                 // Op2 from (long)ulong.MinValue to long.MaxValue
 
-                state.SetFpsrFlag(Fpsr.Qc);
+                state.SetFpsrFlag(AFpsr.Qc);
 
                 return long.MaxValue;
             }
@@ -319,7 +319,7 @@ namespace ChocolArm64.Instruction
 
                 if (add > (ulong)long.MaxValue)
                 {
-                    state.SetFpsrFlag(Fpsr.Qc);
+                    state.SetFpsrFlag(AFpsr.Qc);
 
                     return long.MaxValue;
                 }
@@ -341,7 +341,7 @@ namespace ChocolArm64.Instruction
 
                 if ((add < (ulong)op1) && (add < op2))
                 {
-                    state.SetFpsrFlag(Fpsr.Qc);
+                    state.SetFpsrFlag(AFpsr.Qc);
 
                     return ulong.MaxValue;
                 }
@@ -366,7 +366,7 @@ namespace ChocolArm64.Instruction
 
                 if (add < (long)ulong.MinValue)
                 {
-                    state.SetFpsrFlag(Fpsr.Qc);
+                    state.SetFpsrFlag(AFpsr.Qc);
 
                     return ulong.MinValue;
                 }

@@ -209,7 +209,7 @@ namespace ChocolArm64.Instruction
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                if (state.GetFpcrFlag(Fpcr.Dn))
+                if (state.GetFpcrFlag(AFpcr.Dn))
                 {
                     result = FPDefaultNaN();
                 }
@@ -220,7 +220,7 @@ namespace ChocolArm64.Instruction
 
                 if (type == FPType.SNaN)
                 {
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
             }
             else if (type == FPType.Infinity)
@@ -281,7 +281,7 @@ namespace ChocolArm64.Instruction
                     real = Math.Pow(2d, -14) * ((double)frac16 * Math.Pow(2d, -10));
                 }
             }
-            else if (exp16 == 0x1Fu && !state.GetFpcrFlag(Fpcr.Ahp))
+            else if (exp16 == 0x1Fu && !state.GetFpcrFlag(AFpcr.Ahp))
             {
                 if (frac16 == 0u)
                 {
@@ -338,9 +338,9 @@ namespace ChocolArm64.Instruction
                 exponent++;
             }
 
-            if (state.GetFpcrFlag(Fpcr.Fz) && exponent < minimumExp)
+            if (state.GetFpcrFlag(AFpcr.Fz) && exponent < minimumExp)
             {
-                state.SetFpsrFlag(Fpsr.Ufc);
+                state.SetFpsrFlag(AFpsr.Ufc);
 
                 return FPZero(sign);
             }
@@ -355,9 +355,9 @@ namespace ChocolArm64.Instruction
             uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
             double error = mantissa * Math.Pow(2d, f) - (double)intMant;
 
-            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(Fpcr.Ufe)))
+            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(AFpcr.Ufe)))
             {
-                FPProcessException(FPExc.Underflow, state);
+                FPProcessException(AFpExc.Underflow, state);
             }
 
             bool overflowToInf;
@@ -409,7 +409,7 @@ namespace ChocolArm64.Instruction
             {
                 result = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
 
-                FPProcessException(FPExc.Overflow, state);
+                FPProcessException(AFpExc.Overflow, state);
 
                 error = 1d;
             }
@@ -421,7 +421,7 @@ namespace ChocolArm64.Instruction
 
             if (error != 0d)
             {
-                FPProcessException(FPExc.Inexact, state);
+                FPProcessException(AFpExc.Inexact, state);
             }
 
             return result;
@@ -433,7 +433,7 @@ namespace ChocolArm64.Instruction
                 (int)(((uint)valueBits & 0x8000u) << 16 | 0x7FC00000u | ((uint)valueBits & 0x01FFu) << 13));
         }
 
-        private static void FPProcessException(FPExc exc, AThreadState state)
+        private static void FPProcessException(AFpExc exc, AThreadState state)
         {
             int enable = (int)exc + 8;
 
@@ -456,7 +456,7 @@ namespace ChocolArm64.Instruction
 
             double real = value.FPUnpackCv(out FPType type, out bool sign, state, out uint valueBits);
 
-            bool altHp = state.GetFpcrFlag(Fpcr.Ahp);
+            bool altHp = state.GetFpcrFlag(AFpcr.Ahp);
 
             ushort resultBits;
 
@@ -466,7 +466,7 @@ namespace ChocolArm64.Instruction
                 {
                     resultBits = FPZero(sign);
                 }
-                else if (state.GetFpcrFlag(Fpcr.Dn))
+                else if (state.GetFpcrFlag(AFpcr.Dn))
                 {
                     resultBits = FPDefaultNaN();
                 }
@@ -477,7 +477,7 @@ namespace ChocolArm64.Instruction
 
                 if (type == FPType.SNaN || altHp)
                 {
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
             }
             else if (type == FPType.Infinity)
@@ -486,7 +486,7 @@ namespace ChocolArm64.Instruction
                 {
                     resultBits = (ushort)((sign ? 1u : 0u) << 15 | 0x7FFFu);
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else
                 {
@@ -538,12 +538,12 @@ namespace ChocolArm64.Instruction
 
             if (exp32 == 0u)
             {
-                if (frac32 == 0u || state.GetFpcrFlag(Fpcr.Fz))
+                if (frac32 == 0u || state.GetFpcrFlag(AFpcr.Fz))
                 {
                     type = FPType.Zero;
                     real = 0d;
 
-                    if (frac32 != 0u) FPProcessException(FPExc.InputDenorm, state);
+                    if (frac32 != 0u) FPProcessException(AFpExc.InputDenorm, state);
                 }
                 else
                 {
@@ -618,9 +618,9 @@ namespace ChocolArm64.Instruction
             uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
             double error = mantissa * Math.Pow(2d, f) - (double)intMant;
 
-            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(Fpcr.Ufe)))
+            if (biasedExp == 0u && (error != 0d || state.GetFpcrFlag(AFpcr.Ufe)))
             {
-                FPProcessException(FPExc.Underflow, state);
+                FPProcessException(AFpExc.Underflow, state);
             }
 
             bool overflowToInf;
@@ -668,13 +668,13 @@ namespace ChocolArm64.Instruction
 
             ushort resultBits;
 
-            if (!state.GetFpcrFlag(Fpcr.Ahp))
+            if (!state.GetFpcrFlag(AFpcr.Ahp))
             {
                 if (biasedExp >= (uint)Math.Pow(2d, e) - 1u)
                 {
                     resultBits = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
 
-                    FPProcessException(FPExc.Overflow, state);
+                    FPProcessException(AFpExc.Overflow, state);
 
                     error = 1d;
                 }
@@ -689,7 +689,7 @@ namespace ChocolArm64.Instruction
                 {
                     resultBits = (ushort)((sign ? 1u : 0u) << 15 | 0x7FFFu);
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
 
                     error = 0d;
                 }
@@ -701,7 +701,7 @@ namespace ChocolArm64.Instruction
 
             if (error != 0d)
             {
-                FPProcessException(FPExc.Inexact, state);
+                FPProcessException(AFpExc.Inexact, state);
             }
 
             return resultBits;
@@ -712,7 +712,7 @@ namespace ChocolArm64.Instruction
             return (ushort)((valueBits & 0x80000000u) >> 16 | 0x7E00u | (valueBits & 0x003FE000u) >> 13);
         }
 
-        private static void FPProcessException(FPExc exc, AThreadState state)
+        private static void FPProcessException(AFpExc exc, AThreadState state)
         {
             int enable = (int)exc + 8;
 
@@ -747,7 +747,7 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if ((inf1 && !sign1) || (inf2 && !sign2))
                 {
@@ -788,13 +788,13 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if (inf1 || zero2)
                 {
                     result = FPInfinity(sign1 ^ sign2);
 
-                    if (!inf1) FPProcessException(FPExc.DivideByZero, state);
+                    if (!inf1) FPProcessException(AFpExc.DivideByZero, state);
                 }
                 else if (zero1 || inf2)
                 {
@@ -957,7 +957,7 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if (inf1 || inf2)
                 {
@@ -993,7 +993,7 @@ namespace ChocolArm64.Instruction
             {
                 result = FPDefaultNaN();
 
-                FPProcessException(FPExc.InvalidOp, state);
+                FPProcessException(AFpExc.InvalidOp, state);
             }
 
             if (!done)
@@ -1008,7 +1008,7 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if ((infA && !signA) || (infP && !signP))
                 {
@@ -1199,7 +1199,7 @@ namespace ChocolArm64.Instruction
             {
                 result = FPDefaultNaN();
 
-                FPProcessException(FPExc.InvalidOp, state);
+                FPProcessException(AFpExc.InvalidOp, state);
             }
             else
             {
@@ -1227,7 +1227,7 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if ((inf1 && !sign1) || (inf2 && sign2))
                 {
@@ -1400,10 +1400,10 @@ namespace ChocolArm64.Instruction
             {
                 op |= 1u << 22;
 
-                FPProcessException(FPExc.InvalidOp, state);
+                FPProcessException(AFpExc.InvalidOp, state);
             }
 
-            if (state.GetFpcrFlag(Fpcr.Dn))
+            if (state.GetFpcrFlag(AFpcr.Dn))
             {
                 return FPDefaultNaN();
             }
@@ -1411,7 +1411,7 @@ namespace ChocolArm64.Instruction
             return BitConverter.Int32BitsToSingle((int)op);
         }
 
-        private static void FPProcessException(FPExc exc, AThreadState state)
+        private static void FPProcessException(AFpExc exc, AThreadState state)
         {
             int enable = (int)exc + 8;
 
@@ -1446,7 +1446,7 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if ((inf1 && !sign1) || (inf2 && !sign2))
                 {
@@ -1487,13 +1487,13 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if (inf1 || zero2)
                 {
                     result = FPInfinity(sign1 ^ sign2);
 
-                    if (!inf1) FPProcessException(FPExc.DivideByZero, state);
+                    if (!inf1) FPProcessException(AFpExc.DivideByZero, state);
                 }
                 else if (zero1 || inf2)
                 {
@@ -1656,7 +1656,7 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if (inf1 || inf2)
                 {
@@ -1692,7 +1692,7 @@ namespace ChocolArm64.Instruction
             {
                 result = FPDefaultNaN();
 
-                FPProcessException(FPExc.InvalidOp, state);
+                FPProcessException(AFpExc.InvalidOp, state);
             }
 
             if (!done)
@@ -1707,7 +1707,7 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if ((infA && !signA) || (infP && !signP))
                 {
@@ -1898,7 +1898,7 @@ namespace ChocolArm64.Instruction
             {
                 result = FPDefaultNaN();
 
-                FPProcessException(FPExc.InvalidOp, state);
+                FPProcessException(AFpExc.InvalidOp, state);
             }
             else
             {
@@ -1926,7 +1926,7 @@ namespace ChocolArm64.Instruction
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPExc.InvalidOp, state);
+                    FPProcessException(AFpExc.InvalidOp, state);
                 }
                 else if ((inf1 && !sign1) || (inf2 && sign2))
                 {
@@ -2099,10 +2099,10 @@ namespace ChocolArm64.Instruction
             {
                 op |= 1ul << 51;
 
-                FPProcessException(FPExc.InvalidOp, state);
+                FPProcessException(AFpExc.InvalidOp, state);
             }
 
-            if (state.GetFpcrFlag(Fpcr.Dn))
+            if (state.GetFpcrFlag(AFpcr.Dn))
             {
                 return FPDefaultNaN();
             }
@@ -2110,7 +2110,7 @@ namespace ChocolArm64.Instruction
             return BitConverter.Int64BitsToDouble((long)op);
         }
 
-        private static void FPProcessException(FPExc exc, AThreadState state)
+        private static void FPProcessException(AFpExc exc, AThreadState state)
         {
             int enable = (int)exc + 8;
 

@@ -1,6 +1,6 @@
 namespace ChocolArm64.State
 {
-    enum Fpcr
+    enum AFpcr
     {
         Ufe   = 11,
         RMode = 22,

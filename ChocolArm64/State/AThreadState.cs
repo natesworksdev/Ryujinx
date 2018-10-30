@@ -146,19 +146,19 @@ namespace ChocolArm64.State
             Undefined?.Invoke(this, new AInstUndefinedEventArgs(position, rawOpCode));
         }
 
-        internal bool GetFpcrFlag(Fpcr flag)
+        internal bool GetFpcrFlag(AFpcr flag)
         {
             return (Fpcr & (1 << (int)flag)) != 0;
         }
 
-        internal void SetFpsrFlag(Fpsr flag)
+        internal void SetFpsrFlag(AFpsr flag)
         {
             Fpsr |= 1 << (int)flag;
         }
 
         internal ARoundMode FPRoundingMode()
         {
-            return (ARoundMode)((Fpcr >> (int)State.Fpcr.RMode) & 3);
+            return (ARoundMode)((Fpcr >> (int)State.AFpcr.RMode) & 3);
         }
     }
 }
