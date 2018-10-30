@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace ChocolArm64.Memory
 {
-    public unsafe class AMemory : IAMemory, IDisposable
+    public unsafe class MemoryManager : IMemory, IDisposable
     {
         private const int PtLvl0Bits = 13;
         private const int PtLvl1Bits = 14;
@@ -29,7 +29,7 @@ namespace ChocolArm64.Memory
         private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
         private const int PtLvl1Bit = PtPageBits;
 
-        private const long ErgMask = (4 << AThreadState.ErgSizeLog2) - 1;
+        private const long ErgMask = (4 << CpuThreadState.ErgSizeLog2) - 1;
 
         private class ArmMonitor
         {
@@ -54,7 +54,7 @@ namespace ChocolArm64.Memory
 
         public event EventHandler<InvalidAccessEventArgs> InvalidAccess;
 
-        public AMemory(IntPtr ram)
+        public MemoryManager(IntPtr ram)
         {
             _monitors = new Dictionary<int, ArmMonitor>();
 

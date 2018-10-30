@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS
         public const string TemporaryNroSuffix = ".ryu_tmp.nro";
 
         //http://switchbrew.org/index.php?title=Homebrew_ABI
-        public static void WriteHbAbiData(AMemory Memory, long Position, int MainThreadHandle, string SwitchPath)
+        public static void WriteHbAbiData(MemoryManager Memory, long Position, int MainThreadHandle, string SwitchPath)
         {
             //MainThreadHandle.
             WriteConfigEntry(Memory, ref Position, 1, 0, MainThreadHandle);
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS
         }
 
         private static void WriteConfigEntry(
-            AMemory  Memory,
+            MemoryManager  Memory,
             ref long Position,
             int      Key,
             int      Flags  = 0,
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS
             Position += 0x18;
         }
 
-        public static string ReadHbAbiNextLoadPath(AMemory Memory, long Position)
+        public static string ReadHbAbiNextLoadPath(MemoryManager Memory, long Position)
         {
             string FileName = null;
 
@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS
                     long Value0 = Memory.ReadInt64(Position + 0x08);
                     long Value1 = Memory.ReadInt64(Position + 0x10);
 
-                    FileName = AMemoryHelper.ReadAsciiString(Memory, Value0, Value1 - Value0);
+                    FileName = MemoryHelper.ReadAsciiString(Memory, Value0, Value1 - Value0);
 
                     break;
                 }

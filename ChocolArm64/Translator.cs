@@ -21,13 +21,13 @@ namespace ChocolArm64
             _cache = new TranslatorCache();
         }
 
-        internal void ExecuteSubroutine(AThread thread, long position)
+        internal void ExecuteSubroutine(CpuThread thread, long position)
         {
             //TODO: Both the execute A32/A64 methods should be merged on the future,
             //when both ISAs are implemented with the interpreter and JIT.
             //As of now, A32 only has a interpreter and A64 a JIT.
-            AThreadState state  = thread.ThreadState;
-            AMemory      memory = thread.Memory;
+            CpuThreadState state  = thread.ThreadState;
+            MemoryManager      memory = thread.Memory;
 
             if (state.ExecutionMode == ExecutionMode.AArch32)
             {
@@ -39,7 +39,7 @@ namespace ChocolArm64
             }
         }
 
-        private void ExecuteSubroutineA32(AThreadState state, AMemory memory)
+        private void ExecuteSubroutineA32(CpuThreadState state, MemoryManager memory)
         {
             do
             {
@@ -50,7 +50,7 @@ namespace ChocolArm64
             while (state.R15 != 0 && state.Running);
         }
 
-        private void ExecuteSubroutineA64(AThreadState state, AMemory memory, long position)
+        private void ExecuteSubroutineA64(CpuThreadState state, MemoryManager memory, long position)
         {
             do
             {
@@ -79,7 +79,7 @@ namespace ChocolArm64
             return _cache.HasSubroutine(position);
         }
 
-        private TranslatedSub TranslateTier0(AThreadState state, AMemory memory, long position)
+        private TranslatedSub TranslateTier0(CpuThreadState state, MemoryManager memory, long position)
         {
             Block block = ADecoder.DecodeBasicBlock(state, memory, position);
 
@@ -106,7 +106,7 @@ namespace ChocolArm64
             return subroutine;
         }
 
-        private void TranslateTier1(AThreadState state, AMemory memory, long position)
+        private void TranslateTier1(CpuThreadState state, MemoryManager memory, long position)
         {
             (Block[] graph, Block root) = ADecoder.DecodeSubroutine(_cache, state, memory, position);
 

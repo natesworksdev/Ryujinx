@@ -6,7 +6,7 @@ using System.Runtime.Intrinsics;
 
 namespace ChocolArm64.State
 {
-    public class AThreadState
+    public class CpuThreadState
     {
         internal const int LrIndex = 30;
         internal const int ZrIndex = 31;
@@ -89,7 +89,7 @@ namespace ChocolArm64.State
 
         private static double _hostTickFreq;
 
-        static AThreadState()
+        static CpuThreadState()
         {
             _hostTickFreq = 1.0 / Stopwatch.Frequency;
 

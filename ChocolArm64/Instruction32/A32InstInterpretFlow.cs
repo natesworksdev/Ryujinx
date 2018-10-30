@@ -9,7 +9,7 @@ namespace ChocolArm64.Instruction32
 {
     static partial class A32InstInterpret
     {
-        public static void B(AThreadState state, AMemory memory, AOpCode opCode)
+        public static void B(CpuThreadState state, MemoryManager memory, AOpCode opCode)
         {
             A32OpCodeBImmAl op = (A32OpCodeBImmAl)opCode;
 
@@ -19,17 +19,17 @@ namespace ChocolArm64.Instruction32
             }
         }
 
-        public static void Bl(AThreadState state, AMemory memory, AOpCode opCode)
+        public static void Bl(CpuThreadState state, MemoryManager memory, AOpCode opCode)
         {
             Blx(state, memory, opCode, false);
         }
 
-        public static void Blx(AThreadState state, AMemory memory, AOpCode opCode)
+        public static void Blx(CpuThreadState state, MemoryManager memory, AOpCode opCode)
         {
             Blx(state, memory, opCode, true);
         }
 
-        public static void Blx(AThreadState state, AMemory memory, AOpCode opCode, bool x)
+        public static void Blx(CpuThreadState state, MemoryManager memory, AOpCode opCode, bool x)
         {
             A32OpCodeBImmAl op = (A32OpCodeBImmAl)opCode;
 
@@ -60,7 +60,7 @@ namespace ChocolArm64.Instruction32
             }
         }
 
-        private static void BranchWritePc(AThreadState state, uint pc)
+        private static void BranchWritePc(CpuThreadState state, uint pc)
         {
             state.R15 = state.Thumb
                 ? pc & ~1U

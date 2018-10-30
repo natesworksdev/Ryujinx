@@ -5,10 +5,10 @@ using System.Threading;
 
 namespace ChocolArm64
 {
-    public class AThread
+    public class CpuThread
     {
-        public AThreadState ThreadState { get; private set; }
-        public AMemory      Memory      { get; private set; }
+        public CpuThreadState ThreadState { get; private set; }
+        public MemoryManager  Memory      { get; private set; }
 
         private Translator _translator;
 
@@ -18,12 +18,12 @@ namespace ChocolArm64
 
         private int _isExecuting;
 
-        public AThread(Translator translator, AMemory memory, long entryPoint)
+        public CpuThread(Translator translator, MemoryManager memory, long entryPoint)
         {
             _translator = translator;
             Memory      = memory;
 
-            ThreadState = new AThreadState();
+            ThreadState = new CpuThreadState();
 
             ThreadState.ExecutionMode = ExecutionMode.AArch64;
 

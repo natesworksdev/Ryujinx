@@ -105,7 +105,7 @@ namespace ChocolArm64.Instruction
                    value < ulong.MinValue ? ulong.MinValue : (ulong)value;
         }
 
-        public static double Round(double value, AThreadState state)
+        public static double Round(double value, CpuThreadState state)
         {
             switch (state.FPRoundingMode())
             {
@@ -118,7 +118,7 @@ namespace ChocolArm64.Instruction
             throw new InvalidOperationException();
         }
 
-        public static float RoundF(float value, AThreadState state)
+        public static float RoundF(float value, CpuThreadState state)
         {
             switch (state.FPRoundingMode())
             {

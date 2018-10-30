@@ -6,7 +6,7 @@ namespace ChocolArm64.Instruction32
 {
     static class A32InstInterpretHelper
     {
-        public static bool IsConditionTrue(AThreadState state, Cond cond)
+        public static bool IsConditionTrue(CpuThreadState state, Cond cond)
         {
             switch (cond)
             {
@@ -29,7 +29,7 @@ namespace ChocolArm64.Instruction32
             return true;
         }
 
-        public unsafe static uint GetReg(AThreadState state, int reg)
+        public unsafe static uint GetReg(CpuThreadState state, int reg)
         {
             if ((uint)reg > 15)
             {
@@ -42,7 +42,7 @@ namespace ChocolArm64.Instruction32
             }
         }
 
-        public unsafe static void SetReg(AThreadState state, int reg, uint value)
+        public unsafe static void SetReg(CpuThreadState state, int reg, uint value)
         {
             if ((uint)reg > 15)
             {
@@ -55,7 +55,7 @@ namespace ChocolArm64.Instruction32
             }
         }
 
-        public static uint GetPc(AThreadState state)
+        public static uint GetPc(CpuThreadState state)
         {
             //Due to the old fetch-decode-execute pipeline of old ARM CPUs,
             //the PC is 4 or 8 bytes (2 instructions) ahead of the current instruction.

@@ -11,7 +11,7 @@ namespace ChocolArm64
 {
     class TranslatedSub
     {
-        private delegate long Aa64Subroutine(AThreadState register, AMemory memory);
+        private delegate long Aa64Subroutine(CpuThreadState register, MemoryManager memory);
 
         private const int MinCallCountForReJit = 250;
 
@@ -68,11 +68,11 @@ namespace ChocolArm64
 
                 FixedArgTypes[index] = paramType;
 
-                if (paramType == typeof(AThreadState))
+                if (paramType == typeof(CpuThreadState))
                 {
                     StateArgIdx = index;
                 }
-                else if (paramType == typeof(AMemory))
+                else if (paramType == typeof(MemoryManager))
                 {
                     MemoryArgIdx = index;
                 }
@@ -114,7 +114,7 @@ namespace ChocolArm64
             return _needsReJit;
         }
 
-        public long Execute(AThreadState threadState, AMemory memory)
+        public long Execute(CpuThreadState threadState, MemoryManager memory)
         {
             return _execDelegate(threadState, memory);
         }

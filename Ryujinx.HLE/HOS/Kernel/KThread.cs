@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KThread : KSynchronizationObject, IKFutureSchedulerObject
     {
-        public AThread Context { get; private set; }
+        public CpuThread Context { get; private set; }
 
         public long AffinityMask { get; set; }
 
@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         public long LastPc { get; set; }
 
         public KThread(
-            AThread Thread,
+            CpuThread Thread,
             Process Process,
             Horizon System,
             int     ProcessorId,

@@ -103,7 +103,7 @@ namespace ChocolArm64.Instruction
 #endregion
 
 #region "Saturating"
-        public static long SignedSrcSignedDstSatQ(long op, int size, AThreadState state)
+        public static long SignedSrcSignedDstSatQ(long op, int size, CpuThreadState state)
         {
             int eSize = 8 << size;
 
@@ -128,7 +128,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static ulong SignedSrcUnsignedDstSatQ(long op, int size, AThreadState state)
+        public static ulong SignedSrcUnsignedDstSatQ(long op, int size, CpuThreadState state)
         {
             int eSize = 8 << size;
 
@@ -153,7 +153,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static long UnsignedSrcSignedDstSatQ(ulong op, int size, AThreadState state)
+        public static long UnsignedSrcSignedDstSatQ(ulong op, int size, CpuThreadState state)
         {
             int eSize = 8 << size;
 
@@ -171,7 +171,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static ulong UnsignedSrcUnsignedDstSatQ(ulong op, int size, AThreadState state)
+        public static ulong UnsignedSrcUnsignedDstSatQ(ulong op, int size, CpuThreadState state)
         {
             int eSize = 8 << size;
 
@@ -189,7 +189,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static long UnarySignedSatQAbsOrNeg(long op, AThreadState state)
+        public static long UnarySignedSatQAbsOrNeg(long op, CpuThreadState state)
         {
             if (op == long.MinValue)
             {
@@ -203,7 +203,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static long BinarySignedSatQAdd(long op1, long op2, AThreadState state)
+        public static long BinarySignedSatQAdd(long op1, long op2, CpuThreadState state)
         {
             long add = op1 + op2;
 
@@ -226,7 +226,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static ulong BinaryUnsignedSatQAdd(ulong op1, ulong op2, AThreadState state)
+        public static ulong BinaryUnsignedSatQAdd(ulong op1, ulong op2, CpuThreadState state)
         {
             ulong add = op1 + op2;
 
@@ -242,7 +242,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static long BinarySignedSatQSub(long op1, long op2, AThreadState state)
+        public static long BinarySignedSatQSub(long op1, long op2, CpuThreadState state)
         {
             long sub = op1 - op2;
 
@@ -265,7 +265,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static ulong BinaryUnsignedSatQSub(ulong op1, ulong op2, AThreadState state)
+        public static ulong BinaryUnsignedSatQSub(ulong op1, ulong op2, CpuThreadState state)
         {
             ulong sub = op1 - op2;
 
@@ -281,7 +281,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static long BinarySignedSatQAcc(ulong op1, long op2, AThreadState state)
+        public static long BinarySignedSatQAcc(ulong op1, long op2, CpuThreadState state)
         {
             if (op1 <= (ulong)long.MaxValue)
             {
@@ -330,7 +330,7 @@ namespace ChocolArm64.Instruction
             }
         }
 
-        public static ulong BinaryUnsignedSatQAcc(long op1, ulong op2, AThreadState state)
+        public static ulong BinaryUnsignedSatQAcc(long op1, ulong op2, CpuThreadState state)
         {
             if (op1 >= 0L)
             {

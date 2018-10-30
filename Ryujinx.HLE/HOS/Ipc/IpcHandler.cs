@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Ipc
         public static long IpcCall(
             Switch     Ns,
             Process    Process,
-            AMemory    Memory,
+            MemoryManager    Memory,
             KSession   Session,
             IpcMessage Request,
             long       CmdPtr)

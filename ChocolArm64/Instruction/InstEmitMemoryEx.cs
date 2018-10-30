@@ -23,7 +23,7 @@ namespace ChocolArm64.Instruction
 
         public static void Clrex(ILEmitterCtx context)
         {
-            EmitMemoryCall(context, nameof(AMemory.ClearExclusive));
+            EmitMemoryCall(context, nameof(MemoryManager.ClearExclusive));
         }
 
         public static void Dmb(ILEmitterCtx context) => EmitBarrier(context);
@@ -59,7 +59,7 @@ namespace ChocolArm64.Instruction
 
             if (exclusive)
             {
-                EmitMemoryCall(context, nameof(AMemory.SetExclusive), op.Rn);
+                EmitMemoryCall(context, nameof(MemoryManager.SetExclusive), op.Rn);
             }
 
             context.EmitLdint(op.Rn);
@@ -124,7 +124,7 @@ namespace ChocolArm64.Instruction
 
             if (exclusive)
             {
-                EmitMemoryCall(context, nameof(AMemory.TestExclusive), op.Rn);
+                EmitMemoryCall(context, nameof(MemoryManager.TestExclusive), op.Rn);
 
                 context.Emit(OpCodes.Brtrue_S, lblEx);
 
@@ -160,7 +160,7 @@ namespace ChocolArm64.Instruction
                 context.EmitLdc_I8(0);
                 context.EmitStintzr(op.Rs);
 
-                EmitMemoryCall(context, nameof(AMemory.ClearExclusiveForStore));
+                EmitMemoryCall(context, nameof(MemoryManager.ClearExclusiveForStore));
             }
 
             context.MarkLabel(lblEnd);
@@ -171,14 +171,14 @@ namespace ChocolArm64.Instruction
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
             context.EmitLdarg(TranslatedSub.StateArgIdx);
 
-            context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Core));
+            context.EmitCallPropGet(typeof(CpuThreadState), nameof(CpuThreadState.Core));
 
             if (rn != -1)
             {
                 context.EmitLdint(rn);
             }
 
-            context.EmitCall(typeof(AMemory), name);
+            context.EmitCall(typeof(MemoryManager), name);
         }
 
         private static void EmitBarrier(ILEmitterCtx context)

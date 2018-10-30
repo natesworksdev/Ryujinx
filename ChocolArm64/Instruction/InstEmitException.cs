@@ -9,12 +9,12 @@ namespace ChocolArm64.Instruction
     {
         public static void Brk(ILEmitterCtx context)
         {
-            EmitExceptionCall(context, nameof(AThreadState.OnBreak));
+            EmitExceptionCall(context, nameof(CpuThreadState.OnBreak));
         }
 
         public static void Svc(ILEmitterCtx context)
         {
-            EmitExceptionCall(context, nameof(AThreadState.OnSvcCall));
+            EmitExceptionCall(context, nameof(CpuThreadState.OnSvcCall));
         }
 
         private static void EmitExceptionCall(ILEmitterCtx context, string mthdName)
@@ -28,13 +28,13 @@ namespace ChocolArm64.Instruction
             context.EmitLdc_I8(op.Position);
             context.EmitLdc_I4(op.Id);
 
-            context.EmitPrivateCall(typeof(AThreadState), mthdName);
+            context.EmitPrivateCall(typeof(CpuThreadState), mthdName);
 
             //Check if the thread should still be running, if it isn't then we return 0
             //to force a return to the dispatcher and then exit the thread.
             context.EmitLdarg(TranslatedSub.StateArgIdx);
 
-            context.EmitCallPropGet(typeof(AThreadState), nameof(AThreadState.Running));
+            context.EmitCallPropGet(typeof(CpuThreadState), nameof(CpuThreadState.Running));
 
             ILLabel lblEnd = new ILLabel();
 
@@ -69,7 +69,7 @@ namespace ChocolArm64.Instruction
             context.EmitLdc_I8(op.Position);
             context.EmitLdc_I4(op.RawOpCode);
 
-            context.EmitPrivateCall(typeof(AThreadState), nameof(AThreadState.OnUndefined));
+            context.EmitPrivateCall(typeof(CpuThreadState), nameof(CpuThreadState.OnUndefined));
 
             if (context.CurrBlock.Next != null)
             {

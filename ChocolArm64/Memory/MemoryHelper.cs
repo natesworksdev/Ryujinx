@@ -5,9 +5,9 @@ using System.Text;
 
 namespace ChocolArm64.Memory
 {
-    public static class AMemoryHelper
+    public static class MemoryHelper
     {
-        public static void FillWithZeros(AMemory memory, long position, int size)
+        public static void FillWithZeros(MemoryManager memory, long position, int size)
         {
             int size8 = size & ~(8 - 1);
 
@@ -22,7 +22,7 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public unsafe static T Read<T>(AMemory memory, long position) where T : struct
+        public unsafe static T Read<T>(MemoryManager memory, long position) where T : struct
         {
             long size = Marshal.SizeOf<T>();
 
@@ -33,7 +33,7 @@ namespace ChocolArm64.Memory
             return Marshal.PtrToStructure<T>(ptr);
         }
 
-        public unsafe static void Write<T>(AMemory memory, long position, T value) where T : struct
+        public unsafe static void Write<T>(MemoryManager memory, long position, T value) where T : struct
         {
             long size = Marshal.SizeOf<T>();
 
@@ -44,7 +44,7 @@ namespace ChocolArm64.Memory
             Marshal.StructureToPtr<T>(value, ptr, false);
         }
 
-        public static string ReadAsciiString(AMemory memory, long position, long maxSize = -1)
+        public static string ReadAsciiString(MemoryManager memory, long position, long maxSize = -1)
         {
             using (MemoryStream ms = new MemoryStream())
             {

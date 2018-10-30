@@ -111,7 +111,7 @@ namespace ChocolArm64.Translation
 
             EmitLdc_I4(CurrBlock.OpCodes.Count);
 
-            EmitPrivateCall(typeof(AThreadState), nameof(AThreadState.Synchronize));
+            EmitPrivateCall(typeof(CpuThreadState), nameof(CpuThreadState.Synchronize));
 
             EmitLdc_I4(0);
 
@@ -358,7 +358,7 @@ namespace ChocolArm64.Translation
 
         public void EmitLdintzr(int index)
         {
-            if (index != AThreadState.ZrIndex)
+            if (index != CpuThreadState.ZrIndex)
             {
                 EmitLdint(index);
             }
@@ -370,7 +370,7 @@ namespace ChocolArm64.Translation
 
         public void EmitStintzr(int index)
         {
-            if (index != AThreadState.ZrIndex)
+            if (index != CpuThreadState.ZrIndex)
             {
                 EmitStint(index);
             }

@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS
     {
         public Switch       Device       { get; private set; }
         public Process      Process      { get; private set; }
-        public AMemory      Memory       { get; private set; }
+        public MemoryManager      Memory       { get; private set; }
         public KSession     Session      { get; private set; }
         public IpcMessage   Request      { get; private set; }
         public IpcMessage   Response     { get; private set; }
@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS
         public ServiceCtx(
             Switch       Device,
             Process      Process,
-            AMemory      Memory,
+            MemoryManager      Memory,
             KSession     Session,
             IpcMessage   Request,
             IpcMessage   Response,

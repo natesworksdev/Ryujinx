@@ -19,7 +19,7 @@ namespace ChocolArm64.Decoder
             _opActivators = new ConcurrentDictionary<Type, OpActivator>();
         }
 
-        public static Block DecodeBasicBlock(AThreadState state, AMemory memory, long start)
+        public static Block DecodeBasicBlock(CpuThreadState state, MemoryManager memory, long start)
         {
             Block block = new Block(start);
 
@@ -30,8 +30,8 @@ namespace ChocolArm64.Decoder
 
         public static (Block[] Graph, Block Root) DecodeSubroutine(
             TranslatorCache cache,
-            AThreadState     state,
-            AMemory          memory,
+            CpuThreadState   state,
+            MemoryManager    memory,
             long             start)
         {
             Dictionary<long, Block> visited    = new Dictionary<long, Block>();
@@ -147,7 +147,7 @@ namespace ChocolArm64.Decoder
             return (graph, root);
         }
 
-        private static void FillBlock(AThreadState state, AMemory memory, Block block)
+        private static void FillBlock(CpuThreadState state, MemoryManager memory, Block block)
         {
             long position = block.Position;
 
@@ -181,7 +181,7 @@ namespace ChocolArm64.Decoder
                    opCode.Emitter == InstEmit.Und;
         }
 
-        public static AOpCode DecodeOpCode(AThreadState state, AMemory memory, long position)
+        public static AOpCode DecodeOpCode(CpuThreadState state, MemoryManager memory, long position)
         {
             int opCode = memory.ReadInt32(position);
 

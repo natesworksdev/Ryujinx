@@ -45,25 +45,25 @@ namespace ChocolArm64.Instruction
             {
                 switch (size)
                 {
-                    case 0: name = nameof(AMemory.ReadVector8);   break;
-                    case 1: name = nameof(AMemory.ReadVector16);  break;
-                    case 2: name = nameof(AMemory.ReadVector32);  break;
-                    case 3: name = nameof(AMemory.ReadVector64);  break;
-                    case 4: name = nameof(AMemory.ReadVector128); break;
+                    case 0: name = nameof(MemoryManager.ReadVector8);   break;
+                    case 1: name = nameof(MemoryManager.ReadVector16);  break;
+                    case 2: name = nameof(MemoryManager.ReadVector32);  break;
+                    case 3: name = nameof(MemoryManager.ReadVector64);  break;
+                    case 4: name = nameof(MemoryManager.ReadVector128); break;
                 }
             }
             else
             {
                 switch (size)
                 {
-                    case 0: name = nameof(AMemory.ReadByte);   break;
-                    case 1: name = nameof(AMemory.ReadUInt16); break;
-                    case 2: name = nameof(AMemory.ReadUInt32); break;
-                    case 3: name = nameof(AMemory.ReadUInt64); break;
+                    case 0: name = nameof(MemoryManager.ReadByte);   break;
+                    case 1: name = nameof(MemoryManager.ReadUInt16); break;
+                    case 2: name = nameof(MemoryManager.ReadUInt32); break;
+                    case 3: name = nameof(MemoryManager.ReadUInt64); break;
                 }
             }
 
-            context.EmitCall(typeof(AMemory), name);
+            context.EmitCall(typeof(MemoryManager), name);
 
             if (!isSimd)
             {
@@ -107,25 +107,25 @@ namespace ChocolArm64.Instruction
             {
                 switch (size)
                 {
-                    case 0: name = nameof(AMemory.WriteVector8);   break;
-                    case 1: name = nameof(AMemory.WriteVector16);  break;
-                    case 2: name = nameof(AMemory.WriteVector32);  break;
-                    case 3: name = nameof(AMemory.WriteVector64);  break;
-                    case 4: name = nameof(AMemory.WriteVector128); break;
+                    case 0: name = nameof(MemoryManager.WriteVector8);   break;
+                    case 1: name = nameof(MemoryManager.WriteVector16);  break;
+                    case 2: name = nameof(MemoryManager.WriteVector32);  break;
+                    case 3: name = nameof(MemoryManager.WriteVector64);  break;
+                    case 4: name = nameof(MemoryManager.WriteVector128); break;
                 }
             }
             else
             {
                 switch (size)
                 {
-                    case 0: name = nameof(AMemory.WriteByte);   break;
-                    case 1: name = nameof(AMemory.WriteUInt16); break;
-                    case 2: name = nameof(AMemory.WriteUInt32); break;
-                    case 3: name = nameof(AMemory.WriteUInt64); break;
+                    case 0: name = nameof(MemoryManager.WriteByte);   break;
+                    case 1: name = nameof(MemoryManager.WriteUInt16); break;
+                    case 2: name = nameof(MemoryManager.WriteUInt32); break;
+                    case 3: name = nameof(MemoryManager.WriteUInt64); break;
                 }
             }
 
-            context.EmitCall(typeof(AMemory), name);
+            context.EmitCall(typeof(MemoryManager), name);
         }
 
         private static bool GetIsSimd(ILEmitterCtx context)
