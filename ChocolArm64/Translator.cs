@@ -1,4 +1,4 @@
-using ChocolArm64.Decoder;
+using ChocolArm64.Decoders;
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
@@ -43,7 +43,7 @@ namespace ChocolArm64
         {
             do
             {
-                AOpCode opCode = ADecoder.DecodeOpCode(state, memory, state.R15);
+                AOpCode opCode = Decoder.DecodeOpCode(state, memory, state.R15);
 
                 opCode.Interpreter(state, memory, opCode);
             }
@@ -81,7 +81,7 @@ namespace ChocolArm64
 
         private TranslatedSub TranslateTier0(CpuThreadState state, MemoryManager memory, long position)
         {
-            Block block = ADecoder.DecodeBasicBlock(state, memory, position);
+            Block block = Decoder.DecodeBasicBlock(state, memory, position);
 
             Block[] graph = new Block[] { block };
 
@@ -108,7 +108,7 @@ namespace ChocolArm64
 
         private void TranslateTier1(CpuThreadState state, MemoryManager memory, long position)
         {
-            (Block[] graph, Block root) = ADecoder.DecodeSubroutine(_cache, state, memory, position);
+            (Block[] graph, Block root) = Decoder.DecodeSubroutine(_cache, state, memory, position);
 
             string subName = GetSubroutineName(position);
 

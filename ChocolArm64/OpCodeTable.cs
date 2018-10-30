@@ -1,7 +1,7 @@
-using ChocolArm64.Decoder;
-using ChocolArm64.Decoder32;
-using ChocolArm64.Instruction;
-using ChocolArm64.Instruction32;
+using ChocolArm64.Decoders;
+using ChocolArm64.Decoders32;
+using ChocolArm64.Instructions;
+using ChocolArm64.Instructions32;
 using ChocolArm64.State;
 using System;
 using System.Collections.Generic;

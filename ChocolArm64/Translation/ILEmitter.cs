@@ -1,4 +1,4 @@
-using ChocolArm64.Decoder;
+using ChocolArm64.Decoders;
 using ChocolArm64.State;
 using System;
 using System.Collections.Generic;
