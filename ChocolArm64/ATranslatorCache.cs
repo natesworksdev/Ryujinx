@@ -138,7 +138,7 @@ namespace ChocolArm64
 
                     CacheBucket bucket = _cache[node.Value];
 
-                    long timeDelta = Timestamp - bucket.Timestamp;
+                    long timeDelta = timestamp - bucket.Timestamp;
 
                     if (timeDelta <= MinTimeDelta)
                     {
