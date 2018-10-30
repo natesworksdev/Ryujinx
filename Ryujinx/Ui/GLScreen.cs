@@ -209,13 +209,13 @@ namespace Ryujinx
                     int scrnMouseX = mouse.X - startX;
                     int scrnMouseY = mouse.Y - startY;
 
-                    int mx = (scrnMouseX * TouchScreenWidth)  / scrnWidth;
-                    int my = (scrnMouseY * TouchScreenHeight) / scrnHeight;
+                    int mX = (scrnMouseX * TouchScreenWidth)  / scrnWidth;
+                    int mY = (scrnMouseY * TouchScreenHeight) / scrnHeight;
 
                     HidTouchPoint currentPoint = new HidTouchPoint
                     {
-                        X = mx,
-                        Y = my,
+                        X = mX,
+                        Y = mY,
 
                         //Placeholder values till more data is acquired
                         DiameterX = 10,

@@ -8,7 +8,7 @@ namespace ChocolArm64.State
 {
     public class AThreadState
     {
-        internal const int LRIndex = 30;
+        internal const int LrIndex = 30;
         internal const int ZrIndex = 31;
 
         internal const int ErgSizeLog2 = 4;
