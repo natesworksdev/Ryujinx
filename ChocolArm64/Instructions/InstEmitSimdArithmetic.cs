@@ -211,7 +211,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPAdd));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd));
                 });
             }
         }
@@ -227,7 +227,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPAdd));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd));
                 });
             }
         }
@@ -262,7 +262,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPDiv));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPDiv));
                 });
             }
         }
@@ -278,7 +278,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPDiv));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPDiv));
                 });
             }
         }
@@ -324,7 +324,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarTernaryRaOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMulAdd));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd));
                 });
             }
         }
@@ -340,7 +340,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMax));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax));
                 });
             }
         }
@@ -356,7 +356,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMax));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax));
                 });
             }
         }
@@ -365,7 +365,7 @@ namespace ChocolArm64.Instructions
         {
             EmitScalarBinaryOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMaxNum));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMaxNum));
             });
         }
 
@@ -373,7 +373,7 @@ namespace ChocolArm64.Instructions
         {
             EmitVectorBinaryOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMaxNum));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMaxNum));
             });
         }
 
@@ -381,7 +381,7 @@ namespace ChocolArm64.Instructions
         {
             EmitVectorPairwiseOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMax));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax));
             });
         }
 
@@ -396,7 +396,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMin));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin));
                 });
             }
         }
@@ -412,7 +412,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMin));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin));
                 });
             }
         }
@@ -421,7 +421,7 @@ namespace ChocolArm64.Instructions
         {
             EmitScalarBinaryOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMinNum));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum));
             });
         }
 
@@ -429,7 +429,7 @@ namespace ChocolArm64.Instructions
         {
             EmitVectorBinaryOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMinNum));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum));
             });
         }
 
@@ -437,7 +437,7 @@ namespace ChocolArm64.Instructions
         {
             EmitVectorPairwiseOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMin));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin));
             });
         }
 
@@ -536,7 +536,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarTernaryRaOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMulSub));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulSub));
                 });
             }
         }
@@ -552,7 +552,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMul));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMul));
                 });
             }
         }
@@ -573,7 +573,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMul));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMul));
                 });
             }
         }
@@ -587,7 +587,7 @@ namespace ChocolArm64.Instructions
         {
             EmitScalarBinaryOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMulX));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulX));
             });
         }
 
@@ -595,7 +595,7 @@ namespace ChocolArm64.Instructions
         {
             EmitScalarBinaryOpByElemF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMulX));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulX));
             });
         }
 
@@ -603,7 +603,7 @@ namespace ChocolArm64.Instructions
         {
             EmitVectorBinaryOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMulX));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulX));
             });
         }
 
@@ -611,7 +611,7 @@ namespace ChocolArm64.Instructions
         {
             EmitVectorBinaryOpByElemF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPMulX));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulX));
             });
         }
 
@@ -738,7 +738,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPRecipStepFused));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipStepFused));
                 });
             }
         }
@@ -793,7 +793,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPRecipStepFused));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipStepFused));
                 });
             }
         }
@@ -802,7 +802,7 @@ namespace ChocolArm64.Instructions
         {
             EmitScalarUnaryOpF(context, () =>
             {
-                EmitSoftFloatCall(context, nameof(ASoftFloat32.FPRecpX));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecpX));
             });
         }
 
@@ -1043,7 +1043,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FprSqrtStepFused));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FprSqrtStepFused));
                 });
             }
         }
@@ -1106,7 +1106,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FprSqrtStepFused));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FprSqrtStepFused));
                 });
             }
         }
@@ -1122,7 +1122,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarUnaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPSqrt));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPSqrt));
                 });
             }
         }
@@ -1138,7 +1138,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorUnaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPSqrt));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPSqrt));
                 });
             }
         }
@@ -1154,7 +1154,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitScalarBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPSub));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub));
                 });
             }
         }
@@ -1170,7 +1170,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorBinaryOpF(context, () =>
                 {
-                    EmitSoftFloatCall(context, nameof(ASoftFloat32.FPSub));
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub));
                 });
             }
         }

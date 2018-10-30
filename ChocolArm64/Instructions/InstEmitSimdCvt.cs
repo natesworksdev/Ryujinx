@@ -89,7 +89,7 @@ namespace ChocolArm64.Instructions
 
                     context.EmitLdarg(TranslatedSub.StateArgIdx);
 
-                    context.EmitCall(typeof(ASoftFloat1632), nameof(ASoftFloat1632.FPConvert));
+                    context.EmitCall(typeof(SoftFloat1632), nameof(SoftFloat1632.FPConvert));
                 }
                 else /* if (SizeF == 1) */
                 {
@@ -139,7 +139,7 @@ namespace ChocolArm64.Instructions
                 {
                     context.EmitLdarg(TranslatedSub.StateArgIdx);
 
-                    context.EmitCall(typeof(ASoftFloat3216), nameof(ASoftFloat3216.FPConvert));
+                    context.EmitCall(typeof(SoftFloat3216), nameof(SoftFloat3216.FPConvert));
 
                     context.Emit(OpCodes.Conv_U8);
                     EmitVectorInsertTmp(context, part + index, 1);

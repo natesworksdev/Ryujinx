@@ -197,7 +197,7 @@ namespace ChocolArm64.Instructions
         }
     }
 
-    static class ASoftFloat1632
+    static class SoftFloat1632
     {
         public static float FPConvert(ushort valueBits, CpuThreadState state)
         {
@@ -448,7 +448,7 @@ namespace ChocolArm64.Instructions
         }
     }
 
-    static class ASoftFloat3216
+    static class SoftFloat3216
     {
         public static ushort FPConvert(float value, CpuThreadState state)
         {
@@ -727,7 +727,7 @@ namespace ChocolArm64.Instructions
         }
     }
 
-    static class ASoftFloat32
+    static class SoftFloat32
     {
         public static float FPAdd(float value1, float value2, CpuThreadState state)
         {
@@ -1426,7 +1426,7 @@ namespace ChocolArm64.Instructions
         }
     }
 
-    static class ASoftFloat64
+    static class SoftFloat64
     {
         public static double FPAdd(double value1, double value2, CpuThreadState state)
         {

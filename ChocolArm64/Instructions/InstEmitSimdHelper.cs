@@ -347,8 +347,8 @@ namespace ChocolArm64.Instructions
             IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
 
             Type type = (op.Size & 1) == 0
-                ? typeof(ASoftFloat32)
-                : typeof(ASoftFloat64);
+                ? typeof(SoftFloat32)
+                : typeof(SoftFloat64);
 
             context.EmitLdarg(TranslatedSub.StateArgIdx);
 
