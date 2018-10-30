@@ -6,24 +6,24 @@ namespace ChocolArm64.Instruction32
 {
     static class A32InstInterpretHelper
     {
-        public static bool IsConditionTrue(AThreadState state, ACond cond)
+        public static bool IsConditionTrue(AThreadState state, Cond cond)
         {
             switch (cond)
             {
-                case ACond.Eq:   return  state.Zero;
-                case ACond.Ne:   return !state.Zero;
-                case ACond.GeUn: return  state.Carry;
-                case ACond.LtUn: return !state.Carry;
-                case ACond.Mi:   return  state.Negative;
-                case ACond.Pl:   return !state.Negative;
-                case ACond.Vs:   return  state.Overflow;
-                case ACond.Vc:   return !state.Overflow;
-                case ACond.GtUn: return  state.Carry    && !state.Zero;
-                case ACond.LeUn: return !state.Carry    &&  state.Zero;
-                case ACond.Ge:   return  state.Negative ==  state.Overflow;
-                case ACond.Lt:   return  state.Negative !=  state.Overflow;
-                case ACond.Gt:   return  state.Negative ==  state.Overflow && !state.Zero;
-                case ACond.Le:   return  state.Negative !=  state.Overflow &&  state.Zero;
+                case Cond.Eq:   return  state.Zero;
+                case Cond.Ne:   return !state.Zero;
+                case Cond.GeUn: return  state.Carry;
+                case Cond.LtUn: return !state.Carry;
+                case Cond.Mi:   return  state.Negative;
+                case Cond.Pl:   return !state.Negative;
+                case Cond.Vs:   return  state.Overflow;
+                case Cond.Vc:   return !state.Overflow;
+                case Cond.GtUn: return  state.Carry    && !state.Zero;
+                case Cond.LeUn: return !state.Carry    &&  state.Zero;
+                case Cond.Ge:   return  state.Negative ==  state.Overflow;
+                case Cond.Lt:   return  state.Negative !=  state.Overflow;
+                case Cond.Gt:   return  state.Negative ==  state.Overflow && !state.Zero;
+                case Cond.Le:   return  state.Negative !=  state.Overflow &&  state.Zero;
             }
 
             return true;

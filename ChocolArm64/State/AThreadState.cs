@@ -16,7 +16,7 @@ namespace ChocolArm64.State
 
         private const int MinInstForCheck = 4000000;
 
-        internal AExecutionMode ExecutionMode;
+        internal ExecutionMode ExecutionMode;
 
         //AArch32 state.
         public uint R0,  R1,  R2,  R3,
@@ -59,10 +59,10 @@ namespace ChocolArm64.State
         {
             get
             {
-                return (Negative ? (int)ApState.N : 0) |
-                       (Zero     ? (int)ApState.Z : 0) |
-                       (Carry    ? (int)ApState.C : 0) |
-                       (Overflow ? (int)ApState.V : 0);
+                return (Negative ? (int)PState.N : 0) |
+                       (Zero     ? (int)PState.Z : 0) |
+                       (Carry    ? (int)PState.C : 0) |
+                       (Overflow ? (int)PState.V : 0);
             }
         }
 
@@ -81,9 +81,9 @@ namespace ChocolArm64.State
         }
 
         public event EventHandler<EventArgs>               Interrupt;
-        public event EventHandler<AInstExceptionEventArgs> Break;
-        public event EventHandler<AInstExceptionEventArgs> SvcCall;
-        public event EventHandler<AInstUndefinedEventArgs> Undefined;
+        public event EventHandler<InstExceptionEventArgs> Break;
+        public event EventHandler<InstExceptionEventArgs> SvcCall;
+        public event EventHandler<InstUndefinedEventArgs> Undefined;
 
         private static Stopwatch _tickCounter;
 
@@ -133,32 +133,32 @@ namespace ChocolArm64.State
 
         internal void OnBreak(long position, int imm)
         {
-            Break?.Invoke(this, new AInstExceptionEventArgs(position, imm));
+            Break?.Invoke(this, new InstExceptionEventArgs(position, imm));
         }
 
         internal void OnSvcCall(long position, int imm)
         {
-            SvcCall?.Invoke(this, new AInstExceptionEventArgs(position, imm));
+            SvcCall?.Invoke(this, new InstExceptionEventArgs(position, imm));
         }
 
         internal void OnUndefined(long position, int rawOpCode)
         {
-            Undefined?.Invoke(this, new AInstUndefinedEventArgs(position, rawOpCode));
+            Undefined?.Invoke(this, new InstUndefinedEventArgs(position, rawOpCode));
         }
 
-        internal bool GetFpcrFlag(AFpcr flag)
+        internal bool GetFpcrFlag(Fpcr flag)
         {
             return (Fpcr & (1 << (int)flag)) != 0;
         }
 
-        internal void SetFpsrFlag(AFpsr flag)
+        internal void SetFpsrFlag(Fpsr flag)
         {
             Fpsr |= 1 << (int)flag;
         }
 
-        internal ARoundMode FPRoundingMode()
+        internal RoundMode FPRoundingMode()
         {
-            return (ARoundMode)((Fpcr >> (int)State.AFpcr.RMode) & 3);
+            return (RoundMode)((Fpcr >> (int)State.Fpcr.RMode) & 3);
         }
     }
 }

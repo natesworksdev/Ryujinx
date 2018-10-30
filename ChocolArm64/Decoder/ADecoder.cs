@@ -10,7 +10,7 @@ namespace ChocolArm64.Decoder
 {
     static class ADecoder
     {
-        private delegate object OpActivator(AInst inst, long position, int opCode);
+        private delegate object OpActivator(Inst inst, long position, int opCode);
 
         private static ConcurrentDictionary<Type, OpActivator> _opActivators;
 
@@ -19,31 +19,31 @@ namespace ChocolArm64.Decoder
             _opActivators = new ConcurrentDictionary<Type, OpActivator>();
         }
 
-        public static ABlock DecodeBasicBlock(AThreadState state, AMemory memory, long start)
+        public static Block DecodeBasicBlock(AThreadState state, AMemory memory, long start)
         {
-            ABlock block = new ABlock(start);
+            Block block = new Block(start);
 
             FillBlock(state, memory, block);
 
             return block;
         }
 
-        public static (ABlock[] Graph, ABlock Root) DecodeSubroutine(
-            ATranslatorCache cache,
+        public static (Block[] Graph, Block Root) DecodeSubroutine(
+            TranslatorCache cache,
             AThreadState     state,
             AMemory          memory,
             long             start)
         {
-            Dictionary<long, ABlock> visited    = new Dictionary<long, ABlock>();
-            Dictionary<long, ABlock> visitedEnd = new Dictionary<long, ABlock>();
+            Dictionary<long, Block> visited    = new Dictionary<long, Block>();
+            Dictionary<long, Block> visitedEnd = new Dictionary<long, Block>();
 
-            Queue<ABlock> blocks = new Queue<ABlock>();
+            Queue<Block> blocks = new Queue<Block>();
 
-            ABlock Enqueue(long position)
+            Block Enqueue(long position)
             {
-                if (!visited.TryGetValue(position, out ABlock output))
+                if (!visited.TryGetValue(position, out Block output))
                 {
-                    output = new ABlock(position);
+                    output = new Block(position);
 
                     blocks.Enqueue(output);
 
@@ -53,11 +53,11 @@ namespace ChocolArm64.Decoder
                 return output;
             }
 
-            ABlock root = Enqueue(start);
+            Block root = Enqueue(start);
 
             while (blocks.Count > 0)
             {
-                ABlock current = blocks.Dequeue();
+                Block current = blocks.Dequeue();
 
                 FillBlock(state, memory, current);
 
@@ -71,9 +71,9 @@ namespace ChocolArm64.Decoder
 
                     AOpCode lastOp = current.GetLastOp();
 
-                    if (lastOp is AOpCodeBImm op)
+                    if (lastOp is OpCodeBImm op)
                     {
-                        if (op.Emitter == AInstEmit.Bl)
+                        if (op.Emitter == InstEmit.Bl)
                         {
                             hasCachedSub = cache.HasSubroutine(op.Imm);
                         }
@@ -83,8 +83,8 @@ namespace ChocolArm64.Decoder
                         }
                     }
 
-                    if (!((lastOp is AOpCodeBImmAl) ||
-                          (lastOp is AOpCodeBReg)) || hasCachedSub)
+                    if (!((lastOp is OpCodeBImmAl) ||
+                          (lastOp is OpCodeBReg)) || hasCachedSub)
                     {
                         current.Next = Enqueue(current.EndPosition);
                     }
@@ -94,11 +94,11 @@ namespace ChocolArm64.Decoder
                 //then we need to split the bigger block and have two small blocks,
                 //the end position of the bigger "Current" block should then be == to
                 //the position of the "Smaller" block.
-                while (visitedEnd.TryGetValue(current.EndPosition, out ABlock smaller))
+                while (visitedEnd.TryGetValue(current.EndPosition, out Block smaller))
                 {
                     if (current.Position > smaller.Position)
                     {
-                        ABlock temp = smaller;
+                        Block temp = smaller;
 
                         smaller = current;
                         current = temp;
@@ -119,19 +119,19 @@ namespace ChocolArm64.Decoder
             }
 
             //Make and sort Graph blocks array by position.
-            ABlock[] graph = new ABlock[visited.Count];
+            Block[] graph = new Block[visited.Count];
 
             while (visited.Count > 0)
             {
                 ulong firstPos = ulong.MaxValue;
 
-                foreach (ABlock block in visited.Values)
+                foreach (Block block in visited.Values)
                 {
                     if (firstPos > (ulong)block.Position)
                         firstPos = (ulong)block.Position;
                 }
 
-                ABlock current = visited[(long)firstPos];
+                Block current = visited[(long)firstPos];
 
                 do
                 {
@@ -147,7 +147,7 @@ namespace ChocolArm64.Decoder
             return (graph, root);
         }
 
-        private static void FillBlock(AThreadState state, AMemory memory, ABlock block)
+        private static void FillBlock(AThreadState state, AMemory memory, Block block)
         {
             long position = block.Position;
 
@@ -170,34 +170,34 @@ namespace ChocolArm64.Decoder
 
         private static bool IsBranch(AOpCode opCode)
         {
-            return opCode is AOpCodeBImm ||
-                   opCode is AOpCodeBReg;
+            return opCode is OpCodeBImm ||
+                   opCode is OpCodeBReg;
         }
 
         private static bool IsException(AOpCode opCode)
         {
-            return opCode.Emitter == AInstEmit.Brk ||
-                   opCode.Emitter == AInstEmit.Svc ||
-                   opCode.Emitter == AInstEmit.Und;
+            return opCode.Emitter == InstEmit.Brk ||
+                   opCode.Emitter == InstEmit.Svc ||
+                   opCode.Emitter == InstEmit.Und;
         }
 
         public static AOpCode DecodeOpCode(AThreadState state, AMemory memory, long position)
         {
             int opCode = memory.ReadInt32(position);
 
-            AInst inst;
+            Inst inst;
 
-            if (state.ExecutionMode == AExecutionMode.AArch64)
+            if (state.ExecutionMode == ExecutionMode.AArch64)
             {
-                inst = AOpCodeTable.GetInstA64(opCode);
+                inst = OpCodeTable.GetInstA64(opCode);
             }
             else
             {
                 //TODO: Thumb support.
-                inst = AOpCodeTable.GetInstA32(opCode);
+                inst = OpCodeTable.GetInstA32(opCode);
             }
 
-            AOpCode decodedOpCode = new AOpCode(AInst.Undefined, position, opCode);
+            AOpCode decodedOpCode = new AOpCode(Inst.Undefined, position, opCode);
 
             if (inst.Type != null)
             {
@@ -207,7 +207,7 @@ namespace ChocolArm64.Decoder
             return decodedOpCode;
         }
 
-        private static AOpCode MakeOpCode(Type type, AInst inst, long position, int opCode)
+        private static AOpCode MakeOpCode(Type type, Inst inst, long position, int opCode)
         {
             if (type == null)
             {
@@ -221,7 +221,7 @@ namespace ChocolArm64.Decoder
 
         private static OpActivator CacheOpActivator(Type type)
         {
-            Type[] argTypes = new Type[] { typeof(AInst), typeof(long), typeof(int) };
+            Type[] argTypes = new Type[] { typeof(Inst), typeof(long), typeof(int) };
 
             DynamicMethod mthd = new DynamicMethod($"Make{type.Name}", type, argTypes);
 

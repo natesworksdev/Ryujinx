@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Graphics.Memory
 {
-    public class NvGpuVmm : IaMemory, IGalMemory
+    public class NvGpuVmm : IAMemory, IGalMemory
     {
         public const long AddrSize = 1L << 40;
 

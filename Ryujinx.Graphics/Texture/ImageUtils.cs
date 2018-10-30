@@ -216,7 +216,7 @@ namespace Ryujinx.Graphics.Texture
             throw new NotImplementedException(Format.ToString());
         }
 
-        public static byte[] ReadTexture(IaMemory Memory, GalImage Image, long Position)
+        public static byte[] ReadTexture(IAMemory Memory, GalImage Image, long Position)
         {
             AMemory CpuMemory;
 

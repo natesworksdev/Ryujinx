@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             Rng = new Random();
         }
 
-        public void SvcCall(object sender, AInstExceptionEventArgs e)
+        public void SvcCall(object sender, InstExceptionEventArgs e)
         {
             AThreadState ThreadState = (AThreadState)sender;
 

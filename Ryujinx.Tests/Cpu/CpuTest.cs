@@ -48,7 +48,7 @@ namespace Ryujinx.Tests.Cpu
 
             EntryPoint = Position;
 
-            ATranslator Translator = new ATranslator();
+            Translator Translator = new Translator();
             RamPointer = Marshal.AllocHGlobal(new IntPtr(Size));
             Memory = new AMemory(RamPointer);
             Memory.Map(Position, 0, Size);

@@ -4,7 +4,7 @@ namespace ChocolArm64
 {
     using System.Reflection.Emit;
 
-    static class IlGeneratorEx
+    static class ILGeneratorEx
     {
         public static void EmitLdc_I4(this ILGenerator generator, int value)
         {

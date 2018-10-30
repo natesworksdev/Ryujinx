@@ -10,7 +10,7 @@ namespace ChocolArm64
         public AThreadState ThreadState { get; private set; }
         public AMemory      Memory      { get; private set; }
 
-        private ATranslator _translator;
+        private Translator _translator;
 
         public Thread Work;
 
@@ -18,14 +18,14 @@ namespace ChocolArm64
 
         private int _isExecuting;
 
-        public AThread(ATranslator translator, AMemory memory, long entryPoint)
+        public AThread(Translator translator, AMemory memory, long entryPoint)
         {
             _translator = translator;
             Memory      = memory;
 
             ThreadState = new AThreadState();
 
-            ThreadState.ExecutionMode = AExecutionMode.AArch64;
+            ThreadState.ExecutionMode = ExecutionMode.AArch64;
 
             ThreadState.Running = true;
 

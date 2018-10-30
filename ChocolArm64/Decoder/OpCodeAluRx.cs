@@ -1,0 +1,19 @@
+using ChocolArm64.Instruction;
+
+namespace ChocolArm64.Decoder
+{
+    class OpCodeAluRx : OpCodeAlu, IOpCodeAluRx
+    {
+        public int Shift { get; private set; }
+        public int Rm    { get; private set; }
+
+        public IntType IntType { get; private set; }
+
+        public OpCodeAluRx(Inst inst, long position, int opCode) : base(inst, position, opCode)
+        {
+            Shift   =            (opCode >> 10) & 0x7;
+            IntType = (IntType)((opCode >> 13) & 0x7);
+            Rm      =            (opCode >> 16) & 0x1f;
+        }
+    }
+}

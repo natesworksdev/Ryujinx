@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace ChocolArm64.Memory
 {
-    public unsafe class AMemory : IaMemory, IDisposable
+    public unsafe class AMemory : IAMemory, IDisposable
     {
         private const int PtLvl0Bits = 13;
         private const int PtLvl1Bits = 14;
@@ -52,7 +52,7 @@ namespace ChocolArm64.Memory
 
         private byte*** _pageTable;
 
-        public event EventHandler<AInvalidAccessEventArgs> InvalidAccess;
+        public event EventHandler<InvalidAccessEventArgs> InvalidAccess;
 
         public AMemory(IntPtr ram)
         {
@@ -515,7 +515,7 @@ Unmapped:
                 return (byte*)ptr + (position & PageMask);
             }
 
-            InvalidAccess?.Invoke(this, new AInvalidAccessEventArgs(position));
+            InvalidAccess?.Invoke(this, new InvalidAccessEventArgs(position));
 
             throw new VmmPageFaultException(position);
         }
@@ -565,7 +565,7 @@ Unmapped:
                 return (byte*)ptr + (position & PageMask);
             }
 
-            InvalidAccess?.Invoke(this, new AInvalidAccessEventArgs(position));
+            InvalidAccess?.Invoke(this, new InvalidAccessEventArgs(position));
 
             throw new VmmPageFaultException(position);
         }

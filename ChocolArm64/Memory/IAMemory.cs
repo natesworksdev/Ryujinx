@@ -1,6 +1,6 @@
 namespace ChocolArm64.Memory
 {
-    public interface IaMemory
+    public interface IAMemory
     {
         sbyte ReadSByte(long position);
 
