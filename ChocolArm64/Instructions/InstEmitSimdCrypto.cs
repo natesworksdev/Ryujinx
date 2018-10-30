@@ -7,7 +7,7 @@ namespace ChocolArm64.Instructions
     {
         public static void Aesd_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitLdvec(op.Rn);
@@ -19,7 +19,7 @@ namespace ChocolArm64.Instructions
 
         public static void Aese_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitLdvec(op.Rn);
@@ -31,7 +31,7 @@ namespace ChocolArm64.Instructions
 
         public static void Aesimc_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             context.EmitLdvec(op.Rn);
 
@@ -42,7 +42,7 @@ namespace ChocolArm64.Instructions
 
         public static void Aesmc_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             context.EmitLdvec(op.Rn);
 

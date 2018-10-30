@@ -8,7 +8,7 @@ namespace ChocolArm64.Instructions
     {
         public static void Movk(ILEmitterCtx context)
         {
-            OpCodeMov op = (OpCodeMov)context.CurrOp;
+            OpCodeMov64 op = (OpCodeMov64)context.CurrOp;
 
             context.EmitLdintzr(op.Rd);
             context.EmitLdc_I(~(0xffffL << op.Pos));
@@ -24,7 +24,7 @@ namespace ChocolArm64.Instructions
 
         public static void Movn(ILEmitterCtx context)
         {
-            OpCodeMov op = (OpCodeMov)context.CurrOp;
+            OpCodeMov64 op = (OpCodeMov64)context.CurrOp;
 
             context.EmitLdc_I(~op.Imm);
             context.EmitStintzr(op.Rd);
@@ -32,7 +32,7 @@ namespace ChocolArm64.Instructions
 
         public static void Movz(ILEmitterCtx context)
         {
-            OpCodeMov op = (OpCodeMov)context.CurrOp;
+            OpCodeMov64 op = (OpCodeMov64)context.CurrOp;
 
             context.EmitLdc_I(op.Imm);
             context.EmitStintzr(op.Rd);

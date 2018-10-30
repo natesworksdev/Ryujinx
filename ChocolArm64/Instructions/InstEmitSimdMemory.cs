@@ -33,7 +33,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitSimdMemMs(ILEmitterCtx context, bool isLoad)
         {
-            OpCodeSimdMemMs op = (OpCodeSimdMemMs)context.CurrOp;
+            OpCodeSimdMemMs64 op = (OpCodeSimdMemMs64)context.CurrOp;
 
             int offset = 0;
 
@@ -84,7 +84,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitSimdMemSs(ILEmitterCtx context, bool isLoad)
         {
-            OpCodeSimdMemSs op = (OpCodeSimdMemSs)context.CurrOp;
+            OpCodeSimdMemSs64 op = (OpCodeSimdMemSs64)context.CurrOp;
 
             int offset = 0;
 
@@ -164,7 +164,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitSimdMemWBack(ILEmitterCtx context, int offset)
         {
-            OpCodeMemReg op = (OpCodeMemReg)context.CurrOp;
+            OpCodeMemReg64 op = (OpCodeMemReg64)context.CurrOp;
 
             context.EmitLdint(op.Rn);
 

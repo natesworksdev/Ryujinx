@@ -10,7 +10,7 @@ namespace ChocolArm64.Instructions
     {
         public static void Adr(ILEmitterCtx context)
         {
-            OpCodeAdr op = (OpCodeAdr)context.CurrOp;
+            OpCodeAdr64 op = (OpCodeAdr64)context.CurrOp;
 
             context.EmitLdc_I(op.Position + op.Imm);
             context.EmitStintzr(op.Rd);
@@ -18,7 +18,7 @@ namespace ChocolArm64.Instructions
 
         public static void Adrp(ILEmitterCtx context)
         {
-            OpCodeAdr op = (OpCodeAdr)context.CurrOp;
+            OpCodeAdr64 op = (OpCodeAdr64)context.CurrOp;
 
             context.EmitLdc_I((op.Position & ~0xfffL) + (op.Imm << 12));
             context.EmitStintzr(op.Rd);
@@ -29,7 +29,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitLdr(ILEmitterCtx context, bool signed)
         {
-            OpCodeMem op = (OpCodeMem)context.CurrOp;
+            OpCodeMem64 op = (OpCodeMem64)context.CurrOp;
 
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
 
@@ -48,7 +48,7 @@ namespace ChocolArm64.Instructions
                 EmitReadZxCall(context, op.Size);
             }
 
-            if (op is IOpCodeSimd)
+            if (op is IOpCodeSimd64)
             {
                 context.EmitStvec(op.Rt);
             }
@@ -62,7 +62,7 @@ namespace ChocolArm64.Instructions
 
         public static void LdrLit(ILEmitterCtx context)
         {
-            IOpCodeLit op = (IOpCodeLit)context.CurrOp;
+            IOpCodeLit64 op = (IOpCodeLit64)context.CurrOp;
 
             if (op.Prefetch)
             {
@@ -81,7 +81,7 @@ namespace ChocolArm64.Instructions
                 EmitReadZxCall(context, op.Size);
             }
 
-            if (op is IOpCodeSimd)
+            if (op is IOpCodeSimd64)
             {
                 context.EmitStvec(op.Rt);
             }
@@ -93,7 +93,7 @@ namespace ChocolArm64.Instructions
 
         public static void Ldp(ILEmitterCtx context)
         {
-            OpCodeMemPair op = (OpCodeMemPair)context.CurrOp;
+            OpCodeMemPair64 op = (OpCodeMemPair64)context.CurrOp;
 
             void EmitReadAndStore(int rt)
             {
@@ -106,7 +106,7 @@ namespace ChocolArm64.Instructions
                     EmitReadZxCall(context, op.Size);
                 }
 
-                if (op is IOpCodeSimd)
+                if (op is IOpCodeSimd64)
                 {
                     context.EmitStvec(rt);
                 }
@@ -135,13 +135,13 @@ namespace ChocolArm64.Instructions
 
         public static void Str(ILEmitterCtx context)
         {
-            OpCodeMem op = (OpCodeMem)context.CurrOp;
+            OpCodeMem64 op = (OpCodeMem64)context.CurrOp;
 
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
 
             EmitLoadAddress(context);
 
-            if (op is IOpCodeSimd)
+            if (op is IOpCodeSimd64)
             {
                 context.EmitLdvec(op.Rt);
             }
@@ -157,13 +157,13 @@ namespace ChocolArm64.Instructions
 
         public static void Stp(ILEmitterCtx context)
         {
-            OpCodeMemPair op = (OpCodeMemPair)context.CurrOp;
+            OpCodeMemPair64 op = (OpCodeMemPair64)context.CurrOp;
 
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
 
             EmitLoadAddress(context);
 
-            if (op is IOpCodeSimd)
+            if (op is IOpCodeSimd64)
             {
                 context.EmitLdvec(op.Rt);
             }
@@ -180,7 +180,7 @@ namespace ChocolArm64.Instructions
 
             context.Emit(OpCodes.Add);
 
-            if (op is IOpCodeSimd)
+            if (op is IOpCodeSimd64)
             {
                 context.EmitLdvec(op.Rt2);
             }
@@ -198,7 +198,7 @@ namespace ChocolArm64.Instructions
         {
             switch (context.CurrOp)
             {
-                case OpCodeMemImm op:
+                case OpCodeMemImm64 op:
                     context.EmitLdint(op.Rn);
 
                     if (!op.PostIdx)
@@ -210,7 +210,7 @@ namespace ChocolArm64.Instructions
                     }
                     break;
 
-                case OpCodeMemReg op:
+                case OpCodeMemReg64 op:
                     context.EmitLdint(op.Rn);
                     context.EmitLdintzr(op.Rm);
                     context.EmitCast(op.IntType);
@@ -234,7 +234,7 @@ namespace ChocolArm64.Instructions
         {
             //Check whenever the current OpCode has post-indexed write back, if so write it.
             //Note: AOpCodeMemPair inherits from AOpCodeMemImm, so this works for both.
-            if (context.CurrOp is OpCodeMemImm op && op.WBack)
+            if (context.CurrOp is OpCodeMemImm64 op && op.WBack)
             {
                 context.EmitLdtmp();
 

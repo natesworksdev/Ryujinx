@@ -13,7 +13,7 @@ namespace ChocolArm64.Instructions
     {
         public static void Dup_Gp(ILEmitterCtx context)
         {
-            OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
+            OpCodeSimdIns64 op = (OpCodeSimdIns64)context.CurrOp;
 
             if (Optimizations.UseSse2)
             {
@@ -58,7 +58,7 @@ namespace ChocolArm64.Instructions
 
         public static void Dup_S(ILEmitterCtx context)
         {
-            OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
+            OpCodeSimdIns64 op = (OpCodeSimdIns64)context.CurrOp;
 
             EmitVectorExtractZx(context, op.Rn, op.DstIndex, op.Size);
 
@@ -67,7 +67,7 @@ namespace ChocolArm64.Instructions
 
         public static void Dup_V(ILEmitterCtx context)
         {
-            OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
+            OpCodeSimdIns64 op = (OpCodeSimdIns64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -87,7 +87,7 @@ namespace ChocolArm64.Instructions
 
         public static void Ext_V(ILEmitterCtx context)
         {
-            OpCodeSimdExt op = (OpCodeSimdExt)context.CurrOp;
+            OpCodeSimdExt64 op = (OpCodeSimdExt64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitStvectmp();
@@ -120,7 +120,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcsel_S(ILEmitterCtx context)
         {
-            OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
+            OpCodeSimdFcond64 op = (OpCodeSimdFcond64)context.CurrOp;
 
             ILLabel lblTrue = new ILLabel();
             ILLabel lblEnd  = new ILLabel();
@@ -142,7 +142,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmov_Ftoi(ILEmitterCtx context)
         {
-            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+            OpCodeSimdCvt64 op = (OpCodeSimdCvt64)context.CurrOp;
 
             EmitVectorExtractZx(context, op.Rn, 0, 3);
 
@@ -153,7 +153,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmov_Ftoi1(ILEmitterCtx context)
         {
-            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+            OpCodeSimdCvt64 op = (OpCodeSimdCvt64)context.CurrOp;
 
             EmitVectorExtractZx(context, op.Rn, 1, 3);
 
@@ -164,7 +164,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmov_Itof(ILEmitterCtx context)
         {
-            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+            OpCodeSimdCvt64 op = (OpCodeSimdCvt64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 
@@ -175,7 +175,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmov_Itof1(ILEmitterCtx context)
         {
-            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+            OpCodeSimdCvt64 op = (OpCodeSimdCvt64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 
@@ -186,7 +186,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmov_S(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
@@ -195,7 +195,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmov_Si(ILEmitterCtx context)
         {
-            OpCodeSimdFmov op = (OpCodeSimdFmov)context.CurrOp;
+            OpCodeSimdFmov64 op = (OpCodeSimdFmov64)context.CurrOp;
 
             context.EmitLdc_I8(op.Imm);
 
@@ -204,7 +204,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmov_V(ILEmitterCtx context)
         {
-            OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
+            OpCodeSimdImm64 op = (OpCodeSimdImm64)context.CurrOp;
 
             int elems = op.RegisterSize == RegisterSize.Simd128 ? 4 : 2;
 
@@ -223,7 +223,7 @@ namespace ChocolArm64.Instructions
 
         public static void Ins_Gp(ILEmitterCtx context)
         {
-            OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
+            OpCodeSimdIns64 op = (OpCodeSimdIns64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 
@@ -232,7 +232,7 @@ namespace ChocolArm64.Instructions
 
         public static void Ins_V(ILEmitterCtx context)
         {
-            OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
+            OpCodeSimdIns64 op = (OpCodeSimdIns64)context.CurrOp;
 
             EmitVectorExtractZx(context, op.Rn, op.SrcIndex, op.Size);
 
@@ -251,7 +251,7 @@ namespace ChocolArm64.Instructions
 
         public static void Smov_S(ILEmitterCtx context)
         {
-            OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
+            OpCodeSimdIns64 op = (OpCodeSimdIns64)context.CurrOp;
 
             EmitVectorExtractSx(context, op.Rn, op.DstIndex, op.Size);
 
@@ -262,7 +262,7 @@ namespace ChocolArm64.Instructions
 
         public static void Tbl_V(ILEmitterCtx context)
         {
-            OpCodeSimdTbl op = (OpCodeSimdTbl)context.CurrOp;
+            OpCodeSimdTbl64 op = (OpCodeSimdTbl64)context.CurrOp;
 
             context.EmitLdvec(op.Rm);
 
@@ -307,7 +307,7 @@ namespace ChocolArm64.Instructions
 
         public static void Umov_S(ILEmitterCtx context)
         {
-            OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
+            OpCodeSimdIns64 op = (OpCodeSimdIns64)context.CurrOp;
 
             EmitVectorExtractZx(context, op.Rn, op.DstIndex, op.Size);
 
@@ -326,7 +326,7 @@ namespace ChocolArm64.Instructions
 
         public static void Xtn_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int elems = 8 >> op.Size;
 
@@ -442,7 +442,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitVectorTranspose(ILEmitterCtx context, int part)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int words = op.GetBitsCount() >> 4;
             int pairs = words >> op.Size;
@@ -469,7 +469,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitVectorUnzip(ILEmitterCtx context, int part)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int words = op.GetBitsCount() >> 4;
             int pairs = words >> op.Size;
@@ -496,7 +496,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitVectorZip(ILEmitterCtx context, int part)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse2)
             {

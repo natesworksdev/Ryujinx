@@ -17,17 +17,17 @@ namespace ChocolArm64.Translation
         private int _blkIndex;
         private int _opcIndex;
 
-        private Block[] _graph;
-        private Block   _root;
-        public  Block   CurrBlock => _graph[_blkIndex];
-        public  AOpCode  CurrOp    => _graph[_blkIndex].OpCodes[_opcIndex];
+        private Block[]   _graph;
+        private Block     _root;
+        public  Block     CurrBlock => _graph[_blkIndex];
+        public  OpCode64 CurrOp    => _graph[_blkIndex].OpCodes[_opcIndex];
 
         private ILEmitter _emitter;
 
         private ILBlock _ilBlock;
 
-        private AOpCode _optOpLastCompare;
-        private AOpCode _optOpLastFlagSet;
+        private OpCode64 _optOpLastCompare;
+        private OpCode64 _optOpLastFlagSet;
 
         //This is the index of the temporary register, used to store temporary
         //values needed by some functions, since IL doesn't have a swap instruction.
@@ -138,7 +138,7 @@ namespace ChocolArm64.Translation
                 return false;
             }
 
-            if (!_cache.TryGetSubroutine(((OpCodeBImmAl)CurrOp).Imm, out TranslatedSub subroutine))
+            if (!_cache.TryGetSubroutine(((OpCodeBImmAl64)CurrOp).Imm, out TranslatedSub subroutine))
             {
                 return false;
             }

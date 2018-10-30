@@ -130,9 +130,9 @@ namespace ChocolArm64.Instructions
 
         private static bool GetIsSimd(ILEmitterCtx context)
         {
-            return context.CurrOp is IOpCodeSimd &&
-                 !(context.CurrOp is OpCodeSimdMemMs ||
-                   context.CurrOp is OpCodeSimdMemSs);
+            return context.CurrOp is IOpCodeSimd64 &&
+                 !(context.CurrOp is OpCodeSimdMemMs64 ||
+                   context.CurrOp is OpCodeSimdMemSs64);
         }
     }
 }

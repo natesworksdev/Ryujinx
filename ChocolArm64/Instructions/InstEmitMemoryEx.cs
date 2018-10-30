@@ -47,7 +47,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitLoad(ILEmitterCtx context, AccessType accType, bool pair)
         {
-            OpCodeMemEx op = (OpCodeMemEx)context.CurrOp;
+            OpCodeMemEx64 op = (OpCodeMemEx64)context.CurrOp;
 
             bool ordered   = (accType & AccessType.Ordered)   != 0;
             bool exclusive = (accType & AccessType.Exclusive) != 0;
@@ -109,7 +109,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitStore(ILEmitterCtx context, AccessType accType, bool pair)
         {
-            OpCodeMemEx op = (OpCodeMemEx)context.CurrOp;
+            OpCodeMemEx64 op = (OpCodeMemEx64)context.CurrOp;
 
             bool ordered   = (accType & AccessType.Ordered)   != 0;
             bool exclusive = (accType & AccessType.Exclusive) != 0;

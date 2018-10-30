@@ -21,7 +21,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitCcmp(ILEmitterCtx context, CcmpOp cmpOp)
         {
-            OpCodeCcmp op = (OpCodeCcmp)context.CurrOp;
+            OpCodeCcmp64 op = (OpCodeCcmp64)context.CurrOp;
 
             ILLabel lblTrue = new ILLabel();
             ILLabel lblEnd  = new ILLabel();

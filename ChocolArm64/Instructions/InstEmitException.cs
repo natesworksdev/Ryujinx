@@ -19,7 +19,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitExceptionCall(ILEmitterCtx context, string mthdName)
         {
-            OpCodeException op = (OpCodeException)context.CurrOp;
+            OpCodeException64 op = (OpCodeException64)context.CurrOp;
 
             context.EmitStoreState();
 
@@ -60,7 +60,7 @@ namespace ChocolArm64.Instructions
 
         public static void Und(ILEmitterCtx context)
         {
-            AOpCode op = context.CurrOp;
+            OpCode64 op = context.CurrOp;
 
             context.EmitStoreState();
 

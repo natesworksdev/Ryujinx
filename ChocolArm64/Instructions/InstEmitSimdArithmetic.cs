@@ -49,7 +49,7 @@ namespace ChocolArm64.Instructions
 
         public static void Addp_S(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitVectorExtractZx(context, op.Rn, 0, op.Size);
             EmitVectorExtractZx(context, op.Rn, 1, op.Size);
@@ -66,7 +66,7 @@ namespace ChocolArm64.Instructions
 
         public static void Addv_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -85,7 +85,7 @@ namespace ChocolArm64.Instructions
 
         public static void Cls_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -111,7 +111,7 @@ namespace ChocolArm64.Instructions
 
         public static void Clz_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -148,7 +148,7 @@ namespace ChocolArm64.Instructions
 
         public static void Cnt_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int elems = op.RegisterSize == RegisterSize.Simd128 ? 16 : 8;
 
@@ -234,7 +234,7 @@ namespace ChocolArm64.Instructions
 
         public static void Faddp_S(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -287,7 +287,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 if (op.Size == 0)
                 {
@@ -499,7 +499,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 if (op.Size == 0)
                 {
@@ -627,7 +627,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fnmadd_S(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -648,7 +648,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fnmsub_S(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -693,7 +693,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 int sizeF = op.Size & 1;
 
@@ -747,7 +747,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 int sizeF = op.Size & 1;
 
@@ -808,7 +808,7 @@ namespace ChocolArm64.Instructions
 
         public static void Frinta_S(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
@@ -827,7 +827,7 @@ namespace ChocolArm64.Instructions
 
         public static void Frinti_S(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitScalarUnaryOpF(context, () =>
             {
@@ -850,7 +850,7 @@ namespace ChocolArm64.Instructions
 
         public static void Frinti_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -891,7 +891,7 @@ namespace ChocolArm64.Instructions
 
         public static void Frintn_S(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
@@ -926,7 +926,7 @@ namespace ChocolArm64.Instructions
 
         public static void Frintx_S(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitScalarUnaryOpF(context, () =>
             {
@@ -949,7 +949,7 @@ namespace ChocolArm64.Instructions
 
         public static void Frintx_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitVectorUnaryOpF(context, () =>
             {
@@ -990,7 +990,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 int sizeF = op.Size & 1;
 
@@ -1052,7 +1052,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 int sizeF = op.Size & 1;
 
@@ -1290,7 +1290,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 Type[] typesSrl = new Type[] { VectorIntTypesPerSizeLog2[op.Size], typeof(byte) };
                 Type[] typesCvt = new Type[] { VectorIntTypesPerSizeLog2[op.Size] };
@@ -1339,7 +1339,7 @@ namespace ChocolArm64.Instructions
 
         public static void Shadd_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse2 && op.Size > 0)
             {
@@ -1389,7 +1389,7 @@ namespace ChocolArm64.Instructions
 
         public static void Shsub_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse2 && op.Size < 2)
             {
@@ -1475,7 +1475,7 @@ namespace ChocolArm64.Instructions
 
         public static void Smlal_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse41 && op.Size < 2)
             {
@@ -1526,7 +1526,7 @@ namespace ChocolArm64.Instructions
 
         public static void Smlsl_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse41 && op.Size < 2)
             {
@@ -1662,7 +1662,7 @@ namespace ChocolArm64.Instructions
 
         public static void Srhadd_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse2 && op.Size < 2)
             {
@@ -1715,7 +1715,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 Type[] typesSrl = new Type[] { VectorIntTypesPerSizeLog2[op.Size], typeof(byte) };
                 Type[] typesCvt = new Type[] { VectorIntTypesPerSizeLog2[op.Size] };
@@ -1838,7 +1838,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 Type[] typesSrl = new Type[] { VectorUIntTypesPerSizeLog2[op.Size], typeof(byte) };
                 Type[] typesCvt = new Type[] { VectorUIntTypesPerSizeLog2[op.Size] };
@@ -1882,7 +1882,7 @@ namespace ChocolArm64.Instructions
 
         public static void Uaddlv_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -1906,7 +1906,7 @@ namespace ChocolArm64.Instructions
 
         public static void Uhadd_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse2 && op.Size > 0)
             {
@@ -1956,7 +1956,7 @@ namespace ChocolArm64.Instructions
 
         public static void Uhsub_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse2 && op.Size < 2)
             {
@@ -2028,7 +2028,7 @@ namespace ChocolArm64.Instructions
 
         public static void Umlal_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse41 && op.Size < 2)
             {
@@ -2079,7 +2079,7 @@ namespace ChocolArm64.Instructions
 
         public static void Umlsl_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse41 && op.Size < 2)
             {
@@ -2165,7 +2165,7 @@ namespace ChocolArm64.Instructions
 
         public static void Urhadd_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse2 && op.Size < 2)
             {
@@ -2212,7 +2212,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 Type[] typesSrl = new Type[] { VectorUIntTypesPerSizeLog2[op.Size], typeof(byte) };
                 Type[] typesCvt = new Type[] { VectorUIntTypesPerSizeLog2[op.Size] };
@@ -2269,7 +2269,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitAddLongPairwise(ILEmitterCtx context, bool signed, bool accumulate)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int words = op.GetBitsCount() >> 4;
             int pairs = words >> op.Size;
@@ -2304,7 +2304,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitDoublingMultiplyHighHalf(ILEmitterCtx context, bool round)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int eSize = 8 << op.Size;
 
@@ -2340,7 +2340,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitHighNarrow(ILEmitterCtx context, Action emit, bool round)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int elems = 8 >> op.Size;
 

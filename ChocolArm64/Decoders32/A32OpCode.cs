@@ -3,7 +3,7 @@ using ChocolArm64.Instructions;
 
 namespace ChocolArm64.Decoders32
 {
-    class A32OpCode : AOpCode
+    class A32OpCode : OpCode64
     {
         public Cond Cond { get; private set; }
 

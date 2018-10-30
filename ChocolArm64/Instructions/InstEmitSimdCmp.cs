@@ -19,7 +19,7 @@ namespace ChocolArm64.Instructions
 
         public static void Cmeq_V(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeSimdReg op)
+            if (context.CurrOp is OpCodeSimdReg64 op)
             {
                 if (op.Size < 3 && Optimizations.UseSse2)
                 {
@@ -57,7 +57,7 @@ namespace ChocolArm64.Instructions
 
         public static void Cmgt_V(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeSimdReg op)
+            if (context.CurrOp is OpCodeSimdReg64 op)
             {
                 if (op.Size < 3 && Optimizations.UseSse2)
                 {
@@ -130,7 +130,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fccmp_S(ILEmitterCtx context)
         {
-            OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
+            OpCodeSimdFcond64 op = (OpCodeSimdFcond64)context.CurrOp;
 
             ILLabel lblTrue = new ILLabel();
             ILLabel lblEnd  = new ILLabel();
@@ -155,7 +155,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcmeq_S(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeSimdReg && Optimizations.UseSse
+            if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
                                                  && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareEqualScalar));
@@ -168,7 +168,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcmeq_V(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeSimdReg && Optimizations.UseSse
+            if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
                                                  && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareEqual));
@@ -181,7 +181,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcmge_S(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeSimdReg && Optimizations.UseSse
+            if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
                                                  && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanOrEqualScalar));
@@ -194,7 +194,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcmge_V(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeSimdReg && Optimizations.UseSse
+            if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
                                                  && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanOrEqual));
@@ -207,7 +207,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcmgt_S(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeSimdReg && Optimizations.UseSse
+            if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
                                                  && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanScalar));
@@ -220,7 +220,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcmgt_V(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeSimdReg && Optimizations.UseSse
+            if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
                                                  && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareGreaterThan));
@@ -253,9 +253,9 @@ namespace ChocolArm64.Instructions
 
         public static void Fcmp_S(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
-            bool cmpWithZero = !(op is OpCodeSimdFcond) ? op.Bit3 : false;
+            bool cmpWithZero = !(op is OpCodeSimdFcond64) ? op.Bit3 : false;
 
             //Handle NaN case.
             //If any number is NaN, then NZCV = 0011.
@@ -341,7 +341,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitNaNCheck(ILEmitterCtx context, int reg)
         {
-            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+            IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
 
             EmitVectorExtractF(context, reg, 0, op.Size);
 
@@ -361,7 +361,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitCmp(ILEmitterCtx context, OpCode ilOp, bool scalar)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = !scalar ? bytes >> op.Size : 1;
@@ -372,7 +372,7 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorExtractSx(context, op.Rn, index, op.Size);
 
-                if (op is OpCodeSimdReg binOp)
+                if (op is OpCodeSimdReg64 binOp)
                 {
                     EmitVectorExtractSx(context, binOp.Rm, index, op.Size);
                 }
@@ -405,7 +405,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitCmtst(ILEmitterCtx context, bool scalar)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = !scalar ? bytes >> op.Size : 1;
@@ -450,7 +450,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitVectorFcmp(ILEmitterCtx context, OpCode ilOp)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -470,7 +470,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitFcmp(ILEmitterCtx context, OpCode ilOp, int index, bool scalar)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -478,7 +478,7 @@ namespace ChocolArm64.Instructions
 
             EmitVectorExtractF(context, op.Rn, index, sizeF);
 
-            if (op is OpCodeSimdReg binOp)
+            if (op is OpCodeSimdReg64 binOp)
             {
                 EmitVectorExtractF(context, binOp.Rm, index, sizeF);
             }

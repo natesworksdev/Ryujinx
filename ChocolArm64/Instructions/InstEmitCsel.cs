@@ -21,7 +21,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitCsel(ILEmitterCtx context, CselOperation cselOp)
         {
-            OpCodeCsel op = (OpCodeCsel)context.CurrOp;
+            OpCodeCsel64 op = (OpCodeCsel64)context.CurrOp;
 
             ILLabel lblTrue = new ILLabel();
             ILLabel lblEnd  = new ILLabel();

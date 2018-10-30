@@ -10,7 +10,7 @@ namespace ChocolArm64.Instructions
 #region "Sha1"
         public static void Sha1c_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             EmitVectorExtractZx(context, op.Rn, 0, 2);
@@ -23,7 +23,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sha1h_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitVectorExtractZx(context, op.Rn, 0, 2);
 
@@ -34,7 +34,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sha1m_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             EmitVectorExtractZx(context, op.Rn, 0, 2);
@@ -47,7 +47,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sha1p_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             EmitVectorExtractZx(context, op.Rn, 0, 2);
@@ -60,7 +60,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sha1su0_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitLdvec(op.Rn);
@@ -73,7 +73,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sha1su1_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitLdvec(op.Rn);
@@ -87,7 +87,7 @@ namespace ChocolArm64.Instructions
 #region "Sha256"
         public static void Sha256h_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitLdvec(op.Rn);
@@ -100,7 +100,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sha256h2_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitLdvec(op.Rn);
@@ -113,7 +113,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sha256su0_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitLdvec(op.Rn);
@@ -125,7 +125,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sha256su1_V(ILEmitterCtx context)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             context.EmitLdvec(op.Rd);
             context.EmitLdvec(op.Rn);

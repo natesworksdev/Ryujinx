@@ -9,7 +9,7 @@ namespace ChocolArm64.Instructions
     {
         public static void B(ILEmitterCtx context)
         {
-            OpCodeBImmAl op = (OpCodeBImmAl)context.CurrOp;
+            OpCodeBImmAl64 op = (OpCodeBImmAl64)context.CurrOp;
 
             if (context.CurrBlock.Branch != null)
             {
@@ -26,14 +26,14 @@ namespace ChocolArm64.Instructions
 
         public static void B_Cond(ILEmitterCtx context)
         {
-            OpCodeBImmCond op = (OpCodeBImmCond)context.CurrOp;
+            OpCodeBImmCond64 op = (OpCodeBImmCond64)context.CurrOp;
 
             EmitBranch(context, op.Cond);
         }
 
         public static void Bl(ILEmitterCtx context)
         {
-            OpCodeBImmAl op = (OpCodeBImmAl)context.CurrOp;
+            OpCodeBImmAl64 op = (OpCodeBImmAl64)context.CurrOp;
 
             context.EmitLdc_I(op.Position + 4);
             context.EmitStint(CpuThreadState.LrIndex);
@@ -70,7 +70,7 @@ namespace ChocolArm64.Instructions
 
         public static void Blr(ILEmitterCtx context)
         {
-            OpCodeBReg op = (OpCodeBReg)context.CurrOp;
+            OpCodeBReg64 op = (OpCodeBReg64)context.CurrOp;
 
             context.EmitLdc_I(op.Position + 4);
             context.EmitStint(CpuThreadState.LrIndex);
@@ -82,7 +82,7 @@ namespace ChocolArm64.Instructions
 
         public static void Br(ILEmitterCtx context)
         {
-            OpCodeBReg op = (OpCodeBReg)context.CurrOp;
+            OpCodeBReg64 op = (OpCodeBReg64)context.CurrOp;
 
             context.EmitStoreState();
             context.EmitLdintzr(op.Rn);
@@ -95,7 +95,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitCb(ILEmitterCtx context, OpCode ilOp)
         {
-            OpCodeBImmCmp op = (OpCodeBImmCmp)context.CurrOp;
+            OpCodeBImmCmp64 op = (OpCodeBImmCmp64)context.CurrOp;
 
             context.EmitLdintzr(op.Rt);
             context.EmitLdc_I(0);
@@ -116,7 +116,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitTb(ILEmitterCtx context, OpCode ilOp)
         {
-            OpCodeBImmTest op = (OpCodeBImmTest)context.CurrOp;
+            OpCodeBImmTest64 op = (OpCodeBImmTest64)context.CurrOp;
 
             context.EmitLdintzr(op.Rt);
             context.EmitLdc_I(1L << op.Pos);
@@ -130,7 +130,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitBranch(ILEmitterCtx context, Cond cond)
         {
-            OpCodeBImm op = (OpCodeBImm)context.CurrOp;
+            OpCodeBImm64 op = (OpCodeBImm64)context.CurrOp;
 
             if (context.CurrBlock.Next   != null &&
                 context.CurrBlock.Branch != null)
@@ -159,7 +159,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitBranch(ILEmitterCtx context, OpCode ilOp)
         {
-            OpCodeBImm op = (OpCodeBImm)context.CurrOp;
+            OpCodeBImm64 op = (OpCodeBImm64)context.CurrOp;
 
             if (context.CurrBlock.Next   != null &&
                 context.CurrBlock.Branch != null)

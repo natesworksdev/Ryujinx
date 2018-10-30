@@ -11,7 +11,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitMul(ILEmitterCtx context, OpCode ilOp)
         {
-            OpCodeMul op = (OpCodeMul)context.CurrOp;
+            OpCodeMul64 op = (OpCodeMul64)context.CurrOp;
 
             context.EmitLdintzr(op.Ra);
             context.EmitLdintzr(op.Rn);
@@ -30,7 +30,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitMull(ILEmitterCtx context, OpCode addSubOp, bool signed)
         {
-            OpCodeMul op = (OpCodeMul)context.CurrOp;
+            OpCodeMul64 op = (OpCodeMul64)context.CurrOp;
 
             OpCode castOp = signed
                 ? OpCodes.Conv_I8
@@ -55,7 +55,7 @@ namespace ChocolArm64.Instructions
 
         public static void Smulh(ILEmitterCtx context)
         {
-            OpCodeMul op = (OpCodeMul)context.CurrOp;
+            OpCodeMul64 op = (OpCodeMul64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
             context.EmitLdintzr(op.Rm);
@@ -67,7 +67,7 @@ namespace ChocolArm64.Instructions
 
         public static void Umulh(ILEmitterCtx context)
         {
-            OpCodeMul op = (OpCodeMul)context.CurrOp;
+            OpCodeMul64 op = (OpCodeMul64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
             context.EmitLdintzr(op.Rm);

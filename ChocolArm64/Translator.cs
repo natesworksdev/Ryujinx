@@ -43,7 +43,7 @@ namespace ChocolArm64
         {
             do
             {
-                AOpCode opCode = Decoder.DecodeOpCode(state, memory, state.R15);
+                OpCode64 opCode = Decoder.DecodeOpCode(state, memory, state.R15);
 
                 opCode.Interpreter(state, memory, opCode);
             }
@@ -101,7 +101,7 @@ namespace ChocolArm64
 
             _cache.AddOrUpdate(position, subroutine, block.OpCodes.Count);
 
-            AOpCode lastOp = block.GetLastOp();
+            OpCode64 lastOp = block.GetLastOp();
 
             return subroutine;
         }

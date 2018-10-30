@@ -79,7 +79,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitSse42Crc32(ILEmitterCtx context, Type tCrc, Type tData)
         {
-            OpCodeAluRs op = (OpCodeAluRs)context.CurrOp;
+            OpCodeAluRs64 op = (OpCodeAluRs64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
             context.EmitLdintzr(op.Rm);
@@ -91,7 +91,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitCrc32(ILEmitterCtx context, string name)
         {
-            OpCodeAluRs op = (OpCodeAluRs)context.CurrOp;
+            OpCodeAluRs64 op = (OpCodeAluRs64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 

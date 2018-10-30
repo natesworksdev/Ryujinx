@@ -101,7 +101,7 @@ namespace ChocolArm64.Instructions
 
         public static void Cls(ILEmitterCtx context)
         {
-            OpCodeAlu op = (OpCodeAlu)context.CurrOp;
+            OpCodeAlu64 op = (OpCodeAlu64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 
@@ -114,7 +114,7 @@ namespace ChocolArm64.Instructions
 
         public static void Clz(ILEmitterCtx context)
         {
-            OpCodeAlu op = (OpCodeAlu)context.CurrOp;
+            OpCodeAlu64 op = (OpCodeAlu64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 
@@ -149,7 +149,7 @@ namespace ChocolArm64.Instructions
         public static void Extr(ILEmitterCtx context)
         {
             //TODO: Ensure that the Shift is valid for the Is64Bits.
-            OpCodeAluRs op = (OpCodeAluRs)context.CurrOp;
+            OpCodeAluRs64 op = (OpCodeAluRs64)context.CurrOp;
 
             context.EmitLdintzr(op.Rm);
 
@@ -254,7 +254,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitFallback32_64(ILEmitterCtx context, string name32, string name64)
         {
-            OpCodeAlu op = (OpCodeAlu)context.CurrOp;
+            OpCodeAlu64 op = (OpCodeAlu64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 
@@ -272,7 +272,7 @@ namespace ChocolArm64.Instructions
 
         public static void Rev64(ILEmitterCtx context)
         {
-            OpCodeAlu op = (OpCodeAlu)context.CurrOp;
+            OpCodeAlu64 op = (OpCodeAlu64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 

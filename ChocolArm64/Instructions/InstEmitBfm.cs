@@ -9,7 +9,7 @@ namespace ChocolArm64.Instructions
     {
         public static void Bfm(ILEmitterCtx context)
         {
-            OpCodeBfm op = (OpCodeBfm)context.CurrOp;
+            OpCodeBfm64 op = (OpCodeBfm64)context.CurrOp;
 
             EmitBfmLoadRn(context);
 
@@ -30,7 +30,7 @@ namespace ChocolArm64.Instructions
 
         public static void Sbfm(ILEmitterCtx context)
         {
-            OpCodeBfm op = (OpCodeBfm)context.CurrOp;
+            OpCodeBfm64 op = (OpCodeBfm64)context.CurrOp;
 
             int bitsCount = op.GetBitsCount();
 
@@ -74,7 +74,7 @@ namespace ChocolArm64.Instructions
 
         public static void Ubfm(ILEmitterCtx context)
         {
-            OpCodeBfm op = (OpCodeBfm)context.CurrOp;
+            OpCodeBfm64 op = (OpCodeBfm64)context.CurrOp;
 
             if (op.Pos + 1 == op.GetBitsCount())
             {
@@ -109,7 +109,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitBfiz(ILEmitterCtx context, bool signed)
         {
-            OpCodeBfm op = (OpCodeBfm)context.CurrOp;
+            OpCodeBfm64 op = (OpCodeBfm64)context.CurrOp;
 
             int width = op.Pos + 1;
 
@@ -141,7 +141,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitBfmCast(ILEmitterCtx context, OpCode ilOp, bool signed)
         {
-            OpCodeBfm op = (OpCodeBfm)context.CurrOp;
+            OpCodeBfm64 op = (OpCodeBfm64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 
@@ -169,7 +169,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitBfmShift(ILEmitterCtx context, bool signed)
         {
-            OpCodeBfm op = (OpCodeBfm)context.CurrOp;
+            OpCodeBfm64 op = (OpCodeBfm64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
             context.EmitLdc_I4(op.Shift);
@@ -183,7 +183,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitBfmLsl(ILEmitterCtx context)
         {
-            OpCodeBfm op = (OpCodeBfm)context.CurrOp;
+            OpCodeBfm64 op = (OpCodeBfm64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 
@@ -194,7 +194,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitBfmLoadRn(ILEmitterCtx context)
         {
-            OpCodeBfm op = (OpCodeBfm)context.CurrOp;
+            OpCodeBfm64 op = (OpCodeBfm64)context.CurrOp;
 
             context.EmitLdintzr(op.Rn);
 

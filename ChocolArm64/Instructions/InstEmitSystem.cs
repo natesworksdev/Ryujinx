@@ -21,7 +21,7 @@ namespace ChocolArm64.Instructions
 
         public static void Mrs(ILEmitterCtx context)
         {
-            OpCodeSystem op = (OpCodeSystem)context.CurrOp;
+            OpCodeSystem64 op = (OpCodeSystem64)context.CurrOp;
 
             context.EmitLdarg(TranslatedSub.StateArgIdx);
 
@@ -56,7 +56,7 @@ namespace ChocolArm64.Instructions
 
         public static void Msr(ILEmitterCtx context)
         {
-            OpCodeSystem op = (OpCodeSystem)context.CurrOp;
+            OpCodeSystem64 op = (OpCodeSystem64)context.CurrOp;
 
             context.EmitLdarg(TranslatedSub.StateArgIdx);
             context.EmitLdintzr(op.Rt);
@@ -93,7 +93,7 @@ namespace ChocolArm64.Instructions
             //This instruction is used to do some operations on the CPU like cache invalidation,
             //address translation and the like.
             //We treat it as no-op here since we don't have any cache being emulated anyway.
-            OpCodeSystem op = (OpCodeSystem)context.CurrOp;
+            OpCodeSystem64 op = (OpCodeSystem64)context.CurrOp;
 
             switch (GetPackedId(op))
             {
@@ -122,7 +122,7 @@ namespace ChocolArm64.Instructions
             }
         }
 
-        private static int GetPackedId(OpCodeSystem op)
+        private static int GetPackedId(OpCodeSystem64 op)
         {
             int id;
 

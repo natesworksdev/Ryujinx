@@ -122,7 +122,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitDataLoadRm(ILEmitterCtx context)
         {
-            context.EmitLdintzr(((IOpCodeAluRs)context.CurrOp).Rm);
+            context.EmitLdintzr(((IOpCodeAluRs64)context.CurrOp).Rm);
         }
 
         public static void EmitDataLoadOpers(ILEmitterCtx context)
@@ -133,9 +133,9 @@ namespace ChocolArm64.Instructions
 
         public static void EmitDataLoadRn(ILEmitterCtx context)
         {
-            IOpCodeAlu op = (IOpCodeAlu)context.CurrOp;
+            IOpCodeAlu64 op = (IOpCodeAlu64)context.CurrOp;
 
-            if (op.DataOp == DataOp.Logical || op is IOpCodeAluRs)
+            if (op.DataOp == DataOp.Logical || op is IOpCodeAluRs64)
             {
                 context.EmitLdintzr(op.Rn);
             }
@@ -149,11 +149,11 @@ namespace ChocolArm64.Instructions
         {
             switch (context.CurrOp)
             {
-                case IOpCodeAluImm op:
+                case IOpCodeAluImm64 op:
                     context.EmitLdc_I(op.Imm);
                     break;
 
-                case IOpCodeAluRs op:
+                case IOpCodeAluRs64 op:
                     context.EmitLdintzr(op.Rm);
 
                     switch (op.ShiftType)
@@ -165,7 +165,7 @@ namespace ChocolArm64.Instructions
                     }
                     break;
 
-                case IOpCodeAluRx op:
+                case IOpCodeAluRx64 op:
                     context.EmitLdintzr(op.Rm);
                     context.EmitCast(op.IntType);
                     context.EmitLsl(op.Shift);
@@ -178,9 +178,9 @@ namespace ChocolArm64.Instructions
 
         public static void EmitDataStore(ILEmitterCtx context, bool setFlags)
         {
-            IOpCodeAlu op = (IOpCodeAlu)context.CurrOp;
+            IOpCodeAlu64 op = (IOpCodeAlu64)context.CurrOp;
 
-            if (setFlags || op is IOpCodeAluRs)
+            if (setFlags || op is IOpCodeAluRs64)
             {
                 context.EmitStintzr(op.Rd);
             }

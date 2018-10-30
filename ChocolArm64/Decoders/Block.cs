@@ -10,11 +10,11 @@ namespace ChocolArm64.Decoders
         public Block Next   { get; set; }
         public Block Branch { get; set; }
 
-        public List<AOpCode> OpCodes { get; private set; }
+        public List<OpCode64> OpCodes { get; private set; }
 
         public Block()
         {
-            OpCodes = new List<AOpCode>();
+            OpCodes = new List<OpCode64>();
         }
 
         public Block(long position) : this()
@@ -22,7 +22,7 @@ namespace ChocolArm64.Decoders
             Position = position;
         }
 
-        public AOpCode GetLastOp()
+        public OpCode64 GetLastOp()
         {
             if (OpCodes.Count > 0)
             {

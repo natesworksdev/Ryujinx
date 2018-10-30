@@ -69,9 +69,9 @@ namespace ChocolArm64.Decoders
                 {
                     bool hasCachedSub = false;
 
-                    AOpCode lastOp = current.GetLastOp();
+                    OpCode64 lastOp = current.GetLastOp();
 
-                    if (lastOp is OpCodeBImm op)
+                    if (lastOp is OpCodeBImm64 op)
                     {
                         if (op.Emitter == InstEmit.Bl)
                         {
@@ -83,8 +83,8 @@ namespace ChocolArm64.Decoders
                         }
                     }
 
-                    if (!((lastOp is OpCodeBImmAl) ||
-                          (lastOp is OpCodeBReg)) || hasCachedSub)
+                    if (!((lastOp is OpCodeBImmAl64) ||
+                          (lastOp is OpCodeBReg64)) || hasCachedSub)
                     {
                         current.Next = Enqueue(current.EndPosition);
                     }
@@ -151,7 +151,7 @@ namespace ChocolArm64.Decoders
         {
             long position = block.Position;
 
-            AOpCode opCode;
+            OpCode64 opCode;
 
             do
             {
@@ -168,20 +168,20 @@ namespace ChocolArm64.Decoders
             block.EndPosition = position;
         }
 
-        private static bool IsBranch(AOpCode opCode)
+        private static bool IsBranch(OpCode64 opCode)
         {
-            return opCode is OpCodeBImm ||
-                   opCode is OpCodeBReg;
+            return opCode is OpCodeBImm64 ||
+                   opCode is OpCodeBReg64;
         }
 
-        private static bool IsException(AOpCode opCode)
+        private static bool IsException(OpCode64 opCode)
         {
             return opCode.Emitter == InstEmit.Brk ||
                    opCode.Emitter == InstEmit.Svc ||
                    opCode.Emitter == InstEmit.Und;
         }
 
-        public static AOpCode DecodeOpCode(CpuThreadState state, MemoryManager memory, long position)
+        public static OpCode64 DecodeOpCode(CpuThreadState state, MemoryManager memory, long position)
         {
             int opCode = memory.ReadInt32(position);
 
@@ -197,7 +197,7 @@ namespace ChocolArm64.Decoders
                 inst = OpCodeTable.GetInstA32(opCode);
             }
 
-            AOpCode decodedOpCode = new AOpCode(Inst.Undefined, position, opCode);
+            OpCode64 decodedOpCode = new OpCode64(Inst.Undefined, position, opCode);
 
             if (inst.Type != null)
             {
@@ -207,7 +207,7 @@ namespace ChocolArm64.Decoders
             return decodedOpCode;
         }
 
-        private static AOpCode MakeOpCode(Type type, Inst inst, long position, int opCode)
+        private static OpCode64 MakeOpCode(Type type, Inst inst, long position, int opCode)
         {
             if (type == null)
             {
@@ -216,7 +216,7 @@ namespace ChocolArm64.Decoders
 
             OpActivator createInstance = _opActivators.GetOrAdd(type, CacheOpActivator);
 
-            return (AOpCode)createInstance(inst, position, opCode);
+            return (OpCode64)createInstance(inst, position, opCode);
         }
 
         private static OpActivator CacheOpActivator(Type type)

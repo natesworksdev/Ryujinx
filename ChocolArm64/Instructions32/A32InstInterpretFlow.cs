@@ -9,7 +9,7 @@ namespace ChocolArm64.Instructions32
 {
     static partial class A32InstInterpret
     {
-        public static void B(CpuThreadState state, MemoryManager memory, AOpCode opCode)
+        public static void B(CpuThreadState state, MemoryManager memory, OpCode64 opCode)
         {
             A32OpCodeBImmAl op = (A32OpCodeBImmAl)opCode;
 
@@ -19,17 +19,17 @@ namespace ChocolArm64.Instructions32
             }
         }
 
-        public static void Bl(CpuThreadState state, MemoryManager memory, AOpCode opCode)
+        public static void Bl(CpuThreadState state, MemoryManager memory, OpCode64 opCode)
         {
             Blx(state, memory, opCode, false);
         }
 
-        public static void Blx(CpuThreadState state, MemoryManager memory, AOpCode opCode)
+        public static void Blx(CpuThreadState state, MemoryManager memory, OpCode64 opCode)
         {
             Blx(state, memory, opCode, true);
         }
 
-        public static void Blx(CpuThreadState state, MemoryManager memory, AOpCode opCode, bool x)
+        public static void Blx(CpuThreadState state, MemoryManager memory, OpCode64 opCode, bool x)
         {
             A32OpCodeBImmAl op = (A32OpCodeBImmAl)opCode;
 

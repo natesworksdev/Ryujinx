@@ -27,7 +27,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 EmitLdvecWithUnsignedCast(context, op.Rm, op.Size);
                 EmitLdvecWithUnsignedCast(context, op.Rn, op.Size);
@@ -78,7 +78,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitBitBif(ILEmitterCtx context, bool notRm)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             if (Optimizations.UseSse2)
             {
@@ -148,7 +148,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
                 Type[] types = new Type[]
                 {
@@ -238,7 +238,7 @@ namespace ChocolArm64.Instructions
 
         public static void Rbit_V(ILEmitterCtx context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int elems = op.RegisterSize == RegisterSize.Simd128 ? 16 : 8;
 
@@ -278,7 +278,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitRev_V(ILEmitterCtx context, int containerSize)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             if (op.Size >= containerSize)
             {

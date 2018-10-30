@@ -57,12 +57,12 @@ namespace ChocolArm64.Instructions
             RdRnRm = Rd | Rn | Rm
         }
 
-        public static int GetImmShl(OpCodeSimdShImm op)
+        public static int GetImmShl(OpCodeSimdShImm64 op)
         {
             return op.Imm - (8 << op.Size);
         }
 
-        public static int GetImmShr(OpCodeSimdShImm op)
+        public static int GetImmShr(OpCodeSimdShImm64 op)
         {
             return (8 << (op.Size + 1)) - op.Imm;
         }
@@ -84,13 +84,13 @@ namespace ChocolArm64.Instructions
 
         private static void EmitSseOp(ILEmitterCtx context, string name, Type type)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             EmitLdvecWithSignedCast(context, op.Rn, op.Size);
 
             Type baseType = VectorIntTypesPerSizeLog2[op.Size];
 
-            if (op is OpCodeSimdReg binOp)
+            if (op is OpCodeSimdReg64 binOp)
             {
                 EmitLdvecWithSignedCast(context, binOp.Rm, op.Size);
 
@@ -195,7 +195,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitSseOrSse2OpF(ILEmitterCtx context, string name, bool scalar)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -225,7 +225,7 @@ namespace ChocolArm64.Instructions
                 baseType = typeof(Vector128<double>);
             }
 
-            if (op is OpCodeSimdReg binOp)
+            if (op is OpCodeSimdReg64 binOp)
             {
                 Ldvec(binOp.Rm);
 
@@ -262,7 +262,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitUnaryMathCall(ILEmitterCtx context, string name)
         {
-            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+            IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -282,7 +282,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitBinaryMathCall(ILEmitterCtx context, string name)
         {
-            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+            IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -302,7 +302,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitRoundMathCall(ILEmitterCtx context, MidpointRounding roundMode)
         {
-            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+            IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -324,7 +324,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitUnarySoftFloatCall(ILEmitterCtx context, string name)
         {
-            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+            IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -344,7 +344,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitSoftFloatCall(ILEmitterCtx context, string name)
         {
-            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+            IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
 
             Type type = (op.Size & 1) == 0
                 ? typeof(SoftFloat32)
@@ -357,21 +357,21 @@ namespace ChocolArm64.Instructions
 
         public static void EmitScalarBinaryOpByElemF(ILEmitterCtx context, Action emit)
         {
-            OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
+            OpCodeSimdRegElemF64 op = (OpCodeSimdRegElemF64)context.CurrOp;
 
             EmitScalarOpByElemF(context, emit, op.Index, ternary: false);
         }
 
         public static void EmitScalarTernaryOpByElemF(ILEmitterCtx context, Action emit)
         {
-            OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
+            OpCodeSimdRegElemF64 op = (OpCodeSimdRegElemF64)context.CurrOp;
 
             EmitScalarOpByElemF(context, emit, op.Index, ternary: true);
         }
 
         public static void EmitScalarOpByElemF(ILEmitterCtx context, Action emit, int elem, bool ternary)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -415,7 +415,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitScalarOp(ILEmitterCtx context, Action emit, OperFlags opers, bool signed)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             bool rd = (opers & OperFlags.Rd) != 0;
             bool rn = (opers & OperFlags.Rn) != 0;
@@ -433,7 +433,7 @@ namespace ChocolArm64.Instructions
 
             if (rm)
             {
-                EmitVectorExtract(context, ((OpCodeSimdReg)op).Rm, 0, op.Size, signed);
+                EmitVectorExtract(context, ((OpCodeSimdReg64)op).Rm, 0, op.Size, signed);
             }
 
             emit();
@@ -458,7 +458,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitScalarOpF(ILEmitterCtx context, Action emit, OperFlags opers)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -468,7 +468,7 @@ namespace ChocolArm64.Instructions
 
             if (ra)
             {
-                EmitVectorExtractF(context, ((OpCodeSimdReg)op).Ra, 0, sizeF);
+                EmitVectorExtractF(context, ((OpCodeSimdReg64)op).Ra, 0, sizeF);
             }
 
             if (rn)
@@ -478,7 +478,7 @@ namespace ChocolArm64.Instructions
 
             if (rm)
             {
-                EmitVectorExtractF(context, ((OpCodeSimdReg)op).Rm, 0, sizeF);
+                EmitVectorExtractF(context, ((OpCodeSimdReg64)op).Rm, 0, sizeF);
             }
 
             emit();
@@ -503,7 +503,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorOpF(ILEmitterCtx context, Action emit, OperFlags opers)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -528,7 +528,7 @@ namespace ChocolArm64.Instructions
 
                 if (rm)
                 {
-                    EmitVectorExtractF(context, ((OpCodeSimdReg)op).Rm, index, sizeF);
+                    EmitVectorExtractF(context, ((OpCodeSimdReg64)op).Rm, index, sizeF);
                 }
 
                 emit();
@@ -544,21 +544,21 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorBinaryOpByElemF(ILEmitterCtx context, Action emit)
         {
-            OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
+            OpCodeSimdRegElemF64 op = (OpCodeSimdRegElemF64)context.CurrOp;
 
             EmitVectorOpByElemF(context, emit, op.Index, ternary: false);
         }
 
         public static void EmitVectorTernaryOpByElemF(ILEmitterCtx context, Action emit)
         {
-            OpCodeSimdRegElemF op = (OpCodeSimdRegElemF)context.CurrOp;
+            OpCodeSimdRegElemF64 op = (OpCodeSimdRegElemF64)context.CurrOp;
 
             EmitVectorOpByElemF(context, emit, op.Index, ternary: true);
         }
 
         public static void EmitVectorOpByElemF(ILEmitterCtx context, Action emit, int elem, bool ternary)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -621,7 +621,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorOp(ILEmitterCtx context, Action emit, OperFlags opers, bool signed)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -644,7 +644,7 @@ namespace ChocolArm64.Instructions
 
                 if (rm)
                 {
-                    EmitVectorExtract(context, ((OpCodeSimdReg)op).Rm, index, op.Size, signed);
+                    EmitVectorExtract(context, ((OpCodeSimdReg64)op).Rm, index, op.Size, signed);
                 }
 
                 emit();
@@ -660,28 +660,28 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorBinaryOpByElemSx(ILEmitterCtx context, Action emit)
         {
-            OpCodeSimdRegElem op = (OpCodeSimdRegElem)context.CurrOp;
+            OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
             EmitVectorOpByElem(context, emit, op.Index, false, true);
         }
 
         public static void EmitVectorBinaryOpByElemZx(ILEmitterCtx context, Action emit)
         {
-            OpCodeSimdRegElem op = (OpCodeSimdRegElem)context.CurrOp;
+            OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
             EmitVectorOpByElem(context, emit, op.Index, false, false);
         }
 
         public static void EmitVectorTernaryOpByElemZx(ILEmitterCtx context, Action emit)
         {
-            OpCodeSimdRegElem op = (OpCodeSimdRegElem)context.CurrOp;
+            OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
             EmitVectorOpByElem(context, emit, op.Index, true, false);
         }
 
         public static void EmitVectorOpByElem(ILEmitterCtx context, Action emit, int elem, bool ternary, bool signed)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -725,7 +725,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorImmOp(ILEmitterCtx context, Action emit, bool binary)
         {
-            OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
+            OpCodeSimdImm64 op = (OpCodeSimdImm64)context.CurrOp;
 
             int bytes = op.GetBitsCount() >> 3;
             int elems = bytes >> op.Size;
@@ -762,7 +762,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorWidenRmBinaryOp(ILEmitterCtx context, Action emit, bool signed)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int elems = 8 >> op.Size;
 
@@ -804,7 +804,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorWidenRnRmOp(ILEmitterCtx context, Action emit, bool ternary, bool signed)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int elems = 8 >> op.Size;
 
@@ -841,7 +841,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorPairwiseOp(ILEmitterCtx context, Action emit, bool signed)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int words = op.GetBitsCount() >> 4;
             int pairs = words >> op.Size;
@@ -875,7 +875,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitVectorPairwiseOpF(ILEmitterCtx context, Action emit)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
             int sizeF = op.Size & 1;
 
@@ -939,7 +939,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitSaturatingUnaryOpSx(ILEmitterCtx context, Action emit, SaturatingFlags flags)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             bool scalar = (flags & SaturatingFlags.Scalar) != 0;
 
@@ -1000,7 +1000,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitSaturatingBinaryOp(ILEmitterCtx context, Action emit, SaturatingFlags flags)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             bool scalar = (flags & SaturatingFlags.Scalar) != 0;
             bool signed = (flags & SaturatingFlags.Signed) != 0;
@@ -1023,7 +1023,7 @@ namespace ChocolArm64.Instructions
                 for (int index = 0; index < elems; index++)
                 {
                     EmitVectorExtract(context,                   op.Rn, index, op.Size, signed);
-                    EmitVectorExtract(context, ((OpCodeSimdReg)op).Rm, index, op.Size, signed);
+                    EmitVectorExtract(context, ((OpCodeSimdReg64)op).Rm, index, op.Size, signed);
 
                     if (op.Size <= 2)
                     {
@@ -1072,7 +1072,7 @@ namespace ChocolArm64.Instructions
                 for (int index = 0; index < elems; index++)
                 {
                     EmitVectorExtract(context,                   op.Rn, index, op.Size, signed);
-                    EmitVectorExtract(context, ((OpCodeSimdReg)op).Rm, index, op.Size, signed);
+                    EmitVectorExtract(context, ((OpCodeSimdReg64)op).Rm, index, op.Size, signed);
 
                     emit();
 
@@ -1109,7 +1109,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitSaturatingNarrowOp(ILEmitterCtx context, SaturatingNarrowFlags flags)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
             bool scalar    = (flags & SaturatingNarrowFlags.Scalar)    != 0;
             bool signedSrc = (flags & SaturatingNarrowFlags.SignedSrc) != 0;
@@ -1180,7 +1180,7 @@ namespace ChocolArm64.Instructions
         // TSrc (64bit) == TDst (64bit); signed.
         public static void EmitUnarySignedSatQAbsOrNeg(ILEmitterCtx context)
         {
-            if (((OpCodeSimd)context.CurrOp).Size < 3)
+            if (((OpCodeSimd64)context.CurrOp).Size < 3)
             {
                 throw new InvalidOperationException();
             }
@@ -1193,7 +1193,7 @@ namespace ChocolArm64.Instructions
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQAdd(ILEmitterCtx context, bool signed)
         {
-            if (((OpCodeSimdReg)context.CurrOp).Size < 3)
+            if (((OpCodeSimdReg64)context.CurrOp).Size < 3)
             {
                 throw new InvalidOperationException();
             }
@@ -1208,7 +1208,7 @@ namespace ChocolArm64.Instructions
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQSub(ILEmitterCtx context, bool signed)
         {
-            if (((OpCodeSimdReg)context.CurrOp).Size < 3)
+            if (((OpCodeSimdReg64)context.CurrOp).Size < 3)
             {
                 throw new InvalidOperationException();
             }
@@ -1223,7 +1223,7 @@ namespace ChocolArm64.Instructions
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
         public static void EmitBinarySatQAccumulate(ILEmitterCtx context, bool signed)
         {
-            if (((OpCodeSimd)context.CurrOp).Size < 3)
+            if (((OpCodeSimd64)context.CurrOp).Size < 3)
             {
                 throw new InvalidOperationException();
             }
