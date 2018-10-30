@@ -67,11 +67,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KThread(
             CpuThread Thread,
-            Process Process,
-            Horizon System,
-            int     ProcessorId,
-            int     Priority,
-            int     ThreadId) : base(System)
+            Process   Process,
+            Horizon   System,
+            int       ProcessorId,
+            int       Priority,
+            int       ThreadId) : base(System)
         {
             this.ThreadId = ThreadId;
 
