@@ -14,9 +14,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private Dictionary<int, SvcFunc> SvcFuncs;
 
-        private Switch  Device;
-        private Process Process;
-        private Horizon System;
+        private Switch        Device;
+        private Process       Process;
+        private Horizon       System;
         private MemoryManager Memory;
 
         private struct HleIpcMessage

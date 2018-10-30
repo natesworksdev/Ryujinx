@@ -25,7 +25,7 @@ namespace Ryujinx.Tests.Cpu
         private IntPtr RamPointer;
 
         private MemoryManager Memory;
-        private CpuThread Thread;
+        private CpuThread     Thread;
 
         private static bool UnicornAvailable;
         private UnicornAArch64 UnicornEmu;

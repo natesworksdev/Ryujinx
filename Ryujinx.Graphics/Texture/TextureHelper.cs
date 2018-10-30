@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Texture
 
         public static (MemoryManager Memory, long Position) GetMemoryAndPosition(
             IMemory Memory,
-            long     Position)
+            long    Position)
         {
             if (Memory is NvGpuVmm Vmm)
             {

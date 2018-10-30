@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         public IAudioRenderer(
             Horizon                System,
-            MemoryManager                Memory,
+            MemoryManager          Memory,
             IAalOutput             AudioOut,
             AudioRendererParameter Params)
         {

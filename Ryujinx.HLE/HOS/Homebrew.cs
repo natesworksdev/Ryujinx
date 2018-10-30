@@ -32,11 +32,11 @@ namespace Ryujinx.HLE.HOS
 
         private static void WriteConfigEntry(
             MemoryManager  Memory,
-            ref long Position,
-            int      Key,
-            int      Flags  = 0,
-            long     Value0 = 0,
-            long     Value1 = 0)
+            ref long       Position,
+            int            Key,
+            int            Flags  = 0,
+            long           Value0 = 0,
+            long           Value1 = 0)
         {
             Memory.WriteInt32(Position + 0x00, Key);
             Memory.WriteInt32(Position + 0x04, Flags);

@@ -27,7 +27,7 @@ namespace ChocolArm64
             //when both ISAs are implemented with the interpreter and JIT.
             //As of now, A32 only has a interpreter and A64 a JIT.
             CpuThreadState state  = thread.ThreadState;
-            MemoryManager      memory = thread.Memory;
+            MemoryManager  memory = thread.Memory;
 
             if (state.ExecutionMode == ExecutionMode.AArch32)
             {

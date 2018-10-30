@@ -24,11 +24,11 @@ namespace Ryujinx.HLE.HOS.Kernel
         }
 
         public long ArbitrateLock(
-            Process Process,
+            Process       Process,
             MemoryManager Memory,
-            int     OwnerHandle,
-            long    MutexAddress,
-            int     RequesterHandle)
+            int           OwnerHandle,
+            long          MutexAddress,
+            int           RequesterHandle)
         {
             System.CriticalSectionLock.Lock();
 
@@ -101,10 +101,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long WaitProcessWideKeyAtomic(
             MemoryManager Memory,
-            long    MutexAddress,
-            long    CondVarAddress,
-            int     ThreadHandle,
-            long    Timeout)
+            long          MutexAddress,
+            long          CondVarAddress,
+            int           ThreadHandle,
+            long          Timeout)
         {
             System.CriticalSectionLock.Lock();
 
@@ -374,10 +374,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long WaitForAddressIfLessThan(
             MemoryManager Memory,
-            long    Address,
-            int     Value,
-            bool    ShouldDecrement,
-            long    Timeout)
+            long          Address,
+            int           Value,
+            bool          ShouldDecrement,
+            long          Timeout)
         {
             KThread CurrentThread = System.Scheduler.GetCurrentThread();
 
