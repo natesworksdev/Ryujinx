@@ -913,6 +913,7 @@ namespace ChocolArm64.Instruction
             ulong z1 = t & 0xFFFFFFFF;
             ulong z0 = t >> 32;
 
+            z1 += lLow * rHigh;
 
             return lHigh * rHigh + z0 + (z1 >> 32);
         }
