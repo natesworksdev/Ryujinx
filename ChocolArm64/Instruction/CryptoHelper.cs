@@ -4,12 +4,12 @@ using System;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace ChocolArm64.Instruction
+namespace ChocolArm64.Instructions
 {
-    static class ACryptoHelper
+    static class CryptoHelper
     {
 #region "LookUp Tables"
-        private static byte[] SBox =
+        private static byte[] _sBox =
         {
             0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
             0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
@@ -29,7 +29,7 @@ namespace ChocolArm64.Instruction
             0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
         };
 
-        private static byte[] InvSBox =
+        private static byte[] _invSBox =
         {
             0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
             0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
@@ -49,7 +49,7 @@ namespace ChocolArm64.Instruction
             0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
         };
 
-        private static byte[] GFMul_02 =
+        private static byte[] _gfMul02 =
         {
             0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c, 0x0e, 0x10, 0x12, 0x14, 0x16, 0x18, 0x1a, 0x1c, 0x1e,
             0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e, 0x30, 0x32, 0x34, 0x36, 0x38, 0x3a, 0x3c, 0x3e,
@@ -69,7 +69,7 @@ namespace ChocolArm64.Instruction
             0xfb, 0xf9, 0xff, 0xfd, 0xf3, 0xf1, 0xf7, 0xf5, 0xeb, 0xe9, 0xef, 0xed, 0xe3, 0xe1, 0xe7, 0xe5
         };
 
-        private static byte[] GFMul_03 =
+        private static byte[] _gfMul03 =
         {
             0x00, 0x03, 0x06, 0x05, 0x0c, 0x0f, 0x0a, 0x09, 0x18, 0x1b, 0x1e, 0x1d, 0x14, 0x17, 0x12, 0x11,
             0x30, 0x33, 0x36, 0x35, 0x3c, 0x3f, 0x3a, 0x39, 0x28, 0x2b, 0x2e, 0x2d, 0x24, 0x27, 0x22, 0x21,
@@ -89,7 +89,7 @@ namespace ChocolArm64.Instruction
             0x0b, 0x08, 0x0d, 0x0e, 0x07, 0x04, 0x01, 0x02, 0x13, 0x10, 0x15, 0x16, 0x1f, 0x1c, 0x19, 0x1a
         };
 
-        private static byte[] GFMul_09 =
+        private static byte[] _gfMul09 =
         {
             0x00, 0x09, 0x12, 0x1b, 0x24, 0x2d, 0x36, 0x3f, 0x48, 0x41, 0x5a, 0x53, 0x6c, 0x65, 0x7e, 0x77,
             0x90, 0x99, 0x82, 0x8b, 0xb4, 0xbd, 0xa6, 0xaf, 0xd8, 0xd1, 0xca, 0xc3, 0xfc, 0xf5, 0xee, 0xe7,
@@ -109,7 +109,7 @@ namespace ChocolArm64.Instruction
             0x31, 0x38, 0x23, 0x2a, 0x15, 0x1c, 0x07, 0x0e, 0x79, 0x70, 0x6b, 0x62, 0x5d, 0x54, 0x4f, 0x46
         };
 
-        private static byte[] GFMul_0B =
+        private static byte[] _gfMul0B =
         {
             0x00, 0x0b, 0x16, 0x1d, 0x2c, 0x27, 0x3a, 0x31, 0x58, 0x53, 0x4e, 0x45, 0x74, 0x7f, 0x62, 0x69,
             0xb0, 0xbb, 0xa6, 0xad, 0x9c, 0x97, 0x8a, 0x81, 0xe8, 0xe3, 0xfe, 0xf5, 0xc4, 0xcf, 0xd2, 0xd9,
@@ -129,7 +129,7 @@ namespace ChocolArm64.Instruction
             0xca, 0xc1, 0xdc, 0xd7, 0xe6, 0xed, 0xf0, 0xfb, 0x92, 0x99, 0x84, 0x8f, 0xbe, 0xb5, 0xa8, 0xa3
         };
 
-        private static byte[] GFMul_0D =
+        private static byte[] _gfMul0D =
         {
             0x00, 0x0d, 0x1a, 0x17, 0x34, 0x39, 0x2e, 0x23, 0x68, 0x65, 0x72, 0x7f, 0x5c, 0x51, 0x46, 0x4b,
             0xd0, 0xdd, 0xca, 0xc7, 0xe4, 0xe9, 0xfe, 0xf3, 0xb8, 0xb5, 0xa2, 0xaf, 0x8c, 0x81, 0x96, 0x9b,
@@ -149,7 +149,7 @@ namespace ChocolArm64.Instruction
             0xdc, 0xd1, 0xc6, 0xcb, 0xe8, 0xe5, 0xf2, 0xff, 0xb4, 0xb9, 0xae, 0xa3, 0x80, 0x8d, 0x9a, 0x97
         };
 
-        private static byte[] GFMul_0E =
+        private static byte[] _gfMul0E =
         {
             0x00, 0x0e, 0x1c, 0x12, 0x38, 0x36, 0x24, 0x2a, 0x70, 0x7e, 0x6c, 0x62, 0x48, 0x46, 0x54, 0x5a,
             0xe0, 0xee, 0xfc, 0xf2, 0xd8, 0xd6, 0xc4, 0xca, 0x90, 0x9e, 0x8c, 0x82, 0xa8, 0xa6, 0xb4, 0xba,
@@ -169,149 +169,149 @@ namespace ChocolArm64.Instruction
             0xd7, 0xd9, 0xcb, 0xc5, 0xef, 0xe1, 0xf3, 0xfd, 0xa7, 0xa9, 0xbb, 0xb5, 0x9f, 0x91, 0x83, 0x8d
         };
 
-        private static byte[] SRPerm = { 0, 13, 10, 7, 4, 1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3 };
+        private static byte[] _srPerm = { 0, 13, 10, 7, 4, 1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3 };
 
-        private static byte[] ISRPerm = { 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11 };
+        private static byte[] _isrPerm = { 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11 };
 #endregion
 
-        public static Vector128<float> AESInvMixColumns(Vector128<float> op)
+        public static Vector128<float> AesInvMixColumns(Vector128<float> op)
         {
-            byte[] InState  = new byte[16];
-            byte[] OutState = new byte[16];
+            byte[] inState  = new byte[16];
+            byte[] outState = new byte[16];
 
-            FromVectorToByteArray(InState, ref op);
+            FromVectorToByteArray(inState, ref op);
 
-            for (int Columns = 0; Columns <= 3; Columns++)
+            for (int columns = 0; columns <= 3; columns++)
             {
-                int Idx = Columns << 2;
+                int idx = columns << 2;
 
-                byte Row0 = InState[Idx + 0]; // A, E, I, M: [Row0, Col0-Col3]
-                byte Row1 = InState[Idx + 1]; // B, F, J, N: [Row1, Col0-Col3]
-                byte Row2 = InState[Idx + 2]; // C, G, K, O: [Row2, Col0-Col3]
-                byte Row3 = InState[Idx + 3]; // D, H, L, P: [Row3, Col0-Col3]
+                byte row0 = inState[idx + 0]; // A, E, I, M: [row0, col0-col3]
+                byte row1 = inState[idx + 1]; // B, F, J, N: [row1, col0-col3]
+                byte row2 = inState[idx + 2]; // C, G, K, O: [row2, col0-col3]
+                byte row3 = inState[idx + 3]; // D, H, L, P: [row3, col0-col3]
 
-                OutState[Idx + 0] = (byte)((uint)GFMul_0E[Row0] ^ GFMul_0B[Row1] ^ GFMul_0D[Row2] ^ GFMul_09[Row3]);
-                OutState[Idx + 1] = (byte)((uint)GFMul_09[Row0] ^ GFMul_0E[Row1] ^ GFMul_0B[Row2] ^ GFMul_0D[Row3]);
-                OutState[Idx + 2] = (byte)((uint)GFMul_0D[Row0] ^ GFMul_09[Row1] ^ GFMul_0E[Row2] ^ GFMul_0B[Row3]);
-                OutState[Idx + 3] = (byte)((uint)GFMul_0B[Row0] ^ GFMul_0D[Row1] ^ GFMul_09[Row2] ^ GFMul_0E[Row3]);
+                outState[idx + 0] = (byte)((uint)_gfMul0E[row0] ^ _gfMul0B[row1] ^ _gfMul0D[row2] ^ _gfMul09[row3]);
+                outState[idx + 1] = (byte)((uint)_gfMul09[row0] ^ _gfMul0E[row1] ^ _gfMul0B[row2] ^ _gfMul0D[row3]);
+                outState[idx + 2] = (byte)((uint)_gfMul0D[row0] ^ _gfMul09[row1] ^ _gfMul0E[row2] ^ _gfMul0B[row3]);
+                outState[idx + 3] = (byte)((uint)_gfMul0B[row0] ^ _gfMul0D[row1] ^ _gfMul09[row2] ^ _gfMul0E[row3]);
             }
 
-            FromByteArrayToVector(OutState, ref op);
+            FromByteArrayToVector(outState, ref op);
 
             return op;
         }
 
-        public static Vector128<float> AESInvShiftRows(Vector128<float> op)
+        public static Vector128<float> AesInvShiftRows(Vector128<float> op)
         {
-            byte[] InState  = new byte[16];
-            byte[] OutState = new byte[16];
+            byte[] inState  = new byte[16];
+            byte[] outState = new byte[16];
 
-            FromVectorToByteArray(InState, ref op);
+            FromVectorToByteArray(inState, ref op);
 
-            for (int Idx = 0; Idx <= 15; Idx++)
+            for (int idx = 0; idx <= 15; idx++)
             {
-                OutState[ISRPerm[Idx]] = InState[Idx];
+                outState[_isrPerm[idx]] = inState[idx];
             }
 
-            FromByteArrayToVector(OutState, ref op);
+            FromByteArrayToVector(outState, ref op);
 
             return op;
         }
 
-        public static Vector128<float> AESInvSubBytes(Vector128<float> op)
+        public static Vector128<float> AesInvSubBytes(Vector128<float> op)
         {
-            byte[] InState  = new byte[16];
-            byte[] OutState = new byte[16];
+            byte[] inState  = new byte[16];
+            byte[] outState = new byte[16];
 
-            FromVectorToByteArray(InState, ref op);
+            FromVectorToByteArray(inState, ref op);
 
-            for (int Idx = 0; Idx <= 15; Idx++)
+            for (int idx = 0; idx <= 15; idx++)
             {
-                OutState[Idx] = InvSBox[InState[Idx]];
+                outState[idx] = _invSBox[inState[idx]];
             }
 
-            FromByteArrayToVector(OutState, ref op);
+            FromByteArrayToVector(outState, ref op);
 
             return op;
         }
 
-        public static Vector128<float> AESMixColumns(Vector128<float> op)
+        public static Vector128<float> AesMixColumns(Vector128<float> op)
         {
-            byte[] InState  = new byte[16];
-            byte[] OutState = new byte[16];
+            byte[] inState  = new byte[16];
+            byte[] outState = new byte[16];
 
-            FromVectorToByteArray(InState, ref op);
+            FromVectorToByteArray(inState, ref op);
 
-            for (int Columns = 0; Columns <= 3; Columns++)
+            for (int columns = 0; columns <= 3; columns++)
             {
-                int Idx = Columns << 2;
+                int idx = columns << 2;
 
-                byte Row0 = InState[Idx + 0]; // A, E, I, M: [Row0, Col0-Col3]
-                byte Row1 = InState[Idx + 1]; // B, F, J, N: [Row1, Col0-Col3]
-                byte Row2 = InState[Idx + 2]; // C, G, K, O: [Row2, Col0-Col3]
-                byte Row3 = InState[Idx + 3]; // D, H, L, P: [Row3, Col0-Col3]
+                byte row0 = inState[idx + 0]; // A, E, I, M: [row0, col0-col3]
+                byte row1 = inState[idx + 1]; // B, F, J, N: [row1, col0-col3]
+                byte row2 = inState[idx + 2]; // C, G, K, O: [row2, col0-col3]
+                byte row3 = inState[idx + 3]; // D, H, L, P: [row3, col0-col3]
 
-                OutState[Idx + 0] = (byte)((uint)GFMul_02[Row0] ^ GFMul_03[Row1] ^ Row2 ^ Row3);
-                OutState[Idx + 1] = (byte)((uint)Row0 ^ GFMul_02[Row1] ^ GFMul_03[Row2] ^ Row3);
-                OutState[Idx + 2] = (byte)((uint)Row0 ^ Row1 ^ GFMul_02[Row2] ^ GFMul_03[Row3]);
-                OutState[Idx + 3] = (byte)((uint)GFMul_03[Row0] ^ Row1 ^ Row2 ^ GFMul_02[Row3]);
+                outState[idx + 0] = (byte)((uint)_gfMul02[row0] ^ _gfMul03[row1] ^ row2 ^ row3);
+                outState[idx + 1] = (byte)((uint)row0 ^ _gfMul02[row1] ^ _gfMul03[row2] ^ row3);
+                outState[idx + 2] = (byte)((uint)row0 ^ row1 ^ _gfMul02[row2] ^ _gfMul03[row3]);
+                outState[idx + 3] = (byte)((uint)_gfMul03[row0] ^ row1 ^ row2 ^ _gfMul02[row3]);
             }
 
-            FromByteArrayToVector(OutState, ref op);
+            FromByteArrayToVector(outState, ref op);
 
             return op;
         }
 
-        public static Vector128<float> AESShiftRows(Vector128<float> op)
+        public static Vector128<float> AesShiftRows(Vector128<float> op)
         {
-            byte[] InState  = new byte[16];
-            byte[] OutState = new byte[16];
+            byte[] inState  = new byte[16];
+            byte[] outState = new byte[16];
 
-            FromVectorToByteArray(InState, ref op);
+            FromVectorToByteArray(inState, ref op);
 
-            for (int Idx = 0; Idx <= 15; Idx++)
+            for (int idx = 0; idx <= 15; idx++)
             {
-                OutState[SRPerm[Idx]] = InState[Idx];
+                outState[_srPerm[idx]] = inState[idx];
             }
 
-            FromByteArrayToVector(OutState, ref op);
+            FromByteArrayToVector(outState, ref op);
 
             return op;
         }
 
-        public static Vector128<float> AESSubBytes(Vector128<float> op)
+        public static Vector128<float> AesSubBytes(Vector128<float> op)
         {
-            byte[] InState  = new byte[16];
-            byte[] OutState = new byte[16];
+            byte[] inState  = new byte[16];
+            byte[] outState = new byte[16];
 
-            FromVectorToByteArray(InState, ref op);
+            FromVectorToByteArray(inState, ref op);
 
-            for (int Idx = 0; Idx <= 15; Idx++)
+            for (int idx = 0; idx <= 15; idx++)
             {
-                OutState[Idx] = SBox[InState[Idx]];
+                outState[idx] = _sBox[inState[idx]];
             }
 
-            FromByteArrayToVector(OutState, ref op);
+            FromByteArrayToVector(outState, ref op);
 
             return op;
         }
 
-        private static void FromVectorToByteArray(byte[] State, ref Vector128<float> op)
+        private static void FromVectorToByteArray(byte[] state, ref Vector128<float> op)
         {
-            ulong ULongLow  = AVectorHelper.VectorExtractIntZx((op), (byte)0, 3);
-            ulong ULongHigh = AVectorHelper.VectorExtractIntZx((op), (byte)1, 3);
+            ulong uLongLow  = VectorHelper.VectorExtractIntZx((op), (byte)0, 3);
+            ulong uLongHigh = VectorHelper.VectorExtractIntZx((op), (byte)1, 3);
 
-            for (int Idx = 0; Idx <= 7; Idx++)
+            for (int idx = 0; idx <= 7; idx++)
             {
-                State[Idx + 0] = (byte)(ULongLow  & 0xFFUL);
-                State[Idx + 8] = (byte)(ULongHigh & 0xFFUL);
+                state[idx + 0] = (byte)(uLongLow  & 0xFFUL);
+                state[idx + 8] = (byte)(uLongHigh & 0xFFUL);
 
-                ULongLow  >>= 8;
-                ULongHigh >>= 8;
+                uLongLow  >>= 8;
+                uLongHigh >>= 8;
             }
         }
 
-        private static void FromByteArrayToVector(byte[] State, ref Vector128<float> op)
+        private static void FromByteArrayToVector(byte[] state, ref Vector128<float> op)
         {
             if (!Sse2.IsSupported)
             {
@@ -319,10 +319,10 @@ namespace ChocolArm64.Instruction
             }
 
             op = Sse.StaticCast<byte, float>(Sse2.SetVector128(
-                State[15], State[14], State[13], State[12],
-                State[11], State[10], State[9],  State[8],
-                State[7],  State[6],  State[5],  State[4],
-                State[3],  State[2],  State[1],  State[0]));
+                state[15], state[14], state[13], state[12],
+                state[11], state[10], state[9],  state[8],
+                state[7],  state[6],  state[5],  state[4],
+                state[3],  state[2],  state[1],  state[0]));
         }
     }
 }
