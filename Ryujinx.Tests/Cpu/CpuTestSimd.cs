@@ -1012,8 +1012,7 @@ namespace Ryujinx.Tests.Cpu
                                        [Values(1u, 0u)] uint Rn,
                                        [ValueSource("_2S_F_")] ulong Z,
                                        [ValueSource("_2S_F_")] ulong A,
-                                       [Values(0b0u, 0b1u)] uint Q, // <2S, 4S>
-                                       [Values(RMode.RN)] RMode RMode)
+                                       [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcodes |= ((Q & 1) << 30);
@@ -1026,14 +1025,14 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise] [Explicit] // Unicorn seems to default all rounding modes to RMode.RN.
         public void F_Cvtn_V_4S4H_4S8H([ValueSource("_F_Cvtn_V_4S4H_4S8H_")] uint Opcodes,
                                        [Values(0u)]     uint Rd,
                                        [Values(1u, 0u)] uint Rn,
                                        [ValueSource("_2S_F_")] ulong Z,
                                        [ValueSource("_2S_F_")] ulong A,
                                        [Values(0b0u, 0b1u)] uint Q, // <4H, 8H>
-                                       [Values(RMode.RN)] RMode RMode) // Unicorn seems to default all rounding modes to RMode.RN.
+                                       [Values(RMode.RN)] RMode RMode)
         {
             Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcodes |= ((Q & 1) << 30);
@@ -1053,14 +1052,13 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.OFC | FPSR.UFC | FPSR.IXC | FPSR.IDC);
         }
 
-        [Test, Pairwise] [Explicit]
+        [Test, Pairwise] [Explicit] // Unicorn seems to default all rounding modes to RMode.RN.
         public void F_Cvtn_V_2D2S_2D4S([ValueSource("_F_Cvtn_V_2D2S_2D4S_")] uint Opcodes,
                                        [Values(0u)]     uint Rd,
                                        [Values(1u, 0u)] uint Rn,
                                        [ValueSource("_1D_F_")] ulong Z,
                                        [ValueSource("_1D_F_")] ulong A,
-                                       [Values(0b0u, 0b1u)] uint Q, // <2S, 4S>
-                                       [Values(RMode.RN)] RMode RMode) // Unicorn seems to default all rounding modes to RMode.RN.
+                                       [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
         {
             Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
             Opcodes |= ((Q & 1) << 30);
@@ -1081,11 +1079,14 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0(A);
 
-            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Rnd = (int)TestContext.CurrentContext.Random.NextUInt();
+
+            int Fpcr = Rnd & (1 << (int)FPCR.FZ);
+            Fpcr |= Rnd & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, Fpcr: Fpcr);
 
-            CompareAgainstUnicorn(FpsrMask: FPSR.IOC);
+            CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.IDC);
         }
 
         [Test, Pairwise] [Explicit]
@@ -1096,11 +1097,14 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V0 = MakeVectorE1(Z);
             Vector128<float> V1 = MakeVectorE0(A);
 
-            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Rnd = (int)TestContext.CurrentContext.Random.NextUInt();
+
+            int Fpcr = Rnd & (1 << (int)FPCR.FZ);
+            Fpcr |= Rnd & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, Fpcr: Fpcr);
 
-            CompareAgainstUnicorn(FpsrMask: FPSR.IOC);
+            CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.IDC);
         }
 
         [Test, Pairwise] [Explicit]
@@ -1117,11 +1121,14 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
 
-            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Rnd = (int)TestContext.CurrentContext.Random.NextUInt();
+
+            int Fpcr = Rnd & (1 << (int)FPCR.FZ);
+            Fpcr |= Rnd & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, Fpcr: Fpcr);
 
-            CompareAgainstUnicorn(FpsrMask: FPSR.IOC);
+            CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.IDC);
         }
 
         [Test, Pairwise] [Explicit]
@@ -1136,11 +1143,14 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> V0 = MakeVectorE0E1(Z, Z);
             Vector128<float> V1 = MakeVectorE0E1(A, A);
 
-            int Fpcr = (int)TestContext.CurrentContext.Random.NextUInt() & (1 << (int)FPCR.DN);
+            int Rnd = (int)TestContext.CurrentContext.Random.NextUInt();
+
+            int Fpcr = Rnd & (1 << (int)FPCR.FZ);
+            Fpcr |= Rnd & (1 << (int)FPCR.DN);
 
             AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1, Fpcr: Fpcr);
 
-            CompareAgainstUnicorn(FpsrMask: FPSR.IOC);
+            CompareAgainstUnicorn(FpsrMask: FPSR.IOC | FPSR.IDC);
         }
 
         [Test, Pairwise, Description("NEG <V><d>, <V><n>")]
