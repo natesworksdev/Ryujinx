@@ -20,7 +20,7 @@ namespace ChocolArm64.Translation
         private Block[]   _graph;
         private Block     _root;
         public  Block     CurrBlock => _graph[_blkIndex];
-        public  OpCode64 CurrOp    => _graph[_blkIndex].OpCodes[_opcIndex];
+        public  OpCode64  CurrOp    => _graph[_blkIndex].OpCodes[_opcIndex];
 
         private ILEmitter _emitter;
 
@@ -44,7 +44,7 @@ namespace ChocolArm64.Translation
             TranslatorCache cache,
             Block[]         graph,
             Block           root,
-            string           subName)
+            string          subName)
         {
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _graph = graph ?? throw new ArgumentNullException(nameof(graph));
