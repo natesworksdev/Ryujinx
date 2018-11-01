@@ -137,7 +137,7 @@ namespace ChocolArm64.Instructions
         {
             ulong xBits  = (ulong)BitConverter.DoubleToInt64Bits(x);
             ulong xSign  = xBits & 0x8000000000000000;
-            long xExp    = (long)((xBits >> 52) & 0x7FF);
+            long  xExp   = (long)((xBits >> 52) & 0x7FF);
             ulong scaled = xBits & ((1ul << 52) - 1);
 
             if (xExp == 0x7FF && scaled != 0)
