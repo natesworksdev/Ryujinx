@@ -1,7 +1,5 @@
 #define Mov
 
-using ChocolArm64.State;
-
 using NUnit.Framework;
 
 namespace Ryujinx.Tests.Cpu

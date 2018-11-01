@@ -1,7 +1,5 @@
 #define SimdIns
 
-using ChocolArm64.State;
-
 using NUnit.Framework;
 
 using System.Runtime.Intrinsics;

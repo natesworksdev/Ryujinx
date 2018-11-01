@@ -1,7 +1,5 @@
 #define Simd
 
-using ChocolArm64.State;
-
 using NUnit.Framework;
 
 using System.Collections.Generic;
