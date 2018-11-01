@@ -1,7 +1,5 @@
 #define SimdShImm
 
-using ChocolArm64.State;
-
 using NUnit.Framework;
 
 using System.Runtime.Intrinsics;
@@ -51,7 +49,7 @@ namespace Ryujinx.Tests.Cpu
         }
 #endregion
 
-#region "ValueSource (opcodes)"
+#region "ValueSource (Opcodes)"
         private static uint[] _ShrImm_S_D_()
         {
             return new uint[]
