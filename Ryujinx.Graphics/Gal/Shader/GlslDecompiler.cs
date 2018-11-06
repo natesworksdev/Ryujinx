@@ -1,3 +1,5 @@
+using OpenTK.Graphics.OpenGL;
+using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -219,14 +221,52 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
+        private string GetSamplerType(TextureTarget TextureTarget)
+        {
+            switch (TextureTarget)
+            {
+                case TextureTarget.Texture1D:
+                    return "sampler1D";
+                case TextureTarget.Texture2D:
+                    return "sampler2D";
+                case TextureTarget.Texture3D:
+                    return "sampler3D";
+                case TextureTarget.TextureCubeMap:
+                    return "samplerCube";
+                case TextureTarget.TextureRectangle:
+                    return "sampler2DRect";
+                case TextureTarget.Texture1DArray:
+                    return "sampler1DArray";
+                case TextureTarget.Texture2DArray:
+                    return "sampler2DArray";
+                case TextureTarget.TextureCubeMapArray:
+                    return "samplerCubeArray";
+                case TextureTarget.TextureBuffer:
+                    return "samplerBuffer";
+                case TextureTarget.Texture2DMultisample:
+                    return "sampler2DMS";
+                case TextureTarget.Texture2DMultisampleArray:
+                    return "sampler2DMSArray";
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
         private void PrintDeclTextures()
         {
             foreach (ShaderDeclInfo DeclInfo in IterateCbTextures())
             {
-                SB.AppendLine("uniform sampler2D " + DeclInfo.Name + ";");
+                TextureTarget Target = ImageUtils.GetTextureTarget(DeclInfo.TextureType);
+
+                SB.AppendLine("uniform " + GetSamplerType(Target) + " " + DeclInfo.Name + ";");
             }
 
-            PrintDecls(Decl.Textures, "uniform sampler2D");
+            foreach (ShaderDeclInfo DeclInfo in Decl.Textures.Values.OrderBy(DeclKeySelector))
+            {
+                TextureTarget Target = ImageUtils.GetTextureTarget(DeclInfo.TextureType);
+
+                SB.AppendLine("uniform " + GetSamplerType(Target) + " " + DeclInfo.Name + ";");
+            }
         }
 
         private IEnumerable<ShaderDeclInfo> IterateCbTextures()
@@ -1246,8 +1286,23 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetTexSamplerCoords(ShaderIrOp Op)
         {
-            return "vec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                             GetOperExpr(Op, Op.OperandB) + ")";
+            ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+
+            switch (Meta.TextureType)
+            {
+                case TextureType.OneD:
+                    return GetOperExpr(Op, Meta.Coordinates[0]);
+                case TextureType.ThreeD:
+                case TextureType.TwoDArray:
+                case TextureType.CubeMap:
+                    return "vec3(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + GetOperExpr(Op, Meta.Coordinates[2]) + ")";
+                case TextureType.CubeArray:
+                    return "vec4(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + GetOperExpr(Op, Meta.Coordinates[2]) + ", " + GetOperExpr(Op, Meta.Coordinates[3]) + ")";
+                case TextureType.TwoD:
+                default:
+                    return "vec2(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ")";
+            }
+
         }
 
         private string GetITexSamplerCoords(ShaderIrOp Op)

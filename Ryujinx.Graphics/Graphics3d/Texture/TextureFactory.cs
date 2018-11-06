@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using System;
@@ -11,6 +12,8 @@ namespace Ryujinx.Graphics.Texture
             int[] Tic = ReadWords(Vmm, TicPosition, 8);
 
             GalImageFormat Format = GetImageFormat(Tic);
+
+            TextureType TextureType = (TextureType)((Tic[4] >> 23) & 0xF);
 
             GalTextureSource XSource = (GalTextureSource)((Tic[0] >> 19) & 7);
             GalTextureSource YSource = (GalTextureSource)((Tic[0] >> 22) & 7);
@@ -39,14 +42,22 @@ namespace Ryujinx.Graphics.Texture
 
             int Width  = (Tic[4] & 0xffff) + 1;
             int Height = (Tic[5] & 0xffff) + 1;
+            int Depth  = ((Tic[5] >> 16) & 0x3fff) + 1;
+
+            if (TextureType == TextureType.TwoD || TextureType == TextureType.OneD)
+            {
+                Depth = 1;
+            }
 
             GalImage Image = new GalImage(
                 Width,
                 Height,
+                Depth,
                 TileWidth,
                 BlockHeight,
                 Layout,
                 Format,
+                TextureType,
                 XSource,
                 YSource,
                 ZSource,

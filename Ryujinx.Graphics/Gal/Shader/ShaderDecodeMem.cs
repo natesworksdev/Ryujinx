@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Texture;
 using System;
 
 using static Ryujinx.Graphics.Gal.Shader.ShaderDecodeHelper;
@@ -28,6 +29,68 @@ namespace Ryujinx.Graphics.Gal.Shader
             { R___, _G__, __B_, ___A, RG__, ____, ____, ____ },
             { RGB_, RG_A, R_BA, _GBA, RGBA, ____, ____, ____ }
         };
+
+        private static TextureType TexToTextureType(int TexType)
+        {
+            switch (TexType)
+            {
+                case 2:
+                    return TextureType.TwoD;
+                case 4:
+                    return TextureType.ThreeD;
+                case 6:
+                    return TextureType.CubeMap;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        private static int GetCoordsCountTextureType(TextureType TextureType)
+        {
+            switch (TextureType)
+            {
+                case TextureType.OneD:
+                    return 1;
+                case TextureType.OneDArray:
+                case TextureType.TwoD:
+                case TextureType.TwoDNoMipMap:
+                    return 2;
+                case TextureType.ThreeD:
+                case TextureType.TwoDArray:
+                case TextureType.CubeMap:
+                    return 3;
+                default:
+                    throw new NotImplementedException($"TEX of TextureTpe.{TextureType} not implemented");
+            }
+        }
+
+        private static TextureType TexsToTextureType(int TexType)
+        {
+            switch (TexType)
+            {
+                case 0:
+                    return TextureType.OneD;
+                case 2:
+                case 4:
+                case 6:
+                case 8:
+                case 0xa:
+                case 0xc:
+                    return TextureType.TwoD;
+                case 0xe:
+                case 0x10:
+                case 0x12:
+                    return TextureType.TwoDArray;
+                case 0x14:
+                case 0x16:
+                    return TextureType.ThreeD;
+                case 0x18:
+                case 0x1a:
+                    return TextureType.CubeArray;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
 
         public static void Ld_A(ShaderIrBlock Block, long OpCode, int Position)
         {
@@ -142,8 +205,12 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static void EmitTex(ShaderIrBlock Block, long OpCode, bool GprHandle)
         {
-            //TODO: Support other formats.
-            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[2];
+            // TODO: Support array textures
+            TextureType TextureType = TexToTextureType(OpCode.Read(28, 6));
+            Block.AddNode(new ShaderIrCmnt($"TextureType: {TextureType}"));
+
+            // FIXME: check if this is right
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[GetCoordsCountTextureType(TextureType)];
 
             for (int Index = 0; Index < Coords.Length; Index++)
             {
@@ -187,7 +254,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch);
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch,  TextureType, Coords);
 
                 ShaderIrOp Op = new ShaderIrOp(Inst, Coords[0], Coords[1], OperC, Meta);
 
@@ -207,7 +274,73 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static void EmitTexs(ShaderIrBlock Block, long OpCode, ShaderIrInst Inst)
         {
+            TextureType TextureType = TexsToTextureType(OpCode.Read(52, 0x1e));
+            Block.AddNode(new ShaderIrCmnt($"TextureType: {TextureType}"));
+
+            if (Inst == ShaderIrInst.Txlf && TextureType == TextureType.CubeArray)
+            {
+                throw new InvalidOperationException("TXLF instructions cannot use CUBE modifier!");
+            }
+
             //TODO: Support other formats.
+            ShaderIrOperGpr OperA = OpCode.Gpr8();
+            ShaderIrOperGpr OperB = OpCode.Gpr20();
+
+            ShaderIrOperGpr[] GetCoordinates()
+            {
+                ShaderIrOperGpr X;
+                ShaderIrOperGpr Y;
+                ShaderIrOperGpr Z;
+                ShaderIrOperGpr Index;
+
+                switch (TextureType)
+                {
+                    case TextureType.OneD:
+                        X = OperA;
+
+                        return CoordsRegistersToTempRegisters(Block, X);
+                    case TextureType.TwoDArray:
+                        Index = OperA;
+
+                        X = OpCode.Gpr8();
+                        X.Index++;
+
+                        Y = OperB;
+
+                        return CoordsRegistersToTempRegisters(Block, X, Y, Index);
+                    case TextureType.ThreeD:
+                    case TextureType.CubeMap:
+                        X = OperA;
+
+                        Y = OpCode.Gpr8();
+                        Y.Index += 1;
+
+                        Z = OperB;
+
+                        return CoordsRegistersToTempRegisters(Block, X, Y, Z);
+                    case TextureType.CubeArray:
+                        Index = OperA;
+
+                        X = OpCode.Gpr8();
+                        X.Index += 1;
+
+                        Y = OpCode.Gpr8();
+                        Y.Index += 2;
+
+                        Z = OperB;
+
+                        return CoordsRegistersToTempRegisters(Block, X, Y, Z, Index);
+                    case TextureType.TwoD:
+                        X = OperA;
+                        Y = OperB;
+
+                        return new ShaderIrOperGpr[] { X, Y };
+                    default:
+                        throw new NotImplementedException($"TEXS of TextureType.{TextureType} not supported!");
+                }
+            }
+
+
             int LutIndex;
 
             LutIndex  = !OpCode.Gpr0().IsConst  ? 1 : 0;
@@ -277,12 +410,6 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             ShaderIrNode OperC = OpCode.Imm13_36();
 
-            ShaderIrOperGpr Coord0 = ShaderIrOperGpr.MakeTemporary(0);
-            ShaderIrOperGpr Coord1 = ShaderIrOperGpr.MakeTemporary(1);
-
-            Block.AddNode(new ShaderIrAsg(Coord0, OpCode.Gpr8()));
-            Block.AddNode(new ShaderIrAsg(Coord1, OpCode.Gpr20()));
-
             for (int Ch = 0; Ch < 4; Ch++)
             {
                 if (!IsChannelUsed(ChMask, Ch))
@@ -290,9 +417,9 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch);
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, GetCoordinates());
 
-                ShaderIrOp Op = new ShaderIrOp(Inst, Coord0, Coord1, OperC, Meta);
+                ShaderIrOp Op = new ShaderIrOp(Inst, OperA, OperB, OperC, Meta);
 
                 ShaderIrOperGpr Dst = GetDst();
 
@@ -306,6 +433,19 @@ namespace Ryujinx.Graphics.Gal.Shader
         private static bool IsChannelUsed(int ChMask, int Ch)
         {
             return (ChMask & (1 << Ch)) != 0;
+        }
+
+        private static ShaderIrOperGpr[] CoordsRegistersToTempRegisters(ShaderIrBlock Block, params ShaderIrOperGpr[] Registers)
+        {
+            ShaderIrOperGpr[] Res = new ShaderIrOperGpr[Registers.Length];
+
+            for (int Index = 0; Index < Res.Length; Index++)
+            {
+                Res[Index] = ShaderIrOperGpr.MakeTemporary(Index);
+                Block.AddNode(new ShaderIrAsg(Res[Index], Registers[Index]));
+            }
+
+            return Res;
         }
     }
 }

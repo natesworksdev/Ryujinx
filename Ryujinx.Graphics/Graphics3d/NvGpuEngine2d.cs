@@ -82,19 +82,23 @@ namespace Ryujinx.Graphics.Graphics3d
             long SrcKey = Vmm.GetPhysicalAddress(SrcAddress);
             long DstKey = Vmm.GetPhysicalAddress(DstAddress);
 
+            // TODO: all texture types
+
             GalImage SrcTexture = new GalImage(
                 SrcWidth,
-                SrcHeight, 1,
+                SrcHeight, 1, 1,
                 SrcBlockHeight,
                 SrcLayout,
-                SrcImgFormat);
+                SrcImgFormat,
+                TextureType.TwoD);
 
             GalImage DstTexture = new GalImage(
                 DstWidth,
-                DstHeight, 1,
+                DstHeight, 1, 1,
                 DstBlockHeight,
                 DstLayout,
-                DstImgFormat);
+                DstImgFormat,
+                TextureType.TwoD);
 
             SrcTexture.Pitch = SrcPitch;
             DstTexture.Pitch = DstPitch;

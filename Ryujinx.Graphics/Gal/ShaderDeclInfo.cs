@@ -1,3 +1,5 @@
+using Ryujinx.Graphics.Texture;
+
 namespace Ryujinx.Graphics.Gal
 {
     public class ShaderDeclInfo
@@ -9,18 +11,22 @@ namespace Ryujinx.Graphics.Gal
         public int  Cbuf  { get; private set; }
         public int  Size  { get; private set; }
 
+        public TextureType TextureType { get; private set; }
+
         public ShaderDeclInfo(
             string Name,
             int    Index,
             bool   IsCb = false,
             int    Cbuf = 0,
-            int    Size = 1)
+            int    Size = 1,
+            TextureType TextureType = TextureType.TwoD)
         {
-            this.Name  = Name;
-            this.Index = Index;
-            this.IsCb  = IsCb;
-            this.Cbuf  = Cbuf;
-            this.Size  = Size;
+            this.Name        = Name;
+            this.Index       = Index;
+            this.IsCb        = IsCb;
+            this.Cbuf        = Cbuf;
+            this.Size        = Size;
+            this.TextureType = TextureType;
         }
 
         internal void Enlarge(int NewSize)

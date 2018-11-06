@@ -477,9 +477,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             (_, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(CachedImage.Format);
 
-            GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
+            TextureTarget Target = ImageUtils.GetTextureTarget(NewImage.TextureType);
 
-            GL.GetTexImage(TextureTarget.Texture2D, 0, Format, Type, IntPtr.Zero);
+            GL.BindTexture(Target, CachedImage.Handle);
+
+            GL.GetTexImage(Target, 0, Format, Type, IntPtr.Zero);
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyPBO);

@@ -216,10 +216,11 @@ namespace Ryujinx.Graphics.VDec
 
             GalImage Image = new GalImage(
                 OutputConfig.SurfaceWidth,
-                OutputConfig.SurfaceHeight, 1,
+                OutputConfig.SurfaceHeight, 1, 1,
                 OutputConfig.GobBlockHeight,
                 GalMemoryLayout.BlockLinear,
-                GalImageFormat.RGBA8 | GalImageFormat.Unorm);
+                GalImageFormat.RGBA8 | GalImageFormat.Unorm,
+                TextureType.TwoD);
 
             ImageUtils.WriteTexture(Vmm, Image, Vmm.GetPhysicalAddress(OutputConfig.SurfaceLumaAddress), Frame.Data);
         }

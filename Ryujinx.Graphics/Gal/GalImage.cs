@@ -6,6 +6,7 @@ namespace Ryujinx.Graphics.Gal
     {
         public int Width;
         public int Height;
+        public int Depth;
         public int TileWidth;
         public int GobBlockHeight;
         public int Pitch;
@@ -16,14 +17,17 @@ namespace Ryujinx.Graphics.Gal
         public GalTextureSource YSource;
         public GalTextureSource ZSource;
         public GalTextureSource WSource;
+        public TextureType      TextureType;
 
         public GalImage(
             int              Width,
             int              Height,
+            int              Depth,
             int              TileWidth,
             int              GobBlockHeight,
             GalMemoryLayout  Layout,
             GalImageFormat   Format,
+            TextureType      TextureType,
             GalTextureSource XSource = GalTextureSource.Red,
             GalTextureSource YSource = GalTextureSource.Green,
             GalTextureSource ZSource = GalTextureSource.Blue,
@@ -31,6 +35,7 @@ namespace Ryujinx.Graphics.Gal
         {
             this.Width          = Width;
             this.Height         = Height;
+            this.Depth          = Depth;
             this.TileWidth      = TileWidth;
             this.GobBlockHeight = GobBlockHeight;
             this.Layout         = Layout;
@@ -39,6 +44,7 @@ namespace Ryujinx.Graphics.Gal
             this.YSource        = YSource;
             this.ZSource        = ZSource;
             this.WSource        = WSource;
+            this.TextureType    = TextureType;
 
             Pitch = ImageUtils.GetPitch(Format, Width);
         }

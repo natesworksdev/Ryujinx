@@ -3,6 +3,7 @@ using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using System;
 using System.Collections.Generic;
+using OpenTK.Graphics.OpenGL;
 
 namespace Ryujinx.Graphics.Texture
 {
@@ -336,6 +337,7 @@ namespace Ryujinx.Graphics.Texture
             int Width  = DivRoundUp(Image.Width,  Desc.BlockWidth);
             int Height = DivRoundUp(Image.Height, Desc.BlockHeight);
 
+            // TODO: multi format
             return Desc.BytesPerPixel * Width * Height;
         }
 
@@ -441,6 +443,30 @@ namespace Ryujinx.Graphics.Texture
                 case GalTextureType.Float: return Float;
 
                 default: throw new NotImplementedException(((int)Type).ToString());
+            }
+        }
+
+        public static TextureTarget GetTextureTarget(TextureType TextureType)
+        {
+            switch (TextureType)
+            {
+                case TextureType.OneD:
+                    return TextureTarget.Texture1D;
+                case TextureType.TwoD:
+                case TextureType.TwoDNoMipMap:
+                    return TextureTarget.Texture2D;
+                case TextureType.ThreeD:
+                    return TextureTarget.Texture3D;
+                case TextureType.OneDArray:
+                    return TextureTarget.Texture1DArray;
+                case TextureType.TwoDArray:
+                    return TextureTarget.Texture2DArray;
+                case TextureType.CubeMap:
+                    return TextureTarget.TextureCubeMap;
+                case TextureType.CubeArray:
+                    return TextureTarget.TextureCubeMapArray;
+                default:
+                    throw new NotSupportedException($"Texture type {TextureType} currently not supported!");
             }
         }
     }

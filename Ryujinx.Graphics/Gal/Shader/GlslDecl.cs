@@ -1,3 +1,5 @@
+using Ryujinx.Graphics.Gal.OpenGL;
+using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
 
@@ -232,7 +234,19 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         string Name = StagePrefix + TextureName + Index;
 
-                        m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Handle));
+                        TextureType TextureType;
+
+                        // TODO: non 2d texture type for TEXQ?
+                        if (Op.Inst == ShaderIrInst.Texq)
+                        {
+                            TextureType = TextureType.TwoD;
+                        }
+                        else
+                        {
+                            TextureType = ((ShaderIrMetaTex)Op.MetaData).TextureType;
+                        }
+
+                        m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Handle, false, 0, 1, TextureType));
                     }
                     else if (Op.Inst == ShaderIrInst.Texb)
                     {
@@ -259,7 +273,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         {
                             string Name = StagePrefix + TextureName + "_cb" + Cbuf.Index + "_" + Cbuf.Pos;
 
-                            m_CbTextures.Add(Op, new ShaderDeclInfo(Name, Cbuf.Pos, true, Cbuf.Index));
+                            m_CbTextures.Add(Op, new ShaderDeclInfo(Name, Cbuf.Pos, true, Cbuf.Index, 1, ((ShaderIrMetaTex)Op.MetaData).TextureType));
                         }
                         else
                         {
