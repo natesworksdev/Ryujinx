@@ -7,46 +7,80 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {
-        private void SvcCreateThread(CpuThreadState ThreadState)
+        private void CreateThread64(CpuThreadState ThreadState)
         {
-            long EntryPoint  = (long)ThreadState.X1;
-            long ArgsPtr     = (long)ThreadState.X2;
-            long StackTop    = (long)ThreadState.X3;
-            int  Priority    =  (int)ThreadState.X4;
-            int  ProcessorId =  (int)ThreadState.X5;
+            long Entrypoint = (long)ThreadState.X1;
+            long ArgsPtr    = (long)ThreadState.X2;
+            long StackTop   = (long)ThreadState.X3;
+            int  Priority   =  (int)ThreadState.X4;
+            int  CpuCore    =  (int)ThreadState.X5;
 
-            if ((uint)Priority > 0x3f)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid priority 0x{Priority:x8}!");
+            KernelResult Result = CreateThread(Entrypoint, ArgsPtr, StackTop, Priority, CpuCore, out int Handle);
 
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidPriority);
-
-                return;
-            }
-
-            if (ProcessorId == -2)
-            {
-                //TODO: Get this value from the NPDM file.
-                ProcessorId = 0;
-            }
-            else if ((uint)ProcessorId > 3)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid core id 0x{ProcessorId:x8}!");
-
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidCoreId);
-
-                return;
-            }
-
-            int Handle = Process.MakeThread(
-                EntryPoint,
-                StackTop,
-                ArgsPtr,
-                Priority,
-                ProcessorId);
-
-            ThreadState.X0 = 0;
+            ThreadState.X0 = (ulong)Result;
             ThreadState.X1 = (ulong)Handle;
+        }
+
+        private KernelResult CreateThread(
+            long    Entrypoint,
+            long    ArgsPtr,
+            long    StackTop,
+            int     Priority,
+            int     CpuCore,
+            out int Handle)
+        {
+            Handle = 0;
+
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            if (CpuCore == -2)
+            {
+                CpuCore = CurrentProcess.DefaultCpuCore;
+            }
+
+            if ((uint)CpuCore >= KScheduler.CpuCoresCount || !CurrentProcess.IsAllowedCpuCore(CpuCore))
+            {
+                return KernelResult.InvalidCpuCore;
+            }
+
+            if ((uint)Priority >= KScheduler.PrioritiesCount || !CurrentProcess.IsAllowedPriority(Priority))
+            {
+                return KernelResult.InvalidPriority;
+            }
+
+            if (CurrentProcess.ResourceLimit != null &&
+               !CurrentProcess.ResourceLimit.Reserve(LimitableResource.Thread, 1))
+            {
+                return KernelResult.ResLimitExceeded;
+            }
+
+            KThread Thread = new KThread(System);
+
+            KernelResult Result = CurrentProcess.InitializeThread(
+                Thread,
+                Entrypoint,
+                ArgsPtr,
+                StackTop,
+                Priority,
+                CpuCore);
+
+            if (Result != KernelResult.Success)
+            {
+                CurrentProcess.ResourceLimit?.Release(LimitableResource.Thread, 1);
+
+                return Result;
+            }
+
+            Result = Process.HandleTable.GenerateHandle(Thread, out Handle);
+
+            if (Result != KernelResult.Success)
+            {
+                Thread.Terminate();
+
+                CurrentProcess.ResourceLimit?.Release(LimitableResource.Thread, 1);
+            }
+
+            return Result;
         }
 
         private void SvcStartThread(CpuThreadState ThreadState)
@@ -57,11 +91,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Thread != null)
             {
-                long Result = Thread.Start();
+                KernelResult Result = Thread.Start();
 
-                if (Result != 0)
+                if (Result != KernelResult.Success)
                 {
-                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{Result}\".");
                 }
 
                 ThreadState.X0 = (ulong)Result;
@@ -78,9 +112,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             KThread CurrentThread = System.Scheduler.GetCurrentThread();
 
-            CurrentThread.Exit();
+            System.Scheduler.ExitThread(CurrentThread);
 
-            System.Scheduler.StopThread(CurrentThread);
+            CurrentThread.Exit();
         }
 
         private void SvcSleepThread(CpuThreadState ThreadState)
@@ -242,7 +276,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcGetCurrentProcessorNumber(CpuThreadState ThreadState)
         {
-            ThreadState.X0 = (ulong)Process.GetThread(ThreadState.Tpidr).CurrentCore;
+            ThreadState.X0 = (ulong)System.Scheduler.GetCurrentThread().CurrentCore;
         }
 
         private void SvcGetThreadId(CpuThreadState ThreadState)
@@ -254,7 +288,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (Thread != null)
             {
                 ThreadState.X0 = 0;
-                ThreadState.X1 = (ulong)Thread.ThreadId;
+                ThreadState.X1 = (ulong)Thread.ThreadUid;
             }
             else
             {
@@ -280,11 +314,20 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (Thread.Owner != Process)
+            if (Thread.Owner != System.Scheduler.GetCurrentProcess())
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid thread owner process!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid thread, it belongs to another process.");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+
+                return;
+            }
+
+            if (Thread == System.Scheduler.GetCurrentThread())
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, "Invalid thread, current thread is not accepted.");
+
+                ThreadState.X0 = (ulong)KernelResult.InvalidThread;
 
                 return;
             }
@@ -304,6 +347,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             long Position = (long)ThreadState.X0;
             int  Handle   =  (int)ThreadState.X1;
 
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+            KThread  CurrentThread  = System.Scheduler.GetCurrentThread();
+
             KThread Thread = Process.HandleTable.GetObject<KThread>(Handle);
 
             if (Thread == null)
@@ -315,9 +361,18 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (Process.GetThread(ThreadState.Tpidr) == Thread)
+            if (Thread.Owner != CurrentProcess)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Thread handle 0x{Handle:x8} is current thread!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid thread, it belongs to another process.");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+
+                return;
+            }
+
+            if (CurrentThread == Thread)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, "Invalid thread, current thread is not accepted.");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidThread);
 

@@ -1,4 +1,5 @@
 using ChocolArm64.Memory;
+using Ryujinx.Common;
 using Ryujinx.HLE.Memory;
 using System;
 using System.Collections.Generic;
@@ -17,173 +18,492 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private ArenaAllocator Allocator;
 
+        private Horizon System;
+
         public long AddrSpaceStart { get; private set; }
         public long AddrSpaceEnd   { get; private set; }
 
         public long CodeRegionStart { get; private set; }
         public long CodeRegionEnd   { get; private set; }
 
-        public long MapRegionStart { get; private set; }
-        public long MapRegionEnd   { get; private set; }
-
         public long HeapRegionStart { get; private set; }
         public long HeapRegionEnd   { get; private set; }
 
-        public long NewMapRegionStart { get; private set; }
-        public long NewMapRegionEnd   { get; private set; }
+        private long CurrentHeapAddr;
+
+        public long AliasRegionStart { get; private set; }
+        public long AliasRegionEnd   { get; private set; }
+
+        public long StackRegionStart { get; private set; }
+        public long StackRegionEnd   { get; private set; }
 
         public long TlsIoRegionStart { get; private set; }
         public long TlsIoRegionEnd   { get; private set; }
 
+        private long HeapCapacity;
+
         public long PersonalMmHeapUsage { get; private set; }
 
-        private long CurrentHeapAddr;
+        private MemoryRegion MemRegion;
 
-        public KMemoryManager(Process Process)
+        private bool AslrDisabled;
+
+        public int AddrSpaceWidth { get; private set; }
+
+        private bool IsKernel;
+        private bool AslrEnabled;
+
+        private int ContextId;
+
+        private MersenneTwister RandomNumberGenerator;
+
+        public KMemoryManager(Horizon System, MemoryManager CpuMemory)
         {
-            CpuMemory = Process.Memory;
-            Allocator = Process.Device.Memory.Allocator;
+            this.System    = System;
+            this.CpuMemory = CpuMemory;
 
-            long CodeRegionSize;
-            long MapRegionSize;
-            long HeapRegionSize;
-            long NewMapRegionSize;
-            long TlsIoRegionSize;
-            int  AddrSpaceWidth;
+            Blocks = new LinkedList<KMemoryBlock>();
+        }
 
-            AddressSpaceType AddrType = AddressSpaceType.Addr39Bits;
+        private static readonly int[] AddrSpaceSizes = new int[] { 32, 36, 32, 39 };
 
-            if (Process.MetaData != null)
+        public KernelResult InitializeForProcess(
+            AddressSpaceType AddrSpaceType,
+            bool             AslrEnabled,
+            bool             AslrDisabled,
+            MemoryRegion     MemRegion,
+            long             Address,
+            long             Size)
+        {
+            if ((uint)AddrSpaceType > (uint)AddressSpaceType.Addr39Bits)
             {
-                AddrType = (AddressSpaceType)Process.MetaData.AddressSpaceWidth;
+                throw new ArgumentException(nameof(AddrSpaceType));
             }
 
-            switch (AddrType)
+            ContextId = System.ContextIdManager.GetId();
+
+            long AddrSpaceBase = 0;
+            long AddrSpaceSize = 1L << AddrSpaceSizes[(int)AddrSpaceType];
+
+            KernelResult Result = CreateUserAddressSpace(
+                AddrSpaceType,
+                AslrEnabled,
+                AslrDisabled,
+                AddrSpaceBase,
+                AddrSpaceSize,
+                MemRegion,
+                Address,
+                Size);
+
+            if (Result != KernelResult.Success)
+            {
+                System.ContextIdManager.PutId(ContextId);
+            }
+
+            return Result;
+        }
+
+        private class Region
+        {
+            public long Start;
+            public long End;
+            public long Size;
+            public long AslrOffset;
+        }
+
+        private KernelResult CreateUserAddressSpace(
+            AddressSpaceType AddrSpaceType,
+            bool             AslrEnabled,
+            bool             AslrDisabled,
+            long             AddrSpaceStart,
+            long             AddrSpaceEnd,
+            MemoryRegion     MemRegion,
+            long             Address,
+            long             Size)
+        {
+            long EndAddr = Address + Size;
+
+            Region AliasRegion = new Region();
+            Region HeapRegion  = new Region();
+            Region StackRegion = new Region();
+            Region TlsIoRegion = new Region();
+
+            long CodeRegionSize;
+            long StackAndTlsIoStart;
+            long StackAndTlsIoEnd;
+            long BaseAddress;
+
+            switch (AddrSpaceType)
             {
                 case AddressSpaceType.Addr32Bits:
-                    CodeRegionStart  = 0x200000;
-                    CodeRegionSize   = 0x3fe00000;
-                    MapRegionSize    = 0x40000000;
-                    HeapRegionSize   = 0x40000000;
-                    NewMapRegionSize = 0;
-                    TlsIoRegionSize  = 0;
-                    AddrSpaceWidth   = 32;
+                    AliasRegion.Size   = 0x40000000;
+                    HeapRegion.Size    = 0x40000000;
+                    StackRegion.Size   = 0;
+                    TlsIoRegion.Size   = 0;
+                    CodeRegionStart    = 0x200000;
+                    CodeRegionSize     = 0x3fe00000;
+                    StackAndTlsIoStart = 0x200000;
+                    StackAndTlsIoEnd   = 0x40000000;
+                    BaseAddress        = 0x200000;
+                    AddrSpaceWidth     = 32;
                     break;
 
                 case AddressSpaceType.Addr36Bits:
-                    CodeRegionStart  = 0x8000000;
-                    CodeRegionSize   = 0x78000000;
-                    MapRegionSize    = 0x180000000;
-                    HeapRegionSize   = 0x180000000;
-                    NewMapRegionSize = 0;
-                    TlsIoRegionSize  = 0;
-                    AddrSpaceWidth   = 36;
+                    AliasRegion.Size   = 0x180000000;
+                    HeapRegion.Size    = 0x180000000;
+                    StackRegion.Size   = 0;
+                    TlsIoRegion.Size   = 0;
+                    CodeRegionStart    = 0x8000000;
+                    CodeRegionSize     = 0x78000000;
+                    StackAndTlsIoStart = 0x8000000;
+                    StackAndTlsIoEnd   = 0x80000000;
+                    BaseAddress        = 0x8000000;
+                    AddrSpaceWidth     = 36;
                     break;
 
-                case AddressSpaceType.Addr36BitsNoMap:
-                    CodeRegionStart  = 0x200000;
-                    CodeRegionSize   = 0x3fe00000;
-                    MapRegionSize    = 0;
-                    HeapRegionSize   = 0x80000000;
-                    NewMapRegionSize = 0;
-                    TlsIoRegionSize  = 0;
-                    AddrSpaceWidth   = 36;
+                case AddressSpaceType.Addr32BitsNoMap:
+                    AliasRegion.Size   = 0;
+                    HeapRegion.Size    = 0x80000000;
+                    StackRegion.Size   = 0;
+                    TlsIoRegion.Size   = 0;
+                    CodeRegionStart    = 0x200000;
+                    CodeRegionSize     = 0x3fe00000;
+                    StackAndTlsIoStart = 0x200000;
+                    StackAndTlsIoEnd   = 0x40000000;
+                    BaseAddress        = 0x200000;
+                    AddrSpaceWidth     = 32;
                     break;
 
                 case AddressSpaceType.Addr39Bits:
-                    CodeRegionStart  = 0x8000000;
-                    CodeRegionSize   = 0x80000000;
-                    MapRegionSize    = 0x1000000000;
-                    HeapRegionSize   = 0x180000000;
-                    NewMapRegionSize = 0x80000000;
-                    TlsIoRegionSize  = 0x1000000000;
-                    AddrSpaceWidth   = 39;
+                    AliasRegion.Size   = 0x1000000000;
+                    HeapRegion.Size    = 0x180000000;
+                    StackRegion.Size   = 0x80000000;
+                    TlsIoRegion.Size   = 0x1000000000;
+                    CodeRegionStart    = BitUtils.AlignDown(Address, 0x200000);
+                    CodeRegionSize     = BitUtils.AlignUp  (EndAddr, 0x200000) - CodeRegionStart;
+                    StackAndTlsIoStart = 0;
+                    StackAndTlsIoEnd   = 0;
+                    BaseAddress        = 0x8000000;
+                    AddrSpaceWidth     = 39;
                     break;
 
-                default: throw new InvalidOperationException();
+                default: throw new ArgumentException(nameof(AddrSpaceType));
             }
 
-            AddrSpaceStart = 0;
-            AddrSpaceEnd   = 1L << AddrSpaceWidth;
+            CodeRegionEnd = CodeRegionStart + CodeRegionSize;
 
-            CodeRegionEnd     = CodeRegionStart + CodeRegionSize;
-            MapRegionStart    = CodeRegionEnd;
-            MapRegionEnd      = CodeRegionEnd   + MapRegionSize;
-            HeapRegionStart   = MapRegionEnd;
-            HeapRegionEnd     = MapRegionEnd    + HeapRegionSize;
-            NewMapRegionStart = HeapRegionEnd;
-            NewMapRegionEnd   = HeapRegionEnd   + NewMapRegionSize;
-            TlsIoRegionStart  = NewMapRegionEnd;
-            TlsIoRegionEnd    = NewMapRegionEnd + TlsIoRegionSize;
+            long MapBaseAddress;
+            long MapAvailableSize;
 
-            CurrentHeapAddr = HeapRegionStart;
-
-            if (NewMapRegionSize == 0)
+            if (CodeRegionStart - BaseAddress >= AddrSpaceEnd - CodeRegionEnd)
             {
-                NewMapRegionStart = AddrSpaceStart;
-                NewMapRegionEnd   = AddrSpaceEnd;
+                //Has more space before the start of the code region.
+                MapBaseAddress   = BaseAddress;
+                MapAvailableSize = CodeRegionStart - BaseAddress;
+            }
+            else
+            {
+                //Has more space after the end of the code region.
+                MapBaseAddress   = CodeRegionEnd;
+                MapAvailableSize = AddrSpaceEnd - CodeRegionEnd;
             }
 
-            Blocks = new LinkedList<KMemoryBlock>();
+            long MapTotalSize = AliasRegion.Size + HeapRegion.Size + StackRegion.Size + TlsIoRegion.Size;
 
+            long AslrMaxOffset = MapAvailableSize - MapTotalSize;
+
+            this.AddrSpaceStart = AddrSpaceStart;
+            this.AddrSpaceEnd   = AddrSpaceEnd;
+
+            if (MapAvailableSize < MapTotalSize)
+            {
+                return KernelResult.OutOfMemory;
+            }
+
+            if (AslrEnabled)
+            {
+                AliasRegion.AslrOffset = GetRandomValue(0, AslrMaxOffset >> 21) << 21;
+                HeapRegion.AslrOffset  = GetRandomValue(0, AslrMaxOffset >> 21) << 21;
+                StackRegion.AslrOffset = GetRandomValue(0, AslrMaxOffset >> 21) << 21;
+                TlsIoRegion.AslrOffset = GetRandomValue(0, AslrMaxOffset >> 21) << 21;
+            }
+
+            //Regions are sorted based on ASLR offset.
+            //When ASLR is disabled, the order is Map, Heap, NewMap and TlsIo.
+            AliasRegion.Start = MapBaseAddress    + AliasRegion.AslrOffset;
+            AliasRegion.End   = AliasRegion.Start + AliasRegion.Size;
+            HeapRegion.Start  = MapBaseAddress    + HeapRegion.AslrOffset;
+            HeapRegion.End    = HeapRegion.Start  + HeapRegion.Size;
+            StackRegion.Start = MapBaseAddress    + StackRegion.AslrOffset;
+            StackRegion.End   = StackRegion.Start + StackRegion.Size;
+            TlsIoRegion.Start = MapBaseAddress    + TlsIoRegion.AslrOffset;
+            TlsIoRegion.End   = TlsIoRegion.Start + TlsIoRegion.Size;
+
+            SortRegion(HeapRegion, AliasRegion);
+
+            if (StackRegion.Size != 0)
+            {
+                SortRegion(StackRegion, AliasRegion);
+                SortRegion(StackRegion, HeapRegion);
+            }
+            else
+            {
+                StackRegion.Start = StackAndTlsIoStart;
+                StackRegion.End   = StackAndTlsIoEnd;
+            }
+
+            if (TlsIoRegion.Size != 0)
+            {
+                SortRegion(TlsIoRegion, AliasRegion);
+                SortRegion(TlsIoRegion, HeapRegion);
+                SortRegion(TlsIoRegion, StackRegion);
+            }
+            else
+            {
+                TlsIoRegion.Start = StackAndTlsIoStart;
+                TlsIoRegion.End   = StackAndTlsIoEnd;
+            }
+
+            AliasRegionStart = AliasRegion.Start;
+            AliasRegionEnd   = AliasRegion.End;
+            HeapRegionStart  = HeapRegion.Start;
+            HeapRegionEnd    = HeapRegion.End;
+            StackRegionStart = StackRegion.Start;
+            StackRegionEnd   = StackRegion.End;
+            TlsIoRegionStart = TlsIoRegion.Start;
+            TlsIoRegionEnd   = TlsIoRegion.End;
+
+            CurrentHeapAddr     = HeapRegionStart;
+            HeapCapacity        = 0;
+            PersonalMmHeapUsage = 0;
+
+            this.MemRegion    = MemRegion;
+            this.AslrDisabled = AslrDisabled;
+
+            InitializeBlocks(AddrSpaceStart, AddrSpaceEnd);
+
+            return KernelResult.Success;
+        }
+
+        private long GetRandomValue(long Min, long Max)
+        {
+            if (RandomNumberGenerator == null)
+            {
+                RandomNumberGenerator = new MersenneTwister(0);
+            }
+
+            return RandomNumberGenerator.GenRandomNumber(Min, Max);
+        }
+
+        private static void SortRegion(Region Lhs, Region Rhs)
+        {
+            if (Lhs.AslrOffset < Rhs.AslrOffset)
+            {
+                Rhs.Start += Lhs.Size;
+                Rhs.End   += Lhs.Size;
+            }
+            else
+            {
+                Lhs.Start += Rhs.Size;
+                Lhs.End   += Rhs.Size;
+            }
+        }
+
+        private void InitializeBlocks(long AddrSpaceStart, long AddrSpaceEnd)
+        {
             long AddrSpacePagesCount = (AddrSpaceEnd - AddrSpaceStart) / PageSize;
 
             InsertBlock(AddrSpaceStart, AddrSpacePagesCount, MemoryState.Unmapped);
         }
 
-        public void HleMapProcessCode(long Position, long Size)
+        public KernelResult MapPages(
+            long             Address,
+            KPageList        PageList,
+            MemoryState      State,
+            MemoryPermission Permission)
         {
-            long PagesCount = Size / PageSize;
+            long PagesCount = PageList.GetPagesCount();
 
-            if (!Allocator.TryAllocate(Size, out long PA))
+            if (!IsUnmapped(Address, PagesCount * PageSize))
             {
-                throw new InvalidOperationException();
+                return KernelResult.InvalidMemState;
             }
 
-            lock (Blocks)
-            {
-                InsertBlock(Position, PagesCount, MemoryState.CodeStatic, MemoryPermission.ReadAndExecute);
+            KernelResult Result = MmuMapPages(Address, PageList);
 
-                CpuMemory.Map(Position, PA, Size);
+            if (Result == KernelResult.Success)
+            {
+                InsertBlock(Address, PagesCount, State, Permission);
             }
+
+            return Result;
         }
 
-        public long MapProcessCodeMemory(long Dst, long Src, long Size)
+        public KernelResult MapNormalMemory(long Address, long Size, MemoryPermission Permission)
         {
-            lock (Blocks)
+            //TODO.
+            return KernelResult.Success;
+        }
+
+        public KernelResult MapIoMemory(long Address, long Size, MemoryPermission Permission)
+        {
+            //TODO.
+            return KernelResult.Success;
+        }
+
+        public KernelResult AllocateOrMapPa(
+            long             NeededPagesCount,
+            int              Alignment,
+            long             SrcPa,
+            bool             Map,
+            long             RegionStart,
+            long             RegionPagesCount,
+            MemoryState      State,
+            MemoryPermission Permission,
+            out long         Address)
+        {
+            Address = 0;
+
+            long RegionSize = RegionPagesCount * PageSize;
+
+            long RegionEndAddr = RegionStart + RegionSize;
+
+            if (!ValidateRegionForState(RegionStart, RegionSize, State))
             {
-                long PagesCount = Size / PageSize;
-
-                bool Success = IsUnmapped(Dst, Size);
-
-                Success &= CheckRange(
-                            Src,
-                            Size,
-                            MemoryState.Mask,
-                            MemoryState.Heap,
-                            MemoryPermission.Mask,
-                            MemoryPermission.ReadAndWrite,
-                            MemoryAttribute.Mask,
-                            MemoryAttribute.None,
-                            MemoryAttribute.IpcAndDeviceMapped,
-                            out _,
-                            out _,
-                            out _);
-
-                if (Success)
-                {
-                    long PA = CpuMemory.GetPhysicalAddress(Src);
-
-                    InsertBlock(Dst, PagesCount, MemoryState.CodeStatic, MemoryPermission.ReadAndExecute);
-                    InsertBlock(Src, PagesCount, MemoryState.Heap, MemoryPermission.None);
-
-                    CpuMemory.Map(Dst, PA, Size);
-
-                    return 0;
-                }
+                return KernelResult.InvalidMemState;
             }
 
-            return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+            if ((ulong)RegionPagesCount <= (ulong)NeededPagesCount)
+            {
+                return KernelResult.OutOfMemory;
+            }
+
+            long ReservedPagesCount = IsKernel ? 1 : 4;
+
+            lock (Blocks)
+            {
+                if (AslrEnabled)
+                {
+                    long TotalNeededSize = (ReservedPagesCount + NeededPagesCount) * PageSize;
+
+                    long RemainingPages = RegionPagesCount - NeededPagesCount;
+
+                    long AslrMaxOffset = ((RemainingPages + ReservedPagesCount) * PageSize) / Alignment;
+
+                    for (int Attempt = 0; Attempt < 8; Attempt++)
+                    {
+                        Address = BitUtils.AlignDown(RegionStart + GetRandomValue(0, AslrMaxOffset) * Alignment, Alignment);
+
+                        long EndAddr = Address + TotalNeededSize;
+
+                        KMemoryInfo Info = FindBlock(Address).GetInfo();
+
+                        if (Info.State != MemoryState.Unmapped)
+                        {
+                            continue;
+                        }
+
+                        long BlkStartAddr = Info.Position + ReservedPagesCount * PageSize;
+
+                        long BlkEndAddr = Info.Position + Info.Size;
+
+                        if ((ulong)Address     >= (ulong)RegionStart       &&
+                            (ulong)Address     >= (ulong)BlkStartAddr      &&
+                            (ulong)EndAddr - 1 <= (ulong)RegionEndAddr - 1 &&
+                            (ulong)EndAddr - 1 <= (ulong)BlkEndAddr    - 1)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (Address == 0)
+                    {
+                        long AslrPage = GetRandomValue(0, AslrMaxOffset);
+
+                        Address = FindFirstFit(
+                            RegionStart      + AslrPage * PageSize,
+                            RegionPagesCount - AslrPage,
+                            NeededPagesCount,
+                            Alignment,
+                            0,
+                            ReservedPagesCount);
+                    }
+                }
+
+                if (Address == 0)
+                {
+                    Address = FindFirstFit(
+                        RegionStart,
+                        RegionPagesCount,
+                        NeededPagesCount,
+                        Alignment,
+                        0,
+                        ReservedPagesCount);
+                }
+
+                if (Address == 0)
+                {
+                    return KernelResult.OutOfMemory;
+                }
+
+                MemoryOperation Operation = Map
+                    ? MemoryOperation.MapPa
+                    : MemoryOperation.Allocate;
+
+                KernelResult Result = DoMmuOperation(
+                    Address,
+                    NeededPagesCount,
+                    SrcPa,
+                    Map,
+                    Permission,
+                    Operation);
+
+                if (Result != KernelResult.Success)
+                {
+                    return Result;
+                }
+
+                InsertBlock(Address, NeededPagesCount, State, Permission);
+            }
+
+            return KernelResult.Success;
+        }
+
+        public KernelResult MapNewProcessCode(
+            long             Address,
+            long             PagesCount,
+            MemoryState      State,
+            MemoryPermission Permission)
+        {
+            long Size = PagesCount * PageSize;
+
+            if (!ValidateRegionForState(Address, Size, State))
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            lock (Blocks)
+            {
+                if (!IsUnmapped(Address, Size))
+                {
+                    return KernelResult.InvalidMemState;
+                }
+
+                KernelResult Result = DoMmuOperation(
+                    Address,
+                    PagesCount,
+                    0,
+                    false,
+                    Permission,
+                    MemoryOperation.Allocate);
+
+                if (Result == KernelResult.Success)
+                {
+                    InsertBlock(Address, PagesCount, State, Permission);
+                }
+
+                return Result;
+            }
         }
 
         public long UnmapProcessCodeMemory(long Dst, long Src, long Size)
@@ -193,32 +513,32 @@ namespace Ryujinx.HLE.HOS.Kernel
                 long PagesCount = Size / PageSize;
 
                 bool Success = CheckRange(
-                            Dst,
-                            Size,
-                            MemoryState.Mask,
-                            MemoryState.CodeStatic,
-                            MemoryPermission.None,
-                            MemoryPermission.None,
-                            MemoryAttribute.Mask,
-                            MemoryAttribute.None,
-                            MemoryAttribute.IpcAndDeviceMapped,
-                            out _,
-                            out _,
-                            out _);
+                    Dst,
+                    Size,
+                    MemoryState.Mask,
+                    MemoryState.CodeStatic,
+                    MemoryPermission.None,
+                    MemoryPermission.None,
+                    MemoryAttribute.Mask,
+                    MemoryAttribute.None,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out _,
+                    out _,
+                    out _);
 
                 Success &= CheckRange(
-                            Src,
-                            Size,
-                            MemoryState.Mask,
-                            MemoryState.Heap,
-                            MemoryPermission.Mask,
-                            MemoryPermission.None,
-                            MemoryAttribute.Mask,
-                            MemoryAttribute.None,
-                            MemoryAttribute.IpcAndDeviceMapped,
-                            out _,
-                            out _,
-                            out _);
+                    Src,
+                    Size,
+                    MemoryState.Mask,
+                    MemoryState.Heap,
+                    MemoryPermission.Mask,
+                    MemoryPermission.None,
+                    MemoryAttribute.Mask,
+                    MemoryAttribute.None,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out _,
+                    out _,
+                    out _);
 
                 if (Success)
                 {
@@ -234,64 +554,14 @@ namespace Ryujinx.HLE.HOS.Kernel
             return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
         }
 
-        public void HleMapCustom(long Position, long Size, MemoryState State, MemoryPermission Permission)
-        {
-            long PagesCount = Size / PageSize;
-
-            if (!Allocator.TryAllocate(Size, out long PA))
-            {
-                throw new InvalidOperationException();
-            }
-
-            lock (Blocks)
-            {
-                InsertBlock(Position, PagesCount, State, Permission);
-
-                CpuMemory.Map(Position, PA, Size);
-            }
-        }
-
-        public long HleMapTlsPage()
-        {
-            bool HasTlsIoRegion = TlsIoRegionStart != TlsIoRegionEnd;
-
-            long Position = HasTlsIoRegion ? TlsIoRegionStart : CodeRegionStart;
-
-            lock (Blocks)
-            {
-                while (Position < (HasTlsIoRegion ? TlsIoRegionEnd : CodeRegionEnd))
-                {
-                    if (FindBlock(Position).State == MemoryState.Unmapped)
-                    {
-                        InsertBlock(Position, 1, MemoryState.ThreadLocal, MemoryPermission.ReadAndWrite);
-
-                        if (!Allocator.TryAllocate(PageSize, out long PA))
-                        {
-                            throw new InvalidOperationException();
-                        }
-
-                        CpuMemory.Map(Position, PA, PageSize);
-
-                        return Position;
-                    }
-
-                    Position += PageSize;
-                }
-
-                throw new InvalidOperationException();
-            }
-        }
-
-        public long TrySetHeapSize(long Size, out long Position)
+        public KernelResult SetHeapSize(long Size, out long Position)
         {
             Position = 0;
 
             if ((ulong)Size > (ulong)(HeapRegionEnd - HeapRegionStart))
             {
-                return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
+                return KernelResult.OutOfMemory;
             }
-
-            bool Success = false;
 
             long CurrentHeapSize = GetHeapSize();
 
@@ -302,19 +572,35 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 lock (Blocks)
                 {
-                    if (Success = IsUnmapped(CurrentHeapAddr, DiffSize))
+                    long PagesCount = DiffSize / PageSize;
+
+                    KMemoryRegionManager Region = GetMemoryRegionManager();
+
+                    KernelResult Result = Region.AllocatePages(PagesCount, AslrDisabled, out KPageList PageList);
+
+                    if (Result != KernelResult.Success)
                     {
-                        if (!Allocator.TryAllocate(DiffSize, out long PA))
-                        {
-                            return MakeError(ErrorModule.Kernel, KernelErr.OutOfMemory);
-                        }
-
-                        long PagesCount = DiffSize / PageSize;
-
-                        InsertBlock(CurrentHeapAddr, PagesCount, MemoryState.Heap, MemoryPermission.ReadAndWrite);
-
-                        CpuMemory.Map(CurrentHeapAddr, PA, DiffSize);
+                        return Result;
                     }
+
+                    if (!IsUnmapped(CurrentHeapAddr, DiffSize))
+                    {
+                        return KernelResult.InvalidMemState;
+                    }
+
+                    Result = DoMmuOperation(
+                        CurrentHeapAddr,
+                        PagesCount,
+                        PageList,
+                        MemoryPermission.ReadAndWrite,
+                        MemoryOperation.MapVa);
+
+                    if (Result != KernelResult.Success)
+                    {
+                        return Result;
+                    }
+
+                    InsertBlock(CurrentHeapAddr, PagesCount, MemoryState.Heap, MemoryPermission.ReadAndWrite);
                 }
             }
             else
@@ -325,7 +611,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 lock (Blocks)
                 {
-                    Success = CheckRange(
+                    if (!CheckRange(
                         FreeAddr,
                         DiffSize,
                         MemoryState.Mask,
@@ -337,36 +623,58 @@ namespace Ryujinx.HLE.HOS.Kernel
                         MemoryAttribute.IpcAndDeviceMapped,
                         out _,
                         out _,
-                        out _);
-
-                    if (Success)
+                        out _))
                     {
-                        long PagesCount = DiffSize / PageSize;
-
-                        InsertBlock(FreeAddr, PagesCount, MemoryState.Unmapped);
-
-                        FreePages(FreeAddr, PagesCount);
-
-                        CpuMemory.Unmap(FreeAddr, DiffSize);
+                        return KernelResult.InvalidMemState;
                     }
+
+                    long PagesCount = DiffSize / PageSize;
+
+                    KernelResult Result = DoMmuOperation(
+                        FreeAddr,
+                        PagesCount,
+                        0,
+                        false,
+                        MemoryPermission.None,
+                        MemoryOperation.Unmap);
+
+                    if (Result != KernelResult.Success)
+                    {
+                        return Result;
+                    }
+
+                    InsertBlock(FreeAddr, PagesCount, MemoryState.Unmapped);
                 }
             }
 
             CurrentHeapAddr = HeapRegionStart + Size;
 
-            if (Success)
-            {
-                Position = HeapRegionStart;
+            Position = HeapRegionStart;
 
-                return 0;
-            }
-
-            return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+            return KernelResult.Success;
         }
 
-        public long GetHeapSize()
+        public long GetTotalHeapSize()
+        {
+            lock (Blocks)
+            {
+                return GetHeapSize() + PersonalMmHeapUsage;
+            }
+        }
+
+        private long GetHeapSize()
         {
             return CurrentHeapAddr - HeapRegionStart;
+        }
+
+        public KernelResult SetHeapCapacity(long Capacity)
+        {
+            lock (Blocks)
+            {
+                HeapCapacity = Capacity;
+            }
+
+            return KernelResult.Success;
         }
 
         public long SetMemoryAttribute(
@@ -455,8 +763,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     long PagesCount = Size / PageSize;
 
                     InsertBlock(Src, PagesCount, SrcState, MemoryPermission.None, MemoryAttribute.Borrowed);
-
-                    InsertBlock(Dst, PagesCount, MemoryState.MappedMemory, MemoryPermission.ReadAndWrite);
+                    InsertBlock(Dst, PagesCount, MemoryState.Stack, MemoryPermission.ReadAndWrite);
 
                     long PA = CpuMemory.GetPhysicalAddress(Src);
 
@@ -465,6 +772,37 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             return Success ? 0 : MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+        }
+
+        public KernelResult UnmapForKernel(long Address, long PagesCount, MemoryState StateExpected)
+        {
+            long Size = PagesCount * PageSize;
+
+            lock (Blocks)
+            {
+                if (CheckRange(
+                    Address,
+                    Size,
+                    MemoryState.Mask,
+                    StateExpected,
+                    MemoryPermission.None,
+                    MemoryPermission.None,
+                    MemoryAttribute.Mask,
+                    MemoryAttribute.None,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out _,
+                    out _,
+                    out _))
+                {
+                    CpuMemory.Unmap(Address, Size);
+
+                    InsertBlock(Address, PagesCount, MemoryState.Unmapped);
+
+                    return KernelResult.Success;
+                }
+            }
+
+            return KernelResult.InvalidMemState;
         }
 
         public long Unmap(long Src, long Dst, long Size)
@@ -491,7 +829,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     Dst,
                     Size,
                     MemoryState.Mask,
-                    MemoryState.MappedMemory,
+                    MemoryState.Stack,
                     MemoryPermission.None,
                     MemoryPermission.None,
                     MemoryAttribute.Mask,
@@ -506,7 +844,6 @@ namespace Ryujinx.HLE.HOS.Kernel
                     long PagesCount = Size / PageSize;
 
                     InsertBlock(Src, PagesCount, SrcState, MemoryPermission.ReadAndWrite);
-
                     InsertBlock(Dst, PagesCount, MemoryState.Unmapped);
 
                     CpuMemory.Unmap(Dst, Size);
@@ -640,26 +977,36 @@ namespace Ryujinx.HLE.HOS.Kernel
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
-                    out MemoryState State,
-                    out _,
+                    out MemoryState      OldState,
+                    out MemoryPermission OldPermission,
                     out _))
                 {
-                    if (State == MemoryState.CodeStatic)
+                    MemoryState NewState = OldState;
+
+                    //If writing into the code region is allowed, then we need
+                    //to change it to mutable.
+                    if ((Permission & MemoryPermission.Write) != 0)
                     {
-                        State = MemoryState.CodeMutable;
-                    }
-                    else if (State == MemoryState.ModCodeStatic)
-                    {
-                        State = MemoryState.ModCodeMutable;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException();
+                        if (OldState == MemoryState.CodeStatic)
+                        {
+                            NewState = MemoryState.CodeMutable;
+                        }
+                        else if (OldState == MemoryState.ModCodeStatic)
+                        {
+                            NewState = MemoryState.ModCodeMutable;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Memory state \"{OldState}\" not valid for this operation.");
+                        }
                     }
 
-                    long PagesCount = Size / PageSize;
+                    if (NewState != OldState || Permission != OldPermission)
+                    {
+                        long PagesCount = Size / PageSize;
 
-                    InsertBlock(Position, PagesCount, State, Permission);
+                        InsertBlock(Position, PagesCount, NewState, Permission);
+                    }
 
                     return 0;
                 }
@@ -1147,13 +1494,69 @@ namespace Ryujinx.HLE.HOS.Kernel
             Block.PagesCount = (long)((End - Start) / PageSize);
         }
 
-        private static bool BlockStateEquals(KMemoryBlock LHS, KMemoryBlock RHS)
+        private static bool BlockStateEquals(KMemoryBlock Lhs, KMemoryBlock Rhs)
         {
-            return LHS.State          == RHS.State          &&
-                   LHS.Permission     == RHS.Permission     &&
-                   LHS.Attribute      == RHS.Attribute      &&
-                   LHS.DeviceRefCount == RHS.DeviceRefCount &&
-                   LHS.IpcRefCount    == RHS.IpcRefCount;
+            return Lhs.State          == Rhs.State          &&
+                   Lhs.Permission     == Rhs.Permission     &&
+                   Lhs.Attribute      == Rhs.Attribute      &&
+                   Lhs.DeviceRefCount == Rhs.DeviceRefCount &&
+                   Lhs.IpcRefCount    == Rhs.IpcRefCount;
+        }
+
+        private long FindFirstFit(
+            long RegionStart,
+            long RegionPagesCount,
+            long NeededPagesCount,
+            int  Alignment,
+            long ReservedStart,
+            long ReservedPagesCount)
+        {
+            long ReservedSize = ReservedPagesCount * PageSize;
+
+            long TotalNeededSize = ReservedSize + NeededPagesCount * PageSize;
+
+            long RegionEndAddr = RegionStart + RegionPagesCount * PageSize;
+
+            LinkedListNode<KMemoryBlock> Node = FindBlockNode(RegionStart);
+
+            KMemoryInfo Info = Node.Value.GetInfo();
+
+            while ((ulong)RegionEndAddr >= (ulong)Info.Position)
+            {
+                if (Info.State == MemoryState.Unmapped)
+                {
+                    long BlkStartAddr = Info.Position + ReservedSize;
+
+                    long BlkEndAddr = Info.Position + Info.Size - 1;
+
+                    long Address = BitUtils.AlignDown(BlkStartAddr, Alignment) + ReservedStart;
+
+                    if ((ulong)BlkStartAddr > (ulong)Address)
+                    {
+                        Address += Alignment;
+                    }
+
+                    long AllocationEndAddr = Address + TotalNeededSize - 1;
+
+                    if ((ulong)AllocationEndAddr <= (ulong)RegionEndAddr &&
+                        (ulong)AllocationEndAddr <= (ulong)BlkEndAddr    &&
+                        (ulong)Address           <  (ulong)AllocationEndAddr)
+                    {
+                        return Address;
+                    }
+                }
+
+                Node = Node.Next;
+
+                if (Node == null)
+                {
+                    break;
+                }
+
+                Info = Node.Value.GetInfo();
+            }
+
+            return 0;
         }
 
         private KMemoryBlock FindBlock(long Position)
@@ -1186,6 +1589,311 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             return null;
+        }
+
+        private bool ValidateRegionForState(long Address, long Size, MemoryState State)
+        {
+            long EndAddr = Address + Size;
+
+            long RegionBaseAddr = GetBaseAddrForState(State);
+
+            long RegionEndAddr = RegionBaseAddr + GetSizeForState(State);
+
+            bool InsideRegion()
+            {
+                return (ulong)RegionBaseAddr <= (ulong)Address &&
+                       (ulong)EndAddr        >  (ulong)Address &&
+                       (ulong)EndAddr - 1    <= (ulong)RegionEndAddr - 1;
+            }
+
+            bool OutsideHeapRegion()
+            {
+                return (ulong)EndAddr <= (ulong)HeapRegionStart ||
+                       (ulong)Address >= (ulong)HeapRegionEnd;
+            }
+
+            bool OutsideMapRegion()
+            {
+                return (ulong)EndAddr <= (ulong)AliasRegionStart ||
+                       (ulong)Address >= (ulong)AliasRegionEnd;
+            }
+
+            switch (State)
+            {
+                case MemoryState.Io:
+                case MemoryState.Normal:
+                case MemoryState.CodeStatic:
+                case MemoryState.CodeMutable:
+                case MemoryState.SharedMemory:
+                case MemoryState.ModCodeStatic:
+                case MemoryState.ModCodeMutable:
+                case MemoryState.Stack:
+                case MemoryState.ThreadLocal:
+                case MemoryState.TransferMemoryIsolated:
+                case MemoryState.TransferMemory:
+                case MemoryState.ProcessMemory:
+                case MemoryState.CodeReadOnly:
+                case MemoryState.CodeWritable:
+                    return InsideRegion() && OutsideHeapRegion() && OutsideMapRegion();
+
+                case MemoryState.Heap:
+                    return InsideRegion() && OutsideMapRegion();
+
+                case MemoryState.IpcBuffer0:
+                case MemoryState.IpcBuffer1:
+                case MemoryState.IpcBuffer3:
+                    return InsideRegion() && OutsideHeapRegion();
+
+                case MemoryState.KernelStack:
+                    return InsideRegion();
+            }
+
+            throw new ArgumentException($"Invalid state value \"{State}\".");
+        }
+
+        private long GetBaseAddrForState(MemoryState State)
+        {
+            switch (State)
+            {
+                case MemoryState.Io:
+                case MemoryState.Normal:
+                case MemoryState.ThreadLocal:
+                    return TlsIoRegionStart;
+
+                case MemoryState.CodeStatic:
+                case MemoryState.CodeMutable:
+                case MemoryState.SharedMemory:
+                case MemoryState.ModCodeStatic:
+                case MemoryState.ModCodeMutable:
+                case MemoryState.TransferMemoryIsolated:
+                case MemoryState.TransferMemory:
+                case MemoryState.ProcessMemory:
+                case MemoryState.CodeReadOnly:
+                case MemoryState.CodeWritable:
+                    return GetAddrSpaceBaseAddr();
+
+                case MemoryState.Heap:
+                    return HeapRegionStart;
+
+                case MemoryState.IpcBuffer0:
+                case MemoryState.IpcBuffer1:
+                case MemoryState.IpcBuffer3:
+                    return AliasRegionStart;
+
+                case MemoryState.Stack:
+                    return StackRegionStart;
+
+                case MemoryState.KernelStack:
+                    return AddrSpaceStart;
+            }
+
+            throw new ArgumentException($"Invalid state value \"{State}\".");
+        }
+
+        private long GetSizeForState(MemoryState State)
+        {
+            switch (State)
+            {
+                case MemoryState.Io:
+                case MemoryState.Normal:
+                case MemoryState.ThreadLocal:
+                    return TlsIoRegionEnd - TlsIoRegionStart;
+
+                case MemoryState.CodeStatic:
+                case MemoryState.CodeMutable:
+                case MemoryState.SharedMemory:
+                case MemoryState.ModCodeStatic:
+                case MemoryState.ModCodeMutable:
+                case MemoryState.TransferMemoryIsolated:
+                case MemoryState.TransferMemory:
+                case MemoryState.ProcessMemory:
+                case MemoryState.CodeReadOnly:
+                case MemoryState.CodeWritable:
+                    return GetAddrSpaceSize();
+
+                case MemoryState.Heap:
+                    return HeapRegionEnd - HeapRegionStart;
+
+                case MemoryState.IpcBuffer0:
+                case MemoryState.IpcBuffer1:
+                case MemoryState.IpcBuffer3:
+                    return AliasRegionEnd - AliasRegionStart;
+
+                case MemoryState.Stack:
+                    return StackRegionEnd - StackRegionStart;
+
+                case MemoryState.KernelStack:
+                    return AddrSpaceEnd - AddrSpaceStart;
+            }
+
+            throw new ArgumentException($"Invalid state value \"{State}\".");
+        }
+
+        private long GetAddrSpaceBaseAddr()
+        {
+            if (AddrSpaceWidth == 36 || AddrSpaceWidth == 39)
+            {
+                return 0x8000000;
+            }
+            else if (AddrSpaceWidth == 32)
+            {
+                return 0x200000;
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid address space width!");
+            }
+        }
+
+        private long GetAddrSpaceSize()
+        {
+            if (AddrSpaceWidth == 36)
+            {
+                return 0xff8000000;
+            }
+            else if (AddrSpaceWidth == 39)
+            {
+                return 0x7ff8000000;
+            }
+            else if (AddrSpaceWidth == 32)
+            {
+                return 0xffe00000;
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid address space width!");
+            }
+        }
+
+        private KernelResult DoMmuOperation(
+            long             DstVa,
+            long             PagesCount,
+            long             SrcPa,
+            bool             Map,
+            MemoryPermission Permission,
+            MemoryOperation  Operation)
+        {
+            KernelResult Result;
+
+            switch (Operation)
+            {
+                case MemoryOperation.MapPa:
+                {
+                    long Size = PagesCount * PageSize;
+
+                    CpuMemory.Map(DstVa, SrcPa, Size);
+
+                    Result = KernelResult.Success;
+
+                    break;
+                }
+
+                case MemoryOperation.Allocate:
+                {
+                    KMemoryRegionManager Region = GetMemoryRegionManager();
+
+                    Result = Region.AllocatePages(PagesCount, AslrDisabled, out KPageList PageList);
+
+                    if (Result == KernelResult.Success)
+                    {
+                        Result = MmuMapPages(DstVa, PageList);
+                    }
+
+                    break;
+                }
+
+                case MemoryOperation.Unmap:
+                {
+                    long Size = PagesCount * PageSize;
+
+                    CpuMemory.Unmap(DstVa, Size);
+
+                    Result = KernelResult.Success;
+
+                    break;
+                }
+
+                default: throw new NotImplementedException($"Unsupported memory operation \"{Operation}\".");
+            }
+
+            return Result;
+        }
+
+        private KernelResult DoMmuOperation(
+            long             Address,
+            long             PagesCount,
+            KPageList        PageList,
+            MemoryPermission Permission,
+            MemoryOperation  Operation)
+        {
+            if (Operation != MemoryOperation.MapVa)
+            {
+                throw new ArgumentException($"Invalid memory operation \"{Operation}\" specified.");
+            }
+
+            return MmuMapPages(Address, PageList);
+        }
+
+        private KMemoryRegionManager GetMemoryRegionManager()
+        {
+            return System.MemoryRegions[(int)MemRegion];
+        }
+
+        private KernelResult MmuMapPages(long Address, KPageList PageList)
+        {
+            foreach (KPageNode PageNode in PageList)
+            {
+                long Size = PageNode.PagesCount * PageSize;
+
+                CpuMemory.Map(Address, PageNode.Address - DramMemoryMap.DramBase, Size);
+
+                Address += Size;
+            }
+
+            return KernelResult.Success;
+        }
+
+        public KernelResult ConvertVaToPa(long Va, out long Pa)
+        {
+            Pa = DramMemoryMap.DramBase + CpuMemory.GetPhysicalAddress(Va);
+
+            return KernelResult.Success;
+        }
+
+        public bool InsideAddrSpace(long Position, long Size)
+        {
+            ulong Start = (ulong)Position;
+            ulong End   = (ulong)Size + Start;
+
+            return Start >= (ulong)AddrSpaceStart &&
+                   End   <  (ulong)AddrSpaceEnd;
+        }
+
+        public bool InsideMapRegion(long Position, long Size)
+        {
+            ulong Start = (ulong)Position;
+            ulong End   = (ulong)Size + Start;
+
+            return Start >= (ulong)AliasRegionStart &&
+                   End   <  (ulong)AliasRegionEnd;
+        }
+
+        public bool InsideHeapRegion(long Position, long Size)
+        {
+            ulong Start = (ulong)Position;
+            ulong End   = (ulong)Size + Start;
+
+            return Start >= (ulong)HeapRegionStart &&
+                   End   <  (ulong)HeapRegionEnd;
+        }
+
+        public bool InsideNewMapRegion(long Position, long Size)
+        {
+            ulong Start = (ulong)Position;
+            ulong End   = (ulong)Size + Start;
+
+            return Start >= (ulong)StackRegionStart &&
+                   End   <  (ulong)StackRegionEnd;
         }
     }
 }

@@ -261,8 +261,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             long HeapRegionStart = Context.Process.MemoryManager.HeapRegionStart;
             long HeapRegionEnd   = Context.Process.MemoryManager.HeapRegionEnd;
 
-            long MapRegionStart = Context.Process.MemoryManager.MapRegionStart;
-            long MapRegionEnd   = Context.Process.MemoryManager.MapRegionEnd;
+            long MapRegionStart = Context.Process.MemoryManager.AliasRegionStart;
+            long MapRegionEnd   = Context.Process.MemoryManager.AliasRegionEnd;
 
             while (true)
             {
@@ -285,7 +285,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
                 TargetAddress += 0x1000;
             }
 
-            Context.Process.LoadProgram(Info.Executable, TargetAddress);
+            //Context.Process.LoadProgram(Info.Executable, TargetAddress);
 
             Info.NroMappedAddress = TargetAddress;
             NroMappedAddress      = TargetAddress;
@@ -316,7 +316,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
                 {
                     NroInfos.Remove(Info);
 
-                    Context.Process.RemoveProgram(Info.NroMappedAddress);
+                    //Context.Process.RemoveProgram(Info.NroMappedAddress);
 
                     long Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(Info.NroMappedAddress, Info.Executable.SourceAddress, Info.TotalSize - Info.Executable.BssSize);
 

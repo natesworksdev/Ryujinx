@@ -1,5 +1,4 @@
 using Ryujinx.Common;
-using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
@@ -48,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (CurrentThread != null)
             {
-                CoreManager.GetThread(CurrentThread.Context.Work).Reset();
+                CoreManager.Reset(CurrentThread.Context.Work);
             }
 
             CurrentThread = SelectedThread;
@@ -57,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 CurrentThread.ClearExclusive();
 
-                CoreManager.GetThread(CurrentThread.Context.Work).Set();
+                CoreManager.Set(CurrentThread.Context.Work);
 
                 CurrentThread.Context.Execute();
             }

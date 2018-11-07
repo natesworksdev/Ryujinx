@@ -38,14 +38,14 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void PreemptThreads()
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             PreemptThread(PreemptionPriorityCores012, 0);
             PreemptThread(PreemptionPriorityCores012, 1);
             PreemptThread(PreemptionPriorityCores012, 2);
             PreemptThread(PreemptionPriorityCore3,    3);
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
         }
 
         private void PreemptThread(int Prio, int Core)
@@ -210,6 +210,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             throw new InvalidOperationException("Current thread is not scheduled!");
+        }
+
+        public KProcess GetCurrentProcess()
+        {
+            return GetCurrentThread().Owner;
         }
 
         public void Dispose()

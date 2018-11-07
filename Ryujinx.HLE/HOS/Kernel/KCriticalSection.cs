@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KRecursiveLock
+    class KCriticalSection
     {
         private Horizon System;
 
@@ -11,21 +11,21 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private int RecursionCount;
 
-        public KRecursiveLock(Horizon System)
+        public KCriticalSection(Horizon System)
         {
             this.System = System;
 
             LockObj = new object();
         }
 
-        public void Lock()
+        public void Enter()
         {
             Monitor.Enter(LockObj);
 
             RecursionCount++;
         }
 
-        public void Unlock()
+        public void Leave()
         {
             if (RecursionCount == 0)
             {

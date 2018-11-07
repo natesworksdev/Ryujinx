@@ -1,8 +1,8 @@
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
-using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         private Dictionary<int, SvcFunc> SvcFuncs;
 
         private Switch        Device;
-        private Process       Process;
+        private KProcess      Process;
         private Horizon       System;
         private MemoryManager Memory;
 
@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private static Random Rng;
 
-        public SvcHandler(Switch Device, Process Process)
+        public SvcHandler(Switch Device, KProcess Process)
         {
             SvcFuncs = new Dictionary<int, SvcFunc>()
             {
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 { 0x05, SvcUnmapMemory                   },
                 { 0x06, SvcQueryMemory                   },
                 { 0x07, SvcExitProcess                   },
-                { 0x08, SvcCreateThread                  },
+                { 0x08, CreateThread64                   },
                 { 0x09, SvcStartThread                   },
                 { 0x0a, SvcExitThread                    },
                 { 0x0b, SvcSleepThread                   },
@@ -92,8 +92,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             this.Device  = Device;
             this.Process = Process;
-            this.System  = Process.Device.System;
-            this.Memory  = Process.Memory;
+            this.System  = Device.System;
+            this.Memory  = Process.CpuMemory;
         }
 
         static SvcHandler()
@@ -105,7 +105,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             CpuThreadState ThreadState = (CpuThreadState)sender;
 
-            Process.GetThread(ThreadState.Tpidr).LastPc = e.Position;
+            //Process.GetThread(ThreadState.Tpidr).LastPc = e.Position;
 
             if (SvcFuncs.TryGetValue(e.Id, out SvcFunc Func))
             {
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
             else
             {
-                Process.PrintStackTrace(ThreadState);
+                //Process.PrintStackTrace(ThreadState);
 
                 throw new NotImplementedException($"0x{e.Id:x4}");
             }

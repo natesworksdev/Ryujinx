@@ -1,12 +1,9 @@
 using ChocolArm64.Memory;
-using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Loaders.Executables;
-using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 
 namespace Ryujinx.HLE.Loaders
@@ -31,72 +28,6 @@ namespace Ryujinx.HLE.Loaders
         public Executable(IExecutable Exe, KMemoryManager MemoryManager, MemoryManager Memory, long ImageBase)
         {
             Dynamic = new List<ElfDyn>();
-
-            FilePath = Exe.FilePath;
-
-            if (FilePath != null)
-            {
-                Name = Path.GetFileNameWithoutExtension(FilePath.Replace(Homebrew.TemporaryNroSuffix, ""));
-            }
-
-            this.Memory        = Memory;
-            this.MemoryManager = MemoryManager;
-            this.ImageBase     = ImageBase;
-            this.ImageEnd      = ImageBase;
-
-            long TextPosition = ImageBase + (uint)Exe.TextOffset;
-            long ROPosition   = ImageBase + (uint)Exe.ROOffset;
-            long DataPosition = ImageBase + (uint)Exe.DataOffset;
-
-            long TextSize = (uint)IntUtils.AlignUp(Exe.Text.Length, KMemoryManager.PageSize);
-            long ROSize   = (uint)IntUtils.AlignUp(Exe.RO.Length, KMemoryManager.PageSize);
-            long DataSize = (uint)IntUtils.AlignUp(Exe.Data.Length, KMemoryManager.PageSize);
-            long BssSize  = (uint)IntUtils.AlignUp(Exe.BssSize, KMemoryManager.PageSize);
-
-            long DataAndBssSize = BssSize + DataSize;
-
-            ImageEnd = DataPosition + DataAndBssSize;
-
-            if (Exe.SourceAddress == 0)
-            {
-                MemoryManager.HleMapProcessCode(TextPosition, TextSize + ROSize + DataAndBssSize);
-
-                MemoryManager.SetProcessMemoryPermission(ROPosition, ROSize, MemoryPermission.Read);
-                MemoryManager.SetProcessMemoryPermission(DataPosition, DataAndBssSize, MemoryPermission.ReadAndWrite);
-
-                Memory.WriteBytes(TextPosition, Exe.Text);
-                Memory.WriteBytes(ROPosition, Exe.RO);
-                Memory.WriteBytes(DataPosition, Exe.Data);
-            }
-            else
-            {
-                long Result = MemoryManager.MapProcessCodeMemory(TextPosition, Exe.SourceAddress, TextSize + ROSize + DataSize);
-
-                if (Result != 0)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                MemoryManager.SetProcessMemoryPermission(ROPosition, ROSize, MemoryPermission.Read);
-                MemoryManager.SetProcessMemoryPermission(DataPosition, DataSize, MemoryPermission.ReadAndWrite);
-
-                if (Exe.BssAddress != 0 && Exe.BssSize != 0)
-                {
-                    Result = MemoryManager.MapProcessCodeMemory(DataPosition + DataSize, Exe.BssAddress, BssSize);
-
-                    if (Result != 0)
-                    {
-                        throw new InvalidOperationException();
-                    }
-
-                    MemoryManager.SetProcessMemoryPermission(DataPosition + DataSize, BssSize, MemoryPermission.ReadAndWrite);
-                }
-            }
-
-            if (Exe.Mod0Offset == 0)
-            {
-                return;
-            }
 
             long Mod0Offset = ImageBase + Exe.Mod0Offset;
 
@@ -142,32 +73,6 @@ namespace Ryujinx.HLE.Loaders
             }
 
             SymbolTable = Array.AsReadOnly(Symbols.OrderBy(x => x.Value).ToArray());
-        }
-
-        private ElfRel GetRelocation(long Position)
-        {
-            long Offset = Memory.ReadInt64(Position + 0);
-            long Info   = Memory.ReadInt64(Position + 8);
-            long Addend = Memory.ReadInt64(Position + 16);
-
-            int RelType = (int)(Info >> 0);
-            int SymIdx  = (int)(Info >> 32);
-
-            ElfSym Symbol = GetSymbol(SymIdx);
-
-            return new ElfRel(Offset, Addend, Symbol, (ElfRelType)RelType);
-        }
-
-        private ElfSym GetSymbol(int Index)
-        {
-            long StrTblAddr = ImageBase + GetFirstValue(ElfDynTag.DT_STRTAB);
-            long SymTblAddr = ImageBase + GetFirstValue(ElfDynTag.DT_SYMTAB);
-
-            long SymEntSize = GetFirstValue(ElfDynTag.DT_SYMENT);
-
-            long Position = SymTblAddr + Index * SymEntSize;
-
-            return GetSymbol(Position, StrTblAddr);
         }
 
         private ElfSym GetSymbol(long Position, long StrTblAddr)

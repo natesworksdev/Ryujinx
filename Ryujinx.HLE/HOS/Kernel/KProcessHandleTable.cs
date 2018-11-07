@@ -20,7 +20,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private ushort IdCounter;
 
-        private object LockObj;
+        public KProcessHandleTable(Horizon System)
+        {
+            this.System = System;
+        }
 
         public KProcessHandleTable(Horizon System, int Size = 1024)
         {
@@ -47,15 +50,51 @@ namespace Ryujinx.HLE.HOS.Kernel
             Table[Size - 1].Next = null;
 
             NextFreeEntry = TableHead;
+        }
 
-            LockObj = new object();
+        public KernelResult Initialize(int Size)
+        {
+            if ((uint)Size > 1024)
+            {
+                return KernelResult.OutOfMemory;
+            }
+
+            if (Size < 1)
+            {
+                Size = 1024;
+            }
+
+            this.Size = Size;
+
+            IdCounter = 1;
+
+            Table = new KHandleEntry[Size];
+
+            TableHead = new KHandleEntry(0);
+
+            KHandleEntry Entry = TableHead;
+
+            for (int Index = 0; Index < Size; Index++)
+            {
+                Table[Index] = Entry;
+
+                Entry.Next = new KHandleEntry(Index + 1);
+
+                Entry = Entry.Next;
+            }
+
+            Table[Size - 1].Next = null;
+
+            NextFreeEntry = TableHead;
+
+            return KernelResult.Success;
         }
 
         public KernelResult GenerateHandle(object Obj, out int Handle)
         {
             Handle = 0;
 
-            lock (LockObj)
+            lock (Table)
             {
                 if (ActiveSlotsCount >= Size)
                 {
@@ -95,12 +134,12 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return false;
             }
 
-            int Index    = (Handle >>  0) & 0x7fff;
+            int Index    = (Handle >> 0) & 0x7fff;
             int HandleId = (Handle >> 15);
 
             bool Result = false;
 
-            lock (LockObj)
+            lock (Table)
             {
                 if (HandleId != 0 && Index < Size)
                 {
@@ -125,10 +164,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public T GetObject<T>(int Handle)
         {
-            int Index    = (Handle >>  0) & 0x7fff;
+            int Index    = (Handle >> 0) & 0x7fff;
             int HandleId = (Handle >> 15);
 
-            lock (LockObj)
+            lock (Table)
             {
                 if ((Handle >> 30) == 0 && HandleId != 0)
                 {
@@ -158,7 +197,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void Destroy()
         {
-            lock (LockObj)
+            lock (Table)
             {
                 for (int Index = 0; Index < Size; Index++)
                 {

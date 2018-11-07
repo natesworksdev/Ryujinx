@@ -20,17 +20,17 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = Process.MemoryManager.TrySetHeapSize((long)Size, out long Position);
+            KernelResult Result = Process.MemoryManager.SetHeapSize((long)Size, out long Position);
 
             ThreadState.X0 = (ulong)Result;
 
-            if (Result == 0)
+            if (Result == KernelResult.Success)
             {
                 ThreadState.X1 = (ulong)Position;
             }
             else
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{Result}\".");
             }
         }
 
@@ -552,8 +552,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             ulong Start = (ulong)Position;
             ulong End   = (ulong)Size + Start;
 
-            return Start >= (ulong)Process.MemoryManager.MapRegionStart &&
-                   End   <  (ulong)Process.MemoryManager.MapRegionEnd;
+            return Start >= (ulong)Process.MemoryManager.AliasRegionStart &&
+                   End   <  (ulong)Process.MemoryManager.AliasRegionEnd;
         }
 
         private bool InsideHeapRegion(long Position, long Size)
@@ -570,8 +570,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             ulong Start = (ulong)Position;
             ulong End   = (ulong)Size + Start;
 
-            return Start >= (ulong)Process.MemoryManager.NewMapRegionStart &&
-                   End   <  (ulong)Process.MemoryManager.NewMapRegionEnd;
+            return Start >= (ulong)Process.MemoryManager.StackRegionStart &&
+                   End   <  (ulong)Process.MemoryManager.StackRegionEnd;
         }
     }
 }

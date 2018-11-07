@@ -1,9 +1,9 @@
 using ChocolArm64.Memory;
 using ChocolArm64.State;
-using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services;
+using Ryujinx.Common.Logging;
 using System;
 using System.Threading;
 
@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcExitProcess(CpuThreadState ThreadState)
         {
-            Device.System.ExitProcess(Process.ProcessId);
+            System.Scheduler.GetCurrentProcess().Terminate();
         }
 
         private void SignalEvent64(CpuThreadState ThreadState)
@@ -187,17 +187,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SendSyncRequest(CpuThreadState ThreadState, long MessagePtr, long Size, int Handle)
         {
-            KThread CurrThread = Process.GetThread(ThreadState.Tpidr);
-
             byte[] MessageData = Memory.ReadBytes(MessagePtr, Size);
 
             KSession Session = Process.HandleTable.GetObject<KSession>(Handle);
 
             if (Session != null)
             {
-                //Process.Scheduler.Suspend(CurrThread);
-
-                System.CriticalSectionLock.Lock();
+                System.CriticalSection.Enter();
 
                 KThread CurrentThread = System.Scheduler.GetCurrentThread();
 
@@ -214,7 +210,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     Message,
                     MessagePtr));
 
-                System.CriticalSectionLock.Unlock();
+                System.CriticalSection.Leave();
 
                 ThreadState.X0 = (ulong)CurrentThread.ObjSyncResult;
             }
@@ -247,17 +243,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             long Unknown = (long)ThreadState.X1;
             long Info    = (long)ThreadState.X2;
 
-            if ((Reason & (1 << 31)) == 0)
-            {
-                Process.PrintStackTrace(ThreadState);
+            //Process.PrintStackTrace(ThreadState);
 
-                throw new GuestBrokeExecutionException();
-            }
-            else
-            {
-                Logger.PrintInfo(LogClass.KernelSvc, "Debugger triggered");
-                Process.PrintStackTrace(ThreadState);
-            }
+            throw new GuestBrokeExecutionException();
         }
 
         private void SvcOutputDebugString(CpuThreadState ThreadState)
@@ -298,12 +286,12 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
 
                 case 2:
-                    ThreadState.X1 = (ulong)Process.MemoryManager.MapRegionStart;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.AliasRegionStart;
                     break;
 
                 case 3:
-                    ThreadState.X1 = (ulong)Process.MemoryManager.MapRegionEnd -
-                                     (ulong)Process.MemoryManager.MapRegionStart;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.AliasRegionEnd -
+                                     (ulong)Process.MemoryManager.AliasRegionStart;
                     break;
 
                 case 4:
@@ -316,11 +304,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
 
                 case 6:
-                    ThreadState.X1 = (ulong)Process.Device.Memory.Allocator.TotalAvailableSize;
+                    ThreadState.X1 = (ulong)Process.GetMemoryCapacity();
                     break;
 
                 case 7:
-                    ThreadState.X1 = (ulong)Process.Device.Memory.Allocator.TotalUsedSize;
+                    ThreadState.X1 = (ulong)Process.GetMemoryUsage();
                     break;
 
                 case 8:
@@ -341,16 +329,16 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
 
                 case 14:
-                    ThreadState.X1 = (ulong)Process.MemoryManager.NewMapRegionStart;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.StackRegionStart;
                     break;
 
                 case 15:
-                    ThreadState.X1 = (ulong)Process.MemoryManager.NewMapRegionEnd -
-                                     (ulong)Process.MemoryManager.NewMapRegionStart;
+                    ThreadState.X1 = (ulong)Process.MemoryManager.StackRegionEnd -
+                                     (ulong)Process.MemoryManager.StackRegionStart;
                     break;
 
                 case 16:
-                    ThreadState.X1 = (ulong)(Process.MetaData?.SystemResourceSize ?? 0);
+                    //ThreadState.X1 = (ulong)(Process.MetaData?.SystemResourceSize ?? 0);
                     break;
 
                 case 17:
@@ -358,7 +346,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
 
                 default:
-                    Process.PrintStackTrace(ThreadState);
+                    //Process.PrintStackTrace(ThreadState);
 
                     throw new NotImplementedException($"SvcGetInfo: {InfoType} 0x{Handle:x8} {InfoId}");
             }

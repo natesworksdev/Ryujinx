@@ -276,16 +276,38 @@ namespace ChocolArm64.Memory
 
         public byte[] ReadBytes(long position, long size)
         {
-            if ((uint)size > int.MaxValue)
+            long endAddr = position + size;
+
+            if ((ulong)size > int.MaxValue)
             {
                 throw new ArgumentOutOfRangeException(nameof(size));
             }
 
-            EnsureRangeIsValid(position, size);
+            if ((ulong)endAddr < (ulong)position)
+            {
+                throw new ArgumentOutOfRangeException(nameof(position));
+            }
 
             byte[] data = new byte[size];
 
-            Marshal.Copy((IntPtr)Translate(position), data, 0, (int)size);
+            int offset = 0;
+
+            while ((ulong)position < (ulong)endAddr)
+            {
+                long pageLimit = (position + PageSize) & ~(long)PageMask;
+
+                if ((ulong)pageLimit > (ulong)endAddr)
+                {
+                    pageLimit = endAddr;
+                }
+
+                int copySize = (int)(pageLimit - position);
+
+                Marshal.Copy((IntPtr)Translate(position), data, offset, copySize);
+
+                position += copySize;
+                offset   += copySize;
+            }
 
             return data;
         }

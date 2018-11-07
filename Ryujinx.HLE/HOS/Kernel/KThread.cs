@@ -1,4 +1,5 @@
 using ChocolArm64;
+using ChocolArm64.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,20 +14,27 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long AffinityMask { get; set; }
 
-        public int ThreadId { get; private set; }
+        public long ThreadUid { get; private set; }
 
         public KSynchronizationObject SignaledObj;
 
         public long CondVarAddress { get; set; }
-        public long MutexAddress   { get; set; }
 
-        public Process Owner { get; private set; }
+        private long Entrypoint;
+
+        public long MutexAddress { get; set; }
+
+        public KProcess Owner { get; private set; }
+
+        private long TlsAddress;
 
         public long LastScheduledTicks { get; set; }
 
         public LinkedListNode<KThread>[] SiblingsPerCore { get; private set; }
 
         private LinkedListNode<KThread> WithholderNode;
+
+        public LinkedListNode<KThread> ProcessListNode { get; set; }
 
         private LinkedList<KThread>     MutexWaiters;
         private LinkedListNode<KThread> MutexWaiterNode;
@@ -65,38 +73,131 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long LastPc { get; set; }
 
-        public KThread(
-            CpuThread Thread,
-            Process   Process,
-            Horizon   System,
-            int       ProcessorId,
-            int       Priority,
-            int       ThreadId) : base(System)
+        public KThread(Horizon System) : base(System)
         {
-            this.ThreadId = ThreadId;
-
-            Context        = Thread;
-            Owner          = Process;
-            PreferredCore  = ProcessorId;
             Scheduler      = System.Scheduler;
             SchedulingData = System.Scheduler.SchedulingData;
 
             SiblingsPerCore = new LinkedListNode<KThread>[KScheduler.CpuCoresCount];
 
             MutexWaiters = new LinkedList<KThread>();
-
-            AffinityMask = 1 << ProcessorId;
-
-            DynamicPriority = BasePriority = Priority;
-
-            CurrentCore = PreferredCore;
         }
 
-        public long Start()
+        public KernelResult Initialize(
+            long       Entrypoint,
+            long       ArgsPtr,
+            long       StackTop,
+            int        Priority,
+            int        DefaultCpuCore,
+            KProcess   Owner,
+            ThreadType Type = ThreadType.User)
         {
-            long Result = MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
+            if ((uint)Type > 3)
+            {
+                throw new ArgumentException($"Invalid thread type \"{Type}\".");
+            }
 
-            System.CriticalSectionLock.Lock();
+            PreferredCore = DefaultCpuCore;
+
+            AffinityMask |= 1L << DefaultCpuCore;
+
+            SchedFlags = Type == ThreadType.Dummy
+                ? ThreadSchedState.Running
+                : ThreadSchedState.None;
+
+            CurrentCore = PreferredCore;
+
+            DynamicPriority = Priority;
+            BasePriority    = Priority;
+
+            ObjSyncResult = 0x7201;
+
+            this.Entrypoint = Entrypoint;
+
+            if (Type == ThreadType.User)
+            {
+                if (Owner.AllocateThreadLocalStorage(out TlsAddress) != KernelResult.Success)
+                {
+                    return KernelResult.OutOfMemory;
+                }
+
+                MemoryHelper.FillWithZeros(Owner.CpuMemory, TlsAddress, KTlsPageInfo.TlsEntrySize);
+            }
+
+            bool Is64Bits;
+
+            if (Owner != null)
+            {
+                this.Owner = Owner;
+
+                Owner.IncrementThreadCount();
+
+                Is64Bits = (Owner.MmuFlags & 1) != 0;
+            }
+            else
+            {
+                Is64Bits = true;
+            }
+
+            Context = new CpuThread(Owner.Translator, Owner.CpuMemory, Entrypoint);
+
+            Context.ThreadState.X0  = (ulong)ArgsPtr;
+            Context.ThreadState.X31 = (ulong)StackTop;
+
+            Context.ThreadState.CntfrqEl0 = 19200000;
+            Context.ThreadState.Tpidr     = TlsAddress;
+
+            Owner.SubscribeThreadEventHandlers(Context);
+
+            Context.WorkFinished += ThreadFinishedHandler;
+
+            ThreadUid = System.GetThreadUid();
+
+            if (Owner != null)
+            {
+                Owner.AddThread(this);
+
+                if (Owner.IsPaused)
+                {
+                    System.CriticalSection.Enter();
+
+                    if (ShallBeTerminated || SchedFlags == ThreadSchedState.TerminationPending)
+                    {
+                        System.CriticalSection.Leave();
+
+                        return KernelResult.Success;
+                    }
+
+                    ForcePauseFlags |= ThreadSchedState.ProcessPauseFlag;
+
+                    CombineForcePauseFlags();
+
+                    System.CriticalSection.Leave();
+                }
+            }
+
+            return KernelResult.Success;
+        }
+
+        public KernelResult Start()
+        {
+            if (!System.KernelInitialized)
+            {
+                System.CriticalSection.Enter();
+
+                if (!ShallBeTerminated && SchedFlags != ThreadSchedState.TerminationPending)
+                {
+                    ForcePauseFlags |= ThreadSchedState.KernelInitPauseFlag;
+
+                    CombineForcePauseFlags();
+                }
+
+                System.CriticalSection.Leave();
+            }
+
+            KernelResult Result = KernelResult.ThreadTerminating;
+
+            System.CriticalSection.Enter();
 
             if (!ShallBeTerminated)
             {
@@ -106,9 +207,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                        CurrentThread.SchedFlags != ThreadSchedState.TerminationPending &&
                        !CurrentThread.ShallBeTerminated)
                 {
-                    if ((SchedFlags & ThreadSchedState.LowNibbleMask) != ThreadSchedState.None)
+                    if ((SchedFlags & ThreadSchedState.LowMask) != ThreadSchedState.None)
                     {
-                        Result = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+                        Result = KernelResult.InvalidState;
 
                         break;
                     }
@@ -130,8 +231,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                     {
                         CurrentThread.CombineForcePauseFlags();
 
-                        System.CriticalSectionLock.Unlock();
-                        System.CriticalSectionLock.Lock();
+                        System.CriticalSection.Leave();
+                        System.CriticalSection.Enter();
 
                         if (CurrentThread.ShallBeTerminated)
                         {
@@ -141,25 +242,25 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
             }
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
 
             return Result;
         }
 
         public void Exit()
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
-            ForcePauseFlags &= ~ThreadSchedState.ExceptionalMask;
+            ForcePauseFlags &= ~ThreadSchedState.ForcePauseMask;
 
             ExitImpl();
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
         }
 
         private void ExitImpl()
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             SetNewSchedFlags(ThreadSchedState.TerminationPending);
 
@@ -167,16 +268,16 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             Signal();
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
         }
 
         public long Sleep(long Timeout)
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             if (ShallBeTerminated || SchedFlags == ThreadSchedState.TerminationPending)
             {
-                System.CriticalSectionLock.Unlock();
+                System.CriticalSection.Leave();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
             }
@@ -188,7 +289,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 System.TimeManager.ScheduleFutureInvocation(this, Timeout);
             }
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
 
             if (Timeout > 0)
             {
@@ -200,11 +301,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void Yield()
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             if (SchedFlags != ThreadSchedState.Running)
             {
-                System.CriticalSectionLock.Unlock();
+                System.CriticalSection.Leave();
 
                 System.Scheduler.ContextSwitch();
 
@@ -219,26 +320,26 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             Scheduler.ThreadReselectionRequested = true;
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
 
             System.Scheduler.ContextSwitch();
         }
 
         public void YieldWithLoadBalancing()
         {
-            System.CriticalSectionLock.Lock();
-
-            int Prio = DynamicPriority;
-            int Core = CurrentCore;
+            System.CriticalSection.Enter();
 
             if (SchedFlags != ThreadSchedState.Running)
             {
-                System.CriticalSectionLock.Unlock();
+                System.CriticalSection.Leave();
 
                 System.Scheduler.ContextSwitch();
 
                 return;
             }
+
+            int Prio = DynamicPriority;
+            int Core = CurrentCore;
 
             KThread NextThreadOnCurrentQueue = null;
 
@@ -292,18 +393,18 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Scheduler.ThreadReselectionRequested = true;
             }
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
 
             System.Scheduler.ContextSwitch();
         }
 
         public void YieldAndWaitForLoadBalancing()
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             if (SchedFlags != ThreadSchedState.Running)
             {
-                System.CriticalSectionLock.Unlock();
+                System.CriticalSection.Leave();
 
                 System.Scheduler.ContextSwitch();
 
@@ -348,47 +449,47 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Scheduler.ThreadReselectionRequested = true;
             }
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
 
             System.Scheduler.ContextSwitch();
         }
 
         public void SetPriority(int Priority)
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             BasePriority = Priority;
 
             UpdatePriorityInheritance();
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
         }
 
         public long SetActivity(bool Pause)
         {
             long Result = 0;
 
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
-            ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowNibbleMask;
+            ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowMask;
 
             if (LowNibble != ThreadSchedState.Paused && LowNibble != ThreadSchedState.Running)
             {
-                System.CriticalSectionLock.Unlock();
+                System.CriticalSection.Leave();
 
                 return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
             }
 
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             if (!ShallBeTerminated && SchedFlags != ThreadSchedState.TerminationPending)
             {
                 if (Pause)
                 {
                     //Pause, the force pause flag should be clear (thread is NOT paused).
-                    if ((ForcePauseFlags & ThreadSchedState.ForcePauseFlag) == 0)
+                    if ((ForcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
                     {
-                        ForcePauseFlags |= ThreadSchedState.ForcePauseFlag;
+                        ForcePauseFlags |= ThreadSchedState.ThreadPauseFlag;
 
                         CombineForcePauseFlags();
                     }
@@ -400,17 +501,17 @@ namespace Ryujinx.HLE.HOS.Kernel
                 else
                 {
                     //Unpause, the force pause flag should be set (thread is paused).
-                    if ((ForcePauseFlags & ThreadSchedState.ForcePauseFlag) != 0)
+                    if ((ForcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
                     {
                         ThreadSchedState OldForcePauseFlags = ForcePauseFlags;
 
-                        ForcePauseFlags &= ~ThreadSchedState.ForcePauseFlag;
+                        ForcePauseFlags &= ~ThreadSchedState.ThreadPauseFlag;
 
-                        if ((OldForcePauseFlags & ~ThreadSchedState.ForcePauseFlag) == ThreadSchedState.None)
+                        if ((OldForcePauseFlags & ~ThreadSchedState.ThreadPauseFlag) == ThreadSchedState.None)
                         {
                             ThreadSchedState OldSchedFlags = SchedFlags;
 
-                            SchedFlags &= ThreadSchedState.LowNibbleMask;
+                            SchedFlags &= ThreadSchedState.LowMask;
 
                             AdjustScheduling(OldSchedFlags);
                         }
@@ -422,17 +523,17 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
             }
 
-            System.CriticalSectionLock.Unlock();
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
+            System.CriticalSection.Leave();
 
             return Result;
         }
 
         public void CancelSynchronization()
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
-            if ((SchedFlags & ThreadSchedState.LowNibbleMask) != ThreadSchedState.Paused || !WaitingSync)
+            if ((SchedFlags & ThreadSchedState.LowMask) != ThreadSchedState.Paused || !WaitingSync)
             {
                 SyncCancelled = true;
             }
@@ -456,12 +557,12 @@ namespace Ryujinx.HLE.HOS.Kernel
                 SyncCancelled = false;
             }
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
         }
 
         public long SetCoreAndAffinityMask(int NewCore, long NewAffinityMask)
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             bool UseOverride = AffinityOverrideCount != 0;
 
@@ -472,7 +573,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 if ((NewAffinityMask & (1 << NewCore)) == 0)
                 {
-                    System.CriticalSectionLock.Unlock();
+                    System.CriticalSection.Leave();
 
                     return MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
                 }
@@ -510,7 +611,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
             }
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
 
             return 0;
         }
@@ -531,7 +632,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         private void CombineForcePauseFlags()
         {
             ThreadSchedState OldFlags  = SchedFlags;
-            ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowNibbleMask;
+            ThreadSchedState LowNibble = SchedFlags & ThreadSchedState.LowMask;
 
             SchedFlags = LowNibble | ForcePauseFlags;
 
@@ -540,25 +641,25 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SetNewSchedFlags(ThreadSchedState NewFlags)
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             ThreadSchedState OldFlags = SchedFlags;
 
-            SchedFlags = (OldFlags & ThreadSchedState.HighNibbleMask) | NewFlags;
+            SchedFlags = (OldFlags & ThreadSchedState.HighMask) | NewFlags;
 
-            if ((OldFlags & ThreadSchedState.LowNibbleMask) != NewFlags)
+            if ((OldFlags & ThreadSchedState.LowMask) != NewFlags)
             {
                 AdjustScheduling(OldFlags);
             }
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
         }
 
         public void ReleaseAndResume()
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
-            if ((SchedFlags & ThreadSchedState.LowNibbleMask) == ThreadSchedState.Paused)
+            if ((SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
             {
                 if (WithholderNode != null)
                 {
@@ -574,21 +675,21 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
             }
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
         }
 
         public void Reschedule(ThreadSchedState NewFlags)
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             ThreadSchedState OldFlags = SchedFlags;
 
-            SchedFlags = (OldFlags & ThreadSchedState.HighNibbleMask) |
-                         (NewFlags & ThreadSchedState.LowNibbleMask);
+            SchedFlags = (OldFlags & ThreadSchedState.HighMask) |
+                         (NewFlags & ThreadSchedState.LowMask);
 
             AdjustScheduling(OldFlags);
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
         }
 
         public void AddMutexWaiter(KThread Requester)
@@ -866,18 +967,60 @@ namespace Ryujinx.HLE.HOS.Kernel
             return HasExited;
         }
 
+        public void SetEntryArguments(long ArgsPtr, int ThreadHandle)
+        {
+            Context.ThreadState.X0 = (ulong)ArgsPtr;
+            Context.ThreadState.X1 = (ulong)ThreadHandle;
+        }
+
         public void ClearExclusive()
         {
-            Owner.Memory.ClearExclusive(CurrentCore);
+            Owner.CpuMemory.ClearExclusive(CurrentCore);
         }
 
         public void TimeUp()
         {
-            System.CriticalSectionLock.Lock();
+            System.CriticalSection.Enter();
 
             SetNewSchedFlags(ThreadSchedState.Running);
 
-            System.CriticalSectionLock.Unlock();
+            System.CriticalSection.Leave();
+        }
+
+        private void ThreadFinishedHandler(object sender, EventArgs e)
+        {
+            System.Scheduler.ExitThread(this);
+
+            Terminate();
+
+            System.Scheduler.RemoveThread(this);
+        }
+
+        public void Terminate()
+        {
+            Owner?.RemoveThread(this);
+
+            if (TlsAddress != 0 && Owner.FreeThreadLocalStorage(TlsAddress) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Unexpected failure freeing thread local storage.");
+            }
+
+            System.CriticalSection.Enter();
+
+            //Wake up all threads that may be waiting for a mutex being held
+            //by this thread.
+            foreach (KThread Thread in MutexWaiters)
+            {
+                Thread.MutexOwner            = null;
+                Thread.PreferredCoreOverride = 0;
+                Thread.ObjSyncResult         = 0xfa01;
+
+                Thread.ReleaseAndResume();
+            }
+
+            System.CriticalSection.Leave();
+
+            Owner?.DecrementThreadCountAndTerminateIfZero();
         }
     }
 }

@@ -18,9 +18,6 @@ namespace Ryujinx.HLE.Loaders.Executables
         public int DataOffset { get; private set; }
         public int BssSize    { get; private set; }
 
-        public long SourceAddress { get; private set; }
-        public long BssAddress    { get; private set; }
-
         [Flags]
         private enum NsoFlags
         {
@@ -35,9 +32,6 @@ namespace Ryujinx.HLE.Loaders.Executables
         public Nso(Stream Input, string FilePath)
         {
             this.FilePath = FilePath;
-
-            SourceAddress = 0;
-            BssAddress    = 0;
 
             BinaryReader Reader = new BinaryReader(Input);
 
