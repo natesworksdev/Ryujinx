@@ -1,7 +1,36 @@
+using System;
+
 namespace Ryujinx.HLE.HOS.Kernel
 {
     static class KernelInit
     {
+        public static void InitializeResourceLimit(KResourceLimit ResourceLimit)
+        {
+            void EnsureSuccess(KernelResult Result)
+            {
+                if (Result != KernelResult.Success)
+                {
+                    throw new InvalidOperationException($"Unexpected result \"{Result}\".");
+                }
+            }
+
+            int KernelMemoryCfg = 0;
+
+            long RamSize = GetRamSize(KernelMemoryCfg);
+
+            EnsureSuccess(ResourceLimit.SetLimitValue(LimitableResource.Memory,         RamSize));
+            EnsureSuccess(ResourceLimit.SetLimitValue(LimitableResource.Thread,         800));
+            EnsureSuccess(ResourceLimit.SetLimitValue(LimitableResource.Event,          700));
+            EnsureSuccess(ResourceLimit.SetLimitValue(LimitableResource.TransferMemory, 200));
+            EnsureSuccess(ResourceLimit.SetLimitValue(LimitableResource.Session,        900));
+
+            if (!ResourceLimit.Reserve(LimitableResource.Memory, 0) ||
+                !ResourceLimit.Reserve(LimitableResource.Memory, 0x60000))
+            {
+                throw new InvalidOperationException("Unexpected failure reserving memory on resource limit.");
+            }
+        }
+
         public static KMemoryRegionManager[] GetMemoryRegions()
         {
             KMemoryArrange Arrange = GetMemoryArrange();
@@ -17,10 +46,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private static KMemoryRegionManager GetMemoryRegion(KMemoryArrangeRegion Region)
         {
-            return new KMemoryRegionManager(
-                Region.Address,
-                Region.Size,
-                Region.EndAddr);
+            return new KMemoryRegionManager(Region.Address, Region.Size, Region.EndAddr);
         }
 
         private static KMemoryArrange GetMemoryArrange()
@@ -31,14 +57,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             int KernelMemoryCfg = 0;
 
-            ulong RamSize;
-
-            switch ((KernelMemoryCfg >> 16) & 3)
-            {
-                case 1:  RamSize = 0x180000000; break;
-                case 2:  RamSize = 0x200000000; break;
-                default: RamSize = 0x100000000; break;
-            }
+            ulong RamSize = (ulong)GetRamSize(KernelMemoryCfg);
 
             long RamPart0;
             long RamPart1;
@@ -97,11 +116,21 @@ namespace Ryujinx.HLE.HOS.Kernel
             //Note: There is an extra region used by the kernel, however
             //since we are doing HLE we are not going to use that memory, so give all
             //the remaining memory space to services.
-            long ServiceRgSize = NvServicesRg.Address - DramMemoryMap.KernelReserveBase;
+            long ServiceRgSize = NvServicesRg.Address - DramMemoryMap.SlabHeapEnd;
 
-            ServiceRg = new KMemoryArrangeRegion(DramMemoryMap.KernelReserveBase, ServiceRgSize);
+            ServiceRg = new KMemoryArrangeRegion(DramMemoryMap.SlabHeapEnd, ServiceRgSize);
 
             return new KMemoryArrange(ServiceRg, NvServicesRg, AppletRg, ApplicationRg);
+        }
+
+        private static long GetRamSize(int KernelMemoryCfg)
+        {
+            switch ((KernelMemoryCfg >> 16) & 3)
+            {
+                case 1:  return 0x180000000;
+                case 2:  return 0x200000000;
+                default: return 0x100000000;
+            }
         }
     }
 }

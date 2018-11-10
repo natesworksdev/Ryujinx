@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         private bool Signaled;
         private bool UseSystemMemBlocks;
 
-        private string Name;
+        public string Name { get; private set; }
 
         private int ThreadCount;
 
@@ -79,6 +79,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private SvcHandler SvcHandler;
 
+        public HleProcessDebugger Debugger { get; private set; }
+
         public KProcess(Horizon System) : base(System)
         {
             ProcessLock   = new object();
@@ -93,8 +95,6 @@ namespace Ryujinx.HLE.HOS.Kernel
             FullTlsPages = new SortedDictionary<long, KTlsPageInfo>();
             FreeTlsPages = new SortedDictionary<long, KTlsPageInfo>();
 
-            ResourceLimit = new KResourceLimit();
-
             Capabilities = new KProcessCapabilities();
 
             RandomEntropy = new long[KScheduler.CpuCoresCount];
@@ -103,7 +103,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             Translator = new Translator();
 
+            Translator.CpuTrace += CpuTraceHandler;
+
             SvcHandler = new SvcHandler(System.Device, this);
+
+            Debugger = new HleProcessDebugger(this);
         }
 
         public KernelResult InitializeKip(
@@ -175,7 +179,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             KResourceLimit      ResourceLimit,
             MemoryRegion        MemRegion)
         {
-            long PersonalMmHeapSize = CreationInfo.PersonalMmHeapPagesCount * KMemoryManager.PageSize;
+            this.ResourceLimit = ResourceLimit;
+            this.MemRegion     = MemRegion;
+
+            long PersonalMmHeapSize = GetPersonalMmHeapSize(CreationInfo.PersonalMmHeapPagesCount, MemRegion);
 
             long CodePagesCount = (long)(uint)CreationInfo.CodePagesCount;
 
@@ -273,7 +280,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             return Result;
         }
 
-        private bool ValidateCodeAddressAndSize(long CodeAddress, long CodeSize)
+        private bool ValidateCodeAddressAndSize(long Address, long Size)
         {
             long CodeRegionStart;
             long CodeRegionSize;
@@ -298,18 +305,18 @@ namespace Ryujinx.HLE.HOS.Kernel
                 default: throw new InvalidOperationException("Invalid address space width on memory manager.");
             }
 
-            long CodeEndAddr = CodeAddress + CodeSize;
+            long EndAddr = Address + Size;
 
             long CodeRegionEnd = CodeRegionStart + CodeRegionSize;
 
-            if ((ulong)CodeEndAddr     <= (ulong)CodeAddress ||
-                (ulong)CodeEndAddr - 1 >  (ulong)CodeRegionEnd - 1)
+            if ((ulong)EndAddr     <= (ulong)Address ||
+                (ulong)EndAddr - 1 >  (ulong)CodeRegionEnd - 1)
             {
                 return false;
             }
 
-            if (MemoryManager.InsideHeapRegion(CodeAddress, CodeSize) ||
-                MemoryManager.InsideMapRegion (CodeAddress, CodeSize))
+            if (MemoryManager.InsideHeapRegion(Address, Size) ||
+                MemoryManager.InsideMapRegion (Address, Size))
             {
                 return false;
             }
@@ -445,8 +452,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             long RegionStart = MemoryManager.TlsIoRegionStart;
+            long RegionSize  = MemoryManager.TlsIoRegionEnd - RegionStart;
 
-            long RegionPagesCount = (MemoryManager.TlsIoRegionEnd - RegionStart) / KMemoryManager.PageSize;
+            long RegionPagesCount = (long)((ulong)RegionSize / KMemoryManager.PageSize);
 
             KernelResult Result = MemoryManager.AllocateOrMapPa(
                 1,
@@ -606,7 +614,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     {
                         long StackBottom = StackTop - MainThreadStackSize;
 
-                        long StackPagesCount = MainThreadStackSize / KMemoryManager.PageSize;
+                        long StackPagesCount = (long)((ulong)MainThreadStackSize / KMemoryManager.PageSize);
 
                         MemoryManager.UnmapForKernel(StackBottom, StackPagesCount, MemoryState.Stack);
                     }
@@ -617,10 +625,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 if (StackSizeRounded != 0)
                 {
-                    long StackPagesCount = StackSizeRounded / KMemoryManager.PageSize;
+                    long StackPagesCount = (long)((ulong)StackSizeRounded / KMemoryManager.PageSize);
 
-                    long RegionStart      =  MemoryManager.StackRegionStart;
-                    long RegionPagesCount = (MemoryManager.StackRegionEnd - RegionStart) / KMemoryManager.PageSize;
+                    long RegionStart = MemoryManager.StackRegionStart;
+                    long RegionSize  = MemoryManager.StackRegionEnd - RegionStart;
+
+                    long RegionPagesCount = (long)((ulong)RegionSize / KMemoryManager.PageSize);
 
                     Result = MemoryManager.AllocateOrMapPa(
                         StackPagesCount,
@@ -715,7 +725,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     CleanUpForError();
                 } */
 
-                MainThread.TimeUp();
+                MainThread.Reschedule(ThreadSchedState.Running);
 
                 return Result;
             }
@@ -772,14 +782,41 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long GetMemoryCapacity()
         {
-            //TODO: Personal Mm Heap.
-            return 0xcd500000;
+            long TotalCapacity = ResourceLimit.GetRemainingValue(LimitableResource.Memory);
+
+            TotalCapacity += MemoryManager.GetTotalHeapSize();
+
+            TotalCapacity += GetPersonalMmHeapSize();
+
+            TotalCapacity += ImageSize + MainThreadStackSize;
+
+            if ((ulong)TotalCapacity <= (ulong)MemoryUsageCapacity)
+            {
+                return TotalCapacity;
+            }
+
+            return MemoryUsageCapacity;
         }
 
         public long GetMemoryUsage()
         {
             //TODO: Personal Mm Heap.
             return ImageSize + MainThreadStackSize + MemoryManager.GetTotalHeapSize();
+        }
+
+        private long GetPersonalMmHeapSize()
+        {
+            return GetPersonalMmHeapSize(PersonalMmHeapPagesCount, MemRegion);
+        }
+
+        private static long GetPersonalMmHeapSize(long PersonalMmHeapPagesCount, MemoryRegion MemRegion)
+        {
+            if (MemRegion == MemoryRegion.Applet)
+            {
+                return 0;
+            }
+
+            return PersonalMmHeapPagesCount * KMemoryManager.PageSize;
         }
 
         public void AddThread(KThread Thread)
@@ -880,6 +917,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             SetState(ProcessState.Exited);
 
             System.CriticalSection.Leave();
+        }
+
+        private void CpuTraceHandler(object sender, EventArgs e)
+        {
+            System.Scheduler.GetCurrentThread().PrintGuestStackTrace();
         }
     }
 }

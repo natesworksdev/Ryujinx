@@ -56,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             WaitEvent.Set();
         }
 
-        private long ConvertNanosecondsToMilliseconds(long Timeout)
+        public static long ConvertNanosecondsToMilliseconds(long Timeout)
         {
             Timeout /= 1000000;
 
@@ -66,6 +66,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             return Timeout;
+        }
+
+        public static long ConvertMillisecondsToNanoseconds(long Timeout)
+        {
+            return Timeout * 1000000;
         }
 
         public void UnscheduleFutureInvocation(IKFutureSchedulerObject Object)

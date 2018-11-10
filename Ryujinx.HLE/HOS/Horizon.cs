@@ -78,13 +78,17 @@ namespace Ryujinx.HLE.HOS
 
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
+        internal long HidBaseAddress { get; private set; }
+
         public Horizon(Switch Device)
         {
             this.Device = Device;
 
             State = new SystemStateMgr();
 
-            ResourceLimit = new KResourceLimit();
+            ResourceLimit = new KResourceLimit(this);
+
+            KernelInit.InitializeResourceLimit(ResourceLimit);
 
             MemoryRegions = KernelInit.GetMemoryRegions();
 
@@ -112,20 +116,27 @@ namespace Ryujinx.HLE.HOS
 
             KernelInitialized = true;
 
-            if (!Device.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
-                !Device.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
-            {
-                throw new InvalidOperationException();
-            }
+            KMemoryRegionManager Region = MemoryRegions[(int)MemoryRegion.Service];
 
-            HidSharedMem  = new KSharedMemory(HidPA, HidSize);
-            FontSharedMem = new KSharedMemory(FontPA, FontSize);
+            long HidPA  = Region.Address;
+            long FontPA = Region.Address + HidSize;
+
+            HidBaseAddress = HidPA - DramMemoryMap.DramBase;
+
+            KPageList HidPageList  = new KPageList();
+            KPageList FontPageList = new KPageList();
+
+            HidPageList .AddRange(HidPA,  HidSize  / KMemoryManager.PageSize);
+            FontPageList.AddRange(FontPA, FontSize / KMemoryManager.PageSize);
+
+            HidSharedMem  = new KSharedMemory(HidPageList,  0, 0, MemoryPermission.Read);
+            FontSharedMem = new KSharedMemory(FontPageList, 0, 0, MemoryPermission.Read);
 
             AppletState = new AppletStateMgr(this);
 
             AppletState.SetFocus(true);
 
-            Font = new SharedFontManager(Device, FontSharedMem.PA);
+            Font = new SharedFontManager(Device, FontPA - DramMemoryMap.DramBase);
 
             VsyncEvent = new KEvent(this);
 

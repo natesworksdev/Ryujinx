@@ -32,7 +32,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public LinkedListNode<KThread>[] SiblingsPerCore { get; private set; }
 
-        private LinkedListNode<KThread> WithholderNode;
+        public LinkedList<KThread>     Withholder     { get; set; }
+        public LinkedListNode<KThread> WithholderNode { get; set; }
 
         public LinkedListNode<KThread> ProcessListNode { get; set; }
 
@@ -223,7 +224,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                         SetNewSchedFlags(ThreadSchedState.Running);
 
-                        Result = 0;
+                        Result = KernelResult.Success;
 
                         break;
                     }
@@ -980,11 +981,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void TimeUp()
         {
-            System.CriticalSection.Enter();
+            ReleaseAndResume();
+        }
 
-            SetNewSchedFlags(ThreadSchedState.Running);
-
-            System.CriticalSection.Leave();
+        public void PrintGuestStackTrace()
+        {
+            Owner.Debugger.PrintGuestStackTrace(Context.ThreadState);
         }
 
         private void ThreadFinishedHandler(object sender, EventArgs e)

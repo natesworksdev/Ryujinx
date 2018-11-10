@@ -6,10 +6,11 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         private static readonly int[] BlockOrders = new int[] { 12, 16, 21, 22, 25, 29, 30 };
 
-        private long Address;
-        private long EndAddr;
-        private long Size;
-        private int  BlockOrdersCount;
+        public long Address { get; private set; }
+        public long EndAddr { get; private set; }
+        public long Size    { get; private set; }
+
+        private int BlockOrdersCount;
 
         private KMemoryRegionBlock[] Blocks;
 
@@ -292,7 +293,18 @@ namespace Ryujinx.HLE.HOS.Kernel
             return KernelResult.OutOfMemory;
         }
 
-        public void FreePages(long Address, long PagesCount)
+        public void FreePages(KPageList PageList)
+        {
+            lock (Blocks)
+            {
+                foreach (KPageNode PageNode in PageList)
+                {
+                    FreePages(PageNode.Address, PageNode.PagesCount);
+                }
+            }
+        }
+
+        private void FreePages(long Address, long PagesCount)
         {
             long EndAddr = Address + PagesCount * KMemoryManager.PageSize;
 

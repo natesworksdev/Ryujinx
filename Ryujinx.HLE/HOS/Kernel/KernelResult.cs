@@ -10,6 +10,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         OutOfMemory        = 0xd001,
         HandleTableFull    = 0xd201,
         InvalidMemState    = 0xd401,
+        InvalidPermission  = 0xd801,
         InvalidMemRange    = 0xdc01,
         InvalidPriority    = 0xe001,
         InvalidCpuCore     = 0xe201,

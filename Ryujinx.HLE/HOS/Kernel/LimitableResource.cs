@@ -2,10 +2,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     enum LimitableResource : byte
     {
-        Memory,
-        Thread,
-        Event,
-        TransferMemory,
-        Session
+        Memory         = 0,
+        Thread         = 1,
+        Event          = 2,
+        TransferMemory = 3,
+        Session        = 4,
+
+        Count = 5
     }
 }

@@ -141,9 +141,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = Process.MemoryManager.Map(Src, Dst, Size);
+            KernelResult Result = Process.MemoryManager.Map(Dst, Src, Size);
 
-            if (Result != 0)
+            if (Result != KernelResult.Success)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
@@ -202,9 +202,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = Process.MemoryManager.Unmap(Src, Dst, Size);
+            KernelResult Result = Process.MemoryManager.Unmap(Dst, Src, Size);
 
-            if (Result != 0)
+            if (Result != KernelResult.Success)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
@@ -219,7 +219,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             KMemoryInfo BlkInfo = Process.MemoryManager.QueryMemory(Position);
 
-            Memory.WriteInt64(InfoPtr + 0x00, BlkInfo.Position);
+            Memory.WriteInt64(InfoPtr + 0x00, BlkInfo.Address);
             Memory.WriteInt64(InfoPtr + 0x08, BlkInfo.Size);
             Memory.WriteInt32(InfoPtr + 0x10, (int)BlkInfo.State & 0xff);
             Memory.WriteInt32(InfoPtr + 0x14, (int)BlkInfo.Attribute);
@@ -234,13 +234,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcMapSharedMemory(CpuThreadState ThreadState)
         {
-            int  Handle   =  (int)ThreadState.X0;
-            long Position = (long)ThreadState.X1;
-            long Size     = (long)ThreadState.X2;
+            int  Handle  =  (int)ThreadState.X0;
+            long Address = (long)ThreadState.X1;
+            long Size    = (long)ThreadState.X2;
 
-            if (!PageAligned(Position))
+            if (!PageAligned(Address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Address:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -256,9 +256,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Position + Size) <= (ulong)Position)
+            if ((ulong)(Address + Size) <= (ulong)Address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -276,7 +276,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            KSharedMemory SharedMemory = Process.HandleTable.GetObject<KSharedMemory>(Handle);
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            KSharedMemory SharedMemory = CurrentProcess.HandleTable.GetObject<KSharedMemory>(Handle);
 
             if (SharedMemory == null)
             {
@@ -287,29 +289,25 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Position, Size) || InsideMapRegion(Position, Size) || InsideHeapRegion(Position, Size))
+            if (!InsideAddrSpace(Address, Size) || InsideMapRegion(Address, Size) || InsideHeapRegion(Address, Size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Address:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            if (SharedMemory.Size != Size)
+            KernelResult Result = SharedMemory.MapIntoProcess(
+                CurrentProcess.MemoryManager,
+                Address,
+                Size,
+                CurrentProcess,
+                Permission);
+
+            if (Result != KernelResult.Success)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} does not match shared memory size 0x{SharedMemory.Size:16}!");
-
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
-            }
-
-            long Result = Process.MemoryManager.MapSharedMemory(SharedMemory, Permission, Position);
-
-            if (Result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{Result}\".");
             }
 
             ThreadState.X0 = (ulong)Result;
@@ -348,7 +346,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            KSharedMemory SharedMemory = Process.HandleTable.GetObject<KSharedMemory>(Handle);
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            KSharedMemory SharedMemory = CurrentProcess.HandleTable.GetObject<KSharedMemory>(Handle);
 
             if (SharedMemory == null)
             {
@@ -368,11 +368,15 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = Process.MemoryManager.UnmapSharedMemory(Position, Size);
+            KernelResult Result = SharedMemory.UnmapFromProcess(
+                CurrentProcess.MemoryManager,
+                Position,
+                Size,
+                CurrentProcess);
 
-            if (Result != 0)
+            if (Result != KernelResult.Success)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{Result}\".");
             }
 
             ThreadState.X0 = (ulong)Result;
@@ -472,9 +476,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = Process.MemoryManager.MapPhysicalMemory(Position, Size);
+            KernelResult Result = Process.MemoryManager.MapPhysicalMemory(Position, Size);
 
-            if (Result != 0)
+            if (Result != KernelResult.Success)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
@@ -523,9 +527,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = Process.MemoryManager.UnmapPhysicalMemory(Position, Size);
+            KernelResult Result = Process.MemoryManager.UnmapPhysicalMemory(Position, Size);
 
-            if (Result != 0)
+            if (Result != KernelResult.Success)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }

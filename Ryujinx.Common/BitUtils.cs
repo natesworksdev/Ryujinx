@@ -22,6 +22,11 @@ namespace Ryujinx.Common
             return Value & -(long)Size;
         }
 
+        public static long DivRoundUp(long Value, int Dividend)
+        {
+            return (Value + Dividend - 1) / Dividend;
+        }
+
         public static bool IsPowerOfTwo32(int Value)
         {
             return Value != 0 && (Value & (Value - 1)) == 0;

@@ -1,9 +1,9 @@
 using ChocolArm64.Memory;
 using ChocolArm64.State;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services;
-using Ryujinx.Common.Logging;
 using System;
 using System.Threading;
 
@@ -243,9 +243,20 @@ namespace Ryujinx.HLE.HOS.Kernel
             long Unknown = (long)ThreadState.X1;
             long Info    = (long)ThreadState.X2;
 
-            //Process.PrintStackTrace(ThreadState);
+            KThread CurrentThread = System.Scheduler.GetCurrentThread();
 
-            throw new GuestBrokeExecutionException();
+            if ((Reason & (1 << 31)) == 0)
+            {
+                CurrentThread.PrintGuestStackTrace();
+
+                throw new GuestBrokeExecutionException();
+            }
+            else
+            {
+                Logger.PrintInfo(LogClass.KernelSvc, "Debugger triggered.");
+
+                CurrentThread.PrintGuestStackTrace();
+            }
         }
 
         private void SvcOutputDebugString(CpuThreadState ThreadState)

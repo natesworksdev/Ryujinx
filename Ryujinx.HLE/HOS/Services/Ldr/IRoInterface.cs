@@ -1,4 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
 using System;
@@ -318,14 +319,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
                     //Context.Process.RemoveProgram(Info.NroMappedAddress);
 
-                    long Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(Info.NroMappedAddress, Info.Executable.SourceAddress, Info.TotalSize - Info.Executable.BssSize);
+                    KernelResult Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(Info.NroMappedAddress, Info.Executable.SourceAddress, Info.TotalSize - Info.Executable.BssSize);
 
-                    if (Result == 0 && Info.Executable.BssSize != 0)
+                    if (Result == KernelResult.Success && Info.Executable.BssSize != 0)
                     {
                         Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(Info.NroMappedAddress + Info.TotalSize - Info.Executable.BssSize, Info.Executable.BssAddress, Info.Executable.BssSize);
                     }
 
-                    return Result;
+                    return (long)Result;
                 }
             }
 

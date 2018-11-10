@@ -10,5 +10,6 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public const long SlabHeapBase = KernelReserveBase + 0x85000;
         public const long SlapHeapSize = 0xa21000;
+        public const long SlabHeapEnd  = SlabHeapBase + SlapHeapSize;
     }
 }

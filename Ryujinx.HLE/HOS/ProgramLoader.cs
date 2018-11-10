@@ -78,15 +78,34 @@ namespace Ryujinx.HLE.HOS
                 0,
                 PersonalMmHeapPagesCount);
 
-            KernelResult Result = Process.Initialize(
+            KernelResult Result;
+
+            KResourceLimit ResourceLimit = new KResourceLimit(System);
+
+            long ApplicationRgSize = System.MemoryRegions[(int)MemoryRegion.Application].Size;
+
+            Result  = ResourceLimit.SetLimitValue(LimitableResource.Memory,         ApplicationRgSize);
+            Result |= ResourceLimit.SetLimitValue(LimitableResource.Thread,         608);
+            Result |= ResourceLimit.SetLimitValue(LimitableResource.Event,          700);
+            Result |= ResourceLimit.SetLimitValue(LimitableResource.TransferMemory, 128);
+            Result |= ResourceLimit.SetLimitValue(LimitableResource.Session,        894);
+
+            if (Result != KernelResult.Success)
+            {
+                Logger.PrintError(LogClass.Loader, $"Resource limit initialization returned error \"{Result}\".");
+
+                return false;
+            }
+
+            Result = Process.Initialize(
                 CreationInfo,
                 MetaData.ACI0.KernelAccessControl.Capabilities,
-                System.ResourceLimit,
+                ResourceLimit,
                 MemoryRegion.Application);
 
             if (Result != KernelResult.Success)
             {
-                Logger.PrintError(LogClass.KernelSvc, $"Process initialization returned error \"{Result}\".");
+                Logger.PrintError(LogClass.Loader, $"Process initialization returned error \"{Result}\".");
 
                 return false;
             }
@@ -107,7 +126,7 @@ namespace Ryujinx.HLE.HOS
                 Process.CpuMemory.WriteBytes(ROStart,   StaticObject.RO);
                 Process.CpuMemory.WriteBytes(DataStart, StaticObject.Data);
 
-                 MemoryHelper.FillWithZeros(Process.CpuMemory, BssStart, (int)(BssEnd - BssStart));
+                MemoryHelper.FillWithZeros(Process.CpuMemory, BssStart, (int)(BssEnd - BssStart));
 
                 Process.MemoryManager.SetProcessMemoryPermission(TextStart, ROStart   - TextStart, MemoryPermission.ReadAndExecute);
                 Process.MemoryManager.SetProcessMemoryPermission(ROStart,   DataStart - ROStart,   MemoryPermission.Read);
@@ -118,7 +137,7 @@ namespace Ryujinx.HLE.HOS
 
             if (Result != KernelResult.Success)
             {
-                Logger.PrintError(LogClass.KernelSvc, $"Process start returned error \"{Result}\".");
+                Logger.PrintError(LogClass.Loader, $"Process start returned error \"{Result}\".");
 
                 return false;
             }

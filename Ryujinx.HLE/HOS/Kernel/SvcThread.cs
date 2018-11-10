@@ -48,8 +48,10 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return KernelResult.InvalidPriority;
             }
 
+            long Timeout = KTimeManager.ConvertMillisecondsToNanoseconds(100);
+
             if (CurrentProcess.ResourceLimit != null &&
-               !CurrentProcess.ResourceLimit.Reserve(LimitableResource.Thread, 1))
+               !CurrentProcess.ResourceLimit.Reserve(LimitableResource.Thread, 1, Timeout))
             {
                 return KernelResult.ResLimitExceeded;
             }

@@ -56,7 +56,7 @@ namespace Ryujinx.HLE
 
             Statistics = new PerformanceStatistics();
 
-            Hid = new Hid(this, System.HidSharedMem.PA);
+            Hid = new Hid(this, System.HidBaseAddress);
 
             VsyncEvent = new AutoResetEvent(true);
         }
