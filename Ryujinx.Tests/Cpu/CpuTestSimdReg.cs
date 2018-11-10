@@ -250,6 +250,22 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
+        private static uint[] _F_Cmp_S_S_()
+        {
+            return new uint[]
+            {
+                0x1E222020u // FCMP S1, S2
+            };
+        }
+
+        private static uint[] _F_Cmp_S_D_()
+        {
+            return new uint[]
+            {
+                0x1E622020u // FCMP D1, D2
+            };
+        }
+
         private static uint[] _F_Madd_Msub_S_S_()
         {
             return new uint[]
@@ -370,6 +386,28 @@ namespace Ryujinx.Tests.Cpu
                 0x5E004000u, // SHA256H   Q0,    Q0,    V0.4S
                 0x5E005000u, // SHA256H2  Q0,    Q0,    V0.4S
                 0x5E006000u  // SHA256SU1 V0.4S, V0.4S, V0.4S
+            };
+        }
+
+        private static uint[] _S_Max_Min_P_V_()
+        {
+            return new uint[]
+            {
+                0x0E206400u, // SMAX  V0.8B, V0.8B, V0.8B
+                0x0E20A400u, // SMAXP V0.8B, V0.8B, V0.8B
+                0x0E206C00u, // SMIN  V0.8B, V0.8B, V0.8B
+                0x0E20AC00u  // SMINP V0.8B, V0.8B, V0.8B
+            };
+        }
+
+        private static uint[] _U_Max_Min_P_V_()
+        {
+            return new uint[]
+            {
+                0x2E206400u, // UMAX  V0.8B, V0.8B, V0.8B
+                0x2E20A400u, // UMAXP V0.8B, V0.8B, V0.8B
+                0x2E206C00u, // UMIN  V0.8B, V0.8B, V0.8B
+                0x2E20AC00u  // UMINP V0.8B, V0.8B, V0.8B
             };
         }
 #endregion
@@ -1248,6 +1286,42 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Idc);
         }
 
+        [Test, Pairwise] [Explicit]
+        public void F_Cmp_S_S([ValueSource("_F_Cmp_S_S_")] uint opcodes,
+                              [ValueSource("_1S_F_")] ulong a,
+                              [ValueSource("_1S_F_")] ulong b)
+        {
+            Vector128<float> v1 = MakeVectorE0(a);
+            Vector128<float> v2 = MakeVectorE0(b);
+
+            bool v = TestContext.CurrentContext.Random.NextBool();
+            bool c = TestContext.CurrentContext.Random.NextBool();
+            bool z = TestContext.CurrentContext.Random.NextBool();
+            bool n = TestContext.CurrentContext.Random.NextBool();
+
+            SingleOpcode(opcodes, v1: v1, v2: v2, overflow: v, carry: c, zero: z, negative: n);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc);
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Cmp_S_D([ValueSource("_F_Cmp_S_D_")] uint opcodes,
+                              [ValueSource("_1D_F_")] ulong a,
+                              [ValueSource("_1D_F_")] ulong b)
+        {
+            Vector128<float> v1 = MakeVectorE0(a);
+            Vector128<float> v2 = MakeVectorE0(b);
+
+            bool v = TestContext.CurrentContext.Random.NextBool();
+            bool c = TestContext.CurrentContext.Random.NextBool();
+            bool z = TestContext.CurrentContext.Random.NextBool();
+            bool n = TestContext.CurrentContext.Random.NextBool();
+
+            SingleOpcode(opcodes, v1: v1, v2: v2, overflow: v, carry: c, zero: z, negative: n);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc);
+        }
+
         [Test, Pairwise] [Explicit] // Fused.
         public void F_Madd_Msub_S_S([ValueSource("_F_Madd_Msub_S_S_")] uint opcodes,
                                     [ValueSource("_1S_F_")] ulong a,
@@ -2032,6 +2106,30 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v2 = MakeVectorE0E1(b, b);
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void S_Max_Min_P_V([ValueSource("_S_Max_Min_P_V_")] uint opcodes,
+                                  [Values(0u)]     uint rd,
+                                  [Values(1u, 0u)] uint rn,
+                                  [Values(2u, 0u)] uint rm,
+                                  [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong z,
+                                  [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong a,
+                                  [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong b,
+                                  [Values(0b00u, 0b01u, 0b10u)] uint size, // Q0: <8B,  4H, 2S>
+                                  [Values(0b0u, 0b1u)] uint q)             // Q1: <16B, 8H, 4S>
+        {
+            opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= ((size & 3) << 22);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
+            Vector128<float> v2 = MakeVectorE0E1(b, b * q);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, v2: v2);
 
             CompareAgainstUnicorn();
         }
@@ -3064,6 +3162,30 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v2 = MakeVectorE0E1(b, b);
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void U_Max_Min_P_V([ValueSource("_U_Max_Min_P_V_")] uint opcodes,
+                                  [Values(0u)]     uint rd,
+                                  [Values(1u, 0u)] uint rn,
+                                  [Values(2u, 0u)] uint rm,
+                                  [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong z,
+                                  [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong a,
+                                  [ValueSource("_8B4H2S_")] [Random(RndCnt)] ulong b,
+                                  [Values(0b00u, 0b01u, 0b10u)] uint size, // Q0: <8B,  4H, 2S>
+                                  [Values(0b0u, 0b1u)] uint q)             // Q1: <16B, 8H, 4S>
+        {
+            opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= ((size & 3) << 22);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
+            Vector128<float> v2 = MakeVectorE0E1(b, b * q);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, v2: v2);
 
             CompareAgainstUnicorn();
         }
