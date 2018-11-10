@@ -3,6 +3,7 @@ using ChocolArm64.State;
 using ChocolArm64.Translation;
 using System;
 using System.Reflection.Emit;
+using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
 using static ChocolArm64.Instructions.InstEmitAluHelper;
@@ -137,7 +138,8 @@ namespace ChocolArm64.Instructions
 
             context.EmitCondBranch(lblTrue, op.Cond);
 
-            EmitSetNzcv(context, op.Nzcv);
+            context.EmitLdc_I4(op.Nzcv);
+            EmitSetNzcv(context);
 
             context.Emit(OpCodes.Br, lblEnd);
 
@@ -156,7 +158,7 @@ namespace ChocolArm64.Instructions
         public static void Fcmeq_S(ILEmitterCtx context)
         {
             if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
-                                                 && Optimizations.UseSse2)
+                                                  && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareEqualScalar));
             }
@@ -169,7 +171,7 @@ namespace ChocolArm64.Instructions
         public static void Fcmeq_V(ILEmitterCtx context)
         {
             if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
-                                                 && Optimizations.UseSse2)
+                                                  && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareEqual));
             }
@@ -182,7 +184,7 @@ namespace ChocolArm64.Instructions
         public static void Fcmge_S(ILEmitterCtx context)
         {
             if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
-                                                 && Optimizations.UseSse2)
+                                                  && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanOrEqualScalar));
             }
@@ -195,7 +197,7 @@ namespace ChocolArm64.Instructions
         public static void Fcmge_V(ILEmitterCtx context)
         {
             if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
-                                                 && Optimizations.UseSse2)
+                                                  && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanOrEqual));
             }
@@ -208,7 +210,7 @@ namespace ChocolArm64.Instructions
         public static void Fcmgt_S(ILEmitterCtx context)
         {
             if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
-                                                 && Optimizations.UseSse2)
+                                                  && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.CompareGreaterThanScalar));
             }
@@ -221,7 +223,7 @@ namespace ChocolArm64.Instructions
         public static void Fcmgt_V(ILEmitterCtx context)
         {
             if (context.CurrOp is OpCodeSimdReg64 && Optimizations.UseSse
-                                                 && Optimizations.UseSse2)
+                                                  && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.CompareGreaterThan));
             }
@@ -257,26 +259,142 @@ namespace ChocolArm64.Instructions
 
             bool cmpWithZero = !(op is OpCodeSimdFcond64) ? op.Bit3 : false;
 
-            //Handle NaN case.
-            //If any number is NaN, then NZCV = 0011.
-            if (cmpWithZero)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitNaNCheck(context, op.Rn);
+                if (op.Size == 0)
+                {
+                    Type[] typesCmp = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    ILLabel lblNaN = new ILLabel();
+                    ILLabel lblEnd = new ILLabel();
+
+                    context.EmitLdvec(op.Rn);
+
+                    context.Emit(OpCodes.Dup);
+                    context.EmitStvectmp();
+
+                    if (cmpWithZero)
+                    {
+                        VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
+                    }
+                    else
+                    {
+                        context.EmitLdvec(op.Rm);
+                    }
+
+                    context.Emit(OpCodes.Dup);
+                    context.EmitStvectmp2();
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareOrderedScalar), typesCmp));
+                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareEqualOrderedScalar), typesCmp));
+
+                    context.Emit(OpCodes.Brtrue_S, lblNaN);
+
+                    context.EmitLdc_I4(0);
+
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp2();
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareGreaterThanOrEqualOrderedScalar), typesCmp));
+
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp2();
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareEqualOrderedScalar), typesCmp));
+
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp2();
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareLessThanOrderedScalar), typesCmp));
+
+                    context.EmitStflg((int)PState.NBit);
+                    context.EmitStflg((int)PState.ZBit);
+                    context.EmitStflg((int)PState.CBit);
+                    context.EmitStflg((int)PState.VBit);
+
+                    context.Emit(OpCodes.Br_S, lblEnd);
+
+                    context.MarkLabel(lblNaN);
+
+                    context.EmitLdc_I4(1);
+                    context.Emit(OpCodes.Dup);
+                    context.EmitLdc_I4(0);
+                    context.Emit(OpCodes.Dup);
+
+                    context.EmitStflg((int)PState.NBit);
+                    context.EmitStflg((int)PState.ZBit);
+                    context.EmitStflg((int)PState.CBit);
+                    context.EmitStflg((int)PState.VBit);
+
+                    context.MarkLabel(lblEnd);
+                }
+                else /* if (op.Size == 1) */
+                {
+                    Type[] typesCmp = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+
+                    ILLabel lblNaN = new ILLabel();
+                    ILLabel lblEnd = new ILLabel();
+
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+
+                    context.Emit(OpCodes.Dup);
+                    context.EmitStvectmp();
+
+                    if (cmpWithZero)
+                    {
+                        VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleZero));
+                    }
+                    else
+                    {
+                        EmitLdvecWithCastToDouble(context, op.Rm);
+                    }
+
+                    context.Emit(OpCodes.Dup);
+                    context.EmitStvectmp2();
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareOrderedScalar), typesCmp));
+                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleZero));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareEqualOrderedScalar), typesCmp));
+
+                    context.Emit(OpCodes.Brtrue_S, lblNaN);
+
+                    context.EmitLdc_I4(0);
+
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp2();
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareGreaterThanOrEqualOrderedScalar), typesCmp));
+
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp2();
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareEqualOrderedScalar), typesCmp));
+
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp2();
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareLessThanOrderedScalar), typesCmp));
+
+                    context.EmitStflg((int)PState.NBit);
+                    context.EmitStflg((int)PState.ZBit);
+                    context.EmitStflg((int)PState.CBit);
+                    context.EmitStflg((int)PState.VBit);
+
+                    context.Emit(OpCodes.Br_S, lblEnd);
+
+                    context.MarkLabel(lblNaN);
+
+                    context.EmitLdc_I4(1);
+                    context.Emit(OpCodes.Dup);
+                    context.EmitLdc_I4(0);
+                    context.Emit(OpCodes.Dup);
+
+                    context.EmitStflg((int)PState.NBit);
+                    context.EmitStflg((int)PState.ZBit);
+                    context.EmitStflg((int)PState.CBit);
+                    context.EmitStflg((int)PState.VBit);
+
+                    context.MarkLabel(lblEnd);
+                }
             }
             else
-            {
-                EmitNaNCheck(context, op.Rn);
-                EmitNaNCheck(context, op.Rm);
-
-                context.Emit(OpCodes.Or);
-            }
-
-            ILLabel lblNaN = new ILLabel();
-            ILLabel lblEnd = new ILLabel();
-
-            context.Emit(OpCodes.Brtrue_S, lblNaN);
-
-            void EmitLoadOpers()
             {
                 EmitVectorExtractF(context, op.Rn, 0, op.Size);
 
@@ -286,7 +404,7 @@ namespace ChocolArm64.Instructions
                     {
                         context.EmitLdc_R4(0f);
                     }
-                    else /* if (Op.Size == 1) */
+                    else // if (op.Size == 1)
                     {
                         context.EmitLdc_R8(0d);
                     }
@@ -295,68 +413,18 @@ namespace ChocolArm64.Instructions
                 {
                     EmitVectorExtractF(context, op.Rm, 0, op.Size);
                 }
+
+                context.EmitLdc_I4(0);
+
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPCompare));
+
+                EmitSetNzcv(context);
             }
-
-            //Z = Rn == Rm
-            EmitLoadOpers();
-
-            context.Emit(OpCodes.Ceq);
-            context.Emit(OpCodes.Dup);
-
-            context.EmitStflg((int)PState.ZBit);
-
-            //C = Rn >= Rm
-            EmitLoadOpers();
-
-            context.Emit(OpCodes.Cgt);
-            context.Emit(OpCodes.Or);
-
-            context.EmitStflg((int)PState.CBit);
-
-            //N = Rn < Rm
-            EmitLoadOpers();
-
-            context.Emit(OpCodes.Clt);
-
-            context.EmitStflg((int)PState.NBit);
-
-            //V = 0
-            context.EmitLdc_I4(0);
-
-            context.EmitStflg((int)PState.VBit);
-
-            context.Emit(OpCodes.Br_S, lblEnd);
-
-            context.MarkLabel(lblNaN);
-
-            EmitSetNzcv(context, 0b0011);
-
-            context.MarkLabel(lblEnd);
         }
 
         public static void Fcmpe_S(ILEmitterCtx context)
         {
             Fcmp_S(context);
-        }
-
-        private static void EmitNaNCheck(ILEmitterCtx context, int reg)
-        {
-            IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
-
-            EmitVectorExtractF(context, reg, 0, op.Size);
-
-            if (op.Size == 0)
-            {
-                context.EmitCall(typeof(float), nameof(float.IsNaN));
-            }
-            else if (op.Size == 1)
-            {
-                context.EmitCall(typeof(double), nameof(double.IsNaN));
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
         }
 
         private static void EmitCmp(ILEmitterCtx context, OpCode ilOp, bool scalar)
@@ -486,7 +554,7 @@ namespace ChocolArm64.Instructions
             {
                 context.EmitLdc_R4(0f);
             }
-            else /* if (SizeF == 1) */
+            else /* if (sizeF == 1) */
             {
                 context.EmitLdc_R8(0d);
             }
