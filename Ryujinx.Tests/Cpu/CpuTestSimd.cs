@@ -244,6 +244,22 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Opcodes)"
+        private static uint[] _F_Cmp_S_S_()
+        {
+            return new uint[]
+            {
+                0x1E202028u // FCMP S1, #0.0
+            };
+        }
+
+        private static uint[] _F_Cmp_S_D_()
+        {
+            return new uint[]
+            {
+                0x1E602028u // FCMP D1, #0.0
+            };
+        }
+
         private static uint[] _F_Cvt_S_SD_()
         {
             return new uint[]
@@ -336,37 +352,41 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-        private static uint[] _F_Recpx_Sqrt_S_S_()
+        private static uint[] _F_Abs_Recpx_Sqrt_S_S_()
         {
             return new uint[]
             {
+                0x1E20C020u, // FABS   S0, S1
                 0x5EA1F820u, // FRECPX S0, S1
                 0x1E21C020u  // FSQRT  S0, S1
             };
         }
 
-        private static uint[] _F_Recpx_Sqrt_S_D_()
+        private static uint[] _F_Abs_Recpx_Sqrt_S_D_()
         {
             return new uint[]
             {
+                0x1E60C020u, // FABS   D0, D1
                 0x5EE1F820u, // FRECPX D0, D1
                 0x1E61C020u  // FSQRT  D0, D1
             };
         }
 
-        private static uint[] _F_Sqrt_V_2S_4S_()
+        private static uint[] _F_Abs_Sqrt_V_2S_4S_()
         {
             return new uint[]
             {
-                0x2EA1F800u // FSQRT V0.2S, V0.2S
+                0x0EA0F800u, // FABS  V0.2S, V0.2S
+                0x2EA1F800u  // FSQRT V0.2S, V0.2S
             };
         }
 
-        private static uint[] _F_Sqrt_V_2D_()
+        private static uint[] _F_Abs_Sqrt_V_2D_()
         {
             return new uint[]
             {
-                0x6EE1F800u // FSQRT V0.2D, V0.2D
+                0x4EE0F800u, // FABS  V0.2D, V0.2D
+                0x6EE1F800u  // FSQRT V0.2D, V0.2D
             };
         }
 
@@ -890,6 +910,38 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
+        public void F_Cmp_S_S([ValueSource("_F_Cmp_S_S_")] uint opcodes,
+                              [ValueSource("_1S_F_")] ulong a)
+        {
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            bool v = TestContext.CurrentContext.Random.NextBool();
+            bool c = TestContext.CurrentContext.Random.NextBool();
+            bool z = TestContext.CurrentContext.Random.NextBool();
+            bool n = TestContext.CurrentContext.Random.NextBool();
+
+            SingleOpcode(opcodes, v1: v1, overflow: v, carry: c, zero: z, negative: n);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc);
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Cmp_S_D([ValueSource("_F_Cmp_S_D_")] uint opcodes,
+                              [ValueSource("_1D_F_")] ulong a)
+        {
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            bool v = TestContext.CurrentContext.Random.NextBool();
+            bool c = TestContext.CurrentContext.Random.NextBool();
+            bool z = TestContext.CurrentContext.Random.NextBool();
+            bool n = TestContext.CurrentContext.Random.NextBool();
+
+            SingleOpcode(opcodes, v1: v1, overflow: v, carry: c, zero: z, negative: n);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc);
+        }
+
+        [Test, Pairwise] [Explicit]
         public void F_Cvt_S_SD([ValueSource("_F_Cvt_S_SD_")] uint opcodes,
                                [ValueSource("_1S_F_")] ulong a)
         {
@@ -1070,8 +1122,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Recpx_Sqrt_S_S([ValueSource("_F_Recpx_Sqrt_S_S_")] uint opcodes,
-                                     [ValueSource("_1S_F_")] ulong a)
+        public void F_Abs_Recpx_Sqrt_S_S([ValueSource("_F_Abs_Recpx_Sqrt_S_S_")] uint opcodes,
+                                         [ValueSource("_1S_F_")] ulong a)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE0E1(z, z);
@@ -1088,8 +1140,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Recpx_Sqrt_S_D([ValueSource("_F_Recpx_Sqrt_S_D_")] uint opcodes,
-                                     [ValueSource("_1D_F_")] ulong a)
+        public void F_Abs_Recpx_Sqrt_S_D([ValueSource("_F_Abs_Recpx_Sqrt_S_D_")] uint opcodes,
+                                         [ValueSource("_1D_F_")] ulong a)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE1(z);
@@ -1106,12 +1158,12 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Sqrt_V_2S_4S([ValueSource("_F_Sqrt_V_2S_4S_")] uint opcodes,
-                                   [Values(0u)]     uint rd,
-                                   [Values(1u, 0u)] uint rn,
-                                   [ValueSource("_2S_F_")] ulong z,
-                                   [ValueSource("_2S_F_")] ulong a,
-                                   [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
+        public void F_Abs_Sqrt_V_2S_4S([ValueSource("_F_Abs_Sqrt_V_2S_4S_")] uint opcodes,
+                                       [Values(0u)]     uint rd,
+                                       [Values(1u, 0u)] uint rn,
+                                       [ValueSource("_2S_F_")] ulong z,
+                                       [ValueSource("_2S_F_")] ulong a,
+                                       [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);
@@ -1130,11 +1182,11 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Sqrt_V_2D([ValueSource("_F_Sqrt_V_2D_")] uint opcodes,
-                                [Values(0u)]     uint rd,
-                                [Values(1u, 0u)] uint rn,
-                                [ValueSource("_1D_F_")] ulong z,
-                                [ValueSource("_1D_F_")] ulong a)
+        public void F_Abs_Sqrt_V_2D([ValueSource("_F_Abs_Sqrt_V_2D_")] uint opcodes,
+                                    [Values(0u)]     uint rd,
+                                    [Values(1u, 0u)] uint rn,
+                                    [ValueSource("_1D_F_")] ulong z,
+                                    [ValueSource("_1D_F_")] ulong a)
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
