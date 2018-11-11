@@ -131,10 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
                     //When the address is zero, we need to allocate
                     //our own backing memory for the NvMap.
                     //TODO: Is this allocation inside the transfer memory?
-                    if (!Context.Device.Memory.Allocator.TryAllocate((uint)Size, out Address))
-                    {
-                        Result = NvResult.OutOfMemory;
-                    }
+                    Result = NvResult.OutOfMemory;
                 }
 
                 if (Result == NvResult.Success)

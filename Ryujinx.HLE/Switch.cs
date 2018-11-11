@@ -4,7 +4,6 @@ using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.Input;
-using Ryujinx.HLE.Memory;
 using System;
 using System.Threading;
 

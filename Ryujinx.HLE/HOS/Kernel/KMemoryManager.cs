@@ -1,6 +1,5 @@
 using ChocolArm64.Memory;
 using Ryujinx.Common;
-using Ryujinx.HLE.Memory;
 using System;
 using System.Collections.Generic;
 
@@ -17,8 +16,6 @@ namespace Ryujinx.HLE.HOS.Kernel
         private LinkedList<KMemoryBlock> Blocks;
 
         private MemoryManager CpuMemory;
-
-        private ArenaAllocator Allocator;
 
         private Horizon System;
 

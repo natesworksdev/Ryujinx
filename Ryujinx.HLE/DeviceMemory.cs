@@ -1,13 +1,11 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.Memory
+namespace Ryujinx.HLE
 {
     class DeviceMemory : IDisposable
     {
         public const long RamSize = 4L * 1024 * 1024 * 1024;
-
-        public ArenaAllocator Allocator { get; private set; }
 
         public IntPtr RamPointer { get; private set; }
 
@@ -15,8 +13,6 @@ namespace Ryujinx.HLE.Memory
 
         public unsafe DeviceMemory()
         {
-            Allocator = new ArenaAllocator(RamSize);
-
             RamPointer = Marshal.AllocHGlobal(new IntPtr(RamSize));
 
             RamPtr = (byte*)RamPointer;

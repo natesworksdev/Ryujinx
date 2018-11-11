@@ -4,7 +4,7 @@ namespace ChocolArm64.Exceptions
 {
     public class VmmAccessException : Exception
     {
-        private const string ExMsg = "Memory region at 0x{0} with size 0x{1} is not contiguous!";
+        private const string ExMsg = "Memory region at 0x{0:X16} with size 0x{1:X16} is not contiguous!";
 
         public VmmAccessException() { }
 
