@@ -2,8 +2,6 @@ namespace Ryujinx.HLE.Loaders.Executables
 {
     interface IExecutable
     {
-        string FilePath { get; }
-
         byte[] Text { get; }
         byte[] RO   { get; }
         byte[] Data { get; }

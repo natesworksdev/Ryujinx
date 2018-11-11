@@ -19,6 +19,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         TimedOut           = 0xea01,
         Cancelled          = 0xec01,
         MaximumExceeded    = 0xee01,
+        InvalidEnumValue   = 0xf001,
         InvalidThread      = 0xf401,
         InvalidState       = 0xfa01,
         ReservedValue      = 0xfc01,

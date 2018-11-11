@@ -2,10 +2,8 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    class Nro : IExecutable
+    class NxRelocatableObject : IExecutable
     {
-        public string FilePath { get; private set; }
-
         public byte[] Text { get; private set; }
         public byte[] RO   { get; private set; }
         public byte[] Data { get; private set; }
@@ -19,9 +17,8 @@ namespace Ryujinx.HLE.Loaders.Executables
         public long SourceAddress { get; private set; }
         public long BssAddress    { get; private set; }
 
-        public Nro(Stream Input, string FilePath, long SourceAddress = 0, long BssAddress = 0)
+        public NxRelocatableObject(Stream Input, long SourceAddress = 0, long BssAddress = 0)
         {
-            this.FilePath      = FilePath;
             this.SourceAddress = SourceAddress;
             this.BssAddress    = BssAddress;
 

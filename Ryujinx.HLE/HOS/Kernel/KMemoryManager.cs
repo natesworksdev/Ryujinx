@@ -12,6 +12,8 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         public const int PageSize = 0x1000;
 
+        private const int KMemoryBlockSize = 0x40;
+
         private LinkedList<KMemoryBlock> Blocks;
 
         private MemoryManager CpuMemory;
@@ -1953,7 +1955,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             throw new ArgumentException($"Invalid state value \"{State}\".");
         }
 
-        private long GetAddrSpaceBaseAddr()
+        public long GetAddrSpaceBaseAddr()
         {
             if (AddrSpaceWidth == 36 || AddrSpaceWidth == 39)
             {
@@ -1969,7 +1971,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private long GetAddrSpaceSize()
+        public long GetAddrSpaceSize()
         {
             if (AddrSpaceWidth == 36)
             {
@@ -2145,6 +2147,19 @@ namespace Ryujinx.HLE.HOS.Kernel
             Pa = DramMemoryMap.DramBase + CpuMemory.GetPhysicalAddress(Va);
 
             return KernelResult.Success;
+        }
+
+        public long GetMmUsedPages()
+        {
+            lock (Blocks)
+            {
+                return BitUtils.DivRoundUp(GetMmUsedSize(), PageSize);
+            }
+        }
+
+        private long GetMmUsedSize()
+        {
+            return Blocks.Count * KMemoryBlockSize;
         }
 
         public bool InsideAddrSpace(long Address, long Size)

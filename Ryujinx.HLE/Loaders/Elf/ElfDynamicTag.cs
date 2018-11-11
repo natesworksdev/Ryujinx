@@ -1,6 +1,6 @@
-namespace Ryujinx.HLE.Loaders
+namespace Ryujinx.HLE.Loaders.Elf
 {
-    enum ElfDynTag
+    enum ElfDynamicTag
     {
         DT_NULL            = 0,
         DT_NEEDED          = 1,

@@ -63,13 +63,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
     class NroInfo
     {
-        public Nro    Executable       { get; private set; }
+        public NxRelocatableObject    Executable       { get; private set; }
         public byte[] Hash             { get; private set; }
         public long   NroAddress       { get; private set; }
         public long   TotalSize        { get; private set; }
         public long   NroMappedAddress { get; set; }
 
-        public NroInfo(Nro Executable, byte[] Hash, long TotalSize)
+        public NroInfo(NxRelocatableObject Executable, byte[] Hash, long TotalSize)
         {
             this.Executable = Executable;
             this.Hash       = Hash;
@@ -226,19 +226,19 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
             Stream.Position = 0;
 
-            Nro Executable = new Nro(Stream, "memory", NroHeapAddress, BssHeapAddress);
+            NxRelocatableObject Executable = new NxRelocatableObject(Stream, NroHeapAddress, BssHeapAddress);
 
             // check if everything is page align.
-            if ((Executable.Text.Length & 0xFFF) != 0 || (Executable.RO.Length & 0xFFF) != 0
-                || (Executable.Data.Length & 0xFFF) != 0 || (Executable.BssSize & 0xFFF) !=  0)
+            if ((Executable.Text.Length & 0xFFF) != 0 || (Executable.RO.Length & 0xFFF) != 0 ||
+                (Executable.Data.Length & 0xFFF) != 0 || (Executable.BssSize & 0xFFF)   != 0)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.InvalidNro);
             }
 
             // check if everything is contiguous.
-            if (Executable.ROOffset != Executable.TextOffset + Executable.Text.Length
-                || Executable.DataOffset != Executable.ROOffset + Executable.RO.Length
-                || NroFileSize != Executable.DataOffset + Executable.Data.Length)
+            if (Executable.ROOffset   != Executable.TextOffset + Executable.Text.Length ||
+                Executable.DataOffset != Executable.ROOffset   + Executable.RO.Length   ||
+                NroFileSize           != Executable.DataOffset + Executable.Data.Length)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.InvalidNro);
             }

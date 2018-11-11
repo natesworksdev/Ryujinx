@@ -16,7 +16,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long ThreadUid { get; private set; }
 
-        public KSynchronizationObject SignaledObj;
+        public long TotalTimeRunning { get; set; }
+
+        public KSynchronizationObject SignaledObj { get; set; }
 
         public long CondVarAddress { get; set; }
 
@@ -28,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private long TlsAddress;
 
-        public long LastScheduledTicks { get; set; }
+        public long LastScheduledTime { get; set; }
 
         public LinkedListNode<KThread>[] SiblingsPerCore { get; private set; }
 
@@ -372,7 +374,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     //If the candidate was scheduled after the current thread, then it's not worth it,
                     //unless the priority is higher than the current one.
-                    if (NextThreadOnCurrentQueue.LastScheduledTicks >= Thread.LastScheduledTicks ||
+                    if (NextThreadOnCurrentQueue.LastScheduledTime >= Thread.LastScheduledTime ||
                         NextThreadOnCurrentQueue.DynamicPriority    <  Thread.DynamicPriority)
                     {
                         yield return Thread;
@@ -538,13 +540,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 SyncCancelled = true;
             }
-            else if (WithholderNode != null)
+            else if (Withholder != null)
             {
-                System.Withholders.Remove(WithholderNode);
+                Withholder.Remove(WithholderNode);
 
                 SetNewSchedFlags(ThreadSchedState.Running);
 
-                WithholderNode = null;
+                Withholder = null;
 
                 SyncCancelled = true;
             }
@@ -561,7 +563,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             System.CriticalSection.Leave();
         }
 
-        public long SetCoreAndAffinityMask(int NewCore, long NewAffinityMask)
+        public KernelResult SetCoreAndAffinityMask(int NewCore, long NewAffinityMask)
         {
             System.CriticalSection.Enter();
 
@@ -576,7 +578,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     System.CriticalSection.Leave();
 
-                    return MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
+                    return KernelResult.InvalidCombination;
                 }
             }
 
@@ -614,7 +616,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             System.CriticalSection.Leave();
 
-            return 0;
+            return KernelResult.Success;
         }
 
         private static int HighestSetCore(long Mask)
@@ -662,13 +664,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
             {
-                if (WithholderNode != null)
+                if (Withholder != null)
                 {
-                    System.Withholders.Remove(WithholderNode);
+                    Withholder.Remove(WithholderNode);
 
                     SetNewSchedFlags(ThreadSchedState.Running);
 
-                    WithholderNode = null;
+                    Withholder = null;
                 }
                 else
                 {

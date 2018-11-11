@@ -4,10 +4,8 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    class Nso : IExecutable
+    class NxStaticObject : IExecutable
     {
-        public string FilePath { get; private set; }
-
         public byte[] Text { get; private set; }
         public byte[] RO   { get; private set; }
         public byte[] Data { get; private set; }
@@ -29,10 +27,8 @@ namespace Ryujinx.HLE.Loaders.Executables
             HasDataHash      = 1 << 5
         }
 
-        public Nso(Stream Input, string FilePath)
+        public NxStaticObject(Stream Input)
         {
-            this.FilePath = FilePath;
-
             BinaryReader Reader = new BinaryReader(Input);
 
             Input.Seek(0, SeekOrigin.Begin);
@@ -83,7 +79,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
             Text = Reader.ReadBytes(TextSize);
 
-            if (Flags.HasFlag(NsoFlags.IsTextCompressed) || true)
+            if (Flags.HasFlag(NsoFlags.IsTextCompressed))
             {
                 Text = Lz4.Decompress(Text, TextDecSize);
             }
@@ -93,7 +89,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
             RO = Reader.ReadBytes(ROSize);
 
-            if (Flags.HasFlag(NsoFlags.IsROCompressed) || true)
+            if (Flags.HasFlag(NsoFlags.IsROCompressed))
             {
                 RO = Lz4.Decompress(RO, RODecSize);
             }
@@ -103,7 +99,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
             Data = Reader.ReadBytes(DataSize);
 
-            if (Flags.HasFlag(NsoFlags.IsDataCompressed) || true)
+            if (Flags.HasFlag(NsoFlags.IsDataCompressed))
             {
                 Data = Lz4.Decompress(Data, DataDecSize);
             }

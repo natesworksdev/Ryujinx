@@ -13,7 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
-using Nso = Ryujinx.HLE.Loaders.Executables.Nso;
+using NxStaticObject = Ryujinx.HLE.Loaders.Executables.NxStaticObject;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -48,8 +48,6 @@ namespace Ryujinx.HLE.HOS
         internal KTimeManager TimeManager { get; private set; }
 
         internal KSynchronization Synchronization { get; private set; }
-
-        internal LinkedList<KThread> Withholders { get; private set; }
 
         internal KContextIdManager ContextIdManager { get; private set; }
 
@@ -105,8 +103,6 @@ namespace Ryujinx.HLE.HOS
 
             Synchronization = new KSynchronization(this);
 
-            Withholders = new LinkedList<KThread>();
-
             ContextIdManager = new KContextIdManager();
 
             KipId     = InitialKipId;
@@ -118,16 +114,16 @@ namespace Ryujinx.HLE.HOS
 
             KMemoryRegionManager Region = MemoryRegions[(int)MemoryRegion.Service];
 
-            long HidPA  = Region.Address;
-            long FontPA = Region.Address + HidSize;
+            long HidPa  = Region.Address;
+            long FontPa = Region.Address + HidSize;
 
-            HidBaseAddress = HidPA - DramMemoryMap.DramBase;
+            HidBaseAddress = HidPa - DramMemoryMap.DramBase;
 
             KPageList HidPageList  = new KPageList();
             KPageList FontPageList = new KPageList();
 
-            HidPageList .AddRange(HidPA,  HidSize  / KMemoryManager.PageSize);
-            FontPageList.AddRange(FontPA, FontSize / KMemoryManager.PageSize);
+            HidPageList .AddRange(HidPa,  HidSize  / KMemoryManager.PageSize);
+            FontPageList.AddRange(FontPa, FontSize / KMemoryManager.PageSize);
 
             HidSharedMem  = new KSharedMemory(HidPageList,  0, 0, MemoryPermission.Read);
             FontSharedMem = new KSharedMemory(FontPageList, 0, 0, MemoryPermission.Read);
@@ -136,7 +132,7 @@ namespace Ryujinx.HLE.HOS
 
             AppletState.SetFocus(true);
 
-            Font = new SharedFontManager(Device, FontPA - DramMemoryMap.DramBase);
+            Font = new SharedFontManager(Device, FontPa - DramMemoryMap.DramBase);
 
             VsyncEvent = new KEvent(this);
 
@@ -187,9 +183,7 @@ namespace Ryujinx.HLE.HOS
 
                     using (FileStream Input = new FileStream(File, FileMode.Open))
                     {
-                        string Name = Path.GetFileNameWithoutExtension(File);
-
-                        Nso StaticObject = new Nso(Input, Name);
+                        NxStaticObject StaticObject = new NxStaticObject(Input);
 
                         StaticObjects.Add(StaticObject);
                     }
@@ -420,9 +414,7 @@ namespace Ryujinx.HLE.HOS
 
                     Logger.PrintInfo(LogClass.Loader, $"Loading {Filename}...");
 
-                    string Name = Path.GetFileNameWithoutExtension(File.Name);
-
-                    Nso StaticObject = new Nso(Exefs.OpenFile(File), Name);
+                    NxStaticObject StaticObject = new NxStaticObject(Exefs.OpenFile(File));
 
                     StaticObjects.Add(StaticObject);
                 }
@@ -446,6 +438,15 @@ namespace Ryujinx.HLE.HOS
                 }
 
                 return ControlData;
+            }
+
+            if (ControlNca != null)
+            {
+                ReadControlData();
+            }
+            else
+            {
+                CurrentTitle = MetaData.ACI0.TitleId.ToString("x16");
             }
 
             if (!MetaData.Is64Bits)
@@ -472,8 +473,8 @@ namespace Ryujinx.HLE.HOS
             using (FileStream Input = new FileStream(FilePath, FileMode.Open))
             {
                 IExecutable StaticObject = IsNro
-                    ? (IExecutable)new Nro(Input, FilePath)
-                    : (IExecutable)new Nso(Input, FilePath);
+                    ? (IExecutable)new NxRelocatableObject(Input)
+                    : (IExecutable)new NxStaticObject(Input);
 
                 ProgramLoader.LoadStaticObjects(this, MetaData, new IExecutable[] { StaticObject });
             }
@@ -487,11 +488,6 @@ namespace Ryujinx.HLE.HOS
             {
                 return new Npdm(NpdmStream);
             }
-        }
-
-        private Stream GetHomebrewNpdmStream()
-        {
-            return Assembly.GetCallingAssembly().GetManifestResourceStream("Ryujinx.HLE.Homebrew.npdm");
         }
 
         public void LoadKeySet()

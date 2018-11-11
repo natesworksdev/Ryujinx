@@ -2,7 +2,7 @@ using ChocolArm64.Memory;
 using ChocolArm64.State;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
-using Ryujinx.HLE.Loaders;
+using Ryujinx.HLE.Loaders.Elf;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +20,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             public long BaseAddress { get; private set; }
 
-            public ElfSym[] Symbols { get; private set; }
+            public ElfSymbol[] Symbols { get; private set; }
 
-            public Image(long BaseAddress, ElfSym[] Symbols)
+            public Image(long BaseAddress, ElfSymbol[] Symbols)
             {
                 this.BaseAddress = BaseAddress;
                 this.Symbols     = Symbols;
@@ -81,7 +81,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             while (FramePointer != 0)
             {
-                if (!Owner.CpuMemory.IsMapped(FramePointer))
+                if ((FramePointer & 7) != 0                 ||
+                    !Owner.CpuMemory.IsMapped(FramePointer) ||
+                    !Owner.CpuMemory.IsMapped(FramePointer + 8))
                 {
                     break;
                 }
@@ -109,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 int Middle = Left + (Size >> 1);
 
-                ElfSym Symbol = Image.Symbols[Middle];
+                ElfSymbol Symbol = Image.Symbols[Middle];
 
                 long EndAddr = Symbol.Value + Symbol.Size;
 
@@ -226,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            Dictionary<ElfDynTag, long> Dynamic = new Dictionary<ElfDynTag, long>();
+            Dictionary<ElfDynamicTag, long> Dynamic = new Dictionary<ElfDynamicTag, long>();
 
             int Mod0Magic = Memory.ReadInt32(Mod0Offset + 0x0);
 
@@ -249,9 +251,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 DynamicOffset += 0x10;
 
-                ElfDynTag Tag = (ElfDynTag)TagVal;
+                ElfDynamicTag Tag = (ElfDynamicTag)TagVal;
 
-                if (Tag == ElfDynTag.DT_NULL)
+                if (Tag == ElfDynamicTag.DT_NULL)
                 {
                     break;
                 }
@@ -259,16 +261,16 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Dynamic[Tag] = Value;
             }
 
-            long StrTblAddr = TextOffset + Dynamic[ElfDynTag.DT_STRTAB];
-            long SymTblAddr = TextOffset + Dynamic[ElfDynTag.DT_SYMTAB];
+            long StrTblAddr = TextOffset + Dynamic[ElfDynamicTag.DT_STRTAB];
+            long SymTblAddr = TextOffset + Dynamic[ElfDynamicTag.DT_SYMTAB];
 
-            long SymEntSize = Dynamic[ElfDynTag.DT_SYMENT];
+            long SymEntSize = Dynamic[ElfDynamicTag.DT_SYMENT];
 
-            List<ElfSym> Symbols = new List<ElfSym>();
+            List<ElfSymbol> Symbols = new List<ElfSymbol>();
 
             while ((ulong)SymTblAddr < (ulong)StrTblAddr)
             {
-                ElfSym Sym = GetSymbol(Memory, SymTblAddr, StrTblAddr);
+                ElfSymbol Sym = GetSymbol(Memory, SymTblAddr, StrTblAddr);
 
                 Symbols.Add(Sym);
 
@@ -281,7 +283,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private ElfSym GetSymbol(MemoryManager Memory, long Address, long StrTblAddr)
+        private ElfSymbol GetSymbol(MemoryManager Memory, long Address, long StrTblAddr)
         {
             int  NameIndex = Memory.ReadInt32(Address + 0);
             int  Info      = Memory.ReadByte (Address + 4);
@@ -297,7 +299,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Name += (char)Chr;
             }
 
-            return new ElfSym(Name, Info, Other, SHIdx, Value, Size);
+            return new ElfSymbol(Name, Info, Other, SHIdx, Value, Size);
         }
     }
 }

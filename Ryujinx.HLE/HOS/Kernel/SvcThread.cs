@@ -38,12 +38,12 @@ namespace Ryujinx.HLE.HOS.Kernel
                 CpuCore = CurrentProcess.DefaultCpuCore;
             }
 
-            if ((uint)CpuCore >= KScheduler.CpuCoresCount || !CurrentProcess.IsAllowedCpuCore(CpuCore))
+            if ((uint)CpuCore >= KScheduler.CpuCoresCount || !CurrentProcess.IsCpuCoreAllowed(CpuCore))
             {
                 return KernelResult.InvalidCpuCore;
             }
 
-            if ((uint)Priority >= KScheduler.PrioritiesCount || !CurrentProcess.IsAllowedPriority(Priority))
+            if ((uint)Priority >= KScheduler.PrioritiesCount || !CurrentProcess.IsPriorityAllowed(Priority))
             {
                 return KernelResult.InvalidPriority;
             }
@@ -212,46 +212,60 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private void SvcSetThreadCoreMask(CpuThreadState ThreadState)
+        private void SetThreadCoreMask64(CpuThreadState ThreadState)
         {
             int  Handle        =  (int)ThreadState.X0;
-            int  PrefferedCore =  (int)ThreadState.X1;
+            int  PreferredCore =  (int)ThreadState.X1;
             long AffinityMask  = (long)ThreadState.X2;
 
             Logger.PrintDebug(LogClass.KernelSvc,
                 "Handle = 0x"        + Handle       .ToString("x8") + ", " +
-                "PrefferedCore = 0x" + PrefferedCore.ToString("x8") + ", " +
+                "PreferredCore = 0x" + PreferredCore.ToString("x8") + ", " +
                 "AffinityMask = 0x"  + AffinityMask .ToString("x16"));
 
-            if (PrefferedCore == -2)
-            {
-                //TODO: Get this value from the NPDM file.
-                PrefferedCore = 0;
+            KernelResult Result = SetThreadCoreMask(Handle, PreferredCore, AffinityMask);
 
-                AffinityMask = 1 << PrefferedCore;
+            if (Result != KernelResult.Success)
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{Result}\".");
+            }
+
+            ThreadState.X0 = (ulong)Result;
+        }
+
+        private KernelResult SetThreadCoreMask(int Handle, int PreferredCore, long AffinityMask)
+        {
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            if (PreferredCore == -2)
+            {
+                PreferredCore = CurrentProcess.DefaultCpuCore;
+
+                AffinityMask = 1 << PreferredCore;
             }
             else
             {
-                //TODO: Check allowed cores from NPDM file.
-
-                if ((uint)PrefferedCore > 3)
+                if ((CurrentProcess.Capabilities.AllowedCpuCoresMask | AffinityMask) !=
+                     CurrentProcess.Capabilities.AllowedCpuCoresMask)
                 {
-                    if ((PrefferedCore | 2) != -1)
+                    return KernelResult.InvalidCpuCore;
+                }
+
+                if (AffinityMask == 0)
+                {
+                    return KernelResult.InvalidCombination;
+                }
+
+                if ((uint)PreferredCore > 3)
+                {
+                    if ((PreferredCore | 2) != -1)
                     {
-                        Logger.PrintWarning(LogClass.KernelSvc, $"Invalid core id 0x{PrefferedCore:x8}!");
-
-                        ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidCoreId);
-
-                        return;
+                        return KernelResult.InvalidCpuCore;
                     }
                 }
-                else if ((AffinityMask & (1 << PrefferedCore)) == 0)
+                else if ((AffinityMask & (1 << PreferredCore)) == 0)
                 {
-                    Logger.PrintWarning(LogClass.KernelSvc, $"Invalid core mask 0x{AffinityMask:x8}!");
-
-                    ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
-
-                    return;
+                    return KernelResult.InvalidCombination;
                 }
             }
 
@@ -259,21 +273,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Thread == null)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{Handle:x8}!");
-
-                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
-
-                return;
+                return KernelResult.InvalidHandle;
             }
 
-            long Result = Thread.SetCoreAndAffinityMask(PrefferedCore, AffinityMask);
-
-            if (Result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
-            }
-
-            ThreadState.X0 = (ulong)Result;
+            return Thread.SetCoreAndAffinityMask(PreferredCore, AffinityMask);
         }
 
         private void SvcGetCurrentProcessorNumber(CpuThreadState ThreadState)

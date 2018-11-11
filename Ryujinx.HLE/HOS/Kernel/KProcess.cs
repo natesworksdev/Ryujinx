@@ -28,10 +28,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public int DefaultCpuCore { get; private set; }
 
+        public bool Debug { get; private set; }
+
         public KResourceLimit ResourceLimit { get; private set; }
 
-        private long PersonalMmHeapBase;
-        private long PersonalMmHeapPagesCount;
+        public long PersonalMmHeapPagesCount { get; private set; }
 
         private ProcessState State;
 
@@ -40,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KAddressArbiter AddressArbiter { get; private set; }
 
-        private long[] RandomEntropy;
+        public long[] RandomEntropy { get; private set; }
 
         private bool Signaled;
         private bool UseSystemMemBlocks;
@@ -65,9 +66,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         private long MemoryUsageCapacity;
         private int  Category;
 
-        public KProcessHandleTable HandleTable { get; private set; }
+        public KHandleTable HandleTable { get; private set; }
 
-        private long TlsAddress;
+        public long UserExceptionContextAddress { get; private set; }
 
         private LinkedList<KThread> Threads;
 
@@ -345,14 +346,16 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return KernelResult.InvalidCombination;
             }
 
-            KernelResult Result = AllocateThreadLocalStorage(out TlsAddress);
+            KernelResult Result = AllocateThreadLocalStorage(out long UserExceptionContextAddress);
 
             if (Result != KernelResult.Success)
             {
                 return Result;
             }
 
-            MemoryHelper.FillWithZeros(CpuMemory, TlsAddress, KTlsPageInfo.TlsEntrySize);
+            this.UserExceptionContextAddress = UserExceptionContextAddress;
+
+            MemoryHelper.FillWithZeros(CpuMemory, UserExceptionContextAddress, KTlsPageInfo.TlsEntrySize);
 
             Name = CreationInfo.Name;
 
@@ -666,7 +669,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     return Result;
                 }
 
-                HandleTable = new KProcessHandleTable(System);
+                HandleTable = new KHandleTable(System);
 
                 Result = HandleTable.Initialize(Capabilities.HandleTableSize);
 
@@ -804,6 +807,16 @@ namespace Ryujinx.HLE.HOS.Kernel
             return ImageSize + MainThreadStackSize + MemoryManager.GetTotalHeapSize();
         }
 
+        public long GetMemoryCapacityWithoutPersonalMmHeap()
+        {
+            return GetMemoryCapacity() - GetPersonalMmHeapSize();
+        }
+
+        public long GetMemoryUsageWithoutPersonalMmHeap()
+        {
+            return GetMemoryUsage() - GetPersonalMmHeapSize();
+        }
+
         private long GetPersonalMmHeapSize()
         {
             return GetPersonalMmHeapSize(PersonalMmHeapPagesCount, MemRegion);
@@ -835,12 +848,12 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        public bool IsAllowedCpuCore(int Core)
+        public bool IsCpuCoreAllowed(int Core)
         {
             return (Capabilities.AllowedCpuCoresMask & (1L << Core)) != 0;
         }
 
-        public bool IsAllowedPriority(int Priority)
+        public bool IsPriorityAllowed(int Priority)
         {
             return (Capabilities.AllowedThreadPriosMask & (1L << Priority)) != 0;
         }
@@ -856,12 +869,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             bool ShallTerminate = false;
 
+            System.CriticalSection.Enter();
+
             lock (ProcessLock)
             {
                 if (State >= ProcessState.Started)
                 {
-                    System.CriticalSection.Enter();
-
                     if (State == ProcessState.Started  ||
                         State == ProcessState.Crashed  ||
                         State == ProcessState.Attached ||
@@ -872,8 +885,6 @@ namespace Ryujinx.HLE.HOS.Kernel
                         ShallTerminate = true;
                     }
 
-                    System.CriticalSection.Leave();
-
                     Result = KernelResult.Success;
                 }
                 else
@@ -881,6 +892,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                     Result = KernelResult.InvalidState;
                 }
             }
+
+            System.CriticalSection.Leave();
 
             if (ShallTerminate)
             {
@@ -917,6 +930,31 @@ namespace Ryujinx.HLE.HOS.Kernel
             SetState(ProcessState.Exited);
 
             System.CriticalSection.Leave();
+        }
+
+        public KernelResult ClearIfNotExited()
+        {
+            KernelResult Result;
+
+            System.CriticalSection.Enter();
+
+            lock (ProcessLock)
+            {
+                if (State != ProcessState.Exited && Signaled)
+                {
+                    Signaled = false;
+
+                    Result = KernelResult.Success;
+                }
+                else
+                {
+                    Result = KernelResult.InvalidState;
+                }
+            }
+
+            System.CriticalSection.Leave();
+
+            return Result;
         }
 
         private void CpuTraceHandler(object sender, EventArgs e)

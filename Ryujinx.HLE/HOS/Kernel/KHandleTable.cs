@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KProcessHandleTable
+    class KHandleTable
     {
         private const int SelfThreadHandle  = (0x1ffff << 15) | 0;
         private const int SelfProcessHandle = (0x1ffff << 15) | 1;
@@ -20,36 +20,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private ushort IdCounter;
 
-        public KProcessHandleTable(Horizon System)
+        public KHandleTable(Horizon System)
         {
             this.System = System;
-        }
-
-        public KProcessHandleTable(Horizon System, int Size = 1024)
-        {
-            this.System = System;
-            this.Size   = Size;
-
-            IdCounter = 1;
-
-            Table = new KHandleEntry[Size];
-
-            TableHead = new KHandleEntry(0);
-
-            KHandleEntry Entry = TableHead;
-
-            for (int Index = 0; Index < Size; Index++)
-            {
-                Table[Index] = Entry;
-
-                Entry.Next = new KHandleEntry(Index + 1);
-
-                Entry = Entry.Next;
-            }
-
-            Table[Size - 1].Next = null;
-
-            NextFreeEntry = TableHead;
         }
 
         public KernelResult Initialize(int Size)
@@ -192,6 +165,18 @@ namespace Ryujinx.HLE.HOS.Kernel
             else
             {
                 return GetObject<KThread>(Handle);
+            }
+        }
+
+        public KProcess GetKProcess(int Handle)
+        {
+            if (Handle == SelfProcessHandle)
+            {
+                return System.Scheduler.GetCurrentProcess();
+            }
+            else
+            {
+                return GetObject<KProcess>(Handle);
             }
         }
 
