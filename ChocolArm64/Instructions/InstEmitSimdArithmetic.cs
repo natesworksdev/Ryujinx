@@ -192,35 +192,35 @@ namespace ChocolArm64.Instructions
 
                 if (op.Size == 0)
                 {
-                    Type[] typesSet = new Type[] { typeof(uint), typeof(uint), typeof(uint), typeof(uint) };
-                    Type[] typesAnd = new Type[] { typeof(Vector128<uint>), typeof(Vector128<uint>) };
+                    Type[] typesSsv    = new Type[] { typeof(float) };
+                    Type[] typesAndNot = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
-                    EmitLdvecWithUnsignedCast(context, op.Rn, 2);
+                    context.EmitLdc_R4(-0f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), typesSsv));
 
-                    context.EmitLdc_I4(0);
-                    context.Emit(OpCodes.Dup);
-                    context.Emit(OpCodes.Dup);
-                    context.EmitLdc_I4(0x7FFFFFFF);
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSet));
+                    context.EmitLdvec(op.Rn);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), typesAnd));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot), typesAndNot));
 
-                    EmitStvecWithUnsignedCast(context, op.Rd, 2);
+                    context.EmitStvec(op.Rd);
+
+                    EmitVectorZero32_128(context, op.Rd);
                 }
                 else /* if (op.Size == 1) */
                 {
-                    Type[] typesSet = new Type[] { typeof(ulong), typeof(ulong) };
-                    Type[] typesAnd = new Type[] { typeof(Vector128<ulong>), typeof(Vector128<ulong>) };
+                    Type[] typesSsv    = new Type[] { typeof(double) };
+                    Type[] typesAndNot = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                    EmitLdvecWithUnsignedCast(context, op.Rn, 3);
+                    context.EmitLdc_R8(-0d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), typesSsv));
 
-                    context.EmitLdc_I8(0L);
-                    context.EmitLdc_I8(0x7FFFFFFFFFFFFFFFL);
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSet));
+                    EmitLdvecWithCastToDouble(context, op.Rn);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), typesAnd));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), typesAndNot));
 
-                    EmitStvecWithUnsignedCast(context, op.Rd, 3);
+                    EmitStvecWithCastFromDouble(context, op.Rd);
+
+                    EmitVectorZeroUpper(context, op.Rd);
                 }
             }
             else
@@ -242,35 +242,36 @@ namespace ChocolArm64.Instructions
 
                 if (sizeF == 0)
                 {
-                    Type[] typesSet = new Type[] { typeof(uint), typeof(uint), typeof(uint), typeof(uint) };
-                    Type[] typesAnd = new Type[] { typeof(Vector128<uint>), typeof(Vector128<uint>) };
+                    Type[] typesSav    = new Type[] { typeof(float) };
+                    Type[] typesAndNot = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
-                    EmitLdvecWithUnsignedCast(context, op.Rn, 2);
+                    context.EmitLdc_R4(-0f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), typesSav));
 
-                    context.EmitLdc_I4(op.RegisterSize == RegisterSize.Simd128 ? 0x7FFFFFFF : 0);
-                    context.Emit(OpCodes.Dup);
-                    context.EmitLdc_I4(0x7FFFFFFF);
-                    context.Emit(OpCodes.Dup);
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSet));
+                    context.EmitLdvec(op.Rn);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), typesAnd));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot), typesAndNot));
 
-                    EmitStvecWithUnsignedCast(context, op.Rd, 2);
+                    context.EmitStvec(op.Rd);
+
+                    if (op.RegisterSize == RegisterSize.Simd64)
+                    {
+                        EmitVectorZeroUpper(context, op.Rd);
+                    }
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Type[] typesSet = new Type[] { typeof(ulong), typeof(ulong) };
-                    Type[] typesAnd = new Type[] { typeof(Vector128<ulong>), typeof(Vector128<ulong>) };
+                    Type[] typesSav    = new Type[] { typeof(double) };
+                    Type[] typesAndNot = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                    EmitLdvecWithUnsignedCast(context, op.Rn, 3);
+                    context.EmitLdc_R8(-0d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
 
-                    context.EmitLdc_I8(0x7FFFFFFFFFFFFFFFL);
-                    context.Emit(OpCodes.Dup);
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSet));
+                    EmitLdvecWithCastToDouble(context, op.Rn);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), typesAnd));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), typesAndNot));
 
-                    EmitStvecWithUnsignedCast(context, op.Rd, 3);
+                    EmitStvecWithCastFromDouble(context, op.Rd);
                 }
             }
             else
@@ -699,12 +700,95 @@ namespace ChocolArm64.Instructions
 
         public static void Fneg_S(ILEmitterCtx context)
         {
-            EmitScalarUnaryOpF(context, () => context.Emit(OpCodes.Neg));
+            if (Optimizations.UseSse2)
+            {
+                OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+                if (op.Size == 0)
+                {
+                    Type[] typesSsv = new Type[] { typeof(float) };
+                    Type[] typesXor = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    context.EmitLdc_R4(-0f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), typesSsv));
+
+                    context.EmitLdvec(op.Rn);
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Xor), typesXor));
+
+                    context.EmitStvec(op.Rd);
+
+                    EmitVectorZero32_128(context, op.Rd);
+                }
+                else /* if (op.Size == 1) */
+                {
+                    Type[] typesSsv = new Type[] { typeof(double) };
+                    Type[] typesXor = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+
+                    context.EmitLdc_R8(-0d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), typesSsv));
+
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), typesXor));
+
+                    EmitStvecWithCastFromDouble(context, op.Rd);
+
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+            else
+            {
+                EmitScalarUnaryOpF(context, () => context.Emit(OpCodes.Neg));
+            }
         }
 
         public static void Fneg_V(ILEmitterCtx context)
         {
-            EmitVectorUnaryOpF(context, () => context.Emit(OpCodes.Neg));
+            if (Optimizations.UseSse2)
+            {
+                OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+                int sizeF = op.Size & 1;
+
+                if (sizeF == 0)
+                {
+                    Type[] typesSav = new Type[] { typeof(float) };
+                    Type[] typesXor = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    context.EmitLdc_R4(-0f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), typesSav));
+
+                    context.EmitLdvec(op.Rn);
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Xor), typesXor));
+
+                    context.EmitStvec(op.Rd);
+
+                    if (op.RegisterSize == RegisterSize.Simd64)
+                    {
+                        EmitVectorZeroUpper(context, op.Rd);
+                    }
+                }
+                else /* if (sizeF == 1) */
+                {
+                    Type[] typesSav = new Type[] { typeof(double) };
+                    Type[] typesXor = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+
+                    context.EmitLdc_R8(-0d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), typesXor));
+
+                    EmitStvecWithCastFromDouble(context, op.Rd);
+                }
+            }
+            else
+            {
+                EmitVectorUnaryOpF(context, () => context.Emit(OpCodes.Neg));
+            }
         }
 
         public static void Fnmadd_S(ILEmitterCtx context)
