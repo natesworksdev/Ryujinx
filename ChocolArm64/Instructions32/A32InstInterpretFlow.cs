@@ -37,6 +37,21 @@ namespace ChocolArm64.Instructions32
             }
         }
 
+        public static void Bx(CpuThreadState state, MemoryManager memory, OpCode64 opCode)
+        {
+            A32OpCodeBReg op = (A32OpCodeBReg)opCode;
+            if (IsConditionTrue(state, op.Cond))
+            {
+                uint pc = GetPc(state);
+                BXWritePC(state, GetReg(state, op.Rm));
+            }
+        }
+
+        public static void Bxj(CpuThreadState state, MemoryManager memory, OpCode64 opCode)
+        {
+            Bx(state, memory, opCode);
+        }
+
         private static void Blx_Imm(CpuThreadState state, MemoryManager memory, OpCode64 opCode, bool x)
         {
             A32OpCodeBImmAl op = (A32OpCodeBImmAl)opCode;

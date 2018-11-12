@@ -18,6 +18,8 @@ namespace ChocolArm64
             SetA32("<<<<1011xxxxxxxxxxxxxxxxxxxxxxxx", A32InstInterpret.Bl,     typeof(A32OpCodeBImmAl));
             SetA32("1111101xxxxxxxxxxxxxxxxxxxxxxxxx", A32InstInterpret.Blx,    typeof(A32OpCodeBImmAl));
             SetA32("<<<<000100101111111111110011xxxx", A32InstInterpret.Blx,    typeof(A32OpCodeBReg));
+            SetA32("<<<<000100101111111111110001xxxx", A32InstInterpret.Bx,     typeof(A32OpCodeBReg));
+            SetA32("<<<<000100101111111111110010xxxx", A32InstInterpret.Bxj,    typeof(A32OpCodeBReg));
 #endregion
 
 #region "OpCode Table (AArch64)"
