@@ -30,6 +30,11 @@ namespace Ryujinx.Audio
         private SoundIoAudioTrackPool m_TrackPool;
 
         /// <summary>
+        /// True if SoundIO is supported on the device.
+        /// </summary>
+        public static bool IsSupported => true;
+
+        /// <summary>
         /// Constructs a new instance of a <see cref="SoundIoAudioOut"/>
         /// </summary>
         public SoundIoAudioOut()
@@ -42,11 +47,6 @@ namespace Ryujinx.Audio
             m_AudioDevice = m_AudioContext.GetOutputDevice(m_AudioContext.DefaultOutputDeviceIndex);
             m_TrackPool = new SoundIoAudioTrackPool(m_AudioContext, m_AudioDevice, MaximumTracks);
         }
-        
-        /// <summary>
-        /// True if SoundIO is supported on the device.
-        /// </summary>
-        public static bool IsSupported => true;
 
         /// <summary>
         /// Gets the current playback state of the specified track
@@ -55,7 +55,9 @@ namespace Ryujinx.Audio
         public PlaybackState GetState(int trackId)
         {
             if (m_TrackPool.TryGet(trackId, out SoundIoAudioTrack track))
+            {
                 return track.State;
+            }
 
             return PlaybackState.Stopped;
         }
@@ -69,8 +71,10 @@ namespace Ryujinx.Audio
         /// <returns>The created track's Track ID</returns>
         public int OpenTrack(int sampleRate, int channels, ReleaseCallback callback)
         {
-            if(!m_TrackPool.TryGet(out SoundIoAudioTrack track))
+            if (!m_TrackPool.TryGet(out SoundIoAudioTrack track))
+            {
                 return -1;
+            }
 
             // Open the output. We currently only support 16-bit signed LE
             track.Open(sampleRate, channels, callback, SoundIOFormat.S16LE);
@@ -125,7 +129,8 @@ namespace Ryujinx.Audio
         /// <param name="trackId">The track to append the buffer to</param>
         /// <param name="bufferTag">The internal tag of the buffer</param>
         /// <param name="buffer">The buffer to append to the track</param>
-        public void AppendBuffer<T>(int trackId, long bufferTag, T[] buffer) where T : struct
+        public void AppendBuffer<T>(int trackId, long bufferTag, T[] buffer)
+            where T : struct
         {
             if(m_TrackPool.TryGet(trackId, out SoundIoAudioTrack track))
             {
@@ -141,7 +146,9 @@ namespace Ryujinx.Audio
         public bool ContainsBuffer(int trackId, long bufferTag)
         {
             if (m_TrackPool.TryGet(trackId, out SoundIoAudioTrack track))
+            {
                 return track.ContainsBuffer(bufferTag);
+            }
 
             return false;
         }
@@ -158,11 +165,8 @@ namespace Ryujinx.Audio
             {
                 List<long> bufferTags = new List<long>();
 
-                for(var i = 0; i < maxCount; i++)
+                while(maxCount-- > 0 && track.ReleasedBuffers.TryDequeue(out long tag))
                 {
-                    if (!track.ReleasedBuffers.TryDequeue(out long tag))
-                        break;
-
                     bufferTags.Add(tag);
                 }
 

@@ -22,7 +22,7 @@
         /// <param name="length">The size of the buffer</param>
         public SoundIoBuffer(long tag, int length)
         {
-            Tag = tag;
+            Tag    = tag;
             Length = length;
         }
     }

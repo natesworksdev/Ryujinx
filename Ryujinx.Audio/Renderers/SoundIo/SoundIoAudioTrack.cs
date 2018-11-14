@@ -78,28 +78,36 @@ namespace Ryujinx.Audio.SoundIo
         /// <param name="channelCount">The requested channel count of the track</param>
         /// <param name="callback">A <see cref="ReleaseCallback" /> that represents the delegate to invoke when a buffer has been released by the audio track</param>
         /// <param name="format">The requested sample format of the track</param>
-        public void Open(int sampleRate, int channelCount, ReleaseCallback callback, SoundIOFormat format = SoundIOFormat.S16LE)
+        public void Open(
+            int sampleRate,
+            int channelCount,
+            ReleaseCallback callback,
+            SoundIOFormat format = SoundIOFormat.S16LE)
         {
             // Close any existing audio streams
             if (AudioStream != null)
+            {
                 Close();
+            }
 
             if (!AudioDevice.SupportsSampleRate(sampleRate))
+            {
                 throw new InvalidOperationException($"This sound device does not support a sample rate of {sampleRate}Hz");
+            }
 
             if (!AudioDevice.SupportsFormat(format))
+            {
                 throw new InvalidOperationException($"This sound device does not support SoundIOFormat.{Enum.GetName(typeof(SoundIOFormat), format)}");
+            }
 
             AudioStream = AudioDevice.CreateOutStream();
 
-            AudioStream.Name = $"SwitchAudioTrack_{TrackID}";
+            AudioStream.Name       = $"SwitchAudioTrack_{TrackID}";
+            AudioStream.Layout     = SoundIOChannelLayout.GetDefault(channelCount);
+            AudioStream.Format     = format;
             AudioStream.SampleRate = sampleRate;
-            AudioStream.Layout = SoundIOChannelLayout.GetDefault(channelCount);
-            AudioStream.Format = format;
 
             AudioStream.WriteCallback = WriteCallback;
-            //AudioStream.ErrorCallback = ErrorCallback;
-            //AudioStream.UnderflowCallback = UnderflowCallback;
 
             BufferReleased += callback;
 
@@ -113,38 +121,38 @@ namespace Ryujinx.Audio.SoundIo
         /// <param name="maxFrameCount">The maximum amount of frames that can be written to the audio backend</param>
         private unsafe void WriteCallback(int minFrameCount, int maxFrameCount)
         {
-            var bytesPerFrame = AudioStream.BytesPerFrame;
-            var bytesPerSample = (uint)AudioStream.BytesPerSample;
+            int bytesPerFrame = AudioStream.BytesPerFrame;
+            uint bytesPerSample = (uint)AudioStream.BytesPerSample;
 
-            var bufferedFrames = m_Buffer.Length / bytesPerFrame;
-            var bufferedSamples = m_Buffer.Length / bytesPerSample;
+            int bufferedFrames = m_Buffer.Length / bytesPerFrame;
+            long bufferedSamples = m_Buffer.Length / bytesPerSample;
 
-            var frameCount = Math.Min(bufferedFrames, maxFrameCount);
+            int frameCount = Math.Min(bufferedFrames, maxFrameCount);
 
             if (frameCount == 0)
                 return;
 
-            var areas = AudioStream.BeginWrite(ref frameCount);
-            var channelCount = areas.ChannelCount;
+            SoundIOChannelAreas areas = AudioStream.BeginWrite(ref frameCount);
+            int channelCount = areas.ChannelCount;
 
-            var samples = new byte[frameCount * bytesPerFrame];
+            byte[] samples = new byte[frameCount * bytesPerFrame];
 
             m_Buffer.Read(samples, 0, samples.Length);
 
             // This is a huge ugly block of code, but we save
             // a significant amount of time over the generic
             // loop that handles other channel counts.
-            
+
             // Mono
             if (channelCount == 1)
             {
-                var area = areas.GetArea(0);
+                SoundIOChannelArea area = areas.GetArea(0);
 
                 fixed (byte* srcptr = samples)
                 {
                     if (bytesPerSample == 1)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             ((byte*)area.Pointer)[0] = srcptr[frame * bytesPerFrame];
 
@@ -153,7 +161,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else if (bytesPerSample == 2)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             ((short*)area.Pointer)[0] = ((short*)srcptr)[frame * bytesPerFrame >> 1];
 
@@ -162,7 +170,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else if (bytesPerSample == 4)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             ((int*)area.Pointer)[0] = ((int*)srcptr)[frame * bytesPerFrame >> 2];
 
@@ -171,7 +179,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             Unsafe.CopyBlockUnaligned((byte*)area.Pointer, srcptr + (frame * bytesPerFrame), bytesPerSample);
 
@@ -183,14 +191,14 @@ namespace Ryujinx.Audio.SoundIo
             // Stereo
             else if (channelCount == 2)
             {
-                var area1 = areas.GetArea(0);
-                var area2 = areas.GetArea(1);
+                SoundIOChannelArea area1 = areas.GetArea(0);
+                SoundIOChannelArea area2 = areas.GetArea(1);
 
                 fixed (byte* srcptr = samples)
                 {
                     if (bytesPerSample == 1)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
                             ((byte*)area1.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 0];
@@ -204,7 +212,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else if (bytesPerSample == 2)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
                             ((short*)area1.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 0];
@@ -218,7 +226,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else if (bytesPerSample == 4)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
                             ((int*)area1.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 0];
@@ -232,7 +240,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
                             Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, srcptr + (frame * bytesPerFrame) + (0 * bytesPerSample), bytesPerSample);
@@ -249,18 +257,18 @@ namespace Ryujinx.Audio.SoundIo
             // Surround
             else if (channelCount == 6)
             {
-                var area1 = areas.GetArea(0);
-                var area2 = areas.GetArea(1);
-                var area3 = areas.GetArea(2);
-                var area4 = areas.GetArea(3);
-                var area5 = areas.GetArea(4);
-                var area6 = areas.GetArea(5);
+                SoundIOChannelArea area1 = areas.GetArea(0);
+                SoundIOChannelArea area2 = areas.GetArea(1);
+                SoundIOChannelArea area3 = areas.GetArea(2);
+                SoundIOChannelArea area4 = areas.GetArea(3);
+                SoundIOChannelArea area5 = areas.GetArea(4);
+                SoundIOChannelArea area6 = areas.GetArea(5);
 
                 fixed (byte* srcptr = samples)
                 {
                     if (bytesPerSample == 1)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
                             ((byte*)area1.Pointer)[0] = srcptr[(frame * bytesPerFrame) + 0];
@@ -290,7 +298,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else if (bytesPerSample == 2)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
                             ((short*)area1.Pointer)[0] = ((short*)srcptr)[(frame * bytesPerFrame >> 1) + 0];
@@ -320,7 +328,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else if (bytesPerSample == 4)
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
                             ((int*)area1.Pointer)[0] = ((int*)srcptr)[(frame * bytesPerFrame >> 2) + 0];
@@ -350,7 +358,7 @@ namespace Ryujinx.Audio.SoundIo
                     }
                     else
                     {
-                        for (var frame = 0; frame < frameCount; frame++)
+                        for (int frame = 0; frame < frameCount; frame++)
                         {
                             // Channel 1
                             Unsafe.CopyBlockUnaligned((byte*)area1.Pointer, srcptr + (frame * bytesPerFrame) + (0 * bytesPerSample), bytesPerSample);
@@ -383,22 +391,22 @@ namespace Ryujinx.Audio.SoundIo
             // Every other channel count
             else
             {
-                var channels = new SoundIOChannelArea[channelCount];
+                SoundIOChannelArea[] channels = new SoundIOChannelArea[channelCount];
 
                 // Obtain the channel area for each channel
-                for (var i = 0; i < channelCount; i++)
+                for (int i = 0; i < channelCount; i++)
                     channels[i] = areas.GetArea(i);
 
                 fixed (byte* srcptr = samples)
                 {
-                    for (var frame = 0; frame < frameCount; frame++)
-                    for (var channel = 0; channel < areas.ChannelCount; channel++)
-                    {
-                        // Copy channel by channel, frame by frame. This is slow!
-                        Unsafe.CopyBlockUnaligned((byte*)channels[channel].Pointer, srcptr + (frame * bytesPerFrame) + (channel * bytesPerSample), bytesPerSample);
+                    for (int frame = 0; frame < frameCount; frame++)
+                        for (int channel = 0; channel < areas.ChannelCount; channel++)
+                        {
+                            // Copy channel by channel, frame by frame. This is slow!
+                            Unsafe.CopyBlockUnaligned((byte*)channels[channel].Pointer, srcptr + (frame * bytesPerFrame) + (channel * bytesPerSample), bytesPerSample);
 
-                        channels[channel].Pointer += channels[channel].Step;
-                    }
+                            channels[channel].Pointer += channels[channel].Step;
+                        }
                 }
             }
 
@@ -414,6 +422,7 @@ namespace Ryujinx.Audio.SoundIo
         private void UpdateReleasedBuffers(int bytesRead)
         {
             bool bufferReleased = false;
+
             while (bytesRead > 0)
             {
                 if (m_ReservedBuffers.TryPeek(out SoundIoBuffer buffer))
@@ -441,28 +450,14 @@ namespace Ryujinx.Audio.SoundIo
         }
 
         /// <summary>
-        /// This callback occurs when the sound device encounters an error
-        /// </summary>
-        private void ErrorCallback()
-        {
-
-        }
-
-        /// <summary>
-        /// This callback occurs when the sound device runs out of buffered audio data to play
-        /// </summary>
-        private void UnderflowCallback()
-        {
-
-        }
-
-        /// <summary>
         /// Starts audio playback
         /// </summary>
         public void Start()
         {
             if (AudioStream == null)
+            {
                 return;
+            }
 
             AudioStream.Start();
             AudioStream.Pause(false);
@@ -476,7 +471,9 @@ namespace Ryujinx.Audio.SoundIo
         public void Stop()
         {
             if (AudioStream == null)
+            {
                 return;
+            }
 
             AudioStream.Pause(true);
             AudioContext.FlushEvents();
@@ -492,13 +489,15 @@ namespace Ryujinx.Audio.SoundIo
         public void AppendBuffer<T>(long bufferTag, T[] buffer)
         {
             if (AudioStream == null)
+            {
                 return;
+            }
 
             // Calculate the size of the audio samples
-            var size = Unsafe.SizeOf<T>();
+            int size = Unsafe.SizeOf<T>();
 
             // Calculate the amount of bytes to copy from the buffer
-            var bytesToCopy = size * buffer.Length;
+            int bytesToCopy = size * buffer.Length;
 
             // Copy the memory to our ring buffer
             m_Buffer.Write(buffer, 0, bytesToCopy);

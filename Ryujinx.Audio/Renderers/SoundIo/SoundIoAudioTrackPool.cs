@@ -30,7 +30,14 @@ namespace Ryujinx.Audio.SoundIo
         /// </summary>
         private SoundIODevice m_Device;
 
+        /// <summary>
+        /// 
+        /// </summary>
         private ConcurrentQueue<SoundIoAudioTrack> m_Queue;
+
+        /// <summary>
+        /// 
+        /// </summary>
         private ConcurrentDictionary<int, SoundIoAudioTrack> m_TrackList;
 
         /// <summary>
@@ -54,11 +61,12 @@ namespace Ryujinx.Audio.SoundIo
         /// <param name="maxSize">The maximum amount of tracks that can be created</param>
         public SoundIoAudioTrackPool(SoundIO context, SoundIODevice device, int maxSize)
         {
+            m_Size    = 0;
             m_Context = context;
-            m_Device = device;
-            m_Size = 0;
+            m_Device  = device;
             m_MaxSize = maxSize;
-            m_Queue = new ConcurrentQueue<SoundIoAudioTrack>();
+
+            m_Queue     = new ConcurrentQueue<SoundIoAudioTrack>();
             m_TrackList = new ConcurrentDictionary<int, SoundIoAudioTrack>();
         }
 
@@ -74,7 +82,7 @@ namespace Ryujinx.Audio.SoundIo
             var trackCollection = Enumerable.Range(0, initialCapacity)
                                             .Select(TrackFactory);
 
-            m_Size = initialCapacity;
+            m_Size  = initialCapacity;
             m_Queue = new ConcurrentQueue<SoundIoAudioTrack>(trackCollection);
         }
 
@@ -87,7 +95,7 @@ namespace Ryujinx.Audio.SoundIo
         private SoundIoAudioTrack TrackFactory(int trackId)
         {
             // Create a new AudioTrack
-            var track = new SoundIoAudioTrack(trackId, m_Context, m_Device);
+            SoundIoAudioTrack track = new SoundIoAudioTrack(trackId, m_Context, m_Device);
 
             // Keep track of issued tracks
             m_TrackList[trackId] = track;
@@ -103,11 +111,15 @@ namespace Ryujinx.Audio.SoundIo
         {
             // If we have a track available, reuse it
             if (m_Queue.TryDequeue(out SoundIoAudioTrack track))
+            {
                 return track;
-            
+            }
+
             // Have we reached the maximum size of our pool?
             if (m_Size >= m_MaxSize)
+            {
                 return null;
+            }
 
             // We don't have any pooled tracks, so create a new one
             return TrackFactory(m_Size++);
@@ -120,7 +132,9 @@ namespace Ryujinx.Audio.SoundIo
         public SoundIoAudioTrack Get(int trackId)
         {
             if (m_TrackList.TryGetValue(trackId, out SoundIoAudioTrack track))
+            {
                 return track;
+            }
 
             return null;
         }
@@ -133,6 +147,7 @@ namespace Ryujinx.Audio.SoundIo
         public bool TryGet(out SoundIoAudioTrack track)
         {
             track = Get();
+
             return track != null;
         }
 

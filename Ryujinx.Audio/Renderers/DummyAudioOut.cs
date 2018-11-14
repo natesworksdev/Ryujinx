@@ -30,7 +30,8 @@ namespace Ryujinx.Audio
 
         public void Stop(int trackId) { }
 
-        public void AppendBuffer<T>(int trackID, long bufferTag, T[] buffer) where T : struct
+        public void AppendBuffer<T>(int trackID, long bufferTag, T[] buffer)
+            where T : struct
         {
             m_Buffers.Enqueue(bufferTag);
         }
@@ -39,10 +40,12 @@ namespace Ryujinx.Audio
         {
             List<long> bufferTags = new List<long>();
 
-            for (var i = 0; i < maxCount; i++)
+            for (int i = 0; i < maxCount; i++)
             {
                 if (!m_Buffers.TryDequeue(out long tag))
+                {
                     break;
+                }
 
                 bufferTags.Add(tag);
             }

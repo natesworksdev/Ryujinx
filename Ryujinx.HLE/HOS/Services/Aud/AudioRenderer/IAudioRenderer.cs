@@ -318,11 +318,9 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                         continue;
                     }
 
-                    int OutOffset = 0;
-
-                    int PendingSamples = MixBufferSamplesCount;
-
-                    float Volume = Voice.Volume;
+                    int   OutOffset      = 0;
+                    int   PendingSamples = MixBufferSamplesCount;
+                    float Volume         = Voice.Volume;
 
                     while (PendingSamples > 0)
                     {
@@ -419,7 +417,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             // Perform Saturation using SSE2 if supported
             if (Sse2.IsSupported)
             {
-                fixed (int* inptr = Buffer)
+                fixed (int*   inptr  = Buffer)
                 fixed (short* outptr = Output)
                 {
                     for (; Offset + 32 <= Buffer.Length; Offset += 32)

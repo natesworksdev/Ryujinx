@@ -93,11 +93,17 @@ namespace Ryujinx
         private static IAalOutput InitializeAudioEngine()
         {
             if (SoundIoAudioOut.IsSupported)
+            {
                 return new SoundIoAudioOut();
+            }
             else if (OpenALAudioOut.IsSupported)
+            {
                 return new OpenALAudioOut();
-
-            return new DummyAudioOut();
+            }
+            else
+            {
+                return new DummyAudioOut();
+            }
         }
     }
 }

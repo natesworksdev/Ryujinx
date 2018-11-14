@@ -8,10 +8,10 @@ namespace Ryujinx.Audio.SoundIo
     internal class SoundIoRingBuffer
     {
         private byte[] m_Buffer;
-        private int m_HeadOffset;
-        private int m_TailOffset;
-        private int m_Size;
-
+        private int    m_Size;
+        private int    m_HeadOffset;
+        private int    m_TailOffset;
+        
         /// <summary>
         /// Gets the available bytes in the ring buffer
         /// </summary>
@@ -42,7 +42,7 @@ namespace Ryujinx.Audio.SoundIo
         /// </summary>
         public void Clear()
         {
-            m_Size = 0;
+            m_Size       = 0;
             m_HeadOffset = 0;
             m_TailOffset = 0;
         }
@@ -56,10 +56,14 @@ namespace Ryujinx.Audio.SoundIo
             lock (this)
             {
                 if (size > m_Size)
+                {
                     size = m_Size;
+                }
 
                 if (size == 0)
+                {
                     return;
+                }
 
                 m_HeadOffset = (m_HeadOffset + size) % m_Buffer.Length;
                 m_Size -= size;
@@ -94,7 +98,7 @@ namespace Ryujinx.Audio.SoundIo
                 }
             }
 
-            m_Buffer = buffer;
+            m_Buffer     = buffer;
             m_HeadOffset = 0;
             m_TailOffset = m_Size;
         }
@@ -109,7 +113,9 @@ namespace Ryujinx.Audio.SoundIo
         public void Write<T>(T[] buffer, int index, int count)
         {
             if (count == 0)
+            {
                 return;
+            }
 
             lock (this)
             {
@@ -154,10 +160,14 @@ namespace Ryujinx.Audio.SoundIo
             lock (this)
             {
                 if (count > m_Size)
+                {
                     count = m_Size;
+                }
 
                 if (count == 0)
+                {
                     return 0;
+                }
 
                 if (m_HeadOffset < m_TailOffset)
                 {
