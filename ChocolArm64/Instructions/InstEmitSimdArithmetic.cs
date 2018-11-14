@@ -663,7 +663,59 @@ namespace ChocolArm64.Instructions
 
         public static void Fmul_Ve(ILEmitterCtx context)
         {
-            EmitVectorBinaryOpByElemF(context, () => context.Emit(OpCodes.Mul));
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                OpCodeSimdRegElemF64 op = (OpCodeSimdRegElemF64)context.CurrOp;
+
+                int sizeF = op.Size & 1;
+
+                if (sizeF == 0)
+                {
+                    Type[] typesSfl = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>), typeof(byte) };
+                    Type[] typesMul = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    context.EmitLdvec(op.Rn);
+
+                    context.EmitLdvec(op.Rm);
+                    context.Emit(OpCodes.Dup);
+
+                    context.EmitLdc_I4(op.Index | op.Index << 2 | op.Index << 4 | op.Index << 6);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle), typesSfl));
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), typesMul));
+
+                    context.EmitStvec(op.Rd);
+
+                    if (op.RegisterSize == RegisterSize.Simd64)
+                    {
+                        EmitVectorZeroUpper(context, op.Rd);
+                    }
+                }
+                else /* if (sizeF == 1) */
+                {
+                    Type[] typesSfl = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>), typeof(byte) };
+                    Type[] typesMul = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+
+                    EmitLdvecWithCastToDouble(context, op.Rm);
+                    context.Emit(OpCodes.Dup);
+
+                    context.EmitLdc_I4(op.Index | op.Index << 1);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Shuffle), typesSfl));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), typesMul));
+
+                    EmitStvecWithCastFromDouble(context, op.Rd);
+                }
+            }
+            else
+            {
+                EmitVectorBinaryOpByElemF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMul));
+                });
+            }
         }
 
         public static void Fmulx_S(ILEmitterCtx context)
