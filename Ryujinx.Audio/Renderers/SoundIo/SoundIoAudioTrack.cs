@@ -61,13 +61,13 @@ namespace Ryujinx.Audio.SoundIo
         /// <param name="audioDevice">The SoundIO audio device</param>
         public SoundIoAudioTrack(int trackId, SoundIO audioContext, SoundIODevice audioDevice)
         {
-            TrackID = trackId;
-            AudioContext = audioContext;
-            AudioDevice = audioDevice;
-            State = PlaybackState.Stopped;
+            TrackID         = trackId;
+            AudioContext    = audioContext;
+            AudioDevice     = audioDevice;
+            State           = PlaybackState.Stopped;
             ReleasedBuffers = new ConcurrentQueue<long>();
 
-            m_Buffer = new SoundIoRingBuffer();
+            m_Buffer          = new SoundIoRingBuffer();
             m_ReservedBuffers = new ConcurrentQueue<SoundIoBuffer>();
         }
 
@@ -121,16 +121,18 @@ namespace Ryujinx.Audio.SoundIo
         /// <param name="maxFrameCount">The maximum amount of frames that can be written to the audio backend</param>
         private unsafe void WriteCallback(int minFrameCount, int maxFrameCount)
         {
-            int bytesPerFrame = AudioStream.BytesPerFrame;
+            int  bytesPerFrame  = AudioStream.BytesPerFrame;
             uint bytesPerSample = (uint)AudioStream.BytesPerSample;
 
-            int bufferedFrames = m_Buffer.Length / bytesPerFrame;
+            int  bufferedFrames  = m_Buffer.Length / bytesPerFrame;
             long bufferedSamples = m_Buffer.Length / bytesPerSample;
 
             int frameCount = Math.Min(bufferedFrames, maxFrameCount);
 
             if (frameCount == 0)
+            {
                 return;
+            }
 
             SoundIOChannelAreas areas = AudioStream.BeginWrite(ref frameCount);
             int channelCount = areas.ChannelCount;
@@ -395,7 +397,9 @@ namespace Ryujinx.Audio.SoundIo
 
                 // Obtain the channel area for each channel
                 for (int i = 0; i < channelCount; i++)
+                {
                     channels[i] = areas.GetArea(i);
+                }
 
                 fixed (byte* srcptr = samples)
                 {
@@ -530,9 +534,9 @@ namespace Ryujinx.Audio.SoundIo
             OnBufferReleased();
             ReleasedBuffers.Clear();
 
-            AudioStream = null;
+            State          = PlaybackState.Stopped;
+            AudioStream    = null;
             BufferReleased = null;
-            State = PlaybackState.Stopped;
         }
 
         private void OnBufferReleased()
