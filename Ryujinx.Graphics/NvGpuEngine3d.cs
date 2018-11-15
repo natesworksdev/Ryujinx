@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics
 {
-    public class NvGpuEngine3d : INvGpuEngine
+    class NvGpuEngine3d : INvGpuEngine
     {
         public int[] Registers { get; private set; }
 
@@ -23,8 +23,6 @@ namespace Ryujinx.Graphics
         }
 
         private ConstBuffer[][] ConstBuffers;
-
-        private List<long>[] UploadedKeys;
 
         private int CurrentInstance = 0;
 
@@ -59,39 +57,24 @@ namespace Ryujinx.Graphics
                 ConstBuffers[Index] = new ConstBuffer[18];
             }
 
-            UploadedKeys = new List<long>[(int)NvGpuBufferType.Count];
-
-            for (int i = 0; i < UploadedKeys.Length; i++)
-            {
-                UploadedKeys[i] = new List<long>();
-            }
-
             //Ensure that all components are enabled by default.
             //FIXME: Is this correct?
             WriteRegister(NvGpuEngine3dReg.ColorMaskN, 0x1111);
         }
 
-        public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        public void CallMethod(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            if (Methods.TryGetValue(PBEntry.Method, out NvGpuMethod Method))
+            if (Methods.TryGetValue(MethCall.Method, out NvGpuMethod Method))
             {
-                Method(Vmm, PBEntry);
+                Method(Vmm, MethCall);
             }
             else
             {
-                WriteRegister(PBEntry);
+                WriteRegister(MethCall);
             }
         }
 
-        public void ResetCache()
-        {
-            foreach (List<long> Uploaded in UploadedKeys)
-            {
-                Uploaded.Clear();
-            }
-        }
-
-        private void VertexEndGl(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void VertexEndGl(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
             LockCaches();
 
@@ -142,13 +125,11 @@ namespace Ryujinx.Graphics
             Gpu.Renderer.Texture.UnlockCache();
         }
 
-        private void ClearBuffers(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void ClearBuffers(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            int Arg0 = PBEntry.Arguments[0];
+            int Attachment = (MethCall.Argument >> 6) & 0xf;
 
-            int Attachment = (Arg0 >> 6) & 0xf;
-
-            GalClearBufferFlags Flags = (GalClearBufferFlags)(Arg0 & 0x3f);
+            GalClearBufferFlags Flags = (GalClearBufferFlags)(MethCall.Argument & 0x3f);
 
             float Red   = ReadRegisterFloat(NvGpuEngine3dReg.ClearNColor + 0);
             float Green = ReadRegisterFloat(NvGpuEngine3dReg.ClearNColor + 1);
@@ -580,6 +561,8 @@ namespace Ryujinx.Graphics
                 Key &= ~0x1fL;
             }
 
+            long addr = Key;
+
             Key = Vmm.GetPhysicalAddress(Key);
 
             if (Key == -1)
@@ -608,7 +591,7 @@ namespace Ryujinx.Graphics
 
                     long Key = Vmm.GetPhysicalAddress(Cb.Position);
 
-                    if (QueryKeyUpload(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer))
+                    if (Gpu.ResourceManager.MemoryRegionModified(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer))
                     {
                         IntPtr Source = Vmm.GetHostAddress(Cb.Position, Cb.Size);
 
@@ -651,7 +634,7 @@ namespace Ryujinx.Graphics
                     PrimType == GalPrimitiveType.Quads ||
                     PrimType == GalPrimitiveType.QuadStrip;
 
-                if (!IboCached || QueryKeyUpload(Vmm, IboKey, (uint)IbSize, NvGpuBufferType.Index))
+                if (!IboCached || Gpu.ResourceManager.MemoryRegionModified(Vmm, IboKey, (uint)IbSize, NvGpuBufferType.Index))
                 {
                     if (!UsesLegacyQuads)
                     {
@@ -768,7 +751,7 @@ namespace Ryujinx.Graphics
 
                 bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VboKey, VbSize);
 
-                if (!VboCached || QueryKeyUpload(Vmm, VboKey, VbSize, NvGpuBufferType.Vertex))
+                if (!VboCached || Gpu.ResourceManager.MemoryRegionModified(Vmm, VboKey, VbSize, NvGpuBufferType.Vertex))
                 {
                     IntPtr DataAddress = Vmm.GetHostAddress(VertexPosition, VbSize);
 
@@ -867,9 +850,9 @@ namespace Ryujinx.Graphics
             WriteCounterAndTimestamp
         }
 
-        private void QueryControl(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void QueryControl(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            WriteRegister(PBEntry);
+            WriteRegister(MethCall);
 
             long Position = MakeInt64From2xInt32(NvGpuEngine3dReg.QueryAddress);
 
@@ -899,29 +882,24 @@ namespace Ryujinx.Graphics
             }
         }
 
-        private void CbData(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void CbData(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
             long Position = MakeInt64From2xInt32(NvGpuEngine3dReg.ConstBufferAddress);
 
             int Offset = ReadRegister(NvGpuEngine3dReg.ConstBufferOffset);
 
-            foreach (int Arg in PBEntry.Arguments)
-            {
-                Vmm.WriteInt32(Position + Offset, Arg);
+            Vmm.WriteInt32(Position + Offset, MethCall.Argument);
 
-                Offset += 4;
-            }
+            WriteRegister(NvGpuEngine3dReg.ConstBufferOffset, Offset + 4);
 
-            WriteRegister(NvGpuEngine3dReg.ConstBufferOffset, Offset);
-
-            UploadedKeys[(int)NvGpuBufferType.ConstBuffer].Clear();
+            Gpu.ResourceManager.ClearPbCache(NvGpuBufferType.ConstBuffer);
         }
 
-        private void CbBind(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void CbBind(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            int Stage = (PBEntry.Method - 0x904) >> 3;
+            int Stage = (MethCall.Method - 0x904) >> 3;
 
-            int Index = PBEntry.Arguments[0];
+            int Index = MethCall.Argument;
 
             bool Enabled = (Index & 1) != 0;
 
@@ -960,14 +938,9 @@ namespace Ryujinx.Graphics
                 (uint)Registers[(int)Reg + 1];
         }
 
-        private void WriteRegister(NvGpuPBEntry PBEntry)
+        private void WriteRegister(GpuMethodCall MethCall)
         {
-            int ArgsCount = PBEntry.Arguments.Count;
-
-            if (ArgsCount > 0)
-            {
-                Registers[PBEntry.Method] = PBEntry.Arguments[ArgsCount - 1];
-            }
+            Registers[MethCall.Method] = MethCall.Argument;
         }
 
         private int ReadRegister(NvGpuEngine3dReg Reg)
@@ -988,20 +961,6 @@ namespace Ryujinx.Graphics
         private void WriteRegister(NvGpuEngine3dReg Reg, int Value)
         {
             Registers[(int)Reg] = Value;
-        }
-
-        private bool QueryKeyUpload(NvGpuVmm Vmm, long Key, long Size, NvGpuBufferType Type)
-        {
-            List<long> Uploaded = UploadedKeys[(int)Type];
-
-            if (Uploaded.Contains(Key))
-            {
-                return false;
-            }
-
-            Uploaded.Add(Key);
-
-            return Vmm.IsRegionModified(Key, Size, Type);
         }
     }
 }

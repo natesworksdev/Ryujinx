@@ -402,6 +402,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     DstFb = GL.GenFramebuffer();
                 }
 
+                GL.GetError();
+
                 GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, SrcFb);
                 GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, DstFb);
 
@@ -420,8 +422,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
 
                 ClearBufferMask Mask = GetClearMask(SrcTex);
-
-                GL.Clear(Mask);
 
                 GL.BlitFramebuffer(SrcX0, SrcY0, SrcX1, SrcY1, DstX0, DstY0, DstX1, DstY1, Mask, Filter);
             }
