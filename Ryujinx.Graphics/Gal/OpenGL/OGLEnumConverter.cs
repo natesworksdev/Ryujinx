@@ -270,7 +270,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalTextureFilter.Linear:  return TextureMinFilter.Linear;
             }
 
-            return TextureMinFilter.Linear;
+            throw new ArgumentException(nameof(MinFilter) + " \"" + MinFilter + "\" is not valid!");
         }
 
         public static TextureMagFilter GetTextureMagFilter(GalTextureFilter Filter)
@@ -281,7 +281,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 case GalTextureFilter.Linear:  return TextureMagFilter.Linear;
             }
 
-            return TextureMagFilter.Linear;
+            throw new ArgumentException(nameof(Filter) + " \"" + Filter + "\" is not valid!");
         }
 
         public static BlendEquationMode GetBlendEquation(GalBlendEquation BlendEquation)

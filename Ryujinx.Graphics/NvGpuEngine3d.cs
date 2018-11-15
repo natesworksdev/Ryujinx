@@ -537,8 +537,11 @@ namespace Ryujinx.Graphics
                 return;
             }
 
+            bool LinkedTsc = ReadRegisterBool(NvGpuEngine3dReg.LinkedTsc);
+
             int TicIndex = (TextureHandle >>  0) & 0xfffff;
-            int TscIndex = (TextureHandle >> 20) & 0xfff;
+
+            int TscIndex = LinkedTsc ? TicIndex : (TextureHandle >> 20) & 0xfff;
 
             long TicPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.TexHeaderPoolOffset);
             long TscPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.TexSamplerPoolOffset);

@@ -36,6 +36,7 @@ namespace Ryujinx.Graphics
         ZetaHoriz            = 0x48a,
         ZetaVert             = 0x48b,
         ZetaArrayMode        = 0x48c,
+        LinkedTsc            = 0x48d,
         DepthTestEnable      = 0x4b3,
         BlendIndependent     = 0x4b9,
         DepthWriteEnable     = 0x4ba,
