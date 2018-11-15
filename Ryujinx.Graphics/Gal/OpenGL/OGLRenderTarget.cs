@@ -402,8 +402,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     DstFb = GL.GenFramebuffer();
                 }
 
-                GL.GetError();
-
                 GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, SrcFb);
                 GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, DstFb);
 

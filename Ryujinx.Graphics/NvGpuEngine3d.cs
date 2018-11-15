@@ -561,8 +561,6 @@ namespace Ryujinx.Graphics
                 Key &= ~0x1fL;
             }
 
-            long addr = Key;
-
             Key = Vmm.GetPhysicalAddress(Key);
 
             if (Key == -1)
