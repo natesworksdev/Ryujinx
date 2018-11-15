@@ -308,7 +308,29 @@ namespace ChocolArm64.Instructions
 
         public static void Scvtf_V(ILEmitterCtx context)
         {
-            EmitVectorCvtf(context, signed: true);
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+
+            if (Optimizations.UseSse2 && sizeF == 0)
+            {
+                Type[] typesCvt = new Type[] { typeof(Vector128<int>) };
+
+                EmitLdvecWithSignedCast(context, op.Rn, 2);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToVector128Single), typesCvt));
+
+                context.EmitStvec(op.Rd);
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+            else
+            {
+                EmitVectorCvtf(context, signed: true);
+            }
         }
 
         public static void Ucvtf_Gp(ILEmitterCtx context)
@@ -487,16 +509,6 @@ namespace ChocolArm64.Instructions
             }
 
             context.EmitStintzr(op.Rd);
-        }
-
-        private static void EmitVectorScvtf(ILEmitterCtx context)
-        {
-            EmitVectorCvtf(context, true);
-        }
-
-        private static void EmitVectorUcvtf(ILEmitterCtx context)
-        {
-            EmitVectorCvtf(context, false);
         }
 
         private static void EmitVectorCvtf(ILEmitterCtx context, bool signed)
