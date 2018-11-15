@@ -45,6 +45,12 @@ namespace Ryujinx.Tests.Cpu
                                  0x0000000080000000ul, 0x00000000FFFFFFFFul };
         }
 
+        private static ulong[] _2S_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x7FFFFFFF7FFFFFFFul,
+                                 0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
+
         private static ulong[] _4H2S1D_()
         {
             return new ulong[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
@@ -250,19 +256,21 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Opcodes)"
-        private static uint[] _F_Cmp_S_S_()
+        private static uint[] _F_Cmp_Cmpe_S_S_()
         {
             return new uint[]
             {
-                0x1E202028u // FCMP S1, #0.0
+                0x1E202028u, // FCMP  S1, #0.0
+                0x1E202038u  // FCMPE S1, #0.0
             };
         }
 
-        private static uint[] _F_Cmp_S_D_()
+        private static uint[] _F_Cmp_Cmpe_S_D_()
         {
             return new uint[]
             {
-                0x1E602028u // FCMP D1, #0.0
+                0x1E602028u, // FCMP  D1, #0.0
+                0x1E602038u  // FCMPE D1, #0.0
             };
         }
 
@@ -415,6 +423,24 @@ namespace Ryujinx.Tests.Cpu
             {
                 0x5E61D820u, // SCVTF D0, D1
                 0x7E61D820u  // UCVTF D0, D1
+            };
+        }
+
+        private static uint[] _SU_Cvt_F_V_2S_4S_()
+        {
+            return new uint[]
+            {
+                0x0E21D800u, // SCVTF V0.2S, V0.2S
+                0x2E21D800u  // UCVTF V0.2S, V0.2S
+            };
+        }
+
+        private static uint[] _SU_Cvt_F_V_2D_()
+        {
+            return new uint[]
+            {
+                0x4E61D800u, // SCVTF V0.2D, V0.2D
+                0x6E61D800u  // UCVTF V0.2D, V0.2D
             };
         }
 
@@ -938,8 +964,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Cmp_S_S([ValueSource("_F_Cmp_S_S_")] uint opcodes,
-                              [ValueSource("_1S_F_")] ulong a)
+        public void F_Cmp_Cmpe_S_S([ValueSource("_F_Cmp_Cmpe_S_S_")] uint opcodes,
+                                   [ValueSource("_1S_F_")] ulong a)
         {
             Vector128<float> v1 = MakeVectorE0(a);
 
@@ -954,8 +980,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Cmp_S_D([ValueSource("_F_Cmp_S_D_")] uint opcodes,
-                              [ValueSource("_1D_F_")] ulong a)
+        public void F_Cmp_Cmpe_S_D([ValueSource("_F_Cmp_Cmpe_S_D_")] uint opcodes,
+                                   [ValueSource("_1D_F_")] ulong a)
         {
             Vector128<float> v1 = MakeVectorE0(a);
 
@@ -1560,6 +1586,42 @@ namespace Ryujinx.Tests.Cpu
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE1(z);
             Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void SU_Cvt_F_V_2S_4S([ValueSource("_SU_Cvt_F_V_2S_4S_")] uint opcodes,
+                                     [Values(0u)]     uint rd,
+                                     [Values(1u, 0u)] uint rn,
+                                     [ValueSource("_2S_")] [Random(RndCnt)] ulong z,
+                                     [ValueSource("_2S_")] [Random(RndCnt)] ulong a,
+                                     [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void SU_Cvt_F_V_2D([ValueSource("_SU_Cvt_F_V_2D_")] uint opcodes,
+                                  [Values(0u)]     uint rd,
+                                  [Values(1u, 0u)] uint rn,
+                                  [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
+                                  [ValueSource("_1D_")] [Random(RndCnt)] ulong a)
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
 
             SingleOpcode(opcodes, v0: v0, v1: v1);
 
