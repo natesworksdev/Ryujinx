@@ -19,11 +19,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Third Party\libsoundio-sharp\libsoundio-sharp.csproj" />
+    <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
+    <ContentWithTargetPath Include="Native\libsoundio\libs\libsoundio.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.dll</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="Native\libsoundio\libs\libsoundio.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.dylib</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="Native\libsoundio\libs\libsoundio.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.so</TargetPath>
+    </ContentWithTargetPath>
   </ItemGroup>
 
 </Project>
