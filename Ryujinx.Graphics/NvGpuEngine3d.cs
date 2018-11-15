@@ -205,6 +205,15 @@ namespace Ryujinx.Graphics
 
             State.FlipX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
             State.FlipY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
+
+            int ScreenYControl = ReadRegister(NvGpuEngine3dReg.ScreenYControl);
+
+            bool NegateY = (ScreenYControl & 1) != 0;
+
+            if (NegateY)
+            {
+                State.FlipY = -State.FlipY;
+            }
         }
 
         private void SetZeta(NvGpuVmm Vmm)

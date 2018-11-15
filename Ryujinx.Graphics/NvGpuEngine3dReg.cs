@@ -58,6 +58,7 @@ namespace Ryujinx.Graphics
         StencilFrontFuncRef  = 0x4e5,
         StencilFrontFuncMask = 0x4e6,
         StencilFrontMask     = 0x4e7,
+        ScreenYControl       = 0x4eb,
         VertexArrayElemBase  = 0x50d,
         VertexArrayInstBase  = 0x50e,
         ZetaEnable           = 0x54e,
