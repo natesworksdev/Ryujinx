@@ -30,37 +30,22 @@ namespace Ryujinx.Graphics.Gal.Shader
             { RGB_, RG_A, R_BA, _GBA, RGBA, ____, ____, ____ }
         };
 
-        private static TextureType TexToTextureType(int TexType)
+        private static TextureType TexToTextureType(int TexType, bool IsArray)
         {
             switch (TexType)
             {
+                case 0:
+                    return IsArray ? TextureType.OneDArray : TextureType.OneD;
                 case 2:
-                    return TextureType.TwoD;
+                    return IsArray ? TextureType.TwoDArray : TextureType.TwoD;
                 case 4:
+                    if (IsArray)
+                        throw new InvalidOperationException($"ARRAY bit set on a TEX with 3D texture!");
                     return TextureType.ThreeD;
                 case 6:
-                    return TextureType.CubeMap;
+                    return IsArray ? TextureType.CubeArray : TextureType.CubeMap;
                 default:
                     throw new InvalidOperationException();
-            }
-        }
-
-        private static int GetCoordsCountTextureType(TextureType TextureType)
-        {
-            switch (TextureType)
-            {
-                case TextureType.OneD:
-                    return 1;
-                case TextureType.OneDArray:
-                case TextureType.TwoD:
-                case TextureType.TwoDNoMipMap:
-                    return 2;
-                case TextureType.ThreeD:
-                case TextureType.TwoDArray:
-                case TextureType.CubeMap:
-                    return 3;
-                default:
-                    throw new NotImplementedException($"TEX of TextureTpe.{TextureType} not implemented");
             }
         }
 
@@ -86,7 +71,28 @@ namespace Ryujinx.Graphics.Gal.Shader
                     return TextureType.ThreeD;
                 case 0x18:
                 case 0x1a:
-                    return TextureType.CubeArray;
+                    return TextureType.CubeMap;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        public static TextureType TldsToTextureType(int TexType)
+        {
+            switch (TexType)
+            {
+                case 0:
+                case 2:
+                    return TextureType.OneD;
+                case 4:
+                case 8:
+                case 0xa:
+                case 0xc:
+                    return TextureType.TwoD;
+                case 0x10:
+                    return TextureType.TwoDArray;
+                case 0xe:
+                    return TextureType.ThreeD;
                 default:
                     throw new InvalidOperationException();
             }
@@ -195,28 +201,108 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static void Tex(ShaderIrBlock Block, long OpCode, int Position)
         {
-            EmitTex(Block, OpCode, GprHandle: false);
+            TextureInstructionSuffix GetSuffix()
+            {
+                int Suffix = OpCode.Read(0x34, 0x38);
+
+                switch (Suffix)
+                {
+                    case 0:
+                        return TextureInstructionSuffix.None;
+                    case 0x8:
+                        return TextureInstructionSuffix.LZ;
+                    case 0x10:
+                        return TextureInstructionSuffix.LB;
+                    case 0x18:
+                        return TextureInstructionSuffix.LL;
+                    case 0x30:
+                        return TextureInstructionSuffix.LBA;
+                    case 0x38:
+                        return TextureInstructionSuffix.LLA;
+                    default:
+                        throw new InvalidOperationException($"Invalid Suffix for TEX instruction {Suffix}");
+                }
+            }
+
+            TextureInstructionSuffix InstructionSuffix = GetSuffix();
+            bool IsOffset = OpCode.Read(0x36);
+
+            if (IsOffset)
+                InstructionSuffix |= TextureInstructionSuffix.AOFFI;
+
+            EmitTex(Block, OpCode, InstructionSuffix, GprHandle: false);
         }
 
         public static void Tex_B(ShaderIrBlock Block, long OpCode, int Position)
         {
-            EmitTex(Block, OpCode, GprHandle: true);
+            TextureInstructionSuffix GetSuffix()
+            {
+                int Suffix = OpCode.Read(0x24, 0xe);
+                switch (Suffix)
+                {
+                    case 0:
+                        return TextureInstructionSuffix.None;
+                    case 0x2:
+                        return TextureInstructionSuffix.LZ;
+                    case 0x4:
+                        return TextureInstructionSuffix.LB;
+                    case 0x6:
+                        return TextureInstructionSuffix.LL;
+                    case 0xC:
+                        return TextureInstructionSuffix.LBA;
+                    case 0xE:
+                        return TextureInstructionSuffix.LLA;
+                    default:
+                        throw new InvalidOperationException($"Invalid Suffix for TEX.B instruction {Suffix}");
+                }
+            }
+
+            TextureInstructionSuffix InstructionSuffix = GetSuffix();
+            bool IsOffset = OpCode.Read(0x23);
+
+            if (IsOffset)
+                InstructionSuffix |= TextureInstructionSuffix.AOFFI;
+
+            EmitTex(Block, OpCode, InstructionSuffix, GprHandle: true);
         }
 
-        private static void EmitTex(ShaderIrBlock Block, long OpCode, bool GprHandle)
+        private static void EmitTex(ShaderIrBlock Block, long OpCode, TextureInstructionSuffix TextureInstructionSuffix, bool GprHandle)
         {
-            // TODO: Support array textures
-            TextureType TextureType = TexToTextureType(OpCode.Read(28, 6));
+            bool IsArray = OpCode.HasArray();
+
+            TextureType TextureType = TexToTextureType(OpCode.Read(28, 6), IsArray);
             Block.AddNode(new ShaderIrCmnt($"TextureType: {TextureType}"));
+            Block.AddNode(new ShaderIrCmnt($"TextureInstructionSuffix: {TextureInstructionSuffix}"));
+            Block.AddNode(new ShaderIrCmnt($"Array: {IsArray}"));
 
-            // FIXME: check if this is right
-            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[GetCoordsCountTextureType(TextureType)];
+            bool HasDepthCompare = OpCode.Read(0x32);
 
-            for (int Index = 0; Index < Coords.Length; Index++)
+            if (HasDepthCompare)
+            {
+                TextureInstructionSuffix |= TextureInstructionSuffix.DC;
+            }
+
+            ShaderIrOperGpr[] Coords = null;
+
+            Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
+
+            int IndexExtraCoord = 0;
+
+            if (IsArray)
+            {
+                IndexExtraCoord++;
+
+                Coords[Coords.Length - 1] = OpCode.Gpr8();
+            }
+
+
+            for (int Index = 0; Index < Coords.Length - IndexExtraCoord; Index++)
             {
                 ShaderIrOperGpr CoordReg = OpCode.Gpr8();
 
                 CoordReg.Index += Index;
+
+                Coords[Index].Index += IndexExtraCoord;
 
                 if (!CoordReg.IsValidRegister)
                 {
@@ -230,6 +316,41 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             int ChMask = OpCode.Read(31, 0xf);
 
+            ShaderIrOperGpr LevelOfDetail = null;
+            ShaderIrOperGpr Offset        = null;
+            ShaderIrOperGpr DepthCompare  = null;
+
+            // TODO: determine first argument when TEX.B is used
+            int OperBIndex = GprHandle ? 1 : 0;
+
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.LL) != 0 ||
+                (TextureInstructionSuffix & TextureInstructionSuffix.LB) != 0 ||
+                (TextureInstructionSuffix & TextureInstructionSuffix.LBA) != 0 ||
+                (TextureInstructionSuffix & TextureInstructionSuffix.LLA) != 0)
+            {
+                LevelOfDetail        = OpCode.Gpr20();
+                LevelOfDetail.Index += OperBIndex;
+
+                OperBIndex++;
+            }
+
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOFFI) != 0)
+            {
+                Offset        = OpCode.Gpr20();
+                Offset.Index += OperBIndex;
+
+                OperBIndex++;
+            }
+
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.DC) != 0)
+            {
+                DepthCompare        = OpCode.Gpr20();
+                DepthCompare.Index += OperBIndex;
+
+                OperBIndex++;
+            }
+
+            // ???
             ShaderIrNode OperC = GprHandle
                 ? (ShaderIrNode)OpCode.Gpr20()
                 : (ShaderIrNode)OpCode.Imm13_36();
@@ -254,9 +375,14 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch,  TextureType, Coords);
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, TextureInstructionSuffix, Coords)
+                {
+                    LevelOfDetail = LevelOfDetail,
+                    Offset        = Offset,
+                    DepthCompare  = DepthCompare
+                };
 
-                ShaderIrOp Op = new ShaderIrOp(Inst, Coords[0], Coords[1], OperC, Meta);
+                ShaderIrOp Op = new ShaderIrOp(Inst, Coords[0], Coords.Length > 1 ? Coords[1] : null, OperC, Meta);
 
                 Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Op)));
             }
@@ -264,82 +390,176 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static void Texs(ShaderIrBlock Block, long OpCode, int Position)
         {
-            EmitTexs(Block, OpCode, ShaderIrInst.Texs);
+            TextureInstructionSuffix GetSuffix()
+            {
+                int Suffix = OpCode.Read(0x34, 0x1e);
+                switch (Suffix)
+                {
+                    case 0:
+                    case 0x4:
+                    case 0x10:
+                    case 0x16:
+                        return TextureInstructionSuffix.LZ;
+                    case 0x6:
+                    case 0x1a:
+                        return TextureInstructionSuffix.LL;
+                    case 0x8:
+                        return TextureInstructionSuffix.DC;
+                    case 0x2:
+                    case 0xe:
+                    case 0x14:
+                    case 0x18:
+                        return TextureInstructionSuffix.None;
+                    case 0xa:
+                        return TextureInstructionSuffix.LL | TextureInstructionSuffix.DC;
+                    case 0xc:
+                    case 0x12:
+                        return TextureInstructionSuffix.LZ | TextureInstructionSuffix.DC;
+                    default:
+                        throw new InvalidOperationException($"Invalid Suffix for TEXS instruction {Suffix}");
+                }
+            }
+
+            TextureType TextureType = TexsToTextureType(OpCode.Read(52, 0x1e));
+
+            EmitTexs(Block, OpCode, ShaderIrInst.Texs, TextureType, GetSuffix());
         }
 
         public static void Tlds(ShaderIrBlock Block, long OpCode, int Position)
         {
-            EmitTexs(Block, OpCode, ShaderIrInst.Txlf);
-        }
-
-        private static void EmitTexs(ShaderIrBlock Block, long OpCode, ShaderIrInst Inst)
-        {
-            TextureType TextureType = TexsToTextureType(OpCode.Read(52, 0x1e));
-            Block.AddNode(new ShaderIrCmnt($"TextureType: {TextureType}"));
-
-            if (Inst == ShaderIrInst.Txlf && TextureType == TextureType.CubeArray)
+            TextureInstructionSuffix GetSuffix()
             {
-                throw new InvalidOperationException("TXLF instructions cannot use CUBE modifier!");
-            }
-
-            //TODO: Support other formats.
-            ShaderIrOperGpr OperA = OpCode.Gpr8();
-            ShaderIrOperGpr OperB = OpCode.Gpr20();
-
-            ShaderIrOperGpr[] GetCoordinates()
-            {
-                ShaderIrOperGpr X;
-                ShaderIrOperGpr Y;
-                ShaderIrOperGpr Z;
-                ShaderIrOperGpr Index;
-
-                switch (TextureType)
+                int Suffix = OpCode.Read(0x34, 0x1e);
+                switch (Suffix)
                 {
-                    case TextureType.OneD:
-                        X = OperA;
-
-                        return CoordsRegistersToTempRegisters(Block, X);
-                    case TextureType.TwoDArray:
-                        Index = OperA;
-
-                        X = OpCode.Gpr8();
-                        X.Index++;
-
-                        Y = OperB;
-
-                        return CoordsRegistersToTempRegisters(Block, X, Y, Index);
-                    case TextureType.ThreeD:
-                    case TextureType.CubeMap:
-                        X = OperA;
-
-                        Y = OpCode.Gpr8();
-                        Y.Index += 1;
-
-                        Z = OperB;
-
-                        return CoordsRegistersToTempRegisters(Block, X, Y, Z);
-                    case TextureType.CubeArray:
-                        Index = OperA;
-
-                        X = OpCode.Gpr8();
-                        X.Index += 1;
-
-                        Y = OpCode.Gpr8();
-                        Y.Index += 2;
-
-                        Z = OperB;
-
-                        return CoordsRegistersToTempRegisters(Block, X, Y, Z, Index);
-                    case TextureType.TwoD:
-                        X = OperA;
-                        Y = OperB;
-
-                        return new ShaderIrOperGpr[] { X, Y };
+                    case 0:
+                    case 0x4:
+                    case 0x8:
+                        return TextureInstructionSuffix.LZ | TextureInstructionSuffix.AOFFI;
+                    case 0xc:
+                        return TextureInstructionSuffix.LZ | TextureInstructionSuffix.MZ;
+                    case 0xe:
+                    case 0x10:
+                        return TextureInstructionSuffix.LZ;
+                    case 0x2:
+                    case 0xa:
+                        return TextureInstructionSuffix.LL;
+                    case 0x18:
+                        return TextureInstructionSuffix.LL | TextureInstructionSuffix.AOFFI;
                     default:
-                        throw new NotImplementedException($"TEXS of TextureType.{TextureType} not supported!");
+                        throw new InvalidOperationException($"Invalid Suffix for TLDS instruction {Suffix}");
                 }
             }
 
+            TextureType TextureType = TldsToTextureType(OpCode.Read(52, 0x1e));
+
+            EmitTexs(Block, OpCode, ShaderIrInst.Txlf, TextureType, GetSuffix());
+        }
+
+        private static void EmitTexs(ShaderIrBlock Block, long OpCode, ShaderIrInst Inst, TextureType TextureType, TextureInstructionSuffix TextureInstructionSuffix)
+        {
+            Block.AddNode(new ShaderIrCmnt($"TextureType: {TextureType}"));
+            Block.AddNode(new ShaderIrCmnt($"TextureInstructionSuffix: {TextureInstructionSuffix}"));
+
+            if (Inst == ShaderIrInst.Txlf && TextureType == TextureType.CubeArray)
+            {
+                throw new InvalidOperationException("TLDS instructions cannot use CUBE modifier!");
+            }
+
+            // This is the only array type that is known to be usable with TEXS
+            bool IsArray = ImageUtils.IsArray(TextureType);
+
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
+
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.DC) != 0)
+            {
+                // TODO
+                //throw new NotImplementedException($"TEXS.DC isn't implemented yet");
+            }
+
+
+            ShaderIrOperGpr OperA = OpCode.Gpr8();
+            ShaderIrOperGpr OperB = OpCode.Gpr20();
+
+            ShaderIrOperGpr SuffixExtra = OpCode.Gpr20();
+            SuffixExtra.Index += 1;
+
+            int CoordStartIndex = 0;
+
+            if (IsArray)
+            {
+                CoordStartIndex++;
+                Coords[Coords.Length - 1] = OperB;
+            }
+
+            switch (Coords.Length - CoordStartIndex)
+            {
+                case 1:
+                    Coords[0] = OpCode.Gpr8();
+
+                    break;
+                case 2:
+                    Coords[0] = OpCode.Gpr8();
+                    Coords[0].Index += CoordStartIndex;
+
+                    break;
+                case 3:
+                    Coords[0] = OpCode.Gpr8();
+                    Coords[0].Index += CoordStartIndex;
+
+                    Coords[1] = OpCode.Gpr8();
+                    Coords[1].Index += 1 + CoordStartIndex;
+
+                    break;
+                default:
+                    throw new NotSupportedException($"{Coords.Length - CoordStartIndex} coords textures aren't supported in TEXS");
+            }
+
+            int OperBIndex = 0;
+
+            ShaderIrOperGpr LevelOfDetail = null;
+            ShaderIrOperGpr Offset        = null;
+            ShaderIrOperGpr DepthCompare  = null;
+
+            // OperB is always the last value
+            // Not applicable to 1d textures
+            if (Coords.Length - CoordStartIndex != 1)
+            {
+                Coords[Coords.Length - CoordStartIndex -  1] = OperB;
+                OperBIndex++;
+            }
+
+            // Encoding of TEXS/TLDS is a bit special and change for 2d textures
+            // NOTE: OperA seems to hold at best two args.
+            // On 2D textures, if no suffix need an additional values, Y is stored in OperB, otherwise coords are in OperA and the additional values is in OperB.
+            if (TextureInstructionSuffix != TextureInstructionSuffix.None && TextureType == TextureType.TwoD)
+            {
+                Coords[Coords.Length - CoordStartIndex - 1] = OpCode.Gpr8();
+                Coords[Coords.Length - CoordStartIndex - 1].Index += Coords.Length - CoordStartIndex - 1;
+                OperBIndex--;
+            }
+
+            // TODO: Find what MZ do and what change about the encoding (Maybe Multisample?)
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.LL) != 0)
+            {
+                LevelOfDetail        = OpCode.Gpr20();
+                LevelOfDetail.Index += OperBIndex;
+                OperBIndex++;
+            }
+
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOFFI) != 0)
+            {
+                Offset        = OpCode.Gpr20();
+                Offset.Index += OperBIndex;
+                OperBIndex++;
+            }
+
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.DC) != 0)
+            {
+                DepthCompare        = OpCode.Gpr20();
+                DepthCompare.Index += OperBIndex;
+                OperBIndex++;
+            }
 
             int LutIndex;
 
@@ -417,8 +637,12 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, GetCoordinates());
-
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, TextureInstructionSuffix, Coords)
+                {
+                    LevelOfDetail = LevelOfDetail,
+                    Offset        = Offset,
+                    DepthCompare  = DepthCompare
+                };
                 ShaderIrOp Op = new ShaderIrOp(Inst, OperA, OperB, OperC, Meta);
 
                 ShaderIrOperGpr Dst = GetDst();

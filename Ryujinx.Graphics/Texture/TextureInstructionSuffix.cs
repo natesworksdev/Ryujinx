@@ -1,0 +1,18 @@
+﻿using System;
+
+namespace Ryujinx.Graphics.Texture
+{
+    [Flags]
+    enum TextureInstructionSuffix
+    {
+        None  = 0x00,  // No Modifier
+        LZ    = 0x02,  // Load LOD Zero
+        LB    = 0x08,  // Load Bias
+        LL    = 0x10,  // Load LOD
+        LBA   = 0x20,  // Load Bias with OperA?
+        LLA   = 0x40,  // Load LOD with OperA?
+        DC    = 0x80,  // Depth Compare
+        AOFFI = 0x100, // Offset
+        MZ    = 0x200  // Multisample Zero?
+    }
+}

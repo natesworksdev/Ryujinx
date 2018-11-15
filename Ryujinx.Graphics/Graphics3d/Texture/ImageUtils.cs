@@ -469,5 +469,39 @@ namespace Ryujinx.Graphics.Texture
                     throw new NotSupportedException($"Texture type {TextureType} currently not supported!");
             }
         }
+
+        public static bool IsArray(TextureType TextureType)
+        {
+            switch (TextureType)
+            {
+                case TextureType.OneDArray:
+                case TextureType.TwoDArray:
+                case TextureType.CubeArray:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static int GetCoordsCountTextureType(TextureType TextureType)
+        {
+            switch (TextureType)
+            {
+                case TextureType.OneD:
+                    return 1;
+                case TextureType.OneDArray:
+                case TextureType.TwoD:
+                case TextureType.TwoDNoMipMap:
+                    return 2;
+                case TextureType.ThreeD:
+                case TextureType.TwoDArray:
+                case TextureType.CubeMap:
+                    return 3;
+                case TextureType.CubeArray:
+                    return 4;
+                default:
+                    throw new NotImplementedException($"TextureTpe.{TextureType} not implemented yet");
+            }
+        }
     }
 }

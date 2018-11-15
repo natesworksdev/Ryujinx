@@ -1164,7 +1164,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             string Ch = "rgba".Substring(Meta.Elem, 1);
 
-            return "texture(" + DeclInfo.Name + ", " + Coords + ")." + Ch;
+            return GetTextureOperation(Op, DeclInfo.Name, Coords, Ch);
         }
 
         private string GetTexqExpr(ShaderIrOp Op)
@@ -1197,12 +1197,15 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             string Ch = "rgba".Substring(Meta.Elem, 1);
 
-            return "texture(" + Sampler + ", " + Coords + ")." + Ch;
+            return GetTextureOperation(Op, Sampler, Coords, Ch);
         }
 
         private string GetTxlfExpr(ShaderIrOp Op)
         {
+            // TODO: DC AND MZ
             ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+
+            TextureInstructionSuffix Suffix = Meta.TextureInstructionSuffix;
 
             string Sampler = GetTexSamplerName(Op);
 
@@ -1210,7 +1213,19 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             string Ch = "rgba".Substring(Meta.Elem, 1);
 
-            return "texelFetch(" + Sampler + ", " + Coords + ", 0)." + Ch;
+            string Lod = "0";
+
+            if (Meta.LevelOfDetail != null)
+            {
+                Lod = GetOperExpr(Op, Meta.LevelOfDetail);
+            }
+
+            if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+            {
+                return "texelFetchOffset(" + Sampler + ", " + Coords + ", " + Lod + ", " + GetOperExpr(Op, Meta.Offset) + ")." + Ch;
+            }
+
+            return "texelFetch(" + Sampler + ", " + Coords + ", " + Lod + ")." + Ch;
         }
 
         private string GetTruncExpr(ShaderIrOp Op) => GetUnaryCall(Op, "trunc");
@@ -1288,27 +1303,146 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
 
-            switch (Meta.TextureType)
+            int Coords = ImageUtils.GetCoordsCountTextureType(Meta.TextureType);
+
+            bool IsArray = ImageUtils.IsArray(Meta.TextureType);
+
+            string GetLastArgument(ShaderIrNode Node)
             {
-                case TextureType.OneD:
-                    return GetOperExpr(Op, Meta.Coordinates[0]);
-                case TextureType.ThreeD:
-                case TextureType.TwoDArray:
-                case TextureType.CubeMap:
-                    return "vec3(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + GetOperExpr(Op, Meta.Coordinates[2]) + ")";
-                case TextureType.CubeArray:
-                    return "vec4(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + GetOperExpr(Op, Meta.Coordinates[2]) + ", " + GetOperExpr(Op, Meta.Coordinates[3]) + ")";
-                case TextureType.TwoD:
-                default:
-                    return "vec2(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ")";
+                string Result = GetOperExpr(Op, Node);
+
+                // array index is actually an integer so we need to pass it correctly
+                if (IsArray)
+                {
+                    Result = "float(floatBitsToInt(" + Result + "))";
+                }
+
+                return Result;
             }
+
+            string LastArgument;
+
+            switch (Coords)
+            {
+                case 1:
+                    return GetOperExpr(Op, Meta.Coordinates[0]);
+                case 2:
+                    LastArgument = GetLastArgument(Meta.Coordinates[1]);
+
+                    return "vec2(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + LastArgument + ")";
+                case 3:
+                    LastArgument = GetLastArgument(Meta.Coordinates[2]);
+
+                    return "vec3(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + LastArgument + ")";
+                case 4:
+                    LastArgument = GetLastArgument(Meta.Coordinates[3]);
+
+                    return "vec4(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + GetOperExpr(Op, Meta.Coordinates[2]) + ", " + LastArgument + ")";
+                default:
+                    throw new InvalidOperationException();
+            }
+
+        }
+
+        private string GetTextureOffset(ShaderIrMetaTex Meta, string Oper)
+        {
+            string GetOffset(string Operation, int index)
+            {
+                return "(" + Operation + " >> " + index * 4 + ") & 0xF";
+            }
+
+            int Coords = ImageUtils.GetCoordsCountTextureType(Meta.TextureType);
+
+            if (ImageUtils.IsArray(Meta.TextureType))
+                Coords -= 1;
+
+            // FIXME: DC not supported
+            switch (Coords)
+            {
+                case 1:
+                    return GetOffset(Oper, 0);
+                case 2:
+                    return "ivec2(" + GetOffset(Oper, 0) + ", " + GetOffset(Oper, 1) + ")";
+                case 3:
+                    return "ivec3(" + GetOffset(Oper, 0) + ", " + GetOffset(Oper, 1) + ", " + GetOffset(Oper, 2) + ")";
+                case 4:
+                    return "ivec4(" + GetOffset(Oper, 0) + ", " + GetOffset(Oper, 1) + ", " + GetOffset(Oper, 2) + ", " + GetOffset(Oper, 3) + ")";
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        private string GetTextureOperation(ShaderIrOp Op, string Sampler, string Coords, string Ch)
+        {
+            ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+
+            TextureInstructionSuffix Suffix = Meta.TextureInstructionSuffix;
+
+            // TODO: support LBA and LLA and DC
+            if ((Suffix & TextureInstructionSuffix.LZ) != 0)
+            {
+                if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+                {
+                    string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
+
+                    return "textureLodOffset(" + Sampler + ", " + Coords + ", 0.0, " + Offset + ")." + Ch;
+                }
+
+                return "textureLod(" + Sampler + ", " + Coords + ", 0.0)." + Ch;
+            }
+            else if ((Suffix & TextureInstructionSuffix.LB) != 0)
+            {
+                if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+                {
+                    string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
+
+                    return "textureOffset(" + Sampler + ", " + Coords + ", " + Offset + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")." + Ch;
+                }
+
+                return "texture(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")." + Ch;
+            }
+            else if ((Suffix & TextureInstructionSuffix.LL) != 0)
+            {
+                if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+                {
+                    string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
+
+                    return "textureLodOffset(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ", " + Offset + ")." + Ch;
+                }
+
+                return "textureLod(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")." + Ch;
+            }
+            else if (Suffix == TextureInstructionSuffix.AOFFI)
+            {
+                string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
+
+                return "textureOffset(" + Sampler + ", " + Coords + ", " + Offset + ")." + Ch;
+            }
+            else if (Suffix == TextureInstructionSuffix.None || Suffix == TextureInstructionSuffix.DC)
+            {
+                // FIXME: implement DC
+                // Load Standard
+                return "texture(" + Sampler + ", " + Coords + ")." + Ch;
+            }
+            throw new NotImplementedException($"Texture Suffix {Meta.TextureInstructionSuffix} is not implemented");
 
         }
 
         private string GetITexSamplerCoords(ShaderIrOp Op)
         {
-            return "ivec2(" + GetOperExpr(Op, Op.OperandA) + ", " +
-                              GetOperExpr(Op, Op.OperandB) + ")";
+            ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+
+            switch (ImageUtils.GetCoordsCountTextureType(Meta.TextureType))
+            {
+                case 1:
+                    return GetOperExpr(Op, Meta.Coordinates[0]);
+                case 2:
+                    return "ivec2(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ")";
+                case 3:
+                    return "ivec3(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + GetOperExpr(Op, Meta.Coordinates[2]) + ")";
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
         private string GetOperExpr(ShaderIrOp Op, ShaderIrNode Oper)
@@ -1344,22 +1478,6 @@ namespace Ryujinx.Graphics.Gal.Shader
                         if (Gpr.IsConst)
                         {
                             return "0";
-                        }
-                        break;
-                    }
-
-                    case ShaderIrOperImm Imm:
-                    {
-                        //For integer immediates being used as float,
-                        //it's better (for readability) to just return the float value.
-                        if (DstType == OperType.F32)
-                        {
-                            float Value = BitConverter.Int32BitsToSingle(Imm.Value);
-
-                            if (!float.IsNaN(Value) && !float.IsInfinity(Value))
-                            {
-                                return GetFloatConst(Value);
-                            }
                         }
                         break;
                     }
