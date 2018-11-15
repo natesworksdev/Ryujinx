@@ -309,98 +309,31 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
         {
             int[] MixBuffer = new int[MixBufferSamplesCount * AudioConsts.HostChannelsCount];
 
-            fixed (int* mixptr = MixBuffer)
+            foreach (VoiceContext Voice in Voices)
             {
-                foreach (VoiceContext Voice in Voices)
+                if (!Voice.Playing)
                 {
-                    if (!Voice.Playing)
+                    continue;
+                }
+
+                int   OutOffset      = 0;
+                int   PendingSamples = MixBufferSamplesCount;
+                float Volume         = Voice.Volume;
+
+                while (PendingSamples > 0)
+                {
+                    int[] Samples = Voice.GetBufferData(Memory, PendingSamples, out int ReturnedSamples);
+
+                    if (ReturnedSamples == 0)
                     {
-                        continue;
+                        break;
                     }
 
-                    int   OutOffset      = 0;
-                    int   PendingSamples = MixBufferSamplesCount;
-                    float Volume         = Voice.Volume;
+                    PendingSamples -= ReturnedSamples;
 
-                    while (PendingSamples > 0)
+                    for (int Offset = 0; Offset < Samples.Length; Offset++)
                     {
-                        int[] Samples = Voice.GetBufferData(Memory, PendingSamples, out int ReturnedSamples);
-
-                        if (ReturnedSamples == 0)
-                        {
-                            break;
-                        }
-
-                        PendingSamples -= ReturnedSamples;
-
-                        int Offset = 0;
-
-                        if(Avx2.IsSupported && Avx.IsSupported)
-                        {
-                            fixed (int* samptr = Samples)
-                            {
-                                // Load our scale factor as a scalar
-                                Vector256<float> volume = Avx.SetAllVector256(Volume);
-
-                                for (; Offset + 32 <= Samples.Length; Offset += 32, OutOffset += 32)
-                                {
-                                    // Convert our samples from ints to floats
-                                    Vector256<float> samples1 = Avx.ConvertToVector256Single(Avx.LoadVector256(samptr + Offset + 0));
-                                    Vector256<float> samples2 = Avx.ConvertToVector256Single(Avx.LoadVector256(samptr + Offset + 8));
-                                    Vector256<float> samples3 = Avx.ConvertToVector256Single(Avx.LoadVector256(samptr + Offset + 16));
-                                    Vector256<float> samples4 = Avx.ConvertToVector256Single(Avx.LoadVector256(samptr + Offset + 24));
-
-                                    Vector256<int> mix1 = Avx.LoadVector256(mixptr + OutOffset + 0);
-                                    Vector256<int> mix2 = Avx.LoadVector256(mixptr + OutOffset + 8);
-                                    Vector256<int> mix3 = Avx.LoadVector256(mixptr + OutOffset + 16);
-                                    Vector256<int> mix4 = Avx.LoadVector256(mixptr + OutOffset + 24);
-
-                                    // Scale by the volume and store back as ints
-                                    // TODO: Implement this as an FMA operation once Intrinsics
-                                    //       gets support for FMA in their AVX2 implementation.
-                                    Avx.Store(mixptr + OutOffset +  0, Avx2.Add(mix1, Avx.ConvertToVector256Int32(Avx.Multiply(samples1, volume))));
-                                    Avx.Store(mixptr + OutOffset +  8, Avx2.Add(mix2, Avx.ConvertToVector256Int32(Avx.Multiply(samples2, volume))));
-                                    Avx.Store(mixptr + OutOffset + 16, Avx2.Add(mix3, Avx.ConvertToVector256Int32(Avx.Multiply(samples3, volume))));
-                                    Avx.Store(mixptr + OutOffset + 24, Avx2.Add(mix4, Avx.ConvertToVector256Int32(Avx.Multiply(samples4, volume))));
-                                }
-                            }
-                        }
-                        else if (Sse2.IsSupported && Sse.IsSupported)
-                        {
-                            fixed (int* samptr = Samples)
-                            {
-                                // Load our scale factor as a scalar
-                                Vector128<float> volume = Sse.SetAllVector128(Volume);
-
-                                for (; Offset + 16 <= Samples.Length; Offset += 16, OutOffset += 16)
-                                {
-                                    // Convert our samples from ints to floats
-                                    Vector128<float> samples1 = Sse2.ConvertToVector128Single(Sse2.LoadVector128(samptr + Offset + 0));
-                                    Vector128<float> samples2 = Sse2.ConvertToVector128Single(Sse2.LoadVector128(samptr + Offset + 4));
-                                    Vector128<float> samples3 = Sse2.ConvertToVector128Single(Sse2.LoadVector128(samptr + Offset + 8));
-                                    Vector128<float> samples4 = Sse2.ConvertToVector128Single(Sse2.LoadVector128(samptr + Offset + 12));
-
-                                    Vector128<int> mix1 = Sse2.LoadVector128(mixptr + OutOffset + 0);
-                                    Vector128<int> mix2 = Sse2.LoadVector128(mixptr + OutOffset + 4);
-                                    Vector128<int> mix3 = Sse2.LoadVector128(mixptr + OutOffset + 8);
-                                    Vector128<int> mix4 = Sse2.LoadVector128(mixptr + OutOffset + 12);
-
-                                    // Scale by the volume and store back as ints
-                                    Sse2.Store(mixptr + OutOffset +  0, Sse2.Add(mix1, Sse2.ConvertToVector128Int32(Sse.Multiply(samples1, volume))));
-                                    Sse2.Store(mixptr + OutOffset +  4, Sse2.Add(mix2, Sse2.ConvertToVector128Int32(Sse.Multiply(samples2, volume))));
-                                    Sse2.Store(mixptr + OutOffset +  8, Sse2.Add(mix3, Sse2.ConvertToVector128Int32(Sse.Multiply(samples3, volume))));
-                                    Sse2.Store(mixptr + OutOffset + 12, Sse2.Add(mix4, Sse2.ConvertToVector128Int32(Sse.Multiply(samples4, volume))));
-                                }
-                            }
-                        }
-
-                        // Process left overs
-                        for (; Offset < Samples.Length; Offset++)
-                        {
-                            int Sample = (int)(Samples[Offset] * Voice.Volume);
-
-                            MixBuffer[OutOffset++] += Sample;
-                        }
+                        MixBuffer[OutOffset++] += (int)(Samples[Offset] * Voice.Volume);
                     }
                 }
             }
@@ -427,7 +360,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                         Vector128<int> block1A = Sse2.LoadVector128(inptr + Offset + 0);
                         Vector128<int> block1B = Sse2.LoadVector128(inptr + Offset + 4);
 
-                        Vector128<int> block2A = Sse2.LoadVector128(inptr + Offset + 8);
+                        Vector128<int> block2A = Sse2.LoadVector128(inptr + Offset +  8);
                         Vector128<int> block2B = Sse2.LoadVector128(inptr + Offset + 12);
 
                         Vector128<int> block3A = Sse2.LoadVector128(inptr + Offset + 16);
@@ -441,8 +374,8 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                         Vector128<short> output3 = Sse2.PackSignedSaturate(block3A, block3B);
                         Vector128<short> output4 = Sse2.PackSignedSaturate(block4A, block4B);
 
-                        Sse2.Store(outptr + Offset + 0, output1);
-                        Sse2.Store(outptr + Offset + 8, output2);
+                        Sse2.Store(outptr + Offset +  0, output1);
+                        Sse2.Store(outptr + Offset +  8, output2);
                         Sse2.Store(outptr + Offset + 16, output3);
                         Sse2.Store(outptr + Offset + 24, output4);
                     }
