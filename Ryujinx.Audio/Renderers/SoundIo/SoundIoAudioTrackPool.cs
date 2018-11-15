@@ -31,12 +31,12 @@ namespace Ryujinx.Audio.SoundIo
         private SoundIODevice m_Device;
 
         /// <summary>
-        /// 
+        /// The queue that keeps track of the available <see cref="SoundIoAudioTrack"/> in the pool.
         /// </summary>
         private ConcurrentQueue<SoundIoAudioTrack> m_Queue;
 
         /// <summary>
-        /// 
+        /// The dictionary providing mapping between a TrackID and <see cref="SoundIoAudioTrack"/>
         /// </summary>
         private ConcurrentDictionary<int, SoundIoAudioTrack> m_TrackList;
 
