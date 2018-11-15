@@ -145,14 +145,30 @@ namespace ChocolArm64.Instructions
 
             context.MarkLabel(lblTrue);
 
-            Fcmp_S(context);
+            EmitFcmpE(context, signalNaNs: false);
 
             context.MarkLabel(lblEnd);
         }
 
         public static void Fccmpe_S(ILEmitterCtx context)
         {
-            Fccmp_S(context);
+            OpCodeSimdFcond64 op = (OpCodeSimdFcond64)context.CurrOp;
+
+            ILLabel lblTrue = new ILLabel();
+            ILLabel lblEnd  = new ILLabel();
+
+            context.EmitCondBranch(lblTrue, op.Cond);
+
+            context.EmitLdc_I4(op.Nzcv);
+            EmitSetNzcv(context);
+
+            context.Emit(OpCodes.Br, lblEnd);
+
+            context.MarkLabel(lblTrue);
+
+            EmitFcmpE(context, signalNaNs: true);
+
+            context.MarkLabel(lblEnd);
         }
 
         public static void Fcmeq_S(ILEmitterCtx context)
@@ -254,6 +270,16 @@ namespace ChocolArm64.Instructions
         }
 
         public static void Fcmp_S(ILEmitterCtx context)
+        {
+            EmitFcmpE(context, signalNaNs: false);
+        }
+
+        public static void Fcmpe_S(ILEmitterCtx context)
+        {
+            EmitFcmpE(context, signalNaNs: true);
+        }
+
+        private static void EmitFcmpE(ILEmitterCtx context, bool signalNaNs)
         {
             OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
@@ -414,17 +440,12 @@ namespace ChocolArm64.Instructions
                     EmitVectorExtractF(context, op.Rm, 0, op.Size);
                 }
 
-                context.EmitLdc_I4(0);
+                context.EmitLdc_I4(!signalNaNs ? 0 : 1);
 
                 EmitSoftFloatCall(context, nameof(SoftFloat32.FPCompare));
 
                 EmitSetNzcv(context);
             }
-        }
-
-        public static void Fcmpe_S(ILEmitterCtx context)
-        {
-            Fcmp_S(context);
         }
 
         private static void EmitCmp(ILEmitterCtx context, OpCode ilOp, bool scalar)
