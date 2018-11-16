@@ -39,24 +39,34 @@ namespace Ryujinx.Audio
                 SoundIO context = null;
                 SoundIODevice device = null;
                 SoundIOOutStream stream = null;
+                bool backendDisconnected = false;
 
                 try
                 {
                     context = new SoundIO();
 
+                    context.OnBackendDisconnect = (i) => {
+                        backendDisconnected = true;
+                    };
+
                     context.Connect();
                     context.FlushEvents();
 
+                    if(backendDisconnected)
+                    {
+                        return false;
+                    }
+
                     device = context.GetOutputDevice(context.DefaultOutputDeviceIndex);
 
-                    if(device == null)
+                    if(device == null || backendDisconnected)
                     {
                         return false;
                     }
 
                     stream = device.CreateOutStream();
 
-                    if(stream == null)
+                    if(stream == null || backendDisconnected)
                     {
                         return false;
                     }
