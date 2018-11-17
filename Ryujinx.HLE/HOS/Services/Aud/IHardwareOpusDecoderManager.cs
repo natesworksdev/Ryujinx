@@ -1,7 +1,7 @@
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.HOS.Services.Aud
 {
     class IHardwareOpusDecoderManager : IpcService
     {

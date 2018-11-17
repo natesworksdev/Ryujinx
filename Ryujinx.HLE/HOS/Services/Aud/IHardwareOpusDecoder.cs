@@ -1,10 +1,10 @@
 using Concentus.Structs;
-using Ryujinx.HLE.OsHle.Ipc;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 
-using static Ryujinx.HLE.OsHle.ErrorCode;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
-namespace Ryujinx.HLE.OsHle.Services.Aud
+namespace Ryujinx.HLE.HOS.Services.Aud
 {
     class IHardwareOpusDecoder : IpcService
     {
@@ -23,13 +23,25 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, DecodeInterleaved }
+                { 0, DecodeInterleaved         },
+                { 4, DecodeInterleavedWithPerf }
             };
 
             this.SampleRate    = SampleRate;
             this.ChannelsCount = ChannelsCount;
 
             Decoder = new OpusDecoder(FixedSampleRate, ChannelsCount);
+        }
+
+        public long DecodeInterleavedWithPerf(ServiceCtx Context)
+        {
+            long Result = DecodeInterleaved(Context);
+
+            //TODO: Figure out what this value is.
+            //According to switchbrew, it is now used.
+            Context.ResponseData.Write(0L);
+
+            return Result;
         }
 
         public long DecodeInterleaved(ServiceCtx Context)
@@ -47,12 +59,12 @@ namespace Ryujinx.HLE.OsHle.Services.Aud
 
             byte[] OpusData = Context.Memory.ReadBytes(InPosition, InSize);
 
-            int Processed = ((OpusData[0] << 0)  |
-                             (OpusData[1] << 8)  |
-                             (OpusData[2] << 16) |
-                             (OpusData[3] << 24)) + 8;
+            int Processed = ((OpusData[0] << 24) |
+                             (OpusData[1] << 16) |
+                             (OpusData[2] << 8)  |
+                             (OpusData[3] << 0)) + 8;
 
-            if (Processed > InSize)
+            if ((uint)Processed > (ulong)InSize)
             {
                 return MakeError(ErrorModule.Audio, AudErr.OpusInvalidInput);
             }
