@@ -61,11 +61,11 @@ namespace Ryujinx.Graphics
             int DstBlitW = ReadRegister(NvGpuEngine2dReg.BlitDstW);
             int DstBlitH = ReadRegister(NvGpuEngine2dReg.BlitDstH);
 
-            double BlitDuDx = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitDuDxFract);
-            double BlitDvDy = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitDvDyFract);
+            long BlitDuDx = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitDuDxFract);
+            long BlitDvDy = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitDvDyFract);
 
-            double SrcBlitX = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitSrcXFract);
-            double SrcBlitY = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitSrcYFract);
+            long SrcBlitX = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitSrcXFract);
+            long SrcBlitY = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitSrcYFract);
 
             GalImageFormat SrcImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)SrcFormat);
             GalImageFormat DstImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)DstFormat);
@@ -102,11 +102,11 @@ namespace Ryujinx.Graphics
             Gpu.ResourceManager.SendTexture(Vmm, SrcKey, SrcTexture);
             Gpu.ResourceManager.SendTexture(Vmm, DstKey, DstTexture);
 
-            int SrcBlitX1 = (int)SrcBlitX;
-            int SrcBlitY1 = (int)SrcBlitY;
+            int SrcBlitX1 = (int)(SrcBlitX >> 32);
+            int SrcBlitY1 = (int)(SrcBlitY >> 32);
 
-            int SrcBlitX2 = (int)(SrcBlitX + DstBlitW * BlitDuDx);
-            int SrcBlitY2 = (int)(SrcBlitY + DstBlitH * BlitDvDy);
+            int SrcBlitX2 = (int)(SrcBlitX + DstBlitW * BlitDuDx >> 32);
+            int SrcBlitY2 = (int)(SrcBlitY + DstBlitH * BlitDvDy >> 32);
 
             Gpu.Renderer.RenderTarget.Copy(
                 SrcKey,
@@ -159,14 +159,12 @@ namespace Ryujinx.Graphics
             Registers[MethCall.Method] = MethCall.Argument;
         }
 
-        private double ReadRegisterFixed1_31_32(NvGpuEngine2dReg Reg)
+        private long ReadRegisterFixed1_31_32(NvGpuEngine2dReg Reg)
         {
             long Low  = (uint)ReadRegister(Reg + 0);
             long High = (uint)ReadRegister(Reg + 1);
 
-            long Value = Low | (High << 32);
-
-            return Value * (1d / 0x100000000);
+            return Low | (High << 32);
         }
 
         private int ReadRegister(NvGpuEngine2dReg Reg)
