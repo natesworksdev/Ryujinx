@@ -90,6 +90,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private int CopyPBO;
 
+        public bool FramebufferSrgb { get; set; }
+
         public OGLRenderTarget(OGLTexture Texture)
         {
             Attachments = new FrameBufferAttachments();
@@ -363,11 +365,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
+            GL.Disable(EnableCap.FramebufferSrgb);
+
             GL.BlitFramebuffer(
-                SrcX0, SrcY0, SrcX1, SrcY1,
-                DstX0, DstY0, DstX1, DstY1,
+                SrcX0,
+                SrcY0,
+                SrcX1,
+                SrcY1,
+                DstX0,
+                DstY0,
+                DstX1,
+                DstY1,
                 ClearBufferMask.ColorBufferBit,
                 BlitFramebufferFilter.Linear);
+
+            if (FramebufferSrgb)
+            {
+                GL.Enable(EnableCap.FramebufferSrgb);
+            }
         }
 
         public void Copy(

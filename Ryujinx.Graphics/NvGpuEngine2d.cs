@@ -61,6 +61,9 @@ namespace Ryujinx.Graphics
             int DstBlitW = ReadRegister(NvGpuEngine2dReg.BlitDstW);
             int DstBlitH = ReadRegister(NvGpuEngine2dReg.BlitDstH);
 
+            int BlitDuDx = ReadRegister(NvGpuEngine2dReg.BlitDuDxInt);
+            int BlitDvDy = ReadRegister(NvGpuEngine2dReg.BlitDvDyInt);
+
             int SrcBlitX = ReadRegister(NvGpuEngine2dReg.BlitSrcXInt);
             int SrcBlitY = ReadRegister(NvGpuEngine2dReg.BlitSrcYInt);
 
@@ -99,13 +102,16 @@ namespace Ryujinx.Graphics
             Gpu.ResourceManager.SendTexture(Vmm, SrcKey, SrcTexture);
             Gpu.ResourceManager.SendTexture(Vmm, DstKey, DstTexture);
 
+            int SrcBlitX2 = SrcBlitX + DstBlitW * BlitDuDx;
+            int SrcBlitY2 = SrcBlitY + DstBlitH * BlitDvDy;
+
             Gpu.Renderer.RenderTarget.Copy(
                 SrcKey,
                 DstKey,
                 SrcBlitX,
                 SrcBlitY,
-                SrcBlitX + DstBlitW,
-                SrcBlitY + DstBlitH,
+                SrcBlitX2,
+                SrcBlitY2,
                 DstBlitX,
                 DstBlitY,
                 DstBlitX + DstBlitW,
