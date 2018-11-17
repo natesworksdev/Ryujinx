@@ -82,8 +82,8 @@ namespace Ryujinx.HLE.HOS.Services.Aud
                 OutPosition += 2;
             }
 
-            Context.ResponseData.Write(Samples);
             Context.ResponseData.Write(Processed);
+            Context.ResponseData.Write(Samples);
 
             return 0;
         }
