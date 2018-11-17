@@ -36,9 +36,10 @@ namespace Ryujinx.Audio
         {
             get
             {
-                SoundIO context          = null;
-                SoundIODevice device     = null;
+                SoundIO          context = null;
+                SoundIODevice    device  = null;
                 SoundIOOutStream stream  = null;
+
                 bool backendDisconnected = false;
 
                 try
