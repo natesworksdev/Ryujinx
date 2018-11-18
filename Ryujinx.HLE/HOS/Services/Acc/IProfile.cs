@@ -1,9 +1,8 @@
 using ChocolArm64.Memory;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.SystemState;
-using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Utilities;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -38,11 +37,11 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
         public long Get(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAcc, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAcc, "Stubbed.");
 
             long Position = Context.Request.ReceiveBuff[0].Position;
 
-            AMemoryHelper.FillWithZeros(Context.Memory, Position, 0x80);
+            MemoryHelper.FillWithZeros(Context.Memory, Position, 0x80);
 
             Context.Memory.WriteInt32(Position, 0);
             Context.Memory.WriteInt32(Position + 4, 1);

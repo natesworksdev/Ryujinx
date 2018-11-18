@@ -1,5 +1,5 @@
 using ChocolArm64.Memory;
-using Ryujinx.HLE.Logging;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Text;
@@ -84,8 +84,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                 long InputPosition  = Context.Request.GetBufferType0x21().Position;
                 long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-                string Domain = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0, 0x41);
-                string Name   = AMemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0x41, 0x41);
+                string Domain = MemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0, 0x41);
+                string Name   = MemoryHelper.ReadAsciiString(Context.Memory, InputPosition + 0x41, 0x41);
 
                 if (Set.NxSettings.Settings.TryGetValue($"{Domain}!{Name}", out object NvSetting))
                 {
@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                     {
                         if (StringValue.Length > 0x100)
                         {
-                            Context.Device.Log.PrintError(Logging.LogClass.ServiceNv, $"{Domain}!{Name} String value size is too big!");
+                            Logger.PrintError(LogClass.ServiceNv, $"{Domain}!{Name} String value size is too big!");
                         }
                         else
                         {
@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
                     Context.Memory.WriteBytes(OutputPosition + 0x82, SettingBuffer);
 
-                    Context.Device.Log.PrintDebug(Logging.LogClass.ServiceNv, $"Got setting {Domain}!{Name}");
+                    Logger.PrintDebug(LogClass.ServiceNv, $"Got setting {Domain}!{Name}");
                 }
 
                 return NvResult.Success;
@@ -144,7 +144,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             int EventId = Context.Memory.ReadInt32(InputPosition);
 
-            Context.Device.Log.PrintStub(LogClass.ServiceNv, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
             return NvResult.Success;
         }
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            NvHostCtrlSyncptRead Args = AMemoryHelper.Read<NvHostCtrlSyncptRead>(Context.Memory, InputPosition);
+            NvHostCtrlSyncptRead Args = MemoryHelper.Read<NvHostCtrlSyncptRead>(Context.Memory, InputPosition);
 
             if ((uint)Args.Id >= NvHostSyncpt.SyncptsCount)
             {
@@ -170,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                 Args.Value = GetUserCtx(Context).Syncpt.GetMin(Args.Id);
             }
 
-            AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
+            MemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
             return NvResult.Success;
         }
@@ -180,7 +180,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            NvHostCtrlSyncptWait Args = AMemoryHelper.Read<NvHostCtrlSyncptWait>(Context.Memory, InputPosition);
+            NvHostCtrlSyncptWait Args = MemoryHelper.Read<NvHostCtrlSyncptWait>(Context.Memory, InputPosition);
 
             NvHostSyncpt Syncpt = GetUserCtx(Context).Syncpt;
 
@@ -201,7 +201,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
             }
             else
             {
-                Context.Device.Log.PrintDebug(LogClass.ServiceNv, "Waiting syncpt with timeout of " + Args.Timeout + "ms...");
+                Logger.PrintDebug(LogClass.ServiceNv, "Waiting syncpt with timeout of " + Args.Timeout + "ms...");
 
                 using (ManualResetEvent WaitEvent = new ManualResetEvent(false))
                 {
@@ -232,7 +232,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                     }
                 }
 
-                Context.Device.Log.PrintDebug(LogClass.ServiceNv, "Resuming...");
+                Logger.PrintDebug(LogClass.ServiceNv, "Resuming...");
             }
 
             if (Extended)
@@ -248,7 +248,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            NvHostCtrlSyncptWaitEx Args = AMemoryHelper.Read<NvHostCtrlSyncptWaitEx>(Context.Memory, InputPosition);
+            NvHostCtrlSyncptWaitEx Args = MemoryHelper.Read<NvHostCtrlSyncptWaitEx>(Context.Memory, InputPosition);
 
             if ((uint)Args.Id >= NvHostSyncpt.SyncptsCount)
             {
@@ -257,7 +257,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             void WriteArgs()
             {
-                AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
+                MemoryHelper.Write(Context.Memory, OutputPosition, Args);
             }
 
             NvHostSyncpt Syncpt = GetUserCtx(Context).Syncpt;

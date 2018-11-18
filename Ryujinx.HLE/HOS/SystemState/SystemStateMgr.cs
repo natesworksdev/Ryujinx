@@ -1,3 +1,4 @@
+using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -37,6 +38,8 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         internal long DesiredLanguageCode { get; private set; }
 
+        public TitleLanguage DesiredTitleLanguage { get; private set; }
+
         internal string ActiveAudioOutput { get; private set; }
 
         public bool DockedMode { get; set; }
@@ -55,15 +58,18 @@ namespace Ryujinx.HLE.HOS.SystemState
 
             Profiles = new ConcurrentDictionary<string, UserProfile>();
 
-            UserId DefaultUuid = new UserId("00000000000000000000000000000001");
+            UInt128 DefaultUuid = new UInt128("00000000000000000000000000000001");
 
             AddUser(DefaultUuid, "Player");
+
             OpenUser(DefaultUuid);
         }
 
         public void SetLanguage(SystemLanguage Language)
         {
             DesiredLanguageCode = GetLanguageCode((int)Language);
+
+            DesiredTitleLanguage = Enum.Parse<TitleLanguage>(Enum.GetName(typeof(SystemLanguage), Language));
         }
 
         public void SetAudioOutputAsTv()
@@ -81,24 +87,24 @@ namespace Ryujinx.HLE.HOS.SystemState
             ActiveAudioOutput = AudioOutputs[2];
         }
 
-        public void AddUser(UserId Uuid, string Name)
+        public void AddUser(UInt128 Uuid, string Name)
         {
             UserProfile Profile = new UserProfile(Uuid, Name);
 
-            Profiles.AddOrUpdate(Uuid.UserIdHex, Profile, (Key, Old) => Profile);
+            Profiles.AddOrUpdate(Uuid.ToString(), Profile, (Key, Old) => Profile);
         }
 
-        public void OpenUser(UserId Uuid)
+        public void OpenUser(UInt128 Uuid)
         {
-            if (Profiles.TryGetValue(Uuid.UserIdHex, out UserProfile Profile))
+            if (Profiles.TryGetValue(Uuid.ToString(), out UserProfile Profile))
             {
                 (LastOpenUser = Profile).AccountState = OpenCloseState.Open;
             }
         }
 
-        public void CloseUser(UserId Uuid)
+        public void CloseUser(UInt128 Uuid)
         {
-            if (Profiles.TryGetValue(Uuid.UserIdHex, out UserProfile Profile))
+            if (Profiles.TryGetValue(Uuid.ToString(), out UserProfile Profile))
             {
                 Profile.AccountState = OpenCloseState.Closed;
             }
@@ -109,9 +115,9 @@ namespace Ryujinx.HLE.HOS.SystemState
             return Profiles.Count;
         }
 
-        internal bool TryGetUser(UserId Uuid, out UserProfile Profile)
+        internal bool TryGetUser(UInt128 Uuid, out UserProfile Profile)
         {
-            return Profiles.TryGetValue(Uuid.UserIdHex, out Profile);
+            return Profiles.TryGetValue(Uuid.ToString(), out Profile);
         }
 
         internal IEnumerable<UserProfile> GetAllUsers()

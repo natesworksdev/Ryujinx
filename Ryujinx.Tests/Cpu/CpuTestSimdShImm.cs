@@ -1,14 +1,12 @@
 #define SimdShImm
 
-using ChocolArm64.State;
-
 using NUnit.Framework;
 
 using System.Runtime.Intrinsics;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdShImm")] // Tested: second half of 2018.
+    [Category("SimdShImm")]
     public sealed class CpuTestSimdShImm : CpuTest
     {
 #if SimdShImm
@@ -18,6 +16,18 @@ namespace Ryujinx.Tests.Cpu
         {
             return new ulong[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                                  0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
+
+        private static ulong[] _1H_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x0000000000007FFFul,
+                                 0x0000000000008000ul, 0x000000000000FFFFul };
+        }
+
+        private static ulong[] _1S_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x000000007FFFFFFFul,
+                                 0x0000000080000000ul, 0x00000000FFFFFFFFul };
         }
 
         private static ulong[] _2S_()
@@ -114,230 +124,536 @@ namespace Ryujinx.Tests.Cpu
                 0x6F401400u  // USRA  V0.2D, V0.2D, #64
             };
         }
+
+        private static uint[] _ShrImmNarrow_V_8H8B_8H16B_()
+        {
+            return new uint[]
+            {
+                0x0F088C00u, // RSHRN V0.8B, V0.8H, #8
+                0x0F088400u  // SHRN  V0.8B, V0.8H, #8
+            };
+        }
+
+        private static uint[] _ShrImmNarrow_V_4S4H_4S8H_()
+        {
+            return new uint[]
+            {
+                0x0F108C00u, // RSHRN V0.4H, V0.4S, #16
+                0x0F108400u  // SHRN  V0.4H, V0.4S, #16
+            };
+        }
+
+        private static uint[] _ShrImmNarrow_V_2D2S_2D4S_()
+        {
+            return new uint[]
+            {
+                0x0F208C00u, // RSHRN V0.2S, V0.2D, #32
+                0x0F208400u  // SHRN  V0.2S, V0.2D, #32
+            };
+        }
+
+        private static uint[] _ShrImmSaturatingNarrow_S_HB_()
+        {
+            return new uint[]
+            {
+                0x5F089C00u, // SQRSHRN  B0, H0, #8
+                0x7F089C00u, // UQRSHRN  B0, H0, #8
+                0x7F088C00u, // SQRSHRUN B0, H0, #8
+                0x5F089400u, // SQSHRN   B0, H0, #8
+                0x7F089400u, // UQSHRN   B0, H0, #8
+                0x7F088400u  // SQSHRUN  B0, H0, #8
+            };
+        }
+
+        private static uint[] _ShrImmSaturatingNarrow_S_SH_()
+        {
+            return new uint[]
+            {
+                0x5F109C00u, // SQRSHRN  H0, S0, #16
+                0x7F109C00u, // UQRSHRN  H0, S0, #16
+                0x7F108C00u, // SQRSHRUN H0, S0, #16
+                0x5F109400u, // SQSHRN   H0, S0, #16
+                0x7F109400u, // UQSHRN   H0, S0, #16
+                0x7F108400u  // SQSHRUN  H0, S0, #16
+            };
+        }
+
+        private static uint[] _ShrImmSaturatingNarrow_S_DS_()
+        {
+            return new uint[]
+            {
+                0x5F209C00u, // SQRSHRN  S0, D0, #32
+                0x7F209C00u, // UQRSHRN  S0, D0, #32
+                0x7F208C00u, // SQRSHRUN S0, D0, #32
+                0x5F209400u, // SQSHRN   S0, D0, #32
+                0x7F209400u, // UQSHRN   S0, D0, #32
+                0x7F208400u  // SQSHRUN  S0, D0, #32
+            };
+        }
+
+        private static uint[] _ShrImmSaturatingNarrow_V_8H8B_8H16B_()
+        {
+            return new uint[]
+            {
+                0x0F089C00u, // SQRSHRN  V0.8B, V0.8H, #8
+                0x2F089C00u, // UQRSHRN  V0.8B, V0.8H, #8
+                0x2F088C00u, // SQRSHRUN V0.8B, V0.8H, #8
+                0x0F089400u, // SQSHRN   V0.8B, V0.8H, #8
+                0x2F089400u, // UQSHRN   V0.8B, V0.8H, #8
+                0x2F088400u  // SQSHRUN  V0.8B, V0.8H, #8
+            };
+        }
+
+        private static uint[] _ShrImmSaturatingNarrow_V_4S4H_4S8H_()
+        {
+            return new uint[]
+            {
+                0x0F109C00u, // SQRSHRN  V0.4H, V0.4S, #16
+                0x2F109C00u, // UQRSHRN  V0.4H, V0.4S, #16
+                0x2F108C00u, // SQRSHRUN V0.4H, V0.4S, #16
+                0x0F109400u, // SQSHRN   V0.4H, V0.4S, #16
+                0x2F109400u, // UQSHRN   V0.4H, V0.4S, #16
+                0x2F108400u  // SQSHRUN  V0.4H, V0.4S, #16
+            };
+        }
+
+        private static uint[] _ShrImmSaturatingNarrow_V_2D2S_2D4S_()
+        {
+            return new uint[]
+            {
+                0x0F209C00u, // SQRSHRN  V0.2S, V0.2D, #32
+                0x2F209C00u, // UQRSHRN  V0.2S, V0.2D, #32
+                0x2F208C00u, // SQRSHRUN V0.2S, V0.2D, #32
+                0x0F209400u, // SQSHRN   V0.2S, V0.2D, #32
+                0x2F209400u, // UQSHRN   V0.2S, V0.2D, #32
+                0x2F208400u  // SQSHRUN  V0.2S, V0.2D, #32
+            };
+        }
 #endregion
 
         private const int RndCnt = 2;
 
         [Test, Pairwise, Description("SHL <V><d>, <V><n>, #<shift>")]
-        public void Shl_S_D([Values(0u)]     uint Rd,
-                            [Values(1u, 0u)] uint Rn,
-                            [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
-                            [ValueSource("_1D_")] [Random(RndCnt)] ulong A,
-                            [Range(0u, 63u)] uint Shift)
+        public void Shl_S_D([Values(0u)]     uint rd,
+                            [Values(1u, 0u)] uint rn,
+                            [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
+                            [ValueSource("_1D_")] [Random(RndCnt)] ulong a,
+                            [Range(0u, 63u)] uint shift)
         {
-            uint ImmHB = (64 + Shift) & 0x7F;
+            uint immHb = (64 + shift) & 0x7F;
 
-            uint Opcode = 0x5F405400; // SHL D0, D0, #0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcode |= (ImmHB << 16);
+            uint opcode = 0x5F405400; // SHL D0, D0, #0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcode |= (immHb << 16);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            SingleOpcode(opcode, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("SHL <Vd>.<T>, <Vn>.<T>, #<shift>")]
-        public void Shl_V_8B_16B([Values(0u)]     uint Rd,
-                                 [Values(1u, 0u)] uint Rn,
-                                 [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
-                                 [ValueSource("_8B_")] [Random(RndCnt)] ulong A,
-                                 [Range(0u, 7u)] uint Shift,
-                                 [Values(0b0u, 0b1u)] uint Q) // <8B, 16B>
+        public void Shl_V_8B_16B([Values(0u)]     uint rd,
+                                 [Values(1u, 0u)] uint rn,
+                                 [ValueSource("_8B_")] [Random(RndCnt)] ulong z,
+                                 [ValueSource("_8B_")] [Random(RndCnt)] ulong a,
+                                 [Range(0u, 7u)] uint shift,
+                                 [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
-            uint ImmHB = (8 + Shift) & 0x7F;
+            uint immHb = (8 + shift) & 0x7F;
 
-            uint Opcode = 0x0F085400; // SHL V0.8B, V0.8B, #0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcode |= (ImmHB << 16);
-            Opcode |= ((Q & 1) << 30);
+            uint opcode = 0x0F085400; // SHL V0.8B, V0.8B, #0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcode |= (immHb << 16);
+            opcode |= ((q & 1) << 30);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            SingleOpcode(opcode, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("SHL <Vd>.<T>, <Vn>.<T>, #<shift>")]
-        public void Shl_V_4H_8H([Values(0u)]     uint Rd,
-                                [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_4H_")] [Random(RndCnt)] ulong Z,
-                                [ValueSource("_4H_")] [Random(RndCnt)] ulong A,
-                                [Range(0u, 15u)] uint Shift,
-                                [Values(0b0u, 0b1u)] uint Q) // <4H, 8H>
+        public void Shl_V_4H_8H([Values(0u)]     uint rd,
+                                [Values(1u, 0u)] uint rn,
+                                [ValueSource("_4H_")] [Random(RndCnt)] ulong z,
+                                [ValueSource("_4H_")] [Random(RndCnt)] ulong a,
+                                [Range(0u, 15u)] uint shift,
+                                [Values(0b0u, 0b1u)] uint q) // <4H, 8H>
         {
-            uint ImmHB = (16 + Shift) & 0x7F;
+            uint immHb = (16 + shift) & 0x7F;
 
-            uint Opcode = 0x0F105400; // SHL V0.4H, V0.4H, #0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcode |= (ImmHB << 16);
-            Opcode |= ((Q & 1) << 30);
+            uint opcode = 0x0F105400; // SHL V0.4H, V0.4H, #0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcode |= (immHb << 16);
+            opcode |= ((q & 1) << 30);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            SingleOpcode(opcode, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("SHL <Vd>.<T>, <Vn>.<T>, #<shift>")]
-        public void Shl_V_2S_4S([Values(0u)]     uint Rd,
-                                [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_2S_")] [Random(RndCnt)] ulong Z,
-                                [ValueSource("_2S_")] [Random(RndCnt)] ulong A,
-                                [Range(0u, 31u)] uint Shift,
-                                [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
+        public void Shl_V_2S_4S([Values(0u)]     uint rd,
+                                [Values(1u, 0u)] uint rn,
+                                [ValueSource("_2S_")] [Random(RndCnt)] ulong z,
+                                [ValueSource("_2S_")] [Random(RndCnt)] ulong a,
+                                [Range(0u, 31u)] uint shift,
+                                [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
         {
-            uint ImmHB = (32 + Shift) & 0x7F;
+            uint immHb = (32 + shift) & 0x7F;
 
-            uint Opcode = 0x0F205400; // SHL V0.2S, V0.2S, #0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcode |= (ImmHB << 16);
-            Opcode |= ((Q & 1) << 30);
+            uint opcode = 0x0F205400; // SHL V0.2S, V0.2S, #0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcode |= (immHb << 16);
+            opcode |= ((q & 1) << 30);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            SingleOpcode(opcode, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("SHL <Vd>.<T>, <Vn>.<T>, #<shift>")]
-        public void Shl_V_2D([Values(0u)]     uint Rd,
-                             [Values(1u, 0u)] uint Rn,
-                             [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
-                             [ValueSource("_1D_")] [Random(RndCnt)] ulong A,
-                             [Range(0u, 63u)] uint Shift)
+        public void Shl_V_2D([Values(0u)]     uint rd,
+                             [Values(1u, 0u)] uint rn,
+                             [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
+                             [ValueSource("_1D_")] [Random(RndCnt)] ulong a,
+                             [Range(0u, 63u)] uint shift)
         {
-            uint ImmHB = (64 + Shift) & 0x7F;
+            uint immHb = (64 + shift) & 0x7F;
 
-            uint Opcode = 0x4F405400; // SHL V0.2D, V0.2D, #0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcode |= (ImmHB << 16);
+            uint opcode = 0x4F405400; // SHL V0.2D, V0.2D, #0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcode |= (immHb << 16);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
 
-            AThreadState ThreadState = SingleOpcode(Opcode, V0: V0, V1: V1);
+            SingleOpcode(opcode, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise]
-        public void ShrImm_S_D([ValueSource("_ShrImm_S_D_")] uint Opcodes,
-                               [Values(0u)]     uint Rd,
-                               [Values(1u, 0u)] uint Rn,
-                               [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
-                               [ValueSource("_1D_")] [Random(RndCnt)] ulong A,
-                               [Range(1u, 64u)] uint Shift)
+        public void ShrImm_S_D([ValueSource("_ShrImm_S_D_")] uint opcodes,
+                               [Values(0u)]     uint rd,
+                               [Values(1u, 0u)] uint rn,
+                               [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
+                               [ValueSource("_1D_")] [Random(RndCnt)] ulong a,
+                               [Range(1u, 64u)] uint shift)
         {
-            uint ImmHB = (128 - Shift) & 0x7F;
+            uint immHb = (128 - shift) & 0x7F;
 
-            Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcodes |= (ImmHB << 16);
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0(A);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
 
-            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1);
+            SingleOpcode(opcodes, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise]
-        public void ShrImm_V_8B_16B([ValueSource("_ShrImm_V_8B_16B_")] uint Opcodes,
-                                    [Values(0u)]     uint Rd,
-                                    [Values(1u, 0u)] uint Rn,
-                                    [ValueSource("_8B_")] [Random(RndCnt)] ulong Z,
-                                    [ValueSource("_8B_")] [Random(RndCnt)] ulong A,
-                                    [Range(1u, 8u)] uint Shift,
-                                    [Values(0b0u, 0b1u)] uint Q) // <8B, 16B>
+        public void ShrImm_V_8B_16B([ValueSource("_ShrImm_V_8B_16B_")] uint opcodes,
+                                    [Values(0u)]     uint rd,
+                                    [Values(1u, 0u)] uint rn,
+                                    [ValueSource("_8B_")] [Random(RndCnt)] ulong z,
+                                    [ValueSource("_8B_")] [Random(RndCnt)] ulong a,
+                                    [Range(1u, 8u)] uint shift,
+                                    [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
-            uint ImmHB = (16 - Shift) & 0x7F;
+            uint immHb = (16 - shift) & 0x7F;
 
-            Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcodes |= (ImmHB << 16);
-            Opcodes |= ((Q & 1) << 30);
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
 
-            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1);
+            SingleOpcode(opcodes, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise]
-        public void ShrImm_V_4H_8H([ValueSource("_ShrImm_V_4H_8H_")] uint Opcodes,
-                                   [Values(0u)]     uint Rd,
-                                   [Values(1u, 0u)] uint Rn,
-                                   [ValueSource("_4H_")] [Random(RndCnt)] ulong Z,
-                                   [ValueSource("_4H_")] [Random(RndCnt)] ulong A,
-                                   [Range(1u, 16u)] uint Shift,
-                                   [Values(0b0u, 0b1u)] uint Q) // <4H, 8H>
+        public void ShrImm_V_4H_8H([ValueSource("_ShrImm_V_4H_8H_")] uint opcodes,
+                                   [Values(0u)]     uint rd,
+                                   [Values(1u, 0u)] uint rn,
+                                   [ValueSource("_4H_")] [Random(RndCnt)] ulong z,
+                                   [ValueSource("_4H_")] [Random(RndCnt)] ulong a,
+                                   [Range(1u, 16u)] uint shift,
+                                   [Values(0b0u, 0b1u)] uint q) // <4H, 8H>
         {
-            uint ImmHB = (32 - Shift) & 0x7F;
+            uint immHb = (32 - shift) & 0x7F;
 
-            Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcodes |= (ImmHB << 16);
-            Opcodes |= ((Q & 1) << 30);
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
 
-            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1);
+            SingleOpcode(opcodes, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise]
-        public void ShrImm_V_2S_4S([ValueSource("_ShrImm_V_2S_4S_")] uint Opcodes,
-                                   [Values(0u)]     uint Rd,
-                                   [Values(1u, 0u)] uint Rn,
-                                   [ValueSource("_2S_")] [Random(RndCnt)] ulong Z,
-                                   [ValueSource("_2S_")] [Random(RndCnt)] ulong A,
-                                   [Range(1u, 32u)] uint Shift,
-                                   [Values(0b0u, 0b1u)] uint Q) // <2S, 4S>
+        public void ShrImm_V_2S_4S([ValueSource("_ShrImm_V_2S_4S_")] uint opcodes,
+                                   [Values(0u)]     uint rd,
+                                   [Values(1u, 0u)] uint rn,
+                                   [ValueSource("_2S_")] [Random(RndCnt)] ulong z,
+                                   [ValueSource("_2S_")] [Random(RndCnt)] ulong a,
+                                   [Range(1u, 32u)] uint shift,
+                                   [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
         {
-            uint ImmHB = (64 - Shift) & 0x7F;
+            uint immHb = (64 - shift) & 0x7F;
 
-            Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcodes |= (ImmHB << 16);
-            Opcodes |= ((Q & 1) << 30);
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A * Q);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
 
-            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1);
+            SingleOpcode(opcodes, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
         }
 
         [Test, Pairwise]
-        public void ShrImm_V_2D([ValueSource("_ShrImm_V_2D_")] uint Opcodes,
-                                [Values(0u)]     uint Rd,
-                                [Values(1u, 0u)] uint Rn,
-                                [ValueSource("_1D_")] [Random(RndCnt)] ulong Z,
-                                [ValueSource("_1D_")] [Random(RndCnt)] ulong A,
-                                [Range(1u, 64u)] uint Shift)
+        public void ShrImm_V_2D([ValueSource("_ShrImm_V_2D_")] uint opcodes,
+                                [Values(0u)]     uint rd,
+                                [Values(1u, 0u)] uint rn,
+                                [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
+                                [ValueSource("_1D_")] [Random(RndCnt)] ulong a,
+                                [Range(1u, 64u)] uint shift)
         {
-            uint ImmHB = (128 - Shift) & 0x7F;
+            uint immHb = (128 - shift) & 0x7F;
 
-            Opcodes |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-            Opcodes |= (ImmHB << 16);
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
 
-            Vector128<float> V0 = MakeVectorE0E1(Z, Z);
-            Vector128<float> V1 = MakeVectorE0E1(A, A);
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
 
-            AThreadState ThreadState = SingleOpcode(Opcodes, V0: V0, V1: V1);
+            SingleOpcode(opcodes, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void ShrImmNarrow_V_8H8B_8H16B([ValueSource("_ShrImmNarrow_V_8H8B_8H16B_")] uint opcodes,
+                                              [Values(0u)]     uint rd,
+                                              [Values(1u, 0u)] uint rn,
+                                              [ValueSource("_4H_")] [Random(RndCnt)] ulong z,
+                                              [ValueSource("_4H_")] [Random(RndCnt)] ulong a,
+                                              [Range(1u, 8u)] uint shift,
+                                              [Values(0b0u, 0b1u)] uint q) // <8H8B, 8H16B>
+        {
+            uint immHb = (16 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void ShrImmNarrow_V_4S4H_4S8H([ValueSource("_ShrImmNarrow_V_4S4H_4S8H_")] uint opcodes,
+                                             [Values(0u)]     uint rd,
+                                             [Values(1u, 0u)] uint rn,
+                                             [ValueSource("_2S_")] [Random(RndCnt)] ulong z,
+                                             [ValueSource("_2S_")] [Random(RndCnt)] ulong a,
+                                             [Range(1u, 16u)] uint shift,
+                                             [Values(0b0u, 0b1u)] uint q) // <4S4H, 4S8H>
+        {
+            uint immHb = (32 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void ShrImmNarrow_V_2D2S_2D4S([ValueSource("_ShrImmNarrow_V_2D2S_2D4S_")] uint opcodes,
+                                             [Values(0u)]     uint rd,
+                                             [Values(1u, 0u)] uint rn,
+                                             [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
+                                             [ValueSource("_1D_")] [Random(RndCnt)] ulong a,
+                                             [Range(1u, 32u)] uint shift,
+                                             [Values(0b0u, 0b1u)] uint q) // <2D2S, 2D4S>
+        {
+            uint immHb = (64 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void ShrImmSaturatingNarrow_S_HB([ValueSource("_ShrImmSaturatingNarrow_S_HB_")] uint opcodes,
+                                                [Values(0u)]     uint rd,
+                                                [Values(1u, 0u)] uint rn,
+                                                [ValueSource("_1H_")] [Random(RndCnt)] ulong z,
+                                                [ValueSource("_1H_")] [Random(RndCnt)] ulong a,
+                                                [Range(1u, 8u)] uint shift)
+        {
+            uint immHb = (16 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Qc);
+        }
+
+        [Test, Pairwise]
+        public void ShrImmSaturatingNarrow_S_SH([ValueSource("_ShrImmSaturatingNarrow_S_SH_")] uint opcodes,
+                                                [Values(0u)]     uint rd,
+                                                [Values(1u, 0u)] uint rn,
+                                                [ValueSource("_1S_")] [Random(RndCnt)] ulong z,
+                                                [ValueSource("_1S_")] [Random(RndCnt)] ulong a,
+                                                [Range(1u, 16u)] uint shift)
+        {
+            uint immHb = (32 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Qc);
+        }
+
+        [Test, Pairwise]
+        public void ShrImmSaturatingNarrow_S_DS([ValueSource("_ShrImmSaturatingNarrow_S_DS_")] uint opcodes,
+                                                [Values(0u)]     uint rd,
+                                                [Values(1u, 0u)] uint rn,
+                                                [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
+                                                [ValueSource("_1D_")] [Random(RndCnt)] ulong a,
+                                                [Range(1u, 32u)] uint shift)
+        {
+            uint immHb = (64 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Qc);
+        }
+
+        [Test, Pairwise]
+        public void ShrImmSaturatingNarrow_V_8H8B_8H16B([ValueSource("_ShrImmSaturatingNarrow_V_8H8B_8H16B_")] uint opcodes,
+                                                        [Values(0u)]     uint rd,
+                                                        [Values(1u, 0u)] uint rn,
+                                                        [ValueSource("_4H_")] [Random(RndCnt)] ulong z,
+                                                        [ValueSource("_4H_")] [Random(RndCnt)] ulong a,
+                                                        [Range(1u, 8u)] uint shift,
+                                                        [Values(0b0u, 0b1u)] uint q) // <8H8B, 8H16B>
+        {
+            uint immHb = (16 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Qc);
+        }
+
+        [Test, Pairwise]
+        public void ShrImmSaturatingNarrow_V_4S4H_4S8H([ValueSource("_ShrImmSaturatingNarrow_V_4S4H_4S8H_")] uint opcodes,
+                                                       [Values(0u)]     uint rd,
+                                                       [Values(1u, 0u)] uint rn,
+                                                       [ValueSource("_2S_")] [Random(RndCnt)] ulong z,
+                                                       [ValueSource("_2S_")] [Random(RndCnt)] ulong a,
+                                                       [Range(1u, 16u)] uint shift,
+                                                       [Values(0b0u, 0b1u)] uint q) // <4S4H, 4S8H>
+        {
+            uint immHb = (32 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Qc);
+        }
+
+        [Test, Pairwise]
+        public void ShrImmSaturatingNarrow_V_2D2S_2D4S([ValueSource("_ShrImmSaturatingNarrow_V_2D2S_2D4S_")] uint opcodes,
+                                                       [Values(0u)]     uint rd,
+                                                       [Values(1u, 0u)] uint rn,
+                                                       [ValueSource("_1D_")] [Random(RndCnt)] ulong z,
+                                                       [ValueSource("_1D_")] [Random(RndCnt)] ulong a,
+                                                       [Range(1u, 32u)] uint shift,
+                                                       [Values(0b0u, 0b1u)] uint q) // <2D2S, 2D4S>
+        {
+            uint immHb = (64 - shift) & 0x7F;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (immHb << 16);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Qc);
         }
 #endif
     }

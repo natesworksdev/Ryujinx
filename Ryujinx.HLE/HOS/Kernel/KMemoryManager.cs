@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private LinkedList<KMemoryBlock> Blocks;
 
-        private AMemory CpuMemory;
+        private MemoryManager CpuMemory;
 
         private ArenaAllocator Allocator;
 
@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
 
                 case AddressSpaceType.Addr39Bits:
-                    CodeRegionStart  = 0;
+                    CodeRegionStart  = 0x8000000;
                     CodeRegionSize   = 0x80000000;
                     MapRegionSize    = 0x1000000000;
                     HeapRegionSize   = 0x180000000;
@@ -146,6 +146,92 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 CpuMemory.Map(Position, PA, Size);
             }
+        }
+
+        public long MapProcessCodeMemory(long Dst, long Src, long Size)
+        {
+            lock (Blocks)
+            {
+                long PagesCount = Size / PageSize;
+
+                bool Success = IsUnmapped(Dst, Size);
+
+                Success &= CheckRange(
+                            Src,
+                            Size,
+                            MemoryState.Mask,
+                            MemoryState.Heap,
+                            MemoryPermission.Mask,
+                            MemoryPermission.ReadAndWrite,
+                            MemoryAttribute.Mask,
+                            MemoryAttribute.None,
+                            MemoryAttribute.IpcAndDeviceMapped,
+                            out _,
+                            out _,
+                            out _);
+
+                if (Success)
+                {
+                    long PA = CpuMemory.GetPhysicalAddress(Src);
+
+                    InsertBlock(Dst, PagesCount, MemoryState.CodeStatic, MemoryPermission.ReadAndExecute);
+                    InsertBlock(Src, PagesCount, MemoryState.Heap, MemoryPermission.None);
+
+                    CpuMemory.Map(Dst, PA, Size);
+
+                    return 0;
+                }
+            }
+
+            return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+        }
+
+        public long UnmapProcessCodeMemory(long Dst, long Src, long Size)
+        {
+            lock (Blocks)
+            {
+                long PagesCount = Size / PageSize;
+
+                bool Success = CheckRange(
+                            Dst,
+                            Size,
+                            MemoryState.Mask,
+                            MemoryState.CodeStatic,
+                            MemoryPermission.None,
+                            MemoryPermission.None,
+                            MemoryAttribute.Mask,
+                            MemoryAttribute.None,
+                            MemoryAttribute.IpcAndDeviceMapped,
+                            out _,
+                            out _,
+                            out _);
+
+                Success &= CheckRange(
+                            Src,
+                            Size,
+                            MemoryState.Mask,
+                            MemoryState.Heap,
+                            MemoryPermission.Mask,
+                            MemoryPermission.None,
+                            MemoryAttribute.Mask,
+                            MemoryAttribute.None,
+                            MemoryAttribute.IpcAndDeviceMapped,
+                            out _,
+                            out _,
+                            out _);
+
+                if (Success)
+                {
+                    InsertBlock(Dst, PagesCount, MemoryState.Unmapped);
+                    InsertBlock(Src, PagesCount, MemoryState.Heap, MemoryPermission.ReadAndWrite);
+
+                    CpuMemory.Unmap(Dst, Size);
+
+                    return 0;
+                }
+            }
+
+            return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
         }
 
         public void HleMapCustom(long Position, long Size, MemoryState State, MemoryPermission Permission)
@@ -753,6 +839,18 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 Allocator.Free(PA, PageSize);
             }
+        }
+
+        public bool HleIsUnmapped(long Position, long Size)
+        {
+            bool Result = false;
+
+            lock (Blocks)
+            {
+                Result = IsUnmapped(Position, Size);
+            }
+
+            return Result;
         }
 
         private bool IsUnmapped(long Position, long Size)

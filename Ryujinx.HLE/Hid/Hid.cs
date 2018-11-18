@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS;
+﻿using Ryujinx.Common;
+using Ryujinx.HLE.HOS;
 using System;
 
 namespace Ryujinx.HLE.Input
@@ -98,12 +99,12 @@ namespace Ryujinx.HLE.Input
 
             HidControllerColorDesc SplitColorDesc = 0;
 
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x0,  (int)Type);
+            Device.Memory.WriteInt32(BaseControllerOffset + 0x00, (int)Type);
 
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x4,  IsHalf ? 1 : 0);
+            Device.Memory.WriteInt32(BaseControllerOffset + 0x04, IsHalf ? 1 : 0);
 
-            Device.Memory.WriteInt32(BaseControllerOffset + 0x8,  (int)SingleColorDesc);
-            Device.Memory.WriteInt32(BaseControllerOffset + 0xc,  (int)SingleColorBody);
+            Device.Memory.WriteInt32(BaseControllerOffset + 0x08, (int)SingleColorDesc);
+            Device.Memory.WriteInt32(BaseControllerOffset + 0x0c, (int)SingleColorBody);
             Device.Memory.WriteInt32(BaseControllerOffset + 0x10, (int)SingleColorButtons);
             Device.Memory.WriteInt32(BaseControllerOffset + 0x14, (int)SplitColorDesc);
 
@@ -114,6 +115,55 @@ namespace Ryujinx.HLE.Input
             Device.Memory.WriteInt32(BaseControllerOffset + 0x24, (int)RightColorButtons);
         }
 
+        private HidControllerButtons UpdateStickButtons(
+            HidJoystickPosition LeftStick,
+            HidJoystickPosition RightStick)
+        {
+            HidControllerButtons Result = 0;
+
+            if (RightStick.DX < 0)
+            {
+                Result |= HidControllerButtons.KEY_RSTICK_LEFT;
+            }
+
+            if (RightStick.DX > 0)
+            {
+                Result |= HidControllerButtons.KEY_RSTICK_RIGHT;
+            }
+
+            if (RightStick.DY < 0)
+            {
+                Result |= HidControllerButtons.KEY_RSTICK_DOWN;
+            }
+
+            if (RightStick.DY > 0)
+            {
+                Result |= HidControllerButtons.KEY_RSTICK_UP;
+            }
+
+            if (LeftStick.DX < 0)
+            {
+                Result |= HidControllerButtons.KEY_LSTICK_LEFT;
+            }
+
+            if (LeftStick.DX > 0)
+            {
+                Result |= HidControllerButtons.KEY_LSTICK_RIGHT;
+            }
+
+            if (LeftStick.DY < 0)
+            {
+                Result |= HidControllerButtons.KEY_LSTICK_DOWN;
+            }
+
+            if (LeftStick.DY > 0)
+            {
+                Result |= HidControllerButtons.KEY_LSTICK_UP;
+            }
+
+            return Result;
+        }
+
         public void SetJoyconButton(
             HidControllerId      ControllerId,
             HidControllerLayouts ControllerLayout,
@@ -121,6 +171,8 @@ namespace Ryujinx.HLE.Input
             HidJoystickPosition  LeftStick,
             HidJoystickPosition  RightStick)
         {
+            Buttons |= UpdateStickButtons(LeftStick, RightStick);
+
             long ControllerOffset = HidPosition + HidControllersOffset;
 
             ControllerOffset += (int)ControllerId * HidControllerSize;
@@ -135,8 +187,8 @@ namespace Ryujinx.HLE.Input
 
             long Timestamp = GetTimestamp();
 
-            Device.Memory.WriteInt64(ControllerOffset + 0x0,  Timestamp);
-            Device.Memory.WriteInt64(ControllerOffset + 0x8,  HidEntryCount);
+            Device.Memory.WriteInt64(ControllerOffset + 0x00, Timestamp);
+            Device.Memory.WriteInt64(ControllerOffset + 0x08, HidEntryCount);
             Device.Memory.WriteInt64(ControllerOffset + 0x10, CurrEntry);
             Device.Memory.WriteInt64(ControllerOffset + 0x18, HidEntryCount - 1);
 
@@ -148,8 +200,8 @@ namespace Ryujinx.HLE.Input
 
             long SampleCounter = Device.Memory.ReadInt64(LastEntryOffset) + 1;
 
-            Device.Memory.WriteInt64(ControllerOffset + 0x0, SampleCounter);
-            Device.Memory.WriteInt64(ControllerOffset + 0x8, SampleCounter);
+            Device.Memory.WriteInt64(ControllerOffset + 0x00, SampleCounter);
+            Device.Memory.WriteInt64(ControllerOffset + 0x08, SampleCounter);
 
             Device.Memory.WriteInt64(ControllerOffset + 0x10, (uint)Buttons);
 
@@ -174,8 +226,8 @@ namespace Ryujinx.HLE.Input
 
             long Timestamp = GetTimestamp();
 
-            Device.Memory.WriteInt64(TouchScreenOffset + 0x0,  Timestamp);
-            Device.Memory.WriteInt64(TouchScreenOffset + 0x8,  HidEntryCount);
+            Device.Memory.WriteInt64(TouchScreenOffset + 0x00, Timestamp);
+            Device.Memory.WriteInt64(TouchScreenOffset + 0x08, HidEntryCount);
             Device.Memory.WriteInt64(TouchScreenOffset + 0x10, CurrEntry);
             Device.Memory.WriteInt64(TouchScreenOffset + 0x18, HidEntryCount - 1);
             Device.Memory.WriteInt64(TouchScreenOffset + 0x20, Timestamp);
@@ -188,8 +240,8 @@ namespace Ryujinx.HLE.Input
 
             TouchEntryOffset += CurrEntry * HidTouchEntrySize;
 
-            Device.Memory.WriteInt64(TouchEntryOffset + 0x0, SampleCounter);
-            Device.Memory.WriteInt64(TouchEntryOffset + 0x8, Points.Length);
+            Device.Memory.WriteInt64(TouchEntryOffset + 0x00, SampleCounter);
+            Device.Memory.WriteInt64(TouchEntryOffset + 0x08, Points.Length);
 
             TouchEntryOffset += HidTouchEntryHeaderSize;
 
@@ -199,9 +251,9 @@ namespace Ryujinx.HLE.Input
 
             foreach (HidTouchPoint Point in Points)
             {
-                Device.Memory.WriteInt64(TouchEntryOffset + 0x0,  Timestamp);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0x8,  Padding);
-                Device.Memory.WriteInt32(TouchEntryOffset + 0xc,  Index++);
+                Device.Memory.WriteInt64(TouchEntryOffset + 0x00, Timestamp);
+                Device.Memory.WriteInt32(TouchEntryOffset + 0x08, Padding);
+                Device.Memory.WriteInt32(TouchEntryOffset + 0x0c, Index++);
                 Device.Memory.WriteInt32(TouchEntryOffset + 0x10, Point.X);
                 Device.Memory.WriteInt32(TouchEntryOffset + 0x14, Point.Y);
                 Device.Memory.WriteInt32(TouchEntryOffset + 0x18, Point.DiameterX);
@@ -215,7 +267,7 @@ namespace Ryujinx.HLE.Input
 
         private static long GetTimestamp()
         {
-            return (long)((ulong)Environment.TickCount * 19_200);
+            return PerformanceCounter.ElapsedMilliseconds * 19200;
         }
     }
 }

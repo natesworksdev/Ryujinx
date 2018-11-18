@@ -10,7 +10,10 @@ namespace Ryujinx.Graphics.Gal
         void ClearBuffers(
             GalClearBufferFlags Flags,
             int Attachment,
-            float Red, float Green, float Blue, float Alpha,
+            float Red,
+            float Green,
+            float Blue,
+            float Alpha,
             float Depth,
             int Stencil);
 
@@ -21,10 +24,11 @@ namespace Ryujinx.Graphics.Gal
         void CreateVbo(long Key, int DataSize, IntPtr HostAddress);
 
         void CreateIbo(long Key, int DataSize, IntPtr HostAddress);
+        void CreateIbo(long Key, int DataSize, byte[] Buffer);
 
         void SetIndexArray(int Size, GalIndexFormat Format);
 
-        void DrawArrays(int First, int PrimCount, GalPrimitiveType PrimType);
+        void DrawArrays(int First, int Count, GalPrimitiveType PrimType);
 
         void DrawElements(long IboKey, int First, int VertexBase, GalPrimitiveType PrimType);
     }

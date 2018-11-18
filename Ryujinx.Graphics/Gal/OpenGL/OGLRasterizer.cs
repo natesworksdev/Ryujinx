@@ -5,6 +5,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLRasterizer : IGalRasterizer
     {
+        private const long MaxVertexBufferCacheSize = 128 * 1024 * 1024;
+        private const long MaxIndexBufferCacheSize  = 64  * 1024 * 1024;
+
         private int[] VertexBuffers;
 
         private OGLCachedResource<int> VboCache;
@@ -24,8 +27,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             VertexBuffers = new int[32];
 
-            VboCache = new OGLCachedResource<int>(GL.DeleteBuffer);
-            IboCache = new OGLCachedResource<int>(GL.DeleteBuffer);
+            VboCache = new OGLCachedResource<int>(GL.DeleteBuffer, MaxVertexBufferCacheSize);
+            IboCache = new OGLCachedResource<int>(GL.DeleteBuffer, MaxIndexBufferCacheSize);
 
             IndexBuffer = new IbInfo();
         }
@@ -45,17 +48,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public void ClearBuffers(
             GalClearBufferFlags Flags,
             int Attachment,
-            float Red, float Green, float Blue, float Alpha,
+            float Red,
+            float Green,
+            float Blue,
+            float Alpha,
             float Depth,
             int Stencil)
         {
             GL.ColorMask(
+                Attachment,
                 Flags.HasFlag(GalClearBufferFlags.ColorRed),
                 Flags.HasFlag(GalClearBufferFlags.ColorGreen),
                 Flags.HasFlag(GalClearBufferFlags.ColorBlue),
                 Flags.HasFlag(GalClearBufferFlags.ColorAlpha));
 
             GL.ClearBuffer(ClearBuffer.Color, Attachment, new float[] { Red, Green, Blue, Alpha });
+
+            GL.ColorMask(Attachment, true, true, true, true);
+            GL.DepthMask(true);
 
             if (Flags.HasFlag(GalClearBufferFlags.Depth))
             {
@@ -66,8 +76,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 GL.ClearBuffer(ClearBuffer.Stencil, 0, ref Stencil);
             }
-
-            GL.ColorMask(true, true, true, true);
         }
 
         public bool IsVboCached(long Key, long DataSize)
@@ -104,6 +112,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BufferData(BufferTarget.ElementArrayBuffer, Length, HostAddress, BufferUsageHint.StreamDraw);
         }
 
+        public void CreateIbo(long Key, int DataSize, byte[] Buffer)
+        {
+            int Handle = GL.GenBuffer();
+
+            IboCache.AddOrUpdate(Key, Handle, (uint)DataSize);
+
+            IntPtr Length = new IntPtr(Buffer.Length);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Handle);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Length, Buffer, BufferUsageHint.StreamDraw);
+        }
+
         public void SetIndexArray(int Size, GalIndexFormat Format)
         {
             IndexBuffer.Type = OGLEnumConverter.GetDrawElementsType(Format);
@@ -113,14 +133,33 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             IndexBuffer.ElemSizeLog2 = (int)Format;
         }
 
-        public void DrawArrays(int First, int PrimCount, GalPrimitiveType PrimType)
+        public void DrawArrays(int First, int Count, GalPrimitiveType PrimType)
         {
-            if (PrimCount == 0)
+            if (Count == 0)
             {
                 return;
             }
 
-            GL.DrawArrays(OGLEnumConverter.GetPrimitiveType(PrimType), First, PrimCount);
+            if (PrimType == GalPrimitiveType.Quads)
+            {
+                for (int Offset = 0; Offset < Count; Offset += 4)
+                {
+                    GL.DrawArrays(PrimitiveType.TriangleFan, First + Offset, 4);
+                }
+            }
+            else if (PrimType == GalPrimitiveType.QuadStrip)
+            {
+                GL.DrawArrays(PrimitiveType.TriangleFan, First, 4);
+
+                for (int Offset = 2; Offset < Count; Offset += 2)
+                {
+                    GL.DrawArrays(PrimitiveType.TriangleFan, First + Offset, 4);
+                }
+            }
+            else
+            {
+                GL.DrawArrays(OGLEnumConverter.GetPrimitiveType(PrimType), First, Count);
+            }
         }
 
         public void DrawElements(long IboKey, int First, int VertexBase, GalPrimitiveType PrimType)

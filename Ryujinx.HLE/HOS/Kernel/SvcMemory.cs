@@ -1,5 +1,5 @@
 using ChocolArm64.State;
-using Ryujinx.HLE.Logging;
+using Ryujinx.Common.Logging;
 
 using static Ryujinx.HLE.HOS.ErrorCode;
 
@@ -7,13 +7,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {
-        private void SvcSetHeapSize(AThreadState ThreadState)
+        private void SvcSetHeapSize(CpuThreadState ThreadState)
         {
             ulong Size = ThreadState.X1;
 
             if ((Size & 0xFFFFFFFE001FFFFF) != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Heap size 0x{Size:x16} is not aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Heap size 0x{Size:x16} is not aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -30,18 +30,18 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
             else
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
         }
 
-        private void SvcSetMemoryAttribute(AThreadState ThreadState)
+        private void SvcSetMemoryAttribute(CpuThreadState ThreadState)
         {
             long Position = (long)ThreadState.X0;
             long Size     = (long)ThreadState.X1;
 
             if (!PageAligned(Position))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Size) || Size == 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (Attributes != AttributeMask ||
                (Attributes | MemoryAttribute.Uncached) != MemoryAttribute.Uncached)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, "Invalid memory attributes!");
+                Logger.PrintWarning(LogClass.KernelSvc, "Invalid memory attributes!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
 
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
             else
             {
@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             ThreadState.X0 = (ulong)Result;
         }
 
-        private void SvcMapMemory(AThreadState ThreadState)
+        private void SvcMapMemory(CpuThreadState ThreadState)
         {
             long Dst  = (long)ThreadState.X0;
             long Src  = (long)ThreadState.X1;
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Src | Dst))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, "Addresses are not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, "Addresses are not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Size) || Size == 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((ulong)(Src + Size) <= (ulong)Src || (ulong)(Dst + Size) <= (ulong)Dst)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!InsideAddrSpace(Src, Size))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!InsideNewMapRegion(Dst, Size))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
 
@@ -145,13 +145,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;
         }
 
-        private void SvcUnmapMemory(AThreadState ThreadState)
+        private void SvcUnmapMemory(CpuThreadState ThreadState)
         {
             long Dst  = (long)ThreadState.X0;
             long Src  = (long)ThreadState.X1;
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Src | Dst))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, "Addresses are not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, "Addresses are not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -168,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Size) || Size == 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((ulong)(Src + Size) <= (ulong)Src || (ulong)(Dst + Size) <= (ulong)Dst)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -186,7 +186,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!InsideAddrSpace(Src, Size))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -195,7 +195,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!InsideNewMapRegion(Dst, Size))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
 
@@ -206,13 +206,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;
         }
 
-        private void SvcQueryMemory(AThreadState ThreadState)
+        private void SvcQueryMemory(CpuThreadState ThreadState)
         {
             long InfoPtr  = (long)ThreadState.X0;
             long Position = (long)ThreadState.X2;
@@ -232,7 +232,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             ThreadState.X1 = 0;
         }
 
-        private void SvcMapSharedMemory(AThreadState ThreadState)
+        private void SvcMapSharedMemory(CpuThreadState ThreadState)
         {
             int  Handle   =  (int)ThreadState.X0;
             long Position = (long)ThreadState.X1;
@@ -240,7 +240,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Position))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -249,7 +249,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Size) || Size == 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -258,7 +258,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((ulong)(Position + Size) <= (ulong)Position)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -269,18 +269,18 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((Permission | MemoryPermission.Write) != MemoryPermission.ReadAndWrite)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid permission {Permission}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid permission {Permission}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidPermission);
 
                 return;
             }
 
-            KSharedMemory SharedMemory = Process.HandleTable.GetData<KSharedMemory>(Handle);
+            KSharedMemory SharedMemory = Process.HandleTable.GetObject<KSharedMemory>(Handle);
 
             if (SharedMemory == null)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid shared memory handle 0x{Handle:x8}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid shared memory handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -289,7 +289,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!InsideAddrSpace(Position, Size) || InsideMapRegion(Position, Size) || InsideHeapRegion(Position, Size))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -298,7 +298,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (SharedMemory.Size != Size)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} does not match shared memory size 0x{SharedMemory.Size:16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} does not match shared memory size 0x{SharedMemory.Size:16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -309,13 +309,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;
         }
 
-        private void SvcUnmapSharedMemory(AThreadState ThreadState)
+        private void SvcUnmapSharedMemory(CpuThreadState ThreadState)
         {
             int  Handle   =  (int)ThreadState.X0;
             long Position = (long)ThreadState.X1;
@@ -323,7 +323,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Position))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -332,7 +332,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Size) || Size == 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -341,18 +341,18 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((ulong)(Position + Size) <= (ulong)Position)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            KSharedMemory SharedMemory = Process.HandleTable.GetData<KSharedMemory>(Handle);
+            KSharedMemory SharedMemory = Process.HandleTable.GetObject<KSharedMemory>(Handle);
 
             if (SharedMemory == null)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid shared memory handle 0x{Handle:x8}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid shared memory handle 0x{Handle:x8}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
 
@@ -361,7 +361,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!InsideAddrSpace(Position, Size) || InsideMapRegion(Position, Size) || InsideHeapRegion(Position, Size))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -372,20 +372,20 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;
         }
 
-        private void SvcCreateTransferMemory(AThreadState ThreadState)
+        private void SvcCreateTransferMemory(CpuThreadState ThreadState)
         {
             long Position = (long)ThreadState.X1;
             long Size     = (long)ThreadState.X2;
 
             if (!PageAligned(Position))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -394,7 +394,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Size) || Size == 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -403,7 +403,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((ulong)(Position + Size) <= (ulong)Position)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -414,7 +414,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Permission > MemoryPermission.ReadAndWrite || Permission == MemoryPermission.Write)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid permission {Permission}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid permission {Permission}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidPermission);
 
@@ -425,20 +425,20 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             KTransferMemory TransferMemory = new KTransferMemory(Position, Size);
 
-            int Handle = Process.HandleTable.OpenHandle(TransferMemory);
+            KernelResult Result = Process.HandleTable.GenerateHandle(TransferMemory, out int Handle);
 
-            ThreadState.X0 = 0;
+            ThreadState.X0 = (uint)Result;
             ThreadState.X1 = (ulong)Handle;
         }
 
-        private void SvcMapPhysicalMemory(AThreadState ThreadState)
+        private void SvcMapPhysicalMemory(CpuThreadState ThreadState)
         {
             long Position = (long)ThreadState.X0;
             long Size     = (long)ThreadState.X1;
 
             if (!PageAligned(Position))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -447,7 +447,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Size) || Size == 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -456,7 +456,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((ulong)(Position + Size) <= (ulong)Position)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -465,7 +465,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!InsideAddrSpace(Position, Size))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Position:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address {Position:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -476,20 +476,20 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;
         }
 
-        private void SvcUnmapPhysicalMemory(AThreadState ThreadState)
+        private void SvcUnmapPhysicalMemory(CpuThreadState ThreadState)
         {
             long Position = (long)ThreadState.X0;
             long Size     = (long)ThreadState.X1;
 
             if (!PageAligned(Position))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -498,7 +498,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!PageAligned(Size) || Size == 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{Size:x16} is not page aligned or is zero!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
 
@@ -507,7 +507,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if ((ulong)(Position + Size) <= (ulong)Position)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -516,7 +516,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (!InsideAddrSpace(Position, Size))
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Invalid address {Position:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address {Position:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -527,7 +527,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (Result != 0)
             {
-                Device.Log.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
             }
 
             ThreadState.X0 = (ulong)Result;

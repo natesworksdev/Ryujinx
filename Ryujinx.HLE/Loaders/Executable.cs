@@ -3,18 +3,21 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 
 namespace Ryujinx.HLE.Loaders
 {
     class Executable
     {
+        private MemoryManager Memory;
+
         private List<ElfDyn> Dynamic;
 
-        private Dictionary<long, string> m_SymbolTable;
-
-        public IReadOnlyDictionary<long, string> SymbolTable => m_SymbolTable;
+        public ReadOnlyCollection<ElfSym> SymbolTable;
 
         public string Name { get; private set; }
 
@@ -23,15 +26,11 @@ namespace Ryujinx.HLE.Loaders
         public long ImageBase { get; private set; }
         public long ImageEnd  { get; private set; }
 
-        private AMemory Memory;
-
         private KMemoryManager MemoryManager;
 
-        public Executable(IExecutable Exe, KMemoryManager MemoryManager, AMemory Memory, long ImageBase)
+        public Executable(IExecutable Exe, KMemoryManager MemoryManager, MemoryManager Memory, long ImageBase)
         {
             Dynamic = new List<ElfDyn>();
-
-            m_SymbolTable = new Dictionary<long, string>();
 
             FilePath = Exe.FilePath;
 
@@ -50,21 +49,49 @@ namespace Ryujinx.HLE.Loaders
             long DataPosition = ImageBase + (uint)Exe.DataOffset;
 
             long TextSize = (uint)IntUtils.AlignUp(Exe.Text.Length, KMemoryManager.PageSize);
-            long ROSize   = (uint)IntUtils.AlignUp(Exe.RO.Length,   KMemoryManager.PageSize);
+            long ROSize   = (uint)IntUtils.AlignUp(Exe.RO.Length, KMemoryManager.PageSize);
             long DataSize = (uint)IntUtils.AlignUp(Exe.Data.Length, KMemoryManager.PageSize);
+            long BssSize  = (uint)IntUtils.AlignUp(Exe.BssSize, KMemoryManager.PageSize);
 
-            long DataAndBssSize = (uint)IntUtils.AlignUp(Exe.BssSize, KMemoryManager.PageSize) + DataSize;
+            long DataAndBssSize = BssSize + DataSize;
 
             ImageEnd = DataPosition + DataAndBssSize;
 
-            MemoryManager.HleMapProcessCode(TextPosition, TextSize + ROSize + DataAndBssSize);
+            if (Exe.SourceAddress == 0)
+            {
+                MemoryManager.HleMapProcessCode(TextPosition, TextSize + ROSize + DataAndBssSize);
 
-            MemoryManager.SetProcessMemoryPermission(ROPosition,   ROSize,         MemoryPermission.Read);
-            MemoryManager.SetProcessMemoryPermission(DataPosition, DataAndBssSize, MemoryPermission.ReadAndWrite);
+                MemoryManager.SetProcessMemoryPermission(ROPosition, ROSize, MemoryPermission.Read);
+                MemoryManager.SetProcessMemoryPermission(DataPosition, DataAndBssSize, MemoryPermission.ReadAndWrite);
 
-            Memory.WriteBytes(TextPosition, Exe.Text);
-            Memory.WriteBytes(ROPosition,   Exe.RO);
-            Memory.WriteBytes(DataPosition, Exe.Data);
+                Memory.WriteBytes(TextPosition, Exe.Text);
+                Memory.WriteBytes(ROPosition, Exe.RO);
+                Memory.WriteBytes(DataPosition, Exe.Data);
+            }
+            else
+            {
+                long Result = MemoryManager.MapProcessCodeMemory(TextPosition, Exe.SourceAddress, TextSize + ROSize + DataSize);
+
+                if (Result != 0)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                MemoryManager.SetProcessMemoryPermission(ROPosition, ROSize, MemoryPermission.Read);
+                MemoryManager.SetProcessMemoryPermission(DataPosition, DataSize, MemoryPermission.ReadAndWrite);
+
+                if (Exe.BssAddress != 0 && Exe.BssSize != 0)
+                {
+                    Result = MemoryManager.MapProcessCodeMemory(DataPosition + DataSize, Exe.BssAddress, BssSize);
+
+                    if (Result != 0)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    MemoryManager.SetProcessMemoryPermission(DataPosition + DataSize, BssSize, MemoryPermission.ReadAndWrite);
+                }
+            }
 
             if (Exe.Mod0Offset == 0)
             {
@@ -103,14 +130,18 @@ namespace Ryujinx.HLE.Loaders
 
             long SymEntSize = GetFirstValue(ElfDynTag.DT_SYMENT);
 
+            List<ElfSym> Symbols = new List<ElfSym>();
+
             while ((ulong)SymTblAddr < (ulong)StrTblAddr)
             {
                 ElfSym Sym = GetSymbol(SymTblAddr, StrTblAddr);
 
-                m_SymbolTable.TryAdd(Sym.Value, Sym.Name);
+                Symbols.Add(Sym);
 
                 SymTblAddr += SymEntSize;
             }
+
+            SymbolTable = Array.AsReadOnly(Symbols.OrderBy(x => x.Value).ToArray());
         }
 
         private ElfRel GetRelocation(long Position)

@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             OutStatus.VoiceDropsCount        = 0;
         }
 
-        public int[] GetBufferData(AMemory Memory, int MaxSamples, out int SamplesCount)
+        public int[] GetBufferData(MemoryManager Memory, int MaxSamples, out int SamplesCount)
         {
             if (!Playing)
             {
@@ -118,12 +118,19 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             return Output;
         }
 
-        private void UpdateBuffer(AMemory Memory)
+        private void UpdateBuffer(MemoryManager Memory)
         {
             //TODO: Implement conversion for formats other
             //than interleaved stereo (2 channels).
             //As of now, it assumes that HostChannelsCount == 2.
             WaveBuffer Wb = WaveBuffers[BufferIndex];
+
+            if (Wb.Position == 0)
+            {
+                Samples = new int[0];
+
+                return;
+            }
 
             if (SampleFormat == SampleFormat.PcmInt16)
             {

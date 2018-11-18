@@ -1,7 +1,7 @@
 using Ryujinx.Audio;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services.Aud.AudioRenderer;
-using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 
@@ -28,9 +28,10 @@ namespace Ryujinx.HLE.HOS.Services.Aud
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, OpenAudioRenderer              },
-                { 1, GetAudioRendererWorkBufferSize },
-                { 2, GetAudioDevice                 }
+                { 0, OpenAudioRenderer                     },
+                { 1, GetAudioRendererWorkBufferSize        },
+                { 2, GetAudioDeviceService                 },
+                { 4, GetAudioDeviceServiceWithRevisionInfo }
             };
         }
 
@@ -40,7 +41,11 @@ namespace Ryujinx.HLE.HOS.Services.Aud
 
             AudioRendererParameter Params = GetAudioRendererParameter(Context);
 
-            MakeObject(Context, new IAudioRenderer(Context.Memory, AudioOut, Params));
+            MakeObject(Context, new IAudioRenderer(
+                Context.Device.System,
+                Context.Memory,
+                AudioOut,
+                Params));
 
             return 0;
         }
@@ -98,7 +103,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud
 
                 Context.ResponseData.Write(Size);
 
-                Context.Device.Log.PrintDebug(LogClass.ServiceAudio, $"WorkBufferSize is 0x{Size:x16}.");
+                Logger.PrintDebug(LogClass.ServiceAudio, $"WorkBufferSize is 0x{Size:x16}.");
 
                 return 0;
             }
@@ -106,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud
             {
                 Context.ResponseData.Write(0L);
 
-                Context.Device.Log.PrintWarning(LogClass.ServiceAudio, $"Library Revision 0x{Params.Revision:x8} is not supported!");
+                Logger.PrintWarning(LogClass.ServiceAudio, $"Library Revision 0x{Params.Revision:x8} is not supported!");
 
                 return MakeError(ErrorModule.Audio, AudErr.UnsupportedRevision);
             }
@@ -157,13 +162,26 @@ namespace Ryujinx.HLE.HOS.Services.Aud
             return Result / 8;
         }
 
-        public long GetAudioDevice(ServiceCtx Context)
+        // GetAudioDeviceService(nn::applet::AppletResourceUserId) -> object<nn::audio::detail::IAudioDevice>
+        public long GetAudioDeviceService(ServiceCtx Context)
         {
-            long UserId = Context.RequestData.ReadInt64();
+            long AppletResourceUserId = Context.RequestData.ReadInt64();
 
-            MakeObject(Context, new IAudioDevice());
+            MakeObject(Context, new IAudioDevice(Context.Device.System));
 
             return 0;
+        }
+
+        // GetAudioDeviceServiceWithRevisionInfo(nn::applet::AppletResourceUserId, u32) -> object<nn::audio::detail::IAudioDevice>
+        private long GetAudioDeviceServiceWithRevisionInfo(ServiceCtx Context)
+        {
+            long AppletResourceUserId = Context.RequestData.ReadInt64();
+            int  RevisionInfo         = Context.RequestData.ReadInt32();
+
+            Logger.PrintStub(LogClass.ServiceAudio, $"Stubbed. AppletResourceUserId: {AppletResourceUserId} - " +
+                                                                $"RevisionInfo: {RevisionInfo}");
+
+            return GetAudioDeviceService(Context);
         }
     }
 }
