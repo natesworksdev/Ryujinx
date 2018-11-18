@@ -2,15 +2,16 @@ using ChocolArm64;
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
+using LibHac;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
-using Ryujinx.HLE.HOS.Diagnostics;
+using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
-using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Concurrent;
@@ -32,21 +33,17 @@ namespace Ryujinx.HLE.HOS
 
         public int ProcessId { get; private set; }
 
-        private ATranslator Translator;
+        private Translator Translator;
 
-        public AMemory Memory { get; private set; }
+        public MemoryManager Memory { get; private set; }
 
         public KMemoryManager MemoryManager { get; private set; }
 
         private List<KTlsPageManager> TlsPages;
 
-        public KProcessScheduler Scheduler { get; private set; }
-
-        public List<KThread> ThreadArbiterList { get; private set; }
-
-        public object ThreadSyncLock { get; private set; }
-
         public Npdm MetaData { get; private set; }
+
+        public Nacp ControlData { get; set; }
 
         public KProcessHandleTable HandleTable { get; private set; }
 
@@ -58,34 +55,42 @@ namespace Ryujinx.HLE.HOS
 
         private List<Executable> Executables;
 
-        private Dictionary<long, string> SymbolTable;
-
         private long ImageBase;
-
-        private bool ShouldDispose;
 
         private bool Disposed;
 
-        public Process(Switch Device, KProcessScheduler Scheduler, int ProcessId, Npdm MetaData)
+        public Process(Switch Device, int ProcessId, Npdm MetaData)
         {
             this.Device    = Device;
-            this.Scheduler = Scheduler;
             this.MetaData  = MetaData;
             this.ProcessId = ProcessId;
 
-            Memory = new AMemory(Device.Memory.RamPointer);
+            Memory = new MemoryManager(Device.Memory.RamPointer);
+
+            Memory.InvalidAccess += CpuInvalidAccessHandler;
 
             MemoryManager = new KMemoryManager(this);
 
             TlsPages = new List<KTlsPageManager>();
 
-            ThreadArbiterList = new List<KThread>();
+            int HandleTableSize = 1024;
 
-            ThreadSyncLock = new object();
+            if (MetaData != null)
+            {
+                foreach (KernelAccessControlItem Item in MetaData.ACI0.KernelAccessControl.Items)
+                {
+                    if (Item.HasHandleTableSize)
+                    {
+                        HandleTableSize = Item.HandleTableSize;
 
-            HandleTable = new KProcessHandleTable();
+                        break;
+                    }
+                }
+            }
 
-            AppletState = new AppletStateMgr();
+            HandleTable = new KProcessHandleTable(Device.System, HandleTableSize);
+
+            AppletState = new AppletStateMgr(Device.System);
 
             SvcHandler = new SvcHandler(Device, this);
 
@@ -103,13 +108,37 @@ namespace Ryujinx.HLE.HOS
                 throw new ObjectDisposedException(nameof(Process));
             }
 
-            Device.Log.PrintInfo(LogClass.Loader, $"Image base at 0x{ImageBase:x16}.");
+            long ImageEnd = LoadProgram(Program, ImageBase);
 
-            Executable Executable = new Executable(Program, MemoryManager, Memory, ImageBase);
+            ImageBase = IntUtils.AlignUp(ImageEnd, KMemoryManager.PageSize);
+        }
+
+        public long LoadProgram(IExecutable Program, long ExecutableBase)
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(nameof(Process));
+            }
+
+            Logger.PrintInfo(LogClass.Loader, $"Image base at 0x{ExecutableBase:x16}.");
+
+            Executable Executable = new Executable(Program, MemoryManager, Memory, ExecutableBase);
 
             Executables.Add(Executable);
 
-            ImageBase = IntUtils.AlignUp(Executable.ImageEnd, KMemoryManager.PageSize);
+            return Executable.ImageEnd;
+        }
+
+        public void RemoveProgram(long ExecutableBase)
+        {
+            foreach (Executable Executable in Executables)
+            {
+                if (Executable.ImageBase == ExecutableBase)
+                {
+                    Executables.Remove(Executable);
+                    break;
+                }
+            }
         }
 
         public void SetEmptyArgs()
@@ -132,8 +161,6 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            MakeSymbolTable();
-
             long MainStackTop = MemoryManager.CodeRegionEnd - KMemoryManager.PageSize;
 
             long MainStackSize = 1 * 1024 * 1024;
@@ -153,7 +180,7 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            KThread MainThread = HandleTable.GetData<KThread>(Handle);
+            KThread MainThread = HandleTable.GetKThread(Handle);
 
             if (NeedsHbAbi)
             {
@@ -171,14 +198,16 @@ namespace Ryujinx.HLE.HOS
 
                 Homebrew.WriteHbAbiData(Memory, HbAbiDataPosition, Handle, SwitchPath);
 
-                MainThread.Thread.ThreadState.X0 = (ulong)HbAbiDataPosition;
-                MainThread.Thread.ThreadState.X1 = ulong.MaxValue;
+                MainThread.Context.ThreadState.X0 = (ulong)HbAbiDataPosition;
+                MainThread.Context.ThreadState.X1 = ulong.MaxValue;
             }
 
-            Scheduler.StartThread(MainThread);
+            MainThread.TimeUp();
 
             return true;
         }
+
+        private int ThreadIdCtr = 1;
 
         public int MakeThread(
             long EntryPoint,
@@ -192,17 +221,17 @@ namespace Ryujinx.HLE.HOS
                 throw new ObjectDisposedException(nameof(Process));
             }
 
-            AThread CpuThread = new AThread(GetTranslator(), Memory, EntryPoint);
+            CpuThread CpuThread = new CpuThread(GetTranslator(), Memory, EntryPoint);
 
             long Tpidr = GetFreeTls();
 
-            int ThreadId = (int)((Tpidr - MemoryManager.TlsIoRegionStart) / 0x200) + 1;
+            int ThreadId = ThreadIdCtr++; //(int)((Tpidr - MemoryManager.TlsIoRegionStart) / 0x200) + 1;
 
-            KThread Thread = new KThread(CpuThread, this, ProcessorId, Priority, ThreadId);
+            KThread Thread = new KThread(CpuThread, this, Device.System, ProcessorId, Priority, ThreadId);
 
             Thread.LastPc = EntryPoint;
 
-            int Handle = HandleTable.OpenHandle(Thread);
+            HandleTable.GenerateHandle(Thread, out int Handle);
 
             CpuThread.ThreadState.CntfrqEl0 = TickFreq;
             CpuThread.ThreadState.Tpidr     = Tpidr;
@@ -211,6 +240,7 @@ namespace Ryujinx.HLE.HOS
             CpuThread.ThreadState.X1  = (ulong)Handle;
             CpuThread.ThreadState.X31 = (ulong)StackTop;
 
+            CpuThread.ThreadState.Interrupt += InterruptHandler;
             CpuThread.ThreadState.Break     += BreakHandler;
             CpuThread.ThreadState.SvcCall   += SvcHandler.SvcCall;
             CpuThread.ThreadState.Undefined += UndefinedHandler;
@@ -248,39 +278,23 @@ namespace Ryujinx.HLE.HOS
             return Position;
         }
 
-        private void BreakHandler(object sender, AInstExceptionEventArgs e)
+        private void InterruptHandler(object sender, EventArgs e)
         {
+            Device.System.Scheduler.ContextSwitch();
+        }
+
+        private void BreakHandler(object sender, InstExceptionEventArgs e)
+        {
+            PrintStackTraceForCurrentThread();
+
             throw new GuestBrokeExecutionException();
         }
 
-        private void UndefinedHandler(object sender, AInstUndefinedEventArgs e)
+        private void UndefinedHandler(object sender, InstUndefinedEventArgs e)
         {
+            PrintStackTraceForCurrentThread();
+
             throw new UndefinedInstructionException(e.Position, e.RawOpCode);
-        }
-
-        private void MakeSymbolTable()
-        {
-            SymbolTable = new Dictionary<long, string>();
-
-            foreach (Executable Exe in Executables)
-            {
-                foreach (KeyValuePair<long, string> KV in Exe.SymbolTable)
-                {
-                    SymbolTable.TryAdd(Exe.ImageBase + KV.Key, KV.Value);
-                }
-            }
-        }
-
-        private ATranslator GetTranslator()
-        {
-            if (Translator == null)
-            {
-                Translator = new ATranslator(SymbolTable);
-
-                Translator.CpuTrace += CpuTraceHandler;
-            }
-
-            return Translator;
         }
 
         public void EnableCpuTracing()
@@ -293,34 +307,73 @@ namespace Ryujinx.HLE.HOS
             Translator.EnableCpuTrace = false;
         }
 
-        private void CpuTraceHandler(object sender, ACpuTraceEventArgs e)
+        private void CpuTraceHandler(object sender, CpuTraceEventArgs e)
         {
-            string NsoName = string.Empty;
+            Executable Exe = GetExecutable(e.Position);
 
-            for (int Index = Executables.Count - 1; Index >= 0; Index--)
+            if (Exe == null)
             {
-                if (e.Position >= Executables[Index].ImageBase)
+                return;
+            }
+
+            if (!TryGetSubName(Exe, e.Position, out string SubName))
+            {
+                SubName = string.Empty;
+            }
+
+            long Offset = e.Position - Exe.ImageBase;
+
+            string ExeNameWithAddr = $"{Exe.Name}:0x{Offset:x8}";
+
+            Logger.PrintDebug(LogClass.Cpu, ExeNameWithAddr + " " + SubName);
+        }
+
+        private Translator GetTranslator()
+        {
+            if (Translator == null)
+            {
+                Translator = new Translator();
+
+                Translator.CpuTrace += CpuTraceHandler;
+            }
+
+            return Translator;
+        }
+
+        private void CpuInvalidAccessHandler(object sender, InvalidAccessEventArgs e)
+        {
+            PrintStackTraceForCurrentThread();
+        }
+
+        private void PrintStackTraceForCurrentThread()
+        {
+            foreach (KThread Thread in Threads.Values)
+            {
+                if (Thread.Context.IsCurrentThread())
                 {
-                    NsoName = $"{(e.Position - Executables[Index].ImageBase):x16}";
+                    PrintStackTrace(Thread.Context.ThreadState);
 
                     break;
                 }
             }
-
-            Device.Log.PrintDebug(LogClass.Cpu, $"Executing at 0x{e.Position:x16} {e.SubName} {NsoName}");
         }
 
-        public void PrintStackTrace(AThreadState ThreadState)
+        public void PrintStackTrace(CpuThreadState ThreadState)
         {
-            long[] Positions = ThreadState.GetCallStack();
-
             StringBuilder Trace = new StringBuilder();
 
             Trace.AppendLine("Guest stack trace:");
 
-            foreach (long Position in Positions)
+            void AppendTrace(long Position)
             {
-                if (!SymbolTable.TryGetValue(Position, out string SubName))
+                Executable Exe = GetExecutable(Position);
+
+                if (Exe == null)
+                {
+                    return;
+                }
+
+                if (!TryGetSubName(Exe, Position, out string SubName))
                 {
                     SubName = $"Sub{Position:x16}";
                 }
@@ -329,40 +382,87 @@ namespace Ryujinx.HLE.HOS
                     SubName = Demangler.Parse(SubName);
                 }
 
-                Trace.AppendLine(" " + SubName + " (" + GetNsoNameAndAddress(Position) + ")");
+                long Offset = Position - Exe.ImageBase;
+
+                string ExeNameWithAddr = $"{Exe.Name}:0x{Offset:x8}";
+
+                Trace.AppendLine(" " + ExeNameWithAddr + " " + SubName);
             }
 
-            Device.Log.PrintInfo(LogClass.Cpu, Trace.ToString());
+            long FramePointer = (long)ThreadState.X29;
+
+            while (FramePointer != 0)
+            {
+                AppendTrace(Memory.ReadInt64(FramePointer + 8));
+
+                FramePointer = Memory.ReadInt64(FramePointer);
+            }
+
+            Logger.PrintInfo(LogClass.Cpu, Trace.ToString());
         }
 
-        private string GetNsoNameAndAddress(long Position)
+        private bool TryGetSubName(Executable Exe, long Position, out string Name)
+        {
+            Position -= Exe.ImageBase;
+
+            int Left  = 0;
+            int Right = Exe.SymbolTable.Count - 1;
+
+            while (Left <= Right)
+            {
+                int Size = Right - Left;
+
+                int Middle = Left + (Size >> 1);
+
+                ElfSym Symbol = Exe.SymbolTable[Middle];
+
+                long EndPosition = Symbol.Value + Symbol.Size;
+
+                if ((ulong)Position >= (ulong)Symbol.Value && (ulong)Position < (ulong)EndPosition)
+                {
+                    Name = Symbol.Name;
+
+                    return true;
+                }
+
+                if ((ulong)Position < (ulong)Symbol.Value)
+                {
+                    Right = Middle - 1;
+                }
+                else
+                {
+                    Left = Middle + 1;
+                }
+            }
+
+            Name = null;
+
+            return false;
+        }
+
+        private Executable GetExecutable(long Position)
         {
             string Name = string.Empty;
 
             for (int Index = Executables.Count - 1; Index >= 0; Index--)
             {
-                if (Position >= Executables[Index].ImageBase)
+                if ((ulong)Position >= (ulong)Executables[Index].ImageBase)
                 {
-                    long Offset = Position - Executables[Index].ImageBase;
-
-                    Name = $"{Executables[Index].Name}:{Offset:x8}";
-
-                    break;
+                    return Executables[Index];
                 }
             }
 
-            return Name;
+            return null;
         }
 
         private void ThreadFinished(object sender, EventArgs e)
         {
-            if (sender is AThread Thread)
+            if (sender is CpuThread Thread)
             {
-                Threads.TryRemove(Thread.ThreadState.Tpidr, out KThread KernelThread);
-
-                Scheduler.RemoveThread(KernelThread);
-
-                KernelThread.WaitEvent.Set();
+                if (Threads.TryRemove(Thread.ThreadState.Tpidr, out KThread KernelThread))
+                {
+                    Device.System.Scheduler.RemoveThread(KernelThread);
+                }
             }
 
             if (Threads.Count == 0)
@@ -390,24 +490,16 @@ namespace Ryujinx.HLE.HOS
 
             Disposed = true;
 
-            foreach (object Obj in HandleTable.Clear())
-            {
-                if (Obj is KSession Session)
-                {
-                    Session.Dispose();
-                }
-            }
+            HandleTable.Destroy();
 
             INvDrvServices.UnloadProcess(this);
-
-            AppletState.Dispose();
 
             if (NeedsHbAbi && Executables.Count > 0 && Executables[0].FilePath.EndsWith(Homebrew.TemporaryNroSuffix))
             {
                 File.Delete(Executables[0].FilePath);
             }
 
-            Device.Log.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
+            Logger.PrintInfo(LogClass.Loader, $"Process {ProcessId} exiting...");
         }
 
         public void Dispose()
@@ -423,9 +515,7 @@ namespace Ryujinx.HLE.HOS
                 {
                     foreach (KThread Thread in Threads.Values)
                     {
-                        Thread.Thread.StopExecution();
-
-                        Scheduler.ForceWakeUp(Thread);
+                        Device.System.Scheduler.StopThread(Thread);
                     }
                 }
                 else

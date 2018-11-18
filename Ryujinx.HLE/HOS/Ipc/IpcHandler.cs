@@ -8,12 +8,12 @@ namespace Ryujinx.HLE.HOS.Ipc
     static class IpcHandler
     {
         public static long IpcCall(
-            Switch     Ns,
-            Process    Process,
-            AMemory    Memory,
-            KSession   Session,
-            IpcMessage Request,
-            long       CmdPtr)
+            Switch        Ns,
+            Process       Process,
+            MemoryManager Memory,
+            KSession      Session,
+            IpcMessage    Request,
+            long          CmdPtr)
         {
             IpcMessage Response = new IpcMessage();
 
@@ -73,7 +73,10 @@ namespace Ryujinx.HLE.HOS.Ipc
                         {
                             int Unknown = ReqReader.ReadInt32();
 
-                            int Handle = Process.HandleTable.OpenHandle(Session);
+                            if (Process.HandleTable.GenerateHandle(Session, out int Handle) != KernelResult.Success)
+                            {
+                                throw new InvalidOperationException("Out of handles!");
+                            }
 
                             Response.HandleDesc = IpcHandleDesc.MakeMove(Handle);
 

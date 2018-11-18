@@ -1,45 +1,42 @@
 using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
-using System;
 
 namespace Ryujinx.Graphics.Texture
 {
     static class TextureHelper
     {
-        public static ISwizzle GetSwizzle(TextureInfo Texture, int BlockWidth, int Bpp)
+        public static ISwizzle GetSwizzle(GalImage Image)
         {
-            int Width = (Texture.Width + (BlockWidth - 1)) / BlockWidth;
+            int BlockWidth    = ImageUtils.GetBlockWidth   (Image.Format);
+            int BytesPerPixel = ImageUtils.GetBytesPerPixel(Image.Format);
 
-            int AlignMask = Texture.TileWidth * (64 / Bpp) - 1;
+            int Width = (Image.Width + (BlockWidth - 1)) / BlockWidth;
 
-            Width = (Width + AlignMask) & ~AlignMask;
-
-            switch (Texture.Swizzle)
+            if (Image.Layout == GalMemoryLayout.BlockLinear)
             {
-                case TextureSwizzle._1dBuffer:
-                case TextureSwizzle.Pitch:
-                case TextureSwizzle.PitchColorKey:
-                     return new LinearSwizzle(Texture.Pitch, Bpp);
+                int AlignMask = Image.TileWidth * (64 / BytesPerPixel) - 1;
 
-                case TextureSwizzle.BlockLinear:
-                case TextureSwizzle.BlockLinearColorKey:
-                    return new BlockLinearSwizzle(Width, Bpp, Texture.BlockHeight);
+                Width = (Width + AlignMask) & ~AlignMask;
+
+                return new BlockLinearSwizzle(Width, BytesPerPixel, Image.GobBlockHeight);
             }
-
-            throw new NotImplementedException(Texture.Swizzle.ToString());
+            else
+            {
+                return new LinearSwizzle(Image.Pitch, BytesPerPixel);
+            }
         }
 
-        public static (AMemory Memory, long Position) GetMemoryAndPosition(
-            IAMemory Memory,
-            long     Position)
+        public static (MemoryManager Memory, long Position) GetMemoryAndPosition(
+            IMemory Memory,
+            long    Position)
         {
             if (Memory is NvGpuVmm Vmm)
             {
                 return (Vmm.Memory, Vmm.GetPhysicalAddress(Position));
             }
 
-            return ((AMemory)Memory, Position);
+            return ((MemoryManager)Memory, Position);
         }
     }
 }

@@ -1,14 +1,16 @@
 using LibHac;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
-using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Nso = Ryujinx.HLE.Loaders.Executables.Nso;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -19,11 +21,21 @@ namespace Ryujinx.HLE.HOS
 
         private Switch Device;
 
-        private KProcessScheduler Scheduler;
-
         private ConcurrentDictionary<int, Process> Processes;
 
         public SystemStateMgr State { get; private set; }
+
+        internal KRecursiveLock CriticalSectionLock { get; private set; }
+
+        internal KScheduler Scheduler { get; private set; }
+
+        internal KTimeManager TimeManager { get; private set; }
+
+        internal KAddressArbiter AddressArbiter { get; private set; }
+
+        internal KSynchronization Synchronization { get; private set; }
+
+        internal LinkedList<KThread> Withholders { get; private set; }
 
         internal KSharedMemory HidSharedMem  { get; private set; }
         internal KSharedMemory FontSharedMem { get; private set; }
@@ -34,15 +46,35 @@ namespace Ryujinx.HLE.HOS
 
         internal Keyset KeySet { get; private set; }
 
+        private bool HasStarted;
+
+        public Nacp ControlData { get; set; }
+
+        public string CurrentTitle { get; private set; }
+
+        public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
+
         public Horizon(Switch Device)
         {
             this.Device = Device;
 
-            Scheduler = new KProcessScheduler(Device.Log);
-
             Processes = new ConcurrentDictionary<int, Process>();
 
             State = new SystemStateMgr();
+
+            CriticalSectionLock = new KRecursiveLock(this);
+
+            Scheduler = new KScheduler(this);
+
+            TimeManager = new KTimeManager();
+
+            AddressArbiter = new KAddressArbiter(this);
+
+            Synchronization = new KSynchronization(this);
+
+            Withholders = new LinkedList<KThread>();
+
+            Scheduler.StartAutoPreemptionThread();
 
             if (!Device.Memory.Allocator.TryAllocate(HidSize,  out long HidPA) ||
                 !Device.Memory.Allocator.TryAllocate(FontSize, out long FontPA))
@@ -55,7 +87,7 @@ namespace Ryujinx.HLE.HOS
 
             Font = new SharedFontManager(Device, FontSharedMem.PA);
 
-            VsyncEvent = new KEvent();
+            VsyncEvent = new KEvent(this);
 
             LoadKeySet();
         }
@@ -73,7 +105,7 @@ namespace Ryujinx.HLE.HOS
 
             if (File.Exists(NpdmFileName))
             {
-                Device.Log.PrintInfo(LogClass.Loader, $"Loading main.npdm...");
+                Logger.PrintInfo(LogClass.Loader, $"Loading main.npdm...");
 
                 using (FileStream Input = new FileStream(NpdmFileName, FileMode.Open))
                 {
@@ -82,7 +114,7 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                Device.Log.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
+                Logger.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
             }
 
             Process MainProcess = MakeProcess(MetaData);
@@ -96,7 +128,7 @@ namespace Ryujinx.HLE.HOS
                         continue;
                     }
 
-                    Device.Log.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(File)}...");
+                    Logger.PrintInfo(LogClass.Loader, $"Loading {Path.GetFileNameWithoutExtension(File)}...");
 
                     using (FileStream Input = new FileStream(File, FileMode.Open))
                     {
@@ -113,6 +145,8 @@ namespace Ryujinx.HLE.HOS
             {
                 throw new NotImplementedException("32-bit titles are unsupported!");
             }
+
+            CurrentTitle = MainProcess.MetaData.ACI0.TitleId.ToString("x16");
 
             LoadNso("rtld");
 
@@ -131,27 +165,38 @@ namespace Ryujinx.HLE.HOS
 
             Xci Xci = new Xci(KeySet, File);
 
-            Nca Nca = GetXciMainNca(Xci);
+            (Nca MainNca, Nca ControlNca) = GetXciGameData(Xci);
 
-            if (Nca == null)
+            if (MainNca == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "Unable to load XCI");
+                Logger.PrintError(LogClass.Loader, "Unable to load XCI");
 
                 return;
             }
 
-            LoadNca(Nca);
+            LoadNca(MainNca, ControlNca);
         }
 
-        private Nca GetXciMainNca(Xci Xci)
+        private (Nca Main, Nca Control) GetXciGameData(Xci Xci)
         {
             if (Xci.SecurePartition == null)
             {
                 throw new InvalidDataException("Could not find XCI secure partition");
             }
 
-            Nca MainNca = null;
-            Nca PatchNca = null;
+            Nca MainNca    = null;
+            Nca PatchNca   = null;
+            Nca ControlNca = null;
+
+            foreach (PfsFileEntry TicketEntry in Xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".tik")))
+            {
+                Ticket ticket = new Ticket(Xci.SecurePartition.OpenFile(TicketEntry));
+
+                if (!KeySet.TitleKeys.ContainsKey(ticket.RightsId))
+                {
+                    KeySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(KeySet));
+                }
+            }
 
             foreach (PfsFileEntry FileEntry in Xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
             {
@@ -170,16 +215,43 @@ namespace Ryujinx.HLE.HOS
                         PatchNca = Nca;
                     }
                 }
+                else if (Nca.Header.ContentType == ContentType.Control)
+                {
+                    ControlNca = Nca;
+                }
             }
 
             if (MainNca == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
+                Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided XCI file");
             }
 
             MainNca.SetBaseNca(PatchNca);
 
-            return MainNca;
+            if (ControlNca != null)
+            {
+                ReadControlData(ControlNca);
+            }
+
+            if (PatchNca != null)
+            {
+                PatchNca.SetBaseNca(MainNca);
+
+                return (PatchNca, ControlNca);
+            }
+
+            return (MainNca, ControlNca);
+        }
+
+        public void ReadControlData(Nca ControlNca)
+        {
+            Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false, FsIntegrityCheckLevel));
+
+            byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
+
+            BinaryReader Reader = new BinaryReader(new MemoryStream(ControlFile));
+
+            ControlData = new Nacp(Reader);
         }
 
         public void LoadNca(string NcaFile)
@@ -188,7 +260,7 @@ namespace Ryujinx.HLE.HOS
 
             Nca Nca = new Nca(KeySet, File, true);
 
-            LoadNca(Nca);
+            LoadNca(Nca, null);
         }
 
         public void LoadNsp(string NspFile)
@@ -202,11 +274,13 @@ namespace Ryujinx.HLE.HOS
             // Load title key from the NSP's ticket in case the user doesn't have a title key file
             if (TicketFile != null)
             {
-                // todo Change when Ticket(Stream) overload is added
-                Ticket Ticket = new Ticket(new BinaryReader(Nsp.OpenFile(TicketFile)));
+                Ticket Ticket = new Ticket(Nsp.OpenFile(TicketFile));
 
                 KeySet.TitleKeys[Ticket.RightsId] = Ticket.GetTitleKey(KeySet);
             }
+
+            Nca MainNca    = null;
+            Nca ControlNca = null;
 
             foreach (PfsFileEntry NcaFile in Nsp.Files.Where(x => x.Name.EndsWith(".nca")))
             {
@@ -214,51 +288,65 @@ namespace Ryujinx.HLE.HOS
 
                 if (Nca.Header.ContentType == ContentType.Program)
                 {
-                    LoadNca(Nca);
-
-                    return;
+                    MainNca = Nca;
+                }
+                else if (Nca.Header.ContentType == ContentType.Control)
+                {
+                    ControlNca = Nca;
                 }
             }
 
-            Device.Log.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided NSP file");
+            if (MainNca != null)
+            {
+                LoadNca(MainNca, ControlNca);
+
+                return;
+            }
+
+            Logger.PrintError(LogClass.Loader, "Could not find an Application NCA in the provided NSP file");
         }
 
-        public void LoadNca(Nca Nca)
+        public void LoadNca(Nca MainNca, Nca ControlNca)
         {
-            NcaSection RomfsSection = Nca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
-            NcaSection ExefsSection = Nca.Sections.FirstOrDefault(x => x?.IsExefs == true);
-
-            if (ExefsSection == null)
+            if (MainNca.Header.ContentType != ContentType.Program)
             {
-                Device.Log.PrintError(LogClass.Loader, "No ExeFS found in NCA");
+                Logger.PrintError(LogClass.Loader, "Selected NCA is not a \"Program\" NCA");
 
                 return;
             }
 
-            if (RomfsSection == null)
+            Stream RomfsStream = MainNca.OpenSection(ProgramPartitionType.Data, false, FsIntegrityCheckLevel);
+            Stream ExefsStream = MainNca.OpenSection(ProgramPartitionType.Code, false, FsIntegrityCheckLevel);
+
+            if (ExefsStream == null)
             {
-                Device.Log.PrintError(LogClass.Loader, "No RomFS found in NCA");
+                Logger.PrintError(LogClass.Loader, "No ExeFS found in NCA");
 
                 return;
             }
 
-            Stream RomfsStream = Nca.OpenSection(RomfsSection.SectionNum, false);
-            Device.FileSystem.SetRomFs(RomfsStream);
+            if (RomfsStream == null)
+            {
+                Logger.PrintWarning(LogClass.Loader, "No RomFS found in NCA");
+            }
+            else
+            {
+                Device.FileSystem.SetRomFs(RomfsStream);
+            }
 
-            Stream ExefsStream = Nca.OpenSection(ExefsSection.SectionNum, false);
             Pfs Exefs = new Pfs(ExefsStream);
 
             Npdm MetaData = null;
 
             if (Exefs.FileExists("main.npdm"))
             {
-                Device.Log.PrintInfo(LogClass.Loader, "Loading main.npdm...");
+                Logger.PrintInfo(LogClass.Loader, "Loading main.npdm...");
 
                 MetaData = new Npdm(Exefs.OpenFile("main.npdm"));
             }
             else
             {
-                Device.Log.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
+                Logger.PrintWarning(LogClass.Loader, $"NPDM file not found, using default values!");
             }
 
             Process MainProcess = MakeProcess(MetaData);
@@ -272,7 +360,7 @@ namespace Ryujinx.HLE.HOS
                         continue;
                     }
 
-                    Device.Log.PrintInfo(LogClass.Loader, $"Loading {Filename}...");
+                    Logger.PrintInfo(LogClass.Loader, $"Loading {Filename}...");
 
                     string Name = Path.GetFileNameWithoutExtension(File.Name);
 
@@ -280,6 +368,35 @@ namespace Ryujinx.HLE.HOS
 
                     MainProcess.LoadProgram(Program);
                 }
+            }
+
+            Nacp ReadControlData()
+            {
+                Romfs ControlRomfs = new Romfs(ControlNca.OpenSection(0, false, FsIntegrityCheckLevel));
+
+                byte[] ControlFile = ControlRomfs.GetFile("/control.nacp");
+
+                BinaryReader Reader = new BinaryReader(new MemoryStream(ControlFile));
+
+                Nacp ControlData = new Nacp(Reader);
+
+                CurrentTitle = ControlData.Languages[(int)State.DesiredTitleLanguage].Title;
+
+                if (string.IsNullOrWhiteSpace(CurrentTitle))
+                {
+                    CurrentTitle = ControlData.Languages.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                }
+
+                return ControlData;
+            }
+
+            if (ControlNca != null)
+            {
+                MainProcess.ControlData = ReadControlData();
+            }
+            else
+            {
+                CurrentTitle = MainProcess.MetaData.ACI0.TitleId.ToString("x16");
             }
 
             if (!MainProcess.MetaData.Is64Bits)
@@ -371,10 +488,15 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void SignalVsync() => VsyncEvent.WaitEvent.Set();
+        public void SignalVsync()
+        {
+            VsyncEvent.ReadableEvent.Signal();
+        }
 
         private Process MakeProcess(Npdm MetaData = null)
         {
+            HasStarted = true;
+
             Process Process;
 
             lock (Processes)
@@ -386,7 +508,7 @@ namespace Ryujinx.HLE.HOS
                     ProcessId++;
                 }
 
-                Process = new Process(Device, Scheduler, ProcessId, MetaData);
+                Process = new Process(Device, ProcessId, MetaData);
 
                 Processes.TryAdd(ProcessId, Process);
             }
@@ -409,18 +531,29 @@ namespace Ryujinx.HLE.HOS
 
                 if (Processes.Count == 0)
                 {
-                    Unload();
+                    Scheduler.Dispose();
+
+                    TimeManager.Dispose();
 
                     Device.Unload();
                 }
             }
         }
 
-        private void Unload()
+        public void EnableMultiCoreScheduling()
         {
-            VsyncEvent.Dispose();
+            if (!HasStarted)
+            {
+                Scheduler.MultiCoreScheduling = true;
+            }
+        }
 
-            Scheduler.Dispose();
+        public void DisableMultiCoreScheduling()
+        {
+            if (!HasStarted)
+            {
+                Scheduler.MultiCoreScheduling = false;
+            }
         }
 
         public void Dispose()

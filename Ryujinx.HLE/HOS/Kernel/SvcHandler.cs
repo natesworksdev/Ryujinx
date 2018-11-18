@@ -1,28 +1,43 @@
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
-using Ryujinx.HLE.Logging;
+using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Ipc;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {
-        private delegate void SvcFunc(AThreadState ThreadState);
+        private delegate void SvcFunc(CpuThreadState ThreadState);
 
         private Dictionary<int, SvcFunc> SvcFuncs;
 
-        private Switch  Device;
-        private Process Process;
-        private AMemory Memory;
+        private Switch        Device;
+        private Process       Process;
+        private Horizon       System;
+        private MemoryManager Memory;
 
-        private ConcurrentDictionary<KThread, AutoResetEvent> SyncWaits;
+        private struct HleIpcMessage
+        {
+            public KThread    Thread     { get; private set; }
+            public KSession   Session    { get; private set; }
+            public IpcMessage Message    { get; private set; }
+            public long       MessagePtr { get; private set; }
 
-        private const uint SelfThreadHandle  = 0xffff8000;
-        private const uint SelfProcessHandle = 0xffff8001;
+            public HleIpcMessage(
+                KThread    Thread,
+                KSession   Session,
+                IpcMessage Message,
+                long       MessagePtr)
+            {
+                this.Thread     = Thread;
+                this.Session    = Session;
+                this.Message    = Message;
+                this.MessagePtr = MessagePtr;
+            }
+        }
 
         private static Random Rng;
 
@@ -45,12 +60,13 @@ namespace Ryujinx.HLE.HOS.Kernel
                 { 0x0e, SvcGetThreadCoreMask             },
                 { 0x0f, SvcSetThreadCoreMask             },
                 { 0x10, SvcGetCurrentProcessorNumber     },
-                { 0x12, SvcClearEvent                    },
+                { 0x11, SignalEvent64                    },
+                { 0x12, ClearEvent64                     },
                 { 0x13, SvcMapSharedMemory               },
                 { 0x14, SvcUnmapSharedMemory             },
                 { 0x15, SvcCreateTransferMemory          },
                 { 0x16, SvcCloseHandle                   },
-                { 0x17, SvcResetSignal                   },
+                { 0x17, ResetSignal64                    },
                 { 0x18, SvcWaitSynchronization           },
                 { 0x19, SvcCancelSynchronization         },
                 { 0x1a, SvcArbitrateLock                 },
@@ -69,14 +85,15 @@ namespace Ryujinx.HLE.HOS.Kernel
                 { 0x2d, SvcUnmapPhysicalMemory           },
                 { 0x32, SvcSetThreadActivity             },
                 { 0x33, SvcGetThreadContext3             },
-                { 0x34, SvcWaitForAddress                }
+                { 0x34, SvcWaitForAddress                },
+                { 0x35, SvcSignalToAddress               },
+                { 0x45, CreateEvent64                    }
             };
 
             this.Device  = Device;
             this.Process = Process;
+            this.System  = Process.Device.System;
             this.Memory  = Process.Memory;
-
-            SyncWaits = new ConcurrentDictionary<KThread, AutoResetEvent>();
         }
 
         static SvcHandler()
@@ -84,39 +101,25 @@ namespace Ryujinx.HLE.HOS.Kernel
             Rng = new Random();
         }
 
-        public void SvcCall(object sender, AInstExceptionEventArgs e)
+        public void SvcCall(object sender, InstExceptionEventArgs e)
         {
-            AThreadState ThreadState = (AThreadState)sender;
+            CpuThreadState ThreadState = (CpuThreadState)sender;
 
             Process.GetThread(ThreadState.Tpidr).LastPc = e.Position;
 
             if (SvcFuncs.TryGetValue(e.Id, out SvcFunc Func))
             {
-                Device.Log.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} called.");
+                Logger.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} called.");
 
                 Func(ThreadState);
 
-                Process.Scheduler.Reschedule(Process.GetThread(ThreadState.Tpidr));
-
-                Device.Log.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} ended.");
+                Logger.PrintDebug(LogClass.KernelSvc, $"{Func.Method.Name} ended.");
             }
             else
             {
                 Process.PrintStackTrace(ThreadState);
 
                 throw new NotImplementedException($"0x{e.Id:x4}");
-            }
-        }
-
-        private KThread GetThread(long Tpidr, int Handle)
-        {
-            if ((uint)Handle == SelfThreadHandle)
-            {
-                return Process.GetThread(Tpidr);
-            }
-            else
-            {
-                return Process.HandleTable.GetData<KThread>(Handle);
             }
         }
     }

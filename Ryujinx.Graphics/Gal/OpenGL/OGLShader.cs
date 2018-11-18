@@ -55,16 +55,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GlslDecompiler Decompiler = new GlslDecompiler();
 
+            int ShaderDumpIndex = ShaderDumper.DumpIndex;
+
             if (IsDualVp)
             {
                 ShaderDumper.Dump(Memory, Position,  Type, "a");
                 ShaderDumper.Dump(Memory, PositionB, Type, "b");
 
-                Program = Decompiler.Decompile(
-                    Memory,
-                    Position,
-                    PositionB,
-                    Type);
+                Program = Decompiler.Decompile(Memory, Position, PositionB, Type);
             }
             else
             {
@@ -73,11 +71,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Program = Decompiler.Decompile(Memory, Position, Type);
             }
 
-            return new OGLShaderStage(
-                Type,
-                Program.Code,
-                Program.Uniforms,
-                Program.Textures);
+            string Code = Program.Code;
+
+            if (ShaderDumper.IsDumpEnabled())
+            {
+                Code = "//Shader " + ShaderDumpIndex + Environment.NewLine + Code;
+            }
+
+            return new OGLShaderStage(Type, Code, Program.Uniforms, Program.Textures);
         }
 
         public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long Key)
@@ -133,7 +134,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 //Enhanced layouts are required for Geometry shaders
                 //skip this stage if current driver has no ARB_enhanced_layouts
-                if (!OGLExtension.HasEnhancedLayouts())
+                if (!OGLExtension.EnhancedLayouts)
                 {
                     return;
                 }

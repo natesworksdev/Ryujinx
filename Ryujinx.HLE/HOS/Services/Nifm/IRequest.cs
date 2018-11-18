@@ -1,12 +1,12 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.Logging;
 using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm
 {
-    class IRequest : IpcService, IDisposable
+    class IRequest : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> m_Commands;
 
@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
         private KEvent Event0;
         private KEvent Event1;
 
-        public IRequest()
+        public IRequest(Horizon System)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
@@ -27,30 +27,37 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
                 { 11, SetConnectionConfirmationOption }
             };
 
-            Event0 = new KEvent();
-            Event1 = new KEvent();
+            Event0 = new KEvent(System);
+            Event1 = new KEvent(System);
         }
 
         public long GetRequestState(ServiceCtx Context)
         {
             Context.ResponseData.Write(1);
 
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long GetResult(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long GetSystemEventReadableHandles(ServiceCtx Context)
         {
-            int Handle0 = Context.Process.HandleTable.OpenHandle(Event0);
-            int Handle1 = Context.Process.HandleTable.OpenHandle(Event1);
+            if (Context.Process.HandleTable.GenerateHandle(Event0.ReadableEvent, out int Handle0) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
+
+            if (Context.Process.HandleTable.GenerateHandle(Event1.ReadableEvent, out int Handle1) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle0, Handle1);
 
@@ -59,37 +66,23 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
 
         public long Cancel(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long Submit(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
         }
 
         public long SetConnectionConfirmationOption(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceNifm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceNifm, "Stubbed.");
 
             return 0;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool Disposing)
-        {
-            if (Disposing)
-            {
-                Event0.Dispose();
-                Event1.Dispose();
-            }
         }
     }
 }

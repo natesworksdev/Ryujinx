@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +8,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
     {
         public delegate void DeleteValue(T Value);
 
-        private const int MaxTimeDelta      = 5 * 60000;
+        private const int MinTimeDelta      = 5 * 60000;
         private const int MaxRemovalsPerRun = 10;
 
         private struct CacheBucket
@@ -18,15 +19,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             public long DataSize { get; private set; }
 
-            public int Timestamp { get; private set; }
+            public long Timestamp { get; private set; }
 
             public CacheBucket(T Value, long DataSize, LinkedListNode<long> Node)
             {
-                this.Value     = Value;
-                this.DataSize  = DataSize;
-                this.Node      = Node;
+                this.Value    = Value;
+                this.DataSize = DataSize;
+                this.Node     = Node;
 
-                Timestamp = Environment.TickCount;
+                Timestamp = PerformanceCounter.ElapsedMilliseconds;
             }
         }
 
@@ -40,8 +41,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private bool Locked;
 
-        public OGLCachedResource(DeleteValue DeleteValueCallback)
+        private long MaxSize;
+        private long TotalSize;
+
+        public OGLCachedResource(DeleteValue DeleteValueCallback, long MaxSize)
         {
+            this.MaxSize = MaxSize;
+
             if (DeleteValueCallback == null)
             {
                 throw new ArgumentNullException(nameof(DeleteValueCallback));
@@ -97,12 +103,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 SortedCache.Remove(Bucket.Node);
 
+                TotalSize -= Bucket.DataSize;
+
                 Cache[Key] = NewBucket;
             }
             else
             {
                 Cache.Add(Key, NewBucket);
             }
+
+            TotalSize += Size;
         }
 
         public bool TryGetValue(long Key, out T Value)
@@ -141,7 +151,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private void ClearCacheIfNeeded()
         {
-            int Timestamp = Environment.TickCount;
+            long Timestamp = PerformanceCounter.ElapsedMilliseconds;
 
             int Count = 0;
 
@@ -156,9 +166,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 CacheBucket Bucket = Cache[Node.Value];
 
-                int TimeDelta = RingDelta(Bucket.Timestamp, Timestamp);
+                long TimeDelta = Timestamp - Bucket.Timestamp;
 
-                if ((uint)TimeDelta <= (uint)MaxTimeDelta)
+                if (TimeDelta <= MinTimeDelta && !UnderMemoryPressure())
                 {
                     break;
                 }
@@ -168,19 +178,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 Cache.Remove(Node.Value);
 
                 DeleteValueCallback(Bucket.Value);
+
+                TotalSize -= Bucket.DataSize;
             }
         }
 
-        private int RingDelta(int Old, int New)
+        private bool UnderMemoryPressure()
         {
-            if ((uint)New < (uint)Old)
-            {
-                return New + (~Old + 1);
-            }
-            else
-            {
-                return New - Old;
-            }
+            return TotalSize >= MaxSize;
         }
     }
 }

@@ -1,6 +1,8 @@
 using ChocolArm64.Memory;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Text;
 
@@ -41,7 +43,9 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         public long GetRelayService(ServiceCtx Context)
         {
-            MakeObject(Context, new IHOSBinderDriver(Context.Device.Gpu.Renderer));
+            MakeObject(Context, new IHOSBinderDriver(
+                Context.Device.System,
+                Context.Device.Gpu.Renderer));
 
             return 0;
         }
@@ -62,7 +66,9 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         public long GetIndirectDisplayTransactionService(ServiceCtx Context)
         {
-            MakeObject(Context, new IHOSBinderDriver(Context.Device.Gpu.Renderer));
+            MakeObject(Context, new IHOSBinderDriver(
+                Context.Device.System,
+                Context.Device.Gpu.Renderer));
 
             return 0;
         }
@@ -71,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
         {
             long RecBuffPtr = Context.Request.ReceiveBuff[0].Position;
 
-            AMemoryHelper.FillWithZeros(Context.Memory, RecBuffPtr, 0x60);
+            MemoryHelper.FillWithZeros(Context.Memory, RecBuffPtr, 0x60);
 
             //Add only the default display to buffer
             Context.Memory.WriteBytes(RecBuffPtr, Encoding.ASCII.GetBytes("Default"));
@@ -174,7 +180,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi
         {
             string Name = GetDisplayName(Context);
 
-            int Handle = Context.Process.HandleTable.OpenHandle(Context.Device.System.VsyncEvent);
+            if (Context.Process.HandleTable.GenerateHandle(Context.Device.System.VsyncEvent.ReadableEvent, out int Handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 

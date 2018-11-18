@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChocolArm64\ChocolArm64.csproj" />
+    <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
   </ItemGroup>
 
 </Project>

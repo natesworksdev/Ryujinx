@@ -1,6 +1,7 @@
-﻿using Ryujinx.HLE.HOS.Ipc;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.Logging;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
@@ -13,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         private KEvent StateChangedEvent;
 
-        public ILibraryAppletAccessor()
+        public ILibraryAppletAccessor(Horizon System)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
@@ -24,39 +25,42 @@ namespace Ryujinx.HLE.HOS.Services.Am
                 { 101, PopOutData                 }
             };
 
-            StateChangedEvent = new KEvent();
+            StateChangedEvent = new KEvent(System);
         }
 
         public long GetAppletStateChangedEvent(ServiceCtx Context)
         {
-            StateChangedEvent.WaitEvent.Set();
+            StateChangedEvent.ReadableEvent.Signal();
 
-            int Handle = Context.Process.HandleTable.OpenHandle(StateChangedEvent);
+            if (Context.Process.HandleTable.GenerateHandle(StateChangedEvent.ReadableEvent, out int Handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
 
         public long Start(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
 
         public long GetResult(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
 
         public long PushInData(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }

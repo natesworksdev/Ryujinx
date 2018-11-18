@@ -1,13 +1,15 @@
 using ChocolArm64.Memory;
 using Ryujinx.Audio;
 using Ryujinx.Audio.Adpcm;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.Logging;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
@@ -26,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         private KEvent UpdateEvent;
 
-        private AMemory Memory;
+        private MemoryManager Memory;
 
         private IAalOutput AudioOut;
 
@@ -38,17 +40,27 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         private int Track;
 
-        public IAudioRenderer(AMemory Memory, IAalOutput AudioOut, AudioRendererParameter Params)
+        private PlayState PlayState;
+
+        public IAudioRenderer(
+            Horizon                System,
+            MemoryManager          Memory,
+            IAalOutput             AudioOut,
+            AudioRendererParameter Params)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
+                { 0, GetSampleRate              },
+                { 1, GetSampleCount             },
+                { 2, GetMixBufferCount          },
+                { 3, GetState                   },
                 { 4, RequestUpdateAudioRenderer },
                 { 5, StartAudioRenderer         },
                 { 6, StopAudioRenderer          },
                 { 7, QuerySystemEvent           }
             };
 
-            UpdateEvent = new KEvent();
+            UpdateEvent = new KEvent(System);
 
             this.Memory   = Memory;
             this.AudioOut = AudioOut;
@@ -64,11 +76,47 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             Voices = CreateArray<VoiceContext>(Params.VoiceCount);
 
             InitializeAudioOut();
+
+            PlayState = PlayState.Stopped;
+        }
+
+        //  GetSampleRate() -> u32
+        public long GetSampleRate(ServiceCtx Context)
+        {
+            Context.ResponseData.Write(Params.SampleRate);
+
+            return 0;
+        }
+
+        //  GetSampleCount() -> u32
+        public long GetSampleCount(ServiceCtx Context)
+        {
+            Context.ResponseData.Write(Params.SampleCount);
+
+            return 0;
+        }
+
+        // GetMixBufferCount() -> u32
+        public long GetMixBufferCount(ServiceCtx Context)
+        {
+            Context.ResponseData.Write(Params.MixCount);
+
+            return 0;
+        }
+
+        // GetState() -> u32
+        private long GetState(ServiceCtx Context)
+        {
+            Context.ResponseData.Write((int)PlayState);
+
+            Logger.PrintStub(LogClass.ServiceAudio, $"Stubbed. Renderer State: {Enum.GetName(typeof(PlayState), PlayState)}");
+
+            return 0;
         }
 
         private void AudioCallback()
         {
-            UpdateEvent.WaitEvent.Set();
+            UpdateEvent.ReadableEvent.Signal();
         }
 
         private static T[] CreateArray<T>(int Size) where T : new()
@@ -97,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             long OutputPosition = Context.Request.ReceiveBuff[0].Position;
             long OutputSize     = Context.Request.ReceiveBuff[0].Size;
 
-            AMemoryHelper.FillWithZeros(Context.Memory, OutputPosition, (int)OutputSize);
+            MemoryHelper.FillWithZeros(Context.Memory, OutputPosition, (int)OutputSize);
 
             long InputPosition = Context.Request.SendBuff[0].Position;
 
@@ -200,21 +248,28 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         public long StartAudioRenderer(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+
+            PlayState = PlayState.Playing;
 
             return 0;
         }
 
         public long StopAudioRenderer(ServiceCtx Context)
         {
-            Context.Device.Log.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAudio, "Stubbed.");
+
+            PlayState = PlayState.Stopped;
 
             return 0;
         }
 
         public long QuerySystemEvent(ServiceCtx Context)
         {
-            int Handle = Context.Process.HandleTable.OpenHandle(UpdateEvent);
+            if (Context.Process.HandleTable.GenerateHandle(UpdateEvent.ReadableEvent, out int Handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
@@ -250,7 +305,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             }
         }
 
-        private void AppendMixedBuffer(long Tag)
+        private unsafe void AppendMixedBuffer(long Tag)
         {
             int[] MixBuffer = new int[MixBufferSamplesCount * AudioConsts.HostChannelsCount];
 
@@ -261,9 +316,9 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                     continue;
                 }
 
-                int OutOffset = 0;
-
-                int PendingSamples = MixBufferSamplesCount;
+                int   OutOffset      = 0;
+                int   PendingSamples = MixBufferSamplesCount;
+                float Volume         = Voice.Volume;
 
                 while (PendingSamples > 0)
                 {
@@ -278,9 +333,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
                     for (int Offset = 0; Offset < Samples.Length; Offset++)
                     {
-                        int Sample = (int)(Samples[Offset] * Voice.Volume);
-
-                        MixBuffer[OutOffset++] += Sample;
+                        MixBuffer[OutOffset++] += (int)(Samples[Offset] * Voice.Volume);
                     }
                 }
             }
@@ -288,11 +341,49 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             AudioOut.AppendBuffer(Track, Tag, GetFinalBuffer(MixBuffer));
         }
 
-        private static short[] GetFinalBuffer(int[] Buffer)
+        private unsafe static short[] GetFinalBuffer(int[] Buffer)
         {
             short[] Output = new short[Buffer.Length];
 
-            for (int Offset = 0; Offset < Buffer.Length; Offset++)
+            int Offset = 0;
+
+            // Perform Saturation using SSE2 if supported
+            if (Sse2.IsSupported)
+            {
+                fixed (int*   inptr  = Buffer)
+                fixed (short* outptr = Output)
+                {
+                    for (; Offset + 32 <= Buffer.Length; Offset += 32)
+                    {
+                        // Unroll the loop a little to ensure the CPU pipeline
+                        // is always full.
+                        Vector128<int> block1A = Sse2.LoadVector128(inptr + Offset + 0);
+                        Vector128<int> block1B = Sse2.LoadVector128(inptr + Offset + 4);
+
+                        Vector128<int> block2A = Sse2.LoadVector128(inptr + Offset +  8);
+                        Vector128<int> block2B = Sse2.LoadVector128(inptr + Offset + 12);
+
+                        Vector128<int> block3A = Sse2.LoadVector128(inptr + Offset + 16);
+                        Vector128<int> block3B = Sse2.LoadVector128(inptr + Offset + 20);
+
+                        Vector128<int> block4A = Sse2.LoadVector128(inptr + Offset + 24);
+                        Vector128<int> block4B = Sse2.LoadVector128(inptr + Offset + 28);
+
+                        Vector128<short> output1 = Sse2.PackSignedSaturate(block1A, block1B);
+                        Vector128<short> output2 = Sse2.PackSignedSaturate(block2A, block2B);
+                        Vector128<short> output3 = Sse2.PackSignedSaturate(block3A, block3B);
+                        Vector128<short> output4 = Sse2.PackSignedSaturate(block4A, block4B);
+
+                        Sse2.Store(outptr + Offset +  0, output1);
+                        Sse2.Store(outptr + Offset +  8, output2);
+                        Sse2.Store(outptr + Offset + 16, output3);
+                        Sse2.Store(outptr + Offset + 24, output4);
+                    }
+                }
+            }
+
+            // Process left overs
+            for (; Offset < Buffer.Length; Offset++)
             {
                 Output[Offset] = DspUtils.Saturate(Buffer[Offset]);
             }
@@ -310,8 +401,6 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             if (Disposing)
             {
                 AudioOut.CloseTrack(Track);
-
-                UpdateEvent.Dispose();
             }
         }
     }

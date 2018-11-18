@@ -1,309 +1,130 @@
 using ChocolArm64.Memory;
 using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Memory
 {
     class NvGpuVmmCache
     {
-        private const long RamSize = 4L * 1024 * 1024 * 1024;
-
-        private const int MaxCpCount     = 10000;
-        private const int MaxCpTimeDelta = 60000;
-
-        private class CachedPage
+        private struct CachedResource
         {
-            private struct Range
-            {
-                public long Start;
-                public long End;
+            public long Key;
+            public int  Mask;
 
-                public Range(long Start, long End)
-                {
-                    this.Start = Start;
-                    this.End = End;
-                }
+            public CachedResource(long Key, int Mask)
+            {
+                this.Key  = Key;
+                this.Mask = Mask;
             }
 
-            private List<Range>[] Regions;
-
-            private HashSet<long> ResidencyKeys;
-
-            public LinkedListNode<long> Node { get; set; }
-
-            public int Timestamp { get; private set; }
-
-            public CachedPage()
+            public override int GetHashCode()
             {
-                Regions = new List<Range>[(int)NvGpuBufferType.Count];
-
-                for (int Index = 0; Index < Regions.Length; Index++)
-                {
-                    Regions[Index] = new List<Range>();
-                }
-
-                ResidencyKeys = new HashSet<long>();
+                return (int)(Key * 23 + Mask);
             }
 
-            public void AddResidency(long Key)
+            public override bool Equals(object obj)
             {
-                ResidencyKeys.Add(Key);
+                return obj is CachedResource Cached && Equals(Cached);
             }
 
-            public void RemoveResidency(HashSet<long>[] Residency, long PageSize)
+            public bool Equals(CachedResource other)
             {
-                for (int i = 0; i < (int)NvGpuBufferType.Count; i++)
-                {
-                    foreach (Range Region in Regions[i])
-                    {
-                        foreach (long Key in ResidencyKeys)
-                        {
-                            Residency[Region.Start / PageSize].Remove(Key);
-                        }
-                    }
-                }
-            }
-
-            public bool AddRange(long Start, long End, NvGpuBufferType BufferType)
-            {
-                List<Range> BtRegions = Regions[(int)BufferType];
-
-                for (int Index = 0; Index < BtRegions.Count; Index++)
-                {
-                    Range Rg = BtRegions[Index];
-
-                    if (Start >= Rg.Start && End <= Rg.End)
-                    {
-                        return false;
-                    }
-
-                    if (Start <= Rg.End && Rg.Start <= End)
-                    {
-                        long MinStart = Math.Min(Rg.Start, Start);
-                        long MaxEnd   = Math.Max(Rg.End,   End);
-
-                        BtRegions[Index] = new Range(MinStart, MaxEnd);
-
-                        Timestamp = Environment.TickCount;
-
-                        return true;
-                    }
-                }
-
-                BtRegions.Add(new Range(Start, End));
-
-                Timestamp = Environment.TickCount;
-
-                return true;
-            }
-
-            public int GetTotalCount()
-            {
-                int Count = 0;
-
-                for (int Index = 0; Index < Regions.Length; Index++)
-                {
-                    Count += Regions[Index].Count;
-                }
-
-                return Count;
+                return Key == other.Key && Mask == other.Mask;
             }
         }
 
-        private Dictionary<long, CachedPage> Cache;
-
-        private LinkedList<long> SortedCache;
-
-        private HashSet<long>[] Residency;
-
-        private long ResidencyPageSize;
-
-        private int CpCount;
+        private ValueRangeSet<CachedResource> CachedRanges;
 
         public NvGpuVmmCache()
         {
-            Cache = new Dictionary<long, CachedPage>();
-
-            SortedCache = new LinkedList<long>();
+            CachedRanges = new ValueRangeSet<CachedResource>();
         }
 
-        public bool IsRegionModified(AMemory Memory, NvGpuBufferType BufferType, long PA, long Size)
+        public bool IsRegionModified(MemoryManager Memory, NvGpuBufferType BufferType, long Start, long Size)
         {
-            (bool[] Modified, long ModifiedCount) = Memory.IsRegionModified(PA, Size);
+            (bool[] Modified, long ModifiedCount) = Memory.IsRegionModified(Start, Size);
 
-            PA = Memory.GetPhysicalAddress(PA);
-
-            ClearCachedPagesIfNeeded();
-
-            long PageSize = AMemory.PageSize;
-
-            EnsureResidencyInitialized(PageSize);
-
-            bool HasResidents = AddResidency(PA, Size);
-
-            if (!HasResidents && ModifiedCount == 0)
-            {
-                return false;
-            }
-
-            long Mask = PageSize - 1;
-
-            long ResidencyKey = PA;
-
-            long PAEnd = PA + Size;
-
-            bool RegMod = false;
-
+            //Remove all modified ranges.
             int Index = 0;
 
-            while (PA < PAEnd)
+            long Position = Start & ~NvGpuVmm.PageMask;
+
+            while (ModifiedCount > 0)
             {
-                long Key = PA & ~AMemory.PageMask;
-
-                long PAPgEnd = Math.Min((PA + AMemory.PageSize) & ~AMemory.PageMask, PAEnd);
-
-                bool IsCached = Cache.TryGetValue(Key, out CachedPage Cp);
-
-                if (IsCached)
+                if (Modified[Index++])
                 {
-                    CpCount -= Cp.GetTotalCount();
+                    CachedRanges.Remove(new ValueRange<CachedResource>(Position, Position + NvGpuVmm.PageSize));
 
-                    SortedCache.Remove(Cp.Node);
-                }
-                else
-                {
-                    Cp = new CachedPage();
-
-                    Cache.Add(Key, Cp);
+                    ModifiedCount--;
                 }
 
-                if (Modified[Index++] && IsCached)
-                {
-                    Cp = new CachedPage();
+                Position += NvGpuVmm.PageSize;
+            }
 
-                    Cache[Key] = Cp;
+            //Mask has the bit set for the current resource type.
+            //If the region is not yet present on the list, then a new ValueRange
+            //is directly added with the current resource type as the only bit set.
+            //Otherwise, it just sets the bit for this new resource type on the current mask.
+            //The physical address of the resource is used as key, those keys are used to keep
+            //track of resources that are already on the cache. A resource may be inside another
+            //resource, and in this case we should return true if the "sub-resource" was not
+            //yet cached.
+            int Mask = 1 << (int)BufferType;
+
+            CachedResource NewCachedValue = new CachedResource(Start, Mask);
+
+            ValueRange<CachedResource> NewCached = new ValueRange<CachedResource>(Start, Start + Size);
+
+            ValueRange<CachedResource>[] Ranges = CachedRanges.GetAllIntersections(NewCached);
+
+            bool IsKeyCached = Ranges.Length > 0 && Ranges[0].Value.Key == Start;
+
+            long LastEnd = NewCached.Start;
+
+            long Coverage = 0;
+
+            for (Index = 0; Index < Ranges.Length; Index++)
+            {
+                ValueRange<CachedResource> Current = Ranges[Index];
+
+                CachedResource Cached = Current.Value;
+
+                long RgStart = Math.Max(Current.Start, NewCached.Start);
+                long RgEnd   = Math.Min(Current.End,   NewCached.End);
+
+                if ((Cached.Mask & Mask) != 0)
+                {
+                    Coverage += RgEnd - RgStart;
                 }
 
-                Cp.AddResidency(ResidencyKey);
-
-                Cp.Node = SortedCache.AddLast(Key);
-
-                RegMod |= Cp.AddRange(PA, PAPgEnd, BufferType);
-
-                CpCount += Cp.GetTotalCount();
-
-                PA = PAPgEnd;
-            }
-
-            return RegMod;
-        }
-
-        private bool AddResidency(long PA, long Size)
-        {
-            long PageSize = ResidencyPageSize;
-
-            long Mask = PageSize - 1;
-
-            long Key = PA;
-
-            bool ResidentFound = false;
-
-            for (long Cursor = PA & ~Mask; Cursor < ((PA + Size + PageSize - 1) & ~Mask); Cursor += PageSize)
-            {
-                long PageIndex = Cursor / PageSize;
-
-                Residency[PageIndex].Add(Key);
-
-                if (Residency[PageIndex].Count > 1)
+                //Highest key value has priority, this prevents larger resources
+                //for completely invalidating smaller ones on the cache. For example,
+                //consider that a resource in the range [100, 200) was added, and then
+                //another one in the range [50, 200). We prevent the new resource from
+                //completely replacing the old one by spliting it like this:
+                //New resource key is added at [50, 100), old key is still present at [100, 200).
+                if (Cached.Key < Start)
                 {
-                    ResidentFound = true;
-                }
-            }
-
-            return ResidentFound;
-        }
-
-        private void EnsureResidencyInitialized(long PageSize)
-        {
-            if (Residency == null)
-            {
-                Residency = new HashSet<long>[RamSize / PageSize];
-
-                for (int i = 0; i < Residency.Length; i++)
-                {
-                    Residency[i] = new HashSet<long>();
+                    Cached.Key = Start;
                 }
 
-                ResidencyPageSize = PageSize;
-            }
-            else
-            {
-                if (ResidencyPageSize != PageSize)
+                Cached.Mask |= Mask;
+
+                CachedRanges.Add(new ValueRange<CachedResource>(RgStart, RgEnd, Cached));
+
+                if (RgStart > LastEnd)
                 {
-                    throw new InvalidOperationException("Tried to change residency page size");
-                }
-            }
-        }
-
-        private void ClearCachedPagesIfNeeded()
-        {
-            if (CpCount <= MaxCpCount)
-            {
-                return;
-            }
-
-            int Timestamp = Environment.TickCount;
-
-            int TimeDelta;
-
-            do
-            {
-                if (!TryPopOldestCachedPageKey(Timestamp, out long Key))
-                {
-                    break;
+                    CachedRanges.Add(new ValueRange<CachedResource>(LastEnd, RgStart, NewCachedValue));
                 }
 
-                CachedPage Cp = Cache[Key];
-
-                Cp.RemoveResidency(Residency, ResidencyPageSize);
-
-                Cache.Remove(Key);
-
-                CpCount -= Cp.GetTotalCount();
-
-                TimeDelta = RingDelta(Cp.Timestamp, Timestamp);
+                LastEnd = RgEnd;
             }
-            while (CpCount > (MaxCpCount >> 1) || (uint)TimeDelta > (uint)MaxCpTimeDelta);
-        }
 
-        private bool TryPopOldestCachedPageKey(int Timestamp, out long Key)
-        {
-            LinkedListNode<long> Node = SortedCache.First;
-
-            if (Node == null)
+            if (LastEnd < NewCached.End)
             {
-                Key = 0;
-
-                return false;
+                CachedRanges.Add(new ValueRange<CachedResource>(LastEnd, NewCached.End, NewCachedValue));
             }
 
-            SortedCache.Remove(Node);
-
-            Key = Node.Value;
-
-            return true;
-        }
-
-        private int RingDelta(int Old, int New)
-        {
-            if ((uint)New < (uint)Old)
-            {
-                return New + (~Old + 1);
-            }
-            else
-            {
-                return New - Old;
-            }
+            return !IsKeyCached || Coverage != Size;
         }
     }
 }

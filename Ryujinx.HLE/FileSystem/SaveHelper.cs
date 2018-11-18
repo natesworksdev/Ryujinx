@@ -35,9 +35,11 @@ namespace Ryujinx.HLE.FileSystem
                 }
             }
 
+            string SaveAccount = SaveMetaData.UserId.IsZero() ? "savecommon" : SaveMetaData.UserId.ToString();
+
             string SavePath = Path.Combine(BaseSavePath,
                 SaveMetaData.SaveId.ToString("x16"),
-                SaveMetaData.UserId.ToString(),
+                SaveAccount,
                 SaveMetaData.SaveDataType == SaveDataType.SaveData ? CurrentTitleId.ToString("x16") : string.Empty);
 
             return SavePath;

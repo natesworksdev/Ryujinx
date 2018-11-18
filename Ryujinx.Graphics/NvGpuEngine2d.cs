@@ -1,12 +1,10 @@
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
-using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.Graphics
 {
-    public class NvGpuEngine2d : INvGpuEngine
+    class NvGpuEngine2d : INvGpuEngine
     {
         private enum CopyOperation
         {
@@ -23,64 +21,54 @@ namespace Ryujinx.Graphics
 
         private NvGpu Gpu;
 
-        private Dictionary<int, NvGpuMethod> Methods;
-
         public NvGpuEngine2d(NvGpu Gpu)
         {
             this.Gpu = Gpu;
 
-            Registers = new int[0xe00];
-
-            Methods = new Dictionary<int, NvGpuMethod>();
-
-            void AddMethod(int Meth, int Count, int Stride, NvGpuMethod Method)
-            {
-                while (Count-- > 0)
-                {
-                    Methods.Add(Meth, Method);
-
-                    Meth += Stride;
-                }
-            }
-
-            AddMethod(0xb5, 1, 1, TextureCopy);
+            Registers = new int[0x238];
         }
 
-        public void CallMethod(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        public void CallMethod(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            if (Methods.TryGetValue(PBEntry.Method, out NvGpuMethod Method))
+            WriteRegister(MethCall);
+
+            if ((NvGpuEngine2dReg)MethCall.Method == NvGpuEngine2dReg.BlitSrcYInt)
             {
-                Method(Vmm, PBEntry);
-            }
-            else
-            {
-                WriteRegister(PBEntry);
+                TextureCopy(Vmm);
             }
         }
 
-        private void TextureCopy(NvGpuVmm Vmm, NvGpuPBEntry PBEntry)
+        private void TextureCopy(NvGpuVmm Vmm)
         {
             CopyOperation Operation = (CopyOperation)ReadRegister(NvGpuEngine2dReg.CopyOperation);
 
-            bool SrcLinear = ReadRegister(NvGpuEngine2dReg.SrcLinear) != 0;
-            int  SrcWidth  = ReadRegister(NvGpuEngine2dReg.SrcWidth);
-            int  SrcHeight = ReadRegister(NvGpuEngine2dReg.SrcHeight);
-            int  SrcPitch  = ReadRegister(NvGpuEngine2dReg.SrcPitch);
-            int  SrcBlkDim = ReadRegister(NvGpuEngine2dReg.SrcBlockDimensions);
-
+            int  DstFormat = ReadRegister(NvGpuEngine2dReg.DstFormat);
             bool DstLinear = ReadRegister(NvGpuEngine2dReg.DstLinear) != 0;
             int  DstWidth  = ReadRegister(NvGpuEngine2dReg.DstWidth);
             int  DstHeight = ReadRegister(NvGpuEngine2dReg.DstHeight);
             int  DstPitch  = ReadRegister(NvGpuEngine2dReg.DstPitch);
             int  DstBlkDim = ReadRegister(NvGpuEngine2dReg.DstBlockDimensions);
 
-            TextureSwizzle SrcSwizzle = SrcLinear
-                ? TextureSwizzle.Pitch
-                : TextureSwizzle.BlockLinear;
+            int  SrcFormat = ReadRegister(NvGpuEngine2dReg.SrcFormat);
+            bool SrcLinear = ReadRegister(NvGpuEngine2dReg.SrcLinear) != 0;
+            int  SrcWidth  = ReadRegister(NvGpuEngine2dReg.SrcWidth);
+            int  SrcHeight = ReadRegister(NvGpuEngine2dReg.SrcHeight);
+            int  SrcPitch  = ReadRegister(NvGpuEngine2dReg.SrcPitch);
+            int  SrcBlkDim = ReadRegister(NvGpuEngine2dReg.SrcBlockDimensions);
 
-            TextureSwizzle DstSwizzle = DstLinear
-                ? TextureSwizzle.Pitch
-                : TextureSwizzle.BlockLinear;
+            int DstBlitX = ReadRegister(NvGpuEngine2dReg.BlitDstX);
+            int DstBlitY = ReadRegister(NvGpuEngine2dReg.BlitDstY);
+            int DstBlitW = ReadRegister(NvGpuEngine2dReg.BlitDstW);
+            int DstBlitH = ReadRegister(NvGpuEngine2dReg.BlitDstH);
+
+            int SrcBlitX = ReadRegister(NvGpuEngine2dReg.BlitSrcXInt);
+            int SrcBlitY = ReadRegister(NvGpuEngine2dReg.BlitSrcYInt);
+
+            GalImageFormat SrcImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)SrcFormat);
+            GalImageFormat DstImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)DstFormat);
+
+            GalMemoryLayout SrcLayout = GetLayout(SrcLinear);
+            GalMemoryLayout DstLayout = GetLayout(DstLinear);
 
             int SrcBlockHeight = 1 << ((SrcBlkDim >> 4) & 0xf);
             int DstBlockHeight = 1 << ((DstBlkDim >> 4) & 0xf);
@@ -91,91 +79,63 @@ namespace Ryujinx.Graphics
             long SrcKey = Vmm.GetPhysicalAddress(SrcAddress);
             long DstKey = Vmm.GetPhysicalAddress(DstAddress);
 
-            bool IsSrcFb = Gpu.Engine3d.IsFrameBufferPosition(SrcKey);
-            bool IsDstFb = Gpu.Engine3d.IsFrameBufferPosition(DstKey);
+            GalImage SrcTexture = new GalImage(
+                SrcWidth,
+                SrcHeight, 1,
+                SrcBlockHeight,
+                SrcLayout,
+                SrcImgFormat);
 
-            TextureInfo SrcTexture()
-            {
-                return new TextureInfo(
-                    SrcAddress,
-                    SrcWidth,
-                    SrcHeight,
-                    SrcPitch,
-                    SrcBlockHeight, 1,
-                    SrcSwizzle,
-                    GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm);
-            }
+            GalImage DstTexture = new GalImage(
+                DstWidth,
+                DstHeight, 1,
+                DstBlockHeight,
+                DstLayout,
+                DstImgFormat);
 
-            TextureInfo DstTexture()
-            {
-                return new TextureInfo(
-                    DstAddress,
-                    DstWidth,
-                    DstHeight,
-                    DstPitch,
-                    DstBlockHeight, 1,
-                    DstSwizzle,
-                    GalImageFormat.A8B8G8R8 | GalImageFormat.Unorm);
-            }
+            SrcTexture.Pitch = SrcPitch;
+            DstTexture.Pitch = DstPitch;
 
-            //TODO: fb -> fb copies, tex -> fb copies, formats other than RGBA8,
-            //make it throw for unimpl stuff (like the copy mode)...
-            if (IsSrcFb && IsDstFb)
-            {
-                //Frame Buffer -> Frame Buffer copy.
-                Gpu.Renderer.RenderTarget.Copy(
-                    SrcKey,
-                    DstKey,
-                    0,
-                    0,
-                    SrcWidth,
-                    SrcHeight,
-                    0,
-                    0,
-                    DstWidth,
-                    DstHeight);
-            }
-            if (IsSrcFb)
-            {
-                //Frame Buffer -> Texture copy.
-                Gpu.Renderer.RenderTarget.GetBufferData(SrcKey, (byte[] Buffer) =>
-                {
-                    TextureInfo Src = SrcTexture();
-                    TextureInfo Dst = DstTexture();
+            Gpu.ResourceManager.SendTexture(Vmm, SrcKey, SrcTexture);
+            Gpu.ResourceManager.SendTexture(Vmm, DstKey, DstTexture);
 
-                    if (Src.Width  != Dst.Width ||
-                        Src.Height != Dst.Height)
-                    {
-                        throw new NotImplementedException("Texture resizing is not supported");
-                    }
+            Gpu.Renderer.RenderTarget.Copy(
+                SrcKey,
+                DstKey,
+                SrcBlitX,
+                SrcBlitY,
+                SrcBlitX + DstBlitW,
+                SrcBlitY + DstBlitH,
+                DstBlitX,
+                DstBlitY,
+                DstBlitX + DstBlitW,
+                DstBlitY + DstBlitH);
 
-                    TextureWriter.Write(Vmm, Dst, Buffer);
-                });
-            }
-            else if (IsDstFb)
-            {
-                byte[] Buffer = TextureReader.Read(Vmm, SrcTexture());
+            //Do a guest side copy aswell. This is necessary when
+            //the texture is modified by the guest, however it doesn't
+            //work when resources that the gpu can write to are copied,
+            //like framebuffers.
+            ImageUtils.CopyTexture(
+                Vmm,
+                SrcTexture,
+                DstTexture,
+                SrcAddress,
+                DstAddress,
+                SrcBlitX,
+                SrcBlitY,
+                DstBlitX,
+                DstBlitY,
+                DstBlitW,
+                DstBlitH);
 
-                Gpu.Renderer.RenderTarget.SetBufferData(
-                    DstKey,
-                    DstWidth,
-                    DstHeight,
-                    Buffer);
-            }
-            else
-            {
-                //Texture -> Texture copy.
-                TextureInfo Src = SrcTexture();
-                TextureInfo Dst = DstTexture();
+            Vmm.IsRegionModified(DstKey, ImageUtils.GetSize(DstTexture), NvGpuBufferType.Texture);
+        }
 
-                if (Src.Width  != Dst.Width ||
-                    Src.Height != Dst.Height)
-                {
-                    throw new NotImplementedException("Texture resizing is not supported");
-                }
-
-                TextureWriter.Write(Vmm, Dst, TextureReader.Read(Vmm, Src));
-            }
+        private static GalMemoryLayout GetLayout(bool Linear)
+        {
+            return Linear
+                ? GalMemoryLayout.Pitch
+                : GalMemoryLayout.BlockLinear;
         }
 
         private long MakeInt64From2xInt32(NvGpuEngine2dReg Reg)
@@ -185,24 +145,14 @@ namespace Ryujinx.Graphics
                 (uint)Registers[(int)Reg + 1];
         }
 
-        private void WriteRegister(NvGpuPBEntry PBEntry)
+        private void WriteRegister(GpuMethodCall MethCall)
         {
-            int ArgsCount = PBEntry.Arguments.Count;
-
-            if (ArgsCount > 0)
-            {
-                Registers[PBEntry.Method] = PBEntry.Arguments[ArgsCount - 1];
-            }
+            Registers[MethCall.Method] = MethCall.Argument;
         }
 
         private int ReadRegister(NvGpuEngine2dReg Reg)
         {
             return Registers[(int)Reg];
-        }
-
-        private void WriteRegister(NvGpuEngine2dReg Reg, int Value)
-        {
-            Registers[(int)Reg] = Value;
         }
     }
 }

@@ -6,6 +6,8 @@ using Ryujinx.HLE.HOS.Services.Bsd;
 using Ryujinx.HLE.HOS.Services.Caps;
 using Ryujinx.HLE.HOS.Services.FspSrv;
 using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.HOS.Services.Irs;
+using Ryujinx.HLE.HOS.Services.Ldr;
 using Ryujinx.HLE.HOS.Services.Lm;
 using Ryujinx.HLE.HOS.Services.Mm;
 using Ryujinx.HLE.HOS.Services.Nfp;
@@ -14,6 +16,7 @@ using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Pctl;
 using Ryujinx.HLE.HOS.Services.Pl;
 using Ryujinx.HLE.HOS.Services.Prepo;
+using Ryujinx.HLE.HOS.Services.Psm;
 using Ryujinx.HLE.HOS.Services.Set;
 using Ryujinx.HLE.HOS.Services.Sfdnsres;
 using Ryujinx.HLE.HOS.Services.Sm;
@@ -26,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services
 {
     static class ServiceFactory
     {
-        public static IpcService MakeService(string Name)
+        public static IpcService MakeService(Horizon System, string Name)
         {
             switch (Name)
             {
@@ -70,10 +73,10 @@ namespace Ryujinx.HLE.HOS.Services
                     return new Bcat.IServiceCreator();
 
                 case "bsd:s":
-                    return new IClient();
+                    return new IClient(true);
 
                 case "bsd:u":
-                    return new IClient();
+                    return new IClient(false);
 
                 case "caps:a":
                     return new IAlbumAccessorService();
@@ -94,7 +97,16 @@ namespace Ryujinx.HLE.HOS.Services
                     return new IFileSystemProxy();
 
                 case "hid":
-                    return new IHidServer();
+                    return new IHidServer(System);
+
+                case "irs":
+                    return new IIrSensorServer();
+
+                case "ldr:ro":
+                    return new IRoInterface();
+
+                case "hwopus":
+                    return new IHardwareOpusDecoderManager();
 
                 case "lm":
                     return new ILogService();
@@ -118,10 +130,10 @@ namespace Ryujinx.HLE.HOS.Services
                     return new IVulnerabilityManagerInterface();
 
                 case "nvdrv":
-                    return new INvDrvServices();
+                    return new INvDrvServices(System);
 
                 case "nvdrv:a":
-                    return new INvDrvServices();
+                    return new INvDrvServices(System);
 
                 case "pctl:s":
                     return new IParentalControlServiceFactory();
@@ -143,6 +155,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                 case "prepo:u":
                     return new IPrepoService();
+
+                case "psm":
+                    return new IPsmServer();
 
                 case "set":
                     return new ISettingsServer();

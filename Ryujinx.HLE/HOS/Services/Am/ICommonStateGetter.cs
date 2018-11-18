@@ -1,6 +1,7 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.Logging;
+using System;
 using System.Collections.Generic;
 
 using static Ryujinx.HLE.HOS.ErrorCode;
@@ -15,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         private KEvent DisplayResolutionChangeEvent;
 
-        public ICommonStateGetter()
+        public ICommonStateGetter(Horizon System)
         {
             m_Commands = new Dictionary<int, ServiceProcessRequest>()
             {
@@ -29,14 +30,17 @@ namespace Ryujinx.HLE.HOS.Services.Am
                 { 61, GetDefaultDisplayResolutionChangeEvent  }
             };
 
-            DisplayResolutionChangeEvent = new KEvent();
+            DisplayResolutionChangeEvent = new KEvent(System);
         }
 
         public long GetEventHandle(ServiceCtx Context)
         {
             KEvent Event = Context.Process.AppletState.MessageEvent;
 
-            int Handle = Context.Process.HandleTable.OpenHandle(Event);
+            if (Context.Process.HandleTable.GenerateHandle(Event.ReadableEvent, out int Handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
@@ -81,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
         {
             Context.ResponseData.Write((byte)0); //Unknown value.
 
-            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
@@ -103,11 +107,14 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long GetDefaultDisplayResolutionChangeEvent(ServiceCtx Context)
         {
-            int Handle = Context.Process.HandleTable.OpenHandle(DisplayResolutionChangeEvent);
+            if (Context.Process.HandleTable.GenerateHandle(DisplayResolutionChangeEvent.ReadableEvent, out int Handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             Context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Handle);
 
-            Context.Device.Log.PrintStub(LogClass.ServiceAm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
             return 0;
         }
