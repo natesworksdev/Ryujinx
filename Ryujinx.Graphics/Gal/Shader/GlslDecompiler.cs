@@ -360,6 +360,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         private void PrintDeclGprs()
         {
             PrintDecls(Decl.Gprs);
+            PrintDecls(Decl.GprsHalf);
         }
 
         private void PrintDeclPreds()
@@ -893,7 +894,23 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetName(ShaderIrOperGpr Gpr)
         {
-            return Gpr.IsConst ? "0" : GetNameWithSwizzle(Decl.Gprs, Gpr.Index);
+            if (Gpr.IsConst)
+            {
+                return "0";
+            }
+
+            if (Gpr.RegisterSize == ShaderRegisterSize.Single)
+            {
+                return GetNameWithSwizzle(Decl.Gprs, Gpr.Index);
+            }
+            else if (Gpr.RegisterSize == ShaderRegisterSize.Half)
+            {
+                return GetNameWithSwizzle(Decl.GprsHalf, (Gpr.Index << 1) | Gpr.HalfPart);
+            }
+            else /* if (Gpr.RegisterSize == ShaderRegisterSize.Double) */
+            {
+                throw new NotImplementedException("Double types are not supported.");
+            }
         }
 
         private string GetValue(ShaderIrOperImm Imm)
