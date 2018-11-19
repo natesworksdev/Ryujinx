@@ -237,22 +237,10 @@ namespace Ryujinx.Graphics.VDec
                 return;
             }
 
-            if ((uint)OutputConfig.SurfaceWidth  > (uint)Frame.Width ||
-                (uint)OutputConfig.SurfaceHeight > (uint)Frame.Height)
-            {
-                string Msg = "Surface and frame resolution mismatch!";
-
-                Msg += $" Surface resolution is {OutputConfig.SurfaceWidth}x{OutputConfig.SurfaceHeight},";
-
-                Msg += $" Frame resolution is {Frame.Width}x{Frame.Height}.";
-
-                throw new InvalidOperationException(Msg);
-            }
-
             int HalfSrcWidth = Frame.Width / 2;
 
-            int HalfWidth  = OutputConfig.SurfaceWidth  / 2;
-            int HalfHeight = OutputConfig.SurfaceHeight / 2;
+            int HalfWidth  = Frame.Width  / 2;
+            int HalfHeight = Frame.Height / 2;
 
             int AlignedWidth = (OutputConfig.SurfaceWidth + 0xff) & ~0xff;
 
@@ -264,7 +252,7 @@ namespace Ryujinx.Graphics.VDec
                 int Src = Y * Frame.Width;
                 int Dst = Y * AlignedWidth;
 
-                int Size = OutputConfig.SurfaceWidth;
+                int Size = Frame.Width;
 
                 Buffer.MemoryCopy(Frame.LumaPtr + Src, LumaPtr + Dst, Size, Size);
             }
