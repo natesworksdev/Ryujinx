@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ryujinx.Graphics.VideoDecoding
+namespace Ryujinx.Graphics.VDec
 {
     class Vp9Decoder
     {

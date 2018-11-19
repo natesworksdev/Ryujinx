@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.VideoDecoding
+namespace Ryujinx.Graphics.VDec
 {
     [StructLayout(LayoutKind.Sequential, Pack = 2)]
     struct Vp9FrameDimensions

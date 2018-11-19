@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            NvHostChannelSubmit Args = AMemoryHelper.Read<NvHostChannelSubmit>(Context.Memory, InputPosition);
+            NvHostChannelSubmit Args = MemoryHelper.Read<NvHostChannelSubmit>(Context.Memory, InputPosition);
 
             NvGpuVmm Vmm = NvGpuASIoctl.GetASCtx(Context).Vmm;
 
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
             {
                 long CmdBufOffset = InputPosition + 0x10 + Index * 0xc;
 
-                NvHostChannelCmdBuf CmdBuf = AMemoryHelper.Read<NvHostChannelCmdBuf>(Context.Memory, CmdBufOffset);
+                NvHostChannelCmdBuf CmdBuf = MemoryHelper.Read<NvHostChannelCmdBuf>(Context.Memory, CmdBufOffset);
 
                 NvMapHandle Map = NvMapIoctl.GetNvMap(Context, CmdBuf.MemoryId);
 
@@ -80,11 +80,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            NvHostChannelGetParamArg Args = AMemoryHelper.Read<NvHostChannelGetParamArg>(Context.Memory, InputPosition);
+            NvHostChannelGetParamArg Args = MemoryHelper.Read<NvHostChannelGetParamArg>(Context.Memory, InputPosition);
 
             Args.Value = 0;
 
-            AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
+            MemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
             return NvResult.Success;
         }
@@ -94,11 +94,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            NvHostChannelGetParamArg Args = AMemoryHelper.Read<NvHostChannelGetParamArg>(Context.Memory, InputPosition);
+            NvHostChannelGetParamArg Args = MemoryHelper.Read<NvHostChannelGetParamArg>(Context.Memory, InputPosition);
 
             Args.Value = 0;
 
-            AMemoryHelper.Write(Context.Memory, OutputPosition, Args);
+            MemoryHelper.Write(Context.Memory, OutputPosition, Args);
 
             return NvResult.Success;
         }
@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
             long OutputPosition = Context.Request.GetBufferType0x22().Position;
 
-            NvHostChannelMapBuffer Args = AMemoryHelper.Read<NvHostChannelMapBuffer>(Context.Memory, InputPosition);
+            NvHostChannelMapBuffer Args = MemoryHelper.Read<NvHostChannelMapBuffer>(Context.Memory, InputPosition);
 
             NvGpuVmm Vmm = NvGpuASIoctl.GetASCtx(Context).Vmm;
 
@@ -143,7 +143,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
         {
             long InputPosition  = Context.Request.GetBufferType0x21().Position;
 
-            NvHostChannelMapBuffer Args = AMemoryHelper.Read<NvHostChannelMapBuffer>(Context.Memory, InputPosition);
+            NvHostChannelMapBuffer Args = MemoryHelper.Read<NvHostChannelMapBuffer>(Context.Memory, InputPosition);
 
             NvGpuVmm Vmm = NvGpuASIoctl.GetASCtx(Context).Vmm;
 

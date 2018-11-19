@@ -1,7 +1,7 @@
 using Ryujinx.Graphics.Memory;
 using System;
 
-namespace Ryujinx.Graphics.VideoImageComposition
+namespace Ryujinx.Graphics.Vic
 {
     class StructUnpacker
     {

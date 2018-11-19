@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.Graphics.VideoDecoding
+namespace Ryujinx.Graphics.VDec
 {
     static class DecoderHelper
     {

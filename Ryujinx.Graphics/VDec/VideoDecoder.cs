@@ -1,11 +1,11 @@
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
-using Ryujinx.Graphics.VideoImageComposition;
+using Ryujinx.Graphics.Vic;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.VideoDecoding
+namespace Ryujinx.Graphics.VDec
 {
     unsafe class VideoDecoder
     {
@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.VideoDecoding
                     Tx32x32Probs          = Vmm.ReadBytes(VpxProbTablesAddress + 0x476, 0x6),
                     CoefProbs             = Vmm.ReadBytes(VpxProbTablesAddress + 0x5a0, 0x900),
                     SkipProbs             = Vmm.ReadBytes(VpxProbTablesAddress + 0x537, 0x3),
-                    InterModeProbs        = Vmm.ReadBytes(VpxProbTablesAddress + 0x400, 0x28),
+                    InterModeProbs        = Vmm.ReadBytes(VpxProbTablesAddress + 0x400, 0x1c),
                     InterpFilterProbs     = Vmm.ReadBytes(VpxProbTablesAddress + 0x52a, 0x8),
                     IsInterProbs          = Vmm.ReadBytes(VpxProbTablesAddress + 0x41c, 0x4),
                     CompModeProbs         = Vmm.ReadBytes(VpxProbTablesAddress + 0x532, 0x5),

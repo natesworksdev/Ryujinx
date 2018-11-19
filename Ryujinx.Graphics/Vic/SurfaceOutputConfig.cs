@@ -1,4 +1,4 @@
-namespace Ryujinx.Graphics.VideoImageComposition
+namespace Ryujinx.Graphics.Vic
 {
     struct SurfaceOutputConfig
     {

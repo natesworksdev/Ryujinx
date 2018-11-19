@@ -1,8 +1,8 @@
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Graphics3d;
 using Ryujinx.Graphics.Memory;
-using Ryujinx.Graphics.VideoDecoding;
-using Ryujinx.Graphics.VideoImageComposition;
+using Ryujinx.Graphics.VDec;
+using Ryujinx.Graphics.Vic;
 
 namespace Ryujinx.Graphics
 {

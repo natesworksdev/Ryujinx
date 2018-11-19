@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Ryujinx.Graphics.VideoDecoding
+namespace Ryujinx.Graphics.VDec
 {
     class H264BitStreamWriter : BitStreamWriter
     {

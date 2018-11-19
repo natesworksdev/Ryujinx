@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.VideoDecoding
+namespace Ryujinx.Graphics.VDec
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     struct H264ParameterSets

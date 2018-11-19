@@ -2,7 +2,7 @@ using FFmpeg.AutoGen;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.VideoDecoding
+namespace Ryujinx.Graphics.VDec
 {
     unsafe static class FFmpegWrapper
     {

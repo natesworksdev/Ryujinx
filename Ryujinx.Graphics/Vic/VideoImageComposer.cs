@@ -1,6 +1,6 @@
 using Ryujinx.Graphics.Memory;
 
-namespace Ryujinx.Graphics.VideoImageComposition
+namespace Ryujinx.Graphics.Vic
 {
     class VideoImageComposer
     {
