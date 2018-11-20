@@ -59,23 +59,23 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             ulong RamSize = (ulong)GetRamSize(KernelMemoryCfg);
 
-            long RamPart0;
-            long RamPart1;
+            ulong RamPart0;
+            ulong RamPart1;
 
             if (RamSize * 2 > EmemApertureSize)
             {
-                RamPart0 = (long)(EmemApertureSize / 2);
-                RamPart1 = (long)(EmemApertureSize / 2);
+                RamPart0 = EmemApertureSize / 2;
+                RamPart1 = EmemApertureSize / 2;
             }
             else
             {
-                RamPart0 = (long)EmemApertureSize;
+                RamPart0 = EmemApertureSize;
                 RamPart1 = 0;
             }
 
             int MemoryArrange = 1;
 
-            long ApplicationRgSize;
+            ulong ApplicationRgSize;
 
             switch (MemoryArrange)
             {
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 default:   ApplicationRgSize = 0xcd500000;  break;
             }
 
-            long AppletRgSize;
+            ulong AppletRgSize;
 
             switch (MemoryArrange)
             {
@@ -102,13 +102,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             KMemoryArrangeRegion AppletRg;
             KMemoryArrangeRegion ApplicationRg;
 
-            const long NvServicesRgSize = 0x29ba000;
+            const ulong NvServicesRgSize = 0x29ba000;
 
-            long ApplicationRgEnd = DramMemoryMap.DramEnd; //- RamPart0;
+            ulong ApplicationRgEnd = DramMemoryMap.DramEnd; //- RamPart0;
 
             ApplicationRg = new KMemoryArrangeRegion(ApplicationRgEnd - ApplicationRgSize, ApplicationRgSize);
 
-            long NvServicesRgEnd = ApplicationRg.Address - AppletRgSize;
+            ulong NvServicesRgEnd = ApplicationRg.Address - AppletRgSize;
 
             NvServicesRg = new KMemoryArrangeRegion(NvServicesRgEnd - NvServicesRgSize, NvServicesRgSize);
             AppletRg     = new KMemoryArrangeRegion(NvServicesRgEnd, AppletRgSize);
@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             //Note: There is an extra region used by the kernel, however
             //since we are doing HLE we are not going to use that memory, so give all
             //the remaining memory space to services.
-            long ServiceRgSize = NvServicesRg.Address - DramMemoryMap.SlabHeapEnd;
+            ulong ServiceRgSize = NvServicesRg.Address - DramMemoryMap.SlabHeapEnd;
 
             ServiceRg = new KMemoryArrangeRegion(DramMemoryMap.SlabHeapEnd, ServiceRgSize);
 

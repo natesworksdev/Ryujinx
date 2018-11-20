@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             else if (Obj is KTransferMemory TransferMemory)
             {
                 Process.MemoryManager.ResetTransferMemory(
-                    TransferMemory.Position,
+                    TransferMemory.Address,
                     TransferMemory.Size);
             }
 
@@ -339,27 +339,27 @@ namespace Ryujinx.HLE.HOS.Kernel
                         case 0: Value = Process.Capabilities.AllowedCpuCoresMask;    break;
                         case 1: Value = Process.Capabilities.AllowedThreadPriosMask; break;
 
-                        case 2: Value = Process.MemoryManager.AliasRegionStart; break;
-                        case 3: Value = Process.MemoryManager.AliasRegionEnd -
-                                        Process.MemoryManager.AliasRegionStart; break;
+                        case 2: Value = (long)Process.MemoryManager.AliasRegionStart; break;
+                        case 3: Value = (long)(Process.MemoryManager.AliasRegionEnd -
+                                               Process.MemoryManager.AliasRegionStart); break;
 
-                        case 4: Value = Process.MemoryManager.HeapRegionStart; break;
-                        case 5: Value = Process.MemoryManager.HeapRegionEnd -
-                                        Process.MemoryManager.HeapRegionStart; break;
+                        case 4: Value = (long)Process.MemoryManager.HeapRegionStart; break;
+                        case 5: Value = (long)(Process.MemoryManager.HeapRegionEnd -
+                                               Process.MemoryManager.HeapRegionStart); break;
 
-                        case 6: Value = Process.GetMemoryCapacity(); break;
+                        case 6: Value = (long)Process.GetMemoryCapacity(); break;
 
-                        case 7: Value = Process.GetMemoryUsage(); break;
+                        case 7: Value = (long)Process.GetMemoryUsage(); break;
 
-                        case 12: Value = Process.MemoryManager.GetAddrSpaceBaseAddr(); break;
+                        case 12: Value = (long)Process.MemoryManager.GetAddrSpaceBaseAddr(); break;
 
-                        case 13: Value = Process.MemoryManager.GetAddrSpaceSize(); break;
+                        case 13: Value = (long)Process.MemoryManager.GetAddrSpaceSize(); break;
 
-                        case 14: Value = Process.MemoryManager.StackRegionStart; break;
-                        case 15: Value = Process.MemoryManager.StackRegionEnd -
-                                         Process.MemoryManager.StackRegionStart; break;
+                        case 14: Value = (long)Process.MemoryManager.StackRegionStart; break;
+                        case 15: Value = (long)(Process.MemoryManager.StackRegionEnd -
+                                                Process.MemoryManager.StackRegionStart); break;
 
-                        case 16: Value = Process.PersonalMmHeapPagesCount * KMemoryManager.PageSize; break;
+                        case 16: Value = (long)Process.PersonalMmHeapPagesCount * KMemoryManager.PageSize; break;
 
                         case 17:
                             if (Process.PersonalMmHeapPagesCount != 0)
@@ -371,11 +371,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                         case 18: Value = Process.TitleId; break;
 
-                        case 20: Value = Process.UserExceptionContextAddress; break;
+                        case 20: Value = (long)Process.UserExceptionContextAddress; break;
 
-                        case 21: Value = Process.GetMemoryCapacityWithoutPersonalMmHeap(); break;
+                        case 21: Value = (long)Process.GetMemoryCapacityWithoutPersonalMmHeap(); break;
 
-                        case 22: Value = Process.GetMemoryUsageWithoutPersonalMmHeap(); break;
+                        case 22: Value = (long)Process.GetMemoryUsageWithoutPersonalMmHeap(); break;
                     }
 
                     break;

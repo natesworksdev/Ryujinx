@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             Nodes = new LinkedList<KPageNode>();
         }
 
-        public KernelResult AddRange(long Address, long PagesCount)
+        public KernelResult AddRange(ulong Address, ulong PagesCount)
         {
             if (PagesCount != 0)
             {
@@ -35,9 +35,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             return KernelResult.Success;
         }
 
-        public long GetPagesCount()
+        public ulong GetPagesCount()
         {
-            long Sum = 0;
+            ulong Sum = 0;
 
             foreach (KPageNode Node in Nodes)
             {

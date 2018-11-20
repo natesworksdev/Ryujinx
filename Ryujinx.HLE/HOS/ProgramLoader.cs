@@ -19,12 +19,12 @@ namespace Ryujinx.HLE.HOS
             IExecutable[] StaticObjects,
             byte[]        Arguments = null)
         {
-            long ArgsStart = 0;
-            int  ArgsSize  = 0;
-            long CodeStart = 0x8000000;
-            int  CodeSize  = 0;
+            ulong ArgsStart = 0;
+            int   ArgsSize  = 0;
+            ulong CodeStart = 0x8000000;
+            int   CodeSize  = 0;
 
-            long[] NsoBase = new long[StaticObjects.Length];
+            ulong[] NsoBase = new ulong[StaticObjects.Length];
 
             for (int Index = 0; Index < StaticObjects.Length; Index++)
             {
@@ -48,13 +48,13 @@ namespace Ryujinx.HLE.HOS
 
                 NsoSize = BitUtils.AlignUp(NsoSize, KMemoryManager.PageSize);
 
-                NsoBase[Index] = CodeStart + CodeSize;
+                NsoBase[Index] = CodeStart + (ulong)CodeSize;
 
                 CodeSize += NsoSize;
 
                 if (Arguments != null && ArgsSize == 0)
                 {
-                    ArgsStart = CodeSize;
+                    ArgsStart = (ulong)CodeSize;
 
                     ArgsSize = BitUtils.AlignDown(Arguments.Length * 2 + ArgsTotalSize - 1, KMemoryManager.PageSize);
 
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS
 
             KResourceLimit ResourceLimit = new KResourceLimit(System);
 
-            long ApplicationRgSize = System.MemoryRegions[(int)MemoryRegion.Application].Size;
+            long ApplicationRgSize = (long)System.MemoryRegions[(int)MemoryRegion.Application].Size;
 
             Result  = ResourceLimit.SetLimitValue(LimitableResource.Memory,         ApplicationRgSize);
             Result |= ResourceLimit.SetLimitValue(LimitableResource.Thread,         608);
@@ -114,26 +114,26 @@ namespace Ryujinx.HLE.HOS
             {
                 IExecutable StaticObject = StaticObjects[Index];
 
-                long TextStart = NsoBase[Index] + StaticObject.TextOffset;
-                long ROStart   = NsoBase[Index] + StaticObject.ROOffset;
-                long DataStart = NsoBase[Index] + StaticObject.DataOffset;
+                ulong TextStart = NsoBase[Index] + (ulong)StaticObject.TextOffset;
+                ulong ROStart   = NsoBase[Index] + (ulong)StaticObject.ROOffset;
+                ulong DataStart = NsoBase[Index] + (ulong)StaticObject.DataOffset;
 
-                long BssStart = DataStart + StaticObject.Data.Length;
+                ulong BssStart = DataStart + (ulong)StaticObject.Data.Length;
 
-                long BssEnd = BitUtils.AlignUp(BssStart + StaticObject.BssSize, KMemoryManager.PageSize);
+                ulong BssEnd = BitUtils.AlignUp(BssStart + (ulong)StaticObject.BssSize, KMemoryManager.PageSize);
 
-                Process.CpuMemory.WriteBytes(TextStart, StaticObject.Text);
-                Process.CpuMemory.WriteBytes(ROStart,   StaticObject.RO);
-                Process.CpuMemory.WriteBytes(DataStart, StaticObject.Data);
+                Process.CpuMemory.WriteBytes((long)TextStart, StaticObject.Text);
+                Process.CpuMemory.WriteBytes((long)ROStart,   StaticObject.RO);
+                Process.CpuMemory.WriteBytes((long)DataStart, StaticObject.Data);
 
-                MemoryHelper.FillWithZeros(Process.CpuMemory, BssStart, (int)(BssEnd - BssStart));
+                MemoryHelper.FillWithZeros(Process.CpuMemory, (long)BssStart, (int)(BssEnd - BssStart));
 
                 Process.MemoryManager.SetProcessMemoryPermission(TextStart, ROStart   - TextStart, MemoryPermission.ReadAndExecute);
                 Process.MemoryManager.SetProcessMemoryPermission(ROStart,   DataStart - ROStart,   MemoryPermission.Read);
                 Process.MemoryManager.SetProcessMemoryPermission(DataStart, BssEnd    - DataStart, MemoryPermission.ReadAndWrite);
             }
 
-            Result = Process.Start(MetaData.MainThreadPriority, MetaData.MainThreadStackSize);
+            Result = Process.Start(MetaData.MainThreadPriority, (ulong)MetaData.MainThreadStackSize);
 
             if (Result != KernelResult.Success)
             {

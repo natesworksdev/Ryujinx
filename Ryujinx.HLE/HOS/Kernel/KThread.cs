@@ -22,13 +22,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long CondVarAddress { get; set; }
 
-        private long Entrypoint;
+        private ulong Entrypoint;
 
         public long MutexAddress { get; set; }
 
         public KProcess Owner { get; private set; }
 
-        private long TlsAddress;
+        private ulong TlsAddress;
 
         public long LastScheduledTime { get; set; }
 
@@ -87,9 +87,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         }
 
         public KernelResult Initialize(
-            long       Entrypoint,
-            long       ArgsPtr,
-            long       StackTop,
+            ulong      Entrypoint,
+            ulong      ArgsPtr,
+            ulong      StackTop,
             int        Priority,
             int        DefaultCpuCore,
             KProcess   Owner,
@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     return KernelResult.OutOfMemory;
                 }
 
-                MemoryHelper.FillWithZeros(Owner.CpuMemory, TlsAddress, KTlsPageInfo.TlsEntrySize);
+                MemoryHelper.FillWithZeros(Owner.CpuMemory, (long)TlsAddress, KTlsPageInfo.TlsEntrySize);
             }
 
             bool Is64Bits;
@@ -142,13 +142,13 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Is64Bits = true;
             }
 
-            Context = new CpuThread(Owner.Translator, Owner.CpuMemory, Entrypoint);
+            Context = new CpuThread(Owner.Translator, Owner.CpuMemory, (long)Entrypoint);
 
-            Context.ThreadState.X0  = (ulong)ArgsPtr;
-            Context.ThreadState.X31 = (ulong)StackTop;
+            Context.ThreadState.X0  = ArgsPtr;
+            Context.ThreadState.X31 = StackTop;
 
             Context.ThreadState.CntfrqEl0 = 19200000;
-            Context.ThreadState.Tpidr     = TlsAddress;
+            Context.ThreadState.Tpidr     = (long)TlsAddress;
 
             Owner.SubscribeThreadEventHandlers(Context);
 

@@ -5,6 +5,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KResourceLimit
     {
+        private const int Time10SecondsMs = 10000;
+
         private long[] Current;
         private long[] Limit;
         private long[] Available;
@@ -30,10 +32,14 @@ namespace Ryujinx.HLE.HOS.Kernel
             this.System = System;
         }
 
+        public bool Reserve(LimitableResource Resource, ulong Amount)
+        {
+            return Reserve(Resource, (long)Amount);
+        }
+
         public bool Reserve(LimitableResource Resource, long Amount)
         {
-            //Wait 10 seconds for the resource if no timeout is specified.
-            return Reserve(Resource, Amount, KTimeManager.ConvertMillisecondsToNanoseconds(10000));
+            return Reserve(Resource, Amount, KTimeManager.ConvertMillisecondsToNanoseconds(Time10SecondsMs));
         }
 
         public bool Reserve(LimitableResource Resource, long Amount, long Timeout)
@@ -75,6 +81,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             return Success;
+        }
+
+        public void Release(LimitableResource Resource, ulong Amount)
+        {
+            Release(Resource, (long)Amount);
         }
 
         public void Release(LimitableResource Resource, long Amount)

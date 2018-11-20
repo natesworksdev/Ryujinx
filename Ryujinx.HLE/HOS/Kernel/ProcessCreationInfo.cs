@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.HOS.Kernel
         public int  Category { get; private set; }
         public long TitleId  { get; private set; }
 
-        public long CodeAddress    { get; private set; }
-        public int  CodePagesCount { get; private set; }
+        public ulong CodeAddress    { get; private set; }
+        public int   CodePagesCount { get; private set; }
 
         public int MmuFlags                 { get; private set; }
         public int ResourceLimitHandle      { get; private set; }
@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             string Name,
             int    Category,
             long   TitleId,
-            long   CodeAddress,
+            ulong  CodeAddress,
             int    CodePagesCount,
             int    MmuFlags,
             int    ResourceLimitHandle,

@@ -196,10 +196,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void ScanMemoryForTextSegments()
         {
-            long OldAddress = 0;
-            long Address    = 0;
+            ulong OldAddress = 0;
+            ulong Address    = 0;
 
-            while ((ulong)Address >= (ulong)OldAddress)
+            while (Address >= OldAddress)
             {
                 KMemoryInfo Info = Owner.MemoryManager.QueryMemory(Address);
 
@@ -210,7 +210,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 if (Info.State == MemoryState.CodeStatic && Info.Permission == MemoryPermission.ReadAndExecute)
                 {
-                    LoadMod0Symbols(Owner.CpuMemory, Info.Address);
+                    LoadMod0Symbols(Owner.CpuMemory, (long)Info.Address);
                 }
 
                 OldAddress = Address;

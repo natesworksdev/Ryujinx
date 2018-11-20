@@ -2,8 +2,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KMemoryInfo
     {
-        public long Address { get; private set; }
-        public long Size    { get; private set; }
+        public ulong Address { get; private set; }
+        public ulong Size    { get; private set; }
 
         public MemoryState      State      { get; private set; }
         public MemoryPermission Permission { get; private set; }
@@ -13,8 +13,8 @@ namespace Ryujinx.HLE.HOS.Kernel
         public int DeviceRefCount { get; private set; }
 
         public KMemoryInfo(
-            long             Address,
-            long             Size,
+            ulong            Address,
+            ulong            Size,
             MemoryState      State,
             MemoryPermission Permission,
             MemoryAttribute  Attribute,

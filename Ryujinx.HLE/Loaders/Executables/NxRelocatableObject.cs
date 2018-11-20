@@ -14,10 +14,10 @@ namespace Ryujinx.HLE.Loaders.Executables
         public int DataOffset { get; private set; }
         public int BssSize    { get; private set; }
 
-        public long SourceAddress { get; private set; }
-        public long BssAddress    { get; private set; }
+        public ulong SourceAddress { get; private set; }
+        public ulong BssAddress    { get; private set; }
 
-        public NxRelocatableObject(Stream Input, long SourceAddress = 0, long BssAddress = 0)
+        public NxRelocatableObject(Stream Input, ulong SourceAddress = 0, ulong BssAddress = 0)
         {
             this.SourceAddress = SourceAddress;
             this.BssAddress    = BssAddress;

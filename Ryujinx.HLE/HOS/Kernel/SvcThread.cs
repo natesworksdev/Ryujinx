@@ -9,11 +9,11 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         private void CreateThread64(CpuThreadState ThreadState)
         {
-            long Entrypoint = (long)ThreadState.X1;
-            long ArgsPtr    = (long)ThreadState.X2;
-            long StackTop   = (long)ThreadState.X3;
-            int  Priority   =  (int)ThreadState.X4;
-            int  CpuCore    =  (int)ThreadState.X5;
+            ulong Entrypoint =      ThreadState.X1;
+            ulong ArgsPtr    =      ThreadState.X2;
+            ulong StackTop   =      ThreadState.X3;
+            int   Priority   = (int)ThreadState.X4;
+            int   CpuCore    = (int)ThreadState.X5;
 
             KernelResult Result = CreateThread(Entrypoint, ArgsPtr, StackTop, Priority, CpuCore, out int Handle);
 
@@ -22,9 +22,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         }
 
         private KernelResult CreateThread(
-            long    Entrypoint,
-            long    ArgsPtr,
-            long    StackTop,
+            ulong   Entrypoint,
+            ulong   ArgsPtr,
+            ulong   StackTop,
             int     Priority,
             int     CpuCore,
             out int Handle)

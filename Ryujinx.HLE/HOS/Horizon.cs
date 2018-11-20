@@ -25,9 +25,9 @@ namespace Ryujinx.HLE.HOS
         internal const int HidSize  = 0x40000;
         internal const int FontSize = 0x1100000;
 
-        private const long UserSlabHeapBase     = DramMemoryMap.SlabHeapBase;
-        private const long UserSlabHeapItemSize = KMemoryManager.PageSize;
-        private const long UserSlabHeapSize     = 0x3de000;
+        private const ulong UserSlabHeapBase     = DramMemoryMap.SlabHeapBase;
+        private const ulong UserSlabHeapItemSize = KMemoryManager.PageSize;
+        private const ulong UserSlabHeapSize     = 0x3de000;
 
         internal Switch Device { get; private set; }
 
@@ -114,10 +114,10 @@ namespace Ryujinx.HLE.HOS
 
             KMemoryRegionManager Region = MemoryRegions[(int)MemoryRegion.Service];
 
-            long HidPa  = Region.Address;
-            long FontPa = Region.Address + HidSize;
+            ulong HidPa  = Region.Address;
+            ulong FontPa = Region.Address + HidSize;
 
-            HidBaseAddress = HidPa - DramMemoryMap.DramBase;
+            HidBaseAddress = (long)(HidPa - DramMemoryMap.DramBase);
 
             KPageList HidPageList  = new KPageList();
             KPageList FontPageList = new KPageList();
@@ -132,7 +132,7 @@ namespace Ryujinx.HLE.HOS
 
             AppletState.SetFocus(true);
 
-            Font = new SharedFontManager(Device, FontPa - DramMemoryMap.DramBase);
+            Font = new SharedFontManager(Device, (long)(FontPa - DramMemoryMap.DramBase));
 
             VsyncEvent = new KEvent(this);
 

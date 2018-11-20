@@ -65,15 +65,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
     {
         public NxRelocatableObject    Executable       { get; private set; }
         public byte[] Hash             { get; private set; }
-        public long   NroAddress       { get; private set; }
-        public long   TotalSize        { get; private set; }
-        public long   NroMappedAddress { get; set; }
+        public ulong  NroAddress       { get; private set; }
+        public ulong  TotalSize        { get; private set; }
+        public ulong  NroMappedAddress { get; set; }
 
-        public NroInfo(NxRelocatableObject Executable, byte[] Hash, long TotalSize)
+        public NroInfo(NxRelocatableObject Executable, byte[] Hash, ulong TotalSize)
         {
             this.Executable = Executable;
             this.Hash       = Hash;
-            this.TotalSize = TotalSize;
+            this.TotalSize  = TotalSize;
         }
     }
 
@@ -175,7 +175,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             return false;
         }
 
-        public long ParseNro(out NroInfo Res, ServiceCtx Context, long NroHeapAddress, long NroSize, long BssHeapAddress, long BssSize)
+        public long ParseNro(out NroInfo Res, ServiceCtx Context, ulong NroHeapAddress, ulong NroSize, ulong BssHeapAddress, ulong BssSize)
         {
             Res = null;
 
@@ -196,15 +196,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
                 return MakeError(ErrorModule.Loader, LoaderErr.UnalignedAddress);
             }
 
-            uint Magic       = Context.Memory.ReadUInt32(NroHeapAddress + 0x10);
-            uint NroFileSize = Context.Memory.ReadUInt32(NroHeapAddress + 0x18);
+            uint Magic       = Context.Memory.ReadUInt32((long)NroHeapAddress + 0x10);
+            uint NroFileSize = Context.Memory.ReadUInt32((long)NroHeapAddress + 0x18);
 
             if (Magic != NroMagic || NroSize != NroFileSize)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.InvalidNro);
             }
 
-            byte[] NroData = Context.Memory.ReadBytes(NroHeapAddress, NroSize);
+            byte[] NroData = Context.Memory.ReadBytes((long)NroHeapAddress, (long)NroSize);
             byte[] NroHash = null;
 
             MemoryStream Stream = new MemoryStream(NroData);
@@ -244,26 +244,29 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             }
 
             // finally check the bss size match.
-            if (Executable.BssSize != BssSize)
+            if ((ulong)Executable.BssSize != BssSize)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.InvalidNro);
             }
 
-            Res = new NroInfo(Executable, NroHash, Executable.Text.Length + Executable.RO.Length + Executable.Data.Length + Executable.BssSize);
+            int TotalSize = Executable.Text.Length + Executable.RO.Length + Executable.Data.Length + Executable.BssSize;
+
+            Res = new NroInfo(Executable, NroHash, (ulong)TotalSize);
 
             return 0;
         }
 
-        private long MapNro(ServiceCtx Context, NroInfo Info, out long NroMappedAddress)
+        private long MapNro(ServiceCtx Context, NroInfo Info, out ulong NroMappedAddress)
         {
             NroMappedAddress = 0;
-            long TargetAddress = Context.Process.MemoryManager.AddrSpaceStart;
 
-            long HeapRegionStart = Context.Process.MemoryManager.HeapRegionStart;
-            long HeapRegionEnd   = Context.Process.MemoryManager.HeapRegionEnd;
+            ulong TargetAddress = Context.Process.MemoryManager.AddrSpaceStart;
 
-            long MapRegionStart = Context.Process.MemoryManager.AliasRegionStart;
-            long MapRegionEnd   = Context.Process.MemoryManager.AliasRegionEnd;
+            ulong HeapRegionStart = Context.Process.MemoryManager.HeapRegionStart;
+            ulong HeapRegionEnd   = Context.Process.MemoryManager.HeapRegionEnd;
+
+            ulong MapRegionStart = Context.Process.MemoryManager.AliasRegionStart;
+            ulong MapRegionEnd   = Context.Process.MemoryManager.AliasRegionEnd;
 
             while (true)
             {
@@ -309,7 +312,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             return MakeError(ErrorModule.Loader, LoaderErr.BadNrrAddress);
         }
 
-        private long RemoveNroInfo(ServiceCtx Context, long NroMappedAddress, long NroHeapAddress)
+        private long RemoveNroInfo(ServiceCtx Context, ulong NroMappedAddress, ulong NroHeapAddress)
         {
             foreach (NroInfo Info in NroInfos)
             {
@@ -319,11 +322,17 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
                     //Context.Process.RemoveProgram(Info.NroMappedAddress);
 
-                    KernelResult Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(Info.NroMappedAddress, Info.Executable.SourceAddress, Info.TotalSize - Info.Executable.BssSize);
+                    KernelResult Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(
+                        Info.NroMappedAddress,
+                        Info.Executable.SourceAddress,
+                        Info.TotalSize - (ulong)Info.Executable.BssSize);
 
                     if (Result == KernelResult.Success && Info.Executable.BssSize != 0)
                     {
-                        Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(Info.NroMappedAddress + Info.TotalSize - Info.Executable.BssSize, Info.Executable.BssAddress, Info.Executable.BssSize);
+                        Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(
+                            Info.NroMappedAddress + Info.TotalSize - (ulong)Info.Executable.BssSize,
+                            Info.Executable.BssAddress,
+                            (ulong)Info.Executable.BssSize);
                     }
 
                     return (long)Result;
@@ -341,12 +350,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             // Zero
             Context.RequestData.ReadUInt64();
 
-            long NroHeapAddress = Context.RequestData.ReadInt64();
-            long NroSize        = Context.RequestData.ReadInt64();
-            long BssHeapAddress = Context.RequestData.ReadInt64();
-            long BssSize        = Context.RequestData.ReadInt64();
+            ulong NroHeapAddress = Context.RequestData.ReadUInt64();
+            ulong NroSize        = Context.RequestData.ReadUInt64();
+            ulong BssHeapAddress = Context.RequestData.ReadUInt64();
+            ulong BssSize        = Context.RequestData.ReadUInt64();
 
-            long NroMappedAddress = 0;
+            ulong NroMappedAddress = 0;
 
             if (IsInitialized)
             {
@@ -375,8 +384,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
         {
             long Result = MakeError(ErrorModule.Loader, LoaderErr.BadInitialization);
 
-            long NroMappedAddress = Context.RequestData.ReadInt64();
-            long NroHeapAddress   = Context.RequestData.ReadInt64();
+            ulong NroMappedAddress = Context.RequestData.ReadUInt64();
+            ulong NroHeapAddress   = Context.RequestData.ReadUInt64();
 
             if (IsInitialized)
             {

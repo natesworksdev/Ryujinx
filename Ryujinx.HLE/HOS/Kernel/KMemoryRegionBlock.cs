@@ -4,13 +4,13 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         public long[][] Masks;
 
-        public long FreeCount;
-        public int  MaxLevel;
-        public long StartAligned;
-        public long SizeInBlocksTruncated;
-        public long SizeInBlocksRounded;
-        public int  Order;
-        public int  NextOrder;
+        public ulong FreeCount;
+        public int   MaxLevel;
+        public ulong StartAligned;
+        public ulong SizeInBlocksTruncated;
+        public ulong SizeInBlocksRounded;
+        public int   Order;
+        public int   NextOrder;
 
         public bool TryCoalesce(int Index, int Size)
         {
@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
             }
 
-            FreeCount -= Size;
+            FreeCount -= (ulong)Size;
 
             return true;
         }

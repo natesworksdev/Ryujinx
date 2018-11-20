@@ -6,15 +6,15 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         private static readonly int[] BlockOrders = new int[] { 12, 16, 21, 22, 25, 29, 30 };
 
-        public long Address { get; private set; }
-        public long EndAddr { get; private set; }
-        public long Size    { get; private set; }
+        public ulong Address { get; private set; }
+        public ulong EndAddr { get; private set; }
+        public ulong Size    { get; private set; }
 
         private int BlockOrdersCount;
 
         private KMemoryRegionBlock[] Blocks;
 
-        public KMemoryRegionManager(long Address, long Size, long EndAddr)
+        public KMemoryRegionManager(ulong Address, ulong Size, ulong EndAddr)
         {
             Blocks = new KMemoryRegionBlock[BlockOrders.Length];
 
@@ -42,18 +42,18 @@ namespace Ryujinx.HLE.HOS.Kernel
                     NextBlockSize = 1 << NextOrder;
                 }
 
-                long StartAligned   = BitUtils.AlignDown(Address, NextBlockSize);
-                long EndAddrAligned = BitUtils.AlignDown(EndAddr, CurrBlockSize);
+                ulong StartAligned   = BitUtils.AlignDown(Address, NextBlockSize);
+                ulong EndAddrAligned = BitUtils.AlignDown(EndAddr, CurrBlockSize);
 
-                ulong SizeInBlocksTruncated = (ulong)(EndAddrAligned - StartAligned) >> BlockOrders[BlockIndex];
+                ulong SizeInBlocksTruncated = (EndAddrAligned - StartAligned) >> BlockOrders[BlockIndex];
 
-                long EndAddrRounded = BitUtils.AlignUp(Address + Size, NextBlockSize);
+                ulong EndAddrRounded = BitUtils.AlignUp(Address + Size, NextBlockSize);
 
-                ulong SizeInBlocksRounded = (ulong)(EndAddrRounded - StartAligned) >> BlockOrders[BlockIndex];
+                ulong SizeInBlocksRounded = (EndAddrRounded - StartAligned) >> BlockOrders[BlockIndex];
 
                 Blocks[BlockIndex].StartAligned          = StartAligned;
-                Blocks[BlockIndex].SizeInBlocksTruncated = (long)SizeInBlocksTruncated;
-                Blocks[BlockIndex].SizeInBlocksRounded   = (long)SizeInBlocksRounded;
+                Blocks[BlockIndex].SizeInBlocksTruncated = SizeInBlocksTruncated;
+                Blocks[BlockIndex].SizeInBlocksRounded   = SizeInBlocksRounded;
 
                 ulong CurrSizeInBlocks = SizeInBlocksRounded;
 
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        public KernelResult AllocatePages(long PagesCount, bool Backwards, out KPageList PageList)
+        public KernelResult AllocatePages(ulong PagesCount, bool Backwards, out KPageList PageList)
         {
             lock (Blocks)
             {
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private KernelResult AllocatePagesImpl(long PagesCount, bool Backwards, out KPageList PageList)
+        private KernelResult AllocatePagesImpl(ulong PagesCount, bool Backwards, out KPageList PageList)
         {
             Backwards = false;
 
@@ -109,10 +109,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     ulong BlockPagesCount = (1UL << Block.Order) / KMemoryManager.PageSize;
 
-                    AvailablePages += BlockPagesCount * (ulong)Block.FreeCount;
+                    AvailablePages += BlockPagesCount * Block.FreeCount;
                 }
 
-                if (AvailablePages < (ulong)PagesCount)
+                if (AvailablePages < PagesCount)
                 {
                     return KernelResult.OutOfMemory;
                 }
@@ -126,15 +126,15 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 KMemoryRegionBlock Block = Blocks[BlockIndex];
 
-                int BestFitBlockSize = 1 << Block.Order;
+                ulong BestFitBlockSize = 1UL << Block.Order;
 
-                int BlockPagesCount = BestFitBlockSize / KMemoryManager.PageSize;
+                ulong BlockPagesCount = BestFitBlockSize / KMemoryManager.PageSize;
 
                 //Check if this is the best fit for this page size.
                 //If so, try allocating as much requested pages as possible.
-                while ((ulong)BlockPagesCount <= (ulong)PagesCount)
+                while (BlockPagesCount <= PagesCount)
                 {
-                    long Address = 0;
+                    ulong Address = 0;
 
                     for (int CurrBlockIndex = BlockIndex;
                              CurrBlockIndex < BlockOrdersCount && Address == 0;
@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                             }
                         }
 
-                        if ((ulong)Block.SizeInBlocksTruncated <= (ulong)Index || ZeroMask)
+                        if (Block.SizeInBlocksTruncated <= (ulong)Index || ZeroMask)
                         {
                             continue;
                         }
@@ -186,7 +186,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                             }
                         }
 
-                        Address = Block.StartAligned + ((long)Index << Block.Order);
+                        Address = Block.StartAligned + ((ulong)Index << Block.Order);
                     }
 
                     for (int CurrBlockIndex = BlockIndex;
@@ -220,7 +220,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                             }
                         }
 
-                        if ((ulong)Block.SizeInBlocksTruncated <= (ulong)Index || ZeroMask)
+                        if (Block.SizeInBlocksTruncated <= (ulong)Index || ZeroMask)
                         {
                             continue;
                         }
@@ -239,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                             }
                         }
 
-                        Address = Block.StartAligned + ((long)Index << Block.Order);
+                        Address = Block.StartAligned + ((ulong)Index << Block.Order);
                     }
 
                     //The address being zero means that no free space was found on that order,
@@ -251,7 +251,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     //If we are using a larger order than best fit, then we should
                     //split it into smaller blocks.
-                    int FirstFreeBlockSize = 1 << Block.Order;
+                    ulong FirstFreeBlockSize = 1UL << Block.Order;
 
                     if (FirstFreeBlockSize > BestFitBlockSize)
                     {
@@ -304,32 +304,31 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private void FreePages(long Address, long PagesCount)
+        private void FreePages(ulong Address, ulong PagesCount)
         {
-            long EndAddr = Address + PagesCount * KMemoryManager.PageSize;
+            ulong EndAddr = Address + PagesCount * KMemoryManager.PageSize;
 
             int BlockIndex = BlockOrdersCount - 1;
 
-            long AddressRounded   = 0;
-            long EndAddrTruncated = 0;
+            ulong AddressRounded   = 0;
+            ulong EndAddrTruncated = 0;
 
             for (; BlockIndex >= 0; BlockIndex--)
             {
                 KMemoryRegionBlock AllocInfo = Blocks[BlockIndex];
 
-                long BlockSize = 1L << AllocInfo.Order;
+                int BlockSize = 1 << AllocInfo.Order;
 
-                AddressRounded = (Address + BlockSize - 1) & -BlockSize;
+                AddressRounded   = BitUtils.AlignUp  (Address, BlockSize);
+                EndAddrTruncated = BitUtils.AlignDown(EndAddr, BlockSize);
 
-                EndAddrTruncated = EndAddr & -BlockSize;
-
-                if ((ulong)AddressRounded < (ulong)EndAddrTruncated)
+                if (AddressRounded < EndAddrTruncated)
                 {
                     break;
                 }
             }
 
-            void FreeRegion(long CurrAddress)
+            void FreeRegion(ulong CurrAddress)
             {
                 for (int CurrBlockIndex = BlockIndex;
                          CurrBlockIndex < BlockOrdersCount && CurrAddress != 0;
@@ -339,7 +338,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     Block.FreeCount++;
 
-                    ulong FreedBlocks = (ulong)(CurrAddress - Block.StartAligned) >> Block.Order;
+                    ulong FreedBlocks = (CurrAddress - Block.StartAligned) >> Block.Order;
 
                     int Index = (int)FreedBlocks;
 
@@ -357,23 +356,23 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     int BlockSizeDelta = 1 << (Block.NextOrder - Block.Order);
 
-                    int FreedBlocksTruncated = (int)FreedBlocks & -BlockSizeDelta;
+                    int FreedBlocksTruncated = BitUtils.AlignDown((int)FreedBlocks, BlockSizeDelta);
 
                     if (!Block.TryCoalesce(FreedBlocksTruncated, BlockSizeDelta))
                     {
                         break;
                     }
 
-                    CurrAddress = Block.StartAligned + ((long)FreedBlocksTruncated << Block.Order);
+                    CurrAddress = Block.StartAligned + ((ulong)FreedBlocksTruncated << Block.Order);
                 }
             }
 
             //Free inside aligned region.
-            long BaseAddress = AddressRounded;
+            ulong BaseAddress = AddressRounded;
 
-            while ((ulong)BaseAddress < (ulong)EndAddrTruncated)
+            while (BaseAddress < EndAddrTruncated)
             {
-                long BlockSize = 1L << Blocks[BlockIndex].Order;
+                ulong BlockSize = 1UL << Blocks[BlockIndex].Order;
 
                 FreeRegion(BaseAddress);
 
@@ -387,9 +386,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             for (BlockIndex = NextBlockIndex; BlockIndex >= 0; BlockIndex--)
             {
-                long BlockSize = 1L << Blocks[BlockIndex].Order;
+                ulong BlockSize = 1UL << Blocks[BlockIndex].Order;
 
-                while ((ulong)(BaseAddress - BlockSize) >= (ulong)Address)
+                while (BaseAddress - BlockSize >= Address)
                 {
                     BaseAddress -= BlockSize;
 
@@ -402,9 +401,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             for (BlockIndex = NextBlockIndex; BlockIndex >= 0; BlockIndex--)
             {
-                long BlockSize = 1L << Blocks[BlockIndex].Order;
+                ulong BlockSize = 1UL << Blocks[BlockIndex].Order;
 
-                while ((ulong)(BaseAddress + BlockSize) <= (ulong)EndAddr)
+                while (BaseAddress + BlockSize <= EndAddr)
                 {
                     FreeRegion(BaseAddress);
 

@@ -20,13 +20,13 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            KernelResult Result = Process.MemoryManager.SetHeapSize((long)Size, out long Position);
+            KernelResult Result = Process.MemoryManager.SetHeapSize(Size, out ulong Position);
 
             ThreadState.X0 = (ulong)Result;
 
             if (Result == KernelResult.Success)
             {
-                ThreadState.X1 = (ulong)Position;
+                ThreadState.X1 = Position;
             }
             else
             {
@@ -36,8 +36,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcSetMemoryAttribute(CpuThreadState ThreadState)
         {
-            long Position = (long)ThreadState.X0;
-            long Size     = (long)ThreadState.X1;
+            ulong Position = ThreadState.X0;
+            ulong Size     = ThreadState.X1;
 
             if (!PageAligned(Position))
             {
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
             else
             {
-                Memory.StopObservingRegion(Position, Size);
+                Memory.StopObservingRegion((long)Position, (long)Size);
             }
 
             ThreadState.X0 = (ulong)Result;
@@ -92,9 +92,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcMapMemory(CpuThreadState ThreadState)
         {
-            long Dst  = (long)ThreadState.X0;
-            long Src  = (long)ThreadState.X1;
-            long Size = (long)ThreadState.X2;
+            ulong Dst  = ThreadState.X0;
+            ulong Src  = ThreadState.X1;
+            ulong Size = ThreadState.X2;
 
             if (!PageAligned(Src | Dst))
             {
@@ -114,7 +114,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Src + Size) <= (ulong)Src || (ulong)(Dst + Size) <= (ulong)Dst)
+            if (Src + Size <= Src || Dst + Size <= Dst)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
 
@@ -123,7 +123,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Src, Size))
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            if (!CurrentProcess.MemoryManager.InsideAddrSpace(Src, Size))
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
 
@@ -132,7 +134,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (!InsideNewMapRegion(Dst, Size))
+            if (CurrentProcess.MemoryManager.OutsideStackRegion(Dst, Size) ||
+                CurrentProcess.MemoryManager.InsideHeapRegion  (Dst, Size) ||
+                CurrentProcess.MemoryManager.InsideAliasRegion (Dst, Size))
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
 
@@ -153,9 +157,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcUnmapMemory(CpuThreadState ThreadState)
         {
-            long Dst  = (long)ThreadState.X0;
-            long Src  = (long)ThreadState.X1;
-            long Size = (long)ThreadState.X2;
+            ulong Dst  = ThreadState.X0;
+            ulong Src  = ThreadState.X1;
+            ulong Size = ThreadState.X2;
 
             if (!PageAligned(Src | Dst))
             {
@@ -175,7 +179,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Src + Size) <= (ulong)Src || (ulong)(Dst + Size) <= (ulong)Dst)
+            if (Src + Size <= Src || Dst + Size <= Dst)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
 
@@ -184,7 +188,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Src, Size))
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            if (!CurrentProcess.MemoryManager.InsideAddrSpace(Src, Size))
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Src address 0x{Src:x16} out of range!");
 
@@ -193,7 +199,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (!InsideNewMapRegion(Dst, Size))
+            if (CurrentProcess.MemoryManager.OutsideStackRegion(Dst, Size) ||
+                CurrentProcess.MemoryManager.InsideHeapRegion  (Dst, Size) ||
+                CurrentProcess.MemoryManager.InsideAliasRegion (Dst, Size))
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{Dst:x16} out of range!");
 
@@ -214,19 +222,19 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcQueryMemory(CpuThreadState ThreadState)
         {
-            long InfoPtr  = (long)ThreadState.X0;
-            long Position = (long)ThreadState.X2;
+            long  InfoPtr  = (long)ThreadState.X0;
+            ulong Position =       ThreadState.X2;
 
             KMemoryInfo BlkInfo = Process.MemoryManager.QueryMemory(Position);
 
-            Memory.WriteInt64(InfoPtr + 0x00, BlkInfo.Address);
-            Memory.WriteInt64(InfoPtr + 0x08, BlkInfo.Size);
-            Memory.WriteInt32(InfoPtr + 0x10, (int)BlkInfo.State & 0xff);
-            Memory.WriteInt32(InfoPtr + 0x14, (int)BlkInfo.Attribute);
-            Memory.WriteInt32(InfoPtr + 0x18, (int)BlkInfo.Permission);
-            Memory.WriteInt32(InfoPtr + 0x1c, BlkInfo.IpcRefCount);
-            Memory.WriteInt32(InfoPtr + 0x20, BlkInfo.DeviceRefCount);
-            Memory.WriteInt32(InfoPtr + 0x24, 0);
+            Memory.WriteUInt64(InfoPtr + 0x00, BlkInfo.Address);
+            Memory.WriteUInt64(InfoPtr + 0x08, BlkInfo.Size);
+            Memory.WriteInt32 (InfoPtr + 0x10, (int)BlkInfo.State & 0xff);
+            Memory.WriteInt32 (InfoPtr + 0x14, (int)BlkInfo.Attribute);
+            Memory.WriteInt32 (InfoPtr + 0x18, (int)BlkInfo.Permission);
+            Memory.WriteInt32 (InfoPtr + 0x1c, BlkInfo.IpcRefCount);
+            Memory.WriteInt32 (InfoPtr + 0x20, BlkInfo.DeviceRefCount);
+            Memory.WriteInt32 (InfoPtr + 0x24, 0);
 
             ThreadState.X0 = 0;
             ThreadState.X1 = 0;
@@ -234,9 +242,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcMapSharedMemory(CpuThreadState ThreadState)
         {
-            int  Handle  =  (int)ThreadState.X0;
-            long Address = (long)ThreadState.X1;
-            long Size    = (long)ThreadState.X2;
+            int   Handle  =  (int)ThreadState.X0;
+            ulong Address =       ThreadState.X1;
+            ulong Size    =       ThreadState.X2;
 
             if (!PageAligned(Address))
             {
@@ -289,7 +297,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Address, Size) || InsideMapRegion(Address, Size) || InsideHeapRegion(Address, Size))
+            if (CurrentProcess.MemoryManager.IsInvalidRegion  (Address, Size) ||
+                CurrentProcess.MemoryManager.InsideHeapRegion (Address, Size) ||
+                CurrentProcess.MemoryManager.InsideAliasRegion(Address, Size))
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Address:x16} out of range!");
 
@@ -315,13 +325,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcUnmapSharedMemory(CpuThreadState ThreadState)
         {
-            int  Handle   =  (int)ThreadState.X0;
-            long Position = (long)ThreadState.X1;
-            long Size     = (long)ThreadState.X2;
+            int   Handle  =  (int)ThreadState.X0;
+            ulong Address =       ThreadState.X1;
+            ulong Size    =       ThreadState.X2;
 
-            if (!PageAligned(Position))
+            if (!PageAligned(Address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Address:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -337,9 +347,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Position + Size) <= (ulong)Position)
+            if ((ulong)(Address + Size) <= (ulong)Address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -359,9 +369,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if (!InsideAddrSpace(Position, Size) || InsideMapRegion(Position, Size) || InsideHeapRegion(Position, Size))
+            if (CurrentProcess.MemoryManager.IsInvalidRegion  (Address, Size) ||
+                CurrentProcess.MemoryManager.InsideHeapRegion (Address, Size) ||
+                CurrentProcess.MemoryManager.InsideAliasRegion(Address, Size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} out of range!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Address:x16} out of range!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -370,7 +382,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             KernelResult Result = SharedMemory.UnmapFromProcess(
                 CurrentProcess.MemoryManager,
-                Position,
+                Address,
                 Size,
                 CurrentProcess);
 
@@ -384,12 +396,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcCreateTransferMemory(CpuThreadState ThreadState)
         {
-            long Position = (long)ThreadState.X1;
-            long Size     = (long)ThreadState.X2;
+            ulong Address = ThreadState.X1;
+            ulong Size    = ThreadState.X2;
 
-            if (!PageAligned(Position))
+            if (!PageAligned(Address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Address:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -405,9 +417,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Position + Size) <= (ulong)Position)
+            if ((ulong)(Address + Size) <= (ulong)Address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
@@ -425,9 +437,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            Process.MemoryManager.ReserveTransferMemory(Position, Size, Permission);
+            Process.MemoryManager.ReserveTransferMemory(Address, Size, Permission);
 
-            KTransferMemory TransferMemory = new KTransferMemory(Position, Size);
+            KTransferMemory TransferMemory = new KTransferMemory(Address, Size);
 
             KernelResult Result = Process.HandleTable.GenerateHandle(TransferMemory, out int Handle);
 
@@ -437,12 +449,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcMapPhysicalMemory(CpuThreadState ThreadState)
         {
-            long Position = (long)ThreadState.X0;
-            long Size     = (long)ThreadState.X1;
+            ulong Address = ThreadState.X0;
+            ulong Size    = ThreadState.X1;
 
-            if (!PageAligned(Position))
+            if (!PageAligned(Address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Address:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -458,25 +470,37 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Position + Size) <= (ulong)Position)
+            if (Address + Size <= Address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            if (!InsideAddrSpace(Position, Size))
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            if ((CurrentProcess.PersonalMmHeapPagesCount & 0xfffffffffffff) == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address {Position:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"System resource size is zero.");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+
+                return;
+            }
+
+            if (!CurrentProcess.MemoryManager.InsideAddrSpace   (Address, Size) ||
+                 CurrentProcess.MemoryManager.OutsideAliasRegion(Address, Size))
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address {Address:x16}.");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            KernelResult Result = Process.MemoryManager.MapPhysicalMemory(Position, Size);
+            KernelResult Result = Process.MemoryManager.MapPhysicalMemory(Address, Size);
 
             if (Result != KernelResult.Success)
             {
@@ -488,12 +512,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private void SvcUnmapPhysicalMemory(CpuThreadState ThreadState)
         {
-            long Position = (long)ThreadState.X0;
-            long Size     = (long)ThreadState.X1;
+            ulong Address = ThreadState.X0;
+            ulong Size    = ThreadState.X1;
 
-            if (!PageAligned(Position))
+            if (!PageAligned(Address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Position:x16} is not page aligned!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{Address:x16} is not page aligned!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
 
@@ -509,25 +533,37 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Position + Size) <= (ulong)Position)
+            if ((ulong)(Address + Size) <= (ulong)Address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Position:x16} / size 0x{Size:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            if (!InsideAddrSpace(Position, Size))
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            if ((CurrentProcess.PersonalMmHeapPagesCount & 0xfffffffffffff) == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address {Position:x16}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"System resource size is zero.");
+
+                ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+
+                return;
+            }
+
+            if (!CurrentProcess.MemoryManager.InsideAddrSpace   (Address, Size) ||
+                 CurrentProcess.MemoryManager.OutsideAliasRegion(Address, Size))
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address {Address:x16}.");
 
                 ThreadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
 
                 return;
             }
 
-            KernelResult Result = Process.MemoryManager.UnmapPhysicalMemory(Position, Size);
+            KernelResult Result = Process.MemoryManager.UnmapPhysicalMemory(Address, Size);
 
             if (Result != KernelResult.Success)
             {
@@ -537,45 +573,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             ThreadState.X0 = (ulong)Result;
         }
 
-        private static bool PageAligned(long Position)
+        private static bool PageAligned(ulong Position)
         {
             return (Position & (KMemoryManager.PageSize - 1)) == 0;
-        }
-
-        private bool InsideAddrSpace(long Position, long Size)
-        {
-            ulong Start = (ulong)Position;
-            ulong End   = (ulong)Size + Start;
-
-            return Start >= (ulong)Process.MemoryManager.AddrSpaceStart &&
-                   End   <  (ulong)Process.MemoryManager.AddrSpaceEnd;
-        }
-
-        private bool InsideMapRegion(long Position, long Size)
-        {
-            ulong Start = (ulong)Position;
-            ulong End   = (ulong)Size + Start;
-
-            return Start >= (ulong)Process.MemoryManager.AliasRegionStart &&
-                   End   <  (ulong)Process.MemoryManager.AliasRegionEnd;
-        }
-
-        private bool InsideHeapRegion(long Position, long Size)
-        {
-            ulong Start = (ulong)Position;
-            ulong End   = (ulong)Size + Start;
-
-            return Start >= (ulong)Process.MemoryManager.HeapRegionStart &&
-                   End   <  (ulong)Process.MemoryManager.HeapRegionEnd;
-        }
-
-        private bool InsideNewMapRegion(long Position, long Size)
-        {
-            ulong Start = (ulong)Position;
-            ulong End   = (ulong)Size + Start;
-
-            return Start >= (ulong)Process.MemoryManager.StackRegionStart &&
-                   End   <  (ulong)Process.MemoryManager.StackRegionEnd;
         }
     }
 }

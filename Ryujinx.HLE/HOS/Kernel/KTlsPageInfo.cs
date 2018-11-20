@@ -4,11 +4,11 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         public const int TlsEntrySize = 0x200;
 
-        public long PageAddr { get; private set; }
+        public ulong PageAddr { get; private set; }
 
         private bool[] IsSlotFree;
 
-        public KTlsPageInfo(long PageAddress)
+        public KTlsPageInfo(ulong PageAddress)
         {
             this.PageAddr = PageAddress;
 
@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        public bool TryGetFreePage(out long Address)
+        public bool TryGetFreePage(out ulong Address)
         {
             Address = PageAddr;
 
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             return AllFree;
         }
 
-        public void FreeTlsSlot(long Address)
+        public void FreeTlsSlot(ulong Address)
         {
             IsSlotFree[(Address - PageAddr) / TlsEntrySize] = true;
         }

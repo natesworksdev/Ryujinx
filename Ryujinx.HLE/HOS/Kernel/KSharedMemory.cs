@@ -25,12 +25,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KernelResult MapIntoProcess(
             KMemoryManager   MemoryManager,
-            long             Address,
-            long             Size,
+            ulong            Address,
+            ulong            Size,
             KProcess         Process,
             MemoryPermission Permission)
         {
-            long PagesCountRounded = BitUtils.DivRoundUp(Size, KMemoryManager.PageSize);
+            ulong PagesCountRounded = BitUtils.DivRoundUp(Size, KMemoryManager.PageSize);
 
             if (PageList.GetPagesCount() != PagesCountRounded)
             {
@@ -51,11 +51,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KernelResult UnmapFromProcess(
             KMemoryManager   MemoryManager,
-            long             Address,
-            long             Size,
+            ulong            Address,
+            ulong            Size,
             KProcess         Process)
         {
-            long PagesCountRounded = BitUtils.DivRoundUp(Size, KMemoryManager.PageSize);
+            ulong PagesCountRounded = BitUtils.DivRoundUp(Size, KMemoryManager.PageSize);
 
             if (PageList.GetPagesCount() != PagesCountRounded)
             {

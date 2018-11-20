@@ -4,11 +4,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KSlabHeap
     {
-        private LinkedList<long> Items;
+        private LinkedList<ulong> Items;
 
-        public KSlabHeap(long Pa, long ItemSize, long Size)
+        public KSlabHeap(ulong Pa, ulong ItemSize, ulong Size)
         {
-            Items = new LinkedList<long>();
+            Items = new LinkedList<ulong>();
 
             int ItemsCount = (int)(Size / ItemSize);
 
@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        public bool TryGetItem(out long Pa)
+        public bool TryGetItem(out ulong Pa)
         {
             lock (Items)
             {
@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             return false;
         }
 
-        public void Free(long Pa)
+        public void Free(ulong Pa)
         {
             lock (Items)
             {
