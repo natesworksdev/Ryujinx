@@ -264,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Address + Size) <= (ulong)Address)
+            if (Address + Size <= Address)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 
@@ -347,7 +347,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Address + Size) <= (ulong)Address)
+            if (Address + Size <= Address)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 
@@ -417,7 +417,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Address + Size) <= (ulong)Address)
+            if (Address + Size <= Address)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 
@@ -533,7 +533,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            if ((ulong)(Address + Size) <= (ulong)Address)
+            if (Address + Size <= Address)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{Address:x16} / size 0x{Size:x16}!");
 

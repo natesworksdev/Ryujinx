@@ -1,4 +1,6 @@
-﻿using Ryujinx.HLE.HOS.Ipc;
+﻿using ChocolArm64.Memory;
+using Ryujinx.Common;
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
@@ -63,16 +65,31 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
     class NroInfo
     {
-        public NxRelocatableObject    Executable       { get; private set; }
+        public NxRelocatableObject Executable { get; private set; }
+
         public byte[] Hash             { get; private set; }
         public ulong  NroAddress       { get; private set; }
+        public ulong  NroSize          { get; private set; }
+        public ulong  BssAddress       { get; private set; }
+        public ulong  BssSize          { get; private set; }
         public ulong  TotalSize        { get; private set; }
         public ulong  NroMappedAddress { get; set; }
 
-        public NroInfo(NxRelocatableObject Executable, byte[] Hash, ulong TotalSize)
+        public NroInfo(
+            NxRelocatableObject Executable,
+            byte[]              Hash,
+            ulong               NroAddress,
+            ulong               NroSize,
+            ulong               BssAddress,
+            ulong               BssSize,
+            ulong               TotalSize)
         {
             this.Executable = Executable;
             this.Hash       = Hash;
+            this.NroAddress = NroAddress;
+            this.NroSize    = NroSize;
+            this.BssAddress = BssAddress;
+            this.BssSize    = BssSize;
             this.TotalSize  = TotalSize;
         }
     }
@@ -175,7 +192,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             return false;
         }
 
-        public long ParseNro(out NroInfo Res, ServiceCtx Context, ulong NroHeapAddress, ulong NroSize, ulong BssHeapAddress, ulong BssSize)
+        public long ParseNro(out NroInfo Res, ServiceCtx Context, ulong NroAddress, ulong NroSize, ulong BssAddress, ulong BssSize)
         {
             Res = null;
 
@@ -183,28 +200,28 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.MaxNro);
             }
-            else if (NroSize == 0 || NroHeapAddress + NroSize <= NroHeapAddress || (NroSize & 0xFFF) != 0)
+            else if (NroSize == 0 || NroAddress + NroSize <= NroAddress || (NroSize & 0xFFF) != 0)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.BadSize);
             }
-            else if (BssSize != 0 && (BssHeapAddress + BssSize) <= BssHeapAddress)
+            else if (BssSize != 0 && (BssAddress + BssSize) <= BssAddress)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.BadSize);
             }
-            else if ((NroHeapAddress & 0xFFF) != 0)
+            else if ((NroAddress & 0xFFF) != 0)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.UnalignedAddress);
             }
 
-            uint Magic       = Context.Memory.ReadUInt32((long)NroHeapAddress + 0x10);
-            uint NroFileSize = Context.Memory.ReadUInt32((long)NroHeapAddress + 0x18);
+            uint Magic       = Context.Memory.ReadUInt32((long)NroAddress + 0x10);
+            uint NroFileSize = Context.Memory.ReadUInt32((long)NroAddress + 0x18);
 
             if (Magic != NroMagic || NroSize != NroFileSize)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.InvalidNro);
             }
 
-            byte[] NroData = Context.Memory.ReadBytes((long)NroHeapAddress, (long)NroSize);
+            byte[] NroData = Context.Memory.ReadBytes((long)NroAddress, (long)NroSize);
             byte[] NroHash = null;
 
             MemoryStream Stream = new MemoryStream(NroData);
@@ -226,7 +243,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
             Stream.Position = 0;
 
-            NxRelocatableObject Executable = new NxRelocatableObject(Stream, NroHeapAddress, BssHeapAddress);
+            NxRelocatableObject Executable = new NxRelocatableObject(Stream, NroAddress, BssAddress);
 
             // check if everything is page align.
             if ((Executable.Text.Length & 0xFFF) != 0 || (Executable.RO.Length & 0xFFF) != 0 ||
@@ -251,7 +268,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
             int TotalSize = Executable.Text.Length + Executable.RO.Length + Executable.Data.Length + Executable.BssSize;
 
-            Res = new NroInfo(Executable, NroHash, (ulong)TotalSize);
+            Res = new NroInfo(
+                Executable,
+                NroHash,
+                NroAddress,
+                NroSize,
+                BssAddress,
+                BssSize,
+                (ulong)TotalSize);
 
             return 0;
         }
@@ -260,41 +284,98 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
         {
             NroMappedAddress = 0;
 
-            ulong TargetAddress = Context.Process.MemoryManager.AddrSpaceStart;
+            KMemoryManager MemMgr = Context.Process.MemoryManager;
 
-            ulong HeapRegionStart = Context.Process.MemoryManager.HeapRegionStart;
-            ulong HeapRegionEnd   = Context.Process.MemoryManager.HeapRegionEnd;
-
-            ulong MapRegionStart = Context.Process.MemoryManager.AliasRegionStart;
-            ulong MapRegionEnd   = Context.Process.MemoryManager.AliasRegionEnd;
+            ulong TargetAddress = MemMgr.AddrSpaceStart;
 
             while (true)
             {
-                if (TargetAddress + Info.TotalSize >= Context.Process.MemoryManager.AddrSpaceEnd)
+                if (TargetAddress + Info.TotalSize >= MemMgr.AddrSpaceEnd)
                 {
                     return MakeError(ErrorModule.Loader, LoaderErr.InvalidMemoryState);
                 }
 
-                bool IsValidAddress = !(HeapRegionStart > 0 && HeapRegionStart <= TargetAddress + Info.TotalSize - 1
-                    && TargetAddress <= HeapRegionEnd - 1)
-                    && !(MapRegionStart > 0
-                    && MapRegionStart <= TargetAddress + Info.TotalSize - 1
-                    && TargetAddress <= MapRegionEnd - 1);
+                KMemoryInfo MemInfo = MemMgr.QueryMemory(TargetAddress);
 
-                if (IsValidAddress && Context.Process.MemoryManager.HleIsUnmapped(TargetAddress, Info.TotalSize))
+                if (MemInfo.State == MemoryState.Unmapped && MemInfo.Size >= Info.TotalSize)
                 {
-                    break;
+                    if (!MemMgr.InsideHeapRegion (TargetAddress, Info.TotalSize) &&
+                        !MemMgr.InsideAliasRegion(TargetAddress, Info.TotalSize))
+                    {
+                        break;
+                    }
                 }
 
-                TargetAddress += 0x1000;
+                TargetAddress += MemInfo.Size;
             }
 
-            //Context.Process.LoadProgram(Info.Executable, TargetAddress);
+            KernelResult Result = MemMgr.MapProcessCodeMemory(TargetAddress, Info.NroAddress, Info.NroSize);
+
+            if (Result != KernelResult.Success)
+            {
+                return MakeError(ErrorModule.Loader, LoaderErr.InvalidMemoryState);
+            }
+
+            ulong BssTargetAddress = TargetAddress + Info.NroSize;
+
+            Result = MemMgr.MapProcessCodeMemory(BssTargetAddress, Info.BssAddress, Info.BssSize);
+
+            if (Result != KernelResult.Success)
+            {
+                MemMgr.UnmapProcessCodeMemory(TargetAddress, Info.NroAddress, Info.NroSize);
+
+                return MakeError(ErrorModule.Loader, LoaderErr.InvalidMemoryState);
+            }
+
+            Result = LoadNroIntoMemory(Context.Process, Info.Executable, TargetAddress);
+
+            if (Result != KernelResult.Success)
+            {
+                MemMgr.UnmapProcessCodeMemory(TargetAddress,    Info.NroAddress, Info.NroSize);
+                MemMgr.UnmapProcessCodeMemory(BssTargetAddress, Info.BssAddress, Info.BssSize);
+
+                return 0;
+            }
 
             Info.NroMappedAddress = TargetAddress;
             NroMappedAddress      = TargetAddress;
 
             return 0;
+        }
+
+        private KernelResult LoadNroIntoMemory(KProcess Process, IExecutable RelocatableObject, ulong BaseAddress)
+        {
+            ulong TextStart = BaseAddress + (ulong)RelocatableObject.TextOffset;
+            ulong ROStart   = BaseAddress + (ulong)RelocatableObject.ROOffset;
+            ulong DataStart = BaseAddress + (ulong)RelocatableObject.DataOffset;
+
+            ulong BssStart = DataStart + (ulong)RelocatableObject.Data.Length;
+
+            ulong BssEnd = BitUtils.AlignUp(BssStart + (ulong)RelocatableObject.BssSize, KMemoryManager.PageSize);
+
+            Process.CpuMemory.WriteBytes((long)TextStart, RelocatableObject.Text);
+            Process.CpuMemory.WriteBytes((long)ROStart,   RelocatableObject.RO);
+            Process.CpuMemory.WriteBytes((long)DataStart, RelocatableObject.Data);
+
+            MemoryHelper.FillWithZeros(Process.CpuMemory, (long)BssStart, (int)(BssEnd - BssStart));
+
+            KernelResult Result;
+
+            Result = Process.MemoryManager.SetProcessMemoryPermission(TextStart, ROStart - TextStart, MemoryPermission.ReadAndExecute);
+
+            if (Result != KernelResult.Success)
+            {
+                return Result;
+            }
+
+            Result = Process.MemoryManager.SetProcessMemoryPermission(ROStart, DataStart - ROStart, MemoryPermission.Read);
+
+            if (Result != KernelResult.Success)
+            {
+                return Result;
+            }
+
+            return Process.MemoryManager.SetProcessMemoryPermission(DataStart, BssEnd - DataStart, MemoryPermission.ReadAndWrite);
         }
 
         private long RemoveNrrInfo(long NrrAddress)
@@ -319,8 +400,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
                 if (Info.NroMappedAddress == NroMappedAddress && Info.Executable.SourceAddress == NroHeapAddress)
                 {
                     NroInfos.Remove(Info);
-
-                    //Context.Process.RemoveProgram(Info.NroMappedAddress);
 
                     KernelResult Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(
                         Info.NroMappedAddress,

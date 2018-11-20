@@ -92,7 +92,7 @@ namespace Ryujinx.HLE.HOS
 
             if (Result != KernelResult.Success)
             {
-                Logger.PrintError(LogClass.Loader, $"Resource limit initialization returned error \"{Result}\".");
+                Logger.PrintError(LogClass.Loader, $"Process initialization failed setting resource limit values.");
 
                 return false;
             }
@@ -128,9 +128,18 @@ namespace Ryujinx.HLE.HOS
 
                 MemoryHelper.FillWithZeros(Process.CpuMemory, (long)BssStart, (int)(BssEnd - BssStart));
 
-                Process.MemoryManager.SetProcessMemoryPermission(TextStart, ROStart   - TextStart, MemoryPermission.ReadAndExecute);
-                Process.MemoryManager.SetProcessMemoryPermission(ROStart,   DataStart - ROStart,   MemoryPermission.Read);
-                Process.MemoryManager.SetProcessMemoryPermission(DataStart, BssEnd    - DataStart, MemoryPermission.ReadAndWrite);
+                KMemoryManager MemMgr = Process.MemoryManager;
+
+                Result  = MemMgr.SetProcessMemoryPermission(TextStart, ROStart   - TextStart, MemoryPermission.ReadAndExecute);
+                Result |= MemMgr.SetProcessMemoryPermission(ROStart,   DataStart - ROStart,   MemoryPermission.Read);
+                Result |= MemMgr.SetProcessMemoryPermission(DataStart, BssEnd    - DataStart, MemoryPermission.ReadAndWrite);
+
+                if (Result != KernelResult.Success)
+                {
+                    Logger.PrintError(LogClass.Loader, $"Process initialization failed setting memory permissions.");
+
+                    return false;
+                }
             }
 
             Result = Process.Start(MetaData.MainThreadPriority, (ulong)MetaData.MainThreadStackSize);

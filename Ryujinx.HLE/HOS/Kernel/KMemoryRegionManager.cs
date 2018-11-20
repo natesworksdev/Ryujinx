@@ -95,8 +95,6 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private KernelResult AllocatePagesImpl(ulong PagesCount, bool Backwards, out KPageList PageList)
         {
-            Backwards = false;
-
             PageList = new KPageList();
 
             if (BlockOrdersCount > 0)

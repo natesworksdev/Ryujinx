@@ -382,7 +382,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 KPageList CurrentPageList = new KPageList();
 
-                AddVaRangeToPageList(CurrentPageList, Address, Address + Size);
+                AddVaRangeToPageList(CurrentPageList, Address, PagesCount);
 
                 if (!CurrentPageList.IsEqual(PageList))
                 {
@@ -582,6 +582,62 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
 
                 return Result;
+            }
+        }
+
+        public KernelResult MapProcessCodeMemory(ulong Dst, ulong Src, ulong Size)
+        {
+            ulong PagesCount = Size / PageSize;
+
+            lock (Blocks)
+            {
+                bool Success = CheckRange(
+                    Src,
+                    Size,
+                    MemoryState.Mask,
+                    MemoryState.Heap,
+                    MemoryPermission.Mask,
+                    MemoryPermission.ReadAndWrite,
+                    MemoryAttribute.Mask,
+                    MemoryAttribute.None,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out MemoryState      State,
+                    out MemoryPermission Permission,
+                    out _);
+
+                Success &= IsUnmapped(Dst, Size);
+
+                if (Success)
+                {
+                    KPageList PageList = new KPageList();
+
+                    AddVaRangeToPageList(PageList, Src, PagesCount);
+
+                    KernelResult Result = MmuChangePermission(Src, PagesCount, MemoryPermission.None);
+
+                    if (Result != KernelResult.Success)
+                    {
+                        return Result;
+                    }
+
+                    Result = MapPages(Dst, PageList, MemoryPermission.None);
+
+                    if (Result != KernelResult.Success)
+                    {
+                        MmuChangePermission(Src, PagesCount, Permission);
+
+                        return Result;
+                    }
+
+                    InsertBlock(Src, PagesCount, State, MemoryPermission.None, MemoryAttribute.Borrowed);
+                    InsertBlock(Dst, PagesCount, MemoryState.ModCodeStatic);
+
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
+                }
             }
         }
 
@@ -844,7 +900,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     KPageList PageList = new KPageList();
 
-                    AddVaRangeToPageList(PageList, Src, Src + Size);
+                    AddVaRangeToPageList(PageList, Src, PagesCount);
 
                     KernelResult Result = MmuChangePermission(Src, PagesCount, MemoryPermission.None);
 
@@ -954,8 +1010,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                     KPageList SrcPageList = new KPageList();
                     KPageList DstPageList = new KPageList();
 
-                    AddVaRangeToPageList(SrcPageList, Src, Src + Size);
-                    AddVaRangeToPageList(DstPageList, Dst, Dst + Size);
+                    AddVaRangeToPageList(SrcPageList, Src, PagesCount);
+                    AddVaRangeToPageList(DstPageList, Dst, PagesCount);
 
                     if (!DstPageList.IsEqual(SrcPageList))
                     {
@@ -1220,7 +1276,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                         ulong BlockSize    = GetSizeInRange(Info, Address, EndAddr);
                         ulong BlockAddress = GetAddrInRange(Info, Address);
 
-                        AddVaRangeToPageList(PageList, BlockAddress, BlockAddress + BlockSize);
+                        AddVaRangeToPageList(PageList, BlockAddress, BlockSize / PageSize);
 
                         HeapMappedSize += BlockSize;
                     }
@@ -1380,11 +1436,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             return Info.Address;
         }
 
-        private void AddVaRangeToPageList(KPageList PageList, ulong Start, ulong End)
+        private void AddVaRangeToPageList(KPageList PageList, ulong Start, ulong PagesCount)
         {
-            while (Start < End)
+            ulong Address = Start;
+
+            while (Address < Start + PagesCount * PageSize)
             {
-                KernelResult Result = ConvertVaToPa(Start, out ulong Pa);
+                KernelResult Result = ConvertVaToPa(Address, out ulong Pa);
 
                 if (Result != KernelResult.Success)
                 {
@@ -1393,20 +1451,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 PageList.AddRange(Pa, 1);
 
-                Start += PageSize;
+                Address += PageSize;
             }
-        }
-
-        public bool HleIsUnmapped(ulong Address, ulong Size)
-        {
-            bool Result = false;
-
-            lock (Blocks)
-            {
-                Result = IsUnmapped(Address, Size);
-            }
-
-            return Result;
         }
 
         private bool IsUnmapped(ulong Address, ulong Size)
