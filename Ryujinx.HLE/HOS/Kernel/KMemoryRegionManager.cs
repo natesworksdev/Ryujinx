@@ -288,6 +288,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                 FreePages(PageNode.Address, PageNode.PagesCount);
             }
 
+            PageList = null;
+
             return KernelResult.OutOfMemory;
         }
 

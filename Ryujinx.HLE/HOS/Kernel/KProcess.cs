@@ -124,13 +124,18 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             ulong CodeSize = (ulong)CreationInfo.CodePagesCount * KMemoryManager.PageSize;
 
+            KMemoryBlockAllocator MemoryBlockAllocator = (MmuFlags & 0x40) != 0
+                ? System.MemoryBlockAllocatorSys
+                : System.MemoryBlockAllocator2;
+
             KernelResult Result = MemoryManager.InitializeForProcess(
                 AddrSpaceType,
                 AslrEnabled,
                 !AslrEnabled,
                 MemRegion,
                 CodeAddress,
-                CodeSize);
+                CodeSize,
+                MemoryBlockAllocator);
 
             if (Result != KernelResult.Success)
             {
@@ -205,9 +210,17 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             PersonalMmHeapPagesCount = (ulong)CreationInfo.PersonalMmHeapPagesCount;
 
+            KMemoryBlockAllocator MemoryBlockAllocator;
+
             if (PersonalMmHeapPagesCount != 0)
             {
-
+                MemoryBlockAllocator = new KMemoryBlockAllocator(PersonalMmHeapPagesCount * KMemoryManager.PageSize);
+            }
+            else
+            {
+                MemoryBlockAllocator = (MmuFlags & 0x40) != 0
+                    ? System.MemoryBlockAllocatorSys
+                    : System.MemoryBlockAllocator2;
             }
 
             AddressSpaceType AddrSpaceType = (AddressSpaceType)((CreationInfo.MmuFlags >> 1) & 7);
@@ -224,7 +237,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                 !AslrEnabled,
                 MemRegion,
                 CodeAddress,
-                CodeSize);
+                CodeSize,
+                MemoryBlockAllocator);
 
             if (Result != KernelResult.Success)
             {
@@ -314,8 +328,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return false;
             }
 
-            if (MemoryManager.InsideHeapRegion(Address, Size) ||
-                MemoryManager.InsideAliasRegion (Address, Size))
+            if (MemoryManager.InsideHeapRegion (Address, Size) ||
+                MemoryManager.InsideAliasRegion(Address, Size))
             {
                 return false;
             }
@@ -771,10 +785,14 @@ namespace Ryujinx.HLE.HOS.Kernel
         public void IncrementThreadCount()
         {
             Interlocked.Increment(ref ThreadCount);
+
+            System.ThreadCounter.AddCount();
         }
 
         public void DecrementThreadCountAndTerminateIfZero()
         {
+            System.ThreadCounter.Signal();
+
             if (Interlocked.Decrement(ref ThreadCount) == 0)
             {
                 Terminate();
@@ -801,8 +819,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public ulong GetMemoryUsage()
         {
-            //TODO: Personal Mm Heap.
-            return ImageSize + MainThreadStackSize + MemoryManager.GetTotalHeapSize();
+            return ImageSize + MainThreadStackSize + MemoryManager.GetTotalHeapSize() + GetPersonalMmHeapSize();
         }
 
         public ulong GetMemoryCapacityWithoutPersonalMmHeap()
@@ -895,7 +912,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (ShallTerminate)
             {
-                UnpauseAndTerminateAllThreadsExcept(System.Scheduler.GetCurrentThread());
+                //UnpauseAndTerminateAllThreadsExcept(System.Scheduler.GetCurrentThread());
 
                 HandleTable.Destroy();
 
@@ -953,6 +970,19 @@ namespace Ryujinx.HLE.HOS.Kernel
             System.CriticalSection.Leave();
 
             return Result;
+        }
+
+        public void StopAllThreads()
+        {
+            lock (ThreadingLock)
+            {
+                foreach (KThread Thread in Threads)
+                {
+                    Thread.Context.StopExecution();
+
+                    System.Scheduler.CoreManager.Set(Thread.Context.Work);
+                }
+            }
         }
 
         private void CpuTraceHandler(object sender, EventArgs e)

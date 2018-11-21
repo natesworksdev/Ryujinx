@@ -72,15 +72,15 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return;
             }
 
-            long Result = Process.MemoryManager.SetMemoryAttribute(
+            KernelResult Result = Process.MemoryManager.SetMemoryAttribute(
                 Position,
                 Size,
                 AttributeMask,
                 AttributeValue);
 
-            if (Result != 0)
+            if (Result != KernelResult.Success)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{Result:x}!");
+                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{Result}\".");
             }
             else
             {

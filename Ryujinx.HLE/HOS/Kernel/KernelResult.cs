@@ -7,6 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         ThreadTerminating  = 0x7601,
         InvalidSize        = 0xca01,
         InvalidAddress     = 0xcc01,
+        OutOfResource      = 0xce01,
         OutOfMemory        = 0xd001,
         HandleTableFull    = 0xd201,
         InvalidMemState    = 0xd401,

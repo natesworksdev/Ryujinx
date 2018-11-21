@@ -151,6 +151,8 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
+            System.Processes.AddLast(Process);
+
             return true;
         }
     }

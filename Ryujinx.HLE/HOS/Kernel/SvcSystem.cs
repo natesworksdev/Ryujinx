@@ -221,6 +221,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                     Message,
                     MessagePtr));
 
+                System.ThreadCounter.AddCount();
+
                 System.CriticalSection.Leave();
 
                 ThreadState.X0 = (ulong)CurrentThread.ObjSyncResult;
@@ -244,6 +246,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                 IpcMessage.Session,
                 IpcMessage.Message,
                 IpcMessage.MessagePtr);
+
+            System.ThreadCounter.Signal();
 
             IpcMessage.Thread.Reschedule(ThreadSchedState.Running);
         }

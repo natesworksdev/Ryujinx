@@ -3,15 +3,17 @@ using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
 
-using static Ryujinx.HLE.HOS.ErrorCode;
-
 namespace Ryujinx.HLE.HOS.Kernel
 {
     class KMemoryManager
     {
         public const int PageSize = 0x1000;
 
-        private const int KMemoryBlockSize = 0x40;
+        public const int KMemoryBlockSize = 0x40;
+
+        //We need 2 blocks for the case where a big block
+        //needs to be split in 2, plus one block that will be the new one inserted.
+        private const int MaxBlocksNeededForInsertion = 2;
 
         private LinkedList<KMemoryBlock> Blocks;
 
@@ -41,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private ulong HeapCapacity;
 
-        public ulong PersonalMmHeapUsage { get; private set; }
+        public ulong PhysicalMemoryUsage { get; private set; }
 
         private MemoryRegion MemRegion;
 
@@ -51,6 +53,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private bool IsKernel;
         private bool AslrEnabled;
+
+        private KMemoryBlockAllocator BlockAllocator;
 
         private int ContextId;
 
@@ -67,12 +71,13 @@ namespace Ryujinx.HLE.HOS.Kernel
         private static readonly int[] AddrSpaceSizes = new int[] { 32, 36, 32, 39 };
 
         public KernelResult InitializeForProcess(
-            AddressSpaceType AddrSpaceType,
-            bool             AslrEnabled,
-            bool             AslrDisabled,
-            MemoryRegion     MemRegion,
-            ulong            Address,
-            ulong            Size)
+            AddressSpaceType      AddrSpaceType,
+            bool                  AslrEnabled,
+            bool                  AslrDisabled,
+            MemoryRegion          MemRegion,
+            ulong                 Address,
+            ulong                 Size,
+            KMemoryBlockAllocator BlockAllocator)
         {
             if ((uint)AddrSpaceType > (uint)AddressSpaceType.Addr39Bits)
             {
@@ -92,7 +97,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                 AddrSpaceSize,
                 MemRegion,
                 Address,
-                Size);
+                Size,
+                BlockAllocator);
 
             if (Result != KernelResult.Success)
             {
@@ -111,14 +117,15 @@ namespace Ryujinx.HLE.HOS.Kernel
         }
 
         private KernelResult CreateUserAddressSpace(
-            AddressSpaceType AddrSpaceType,
-            bool             AslrEnabled,
-            bool             AslrDisabled,
-            ulong            AddrSpaceStart,
-            ulong            AddrSpaceEnd,
-            MemoryRegion     MemRegion,
-            ulong            Address,
-            ulong            Size)
+            AddressSpaceType      AddrSpaceType,
+            bool                  AslrEnabled,
+            bool                  AslrDisabled,
+            ulong                 AddrSpaceStart,
+            ulong                 AddrSpaceEnd,
+            MemoryRegion          MemRegion,
+            ulong                 Address,
+            ulong                 Size,
+            KMemoryBlockAllocator BlockAllocator)
         {
             ulong EndAddr = Address + Size;
 
@@ -211,8 +218,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             ulong AslrMaxOffset = MapAvailableSize - MapTotalSize;
 
+            this.AslrEnabled = AslrEnabled;
+
             this.AddrSpaceStart = AddrSpaceStart;
             this.AddrSpaceEnd   = AddrSpaceEnd;
+
+            this.BlockAllocator = BlockAllocator;
 
             if (MapAvailableSize < MapTotalSize)
             {
@@ -274,14 +285,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             CurrentHeapAddr     = HeapRegionStart;
             HeapCapacity        = 0;
-            PersonalMmHeapUsage = 0;
+            PhysicalMemoryUsage = 0;
 
             this.MemRegion    = MemRegion;
             this.AslrDisabled = AslrDisabled;
 
-            InitializeBlocks(AddrSpaceStart, AddrSpaceEnd);
-
-            return KernelResult.Success;
+            return InitializeBlocks(AddrSpaceStart, AddrSpaceEnd);
         }
 
         private ulong GetRandomValue(ulong Min, ulong Max)
@@ -313,11 +322,20 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private void InitializeBlocks(ulong AddrSpaceStart, ulong AddrSpaceEnd)
+        private KernelResult InitializeBlocks(ulong AddrSpaceStart, ulong AddrSpaceEnd)
         {
+            //First insertion will always need only a single block,
+            //because there's nothing else to split.
+            if (!BlockAllocator.CanAllocate(1))
+            {
+                return KernelResult.OutOfResource;
+            }
+
             ulong AddrSpacePagesCount = (AddrSpaceEnd - AddrSpaceStart) / PageSize;
 
             InsertBlock(AddrSpaceStart, AddrSpacePagesCount, MemoryState.Unmapped);
+
+            return KernelResult.Success;
         }
 
         public KernelResult MapPages(
@@ -340,6 +358,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                 if (!IsUnmapped(Address, PagesCount * PageSize))
                 {
                     return KernelResult.InvalidMemState;
+                }
+
+                if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                {
+                    return KernelResult.OutOfResource;
                 }
 
                 KernelResult Result = MapPages(Address, PageList, Permission);
@@ -403,6 +426,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                     out _,
                     out _))
                 {
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     KernelResult Result = MmuUnmap(Address, PagesCount);
 
                     if (Result == KernelResult.Success)
@@ -525,6 +553,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                     return KernelResult.OutOfMemory;
                 }
 
+                if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                {
+                    return KernelResult.OutOfResource;
+                }
+
                 MemoryOperation Operation = Map
                     ? MemoryOperation.MapPa
                     : MemoryOperation.Allocate;
@@ -568,6 +601,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                     return KernelResult.InvalidMemState;
                 }
 
+                if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                {
+                    return KernelResult.OutOfResource;
+                }
+
                 KernelResult Result = DoMmuOperation(
                     Address,
                     PagesCount,
@@ -609,6 +647,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 if (Success)
                 {
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion * 2))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     KPageList PageList = new KPageList();
 
                     AddVaRangeToPageList(PageList, Src, PagesCount);
@@ -684,6 +727,13 @@ namespace Ryujinx.HLE.HOS.Kernel
                         return Result;
                     }
 
+                    //TODO: Missing some checks here.
+
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion * 2))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     InsertBlock(Dst, PagesCount, MemoryState.Unmapped);
                     InsertBlock(Src, PagesCount, MemoryState.Heap, MemoryPermission.ReadAndWrite);
 
@@ -705,6 +755,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return KernelResult.OutOfMemory;
             }
 
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
             ulong CurrentHeapSize = GetHeapSize();
 
             if (CurrentHeapSize <= Size)
@@ -714,19 +766,49 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 lock (Blocks)
                 {
+                    if (CurrentProcess.ResourceLimit != null && DiffSize != 0 &&
+                       !CurrentProcess.ResourceLimit.Reserve(LimitableResource.Memory, DiffSize))
+                    {
+                        return KernelResult.ResLimitExceeded;
+                    }
+
                     ulong PagesCount = DiffSize / PageSize;
 
                     KMemoryRegionManager Region = GetMemoryRegionManager();
 
                     KernelResult Result = Region.AllocatePages(PagesCount, AslrDisabled, out KPageList PageList);
 
+                    void CleanUpForError()
+                    {
+                        if (PageList != null)
+                        {
+                            Region.FreePages(PageList);
+                        }
+
+                        if (CurrentProcess.ResourceLimit != null && DiffSize != 0)
+                        {
+                            CurrentProcess.ResourceLimit.Release(LimitableResource.Memory, DiffSize);
+                        }
+                    }
+
                     if (Result != KernelResult.Success)
                     {
+                        CleanUpForError();
+
                         return Result;
+                    }
+
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        CleanUpForError();
+
+                        return KernelResult.OutOfResource;
                     }
 
                     if (!IsUnmapped(CurrentHeapAddr, DiffSize))
                     {
+                        CleanUpForError();
+
                         return KernelResult.InvalidMemState;
                     }
 
@@ -739,6 +821,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     if (Result != KernelResult.Success)
                     {
+                        CleanUpForError();
+
                         return Result;
                     }
 
@@ -753,6 +837,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 lock (Blocks)
                 {
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     if (!CheckRange(
                         FreeAddr,
                         DiffSize,
@@ -779,6 +868,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                         return Result;
                     }
 
+                    CurrentProcess.ResourceLimit?.Release(LimitableResource.Memory, BitUtils.AlignDown(DiffSize, PageSize));
+
                     InsertBlock(FreeAddr, PagesCount, MemoryState.Unmapped);
                 }
             }
@@ -794,7 +885,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             lock (Blocks)
             {
-                return GetHeapSize() + PersonalMmHeapUsage;
+                return GetHeapSize() + PhysicalMemoryUsage;
             }
         }
 
@@ -813,7 +904,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             return KernelResult.Success;
         }
 
-        public long SetMemoryAttribute(
+        public KernelResult SetMemoryAttribute(
             ulong           Address,
             ulong           Size,
             MemoryAttribute AttributeMask,
@@ -835,6 +926,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                     out MemoryPermission Permission,
                     out MemoryAttribute  Attribute))
                 {
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     ulong PagesCount = Size / PageSize;
 
                     Attribute &= ~AttributeMask;
@@ -842,11 +938,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     InsertBlock(Address, PagesCount, State, Permission, Attribute);
 
-                    return 0;
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
                 }
             }
-
-            return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
         }
 
         public KMemoryInfo QueryMemory(ulong Address)
@@ -896,6 +994,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 if (Success)
                 {
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion * 2))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     ulong PagesCount = Size / PageSize;
 
                     KPageList PageList = new KPageList();
@@ -953,6 +1056,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                     out _,
                     out _))
                 {
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     KernelResult Result = MmuUnmap(Address, PagesCount);
 
                     if (Result == KernelResult.Success)
@@ -1005,6 +1113,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 if (Success)
                 {
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion * 2))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     ulong PagesCount = Size / PageSize;
 
                     KPageList SrcPageList = new KPageList();
@@ -1046,7 +1159,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        public long ReserveTransferMemory(ulong Address, ulong Size, MemoryPermission Permission)
+        public KernelResult ReserveTransferMemory(ulong Address, ulong Size, MemoryPermission Permission)
         {
             lock (Blocks)
             {
@@ -1064,20 +1177,29 @@ namespace Ryujinx.HLE.HOS.Kernel
                     out _,
                     out MemoryAttribute Attribute))
                 {
+                    //TODO: Missing checks.
+
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     ulong PagesCount = Size / PageSize;
 
                     Attribute |= MemoryAttribute.Borrowed;
 
                     InsertBlock(Address, PagesCount, State, Permission, Attribute);
 
-                    return 0;
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
                 }
             }
-
-            return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
         }
 
-        public long ResetTransferMemory(ulong Address, ulong Size)
+        public KernelResult ResetTransferMemory(ulong Address, ulong Size)
         {
             lock (Blocks)
             {
@@ -1095,15 +1217,22 @@ namespace Ryujinx.HLE.HOS.Kernel
                     out _,
                     out _))
                 {
+                    if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
                     ulong PagesCount = Size / PageSize;
 
                     InsertBlock(Address, PagesCount, State, MemoryPermission.ReadAndWrite);
 
-                    return 0;
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
                 }
             }
-
-            return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
         }
 
         public KernelResult SetProcessMemoryPermission(ulong Address, ulong Size, MemoryPermission Permission)
@@ -1146,6 +1275,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     if (NewState != OldState || Permission != OldPermission)
                     {
+                        if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                        {
+                            return KernelResult.OutOfResource;
+                        }
+
                         ulong PagesCount = Size / PageSize;
 
                         MemoryOperation Operation = (Permission & MemoryPermission.Execute) != 0
@@ -1217,16 +1351,33 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 KernelResult Result = Region.AllocatePages(RemainingPages, AslrDisabled, out KPageList PageList);
 
+                void CleanUpForError()
+                {
+                    if (PageList != null)
+                    {
+                        Region.FreePages(PageList);
+                    }
+
+                    CurrentProcess.ResourceLimit?.Release(LimitableResource.Memory, RemainingSize);
+                }
+
                 if (Result != KernelResult.Success)
                 {
-                    CurrentProcess.ResourceLimit?.Release(LimitableResource.Memory, RemainingSize);
+                    CleanUpForError();
 
                     return Result;
                 }
 
+                if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                {
+                    CleanUpForError();
+
+                    return KernelResult.OutOfResource;
+                }
+
                 MapPhysicalMemory(PageList, Address, EndAddr);
 
-                PersonalMmHeapUsage += RemainingSize;
+                PhysicalMemoryUsage += RemainingSize;
 
                 ulong PagesCount = Size / PageSize;
 
@@ -1294,6 +1445,11 @@ namespace Ryujinx.HLE.HOS.Kernel
                     return KernelResult.Success;
                 }
 
+                if (!BlockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                {
+                    return KernelResult.OutOfResource;
+                }
+
                 //Try to unmap all the heap mapped memory inside range.
                 KernelResult Result = KernelResult.Success;
 
@@ -1329,7 +1485,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     GetMemoryRegionManager().FreePages(PageList);
 
-                    PersonalMmHeapUsage -= HeapMappedSize;
+                    PhysicalMemoryUsage -= HeapMappedSize;
 
                     KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
 
@@ -1545,6 +1701,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             //Insert new block on the list only on areas where the state
             //of the block matches the state specified on the Old* state
             //arguments, otherwise leave it as is.
+            int OldCount = Blocks.Count;
+
             OldAttribute |= MemoryAttribute.IpcAndDeviceMapped;
 
             ulong EndAddr = PagesCount * PageSize + BaseAddress;
@@ -1637,6 +1795,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 Node = NextNode;
             }
+
+            BlockAllocator.Count += Blocks.Count - OldCount;
         }
 
         private void InsertBlock(
@@ -1649,6 +1809,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             //Inserts new block at the list, replacing and spliting
             //existing blocks as needed.
             KMemoryBlock Block = new KMemoryBlock(BaseAddress, PagesCount, State, Permission, Attribute);
+
+            int OldCount = Blocks.Count;
 
             ulong EndAddr = PagesCount * PageSize + BaseAddress;
 
@@ -1729,6 +1891,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             MergeEqualStateNeighbours(NewNode);
+
+            BlockAllocator.Count += Blocks.Count - OldCount;
         }
 
         private void MergeEqualStateNeighbours(LinkedListNode<KMemoryBlock> Node)

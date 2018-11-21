@@ -39,6 +39,9 @@ namespace Ryujinx.HLE.HOS
 
         internal KMemoryRegionManager[] MemoryRegions { get; private set; }
 
+        internal KMemoryBlockAllocator MemoryBlockAllocatorSys { get; private set; }
+        internal KMemoryBlockAllocator MemoryBlockAllocator2   { get; private set; }
+
         internal KSlabHeap UserSlabHeapPages { get; private set; }
 
         internal KCriticalSection CriticalSection { get; private set; }
@@ -54,6 +57,10 @@ namespace Ryujinx.HLE.HOS
         private long KipId;
         private long ProcessId;
         private long ThreadUid;
+
+        internal CountdownEvent ThreadCounter;
+
+        internal LinkedList<KProcess> Processes;
 
         internal AppletStateMgr AppletState { get; private set; }
 
@@ -90,6 +97,9 @@ namespace Ryujinx.HLE.HOS
 
             MemoryRegions = KernelInit.GetMemoryRegions();
 
+            MemoryBlockAllocatorSys = new KMemoryBlockAllocator(0x4e20000);
+            MemoryBlockAllocator2   = new KMemoryBlockAllocator(0x2710000);
+
             UserSlabHeapPages = new KSlabHeap(
                 UserSlabHeapBase,
                 UserSlabHeapItemSize,
@@ -111,6 +121,10 @@ namespace Ryujinx.HLE.HOS
             Scheduler.StartAutoPreemptionThread();
 
             KernelInitialized = true;
+
+            ThreadCounter = new CountdownEvent(1);
+
+            Processes = new LinkedList<KProcess>();
 
             KMemoryRegionManager Region = MemoryRegions[(int)MemoryRegion.Service];
 
@@ -571,6 +585,17 @@ namespace Ryujinx.HLE.HOS
         {
             if (Disposing)
             {
+                //Force all threads to exit.
+                foreach (KProcess Process in Processes)
+                {
+                    Process.StopAllThreads();
+                }
+
+                //It's only safe to release resources once all threads
+                //have exited.
+                ThreadCounter.Signal();
+                ThreadCounter.Wait();
+
                 Scheduler.Dispose();
 
                 TimeManager.Dispose();
