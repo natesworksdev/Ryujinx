@@ -74,11 +74,11 @@ namespace Ryujinx.HLE.HOS.Services.Lm
                     }
                     else if (Field < LmLogField.Count)
                     {
-                        FieldStr = Field + ": \"" + Encoding.UTF8.GetString(Reader.ReadBytes(Size)) + "\"";
+                        FieldStr = Field + ": \"" + Encoding.UTF8.GetString(Reader.ReadBytes(Size)).TrimEnd('\r', '\n') + "\"";
                     }
                     else
                     {
-                        FieldStr = "Field" + Field + ": \"" + Encoding.UTF8.GetString(Reader.ReadBytes(Size)) + "\"";
+                        FieldStr = "Field" + Field + ": \"" + Encoding.UTF8.GetString(Reader.ReadBytes(Size)).TrimEnd('\r', '\n') + "\"";
                     }
 
                     SB.AppendLine(" " + FieldStr);
