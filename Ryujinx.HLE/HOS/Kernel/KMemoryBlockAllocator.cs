@@ -2,8 +2,6 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KMemoryBlockAllocator
     {
-        private const int KMemoryBlockSize = 0x40;
-
         private ulong Size;
 
         public int Count { get; set; }
@@ -15,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public bool CanAllocate(int Count)
         {
-            return (ulong)(this.Count + Count) * KMemoryBlockSize <= Size;
+            return (ulong)(this.Count + Count) * KMemoryManager.KMemoryBlockSize <= Size;
         }
     }
 }
