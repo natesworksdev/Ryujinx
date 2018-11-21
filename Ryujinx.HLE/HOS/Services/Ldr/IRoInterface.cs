@@ -318,21 +318,28 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
             ulong BssTargetAddress = TargetAddress + Info.NroSize;
 
-            Result = MemMgr.MapProcessCodeMemory(BssTargetAddress, Info.BssAddress, Info.BssSize);
-
-            if (Result != KernelResult.Success)
+            if (Info.BssSize != 0)
             {
-                MemMgr.UnmapProcessCodeMemory(TargetAddress, Info.NroAddress, Info.NroSize);
+                Result = MemMgr.MapProcessCodeMemory(BssTargetAddress, Info.BssAddress, Info.BssSize);
 
-                return MakeError(ErrorModule.Loader, LoaderErr.InvalidMemoryState);
+                if (Result != KernelResult.Success)
+                {
+                    MemMgr.UnmapProcessCodeMemory(TargetAddress, Info.NroAddress, Info.NroSize);
+
+                    return MakeError(ErrorModule.Loader, LoaderErr.InvalidMemoryState);
+                }
             }
 
             Result = LoadNroIntoMemory(Context.Process, Info.Executable, TargetAddress);
 
             if (Result != KernelResult.Success)
             {
-                MemMgr.UnmapProcessCodeMemory(TargetAddress,    Info.NroAddress, Info.NroSize);
-                MemMgr.UnmapProcessCodeMemory(BssTargetAddress, Info.BssAddress, Info.BssSize);
+                MemMgr.UnmapProcessCodeMemory(TargetAddress, Info.NroAddress, Info.NroSize);
+
+                if (Info.BssSize != 0)
+                {
+                    MemMgr.UnmapProcessCodeMemory(BssTargetAddress, Info.BssAddress, Info.BssSize);
+                }
 
                 return 0;
             }
