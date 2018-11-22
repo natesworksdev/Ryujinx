@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Memory;
 using System;
 using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL;
+using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Texture
 {
@@ -24,14 +25,16 @@ namespace Ryujinx.Graphics.Texture
             public int BytesPerPixel { get; private set; }
             public int BlockWidth    { get; private set; }
             public int BlockHeight   { get; private set; }
+            public int BlockDepth     { get; private set; }
 
             public TargetBuffer Target { get; private set; }
 
-            public ImageDescriptor(int BytesPerPixel, int BlockWidth, int BlockHeight, TargetBuffer Target)
+            public ImageDescriptor(int BytesPerPixel, int BlockWidth, int BlockHeight, int BlockDepth, TargetBuffer Target)
             {
                 this.BytesPerPixel = BytesPerPixel;
                 this.BlockWidth    = BlockWidth;
                 this.BlockHeight   = BlockHeight;
+                this.BlockDepth     = BlockDepth;
                 this.Target        = Target;
             }
         }
@@ -93,52 +96,53 @@ namespace Ryujinx.Graphics.Texture
         private static readonly Dictionary<GalImageFormat, ImageDescriptor> s_ImageTable =
                             new Dictionary<GalImageFormat, ImageDescriptor>()
         {
-            { GalImageFormat.RGBA32,      new ImageDescriptor(16, 1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RGBA16,      new ImageDescriptor(8,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RG32,        new ImageDescriptor(8,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RGBX8,       new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RGBA8,       new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.BGRA8,       new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RGB10A2,     new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.R32,         new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RGBA4,       new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.BptcSfloat,  new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.BptcUfloat,  new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.BGR5A1,      new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RGB5A1,      new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RGB565,      new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.BGR565,      new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.BptcUnorm,   new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.RG16,        new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.RG8,         new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.R16,         new ImageDescriptor(2,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.R8,          new ImageDescriptor(1,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.R11G11B10,   new ImageDescriptor(4,  1,  1,  TargetBuffer.Color) },
-            { GalImageFormat.BC1,         new ImageDescriptor(8,  4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.BC2,         new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.BC3,         new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.BC4,         new ImageDescriptor(8,  4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.BC5,         new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D4x4,   new ImageDescriptor(16, 4,  4,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D5x5,   new ImageDescriptor(16, 5,  5,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D6x6,   new ImageDescriptor(16, 6,  6,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D8x8,   new ImageDescriptor(16, 8,  8,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D10x10, new ImageDescriptor(16, 10, 10, TargetBuffer.Color) },
-            { GalImageFormat.Astc2D12x12, new ImageDescriptor(16, 12, 12, TargetBuffer.Color) },
-            { GalImageFormat.Astc2D5x4,   new ImageDescriptor(16, 5,  4,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D6x5,   new ImageDescriptor(16, 6,  5,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D8x6,   new ImageDescriptor(16, 8,  6,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D10x8,  new ImageDescriptor(16, 10, 8,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D12x10, new ImageDescriptor(16, 12, 10, TargetBuffer.Color) },
-            { GalImageFormat.Astc2D8x5,   new ImageDescriptor(16, 8,  5,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D10x5,  new ImageDescriptor(16, 10, 5,  TargetBuffer.Color) },
-            { GalImageFormat.Astc2D10x6,  new ImageDescriptor(16, 10, 6,  TargetBuffer.Color) },
+            // TODO: check if everything is alright here
+            { GalImageFormat.RGBA32,      new ImageDescriptor(16, 1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RGBA16,      new ImageDescriptor(8,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RG32,        new ImageDescriptor(8,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RGBX8,       new ImageDescriptor(4,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RGBA8,       new ImageDescriptor(4,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.BGRA8,       new ImageDescriptor(4,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RGB10A2,     new ImageDescriptor(4,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R32,         new ImageDescriptor(4,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RGBA4,       new ImageDescriptor(2,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.BptcSfloat,  new ImageDescriptor(16, 4,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BptcUfloat,  new ImageDescriptor(16, 4,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BGR5A1,      new ImageDescriptor(2,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RGB5A1,      new ImageDescriptor(2,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RGB565,      new ImageDescriptor(2,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.BGR565,      new ImageDescriptor(2,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.BptcUnorm,   new ImageDescriptor(16, 4,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.RG16,        new ImageDescriptor(4,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.RG8,         new ImageDescriptor(2,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R16,         new ImageDescriptor(2,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R8,          new ImageDescriptor(1,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.R11G11B10,   new ImageDescriptor(4,  1,  1,  1,  TargetBuffer.Color) },
+            { GalImageFormat.BC1,         new ImageDescriptor(8,  4,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC2,         new ImageDescriptor(16, 4,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC3,         new ImageDescriptor(16, 4,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC4,         new ImageDescriptor(8,  4,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.BC5,         new ImageDescriptor(16, 4,  4,  4,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D4x4,   new ImageDescriptor(16, 4,  4,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D5x5,   new ImageDescriptor(16, 5,  5,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D6x6,   new ImageDescriptor(16, 6,  6,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D8x8,   new ImageDescriptor(16, 8,  8,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D10x10, new ImageDescriptor(16, 10, 10, 1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D12x12, new ImageDescriptor(16, 12, 12, 1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D5x4,   new ImageDescriptor(16, 5,  4,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D6x5,   new ImageDescriptor(16, 6,  5,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D8x6,   new ImageDescriptor(16, 8,  6,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D10x8,  new ImageDescriptor(16, 10, 8,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D12x10, new ImageDescriptor(16, 12, 10, 1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D8x5,   new ImageDescriptor(16, 8,  5,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D10x5,  new ImageDescriptor(16, 10, 5,  1,  TargetBuffer.Color) },
+            { GalImageFormat.Astc2D10x6,  new ImageDescriptor(16, 10, 6,  1,  TargetBuffer.Color) },
 
-            { GalImageFormat.D16,   new ImageDescriptor(2, 1, 1, TargetBuffer.Depth)        },
-            { GalImageFormat.D24,   new ImageDescriptor(4, 1, 1, TargetBuffer.Depth)        },
-            { GalImageFormat.D24S8, new ImageDescriptor(4, 1, 1, TargetBuffer.DepthStencil) },
-            { GalImageFormat.D32,   new ImageDescriptor(4, 1, 1, TargetBuffer.Depth)        },
-            { GalImageFormat.D32S8, new ImageDescriptor(8, 1, 1, TargetBuffer.DepthStencil) }
+            { GalImageFormat.D16,   new ImageDescriptor(2, 1, 1, 1, TargetBuffer.Depth)        },
+            { GalImageFormat.D24,   new ImageDescriptor(4, 1, 1, 1, TargetBuffer.Depth)        },
+            { GalImageFormat.D24S8, new ImageDescriptor(4, 1, 1, 1, TargetBuffer.DepthStencil) },
+            { GalImageFormat.D32,   new ImageDescriptor(4, 1, 1, 1, TargetBuffer.Depth)        },
+            { GalImageFormat.D32S8, new ImageDescriptor(8, 1, 1, 1, TargetBuffer.DepthStencil) }
         };
 
         public static GalImageFormat ConvertTexture(
@@ -225,6 +229,7 @@ namespace Ryujinx.Graphics.Texture
             throw new NotImplementedException(Format.ToString());
         }
 
+        // TODO: non 2d
         public static byte[] ReadTexture(IMemory Memory, GalImage Image, long Position)
         {
             MemoryManager CpuMemory;
@@ -238,52 +243,61 @@ namespace Ryujinx.Graphics.Texture
                 CpuMemory = (MemoryManager)Memory;
             }
 
+            Debug.Assert(Image.TextureType == TextureType.TwoD, "non 2d texture read");
+
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Image);
 
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);
 
-            (int Width, int Height) = GetImageSizeInBlocks(Image);
+            (int Width, int Height, int Depth) = GetImageSizeInBlocks(Image);
 
             int BytesPerPixel = Desc.BytesPerPixel;
 
             //Note: Each row of the texture needs to be aligned to 4 bytes.
             int Pitch = (Width * BytesPerPixel + 3) & ~3;
 
-            byte[] Data = new byte[Height * Pitch];
-
-            for (int Y = 0; Y < Height; Y++)
+            byte[] Data = new byte[Height * Pitch * Depth];
+            for (int Z = 0; Z < Depth; Z++)
             {
-                int OutOffs = Y * Pitch;
-
-                for (int X = 0; X < Width; X++)
+                for (int Y = 0; Y < Height; Y++)
                 {
-                    long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
+                    int OutOffs = Y * Pitch + (Z * Width * Height * BytesPerPixel);
 
-                    CpuMemory.ReadBytes(Position + Offset, Data, OutOffs, BytesPerPixel);
+                    for (int X = 0; X < Width; X++)
+                    {
+                        long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y, Z);
 
-                    OutOffs += BytesPerPixel;
+                        CpuMemory.ReadBytes(Position + Offset, Data, OutOffs, BytesPerPixel);
+
+                        OutOffs += BytesPerPixel;
+                    }
                 }
             }
+
 
             return Data;
         }
 
+        // TODO: non 2d
         public static void WriteTexture(NvGpuVmm Vmm, GalImage Image, long Position, byte[] Data)
         {
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Image);
 
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);
 
-            (int Width, int Height) = ImageUtils.GetImageSizeInBlocks(Image);
+            (int Width, int Height, int Depth) = ImageUtils.GetImageSizeInBlocks(Image);
 
             int BytesPerPixel = Desc.BytesPerPixel;
 
             int InOffs = 0;
 
+            Debug.Assert(Image.TextureType == TextureType.TwoD, "non 2d texture write");
+
+            for (int Z = 0; Z < Depth; Z++)
             for (int Y = 0; Y < Height; Y++)
             for (int X = 0; X < Width;  X++)
             {
-                long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y);
+                long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y, Z);
 
                 Vmm.Memory.WriteBytes(Position + Offset, Data, InOffs, BytesPerPixel);
 
@@ -291,6 +305,7 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
+        // TODO: SUPPORT NON 2D
         public static bool CopyTexture(
             NvGpuVmm Vmm,
             GalImage SrcImage,
@@ -319,8 +334,8 @@ namespace Ryujinx.Graphics.Texture
             for (int Y = 0; Y < Height; Y++)
             for (int X = 0; X < Width;  X++)
             {
-                long SrcOffset = (uint)SrcSwizzle.GetSwizzleOffset(SrcX + X, SrcY + Y);
-                long DstOffset = (uint)DstSwizzle.GetSwizzleOffset(DstX + X, DstY + Y);
+                long SrcOffset = (uint)SrcSwizzle.GetSwizzleOffset(SrcX + X, SrcY + Y, 0);
+                long DstOffset = (uint)DstSwizzle.GetSwizzleOffset(DstX + X, DstY + Y, 0);
 
                 byte[] Texel = Vmm.ReadBytes(SrcAddress + SrcOffset, BytesPerPixel);
 
@@ -330,15 +345,31 @@ namespace Ryujinx.Graphics.Texture
             return true;
         }
 
+        // FIXME: Check if that does the trick
         public static int GetSize(GalImage Image)
         {
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);
 
+            int ComponentCount = GetCoordsCountTextureType(Image.TextureType);
+
+            if (IsArray(Image.TextureType))
+                ComponentCount--;
+
             int Width  = DivRoundUp(Image.Width,  Desc.BlockWidth);
             int Height = DivRoundUp(Image.Height, Desc.BlockHeight);
+            int Depth  = DivRoundUp(Image.Depth,  Desc.BlockDepth);
 
-            // TODO: multi format
-            return Desc.BytesPerPixel * Width * Height;
+            switch (ComponentCount)
+            {
+                case 1:
+                    return Desc.BytesPerPixel * Width;
+                case 2:
+                    return Desc.BytesPerPixel * Width * Height;
+                case 3:
+                    return Desc.BytesPerPixel * Width * Height * Depth;
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
         public static int GetPitch(GalImageFormat Format, int Width)
@@ -362,6 +393,11 @@ namespace Ryujinx.Graphics.Texture
             return GetImageDescriptor(Format).BlockHeight;
         }
 
+        public static int GetBlockDepth(GalImageFormat Format)
+        {
+            return GetImageDescriptor(Format).BlockDepth;
+        }
+
         public static int GetAlignedWidth(GalImage Image)
         {
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);
@@ -380,12 +416,14 @@ namespace Ryujinx.Graphics.Texture
             return (Image.Width + AlignMask) & ~AlignMask;
         }
 
-        public static (int Width, int Height) GetImageSizeInBlocks(GalImage Image)
+        // TODO: non 2d
+        public static (int Width, int Height, int Depth) GetImageSizeInBlocks(GalImage Image)
         {
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);
 
             return (DivRoundUp(Image.Width,  Desc.BlockWidth),
-                    DivRoundUp(Image.Height, Desc.BlockHeight));
+                    DivRoundUp(Image.Height, Desc.BlockHeight),
+                    DivRoundUp(Image.Depth, Desc.BlockDepth));
         }
 
         public static int GetBytesPerPixel(GalImageFormat Format)

@@ -10,6 +10,7 @@ namespace Ryujinx.Graphics.Gal
         public int TileWidth;
         public int GobBlockHeight;
         public int Pitch;
+        public int MaxMipmapLevel;
 
         public GalImageFormat   Format;
         public GalMemoryLayout  Layout;
@@ -28,10 +29,11 @@ namespace Ryujinx.Graphics.Gal
             GalMemoryLayout  Layout,
             GalImageFormat   Format,
             TextureType      TextureType,
-            GalTextureSource XSource = GalTextureSource.Red,
-            GalTextureSource YSource = GalTextureSource.Green,
-            GalTextureSource ZSource = GalTextureSource.Blue,
-            GalTextureSource WSource = GalTextureSource.Alpha)
+            int              MaxMipmapLevel = 1,
+            GalTextureSource XSource        = GalTextureSource.Red,
+            GalTextureSource YSource        = GalTextureSource.Green,
+            GalTextureSource ZSource        = GalTextureSource.Blue,
+            GalTextureSource WSource        = GalTextureSource.Alpha)
         {
             this.Width          = Width;
             this.Height         = Height;
@@ -40,6 +42,7 @@ namespace Ryujinx.Graphics.Gal
             this.GobBlockHeight = GobBlockHeight;
             this.Layout         = Layout;
             this.Format         = Format;
+            this.MaxMipmapLevel = MaxMipmapLevel;
             this.XSource        = XSource;
             this.YSource        = YSource;
             this.ZSource        = ZSource;

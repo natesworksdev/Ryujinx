@@ -11,7 +11,9 @@ namespace Ryujinx.Graphics.Texture
         private int XShift;
         private int GobStride;
 
-        public BlockLinearSwizzle(int Width, int Bpp, int BlockHeight = 16)
+        private int LayerZ;
+
+        public BlockLinearSwizzle(int Width, int Height, int Bpp, int BlockHeight)
         {
             BhMask = (BlockHeight * 8) - 1;
 
@@ -23,6 +25,8 @@ namespace Ryujinx.Graphics.Texture
             GobStride = 512 * BlockHeight * WidthInGobs;
 
             XShift = CountLsbZeros(512 * BlockHeight);
+
+            LayerZ = Bpp * Width * Height;
         }
 
         private int CountLsbZeros(int Value)
@@ -37,7 +41,7 @@ namespace Ryujinx.Graphics.Texture
             return Count;
         }
 
-        public int GetSwizzleOffset(int X, int Y)
+        public int GetSwizzleOffset(int X, int Y, int Z)
         {
             X <<= BppShift;
 
@@ -53,7 +57,7 @@ namespace Ryujinx.Graphics.Texture
             Position += ((Y & 0x01) >> 0) << 4;
             Position += ((X & 0x0f) >> 0) << 0;
 
-            return Position;
+            return (Z * LayerZ) + Position;
         }
     }
 }

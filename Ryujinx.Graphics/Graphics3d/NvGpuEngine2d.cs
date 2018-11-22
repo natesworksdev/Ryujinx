@@ -38,6 +38,7 @@ namespace Ryujinx.Graphics.Graphics3d
             }
         }
 
+        // FIXME: SUPPORT NON 2D
         private void TextureCopy(NvGpuVmm Vmm)
         {
             CopyOperation Operation = (CopyOperation)ReadRegister(NvGpuEngine2dReg.CopyOperation);
@@ -81,8 +82,6 @@ namespace Ryujinx.Graphics.Graphics3d
 
             long SrcKey = Vmm.GetPhysicalAddress(SrcAddress);
             long DstKey = Vmm.GetPhysicalAddress(DstAddress);
-
-            // TODO: all texture types
 
             GalImage SrcTexture = new GalImage(
                 SrcWidth,

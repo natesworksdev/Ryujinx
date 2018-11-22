@@ -2,6 +2,7 @@ using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Texture;
 using System;
+using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
@@ -46,6 +47,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
 
+            Debug.Assert(Image.MaxMipmapLevel != 1, "No Mipmap support");
+
             TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Size);
 
             if (ImageUtils.IsCompressed(Image.Format))
@@ -87,7 +90,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     break;
                 default:
                     Logger.PrintWarning(LogClass.Gpu, $"Unsupported texture target type: {Target}");
-                    //throw new InvalidOperationException();
+                    throw new InvalidOperationException();
                     GL.TexImage2D(
                         TextureTarget.Texture2D,
                         Level,
@@ -114,6 +117,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
+
+            Debug.Assert(Image.MaxMipmapLevel != 1, "No Mipmap support");
 
             TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Data.Length);
 
@@ -195,14 +200,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 {
                     int TextureBlockWidth  = ImageUtils.GetBlockWidth(Image.Format);
                     int TextureBlockHeight = ImageUtils.GetBlockHeight(Image.Format);
+                    int TextureBlockDepth  = ImageUtils.GetBlockDepth(Image.Format);
 
-                    // TODO: support 3D textures
                     Data = ASTCDecoder.DecodeToRGBA8888(
                         Data,
                         TextureBlockWidth,
-                        TextureBlockHeight, 1,
+                        TextureBlockHeight,
+                        TextureBlockDepth,
                         Image.Width,
-                        Image.Height, 1);
+                        Image.Height,
+                        Image.Depth);
 
                     Image.Format = GalImageFormat.RGBA8 | (Image.Format & GalImageFormat.TypeMask);
                 }
@@ -211,16 +218,50 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                  PixelFormat         Format,
                  PixelType           Type) = OGLEnumConverter.GetImageFormat(Image.Format);
 
-                GL.TexImage2D(
-                    TextureTarget.Texture2D,
-                    Level,
-                    InternalFmt,
-                    Image.Width,
-                    Image.Height,
-                    Border,
-                    Format,
-                    Type,
-                    Data);
+
+                switch (Target)
+                {
+                    case TextureTarget.Texture2D:
+                        GL.TexImage2D(
+                            Target,
+                            Level,
+                            InternalFmt,
+                            Image.Width,
+                            Image.Height,
+                            Border,
+                            Format,
+                            Type,
+                            Data);
+                        break;
+                    case TextureTarget.Texture2DArray:
+                    case TextureTarget.Texture3D:
+                        GL.TexImage3D(
+                            Target,
+                            Level,
+                            InternalFmt,
+                            Image.Width,
+                            Image.Height,
+                            Image.Depth,
+                            Border,
+                            Format,
+                            Type,
+                            Data);
+                        break;
+                    default:
+                        Logger.PrintWarning(LogClass.Gpu, $"Unsupported texture target type: {Target}");
+                        throw new InvalidOperationException();
+                        GL.TexImage2D(
+                            TextureTarget.Texture2D,
+                            Level,
+                            InternalFmt,
+                            Image.Width,
+                            Image.Height,
+                            Border,
+                            Format,
+                            Type,
+                            Data);
+                        break;
+                }
             }
         }
 
@@ -283,6 +324,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int WrapS = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressU);
             int WrapT = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressV);
+            int WrapR = (int)OGLEnumConverter.GetTextureWrapMode(Sampler.AddressP);
 
             int MinFilter = (int)OGLEnumConverter.GetTextureMinFilter(Sampler.MinFilter, Sampler.MipFilter);
             int MagFilter = (int)OGLEnumConverter.GetTextureMagFilter(Sampler.MagFilter);
@@ -291,6 +333,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.TexParameter(Target, TextureParameterName.TextureWrapS, WrapS);
             GL.TexParameter(Target, TextureParameterName.TextureWrapT, WrapT);
+            GL.TexParameter(Target, TextureParameterName.TextureWrapR, WrapR);
 
             GL.TexParameter(Target, TextureParameterName.TextureMinFilter, MinFilter);
             GL.TexParameter(Target, TextureParameterName.TextureMagFilter, MagFilter);

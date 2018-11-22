@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using System;
+using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Texture
 {
@@ -21,6 +22,8 @@ namespace Ryujinx.Graphics.Texture
             GalTextureSource WSource = (GalTextureSource)((Tic[0] >> 28) & 7);
 
             TextureSwizzle Swizzle = (TextureSwizzle)((Tic[2] >> 21) & 7);
+
+            int MaxMipmapLevel = (Tic[3] >> 28) & 0xF + 1;
 
             GalMemoryLayout Layout;
 
@@ -44,6 +47,11 @@ namespace Ryujinx.Graphics.Texture
             int Height = (Tic[5] & 0xffff) + 1;
             int Depth  = ((Tic[5] >> 16) & 0x3fff) + 1;
 
+            if (TextureType == TextureType.OneD)
+            {
+                Height = 1;
+            }
+
             if (TextureType == TextureType.TwoD || TextureType == TextureType.OneD)
             {
                 Depth = 1;
@@ -58,6 +66,7 @@ namespace Ryujinx.Graphics.Texture
                 Layout,
                 Format,
                 TextureType,
+                MaxMipmapLevel,
                 XSource,
                 YSource,
                 ZSource,

@@ -125,29 +125,29 @@ namespace Ryujinx.Graphics.Graphics3d
 
                     if (SrcLinear)
                     {
-                        SrcSwizzle = new LinearSwizzle(SrcPitch, SrcCpp);
+                        SrcSwizzle = new LinearSwizzle(SrcPitch, SrcCpp, SrcSizeX, SrcSizeY);
                     }
                     else
                     {
-                        SrcSwizzle = new BlockLinearSwizzle(SrcSizeX, SrcCpp, SrcBlockHeight);
+                        SrcSwizzle = new BlockLinearSwizzle(SrcSizeX, SrcSizeY, SrcCpp, SrcBlockHeight);
                     }
 
                     ISwizzle DstSwizzle;
 
                     if (DstLinear)
                     {
-                        DstSwizzle = new LinearSwizzle(DstPitch, DstCpp);
+                        DstSwizzle = new LinearSwizzle(DstPitch, DstCpp, SrcSizeX, SrcSizeY);
                     }
                     else
                     {
-                        DstSwizzle = new BlockLinearSwizzle(DstSizeX, DstCpp, DstBlockHeight);
+                        DstSwizzle = new BlockLinearSwizzle(DstSizeX, DstSizeY, DstCpp, DstBlockHeight);
                     }
 
                     for (int Y = 0; Y < YCount; Y++)
                     for (int X = 0; X < XCount; X++)
                     {
-                        int SrcOffset = SrcSwizzle.GetSwizzleOffset(SrcPosX + X, SrcPosY + Y);
-                        int DstOffset = DstSwizzle.GetSwizzleOffset(DstPosX + X, DstPosY + Y);
+                        int SrcOffset = SrcSwizzle.GetSwizzleOffset(SrcPosX + X, SrcPosY + Y, 0);
+                        int DstOffset = DstSwizzle.GetSwizzleOffset(DstPosX + X, DstPosY + Y, 0);
 
                         long Src = SrcPA + (uint)SrcOffset;
                         long Dst = DstPA + (uint)DstOffset;

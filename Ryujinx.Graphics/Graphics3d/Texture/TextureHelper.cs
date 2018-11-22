@@ -9,9 +9,11 @@ namespace Ryujinx.Graphics.Texture
         public static ISwizzle GetSwizzle(GalImage Image)
         {
             int BlockWidth    = ImageUtils.GetBlockWidth   (Image.Format);
+            int BlockHeight   = ImageUtils.GetBlockHeight  (Image.Format);
             int BytesPerPixel = ImageUtils.GetBytesPerPixel(Image.Format);
 
             int Width = (Image.Width + (BlockWidth - 1)) / BlockWidth;
+            int Height = (Image.Height + (BlockHeight - 1)) / BlockHeight;
 
             if (Image.Layout == GalMemoryLayout.BlockLinear)
             {
@@ -19,11 +21,11 @@ namespace Ryujinx.Graphics.Texture
 
                 Width = (Width + AlignMask) & ~AlignMask;
 
-                return new BlockLinearSwizzle(Width, BytesPerPixel, Image.GobBlockHeight);
+                return new BlockLinearSwizzle(Width, Height, BytesPerPixel, Image.GobBlockHeight);
             }
             else
             {
-                return new LinearSwizzle(Image.Pitch, BytesPerPixel);
+                return new LinearSwizzle(Image.Pitch, BytesPerPixel, Width, Height);
             }
         }
 
