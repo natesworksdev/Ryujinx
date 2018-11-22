@@ -447,7 +447,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 return;
             }
 
-            if (NewImage.Format == OldImage.Format)
+            if (NewImage.Format == OldImage.Format &&
+                NewImage.Width  == OldImage.Width  &&
+                NewImage.Height == OldImage.Height)
             {
                 return;
             }
@@ -459,7 +461,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyPBO);
 
-            GL.BufferData(BufferTarget.PixelPackBuffer, Math.Max(ImageUtils.GetSize(OldImage), ImageUtils.GetSize(NewImage)), IntPtr.Zero, BufferUsageHint.StreamCopy);
+            //The buffer should be large enough to hold the largest texture.
+            int BufferSize = Math.Max(ImageUtils.GetSize(OldImage),
+                                      ImageUtils.GetSize(NewImage));
+
+            GL.BufferData(BufferTarget.PixelPackBuffer, BufferSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
 
             if (!Texture.TryGetImageHandler(Key, out ImageHandler CachedImage))
             {
@@ -475,7 +481,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyPBO);
 
+            GL.PixelStore(PixelStoreParameter.UnpackRowLength, OldImage.Width);
+
             Texture.Create(Key, ImageUtils.GetSize(NewImage), NewImage);
+
+            GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
 
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
         }
