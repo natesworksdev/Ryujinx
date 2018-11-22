@@ -112,6 +112,8 @@ namespace Ryujinx.HLE.HOS
 
             for (int Index = 0; Index < StaticObjects.Length; Index++)
             {
+                Logger.PrintInfo(LogClass.Loader, $"Loading image {Index} at 0x{NsoBase[Index]:x16}...");
+
                 IExecutable StaticObject = StaticObjects[Index];
 
                 ulong TextStart = NsoBase[Index] + (ulong)StaticObject.TextOffset;

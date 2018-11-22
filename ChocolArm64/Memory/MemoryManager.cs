@@ -362,9 +362,36 @@ namespace ChocolArm64.Memory
         public void ReadBytes(long position, byte[] data, int startIndex, int size)
         {
             //Note: This will be moved later.
-            EnsureRangeIsValid(position, (uint)size);
+            long endAddr = position + size;
 
-            Marshal.Copy((IntPtr)Translate(position), data, startIndex, size);
+            if ((ulong)size > int.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+
+            if ((ulong)endAddr < (ulong)position)
+            {
+                throw new ArgumentOutOfRangeException(nameof(position));
+            }
+
+            int offset = startIndex;
+
+            while ((ulong)position < (ulong)endAddr)
+            {
+                long pageLimit = (position + PageSize) & ~(long)PageMask;
+
+                if ((ulong)pageLimit > (ulong)endAddr)
+                {
+                    pageLimit = endAddr;
+                }
+
+                int copySize = (int)(pageLimit - position);
+
+                Marshal.Copy((IntPtr)Translate(position), data, offset, copySize);
+
+                position += copySize;
+                offset   += copySize;
+            }
         }
 
         public void WriteSByte(long position, sbyte value)
@@ -533,22 +560,48 @@ namespace ChocolArm64.Memory
         public void WriteBytes(long position, byte[] data, int startIndex, int size)
         {
             //Note: This will be moved later.
-            //Using Translate instead of TranslateWrite is on purpose.
-            EnsureRangeIsValid(position, (uint)size);
+            long endAddr = position + size;
 
-            Marshal.Copy(data, startIndex, (IntPtr)Translate(position), size);
+            if ((ulong)endAddr < (ulong)position)
+            {
+                throw new ArgumentOutOfRangeException(nameof(position));
+            }
+
+            int offset = startIndex;
+
+            while ((ulong)position < (ulong)endAddr)
+            {
+                long pageLimit = (position + PageSize) & ~(long)PageMask;
+
+                if ((ulong)pageLimit > (ulong)endAddr)
+                {
+                    pageLimit = endAddr;
+                }
+
+                int copySize = (int)(pageLimit - position);
+
+                Marshal.Copy(data, offset, (IntPtr)TranslateWrite(position), copySize);
+
+                position += copySize;
+                offset   += copySize;
+            }
         }
 
         public void CopyBytes(long src, long dst, long size)
         {
             //Note: This will be moved later.
-            EnsureRangeIsValid(src, size);
-            EnsureRangeIsValid(dst, size);
+            if (IsContiguous(src, size) &&
+                IsContiguous(dst, size))
+            {
+                byte* srcPtr = Translate(src);
+                byte* dstPtr = TranslateWrite(dst);
 
-            byte* srcPtr = Translate(src);
-            byte* dstPtr = TranslateWrite(dst);
-
-            Buffer.MemoryCopy(srcPtr, dstPtr, size, size);
+                Buffer.MemoryCopy(srcPtr, dstPtr, size, size);
+            }
+            else
+            {
+                WriteBytes(dst, ReadBytes(src, size));
+            }
         }
 
         public void Map(long va, long pa, long size)
@@ -797,14 +850,21 @@ Unmapped:
             }
         }
 
-        public IntPtr GetHostAddress(long position, long size)
+        public bool TryGetHostAddress(long position, long size, out IntPtr ptr)
         {
-            EnsureRangeIsValid(position, size);
+            if (IsContiguous(position, size))
+            {
+                ptr = (IntPtr)Translate(position);
 
-            return (IntPtr)Translate(position);
+                return true;
+            }
+
+            ptr = IntPtr.Zero;
+
+            return false;
         }
 
-        internal void EnsureRangeIsValid(long position, long size)
+        private bool IsContiguous(long position, long size)
         {
             long endPos = position + size;
 
@@ -818,12 +878,14 @@ Unmapped:
 
                 if (pa != expectedPa)
                 {
-                    throw new VmmAccessException(position, size);
+                    return false;
                 }
 
                 position   += PageSize;
                 expectedPa += PageSize;
             }
+
+            return true;
         }
 
         public bool IsValidPosition(long position)

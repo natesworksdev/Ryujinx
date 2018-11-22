@@ -204,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.BadSize);
             }
-            else if (BssSize != 0 && (BssAddress + BssSize) <= BssAddress)
+            else if (BssSize != 0 && BssAddress + BssSize <= BssAddress)
             {
                 return MakeError(ErrorModule.Loader, LoaderErr.BadSize);
             }

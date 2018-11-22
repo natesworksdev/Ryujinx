@@ -62,6 +62,8 @@ namespace Ryujinx.HLE.HOS
 
         internal LinkedList<KProcess> Processes;
 
+        internal bool EnableVersionChecks { get; private set; }
+
         internal AppletStateMgr AppletState { get; private set; }
 
         internal KSharedMemory HidSharedMem  { get; private set; }

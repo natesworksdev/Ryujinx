@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             ulong Size = ThreadState.X1;
 
-            if ((Size & 0xFFFFFFFE001FFFFF) != 0)
+            if ((Size & 0xfffffffe001fffff) != 0)
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Heap size 0x{Size:x16} is not aligned!");
 

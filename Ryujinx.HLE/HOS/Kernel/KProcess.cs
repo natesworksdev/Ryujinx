@@ -1,6 +1,8 @@
 using ChocolArm64;
+using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -343,19 +345,22 @@ namespace Ryujinx.HLE.HOS.Kernel
             uint RequiredKernelVersionMajor =  (uint)Capabilities.KernelReleaseVersion >> 19;
             uint RequiredKernelVersionMinor = ((uint)Capabilities.KernelReleaseVersion >> 15) & 0xf;
 
-            if (RequiredKernelVersionMajor > KernelVersionMajor)
+            if (System.EnableVersionChecks)
             {
-                return KernelResult.InvalidCombination;
-            }
+                if (RequiredKernelVersionMajor > KernelVersionMajor)
+                {
+                    return KernelResult.InvalidCombination;
+                }
 
-            if (RequiredKernelVersionMajor != KernelVersionMajor && RequiredKernelVersionMajor < 3)
-            {
-                return KernelResult.InvalidCombination;
-            }
+                if (RequiredKernelVersionMajor != KernelVersionMajor && RequiredKernelVersionMajor < 3)
+                {
+                    return KernelResult.InvalidCombination;
+                }
 
-            if (RequiredKernelVersionMinor > KernelVersionMinor)
-            {
-                return KernelResult.InvalidCombination;
+                if (RequiredKernelVersionMinor > KernelVersionMinor)
+                {
+                    return KernelResult.InvalidCombination;
+                }
             }
 
             KernelResult Result = AllocateThreadLocalStorage(out ulong UserExceptionContextAddress);
@@ -985,9 +990,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private void CpuTraceHandler(object sender, EventArgs e)
+        private void CpuTraceHandler(object sender, CpuTraceEventArgs e)
         {
-            System.Scheduler.GetCurrentThread().PrintGuestStackTrace();
+            Logger.PrintInfo(LogClass.Cpu, $"Executing at 0x{e.Position:X16}.");
         }
     }
 }
