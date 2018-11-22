@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
 
-            Debug.Assert(Image.MaxMipmapLevel != 1, "No Mipmap support");
+            //Debug.Assert(Image.MaxMipmapLevel != 1, "No Mipmap support");
 
             TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Size);
 
@@ -118,7 +118,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
 
-            Debug.Assert(Image.MaxMipmapLevel != 1, "No Mipmap support");
+            //Debug.Assert(Image.MaxMipmapLevel != 1, "No Mipmap support");
 
             TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Data.Length);
 
@@ -153,6 +153,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Data);
                         break;
                     case TextureTarget.TextureCubeMap:
+                        Span<byte> Array = new Span<byte>(Data);
+
+                        int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
+
                         for (int i = 0; i < 6; i++)
                         {
                             GL.CompressedTexImage2D(
@@ -162,8 +166,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                                 Image.Width,
                                 Image.Height,
                                 Border,
-                                Data.Length, // FIXME: NOT SURE OF THIS
-                                Data);
+                                FaceSize,
+                                Array.Slice(i * FaceSize, FaceSize).ToArray());
                         }
                         break;
                     case TextureTarget.TextureCubeMapArray:
@@ -179,7 +183,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Data);
                         break;
                     default:
-                        Logger.PrintWarning(LogClass.Gpu, $"Unsupported texture target type: {Target} ({Image.Depth})");
+                        Logger.PrintWarning(LogClass.Gpu, $"Unsupported texture target type: {Target}");
                         throw new InvalidOperationException();
                         GL.CompressedTexImage2D(
                             TextureTarget.Texture2D,
@@ -246,6 +250,25 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Format,
                             Type,
                             Data);
+                        break;
+                    case TextureTarget.TextureCubeMap:
+                        Span<byte> Array = new Span<byte>(Data);
+
+                        int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
+
+                        for (int i = 0; i < 6; i++)
+                        {
+                            GL.TexImage2D(
+                                TextureTarget.TextureCubeMapPositiveX + i,
+                                Level,
+                                InternalFmt,
+                                Image.Width,
+                                Image.Height,
+                                Border,
+                                Format,
+                                Type,
+                                Array.Slice(i * FaceSize, FaceSize).ToArray());
+                        }
                         break;
                     default:
                         Logger.PrintWarning(LogClass.Gpu, $"Unsupported texture target type: {Target}");

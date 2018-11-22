@@ -16,6 +16,8 @@ namespace Ryujinx.Graphics.Texture
 
             TextureType TextureType = (TextureType)((Tic[4] >> 23) & 0xF);
 
+
+
             GalTextureSource XSource = (GalTextureSource)((Tic[0] >> 19) & 7);
             GalTextureSource YSource = (GalTextureSource)((Tic[0] >> 22) & 7);
             GalTextureSource ZSource = (GalTextureSource)((Tic[0] >> 25) & 7);
@@ -55,6 +57,10 @@ namespace Ryujinx.Graphics.Texture
             if (TextureType == TextureType.TwoD || TextureType == TextureType.OneD)
             {
                 Depth = 1;
+            }
+            else if (TextureType == TextureType.CubeMap)
+            {
+                Depth = 6;
             }
 
             GalImage Image = new GalImage(

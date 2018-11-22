@@ -532,9 +532,9 @@ namespace Ryujinx.Graphics.Gal.Shader
             // Encoding of TEXS/TLDS is a bit special and change for 2d textures
             // NOTE: OperA seems to hold at best two args.
             // On 2D textures, if no suffix need an additional values, Y is stored in OperB, otherwise coords are in OperA and the additional values is in OperB.
-            if (TextureInstructionSuffix != TextureInstructionSuffix.None && TextureType == TextureType.TwoD)
+            if (TextureInstructionSuffix != TextureInstructionSuffix.None && TextureInstructionSuffix != TextureInstructionSuffix.LZ && TextureType == TextureType.TwoD)
             {
-                Coords[Coords.Length - CoordStartIndex - 1] = OpCode.Gpr8();
+                Coords[Coords.Length - CoordStartIndex - 1]        = OpCode.Gpr8();
                 Coords[Coords.Length - CoordStartIndex - 1].Index += Coords.Length - CoordStartIndex - 1;
                 OperBIndex--;
             }

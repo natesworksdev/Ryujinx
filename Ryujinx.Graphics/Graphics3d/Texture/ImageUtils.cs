@@ -243,7 +243,7 @@ namespace Ryujinx.Graphics.Texture
                 CpuMemory = (MemoryManager)Memory;
             }
 
-            Debug.Assert(Image.TextureType == TextureType.TwoD, "non 2d texture read");
+            //Debug.Assert(Image.TextureType == TextureType.TwoD, "non 2d texture read");
 
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Image);
 
@@ -291,7 +291,7 @@ namespace Ryujinx.Graphics.Texture
 
             int InOffs = 0;
 
-            Debug.Assert(Image.TextureType == TextureType.TwoD, "non 2d texture write");
+            //Debug.Assert(Image.TextureType == TextureType.TwoD, "non 2d texture write");
 
             for (int Z = 0; Z < Depth; Z++)
             for (int Y = 0; Y < Height; Y++)
