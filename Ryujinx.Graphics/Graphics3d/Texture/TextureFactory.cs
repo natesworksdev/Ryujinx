@@ -94,6 +94,10 @@ namespace Ryujinx.Graphics.Texture
             GalTextureWrap AddressV = (GalTextureWrap)((Tsc[0] >> 3) & 7);
             GalTextureWrap AddressP = (GalTextureWrap)((Tsc[0] >> 6) & 7);
 
+            bool DepthCompare = ((Tsc[0] >> 9) & 1) == 1;
+
+            DepthCompareFunc DepthCompareFunc = (DepthCompareFunc)((Tsc[0] >> 10) & 7);
+
             GalTextureFilter    MagFilter = (GalTextureFilter)   ((Tsc[1] >> 0) & 3);
             GalTextureFilter    MinFilter = (GalTextureFilter)   ((Tsc[1] >> 4) & 3);
             GalTextureMipFilter MipFilter = (GalTextureMipFilter)((Tsc[1] >> 6) & 3);
@@ -111,7 +115,9 @@ namespace Ryujinx.Graphics.Texture
                 MinFilter,
                 MagFilter,
                 MipFilter,
-                BorderColor);
+                BorderColor,
+                DepthCompare,
+                DepthCompareFunc);
         }
 
         private static GalImageFormat GetImageFormat(int[] Tic)

@@ -235,18 +235,24 @@ namespace Ryujinx.Graphics.Gal.Shader
                         string Name = StagePrefix + TextureName + Index;
 
                         TextureType TextureType;
+                        
+                        TextureInstructionSuffix TextureInstructionSuffix;
 
                         // TODO: non 2d texture type for TEXQ?
                         if (Op.Inst == ShaderIrInst.Texq)
                         {
                             TextureType = TextureType.TwoD;
+                            TextureInstructionSuffix = TextureInstructionSuffix.None;
                         }
                         else
                         {
-                            TextureType = ((ShaderIrMetaTex)Op.MetaData).TextureType;
+                            ShaderIrMetaTex Meta = ((ShaderIrMetaTex)Op.MetaData);
+
+                            TextureType = Meta.TextureType;
+                            TextureInstructionSuffix = Meta.TextureInstructionSuffix;
                         }
 
-                        m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Handle, false, 0, 1, TextureType));
+                        m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Handle, false, 0, 1, TextureType, TextureInstructionSuffix));
                     }
                     else if (Op.Inst == ShaderIrInst.Texb)
                     {
@@ -271,9 +277,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         if (HandleSrc != null && HandleSrc is ShaderIrOperCbuf Cbuf)
                         {
+                            ShaderIrMetaTex Meta = ((ShaderIrMetaTex)Op.MetaData);
                             string Name = StagePrefix + TextureName + "_cb" + Cbuf.Index + "_" + Cbuf.Pos;
 
-                            m_CbTextures.Add(Op, new ShaderDeclInfo(Name, Cbuf.Pos, true, Cbuf.Index, 1, ((ShaderIrMetaTex)Op.MetaData).TextureType));
+                            m_CbTextures.Add(Op, new ShaderDeclInfo(Name, Cbuf.Pos, true, Cbuf.Index, 1, Meta.TextureType, Meta.TextureInstructionSuffix));
                         }
                         else
                         {

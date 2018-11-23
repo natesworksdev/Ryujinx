@@ -3,7 +3,7 @@
 namespace Ryujinx.Graphics.Texture
 {
     [Flags]
-    enum TextureInstructionSuffix
+    public enum TextureInstructionSuffix
     {
         None  = 0x00,  // No Modifier
         LZ    = 0x02,  // Load LOD Zero

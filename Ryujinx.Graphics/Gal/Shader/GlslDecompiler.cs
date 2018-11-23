@@ -221,35 +221,54 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        private string GetSamplerType(TextureTarget TextureTarget)
+        private string GetSamplerType(TextureTarget TextureTarget, bool HasShadow)
         {
+            string Result;
+
             switch (TextureTarget)
             {
                 case TextureTarget.Texture1D:
-                    return "sampler1D";
+                    Result = "sampler1D";
+                    break;
                 case TextureTarget.Texture2D:
-                    return "sampler2D";
+                    Result = "sampler2D";
+                    break;
                 case TextureTarget.Texture3D:
-                    return "sampler3D";
+                    Result = "sampler3D";
+                    break;
                 case TextureTarget.TextureCubeMap:
-                    return "samplerCube";
+                    Result = "samplerCube";
+                    break;
                 case TextureTarget.TextureRectangle:
-                    return "sampler2DRect";
+                    Result = "sampler2DRect";
+                    break;
                 case TextureTarget.Texture1DArray:
-                    return "sampler1DArray";
+                    Result = "sampler1DArray";
+                    break;
                 case TextureTarget.Texture2DArray:
-                    return "sampler2DArray";
+                    Result = "sampler2DArray";
+                    break;
                 case TextureTarget.TextureCubeMapArray:
-                    return "samplerCubeArray";
+                    Result = "samplerCubeArray";
+                    break;
                 case TextureTarget.TextureBuffer:
-                    return "samplerBuffer";
+                    Result = "samplerBuffer";
+                    break;
                 case TextureTarget.Texture2DMultisample:
-                    return "sampler2DMS";
+                    Result = "sampler2DMS";
+                    break;
                 case TextureTarget.Texture2DMultisampleArray:
-                    return "sampler2DMSArray";
+                    Result = "sampler2DMSArray";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
+
+            if (HasShadow)
+                Result += "Shadow";
+
+
+            return Result;
         }
 
         private void PrintDeclTextures()
@@ -257,15 +276,15 @@ namespace Ryujinx.Graphics.Gal.Shader
             foreach (ShaderDeclInfo DeclInfo in IterateCbTextures())
             {
                 TextureTarget Target = ImageUtils.GetTextureTarget(DeclInfo.TextureType);
-
-                SB.AppendLine("uniform " + GetSamplerType(Target) + " " + DeclInfo.Name + ";");
+                SB.AppendLine($"// {DeclInfo.TextureSuffix}");
+                SB.AppendLine("uniform " + GetSamplerType(Target, (DeclInfo.TextureSuffix & TextureInstructionSuffix.DC) != 0) + " " + DeclInfo.Name + ";");
             }
 
             foreach (ShaderDeclInfo DeclInfo in Decl.Textures.Values.OrderBy(DeclKeySelector))
             {
                 TextureTarget Target = ImageUtils.GetTextureTarget(DeclInfo.TextureType);
-
-                SB.AppendLine("uniform " + GetSamplerType(Target) + " " + DeclInfo.Name + ";");
+                SB.AppendLine($"// {DeclInfo.TextureSuffix}");
+                SB.AppendLine("uniform " + GetSamplerType(Target, (DeclInfo.TextureSuffix & TextureInstructionSuffix.DC) != 0) + " " + DeclInfo.Name + ";");
             }
         }
 
@@ -1303,9 +1322,12 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
 
+            bool HasDepth = (Meta.TextureInstructionSuffix & TextureInstructionSuffix.DC) != 0;
+
             int Coords = ImageUtils.GetCoordsCountTextureType(Meta.TextureType);
 
             bool IsArray = ImageUtils.IsArray(Meta.TextureType);
+
 
             string GetLastArgument(ShaderIrNode Node)
             {
@@ -1321,23 +1343,35 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             string LastArgument;
+            string DepthArgument = "";
+
+            int VecSize = Coords;
+            if (HasDepth)
+            {
+                VecSize++;
+                DepthArgument = $", {GetOperExpr(Op, Meta.DepthCompare)}";
+            }
 
             switch (Coords)
             {
                 case 1:
+                    if (HasDepth)
+                    {
+                        return $"vec2({GetOperExpr(Op, Meta.Coordinates[0])}{DepthArgument})";
+                    }
                     return GetOperExpr(Op, Meta.Coordinates[0]);
                 case 2:
                     LastArgument = GetLastArgument(Meta.Coordinates[1]);
 
-                    return "vec2(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + LastArgument + ")";
+                    return $"vec{VecSize}({GetOperExpr(Op, Meta.Coordinates[0])}, {LastArgument}{DepthArgument})";
                 case 3:
                     LastArgument = GetLastArgument(Meta.Coordinates[2]);
 
-                    return "vec3(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + LastArgument + ")";
+                    return $"vec{VecSize}({GetOperExpr(Op, Meta.Coordinates[0])}, {GetOperExpr(Op, Meta.Coordinates[1])}, {LastArgument}{DepthArgument})";
                 case 4:
                     LastArgument = GetLastArgument(Meta.Coordinates[3]);
 
-                    return "vec4(" + GetOperExpr(Op, Meta.Coordinates[0]) + ", " + GetOperExpr(Op, Meta.Coordinates[1]) + ", " + GetOperExpr(Op, Meta.Coordinates[2]) + ", " + LastArgument + ")";
+                    return $"vec4({GetOperExpr(Op, Meta.Coordinates[0])}, {GetOperExpr(Op, Meta.Coordinates[1])}, {GetOperExpr(Op, Meta.Coordinates[2])}, {LastArgument}){DepthArgument}";
                 default:
                     throw new InvalidOperationException();
             }
@@ -1378,6 +1412,13 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             TextureInstructionSuffix Suffix = Meta.TextureInstructionSuffix;
 
+            string ChString = "." + Ch;
+
+            if ((Suffix & TextureInstructionSuffix.DC) != 0)
+            {
+                ChString = "";
+            }
+
             // TODO: support LBA and LLA and DC
             if ((Suffix & TextureInstructionSuffix.LZ) != 0)
             {
@@ -1385,10 +1426,10 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
-                    return "textureLodOffset(" + Sampler + ", " + Coords + ", 0.0, " + Offset + ")." + Ch;
+                    return "textureLodOffset(" + Sampler + ", " + Coords + ", 0.0, " + Offset + ")" + ChString;
                 }
 
-                return "textureLod(" + Sampler + ", " + Coords + ", 0.0)." + Ch;
+                return "textureLod(" + Sampler + ", " + Coords + ", 0.0)" + ChString;
             }
             else if ((Suffix & TextureInstructionSuffix.LB) != 0)
             {
@@ -1396,10 +1437,10 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
-                    return "textureOffset(" + Sampler + ", " + Coords + ", " + Offset + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")." + Ch;
+                    return "textureOffset(" + Sampler + ", " + Coords + ", " + Offset + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")" + ChString;
                 }
 
-                return "texture(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")." + Ch;
+                return "texture(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")" + ChString;
             }
             else if ((Suffix & TextureInstructionSuffix.LL) != 0)
             {
@@ -1407,22 +1448,22 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
-                    return "textureLodOffset(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ", " + Offset + ")." + Ch;
+                    return "textureLodOffset(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ", " + Offset + ")" + ChString;
                 }
 
-                return "textureLod(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")." + Ch;
+                return "textureLod(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")" + ChString;
             }
             else if (Suffix == TextureInstructionSuffix.AOFFI)
             {
                 string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
-                return "textureOffset(" + Sampler + ", " + Coords + ", " + Offset + ")." + Ch;
+                return "textureOffset(" + Sampler + ", " + Coords + ", " + Offset + ")" + ChString;
             }
-            else if (Suffix == TextureInstructionSuffix.None || Suffix == TextureInstructionSuffix.DC)
+            else
             {
                 // FIXME: implement DC
                 // Load Standard
-                return "texture(" + Sampler + ", " + Coords + ")." + Ch;
+                return "texture(" + Sampler + ", " + Coords + ")" + ChString;
             }
             throw new NotImplementedException($"Texture Suffix {Meta.TextureInstructionSuffix} is not implemented");
 

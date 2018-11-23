@@ -13,13 +13,16 @@ namespace Ryujinx.Graphics.Gal
 
         public TextureType TextureType { get; private set; }
 
+        public TextureInstructionSuffix TextureSuffix { get; private set; }
+
         public ShaderDeclInfo(
             string Name,
             int    Index,
             bool   IsCb = false,
             int    Cbuf = 0,
             int    Size = 1,
-            TextureType TextureType = TextureType.TwoD)
+            TextureType TextureType = TextureType.TwoD,
+            TextureInstructionSuffix TextureSuffix = TextureInstructionSuffix.None)
         {
             this.Name        = Name;
             this.Index       = Index;
@@ -27,6 +30,8 @@ namespace Ryujinx.Graphics.Gal
             this.Cbuf        = Cbuf;
             this.Size        = Size;
             this.TextureType = TextureType;
+
+            this.TextureSuffix = TextureSuffix;
         }
 
         internal void Enlarge(int NewSize)

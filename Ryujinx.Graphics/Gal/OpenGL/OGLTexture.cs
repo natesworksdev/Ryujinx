@@ -370,6 +370,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             };
 
             GL.TexParameter(Target, TextureParameterName.TextureBorderColor, Color);
+
+            if (Sampler.DepthCompare)
+            {
+                GL.TexParameter(Target, TextureParameterName.TextureCompareMode, (int)All.CompareRToTexture);
+                GL.TexParameter(Target, TextureParameterName.TextureCompareFunc, (int)OGLEnumConverter.GetDepthCompareFunc(Sampler.DepthCompareFunc));
+            }
+            else
+            {
+                GL.TexParameter(Target, TextureParameterName.TextureCompareMode, (int)All.None);
+                GL.TexParameter(Target, TextureParameterName.TextureCompareFunc, (int)All.Never);
+            }
         }
     }
 }
