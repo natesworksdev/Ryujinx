@@ -89,6 +89,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             CpuMemory = new MemoryManager(System.Device.Memory.RamPointer);
 
+            CpuMemory.InvalidAccess += InvalidAccessHandler;
+
             AddressArbiter = new KAddressArbiter(System);
 
             MemoryManager = new KMemoryManager(System, CpuMemory);
@@ -118,6 +120,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             KResourceLimit      ResourceLimit,
             MemoryRegion        MemRegion)
         {
+            this.ResourceLimit = ResourceLimit;
+            this.MemRegion     = MemRegion;
+
             AddressSpaceType AddrSpaceType = (AddressSpaceType)((CreationInfo.MmuFlags >> 1) & 7);
 
             bool AslrEnabled = ((CreationInfo.MmuFlags >> 5) & 1) != 0;
@@ -127,8 +132,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             ulong CodeSize = (ulong)CreationInfo.CodePagesCount * KMemoryManager.PageSize;
 
             KMemoryBlockAllocator MemoryBlockAllocator = (MmuFlags & 0x40) != 0
-                ? System.MemoryBlockAllocatorSys
-                : System.MemoryBlockAllocator2;
+                ? System.LargeMemoryBlockAllocator
+                : System.SmallMemoryBlockAllocator;
 
             KernelResult Result = MemoryManager.InitializeForProcess(
                 AddrSpaceType,
@@ -221,8 +226,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             else
             {
                 MemoryBlockAllocator = (MmuFlags & 0x40) != 0
-                    ? System.MemoryBlockAllocatorSys
-                    : System.MemoryBlockAllocator2;
+                    ? System.LargeMemoryBlockAllocator
+                    : System.SmallMemoryBlockAllocator;
             }
 
             AddressSpaceType AddrSpaceType = (AddressSpaceType)((CreationInfo.MmuFlags >> 1) & 7);
@@ -988,6 +993,16 @@ namespace Ryujinx.HLE.HOS.Kernel
                     System.Scheduler.CoreManager.Set(Thread.Context.Work);
                 }
             }
+        }
+
+        private void InvalidAccessHandler(object sender, InvalidAccessEventArgs e)
+        {
+            PrintCurrentThreadStackTrace();
+        }
+
+        public void PrintCurrentThreadStackTrace()
+        {
+            System.Scheduler.GetCurrentThread().PrintGuestStackTrace();
         }
 
         private void CpuTraceHandler(object sender, CpuTraceEventArgs e)

@@ -261,10 +261,15 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Dynamic[Tag] = Value;
             }
 
-            long StrTblAddr = TextOffset + Dynamic[ElfDynamicTag.DT_STRTAB];
-            long SymTblAddr = TextOffset + Dynamic[ElfDynamicTag.DT_SYMTAB];
+            if (!Dynamic.TryGetValue(ElfDynamicTag.DT_STRTAB, out long StrTab) ||
+                !Dynamic.TryGetValue(ElfDynamicTag.DT_SYMTAB, out long SymTab) ||
+                !Dynamic.TryGetValue(ElfDynamicTag.DT_SYMENT, out long SymEntSize))
+            {
+                return;
+            }
 
-            long SymEntSize = Dynamic[ElfDynamicTag.DT_SYMENT];
+            long StrTblAddr = TextOffset + StrTab;
+            long SymTblAddr = TextOffset + SymTab;
 
             List<ElfSymbol> Symbols = new List<ElfSymbol>();
 

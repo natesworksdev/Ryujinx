@@ -39,8 +39,6 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private static Random Rng;
-
         public SvcHandler(Switch Device, KProcess Process)
         {
             SvcFuncs = new Dictionary<int, SvcFunc>()
@@ -77,6 +75,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 { 0x1f, SvcConnectToNamedPort            },
                 { 0x21, SvcSendSyncRequest               },
                 { 0x22, SvcSendSyncRequestWithUserBuffer },
+                { 0x24, GetProcessId64                   },
                 { 0x25, SvcGetThreadId                   },
                 { 0x26, SvcBreak                         },
                 { 0x27, SvcOutputDebugString             },
@@ -87,18 +86,17 @@ namespace Ryujinx.HLE.HOS.Kernel
                 { 0x33, SvcGetThreadContext3             },
                 { 0x34, SvcWaitForAddress                },
                 { 0x35, SvcSignalToAddress               },
-                { 0x45, CreateEvent64                    }
+                { 0x45, CreateEvent64                    },
+                { 0x65, GetProcessList64                 },
+                { 0x6f, GetSystemInfo64                  },
+                { 0x70, CreatePort64                     },
+                { 0x71, ManageNamedPort64                }
             };
 
             this.Device  = Device;
             this.Process = Process;
             this.System  = Device.System;
             this.Memory  = Process.CpuMemory;
-        }
-
-        static SvcHandler()
-        {
-            Rng = new Random();
         }
 
         public void SvcCall(object sender, InstExceptionEventArgs e)

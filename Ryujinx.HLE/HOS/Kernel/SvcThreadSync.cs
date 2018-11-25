@@ -32,6 +32,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 int Handle = Memory.ReadInt32(HandlesPtr + Index * 4);
 
+                Logger.PrintDebug(LogClass.KernelSvc, $"Sync handle 0x{Handle:x8}");
+
                 KSynchronizationObject SyncObj = Process.HandleTable.GetObject<KSynchronizationObject>(Handle);
 
                 if (SyncObj == null)

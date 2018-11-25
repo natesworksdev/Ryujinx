@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         public const int PageSize = 0x1000;
 
-        public const int KMemoryBlockSize = 0x40;
+        private const int KMemoryBlockSize = 0x40;
 
         //We need 2 blocks for the case where a big block
         //needs to be split in 2, plus one block that will be the new one inserted.
@@ -2394,6 +2394,11 @@ namespace Ryujinx.HLE.HOS.Kernel
         public bool OutsideAliasRegion(ulong Address, ulong Size)
         {
             return AliasRegionStart > Address || Address + Size - 1 > AliasRegionEnd - 1;
+        }
+
+        public bool OutsideAddrSpace(ulong Address, ulong Size)
+        {
+            return AddrSpaceStart > Address || Address + Size - 1 > AddrSpaceEnd - 1;
         }
 
         public bool OutsideStackRegion(ulong Address, ulong Size)

@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
 
-            if (!UserToKernelInt32(MutexAddress, out int MutexValue))
+            if (!KernelTransfer.UserToKernelInt32(System, MutexAddress, out int MutexValue))
             {
                 System.CriticalSection.Leave();
 
@@ -185,7 +185,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             long Result = 0;
 
-            if (!KernelToUserInt32(MutexAddress, MutexValue))
+            if (!KernelTransfer.KernelToUserInt32(System, MutexAddress, MutexValue))
             {
                 Result = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
             }
@@ -230,7 +230,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             CurrentProcess.CpuMemory.SetExclusive(0, Address);
 
-            if (!UserToKernelInt32(Address, out int MutexValue))
+            if (!KernelTransfer.UserToKernelInt32(System, Address, out int MutexValue))
             {
                 //Invalid address.
                 CurrentProcess.CpuMemory.ClearExclusive(0);
@@ -315,7 +315,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             CurrentThread.SignaledObj   = null;
             CurrentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
 
-            if (!UserToKernelInt32(Address, out int CurrentValue))
+            if (!KernelTransfer.UserToKernelInt32(System, Address, out int CurrentValue))
             {
                 System.CriticalSection.Leave();
 
@@ -391,7 +391,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             //If ShouldDecrement is true, do atomic decrement of the value at Address.
             CurrentProcess.CpuMemory.SetExclusive(0, Address);
 
-            if (!UserToKernelInt32(Address, out int CurrentValue))
+            if (!KernelTransfer.UserToKernelInt32(System, Address, out int CurrentValue))
             {
                 System.CriticalSection.Leave();
 
@@ -509,7 +509,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             CurrentProcess.CpuMemory.SetExclusive(0, Address);
 
-            if (!UserToKernelInt32(Address, out int CurrentValue))
+            if (!KernelTransfer.UserToKernelInt32(System, Address, out int CurrentValue))
             {
                 System.CriticalSection.Leave();
 
@@ -580,7 +580,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             CurrentProcess.CpuMemory.SetExclusive(0, Address);
 
-            if (!UserToKernelInt32(Address, out int CurrentValue))
+            if (!KernelTransfer.UserToKernelInt32(System, Address, out int CurrentValue))
             {
                 System.CriticalSection.Leave();
 
@@ -645,36 +645,6 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 ArbiterThreads.Remove(Thread);
             }
-        }
-
-        private bool UserToKernelInt32(long Address, out int Value)
-        {
-            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
-
-            if (CurrentProcess.CpuMemory.IsMapped(Address))
-            {
-                Value = CurrentProcess.CpuMemory.ReadInt32(Address);
-
-                return true;
-            }
-
-            Value = 0;
-
-            return false;
-        }
-
-        private bool KernelToUserInt32(long Address, int Value)
-        {
-            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
-
-            if (CurrentProcess.CpuMemory.IsMapped(Address))
-            {
-                CurrentProcess.CpuMemory.WriteInt32ToSharedAddr(Address, Value);
-
-                return true;
-            }
-
-            return false;
         }
     }
 }

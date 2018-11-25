@@ -14,6 +14,8 @@ namespace Ryujinx.HLE.Loaders.Executables
         public int DataOffset { get; private set; }
         public int BssSize    { get; private set; }
 
+        public int BssOffset => DataOffset + Data.Length;
+
         public ulong SourceAddress { get; private set; }
         public ulong BssAddress    { get; private set; }
 

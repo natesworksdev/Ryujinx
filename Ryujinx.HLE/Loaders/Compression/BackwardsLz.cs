@@ -39,8 +39,10 @@ namespace Ryujinx.HLE.Loaders.Compression
             }
         }
 
-        public static byte[] Decompress(Stream Input)
+        public static byte[] Decompress(Stream Input, int DecompressedLength)
         {
+            long End = Input.Position;
+
             BackwardsReader Reader = new BackwardsReader(Input);
 
             int AdditionalDecLength = Reader.ReadInt32();
@@ -49,14 +51,18 @@ namespace Ryujinx.HLE.Loaders.Compression
 
             Input.Seek(12 - StartOffset, SeekOrigin.Current);
 
-            byte[] Dec = new byte[CompressedLength + AdditionalDecLength];
+            byte[] Dec = new byte[DecompressedLength];
+
+            int DecompressedLengthUnpadded = CompressedLength + AdditionalDecLength;
+
+            int DecompressionStart = DecompressedLength - DecompressedLengthUnpadded;
 
             int DecPos = Dec.Length;
 
             byte Mask   = 0;
             byte Header = 0;
 
-            while (DecPos > 0)
+            while (DecPos > DecompressionStart)
             {
                 if ((Mask >>= 1) == 0)
                 {
@@ -75,19 +81,19 @@ namespace Ryujinx.HLE.Loaders.Compression
                     int Length   = (Pair >> 12)   + 3;
                     int Position = (Pair & 0xfff) + 3;
 
-                    if (Position - Length >= DecPos)
+                    DecPos -= Length;
+
+                    if (Length <= Position)
                     {
                         int SrcPos = DecPos + Position;
-
-                        DecPos -= Length;
 
                         Buffer.BlockCopy(Dec, SrcPos, Dec, DecPos, Length);
                     }
                     else
                     {
-                        while (Length-- > 0)
+                        for (int Offset = 0; Offset < Length; Offset++)
                         {
-                            Dec[--DecPos] = Dec[DecPos + Position + 1];
+                            Dec[DecPos + Offset] = Dec[DecPos + Position + Offset];
                         }
                     }
                 }

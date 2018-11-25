@@ -7,6 +7,7 @@ using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,9 +26,14 @@ namespace Ryujinx.HLE.HOS
         internal const int HidSize  = 0x40000;
         internal const int FontSize = 0x1100000;
 
+        private const int MemoryBlockAllocatorSize = 0x2710;
+
         private const ulong UserSlabHeapBase     = DramMemoryMap.SlabHeapBase;
         private const ulong UserSlabHeapItemSize = KMemoryManager.PageSize;
         private const ulong UserSlabHeapSize     = 0x3de000;
+
+        internal long PrivilegedProcessLowestId  { get; set; } = 1;
+        internal long PrivilegedProcessHighestId { get; set; } = 8;
 
         internal Switch Device { get; private set; }
 
@@ -39,8 +45,8 @@ namespace Ryujinx.HLE.HOS
 
         internal KMemoryRegionManager[] MemoryRegions { get; private set; }
 
-        internal KMemoryBlockAllocator MemoryBlockAllocatorSys { get; private set; }
-        internal KMemoryBlockAllocator MemoryBlockAllocator2   { get; private set; }
+        internal KMemoryBlockAllocator LargeMemoryBlockAllocator { get; private set; }
+        internal KMemoryBlockAllocator SmallMemoryBlockAllocator { get; private set; }
 
         internal KSlabHeap UserSlabHeapPages { get; private set; }
 
@@ -60,7 +66,9 @@ namespace Ryujinx.HLE.HOS
 
         internal CountdownEvent ThreadCounter;
 
-        internal LinkedList<KProcess> Processes;
+        internal SortedDictionary<long, KProcess> Processes;
+
+        internal ConcurrentDictionary<string, KAutoObject> AutoObjectNames;
 
         internal bool EnableVersionChecks { get; private set; }
 
@@ -99,8 +107,8 @@ namespace Ryujinx.HLE.HOS
 
             MemoryRegions = KernelInit.GetMemoryRegions();
 
-            MemoryBlockAllocatorSys = new KMemoryBlockAllocator(0x4e20000);
-            MemoryBlockAllocator2   = new KMemoryBlockAllocator(0x2710000);
+            LargeMemoryBlockAllocator = new KMemoryBlockAllocator(MemoryBlockAllocatorSize * 2);
+            SmallMemoryBlockAllocator = new KMemoryBlockAllocator(MemoryBlockAllocatorSize);
 
             UserSlabHeapPages = new KSlabHeap(
                 UserSlabHeapBase,
@@ -126,9 +134,13 @@ namespace Ryujinx.HLE.HOS
 
             ThreadCounter = new CountdownEvent(1);
 
-            Processes = new LinkedList<KProcess>();
+            Processes = new SortedDictionary<long, KProcess>();
 
-            KMemoryRegionManager Region = MemoryRegions[(int)MemoryRegion.Service];
+            AutoObjectNames = new ConcurrentDictionary<string, KAutoObject>();
+
+            //Note: This is not really correct, but with HLE of services, the only memory
+            //region used that is used is Application, so we can use the other ones for anything.
+            KMemoryRegionManager Region = MemoryRegions[(int)MemoryRegion.NvServices];
 
             ulong HidPa  = Region.Address;
             ulong FontPa = Region.Address + HidSize;
@@ -588,9 +600,12 @@ namespace Ryujinx.HLE.HOS
             if (Disposing)
             {
                 //Force all threads to exit.
-                foreach (KProcess Process in Processes)
+                lock (Processes)
                 {
-                    Process.StopAllThreads();
+                    foreach (KProcess Process in Processes.Values)
+                    {
+                        Process.StopAllThreads();
+                    }
                 }
 
                 //It's only safe to release resources once all threads

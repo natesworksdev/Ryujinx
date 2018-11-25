@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     int PrevCap = Cap;
 
-                    Cap = Caps[Index + 1];
+                    Cap = Caps[++Index];
 
                     if (((Cap + 1) & ~Cap) != 0x40)
                     {

@@ -10,11 +10,12 @@ namespace Ryujinx.HLE.Loaders.Executables
         public byte[] RO   { get; private set; }
         public byte[] Data { get; private set; }
 
-        public int Mod0Offset { get; private set; }
         public int TextOffset { get; private set; }
         public int ROOffset   { get; private set; }
         public int DataOffset { get; private set; }
         public int BssSize    { get; private set; }
+
+        public int BssOffset => DataOffset + Data.Length;
 
         [Flags]
         private enum NsoFlags
@@ -102,15 +103,6 @@ namespace Ryujinx.HLE.Loaders.Executables
             if (Flags.HasFlag(NsoFlags.IsDataCompressed))
             {
                 Data = Lz4.Decompress(Data, DataDecSize);
-            }
-
-            using (MemoryStream TextMS = new MemoryStream(Text))
-            {
-                BinaryReader TextReader = new BinaryReader(TextMS);
-
-                TextMS.Seek(4, SeekOrigin.Begin);
-
-                Mod0Offset = TextReader.ReadInt32();
             }
         }
     }

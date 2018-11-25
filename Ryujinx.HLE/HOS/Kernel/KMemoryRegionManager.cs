@@ -99,18 +99,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (BlockOrdersCount > 0)
             {
-                ulong AvailablePages = 0;
-
-                for (int BlockIndex = 0; BlockIndex < BlockOrdersCount; BlockIndex++)
-                {
-                    KMemoryRegionBlock Block = Blocks[BlockIndex];
-
-                    ulong BlockPagesCount = (1UL << Block.Order) / KMemoryManager.PageSize;
-
-                    AvailablePages += BlockPagesCount * Block.FreeCount;
-                }
-
-                if (AvailablePages < PagesCount)
+                if (GetFreePagesImpl() < PagesCount)
                 {
                     return KernelResult.OutOfMemory;
                 }
@@ -410,6 +399,30 @@ namespace Ryujinx.HLE.HOS.Kernel
                     BaseAddress += BlockSize;
                 }
             }
+        }
+
+        public ulong GetFreePages()
+        {
+            lock (Blocks)
+            {
+                return GetFreePagesImpl();
+            }
+        }
+
+        private ulong GetFreePagesImpl()
+        {
+            ulong AvailablePages = 0;
+
+            for (int BlockIndex = 0; BlockIndex < BlockOrdersCount; BlockIndex++)
+            {
+                KMemoryRegionBlock Block = Blocks[BlockIndex];
+
+                ulong BlockPagesCount = (1UL << Block.Order) / KMemoryManager.PageSize;
+
+                AvailablePages += BlockPagesCount * Block.FreeCount;
+            }
+
+            return AvailablePages;
         }
     }
 }

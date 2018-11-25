@@ -233,7 +233,6 @@ namespace ChocolArm64.Memory
                 return (ulong)ReadUInt32(position + 0) << 0 |
                        (ulong)ReadUInt32(position + 4) << 32;
             }
-
         }
 
         public Vector128<float> ReadVector8(long position)

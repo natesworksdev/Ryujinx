@@ -14,10 +14,6 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {
-        private const int AllowedCpuIdBitmask = 0b1111;
-
-        private const bool EnableProcessDebugging = false;
-
         private void SvcExitProcess(CpuThreadState ThreadState)
         {
             System.Scheduler.GetCurrentProcess().Terminate();
@@ -252,6 +248,41 @@ namespace Ryujinx.HLE.HOS.Kernel
             IpcMessage.Thread.Reschedule(ThreadSchedState.Running);
         }
 
+        private void GetProcessId64(CpuThreadState ThreadState)
+        {
+            int Handle = (int)ThreadState.X1;
+
+            KernelResult Result = GetProcessId(Handle, out long Pid);
+
+            ThreadState.X0 = (ulong)Result;
+            ThreadState.X1 = (ulong)Pid;
+        }
+
+        private KernelResult GetProcessId(int Handle, out long Pid)
+        {
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            KProcess Process = CurrentProcess.HandleTable.GetKProcess(Handle);
+
+            if (Process == null)
+            {
+                KThread Thread = CurrentProcess.HandleTable.GetKThread(Handle);
+
+                if (Thread != null)
+                {
+                    Process = Thread.Owner;
+                }
+
+                //TODO: KDebugEvent.
+            }
+
+            Pid = Process?.Pid ?? 0;
+
+            return Process != null
+                ? KernelResult.Success
+                : KernelResult.InvalidHandle;
+        }
+
         private void SvcBreak(CpuThreadState ThreadState)
         {
             long Reason  = (long)ThreadState.X0;
@@ -289,7 +320,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         private void GetInfo64(CpuThreadState ThreadState)
         {
             long StackPtr = (long)ThreadState.X0;
-            int  Id       =  (int)ThreadState.X1;
+            uint Id       = (uint)ThreadState.X1;
             int  Handle   =  (int)ThreadState.X2;
             long SubId    = (long)ThreadState.X3;
 
@@ -299,7 +330,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             ThreadState.X1 = (ulong)Value;
         }
 
-        private KernelResult GetInfo(int Id, int Handle, long SubId, out long Value)
+        private KernelResult GetInfo(uint Id, int Handle, long SubId, out long Value)
         {
             Value = 0;
 
@@ -465,12 +496,15 @@ namespace Ryujinx.HLE.HOS.Kernel
                         return KernelResult.InvalidCombination;
                     }
 
-                    Value = System.Scheduler.GetCurrentProcess().RandomEntropy[SubId];
+                    KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+
+                    Value = CurrentProcess.RandomEntropy[SubId];
 
                     break;
                 }
 
-                case unchecked((int)0xf0000002u):
+                case 0xf0000002u:
                 {
                     if (SubId < -1 || SubId > 3)
                     {
@@ -549,6 +583,242 @@ namespace Ryujinx.HLE.HOS.Kernel
             else
             {
                 REventHandle = 0;
+            }
+
+            return Result;
+        }
+
+        private void GetProcessList64(CpuThreadState State)
+        {
+            ulong Address =      State.X1;
+            int   MaxOut  = (int)State.X2;
+
+            KernelResult Result = GetProcessList(Address, MaxOut, out int Count);
+
+            State.X0 = (ulong)Result;
+            State.X1 = (ulong)Count;
+        }
+
+        private KernelResult GetProcessList(ulong Address, int MaxCount, out int Count)
+        {
+            Count = 0;
+
+            if ((MaxCount >> 28) != 0)
+            {
+                return KernelResult.MaximumExceeded;
+            }
+
+            if (MaxCount != 0)
+            {
+                KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+                ulong CopySize = (ulong)MaxCount * 8;
+
+                if (Address + CopySize <= Address)
+                {
+                    return KernelResult.InvalidMemState;
+                }
+
+                if (CurrentProcess.MemoryManager.OutsideAddrSpace(Address, CopySize))
+                {
+                    return KernelResult.InvalidMemState;
+                }
+            }
+
+            int CopyCount = 0;
+
+            lock (System.Processes)
+            {
+                foreach (KProcess Process in System.Processes.Values)
+                {
+                    if (CopyCount < MaxCount)
+                    {
+                        if (!KernelTransfer.KernelToUserInt64(System, (long)Address + CopyCount * 8, Process.Pid))
+                        {
+                            return KernelResult.UserCopyFailed;
+                        }
+                    }
+
+                    CopyCount++;
+                }
+            }
+
+            Count = CopyCount;
+
+            return KernelResult.Success;
+        }
+
+        private void GetSystemInfo64(CpuThreadState State)
+        {
+            uint Id     = (uint)State.X1;
+            int  Handle =  (int)State.X2;
+            long SubId  = (long)State.X3;
+
+            KernelResult Result = GetSystemInfo(Id, Handle, SubId, out long Value);
+
+            State.X0 = (ulong)Result;
+            State.X1 = (ulong)Value;
+        }
+
+        private KernelResult GetSystemInfo(uint Id, int Handle, long SubId, out long Value)
+        {
+            Value = 0;
+
+            if (Id > 2)
+            {
+                return KernelResult.InvalidEnumValue;
+            }
+
+            if (Handle != 0)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            if (Id < 2)
+            {
+                if ((ulong)SubId > 3)
+                {
+                    return KernelResult.InvalidCombination;
+                }
+
+                KMemoryRegionManager Region = System.MemoryRegions[SubId];
+
+                switch (Id)
+                {
+                    //Memory region capacity.
+                    case 0: Value = (long)Region.Size; break;
+
+                    //Memory region free space.
+                    case 1:
+                    {
+                        ulong FreePagesCount = Region.GetFreePages();
+
+                        Value = (long)(FreePagesCount * KMemoryManager.PageSize);
+
+                        break;
+                    }
+                }
+            }
+            else /* if (Id == 2) */
+            {
+                if ((ulong)SubId > 1)
+                {
+                    return KernelResult.InvalidCombination;
+                }
+
+                switch (SubId)
+                {
+                    case 0: Value = System.PrivilegedProcessLowestId;  break;
+                    case 1: Value = System.PrivilegedProcessHighestId; break;
+                }
+            }
+
+            return KernelResult.Success;
+        }
+
+        private void CreatePort64(CpuThreadState State)
+        {
+            int  MaxSessions =  (int)State.X2;
+            bool IsLight     =      (State.X3 & 1) != 0;
+            long NameAddress = (long)State.X4;
+
+            KernelResult Result = CreatePort(
+                MaxSessions,
+                IsLight,
+                NameAddress,
+                out int ServerPortHandle,
+                out int ClientPortHandle);
+
+            State.X0 = (ulong)Result;
+            State.X1 = (ulong)ServerPortHandle;
+            State.X2 = (ulong)ClientPortHandle;
+        }
+
+        private KernelResult CreatePort(
+            int     MaxSessions,
+            bool    IsLight,
+            long    NameAddress,
+            out int ServerPortHandle,
+            out int ClientPortHandle)
+        {
+            ServerPortHandle = ClientPortHandle = 0;
+
+            if (MaxSessions < 1)
+            {
+                return KernelResult.MaximumExceeded;
+            }
+
+            KPort Port = new KPort(System);
+
+            Port.Initialize(MaxSessions, IsLight, NameAddress);
+
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            KernelResult Result = CurrentProcess.HandleTable.GenerateHandle(Port.ClientPort, out ClientPortHandle);
+
+            if (Result != KernelResult.Success)
+            {
+                return Result;
+            }
+
+            Result = CurrentProcess.HandleTable.GenerateHandle(Port.ServerPort, out ServerPortHandle);
+
+            if (Result != KernelResult.Success)
+            {
+                CurrentProcess.HandleTable.CloseHandle(ClientPortHandle);
+            }
+
+            return Result;
+        }
+
+        private void ManageNamedPort64(CpuThreadState State)
+        {
+            long NameAddress = (long)State.X1;
+            int  MaxSessions =  (int)State.X2;
+
+            KernelResult Result = ManageNamedPort(NameAddress, MaxSessions, out int Handle);
+
+            State.X0 = (ulong)Result;
+            State.X1 = (ulong)Handle;
+        }
+
+        private KernelResult ManageNamedPort(long NameAddress, int MaxSessions, out int Handle)
+        {
+            Handle = 0;
+
+            if (!KernelTransfer.UserToKernelString(System, NameAddress, 12, out string Name))
+            {
+                return KernelResult.UserCopyFailed;
+            }
+
+            if (MaxSessions < 0 || Name.Length > 11)
+            {
+                return KernelResult.MaximumExceeded;
+            }
+
+            if (MaxSessions == 0)
+            {
+                return KClientPort.RemoveName(System, Name);
+            }
+
+            KPort Port = new KPort(System);
+
+            KProcess CurrentProcess = System.Scheduler.GetCurrentProcess();
+
+            KernelResult Result = CurrentProcess.HandleTable.GenerateHandle(Port.ServerPort, out Handle);
+
+            if (Result != KernelResult.Success)
+            {
+                return Result;
+            }
+
+            Port.Initialize(MaxSessions, false, 0);
+
+            Result = Port.SetName(Name);
+
+            if (Result != KernelResult.Success)
+            {
+                CurrentProcess.HandleTable.CloseHandle(Handle);
             }
 
             return Result;

@@ -9,9 +9,111 @@ namespace Ryujinx.HLE.HOS
 {
     class ProgramLoader
     {
+        private const bool AslrEnabled = true;
+
         private const int ArgsHeaderSize = 8;
         private const int ArgsDataSize   = 0x9000;
         private const int ArgsTotalSize  = ArgsHeaderSize + ArgsDataSize;
+
+        public static bool LoadKernelInitalProcess(Horizon System, KernelInitialProcess Kip)
+        {
+            int EndOffset = Kip.DataOffset + Kip.Data.Length;
+
+            if (Kip.BssSize != 0)
+            {
+                EndOffset = Kip.BssOffset + Kip.BssSize;
+            }
+
+            int CodeSize = BitUtils.AlignUp(Kip.TextOffset + EndOffset, KMemoryManager.PageSize);
+
+            int CodePagesCount = CodeSize / KMemoryManager.PageSize;
+
+            ulong CodeBaseAddress = Kip.Addr39Bits ? 0x8000000UL : 0x200000UL;
+
+            ulong CodeAddress = CodeBaseAddress + (ulong)Kip.TextOffset;
+
+            int MmuFlags = 0;
+
+            if (AslrEnabled)
+            {
+                //TODO: Randomization.
+
+                MmuFlags |= 0x20;
+            }
+
+            if (Kip.Addr39Bits)
+            {
+                MmuFlags |= (int)AddressSpaceType.Addr39Bits << 1;
+            }
+
+            if (Kip.Is64Bits)
+            {
+                MmuFlags |= 1;
+            }
+
+            ProcessCreationInfo CreationInfo = new ProcessCreationInfo(
+                Kip.Name,
+                Kip.ProcessCategory,
+                Kip.TitleId,
+                CodeAddress,
+                CodePagesCount,
+                MmuFlags,
+                0,
+                0);
+
+            MemoryRegion MemRegion = Kip.IsService
+                ? MemoryRegion.Service
+                : MemoryRegion.Application;
+
+            KMemoryRegionManager Region = System.MemoryRegions[(int)MemRegion];
+
+            KernelResult Result = Region.AllocatePages((ulong)CodePagesCount, false, out KPageList PageList);
+
+            if (Result != KernelResult.Success)
+            {
+                Logger.PrintError(LogClass.Loader, $"Process initialization returned error \"{Result}\".");
+
+                return false;
+            }
+
+            KProcess Process = new KProcess(System);
+
+            Result = Process.InitializeKip(
+                CreationInfo,
+                Kip.Capabilities,
+                PageList,
+                System.ResourceLimit,
+                MemRegion);
+
+            if (Result != KernelResult.Success)
+            {
+                Logger.PrintError(LogClass.Loader, $"Process initialization returned error \"{Result}\".");
+
+                return false;
+            }
+
+            Result = LoadIntoMemory(Process, Kip, CodeBaseAddress);
+
+            if (Result != KernelResult.Success)
+            {
+                Logger.PrintError(LogClass.Loader, $"Process initialization returned error \"{Result}\".");
+
+                return false;
+            }
+
+            Result = Process.Start(Kip.MainThreadPriority, (ulong)Kip.MainThreadStackSize);
+
+            if (Result != KernelResult.Success)
+            {
+                Logger.PrintError(LogClass.Loader, $"Process start returned error \"{Result}\".");
+
+                return false;
+            }
+
+            System.Processes.Add(Process.Pid, Process);
+
+            return true;
+        }
 
         public static bool LoadStaticObjects(
             Horizon       System,
@@ -66,8 +168,6 @@ namespace Ryujinx.HLE.HOS
 
             int PersonalMmHeapPagesCount = MetaData.PersonalMmHeapSize / KMemoryManager.PageSize;
 
-            KProcess Process = new KProcess(System);
-
             ProcessCreationInfo CreationInfo = new ProcessCreationInfo(
                 MetaData.TitleName,
                 MetaData.ProcessCategory,
@@ -97,6 +197,8 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
+            KProcess Process = new KProcess(System);
+
             Result = Process.Initialize(
                 CreationInfo,
                 MetaData.ACI0.KernelAccessControl.Capabilities,
@@ -114,31 +216,11 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.PrintInfo(LogClass.Loader, $"Loading image {Index} at 0x{NsoBase[Index]:x16}...");
 
-                IExecutable StaticObject = StaticObjects[Index];
-
-                ulong TextStart = NsoBase[Index] + (ulong)StaticObject.TextOffset;
-                ulong ROStart   = NsoBase[Index] + (ulong)StaticObject.ROOffset;
-                ulong DataStart = NsoBase[Index] + (ulong)StaticObject.DataOffset;
-
-                ulong BssStart = DataStart + (ulong)StaticObject.Data.Length;
-
-                ulong BssEnd = BitUtils.AlignUp(BssStart + (ulong)StaticObject.BssSize, KMemoryManager.PageSize);
-
-                Process.CpuMemory.WriteBytes((long)TextStart, StaticObject.Text);
-                Process.CpuMemory.WriteBytes((long)ROStart,   StaticObject.RO);
-                Process.CpuMemory.WriteBytes((long)DataStart, StaticObject.Data);
-
-                MemoryHelper.FillWithZeros(Process.CpuMemory, (long)BssStart, (int)(BssEnd - BssStart));
-
-                KMemoryManager MemMgr = Process.MemoryManager;
-
-                Result  = MemMgr.SetProcessMemoryPermission(TextStart, ROStart   - TextStart, MemoryPermission.ReadAndExecute);
-                Result |= MemMgr.SetProcessMemoryPermission(ROStart,   DataStart - ROStart,   MemoryPermission.Read);
-                Result |= MemMgr.SetProcessMemoryPermission(DataStart, BssEnd    - DataStart, MemoryPermission.ReadAndWrite);
+                Result = LoadIntoMemory(Process, StaticObjects[Index], NsoBase[Index]);
 
                 if (Result != KernelResult.Success)
                 {
-                    Logger.PrintError(LogClass.Loader, $"Process initialization failed setting memory permissions.");
+                    Logger.PrintError(LogClass.Loader, $"Process initialization returned error \"{Result}\".");
 
                     return false;
                 }
@@ -153,9 +235,58 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            System.Processes.AddLast(Process);
+            System.Processes.Add(Process.Pid, Process);
 
             return true;
+        }
+
+        private static KernelResult LoadIntoMemory(KProcess Process, IExecutable Image, ulong BaseAddress)
+        {
+            ulong TextStart = BaseAddress + (ulong)Image.TextOffset;
+            ulong ROStart   = BaseAddress + (ulong)Image.ROOffset;
+            ulong DataStart = BaseAddress + (ulong)Image.DataOffset;
+            ulong BssStart  = BaseAddress + (ulong)Image.BssOffset;
+
+            ulong End = DataStart + (ulong)Image.Data.Length;
+
+            if (Image.BssSize != 0)
+            {
+                End = BssStart + (ulong)Image.BssSize;
+            }
+
+            Process.CpuMemory.WriteBytes((long)TextStart, Image.Text);
+            Process.CpuMemory.WriteBytes((long)ROStart,   Image.RO);
+            Process.CpuMemory.WriteBytes((long)DataStart, Image.Data);
+
+            MemoryHelper.FillWithZeros(Process.CpuMemory, (long)BssStart, Image.BssSize);
+
+            KernelResult SetProcessMemoryPermission(ulong Address, ulong Size, MemoryPermission Permission)
+            {
+                if (Size == 0)
+                {
+                    return KernelResult.Success;
+                }
+
+                Size = BitUtils.AlignUp(Size, KMemoryManager.PageSize);
+
+                return Process.MemoryManager.SetProcessMemoryPermission(Address, Size, Permission);
+            }
+
+            KernelResult Result = SetProcessMemoryPermission(TextStart, (ulong)Image.Text.Length, MemoryPermission.ReadAndExecute);
+
+            if (Result != KernelResult.Success)
+            {
+                return Result;
+            }
+
+            Result = SetProcessMemoryPermission(ROStart, (ulong)Image.RO.Length, MemoryPermission.Read);
+
+            if (Result != KernelResult.Success)
+            {
+                return Result;
+            }
+
+            return SetProcessMemoryPermission(DataStart, End - DataStart, MemoryPermission.ReadAndWrite);
         }
     }
 }
