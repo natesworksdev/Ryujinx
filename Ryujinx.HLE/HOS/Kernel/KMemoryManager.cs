@@ -1527,7 +1527,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     while (DstVaPages > 0)
                     {
-                        if (PageNode.PagesCount == 0)
+                        if (SrcPaPages == 0)
                         {
                             PageListNode = PageListNode.Next;
 
@@ -1537,7 +1537,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                             SrcPaPages = PageNode.PagesCount;
                         }
 
-                        ulong PagesCount = PageNode.PagesCount;
+                        ulong PagesCount = SrcPaPages;
 
                         if (PagesCount > DstVaPages)
                         {
