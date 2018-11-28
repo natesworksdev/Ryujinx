@@ -691,32 +691,42 @@ namespace Ryujinx.HLE.HOS.Kernel
             lock (Blocks)
             {
                 bool Success = CheckRange(
-                    Dst,
+                    Src,
                     Size,
                     MemoryState.Mask,
-                    MemoryState.CodeStatic,
+                    MemoryState.Heap,
                     MemoryPermission.None,
                     MemoryPermission.None,
                     MemoryAttribute.Mask,
-                    MemoryAttribute.None,
+                    MemoryAttribute.Borrowed,
                     MemoryAttribute.IpcAndDeviceMapped,
                     out _,
                     out _,
                     out _);
 
                 Success &= CheckRange(
-                    Src,
-                    Size,
-                    MemoryState.Mask,
-                    MemoryState.Heap,
-                    MemoryPermission.Mask,
+                    Dst,
+                    PageSize,
+                    MemoryState.UnmapProcessCodeMemoryAllowed,
+                    MemoryState.UnmapProcessCodeMemoryAllowed,
+                    MemoryPermission.None,
                     MemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
-                    out _,
+                    out MemoryState State,
                     out _,
                     out _);
+
+                Success &= CheckRange(
+                    Dst,
+                    Size,
+                    MemoryState.Mask,
+                    State,
+                    MemoryPermission.None,
+                    MemoryPermission.None,
+                    MemoryAttribute.Mask,
+                    MemoryAttribute.None);
 
                 if (Success)
                 {
@@ -1684,6 +1694,45 @@ namespace Ryujinx.HLE.HOS.Kernel
             OutState      = MemoryState.Unmapped;
             OutPermission = MemoryPermission.None;
             OutAttribute  = MemoryAttribute.None;
+
+            return false;
+        }
+
+        private bool CheckRange(
+            ulong            Address,
+            ulong            Size,
+            MemoryState      StateMask,
+            MemoryState      StateExpected,
+            MemoryPermission PermissionMask,
+            MemoryPermission PermissionExpected,
+            MemoryAttribute  AttributeMask,
+            MemoryAttribute  AttributeExpected)
+        {
+            ulong EndAddr = Address + Size - 1;
+
+            LinkedListNode<KMemoryBlock> Node = FindBlockNode(Address);
+
+            do
+            {
+                KMemoryInfo Info = Node.Value.GetInfo();
+
+                //Check if the block state matches what we expect.
+                if ((Info.State      & StateMask)      != StateExpected      ||
+                    (Info.Permission & PermissionMask) != PermissionExpected ||
+                    (Info.Attribute  & AttributeMask)  != AttributeExpected)
+                {
+                    break;
+                }
+
+                //Check if this is the last block on the range, if so return success.
+                if (EndAddr <= Info.Address + Info.Size - 1)
+                {
+                    return true;
+                }
+
+                Node = Node.Next;
+            }
+            while (Node != null);
 
             return false;
         }

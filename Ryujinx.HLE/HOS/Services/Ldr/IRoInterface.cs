@@ -286,7 +286,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
             KMemoryManager MemMgr = Context.Process.MemoryManager;
 
-            ulong TargetAddress = MemMgr.AddrSpaceStart;
+            ulong TargetAddress = MemMgr.GetAddrSpaceBaseAddr();
 
             while (true)
             {
@@ -400,25 +400,43 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
             return MakeError(ErrorModule.Loader, LoaderErr.BadNrrAddress);
         }
 
-        private long RemoveNroInfo(ServiceCtx Context, ulong NroMappedAddress, ulong NroHeapAddress)
+        private long RemoveNroInfo(ServiceCtx Context, ulong NroMappedAddress)
         {
             foreach (NroInfo Info in NroInfos)
             {
-                if (Info.NroMappedAddress == NroMappedAddress && Info.Executable.SourceAddress == NroHeapAddress)
+                if (Info.NroMappedAddress == NroMappedAddress)
                 {
                     NroInfos.Remove(Info);
 
-                    KernelResult Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(
-                        Info.NroMappedAddress,
-                        Info.Executable.SourceAddress,
-                        Info.TotalSize - (ulong)Info.Executable.BssSize);
+                    ulong TextSize = (ulong)Info.Executable.Text.Length;
+                    ulong ROSize   = (ulong)Info.Executable.RO.Length;
+                    ulong DataSize = (ulong)Info.Executable.Data.Length;
+                    ulong BssSize  = (ulong)Info.Executable.BssSize;
 
-                    if (Result == KernelResult.Success && Info.Executable.BssSize != 0)
+                    KernelResult Result = KernelResult.Success;
+
+                    if (Info.Executable.BssSize != 0)
                     {
                         Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(
-                            Info.NroMappedAddress + Info.TotalSize - (ulong)Info.Executable.BssSize,
+                            Info.NroMappedAddress + TextSize + ROSize + DataSize,
                             Info.Executable.BssAddress,
-                            (ulong)Info.Executable.BssSize);
+                            BssSize);
+                    }
+
+                    if (Result == KernelResult.Success)
+                    {
+                        Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(
+                            Info.NroMappedAddress         + TextSize + ROSize,
+                            Info.Executable.SourceAddress + TextSize + ROSize,
+                            DataSize);
+
+                        if (Result == KernelResult.Success)
+                        {
+                            Result = Context.Process.MemoryManager.UnmapProcessCodeMemory(
+                                Info.NroMappedAddress,
+                                Info.Executable.SourceAddress,
+                                TextSize + ROSize);
+                        }
                     }
 
                     return (long)Result;
@@ -470,17 +488,19 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
         {
             long Result = MakeError(ErrorModule.Loader, LoaderErr.BadInitialization);
 
+            // Zero
+            Context.RequestData.ReadUInt64();
+
             ulong NroMappedAddress = Context.RequestData.ReadUInt64();
-            ulong NroHeapAddress   = Context.RequestData.ReadUInt64();
 
             if (IsInitialized)
             {
-                if ((NroMappedAddress & 0xFFF) != 0 || (NroHeapAddress & 0xFFF) != 0)
+                if ((NroMappedAddress & 0xFFF) != 0)
                 {
                     return MakeError(ErrorModule.Loader, LoaderErr.UnalignedAddress);
                 }
 
-                Result = RemoveNroInfo(Context, NroMappedAddress, NroHeapAddress);
+                Result = RemoveNroInfo(Context, NroMappedAddress);
             }
 
             return Result;
