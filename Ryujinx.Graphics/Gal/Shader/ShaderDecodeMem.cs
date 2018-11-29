@@ -271,9 +271,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             bool IsArray = OpCode.HasArray();
 
             TextureType TextureType = TexToTextureType(OpCode.Read(28, 6), IsArray);
-            Block.AddNode(new ShaderIrCmnt($"TextureType: {TextureType}"));
-            Block.AddNode(new ShaderIrCmnt($"TextureInstructionSuffix: {TextureInstructionSuffix}"));
-            Block.AddNode(new ShaderIrCmnt($"Array: {IsArray}"));
 
             bool HasDepthCompare = OpCode.Read(0x32);
 
@@ -458,25 +455,14 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private static void EmitTexs(ShaderIrBlock Block, long OpCode, ShaderIrInst Inst, TextureType TextureType, TextureInstructionSuffix TextureInstructionSuffix)
         {
-            Block.AddNode(new ShaderIrCmnt($"TextureType: {TextureType}"));
-            Block.AddNode(new ShaderIrCmnt($"TextureInstructionSuffix: {TextureInstructionSuffix}"));
-
             if (Inst == ShaderIrInst.Txlf && TextureType == TextureType.CubeArray)
             {
                 throw new InvalidOperationException("TLDS instructions cannot use CUBE modifier!");
             }
 
-            // This is the only array type that is known to be usable with TEXS
             bool IsArray = ImageUtils.IsArray(TextureType);
 
             ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
-
-            if ((TextureInstructionSuffix & TextureInstructionSuffix.DC) != 0)
-            {
-                // TODO
-                //throw new NotImplementedException($"TEXS.DC isn't implemented yet");
-            }
-
 
             ShaderIrOperGpr OperA = OpCode.Gpr8();
             ShaderIrOperGpr OperB = OpCode.Gpr20();

@@ -229,7 +229,6 @@ namespace Ryujinx.Graphics.Texture
             throw new NotImplementedException(Format.ToString());
         }
 
-        // TODO: non 2d
         public static byte[] ReadTexture(IMemory Memory, GalImage Image, long Position)
         {
             MemoryManager CpuMemory;
@@ -242,8 +241,6 @@ namespace Ryujinx.Graphics.Texture
             {
                 CpuMemory = (MemoryManager)Memory;
             }
-
-            //Debug.Assert(Image.TextureType == TextureType.TwoD, "non 2d texture read");
 
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Image);
 
@@ -278,7 +275,6 @@ namespace Ryujinx.Graphics.Texture
             return Data;
         }
 
-        // TODO: non 2d
         public static void WriteTexture(NvGpuVmm Vmm, GalImage Image, long Position, byte[] Data)
         {
             ISwizzle Swizzle = TextureHelper.GetSwizzle(Image);
@@ -290,8 +286,6 @@ namespace Ryujinx.Graphics.Texture
             int BytesPerPixel = Desc.BytesPerPixel;
 
             int InOffs = 0;
-
-            //Debug.Assert(Image.TextureType == TextureType.TwoD, "non 2d texture write");
 
             for (int Z = 0; Z < Depth; Z++)
             for (int Y = 0; Y < Height; Y++)
@@ -416,7 +410,6 @@ namespace Ryujinx.Graphics.Texture
             return (Image.Width + AlignMask) & ~AlignMask;
         }
 
-        // TODO: non 2d
         public static (int Width, int Height, int Depth) GetImageSizeInBlocks(GalImage Image)
         {
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);
