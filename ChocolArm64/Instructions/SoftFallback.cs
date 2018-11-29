@@ -207,13 +207,13 @@ namespace ChocolArm64.Instructions
                     return 0UL;
                 }
 
-                long roundConst = 1L << (shift - 1);
+                ulong roundConst = 1UL << (shift - 1);
 
-                ulong add = value + (ulong)roundConst;
+                ulong add = value + roundConst;
 
                 if (eSize == 64)
                 {
-                    if ((add < value) && (add < (ulong)roundConst))
+                    if ((add < value) && (add < roundConst))
                     {
                         if (shift == 64)
                         {
