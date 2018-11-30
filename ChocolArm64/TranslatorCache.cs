@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -15,71 +15,49 @@ namespace ChocolArm64
         //Minimum time required in milliseconds for a method to be eligible for deletion.
         private const int MinTimeDelta = 2 * 60000;
 
-        //Minimum number of calls required to update the timestamp.
-        private const int MinCallCountForUpdate = 250;
-
         private class CacheBucket
         {
             public TranslatedSub Subroutine { get; private set; }
-
-            public LinkedListNode<long> Node { get; private set; }
-
-            public int CallCount { get; set; }
 
             public int Size { get; private set; }
 
             public long Timestamp { get; private set; }
 
-            public CacheBucket(TranslatedSub subroutine, LinkedListNode<long> node, int size)
+            public CacheBucket(TranslatedSub subroutine, int size)
             {
                 Subroutine = subroutine;
                 Size       = size;
-
-                UpdateNode(node);
             }
 
-            public void UpdateNode(LinkedListNode<long> node)
+            public void UpdateTimestamp()
             {
-                Node = node;
-
                 Timestamp = GetTimestamp();
             }
         }
 
         private ConcurrentDictionary<long, CacheBucket> _cache;
 
-        private LinkedList<long> _sortedCache;
-
         private int _totalSize;
 
         public TranslatorCache()
         {
             _cache = new ConcurrentDictionary<long, CacheBucket>();
-
-            _sortedCache = new LinkedList<long>();
         }
 
         public void AddOrUpdate(long position, TranslatedSub subroutine, int size)
         {
             ClearCacheIfNeeded();
 
-            _totalSize += size;
+            CacheBucket newBucket = new CacheBucket(subroutine, size);
 
-            lock (_sortedCache)
+            _cache.AddOrUpdate(position, newBucket, (key, oldBucket) =>
             {
-                LinkedListNode<long> node = _sortedCache.AddLast(position);
+                Interlocked.Add(ref _totalSize, -oldBucket.Size);
 
-                CacheBucket newBucket = new CacheBucket(subroutine, node, size);
+                return newBucket;
+            });
 
-                _cache.AddOrUpdate(position, newBucket, (key, bucket) =>
-                {
-                    _totalSize -= bucket.Size;
-
-                    _sortedCache.Remove(bucket.Node);
-
-                    return newBucket;
-                });
-            }
+            Interlocked.Add(ref _totalSize, size);
         }
 
         public bool HasSubroutine(long position)
@@ -92,24 +70,7 @@ namespace ChocolArm64
         {
             if (_cache.TryGetValue(position, out CacheBucket bucket))
             {
-                if (bucket.CallCount++ > MinCallCountForUpdate)
-                {
-                    if (Monitor.TryEnter(_sortedCache))
-                    {
-                        try
-                        {
-                            bucket.CallCount = 0;
-
-                            _sortedCache.Remove(bucket.Node);
-
-                            bucket.UpdateNode(_sortedCache.AddLast(position));
-                        }
-                        finally
-                        {
-                            Monitor.Exit(_sortedCache);
-                        }
-                    }
-                }
+                bucket.UpdateTimestamp();
 
                 subroutine = bucket.Subroutine;
 
@@ -123,34 +84,32 @@ namespace ChocolArm64
 
         private void ClearCacheIfNeeded()
         {
+            if (_totalSize <= MaxTotalSize)
+            {
+                return;
+            }
+
             long timestamp = GetTimestamp();
 
-            while (_totalSize > MaxTotalSize)
+            foreach (KeyValuePair<long, CacheBucket> kv in _cache.OrderBy(x => (ulong)x.Value.Timestamp))
             {
-                lock (_sortedCache)
+                CacheBucket bucket = kv.Value;
+
+                long timeDelta = timestamp - bucket.Timestamp;
+
+                if (timeDelta <= MinTimeDelta)
                 {
-                    LinkedListNode<long> node = _sortedCache.First;
+                    break;
+                }
 
-                    if (node == null)
-                    {
-                        break;
-                    }
+                if (_cache.Remove(kv.Key, out bucket))
+                {
+                    Interlocked.Add(ref _totalSize, -bucket.Size);
+                }
 
-                    CacheBucket bucket = _cache[node.Value];
-
-                    long timeDelta = timestamp - bucket.Timestamp;
-
-                    if (timeDelta <= MinTimeDelta)
-                    {
-                        break;
-                    }
-
-                    if (_cache.TryRemove(node.Value, out bucket))
-                    {
-                        _totalSize -= bucket.Size;
-
-                        _sortedCache.Remove(bucket.Node);
-                    }
+                if (_totalSize <= MaxTotalSize)
+                {
+                    break;
                 }
             }
         }
