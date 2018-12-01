@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Psm
 {
     class IPsmServer : IpcService
     {
-        enum ChargerType : int
+        enum ChargerType
         {
             None,
             ChargerOrDock,
