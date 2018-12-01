@@ -58,7 +58,7 @@ namespace ChocolArm64.Instructions
 
                 context.Emit(OpCodes.Pop);
 
-                context.EmitLoadState(context.CurrBlock.Next);
+                context.EmitLoadState();
             }
             else
             {

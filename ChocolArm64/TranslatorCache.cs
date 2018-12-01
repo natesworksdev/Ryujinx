@@ -9,8 +9,8 @@ namespace ChocolArm64
 {
     class TranslatorCache
     {
-        //Maximum size of the cache, in bytes, measured in ARM code size.
-        private const int MaxTotalSize = 4 * 1024 * 256;
+        //Maximum size of the cache, the unit used is completely arbitrary.
+        private const int MaxTotalSize = 0x100000;
 
         //Minimum time required in milliseconds for a method to be eligible for deletion.
         private const int MinTimeDelta = 2 * 60000;

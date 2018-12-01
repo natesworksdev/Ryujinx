@@ -1,4 +1,3 @@
-using ChocolArm64.Decoders;
 using ChocolArm64.State;
 using System;
 using System.Collections.Generic;
@@ -17,70 +16,23 @@ namespace ChocolArm64.Translation
 
         private ILBlock[] _ilBlocks;
 
-        private ILBlock _root;
-
-        private TranslatedSub _subroutine;
-
         private string _subName;
 
         private int _localsCount;
 
-        public ILEmitter(Block[] graph, Block root, string subName)
+        public ILEmitter(ILBlock[] ilBlocks, string subName)
         {
-            _subName = subName;
-
-            _locals = new Dictionary<Register, int>();
-
-            _ilBlocks = new ILBlock[graph.Length];
-
-            ILBlock GetBlock(int index)
-            {
-                if (index < 0 || index >= _ilBlocks.Length)
-                {
-                    return null;
-                }
-
-                if (_ilBlocks[index] == null)
-                {
-                    _ilBlocks[index] = new ILBlock();
-                }
-
-                return _ilBlocks[index];
-            }
-
-            for (int index = 0; index < _ilBlocks.Length; index++)
-            {
-                ILBlock block = GetBlock(index);
-
-                block.Next   = GetBlock(Array.IndexOf(graph, graph[index].Next));
-                block.Branch = GetBlock(Array.IndexOf(graph, graph[index].Branch));
-            }
-
-            _root = _ilBlocks[Array.IndexOf(graph, root)];
+            _ilBlocks = ilBlocks;
+            _subName  = subName;
         }
-
-        public ILBlock GetIlBlock(int index) => _ilBlocks[index];
 
         public TranslatedSub GetSubroutine()
         {
-            LocalAlloc = new LocalAlloc(_ilBlocks, _root);
+            LocalAlloc = new LocalAlloc(_ilBlocks, _ilBlocks[0]);
 
-            InitSubroutine();
-            InitLocals();
+            List<Register> subArgs = new List<Register>();
 
-            foreach (ILBlock ilBlock in _ilBlocks)
-            {
-                ilBlock.Emit(this);
-            }
-
-            return _subroutine;
-        }
-
-        private void InitSubroutine()
-        {
-            List<Register> Params = new List<Register>();
-
-            void SetParams(long inputs, RegisterType baseType)
+            void SetArgs(long inputs, RegisterType baseType)
             {
                 for (int bit = 0; bit < 64; bit++)
                 {
@@ -88,37 +40,43 @@ namespace ChocolArm64.Translation
 
                     if ((inputs & mask) != 0)
                     {
-                        Params.Add(GetRegFromBit(bit, baseType));
+                        subArgs.Add(GetRegFromBit(bit, baseType));
                     }
                 }
             }
 
-            SetParams(LocalAlloc.GetIntInputs(_root), RegisterType.Int);
-            SetParams(LocalAlloc.GetVecInputs(_root), RegisterType.Vector);
+            SetArgs(LocalAlloc.GetIntInputs(_ilBlocks[0]), RegisterType.Int);
+            SetArgs(LocalAlloc.GetVecInputs(_ilBlocks[0]), RegisterType.Vector);
 
-            DynamicMethod mthd = new DynamicMethod(_subName, typeof(long), GetParamTypes(Params));
+            DynamicMethod method = new DynamicMethod(_subName, typeof(long), GetArgumentTypes(subArgs));
 
-            Generator = mthd.GetILGenerator();
+            Generator = method.GetILGenerator();
 
-            _subroutine = new TranslatedSub(mthd, Params);
-        }
+            TranslatedSub subroutine = new TranslatedSub(method, subArgs);
 
-        private void InitLocals()
-        {
-            int paramsStart = TranslatedSub.FixedArgTypes.Length;
+            int argsStart = TranslatedSub.FixedArgTypes.Length;
 
             _locals = new Dictionary<Register, int>();
 
-            for (int index = 0; index < _subroutine.Params.Count; index++)
-            {
-                Register reg = _subroutine.Params[index];
+            _localsCount = 0;
 
-                Generator.EmitLdarg(index + paramsStart);
+            for (int index = 0; index < subroutine.SubArgs.Count; index++)
+            {
+                Register reg = subroutine.SubArgs[index];
+
+                Generator.EmitLdarg(index + argsStart);
                 Generator.EmitStloc(GetLocalIndex(reg));
             }
+
+            foreach (ILBlock ilBlock in _ilBlocks)
+            {
+                ilBlock.Emit(this);
+            }
+
+            return subroutine;
         }
 
-        private Type[] GetParamTypes(IList<Register> Params)
+        private Type[] GetArgumentTypes(IList<Register> Params)
         {
             Type[] fixedArgs = TranslatedSub.FixedArgTypes;
 
@@ -140,7 +98,7 @@ namespace ChocolArm64.Translation
         {
             if (!_locals.TryGetValue(reg, out int index))
             {
-                Generator.DeclareLocal(GetLocalType(reg));
+                Generator.DeclareLocal(GetFieldType(reg.Type));
 
                 index = _localsCount++;
 
@@ -150,9 +108,7 @@ namespace ChocolArm64.Translation
             return index;
         }
 
-        public Type GetLocalType(Register reg) => GetFieldType(reg.Type);
-
-        public Type GetFieldType(RegisterType regType)
+        private static Type GetFieldType(RegisterType regType)
         {
             switch (regType)
             {
@@ -182,7 +138,7 @@ namespace ChocolArm64.Translation
 
         public static bool IsRegIndex(int index)
         {
-            return index >= 0 && index < 32;
+            return (uint)index < 32;
         }
     }
 }

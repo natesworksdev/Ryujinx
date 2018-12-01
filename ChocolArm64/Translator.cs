@@ -83,11 +83,7 @@ namespace ChocolArm64
         {
             Block block = Decoder.DecodeBasicBlock(state, memory, position);
 
-            Block[] graph = new Block[] { block };
-
-            string subName = GetSubroutineName(position);
-
-            ILEmitterCtx context = new ILEmitterCtx(_cache, graph, block, subName);
+            ILEmitterCtx context = new ILEmitterCtx(_cache, block);
 
             do
             {
@@ -95,24 +91,24 @@ namespace ChocolArm64
             }
             while (context.AdvanceOpCode());
 
-            TranslatedSub subroutine = context.GetSubroutine();
+            string subName = GetSubroutineName(position);
+
+            ILEmitter ilMthdBuilder = new ILEmitter(context.GetILBlocks(), subName);
+
+            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine();
 
             subroutine.SetType(TranslatedSubType.SubTier0);
 
             _cache.AddOrUpdate(position, subroutine, block.OpCodes.Count);
-
-            OpCode64 lastOp = block.GetLastOp();
 
             return subroutine;
         }
 
         private void TranslateTier1(CpuThreadState state, MemoryManager memory, long position)
         {
-            (Block[] graph, Block root) = Decoder.DecodeSubroutine(_cache, state, memory, position);
+            Block graph = Decoder.DecodeSubroutine(_cache, state, memory, position);
 
-            string subName = GetSubroutineName(position);
-
-            ILEmitterCtx context = new ILEmitterCtx(_cache, graph, root, subName);
+            ILEmitterCtx context = new ILEmitterCtx(_cache, graph);
 
             if (context.CurrBlock.Position != position)
             {
@@ -138,28 +134,29 @@ namespace ChocolArm64
                 }
             }
 
-            TranslatedSub subroutine = context.GetSubroutine();
+            string subName = GetSubroutineName(position);
+
+            ILBlock[] ilBlocks = context.GetILBlocks();
+
+            ILEmitter ilMthdBuilder = new ILEmitter(ilBlocks, subName);
+
+            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine();
 
             subroutine.SetType(TranslatedSubType.SubTier1);
 
-            _cache.AddOrUpdate(position, subroutine, GetGraphInstCount(graph));
+            int ilOpCount = 0;
+
+            foreach (ILBlock ilBlock in ilBlocks)
+            {
+                ilOpCount += ilBlock.Count;
+            }
+
+            _cache.AddOrUpdate(position, subroutine, ilOpCount);
         }
 
         private string GetSubroutineName(long position)
         {
             return $"Sub{position:x16}";
-        }
-
-        private int GetGraphInstCount(Block[] graph)
-        {
-            int size = 0;
-
-            foreach (Block block in graph)
-            {
-                size += block.OpCodes.Count;
-            }
-
-            return size;
         }
     }
 }
