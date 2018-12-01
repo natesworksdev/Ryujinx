@@ -253,7 +253,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 ElfDynamicTag Tag = (ElfDynamicTag)TagVal;
 
-                if (Tag == ElfDynamicTag.DT_NULL)
+                if (Tag == ElfDynamicTag.Null)
                 {
                     break;
                 }
@@ -261,9 +261,9 @@ namespace Ryujinx.HLE.HOS.Kernel
                 Dynamic[Tag] = Value;
             }
 
-            if (!Dynamic.TryGetValue(ElfDynamicTag.DT_STRTAB, out long StrTab) ||
-                !Dynamic.TryGetValue(ElfDynamicTag.DT_SYMTAB, out long SymTab) ||
-                !Dynamic.TryGetValue(ElfDynamicTag.DT_SYMENT, out long SymEntSize))
+            if (!Dynamic.TryGetValue(ElfDynamicTag.StrTab, out long StrTab) ||
+                !Dynamic.TryGetValue(ElfDynamicTag.SymTab, out long SymTab) ||
+                !Dynamic.TryGetValue(ElfDynamicTag.SymEnt, out long SymEntSize))
             {
                 return;
             }
