@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
 
         public IResolver()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  SetDnsAddressesPrivate },
                 { 1,  GetDnsAddressesPrivate },

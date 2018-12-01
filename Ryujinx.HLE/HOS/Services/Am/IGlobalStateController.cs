@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public IGlobalStateController()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 //...
             };

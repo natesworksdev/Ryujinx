@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Set
 
         public ISystemSettingsServer()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 3,  GetFirmwareVersion  },
                 { 4,  GetFirmwareVersion2  },

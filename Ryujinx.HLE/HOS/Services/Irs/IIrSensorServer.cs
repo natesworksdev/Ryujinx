@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Irs
 
         public IIrSensorServer()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 302, ActivateIrsensor   },
                 { 303, DeactivateIrsensor }

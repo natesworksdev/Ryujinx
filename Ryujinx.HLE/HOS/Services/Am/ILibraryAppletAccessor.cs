@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public ILibraryAppletAccessor(Horizon system)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,   GetAppletStateChangedEvent },
                 { 10,  Start                      },

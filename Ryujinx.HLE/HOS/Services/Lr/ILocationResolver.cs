@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Lr
 
         public ILocationResolver(StorageId storageId)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  ResolveProgramPath                      },
                 { 1,  RedirectProgramPath                     },

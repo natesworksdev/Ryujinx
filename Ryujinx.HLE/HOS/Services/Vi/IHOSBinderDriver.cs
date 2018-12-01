@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         public IhosBinderDriver(Horizon system, IGalRenderer renderer)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, TransactParcel     },
                 { 1, AdjustRefcount     },

@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         public IAlbumAccessorService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 //...
             };

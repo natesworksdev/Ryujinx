@@ -122,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Font
                     }
                 }
 
-                _fontData = new Dictionary<SharedFontType, FontInfo>()
+                _fontData = new Dictionary<SharedFontType, FontInfo>
                 {
                     { SharedFontType.JapanUsEurope,       CreateFont("FontStandard")                  },
                     { SharedFontType.SimplifiedChinese,   CreateFont("FontChineseSimplified")         },

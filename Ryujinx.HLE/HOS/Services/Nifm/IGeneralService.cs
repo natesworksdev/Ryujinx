@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
 
         public IGeneralService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 4, CreateRequest        },
                 { 12, GetCurrentIpAddress }

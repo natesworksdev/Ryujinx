@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Set
 
         public ISettingsServer()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, GetLanguageCode               },
                 { 1, GetAvailableLanguageCodes     },

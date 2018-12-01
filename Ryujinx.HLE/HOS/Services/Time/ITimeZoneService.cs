@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public ITimeZoneService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,   GetDeviceLocationName     },
                 { 1,   SetDeviceLocationName     },

@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public ILibraryAppletCreator()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  CreateLibraryApplet },
                 { 10, CreateStorage       }

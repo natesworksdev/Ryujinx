@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Psm
 
         public IPsmSession(Horizon system)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, BindStateChangeEvent                     },
                 { 1, UnbindStateChangeEvent                   },

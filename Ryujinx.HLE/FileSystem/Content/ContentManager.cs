@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             _contentDictionary = new SortedDictionary<(ulong, ContentType), string>();
             _locationEntries   = new Dictionary<StorageId, LinkedList<LocationEntry>>();
 
-            _sharedFontTitleDictionary = new Dictionary<string, long>()
+            _sharedFontTitleDictionary = new Dictionary<string, long>
             {
                 { "FontStandard",                  0x0100000000000811 },
                 { "FontChineseSimplified",         0x0100000000000814 },

@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public IFile(Stream baseStream, string hostPath)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, Read    },
                 { 1, Write   },

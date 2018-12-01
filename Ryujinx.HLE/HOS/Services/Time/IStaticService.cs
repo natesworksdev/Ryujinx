@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public IStaticService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,   GetStandardUserSystemClock                 },
                 { 1,   GetStandardNetworkSystemClock              },

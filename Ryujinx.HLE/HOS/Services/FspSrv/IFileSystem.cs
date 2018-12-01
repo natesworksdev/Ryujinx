@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public IFileSystem(string path, IFileSystemProvider provider)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  CreateFile                 },
                 { 1,  DeleteFile                 },

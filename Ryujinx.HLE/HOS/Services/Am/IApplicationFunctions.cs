@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public IApplicationFunctions()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 1,  PopLaunchParameter          },
                 { 20, EnsureSaveData              },

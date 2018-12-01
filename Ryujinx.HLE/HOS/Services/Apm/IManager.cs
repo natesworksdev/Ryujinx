@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 
         public IManager()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, OpenSession }
             };

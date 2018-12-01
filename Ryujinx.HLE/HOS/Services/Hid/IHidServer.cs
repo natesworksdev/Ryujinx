@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public IHidServer(Horizon system)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,    CreateAppletResource                          },
                 { 1,    ActivateDebugPad                              },
@@ -429,7 +429,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             int   sixAxisSensorHandle = context.RequestData.ReadInt32();
 
-            _sensorFusionParams = new HidSensorFusionParameters()
+            _sensorFusionParams = new HidSensorFusionParameters
             {
                 RevisePower = context.RequestData.ReadInt32(),
                 ReviseRange = context.RequestData.ReadInt32()
@@ -484,7 +484,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             int sixAxisSensorHandle = context.RequestData.ReadInt32();
 
-            _accelerometerParams = new HidAccelerometerParameters()
+            _accelerometerParams = new HidAccelerometerParameters
             {
                 X = context.RequestData.ReadInt32(),
                 Y = context.RequestData.ReadInt32()

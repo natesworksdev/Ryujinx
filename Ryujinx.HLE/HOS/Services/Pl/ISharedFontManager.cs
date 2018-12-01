@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Pl
 
         public ISharedFontManager()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, RequestLoad                    },
                 { 1, GetLoadState                   },

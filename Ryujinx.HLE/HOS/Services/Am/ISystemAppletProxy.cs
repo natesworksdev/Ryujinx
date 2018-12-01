@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public ISystemAppletProxy()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,    GetCommonStateGetter     },
                 { 1,    GetSelfController        },

@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
         public IApplicationManagerInterface()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 
             };

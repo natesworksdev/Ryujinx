@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
         public ISslContext()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 //...
             };

@@ -112,7 +112,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
         public IRoInterface()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, LoadNro    },
                 { 1, UnloadNro  },

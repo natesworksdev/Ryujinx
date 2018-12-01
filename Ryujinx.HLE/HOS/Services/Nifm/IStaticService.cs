@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
 
         public IStaticService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 4, CreateGeneralServiceOld },
                 { 5, CreateGeneralService    }

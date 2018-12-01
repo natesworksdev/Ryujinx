@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
 
         public IParentalControlServiceFactory()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, CreateService                  },
                 { 1, CreateServiceWithoutInitialize }

@@ -105,7 +105,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
 
         public IClient(bool isPrivileged)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  RegisterClient     },
                 { 1,  StartMonitoring    },

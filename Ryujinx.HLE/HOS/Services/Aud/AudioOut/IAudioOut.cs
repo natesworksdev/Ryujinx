@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
 
         public IAudioOut(IAalOutput audioOut, KEvent releaseEvent, int track)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, GetAudioOutState              },
                 { 1, StartAudioOut                 },

@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud
 
         public IHardwareOpusDecoder(int sampleRate, int channelsCount)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, DecodeInterleaved         },
                 { 4, DecodeInterleavedWithPerf }

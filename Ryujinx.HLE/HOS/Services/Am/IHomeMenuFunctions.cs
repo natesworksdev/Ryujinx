@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public IHomeMenuFunctions(Horizon system)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 10, RequestToGetForeground        },
                 { 21, GetPopFromGeneralChannelEvent }

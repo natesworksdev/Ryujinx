@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public IStorage(Stream baseStream)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, Read }
             };

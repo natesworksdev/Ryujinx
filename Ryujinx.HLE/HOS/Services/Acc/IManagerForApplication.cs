@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
         public IManagerForApplication(UInt128 uuid)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, CheckAvailability },
                 { 1, GetAccountId      }

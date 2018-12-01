@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
         public IFriendService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 10101, GetFriendList                 },
                 { 10601, DeclareCloseOnlinePlaySession },
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             int unknown0 = context.RequestData.ReadInt32();
 
-            FriendFilter filter = new FriendFilter()
+            FriendFilter filter = new FriendFilter
             {
                 PresenceStatus           = (PresenceStatusFilter)context.RequestData.ReadInt32(),
                 IsFavoriteOnly           = context.RequestData.ReadBoolean(),

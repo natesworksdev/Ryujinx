@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         public IManagerDisplayService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 2010, CreateManagedLayer  },
                 { 2011, DestroyManagedLayer },

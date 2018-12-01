@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public ISelfController(Horizon system)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  Exit                                  },
                 { 1,  LockExit                              },

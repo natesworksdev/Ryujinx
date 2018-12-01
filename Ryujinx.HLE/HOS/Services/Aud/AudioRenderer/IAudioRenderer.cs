@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             IAalOutput             audioOut,
             AudioRendererParameter Params)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, GetSampleRate              },
                 { 1, GetSampleCount             },

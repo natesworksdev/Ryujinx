@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud
 
         public IAudioDevice(Horizon system)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  ListAudioDeviceName            },
                 { 1,  SetAudioDeviceOutputVolume     },

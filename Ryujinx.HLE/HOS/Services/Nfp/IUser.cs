@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfp
 
         public IUser(Horizon system)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  Initialize                    },
                 { 17, AttachActivateEvent           },

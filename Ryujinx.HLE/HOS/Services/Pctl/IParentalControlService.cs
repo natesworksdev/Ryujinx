@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
 
         public IParentalControlService(bool needInitialize = true)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 1, Initialize }
             };

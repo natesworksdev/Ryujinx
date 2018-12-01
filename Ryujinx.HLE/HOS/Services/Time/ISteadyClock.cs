@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public ISteadyClock()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, GetCurrentTimePoint },
                 { 1, GetTestOffset       },

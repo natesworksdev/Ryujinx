@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         public ISystemDisplayService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 2205, SetLayerZ },
                 { 2207, SetLayerVisibility },

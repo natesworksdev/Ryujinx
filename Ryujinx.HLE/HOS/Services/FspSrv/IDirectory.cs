@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public IDirectory(string directoryPath, int flags, IFileSystemProvider provider)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, Read          },
                 { 1, GetEntryCount }

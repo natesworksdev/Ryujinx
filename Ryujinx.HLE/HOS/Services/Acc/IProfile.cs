@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
         public IProfile(UserProfile profile)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  Get          },
                 { 1,  GetBase      },

@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud
 
         public IAudioOutManager()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, ListAudioOuts     },
                 { 1, OpenAudioOut      },

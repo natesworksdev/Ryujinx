@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
 
         public IRandomInterface()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, GetRandomBytes }
             };

@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
         public IAccountService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,   GetUserCount                        },
                 { 1,   GetUserExistence                    },

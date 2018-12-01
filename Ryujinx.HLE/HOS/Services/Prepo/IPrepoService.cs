@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
         public IPrepoService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 10101, SaveReportWithUser }
             };

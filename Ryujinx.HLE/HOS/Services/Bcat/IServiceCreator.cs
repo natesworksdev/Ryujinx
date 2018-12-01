@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
 
         public IServiceCreator()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, CreateBcatService                 },
                 { 1, CreateDeliveryCacheStorageService }

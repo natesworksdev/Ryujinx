@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public IWindowController()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 1,  GetAppletResourceUserId },
                 { 10, AcquireForegroundRights }

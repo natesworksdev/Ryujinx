@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public IStorageAccessor(IStorage storage)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  GetSize },
                 { 10, Write   },

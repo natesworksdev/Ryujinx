@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public IFileSystemProxy()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 1,    Initialize                               },
                 { 8,    OpenFileSystemWithId                     },

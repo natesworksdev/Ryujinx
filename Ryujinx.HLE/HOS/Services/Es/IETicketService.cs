@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Es
 
         public IeTicketService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
 
             };

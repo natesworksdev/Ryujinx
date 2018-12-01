@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         public IRequest()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 1, InitializeOld },
                 { 4, Initialize    },

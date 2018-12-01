@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public IAudioController()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, SetExpectedMasterVolume              },
                 { 1, GetMainAppletExpectedMasterVolume    },

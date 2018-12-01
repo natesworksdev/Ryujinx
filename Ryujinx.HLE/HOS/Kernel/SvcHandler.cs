@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public SvcHandler(Switch device, KProcess process)
         {
-            _svcFuncs = new Dictionary<int, SvcFunc>()
+            _svcFuncs = new Dictionary<int, SvcFunc>
             {
                 { 0x01, SvcSetHeapSize                   },
                 { 0x03, SvcSetMemoryAttribute            },

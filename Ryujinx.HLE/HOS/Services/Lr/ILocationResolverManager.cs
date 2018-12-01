@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Lr
 
         public ILocationResolverManager()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, OpenLocationResolver }
             };

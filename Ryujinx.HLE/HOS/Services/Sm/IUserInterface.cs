@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
         public IUserInterface()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, Initialize },
                 { 1, GetService }

@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Lm
 
         public ILogService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, Initialize }
             };

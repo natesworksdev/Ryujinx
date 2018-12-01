@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public IAppletResource(KSharedMemory hidSharedMem)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0, GetSharedMemoryHandle }
             };

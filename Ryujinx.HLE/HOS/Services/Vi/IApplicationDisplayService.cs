@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         public IApplicationDisplayService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 100,  GetRelayService                      },
                 { 101,  GetSystemDisplayService              },

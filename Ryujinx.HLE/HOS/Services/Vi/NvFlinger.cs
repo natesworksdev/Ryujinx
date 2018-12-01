@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
         public NvFlinger(IGalRenderer renderer, KEvent binderEvent)
         {
-            _commands = new Dictionary<(string, int), ServiceProcessParcel>()
+            _commands = new Dictionary<(string, int), ServiceProcessParcel>
             {
                 { ("android.gui.IGraphicBufferProducer", 0x1), GbpRequestBuffer  },
                 { ("android.gui.IGraphicBufferProducer", 0x3), GbpDequeueBuffer  },

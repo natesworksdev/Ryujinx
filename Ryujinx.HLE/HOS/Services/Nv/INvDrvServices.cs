@@ -21,8 +21,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
         private static Dictionary<string, IoctlProcessor> _ioctlProcessors =
-                   new Dictionary<string, IoctlProcessor>()
-        {
+                   new Dictionary<string, IoctlProcessor>
+                   {
             { "/dev/nvhost-as-gpu",   ProcessIoctlNvGpuAS    },
             { "/dev/nvhost-ctrl",     ProcessIoctlNvHostCtrl },
             { "/dev/nvhost-ctrl-gpu", ProcessIoctlNvGpuGpu   },
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         public INvDrvServices(Horizon system)
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  Open             },
                 { 1,  Ioctl            },

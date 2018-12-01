@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
 
         public IDeliveryCacheStorageService()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 //...
             };
