@@ -168,7 +168,8 @@ namespace Ryujinx.HLE.FileSystem.Content
         {
             if (_contentDictionary.ContainsValue(ncaId))
             {
-                var         content     = _contentDictionary.FirstOrDefault(x => x.Value == ncaId);
+                KeyValuePair<(ulong, ContentType), string> content = _contentDictionary.FirstOrDefault(x => x.Value == ncaId);
+
                 long        titleId     = (long)content.Key.Item1;
                 ContentType contentType = content.Key.Item2;
                 StorageId   storage     = GetInstalledStorage(titleId, contentType, storageId);
