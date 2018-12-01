@@ -85,12 +85,6 @@ namespace ChocolArm64
 
             ILEmitterCtx context = new ILEmitterCtx(_cache, block);
 
-            do
-            {
-                context.EmitOpCode();
-            }
-            while (context.AdvanceOpCode());
-
             string subName = GetSubroutineName(position);
 
             ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(context.GetILBlocks(), subName);
@@ -110,33 +104,9 @@ namespace ChocolArm64
 
             ILEmitterCtx context = new ILEmitterCtx(_cache, graph);
 
-            if (context.CurrBlock.Position != position)
-            {
-                context.Emit(OpCodes.Br, context.GetLabel(position));
-            }
-
-            do
-            {
-                context.EmitOpCode();
-            }
-            while (context.AdvanceOpCode());
-
-            //Mark all methods that calls this method for ReJiting,
-            //since we can now call it directly which is faster.
-            if (_cache.TryGetSubroutine(position, out TranslatedSub oldSub))
-            {
-                foreach (long callerPos in oldSub.GetCallerPositions())
-                {
-                    if (_cache.TryGetSubroutine(position, out TranslatedSub callerSub))
-                    {
-                        callerSub.MarkForReJit();
-                    }
-                }
-            }
+            ILBlock[] ilBlocks = context.GetILBlocks();
 
             string subName = GetSubroutineName(position);
-
-            ILBlock[] ilBlocks = context.GetILBlocks();
 
             ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(ilBlocks, subName);
 
@@ -152,6 +122,19 @@ namespace ChocolArm64
             }
 
             _cache.AddOrUpdate(position, subroutine, ilOpCount);
+
+            //Mark all methods that calls this method for ReJiting,
+            //since we can now call it directly which is faster.
+            if (_cache.TryGetSubroutine(position, out TranslatedSub oldSub))
+            {
+                foreach (long callerPos in oldSub.GetCallerPositions())
+                {
+                    if (_cache.TryGetSubroutine(position, out TranslatedSub callerSub))
+                    {
+                        callerSub.MarkForReJit();
+                    }
+                }
+            }
         }
 
         private string GetSubroutineName(long position)

@@ -21,7 +21,7 @@ namespace ChocolArm64.Translation
         private Block _currBlock;
 
         public Block    CurrBlock => _currBlock;
-        public OpCode64 CurrOp    => _currBlock.OpCodes[_opcIndex];
+        public OpCode64 CurrOp    => _currBlock?.OpCodes[_opcIndex];
 
         private Dictionary<Block, ILBlock> _visitedBlocks;
 
@@ -67,7 +67,63 @@ namespace ChocolArm64.Translation
             AdvanceOpCode();
         }
 
-        public bool AdvanceOpCode()
+        public ILBlock[] GetILBlocks()
+        {
+            EmitAllOpCodes();
+
+            return _ilBlocks.ToArray();
+        }
+
+        private void EmitAllOpCodes()
+        {
+            do
+            {
+                EmitOpCode();
+            }
+            while (AdvanceOpCode());
+        }
+
+        private void EmitOpCode()
+        {
+            if (_currBlock == null)
+            {
+                return;
+            }
+
+            if (_opcIndex == 0)
+            {
+                MarkLabel(GetLabel(_currBlock.Position));
+
+                EmitSynchronization();
+            }
+
+            CurrOp.Emitter(this);
+
+            _ilBlock.Add(new ILBarrier());
+        }
+
+        private void EmitSynchronization()
+        {
+            EmitLdarg(TranslatedSub.StateArgIdx);
+
+            EmitLdc_I4(_currBlock.OpCodes.Count);
+
+            EmitPrivateCall(typeof(CpuThreadState), nameof(CpuThreadState.Synchronize));
+
+            EmitLdc_I4(0);
+
+            ILLabel lblContinue = new ILLabel();
+
+            Emit(OpCodes.Bne_Un_S, lblContinue);
+
+            EmitLdc_I8(0);
+
+            Emit(OpCodes.Ret);
+
+            MarkLabel(lblContinue);
+        }
+
+        private bool AdvanceOpCode()
         {
             if (_currBlock == null)
             {
@@ -142,51 +198,6 @@ namespace ChocolArm64.Translation
             }
 
             return new ILBlock();
-        }
-
-        public void EmitOpCode()
-        {
-            if (_currBlock == null)
-            {
-                return;
-            }
-
-            if (_opcIndex == 0)
-            {
-                MarkLabel(GetLabel(_currBlock.Position));
-
-                EmitSynchronization();
-            }
-
-            CurrOp.Emitter(this);
-
-            _ilBlock.Add(new ILBarrier());
-        }
-
-        private void EmitSynchronization()
-        {
-            EmitLdarg(TranslatedSub.StateArgIdx);
-
-            EmitLdc_I4(_currBlock.OpCodes.Count);
-
-            EmitPrivateCall(typeof(CpuThreadState), nameof(CpuThreadState.Synchronize));
-
-            EmitLdc_I4(0);
-
-            ILLabel lblContinue = new ILLabel();
-
-            Emit(OpCodes.Bne_Un_S, lblContinue);
-
-            EmitLdc_I8(0);
-
-            Emit(OpCodes.Ret);
-
-            MarkLabel(lblContinue);
-        }
-
-        public ILBlock[] GetILBlocks()
-        {
-            return _ilBlocks.ToArray();
         }
 
         public bool TryOptEmitSubroutineCall()
