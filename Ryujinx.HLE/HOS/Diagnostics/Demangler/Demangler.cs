@@ -1891,13 +1891,13 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                                 return null;
                             }
 
-                            BaseNode @from = ParseExpression();
-                            if (@from == null)
+                            BaseNode from = ParseExpression();
+                            if (from == null)
                             {
                                 return null;
                             }
 
-                            return new CastExpression("const_cast", to, @from);
+                            return new CastExpression("const_cast", to, from);
                         case 'l':
                             _position += 2;
                             BaseNode callee = ParseExpression();
@@ -2240,13 +2240,13 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                                 return null;
                             }
 
-                            BaseNode @from = ParseExpression();
-                            if (@from == null)
+                            BaseNode from = ParseExpression();
+                            if (from == null)
                             {
                                 return null;
                             }
 
-                            return new CastExpression("reinterpret_cast", to, @from);
+                            return new CastExpression("reinterpret_cast", to, from);
                         case 'm':
                             _position += 2;
                             return ParseBinaryExpression("%");
@@ -2272,13 +2272,13 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                                 return null;
                             }
 
-                            BaseNode @from = ParseExpression();
-                            if (@from == null)
+                            BaseNode from = ParseExpression();
+                            if (from == null)
                             {
                                 return null;
                             }
 
-                            return new CastExpression("static_cast", to, @from);
+                            return new CastExpression("static_cast", to, from);
                         case 'p':
                             _position += 2;
                             expression = ParseExpression();
