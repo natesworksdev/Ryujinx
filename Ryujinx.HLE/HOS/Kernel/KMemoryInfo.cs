@@ -21,13 +21,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             int              ipcRefCount,
             int              deviceRefCount)
         {
-            this.Address        = address;
-            this.Size           = size;
-            this.State          = state;
-            this.Attribute      = attribute;
-            this.Permission     = permission;
-            this.IpcRefCount    = ipcRefCount;
-            this.DeviceRefCount = deviceRefCount;
+            Address        = address;
+            Size           = size;
+            State          = state;
+            Attribute      = attribute;
+            Permission     = permission;
+            IpcRefCount    = ipcRefCount;
+            DeviceRefCount = deviceRefCount;
         }
     }
 }

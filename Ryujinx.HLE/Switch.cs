@@ -43,7 +43,7 @@ namespace Ryujinx.HLE
                 throw new ArgumentNullException(nameof(audioOut));
             }
 
-            this.AudioOut = audioOut;
+            AudioOut = audioOut;
 
             Memory = new DeviceMemory();
 

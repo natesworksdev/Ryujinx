@@ -13,8 +13,8 @@ namespace Ryujinx.HLE.Input
 
         public Hid(Switch device, long hidPosition)
         {
-            this._device     = device;
-            this.HidPosition = hidPosition;
+            _device     = device;
+            HidPosition = hidPosition;
 
             device.Memory.FillWithZeros(hidPosition, Horizon.HidSize);
         }

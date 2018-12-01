@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KAddressArbiter(Horizon system)
         {
-            this._system = system;
+            _system = system;
 
             CondVarThreads = new List<KThread>();
             ArbiterThreads = new List<KThread>();

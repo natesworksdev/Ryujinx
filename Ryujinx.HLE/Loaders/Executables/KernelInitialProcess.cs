@@ -45,10 +45,10 @@ namespace Ryujinx.HLE.Loaders.Executables
                 int compressedSize,
                 int attribute)
             {
-                this.Offset           = offset;
-                this.DecompressedSize = decompressedSize;
-                this.CompressedSize   = compressedSize;
-                this.Attribute        = attribute;
+                Offset           = offset;
+                DecompressedSize = decompressedSize;
+                CompressedSize   = compressedSize;
+                Attribute        = attribute;
             }
         }
 

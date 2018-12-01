@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public CastExpression(string kind, BaseNode to, BaseNode from) : base(NodeType.CastExpression)
         {
-            this._kind = kind;
-            this._to   = to;
-            this._from = from;
+            _kind = kind;
+            _to   = to;
+            _from = from;
         }
 
         public override void PrintLeft(TextWriter writer)

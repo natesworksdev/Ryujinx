@@ -10,8 +10,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public InitListExpression(BaseNode typeNode, List<BaseNode> nodes) : base(NodeType.InitListExpression)
         {
-            this._typeNode = typeNode;
-            this._nodes    = nodes;
+            _typeNode = typeNode;
+            _nodes    = nodes;
         }
 
         public override void PrintLeft(TextWriter writer)

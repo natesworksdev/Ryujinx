@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public SpecialSubstitution(SpecialType specialSubstitutionKey) : base(NodeType.SpecialSubstitution)
         {
-            this._specialSubstitutionKey = specialSubstitutionKey;
+            _specialSubstitutionKey = specialSubstitutionKey;
         }
 
         public void SetExtended()

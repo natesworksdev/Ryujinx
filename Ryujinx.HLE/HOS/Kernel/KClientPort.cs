@@ -12,13 +12,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void Initialize(KPort parent, int maxSessions)
         {
-            this._maxSessions = maxSessions;
-            this._parent      = parent;
+            _maxSessions = maxSessions;
+            _parent      = parent;
         }
 
         public new static KernelResult RemoveName(Horizon system, string name)
         {
-            KAutoObject foundObj = KAutoObject.FindNamedObject(system, name);
+            KAutoObject foundObj = FindNamedObject(system, name);
 
             if (!(foundObj is KClientPort))
             {

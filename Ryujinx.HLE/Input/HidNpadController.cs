@@ -15,8 +15,8 @@
             (NpadColor, NpadColor) npadBodyColors,
             (NpadColor, NpadColor) npadButtonColors) : base(controllerType, device)
         {
-            this._npadBodyColors   = npadBodyColors;
-            this._npadButtonColors = npadButtonColors;
+            _npadBodyColors   = npadBodyColors;
+            _npadButtonColors = npadButtonColors;
 
             _currentLayout = HidControllerLayouts.HandheldJoined;
 

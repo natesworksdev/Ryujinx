@@ -8,12 +8,12 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public NameType(string nameValue, NodeType type) : base(type)
         {
-            this._nameValue = nameValue;
+            _nameValue = nameValue;
         }
 
         public NameType(string nameValue) : base(NodeType.NameType)
         {
-            this._nameValue = nameValue;
+            _nameValue = nameValue;
         }
 
         public override string GetName()

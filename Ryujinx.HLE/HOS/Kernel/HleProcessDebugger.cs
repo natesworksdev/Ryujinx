@@ -24,8 +24,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             public Image(long baseAddress, ElfSymbol[] symbols)
             {
-                this.BaseAddress = baseAddress;
-                this.Symbols     = symbols;
+                BaseAddress = baseAddress;
+                Symbols     = symbols;
             }
         }
 
@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public HleProcessDebugger(KProcess owner)
         {
-            this._owner = owner;
+            _owner = owner;
 
             _images = new List<Image>();
         }

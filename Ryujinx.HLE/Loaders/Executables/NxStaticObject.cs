@@ -70,10 +70,10 @@ namespace Ryujinx.HLE.Loaders.Executables
 
             NsoFlags flags = (NsoFlags)flagsMsk;
 
-            this.TextOffset = textMemOffset;
-            this.RoOffset   = roMemOffset;
-            this.DataOffset = dataMemOffset;
-            this.BssSize    = bssSize;
+            TextOffset = textMemOffset;
+            RoOffset   = roMemOffset;
+            DataOffset = dataMemOffset;
+            BssSize    = bssSize;
 
             //Text segment
             input.Seek(textOffset, SeekOrigin.Begin);

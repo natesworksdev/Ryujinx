@@ -18,8 +18,8 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         public UserProfile(UInt128 uuid, string name)
         {
-            this.Uuid = uuid;
-            this.Name = name;
+            Uuid = uuid;
+            Name = name;
 
             LastModifiedTimestamp = 0;
 

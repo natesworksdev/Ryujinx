@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KTlsPageManager(long pagePosition)
         {
-            this._pagePosition = pagePosition;
+            _pagePosition = pagePosition;
 
             _slots = new bool[KMemoryManager.PageSize / TlsEntrySize];
         }

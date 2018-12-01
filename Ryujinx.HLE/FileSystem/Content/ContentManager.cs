@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 { "FontNintendoExtended" ,         0x0100000000000810 },
             };
 
-            this._device = device;
+            _device = device;
         }
 
         public void LoadEntries()

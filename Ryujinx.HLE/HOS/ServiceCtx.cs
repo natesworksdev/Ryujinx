@@ -26,14 +26,14 @@ namespace Ryujinx.HLE.HOS
             BinaryReader  requestData,
             BinaryWriter  responseData)
         {
-            this.Device       = device;
-            this.Process      = process;
-            this.Memory       = memory;
-            this.Session      = session;
-            this.Request      = request;
-            this.Response     = response;
-            this.RequestData  = requestData;
-            this.ResponseData = responseData;
+            Device       = device;
+            Process      = process;
+            Memory       = memory;
+            Session      = session;
+            Request      = request;
+            Response     = response;
+            RequestData  = requestData;
+            ResponseData = responseData;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public FunctionParameter(string number) : base(NodeType.FunctionParameter)
         {
-            this._number = number;
+            _number = number;
         }
 
         public override void PrintLeft(TextWriter writer)

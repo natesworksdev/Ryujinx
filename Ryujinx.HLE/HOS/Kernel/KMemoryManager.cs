@@ -62,8 +62,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KMemoryManager(Horizon system, MemoryManager cpuMemory)
         {
-            this._system    = system;
-            this._cpuMemory = cpuMemory;
+            _system    = system;
+            _cpuMemory = cpuMemory;
 
             _blocks = new LinkedList<KMemoryBlock>();
         }
@@ -218,12 +218,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             ulong aslrMaxOffset = mapAvailableSize - mapTotalSize;
 
-            this._aslrEnabled = aslrEnabled;
+            _aslrEnabled = aslrEnabled;
 
-            this.AddrSpaceStart = addrSpaceStart;
-            this.AddrSpaceEnd   = addrSpaceEnd;
+            AddrSpaceStart = addrSpaceStart;
+            AddrSpaceEnd   = addrSpaceEnd;
 
-            this._blockAllocator = blockAllocator;
+            _blockAllocator = blockAllocator;
 
             if (mapAvailableSize < mapTotalSize)
             {
@@ -287,8 +287,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             _heapCapacity       = 0;
             PhysicalMemoryUsage = 0;
 
-            this._memRegion    = memRegion;
-            this._aslrDisabled = aslrDisabled;
+            _memRegion    = memRegion;
+            _aslrDisabled = aslrDisabled;
 
             return InitializeBlocks(addrSpaceStart, addrSpaceEnd);
         }

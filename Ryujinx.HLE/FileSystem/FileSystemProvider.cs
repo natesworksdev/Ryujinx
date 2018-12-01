@@ -15,8 +15,8 @@ namespace Ryujinx.HLE.FileSystem
 
         public FileSystemProvider(string basePath, string rootPath)
         {
-            this._basePath = basePath;
-            this._rootPath = rootPath;
+            _basePath = basePath;
+            _rootPath = rootPath;
 
             CheckIfDescendentOfRootPath(basePath);
         }

@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Lr
                 { 15, DeleteInfoHtmlNcaPath                   }
             };
 
-            this._storageId = storageId;
+            _storageId = storageId;
         }
 
         // DeleteInfoHtmlNcaPath()

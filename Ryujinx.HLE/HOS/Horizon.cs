@@ -97,7 +97,7 @@ namespace Ryujinx.HLE.HOS
 
         public Horizon(Switch device)
         {
-            this.Device = device;
+            Device = device;
 
             State = new SystemStateMgr();
 

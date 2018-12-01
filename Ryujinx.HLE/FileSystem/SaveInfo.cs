@@ -18,11 +18,11 @@ namespace Ryujinx.HLE.FileSystem
             UInt128      userId,
             SaveSpaceId  saveSpaceId)
         {
-            this.TitleId      = titleId;
-            this.UserId       = userId;
-            this.SaveId       = saveId;
-            this.SaveDataType = saveDataType;
-            this.SaveSpaceId  = saveSpaceId;
+            TitleId      = titleId;
+            UserId       = userId;
+            SaveId       = saveId;
+            SaveDataType = saveDataType;
+            SaveSpaceId  = saveSpaceId;
         }
     }
 }

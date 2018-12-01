@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             ObjSyncResult = 0x7201;
 
-            this._entrypoint = entrypoint;
+            _entrypoint = entrypoint;
 
             if (type == ThreadType.User)
             {
@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (owner != null)
             {
-                this.Owner = owner;
+                Owner = owner;
 
                 owner.IncrementThreadCount();
 

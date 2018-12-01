@@ -17,10 +17,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             MemoryPermission ownerPermission,
             MemoryPermission userPermission)
         {
-            this._pageList        = pageList;
-            this._ownerPid        = ownerPid;
-            this._ownerPermission = ownerPermission;
-            this._userPermission  = userPermission;
+            _pageList        = pageList;
+            _ownerPid        = ownerPid;
+            _ownerPermission = ownerPermission;
+            _userPermission  = userPermission;
         }
 
         public KernelResult MapIntoProcess(

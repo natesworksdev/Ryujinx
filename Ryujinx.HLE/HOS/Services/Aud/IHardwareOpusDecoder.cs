@@ -27,8 +27,8 @@ namespace Ryujinx.HLE.HOS.Services.Aud
                 { 4, DecodeInterleavedWithPerf }
             };
 
-            this._sampleRate    = sampleRate;
-            this._channelsCount = channelsCount;
+            _sampleRate    = sampleRate;
+            _channelsCount = channelsCount;
 
             _decoder = new OpusDecoder(FixedSampleRate, channelsCount);
         }

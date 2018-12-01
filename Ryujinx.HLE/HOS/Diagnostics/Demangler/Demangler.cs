@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
         public Demangler(string mangled)
         {
-            this.Mangled          = mangled;
+            Mangled               = mangled;
             _position             = 0;
             _length               = mangled.Length;
             _canParseTemplateArgs = true;

@@ -19,8 +19,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             ServerPort.Initialize(this);
             ClientPort.Initialize(this, maxSessions);
 
-            this._isLight     = isLight;
-            this._nameAddress = nameAddress;
+            _isLight     = isLight;
+            _nameAddress = nameAddress;
         }
     }
 }

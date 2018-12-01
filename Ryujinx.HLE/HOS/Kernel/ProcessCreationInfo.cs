@@ -24,14 +24,14 @@ namespace Ryujinx.HLE.HOS.Kernel
             int    resourceLimitHandle,
             int    personalMmHeapPagesCount)
         {
-            this.Name                     = name;
-            this.Category                 = category;
-            this.TitleId                  = titleId;
-            this.CodeAddress              = codeAddress;
-            this.CodePagesCount           = codePagesCount;
-            this.MmuFlags                 = mmuFlags;
-            this.ResourceLimitHandle      = resourceLimitHandle;
-            this.PersonalMmHeapPagesCount = personalMmHeapPagesCount;
+            Name                     = name;
+            Category                 = category;
+            TitleId                  = titleId;
+            CodeAddress              = codeAddress;
+            CodePagesCount           = codePagesCount;
+            MmuFlags                 = mmuFlags;
+            ResourceLimitHandle      = resourceLimitHandle;
+            PersonalMmHeapPagesCount = personalMmHeapPagesCount;
         }
     }
 }

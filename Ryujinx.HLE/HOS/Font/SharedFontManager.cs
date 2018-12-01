@@ -26,8 +26,8 @@ namespace Ryujinx.HLE.HOS.Font
 
             public FontInfo(int offset, int size)
             {
-                this.Offset = offset;
-                this.Size   = size;
+                Offset = offset;
+                Size   = size;
             }
         }
 
@@ -35,9 +35,9 @@ namespace Ryujinx.HLE.HOS.Font
 
         public SharedFontManager(Switch device, long physicalAddress)
         {
-            this._physicalAddress = physicalAddress;
+            _physicalAddress = physicalAddress;
 
-            this._device = device;
+            _device = device;
 
             _fontsPath = Path.Combine(device.FileSystem.GetSystemPath(), "fonts");
         }

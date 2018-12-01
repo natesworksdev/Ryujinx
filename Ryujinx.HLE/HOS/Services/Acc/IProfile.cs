@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
                 { 11, LoadImage    },
             };
 
-            this._profile = profile;
+            _profile = profile;
 
             _profilePictureStream = Assembly.GetCallingAssembly().GetManifestResourceStream("Ryujinx.HLE.RyujinxProfileImage.jpg");
         }

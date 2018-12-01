@@ -33,8 +33,8 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 1, GetEntryCount }
             };
 
-            this._provider     = provider;
-            this.DirectoryPath = directoryPath;
+            _provider     = provider;
+            DirectoryPath = directoryPath;
 
             _directoryEntries = new List<DirectoryEntry>();
 

@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void Initialize(KPort parent)
         {
-            this._parent = parent;
+            _parent = parent;
         }
     }
 }

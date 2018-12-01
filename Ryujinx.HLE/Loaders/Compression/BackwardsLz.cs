@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.Loaders.Compression
 
             public BackwardsReader(Stream baseStream)
             {
-                this._baseStream = baseStream;
+                _baseStream = baseStream;
             }
 
             public byte ReadByte()

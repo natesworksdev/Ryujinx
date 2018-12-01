@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KTlsPageInfo(ulong pageAddress)
         {
-            this.PageAddr = pageAddress;
+            PageAddr = pageAddress;
 
             _isSlotFree = new bool[KMemoryManager.PageSize / TlsEntrySize];
 

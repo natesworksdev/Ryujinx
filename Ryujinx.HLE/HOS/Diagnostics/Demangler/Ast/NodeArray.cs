@@ -9,12 +9,12 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public NodeArray(List<BaseNode> nodes) : base(NodeType.NodeArray)
         {
-            this.Nodes = nodes;
+            Nodes = nodes;
         }
 
         public NodeArray(List<BaseNode> nodes, NodeType type) : base(type)
         {
-            this.Nodes = nodes;
+            Nodes = nodes;
         }
 
         public override bool IsArray()

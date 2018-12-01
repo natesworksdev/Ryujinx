@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KSynchronization(Horizon system)
         {
-            this._system = system;
+            _system = system;
         }
 
         public long WaitFor(KSynchronizationObject[] syncObjs, long timeout, ref int hndIndex)

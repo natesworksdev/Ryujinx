@@ -246,7 +246,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                         return KernelResult.ReservedValue;
                     }
 
-                    this.ApplicationType = applicationType;
+                    ApplicationType = applicationType;
 
                     break;
                 }
@@ -273,7 +273,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                         return KernelResult.ReservedValue;
                     }
 
-                    this.HandleTableSize = handleTableSize;
+                    HandleTableSize = handleTableSize;
 
                     break;
                 }
@@ -287,8 +287,8 @@ namespace Ryujinx.HLE.HOS.Kernel
                         return KernelResult.ReservedValue;
                     }
 
-                    this.DebuggingFlags &= ~3;
-                    this.DebuggingFlags |= debuggingFlags;
+                    DebuggingFlags &= ~3;
+                    DebuggingFlags |= debuggingFlags;
 
                     break;
                 }

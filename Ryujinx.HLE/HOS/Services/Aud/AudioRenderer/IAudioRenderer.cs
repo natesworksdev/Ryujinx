@@ -62,9 +62,9 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
             _updateEvent = new KEvent(system);
 
-            this._memory   = memory;
-            this._audioOut = audioOut;
-            this._params   = Params;
+            _memory   = memory;
+            _audioOut = audioOut;
+            _params   = Params;
 
             _track = audioOut.OpenTrack(
                 AudioConsts.HostSampleRate,

@@ -21,8 +21,8 @@ namespace Ryujinx.HLE.Loaders.Executables
 
         public NxRelocatableObject(Stream input, ulong sourceAddress = 0, ulong bssAddress = 0)
         {
-            this.SourceAddress = sourceAddress;
-            this.BssAddress    = bssAddress;
+            SourceAddress = sourceAddress;
+            BssAddress    = bssAddress;
 
             BinaryReader reader = new BinaryReader(input);
 
@@ -43,11 +43,11 @@ namespace Ryujinx.HLE.Loaders.Executables
             int dataSize   = reader.ReadInt32();
             int bssSize    = reader.ReadInt32();
 
-            this.Mod0Offset = mod0Offset;
-            this.TextOffset = textOffset;
-            this.RoOffset   = roOffset;
-            this.DataOffset = dataOffset;
-            this.BssSize    = bssSize;
+            Mod0Offset = mod0Offset;
+            TextOffset = textOffset;
+            RoOffset   = roOffset;
+            DataOffset = dataOffset;
+            BssSize    = bssSize;
 
             byte[] Read(long position, int size)
             {

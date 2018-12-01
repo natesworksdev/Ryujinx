@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.FileSystem
 
         public PFsProvider(Pfs pfs)
         {
-            this._pfs = pfs;
+            _pfs = pfs;
         }
 
         public long CreateDirectory(string name)

@@ -14,10 +14,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             public long TimePoint { get; private set; }
 
-            public WaitingObject(IKFutureSchedulerObject Object, long timePoint)
+            public WaitingObject(IKFutureSchedulerObject schedulerObj, long timePoint)
             {
-                this.Object    = Object;
-                this.TimePoint = timePoint;
+                Object    = schedulerObj;
+                TimePoint = timePoint;
             }
         }
 
@@ -38,13 +38,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             work.Start();
         }
 
-        public void ScheduleFutureInvocation(IKFutureSchedulerObject Object, long timeout)
+        public void ScheduleFutureInvocation(IKFutureSchedulerObject schedulerObj, long timeout)
         {
             long timePoint = PerformanceCounter.ElapsedMilliseconds + ConvertNanosecondsToMilliseconds(timeout);
 
             lock (_waitingObjects)
             {
-                _waitingObjects.Add(new WaitingObject(Object, timePoint));
+                _waitingObjects.Add(new WaitingObject(schedulerObj, timePoint));
             }
 
             _waitEvent.Set();

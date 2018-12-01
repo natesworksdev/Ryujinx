@@ -18,9 +18,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             _blocks = new KMemoryRegionBlock[BlockOrders.Length];
 
-            this.Address = address;
-            this.Size    = size;
-            this.EndAddr = endAddr;
+            Address = address;
+            Size    = size;
+            EndAddr = endAddr;
 
             _blockOrdersCount = BlockOrders.Length;
 

@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KSession(IpcService service, string serviceName)
         {
-            this.Service     = service;
-            this.ServiceName = serviceName;
+            Service     = service;
+            ServiceName = serviceName;
         }
 
         public void Dispose()

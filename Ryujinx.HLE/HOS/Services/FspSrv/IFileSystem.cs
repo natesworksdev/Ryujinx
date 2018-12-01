@@ -44,8 +44,8 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             _openPaths = new HashSet<string>();
 
-            this._path     = path;
-            this._provider = provider;
+            _path     = path;
+            _provider = provider;
         }
 
         // CreateFile(u32 mode, u64 size, buffer<bytes<0x301>, 0x19, 0x301> path)

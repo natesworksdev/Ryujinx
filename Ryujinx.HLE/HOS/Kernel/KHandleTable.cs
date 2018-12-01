@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KHandleTable(Horizon system)
         {
-            this._system = system;
+            _system = system;
         }
 
         public KernelResult Initialize(int size)
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 size = 1024;
             }
 
-            this._size = size;
+            _size = size;
 
             _idCounter = 1;
 

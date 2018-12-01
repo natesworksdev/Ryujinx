@@ -14,15 +14,15 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         public LocationEntry(string contentPath, int flag, long titleId, ContentType contentType)
         {
-            this.ContentPath = contentPath;
-            this.Flag        = flag;
-            this.TitleId     = titleId;
-            this.ContentType = contentType;
+            ContentPath = contentPath;
+            Flag        = flag;
+            TitleId     = titleId;
+            ContentType = contentType;
         }
 
         public void SetFlag(int flag)
         {
-            this.Flag = flag;
+            Flag = flag;
         }
     }
 }

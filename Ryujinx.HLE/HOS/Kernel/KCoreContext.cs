@@ -19,8 +19,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KCoreContext(KScheduler scheduler, HleCoreManager coreManager)
         {
-            this._scheduler   = scheduler;
-            this._coreManager = coreManager;
+            _scheduler   = scheduler;
+            _coreManager = coreManager;
         }
 
         public void SelectThread(KThread thread)

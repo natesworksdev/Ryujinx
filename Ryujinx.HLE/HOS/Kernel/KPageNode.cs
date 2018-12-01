@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KPageNode(ulong address, ulong pagesCount)
         {
-            this.Address    = address;
-            this.PagesCount = pagesCount;
+            Address    = address;
+            PagesCount = pagesCount;
         }
     }
 }

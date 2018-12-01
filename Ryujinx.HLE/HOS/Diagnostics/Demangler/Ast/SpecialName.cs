@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public SpecialName(string specialValue, BaseNode type) : base(NodeType.SpecialName, type)
         {
-            this._specialValue = specialValue;
+            _specialValue = specialValue;
         }
 
         public override void PrintLeft(TextWriter writer)

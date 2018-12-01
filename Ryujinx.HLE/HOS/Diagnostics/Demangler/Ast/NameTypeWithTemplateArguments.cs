@@ -9,8 +9,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public NameTypeWithTemplateArguments(BaseNode prev, BaseNode templateArgument) : base(NodeType.NameTypeWithTemplateArguments)
         {
-            this._prev             = prev;
-            this._templateArgument = templateArgument;
+            _prev             = prev;
+            _templateArgument = templateArgument;
         }
 
         public override string GetName()

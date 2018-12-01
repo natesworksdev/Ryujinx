@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             _waitingThreads = new LinkedList<KThread>();
 
-            this._system = system;
+            _system = system;
         }
 
         public bool Reserve(LimitableResource resource, ulong amount)
@@ -127,7 +127,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 if (_current[index] <= limit)
                 {
-                    this._limit[index] = limit;
+                    _limit[index] = limit;
 
                     return KernelResult.Success;
                 }

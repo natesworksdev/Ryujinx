@@ -13,14 +13,14 @@ namespace Ryujinx.HLE.Input
 
         public HidControllerBase(HidControllerType controllerType, Switch device)
         {
-            this.Device = device;
+            Device = device;
 
             HidControllerType = controllerType;
         }
 
         public virtual void Connect(HidControllerId controllerId)
         {
-            this.ControllerId = controllerId;
+            ControllerId = controllerId;
 
             Offset = Device.Hid.HidPosition + HidControllersOffset + (int)controllerId * HidControllerSize;
 

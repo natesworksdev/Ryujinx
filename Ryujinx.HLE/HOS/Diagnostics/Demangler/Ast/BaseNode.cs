@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 
         public BaseNode(NodeType type)
         {
-            this.Type = type;
+            Type = type;
         }
 
         public virtual void Print(TextWriter writer)

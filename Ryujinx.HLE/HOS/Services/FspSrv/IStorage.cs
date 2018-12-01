@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 0, Read }
             };
 
-            this._baseStream = baseStream;
+            _baseStream = baseStream;
         }
 
         // Read(u64 offset, u64 length) -> buffer<u8, 0x46, 0> buffer

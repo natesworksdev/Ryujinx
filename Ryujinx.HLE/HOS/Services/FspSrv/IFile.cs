@@ -28,8 +28,8 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 4, GetSize }
             };
 
-            this._baseStream = baseStream;
-            this.HostPath   = hostPath;
+            _baseStream = baseStream;
+            HostPath   = hostPath;
         }
 
         // Read(u32, u64 offset, u64 size) -> (u64 out_size, buffer<u8, 0x46, 0> out_buf)

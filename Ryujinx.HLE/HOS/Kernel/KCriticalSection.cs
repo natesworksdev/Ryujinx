@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KCriticalSection(Horizon system)
         {
-            this._system = system;
+            _system = system;
 
             LockObj = new object();
         }

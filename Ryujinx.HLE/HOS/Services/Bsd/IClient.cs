@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                 { 27, DuplicateSocket    },
             };
 
-            this._isPrivileged = isPrivileged;
+            _isPrivileged = isPrivileged;
         }
 
         private LinuxError ConvertError(WsaError errorCode)

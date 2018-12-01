@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.Utilities
 
         public StructWriter(MemoryManager memory, long position)
         {
-            this._memory  = memory;
-            this.Position = position;
+            _memory  = memory;
+            Position = position;
         }
 
         public void Write<T>(T value) where T : struct

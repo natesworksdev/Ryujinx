@@ -120,8 +120,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             KResourceLimit      resourceLimit,
             MemoryRegion        memRegion)
         {
-            this.ResourceLimit = resourceLimit;
-            this._memRegion     = memRegion;
+            ResourceLimit = resourceLimit;
+            _memRegion     = memRegion;
 
             AddressSpaceType addrSpaceType = (AddressSpaceType)((creationInfo.MmuFlags >> 1) & 7);
 
@@ -190,8 +190,8 @@ namespace Ryujinx.HLE.HOS.Kernel
             KResourceLimit      resourceLimit,
             MemoryRegion        memRegion)
         {
-            this.ResourceLimit = resourceLimit;
-            this._memRegion    = memRegion;
+            ResourceLimit = resourceLimit;
+            _memRegion    = memRegion;
 
             ulong personalMmHeapSize = GetPersonalMmHeapSize((ulong)creationInfo.PersonalMmHeapPagesCount, memRegion);
 
@@ -375,7 +375,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 return result;
             }
 
-            this.UserExceptionContextAddress = userExceptionContextAddress;
+            UserExceptionContextAddress = userExceptionContextAddress;
 
             MemoryHelper.FillWithZeros(CpuMemory, (long)userExceptionContextAddress, KTlsPageInfo.TlsEntrySize);
 

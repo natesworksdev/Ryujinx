@@ -9,8 +9,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KMemoryArrangeRegion(ulong address, ulong size)
         {
-            this.Address = address;
-            this.Size    = size;
+            Address = address;
+            Size    = size;
         }
     }
 }

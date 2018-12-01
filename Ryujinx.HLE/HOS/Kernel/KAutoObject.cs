@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KAutoObject(Horizon system)
         {
-            this.System = system;
+            System = system;
         }
 
         public virtual KernelResult SetName(string name)

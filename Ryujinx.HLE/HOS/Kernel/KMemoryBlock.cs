@@ -19,11 +19,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             MemoryPermission permission,
             MemoryAttribute  attribute)
         {
-            this.BaseAddress = baseAddress;
-            this.PagesCount  = pagesCount;
-            this.State       = state;
-            this.Attribute   = attribute;
-            this.Permission  = permission;
+            BaseAddress = baseAddress;
+            PagesCount  = pagesCount;
+            State       = state;
+            Attribute   = attribute;
+            Permission  = permission;
         }
 
         public KMemoryInfo GetInfo()

@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 { 0, GetSharedMemoryHandle }
             };
 
-            this._hidSharedMem = hidSharedMem;
+            _hidSharedMem = hidSharedMem;
         }
 
         public long GetSharedMemoryHandle(ServiceCtx context)

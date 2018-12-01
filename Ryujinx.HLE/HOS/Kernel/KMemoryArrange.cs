@@ -13,10 +13,10 @@ namespace Ryujinx.HLE.HOS.Kernel
             KMemoryArrangeRegion applet,
             KMemoryArrangeRegion application)
         {
-            this.Service     = service;
-            this.NvServices  = nvServices;
-            this.Applet      = applet;
-            this.Application = application;
+            Service     = service;
+            NvServices  = nvServices;
+            Applet      = applet;
+            Application = application;
         }
     }
 }
