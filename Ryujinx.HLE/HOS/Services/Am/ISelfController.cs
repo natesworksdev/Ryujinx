@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long SetScreenShotPermission(ServiceCtx context)
         {
-            bool enable = context.RequestData.ReadByte() != 0 ? true : false;
+            bool enable = context.RequestData.ReadByte() != 0;
 
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long SetOperationModeChangedNotification(ServiceCtx context)
         {
-            bool enable = context.RequestData.ReadByte() != 0 ? true : false;
+            bool enable = context.RequestData.ReadByte() != 0;
 
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
@@ -96,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long SetPerformanceModeChangedNotification(ServiceCtx context)
         {
-            bool enable = context.RequestData.ReadByte() != 0 ? true : false;
+            bool enable = context.RequestData.ReadByte() != 0;
 
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
@@ -105,9 +105,9 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long SetFocusHandlingMode(ServiceCtx context)
         {
-            bool flag1 = context.RequestData.ReadByte() != 0 ? true : false;
-            bool flag2 = context.RequestData.ReadByte() != 0 ? true : false;
-            bool flag3 = context.RequestData.ReadByte() != 0 ? true : false;
+            bool flag1 = context.RequestData.ReadByte() != 0;
+            bool flag2 = context.RequestData.ReadByte() != 0;
+            bool flag3 = context.RequestData.ReadByte() != 0;
 
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long SetRestartMessageEnabled(ServiceCtx context)
         {
-            bool enable = context.RequestData.ReadByte() != 0 ? true : false;
+            bool enable = context.RequestData.ReadByte() != 0;
 
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long SetOutOfFocusSuspendingEnabled(ServiceCtx context)
         {
-            bool enable = context.RequestData.ReadByte() != 0 ? true : false;
+            bool enable = context.RequestData.ReadByte() != 0;
 
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 
@@ -143,7 +143,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public long SetHandlesRequestToDisplay(ServiceCtx context)
         {
-            bool enable = context.RequestData.ReadByte() != 0 ? true : false;
+            bool enable = context.RequestData.ReadByte() != 0;
 
             Logger.PrintStub(LogClass.ServiceAm, "Stubbed.");
 

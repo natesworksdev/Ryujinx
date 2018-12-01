@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.FileSystem
 
         public bool DirectoryExists(string name)
         {
-            return name == "/" ? true : false;
+            return name == "/";
         }
 
         public bool FileExists(string name)
