@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfp
                 throw new InvalidOperationException("Out of handles!");
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);;
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
             return 0;
         }

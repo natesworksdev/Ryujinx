@@ -292,7 +292,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
             int nvMapHandle  = BitConverter.ToInt32(_bufferQueue[slot].Data.RawData, 0x4c);
             int bufferOffset = BitConverter.ToInt32(_bufferQueue[slot].Data.RawData, 0x50);
 
-            NvMapHandle map = NvMapIoctl.GetNvMap(context, nvMapHandle);;
+            NvMapHandle map = NvMapIoctl.GetNvMap(context, nvMapHandle);
 
             long fbAddr = map.Address + bufferOffset;
 

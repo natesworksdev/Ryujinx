@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 _system.CriticalSection.Leave();
 
-                return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);;
+                return MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
             }
 
             if (mutexValue != (ownerHandle | HasListenersMask))
