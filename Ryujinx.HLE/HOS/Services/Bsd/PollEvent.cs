@@ -17,12 +17,12 @@
         public EventTypeMask InputEvents  { get; private set; }
         public EventTypeMask OutputEvents { get; private set; }
 
-        public PollEvent(int SocketFd, BsdSocket Socket, EventTypeMask InputEvents, EventTypeMask OutputEvents)
+        public PollEvent(int socketFd, BsdSocket socket, EventTypeMask inputEvents, EventTypeMask outputEvents)
         {
-            this.SocketFd     = SocketFd;
-            this.Socket       = Socket;
-            this.InputEvents  = InputEvents;
-            this.OutputEvents = OutputEvents;
+            this.SocketFd     = socketFd;
+            this.Socket       = socket;
+            this.InputEvents  = inputEvents;
+            this.OutputEvents = outputEvents;
         }
     }
 }

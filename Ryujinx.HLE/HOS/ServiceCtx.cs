@@ -17,23 +17,23 @@ namespace Ryujinx.HLE.HOS
         public BinaryWriter  ResponseData { get; private set; }
 
         public ServiceCtx(
-            Switch        Device,
-            KProcess      Process,
-            MemoryManager Memory,
-            KSession      Session,
-            IpcMessage    Request,
-            IpcMessage    Response,
-            BinaryReader  RequestData,
-            BinaryWriter  ResponseData)
+            Switch        device,
+            KProcess      process,
+            MemoryManager memory,
+            KSession      session,
+            IpcMessage    request,
+            IpcMessage    response,
+            BinaryReader  requestData,
+            BinaryWriter  responseData)
         {
-            this.Device       = Device;
-            this.Process      = Process;
-            this.Memory       = Memory;
-            this.Session      = Session;
-            this.Request      = Request;
-            this.Response     = Response;
-            this.RequestData  = RequestData;
-            this.ResponseData = ResponseData;
+            this.Device       = device;
+            this.Process      = process;
+            this.Memory       = memory;
+            this.Session      = session;
+            this.Request      = request;
+            this.Response     = response;
+            this.RequestData  = requestData;
+            this.ResponseData = responseData;
         }
     }
 }

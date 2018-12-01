@@ -12,17 +12,17 @@ namespace Ryujinx.HLE.FileSystem.Content
         public long        TitleId     { get; private set; }
         public ContentType ContentType { get; private set; }
 
-        public LocationEntry(string ContentPath, int Flag, long TitleId, ContentType ContentType)
+        public LocationEntry(string contentPath, int flag, long titleId, ContentType contentType)
         {
-            this.ContentPath = ContentPath;
-            this.Flag        = Flag;
-            this.TitleId     = TitleId;
-            this.ContentType = ContentType;
+            this.ContentPath = contentPath;
+            this.Flag        = flag;
+            this.TitleId     = titleId;
+            this.ContentType = contentType;
         }
 
-        public void SetFlag(int Flag)
+        public void SetFlag(int flag)
         {
-            this.Flag = Flag;
+            this.Flag = flag;
         }
     }
 }

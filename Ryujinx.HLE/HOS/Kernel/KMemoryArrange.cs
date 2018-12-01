@@ -8,15 +8,15 @@ namespace Ryujinx.HLE.HOS.Kernel
         public KMemoryArrangeRegion Application { get; private set; }
 
         public KMemoryArrange(
-            KMemoryArrangeRegion Service,
-            KMemoryArrangeRegion NvServices,
-            KMemoryArrangeRegion Applet,
-            KMemoryArrangeRegion Application)
+            KMemoryArrangeRegion service,
+            KMemoryArrangeRegion nvServices,
+            KMemoryArrangeRegion applet,
+            KMemoryArrangeRegion application)
         {
-            this.Service     = Service;
-            this.NvServices  = NvServices;
-            this.Applet      = Applet;
-            this.Application = Application;
+            this.Service     = service;
+            this.NvServices  = nvServices;
+            this.Applet      = applet;
+            this.Application = application;
         }
     }
 }
