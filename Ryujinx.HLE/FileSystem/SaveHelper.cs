@@ -5,7 +5,7 @@ using static Ryujinx.HLE.FileSystem.VirtualFileSystem;
 
 namespace Ryujinx.HLE.FileSystem
 {
-    static class SaveHelper
+    internal static class SaveHelper
     {
         public static string GetSavePath(SaveInfo saveMetaData, ServiceCtx context)
         {

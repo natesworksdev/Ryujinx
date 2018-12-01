@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 {
-    class NvHostCtrlUserCtx
+    internal class NvHostCtrlUserCtx
     {
         public const int LocksCount  = 16;
         public const int EventsCount = 64;

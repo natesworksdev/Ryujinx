@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Lm
 {
-    enum LmLogField
+    internal enum LmLogField
     {
         Start       = 0,
         Stop        = 1,

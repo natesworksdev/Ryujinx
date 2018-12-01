@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
-    class IDirectory : IpcService, IDisposable
+    internal class IDirectory : IpcService, IDisposable
     {
         private const int DirectoryEntrySize = 0x310;
 

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KMemoryRegionBlock
+    internal class KMemoryRegionBlock
     {
         public long[][] Masks;
 

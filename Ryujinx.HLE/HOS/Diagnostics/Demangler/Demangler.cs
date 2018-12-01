@@ -6,7 +6,7 @@ using Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast;
 
 namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 {
-    class Demangler
+    internal class Demangler
     {
         private static readonly string Base36     = "0123456789abcdefghijklmnopqrstuvwxyz";
         private List<BaseNode> _substitutionList  = new List<BaseNode>();
@@ -2684,7 +2684,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             }
         }
 
-        class NameParserContext
+        private class NameParserContext
         {
             public CvType Cv;
             public SimpleReferenceType Ref;

@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace Ryujinx.HLE.HOS.SystemState
 {
-    class AppletStateMgr
+    internal class AppletStateMgr
     {
         private ConcurrentQueue<MessageInfo> _messages;
 

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    struct KPageNode
+    internal struct KPageNode
     {
         public ulong Address;
         public ulong PagesCount;

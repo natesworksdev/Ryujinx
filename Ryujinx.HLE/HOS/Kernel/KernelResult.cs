@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    enum KernelResult
+    internal enum KernelResult
     {
         Success            = 0,
         InvalidCapability  = 0x1c01,

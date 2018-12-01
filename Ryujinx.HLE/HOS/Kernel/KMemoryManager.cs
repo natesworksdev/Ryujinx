@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KMemoryManager
+    internal class KMemoryManager
     {
         public const int PageSize = 0x1000;
 

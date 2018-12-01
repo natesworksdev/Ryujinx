@@ -8,7 +8,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    class ITimeZoneService : IpcService
+    internal class ITimeZoneService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

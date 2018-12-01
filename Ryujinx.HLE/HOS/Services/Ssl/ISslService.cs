@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Ssl
 {
-    class ISslService : IpcService
+    internal class ISslService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

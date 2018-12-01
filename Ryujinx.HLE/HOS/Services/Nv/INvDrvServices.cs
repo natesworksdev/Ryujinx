@@ -12,7 +12,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nv
 {
-    class INvDrvServices : IpcService
+    internal class INvDrvServices : IpcService
     {
         private delegate int IoctlProcessor(ServiceCtx context, int cmd);
 

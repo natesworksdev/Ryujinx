@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    class ServiceAccessControl
+    internal class ServiceAccessControl
     {
         public IReadOnlyDictionary<string, bool> Services { get; private set; }
 

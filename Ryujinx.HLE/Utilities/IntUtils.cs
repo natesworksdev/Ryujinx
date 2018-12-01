@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Utilities
 {
-    static class IntUtils
+    internal static class IntUtils
     {
         public static int AlignUp(int value, int size)
         {

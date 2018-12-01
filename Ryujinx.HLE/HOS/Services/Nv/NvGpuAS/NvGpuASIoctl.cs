@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
-    class NvGpuASIoctl
+    internal class NvGpuASIoctl
     {
         private const int FlagFixedOffset = 1;
 

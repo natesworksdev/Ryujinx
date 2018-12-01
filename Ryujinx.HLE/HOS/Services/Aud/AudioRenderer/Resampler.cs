@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
-    static class Resampler
+    internal static class Resampler
     {
 #region "LookUp Tables"
         private static short[] _curveLut0 = new short[]

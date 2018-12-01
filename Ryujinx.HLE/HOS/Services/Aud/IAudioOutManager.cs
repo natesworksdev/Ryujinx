@@ -11,7 +11,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Aud
 {
-    class IAudioOutManager : IpcService
+    internal class IAudioOutManager : IpcService
     {
         private const string DefaultAudioOutput = "DeviceOut";
 

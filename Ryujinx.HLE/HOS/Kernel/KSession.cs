@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KSession : IDisposable
+    internal class KSession : IDisposable
     {
         public IpcService Service { get; private set; }
 

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    interface IExecutable
+    internal interface IExecutable
     {
         byte[] Text { get; }
         byte[] Ro   { get; }

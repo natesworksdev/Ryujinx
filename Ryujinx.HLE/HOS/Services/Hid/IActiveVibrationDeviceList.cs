@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    class IActiveApplicationDeviceList : IpcService
+    internal class IActiveApplicationDeviceList : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

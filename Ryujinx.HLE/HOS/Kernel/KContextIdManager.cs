@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KContextIdManager
+    internal class KContextIdManager
     {
         private const int IdMasksCount = 8;
 

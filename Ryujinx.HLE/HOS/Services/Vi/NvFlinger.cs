@@ -14,7 +14,7 @@ using static Ryujinx.HLE.HOS.Services.Android.Parcel;
 
 namespace Ryujinx.HLE.HOS.Services.Android
 {
-    class NvFlinger : IDisposable
+    internal class NvFlinger : IDisposable
     {
         private delegate long ServiceProcessParcel(ServiceCtx context, BinaryReader parcelReader);
 

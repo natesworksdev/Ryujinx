@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
-    struct NvGpuASUnmapBuffer
+    internal struct NvGpuASUnmapBuffer
     {
         public long Offset;
     }

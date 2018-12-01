@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.Utilities
 {
-    class StructWriter
+    internal class StructWriter
     {
         private MemoryManager _memory;
 

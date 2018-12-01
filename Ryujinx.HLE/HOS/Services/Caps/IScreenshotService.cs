@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Caps
 {
-    class IScreenshotService : IpcService
+    internal class IScreenshotService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

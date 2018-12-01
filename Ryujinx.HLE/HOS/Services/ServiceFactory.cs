@@ -29,7 +29,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services
 {
-    static class ServiceFactory
+    internal static class ServiceFactory
     {
         public static IpcService MakeService(Horizon system, string name)
         {

@@ -8,7 +8,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KThread : KSynchronizationObject, IKFutureSchedulerObject
+    internal class KThread : KSynchronizationObject, IKFutureSchedulerObject
     {
         public CpuThread Context { get; private set; }
 

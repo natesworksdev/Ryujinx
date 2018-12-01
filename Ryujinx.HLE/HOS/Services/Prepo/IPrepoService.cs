@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Prepo
 {
-    class IPrepoService : IpcService
+    internal class IPrepoService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    enum ThreadType
+    internal enum ThreadType
     {
         Dummy,
         Kernel,

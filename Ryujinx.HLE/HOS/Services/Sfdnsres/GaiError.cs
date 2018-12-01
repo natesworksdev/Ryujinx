@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Sfdnsres
 {
-    enum GaiError
+    internal enum GaiError
     {
         Success,
         AddressFamily,

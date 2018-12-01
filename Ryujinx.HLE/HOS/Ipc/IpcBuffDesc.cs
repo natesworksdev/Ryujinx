@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    struct IpcBuffDesc
+    internal struct IpcBuffDesc
     {
         public long Position { get; private set; }
         public long Size     { get; private set; }

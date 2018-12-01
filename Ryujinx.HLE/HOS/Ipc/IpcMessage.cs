@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    class IpcMessage
+    internal class IpcMessage
     {
         public IpcMessageType Type { get; set; }
 

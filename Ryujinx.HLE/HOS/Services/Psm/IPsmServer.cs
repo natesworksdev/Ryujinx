@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Psm
 {
-    class IPsmServer : IpcService
+    internal class IPsmServer : IpcService
     {
-        enum ChargerType
+        private enum ChargerType
         {
             None,
             ChargerOrDock,

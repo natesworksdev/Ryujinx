@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KMemoryArrange
+    internal class KMemoryArrange
     {
         public KMemoryArrangeRegion Service     { get; private set; }
         public KMemoryArrangeRegion NvServices  { get; private set; }

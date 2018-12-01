@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    class IStaticService : IpcService
+    internal class IStaticService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

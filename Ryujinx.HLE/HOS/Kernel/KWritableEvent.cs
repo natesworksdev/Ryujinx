@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KWritableEvent
+    internal class KWritableEvent
     {
         private KEvent _parent;
 

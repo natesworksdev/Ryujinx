@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    enum ProcessState : byte
+    internal enum ProcessState : byte
     {
         Created         = 0,
         CreatedAttached = 1,

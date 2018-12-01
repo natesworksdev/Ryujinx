@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Bsd
 {
-    class BsdSocket
+    internal class BsdSocket
     {
         public int Family;
         public int Type;

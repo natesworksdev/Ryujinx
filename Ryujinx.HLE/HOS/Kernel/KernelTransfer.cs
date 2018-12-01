@@ -2,7 +2,7 @@ using ChocolArm64.Memory;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    static class KernelTransfer
+    internal static class KernelTransfer
     {
         public static bool UserToKernelInt32(Horizon system, long address, out int value)
         {

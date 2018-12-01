@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class HleCoreManager
+    internal class HleCoreManager
     {
         private class PausableThread
         {

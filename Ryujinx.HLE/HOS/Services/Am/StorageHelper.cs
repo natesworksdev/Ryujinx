@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    class StorageHelper
+    internal class StorageHelper
     {
         private const uint LaunchParamsMagic = 0xc79497ca;
 

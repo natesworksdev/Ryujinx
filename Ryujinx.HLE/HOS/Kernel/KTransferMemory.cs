@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KTransferMemory
+    internal class KTransferMemory
     {
         public ulong Address { get; private set; }
         public ulong Size    { get; private set; }

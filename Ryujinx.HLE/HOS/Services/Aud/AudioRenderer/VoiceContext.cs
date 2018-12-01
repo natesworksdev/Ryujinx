@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
-    class VoiceContext
+    internal class VoiceContext
     {
         private bool _acquired;
         private bool _bufferReload;

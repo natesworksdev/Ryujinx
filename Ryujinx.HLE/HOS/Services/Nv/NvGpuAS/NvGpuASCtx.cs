@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
-    class NvGpuASCtx
+    internal class NvGpuASCtx
     {
         public NvGpuVmm Vmm { get; private set; }
 

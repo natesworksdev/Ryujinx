@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm
 {
-    class IRequest : IpcService
+    internal class IRequest : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

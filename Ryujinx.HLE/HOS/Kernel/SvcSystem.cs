@@ -12,7 +12,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    partial class SvcHandler
+    internal partial class SvcHandler
     {
         private void SvcExitProcess(CpuThreadState threadState)
         {

@@ -8,7 +8,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    class ICommonStateGetter : IpcService
+    internal class ICommonStateGetter : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

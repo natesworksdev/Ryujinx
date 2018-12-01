@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Nfp
 {
-    enum State
+    internal enum State
     {
         NonInitialized = 0,
         Initialized = 1

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 {
-    struct NvHostChannelSubmitGpfifo
+    internal struct NvHostChannelSubmitGpfifo
     {
         public long Address;
         public int  NumEntries;

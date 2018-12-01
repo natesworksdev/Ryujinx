@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 {
-    struct NvHostCtrlSyncptRead
+    internal struct NvHostCtrlSyncptRead
     {
         public int Id;
         public int Value;

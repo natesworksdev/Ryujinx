@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 {
-    class NvHostCtrlIoctl
+    internal class NvHostCtrlIoctl
     {
         private static ConcurrentDictionary<KProcess, NvHostCtrlUserCtx> _userCtxs;
 

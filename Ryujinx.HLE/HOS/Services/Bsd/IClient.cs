@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Bsd
 {
-    class IClient : IpcService
+    internal class IClient : IpcService
     {
 
         private static Dictionary<WsaError, LinuxError> _errorMap = new Dictionary<WsaError, LinuxError>

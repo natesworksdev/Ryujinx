@@ -10,7 +10,7 @@ using static Ryujinx.HLE.HOS.Services.Android.Parcel;
 
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
-    class IApplicationDisplayService : IpcService
+    internal class IApplicationDisplayService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

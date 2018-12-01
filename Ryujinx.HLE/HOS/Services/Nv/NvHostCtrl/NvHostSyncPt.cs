@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 {
-    class NvHostSyncpt
+    internal class NvHostSyncpt
     {
         public const int SyncptsCount = 192;
 

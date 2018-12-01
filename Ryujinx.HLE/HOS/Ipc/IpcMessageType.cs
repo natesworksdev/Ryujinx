@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    enum IpcMessageType
+    internal enum IpcMessageType
     {
         Response           = 0,
         CloseSession       = 2,

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    struct ProcessCreationInfo
+    internal struct ProcessCreationInfo
     {
         public string Name { get; private set; }
 

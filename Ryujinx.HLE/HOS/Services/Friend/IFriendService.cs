@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Friend
 {
-    class IFriendService : IpcService
+    internal class IFriendService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

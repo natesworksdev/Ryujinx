@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Acc
 {
-    class IManagerForApplication : IpcService
+    internal class IManagerForApplication : IpcService
     {
         private UInt128 _uuid;
 

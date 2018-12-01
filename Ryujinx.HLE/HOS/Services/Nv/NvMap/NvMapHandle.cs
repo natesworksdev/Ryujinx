@@ -2,7 +2,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 {
-    class NvMapHandle
+    internal class NvMapHandle
     {
         public int  Handle;
         public int  Id;

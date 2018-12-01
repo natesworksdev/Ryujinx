@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.Utilities
 {
-    static class EndianSwap
+    internal static class EndianSwap
     {
         public static ushort Swap16(ushort value) => (ushort)(((value >> 8) & 0xff) | (value << 8));
 

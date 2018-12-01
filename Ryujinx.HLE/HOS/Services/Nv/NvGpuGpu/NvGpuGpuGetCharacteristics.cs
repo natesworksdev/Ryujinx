@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 {
-    struct NvGpuGpuGetCharacteristics
+    internal struct NvGpuGpuGetCharacteristics
     {
         public long BufferSize;
         public long BufferAddress;

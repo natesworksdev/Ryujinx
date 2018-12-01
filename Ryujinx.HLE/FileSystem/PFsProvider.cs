@@ -10,7 +10,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.FileSystem
 {
-    class PFsProvider : IFileSystemProvider
+    internal class PFsProvider : IFileSystemProvider
     {
         private Pfs _pfs;
 

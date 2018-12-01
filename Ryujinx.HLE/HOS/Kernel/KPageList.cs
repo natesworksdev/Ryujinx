@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KPageList : IEnumerable<KPageNode>
+    internal class KPageList : IEnumerable<KPageNode>
     {
         public LinkedList<KPageNode> Nodes { get; private set; }
 

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    class IHidServer : IpcService
+    internal class IHidServer : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

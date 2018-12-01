@@ -5,7 +5,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KAddressArbiter
+    internal class KAddressArbiter
     {
         private const int HasListenersMask = 0x40000000;
 

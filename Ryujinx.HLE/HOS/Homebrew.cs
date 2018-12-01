@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS
 {
-    static class Homebrew
+    internal static class Homebrew
     {
         public const string TemporaryNroSuffix = ".ryu_tmp.nro";
 

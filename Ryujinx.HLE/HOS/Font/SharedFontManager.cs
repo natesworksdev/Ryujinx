@@ -11,7 +11,7 @@ using static Ryujinx.HLE.Utilities.FontUtils;
 
 namespace Ryujinx.HLE.HOS.Font
 {
-    class SharedFontManager
+    internal class SharedFontManager
     {
         private Switch _device;
 

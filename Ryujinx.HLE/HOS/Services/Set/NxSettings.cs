@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Set
 {
-    static class NxSettings
+    internal static class NxSettings
 	{
 		//Generated automatically from a Switch 3.0 config file (Tid: 0100000000000818).
 		public static Dictionary<string, object> Settings = new Dictionary<string, object>()

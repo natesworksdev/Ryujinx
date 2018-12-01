@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    class IAudioController : IpcService
+    internal class IAudioController : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

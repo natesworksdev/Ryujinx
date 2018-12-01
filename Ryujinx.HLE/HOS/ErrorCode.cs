@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS
 {
-    static class ErrorCode
+    internal static class ErrorCode
     {
         public static uint MakeError(ErrorModule module, int code)
         {

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 {
-    enum NvMapHandleParam
+    internal enum NvMapHandleParam
     {
         Size  = 1,
         Align = 2,

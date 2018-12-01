@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Psm
 {
-    class IPsmSession : IpcService
+    internal class IPsmSession : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

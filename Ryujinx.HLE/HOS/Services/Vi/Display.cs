@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
-    class Display
+    internal class Display
     {
         public string Name { get; private set; }
 

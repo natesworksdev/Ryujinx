@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Lm
 {
-    enum LmLogLevel
+    internal enum LmLogLevel
     {
         Trace,
         Info,

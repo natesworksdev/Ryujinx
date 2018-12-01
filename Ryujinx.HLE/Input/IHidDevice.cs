@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.Input
 {
-    interface IHidDevice
+    internal interface IHidDevice
     {
         long Offset    { get; }
         bool Connected { get; }

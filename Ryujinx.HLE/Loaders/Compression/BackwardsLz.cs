@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Compression
 {
-    static class BackwardsLz
+    internal static class BackwardsLz
     {
         private class BackwardsReader
         {

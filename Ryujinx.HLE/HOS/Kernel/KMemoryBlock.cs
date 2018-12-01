@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KMemoryBlock
+    internal class KMemoryBlock
     {
         public ulong BaseAddress { get; set; }
         public ulong PagesCount  { get; set; }

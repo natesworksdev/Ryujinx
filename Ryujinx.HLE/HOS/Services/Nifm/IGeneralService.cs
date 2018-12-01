@@ -11,7 +11,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm
 {
-    class IGeneralService : IpcService
+    internal class IGeneralService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

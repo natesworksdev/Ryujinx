@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS
 {
-    class ServiceCtx
+    internal class ServiceCtx
     {
         public Switch        Device       { get; private set; }
         public KProcess      Process      { get; private set; }

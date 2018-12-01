@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    enum PerformanceMode
+    internal enum PerformanceMode
     {
         Handheld = 0,
         Docked   = 1

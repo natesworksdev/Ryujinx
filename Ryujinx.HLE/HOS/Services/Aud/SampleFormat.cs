@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Aud
 {
-    enum SampleFormat : byte
+    internal enum SampleFormat : byte
     {
         Invalid  = 0,
         PcmInt8  = 1,

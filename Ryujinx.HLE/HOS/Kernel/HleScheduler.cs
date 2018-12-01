@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    partial class KScheduler
+    internal partial class KScheduler
     {
         private const int RoundRobinTimeQuantumMs = 10;
 

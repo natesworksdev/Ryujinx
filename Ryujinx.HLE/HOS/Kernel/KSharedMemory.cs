@@ -2,7 +2,7 @@ using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KSharedMemory
+    internal class KSharedMemory
     {
         private KPageList _pageList;
 

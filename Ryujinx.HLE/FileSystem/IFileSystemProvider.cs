@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.FspSrv;
 
 namespace Ryujinx.HLE.FileSystem
 {
-    interface IFileSystemProvider
+    internal interface IFileSystemProvider
     {
         long CreateFile(string name, long size);
 

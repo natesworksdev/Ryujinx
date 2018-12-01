@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 {
-    class NvGpuGpuIoctl
+    internal class NvGpuGpuIoctl
     {
         private static Stopwatch _pTimer;
 

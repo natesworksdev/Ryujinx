@@ -10,7 +10,7 @@ using static Ryujinx.HLE.Utilities.StringUtils;
 
 namespace Ryujinx.HLE.HOS.Services.Lr
 {
-    class ILocationResolver : IpcService
+    internal class ILocationResolver : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

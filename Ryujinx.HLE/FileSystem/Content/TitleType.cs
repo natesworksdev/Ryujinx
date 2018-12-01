@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.FileSystem.Content
 {
-    enum TitleType
+    internal enum TitleType
     {
         SystemPrograms     = 0x01,
         SystemDataArchive  = 0x02,

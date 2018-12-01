@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
-    enum PlayState : byte
+    internal enum PlayState : byte
     {
         Playing = 0,
         Stopped = 1,

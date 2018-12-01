@@ -7,7 +7,7 @@ using Ryujinx.HLE.Loaders.Npdm;
 
 namespace Ryujinx.HLE.HOS
 {
-    class ProgramLoader
+    internal class ProgramLoader
     {
         private const bool AslrEnabled = true;
 

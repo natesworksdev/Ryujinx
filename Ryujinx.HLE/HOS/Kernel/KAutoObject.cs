@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    class KAutoObject
+    internal class KAutoObject
     {
         protected Horizon System;
 
