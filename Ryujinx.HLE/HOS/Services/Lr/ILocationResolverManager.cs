@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Lr
         {
             _commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0, OpenLocationResolver },
+                { 0, OpenLocationResolver }
             };
         }
 

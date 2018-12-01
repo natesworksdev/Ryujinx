@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 { "FontExtendedChineseSimplified", 0x0100000000000814 },
                 { "FontKorean",                    0x0100000000000812 },
                 { "FontChineseTraditional",        0x0100000000000813 },
-                { "FontNintendoExtended" ,         0x0100000000000810 },
+                { "FontNintendoExtended" ,         0x0100000000000810 }
             };
 
             _device = device;

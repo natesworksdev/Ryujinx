@@ -126,6 +126,6 @@
          * buffer in general */
         QosTrafficCtrlError    = (BaseError + 1014),
         /* problem with some part of the flowspec */
-        QosGenericError        = (BaseError + 1015),
+        QosGenericError        = (BaseError + 1015)
     }
 }

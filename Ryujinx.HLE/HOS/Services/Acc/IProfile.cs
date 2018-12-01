@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
                 { 0,  Get          },
                 { 1,  GetBase      },
                 { 10, GetImageSize },
-                { 11, LoadImage    },
+                { 11, LoadImage    }
             };
 
             _profile = profile;

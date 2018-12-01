@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Sfdnsres
                 { 5,  GetGaiStringError      },
                 { 8,  RequestCancelHandle    },
                 { 9,  CancelSocketCall       },
-                { 11, ClearDnsAddresses      },
+                { 11, ClearDnsAddresses      }
             };
         }
 

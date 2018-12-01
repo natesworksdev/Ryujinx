@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
                 { 1, UnloadNro  },
                 { 2, LoadNrr    },
                 { 3, UnloadNrr  },
-                { 4, Initialize },
+                { 4, Initialize }
             };
 
             _nrrInfos = new List<NrrInfo>(MaxNrr);

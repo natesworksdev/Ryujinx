@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 10, Commit                     },
                 { 11, GetFreeSpaceSize           },
                 { 12, GetTotalSpaceSize          },
-                { 13, CleanDirectoryRecursively  },
+                { 13, CleanDirectoryRecursively  }
                 //{ 14, GetFileTimeStampRaw        }
             };
 

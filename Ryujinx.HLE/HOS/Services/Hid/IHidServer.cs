@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 { 512,  ReadPalmaUniqueCode                           },
                 { 513,  SetPalmaUniqueCodeInvalid                     },
                 { 1000, SetNpadCommunicationMode                      },
-                { 1001, GetNpadCommunicationMode                      },
+                { 1001, GetNpadCommunicationMode                      }
             };
 
             _npadStyleSetUpdateEvent     = new KEvent(system);
@@ -432,7 +432,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _sensorFusionParams = new HidSensorFusionParameters()
             {
                 RevisePower = context.RequestData.ReadInt32(),
-                ReviseRange = context.RequestData.ReadInt32(),
+                ReviseRange = context.RequestData.ReadInt32()
             };
 
             long appletResourceUserId = context.RequestData.ReadInt64();
@@ -487,7 +487,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _accelerometerParams = new HidAccelerometerParameters()
             {
                 X = context.RequestData.ReadInt32(),
-                Y = context.RequestData.ReadInt32(),
+                Y = context.RequestData.ReadInt32()
             };
 
             long appletResourceUserId = context.RequestData.ReadInt64();

@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                 { 24, Write              },
                 { 25, Read               },
                 { 26, Close              },
-                { 27, DuplicateSocket    },
+                { 27, DuplicateSocket    }
             };
 
             _isPrivileged = isPrivileged;
@@ -667,7 +667,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                         Family   = (int)newSocket.AddressFamily,
                         Type     = (int)newSocket.SocketType,
                         Protocol = (int)newSocket.ProtocolType,
-                        Handle   = newSocket,
+                        Handle   = newSocket
                     };
 
                     _sockets.Add(newBsdSocket);
