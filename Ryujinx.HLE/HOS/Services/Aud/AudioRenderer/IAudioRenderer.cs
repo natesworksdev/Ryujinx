@@ -305,7 +305,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             }
         }
 
-        private unsafe void AppendMixedBuffer(long tag)
+        private void AppendMixedBuffer(long tag)
         {
             int[] mixBuffer = new int[MixBufferSamplesCount * AudioConsts.HostChannelsCount];
 
