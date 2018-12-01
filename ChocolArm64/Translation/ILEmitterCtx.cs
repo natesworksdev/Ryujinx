@@ -78,8 +78,6 @@ namespace ChocolArm64.Translation
             {
                 if (!AdvanceBlock())
                 {
-                    --_opcIndex;
-
                     return false;
                 }
 
@@ -148,6 +146,11 @@ namespace ChocolArm64.Translation
 
         public void EmitOpCode()
         {
+            if (_currBlock == null)
+            {
+                return;
+            }
+
             if (_opcIndex == 0)
             {
                 MarkLabel(GetLabel(_currBlock.Position));
