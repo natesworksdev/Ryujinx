@@ -1,6 +1,5 @@
 ﻿using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.FspSrv;
-using System;
 
 namespace Ryujinx.HLE.FileSystem
 {

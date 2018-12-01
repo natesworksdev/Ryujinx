@@ -4,7 +4,6 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

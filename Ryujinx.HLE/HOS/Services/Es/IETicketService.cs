@@ -1,5 +1,4 @@
 ﻿using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Es

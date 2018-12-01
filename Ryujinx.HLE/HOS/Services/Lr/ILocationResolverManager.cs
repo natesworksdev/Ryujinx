@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.FileSystem;
 

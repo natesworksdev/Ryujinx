@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using LibHac;
+﻿using LibHac;
 
 namespace Ryujinx.HLE.FileSystem.Content
 {
