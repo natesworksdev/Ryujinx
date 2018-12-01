@@ -502,7 +502,7 @@ namespace Ryujinx.HLE.HOS
             {
                 IExecutable staticObject = isNro
                     ? (IExecutable)new NxRelocatableObject(input)
-                    : (IExecutable)new NxStaticObject(input);
+                    : new NxStaticObject(input);
 
                 ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
             }

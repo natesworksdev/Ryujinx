@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Ipc
 
                 if (HasPId)
                 {
-                    writer.Write((long)PId);
+                    writer.Write(PId);
                 }
 
                 foreach (int handle in ToCopy)

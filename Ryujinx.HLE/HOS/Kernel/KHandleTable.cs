@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 _activeSlotsCount++;
 
-                handle = (int)((_idCounter << 15) & (uint)0xffff8000) | entry.Index;
+                handle = (int)((_idCounter << 15) & 0xffff8000) | entry.Index;
 
                 if ((short)(_idCounter + 1) >= 0)
                 {

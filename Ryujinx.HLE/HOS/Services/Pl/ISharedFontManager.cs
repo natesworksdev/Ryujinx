@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Pl
             {
                 int offset = (int)type * 4;
 
-                if (!AddFontToOrderOfPriorityList(context, (SharedFontType)type, offset))
+                if (!AddFontToOrderOfPriorityList(context, type, offset))
                 {
                     break;
                 }

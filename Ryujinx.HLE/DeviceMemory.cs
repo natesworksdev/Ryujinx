@@ -40,7 +40,7 @@ namespace Ryujinx.HLE
 
         public unsafe byte ReadByte(long position)
         {
-            return *((byte*)(_ramPtr + position));
+            return *(_ramPtr + position);
         }
 
         public unsafe ushort ReadUInt16(long position)
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE
 
         public unsafe void WriteByte(long position, byte value)
         {
-            *((byte*)(_ramPtr + position)) = value;
+            *(_ramPtr + position) = value;
         }
 
         public unsafe void WriteUInt16(long position, ushort value)
