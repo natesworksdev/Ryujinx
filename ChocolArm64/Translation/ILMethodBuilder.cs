@@ -6,7 +6,7 @@ using System.Runtime.Intrinsics;
 
 namespace ChocolArm64.Translation
 {
-    class ILEmitter
+    class ILMethodBuilder
     {
         public LocalAlloc LocalAlloc { get; private set; }
 
@@ -20,7 +20,7 @@ namespace ChocolArm64.Translation
 
         private int _localsCount;
 
-        public ILEmitter(ILBlock[] ilBlocks, string subName)
+        public ILMethodBuilder(ILBlock[] ilBlocks, string subName)
         {
             _ilBlocks = ilBlocks;
             _subName  = subName;

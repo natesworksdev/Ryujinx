@@ -37,7 +37,7 @@ namespace ChocolArm64.Translation
                 IntAwOutputs = IntOutputs;
                 VecAwOutputs = VecOutputs;
             }
-            else if (emitter is ILOpCodeLoad ld && ILEmitter.IsRegIndex(ld.Index))
+            else if (emitter is ILOpCodeLoad ld && ILMethodBuilder.IsRegIndex(ld.Index))
             {
                 switch (ld.IoType)
                 {
@@ -46,7 +46,7 @@ namespace ChocolArm64.Translation
                     case IoType.Vector: VecInputs |=  (1L << ld.Index)        & ~VecAwOutputs; break;
                 }
             }
-            else if (emitter is ILOpCodeStore st && ILEmitter.IsRegIndex(st.Index))
+            else if (emitter is ILOpCodeStore st && ILMethodBuilder.IsRegIndex(st.Index))
             {
                 switch (st.IoType)
                 {
@@ -63,7 +63,7 @@ namespace ChocolArm64.Translation
             _emitters.Add(emitter);
         }
 
-        public void Emit(ILEmitter context)
+        public void Emit(ILMethodBuilder context)
         {
             foreach (IILEmit ilEmitter in _emitters)
             {

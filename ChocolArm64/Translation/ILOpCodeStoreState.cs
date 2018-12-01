@@ -12,7 +12,7 @@ namespace ChocolArm64.Translation
             _block = block;
         }
 
-        public void Emit(ILEmitter context)
+        public void Emit(ILMethodBuilder context)
         {
             long intOutputs = context.LocalAlloc.GetIntOutputs(_block);
             long vecOutputs = context.LocalAlloc.GetVecOutputs(_block);
@@ -21,7 +21,7 @@ namespace ChocolArm64.Translation
             StoreLocals(context, vecOutputs, RegisterType.Vector);
         }
 
-        private void StoreLocals(ILEmitter context, long outputs, RegisterType baseType)
+        private void StoreLocals(ILMethodBuilder context, long outputs, RegisterType baseType)
         {
             for (int bit = 0; bit < 64; bit++)
             {
@@ -29,7 +29,7 @@ namespace ChocolArm64.Translation
 
                 if ((outputs & mask) != 0)
                 {
-                    Register reg = ILEmitter.GetRegFromBit(bit, baseType);
+                    Register reg = ILMethodBuilder.GetRegFromBit(bit, baseType);
 
                     context.Generator.EmitLdarg(TranslatedSub.StateArgIdx);
                     context.Generator.EmitLdloc(context.GetLocalIndex(reg));

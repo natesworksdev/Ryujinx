@@ -18,7 +18,7 @@ namespace ChocolArm64.Translation
             RegisterSize = registerSize;
         }
 
-        public void Emit(ILEmitter context)
+        public void Emit(ILMethodBuilder context)
         {
             switch (IoType)
             {
@@ -30,7 +30,7 @@ namespace ChocolArm64.Translation
             }
         }
 
-        private void EmitStloc(ILEmitter context, int index, RegisterType registerType)
+        private void EmitStloc(ILMethodBuilder context, int index, RegisterType registerType)
         {
             Register reg = new Register(index, registerType);
 

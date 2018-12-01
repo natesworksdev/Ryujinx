@@ -93,7 +93,7 @@ namespace ChocolArm64
 
             string subName = GetSubroutineName(position);
 
-            ILEmitter ilMthdBuilder = new ILEmitter(context.GetILBlocks(), subName);
+            ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(context.GetILBlocks(), subName);
 
             TranslatedSub subroutine = ilMthdBuilder.GetSubroutine();
 
@@ -138,7 +138,7 @@ namespace ChocolArm64
 
             ILBlock[] ilBlocks = context.GetILBlocks();
 
-            ILEmitter ilMthdBuilder = new ILEmitter(ilBlocks, subName);
+            ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(ilBlocks, subName);
 
             TranslatedSub subroutine = ilMthdBuilder.GetSubroutine();
 
