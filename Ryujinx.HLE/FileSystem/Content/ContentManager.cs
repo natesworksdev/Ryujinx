@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 { "FontExtendedChineseSimplified", 0x0100000000000814 },
                 { "FontKorean",                    0x0100000000000812 },
                 { "FontChineseTraditional",        0x0100000000000813 },
-                { "FontNintendoExtended" ,         0x0100000000000810 }
+                { "FontNintendoExtended",          0x0100000000000810 }
             };
 
             _device = device;
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                     contentDirectory    = LocationHelper.GetRealPath(_device.FileSystem, contentPathString);
                     registeredDirectory = Path.Combine(contentDirectory, "registered");
                 }
-                catch (NotSupportedException nEx)
+                catch (NotSupportedException)
                 {
                     continue;
                 }
@@ -168,8 +168,7 @@ namespace Ryujinx.HLE.FileSystem.Content
         {
             if (_contentDictionary.ContainsValue(ncaId))
             {
-                KeyValuePair<(ulong, ContentType), string> content = _contentDictionary.FirstOrDefault(x => x.Value == ncaId);
-
+                var         content     = _contentDictionary.FirstOrDefault(x => x.Value == ncaId);
                 long        titleId     = (long)content.Key.Item1;
                 ContentType contentType = content.Key.Item2;
                 StorageId   storage     = GetInstalledStorage(titleId, contentType, storageId);
