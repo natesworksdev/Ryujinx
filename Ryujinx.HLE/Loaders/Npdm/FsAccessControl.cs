@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    internal class FsAccessControl
+    class FsAccessControl
     {
         public int   Version            { get; private set; }
         public ulong PermissionsBitmask { get; private set; }

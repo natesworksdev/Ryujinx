@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv
 {
-    internal class NvFd
+    class NvFd
     {
         public string Name { get; private set; }
 

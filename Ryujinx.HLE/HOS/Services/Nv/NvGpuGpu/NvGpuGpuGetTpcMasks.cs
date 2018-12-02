@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 {
-    internal struct NvGpuGpuGetTpcMasks
+    struct NvGpuGpuGetTpcMasks
     {
         public int  MaskBufferSize;
         public int  Reserved;

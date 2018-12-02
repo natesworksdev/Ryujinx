@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    internal class IDebugFunctions : IpcService
+    class IDebugFunctions : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

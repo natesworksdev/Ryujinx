@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.FileSystem.Content
 {
-    internal static class ContentPath
+    static class ContentPath
     {
         public const string SystemContent    = "@SystemContent";
         public const string UserContent      = "@UserContent";

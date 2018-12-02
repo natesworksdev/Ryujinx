@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Elf
 {
-    internal struct ElfSymbol
+    struct ElfSymbol
     {
         public string Name { get; private set; }
 

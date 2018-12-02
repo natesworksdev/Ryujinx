@@ -8,7 +8,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.FileSystem
 {
-    internal class FileSystemProvider : IFileSystemProvider
+    class FileSystemProvider : IFileSystemProvider
     {
         private readonly string _basePath;
         private readonly string _rootPath;

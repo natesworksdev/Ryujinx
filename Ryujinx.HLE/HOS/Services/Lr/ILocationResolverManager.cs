@@ -4,7 +4,7 @@ using Ryujinx.HLE.FileSystem;
 
 namespace Ryujinx.HLE.HOS.Services.Lr
 {
-    internal class ILocationResolverManager : IpcService
+    class ILocationResolverManager : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

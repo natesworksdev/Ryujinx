@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
-    internal class IhosBinderDriver : IpcService, IDisposable
+    class IhosBinderDriver : IpcService, IDisposable
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KTlsPageInfo
+    class KTlsPageInfo
     {
         public const int TlsEntrySize = 0x200;
 

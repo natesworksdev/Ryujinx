@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.FileSystem
 {
-    internal struct SaveInfo
+    struct SaveInfo
     {
         public long    TitleId { get; private set; }
         public long    SaveId  { get; private set; }

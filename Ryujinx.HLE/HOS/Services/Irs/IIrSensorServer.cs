@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Irs
 {
-    internal class IIrSensorServer : IpcService
+    class IIrSensorServer : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Pctl
 {
-    internal class IParentalControlService : IpcService
+    class IParentalControlService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

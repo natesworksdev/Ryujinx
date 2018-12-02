@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Elf
 {
-    internal enum ElfSymbolType
+    enum ElfSymbolType
     {
         SttNoType  = 0,
         SttObject  = 1,

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Es
 {
-    internal class IeTicketService : IpcService
+    class IeTicketService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

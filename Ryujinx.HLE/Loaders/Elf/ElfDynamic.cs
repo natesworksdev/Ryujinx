@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Elf
 {
-    internal struct ElfDynamic
+    struct ElfDynamic
     {
         public ElfDynamicTag Tag { get; private set; }
 

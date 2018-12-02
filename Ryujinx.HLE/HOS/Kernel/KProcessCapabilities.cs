@@ -2,7 +2,7 @@ using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KProcessCapabilities
+    class KProcessCapabilities
     {
         public byte[] SvcAccessMask { get; private set; }
         public byte[] IrqAccessMask { get; private set; }

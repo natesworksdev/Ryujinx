@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KTimeManager : IDisposable
+    class KTimeManager : IDisposable
     {
         private class WaitingObject
         {

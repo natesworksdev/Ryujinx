@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    internal enum FocusState
+    enum FocusState
     {
         InFocus    = 1,
         OutOfFocus = 2

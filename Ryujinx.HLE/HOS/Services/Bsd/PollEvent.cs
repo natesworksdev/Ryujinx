@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Bsd
 {
-    internal class PollEvent
+    class PollEvent
     {
         public enum EventTypeMask
         {

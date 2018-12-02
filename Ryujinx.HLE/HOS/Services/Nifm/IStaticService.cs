@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm
 {
-    internal class IStaticService : IpcService
+    class IStaticService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

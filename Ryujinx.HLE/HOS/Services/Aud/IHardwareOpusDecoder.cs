@@ -6,7 +6,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Aud
 {
-    internal class IHardwareOpusDecoder : IpcService
+    class IHardwareOpusDecoder : IpcService
     {
         private const int FixedSampleRate = 48000;
 

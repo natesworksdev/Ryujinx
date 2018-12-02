@@ -2,7 +2,7 @@ using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KCoreContext
+    class KCoreContext
     {
         private KScheduler _scheduler;
 

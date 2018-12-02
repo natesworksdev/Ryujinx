@@ -2,7 +2,7 @@ using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KMemoryRegionManager
+    class KMemoryRegionManager
     {
         private static readonly int[] BlockOrders = new int[] { 12, 16, 21, 22, 25, 29, 30 };
 

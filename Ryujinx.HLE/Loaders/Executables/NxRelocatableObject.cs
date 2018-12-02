@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    internal class NxRelocatableObject : IExecutable
+    class NxRelocatableObject : IExecutable
     {
         public byte[] Text { get; private set; }
         public byte[] Ro   { get; private set; }

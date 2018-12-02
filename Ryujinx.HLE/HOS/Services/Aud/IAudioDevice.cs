@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Aud
 {
-    internal class IAudioDevice : IpcService
+    class IAudioDevice : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

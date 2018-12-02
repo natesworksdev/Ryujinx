@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    internal class Aci0
+    class Aci0
     {
         private const int Aci0Magic = 'A' << 0 | 'C' << 8 | 'I' << 16 | '0' << 24;
 

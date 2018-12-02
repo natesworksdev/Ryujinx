@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
-    internal struct UpdateDataHeader
+    struct UpdateDataHeader
     {
         public int Revision;
         public int BehaviorSize;

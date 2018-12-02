@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    internal class IManager : IpcService
+    class IManager : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

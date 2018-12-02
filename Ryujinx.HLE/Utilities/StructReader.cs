@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.Utilities
 {
-    internal class StructReader
+    class StructReader
     {
         private MemoryManager _memory;
 

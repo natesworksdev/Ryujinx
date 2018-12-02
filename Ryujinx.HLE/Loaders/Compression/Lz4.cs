@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.HLE.Loaders.Compression
 {
-    internal static class Lz4
+    static class Lz4
     {
         public static byte[] Decompress(byte[] cmp, int decLength)
         {

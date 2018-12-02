@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
-    internal class IFile : IpcService, IDisposable
+    class IFile : IpcService, IDisposable
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

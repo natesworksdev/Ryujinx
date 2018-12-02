@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Aud
 {
-    internal class IHardwareOpusDecoderManager : IpcService
+    class IHardwareOpusDecoderManager : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

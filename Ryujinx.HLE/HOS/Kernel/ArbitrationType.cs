@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal enum ArbitrationType
+    enum ArbitrationType
     {
         WaitIfLessThan             = 0,
         DecrementAndWaitIfLessThan = 1,

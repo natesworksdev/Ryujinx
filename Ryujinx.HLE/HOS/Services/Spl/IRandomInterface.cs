@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 
 namespace Ryujinx.HLE.HOS.Services.Spl
 {
-    internal class IRandomInterface : IpcService, IDisposable
+    class IRandomInterface : IpcService, IDisposable
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

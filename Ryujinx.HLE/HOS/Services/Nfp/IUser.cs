@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nfp
 {
-    internal class IUser : IpcService
+    class IUser : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

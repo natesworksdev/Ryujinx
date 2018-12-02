@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS
 {
-    internal enum ErrorModule
+    enum ErrorModule
     {
         Kernel                = 1,
         Fs                    = 2,

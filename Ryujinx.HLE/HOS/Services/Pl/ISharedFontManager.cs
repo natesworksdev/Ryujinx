@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Pl
 {
-    internal class ISharedFontManager : IpcService
+    class ISharedFontManager : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

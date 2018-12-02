@@ -2,7 +2,7 @@
 {
     public class HidProController : HidControllerBase
     {
-        private bool _wired = false;
+        bool _wired = false;
 
         public HidProController(Switch device) : base(HidControllerType.ProController, device)
         {

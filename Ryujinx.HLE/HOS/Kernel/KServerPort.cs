@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KServerPort : KSynchronizationObject
+    class KServerPort : KSynchronizationObject
     {
         private KPort _parent;
 

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
-    internal class MemoryPoolContext
+    class MemoryPoolContext
     {
         public MemoryPoolOut OutStatus;
 

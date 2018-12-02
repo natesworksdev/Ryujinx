@@ -2,7 +2,7 @@ using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class MersenneTwister
+    class MersenneTwister
     {
         private int _index;
         private uint[] _mt;

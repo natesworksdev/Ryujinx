@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Ldr
 {
-    internal static class LoaderErr
+    static class LoaderErr
     {
         public const int InvalidMemoryState = 51;
         public const int InvalidNro         = 52;

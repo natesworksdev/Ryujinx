@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    internal class IAppletResource : IpcService
+    class IAppletResource : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

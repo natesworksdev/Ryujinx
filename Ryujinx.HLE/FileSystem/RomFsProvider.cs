@@ -10,7 +10,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.FileSystem
 {
-    internal class RomFsProvider : IFileSystemProvider
+    class RomFsProvider : IFileSystemProvider
     {
         private Romfs _romFs;
 

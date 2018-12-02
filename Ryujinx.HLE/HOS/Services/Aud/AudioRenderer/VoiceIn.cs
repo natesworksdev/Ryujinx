@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x170, Pack = 1)]
-    internal struct VoiceIn
+    struct VoiceIn
     {
         public int VoiceSlot;
         public int NodeId;

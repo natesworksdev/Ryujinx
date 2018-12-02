@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal static class KConditionVariable
+    static class KConditionVariable
     {
         public static void Wait(Horizon system, LinkedList<KThread> threadList, object mutex, long timeout)
         {

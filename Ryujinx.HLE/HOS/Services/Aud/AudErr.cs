@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Aud
 {
-    internal static class AudErr
+    static class AudErr
     {
         public const int DeviceNotFound        = 1;
         public const int UnsupportedRevision   = 2;

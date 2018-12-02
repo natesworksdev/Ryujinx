@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Android
 {
-    internal static class Parcel
+    static class Parcel
     {
         public static byte[] GetParcelData(byte[] parcel)
         {

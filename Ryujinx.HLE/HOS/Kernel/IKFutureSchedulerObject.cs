@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal interface IKFutureSchedulerObject
+    interface IKFutureSchedulerObject
     {
         void TimeUp();
     }

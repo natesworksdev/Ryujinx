@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Android
 {
-    internal struct GbpBuffer
+    struct GbpBuffer
     {
         public int Magic  { get; private set; }
         public int Width  { get; private set; }

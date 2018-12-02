@@ -3,7 +3,7 @@ using System;
 namespace Ryujinx.HLE.HOS.Kernel
 {
     [Flags]
-    internal enum MemoryAttribute  : byte
+    enum MemoryAttribute  : byte
     {
         None = 0,
         Mask = 0xff,

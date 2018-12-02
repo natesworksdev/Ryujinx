@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.Utilities
 {
-    internal static class StringUtils
+    static class StringUtils
     {
         public static byte[] GetFixedLengthBytes(string inputString, int size, Encoding encoding)
         {

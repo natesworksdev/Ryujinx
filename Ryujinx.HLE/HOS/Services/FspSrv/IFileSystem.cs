@@ -9,7 +9,7 @@ using static Ryujinx.HLE.Utilities.StringUtils;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
-    internal class IFileSystem : IpcService
+    class IFileSystem : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

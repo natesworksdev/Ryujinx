@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KHandleTable
+    class KHandleTable
     {
         private const int SelfThreadHandle  = (0x1ffff << 15) | 0;
         private const int SelfProcessHandle = (0x1ffff << 15) | 1;

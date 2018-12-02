@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 {
-    internal class NvMapIoctl
+    class NvMapIoctl
     {
         private const int FlagNotFreedYet = 1;
 

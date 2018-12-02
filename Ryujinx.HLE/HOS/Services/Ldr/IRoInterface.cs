@@ -15,7 +15,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 namespace Ryujinx.HLE.HOS.Services.Ldr
 {
     [StructLayout(LayoutKind.Explicit, Size = 0x350)]
-    internal unsafe struct NrrHeader
+    unsafe struct NrrHeader
     {
         [FieldOffset(0)]
         public uint  Magic;
@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
         public uint HashCount;
     }
 
-    internal class NrrInfo
+    class NrrInfo
     {
         public NrrHeader    Header     { get; private set; }
         public List<byte[]> Hashes     { get; private set; }
@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
         }
     }
 
-    internal class NroInfo
+    class NroInfo
     {
         public NxRelocatableObject Executable { get; private set; }
 
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
         }
     }
 
-    internal class IRoInterface : IpcService
+    class IRoInterface : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

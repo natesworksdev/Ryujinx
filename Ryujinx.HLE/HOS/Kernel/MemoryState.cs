@@ -3,7 +3,7 @@ using System;
 namespace Ryujinx.HLE.HOS.Kernel
 {
     [Flags]
-    internal enum MemoryState : uint
+    enum MemoryState : uint
     {
         Unmapped               = 0x00000000,
         Io                     = 0x00002001,

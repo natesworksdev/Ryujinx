@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KResourceLimit
+    class KResourceLimit
     {
         private const int Time10SecondsMs = 10000;
 

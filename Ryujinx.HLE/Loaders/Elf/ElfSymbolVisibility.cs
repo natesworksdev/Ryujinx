@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Elf
 {
-    internal enum ElfSymbolVisibility
+    enum ElfSymbolVisibility
     {
         StvDefault   = 0,
         StvInternal  = 1,

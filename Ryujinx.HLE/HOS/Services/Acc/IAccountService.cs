@@ -8,7 +8,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Acc
 {
-    internal class IAccountService : IpcService
+    class IAccountService : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

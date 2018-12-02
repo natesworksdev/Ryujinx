@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x20, Pack = 4)]
-    internal struct MemoryPoolIn
+    struct MemoryPoolIn
     {
         public long            Address;
         public long            Size;

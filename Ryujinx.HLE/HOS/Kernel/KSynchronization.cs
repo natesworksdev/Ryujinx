@@ -4,7 +4,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KSynchronization
+    class KSynchronization
     {
         private Horizon _system;
 

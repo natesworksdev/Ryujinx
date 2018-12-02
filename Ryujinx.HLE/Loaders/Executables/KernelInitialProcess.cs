@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    internal class KernelInitialProcess : IExecutable
+    class KernelInitialProcess : IExecutable
     {
         public string Name { get; private set; }
 

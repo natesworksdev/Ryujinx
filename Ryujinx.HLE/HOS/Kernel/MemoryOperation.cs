@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal enum MemoryOperation
+    enum MemoryOperation
     {
         MapPa,
         MapVa,

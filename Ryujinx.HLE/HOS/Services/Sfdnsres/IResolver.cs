@@ -10,7 +10,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Sfdnsres
 {
-    internal class IResolver : IpcService
+    class IResolver : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

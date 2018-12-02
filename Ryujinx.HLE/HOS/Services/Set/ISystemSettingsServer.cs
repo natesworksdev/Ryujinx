@@ -10,7 +10,7 @@ using Ryujinx.HLE.FileSystem;
 
 namespace Ryujinx.HLE.HOS.Services.Set
 {
-    internal class ISystemSettingsServer : IpcService
+    class ISystemSettingsServer : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

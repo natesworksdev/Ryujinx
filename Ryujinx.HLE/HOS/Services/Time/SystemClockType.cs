@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    internal enum SystemClockType
+    enum SystemClockType
     {
         User,
         Network,

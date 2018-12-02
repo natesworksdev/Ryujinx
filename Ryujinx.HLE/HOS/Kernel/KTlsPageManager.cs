@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KTlsPageManager
+    class KTlsPageManager
     {
         private const int TlsEntrySize = 0x200;
 

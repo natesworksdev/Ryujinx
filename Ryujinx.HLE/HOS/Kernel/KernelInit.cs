@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal static class KernelInit
+    static class KernelInit
     {
         public static void InitializeResourceLimit(KResourceLimit resourceLimit)
         {

@@ -9,7 +9,7 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Aud
 {
-    internal class IAudioRendererManager : IpcService
+    class IAudioRendererManager : IpcService
     {
         private const int Rev0Magic = ('R' << 0)  |
                                       ('E' << 8)  |

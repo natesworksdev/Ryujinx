@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    internal enum PerformanceConfiguration : uint
+    enum PerformanceConfiguration : uint
     {
         PerformanceConfiguration1  = 0x00010000,
         PerformanceConfiguration2  = 0x00010001,

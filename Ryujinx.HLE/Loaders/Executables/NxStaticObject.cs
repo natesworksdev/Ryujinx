@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    internal class NxStaticObject : IExecutable
+    class NxStaticObject : IExecutable
     {
         public byte[] Text { get; private set; }
         public byte[] Ro   { get; private set; }

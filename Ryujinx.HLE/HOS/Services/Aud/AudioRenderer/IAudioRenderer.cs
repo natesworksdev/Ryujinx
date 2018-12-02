@@ -13,7 +13,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
-    internal class IAudioRenderer : IpcService, IDisposable
+    class IAudioRenderer : IpcService, IDisposable
     {
         //This is the amount of samples that are going to be appended
         //each time that RequestUpdateAudioRenderer is called. Ideally,

@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KCriticalSection
+    class KCriticalSection
     {
         private Horizon _system;
 

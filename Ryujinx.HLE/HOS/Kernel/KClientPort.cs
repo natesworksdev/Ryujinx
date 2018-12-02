@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KClientPort : KSynchronizationObject
+    class KClientPort : KSynchronizationObject
     {
         private int _sessionsCount;
         private int _currentCapacity;

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal static class DramMemoryMap
+    static class DramMemoryMap
     {
         public const ulong DramBase = 0x80000000;
         public const ulong DramSize = 0x100000000;

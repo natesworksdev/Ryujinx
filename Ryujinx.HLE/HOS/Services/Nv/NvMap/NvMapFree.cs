@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 {
-    internal struct NvMapFree
+    struct NvMapFree
     {
         public int  Handle;
         public int  Padding;

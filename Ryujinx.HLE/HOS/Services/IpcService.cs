@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services
 {
-    internal abstract class IpcService : IIpcService
+    abstract class IpcService : IIpcService
     {
         public abstract IReadOnlyDictionary<int, ServiceProcessRequest> Commands { get; }
 

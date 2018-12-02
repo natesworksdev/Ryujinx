@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Sm
 {
-    internal class IUserInterface : IpcService
+    class IUserInterface : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

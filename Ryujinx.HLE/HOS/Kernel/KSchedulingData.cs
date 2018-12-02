@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KSchedulingData
+    class KSchedulingData
     {
         private LinkedList<KThread>[][] _scheduledThreadsPerPrioPerCore;
         private LinkedList<KThread>[][] _suggestedThreadsPerPrioPerCore;

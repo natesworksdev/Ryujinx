@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Lm
 {
-    internal class ILogger : IpcService
+    class ILogger : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

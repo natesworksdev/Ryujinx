@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 {
-    internal class NvHostChannelIoctl
+    class NvHostChannelIoctl
     {
         private class ChannelsPerProcess
         {

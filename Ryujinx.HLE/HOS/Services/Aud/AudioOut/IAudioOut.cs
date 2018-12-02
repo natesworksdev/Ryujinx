@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioOut
 {
-    internal class IAudioOut : IpcService, IDisposable
+    class IAudioOut : IpcService, IDisposable
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

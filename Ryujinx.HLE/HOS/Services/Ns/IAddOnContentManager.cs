@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Ns
 {
-    internal class IAddOnContentManager : IpcService
+    class IAddOnContentManager : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

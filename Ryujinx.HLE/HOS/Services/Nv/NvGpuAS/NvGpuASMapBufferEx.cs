@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
-    internal struct NvGpuASMapBufferEx
+    struct NvGpuASMapBufferEx
     {
         public int  Flags;
         public int  Kind;

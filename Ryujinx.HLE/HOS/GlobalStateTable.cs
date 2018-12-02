@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS
 {
-    internal class GlobalStateTable
+    class GlobalStateTable
     {
         private ConcurrentDictionary<KProcess, IdDictionary> _dictByProcess;
 

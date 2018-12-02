@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KSynchronizationObject : KAutoObject
+    class KSynchronizationObject : KAutoObject
     {
         public LinkedList<KThread> WaitingThreads;
 

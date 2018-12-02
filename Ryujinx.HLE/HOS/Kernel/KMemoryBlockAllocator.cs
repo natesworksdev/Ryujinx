@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KMemoryBlockAllocator
+    class KMemoryBlockAllocator
     {
         private ulong _capacityElements;
 

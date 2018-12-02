@@ -1,4 +1,4 @@
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    internal delegate long ServiceProcessRequest(ServiceCtx context);
+    delegate long ServiceProcessRequest(ServiceCtx context);
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
-    internal class IApplicationFunctions : IpcService
+    class IApplicationFunctions : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

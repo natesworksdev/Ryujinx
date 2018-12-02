@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
-    internal struct NvGpuASRemap
+    struct NvGpuASRemap
     {
         public short Flags;
         public short Kind;

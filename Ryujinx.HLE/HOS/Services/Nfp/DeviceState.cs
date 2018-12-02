@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Nfp
 {
-    internal enum DeviceState
+    enum DeviceState
     {
         Initialized = 0
     }

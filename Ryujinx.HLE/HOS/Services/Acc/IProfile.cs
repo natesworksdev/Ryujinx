@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Acc
 {
-    internal class IProfile : IpcService
+    class IProfile : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

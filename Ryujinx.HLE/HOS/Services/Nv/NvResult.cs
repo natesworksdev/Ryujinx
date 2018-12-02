@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Nv
 {
-    internal static class NvResult
+    static class NvResult
     {
         public const int NotAvailableInProduction = 196614;
         public const int Success                  = 0;

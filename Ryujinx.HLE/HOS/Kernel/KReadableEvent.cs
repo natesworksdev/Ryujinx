@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KReadableEvent : KSynchronizationObject
+    class KReadableEvent : KSynchronizationObject
     {
         private KEvent _parent;
 

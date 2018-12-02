@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    internal static class IpcHandler
+    static class IpcHandler
     {
         public static long IpcCall(
             Switch        device,

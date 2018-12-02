@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
     [StructLayout(LayoutKind.Sequential, Size = 0xc, Pack = 1)]
-    internal struct BiquadFilter
+    struct BiquadFilter
     {
         public byte  Enable;
         public byte  Padding;

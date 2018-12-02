@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE
 {
-    internal class DeviceMemory : IDisposable
+    class DeviceMemory : IDisposable
     {
         public const long RamSize = 4L * 1024 * 1024 * 1024;
 

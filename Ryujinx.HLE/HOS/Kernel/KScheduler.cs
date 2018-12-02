@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal partial class KScheduler : IDisposable
+    partial class KScheduler : IDisposable
     {
         public const int PrioritiesCount = 64;
         public const int CpuCoresCount   = 4;

@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x38, Pack = 1)]
-    internal struct WaveBuffer
+    struct WaveBuffer
     {
         public long  Position;
         public long  Size;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Ncm
 {
-    internal class IContentStorage : IpcService
+    class IContentStorage : IpcService
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 

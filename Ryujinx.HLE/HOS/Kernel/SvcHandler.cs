@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal partial class SvcHandler
+    partial class SvcHandler
     {
         private delegate void SvcFunc(CpuThreadState threadState);
 

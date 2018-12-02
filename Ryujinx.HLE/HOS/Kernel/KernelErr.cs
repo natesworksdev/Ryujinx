@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal static class KernelErr
+    static class KernelErr
     {
         public const int ThreadTerminating = 59;
         public const int InvalidSize       = 101;

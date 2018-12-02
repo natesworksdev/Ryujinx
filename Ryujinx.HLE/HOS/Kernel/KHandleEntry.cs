@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel
 {
-    internal class KHandleEntry
+    class KHandleEntry
     {
         public KHandleEntry Next { get; set; }
 

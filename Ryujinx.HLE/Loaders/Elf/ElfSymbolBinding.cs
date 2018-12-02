@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Loaders.Elf
 {
-    internal enum ElfSymbolBinding
+    enum ElfSymbolBinding
     {
         StbLocal  = 0,
         StbGlobal = 1,
