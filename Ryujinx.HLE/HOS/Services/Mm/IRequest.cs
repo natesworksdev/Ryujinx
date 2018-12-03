@@ -38,6 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return 0;
         }
 
+        // FinalizeOld(u32)
         public long FinalizeOld(ServiceCtx Context)
         {
             Context.Device.Gpu.UninitializeVideoDecoder();
@@ -79,6 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return 0;
         }
 
+        // Finalize(u32)
         public long Finalize(ServiceCtx Context)
         {
             Context.Device.Gpu.UninitializeVideoDecoder();
