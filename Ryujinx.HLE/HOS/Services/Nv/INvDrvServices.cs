@@ -23,11 +23,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         private static Dictionary<string, IoctlProcessor> _ioctlProcessors =
                    new Dictionary<string, IoctlProcessor>
                    {
-            { "/dev/nvhost-as-gpu",   ProcessIoctlNvGpuAS    },
-            { "/dev/nvhost-ctrl",     ProcessIoctlNvHostCtrl },
-            { "/dev/nvhost-ctrl-gpu", ProcessIoctlNvGpuGpu   },
-            { "/dev/nvhost-gpu",      ProcessIoctlNvHostGpu  },
-            { "/dev/nvmap",           ProcessIoctlNvMap      }
+            { "/dev/nvhost-as-gpu",   ProcessIoctlNvGpuAS       },
+            { "/dev/nvhost-ctrl",     ProcessIoctlNvHostCtrl    },
+            { "/dev/nvhost-ctrl-gpu", ProcessIoctlNvGpuGpu      },
+            { "/dev/nvhost-gpu",      ProcessIoctlNvHostChannel },
+            { "/dev/nvhost-nvdec",    ProcessIoctlNvHostChannel },
+            { "/dev/nvhost-vic",      ProcessIoctlNvHostChannel },
+            { "/dev/nvmap",           ProcessIoctlNvMap         }
         };
 
         public static GlobalStateTable Fds { get; private set; }
@@ -166,9 +168,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             return ProcessIoctl(context, cmd, NvGpuGpuIoctl.ProcessIoctl);
         }
 
-        private static int ProcessIoctlNvHostGpu(ServiceCtx context, int cmd)
+        private static int ProcessIoctlNvHostChannel(ServiceCtx context, int cmd)
         {
-            return ProcessIoctl(context, cmd, NvHostChannelIoctl.ProcessIoctlGpu);
+            return ProcessIoctl(context, cmd, NvHostChannelIoctl.ProcessIoctl);
         }
 
         private static int ProcessIoctlNvMap(ServiceCtx context, int cmd)
