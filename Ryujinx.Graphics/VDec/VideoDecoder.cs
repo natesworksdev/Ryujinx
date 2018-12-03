@@ -1,9 +1,9 @@
+using ChocolArm64.Memory;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Graphics.Vic;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.VDec
 {
@@ -69,9 +69,7 @@ namespace Ryujinx.Graphics.VDec
             {
                 int FrameDataSize = Vmm.ReadInt32(DecoderContextAddress + 0x48);
 
-                IntPtr HeaderPtr = Vmm.GetHostAddress(DecoderContextAddress + 0x58, Marshal.SizeOf<H264ParameterSets>());
-
-                H264ParameterSets Params = Marshal.PtrToStructure<H264ParameterSets>(HeaderPtr);
+                H264ParameterSets Params = MemoryHelper.Read<H264ParameterSets>(Vmm.Memory, Vmm.GetPhysicalAddress(DecoderContextAddress + 0x58));
 
                 H264Matrices Matrices = new H264Matrices()
                 {
@@ -87,8 +85,6 @@ namespace Ryujinx.Graphics.VDec
             {
                 int FrameDataSize = Vmm.ReadInt32(DecoderContextAddress + 0x30);
 
-                IntPtr HeaderPtr = Vmm.GetHostAddress(DecoderContextAddress + 0x48, Marshal.SizeOf<Vp9FrameHeader>());
-
                 Vp9FrameKeys Keys = new Vp9FrameKeys()
                 {
                     CurrKey = Vmm.GetPhysicalAddress(VpxCurrLumaAddress),
@@ -97,7 +93,7 @@ namespace Ryujinx.Graphics.VDec
                     Ref2Key = Vmm.GetPhysicalAddress(VpxRef2LumaAddress)
                 };
 
-                Vp9FrameHeader Header = Marshal.PtrToStructure<Vp9FrameHeader>(HeaderPtr);
+                Vp9FrameHeader Header = MemoryHelper.Read<Vp9FrameHeader>(Vmm.Memory, Vmm.GetPhysicalAddress(DecoderContextAddress + 0x48));
 
                 Vp9ProbabilityTables Probs = new Vp9ProbabilityTables()
                 {
@@ -244,9 +240,6 @@ namespace Ryujinx.Graphics.VDec
 
             int AlignedWidth = (OutputConfig.SurfaceWidth + 0xff) & ~0xff;
 
-            byte* LumaPtr   = (byte*)Vmm.GetHostAddress(OutputConfig.SurfaceLumaAddress,    AlignedWidth * Frame.Height);
-            byte* ChromaPtr = (byte*)Vmm.GetHostAddress(OutputConfig.SurfaceChromaUAddress, AlignedWidth * HalfHeight);
-
             for (int Y = 0; Y < Frame.Height; Y++)
             {
                 int Src = Y * Frame.Width;
@@ -254,7 +247,10 @@ namespace Ryujinx.Graphics.VDec
 
                 int Size = Frame.Width;
 
-                Buffer.MemoryCopy(Frame.LumaPtr + Src, LumaPtr + Dst, Size, Size);
+                for (int Offset = 0; Offset < Size; Offset++)
+                {
+                    Vmm.WriteByte(OutputConfig.SurfaceLumaAddress + Dst + Offset, *(Frame.LumaPtr + Src + Offset));
+                }
             }
 
             //Copy chroma data from both channels with interleaving.
@@ -265,8 +261,8 @@ namespace Ryujinx.Graphics.VDec
 
                 for (int X = 0; X < HalfWidth; X++)
                 {
-                    *(ChromaPtr + Dst + X * 2 + 0) = *(Frame.ChromaBPtr + Src + X);
-                    *(ChromaPtr + Dst + X * 2 + 1) = *(Frame.ChromaRPtr + Src + X);
+                    Vmm.WriteByte(OutputConfig.SurfaceChromaUAddress + Dst + X * 2 + 0, *(Frame.ChromaBPtr + Src + X));
+                    Vmm.WriteByte(OutputConfig.SurfaceChromaUAddress + Dst + X * 2 + 1, *(Frame.ChromaRPtr + Src + X));
                 }
             }
         }
