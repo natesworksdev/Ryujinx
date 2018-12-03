@@ -105,6 +105,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 { ShaderIrInst.Texb,   GetTexbExpr   },
                 { ShaderIrInst.Texq,   GetTexqExpr   },
                 { ShaderIrInst.Texs,   GetTexsExpr   },
+                { ShaderIrInst.Tld4,   GetTld4Expr   },
                 { ShaderIrInst.Trunc,  GetTruncExpr  },
                 { ShaderIrInst.Txlf,   GetTxlfExpr   },
                 { ShaderIrInst.Utof,   GetUtofExpr   },
@@ -837,6 +838,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case ShaderIrInst.Ipa:
                 case ShaderIrInst.Texq:
                 case ShaderIrInst.Texs:
+                case ShaderIrInst.Tld4:
                 case ShaderIrInst.Txlf:
                     return false;
             }
@@ -1219,6 +1221,19 @@ namespace Ryujinx.Graphics.Gal.Shader
             return GetTextureOperation(Op, Sampler, Coords, Ch);
         }
 
+        private string GetTld4Expr(ShaderIrOp Op)
+        {
+            ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+
+            string Sampler = GetTexSamplerName(Op);
+
+            string Coords = GetTexSamplerCoords(Op);
+
+            string Ch = "rgba".Substring(Meta.Elem, 1);
+
+            return GetTextureGatherOperation(Op, Sampler, Coords, Ch);
+        }
+
         private string GetTxlfExpr(ShaderIrOp Op)
         {
             // TODO: DC AND MZ
@@ -1346,7 +1361,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             string DepthArgument = "";
 
             int VecSize = Coords;
-            if (HasDepth)
+            if (HasDepth && Op.Inst != ShaderIrInst.Tld4)
             {
                 VecSize++;
                 DepthArgument = $", {GetOperExpr(Op, Meta.DepthCompare)}";
@@ -1404,6 +1419,29 @@ namespace Ryujinx.Graphics.Gal.Shader
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        private string GetTextureGatherOperation(ShaderIrOp Op, string Sampler, string Coords, string Ch)
+        {
+            ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
+
+            TextureInstructionSuffix Suffix = Meta.TextureInstructionSuffix;
+
+            string ChString = "." + Ch;
+
+            string Comp = Meta.Component.ToString();
+
+            if ((Suffix & TextureInstructionSuffix.DC) != 0)
+            {
+                Comp = GetOperExpr(Op, Meta.DepthCompare);
+            }
+
+            // TODO
+            if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+            {
+                throw new NotSupportedException();
+            }
+            return "textureGather(" + Sampler + ", " + Coords + ", " + Comp + ")" + ChString;
         }
 
         private string GetTextureOperation(ShaderIrOp Op, string Sampler, string Coords, string Ch)

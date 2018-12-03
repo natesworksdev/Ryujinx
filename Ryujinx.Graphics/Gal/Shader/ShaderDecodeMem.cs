@@ -279,9 +279,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 TextureInstructionSuffix |= TextureInstructionSuffix.DC;
             }
 
-            ShaderIrOperGpr[] Coords = null;
-
-            Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
 
             int IndexExtraCoord = 0;
 
@@ -451,6 +449,63 @@ namespace Ryujinx.Graphics.Gal.Shader
             TextureType TextureType = TldsToTextureType(OpCode.Read(52, 0x1e));
 
             EmitTexs(Block, OpCode, ShaderIrInst.Txlf, TextureType, GetSuffix());
+        }
+
+        public static void Tld4(ShaderIrBlock Block, long OpCode, int Position)
+        {
+            TextureInstructionSuffix GetSuffix()
+            {
+                int RawSuffix = OpCode.Read(0x34, 0x38);
+
+                switch (RawSuffix)
+                {
+                    case 0:
+                        return TextureInstructionSuffix.None;
+                    case 0x4:
+                        return TextureInstructionSuffix.AOFFI;
+                    case 0x8:
+                        return TextureInstructionSuffix.PTP;
+                    default:
+                        throw new InvalidOperationException($"Invalid Suffix for TLD4 instruction {RawSuffix}");
+                }
+            }
+
+            bool IsShadow = OpCode.Read(0x32);
+
+            bool IsArray = OpCode.HasArray();
+            int  ChMask  = OpCode.Read(31, 0xf);
+
+            TextureType TextureType = TexToTextureType(OpCode.Read(28, 6), IsArray);
+
+            TextureInstructionSuffix Suffix = GetSuffix();
+
+            if (IsShadow)
+            {
+                Suffix |= TextureInstructionSuffix.DC;
+            }
+
+            EmitTld4(Block, OpCode, TextureType, Suffix, ChMask, OpCode.Read(0x38, 0x3), false);
+        }
+
+        public static void Tld4s(ShaderIrBlock Block, long OpCode, int Position)
+        {
+            TextureInstructionSuffix Suffix = TextureInstructionSuffix.None;
+
+            bool IsOffset = OpCode.Read(0x33);
+            bool IsShadow = OpCode.Read(0x32);
+
+            if (IsOffset)
+            {
+                Suffix |= TextureInstructionSuffix.AOFFI;
+            }
+
+            if (IsShadow)
+            {
+                Suffix |= TextureInstructionSuffix.DC;
+            }
+
+            // TLD4S seems to only support 2D textures with RGBA mask?
+            EmitTld4(Block, OpCode, TextureType.TwoD, Suffix, RGBA, OpCode.Read(0x34, 0x3), true);
         }
 
         private static void EmitTexs(ShaderIrBlock Block, long OpCode, ShaderIrInst Inst, TextureType TextureType, TextureInstructionSuffix TextureInstructionSuffix)
@@ -637,6 +692,154 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Op)));
                 }
+            }
+        }
+
+        private static void EmitTld4(ShaderIrBlock Block, long OpCode, TextureType TextureType, TextureInstructionSuffix TextureInstructionSuffix, int ChMask, int Component, bool Scalar)
+        {
+            ShaderIrOperGpr OperA = OpCode.Gpr8();
+            ShaderIrOperGpr OperB = OpCode.Gpr20();
+            ShaderIrOperImm OperC = OpCode.Imm13_36();
+
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
+
+            ShaderIrOperGpr Offset       = null;
+            ShaderIrOperGpr DepthCompare = null;
+
+            bool IsArray = ImageUtils.IsArray(TextureType);
+
+            int OperBIndex = 0;
+
+            if (Scalar)
+            {
+                int CoordStartIndex = 0;
+
+                if (IsArray)
+                {
+                    CoordStartIndex++;
+                    Coords[Coords.Length - 1] = OperB;
+                }
+
+                switch (Coords.Length - CoordStartIndex)
+                {
+                    case 1:
+                        Coords[0] = OpCode.Gpr8();
+
+                        break;
+                    case 2:
+                        Coords[0] = OpCode.Gpr8();
+                        Coords[0].Index += CoordStartIndex;
+
+                        break;
+                    case 3:
+                        Coords[0] = OpCode.Gpr8();
+                        Coords[0].Index += CoordStartIndex;
+
+                        Coords[1] = OpCode.Gpr8();
+                        Coords[1].Index += 1 + CoordStartIndex;
+
+                        break;
+                    default:
+                        throw new NotSupportedException($"{Coords.Length - CoordStartIndex} coords textures aren't supported in TLD4S");
+                }
+
+                if (Coords.Length - CoordStartIndex != 1)
+                {
+                    Coords[Coords.Length - CoordStartIndex - 1] = OperB;
+                    OperBIndex++;
+                }
+
+                if (TextureInstructionSuffix != TextureInstructionSuffix.None && TextureType == TextureType.TwoD)
+                {
+                    Coords[Coords.Length - CoordStartIndex - 1] = OpCode.Gpr8();
+                    Coords[Coords.Length - CoordStartIndex - 1].Index += Coords.Length - CoordStartIndex - 1;
+                    OperBIndex--;
+                }
+            }
+            else
+            {
+                int IndexExtraCoord = 0;
+
+                if (IsArray)
+                {
+                    IndexExtraCoord++;
+
+                    Coords[Coords.Length - 1] = OpCode.Gpr8();
+                }
+
+                for (int Index = 0; Index < Coords.Length - IndexExtraCoord; Index++)
+                {
+                    Coords[Index] = OpCode.Gpr8();
+
+                    Coords[Index].Index += Index;
+
+                    Coords[Index].Index += IndexExtraCoord;
+
+                    if (Coords[Index].Index > ShaderIrOperGpr.ZRIndex)
+                    {
+                        Coords[Index].Index = ShaderIrOperGpr.ZRIndex;
+                    }
+                }
+            }
+
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOFFI) != 0)
+            {
+                Offset = OpCode.Gpr20();
+                Offset.Index += OperBIndex;
+                OperBIndex++;
+            }
+
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.DC) != 0)
+            {
+                DepthCompare = OpCode.Gpr20();
+                DepthCompare.Index += OperBIndex;
+                OperBIndex++;
+            }
+
+
+            for (int Ch = 0; Ch < 4; Ch++)
+            {
+                // Avoid usuless variable creation
+                if (!IsChannelUsed(ChMask, Ch))
+                {
+                    continue;
+                }
+
+                ShaderIrOperGpr Dst = new ShaderIrOperGpr(TempRegStart + Ch);
+
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, TextureInstructionSuffix, Coords)
+                {
+                    Component    = Component,
+                    Offset       = Offset,
+                    DepthCompare = DepthCompare
+                };
+
+                ShaderIrOp Op = new ShaderIrOp(ShaderIrInst.Tld4, OperA, OperB, OperC, Meta);
+
+                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Op)));
+            }
+
+            int RegInc = 0;
+
+            for (int Ch = 0; Ch < 4; Ch++)
+            {
+                if (!IsChannelUsed(ChMask, Ch))
+                {
+                    continue;
+                }
+
+                ShaderIrOperGpr Src = new ShaderIrOperGpr(TempRegStart + Ch);
+
+                ShaderIrOperGpr Dst = OpCode.Gpr0();
+
+                Dst.Index += RegInc++;
+
+                if (Dst.Index >= ShaderIrOperGpr.ZRIndex)
+                {
+                    continue;
+                }
+
+                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Src)));
             }
         }
 

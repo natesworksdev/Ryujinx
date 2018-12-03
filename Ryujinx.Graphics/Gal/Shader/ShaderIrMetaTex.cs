@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         public ShaderIrOperGpr          LevelOfDetail;
         public ShaderIrOperGpr          Offset;
         public ShaderIrOperGpr          DepthCompare;
+        public int                      Component; // for TLD4(S)
 
         public ShaderIrMetaTex(int Elem, TextureType TextureType, TextureInstructionSuffix TextureInstructionSuffix, params ShaderIrNode[] Coordinates)
         {

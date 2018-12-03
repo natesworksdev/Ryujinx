@@ -226,6 +226,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                     if (Op.Inst == ShaderIrInst.Texq ||
                         Op.Inst == ShaderIrInst.Texs ||
+                        Op.Inst == ShaderIrInst.Tld4 ||
                         Op.Inst == ShaderIrInst.Txlf)
                     {
                         int Handle = ((ShaderIrOperImm)Op.OperandC).Value;
@@ -241,14 +242,14 @@ namespace Ryujinx.Graphics.Gal.Shader
                         // TODO: non 2d texture type for TEXQ?
                         if (Op.Inst == ShaderIrInst.Texq)
                         {
-                            TextureType = TextureType.TwoD;
+                            TextureType              = TextureType.TwoD;
                             TextureInstructionSuffix = TextureInstructionSuffix.None;
                         }
                         else
                         {
                             ShaderIrMetaTex Meta = ((ShaderIrMetaTex)Op.MetaData);
 
-                            TextureType = Meta.TextureType;
+                            TextureType              = Meta.TextureType;
                             TextureInstructionSuffix = Meta.TextureInstructionSuffix;
                         }
 
