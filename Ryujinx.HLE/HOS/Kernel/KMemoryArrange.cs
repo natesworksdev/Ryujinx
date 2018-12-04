@@ -2,10 +2,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KMemoryArrange
     {
-        public KMemoryArrangeRegion Service     { get; private set; }
-        public KMemoryArrangeRegion NvServices  { get; private set; }
-        public KMemoryArrangeRegion Applet      { get; private set; }
-        public KMemoryArrangeRegion Application { get; private set; }
+        public KMemoryArrangeRegion Service     { get; }
+        public KMemoryArrangeRegion NvServices  { get; }
+        public KMemoryArrangeRegion Applet      { get; }
+        public KMemoryArrangeRegion Application { get; }
 
         public KMemoryArrange(
             KMemoryArrangeRegion service,

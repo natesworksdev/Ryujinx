@@ -2,8 +2,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KPort : KAutoObject
     {
-        public KServerPort ServerPort { get; private set; }
-        public KClientPort ClientPort { get; private set; }
+        public KServerPort ServerPort { get; }
+        public KClientPort ClientPort { get; }
 
         private long _nameAddress;
         private bool _isLight;

@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public event EventHandler<EventArgs> Disposed;
 
-        public string DirectoryPath { get; private set; }
+        public string DirectoryPath { get; }
 
         private IFileSystemProvider _provider;
 

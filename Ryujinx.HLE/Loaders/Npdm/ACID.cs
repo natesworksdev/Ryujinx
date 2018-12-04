@@ -7,17 +7,17 @@ namespace Ryujinx.HLE.Loaders.Npdm
     {
         private const int AcidMagic = 'A' << 0 | 'C' << 8 | 'I' << 16 | 'D' << 24;
 
-        public byte[] Rsa2048Signature { get; private set; }
-        public byte[] Rsa2048Modulus   { get; private set; }
-        public int    Unknown1         { get; private set; }
-        public int    Flags            { get; private set; }
+        public byte[] Rsa2048Signature { get; }
+        public byte[] Rsa2048Modulus   { get; }
+        public int    Unknown1         { get; }
+        public int    Flags            { get; }
 
-        public long TitleIdRangeMin { get; private set; }
-        public long TitleIdRangeMax { get; private set; }
+        public long TitleIdRangeMin { get; }
+        public long TitleIdRangeMax { get; }
 
-        public FsAccessControl      FsAccessControl      { get; private set; }
-        public ServiceAccessControl ServiceAccessControl { get; private set; }
-        public KernelAccessControl  KernelAccessControl  { get; private set; }
+        public FsAccessControl      FsAccessControl      { get; }
+        public ServiceAccessControl ServiceAccessControl { get; }
+        public KernelAccessControl  KernelAccessControl  { get; }
 
         public Acid(Stream stream, int offset)
         {

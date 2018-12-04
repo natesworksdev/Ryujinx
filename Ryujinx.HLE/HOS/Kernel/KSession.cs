@@ -5,9 +5,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KSession : IDisposable
     {
-        public IpcService Service { get; private set; }
+        public IpcService Service { get; }
 
-        public string ServiceName { get; private set; }
+        public string ServiceName { get; }
 
         public KSession(IpcService service, string serviceName)
         {

@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         private class PausableThread
         {
-            public ManualResetEvent Event { get; private set; }
+            public ManualResetEvent Event { get; }
 
             public bool IsExiting { get; set; }
 

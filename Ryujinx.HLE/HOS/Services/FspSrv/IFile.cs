@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         public event EventHandler<EventArgs> Disposed;
 
-        public string HostPath { get; private set; }
+        public string HostPath { get; }
 
         public IFile(Stream baseStream, string hostPath)
         {

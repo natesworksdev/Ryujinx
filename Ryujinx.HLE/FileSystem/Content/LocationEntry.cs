@@ -4,10 +4,10 @@ namespace Ryujinx.HLE.FileSystem.Content
 {
     public struct LocationEntry
     {
-        public string      ContentPath { get; private set; }
+        public string      ContentPath { get; }
         public int         Flag        { get; private set; }
-        public long        TitleId     { get; private set; }
-        public ContentType ContentType { get; private set; }
+        public long        TitleId     { get; }
+        public ContentType ContentType { get; }
 
         public LocationEntry(string contentPath, int flag, long titleId, ContentType contentType)
         {

@@ -12,10 +12,10 @@
             Invalid      = 0x20
         }
 
-        public int           SocketFd     { get; private set; }
-        public BsdSocket     Socket       { get; private set; }
-        public EventTypeMask InputEvents  { get; private set; }
-        public EventTypeMask OutputEvents { get; private set; }
+        public int           SocketFd     { get; }
+        public BsdSocket     Socket       { get; }
+        public EventTypeMask InputEvents  { get; }
+        public EventTypeMask OutputEvents { get; }
 
         public PollEvent(int socketFd, BsdSocket socket, EventTypeMask inputEvents, EventTypeMask outputEvents)
         {

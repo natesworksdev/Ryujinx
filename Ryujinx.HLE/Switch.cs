@@ -11,23 +11,23 @@ namespace Ryujinx.HLE
 {
     public class Switch : IDisposable
     {
-        internal IAalOutput AudioOut { get; private set; }
+        internal IAalOutput AudioOut { get; }
 
-        internal DeviceMemory Memory { get; private set; }
+        internal DeviceMemory Memory { get; }
 
-        internal NvGpu Gpu { get; private set; }
+        internal NvGpu Gpu { get; }
 
-        internal VirtualFileSystem FileSystem { get; private set; }
+        internal VirtualFileSystem FileSystem { get; }
 
-        public Horizon System { get; private set; }
+        public Horizon System { get; }
 
-        public PerformanceStatistics Statistics { get; private set; }
+        public PerformanceStatistics Statistics { get; }
 
-        public Hid Hid { get; private set; }
+        public Hid Hid { get; }
 
         public bool EnableDeviceVsync { get; set; } = true;
 
-        public AutoResetEvent VsyncEvent { get; private set; }
+        public AutoResetEvent VsyncEvent { get; }
 
         public event EventHandler Finish;
 

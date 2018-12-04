@@ -6,8 +6,8 @@ namespace Ryujinx.HLE.Loaders.Npdm
 {
     class FsAccessHeader
     {
-        public int   Version            { get; private set; }
-        public ulong PermissionsBitmask { get; private set; }
+        public int   Version            { get; }
+        public ulong PermissionsBitmask { get; }
 
         public FsAccessHeader(Stream stream, int offset, int size)
         {

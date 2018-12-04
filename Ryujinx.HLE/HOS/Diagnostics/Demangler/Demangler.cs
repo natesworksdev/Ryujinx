@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
         private List<ForwardTemplateReference> _forwardTemplateReferenceList = new List<ForwardTemplateReference>();
 
-        public string Mangled { get; private set; }
+        public string Mangled { get; }
 
         private int _position;
         private int _length;

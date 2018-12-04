@@ -2,7 +2,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 {
     class Display
     {
-        public string Name { get; private set; }
+        public string Name { get; }
 
         public Display(string name)
         {

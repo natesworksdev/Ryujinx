@@ -4,20 +4,20 @@ namespace Ryujinx.HLE.HOS.Services.Android
 {
     struct GbpBuffer
     {
-        public int Magic  { get; private set; }
-        public int Width  { get; private set; }
-        public int Height { get; private set; }
-        public int Stride { get; private set; }
-        public int Format { get; private set; }
-        public int Usage  { get; private set; }
+        public int Magic  { get; }
+        public int Width  { get; }
+        public int Height { get; }
+        public int Stride { get; }
+        public int Format { get; }
+        public int Usage  { get; }
 
-        public int Pid      { get; private set; }
-        public int RefCount { get; private set; }
+        public int Pid      { get; }
+        public int RefCount { get; }
 
-        public int FdsCount  { get; private set; }
-        public int IntsCount { get; private set; }
+        public int FdsCount  { get; }
+        public int IntsCount { get; }
 
-        public byte[] RawData { get; private set; }
+        public byte[] RawData { get; }
 
         public int Size => RawData.Length + 10 * 4;
 

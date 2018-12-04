@@ -14,9 +14,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private Horizon _system;
 
-        public KSchedulingData SchedulingData { get; private set; }
+        public KSchedulingData SchedulingData { get; }
 
-        public KCoreContext[] CoreContexts { get; private set; }
+        public KCoreContext[] CoreContexts { get; }
 
         public bool ThreadReselectionRequested { get; set; }
 

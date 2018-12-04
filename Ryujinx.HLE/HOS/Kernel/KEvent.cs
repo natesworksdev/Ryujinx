@@ -2,8 +2,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KEvent
     {
-        public KReadableEvent ReadableEvent { get; private set; }
-        public KWritableEvent WritableEvent { get; private set; }
+        public KReadableEvent ReadableEvent { get; }
+        public KWritableEvent WritableEvent { get; }
 
         public KEvent(Horizon system)
         {

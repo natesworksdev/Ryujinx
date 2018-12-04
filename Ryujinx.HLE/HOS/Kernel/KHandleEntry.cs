@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         public KHandleEntry Next { get; set; }
 
-        public int Index { get; private set; }
+        public int Index { get; }
 
         public ushort HandleId { get; set; }
         public object Obj      { get; set; }

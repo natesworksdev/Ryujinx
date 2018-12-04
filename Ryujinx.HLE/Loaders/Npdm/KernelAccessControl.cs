@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
 {
     class KernelAccessControl
     {
-        public int[] Capabilities { get; private set; }
+        public int[] Capabilities { get; }
 
         public KernelAccessControl(Stream stream, int offset, int size)
         {

@@ -35,30 +35,30 @@ namespace Ryujinx.HLE.HOS
         internal long PrivilegedProcessLowestId  { get; set; } = 1;
         internal long PrivilegedProcessHighestId { get; set; } = 8;
 
-        internal Switch Device { get; private set; }
+        internal Switch Device { get; }
 
-        public SystemStateMgr State { get; private set; }
+        public SystemStateMgr State { get; }
 
-        internal bool KernelInitialized { get; private set; }
+        internal bool KernelInitialized { get; }
 
-        internal KResourceLimit ResourceLimit { get; private set; }
+        internal KResourceLimit ResourceLimit { get; }
 
-        internal KMemoryRegionManager[] MemoryRegions { get; private set; }
+        internal KMemoryRegionManager[] MemoryRegions { get; }
 
-        internal KMemoryBlockAllocator LargeMemoryBlockAllocator { get; private set; }
-        internal KMemoryBlockAllocator SmallMemoryBlockAllocator { get; private set; }
+        internal KMemoryBlockAllocator LargeMemoryBlockAllocator { get; }
+        internal KMemoryBlockAllocator SmallMemoryBlockAllocator { get; }
 
-        internal KSlabHeap UserSlabHeapPages { get; private set; }
+        internal KSlabHeap UserSlabHeapPages { get; }
 
-        internal KCriticalSection CriticalSection { get; private set; }
+        internal KCriticalSection CriticalSection { get; }
 
-        internal KScheduler Scheduler { get; private set; }
+        internal KScheduler Scheduler { get; }
 
-        internal KTimeManager TimeManager { get; private set; }
+        internal KTimeManager TimeManager { get; }
 
-        internal KSynchronization Synchronization { get; private set; }
+        internal KSynchronization Synchronization { get; }
 
-        internal KContextIdManager ContextIdManager { get; private set; }
+        internal KContextIdManager ContextIdManager { get; }
 
         private long _kipId;
         private long _processId;
@@ -72,16 +72,16 @@ namespace Ryujinx.HLE.HOS
 
         internal bool EnableVersionChecks { get; private set; }
 
-        internal AppletStateMgr AppletState { get; private set; }
+        internal AppletStateMgr AppletState { get; }
 
-        internal KSharedMemory HidSharedMem  { get; private set; }
-        internal KSharedMemory FontSharedMem { get; private set; }
+        internal KSharedMemory HidSharedMem  { get; }
+        internal KSharedMemory FontSharedMem { get; }
 
-        internal SharedFontManager Font { get; private set; }
+        internal SharedFontManager Font { get; }
 
-        internal ContentManager ContentManager { get; private set; }
+        internal ContentManager ContentManager { get; }
 
-        internal KEvent VsyncEvent { get; private set; }
+        internal KEvent VsyncEvent { get; }
 
         internal Keyset KeySet { get; private set; }
 
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS
 
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
-        internal long HidBaseAddress { get; private set; }
+        internal long HidBaseAddress { get; }
 
         public Horizon(Switch device)
         {

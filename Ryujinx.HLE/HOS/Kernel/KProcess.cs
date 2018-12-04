@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             (KernelVersionMinor    << 15) |
             (KernelVersionRevision << 0);
 
-        public KMemoryManager MemoryManager { get; private set; }
+        public KMemoryManager MemoryManager { get; }
 
         private SortedDictionary<ulong, KTlsPageInfo> _fullTlsPages;
         private SortedDictionary<ulong, KTlsPageInfo> _freeTlsPages;
@@ -39,9 +39,9 @@ namespace Ryujinx.HLE.HOS.Kernel
         private object _processLock;
         private object _threadingLock;
 
-        public KAddressArbiter AddressArbiter { get; private set; }
+        public KAddressArbiter AddressArbiter { get; }
 
-        public long[] RandomEntropy { get; private set; }
+        public long[] RandomEntropy { get; }
 
         private bool _signaled;
         private bool _useSystemMemBlocks;
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private MemoryRegion _memRegion;
 
-        public KProcessCapabilities Capabilities { get; private set; }
+        public KProcessCapabilities Capabilities { get; }
 
         public long TitleId { get; private set; }
         public long Pid     { get; private set; }
@@ -74,13 +74,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public bool IsPaused { get; private set; }
 
-        public Translator Translator { get; private set; }
+        public Translator Translator { get; }
 
-        public MemoryManager CpuMemory { get; private set; }
+        public MemoryManager CpuMemory { get; }
 
         private SvcHandler _svcHandler;
 
-        public HleProcessDebugger Debugger { get; private set; }
+        public HleProcessDebugger Debugger { get; }
 
         public KProcess(Horizon system) : base(system)
         {

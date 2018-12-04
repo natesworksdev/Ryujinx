@@ -2,8 +2,8 @@
 {
     public struct DirectoryEntry
     {
-        public string Path { get; private set; }
-        public long   Size { get; private set; }
+        public string Path { get; }
+        public long   Size { get; }
 
         public DirectoryEntryType EntryType { get; set; }
 

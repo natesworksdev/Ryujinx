@@ -6,14 +6,14 @@ namespace Ryujinx.HLE.Loaders.Executables
 {
     class NxStaticObject : IExecutable
     {
-        public byte[] Text { get; private set; }
-        public byte[] Ro   { get; private set; }
-        public byte[] Data { get; private set; }
+        public byte[] Text { get; }
+        public byte[] Ro   { get; }
+        public byte[] Data { get; }
 
-        public int TextOffset { get; private set; }
-        public int RoOffset   { get; private set; }
-        public int DataOffset { get; private set; }
-        public int BssSize    { get; private set; }
+        public int TextOffset { get; }
+        public int RoOffset   { get; }
+        public int DataOffset { get; }
+        public int BssSize    { get; }
 
         public int BssOffset => DataOffset + Data.Length;
 

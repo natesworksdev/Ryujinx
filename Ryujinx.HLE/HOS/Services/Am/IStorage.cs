@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        public byte[] Data { get; private set; }
+        public byte[] Data { get; }
 
         public IStorage(byte[] data)
         {

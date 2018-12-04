@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             { "/dev/nvmap",           ProcessIoctlNvMap         }
         };
 
-        public static GlobalStateTable Fds { get; private set; }
+        public static GlobalStateTable Fds { get; }
 
         private KEvent _event;
 

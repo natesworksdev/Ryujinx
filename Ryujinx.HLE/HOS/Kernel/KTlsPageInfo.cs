@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         public const int TlsEntrySize = 0x200;
 
-        public ulong PageAddr { get; private set; }
+        public ulong PageAddr { get; }
 
         private bool[] _isSlotFree;
 

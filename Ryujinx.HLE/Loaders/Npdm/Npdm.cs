@@ -11,18 +11,18 @@ namespace Ryujinx.HLE.Loaders.Npdm
     {
         private const int MetaMagic = 'M' << 0 | 'E' << 8 | 'T' << 16 | 'A' << 24;
 
-        public byte   MmuFlags            { get; private set; }
-        public bool   Is64Bits            { get; private set; }
-        public byte   MainThreadPriority  { get; private set; }
-        public byte   DefaultCpuId        { get; private set; }
-        public int    PersonalMmHeapSize  { get; private set; }
-        public int    ProcessCategory     { get; private set; }
-        public int    MainThreadStackSize { get; private set; }
-        public string TitleName           { get; private set; }
-        public byte[] ProductCode         { get; private set; }
+        public byte   MmuFlags            { get; }
+        public bool   Is64Bits            { get; }
+        public byte   MainThreadPriority  { get; }
+        public byte   DefaultCpuId        { get; }
+        public int    PersonalMmHeapSize  { get; }
+        public int    ProcessCategory     { get; }
+        public int    MainThreadStackSize { get; }
+        public string TitleName           { get; }
+        public byte[] ProductCode         { get; }
 
-        public Aci0 Aci0 { get; private set; }
-        public Acid Acid { get; private set; }
+        public Aci0 Aci0 { get; }
+        public Acid Acid { get; }
 
         public Npdm(Stream stream)
         {

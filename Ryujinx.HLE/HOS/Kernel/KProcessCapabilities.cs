@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KProcessCapabilities
     {
-        public byte[] SvcAccessMask { get; private set; }
-        public byte[] IrqAccessMask { get; private set; }
+        public byte[] SvcAccessMask { get; }
+        public byte[] IrqAccessMask { get; }
 
         public long AllowedCpuCoresMask    { get; private set; }
         public long AllowedThreadPriosMask { get; private set; }

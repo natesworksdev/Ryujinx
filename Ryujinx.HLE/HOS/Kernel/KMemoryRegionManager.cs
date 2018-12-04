@@ -6,9 +6,9 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         private static readonly int[] BlockOrders = new int[] { 12, 16, 21, 22, 25, 29, 30 };
 
-        public ulong Address { get; private set; }
-        public ulong EndAddr { get; private set; }
-        public ulong Size    { get; private set; }
+        public ulong Address { get; }
+        public ulong EndAddr { get; }
+        public ulong Size    { get; }
 
         private int _blockOrdersCount;
 

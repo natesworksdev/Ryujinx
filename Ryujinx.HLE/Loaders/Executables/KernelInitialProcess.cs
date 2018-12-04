@@ -5,39 +5,39 @@ namespace Ryujinx.HLE.Loaders.Executables
 {
     class KernelInitialProcess : IExecutable
     {
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public long TitleId { get; private set; }
+        public long TitleId { get; }
 
-        public int ProcessCategory { get; private set; }
+        public int ProcessCategory { get; }
 
-        public byte MainThreadPriority { get; private set; }
-        public byte DefaultProcessorId { get; private set; }
+        public byte MainThreadPriority { get; }
+        public byte DefaultProcessorId { get; }
 
-        public bool Is64Bits   { get; private set; }
-        public bool Addr39Bits { get; private set; }
-        public bool IsService  { get; private set; }
+        public bool Is64Bits   { get; }
+        public bool Addr39Bits { get; }
+        public bool IsService  { get; }
 
-        public byte[] Text { get; private set; }
-        public byte[] Ro   { get; private set; }
-        public byte[] Data { get; private set; }
+        public byte[] Text { get; }
+        public byte[] Ro   { get; }
+        public byte[] Data { get; }
 
-        public int TextOffset { get; private set; }
-        public int RoOffset   { get; private set; }
-        public int DataOffset { get; private set; }
-        public int BssOffset  { get; private set; }
-        public int BssSize    { get; private set; }
+        public int TextOffset { get; }
+        public int RoOffset   { get; }
+        public int DataOffset { get; }
+        public int BssOffset  { get; }
+        public int BssSize    { get; }
 
-        public int MainThreadStackSize { get; private set; }
+        public int MainThreadStackSize { get; }
 
-        public int[] Capabilities { get; private set; }
+        public int[] Capabilities { get; }
 
         private struct SegmentHeader
         {
-            public int Offset           { get; private set; }
-            public int DecompressedSize { get; private set; }
-            public int CompressedSize   { get; private set; }
-            public int Attribute        { get; private set; }
+            public int Offset           { get; }
+            public int DecompressedSize { get; }
+            public int CompressedSize   { get; }
+            public int Attribute        { get; }
 
             public SegmentHeader(
                 int offset,

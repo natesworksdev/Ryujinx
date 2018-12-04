@@ -6,8 +6,8 @@ namespace Ryujinx.HLE.Utilities
 {
     public struct UInt128
     {
-        public long High { get; private set; }
-        public long Low  { get; private set; }
+        public long High { get; }
+        public long Low  { get; }
 
         public UInt128(long low, long high)
         {

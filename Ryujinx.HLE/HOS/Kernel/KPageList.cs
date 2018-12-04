@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KPageList : IEnumerable<KPageNode>
     {
-        public LinkedList<KPageNode> Nodes { get; private set; }
+        public LinkedList<KPageNode> Nodes { get; }
 
         public KPageList()
         {

@@ -18,9 +18,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private class Image
         {
-            public long BaseAddress { get; private set; }
+            public long BaseAddress { get; }
 
-            public ElfSymbol[] Symbols { get; private set; }
+            public ElfSymbol[] Symbols { get; }
 
             public Image(long baseAddress, ElfSymbol[] symbols)
             {

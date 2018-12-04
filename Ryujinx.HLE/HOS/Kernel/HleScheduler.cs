@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public bool MultiCoreScheduling { get; set; }
 
-        public HleCoreManager CoreManager { get; private set; }
+        public HleCoreManager CoreManager { get; }
 
         private bool _keepPreempting;
 

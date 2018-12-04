@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         private class WaitingObject
         {
-            public IKFutureSchedulerObject Object { get; private set; }
+            public IKFutureSchedulerObject Object { get; }
 
-            public long TimePoint { get; private set; }
+            public long TimePoint { get; }
 
             public WaitingObject(IKFutureSchedulerObject schedulerObj, long timePoint)
             {

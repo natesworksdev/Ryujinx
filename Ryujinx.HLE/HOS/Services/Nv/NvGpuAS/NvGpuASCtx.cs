@@ -5,12 +5,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 {
     class NvGpuASCtx
     {
-        public NvGpuVmm Vmm { get; private set; }
+        public NvGpuVmm Vmm { get; }
 
         private class Range
         {
-            public ulong Start  { get; private set; }
-            public ulong End    { get; private set; }
+            public ulong Start  { get; }
+            public ulong End    { get; }
 
             public Range(long position, long size)
             {
@@ -21,8 +21,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
         private class MappedMemory : Range
         {
-            public long PhysicalAddress { get; private set; }
-            public bool VaAllocated  { get; private set; }
+            public long PhysicalAddress { get; }
+            public bool VaAllocated  { get; }
 
             public MappedMemory(
                 long position,

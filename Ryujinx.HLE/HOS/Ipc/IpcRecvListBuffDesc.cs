@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Ipc
 {
     struct IpcRecvListBuffDesc
     {
-        public long Position { get; private set; }
-        public long Size     { get; private set; }
+        public long Position { get; }
+        public long Size     { get; }
 
         public IpcRecvListBuffDesc(BinaryReader reader)
         {

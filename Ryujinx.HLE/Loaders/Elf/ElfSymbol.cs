@@ -2,11 +2,11 @@ namespace Ryujinx.HLE.Loaders.Elf
 {
     struct ElfSymbol
     {
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public ElfSymbolType       Type       { get; private set; }
-        public ElfSymbolBinding    Binding    { get; private set; }
-        public ElfSymbolVisibility Visibility { get; private set; }
+        public ElfSymbolType       Type       { get; }
+        public ElfSymbolBinding    Binding    { get; }
+        public ElfSymbolVisibility Visibility { get; }
 
         public bool IsFuncOrObject =>
             Type == ElfSymbolType.SttFunc ||
@@ -16,9 +16,9 @@ namespace Ryujinx.HLE.Loaders.Elf
             Binding == ElfSymbolBinding.StbGlobal ||
             Binding == ElfSymbolBinding.StbWeak;
 
-        public int  ShIdx { get; private set; }
-        public long Value { get; private set; }
-        public long Size  { get; private set; }
+        public int  ShIdx { get; }
+        public long Value { get; }
+        public long Size  { get; }
 
         public ElfSymbol(
             string name,

@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         private Horizon _system;
 
-        public object LockObj { get; private set; }
+        public object LockObj { get; }
 
         private int _recursionCount;
 

@@ -4,12 +4,12 @@ namespace Ryujinx.HLE.Loaders.Npdm
 {
     class FsAccessControl
     {
-        public int   Version            { get; private set; }
-        public ulong PermissionsBitmask { get; private set; }
-        public int   Unknown1           { get; private set; }
-        public int   Unknown2           { get; private set; }
-        public int   Unknown3           { get; private set; }
-        public int   Unknown4           { get; private set; }
+        public int   Version            { get; }
+        public ulong PermissionsBitmask { get; }
+        public int   Unknown1           { get; }
+        public int   Unknown2           { get; }
+        public int   Unknown3           { get; }
+        public int   Unknown4           { get; }
 
         public FsAccessControl(Stream stream, int offset, int size)
         {

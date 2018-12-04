@@ -7,7 +7,7 @@ namespace Ryujinx.HLE
     {
         public const long RamSize = 4L * 1024 * 1024 * 1024;
 
-        public IntPtr RamPointer { get; private set; }
+        public IntPtr RamPointer { get; }
 
         private unsafe byte* _ramPtr;
 

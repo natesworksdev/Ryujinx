@@ -7,9 +7,9 @@ namespace Ryujinx.HLE.HOS.SystemState
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public UInt128 Uuid { get; private set; }
+        public UInt128 Uuid { get; }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
         public long LastModifiedTimestamp { get; private set; }
 

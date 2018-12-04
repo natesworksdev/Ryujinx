@@ -7,13 +7,13 @@ namespace Ryujinx.HLE.Loaders.Npdm
     {
         private const int Aci0Magic = 'A' << 0 | 'C' << 8 | 'I' << 16 | '0' << 24;
 
-        public long TitleId { get; private set; }
+        public long TitleId { get; }
 
-        public int   FsVersion            { get; private set; }
-        public ulong FsPermissionsBitmask { get; private set; }
+        public int   FsVersion            { get; }
+        public ulong FsPermissionsBitmask { get; }
 
-        public ServiceAccessControl ServiceAccessControl { get; private set; }
-        public KernelAccessControl  KernelAccessControl  { get; private set; }
+        public ServiceAccessControl ServiceAccessControl { get; }
+        public KernelAccessControl  KernelAccessControl  { get; }
 
         public Aci0(Stream stream, int offset)
         {

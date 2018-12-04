@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
 {
     class ServiceAccessControl
     {
-        public IReadOnlyDictionary<string, bool> Services { get; private set; }
+        public IReadOnlyDictionary<string, bool> Services { get; }
 
         public ServiceAccessControl(Stream stream, int offset, int size)
         {

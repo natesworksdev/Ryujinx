@@ -4,12 +4,12 @@ namespace Ryujinx.HLE.FileSystem
 {
     struct SaveInfo
     {
-        public long    TitleId { get; private set; }
-        public long    SaveId  { get; private set; }
-        public UInt128 UserId  { get; private set; }
+        public long    TitleId { get; }
+        public long    SaveId  { get; }
+        public UInt128 UserId  { get; }
 
-        public SaveDataType SaveDataType { get; private set; }
-        public SaveSpaceId  SaveSpaceId  { get; private set; }
+        public SaveDataType SaveDataType { get; }
+        public SaveSpaceId  SaveSpaceId  { get; }
 
         public SaveInfo(
             long         titleId,

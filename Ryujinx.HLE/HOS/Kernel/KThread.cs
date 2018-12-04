@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public long LastScheduledTime { get; set; }
 
-        public LinkedListNode<KThread>[] SiblingsPerCore { get; private set; }
+        public LinkedListNode<KThread>[] SiblingsPerCore { get; }
 
         public LinkedList<KThread>     Withholder     { get; set; }
         public LinkedListNode<KThread> WithholderNode { get; set; }

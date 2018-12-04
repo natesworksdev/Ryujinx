@@ -7,14 +7,14 @@ namespace Ryujinx.HLE.HOS
 {
     class ServiceCtx
     {
-        public Switch        Device       { get; private set; }
-        public KProcess      Process      { get; private set; }
-        public MemoryManager Memory       { get; private set; }
-        public KSession      Session      { get; private set; }
-        public IpcMessage    Request      { get; private set; }
-        public IpcMessage    Response     { get; private set; }
-        public BinaryReader  RequestData  { get; private set; }
-        public BinaryWriter  ResponseData { get; private set; }
+        public Switch        Device       { get; }
+        public KProcess      Process      { get; }
+        public MemoryManager Memory       { get; }
+        public KSession      Session      { get; }
+        public IpcMessage    Request      { get; }
+        public IpcMessage    Response     { get; }
+        public BinaryReader  RequestData  { get; }
+        public BinaryWriter  ResponseData { get; }
 
         public ServiceCtx(
             Switch        device,

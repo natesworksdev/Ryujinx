@@ -5,12 +5,12 @@ namespace Ryujinx.HLE.HOS.Ipc
 {
     class IpcHandleDesc
     {
-        public bool HasPId { get; private set; }
+        public bool HasPId { get; }
 
-        public long PId { get; private set; }
+        public long PId { get; }
 
-        public int[] ToCopy { get; private set; }
-        public int[] ToMove { get; private set; }
+        public int[] ToCopy { get; }
+        public int[] ToMove { get; }
 
         public IpcHandleDesc(BinaryReader reader)
         {

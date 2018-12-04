@@ -50,9 +50,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
     class NrrInfo
     {
-        public NrrHeader    Header     { get; private set; }
-        public List<byte[]> Hashes     { get; private set; }
-        public long         NrrAddress { get; private set; }
+        public NrrHeader    Header     { get; }
+        public List<byte[]> Hashes     { get; }
+        public long         NrrAddress { get; }
 
         public NrrInfo(long nrrAddress, NrrHeader header, List<byte[]> hashes)
         {
@@ -64,14 +64,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldr
 
     class NroInfo
     {
-        public NxRelocatableObject Executable { get; private set; }
+        public NxRelocatableObject Executable { get; }
 
-        public byte[] Hash             { get; private set; }
-        public ulong  NroAddress       { get; private set; }
-        public ulong  NroSize          { get; private set; }
-        public ulong  BssAddress       { get; private set; }
-        public ulong  BssSize          { get; private set; }
-        public ulong  TotalSize        { get; private set; }
+        public byte[] Hash             { get; }
+        public ulong  NroAddress       { get; }
+        public ulong  NroSize          { get; }
+        public ulong  BssAddress       { get; }
+        public ulong  BssSize          { get; }
+        public ulong  TotalSize        { get; }
         public ulong  NroMappedAddress { get; set; }
 
         public NroInfo(

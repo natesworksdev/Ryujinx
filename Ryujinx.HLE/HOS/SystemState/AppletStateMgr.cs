@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         public FocusState FocusState { get; private set; }
 
-        public KEvent MessageEvent { get; private set; }
+        public KEvent MessageEvent { get; }
 
         public AppletStateMgr(Horizon system)
         {

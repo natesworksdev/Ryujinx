@@ -2,17 +2,17 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     struct ProcessCreationInfo
     {
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public int  Category { get; private set; }
-        public long TitleId  { get; private set; }
+        public int  Category { get; }
+        public long TitleId  { get; }
 
-        public ulong CodeAddress    { get; private set; }
-        public int   CodePagesCount { get; private set; }
+        public ulong CodeAddress    { get; }
+        public int   CodePagesCount { get; }
 
-        public int MmuFlags                 { get; private set; }
-        public int ResourceLimitHandle      { get; private set; }
-        public int PersonalMmHeapPagesCount { get; private set; }
+        public int MmuFlags                 { get; }
+        public int ResourceLimitHandle      { get; }
+        public int PersonalMmHeapPagesCount { get; }
 
         public ProcessCreationInfo(
             string name,

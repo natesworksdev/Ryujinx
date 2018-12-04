@@ -9,13 +9,13 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public IpcHandleDesc HandleDesc { get; set; }
 
-        public List<IpcPtrBuffDesc>      PtrBuff      { get; private set; }
-        public List<IpcBuffDesc>         SendBuff     { get; private set; }
-        public List<IpcBuffDesc>         ReceiveBuff  { get; private set; }
-        public List<IpcBuffDesc>         ExchangeBuff { get; private set; }
-        public List<IpcRecvListBuffDesc> RecvListBuff { get; private set; }
+        public List<IpcPtrBuffDesc>      PtrBuff      { get; }
+        public List<IpcBuffDesc>         SendBuff     { get; }
+        public List<IpcBuffDesc>         ReceiveBuff  { get; }
+        public List<IpcBuffDesc>         ExchangeBuff { get; }
+        public List<IpcRecvListBuffDesc> RecvListBuff { get; }
 
-        public List<int> ObjectIds { get; private set; }
+        public List<int> ObjectIds { get; }
 
         public byte[] RawData { get; set; }
 

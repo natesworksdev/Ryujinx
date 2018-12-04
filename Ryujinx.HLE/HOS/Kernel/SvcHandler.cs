@@ -21,10 +21,10 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private struct HleIpcMessage
         {
-            public KThread    Thread     { get; private set; }
-            public KSession   Session    { get; private set; }
-            public IpcMessage Message    { get; private set; }
-            public long       MessagePtr { get; private set; }
+            public KThread    Thread     { get; }
+            public KSession   Session    { get; }
+            public IpcMessage Message    { get; }
+            public long       MessagePtr { get; }
 
             public HleIpcMessage(
                 KThread    thread,
