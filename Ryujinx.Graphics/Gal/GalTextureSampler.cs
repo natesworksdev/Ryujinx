@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Gal
             GalTextureMipFilter MipFilter,
             GalColorF           BorderColor,
             bool                DepthCompare,
-            DepthCompareFunc     DepthCompareFunc)
+            DepthCompareFunc    DepthCompareFunc)
         {
             this.AddressU    = AddressU;
             this.AddressV    = AddressV;

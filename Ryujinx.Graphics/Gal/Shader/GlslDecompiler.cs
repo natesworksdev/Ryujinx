@@ -1374,6 +1374,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         return $"vec2({GetOperExpr(Op, Meta.Coordinates[0])}{DepthArgument})";
                     }
+
                     return GetOperExpr(Op, Meta.Coordinates[0]);
                 case 2:
                     LastArgument = GetLastArgument(Meta.Coordinates[1]);
@@ -1440,6 +1441,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 throw new NotSupportedException();
             }
+
             return "textureGather(" + Sampler + ", " + Coords + ", " + Comp + ")" + ChString;
         }
 
