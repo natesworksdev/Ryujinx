@@ -72,7 +72,7 @@ namespace Ryujinx.Graphics.Texture
 
                 if (BlockZ != 1 || Z != 1)
                 {
-                    // TODO: support 3D textures?
+                    // TODO: Support 3D textures?
                     throw new ASTCDecoderException("3D compressed textures unsupported!");
                 }
 

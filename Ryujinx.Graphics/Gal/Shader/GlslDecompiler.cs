@@ -1236,7 +1236,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private string GetTxlfExpr(ShaderIrOp Op)
         {
-            // TODO: DC AND MZ
+            // TODO: Support all suffixes
             ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
 
             TextureInstructionSuffix Suffix = Meta.TextureInstructionSuffix;
@@ -1405,7 +1405,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             if (ImageUtils.IsArray(Meta.TextureType))
                 Coords -= 1;
 
-            // FIXME: DC not supported
             switch (Coords)
             {
                 case 1:
@@ -1436,7 +1435,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 Comp = GetOperExpr(Op, Meta.DepthCompare);
             }
 
-            // TODO
+            // TODO: Support AOFFI
             if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
             {
                 throw new NotSupportedException();
@@ -1457,7 +1456,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 ChString = "";
             }
 
-            // TODO: support LBA and LLA and DC
+            // TODO: Support LBA and LLA
             if ((Suffix & TextureInstructionSuffix.LZ) != 0)
             {
                 if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
@@ -1499,8 +1498,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
             else
             {
-                // FIXME: implement DC
-                // Load Standard
                 return "texture(" + Sampler + ", " + Coords + ")" + ChString;
             }
             throw new NotImplementedException($"Texture Suffix {Meta.TextureInstructionSuffix} is not implemented");

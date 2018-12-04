@@ -262,7 +262,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
             GalImageFormat Format = ImageUtils.ConvertZeta((GalZetaFormat)ZetaFormat);
 
-            // TODO: all texture types
+            // TODO: Support non 2D?
             GalImage Image = new GalImage(Width, Height, 1, 1, GobBlockHeight, Layout, Format, TextureType.TwoD);
 
             Gpu.ResourceManager.SendZetaBuffer(Vmm, Key, Image);

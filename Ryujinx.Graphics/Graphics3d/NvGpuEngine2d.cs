@@ -38,7 +38,6 @@ namespace Ryujinx.Graphics.Graphics3d
             }
         }
 
-        // FIXME: SUPPORT NON 2D
         private void TextureCopy(NvGpuVmm Vmm)
         {
             CopyOperation Operation = (CopyOperation)ReadRegister(NvGpuEngine2dReg.CopyOperation);

@@ -96,7 +96,6 @@ namespace Ryujinx.Graphics.Texture
         private static readonly Dictionary<GalImageFormat, ImageDescriptor> s_ImageTable =
                             new Dictionary<GalImageFormat, ImageDescriptor>()
         {
-            // TODO: check if everything is alright here
             { GalImageFormat.RGBA32,      new ImageDescriptor(16, 1,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.RGBA16,      new ImageDescriptor(8,  1,  1,  1,  TargetBuffer.Color) },
             { GalImageFormat.RG32,        new ImageDescriptor(8,  1,  1,  1,  TargetBuffer.Color) },
@@ -299,7 +298,7 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        // TODO: SUPPORT NON 2D
+        // TODO: Support non 2D
         public static bool CopyTexture(
             NvGpuVmm Vmm,
             GalImage SrcImage,
@@ -339,7 +338,6 @@ namespace Ryujinx.Graphics.Texture
             return true;
         }
 
-        // FIXME: Check if that does the trick
         public static int GetSize(GalImage Image)
         {
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);

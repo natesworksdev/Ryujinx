@@ -239,7 +239,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         
                         TextureInstructionSuffix TextureInstructionSuffix;
 
-                        // TODO: non 2d texture type for TEXQ?
+                        // TODO: Non 2D texture type for TEXQ?
                         if (Op.Inst == ShaderIrInst.Texq)
                         {
                             TextureType              = TextureType.TwoD;
