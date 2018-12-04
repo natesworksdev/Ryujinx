@@ -41,9 +41,9 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return 0;
         }
 
-        public long Finalize(ServiceCtx Context)
+        public long Finalize(ServiceCtx context)
         {
-            Context.Device.Gpu.UninitializeVideoDecoder();
+            context.Device.Gpu.UninitializeVideoDecoder();
 
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
