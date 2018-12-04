@@ -1,82 +1,85 @@
-﻿namespace Ryujinx.HLE.Utilities
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Ryujinx.HLE.Utilities
 {
-    internal enum WsaError
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    enum WsaError
     {
         /*
         * All Windows Sockets error constants are biased by WSABASEERR from
         * the "normal"
         */
-        BaseError                   = 10000,
+        WSABASEERR                 = 10000,
 
         /*
         * Windows Sockets definitions of regular Microsoft C error constants
         */
-        Interrupted                 = (BaseError + 4),
-        BadFileHandle               = (BaseError + 9),
-        AccessDenied                = (BaseError + 13),
-        Fault                       = (BaseError + 14),
-        InvalidArgument             = (BaseError + 22),
-        TooManyOpenSockets          = (BaseError + 24),
+        WSAEINTR                   = (WSABASEERR + 4),
+        WSAEBADF                   = (WSABASEERR + 9),
+        WSAEACCES                  = (WSABASEERR + 13),
+        WSAEFAULT                  = (WSABASEERR + 14),
+        WSAEINVAL                  = (WSABASEERR + 22),
+        WSAEMFILE                  = (WSABASEERR + 24),
 
         /*
          * Windows Sockets definitions of regular Berkeley error constants
          */
-        WouldBlock                  = (BaseError + 35),
-        InProgress                  = (BaseError + 36),
-        AlreadyInProgress           = (BaseError + 37),
-        NotSocket                   = (BaseError + 38),
-        DestinationAddressRequired  = (BaseError + 39),
-        MessageSize                 = (BaseError + 40),
-        ProtocolType                = (BaseError + 41),
-        ProtocolOption              = (BaseError + 42),
-        ProtocolNotSupported        = (BaseError + 43),
-        SocketNotSupported          = (BaseError + 44),
-        OperationNotSupported       = (BaseError + 45),
-        ProtocolFamilyNotSupported  = (BaseError + 46),
-        AddressFamilyNotSupported   = (BaseError + 47),
-        AddressAlreadyInUse         = (BaseError + 48),
-        AddressNotAvailable         = (BaseError + 49),
-        NetworkDown                 = (BaseError + 50),
-        NetworkUnreachable          = (BaseError + 51),
-        NetworkReset                = (BaseError + 52),
-        ConnectionAborted           = (BaseError + 53),
-        ConnectionReset             = (BaseError + 54),
-        NoBufferSpaceAvailable      = (BaseError + 55),
-        IsConnected                 = (BaseError + 56),
-        NotConnected                = (BaseError + 57),
-        Shutdown                    = (BaseError + 58),
-        TooManyReferences           = (BaseError + 59),
-        TimedOut                    = (BaseError + 60),
-        ConnectionRefused           = (BaseError + 61),
-        Loop                        = (BaseError + 62),
-        NameTooLong                 = (BaseError + 63),
-        HostDown                    = (BaseError + 64),
-        HostUnreachable             = (BaseError + 65),
-        NotEmpty                    = (BaseError + 66),
-        ProcessLimit                = (BaseError + 67),
-        UserQuota                   = (BaseError + 68),
-        DiskQuota                   = (BaseError + 69),
-        Stale                       = (BaseError + 70),
-        Remote                      = (BaseError + 71),
+        WSAEWOULDBLOCK             = (WSABASEERR + 35),
+        WSAEINPROGRESS             = (WSABASEERR + 36),
+        WSAEALREADY                = (WSABASEERR + 37),
+        WSAENOTSOCK                = (WSABASEERR + 38),
+        WSAEDESTADDRREQ            = (WSABASEERR + 39),
+        WSAEMSGSIZE                = (WSABASEERR + 40),
+        WSAEPROTOTYPE              = (WSABASEERR + 41),
+        WSAENOPROTOOPT             = (WSABASEERR + 42),
+        WSAEPROTONOSUPPORT         = (WSABASEERR + 43),
+        WSAESOCKTNOSUPPORT         = (WSABASEERR + 44),
+        WSAEOPNOTSUPP              = (WSABASEERR + 45),
+        WSAEPFNOSUPPORT            = (WSABASEERR + 46),
+        WSAEAFNOSUPPORT            = (WSABASEERR + 47),
+        WSAEADDRINUSE              = (WSABASEERR + 48),
+        WSAEADDRNOTAVAIL           = (WSABASEERR + 49),
+        WSAENETDOWN                = (WSABASEERR + 50),
+        WSAENETUNREACH             = (WSABASEERR + 51),
+        WSAENETRESET               = (WSABASEERR + 52),
+        WSAECONNABORTED            = (WSABASEERR + 53),
+        WSAECONNRESET              = (WSABASEERR + 54),
+        WSAENOBUFS                 = (WSABASEERR + 55),
+        WSAEISCONN                 = (WSABASEERR + 56),
+        WSAENOTCONN                = (WSABASEERR + 57),
+        WSAESHUTDOWN               = (WSABASEERR + 58),
+        WSAETOOMANYREFS            = (WSABASEERR + 59),
+        WSAETIMEDOUT               = (WSABASEERR + 60),
+        WSAECONNREFUSED            = (WSABASEERR + 61),
+        WSAELOOP                   = (WSABASEERR + 62),
+        WSAENAMETOOLONG            = (WSABASEERR + 63),
+        WSAEHOSTDOWN               = (WSABASEERR + 64),
+        WSAEHOSTUNREACH            = (WSABASEERR + 65),
+        WSAENOTEMPTY               = (WSABASEERR + 66),
+        WSAEPROCLIM                = (WSABASEERR + 67),
+        WSAEUSERS                  = (WSABASEERR + 68),
+        WSAEDQUOT                  = (WSABASEERR + 69),
+        WSAESTALE                  = (WSABASEERR + 70),
+        WSAEREMOTE                 = (WSABASEERR + 71),
 
         /*
          * Extended Windows Sockets error constant definitions
          */
-        SystemNotReady              = (BaseError + 91),
-        VersionNotSupported         = (BaseError + 92),
-        NotInitialized              = (BaseError + 93),
-        Disconnecting               = (BaseError + 101),
-        NoMoreResultsOld            = (BaseError + 102),
-        CancelledOld                = (BaseError + 103),
-        InvalidProcedureCallTable   = (BaseError + 104),
-        InvalidProvider             = (BaseError + 105),
-        ProviderFailedInit          = (BaseError + 106),
-        SysCallFailure              = (BaseError + 107),
-        ServiceNotFound             = (BaseError + 108),
-        TypeNotFound                = (BaseError + 109),
-        NoMoreResults               = (BaseError + 110),
-        Cancelled                   = (BaseError + 111),
-        Refused                     = (BaseError + 112),
+        WSASYSNOTREADY             = (WSABASEERR + 91),
+        WSAVERNOTSUPPORTED         = (WSABASEERR + 92),
+        WSANOTINITIALISED          = (WSABASEERR + 93),
+        WSAEDISCON                 = (WSABASEERR + 101),
+        WSAENOMORE                 = (WSABASEERR + 102),
+        WSAECANCELLED              = (WSABASEERR + 103),
+        WSAEINVALIDPROCTABLE       = (WSABASEERR + 104),
+        WSAEINVALIDPROVIDER        = (WSABASEERR + 105),
+        WSAEPROVIDERFAILEDINIT     = (WSABASEERR + 106),
+        WSASYSCALLFAILURE          = (WSABASEERR + 107),
+        WSASERVICE_NOT_FOUND       = (WSABASEERR + 108),
+        WSATYPE_NOT_FOUND          = (WSABASEERR + 109),
+        WSA_E_NO_MORE              = (WSABASEERR + 110),
+        WSA_E_CANCELLED            = (WSABASEERR + 111),
+        WSAEREFUSED                = (WSABASEERR + 112),
 
         /*
          * Error return codes from gethostbyname() and gethostbyaddr()
@@ -90,42 +93,42 @@
          */
 
         /* Authoritative Answer: Host not found */
-        HostNotFound           = (BaseError + 1001),
+        WSAHOST_NOT_FOUND          = (WSABASEERR + 1001),
 
         /* Non-Authoritative: Host not found, or SERVERFAIL */
-        TryAgain               = (BaseError + 1002),
+        WSATRY_AGAIN               = (WSABASEERR + 1002),
 
         /* Non-recoverable errors, FORMERR, REFUSED, NOTIMP */
-        NoRecovery             = (BaseError + 1003),
+        WSANO_RECOVERY             = (WSABASEERR + 1003),
 
         /* Valid name, no data record of requested type */
-        NoData                 = (BaseError + 1004),
+        WSANO_DATA                 = (WSABASEERR + 1004),
 
         /*
          * Define QOS related error return codes
          *
          */
-        QosReceivers           = (BaseError + 1005),
+        WSA_QOS_RECEIVERS          = (WSABASEERR + 1005),
         /* at least one Reserve has arrived */
-        QosSenders             = (BaseError + 1006),
+        WSA_QOS_SENDERS            = (WSABASEERR + 1006),
         /* at least one Path has arrived */
-        QosNoSenders           = (BaseError + 1007),
+        WSA_QOS_NO_SENDERS         = (WSABASEERR + 1007),
         /* there are no senders */
-        QosNoReceivers         = (BaseError + 1008),
+        WSA_QOS_NO_RECEIVERS       = (WSABASEERR + 1008),
         /* there are no receivers */
-        QosRequestConfirmed    = (BaseError + 1009),
+        WSA_QOS_REQUEST_CONFIRMED  = (WSABASEERR + 1009),
         /* Reserve has been confirmed */
-        QosAdmissionFailure    = (BaseError + 1010),
+        WSA_QOS_ADMISSION_FAILURE  = (WSABASEERR + 1010),
         /* error due to lack of resources */
-        QosPolicyFailure       = (BaseError + 1011),
+        WSA_QOS_POLICY_FAILURE     = (WSABASEERR + 1011),
         /* rejected for administrative reasons - bad credentials */
-        QosBadStyle            = (BaseError + 1012),
+        WSA_QOS_BAD_STYLE          = (WSABASEERR + 1012),
         /* unknown or conflicting style */
-        QosBadObject           = (BaseError + 1013),
+        WSA_QOS_BAD_OBJECT         = (WSABASEERR + 1013),
         /* problem with some part of the filterspec or providerspecific
          * buffer in general */
-        QosTrafficCtrlError    = (BaseError + 1014),
+        WSA_QOS_TRAFFIC_CTRL_ERROR = (WSABASEERR + 1014),
         /* problem with some part of the flowspec */
-        QosGenericError        = (BaseError + 1015)
+        WSA_QOS_GENERIC_ERROR      = (WSABASEERR + 1015)
     }
 }
