@@ -62,6 +62,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             switch (Target)
             {
+                case TextureTarget.Texture1D:
+                    GL.TexImage1D(
+                        Target,
+                        Level,
+                        InternalFmt,
+                        Image.Width,
+                        Border,
+                        Format,
+                        Type,
+                        IntPtr.Zero);
+                    break;
+
                 case TextureTarget.Texture2D:
                     GL.TexImage2D(
                         Target,
@@ -107,22 +119,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     }
                     break;
                 default:
-                    Logger.PrintWarning(LogClass.Gpu, $"Unsupported texture target type: {Target}");
-                    throw new InvalidOperationException();
-                    GL.TexImage2D(
-                        TextureTarget.Texture2D,
-                        Level,
-                        InternalFmt,
-                        Image.Width,
-                        Image.Height,
-                        Border,
-                        Format,
-                        Type,
-                        IntPtr.Zero);
-                    break;
+                    throw new InvalidOperationException($"Unsupported texture target type: {Target}");
             }
-
-
         }
 
         public void Create(long Key, byte[] Data, GalImage Image)
@@ -146,6 +144,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 switch (Target)
                 {
+                    case TextureTarget.Texture1D:
+                        GL.CompressedTexImage1D(
+                            Target,
+                            Level,
+                            InternalFmt,
+                            Image.Width,
+                            Border,
+                            Data.Length,
+                            Data);
+                        break;
                     case TextureTarget.Texture2D:
                         GL.CompressedTexImage2D(
                             Target,
@@ -201,18 +209,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Data);
                         break;
                     default:
-                        Logger.PrintWarning(LogClass.Gpu, $"Unsupported texture target type: {Target}");
-                        throw new InvalidOperationException();
-                        GL.CompressedTexImage2D(
-                            TextureTarget.Texture2D,
-                            Level,
-                            InternalFmt,
-                            Image.Width,
-                            Image.Height,
-                            Border,
-                            Data.Length,
-                            Data);
-                        break;
+                        throw new InvalidOperationException($"Unsupported texture target type: {Target}");
                 }
             }
             else
@@ -243,6 +240,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 switch (Target)
                 {
+                    case TextureTarget.Texture1D:
+                        GL.TexImage1D(
+                            Target,
+                            Level,
+                            InternalFmt,
+                            Image.Width,
+                            Border,
+                            Format,
+                            Type,
+                            Data);
+                        break;
                     case TextureTarget.Texture2D:
                         GL.TexImage2D(
                             Target,
@@ -289,19 +297,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         }
                         break;
                     default:
-                        Logger.PrintWarning(LogClass.Gpu, $"Unsupported texture target type: {Target}");
-                        throw new InvalidOperationException();
-                        GL.TexImage2D(
-                            TextureTarget.Texture2D,
-                            Level,
-                            InternalFmt,
-                            Image.Width,
-                            Image.Height,
-                            Border,
-                            Format,
-                            Type,
-                            Data);
-                        break;
+                        throw new InvalidOperationException($"Unsupported texture target type: {Target}");
                 }
             }
         }
