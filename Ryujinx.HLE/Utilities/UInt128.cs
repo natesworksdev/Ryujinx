@@ -15,15 +15,15 @@ namespace Ryujinx.HLE.Utilities
             High = high;
         }
 
-        public UInt128(string uInt128Hex)
+        public UInt128(string hex)
         {
-            if (uInt128Hex == null || uInt128Hex.Length != 32 || !uInt128Hex.All("0123456789abcdefABCDEF".Contains))
+            if (hex == null || hex.Length != 32 || !hex.All("0123456789abcdefABCDEF".Contains))
             {
-                throw new ArgumentException("Invalid Hex value!", nameof(uInt128Hex));
+                throw new ArgumentException("Invalid Hex value!", nameof(hex));
             }
 
-            Low  = Convert.ToInt64(uInt128Hex.Substring(16), 16);
-            High = Convert.ToInt64(uInt128Hex.Substring(0, 16), 16);
+            Low  = Convert.ToInt64(hex.Substring(16), 16);
+            High = Convert.ToInt64(hex.Substring(0, 16), 16);
         }
 
         public void Write(BinaryWriter binaryWriter)
