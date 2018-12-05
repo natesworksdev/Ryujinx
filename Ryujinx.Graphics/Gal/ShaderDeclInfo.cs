@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gal
         public int  Cbuf  { get; private set; }
         public int  Size  { get; private set; }
 
-        public TextureType TextureType { get; private set; }
+        public GalTextureTarget TextureType { get; private set; }
 
         public TextureInstructionSuffix TextureSuffix { get; private set; }
 
@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Gal
             bool   IsCb = false,
             int    Cbuf = 0,
             int    Size = 1,
-            TextureType TextureType = TextureType.TwoD,
+            GalTextureTarget TextureType = GalTextureTarget.TwoD,
             TextureInstructionSuffix TextureSuffix = TextureInstructionSuffix.None)
         {
             this.Name        = Name;

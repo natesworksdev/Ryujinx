@@ -220,7 +220,7 @@ namespace Ryujinx.Graphics.VDec
                 OutputConfig.GobBlockHeight,
                 GalMemoryLayout.BlockLinear,
                 GalImageFormat.RGBA8 | GalImageFormat.Unorm,
-                TextureType.TwoD);
+                GalTextureTarget.TwoD);
 
             ImageUtils.WriteTexture(Vmm, Image, Vmm.GetPhysicalAddress(OutputConfig.SurfaceLumaAddress), Frame.Data);
         }

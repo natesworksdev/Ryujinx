@@ -1,7 +1,6 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
-using Ryujinx.Graphics.Texture;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvGpuAS;
@@ -420,7 +419,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
                         fbHeight, 1, 1, BlockHeight,
                         GalMemoryLayout.BlockLinear,
                         imageFormat,
-                        TextureType.TwoD);
+                        GalTextureTarget.TwoD);
                 }
 
                 context.Device.Gpu.ResourceManager.ClearPbCache();

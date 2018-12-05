@@ -235,14 +235,14 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         string Name = StagePrefix + TextureName + Index;
 
-                        TextureType TextureType;
+                        GalTextureTarget TextureType;
                         
                         TextureInstructionSuffix TextureInstructionSuffix;
 
                         // TODO: Non 2D texture type for TEXQ?
                         if (Op.Inst == ShaderIrInst.Texq)
                         {
-                            TextureType              = TextureType.TwoD;
+                            TextureType              = GalTextureTarget.TwoD;
                             TextureInstructionSuffix = TextureInstructionSuffix.None;
                         }
                         else

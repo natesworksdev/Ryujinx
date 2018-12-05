@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 SrcBlockHeight,
                 SrcLayout,
                 SrcImgFormat,
-                TextureType.TwoD);
+                GalTextureTarget.TwoD);
 
             GalImage DstTexture = new GalImage(
                 DstWidth,
@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 DstBlockHeight,
                 DstLayout,
                 DstImgFormat,
-                TextureType.TwoD);
+                GalTextureTarget.TwoD);
 
             SrcTexture.Pitch = SrcPitch;
             DstTexture.Pitch = DstPitch;

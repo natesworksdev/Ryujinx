@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Gal
         public GalTextureSource YSource;
         public GalTextureSource ZSource;
         public GalTextureSource WSource;
-        public TextureType      TextureType;
+        public GalTextureTarget      TextureType;
 
         public GalImage(
             int              Width,
@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Gal
             int              GobBlockHeight,
             GalMemoryLayout  Layout,
             GalImageFormat   Format,
-            TextureType      TextureType,
+            GalTextureTarget      TextureType,
             int              MaxMipmapLevel = 1,
             GalTextureSource XSource        = GalTextureSource.Red,
             GalTextureSource YSource        = GalTextureSource.Green,

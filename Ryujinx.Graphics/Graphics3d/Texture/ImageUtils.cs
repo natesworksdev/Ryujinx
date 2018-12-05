@@ -474,58 +474,58 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        public static TextureTarget GetTextureTarget(TextureType TextureType)
+        public static TextureTarget GetTextureTarget(GalTextureTarget TextureType)
         {
             switch (TextureType)
             {
-                case TextureType.OneD:
+                case GalTextureTarget.OneD:
                     return TextureTarget.Texture1D;
-                case TextureType.TwoD:
-                case TextureType.TwoDNoMipMap:
+                case GalTextureTarget.TwoD:
+                case GalTextureTarget.TwoDNoMipMap:
                     return TextureTarget.Texture2D;
-                case TextureType.ThreeD:
+                case GalTextureTarget.ThreeD:
                     return TextureTarget.Texture3D;
-                case TextureType.OneDArray:
+                case GalTextureTarget.OneDArray:
                     return TextureTarget.Texture1DArray;
-                case TextureType.TwoDArray:
+                case GalTextureTarget.TwoDArray:
                     return TextureTarget.Texture2DArray;
-                case TextureType.CubeMap:
+                case GalTextureTarget.CubeMap:
                     return TextureTarget.TextureCubeMap;
-                case TextureType.CubeArray:
+                case GalTextureTarget.CubeArray:
                     return TextureTarget.TextureCubeMapArray;
                 default:
                     throw new NotSupportedException($"Texture type {TextureType} currently not supported!");
             }
         }
 
-        public static bool IsArray(TextureType TextureType)
+        public static bool IsArray(GalTextureTarget TextureType)
         {
             switch (TextureType)
             {
-                case TextureType.OneDArray:
-                case TextureType.TwoDArray:
-                case TextureType.CubeArray:
+                case GalTextureTarget.OneDArray:
+                case GalTextureTarget.TwoDArray:
+                case GalTextureTarget.CubeArray:
                     return true;
                 default:
                     return false;
             }
         }
 
-        public static int GetCoordsCountTextureType(TextureType TextureType)
+        public static int GetCoordsCountTextureType(GalTextureTarget TextureType)
         {
             switch (TextureType)
             {
-                case TextureType.OneD:
+                case GalTextureTarget.OneD:
                     return 1;
-                case TextureType.OneDArray:
-                case TextureType.TwoD:
-                case TextureType.TwoDNoMipMap:
+                case GalTextureTarget.OneDArray:
+                case GalTextureTarget.TwoD:
+                case GalTextureTarget.TwoDNoMipMap:
                     return 2;
-                case TextureType.ThreeD:
-                case TextureType.TwoDArray:
-                case TextureType.CubeMap:
+                case GalTextureTarget.ThreeD:
+                case GalTextureTarget.TwoDArray:
+                case GalTextureTarget.CubeMap:
                     return 3;
-                case TextureType.CubeArray:
+                case GalTextureTarget.CubeArray:
                     return 4;
                 default:
                     throw new NotImplementedException($"TextureTpe.{TextureType} not implemented yet.");

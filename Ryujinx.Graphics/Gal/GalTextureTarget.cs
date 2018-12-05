@@ -1,6 +1,6 @@
-﻿namespace Ryujinx.Graphics.Texture
+﻿namespace Ryujinx.Graphics.Gal
 {
-    public enum TextureType
+    public enum GalTextureTarget
     {
         OneD         = 0,
         TwoD         = 1,

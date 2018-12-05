@@ -1,8 +1,6 @@
-using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using System;
-using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Texture
 {
@@ -14,7 +12,7 @@ namespace Ryujinx.Graphics.Texture
 
             GalImageFormat Format = GetImageFormat(Tic);
 
-            TextureType TextureType = (TextureType)((Tic[4] >> 23) & 0xF);
+            GalTextureTarget TextureType = (GalTextureTarget)((Tic[4] >> 23) & 0xF);
 
             GalTextureSource XSource = (GalTextureSource)((Tic[0] >> 19) & 7);
             GalTextureSource YSource = (GalTextureSource)((Tic[0] >> 22) & 7);
@@ -47,16 +45,16 @@ namespace Ryujinx.Graphics.Texture
             int Height = (Tic[5] & 0xffff) + 1;
             int Depth  = ((Tic[5] >> 16) & 0x3fff) + 1;
 
-            if (TextureType == TextureType.OneD)
+            if (TextureType == GalTextureTarget.OneD)
             {
                 Height = 1;
             }
 
-            if (TextureType == TextureType.TwoD || TextureType == TextureType.OneD)
+            if (TextureType == GalTextureTarget.TwoD || TextureType == GalTextureTarget.OneD)
             {
                 Depth = 1;
             }
-            else if (TextureType == TextureType.CubeMap)
+            else if (TextureType == GalTextureTarget.CubeMap)
             {
                 Depth = 6;
             }

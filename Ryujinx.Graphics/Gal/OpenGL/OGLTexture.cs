@@ -1,8 +1,6 @@
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Texture;
 using System;
-using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
