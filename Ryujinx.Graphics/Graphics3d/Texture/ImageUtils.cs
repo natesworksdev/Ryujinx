@@ -1,10 +1,9 @@
 ﻿using ChocolArm64.Memory;
+using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using System;
 using System.Collections.Generic;
-using OpenTK.Graphics.OpenGL;
-using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Texture
 {

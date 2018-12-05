@@ -232,7 +232,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             bool IsOffset = OpCode.Read(0x36);
 
             if (IsOffset)
-                Suffix |= TextureInstructionSuffix.AOFFI;
+                Suffix |= TextureInstructionSuffix.AOffI;
 
             EmitTex(Block, OpCode, Suffix, GprHandle: false);
         }
@@ -270,7 +270,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             bool IsOffset = OpCode.Read(0x23);
 
             if (IsOffset)
-                Suffix |= TextureInstructionSuffix.AOFFI;
+                Suffix |= TextureInstructionSuffix.AOffI;
 
             EmitTex(Block, OpCode, Suffix, GprHandle: true);
         }
@@ -338,7 +338,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 OperBIndex++;
             }
 
-            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOFFI) != 0)
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOffI) != 0)
             {
                 Offset        = OpCode.Gpr20();
                 Offset.Index += OperBIndex;
@@ -446,7 +446,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case 0:
                 case 0x4:
                 case 0x8:
-                    Suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.AOFFI;
+                    Suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.AOffI;
                     break;
                 case 0xc:
                     Suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.MZ;
@@ -460,7 +460,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     Suffix = TextureInstructionSuffix.LL;
                     break;
                 case 0x18:
-                    Suffix = TextureInstructionSuffix.LL | TextureInstructionSuffix.AOFFI;
+                    Suffix = TextureInstructionSuffix.LL | TextureInstructionSuffix.AOffI;
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid Suffix for TLDS instruction {RawSuffix}");
@@ -483,7 +483,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     Suffix = TextureInstructionSuffix.None;
                     break;
                 case 0x4:
-                    Suffix = TextureInstructionSuffix.AOFFI;
+                    Suffix = TextureInstructionSuffix.AOffI;
                     break;
                 case 0x8:
                     Suffix = TextureInstructionSuffix.PTP;
@@ -516,7 +516,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (IsOffset)
             {
-                Suffix |= TextureInstructionSuffix.AOFFI;
+                Suffix |= TextureInstructionSuffix.AOffI;
             }
 
             if (IsShadow)
@@ -612,7 +612,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 OperBIndex++;
             }
 
-            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOFFI) != 0)
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOffI) != 0)
             {
                 Offset        = OpCode.Gpr20();
                 Offset.Index += OperBIndex;
@@ -806,7 +806,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 }
             }
 
-            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOFFI) != 0)
+            if ((TextureInstructionSuffix & TextureInstructionSuffix.AOffI) != 0)
             {
                 Offset = OpCode.Gpr20();
                 Offset.Index += OperBIndex;

@@ -1253,7 +1253,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 Lod = GetOperExpr(Op, Meta.LevelOfDetail);
             }
 
-            if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+            if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
             {
                 return "texelFetchOffset(" + Sampler + ", " + Coords + ", " + Lod + ", " + GetOperExpr(Op, Meta.Offset) + ")." + Ch;
             }
@@ -1436,7 +1436,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             // TODO: Support AOFFI
-            if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+            if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
             {
                 throw new NotImplementedException();
             }
@@ -1460,7 +1460,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             // TODO: Support LBA and LLA
             if ((Suffix & TextureInstructionSuffix.LZ) != 0)
             {
-                if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+                if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
@@ -1471,7 +1471,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
             else if ((Suffix & TextureInstructionSuffix.LB) != 0)
             {
-                if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+                if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
@@ -1482,7 +1482,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
             else if ((Suffix & TextureInstructionSuffix.LL) != 0)
             {
-                if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
+                if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
@@ -1491,7 +1491,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 return "textureLod(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")" + ChString;
             }
-            else if (Suffix == TextureInstructionSuffix.AOFFI)
+            else if (Suffix == TextureInstructionSuffix.AOffI)
             {
                 string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 

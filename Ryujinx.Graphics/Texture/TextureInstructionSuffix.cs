@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Texture
         LBA   = 0x20,  // Load Bias with OperA? Auto?
         LLA   = 0x40,  // Load LOD with OperA? Auto?
         DC    = 0x80,  // Depth Compare
-        AOFFI = 0x100, // Offset
+        AOffI = 0x100, // Offset
         MZ    = 0x200, // Multisample Zero?
         PTP   = 0x400  // ???
     }
