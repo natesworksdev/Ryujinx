@@ -1458,7 +1458,8 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             // TODO: Support LBA and LLA
-            if ((Suffix & TextureInstructionSuffix.LZ) != 0)
+            // TODO: mipmap support, uncomment this when done.
+            /*if ((Suffix & TextureInstructionSuffix.LZ) != 0)
             {
                 if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
                 {
@@ -1491,7 +1492,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 return "textureLod(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")" + ChString;
             }
-            else if (Suffix == TextureInstructionSuffix.AOffI)
+            else */
+            if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
             {
                 string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
