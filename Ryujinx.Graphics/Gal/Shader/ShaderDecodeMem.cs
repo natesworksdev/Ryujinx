@@ -201,69 +201,78 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static void Tex(ShaderIrBlock Block, long OpCode, int Position)
         {
-            TextureInstructionSuffix GetSuffix()
-            {
-                int Suffix = OpCode.Read(0x34, 0x38);
+            TextureInstructionSuffix Suffix;
 
-                switch (Suffix)
-                {
-                    case 0:
-                        return TextureInstructionSuffix.None;
-                    case 0x8:
-                        return TextureInstructionSuffix.LZ;
-                    case 0x10:
-                        return TextureInstructionSuffix.LB;
-                    case 0x18:
-                        return TextureInstructionSuffix.LL;
-                    case 0x30:
-                        return TextureInstructionSuffix.LBA;
-                    case 0x38:
-                        return TextureInstructionSuffix.LLA;
-                    default:
-                        throw new InvalidOperationException($"Invalid Suffix for TEX instruction {Suffix}");
-                }
+            int RawSuffix = OpCode.Read(0x34, 0x38);
+
+            switch (RawSuffix)
+            {
+                case 0:
+                    Suffix = TextureInstructionSuffix.None;
+                    break;
+                case 0x8:
+                    Suffix = TextureInstructionSuffix.LZ;
+                    break;
+                case 0x10:
+                    Suffix = TextureInstructionSuffix.LB;
+                    break;
+                case 0x18:
+                    Suffix = TextureInstructionSuffix.LL;
+                    break;
+                case 0x30:
+                    Suffix = TextureInstructionSuffix.LBA;
+                    break;
+                case 0x38:
+                    Suffix = TextureInstructionSuffix.LLA;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid Suffix for TEX instruction {RawSuffix}");
             }
 
-            TextureInstructionSuffix InstructionSuffix = GetSuffix();
             bool IsOffset = OpCode.Read(0x36);
 
             if (IsOffset)
-                InstructionSuffix |= TextureInstructionSuffix.AOFFI;
+                Suffix |= TextureInstructionSuffix.AOFFI;
 
-            EmitTex(Block, OpCode, InstructionSuffix, GprHandle: false);
+            EmitTex(Block, OpCode, Suffix, GprHandle: false);
         }
 
         public static void Tex_B(ShaderIrBlock Block, long OpCode, int Position)
         {
-            TextureInstructionSuffix GetSuffix()
+            TextureInstructionSuffix Suffix;
+
+            int RawSuffix = OpCode.Read(0x24, 0xe);
+
+            switch (RawSuffix)
             {
-                int Suffix = OpCode.Read(0x24, 0xe);
-                switch (Suffix)
-                {
-                    case 0:
-                        return TextureInstructionSuffix.None;
-                    case 0x2:
-                        return TextureInstructionSuffix.LZ;
-                    case 0x4:
-                        return TextureInstructionSuffix.LB;
-                    case 0x6:
-                        return TextureInstructionSuffix.LL;
-                    case 0xC:
-                        return TextureInstructionSuffix.LBA;
-                    case 0xE:
-                        return TextureInstructionSuffix.LLA;
-                    default:
-                        throw new InvalidOperationException($"Invalid Suffix for TEX.B instruction {Suffix}");
-                }
+                case 0:
+                    Suffix = TextureInstructionSuffix.None;
+                    break;
+                case 0x2:
+                    Suffix = TextureInstructionSuffix.LZ;
+                    break;
+                case 0x4:
+                    Suffix = TextureInstructionSuffix.LB;
+                    break;
+                case 0x6:
+                    Suffix = TextureInstructionSuffix.LL;
+                    break;
+                case 0xc:
+                    Suffix = TextureInstructionSuffix.LBA;
+                    break;
+                case 0xe:
+                    Suffix = TextureInstructionSuffix.LLA;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid Suffix for TEX.B instruction {RawSuffix}");
             }
 
-            TextureInstructionSuffix InstructionSuffix = GetSuffix();
             bool IsOffset = OpCode.Read(0x23);
 
             if (IsOffset)
-                InstructionSuffix |= TextureInstructionSuffix.AOFFI;
+                Suffix |= TextureInstructionSuffix.AOFFI;
 
-            EmitTex(Block, OpCode, InstructionSuffix, GprHandle: true);
+            EmitTex(Block, OpCode, Suffix, GprHandle: true);
         }
 
         private static void EmitTex(ShaderIrBlock Block, long OpCode, TextureInstructionSuffix TextureInstructionSuffix, bool GprHandle)
@@ -385,89 +394,102 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public static void Texs(ShaderIrBlock Block, long OpCode, int Position)
         {
-            TextureInstructionSuffix GetSuffix()
+            TextureInstructionSuffix Suffix;
+
+            int RawSuffix = OpCode.Read(0x34, 0x1e);
+
+            switch (RawSuffix)
             {
-                int Suffix = OpCode.Read(0x34, 0x1e);
-                switch (Suffix)
-                {
-                    case 0:
-                    case 0x4:
-                    case 0x10:
-                    case 0x16:
-                        return TextureInstructionSuffix.LZ;
-                    case 0x6:
-                    case 0x1a:
-                        return TextureInstructionSuffix.LL;
-                    case 0x8:
-                        return TextureInstructionSuffix.DC;
-                    case 0x2:
-                    case 0xe:
-                    case 0x14:
-                    case 0x18:
-                        return TextureInstructionSuffix.None;
-                    case 0xa:
-                        return TextureInstructionSuffix.LL | TextureInstructionSuffix.DC;
-                    case 0xc:
-                    case 0x12:
-                        return TextureInstructionSuffix.LZ | TextureInstructionSuffix.DC;
-                    default:
-                        throw new InvalidOperationException($"Invalid Suffix for TEXS instruction {Suffix}");
-                }
+                case 0:
+                case 0x4:
+                case 0x10:
+                case 0x16:
+                    Suffix = TextureInstructionSuffix.LZ;
+                    break;
+                case 0x6:
+                case 0x1a:
+                    Suffix = TextureInstructionSuffix.LL;
+                    break;
+                case 0x8:
+                    Suffix = TextureInstructionSuffix.DC;
+                    break;
+                case 0x2:
+                case 0xe:
+                case 0x14:
+                case 0x18:
+                    Suffix = TextureInstructionSuffix.None;
+                    break;
+                case 0xa:
+                    Suffix = TextureInstructionSuffix.LL | TextureInstructionSuffix.DC;
+                    break;
+                case 0xc:
+                case 0x12:
+                    Suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.DC;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid Suffix for TEXS instruction {RawSuffix}");
             }
 
             TextureType TextureType = TexsToTextureType(OpCode.Read(52, 0x1e));
 
-            EmitTexs(Block, OpCode, ShaderIrInst.Texs, TextureType, GetSuffix());
+            EmitTexs(Block, OpCode, ShaderIrInst.Texs, TextureType, Suffix);
         }
 
         public static void Tlds(ShaderIrBlock Block, long OpCode, int Position)
         {
-            TextureInstructionSuffix GetSuffix()
+            TextureInstructionSuffix Suffix;
+
+            int RawSuffix = OpCode.Read(0x34, 0x1e);
+
+            switch (RawSuffix)
             {
-                int Suffix = OpCode.Read(0x34, 0x1e);
-                switch (Suffix)
-                {
-                    case 0:
-                    case 0x4:
-                    case 0x8:
-                        return TextureInstructionSuffix.LZ | TextureInstructionSuffix.AOFFI;
-                    case 0xc:
-                        return TextureInstructionSuffix.LZ | TextureInstructionSuffix.MZ;
-                    case 0xe:
-                    case 0x10:
-                        return TextureInstructionSuffix.LZ;
-                    case 0x2:
-                    case 0xa:
-                        return TextureInstructionSuffix.LL;
-                    case 0x18:
-                        return TextureInstructionSuffix.LL | TextureInstructionSuffix.AOFFI;
-                    default:
-                        throw new InvalidOperationException($"Invalid Suffix for TLDS instruction {Suffix}");
-                }
+                case 0:
+                case 0x4:
+                case 0x8:
+                    Suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.AOFFI;
+                    break;
+                case 0xc:
+                    Suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.MZ;
+                    break;
+                case 0xe:
+                case 0x10:
+                    Suffix = TextureInstructionSuffix.LZ;
+                    break;
+                case 0x2:
+                case 0xa:
+                    Suffix = TextureInstructionSuffix.LL;
+                    break;
+                case 0x18:
+                    Suffix = TextureInstructionSuffix.LL | TextureInstructionSuffix.AOFFI;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid Suffix for TLDS instruction {RawSuffix}");
             }
 
             TextureType TextureType = TldsToTextureType(OpCode.Read(52, 0x1e));
 
-            EmitTexs(Block, OpCode, ShaderIrInst.Txlf, TextureType, GetSuffix());
+            EmitTexs(Block, OpCode, ShaderIrInst.Txlf, TextureType, Suffix);
         }
 
         public static void Tld4(ShaderIrBlock Block, long OpCode, int Position)
         {
-            TextureInstructionSuffix GetSuffix()
-            {
-                int RawSuffix = OpCode.Read(0x34, 0x38);
+            TextureInstructionSuffix Suffix;
 
-                switch (RawSuffix)
-                {
-                    case 0:
-                        return TextureInstructionSuffix.None;
-                    case 0x4:
-                        return TextureInstructionSuffix.AOFFI;
-                    case 0x8:
-                        return TextureInstructionSuffix.PTP;
-                    default:
-                        throw new InvalidOperationException($"Invalid Suffix for TLD4 instruction {RawSuffix}");
-                }
+            int RawSuffix = OpCode.Read(0x34, 0x38);
+
+            switch (RawSuffix)
+            {
+                case 0:
+                    Suffix = TextureInstructionSuffix.None;
+                    break;
+                case 0x4:
+                    Suffix = TextureInstructionSuffix.AOFFI;
+                    break;
+                case 0x8:
+                    Suffix = TextureInstructionSuffix.PTP;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid Suffix for TLD4 instruction {RawSuffix}");
             }
 
             bool IsShadow = OpCode.Read(0x32);
@@ -476,8 +498,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             int  ChMask  = OpCode.Read(31, 0xf);
 
             TextureType TextureType = TexToTextureType(OpCode.Read(28, 6), IsArray);
-
-            TextureInstructionSuffix Suffix = GetSuffix();
 
             if (IsShadow)
             {
