@@ -210,7 +210,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             NvHostChannelSubmitGpfifo args = MemoryHelper.Read<NvHostChannelSubmitGpfifo>(context.Memory, inputPosition);
 
-            NvGpuVmm vmm = NvGpuASIoctl.GetASCtx(context).Vmm;;
+            NvGpuVmm vmm = NvGpuASIoctl.GetASCtx(context).Vmm;
 
             for (int index = 0; index < args.NumEntries; index++)
             {
@@ -284,7 +284,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             NvHostChannelSubmitGpfifo args = MemoryHelper.Read<NvHostChannelSubmitGpfifo>(context.Memory, inputPosition);
 
-            NvGpuVmm vmm = NvGpuASIoctl.GetASCtx(context).Vmm;;
+            NvGpuVmm vmm = NvGpuASIoctl.GetASCtx(context).Vmm;
 
             for (int index = 0; index < args.NumEntries; index++)
             {
