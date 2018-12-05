@@ -235,25 +235,25 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         string Name = StagePrefix + TextureName + Index;
 
-                        GalTextureTarget TextureType;
+                        GalTextureTarget TextureTarget;
                         
                         TextureInstructionSuffix TextureInstructionSuffix;
 
                         // TODO: Non 2D texture type for TEXQ?
                         if (Op.Inst == ShaderIrInst.Texq)
                         {
-                            TextureType              = GalTextureTarget.TwoD;
+                            TextureTarget            = GalTextureTarget.TwoD;
                             TextureInstructionSuffix = TextureInstructionSuffix.None;
                         }
                         else
                         {
                             ShaderIrMetaTex Meta = ((ShaderIrMetaTex)Op.MetaData);
 
-                            TextureType              = Meta.TextureType;
+                            TextureTarget            = Meta.TextureTarget;
                             TextureInstructionSuffix = Meta.TextureInstructionSuffix;
                         }
 
-                        m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Handle, false, 0, 1, TextureType, TextureInstructionSuffix));
+                        m_Textures.TryAdd(Handle, new ShaderDeclInfo(Name, Handle, false, 0, 1, TextureTarget, TextureInstructionSuffix));
                     }
                     else if (Op.Inst == ShaderIrInst.Texb)
                     {
@@ -281,7 +281,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                             ShaderIrMetaTex Meta = ((ShaderIrMetaTex)Op.MetaData);
                             string Name = StagePrefix + TextureName + "_cb" + Cbuf.Index + "_" + Cbuf.Pos;
 
-                            m_CbTextures.Add(Op, new ShaderDeclInfo(Name, Cbuf.Pos, true, Cbuf.Index, 1, Meta.TextureType, Meta.TextureInstructionSuffix));
+                            m_CbTextures.Add(Op, new ShaderDeclInfo(Name, Cbuf.Pos, true, Cbuf.Index, 1, Meta.TextureTarget, Meta.TextureInstructionSuffix));
                         }
                         else
                         {

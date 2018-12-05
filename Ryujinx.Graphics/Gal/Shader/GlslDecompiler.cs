@@ -275,14 +275,14 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             foreach (ShaderDeclInfo DeclInfo in IterateCbTextures())
             {
-                TextureTarget Target = ImageUtils.GetTextureTarget(DeclInfo.TextureType);
+                TextureTarget Target = ImageUtils.GetTextureTarget(DeclInfo.TextureTarget);
                 SB.AppendLine($"// {DeclInfo.TextureSuffix}");
                 SB.AppendLine("uniform " + GetSamplerType(Target, (DeclInfo.TextureSuffix & TextureInstructionSuffix.DC) != 0) + " " + DeclInfo.Name + ";");
             }
 
             foreach (ShaderDeclInfo DeclInfo in Decl.Textures.Values.OrderBy(DeclKeySelector))
             {
-                TextureTarget Target = ImageUtils.GetTextureTarget(DeclInfo.TextureType);
+                TextureTarget Target = ImageUtils.GetTextureTarget(DeclInfo.TextureTarget);
                 SB.AppendLine($"// {DeclInfo.TextureSuffix}");
                 SB.AppendLine("uniform " + GetSamplerType(Target, (DeclInfo.TextureSuffix & TextureInstructionSuffix.DC) != 0) + " " + DeclInfo.Name + ";");
             }
@@ -1338,9 +1338,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             bool HasDepth = (Meta.TextureInstructionSuffix & TextureInstructionSuffix.DC) != 0;
 
-            int Coords = ImageUtils.GetCoordsCountTextureType(Meta.TextureType);
+            int Coords = ImageUtils.GetCoordsCountTextureTarget(Meta.TextureTarget);
 
-            bool IsArray = ImageUtils.IsArray(Meta.TextureType);
+            bool IsArray = ImageUtils.IsArray(Meta.TextureTarget);
 
 
             string GetLastArgument(ShaderIrNode Node)
@@ -1400,9 +1400,9 @@ namespace Ryujinx.Graphics.Gal.Shader
                 return "(" + Operation + " >> " + index * 4 + ") & 0xF";
             }
 
-            int Coords = ImageUtils.GetCoordsCountTextureType(Meta.TextureType);
+            int Coords = ImageUtils.GetCoordsCountTextureTarget(Meta.TextureTarget);
 
-            if (ImageUtils.IsArray(Meta.TextureType))
+            if (ImageUtils.IsArray(Meta.TextureTarget))
                 Coords -= 1;
 
             switch (Coords)
@@ -1509,7 +1509,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
 
-            switch (ImageUtils.GetCoordsCountTextureType(Meta.TextureType))
+            switch (ImageUtils.GetCoordsCountTextureTarget(Meta.TextureTarget))
             {
                 case 1:
                     return GetOperExpr(Op, Meta.Coordinates[0]);

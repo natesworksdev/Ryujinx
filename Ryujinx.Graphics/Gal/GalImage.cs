@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Gal
         public GalTextureSource YSource;
         public GalTextureSource ZSource;
         public GalTextureSource WSource;
-        public GalTextureTarget      TextureType;
+        public GalTextureTarget TextureTarget;
 
         public GalImage(
             int              Width,
@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Gal
             int              GobBlockHeight,
             GalMemoryLayout  Layout,
             GalImageFormat   Format,
-            GalTextureTarget      TextureType,
+            GalTextureTarget TextureTarget,
             int              MaxMipmapLevel = 1,
             GalTextureSource XSource        = GalTextureSource.Red,
             GalTextureSource YSource        = GalTextureSource.Green,
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Gal
             this.YSource        = YSource;
             this.ZSource        = ZSource;
             this.WSource        = WSource;
-            this.TextureType    = TextureType;
+            this.TextureTarget  = TextureTarget;
 
             Pitch = ImageUtils.GetPitch(Format, Width);
         }

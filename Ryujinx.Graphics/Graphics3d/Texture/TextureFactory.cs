@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Texture
 
             GalImageFormat Format = GetImageFormat(Tic);
 
-            GalTextureTarget TextureType = (GalTextureTarget)((Tic[4] >> 23) & 0xF);
+            GalTextureTarget TextureTarget = (GalTextureTarget)((Tic[4] >> 23) & 0xF);
 
             GalTextureSource XSource = (GalTextureSource)((Tic[0] >> 19) & 7);
             GalTextureSource YSource = (GalTextureSource)((Tic[0] >> 22) & 7);
@@ -45,16 +45,16 @@ namespace Ryujinx.Graphics.Texture
             int Height = (Tic[5] & 0xffff) + 1;
             int Depth  = ((Tic[5] >> 16) & 0x3fff) + 1;
 
-            if (TextureType == GalTextureTarget.OneD)
+            if (TextureTarget == GalTextureTarget.OneD)
             {
                 Height = 1;
             }
 
-            if (TextureType == GalTextureTarget.TwoD || TextureType == GalTextureTarget.OneD)
+            if (TextureTarget == GalTextureTarget.TwoD || TextureTarget == GalTextureTarget.OneD)
             {
                 Depth = 1;
             }
-            else if (TextureType == GalTextureTarget.CubeMap)
+            else if (TextureTarget == GalTextureTarget.CubeMap)
             {
                 Depth = 6;
             }
@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Texture
                 BlockHeight,
                 Layout,
                 Format,
-                TextureType,
+                TextureTarget,
                 MaxMipmapLevel,
                 XSource,
                 YSource,

@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int Handle = GL.GenTexture();
 
-            TextureTarget Target = ImageUtils.GetTextureTarget(Image.TextureType);
+            TextureTarget Target = ImageUtils.GetTextureTarget(Image.TextureTarget);
 
             GL.BindTexture(Target, Handle);
 
@@ -123,7 +123,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             int Handle = GL.GenTexture();
 
-            TextureTarget Target = ImageUtils.GetTextureTarget(Image.TextureType);
+            TextureTarget Target = ImageUtils.GetTextureTarget(Image.TextureTarget);
 
             GL.BindTexture(Target, Handle);
 
@@ -335,7 +335,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 GL.ActiveTexture(TextureUnit.Texture0 + Index);
 
-                TextureTarget Target = ImageUtils.GetTextureTarget(Image.TextureType);
+                TextureTarget Target = ImageUtils.GetTextureTarget(Image.TextureTarget);
 
                 GL.BindTexture(Target, CachedImage.Handle);
 
@@ -360,7 +360,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             int MinFilter = (int)OGLEnumConverter.GetTextureMinFilter(Sampler.MinFilter, Sampler.MipFilter);
             int MagFilter = (int)OGLEnumConverter.GetTextureMagFilter(Sampler.MagFilter);
 
-            TextureTarget Target = ImageUtils.GetTextureTarget(Image.TextureType);
+            TextureTarget Target = ImageUtils.GetTextureTarget(Image.TextureTarget);
 
             GL.TexParameter(Target, TextureParameterName.TextureWrapS, WrapS);
             GL.TexParameter(Target, TextureParameterName.TextureWrapT, WrapT);

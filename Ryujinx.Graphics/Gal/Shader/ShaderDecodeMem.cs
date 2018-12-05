@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             { RGB_, RG_A, R_BA, _GBA, RGBA, ____, ____, ____ }
         };
 
-        private static GalTextureTarget TexToTextureType(int TexType, bool IsArray)
+        private static GalTextureTarget TexToTextureTarget(int TexType, bool IsArray)
         {
             switch (TexType)
             {
@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        private static GalTextureTarget TexsToTextureType(int TexType)
+        private static GalTextureTarget TexsToTextureTarget(int TexType)
         {
             switch (TexType)
             {
@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
-        public static GalTextureTarget TldsToTextureType(int TexType)
+        public static GalTextureTarget TldsToTextureTarget(int TexType)
         {
             switch (TexType)
             {
@@ -279,7 +279,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             bool IsArray = OpCode.HasArray();
 
-            GalTextureTarget TextureType = TexToTextureType(OpCode.Read(28, 6), IsArray);
+            GalTextureTarget TextureTarget = TexToTextureTarget(OpCode.Read(28, 6), IsArray);
 
             bool HasDepthCompare = OpCode.Read(0x32);
 
@@ -288,7 +288,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 TextureInstructionSuffix |= TextureInstructionSuffix.DC;
             }
 
-            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureTarget(TextureTarget)];
 
             int IndexExtraCoord = 0;
 
@@ -379,7 +379,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, TextureInstructionSuffix, Coords)
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureTarget, TextureInstructionSuffix, Coords)
                 {
                     LevelOfDetail = LevelOfDetail,
                     Offset        = Offset,
@@ -430,9 +430,9 @@ namespace Ryujinx.Graphics.Gal.Shader
                     throw new InvalidOperationException($"Invalid Suffix for TEXS instruction {RawSuffix}");
             }
 
-            GalTextureTarget TextureType = TexsToTextureType(OpCode.Read(52, 0x1e));
+            GalTextureTarget TextureTarget = TexsToTextureTarget(OpCode.Read(52, 0x1e));
 
-            EmitTexs(Block, OpCode, ShaderIrInst.Texs, TextureType, Suffix);
+            EmitTexs(Block, OpCode, ShaderIrInst.Texs, TextureTarget, Suffix);
         }
 
         public static void Tlds(ShaderIrBlock Block, long OpCode, int Position)
@@ -466,9 +466,9 @@ namespace Ryujinx.Graphics.Gal.Shader
                     throw new InvalidOperationException($"Invalid Suffix for TLDS instruction {RawSuffix}");
             }
 
-            GalTextureTarget TextureType = TldsToTextureType(OpCode.Read(52, 0x1e));
+            GalTextureTarget TextureTarget = TldsToTextureTarget(OpCode.Read(52, 0x1e));
 
-            EmitTexs(Block, OpCode, ShaderIrInst.Txlf, TextureType, Suffix);
+            EmitTexs(Block, OpCode, ShaderIrInst.Txlf, TextureTarget, Suffix);
         }
 
         public static void Tld4(ShaderIrBlock Block, long OpCode, int Position)
@@ -497,14 +497,14 @@ namespace Ryujinx.Graphics.Gal.Shader
             bool IsArray = OpCode.HasArray();
             int  ChMask  = OpCode.Read(31, 0xf);
 
-            GalTextureTarget TextureType = TexToTextureType(OpCode.Read(28, 6), IsArray);
+            GalTextureTarget TextureTarget = TexToTextureTarget(OpCode.Read(28, 6), IsArray);
 
             if (IsShadow)
             {
                 Suffix |= TextureInstructionSuffix.DC;
             }
 
-            EmitTld4(Block, OpCode, TextureType, Suffix, ChMask, OpCode.Read(0x38, 0x3), false);
+            EmitTld4(Block, OpCode, TextureTarget, Suffix, ChMask, OpCode.Read(0x38, 0x3), false);
         }
 
         public static void Tld4s(ShaderIrBlock Block, long OpCode, int Position)
@@ -531,17 +531,17 @@ namespace Ryujinx.Graphics.Gal.Shader
         private static void EmitTexs(ShaderIrBlock            Block,
                                      long                     OpCode,
                                      ShaderIrInst             Inst,
-                                     GalTextureTarget              TextureType,
+                                     GalTextureTarget         TextureTarget,
                                      TextureInstructionSuffix TextureInstructionSuffix)
         {
-            if (Inst == ShaderIrInst.Txlf && TextureType == GalTextureTarget.CubeArray)
+            if (Inst == ShaderIrInst.Txlf && TextureTarget == GalTextureTarget.CubeArray)
             {
                 throw new InvalidOperationException("TLDS instructions cannot use CUBE modifier!");
             }
 
-            bool IsArray = ImageUtils.IsArray(TextureType);
+            bool IsArray = ImageUtils.IsArray(TextureTarget);
 
-            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureTarget(TextureTarget)];
 
             ShaderIrOperGpr OperA = OpCode.Gpr8();
             ShaderIrOperGpr OperB = OpCode.Gpr20();
@@ -597,7 +597,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             // Encoding of TEXS/TLDS is a bit special and change for 2d textures
             // NOTE: OperA seems to hold at best two args.
             // On 2D textures, if no suffix need an additional values, Y is stored in OperB, otherwise coords are in OperA and the additional values is in OperB.
-            if (TextureInstructionSuffix != TextureInstructionSuffix.None && TextureInstructionSuffix != TextureInstructionSuffix.LZ && TextureType == GalTextureTarget.TwoD)
+            if (TextureInstructionSuffix != TextureInstructionSuffix.None && TextureInstructionSuffix != TextureInstructionSuffix.LZ && TextureTarget == GalTextureTarget.TwoD)
             {
                 Coords[Coords.Length - CoordStartIndex - 1]        = OpCode.Gpr8();
                 Coords[Coords.Length - CoordStartIndex - 1].Index += Coords.Length - CoordStartIndex - 1;
@@ -702,7 +702,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, TextureInstructionSuffix, Coords)
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureTarget, TextureInstructionSuffix, Coords)
                 {
                     LevelOfDetail = LevelOfDetail,
                     Offset        = Offset,
@@ -725,7 +725,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             ShaderIrOperGpr OperB = OpCode.Gpr20();
             ShaderIrOperImm OperC = OpCode.Imm13_36();
 
-            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureType(TextureType)];
+            ShaderIrOperGpr[] Coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureTarget(TextureType)];
 
             ShaderIrOperGpr Offset       = null;
             ShaderIrOperGpr DepthCompare = null;

@@ -341,9 +341,9 @@ namespace Ryujinx.Graphics.Texture
         {
             ImageDescriptor Desc = GetImageDescriptor(Image.Format);
 
-            int ComponentCount = GetCoordsCountTextureType(Image.TextureType);
+            int ComponentCount = GetCoordsCountTextureTarget(Image.TextureTarget);
 
-            if (IsArray(Image.TextureType))
+            if (IsArray(Image.TextureTarget))
                 ComponentCount--;
 
             int Width  = DivRoundUp(Image.Width,  Desc.BlockWidth);
@@ -474,9 +474,9 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        public static TextureTarget GetTextureTarget(GalTextureTarget TextureType)
+        public static TextureTarget GetTextureTarget(GalTextureTarget GalTextureTarget)
         {
-            switch (TextureType)
+            switch (GalTextureTarget)
             {
                 case GalTextureTarget.OneD:
                     return TextureTarget.Texture1D;
@@ -494,13 +494,13 @@ namespace Ryujinx.Graphics.Texture
                 case GalTextureTarget.CubeArray:
                     return TextureTarget.TextureCubeMapArray;
                 default:
-                    throw new NotSupportedException($"Texture type {TextureType} currently not supported!");
+                    throw new NotSupportedException($"Texture target {GalTextureTarget} currently not supported!");
             }
         }
 
-        public static bool IsArray(GalTextureTarget TextureType)
+        public static bool IsArray(GalTextureTarget TextureTarget)
         {
-            switch (TextureType)
+            switch (TextureTarget)
             {
                 case GalTextureTarget.OneDArray:
                 case GalTextureTarget.TwoDArray:
@@ -511,9 +511,9 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        public static int GetCoordsCountTextureType(GalTextureTarget TextureType)
+        public static int GetCoordsCountTextureTarget(GalTextureTarget TextureTarget)
         {
-            switch (TextureType)
+            switch (TextureTarget)
             {
                 case GalTextureTarget.OneD:
                     return 1;
@@ -528,7 +528,7 @@ namespace Ryujinx.Graphics.Texture
                 case GalTextureTarget.CubeArray:
                     return 4;
                 default:
-                    throw new NotImplementedException($"TextureTpe.{TextureType} not implemented yet.");
+                    throw new NotImplementedException($"TextureTarget.{TextureTarget} not implemented yet.");
             }
         }
     }
