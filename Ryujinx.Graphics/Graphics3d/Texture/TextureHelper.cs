@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Texture
             int BlockHeight   = ImageUtils.GetBlockHeight  (Image.Format);
             int BytesPerPixel = ImageUtils.GetBytesPerPixel(Image.Format);
 
-            int Width = (Image.Width + (BlockWidth - 1)) / BlockWidth;
+            int Width  = (Image.Width + (BlockWidth - 1)) / BlockWidth;
             int Height = (Image.Height + (BlockHeight - 1)) / BlockHeight;
 
             if (Image.Layout == GalMemoryLayout.BlockLinear)

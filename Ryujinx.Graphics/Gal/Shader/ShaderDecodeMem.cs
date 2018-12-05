@@ -508,7 +508,11 @@ namespace Ryujinx.Graphics.Gal.Shader
             EmitTld4(Block, OpCode, TextureType.TwoD, Suffix, RGBA, OpCode.Read(0x34, 0x3), true);
         }
 
-        private static void EmitTexs(ShaderIrBlock Block, long OpCode, ShaderIrInst Inst, TextureType TextureType, TextureInstructionSuffix TextureInstructionSuffix)
+        private static void EmitTexs(ShaderIrBlock            Block,
+                                     long                     OpCode,
+                                     ShaderIrInst             Inst,
+                                     TextureType              TextureType,
+                                     TextureInstructionSuffix TextureInstructionSuffix)
         {
             if (Inst == ShaderIrInst.Txlf && TextureType == TextureType.CubeArray)
             {
@@ -580,7 +584,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 OperBIndex--;
             }
 
-            // TODO: Find what MZ do and what change about the encoding (Maybe Multisample?)
+            // TODO: Find what MZ does and what changes about the encoding (Maybe Multisample?)
             if ((TextureInstructionSuffix & TextureInstructionSuffix.LL) != 0)
             {
                 LevelOfDetail        = OpCode.Gpr20();

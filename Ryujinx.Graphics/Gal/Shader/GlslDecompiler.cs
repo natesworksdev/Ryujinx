@@ -268,7 +268,6 @@ namespace Ryujinx.Graphics.Gal.Shader
             if (HasShadow)
                 Result += "Shadow";
 
-
             return Result;
         }
 
@@ -1439,7 +1438,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             // TODO: Support AOFFI
             if ((Suffix & TextureInstructionSuffix.AOFFI) != 0)
             {
-                throw new NotSupportedException();
+                throw new NotImplementedException();
             }
 
             return "textureGather(" + Sampler + ", " + Coords + ", " + Comp + ")" + ChString;

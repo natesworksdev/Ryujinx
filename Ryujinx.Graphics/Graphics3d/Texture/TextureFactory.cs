@@ -16,8 +16,6 @@ namespace Ryujinx.Graphics.Texture
 
             TextureType TextureType = (TextureType)((Tic[4] >> 23) & 0xF);
 
-
-
             GalTextureSource XSource = (GalTextureSource)((Tic[0] >> 19) & 7);
             GalTextureSource YSource = (GalTextureSource)((Tic[0] >> 22) & 7);
             GalTextureSource ZSource = (GalTextureSource)((Tic[0] >> 25) & 7);

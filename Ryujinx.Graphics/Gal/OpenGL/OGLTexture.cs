@@ -47,8 +47,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
 
-            //Debug.Assert(Image.MaxMipmapLevel != 1, "No Mipmap support");
-
             TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Size);
 
             if (ImageUtils.IsCompressed(Image.Format))
@@ -104,10 +102,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                     int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
 
-                    for (int i = 0; i < 6; i++)
+                    for (int Face = 0; Face < 6; Face++)
                     {
                         GL.TexImage2D(
-                            TextureTarget.TextureCubeMapPositiveX + i,
+                            TextureTarget.TextureCubeMapPositiveX + Face,
                             Level,
                             InternalFmt,
                             Image.Width,
@@ -119,7 +117,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     }
                     break;
                 default:
-                    throw new InvalidOperationException($"Unsupported texture target type: {Target}");
+                    throw new NotImplementedException($"Unsupported texture target type: {Target}");
             }
         }
 
@@ -133,8 +131,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
-
-            //Debug.Assert(Image.MaxMipmapLevel != 1, "No Mipmap support");
 
             TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Data.Length);
 
@@ -183,17 +179,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                         int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
 
-                        for (int i = 0; i < 6; i++)
+                        for (int Face = 0; Face < 6; Face++)
                         {
                             GL.CompressedTexImage2D(
-                                TextureTarget.TextureCubeMapPositiveX + i,
+                                TextureTarget.TextureCubeMapPositiveX + Face,
                                 Level,
                                 InternalFmt,
                                 Image.Width,
                                 Image.Height,
                                 Border,
                                 FaceSize,
-                                Array.Slice(i * FaceSize, FaceSize).ToArray());
+                                Array.Slice(Face * FaceSize, FaceSize).ToArray());
                         }
                         break;
                     case TextureTarget.TextureCubeMapArray:
@@ -209,7 +205,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Data);
                         break;
                     default:
-                        throw new InvalidOperationException($"Unsupported texture target type: {Target}");
+                        throw new NotImplementedException($"Unsupported texture target type: {Target}");
                 }
             }
             else
@@ -282,10 +278,10 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                         int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
 
-                        for (int i = 0; i < 6; i++)
+                        for (int Face = 0; Face < 6; Face++)
                         {
                             GL.TexImage2D(
-                                TextureTarget.TextureCubeMapPositiveX + i,
+                                TextureTarget.TextureCubeMapPositiveX + Face,
                                 Level,
                                 InternalFmt,
                                 Image.Width,
@@ -293,11 +289,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                                 Border,
                                 Format,
                                 Type,
-                                Array.Slice(i * FaceSize, FaceSize).ToArray());
+                                Array.Slice(Face * FaceSize, FaceSize).ToArray());
                         }
                         break;
                     default:
-                        throw new InvalidOperationException($"Unsupported texture target type: {Target}");
+                        throw new NotImplementedException($"Unsupported texture target type: {Target}");
                 }
             }
         }

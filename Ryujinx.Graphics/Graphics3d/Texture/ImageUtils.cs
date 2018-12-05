@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Texture
             public int BytesPerPixel { get; private set; }
             public int BlockWidth    { get; private set; }
             public int BlockHeight   { get; private set; }
-            public int BlockDepth     { get; private set; }
+            public int BlockDepth    { get; private set; }
 
             public TargetBuffer Target { get; private set; }
 
@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Texture
                 this.BytesPerPixel = BytesPerPixel;
                 this.BlockWidth    = BlockWidth;
                 this.BlockHeight   = BlockHeight;
-                this.BlockDepth     = BlockDepth;
+                this.BlockDepth    = BlockDepth;
                 this.Target        = Target;
             }
         }
@@ -360,7 +360,7 @@ namespace Ryujinx.Graphics.Texture
                 case 3:
                     return Desc.BytesPerPixel * Width * Height * Depth;
                 default:
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException($"Invalid component count: {ComponentCount}");
             }
         }
 
@@ -529,7 +529,7 @@ namespace Ryujinx.Graphics.Texture
                 case TextureType.CubeArray:
                     return 4;
                 default:
-                    throw new NotImplementedException($"TextureTpe.{TextureType} not implemented yet");
+                    throw new NotImplementedException($"TextureTpe.{TextureType} not implemented yet.");
             }
         }
     }
