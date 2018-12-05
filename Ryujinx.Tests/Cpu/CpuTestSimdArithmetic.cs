@@ -143,13 +143,14 @@ namespace Ryujinx.Tests.Cpu
 
             int fpcrTemp = 0x0;
 
-            switch(roundMode)
+            switch (roundMode)
             {
                 case 'N': fpcrTemp = 0x0;      break;
                 case 'P': fpcrTemp = 0x400000; break;
                 case 'M': fpcrTemp = 0x800000; break;
                 case 'Z': fpcrTemp = 0xC00000; break;
             }
+
             if (defaultNaN)
             {
                 fpcrTemp |= 1 << 25;
@@ -200,13 +201,14 @@ namespace Ryujinx.Tests.Cpu
 
             int fpcrTemp = 0x0;
 
-            switch(roundMode)
+            switch (roundMode)
             {
                 case 'N': fpcrTemp = 0x0;      break;
                 case 'P': fpcrTemp = 0x400000; break;
                 case 'M': fpcrTemp = 0x800000; break;
                 case 'Z': fpcrTemp = 0xC00000; break;
             }
+
             if (defaultNaN)
             {
                 fpcrTemp |= 1 << 25;
@@ -466,13 +468,14 @@ namespace Ryujinx.Tests.Cpu
 
         	int fpcrTemp = 0x0;
 
-        	switch(roundMode)
+        	switch (roundMode)
         	{
         		case 'N': fpcrTemp = 0x0;      break;
         		case 'P': fpcrTemp = 0x400000; break;
         		case 'M': fpcrTemp = 0x800000; break;
         		case 'Z': fpcrTemp = 0xC00000; break;
         	}
+
         	if (defaultNaN)
         	{
         		fpcrTemp |= 1 << 25;
@@ -523,13 +526,14 @@ namespace Ryujinx.Tests.Cpu
 
             int fpcrTemp = 0x0;
 
-            switch(roundMode)
+            switch (roundMode)
             {
                 case 'N': fpcrTemp = 0x0;      break;
                 case 'P': fpcrTemp = 0x400000; break;
                 case 'M': fpcrTemp = 0x800000; break;
                 case 'Z': fpcrTemp = 0xC00000; break;
             }
+
             if (defaultNaN)
             {
                 fpcrTemp |= 1 << 25;
@@ -574,8 +578,8 @@ namespace Ryujinx.Tests.Cpu
 
         [TestCase(0x4EE19820u, 0xBFF999999999999Aul, 0xBFF999999999999Aul, false, 0xBFF0000000000000ul, 0xBFF0000000000000ul)] // FRINTZ V0.2D, V1.2D
         [TestCase(0x4EE19820u, 0x4004000000000000ul, 0x4004000000000000ul, false, 0x4000000000000000ul, 0x4000000000000000ul)]
-        [TestCase(0xEA19820u,  0xFF8000017FC00002ul, 0x0000000000000000ul, false, 0xFFC000017FC00002ul, 0x0000000000000000ul, Ignore = "NaN test.")]
-        [TestCase(0xEA19820u,  0xFF8000017FC00002ul, 0x0000000000000000ul, true,  0x7FC000007FC00000ul, 0x0000000000000000ul, Ignore = "NaN test.")]
+        [TestCase(0x0EA19820u, 0xFF8000017FC00002ul, 0x0000000000000000ul, false, 0xFFC000017FC00002ul, 0x0000000000000000ul, Ignore = "NaN test.")]
+        [TestCase(0x0EA19820u, 0xFF8000017FC00002ul, 0x0000000000000000ul, true,  0x7FC000007FC00000ul, 0x0000000000000000ul, Ignore = "NaN test.")]
         public void Frintz_V(uint opcode, ulong a, ulong b, bool defaultNaN, ulong result0, ulong result1)
         {
             Vector128<float> v1 = MakeVectorE0E1(a, b);
