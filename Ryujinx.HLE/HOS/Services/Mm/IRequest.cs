@@ -12,10 +12,11 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         public IRequest()
         {
-            _commands = new Dictionary<int, ServiceProcessRequest>
+            _commands = new Dictionary<int, ServiceProcessRequest>()
             {
                 { 1, InitializeOld },
                 { 4, Initialize    },
+                { 5, Finalize      },
                 { 6, SetAndWait    },
                 { 7, Get           }
             };
@@ -35,6 +36,15 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         public long Initialize(ServiceCtx context)
         {
+            Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
+
+            return 0;
+        }
+
+        public long Finalize(ServiceCtx context)
+        {
+            context.Device.Gpu.UninitializeVideoDecoder();
+
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
