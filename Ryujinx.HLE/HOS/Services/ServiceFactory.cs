@@ -93,10 +93,10 @@ namespace Ryujinx.HLE.HOS.Services
                     return new IeTicketService();
 
                 case "friend:a":
-                    return new Friend.IServiceCreator();
+                    return new Friend.IServiceCreator(system);
 
                 case "friend:u":
-                    return new Friend.IServiceCreator();
+                    return new Friend.IServiceCreator(system);
 
                 case "fsp-srv":
                     return new IFileSystemProxy();
