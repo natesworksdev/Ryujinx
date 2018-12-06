@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,8 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 { 2,   GetStandardSteadyClock                     },
                 { 3,   GetTimeZoneService                         },
                 { 4,   GetStandardLocalSystemClock                },
-                { 300, CalculateMonotonicSystemClockBaseTimePoint }
+                { 300, CalculateMonotonicSystemClockBaseTimePoint },
+                { 400, GetClockSnapshot                           }
             };
         }
 
@@ -70,5 +72,13 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return 0;
         }
 
+        private long GetClockSnapshot(ServiceCtx context)
+        {
+            Logger.PrintStub(LogClass.ServiceTime);
+
+            context.ResponseData.Write(0L);
+
+            return 0;
+        }
     }
 }
