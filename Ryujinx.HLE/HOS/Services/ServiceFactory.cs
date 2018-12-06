@@ -202,6 +202,12 @@ namespace Ryujinx.HLE.HOS.Services
 
                 case "vi:u":
                     return new IApplicationRootService();
+
+                case "mii:e":
+                    return new Mii.IStaticService();
+
+                case "mii:u":
+                    return new Mii.IStaticService();
             }
 
             throw new NotImplementedException(name);
