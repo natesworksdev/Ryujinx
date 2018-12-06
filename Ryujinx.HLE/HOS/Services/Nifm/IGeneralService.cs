@@ -1,3 +1,5 @@
+using ChocolArm64.Memory;
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using System;
@@ -21,9 +23,25 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                { 4, CreateRequest        },
-                { 12, GetCurrentIpAddress }
+                { 1, GetClientId                   },
+                { 4, CreateRequest                 },
+                { 12, GetCurrentIpAddress          },
+                { 21, IsAnyInternetRequestAccepted }
             };
+        }
+
+        private long GetClientId(ServiceCtx context)
+        {
+            long size     = context.Request.RecvListBuff[0].Size;
+            long position = context.Request.RecvListBuff[0].Position;
+
+            Logger.PrintStub(LogClass.ServiceNifm, new { Position = position.ToString("X"), size });
+
+            MemoryHelper.FillWithZeros(context.Memory, position, (int)size);
+
+            context.Memory.WriteInt64(position, 1);
+
+            return 0;
         }
 
         public long CreateRequest(ServiceCtx context)
@@ -51,6 +69,15 @@ namespace Ryujinx.HLE.HOS.Services.Nifm
             context.ResponseData.Write(BitConverter.ToUInt32(address.GetAddressBytes()));
 
             Logger.PrintInfo(LogClass.ServiceNifm, $"Console's local IP is \"{address}\".");
+
+            return 0;
+        }
+
+        private long IsAnyInternetRequestAccepted(ServiceCtx Context)
+        {
+            Logger.PrintStub(LogClass.ServiceNifm, $"Raw data:\n{HexUtils.HexTable(Context.Request.RawData)}");
+
+            Context.ResponseData.Write(false);
 
             return 0;
         }
