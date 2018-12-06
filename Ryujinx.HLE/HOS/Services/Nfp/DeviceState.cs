@@ -2,6 +2,7 @@
 {
     enum DeviceState
     {
-        Initialized = 0
+        Initialized = 0,
+        Finalized = 6
     }
 }

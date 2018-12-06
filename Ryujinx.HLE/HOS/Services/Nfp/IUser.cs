@@ -31,6 +31,8 @@ namespace Ryujinx.HLE.HOS.Services.Nfp
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 0,  Initialize                    },
+                { 1,  Finalize                      },
+                { 2,  ListDevices                   },
                 { 17, AttachActivateEvent           },
                 { 18, AttachDeactivateEvent         },
                 { 19, GetState                      },
@@ -49,6 +51,29 @@ namespace Ryujinx.HLE.HOS.Services.Nfp
             Logger.PrintStub(LogClass.ServiceNfp);
 
             _state = State.Initialized;
+
+            return 0;
+        }
+
+        public long Finalize(ServiceCtx context)
+        {
+            Logger.PrintStub(LogClass.ServiceNfp);
+
+            _deviceState = DeviceState.Finalized;
+
+            return 0;
+        }
+
+        public long ListDevices(ServiceCtx context)
+        {
+            uint arraySize = context.RequestData.ReadUInt32();
+
+            Logger.PrintStub(LogClass.ServiceNfp, new { arraySize });
+
+            (long replyPos, long replySize) = context.Request.GetBufferType0x22();
+
+            context.ResponseData.Write(1u);
+            context.Memory.WriteUInt32(replyPos, 0u);
 
             return 0;
         }
@@ -83,7 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfp
 
         public long GetState(ServiceCtx context)
         {
-            context.ResponseData.Write((int)_state);
+            context.ResponseData.Write((uint)_state);
 
             Logger.PrintStub(LogClass.ServiceNfp);
 
@@ -92,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfp
 
         public long GetDeviceState(ServiceCtx context)
         {
-            context.ResponseData.Write((int)_deviceState);
+            context.ResponseData.Write((uint)_deviceState);
 
             Logger.PrintStub(LogClass.ServiceNfp);
 
