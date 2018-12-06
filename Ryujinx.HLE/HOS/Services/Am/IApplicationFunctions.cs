@@ -1,5 +1,7 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.Utilities;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Am
@@ -19,6 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
                 { 21, GetDesiredLanguage          },
                 { 22, SetTerminateResult          },
                 { 23, GetDisplayVersion           },
+                { 26, GetSaveDataSize             },
                 { 40, NotifyRunning               },
                 { 50, GetPseudoDeviceId           },
                 { 66, InitializeGamePlayRecording },
@@ -76,6 +79,23 @@ namespace Ryujinx.HLE.HOS.Services.Am
         {
             //FIXME: Need to check correct version on a switch.
             context.ResponseData.Write(1L);
+            context.ResponseData.Write(0L);
+
+            return 0;
+        }
+
+        private long GetSaveDataSize(ServiceCtx context)
+        {
+            byte unknown1 = context.RequestData.ReadByte();
+
+            UInt128 uuid = new UInt128(
+                context.RequestData.ReadInt64(),
+                context.RequestData.ReadInt64());
+
+
+            Logger.PrintStub(LogClass.ServiceAm, new { unknown1, uuid });
+
+            context.ResponseData.Write(0L);
             context.ResponseData.Write(0L);
 
             return 0;
