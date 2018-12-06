@@ -554,7 +554,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             if (IsArray)
             {
                 CoordStartIndex++;
-                Coords[Coords.Length - 1] = OperB;
+                Coords[Coords.Length - 1] = OpCode.Gpr8();
             }
 
             switch (Coords.Length - CoordStartIndex)
