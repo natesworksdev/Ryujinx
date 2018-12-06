@@ -190,7 +190,13 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private void PrintDeclHeader()
         {
-            if (Decl.ShaderType == GalShaderType.Geometry)
+            if(Decl.ShaderType == GalShaderType.Vertex)
+            {
+                SB.AppendLine("#extension GL_AMD_vertex_shader_viewport_index : require");
+
+                SB.AppendLine();
+            }
+            else if (Decl.ShaderType == GalShaderType.Geometry)
             {
                 int MaxVertices = Header.MaxOutputVertexCount;
 
@@ -872,9 +878,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                     return Name + Swizzle;
                 }
+                else if (Abuf.Offs == GlslDecl.ViewportIdxAttr)
+                {
+                    return "gl_ViewportIndex";
+                }
                 else if (Abuf.Offs == GlslDecl.PointSizeAttr)
                 {
                     return "gl_PointSize";
+                }
+                else
+                {
+                    throw new NotImplementedException($"Attribute with offset 0x{Abuf.Offs:x2} is not implemented.");
                 }
             }
 
@@ -1346,9 +1360,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             switch (Node)
             {
                 case ShaderIrOperAbuf Abuf:
-                    return Abuf.Offs == GlslDecl.LayerAttr      ||
-                           Abuf.Offs == GlslDecl.InstanceIdAttr ||
-                           Abuf.Offs == GlslDecl.VertexIdAttr   ||
+                    return Abuf.Offs == GlslDecl.LayerAttr       ||
+                           Abuf.Offs == GlslDecl.ViewportIdxAttr ||
+                           Abuf.Offs == GlslDecl.InstanceIdAttr  ||
+                           Abuf.Offs == GlslDecl.VertexIdAttr    ||
                            Abuf.Offs == GlslDecl.FaceAttr
                         ? OperType.I32
                         : OperType.F32;

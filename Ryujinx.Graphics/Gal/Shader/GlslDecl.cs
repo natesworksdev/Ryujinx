@@ -6,6 +6,7 @@ namespace Ryujinx.Graphics.Gal.Shader
     class GlslDecl
     {
         public const int LayerAttr       = 0x064;
+        public const int ViewportIdxAttr = 0x068;
         public const int PointSizeAttr   = 0x06c;
         public const int PointCoordAttrX = 0x2e0;
         public const int PointCoordAttrY = 0x2e4;
