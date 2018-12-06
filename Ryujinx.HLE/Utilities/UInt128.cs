@@ -1,13 +1,15 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.Utilities
 {
-    public struct UInt128
+    [StructLayout(LayoutKind.Sequential)]
+    public struct UInt128 : IEquatable<UInt128>
     {
+        public long Low { get; private set; }
         public long High { get; private set; }
-        public long Low  { get; private set; }
 
         public UInt128(long low, long high)
         {
@@ -40,6 +42,32 @@ namespace Ryujinx.HLE.Utilities
         public bool IsZero()
         {
             return (Low | High) == 0;
+        }
+
+        public static bool operator ==(UInt128 int1, UInt128 int2)
+        {
+            return int1.Equals(int2);
+        }
+
+        public static bool operator !=(UInt128 int1, UInt128 int2)
+        {
+            return !(int1 == int2);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is UInt128 && Equals((UInt128)obj);
+        }
+
+        public bool Equals(UInt128 other)
+        {
+            return High == other.High &&
+                   Low == other.Low;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(High, Low);
         }
     }
 }
