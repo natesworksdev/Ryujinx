@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS
     class ServiceCtx
     {
         public Switch        Device       { get; private set; }
-        public Process       Process      { get; private set; }
+        public KProcess      Process      { get; private set; }
         public MemoryManager Memory       { get; private set; }
         public KSession      Session      { get; private set; }
         public IpcMessage    Request      { get; private set; }
@@ -17,23 +17,23 @@ namespace Ryujinx.HLE.HOS
         public BinaryWriter  ResponseData { get; private set; }
 
         public ServiceCtx(
-            Switch        Device,
-            Process       Process,
-            MemoryManager Memory,
-            KSession      Session,
-            IpcMessage    Request,
-            IpcMessage    Response,
-            BinaryReader  RequestData,
-            BinaryWriter  ResponseData)
+            Switch        device,
+            KProcess      process,
+            MemoryManager memory,
+            KSession      session,
+            IpcMessage    request,
+            IpcMessage    response,
+            BinaryReader  requestData,
+            BinaryWriter  responseData)
         {
-            this.Device       = Device;
-            this.Process      = Process;
-            this.Memory       = Memory;
-            this.Session      = Session;
-            this.Request      = Request;
-            this.Response     = Response;
-            this.RequestData  = RequestData;
-            this.ResponseData = ResponseData;
+            Device       = device;
+            Process      = process;
+            Memory       = memory;
+            Session      = session;
+            Request      = request;
+            Response     = response;
+            RequestData  = requestData;
+            ResponseData = responseData;
         }
     }
 }

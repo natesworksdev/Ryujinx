@@ -1,33 +1,31 @@
 using Ryujinx.Common;
-using System;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
     class KCoreContext
     {
-        private KScheduler Scheduler;
+        private KScheduler _scheduler;
 
-        private HleCoreManager CoreManager;
+        private HleCoreManager _coreManager;
 
         public bool ContextSwitchNeeded { get; private set; }
+
+        public long LastContextSwitchTime { get; private set; }
+
+        public long TotalIdleTimeTicks { get; private set; } //TODO
 
         public KThread CurrentThread  { get; private set; }
         public KThread SelectedThread { get; private set; }
 
-        public KCoreContext(KScheduler Scheduler, HleCoreManager CoreManager)
+        public KCoreContext(KScheduler scheduler, HleCoreManager coreManager)
         {
-            this.Scheduler   = Scheduler;
-            this.CoreManager = CoreManager;
+            _scheduler   = scheduler;
+            _coreManager = coreManager;
         }
 
-        public void SelectThread(KThread Thread)
+        public void SelectThread(KThread thread)
         {
-            SelectedThread = Thread;
-
-            if (Thread != null)
-            {
-                Thread.LastScheduledTicks = PerformanceCounter.ElapsedMilliseconds;
-            }
+            SelectedThread = thread;
 
             if (SelectedThread != CurrentThread)
             {
@@ -39,25 +37,42 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             ContextSwitchNeeded = false;
 
+            LastContextSwitchTime = PerformanceCounter.ElapsedMilliseconds;
+
             CurrentThread = SelectedThread;
+
+            if (CurrentThread != null)
+            {
+                long currentTime = PerformanceCounter.ElapsedMilliseconds;
+
+                CurrentThread.TotalTimeRunning += currentTime - CurrentThread.LastScheduledTime;
+                CurrentThread.LastScheduledTime = currentTime;
+            }
         }
 
         public void ContextSwitch()
         {
             ContextSwitchNeeded = false;
 
+            LastContextSwitchTime = PerformanceCounter.ElapsedMilliseconds;
+
             if (CurrentThread != null)
             {
-                CoreManager.GetThread(CurrentThread.Context.Work).Reset();
+                _coreManager.Reset(CurrentThread.Context.Work);
             }
 
             CurrentThread = SelectedThread;
 
             if (CurrentThread != null)
             {
+                long currentTime = PerformanceCounter.ElapsedMilliseconds;
+
+                CurrentThread.TotalTimeRunning += currentTime - CurrentThread.LastScheduledTime;
+                CurrentThread.LastScheduledTime = currentTime;
+
                 CurrentThread.ClearExclusive();
 
-                CoreManager.GetThread(CurrentThread.Context.Work).Set();
+                _coreManager.Set(CurrentThread.Context.Work);
 
                 CurrentThread.Context.Execute();
             }

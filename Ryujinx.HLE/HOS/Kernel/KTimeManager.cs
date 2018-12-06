@@ -1,6 +1,6 @@
+using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -14,103 +14,112 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             public long TimePoint { get; private set; }
 
-            public WaitingObject(IKFutureSchedulerObject Object, long TimePoint)
+            public WaitingObject(IKFutureSchedulerObject schedulerObj, long timePoint)
             {
-                this.Object    = Object;
-                this.TimePoint = TimePoint;
+                Object    = schedulerObj;
+                TimePoint = timePoint;
             }
         }
 
-        private List<WaitingObject> WaitingObjects;
+        private List<WaitingObject> _waitingObjects;
 
-        private AutoResetEvent WaitEvent;
+        private AutoResetEvent _waitEvent;
 
-        private Stopwatch Counter;
-
-        private bool KeepRunning;
+        private bool _keepRunning;
 
         public KTimeManager()
         {
-            WaitingObjects = new List<WaitingObject>();
+            _waitingObjects = new List<WaitingObject>();
 
-            Counter = new Stopwatch();
+            _keepRunning = true;
 
-            Counter.Start();
+            Thread work = new Thread(WaitAndCheckScheduledObjects);
 
-            KeepRunning = true;
-
-            Thread Work = new Thread(WaitAndCheckScheduledObjects);
-
-            Work.Start();
+            work.Start();
         }
 
-        public void ScheduleFutureInvocation(IKFutureSchedulerObject Object, long Timeout)
+        public void ScheduleFutureInvocation(IKFutureSchedulerObject schedulerObj, long timeout)
         {
-            lock (WaitingObjects)
-            {
-                long TimePoint = Counter.ElapsedMilliseconds + ConvertNanosecondsToMilliseconds(Timeout);
+            long timePoint = PerformanceCounter.ElapsedMilliseconds + ConvertNanosecondsToMilliseconds(timeout);
 
-                WaitingObjects.Add(new WaitingObject(Object, TimePoint));
+            lock (_waitingObjects)
+            {
+                _waitingObjects.Add(new WaitingObject(schedulerObj, timePoint));
             }
 
-            WaitEvent.Set();
+            _waitEvent.Set();
         }
 
-        private long ConvertNanosecondsToMilliseconds(long Timeout)
+        public static long ConvertNanosecondsToMilliseconds(long time)
         {
-            Timeout /= 1000000;
+            time /= 1000000;
 
-            if ((ulong)Timeout > int.MaxValue)
+            if ((ulong)time > int.MaxValue)
             {
                 return int.MaxValue;
             }
 
-            return Timeout;
+            return time;
+        }
+
+        public static long ConvertMillisecondsToNanoseconds(long time)
+        {
+            return time * 1000000;
+        }
+
+        public static long ConvertMillisecondsToTicks(long time)
+        {
+            return time * 19200;
         }
 
         public void UnscheduleFutureInvocation(IKFutureSchedulerObject Object)
         {
-            lock (WaitingObjects)
+            lock (_waitingObjects)
             {
-                WaitingObjects.RemoveAll(x => x.Object == Object);
+                _waitingObjects.RemoveAll(x => x.Object == Object);
             }
         }
 
         private void WaitAndCheckScheduledObjects()
         {
-            using (WaitEvent = new AutoResetEvent(false))
+            using (_waitEvent = new AutoResetEvent(false))
             {
-                while (KeepRunning)
+                while (_keepRunning)
                 {
-                    Monitor.Enter(WaitingObjects);
+                    WaitingObject next;
 
-                    WaitingObject Next = WaitingObjects.OrderBy(x => x.TimePoint).FirstOrDefault();
-
-                    Monitor.Exit(WaitingObjects);
-
-                    if (Next != null)
+                    lock (_waitingObjects)
                     {
-                        long TimePoint = Counter.ElapsedMilliseconds;
+                        next = _waitingObjects.OrderBy(x => x.TimePoint).FirstOrDefault();
+                    }
 
-                        if (Next.TimePoint > TimePoint)
+                    if (next != null)
+                    {
+                        long timePoint = PerformanceCounter.ElapsedMilliseconds;
+
+                        if (next.TimePoint > timePoint)
                         {
-                            WaitEvent.WaitOne((int)(Next.TimePoint - TimePoint));
+                            _waitEvent.WaitOne((int)(next.TimePoint - timePoint));
                         }
 
-                        Monitor.Enter(WaitingObjects);
+                        bool timeUp = PerformanceCounter.ElapsedMilliseconds >= next.TimePoint;
 
-                        bool TimeUp = Counter.ElapsedMilliseconds >= Next.TimePoint && WaitingObjects.Remove(Next);
-
-                        Monitor.Exit(WaitingObjects);
-
-                        if (TimeUp)
+                        if (timeUp)
                         {
-                            Next.Object.TimeUp();
+                            lock (_waitingObjects)
+                            {
+                                timeUp = _waitingObjects.Remove(next);
+                            }
+                        }
+
+                        if (timeUp)
+                        {
+                            next.Object.TimeUp();
                         }
                     }
                     else
                     {
-                        WaitEvent.WaitOne();
+                        _waitEvent.WaitOne();
                     }
                 }
             }
@@ -121,13 +130,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing)
+            if (disposing)
             {
-                KeepRunning = false;
+                _keepRunning = false;
 
-                WaitEvent?.Set();
+                _waitEvent?.Set();
             }
         }
     }

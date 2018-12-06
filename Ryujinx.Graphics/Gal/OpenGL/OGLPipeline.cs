@@ -77,17 +77,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private GalPipelineState Old;
 
-        private OGLConstBuffer Buffer;
-        private OGLRasterizer Rasterizer;
-        private OGLShader Shader;
+        private OGLConstBuffer  Buffer;
+        private OGLRenderTarget RenderTarget;
+        private OGLRasterizer   Rasterizer;
+        private OGLShader       Shader;
 
         private int VaoHandle;
 
-        public OGLPipeline(OGLConstBuffer Buffer, OGLRasterizer Rasterizer, OGLShader Shader)
+        public OGLPipeline(
+            OGLConstBuffer  Buffer,
+            OGLRenderTarget RenderTarget,
+            OGLRasterizer   Rasterizer,
+            OGLShader       Shader)
         {
-            this.Buffer     = Buffer;
-            this.Rasterizer = Rasterizer;
-            this.Shader     = Shader;
+            this.Buffer       = Buffer;
+            this.RenderTarget = RenderTarget;
+            this.Rasterizer   = Rasterizer;
+            this.Shader       = Shader;
 
             //These values match OpenGL's defaults
             Old = new GalPipelineState
@@ -144,6 +150,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             if (New.FramebufferSrgb != Old.FramebufferSrgb)
             {
                 Enable(EnableCap.FramebufferSrgb, New.FramebufferSrgb);
+
+                RenderTarget.FramebufferSrgb = New.FramebufferSrgb;
             }
 
             if (New.FlipX != Old.FlipX || New.FlipY != Old.FlipY || New.Instance != Old.Instance)
@@ -600,122 +608,125 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 ThrowUnsupportedAttrib(Attrib);
             }
 
-            if (Attrib.Type == GalVertexAttribType.Unorm)
+            fixed (byte* Ptr = Attrib.Data)
             {
-                switch (Attrib.Size)
+                if (Attrib.Type == GalVertexAttribType.Unorm)
                 {
-                    case GalVertexAttribSize._8:
-                    case GalVertexAttribSize._8_8:
-                    case GalVertexAttribSize._8_8_8:
-                    case GalVertexAttribSize._8_8_8_8:
-                        GL.VertexAttrib4N((uint)Attrib.Index, (byte*)Attrib.Pointer);
-                        break;
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._8:
+                        case GalVertexAttribSize._8_8:
+                        case GalVertexAttribSize._8_8_8:
+                        case GalVertexAttribSize._8_8_8_8:
+                            GL.VertexAttrib4N((uint)Attrib.Index, Ptr);
+                            break;
 
-                    case GalVertexAttribSize._16:
-                    case GalVertexAttribSize._16_16:
-                    case GalVertexAttribSize._16_16_16:
-                    case GalVertexAttribSize._16_16_16_16:
-                        GL.VertexAttrib4N((uint)Attrib.Index, (ushort*)Attrib.Pointer);
-                        break;
+                        case GalVertexAttribSize._16:
+                        case GalVertexAttribSize._16_16:
+                        case GalVertexAttribSize._16_16_16:
+                        case GalVertexAttribSize._16_16_16_16:
+                            GL.VertexAttrib4N((uint)Attrib.Index, (ushort*)Ptr);
+                            break;
 
-                    case GalVertexAttribSize._32:
-                    case GalVertexAttribSize._32_32:
-                    case GalVertexAttribSize._32_32_32:
-                    case GalVertexAttribSize._32_32_32_32:
-                        GL.VertexAttrib4N((uint)Attrib.Index, (uint*)Attrib.Pointer);
-                        break;
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttrib4N((uint)Attrib.Index, (uint*)Ptr);
+                            break;
+                    }
                 }
-            }
-            else if (Attrib.Type == GalVertexAttribType.Snorm)
-            {
-                switch (Attrib.Size)
+                else if (Attrib.Type == GalVertexAttribType.Snorm)
                 {
-                    case GalVertexAttribSize._8:
-                    case GalVertexAttribSize._8_8:
-                    case GalVertexAttribSize._8_8_8:
-                    case GalVertexAttribSize._8_8_8_8:
-                        GL.VertexAttrib4N((uint)Attrib.Index, (sbyte*)Attrib.Pointer);
-                        break;
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._8:
+                        case GalVertexAttribSize._8_8:
+                        case GalVertexAttribSize._8_8_8:
+                        case GalVertexAttribSize._8_8_8_8:
+                            GL.VertexAttrib4N((uint)Attrib.Index, (sbyte*)Ptr);
+                            break;
 
-                    case GalVertexAttribSize._16:
-                    case GalVertexAttribSize._16_16:
-                    case GalVertexAttribSize._16_16_16:
-                    case GalVertexAttribSize._16_16_16_16:
-                        GL.VertexAttrib4N((uint)Attrib.Index, (short*)Attrib.Pointer);
-                        break;
+                        case GalVertexAttribSize._16:
+                        case GalVertexAttribSize._16_16:
+                        case GalVertexAttribSize._16_16_16:
+                        case GalVertexAttribSize._16_16_16_16:
+                            GL.VertexAttrib4N((uint)Attrib.Index, (short*)Ptr);
+                            break;
 
-                    case GalVertexAttribSize._32:
-                    case GalVertexAttribSize._32_32:
-                    case GalVertexAttribSize._32_32_32:
-                    case GalVertexAttribSize._32_32_32_32:
-                        GL.VertexAttrib4N((uint)Attrib.Index, (int*)Attrib.Pointer);
-                        break;
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttrib4N((uint)Attrib.Index, (int*)Ptr);
+                            break;
+                    }
                 }
-            }
-            else if (Attrib.Type == GalVertexAttribType.Uint)
-            {
-                switch (Attrib.Size)
+                else if (Attrib.Type == GalVertexAttribType.Uint)
                 {
-                    case GalVertexAttribSize._8:
-                    case GalVertexAttribSize._8_8:
-                    case GalVertexAttribSize._8_8_8:
-                    case GalVertexAttribSize._8_8_8_8:
-                        GL.VertexAttribI4((uint)Attrib.Index, (byte*)Attrib.Pointer);
-                        break;
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._8:
+                        case GalVertexAttribSize._8_8:
+                        case GalVertexAttribSize._8_8_8:
+                        case GalVertexAttribSize._8_8_8_8:
+                            GL.VertexAttribI4((uint)Attrib.Index, Ptr);
+                            break;
 
-                    case GalVertexAttribSize._16:
-                    case GalVertexAttribSize._16_16:
-                    case GalVertexAttribSize._16_16_16:
-                    case GalVertexAttribSize._16_16_16_16:
-                        GL.VertexAttribI4((uint)Attrib.Index, (ushort*)Attrib.Pointer);
-                        break;
+                        case GalVertexAttribSize._16:
+                        case GalVertexAttribSize._16_16:
+                        case GalVertexAttribSize._16_16_16:
+                        case GalVertexAttribSize._16_16_16_16:
+                            GL.VertexAttribI4((uint)Attrib.Index, (ushort*)Ptr);
+                            break;
 
-                    case GalVertexAttribSize._32:
-                    case GalVertexAttribSize._32_32:
-                    case GalVertexAttribSize._32_32_32:
-                    case GalVertexAttribSize._32_32_32_32:
-                        GL.VertexAttribI4((uint)Attrib.Index, (uint*)Attrib.Pointer);
-                        break;
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttribI4((uint)Attrib.Index, (uint*)Ptr);
+                            break;
+                    }
                 }
-            }
-            else if (Attrib.Type == GalVertexAttribType.Sint)
-            {
-                switch (Attrib.Size)
+                else if (Attrib.Type == GalVertexAttribType.Sint)
                 {
-                    case GalVertexAttribSize._8:
-                    case GalVertexAttribSize._8_8:
-                    case GalVertexAttribSize._8_8_8:
-                    case GalVertexAttribSize._8_8_8_8:
-                        GL.VertexAttribI4((uint)Attrib.Index, (sbyte*)Attrib.Pointer);
-                        break;
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._8:
+                        case GalVertexAttribSize._8_8:
+                        case GalVertexAttribSize._8_8_8:
+                        case GalVertexAttribSize._8_8_8_8:
+                            GL.VertexAttribI4((uint)Attrib.Index, (sbyte*)Ptr);
+                            break;
 
-                    case GalVertexAttribSize._16:
-                    case GalVertexAttribSize._16_16:
-                    case GalVertexAttribSize._16_16_16:
-                    case GalVertexAttribSize._16_16_16_16:
-                        GL.VertexAttribI4((uint)Attrib.Index, (short*)Attrib.Pointer);
-                        break;
+                        case GalVertexAttribSize._16:
+                        case GalVertexAttribSize._16_16:
+                        case GalVertexAttribSize._16_16_16:
+                        case GalVertexAttribSize._16_16_16_16:
+                            GL.VertexAttribI4((uint)Attrib.Index, (short*)Ptr);
+                            break;
 
-                    case GalVertexAttribSize._32:
-                    case GalVertexAttribSize._32_32:
-                    case GalVertexAttribSize._32_32_32:
-                    case GalVertexAttribSize._32_32_32_32:
-                        GL.VertexAttribI4((uint)Attrib.Index, (int*)Attrib.Pointer);
-                        break;
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttribI4((uint)Attrib.Index, (int*)Ptr);
+                            break;
+                    }
                 }
-            }
-            else if (Attrib.Type == GalVertexAttribType.Float)
-            {
-                switch (Attrib.Size)
+                else if (Attrib.Type == GalVertexAttribType.Float)
                 {
-                    case GalVertexAttribSize._32:
-                    case GalVertexAttribSize._32_32:
-                    case GalVertexAttribSize._32_32_32:
-                    case GalVertexAttribSize._32_32_32_32:
-                        GL.VertexAttrib4(Attrib.Index, (float*)Attrib.Pointer);
-                        break;
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttrib4(Attrib.Index, (float*)Ptr);
+                            break;
 
-                    default: ThrowUnsupportedAttrib(Attrib); break;
+                        default: ThrowUnsupportedAttrib(Attrib); break;
+                    }
                 }
             }
         }

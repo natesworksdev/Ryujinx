@@ -5,24 +5,61 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class HleCoreManager
     {
-        private ConcurrentDictionary<Thread, ManualResetEvent> Threads;
+        private class PausableThread
+        {
+            public ManualResetEvent Event { get; private set; }
+
+            public bool IsExiting { get; set; }
+
+            public PausableThread()
+            {
+                Event = new ManualResetEvent(false);
+            }
+        }
+
+        private ConcurrentDictionary<Thread, PausableThread> _threads;
 
         public HleCoreManager()
         {
-            Threads = new ConcurrentDictionary<Thread, ManualResetEvent>();
+            _threads = new ConcurrentDictionary<Thread, PausableThread>();
         }
 
-        public ManualResetEvent GetThread(Thread Thread)
+        public void Set(Thread thread)
         {
-            return Threads.GetOrAdd(Thread, (Key) => new ManualResetEvent(false));
+            GetThread(thread).Event.Set();
         }
 
-        public void RemoveThread(Thread Thread)
+        public void Reset(Thread thread)
         {
-            if (Threads.TryRemove(Thread, out ManualResetEvent Event))
+            GetThread(thread).Event.Reset();
+        }
+
+        public void Wait(Thread thread)
+        {
+            PausableThread pausableThread = GetThread(thread);
+
+            if (!pausableThread.IsExiting)
             {
-                Event.Set();
-                Event.Dispose();
+                pausableThread.Event.WaitOne();
+            }
+        }
+
+        public void Exit(Thread thread)
+        {
+            GetThread(thread).IsExiting = true;
+        }
+
+        private PausableThread GetThread(Thread thread)
+        {
+            return _threads.GetOrAdd(thread, (key) => new PausableThread());
+        }
+
+        public void RemoveThread(Thread thread)
+        {
+            if (_threads.TryRemove(thread, out PausableThread pausableThread))
+            {
+                pausableThread.Event.Set();
+                pausableThread.Event.Dispose();
             }
         }
     }

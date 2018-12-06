@@ -2,8 +2,8 @@ namespace Ryujinx.HLE.HOS.Kernel
 {
     class KMemoryBlock
     {
-        public long BasePosition { get; set; }
-        public long PagesCount   { get; set; }
+        public ulong BaseAddress { get; set; }
+        public ulong PagesCount  { get; set; }
 
         public MemoryState      State      { get; set; }
         public MemoryPermission Permission { get; set; }
@@ -13,26 +13,26 @@ namespace Ryujinx.HLE.HOS.Kernel
         public int DeviceRefCount { get; set; }
 
         public KMemoryBlock(
-            long             BasePosition,
-            long             PagesCount,
-            MemoryState      State,
-            MemoryPermission Permission,
-            MemoryAttribute  Attribute)
+            ulong            baseAddress,
+            ulong            pagesCount,
+            MemoryState      state,
+            MemoryPermission permission,
+            MemoryAttribute  attribute)
         {
-            this.BasePosition = BasePosition;
-            this.PagesCount   = PagesCount;
-            this.State        = State;
-            this.Attribute    = Attribute;
-            this.Permission   = Permission;
+            BaseAddress = baseAddress;
+            PagesCount  = pagesCount;
+            State       = state;
+            Attribute   = attribute;
+            Permission  = permission;
         }
 
         public KMemoryInfo GetInfo()
         {
-            long Size = PagesCount * KMemoryManager.PageSize;
+            ulong size = PagesCount * KMemoryManager.PageSize;
 
             return new KMemoryInfo(
-                BasePosition,
-                Size,
+                BaseAddress,
+                size,
                 State,
                 Permission,
                 Attribute,
