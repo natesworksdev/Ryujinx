@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
             Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {unknown0}");
 
-            Context.ResponseData.Write(0);
+            context.ResponseData.Write(0);
 
             return 0;
         }
@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
             Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {unknown0}");
 
-            Context.ResponseData.Write(0);
+            context.ResponseData.Write(0);
 
             return 0;
         }
