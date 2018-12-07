@@ -11,7 +11,7 @@ namespace Ryujinx.ShaderTools
         {
             if (args.Length == 2)
             {
-                GlslDecompiler Decompiler = new GlslDecompiler();
+                GlslDecompiler Decompiler = new GlslDecompiler(65536);
 
                 GalShaderType ShaderType = GalShaderType.Vertex;
 
