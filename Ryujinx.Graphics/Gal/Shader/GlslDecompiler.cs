@@ -1371,7 +1371,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case 1:
                     if (HasDepth)
                     {
-                        return $"vec2({GetOperExpr(Op, Meta.Coordinates[0])}{DepthArgument})";
+                        return $"vec3({GetOperExpr(Op, Meta.Coordinates[0])}, 0.0{DepthArgument})";
                     }
 
                     return GetOperExpr(Op, Meta.Coordinates[0]);
