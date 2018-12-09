@@ -40,14 +40,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         {
             _commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0,  Open             },
-                { 1,  Ioctl            },
-                { 2,  Close            },
-                { 3,  Initialize       },
-                { 4,  QueryEvent       },
-                { 8,  SetClientPid     },
-                { 11, Ioctl            },
-                { 13, FinishInitialize }
+                { 0,  Open                   },
+                { 1,  Ioctl                  },
+                { 2,  Close                  },
+                { 3,  Initialize             },
+                { 4,  QueryEvent             },
+                { 6,  GetStatus              },
+                { 8,  SetClientPid           },
+                { 9,  DumpGraphicsMemoryInfo },
+                { 11, Ioctl                  },
+                { 13, FinishInitialize       }
             };
 
             _event = new KEvent(system);
@@ -137,12 +139,24 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             return 0;
         }
 
+        public long GetStatus(ServiceCtx context)
+        {
+            context.ResponseData.Write(0x10);
+
+            return 0;
+        }
+
         public long SetClientPid(ServiceCtx context)
         {
             long pid = context.RequestData.ReadInt64();
 
             context.ResponseData.Write(0);
 
+            return 0;
+        }
+
+        public long DumpGraphicsMemoryInfo(ServiceCtx context)
+        {
             return 0;
         }
 
