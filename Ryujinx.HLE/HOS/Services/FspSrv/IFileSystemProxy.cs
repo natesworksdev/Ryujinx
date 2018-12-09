@@ -28,6 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 18,   OpenSdCardFileSystem                     },
                 { 51,   OpenSaveDataFileSystem                   },
                 { 52,   OpenSaveDataFileSystemBySystemSaveDataId },
+                { 53,   OpenReadOnlySaveDataFileSystem           },
                 { 200,  OpenDataStorageByCurrentProcess          },
                 { 202,  OpenDataStorageByDataId                  },
                 { 203,  OpenPatchDataStorageByCurrentProcess     },
@@ -129,6 +130,14 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         // OpenSaveDataFileSystemBySystemSaveDataId(u8 save_data_space_id, nn::fssrv::sf::SaveStruct saveStruct) -> object<nn::fssrv::sf::IFileSystem> systemSaveDataFs
         public long OpenSaveDataFileSystemBySystemSaveDataId(ServiceCtx context)
+        {
+            LoadSaveDataFileSystem(context);
+
+            return 0;
+        }
+
+        // OpenReadOnlySaveDataFileSystem(u8 save_data_space_id, ...) -> object<> ...
+        public long OpenReadOnlySaveDataFileSystem(ServiceCtx context)
         {
             LoadSaveDataFileSystem(context);
 
