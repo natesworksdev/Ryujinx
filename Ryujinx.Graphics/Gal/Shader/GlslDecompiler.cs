@@ -1438,7 +1438,13 @@ namespace Ryujinx.Graphics.Gal.Shader
             if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
             {
                 string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))", 8, 0x3F);
-                return "textureGatherOffset(" + Sampler + ", " + Coords + ", " + Comp + ", " + Offset + ")" + ChString;
+
+                if ((Suffix & TextureInstructionSuffix.DC) != 0)
+                {
+                    return "textureGatherOffset(" + Sampler + ", " + Coords + ", " + Comp + ", " + Offset + ")" + ChString;
+                }
+
+                return "textureGatherOffset(" + Sampler + ", " + Coords + ", " + Offset + ", " + Comp + ")" + ChString;
             }
             // TODO: Support PTP
             else if ((Suffix & TextureInstructionSuffix.PTP) != 0)
