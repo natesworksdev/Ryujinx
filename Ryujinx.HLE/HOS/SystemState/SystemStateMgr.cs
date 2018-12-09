@@ -54,8 +54,6 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         public SystemStateMgr()
         {
-            SetLanguage(SystemLanguage.AmericanEnglish);
-
             SetAudioOutputAsBuiltInSpeaker();
 
             _profiles = new ConcurrentDictionary<string, UserProfile>();
