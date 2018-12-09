@@ -475,7 +475,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             TextureInstructionSuffix Suffix;
 
-            int RawSuffix = OpCode.Read(0x34, 0x38);
+            int RawSuffix = OpCode.Read(0x34, 0xc);
 
             switch (RawSuffix)
             {

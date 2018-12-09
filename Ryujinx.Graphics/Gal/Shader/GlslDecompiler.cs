@@ -1393,11 +1393,11 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         }
 
-        private string GetTextureOffset(ShaderIrMetaTex Meta, string Oper)
+        private string GetTextureOffset(ShaderIrMetaTex Meta, string Oper, int Shift = 4, int Mask = 0xF)
         {
-            string GetOffset(string Operation, int index)
+            string GetOffset(string Operation, int Index)
             {
-                return "(" + Operation + " >> " + index * 4 + ") & 0xF";
+                return $"({Operation} >> {Index * Shift}) & 0x{Mask:x}";
             }
 
             int Coords = ImageUtils.GetCoordsCountTextureTarget(Meta.TextureTarget);
@@ -1435,8 +1435,13 @@ namespace Ryujinx.Graphics.Gal.Shader
                 Comp = GetOperExpr(Op, Meta.DepthCompare);
             }
 
-            // TODO: Support AOFFI
             if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
+            {
+                string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))", 8, 0x3F);
+                return "textureGatherOffset(" + Sampler + ", " + Coords + ", " + Comp + ", " + Offset + ")" + ChString;
+            }
+            // TODO: Support PTP
+            else if ((Suffix & TextureInstructionSuffix.PTP) != 0)
             {
                 throw new NotImplementedException();
             }
