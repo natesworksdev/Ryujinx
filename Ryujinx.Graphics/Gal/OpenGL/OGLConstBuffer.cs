@@ -5,13 +5,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLConstBuffer : IGalConstBuffer
     {
-        private const long MaxConstBufferCacheSize = 64 * 1024 * 1024;
-
-        private OGLResourceCache<long, OGLStreamBuffer> Cache;
+        private OGLResourceCache<int, OGLStreamBuffer> Cache;
 
         public OGLConstBuffer()
         {
-            Cache = new OGLResourceCache<long, OGLStreamBuffer>(DeleteBuffer, MaxConstBufferCacheSize);
+            Cache = new OGLResourceCache<int, OGLStreamBuffer>(DeleteBuffer, OGLResourceLimits.ConstBufferLimit);
         }
 
         private static void DeleteBuffer(OGLStreamBuffer Buffer)
@@ -29,19 +27,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Cache.Unlock();
         }
 
-        public bool IsCached(long key, long size)
+        public bool IsCached(long key, int size)
         {
-            return Cache.TryGetSize(key, out long cbSize) && cbSize >= size;
+            return Cache.TryGetSize(key, out int cbSize) && cbSize >= size;
         }
 
-        public void Create(long key, IntPtr hostAddress, long size)
+        public void Create(long key, IntPtr hostAddress, int size)
         {
-            GetBuffer(key, size).SetData(size, hostAddress);
+            GetBuffer(key, size).SetData(hostAddress, size);
         }
 
-        public void Create(long key, byte[] data)
+        public void Create(long key, byte[] buffer)
         {
-            GetBuffer(key, data.Length).SetData(data);
+            GetBuffer(key, buffer.Length).SetData(buffer);
         }
 
         public bool TryGetUbo(long key, out int uboHandle)
@@ -58,7 +56,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return false;
         }
 
-        private OGLStreamBuffer GetBuffer(long Key, long Size)
+        private OGLStreamBuffer GetBuffer(long Key, int Size)
         {
             if (!Cache.TryReuseValue(Key, Size, out OGLStreamBuffer Buffer))
             {

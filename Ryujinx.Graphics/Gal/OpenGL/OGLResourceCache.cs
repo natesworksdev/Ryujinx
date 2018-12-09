@@ -7,8 +7,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
     class OGLResourceCache<TPoolKey, TValue>
     {
         private const int MinTimeDelta      = 5 * 60000;
-        private const int MinTimeDeltaPool  = 2500;
         private const int MaxRemovalsPerRun = 10;
+
+        private const int DefaultMinTimeForPoolTransfer = 2500;
 
         private class CacheBucket
         {
@@ -21,18 +22,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             private Queue<Action> _deleteDeps;
 
-            public long DataSize { get; private set; }
+            public int Size { get; private set; }
 
             public long Timestamp { get; private set; }
 
             public bool Orphan { get; private set; }
 
-            public CacheBucket(long key, TPoolKey poolKey, TValue value, long dataSize)
+            public CacheBucket(long key, TPoolKey poolKey, TValue value, int size)
             {
-                Key      = key;
-                PoolKey  = poolKey;
-                Value    = value;
-                DataSize = dataSize;
+                Key     = key;
+                PoolKey = poolKey;
+                Value   = value;
+                Size    = size;
 
                 _deleteDeps = new Queue<Action>();
             }
@@ -82,14 +83,18 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private bool _locked;
 
-        private long _maxSize;
-        private long _totalSize;
+        private int _maxSize;
+        private int _totalSize;
+        private int _minTimeForPoolTransfer;
 
-        public OGLResourceCache(Action<TValue> DeleteValueCallback, long MaxSize)
+        public OGLResourceCache(
+            Action<TValue> deleteValueCallback,
+            int            maxSize,
+            int            minTimeForPoolTransfer = DefaultMinTimeForPoolTransfer)
         {
-            _maxSize = MaxSize;
+            _maxSize = maxSize;
 
-            _deleteValueCallback = DeleteValueCallback ?? throw new ArgumentNullException(nameof(DeleteValueCallback));
+            _deleteValueCallback = deleteValueCallback ?? throw new ArgumentNullException(nameof(deleteValueCallback));
 
             _cache = new Dictionary<long, CacheBucket>();
 
@@ -120,7 +125,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             ClearCacheIfNeeded();
         }
 
-        public void AddOrUpdate(long key, TPoolKey poolKey, TValue value, long size)
+        public void AddOrUpdate(long key, TPoolKey poolKey, TValue value, int size)
         {
             if (!_locked)
             {
@@ -181,15 +186,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public bool TryReuseValue(long key, TPoolKey poolKey, out TValue value)
         {
+            if (_cache.TryGetValue(key, out CacheBucket bucket) && bucket.PoolKey.Equals(poolKey))
+            {
+                //Value on key is already compatible, we don't need to do anything.
+                value = bucket.Value;
+
+                return true;
+            }
+
             if (_pool.TryGetValue(poolKey, out LinkedList<CacheBucket> queue))
             {
                 LinkedListNode<CacheBucket> node = queue.First;
 
-                CacheBucket bucket = node.Value;
+                bucket = node.Value;
 
                 Remove(bucket);
 
-                AddOrUpdate(key, poolKey, bucket.Value, bucket.DataSize);
+                AddOrUpdate(key, poolKey, bucket.Value, bucket.Size);
 
                 value = bucket.Value;
 
@@ -201,11 +214,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return false;
         }
 
-        public bool TryGetSize(long key, out long size)
+        public bool TryGetSize(long key, out int size)
         {
             if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
-                size = bucket.DataSize;
+                size = bucket.Size;
 
                 return true;
             }
@@ -215,11 +228,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return false;
         }
 
-        public bool TryGetSizeAndValue(long key, out long size, out TValue value)
+        public bool TryGetSizeAndValue(long key, out int size, out TValue value)
         {
             if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
-                size  = bucket.DataSize;
+                size  = bucket.Size;
                 value = bucket.Value;
 
                 return true;
@@ -267,7 +280,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 long timeDelta = timestamp - bucket.Timestamp;
 
-                if (timeDelta <= MinTimeDeltaPool)
+                if (timeDelta <= _minTimeForPoolTransfer)
                 {
                     break;
                 }
@@ -319,7 +332,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             bucket.DeleteAllDependencies();
 
-            _totalSize -= bucket.DataSize;
+            _totalSize -= bucket.Size;
         }
 
         private void RemoveFromSortedCache(LinkedListNode<CacheBucket> node)

@@ -11,30 +11,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         protected BufferTarget Target { get; private set; }
 
-        public OGLStreamBuffer(BufferTarget Target, long Size)
+        public OGLStreamBuffer(BufferTarget target, int size)
         {
-            this.Target = Target;
-            this.Size   = Size;
+            Target = target;
+            Size   = size;
 
             Handle = GL.GenBuffer();
 
-            GL.BindBuffer(Target, Handle);
+            GL.BindBuffer(target, Handle);
 
-            GL.BufferData(Target, (IntPtr)Size, IntPtr.Zero, BufferUsageHint.StreamDraw);
+            GL.BufferData(target, new IntPtr(size), IntPtr.Zero, BufferUsageHint.StreamDraw);
         }
 
-        public void SetData(long Size, IntPtr HostAddress)
+        public void SetData(IntPtr hostAddress, int size)
         {
             GL.BindBuffer(Target, Handle);
 
-            GL.BufferSubData(Target, IntPtr.Zero, (IntPtr)Size, HostAddress);
+            GL.BufferSubData(Target, IntPtr.Zero, new IntPtr(size), hostAddress);
         }
 
-        public void SetData(byte[] Data)
+        public void SetData(byte[] buffer)
         {
             GL.BindBuffer(Target, Handle);
 
-            GL.BufferSubData(Target, IntPtr.Zero, (IntPtr)Data.Length, Data);
+            GL.BufferSubData(Target, IntPtr.Zero, new IntPtr(buffer.Length), buffer);
         }
 
         public void Dispose()
@@ -42,9 +42,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing && Handle != 0)
+            if (disposing && Handle != 0)
             {
                 GL.DeleteBuffer(Handle);
 

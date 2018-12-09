@@ -989,13 +989,13 @@ namespace Ryujinx.Graphics.Graphics3d
                     VbSize = MaxVbSize;
                 }
 
-                bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VboKey, VbSize);
+                bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VboKey, (int)VbSize);
 
                 if (Gpu.ResourceManager.MemoryRegionModified(Vmm, VboKey, VbSize, NvGpuBufferType.Vertex) || !VboCached)
                 {
                     if (Vmm.TryGetHostAddress(VbPosition, VbSize, out IntPtr VbPtr))
                     {
-                        Gpu.Renderer.Rasterizer.CreateVbo(VboKey, (int)VbSize, VbPtr);
+                        Gpu.Renderer.Rasterizer.CreateVbo(VboKey, VbPtr, (int)VbSize);
                     }
                     else
                     {

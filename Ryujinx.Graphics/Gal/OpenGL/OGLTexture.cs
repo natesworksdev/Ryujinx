@@ -6,8 +6,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLTexture : IGalTexture
     {
-        private const long MaxTextureCacheSize = 768 * 1024 * 1024;
-
         private struct ImageKey
         {
             public int Width  { get; private set; }
@@ -48,9 +46,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLTexture()
         {
-            TextureCache = new OGLResourceCache<ImageKey, ImageHandler>(DeleteTexture, MaxTextureCacheSize);
+            TextureCache = new OGLResourceCache<ImageKey, ImageHandler>(DeleteTexture, OGLResourceLimits.TextureLimit);
 
-            PboCache = new OGLResourceCache<int, int>(GL.DeleteBuffer, 256);
+            PboCache = new OGLResourceCache<int, int>(GL.DeleteBuffer, OGLResourceLimits.PixelBufferLimit, 0);
         }
 
         public void LockCache()
@@ -90,7 +88,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 CachedImage = new ImageHandler(GL.GenTexture(), Image);
 
-                TextureCache.AddOrUpdate(Key, imageKey, CachedImage, (uint)Size);
+                TextureCache.AddOrUpdate(Key, imageKey, CachedImage, Size);
             }
 
             GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
@@ -128,9 +126,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
 
-            ImageKey imgKey = new ImageKey(Image);
+            ImageKey imageKey = new ImageKey(Image);
 
-            TextureCache.AddOrUpdate(Key, imgKey, new ImageHandler(Handle, Image), (uint)Data.Length);
+            TextureCache.AddOrUpdate(Key, imageKey, new ImageHandler(Handle, Image), Data.Length);
 
             if (ImageUtils.IsCompressed(Image.Format) && !IsAstc(Image.Format))
             {
@@ -195,9 +193,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 return;
             }
 
-            if (NewImage.Format == OldImage.Format &&
-                NewImage.Width  == OldImage.Width  &&
-                NewImage.Height == OldImage.Height)
+            if (NewImage.Width  == OldImage.Width  &&
+                NewImage.Height == OldImage.Height &&
+                NewImage.Format == OldImage.Format)
             {
                 return;
             }
@@ -208,16 +206,22 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             if (!PboCache.TryReuseValue(0, BufferSize, out int Handle))
             {
-                PboCache.AddOrUpdate(0, BufferSize, Handle = GL.GenBuffer(), BufferSize);
+                Handle = GL.GenBuffer();
+
+                GL.BindBuffer(BufferTarget.PixelPackBuffer, Handle);
+
+                GL.BufferData(BufferTarget.PixelPackBuffer, BufferSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
+
+                PboCache.AddOrUpdate(0, BufferSize, Handle, BufferSize);
             }
-
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, Handle);
-
-            GL.BufferData(BufferTarget.PixelPackBuffer, BufferSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
+            else
+            {
+                GL.BindBuffer(BufferTarget.PixelPackBuffer, Handle);
+            }
 
             if (!TryGetImageHandler(Key, out ImageHandler CachedImage))
             {
-                throw new InvalidOperationException();
+                throw new ArgumentException(nameof(Key));
             }
 
             (_, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(CachedImage.Format);

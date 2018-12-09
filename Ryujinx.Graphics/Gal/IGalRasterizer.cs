@@ -24,13 +24,13 @@ namespace Ryujinx.Graphics.Gal
             GalVertexAttrib[]      attributes,
             GalVertexAttribArray[] arrays);
 
-        bool IsVboCached(long key, long size);
-        bool IsIboCached(long key, long size, out long vertexCount);
+        bool IsVboCached(long key, int size);
+        bool IsIboCached(long key, int size, out long vertexCount);
 
-        void CreateVbo(long Key, int DataSize, IntPtr HostAddress);
-        void CreateVbo(long Key, byte[] Data);
-
+        void CreateVbo(long key, IntPtr hostAddress, int size);
         void CreateIbo(long key, IntPtr hostAddress, int size, long vertexCount);
+
+        void CreateVbo(long key, byte[] buffer);
         void CreateIbo(long key, byte[] buffer, long vertexCount);
 
         void SetIndexArray(int Size, GalIndexFormat Format);

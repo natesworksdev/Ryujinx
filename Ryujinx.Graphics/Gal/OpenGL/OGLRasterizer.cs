@@ -75,9 +75,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             { GalVertexAttribSize._11_11_10,    VertexAttribPointerType.UnsignedInt10F11F11FRev }
         };
 
-        private const long MaxVertexBufferCacheSize = 128 * 1024 * 1024;
-        private const long MaxIndexBufferCacheSize  = 64  * 1024 * 1024;
-
         private int[] VertexBuffers;
 
         private struct CachedVao
@@ -99,7 +96,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private OGLResourceCache<int, CachedVao> VaoCache;
 
-        private OGLResourceCache<long, OGLStreamBuffer> VboCache;
+        private OGLResourceCache<int, OGLStreamBuffer> VboCache;
 
         private class CachedIbo
         {
@@ -113,7 +110,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        private OGLResourceCache<long, CachedIbo> IboCache;
+        private OGLResourceCache<int, CachedIbo> IboCache;
 
         private struct IbInfo
         {
@@ -129,11 +126,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             VertexBuffers = new int[32];
 
-            VaoCache = new OGLResourceCache<int, CachedVao>(DeleteVao, 64 * 1024);
+            VaoCache = new OGLResourceCache<int, CachedVao>(DeleteVao, OGLResourceLimits.VertexArrayLimit);
 
-            VboCache = new OGLResourceCache<long, OGLStreamBuffer>(DeleteBuffer, MaxVertexBufferCacheSize);
+            VboCache = new OGLResourceCache<int, OGLStreamBuffer>(DeleteBuffer, OGLResourceLimits.VertexBufferLimit);
 
-            IboCache = new OGLResourceCache<long, CachedIbo>(DeleteIbo, MaxIndexBufferCacheSize);
+            IboCache = new OGLResourceCache<int, CachedIbo>(DeleteIbo, OGLResourceLimits.IndexBufferLimit);
 
             IndexBuffer = new IbInfo();
         }
@@ -169,13 +166,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void ClearBuffers(
             GalClearBufferFlags Flags,
-            int Attachment,
-            float Red,
-            float Green,
-            float Blue,
-            float Alpha,
-            float Depth,
-            int Stencil)
+            int                 Attachment,
+            float               Red,
+            float               Green,
+            float               Blue,
+            float               Alpha,
+            float               Depth,
+            int                 Stencil)
         {
             GL.ColorMask(
                 Attachment,
@@ -200,14 +197,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public bool IsVboCached(long key, long size)
+        public bool IsVboCached(long key, int size)
         {
-            return VboCache.TryGetSize(key, out long vbSize) && vbSize >= size;
+            return VboCache.TryGetSize(key, out int vbSize) && vbSize >= size;
         }
 
-        public bool IsIboCached(long key, long size, out long vertexCount)
+        public bool IsIboCached(long key, int size, out long vertexCount)
         {
-            if (IboCache.TryGetSizeAndValue(key, out long ibSize, out CachedIbo ibo) && ibSize >= size)
+            if (IboCache.TryGetSizeAndValue(key, out int ibSize, out CachedIbo ibo) && ibSize >= size)
             {
                 vertexCount = ibo.VertexCount;
 
@@ -523,19 +520,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             throw new NotImplementedException("Unsupported size \"" + Attrib.Size + "\" on type \"" + Attrib.Type + "\"!");
         }
 
-        public void CreateVbo(long Key, int DataSize, IntPtr HostAddress)
+        public void CreateVbo(long key, IntPtr hostAddress, int size)
         {
-            GetVbo(Key, DataSize).SetData(DataSize, HostAddress);
-        }
-
-        public void CreateVbo(long Key, byte[] Data)
-        {
-            GetVbo(Key, Data.Length).SetData(Data);
+            GetVbo(key, size).SetData(hostAddress, size);
         }
 
         public void CreateIbo(long key, IntPtr hostAddress, int size, long vertexCount)
         {
-            GetIbo(key, size, vertexCount).SetData(size, hostAddress);
+            GetIbo(key, size, vertexCount).SetData(hostAddress, size);
+        }
+
+        public void CreateVbo(long key, byte[] buffer)
+        {
+            GetVbo(key, buffer.Length).SetData(buffer);
         }
 
         public void CreateIbo(long key, byte[] buffer, long vertexCount)
@@ -620,7 +617,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return false;
         }
 
-        private OGLStreamBuffer GetVbo(long Key, long Size)
+        private OGLStreamBuffer GetVbo(long Key, int Size)
         {
             if (!VboCache.TryReuseValue(Key, Size, out OGLStreamBuffer Buffer))
             {
@@ -632,7 +629,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return Buffer;
         }
 
-        private OGLStreamBuffer GetIbo(long Key, long Size, long VertexCount)
+        private OGLStreamBuffer GetIbo(long Key, int Size, long VertexCount)
         {
             if (!IboCache.TryReuseValue(Key, Size, out CachedIbo Ibo))
             {
