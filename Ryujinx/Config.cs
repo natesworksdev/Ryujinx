@@ -62,9 +62,9 @@ namespace Ryujinx
                 }
             }
 
-            SystemLanguage GetLanguage = Enum.Parse<SystemLanguage>(parser.Value("System_Language"));
+            SystemLanguage SetLanguage = Enum.Parse<SystemLanguage>(parser.Value("System_Language"));
 
-            device.System.State.SetLanguage(GetLanguage);
+            device.System.State.SetLanguage(SetLanguage);
 
             device.System.State.DockedMode = Convert.ToBoolean(parser.Value("Docked_Mode"));
 
