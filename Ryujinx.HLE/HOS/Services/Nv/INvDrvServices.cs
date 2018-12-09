@@ -143,7 +143,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         {
             Logger.PrintStub(LogClass.ServiceNv, "Stubbed.");
 
-            context.ResponseData.Write(0x10);
+            byte[] bytes = new byte[0x10];
+            context.ResponseData.Write(bytes, 0, 0x10);
+            context.ResponseData.Write(0);
 
             return 0;
         }
