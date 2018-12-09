@@ -69,7 +69,20 @@ namespace Ryujinx.HLE.HOS.SystemState
         {
             DesiredLanguageCode = GetLanguageCode((int)language);
 
-            DesiredTitleLanguage = Enum.Parse<TitleLanguage>(Enum.GetName(typeof(SystemLanguage), language));
+            switch (language)
+            {
+                case SystemLanguage.Taiwanese:
+                case SystemLanguage.TraditionalChinese:
+                    DesiredTitleLanguage = TitleLanguage.Taiwanese;
+                    break;
+                case SystemLanguage.Chinese:
+                case SystemLanguage.SimplifiedChinese:
+                    DesiredTitleLanguage = TitleLanguage.Chinese;
+                    break;
+                default:
+                    DesiredTitleLanguage = Enum.Parse<TitleLanguage>(Enum.GetName(typeof(SystemLanguage), language));
+                    break;
+            }
         }
 
         public void SetAudioOutputAsTv()
