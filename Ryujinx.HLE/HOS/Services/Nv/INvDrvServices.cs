@@ -141,6 +141,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         public long GetStatus(ServiceCtx context)
         {
+            Logger.PrintStub(LogClass.ServiceNv, "Stubbed.");
+
             context.ResponseData.Write(0x10);
 
             return 0;
@@ -157,6 +159,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         public long DumpGraphicsMemoryInfo(ServiceCtx context)
         {
+            Logger.PrintStub(LogClass.ServiceNv, "Stubbed.");
+
             return 0;
         }
 
