@@ -60,6 +60,11 @@ namespace Ryujinx.HLE.FileSystem
 
         public string GetSystemPath() => MakeDirAndGetFullPath(SystemPath);
 
+        public string GetReadOnlyGameSavePath(SaveInfo save, ServiceCtx context)
+        {
+            return GetReadOnlyFullPath(SaveHelper.GetSavePath(save, context));
+        }
+
         public string GetGameSavePath(SaveInfo save, ServiceCtx context)
         {
             return MakeDirAndGetFullPath(SaveHelper.GetSavePath(save, context));
@@ -104,7 +109,7 @@ namespace Ryujinx.HLE.FileSystem
             return null;
         }
 
-        private string MakeDirAndGetFullPath(string dir)
+        private string GetReadOnlyFullPath(string dir)
         {
             // Handles Common Switch Content Paths
             switch (dir)
@@ -131,6 +136,13 @@ namespace Ryujinx.HLE.FileSystem
             }
 
             string fullPath = Path.Combine(GetBasePath(), dir);
+            return fullPath;
+        }
+
+        private string MakeDirAndGetFullPath(string dir)
+        {
+            // Handles Common Switch Content Paths
+            string fullPath = GetReadOnlyFullPath(dir);
 
             if (!Directory.Exists(fullPath))
             {

@@ -139,7 +139,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
         // OpenReadOnlySaveDataFileSystem(u8 save_data_space_id, ...) -> object<> ...
         public long OpenReadOnlySaveDataFileSystem(ServiceCtx context)
         {
-            LoadSaveDataFileSystem(context);
+            LoadReadOnlySaveDataFileSystem(context);
 
             return 0;
         }
@@ -222,6 +222,25 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             context.ResponseData.Write(0);
 
             return 0;
+        }
+
+        public void LoadReadOnlySaveDataFileSystem(ServiceCtx context)
+        {
+            SaveSpaceId saveSpaceId = (SaveSpaceId)context.RequestData.ReadInt64();
+
+            long titleId = context.RequestData.ReadInt64();
+
+            UInt128 userId = new UInt128(
+                context.RequestData.ReadInt64(), 
+                context.RequestData.ReadInt64());
+
+            long               saveId             = context.RequestData.ReadInt64();
+            SaveDataType       saveDataType       = (SaveDataType)context.RequestData.ReadByte();
+            SaveInfo           saveInfo           = new SaveInfo(titleId, saveId, saveDataType, userId, saveSpaceId);
+            string             savePath           = context.Device.FileSystem.GetReadOnlyGameSavePath(saveInfo, context);
+            FileSystemProvider fileSystemProvider = new FileSystemProvider(savePath, context.Device.FileSystem.GetBasePath());
+
+            MakeObject(context, new IFileSystem(savePath, fileSystemProvider));
         }
 
         public void LoadSaveDataFileSystem(ServiceCtx context)
