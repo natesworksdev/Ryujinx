@@ -120,6 +120,8 @@ namespace Ryujinx.Graphics.Graphics3d
 
             //Ensure that all components are enabled by default.
             //FIXME: Is this correct?
+            WriteRegister(NvGpuEngine3dReg.ColorMaskN, 0x1111);
+
             Gpu.Renderer.RenderTarget.FramebufferSrgb = true;
 
             for (int Index = 0; Index < RenderTargetsCount; Index++)
@@ -622,6 +624,8 @@ namespace Ryujinx.Graphics.Graphics3d
         {
             bool PrimitiveRestartEnabled = ReadRegisterBool(NvGpuEngine3dReg.PrimRestartEnable);
 
+            Gpu.Renderer.Pipeline.SetPrimitiveRestartEnabled(PrimitiveRestartEnabled);
+
             if (PrimitiveRestartEnabled)
             {
                 int Index = ReadRegister(NvGpuEngine3dReg.PrimRestartIndex);
@@ -800,6 +804,7 @@ namespace Ryujinx.Graphics.Graphics3d
             int IndexEntryFmt = ReadRegister(NvGpuEngine3dReg.IndexArrayFormat);
             int IndexFirst    = ReadRegister(NvGpuEngine3dReg.IndexBatchFirst);
             int IndexCount    = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
+            int VertexBase    = ReadRegister(NvGpuEngine3dReg.VertexArrayElemBase);
             int PrimCtrl      = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
 
             GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
@@ -975,7 +980,9 @@ namespace Ryujinx.Graphics.Graphics3d
 
                 long VbSize = (VbEndPos - VbPosition) + 1;
 
-                long MaxVbSize = (IndexCount != 0 ? IbVtxCount : VertexFirst + VertexCount) * Stride;
+                long MaxVbSize = (IndexCount != 0
+                    ? VertexBase  + IbVtxCount
+                    : VertexFirst + VertexCount) * Stride;
 
                 if (MaxVbSize < VbSize)
                 {
