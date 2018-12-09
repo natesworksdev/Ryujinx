@@ -84,7 +84,8 @@ namespace Ryujinx.HLE.HOS.Services
                 }
             }
 
-            long sfciMagic =      context.RequestData.ReadInt64();
+            int  sfciMagic =      context.RequestData.ReadInt32();
+            int  version   =      context.RequestData.ReadInt32();
             int  commandId = (int)context.RequestData.ReadInt64();
 
             if (service.Commands.TryGetValue(commandId, out ServiceProcessRequest processRequest))
