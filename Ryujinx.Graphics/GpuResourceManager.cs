@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics
         {
             if (Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage) && CachedImage.SizeMatches(NewImage))
             {
-                Gpu.Renderer.RenderTarget.Reinterpret(Position, NewImage);
+                Gpu.Renderer.Texture.Reinterpret(Position, NewImage);
 
                 return true;
             }
@@ -132,9 +132,9 @@ namespace Ryujinx.Graphics
             }
         }
 
-        public void ClearPbCache(NvGpuBufferType Type)
+        public void RemoveFromPbCache(NvGpuBufferType Type, long Key)
         {
-            UploadedKeys[(int)Type].Clear();
+            UploadedKeys[(int)Type].Remove(Key);
         }
     }
 }

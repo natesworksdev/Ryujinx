@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private Dictionary<OGLShaderProgram, int> Programs;
 
-        public int CurrentProgramHandle { get; private set; }
+        private int CurrentProgramHandle;
 
         private OGLConstBuffer Buffer;
 
@@ -103,19 +103,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public unsafe void SetExtraData(float FlipX, float FlipY, int Instance)
         {
-            BindProgram();
-
             EnsureExtraBlock();
 
             GL.BindBuffer(BufferTarget.UniformBuffer, ExtraUboHandle);
 
             float* Data = stackalloc float[ExtraDataSize];
+
             Data[0] = FlipX;
             Data[1] = FlipY;
             Data[2] = BitConverter.Int32BitsToSingle(Instance);
-
-            //Invalidate buffer
-            GL.BufferData(BufferTarget.UniformBuffer, ExtraDataSize * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
             GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, ExtraDataSize * sizeof(float), (IntPtr)Data);
         }
@@ -172,7 +168,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             if (!Programs.TryGetValue(Current, out int Handle))
             {
-                Handle = GL.CreateProgram();
+                CurrentProgramHandle = Handle = GL.CreateProgram();
 
                 AttachIfNotNull(Handle, Current.Vertex);
                 AttachIfNotNull(Handle, Current.TessControl);
@@ -184,15 +180,29 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 CheckProgramLink(Handle);
 
+                GL.UseProgram(Handle);
+
                 BindUniformBlocks(Handle);
                 BindTextureLocations(Handle);
 
                 Programs.Add(Current, Handle);
             }
+            else if (CurrentProgramHandle != Handle)
+            {
+                CurrentProgramHandle = Handle;
 
-            GL.UseProgram(Handle);
+                GL.UseProgram(Handle);
+            }
+        }
 
-            CurrentProgramHandle = Handle;
+        private void AttachIfNotNull(int ProgramHandle, OGLShaderStage Stage)
+        {
+            if (Stage != null)
+            {
+                Stage.Compile();
+
+                GL.AttachShader(ProgramHandle, Stage.Handle);
+            }
         }
 
         private void EnsureExtraBlock()
@@ -206,16 +216,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 GL.BufferData(BufferTarget.UniformBuffer, ExtraDataSize * sizeof(float), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
                 GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, ExtraUboHandle);
-            }
-        }
-
-        private void AttachIfNotNull(int ProgramHandle, OGLShaderStage Stage)
-        {
-            if (Stage != null)
-            {
-                Stage.Compile();
-
-                GL.AttachShader(ProgramHandle, Stage.Handle);
             }
         }
 
@@ -273,8 +273,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     }
                 }
             }
-
-            GL.UseProgram(ProgramHandle);
 
             BindTexturesIfNotNull(Current.Vertex);
             BindTexturesIfNotNull(Current.TessControl);

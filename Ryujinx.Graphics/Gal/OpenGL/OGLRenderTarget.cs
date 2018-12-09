@@ -1,5 +1,4 @@
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Graphics.Texture;
 using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
@@ -9,7 +8,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private const int NativeWidth  = 1280;
         private const int NativeHeight = 720;
 
-        private const int RenderTargetsCount = GalPipelineState.RenderTargetsCount;
+        private const int RenderTargetsCount = 8;
 
         private struct Rect
         {
@@ -87,8 +86,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private FrameBufferAttachments Attachments;
         private FrameBufferAttachments OldAttachments;
-
-        private int CopyPBO;
 
         public bool FramebufferSrgb { get; set; }
 
@@ -438,56 +435,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 GL.BlitFramebuffer(SrcX0, SrcY0, SrcX1, SrcY1, DstX0, DstY0, DstX1, DstY1, Mask, Filter);
             }
-        }
-
-        public void Reinterpret(long Key, GalImage NewImage)
-        {
-            if (!Texture.TryGetImage(Key, out GalImage OldImage))
-            {
-                return;
-            }
-
-            if (NewImage.Format == OldImage.Format &&
-                NewImage.Width  == OldImage.Width  &&
-                NewImage.Height == OldImage.Height)
-            {
-                return;
-            }
-
-            if (CopyPBO == 0)
-            {
-                CopyPBO = GL.GenBuffer();
-            }
-
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, CopyPBO);
-
-            //The buffer should be large enough to hold the largest texture.
-            int BufferSize = Math.Max(ImageUtils.GetSize(OldImage),
-                                      ImageUtils.GetSize(NewImage));
-
-            GL.BufferData(BufferTarget.PixelPackBuffer, BufferSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
-
-            if (!Texture.TryGetImageHandler(Key, out ImageHandler CachedImage))
-            {
-                throw new InvalidOperationException();
-            }
-
-            (_, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(CachedImage.Format);
-
-            GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
-
-            GL.GetTexImage(TextureTarget.Texture2D, 0, Format, Type, IntPtr.Zero);
-
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, CopyPBO);
-
-            GL.PixelStore(PixelStoreParameter.UnpackRowLength, OldImage.Width);
-
-            Texture.Create(Key, ImageUtils.GetSize(NewImage), NewImage);
-
-            GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
-
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
         }
 
         private static FramebufferAttachment GetAttachment(ImageHandler CachedImage)

@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Graphics3d
             //the texture is modified by the guest, however it doesn't
             //work when resources that the gpu can write to are copied,
             //like framebuffers.
-            ImageUtils.CopyTexture(
+            /*ImageUtils.CopyTexture(
                 Vmm,
                 SrcTexture,
                 DstTexture,
@@ -137,7 +137,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 DstBlitW,
                 DstBlitH);
 
-            Vmm.IsRegionModified(DstKey, ImageUtils.GetSize(DstTexture), NvGpuBufferType.Texture);
+            Vmm.IsRegionModified(DstKey, ImageUtils.GetSize(DstTexture), NvGpuBufferType.Texture);*/
         }
 
         private static GalMemoryLayout GetLayout(bool Linear)

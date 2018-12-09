@@ -9,6 +9,8 @@ namespace Ryujinx.Graphics.Gal
 
         void Create(long Key, byte[] Data, GalImage Image);
 
+        void Reinterpret(long Key, GalImage NewImage);
+
         bool TryGetImage(long Key, out GalImage Image);
 
         void Bind(long Key, int Index, GalImage Image);
