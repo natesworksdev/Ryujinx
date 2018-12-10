@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -69,17 +70,18 @@ namespace Ryujinx.Common.Logging
 
         public static void PrintStub<T>(LogClass logClass, T obj, [CallerMemberName] string caller = "")
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder  sb    = new StringBuilder();
+            PropertyInfo[] props = typeof(T).GetProperties();
 
             sb.Append("Stubbed. ");
 
-            foreach (var prop in typeof(T).GetProperties())
+            foreach (var prop in props)
             {
                 sb.Append($"{prop.Name}: {prop.GetValue(obj)}");
                 sb.Append(" - ");
             }
 
-            if (typeof(T).GetProperties().Length > 0)
+            if (props.Length > 0)
             {
                 sb.Remove(sb.Length - 3, 3);
             }
@@ -89,19 +91,20 @@ namespace Ryujinx.Common.Logging
 
         public static void PrintStub<T>(LogClass logClass, string message, T obj, [CallerMemberName] string caller = "")
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder  sb    = new StringBuilder();
+            PropertyInfo[] props = typeof(T).GetProperties();
 
             sb.Append("Stubbed. ");
             sb.Append(message);
             sb.Append(' ');
 
-            foreach (var prop in typeof(T).GetProperties())
+            foreach (var prop in props)
             {
                 sb.Append($"{prop.Name}: {prop.GetValue(obj)}");
                 sb.Append(" - ");
             }
 
-            if (typeof(T).GetProperties().Length > 0)
+            if (props.Length > 0)
             {
                 sb.Remove(sb.Length - 3, 3);
             }
