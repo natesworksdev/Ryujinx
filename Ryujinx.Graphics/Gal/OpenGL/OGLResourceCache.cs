@@ -168,13 +168,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
+                AcquireResource(bucket);
+
                 value = bucket.Value;
-
-                RemoveFromSortedCache(bucket.CacheNode);
-
-                bucket.UpdateCacheNode(_sortedCache.AddLast(bucket.CacheNode.Value));
-
-                RemoveFromResourcePool(bucket);
 
                 return true;
             }
@@ -189,6 +185,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             if (_cache.TryGetValue(key, out CacheBucket bucket) && bucket.PoolKey.Equals(poolKey))
             {
                 //Value on key is already compatible, we don't need to do anything.
+                AcquireResource(bucket);
+
                 value = bucket.Value;
 
                 return true;
@@ -218,6 +216,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
+                AcquireResource(bucket);
+
                 size = bucket.Size;
 
                 return true;
@@ -232,6 +232,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             if (_cache.TryGetValue(key, out CacheBucket bucket))
             {
+                AcquireResource(bucket);
+
                 size  = bucket.Size;
                 value = bucket.Value;
 
@@ -242,6 +244,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             value = default(TValue);
 
             return false;
+        }
+
+        private void AcquireResource(CacheBucket bucket)
+        {
+            RemoveFromSortedCache(bucket.CacheNode);
+
+            bucket.UpdateCacheNode(_sortedCache.AddLast(bucket.CacheNode.Value));
+
+            RemoveFromResourcePool(bucket);
         }
 
         private void ClearCacheIfNeeded()
