@@ -5,10 +5,10 @@ namespace Ryujinx.Common
 {
     public static class HexUtils
     {
-        private static readonly char[] HEX_CHARS = "0123456789ABCDEF".ToCharArray();
+        private static readonly char[] HexChars = "0123456789ABCDEF".ToCharArray();
 
-        private const int HEX_TABLE_COLUMN_WIDTH = 8;
-        private const int HEX_TABLE_COLUMN_SPACE = 3;
+        private const int HexTableColumnWidth = 8;
+        private const int HexTableColumnSpace = 3;
 
         // Modified for Ryujinx
         // Original by Pascal Ganaye - CPOL License
@@ -23,12 +23,12 @@ namespace Ryujinx.Common
             int bytesLength = bytes.Length;
 
             int firstHexColumn =
-                  HEX_TABLE_COLUMN_WIDTH
-                + HEX_TABLE_COLUMN_SPACE;
+                  HexTableColumnWidth
+                + HexTableColumnSpace;
 
             int firstCharColumn = firstHexColumn
-                + bytesPerLine * HEX_TABLE_COLUMN_SPACE
-                + (bytesPerLine - 1) / HEX_TABLE_COLUMN_WIDTH
+                + bytesPerLine * HexTableColumnSpace
+                + (bytesPerLine - 1) / HexTableColumnWidth
                 + 2;
 
             int lineLength = firstCharColumn
@@ -43,14 +43,14 @@ namespace Ryujinx.Common
 
             for (int i = 0; i < bytesLength; i += bytesPerLine)
             {
-                line[0] = HEX_CHARS[(i >> 28) & 0xF];
-                line[1] = HEX_CHARS[(i >> 24) & 0xF];
-                line[2] = HEX_CHARS[(i >> 20) & 0xF];
-                line[3] = HEX_CHARS[(i >> 16) & 0xF];
-                line[4] = HEX_CHARS[(i >> 12) & 0xF];
-                line[5] = HEX_CHARS[(i >> 8) & 0xF];
-                line[6] = HEX_CHARS[(i >> 4) & 0xF];
-                line[7] = HEX_CHARS[(i >> 0) & 0xF];
+                line[0] = HexChars[(i >> 28) & 0xF];
+                line[1] = HexChars[(i >> 24) & 0xF];
+                line[2] = HexChars[(i >> 20) & 0xF];
+                line[3] = HexChars[(i >> 16) & 0xF];
+                line[4] = HexChars[(i >> 12) & 0xF];
+                line[5] = HexChars[(i >> 8) & 0xF];
+                line[6] = HexChars[(i >> 4) & 0xF];
+                line[7] = HexChars[(i >> 0) & 0xF];
 
                 int hexColumn = firstHexColumn;
                 int charColumn = firstCharColumn;
@@ -71,8 +71,8 @@ namespace Ryujinx.Common
                     else
                     {
                         byte b = bytes[i + j];
-                        line[hexColumn] = HEX_CHARS[(b >> 4) & 0xF];
-                        line[hexColumn + 1] = HEX_CHARS[b & 0xF];
+                        line[hexColumn] = HexChars[(b >> 4) & 0xF];
+                        line[hexColumn + 1] = HexChars[b & 0xF];
                         line[charColumn] = (b < 32 ? '·' : (char)b);
                     }
 

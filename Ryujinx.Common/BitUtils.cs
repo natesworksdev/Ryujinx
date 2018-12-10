@@ -64,7 +64,7 @@ namespace Ryujinx.Common
             return (int)CountLeadingZeros((ulong)value, 64);
         }
 
-        private static ulong CountLeadingZeros(ulong value, int size) // Size is 8, 16, 32 or 64 (SIMD&FP or Base Inst.).
+        private static ulong CountLeadingZeros(ulong value, int size)
         {
             if (value == 0ul)
             {
