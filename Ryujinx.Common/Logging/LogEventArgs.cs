@@ -9,11 +9,11 @@ namespace Ryujinx.Common.Logging
 
         public string Message { get; private set; }
 
-        public LogEventArgs(LogLevel Level, TimeSpan Time, string Message)
+        public LogEventArgs(LogLevel level, TimeSpan time, string message)
         {
-            this.Level   = Level;
-            this.Time    = Time;
-            this.Message = Message;
+            this.Level   = level;
+            this.Time    = time;
+            this.Message = message;
         }
     }
 }
