@@ -73,9 +73,9 @@ namespace Ryujinx.Common.Logging
 
             sb.Append("Stubbed. ");
 
-            foreach (var Prop in typeof(T).GetProperties())
+            foreach (var prop in typeof(T).GetProperties())
             {
-                sb.Append($"{Prop.Name}: {Prop.GetValue(obj)}");
+                sb.Append($"{prop.Name}: {prop.GetValue(obj)}");
                 sb.Append(" - ");
             }
 
@@ -95,9 +95,9 @@ namespace Ryujinx.Common.Logging
             sb.Append(message);
             sb.Append(' ');
 
-            foreach (var Prop in typeof(T).GetProperties())
+            foreach (var prop in typeof(T).GetProperties())
             {
-                sb.Append($"{Prop.Name}: {Prop.GetValue(obj)}");
+                sb.Append($"{prop.Name}: {prop.GetValue(obj)}");
                 sb.Append(" - ");
             }
 
