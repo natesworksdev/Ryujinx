@@ -57,7 +57,7 @@ namespace Ryujinx
         {
             string formattedTime = e.Time.ToString(@"hh\:mm\:ss\.fff");
 
-            string currentThread = Thread.CurrentThread.ManagedThreadId.ToString("d4");
+            string currentThread = e.ThreadId.ToString("d4");
 
             string message = formattedTime + " | " + currentThread + " " + e.Message;
 

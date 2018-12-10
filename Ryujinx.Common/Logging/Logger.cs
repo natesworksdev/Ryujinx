@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace Ryujinx.Common.Logging
 {
@@ -116,7 +117,7 @@ namespace Ryujinx.Common.Logging
         {
             if (m_EnabledLevels[(int)logLevel] && m_EnabledClasses[(int)logClass])
             {
-                Updated?.Invoke(null, new LogEventArgs(logLevel, m_Time.Elapsed, message));
+                Updated?.Invoke(null, new LogEventArgs(logLevel, m_Time.Elapsed, Thread.CurrentThread.ManagedThreadId, message));
             }
         }
 
