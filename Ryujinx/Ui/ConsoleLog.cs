@@ -14,8 +14,6 @@ namespace Ryujinx
 
         private static Dictionary<LogLevel, ConsoleColor> _logColors;
 
-        private static object _consoleLock;
-
         static ConsoleLog()
         {
             _logColors = new Dictionary<LogLevel, ConsoleColor>()
@@ -27,8 +25,6 @@ namespace Ryujinx
             };
 
             _messageQueue = new BlockingCollection<LogEventArgs>(10);
-
-            _consoleLock = new object();
 
             _messageThread = new Thread(() =>
             {
@@ -63,13 +59,10 @@ namespace Ryujinx
 
             if (_logColors.TryGetValue(e.Level, out ConsoleColor color))
             {
-                lock (_consoleLock)
-                {
-                    Console.ForegroundColor = color;
+                Console.ForegroundColor = color;
 
-                    Console.WriteLine(message);
-                    Console.ResetColor();
-                }
+                Console.WriteLine(message);
+                Console.ResetColor();
             }
             else
             {
