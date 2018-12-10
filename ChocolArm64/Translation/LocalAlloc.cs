@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ChocolArm64.Translation
@@ -83,12 +84,7 @@ namespace ChocolArm64.Translation
 
             public override int GetHashCode()
             {
-                return Block.GetHashCode()      * 23 ^
-                       Entry.GetHashCode()      * 23 ^
-                       IntInputs.GetHashCode()  * 23 ^
-                       VecInputs.GetHashCode()  * 23 ^
-                       IntOutputs.GetHashCode() * 23 ^
-                       VecOutputs.GetHashCode();
+                return HashCode.Combine(Block, Entry, IntInputs, VecInputs, IntOutputs, VecOutputs);
             }
         }
 
