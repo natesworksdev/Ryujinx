@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Memory
 {
     class NvGpuVmmCache
     {
-        private const int PageBits = MemoryManager.PtPageBits;
+        private const int PageBits = MemoryManager.PageBits;
 
         private const long PageSize = MemoryManager.PageSize;
         private const long PageMask = MemoryManager.PageMask;
@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Memory
             CachedPages = new ConcurrentDictionary<long, int>[1 << 20];
         }
 
-        private void MemoryAccessHandler(object sender, InvalidAccessEventArgs e)
+        private void MemoryAccessHandler(object sender, MemoryAccessEventArgs e)
         {
             long pa = _memory.GetPhysicalAddress(e.Position);
 

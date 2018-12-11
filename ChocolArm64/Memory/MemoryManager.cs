@@ -17,18 +17,18 @@ namespace ChocolArm64.Memory
     {
         private const int PtLvl0Bits = 13;
         private const int PtLvl1Bits = 14;
-        public  const int PtPageBits = 12;
+        public  const int PageBits = 12;
 
         private const int PtLvl0Size = 1 << PtLvl0Bits;
         private const int PtLvl1Size = 1 << PtLvl1Bits;
-        public  const int PageSize   = 1 << PtPageBits;
+        public  const int PageSize   = 1 << PageBits;
 
         private const int PtLvl0Mask = PtLvl0Size - 1;
         private const int PtLvl1Mask = PtLvl1Size - 1;
         public  const int PageMask   = PageSize   - 1;
 
-        private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
-        private const int PtLvl1Bit = PtPageBits;
+        private const int PtLvl0Bit = PageBits + PtLvl1Bits;
+        private const int PtLvl1Bit = PageBits;
 
         private const long ErgMask = (4 << CpuThreadState.ErgSizeLog2) - 1;
 
@@ -53,9 +53,9 @@ namespace ChocolArm64.Memory
 
         private byte*** _pageTable;
 
-        public event EventHandler<InvalidAccessEventArgs> InvalidAccess;
+        public event EventHandler<MemoryAccessEventArgs> InvalidAccess;
 
-        public event EventHandler<InvalidAccessEventArgs> ObservedAccess;
+        public event EventHandler<MemoryAccessEventArgs> ObservedAccess;
 
         public MemoryManager(IntPtr ram)
         {
@@ -634,7 +634,7 @@ namespace ChocolArm64.Memory
                 return false;
             }
 
-            return _pageTable[l0][l1] != null || _observedPages.ContainsKey(position >> PtPageBits);
+            return _pageTable[l0][l1] != null || _observedPages.ContainsKey(position >> PageBits);
         }
 
         public long GetPhysicalAddress(long virtualAddress)
@@ -680,14 +680,14 @@ Unmapped:
 
         private byte* HandleNullPte(long position)
         {
-            long key = position >> PtPageBits;
+            long key = position >> PageBits;
 
             if (_observedPages.TryGetValue(key, out IntPtr ptr))
             {
                 return (byte*)ptr + (position & PageMask);
             }
 
-            InvalidAccess?.Invoke(this, new InvalidAccessEventArgs(position));
+            InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
 
             throw new VmmPageFaultException(position);
         }
@@ -728,9 +728,9 @@ Unmapped:
 
         private byte* HandleNullPteWrite(long position)
         {
-            long key = position >> PtPageBits;
+            long key = position >> PageBits;
 
-            InvalidAccessEventArgs e = new InvalidAccessEventArgs(position);
+            MemoryAccessEventArgs e = new MemoryAccessEventArgs(position);
 
             if (_observedPages.TryGetValue(key, out IntPtr ptr))
             {
@@ -798,7 +798,7 @@ Unmapped:
 
             while ((ulong)position < (ulong)endPosition)
             {
-                _observedPages[position >> PtPageBits] = (IntPtr)Translate(position);
+                _observedPages[position >> PageBits] = (IntPtr)Translate(position);
 
                 SetPtEntry(position, null);
 
@@ -814,7 +814,7 @@ Unmapped:
             {
                 lock (_observedPages)
                 {
-                    if (_observedPages.TryRemove(position >> PtPageBits, out IntPtr ptr))
+                    if (_observedPages.TryRemove(position >> PageBits, out IntPtr ptr))
                     {
                         SetPtEntry(position, (byte*)ptr);
                     }
@@ -864,7 +864,7 @@ Unmapped:
 
         public bool IsValidPosition(long position)
         {
-            return position >> (PtLvl0Bits + PtLvl1Bits + PtPageBits) == 0;
+            return position >> (PtLvl0Bits + PtLvl1Bits + PageBits) == 0;
         }
 
         public void Dispose()
