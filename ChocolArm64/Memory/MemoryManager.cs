@@ -17,7 +17,7 @@ namespace ChocolArm64.Memory
     {
         private const int PtLvl0Bits = 13;
         private const int PtLvl1Bits = 14;
-        private const int PtPageBits = 12;
+        public  const int PtPageBits = 12;
 
         private const int PtLvl0Size = 1 << PtLvl0Bits;
         private const int PtLvl1Size = 1 << PtLvl1Bits;
@@ -54,6 +54,8 @@ namespace ChocolArm64.Memory
         private byte*** _pageTable;
 
         public event EventHandler<InvalidAccessEventArgs> InvalidAccess;
+
+        public event EventHandler<InvalidAccessEventArgs> ObservedAccess;
 
         public MemoryManager(IntPtr ram)
         {
@@ -728,14 +730,18 @@ Unmapped:
         {
             long key = position >> PtPageBits;
 
+            InvalidAccessEventArgs e = new InvalidAccessEventArgs(position);
+
             if (_observedPages.TryGetValue(key, out IntPtr ptr))
             {
                 SetPtEntry(position, (byte*)ptr);
 
+                ObservedAccess?.Invoke(this, e);
+
                 return (byte*)ptr + (position & PageMask);
             }
 
-            InvalidAccess?.Invoke(this, new InvalidAccessEventArgs(position));
+            InvalidAccess?.Invoke(this, e);
 
             throw new VmmPageFaultException(position);
         }
@@ -784,53 +790,20 @@ Unmapped:
             _pageTable[l0][l1] = ptr;
         }
 
-        public (bool[], int) IsRegionModified(long position, long size)
+        public void StartObservingRegion(long position, long size)
         {
             long endPosition = (position + size + PageMask) & ~PageMask;
 
             position &= ~PageMask;
 
-            size = endPosition - position;
-
-            bool[] modified = new bool[size >> PtPageBits];
-
-            int count = 0;
-
-            lock (_observedPages)
+            while ((ulong)position < (ulong)endPosition)
             {
-                for (int page = 0; page < modified.Length; page++)
-                {
-                    byte* ptr = Translate(position);
+                _observedPages[position >> PtPageBits] = (IntPtr)Translate(position);
 
-                    if (_observedPages.TryAdd(position >> PtPageBits, (IntPtr)ptr))
-                    {
-                        modified[page] = true;
+                SetPtEntry(position, null);
 
-                        count++;
-                    }
-                    else
-                    {
-                        long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
-                        long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
-
-                        byte** lvl1 = _pageTable[l0];
-
-                        if (lvl1 != null)
-                        {
-                            if (modified[page] = lvl1[l1] != null)
-                            {
-                                count++;
-                            }
-                        }
-                    }
-
-                    SetPtEntry(position, null);
-
-                    position += PageSize;
-                }
+                position += PageSize;
             }
-
-            return (modified, count);
         }
 
         public void StopObservingRegion(long position, long size)
