@@ -86,6 +86,16 @@ namespace ChocolArm64.Translation
             {
                 return HashCode.Combine(Block, Entry, IntInputs, VecInputs, IntOutputs, VecOutputs);
             }
+
+            public static bool operator ==(BlockIo lhs, BlockIo rhs)
+            {
+                return lhs.Equals(rhs);
+            }
+
+            public static bool operator !=(BlockIo lhs, BlockIo rhs)
+            {
+                return !(lhs == rhs);
+            }
         }
 
         private const int MaxOptGraphLength = 40;
