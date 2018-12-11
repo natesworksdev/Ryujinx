@@ -17,15 +17,21 @@ namespace Ryujinx.Graphics.Gal
             float Depth,
             int Stencil);
 
-        bool IsVboCached(long Key, long DataSize);
+        bool TryBindVao(ReadOnlySpan<int> rawAttributes, GalVertexAttribArray[] arrays);
 
-        bool IsIboCached(long Key, long DataSize);
+        void CreateVao(
+            ReadOnlySpan<int>      rawAttributes,
+            GalVertexAttrib[]      attributes,
+            GalVertexAttribArray[] arrays);
 
-        void CreateVbo(long Key, int DataSize, IntPtr HostAddress);
-        void CreateVbo(long Key, byte[] Data);
+        bool IsVboCached(long key, int size);
+        bool IsIboCached(long key, int size, out long vertexCount);
 
-        void CreateIbo(long Key, int DataSize, IntPtr HostAddress);
-        void CreateIbo(long Key, int DataSize, byte[] Buffer);
+        void CreateVbo(long key, IntPtr hostAddress, int size);
+        void CreateIbo(long key, IntPtr hostAddress, int size, long vertexCount);
+
+        void CreateVbo(long key, byte[] buffer);
+        void CreateIbo(long key, byte[] buffer, long vertexCount);
 
         void SetIndexArray(int Size, GalIndexFormat Format);
 

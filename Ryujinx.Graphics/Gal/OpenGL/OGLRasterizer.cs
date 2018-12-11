@@ -1,17 +1,116 @@
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLRasterizer : IGalRasterizer
     {
-        private const long MaxVertexBufferCacheSize = 128 * 1024 * 1024;
-        private const long MaxIndexBufferCacheSize  = 64  * 1024 * 1024;
+        private static Dictionary<GalVertexAttribSize, int> AttribElements =
+                   new Dictionary<GalVertexAttribSize, int>()
+        {
+            { GalVertexAttribSize._32_32_32_32, 4 },
+            { GalVertexAttribSize._32_32_32,    3 },
+            { GalVertexAttribSize._16_16_16_16, 4 },
+            { GalVertexAttribSize._32_32,       2 },
+            { GalVertexAttribSize._16_16_16,    3 },
+            { GalVertexAttribSize._8_8_8_8,     4 },
+            { GalVertexAttribSize._16_16,       2 },
+            { GalVertexAttribSize._32,          1 },
+            { GalVertexAttribSize._8_8_8,       3 },
+            { GalVertexAttribSize._8_8,         2 },
+            { GalVertexAttribSize._16,          1 },
+            { GalVertexAttribSize._8,           1 },
+            { GalVertexAttribSize._10_10_10_2,  4 },
+            { GalVertexAttribSize._11_11_10,    3 }
+        };
+
+        private static Dictionary<GalVertexAttribSize, VertexAttribPointerType> FloatAttribTypes =
+                   new Dictionary<GalVertexAttribSize, VertexAttribPointerType>()
+        {
+            { GalVertexAttribSize._32_32_32_32, VertexAttribPointerType.Float     },
+            { GalVertexAttribSize._32_32_32,    VertexAttribPointerType.Float     },
+            { GalVertexAttribSize._16_16_16_16, VertexAttribPointerType.HalfFloat },
+            { GalVertexAttribSize._32_32,       VertexAttribPointerType.Float     },
+            { GalVertexAttribSize._16_16_16,    VertexAttribPointerType.HalfFloat },
+            { GalVertexAttribSize._16_16,       VertexAttribPointerType.HalfFloat },
+            { GalVertexAttribSize._32,          VertexAttribPointerType.Float     },
+            { GalVertexAttribSize._16,          VertexAttribPointerType.HalfFloat }
+        };
+
+        private static Dictionary<GalVertexAttribSize, VertexAttribPointerType> SignedAttribTypes =
+                   new Dictionary<GalVertexAttribSize, VertexAttribPointerType>()
+        {
+            { GalVertexAttribSize._32_32_32_32, VertexAttribPointerType.Int           },
+            { GalVertexAttribSize._32_32_32,    VertexAttribPointerType.Int           },
+            { GalVertexAttribSize._16_16_16_16, VertexAttribPointerType.Short         },
+            { GalVertexAttribSize._32_32,       VertexAttribPointerType.Int           },
+            { GalVertexAttribSize._16_16_16,    VertexAttribPointerType.Short         },
+            { GalVertexAttribSize._8_8_8_8,     VertexAttribPointerType.Byte          },
+            { GalVertexAttribSize._16_16,       VertexAttribPointerType.Short         },
+            { GalVertexAttribSize._32,          VertexAttribPointerType.Int           },
+            { GalVertexAttribSize._8_8_8,       VertexAttribPointerType.Byte          },
+            { GalVertexAttribSize._8_8,         VertexAttribPointerType.Byte          },
+            { GalVertexAttribSize._16,          VertexAttribPointerType.Short         },
+            { GalVertexAttribSize._8,           VertexAttribPointerType.Byte          },
+            { GalVertexAttribSize._10_10_10_2,  VertexAttribPointerType.Int2101010Rev }
+        };
+
+        private static Dictionary<GalVertexAttribSize, VertexAttribPointerType> UnsignedAttribTypes =
+                   new Dictionary<GalVertexAttribSize, VertexAttribPointerType>()
+        {
+            { GalVertexAttribSize._32_32_32_32, VertexAttribPointerType.UnsignedInt             },
+            { GalVertexAttribSize._32_32_32,    VertexAttribPointerType.UnsignedInt             },
+            { GalVertexAttribSize._16_16_16_16, VertexAttribPointerType.UnsignedShort           },
+            { GalVertexAttribSize._32_32,       VertexAttribPointerType.UnsignedInt             },
+            { GalVertexAttribSize._16_16_16,    VertexAttribPointerType.UnsignedShort           },
+            { GalVertexAttribSize._8_8_8_8,     VertexAttribPointerType.UnsignedByte            },
+            { GalVertexAttribSize._16_16,       VertexAttribPointerType.UnsignedShort           },
+            { GalVertexAttribSize._32,          VertexAttribPointerType.UnsignedInt             },
+            { GalVertexAttribSize._8_8_8,       VertexAttribPointerType.UnsignedByte            },
+            { GalVertexAttribSize._8_8,         VertexAttribPointerType.UnsignedByte            },
+            { GalVertexAttribSize._16,          VertexAttribPointerType.UnsignedShort           },
+            { GalVertexAttribSize._8,           VertexAttribPointerType.UnsignedByte            },
+            { GalVertexAttribSize._10_10_10_2,  VertexAttribPointerType.UnsignedInt2101010Rev   },
+            { GalVertexAttribSize._11_11_10,    VertexAttribPointerType.UnsignedInt10F11F11FRev }
+        };
 
         private int[] VertexBuffers;
 
-        private OGLCachedResource<int> VboCache;
-        private OGLCachedResource<int> IboCache;
+        private struct CachedVao
+        {
+            public int[] Attributes { get; }
+
+            public GalVertexAttribArray[] Arrays { get; }
+
+            public int Handle { get; }
+
+            public CachedVao(int[] attributes, GalVertexAttribArray[] arrays)
+            {
+                Attributes = attributes;
+                Arrays     = arrays;
+
+                Handle = GL.GenVertexArray();
+            }
+        }
+
+        private OGLResourceCache<int, CachedVao> VaoCache;
+
+        private OGLResourceCache<int, OGLStreamBuffer> VboCache;
+
+        private class CachedIbo
+        {
+            public OGLStreamBuffer Buffer { get; }
+
+            public long VertexCount { get; set; }
+
+            public CachedIbo(OGLStreamBuffer buffer)
+            {
+                Buffer = buffer;
+            }
+        }
+
+        private OGLResourceCache<int, CachedIbo> IboCache;
 
         private struct IbInfo
         {
@@ -27,33 +126,53 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             VertexBuffers = new int[32];
 
-            VboCache = new OGLCachedResource<int>(GL.DeleteBuffer, MaxVertexBufferCacheSize);
-            IboCache = new OGLCachedResource<int>(GL.DeleteBuffer, MaxIndexBufferCacheSize);
+            VaoCache = new OGLResourceCache<int, CachedVao>(DeleteVao, OGLResourceLimits.VertexArrayLimit);
+
+            VboCache = new OGLResourceCache<int, OGLStreamBuffer>(DeleteBuffer, OGLResourceLimits.VertexBufferLimit);
+
+            IboCache = new OGLResourceCache<int, CachedIbo>(DeleteIbo, OGLResourceLimits.IndexBufferLimit);
 
             IndexBuffer = new IbInfo();
         }
 
+        private static void DeleteVao(CachedVao vao)
+        {
+            GL.DeleteVertexArray(vao.Handle);
+        }
+
+        private static void DeleteBuffer(OGLStreamBuffer buffer)
+        {
+            buffer.Dispose();
+        }
+
+        private static void DeleteIbo(CachedIbo ibo)
+        {
+            ibo.Buffer.Dispose();
+        }
+
         public void LockCaches()
         {
+            VaoCache.Lock();
             VboCache.Lock();
             IboCache.Lock();
         }
 
         public void UnlockCaches()
         {
+            VaoCache.Unlock();
             VboCache.Unlock();
             IboCache.Unlock();
         }
 
         public void ClearBuffers(
             GalClearBufferFlags Flags,
-            int Attachment,
-            float Red,
-            float Green,
-            float Blue,
-            float Alpha,
-            float Depth,
-            int Stencil)
+            int                 Attachment,
+            float               Red,
+            float               Green,
+            float               Blue,
+            float               Alpha,
+            float               Depth,
+            int                 Stencil)
         {
             GL.ColorMask(
                 Attachment,
@@ -78,62 +197,347 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public bool IsVboCached(long Key, long DataSize)
+        public bool IsVboCached(long key, int size)
         {
-            return VboCache.TryGetSize(Key, out long Size) && Size == DataSize;
+            return VboCache.TryGetSize(key, out int vbSize) && vbSize >= size;
         }
 
-        public bool IsIboCached(long Key, long DataSize)
+        public bool IsIboCached(long key, int size, out long vertexCount)
         {
-            return IboCache.TryGetSize(Key, out long Size) && Size == DataSize;
+            if (IboCache.TryGetSizeAndValue(key, out int ibSize, out CachedIbo ibo) && ibSize >= size)
+            {
+                vertexCount = ibo.VertexCount;
+
+                return true;
+            }
+
+            vertexCount = 0;
+
+            return false;
         }
 
-        public void CreateVbo(long Key, int DataSize, IntPtr HostAddress)
+        public bool TryBindVao(ReadOnlySpan<int> rawAttributes, GalVertexAttribArray[] arrays)
         {
-            int Handle = GL.GenBuffer();
+            long hash = CalculateHash(arrays);
 
-            VboCache.AddOrUpdate(Key, Handle, DataSize);
+            if (!VaoCache.TryGetValue(hash, out CachedVao vao))
+            {
+                return false;
+            }
 
-            IntPtr Length = new IntPtr(DataSize);
+            if (rawAttributes.Length != vao.Attributes.Length)
+            {
+                return false;
+            }
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
-            GL.BufferData(BufferTarget.ArrayBuffer, Length, HostAddress, BufferUsageHint.StreamDraw);
+            if (arrays.Length != vao.Arrays.Length)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < rawAttributes.Length; index++)
+            {
+                if (rawAttributes[index] != vao.Attributes[index])
+                {
+                    return false;
+                }
+            }
+
+            for (int index = 0; index < arrays.Length; index++)
+            {
+                if (!arrays[index].Equals(vao.Arrays[index]))
+                {
+                    return false;
+                }
+            }
+
+            GL.BindVertexArray(vao.Handle);
+
+            return true;
         }
 
-        public void CreateVbo(long Key, byte[] Data)
+        public void CreateVao(
+            ReadOnlySpan<int>      rawAttributes,
+            GalVertexAttrib[]      attributes,
+            GalVertexAttribArray[] arrays)
         {
-            int Handle = GL.GenBuffer();
+            CachedVao vao = new CachedVao(rawAttributes.ToArray(), arrays);
 
-            VboCache.AddOrUpdate(Key, Handle, Data.Length);
+            long hash = CalculateHash(arrays);
 
-            IntPtr Length = new IntPtr(Data.Length);
+            VaoCache.AddOrUpdate(hash, 1, vao, 1);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
-            GL.BufferData(BufferTarget.ArrayBuffer, Length, Data, BufferUsageHint.StreamDraw);
+            GL.BindVertexArray(vao.Handle);
+
+            for (int index = 0; index < attributes.Length; index++)
+            {
+                GalVertexAttrib attrib = attributes[index];
+
+                GalVertexAttribArray array = arrays[attrib.ArrayIndex];
+
+                //Skip uninitialized attributes.
+                if (attrib.Size == 0 || !array.Enabled)
+                {
+                    continue;
+                }
+
+                if (!VboCache.TryGetValue(array.VboKey, out OGLStreamBuffer vbo))
+                {
+                    continue;
+                }
+
+                VboCache.AddDependency(array.VboKey, VaoCache, hash);
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vbo.Handle);
+
+                bool Unsigned =
+                    attrib.Type == GalVertexAttribType.Unorm ||
+                    attrib.Type == GalVertexAttribType.Uint  ||
+                    attrib.Type == GalVertexAttribType.Uscaled;
+
+                bool Normalize =
+                    attrib.Type == GalVertexAttribType.Snorm ||
+                    attrib.Type == GalVertexAttribType.Unorm;
+
+                VertexAttribPointerType Type = 0;
+
+                if (attrib.Type == GalVertexAttribType.Float)
+                {
+                    Type = GetType(FloatAttribTypes, attrib);
+                }
+                else if (Unsigned)
+                {
+                    Type = GetType(UnsignedAttribTypes, attrib);
+                }
+                else
+                {
+                    Type = GetType(SignedAttribTypes, attrib);
+                }
+
+                if (!AttribElements.TryGetValue(attrib.Size, out int Size))
+                {
+                    throw new InvalidOperationException($"Invalid attribute size \"{attrib.Size}\".");
+                }
+
+                int Offset = attrib.Offset;
+
+                if (array.Stride != 0)
+                {
+                    GL.EnableVertexAttribArray(index);
+
+                    if (attrib.Type == GalVertexAttribType.Sint ||
+                        attrib.Type == GalVertexAttribType.Uint)
+                    {
+                        IntPtr Pointer = new IntPtr(Offset);
+
+                        VertexAttribIntegerType IType = (VertexAttribIntegerType)Type;
+
+                        GL.VertexAttribIPointer(index, Size, IType, array.Stride, Pointer);
+                    }
+                    else
+                    {
+                        GL.VertexAttribPointer(index, Size, Type, Normalize, array.Stride, Offset);
+                    }
+                }
+                else
+                {
+                    GL.DisableVertexAttribArray(index);
+
+                    SetConstAttrib(attrib, (uint)index);
+                }
+
+                if (array.Divisor != 0)
+                {
+                    GL.VertexAttribDivisor(index, 1);
+                }
+                else
+                {
+                    GL.VertexAttribDivisor(index, 0);
+                }
+            }
         }
 
-        public void CreateIbo(long Key, int DataSize, IntPtr HostAddress)
+        private long CalculateHash(GalVertexAttribArray[] arrays)
         {
-            int Handle = GL.GenBuffer();
+            if (arrays.Length == 1)
+            {
+                return arrays[0].VboKey;
+            }
 
-            IboCache.AddOrUpdate(Key, Handle, (uint)DataSize);
+            long hash = 17;
 
-            IntPtr Length = new IntPtr(DataSize);
+            for (int index = 0; index < arrays.Length; index++)
+            {
+                hash = hash * 23 + arrays[index].VboKey;
+            }
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Handle);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, Length, HostAddress, BufferUsageHint.StreamDraw);
+            return hash;
         }
 
-        public void CreateIbo(long Key, int DataSize, byte[] Buffer)
+        private static VertexAttribPointerType GetType(Dictionary<GalVertexAttribSize, VertexAttribPointerType> Dict, GalVertexAttrib Attrib)
         {
-            int Handle = GL.GenBuffer();
+            if (!Dict.TryGetValue(Attrib.Size, out VertexAttribPointerType Type))
+            {
+                ThrowUnsupportedAttrib(Attrib);
+            }
 
-            IboCache.AddOrUpdate(Key, Handle, DataSize);
+            return Type;
+        }
 
-            IntPtr Length = new IntPtr(Buffer.Length);
+        private unsafe static void SetConstAttrib(GalVertexAttrib Attrib, uint Index)
+        {
+            if (Attrib.Size == GalVertexAttribSize._10_10_10_2 ||
+                Attrib.Size == GalVertexAttribSize._11_11_10)
+            {
+                ThrowUnsupportedAttrib(Attrib);
+            }
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Handle);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, Length, Buffer, BufferUsageHint.StreamDraw);
+            fixed (byte* Ptr = Attrib.Data)
+            {
+                if (Attrib.Type == GalVertexAttribType.Unorm)
+                {
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._8:
+                        case GalVertexAttribSize._8_8:
+                        case GalVertexAttribSize._8_8_8:
+                        case GalVertexAttribSize._8_8_8_8:
+                            GL.VertexAttrib4N(Index, Ptr);
+                            break;
+
+                        case GalVertexAttribSize._16:
+                        case GalVertexAttribSize._16_16:
+                        case GalVertexAttribSize._16_16_16:
+                        case GalVertexAttribSize._16_16_16_16:
+                            GL.VertexAttrib4N(Index, (ushort*)Ptr);
+                            break;
+
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttrib4N(Index, (uint*)Ptr);
+                            break;
+                    }
+                }
+                else if (Attrib.Type == GalVertexAttribType.Snorm)
+                {
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._8:
+                        case GalVertexAttribSize._8_8:
+                        case GalVertexAttribSize._8_8_8:
+                        case GalVertexAttribSize._8_8_8_8:
+                            GL.VertexAttrib4N(Index, (sbyte*)Ptr);
+                            break;
+
+                        case GalVertexAttribSize._16:
+                        case GalVertexAttribSize._16_16:
+                        case GalVertexAttribSize._16_16_16:
+                        case GalVertexAttribSize._16_16_16_16:
+                            GL.VertexAttrib4N(Index, (short*)Ptr);
+                            break;
+
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttrib4N(Index, (int*)Ptr);
+                            break;
+                    }
+                }
+                else if (Attrib.Type == GalVertexAttribType.Uint)
+                {
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._8:
+                        case GalVertexAttribSize._8_8:
+                        case GalVertexAttribSize._8_8_8:
+                        case GalVertexAttribSize._8_8_8_8:
+                            GL.VertexAttribI4(Index, Ptr);
+                            break;
+
+                        case GalVertexAttribSize._16:
+                        case GalVertexAttribSize._16_16:
+                        case GalVertexAttribSize._16_16_16:
+                        case GalVertexAttribSize._16_16_16_16:
+                            GL.VertexAttribI4(Index, (ushort*)Ptr);
+                            break;
+
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttribI4(Index, (uint*)Ptr);
+                            break;
+                    }
+                }
+                else if (Attrib.Type == GalVertexAttribType.Sint)
+                {
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._8:
+                        case GalVertexAttribSize._8_8:
+                        case GalVertexAttribSize._8_8_8:
+                        case GalVertexAttribSize._8_8_8_8:
+                            GL.VertexAttribI4(Index, (sbyte*)Ptr);
+                            break;
+
+                        case GalVertexAttribSize._16:
+                        case GalVertexAttribSize._16_16:
+                        case GalVertexAttribSize._16_16_16:
+                        case GalVertexAttribSize._16_16_16_16:
+                            GL.VertexAttribI4(Index, (short*)Ptr);
+                            break;
+
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttribI4(Index, (int*)Ptr);
+                            break;
+                    }
+                }
+                else if (Attrib.Type == GalVertexAttribType.Float)
+                {
+                    switch (Attrib.Size)
+                    {
+                        case GalVertexAttribSize._32:
+                        case GalVertexAttribSize._32_32:
+                        case GalVertexAttribSize._32_32_32:
+                        case GalVertexAttribSize._32_32_32_32:
+                            GL.VertexAttrib4(Index, (float*)Ptr);
+                            break;
+
+                        default: ThrowUnsupportedAttrib(Attrib); break;
+                    }
+                }
+            }
+        }
+
+        private static void ThrowUnsupportedAttrib(GalVertexAttrib Attrib)
+        {
+            throw new NotImplementedException("Unsupported size \"" + Attrib.Size + "\" on type \"" + Attrib.Type + "\"!");
+        }
+
+        public void CreateVbo(long key, IntPtr hostAddress, int size)
+        {
+            GetVbo(key, size).SetData(hostAddress, size);
+        }
+
+        public void CreateIbo(long key, IntPtr hostAddress, int size, long vertexCount)
+        {
+            GetIbo(key, size, vertexCount).SetData(hostAddress, size);
+        }
+
+        public void CreateVbo(long key, byte[] buffer)
+        {
+            GetVbo(key, buffer.Length).SetData(buffer);
+        }
+
+        public void CreateIbo(long key, byte[] buffer, long vertexCount)
+        {
+            GetIbo(key, buffer.Length, vertexCount).SetData(buffer);
         }
 
         public void SetIndexArray(int Size, GalIndexFormat Format)
@@ -176,14 +580,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void DrawElements(long IboKey, int First, int VertexBase, GalPrimitiveType PrimType)
         {
-            if (!IboCache.TryGetValue(IboKey, out int IboHandle))
+            if (!IboCache.TryGetValue(IboKey, out CachedIbo Ibo))
             {
                 return;
             }
 
             PrimitiveType Mode = OGLEnumConverter.GetPrimitiveType(PrimType);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IboHandle);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Ibo.Buffer.Handle);
 
             First <<= IndexBuffer.ElemSizeLog2;
 
@@ -201,7 +605,42 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public bool TryGetVbo(long VboKey, out int VboHandle)
         {
-            return VboCache.TryGetValue(VboKey, out VboHandle);
+            if (VboCache.TryGetValue(VboKey, out OGLStreamBuffer Vbo))
+            {
+                VboHandle = Vbo.Handle;
+
+                return true;
+            }
+
+            VboHandle = 0;
+
+            return false;
+        }
+
+        private OGLStreamBuffer GetVbo(long Key, int Size)
+        {
+            if (!VboCache.TryReuseValue(Key, Size, out OGLStreamBuffer Buffer))
+            {
+                Buffer = new OGLStreamBuffer(BufferTarget.ArrayBuffer, Size);
+
+                VboCache.AddOrUpdate(Key, Size, Buffer, Size);
+            }
+
+            return Buffer;
+        }
+
+        private OGLStreamBuffer GetIbo(long Key, int Size, long VertexCount)
+        {
+            if (!IboCache.TryReuseValue(Key, Size, out CachedIbo Ibo))
+            {
+                OGLStreamBuffer Buffer = new OGLStreamBuffer(BufferTarget.ElementArrayBuffer, Size);
+
+                IboCache.AddOrUpdate(Key, Size, Ibo = new CachedIbo(Buffer), Size);
+            }
+
+            Ibo.VertexCount = VertexCount;
+
+            return Ibo.Buffer;
         }
     }
 }

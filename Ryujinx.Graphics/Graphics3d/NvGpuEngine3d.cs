@@ -64,6 +64,53 @@ namespace Ryujinx.Graphics.Graphics3d
             AddMethod(0x8e4, 16, 1, CbData);
             AddMethod(0x904,  5, 8, CbBind);
 
+            AddMethod((int)NvGpuEngine3dReg.DepthTestEnable,   1, 1, SetDepth);
+            AddMethod((int)NvGpuEngine3dReg.DepthWriteEnable,  1, 1, SetDepth);
+            AddMethod((int)NvGpuEngine3dReg.DepthTestFunction, 1, 1, SetDepth);
+            AddMethod((int)NvGpuEngine3dReg.DepthRangeNNear,   1, 1, SetDepth);
+            AddMethod((int)NvGpuEngine3dReg.DepthRangeNFar,    1, 1, SetDepth);
+
+            AddMethod((int)NvGpuEngine3dReg.StencilEnable,        1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilBackFuncFunc,  1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilBackFuncRef,   1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilBackFuncMask,  1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilBackOpFail,    1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilBackOpZFail,   1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilBackOpZPass,   1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilBackMask,      1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilFrontFuncFunc, 1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilFrontFuncRef,  1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilFrontFuncMask, 1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilFrontOpFail,   1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilFrontOpZFail,  1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilFrontOpZPass,  1, 1, SetStencil);
+            AddMethod((int)NvGpuEngine3dReg.StencilFrontMask,     1, 1, SetStencil);
+
+            AddMethod((int)NvGpuEngine3dReg.BlendIndependent,     1, 1, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.IBlendNEnable,        8, 1, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.IBlendNSeparateAlpha, 8, 8, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.IBlendNEquationRgb,   8, 8, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.IBlendNFuncSrcRgb,    8, 8, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.IBlendNFuncDstRgb,    8, 8, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.IBlendNEquationAlpha, 8, 8, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.IBlendNFuncSrcAlpha,  8, 8, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.IBlendNFuncDstAlpha,  8, 8, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.BlendSeparateAlpha,   1, 1, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.BlendEquationRgb,     1, 1, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.BlendFuncSrcRgb,      1, 1, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.BlendFuncDstRgb,      1, 1, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.BlendEquationAlpha,   1, 1, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.BlendFuncSrcAlpha,    1, 1, SetBlend);
+            AddMethod((int)NvGpuEngine3dReg.BlendFuncDstAlpha,    1, 1, SetBlend);
+
+            AddMethod((int)NvGpuEngine3dReg.ColorMaskCommon, 1, 1, SetColorMask);
+            AddMethod((int)NvGpuEngine3dReg.ColorMaskN,      8, 1, SetColorMask);
+
+            AddMethod((int)NvGpuEngine3dReg.PrimRestartEnable, 1, 1, SetPrimRestart);
+            AddMethod((int)NvGpuEngine3dReg.PrimRestartIndex,  1, 1, SetPrimRestart);
+
+            AddMethod((int)NvGpuEngine3dReg.FrameBufferSrgb, 1, 1, SetFramebufferSrgb);
+
             ConstBuffers = new ConstBuffer[6][];
 
             for (int Index = 0; Index < ConstBuffers.Length; Index++)
@@ -726,15 +773,17 @@ namespace Ryujinx.Graphics.Graphics3d
 
                     long Key = Vmm.GetPhysicalAddress(Cb.Position);
 
-                    if (Gpu.ResourceManager.MemoryRegionModified(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer))
+                    bool CbCached = Gpu.Renderer.Buffer.IsCached(Key, Cb.Size);
+
+                    if (Gpu.ResourceManager.MemoryRegionModified(Vmm, Key, Cb.Size, NvGpuBufferType.ConstBuffer) || !CbCached)
                     {
                         if (Vmm.TryGetHostAddress(Cb.Position, Cb.Size, out IntPtr CbPtr))
                         {
-                            Gpu.Renderer.Buffer.SetData(Key, Cb.Size, CbPtr);
+                            Gpu.Renderer.Buffer.Create(Key, CbPtr, Cb.Size);
                         }
                         else
                         {
-                            Gpu.Renderer.Buffer.SetData(Key, Vmm.ReadBytes(Cb.Position, Cb.Size));
+                            Gpu.Renderer.Buffer.Create(Key, Vmm.ReadBytes(Cb.Position, Cb.Size));
                         }
                     }
 
@@ -753,7 +802,9 @@ namespace Ryujinx.Graphics.Graphics3d
             long IboKey = Vmm.GetPhysicalAddress(IbPosition);
 
             int IndexEntryFmt = ReadRegister(NvGpuEngine3dReg.IndexArrayFormat);
+            int IndexFirst    = ReadRegister(NvGpuEngine3dReg.IndexBatchFirst);
             int IndexCount    = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
+            int VertexBase    = ReadRegister(NvGpuEngine3dReg.VertexArrayElemBase);
             int PrimCtrl      = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
 
             GalPrimitiveType PrimType = (GalPrimitiveType)(PrimCtrl & 0xffff);
@@ -764,30 +815,61 @@ namespace Ryujinx.Graphics.Graphics3d
 
             if (IndexEntrySize > 4)
             {
-                throw new InvalidOperationException("Invalid index entry size \"" + IndexEntrySize + "\"!");
+                throw new InvalidOperationException($"Invalid index entry size \"{IndexEntrySize}\".");
             }
+
+            long IbVtxCount = 0;
 
             if (IndexCount != 0)
             {
-                int IbSize = IndexCount * IndexEntrySize;
+                int IbSize = (IndexFirst + IndexCount) * IndexEntrySize;
 
-                bool IboCached = Gpu.Renderer.Rasterizer.IsIboCached(IboKey, (uint)IbSize);
+                int HostIbSize = IbSize;
 
                 bool UsesLegacyQuads =
                     PrimType == GalPrimitiveType.Quads ||
                     PrimType == GalPrimitiveType.QuadStrip;
 
-                if (!IboCached || Gpu.ResourceManager.MemoryRegionModified(Vmm, IboKey, (uint)IbSize, NvGpuBufferType.Index))
+                if (UsesLegacyQuads)
                 {
+                    if (PrimType == GalPrimitiveType.Quads)
+                    {
+                        HostIbSize = IbHelper.ConvertIbSizeQuadsToTris(HostIbSize);
+                    }
+                    else /* if (PrimType == GalPrimitiveType.QuadStrip) */
+                    {
+                        HostIbSize = IbHelper.ConvertIbSizeQuadStripToTris(HostIbSize);
+                    }
+                }
+
+                bool IboCached = Gpu.Renderer.Rasterizer.IsIboCached(IboKey, HostIbSize, out IbVtxCount);
+
+                if (Gpu.ResourceManager.MemoryRegionModified(Vmm, IboKey, (uint)IbSize, NvGpuBufferType.Index) || !IboCached)
+                {
+                    IbVtxCount = IbHelper.GetIbMaxVertexCount(IndexFormat);
+
                     if (!UsesLegacyQuads)
                     {
-                        if (Vmm.TryGetHostAddress(IbPosition, IbSize, out IntPtr IbPtr))
+                        bool ShallGetVertexCount = IndexFormat != GalIndexFormat.Byte;
+
+                        if (!ShallGetVertexCount && Vmm.TryGetHostAddress(IbPosition, IbSize, out IntPtr IbPtr))
                         {
-                            Gpu.Renderer.Rasterizer.CreateIbo(IboKey, IbSize, IbPtr);
+                            Gpu.Renderer.Rasterizer.CreateIbo(IboKey, IbPtr, IbSize, IbVtxCount);
                         }
                         else
                         {
-                            Gpu.Renderer.Rasterizer.CreateIbo(IboKey, IbSize, Vmm.ReadBytes(IbPosition, IbSize));
+                            byte[] Data = Vmm.ReadBytes(IbPosition, IbSize);
+
+                            if (IndexFormat == GalIndexFormat.Int16)
+                            {
+                                IbVtxCount = IbHelper.GetVertexCountFromIb16(Data);
+                            }
+                            else if (IndexFormat == GalIndexFormat.Int32)
+                            {
+                                IbVtxCount = IbHelper.GetVertexCountFromIb32(Data);
+                            }
+
+                            Gpu.Renderer.Rasterizer.CreateIbo(IboKey, Data, IbVtxCount);
                         }
                     }
                     else
@@ -796,14 +878,14 @@ namespace Ryujinx.Graphics.Graphics3d
 
                         if (PrimType == GalPrimitiveType.Quads)
                         {
-                            Buffer = QuadHelper.ConvertIbQuadsToTris(Buffer, IndexEntrySize, IndexCount);
+                            Buffer = IbHelper.ConvertIbQuadsToTris(Buffer, IndexEntrySize, IndexCount);
                         }
                         else /* if (PrimType == GalPrimitiveType.QuadStrip) */
                         {
-                            Buffer = QuadHelper.ConvertIbQuadStripToTris(Buffer, IndexEntrySize, IndexCount);
+                            Buffer = IbHelper.ConvertIbQuadStripToTris(Buffer, IndexEntrySize, IndexCount);
                         }
 
-                        Gpu.Renderer.Rasterizer.CreateIbo(IboKey, IbSize, Buffer);
+                        Gpu.Renderer.Rasterizer.CreateIbo(IboKey, Buffer, IbVtxCount);
                     }
                 }
 
@@ -815,53 +897,56 @@ namespace Ryujinx.Graphics.Graphics3d
                 {
                     if (PrimType == GalPrimitiveType.Quads)
                     {
-                        Gpu.Renderer.Rasterizer.SetIndexArray(QuadHelper.ConvertIbSizeQuadsToTris(IbSize), IndexFormat);
+                        Gpu.Renderer.Rasterizer.SetIndexArray(IbHelper.ConvertIbSizeQuadsToTris(IbSize), IndexFormat);
                     }
                     else /* if (PrimType == GalPrimitiveType.QuadStrip) */
                     {
-                        Gpu.Renderer.Rasterizer.SetIndexArray(QuadHelper.ConvertIbSizeQuadStripToTris(IbSize), IndexFormat);
+                        Gpu.Renderer.Rasterizer.SetIndexArray(IbHelper.ConvertIbSizeQuadStripToTris(IbSize), IndexFormat);
                     }
                 }
             }
 
-            List<GalVertexAttrib>[] Attribs = new List<GalVertexAttrib>[32];
-
-            for (int Attr = 0; Attr < 16; Attr++)
-            {
-                int Packed = ReadRegister(NvGpuEngine3dReg.VertexAttribNFormat + Attr);
-
-                int ArrayIndex = Packed & 0x1f;
-
-                if (Attribs[ArrayIndex] == null)
-                {
-                    Attribs[ArrayIndex] = new List<GalVertexAttrib>();
-                }
-
-                long VbPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNAddress + ArrayIndex * 4);
-
-                bool IsConst = ((Packed >> 6) & 1) != 0;
-
-                int Offset = (Packed >> 7) & 0x3fff;
-
-                GalVertexAttribSize Size = (GalVertexAttribSize)((Packed >> 21) & 0x3f);
-                GalVertexAttribType Type = (GalVertexAttribType)((Packed >> 27) & 0x7);
-
-                bool IsRgba = ((Packed >> 31) & 1) != 0;
-
-                //Note: 16 is the maximum size of an attribute,
-                //having a component size of 32-bits with 4 elements (a vec4).
-                byte[] Data = Vmm.ReadBytes(VbPosition + Offset, 16);
-
-                Attribs[ArrayIndex].Add(new GalVertexAttrib(Attr, IsConst, Offset, Data, Size, Type, IsRgba));
-            }
+            //Get vertex arrays and attributes count from attribute registers.
+            int AttribsCount = 0;
+            int ArraysCount  = 0;
 
             for (int Index = 0; Index < 32; Index++)
             {
-                if (Attribs[Index] == null)
+                int Packed = Registers[(int)NvGpuEngine3dReg.VertexAttribNFormat + Index];
+
+                //The size is a 3 bits field, starting at bit 27.
+                //If size is 0, then the attribute is unused, skip it.
+                if ((Packed & (7 << 27)) == 0)
                 {
                     continue;
                 }
 
+                if (AttribsCount < Index)
+                {
+                    AttribsCount = Index;
+                }
+
+                int ArrayIndex = Packed & 0x1f;
+
+                if (ArraysCount < ArrayIndex)
+                {
+                    ArraysCount = ArrayIndex;
+                }
+            }
+
+            //Those are actually the last valid indices, so we need
+            //to add 1 to get the count.
+            AttribsCount++;
+            ArraysCount++;
+
+            //Upload vertex buffers, build vertex array info table.
+            GalVertexAttribArray[] Arrays = new GalVertexAttribArray[ArraysCount];
+
+            int VertexFirst = ReadRegister(NvGpuEngine3dReg.VertexArrayFirst);
+            int VertexCount = ReadRegister(NvGpuEngine3dReg.VertexArrayCount);
+
+            for (int Index = 0; Index < ArraysCount; Index++)
+            {
                 int Control = ReadRegister(NvGpuEngine3dReg.VertexArrayNControl + Index * 4);
 
                 bool Enable = (Control & 0x1000) != 0;
@@ -895,19 +980,71 @@ namespace Ryujinx.Graphics.Graphics3d
 
                 long VbSize = (VbEndPos - VbPosition) + 1;
 
-                bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VboKey, VbSize);
+                long MaxVbSize = (IndexCount != 0
+                    ? VertexBase  + IbVtxCount
+                    : VertexFirst + VertexCount) * Stride;
 
-                if (!VboCached || Gpu.ResourceManager.MemoryRegionModified(Vmm, VboKey, VbSize, NvGpuBufferType.Vertex))
+                if (MaxVbSize < VbSize)
+                {
+                    VbSize = MaxVbSize;
+                }
+
+                bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VboKey, (int)VbSize);
+
+                if (Gpu.ResourceManager.MemoryRegionModified(Vmm, VboKey, VbSize, NvGpuBufferType.Vertex) || !VboCached)
                 {
                     if (Vmm.TryGetHostAddress(VbPosition, VbSize, out IntPtr VbPtr))
                     {
-                        Gpu.Renderer.Rasterizer.CreateVbo(VboKey, (int)VbSize, VbPtr);
+                        Gpu.Renderer.Rasterizer.CreateVbo(VboKey, VbPtr, (int)VbSize);
                     }
                     else
                     {
                         Gpu.Renderer.Rasterizer.CreateVbo(VboKey, Vmm.ReadBytes(VbPosition, VbSize));
                     }
                 }
+
+                Arrays[Index] = new GalVertexAttribArray(VboKey, Stride, Instanced ? VertexDivisor : 0);
+            }
+
+            //Set vertex attributes.
+            ReadOnlySpan<int> RawAttribs = new ReadOnlySpan<int>(Registers, (int)NvGpuEngine3dReg.VertexAttribNFormat, AttribsCount);
+
+            if (!Gpu.Renderer.Rasterizer.TryBindVao(RawAttribs, Arrays))
+            {
+                GalVertexAttrib[] Attributes = new GalVertexAttrib[AttribsCount];
+
+                for (int Index = 0; Index < AttribsCount; Index++)
+                {
+                    int Packed = ReadRegister(NvGpuEngine3dReg.VertexAttribNFormat + Index);
+
+                    int ArrayIndex = Packed & 0x1f;
+
+                    long VbPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.VertexArrayNAddress + ArrayIndex * 4);
+
+                    bool IsConst = ((Packed >> 6) & 1) != 0;
+
+                    int Offset = (Packed >> 7) & 0x3fff;
+
+                    //Note: 16 is the maximum size of an attribute,
+                    //having a component size of 32-bits with 4 elements (a vec4).
+                    byte[] Data = Vmm.ReadBytes(VbPosition + Offset, 16);
+
+                    GalVertexAttribSize Size = (GalVertexAttribSize)((Packed >> 21) & 0x3f);
+                    GalVertexAttribType Type = (GalVertexAttribType)((Packed >> 27) & 0x7);
+
+                    bool IsRgba = ((Packed >> 31) & 1) != 0;
+
+                    Attributes[Index] = new GalVertexAttrib(
+                        IsConst,
+                        ArrayIndex,
+                        Offset,
+                        Data,
+                        Size,
+                        Type,
+                        IsRgba);
+                }
+
+                Gpu.Renderer.Rasterizer.CreateVao(RawAttribs, Attributes, Arrays);
             }
         }
 
@@ -974,11 +1111,11 @@ namespace Ryujinx.Graphics.Graphics3d
                     //quad (First % 4 != 0 for Quads) then it will not work properly.
                     if (PrimType == GalPrimitiveType.Quads)
                     {
-                        IndexFirst = QuadHelper.ConvertIbSizeQuadsToTris(IndexFirst);
+                        IndexFirst = IbHelper.ConvertIbSizeQuadsToTris(IndexFirst);
                     }
                     else /* if (PrimType == GalPrimitiveType.QuadStrip) */
                     {
-                        IndexFirst = QuadHelper.ConvertIbSizeQuadStripToTris(IndexFirst);
+                        IndexFirst = IbHelper.ConvertIbSizeQuadStripToTris(IndexFirst);
                     }
                 }
 
@@ -1063,23 +1200,11 @@ namespace Ryujinx.Graphics.Graphics3d
 
             long Position = MakeInt64From2xInt32(NvGpuEngine3dReg.ConstBufferAddress);
 
-            long CbKey = Vmm.GetPhysicalAddress(Position);
-
             int Size = ReadRegister(NvGpuEngine3dReg.ConstBufferSize);
 
-            if (!Gpu.Renderer.Buffer.IsCached(CbKey, Size))
-            {
-                Gpu.Renderer.Buffer.Create(CbKey, Size);
-            }
-
-            ConstBuffer Cb = ConstBuffers[Stage][Index];
-
-            if (Cb.Position != Position || Cb.Enabled != Enabled || Cb.Size != Size)
-            {
-                ConstBuffers[Stage][Index].Position = Position;
-                ConstBuffers[Stage][Index].Enabled = Enabled;
-                ConstBuffers[Stage][Index].Size = Size;
-            }
+            ConstBuffers[Stage][Index].Enabled  = Enabled;
+            ConstBuffers[Stage][Index].Position = Position;
+            ConstBuffers[Stage][Index].Size     = Size;
         }
 
         private float GetFlipSign(NvGpuEngine3dReg Reg)

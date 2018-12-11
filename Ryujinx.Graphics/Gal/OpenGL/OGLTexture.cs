@@ -6,14 +6,49 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLTexture : IGalTexture
     {
+        private struct ImageKey
+        {
+            public int Width  { get; private set; }
+            public int Height { get; private set; }
 
-        private OGLCachedResource<ImageHandler> TextureCache;
+            public GalImageFormat Format { get; private set; }
+
+            public ImageKey(GalImage image)
+            {
+                Width  = image.Width;
+                Height = image.Height;
+                Format = image.Format;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (!(obj is ImageKey imgKey))
+                {
+                    return false;
+                }
+
+                return Width  == imgKey.Width  &&
+                       Height == imgKey.Height &&
+                       Format == imgKey.Format;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Width, Height, Format);
+            }
+        }
+
+        private OGLResourceCache<ImageKey, ImageHandler> TextureCache;
+
+        private OGLResourceCache<int, int> PboCache;
 
         public EventHandler<int> TextureDeleted { get; set; }
 
         public OGLTexture()
         {
-            TextureCache = new OGLCachedResource<ImageHandler>(DeleteTexture, OGLResourceLimits.TextureLimit);
+            TextureCache = new OGLResourceCache<ImageKey, ImageHandler>(DeleteTexture, OGLResourceLimits.TextureLimit);
+
+            PboCache = new OGLResourceCache<int, int>(GL.DeleteBuffer, OGLResourceLimits.PixelBufferLimit, 0);
         }
 
         public void LockCache()
@@ -35,14 +70,31 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public void Create(long Key, int Size, GalImage Image)
         {
-            int Handle = GL.GenTexture();
+            CreateFromPboOrEmpty(Key, Size, Image, IsEmpty: true);
+        }
 
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+        private void CreateFromPboOrEmpty(long Key, int Size, GalImage Image, bool IsEmpty = false)
+        {
+            ImageKey imageKey = new ImageKey(Image);
+
+            if (TextureCache.TryReuseValue(Key, imageKey, out ImageHandler CachedImage))
+            {
+                if (IsEmpty)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                CachedImage = new ImageHandler(GL.GenTexture(), Image);
+
+                TextureCache.AddOrUpdate(Key, imageKey, CachedImage, Size);
+            }
+
+            GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
 
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
-
-            TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Size);
 
             if (ImageUtils.IsCompressed(Image.Format))
             {
@@ -74,7 +126,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             const int Level  = 0; //TODO: Support mipmap textures.
             const int Border = 0;
 
-            TextureCache.AddOrUpdate(Key, new ImageHandler(Handle, Image), (uint)Data.Length);
+            ImageKey imageKey = new ImageKey(Image);
+
+            TextureCache.AddOrUpdate(Key, imageKey, new ImageHandler(Handle, Image), Data.Length);
 
             if (ImageUtils.IsCompressed(Image.Format) && !IsAstc(Image.Format))
             {

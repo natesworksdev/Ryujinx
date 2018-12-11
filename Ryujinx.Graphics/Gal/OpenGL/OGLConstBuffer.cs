@@ -1,16 +1,20 @@
-using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL;
 using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLConstBuffer : IGalConstBuffer
     {
-
-        private OGLCachedResource<OGLStreamBuffer> Cache;
+        private OGLResourceCache<int, OGLStreamBuffer> Cache;
 
         public OGLConstBuffer()
         {
-            Cache = new OGLCachedResource<OGLStreamBuffer>(DeleteBuffer, OGLResourceLimits.ConstBufferLimit);
+            Cache = new OGLResourceCache<int, OGLStreamBuffer>(DeleteBuffer, OGLResourceLimits.ConstBufferLimit);
+        }
+
+        private static void DeleteBuffer(OGLStreamBuffer Buffer)
+        {
+            Buffer.Dispose();
         }
 
         public void LockCache()
@@ -23,51 +27,45 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Cache.Unlock();
         }
 
-        public void Create(long Key, long Size)
+        public bool IsCached(long key, int size)
         {
-            OGLStreamBuffer Buffer = new OGLStreamBuffer(BufferTarget.UniformBuffer, Size);
-
-            Cache.AddOrUpdate(Key, Buffer, Size);
+            return Cache.TryGetSize(key, out int cbSize) && cbSize >= size;
         }
 
-        public bool IsCached(long Key, long Size)
+        public void Create(long key, IntPtr hostAddress, int size)
         {
-            return Cache.TryGetSize(Key, out long CachedSize) && CachedSize == Size;
+            GetBuffer(key, size).SetData(hostAddress, size);
         }
 
-        public void SetData(long Key, long Size, IntPtr HostAddress)
+        public void Create(long key, byte[] buffer)
         {
-            if (Cache.TryGetValue(Key, out OGLStreamBuffer Buffer))
+            GetBuffer(key, buffer.Length).SetData(buffer);
+        }
+
+        public bool TryGetUbo(long key, out int uboHandle)
+        {
+            if (Cache.TryGetValue(key, out OGLStreamBuffer buffer))
             {
-                Buffer.SetData(Size, HostAddress);
-            }
-        }
-
-        public void SetData(long Key, byte[] Data)
-        {
-            if (Cache.TryGetValue(Key, out OGLStreamBuffer Buffer))
-            {
-                Buffer.SetData(Data);
-            }
-        }
-
-        public bool TryGetUbo(long Key, out int UboHandle)
-        {
-            if (Cache.TryGetValue(Key, out OGLStreamBuffer Buffer))
-            {
-                UboHandle = Buffer.Handle;
+                uboHandle = buffer.Handle;
 
                 return true;
             }
 
-            UboHandle = 0;
+            uboHandle = 0;
 
             return false;
         }
 
-        private static void DeleteBuffer(OGLStreamBuffer Buffer)
+        private OGLStreamBuffer GetBuffer(long Key, int Size)
         {
-            Buffer.Dispose();
+            if (!Cache.TryReuseValue(Key, Size, out OGLStreamBuffer Buffer))
+            {
+                Buffer = new OGLStreamBuffer(BufferTarget.UniformBuffer, Size);
+
+                Cache.AddOrUpdate(Key, Size, Buffer, Size);
+            }
+
+            return Buffer;
         }
     }
 }

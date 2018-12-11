@@ -37,7 +37,5 @@ namespace Ryujinx.Graphics.Gal
             int  DstY0,
             int  DstX1,
             int  DstY1);
-
-        void Reinterpret(long Key, GalImage NewImage);
     }
 }
