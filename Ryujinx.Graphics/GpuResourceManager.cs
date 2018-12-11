@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics
         {
             if (Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage) && CachedImage.SizeMatches(NewImage))
             {
-                Gpu.Renderer.RenderTarget.Reinterpret(Position, NewImage);
+                Gpu.Renderer.Texture.Reinterpret(Position, NewImage);
 
                 return true;
             }

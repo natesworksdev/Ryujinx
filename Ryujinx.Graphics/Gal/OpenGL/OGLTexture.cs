@@ -132,6 +132,62 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return Format > GalImageFormat.Astc2DStart && Format < GalImageFormat.Astc2DEnd;
         }
 
+        public void Reinterpret(long Key, GalImage NewImage)
+        {
+            if (!TryGetImage(Key, out GalImage OldImage))
+            {
+                return;
+            }
+
+            if (NewImage.Width  == OldImage.Width  &&
+                NewImage.Height == OldImage.Height &&
+                NewImage.Format == OldImage.Format)
+            {
+                return;
+            }
+
+            //The buffer should be large enough to hold the largest texture.
+            int BufferSize = Math.Max(ImageUtils.GetSize(OldImage),
+                                      ImageUtils.GetSize(NewImage));
+
+            if (!PboCache.TryReuseValue(0, BufferSize, out int Handle))
+            {
+                Handle = GL.GenBuffer();
+
+                GL.BindBuffer(BufferTarget.PixelPackBuffer, Handle);
+
+                GL.BufferData(BufferTarget.PixelPackBuffer, BufferSize, IntPtr.Zero, BufferUsageHint.StreamCopy);
+
+                PboCache.AddOrUpdate(0, BufferSize, Handle, BufferSize);
+            }
+            else
+            {
+                GL.BindBuffer(BufferTarget.PixelPackBuffer, Handle);
+            }
+
+            if (!TryGetImageHandler(Key, out ImageHandler CachedImage))
+            {
+                throw new ArgumentException(nameof(Key));
+            }
+
+            (_, PixelFormat Format, PixelType Type) = OGLEnumConverter.GetImageFormat(CachedImage.Format);
+
+            GL.BindTexture(TextureTarget.Texture2D, CachedImage.Handle);
+
+            GL.GetTexImage(TextureTarget.Texture2D, 0, Format, Type, IntPtr.Zero);
+
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, Handle);
+
+            GL.PixelStore(PixelStoreParameter.UnpackRowLength, OldImage.Width);
+
+            CreateFromPboOrEmpty(Key, ImageUtils.GetSize(NewImage), NewImage);
+
+            GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+        }
+
         public bool TryGetImage(long Key, out GalImage Image)
         {
             if (TextureCache.TryGetValue(Key, out ImageHandler CachedImage))
