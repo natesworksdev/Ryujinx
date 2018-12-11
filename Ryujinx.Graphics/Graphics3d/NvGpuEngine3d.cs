@@ -9,6 +9,8 @@ namespace Ryujinx.Graphics.Graphics3d
 {
     class NvGpuEngine3d : INvGpuEngine
     {
+        private const int RenderTargetsCount = 8;
+
         public int[] Registers { get; private set; }
 
         private NvGpu Gpu;
@@ -23,6 +25,18 @@ namespace Ryujinx.Graphics.Graphics3d
         }
 
         private ConstBuffer[][] ConstBuffers;
+
+        [Flags]
+        private enum PipelineState
+        {
+            Depth       = 1 << 0,
+            Stencil     = 1 << 1,
+            Blend       = 1 << 2,
+            ColorMask   = 1 << 3,
+            PrimRestart = 1 << 4
+        }
+
+        private PipelineState DirtyState;
 
         private int CurrentInstance = 0;
 
@@ -61,9 +75,9 @@ namespace Ryujinx.Graphics.Graphics3d
             //FIXME: Is this correct?
             WriteRegister(NvGpuEngine3dReg.ColorMaskN, 0x1111);
 
-            WriteRegister(NvGpuEngine3dReg.FrameBufferSrgb, 1);
+            Gpu.Renderer.RenderTarget.FramebufferSrgb = true;
 
-            for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
+            for (int Index = 0; Index < RenderTargetsCount; Index++)
             {
                 WriteRegister(NvGpuEngine3dReg.IBlendNEquationRgb   + Index * 8, (int)GalBlendEquation.FuncAdd);
                 WriteRegister(NvGpuEngine3dReg.IBlendNFuncSrcRgb    + Index * 8, (int)GalBlendFactor.One);
@@ -90,16 +104,40 @@ namespace Ryujinx.Graphics.Graphics3d
         {
             LockCaches();
 
-            GalPipelineState State = new GalPipelineState();
+            if ((DirtyState & PipelineState.Depth) == 0)
+            {
+                DirtyState |= PipelineState.Depth;
 
-            SetFrameBuffer(State);
-            SetFrontFace(State);
-            SetCullFace(State);
-            SetDepth(State);
-            SetStencil(State);
-            SetBlending(State);
-            SetColorMask(State);
-            SetPrimitiveRestart(State);
+                UpdateDepth();
+            }
+
+            if ((DirtyState & PipelineState.Stencil) == 0)
+            {
+                DirtyState |= PipelineState.Stencil;
+
+                UpdateStencil();
+            }
+
+            if ((DirtyState & PipelineState.Blend) == 0)
+            {
+                DirtyState |= PipelineState.Blend;
+
+                UpdateBlend();
+            }
+
+            if ((DirtyState & PipelineState.ColorMask) == 0)
+            {
+                DirtyState |= PipelineState.ColorMask;
+
+                UpdateColorMask();
+            }
+
+            if ((DirtyState & PipelineState.PrimRestart) == 0)
+            {
+                DirtyState |= PipelineState.PrimRestart;
+
+                UpdatePrimRestart();
+            }
 
             for (int FbIndex = 0; FbIndex < 8; FbIndex++)
             {
@@ -114,11 +152,11 @@ namespace Ryujinx.Graphics.Graphics3d
 
             Gpu.Renderer.Shader.BindProgram();
 
-            UploadTextures(Vmm, State, Keys);
-            UploadConstBuffers(Vmm, State, Keys);
-            UploadVertexArrays(Vmm, State);
+            UploadTextures(Vmm, Keys);
+            UploadConstBuffers(Vmm, Keys);
+            UploadVertexArrays(Vmm);
 
-            DispatchRender(Vmm, State);
+            DispatchRender(Vmm);
 
             UnlockCaches();
         }
@@ -162,8 +200,8 @@ namespace Ryujinx.Graphics.Graphics3d
 
             Gpu.Renderer.Rasterizer.ClearBuffers(Flags, Attachment, Red, Green, Blue, Alpha, Depth, Stencil);
 
-            Gpu.Renderer.Pipeline.ResetDepthMask();
-            Gpu.Renderer.Pipeline.ResetColorMask(Attachment);
+            DirtyState &= ~PipelineState.Depth;
+            DirtyState &= ~PipelineState.ColorMask;
         }
 
         private void SetFrameBuffer(NvGpuVmm Vmm, int FbIndex)
@@ -209,23 +247,6 @@ namespace Ryujinx.Graphics.Graphics3d
             Gpu.ResourceManager.SendColorBuffer(Vmm, Key, FbIndex, Image);
 
             Gpu.Renderer.RenderTarget.SetViewport(FbIndex, VpX, VpY, VpW, VpH);
-        }
-
-        private void SetFrameBuffer(GalPipelineState State)
-        {
-            State.FramebufferSrgb = ReadRegisterBool(NvGpuEngine3dReg.FrameBufferSrgb);
-
-            State.FlipX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
-            State.FlipY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
-
-            int ScreenYControl = ReadRegister(NvGpuEngine3dReg.ScreenYControl);
-
-            bool NegateY = (ScreenYControl & 1) != 0;
-
-            if (NegateY)
-            {
-                State.FlipY = -State.FlipY;
-            }
         }
 
         private void SetZeta(NvGpuVmm Vmm)
@@ -338,115 +359,174 @@ namespace Ryujinx.Graphics.Graphics3d
             throw new ArgumentOutOfRangeException(nameof(Program));
         }
 
-        private void SetFrontFace(GalPipelineState State)
+        private void SetDepth(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            float SignX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
-            float SignY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
+            WriteRegister(MethCall);
 
-            GalFrontFace FrontFace = (GalFrontFace)ReadRegister(NvGpuEngine3dReg.FrontFace);
-
-            //Flipping breaks facing. Flipping front facing too fixes it
-            if (SignX != SignY)
-            {
-                switch (FrontFace)
-                {
-                    case GalFrontFace.CW:  FrontFace = GalFrontFace.CCW; break;
-                    case GalFrontFace.CCW: FrontFace = GalFrontFace.CW;  break;
-                }
-            }
-
-            State.FrontFace = FrontFace;
+            DirtyState &= ~PipelineState.Depth;
         }
 
-        private void SetCullFace(GalPipelineState State)
+        private void SetStencil(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            State.CullFaceEnabled = ReadRegisterBool(NvGpuEngine3dReg.CullFaceEnable);
+            WriteRegister(MethCall);
 
-            if (State.CullFaceEnabled)
-            {
-                State.CullFace = (GalCullFace)ReadRegister(NvGpuEngine3dReg.CullFace);
-            }
+            DirtyState &= ~PipelineState.Stencil;
         }
 
-        private void SetDepth(GalPipelineState State)
+        private void SetBlend(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            State.DepthTestEnabled = ReadRegisterBool(NvGpuEngine3dReg.DepthTestEnable);
+            WriteRegister(MethCall);
 
-            State.DepthWriteEnabled = ReadRegisterBool(NvGpuEngine3dReg.DepthWriteEnable);
-
-            if (State.DepthTestEnabled)
-            {
-                State.DepthFunc = (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.DepthTestFunction);
-            }
-
-            State.DepthRangeNear = ReadRegisterFloat(NvGpuEngine3dReg.DepthRangeNNear);
-            State.DepthRangeFar  = ReadRegisterFloat(NvGpuEngine3dReg.DepthRangeNFar);
+            DirtyState &= ~PipelineState.Blend;
         }
 
-        private void SetStencil(GalPipelineState State)
+        private void SetColorMask(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
-            State.StencilTestEnabled = ReadRegisterBool(NvGpuEngine3dReg.StencilEnable);
+            WriteRegister(MethCall);
 
-            if (State.StencilTestEnabled)
+            DirtyState &= ~PipelineState.ColorMask;
+        }
+
+        private void SetPrimRestart(NvGpuVmm Vmm, GpuMethodCall MethCall)
+        {
+            WriteRegister(MethCall);
+
+            DirtyState &= ~PipelineState.PrimRestart;
+        }
+
+        private void SetFramebufferSrgb(NvGpuVmm Vmm, GpuMethodCall MethCall)
+        {
+            bool FramebufferSrgb = ReadRegisterBool(NvGpuEngine3dReg.FrameBufferSrgb);
+
+            Gpu.Renderer.Pipeline.SetFramebufferSrgb(FramebufferSrgb);
+
+            Gpu.Renderer.RenderTarget.FramebufferSrgb = FramebufferSrgb;
+        }
+
+        private void UpdateDepth()
+        {
+            bool DepthTestEnabled  = ReadRegisterBool(NvGpuEngine3dReg.DepthTestEnable);
+            bool DepthWriteEnabled = ReadRegisterBool(NvGpuEngine3dReg.DepthWriteEnable);
+
+            Gpu.Renderer.Pipeline.SetDepthMask(DepthTestEnabled, DepthWriteEnabled);
+
+            if (DepthTestEnabled)
             {
-                State.StencilBackFuncFunc = (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.StencilBackFuncFunc);
-                State.StencilBackFuncRef  =                  ReadRegister(NvGpuEngine3dReg.StencilBackFuncRef);
-                State.StencilBackFuncMask =            (uint)ReadRegister(NvGpuEngine3dReg.StencilBackFuncMask);
-                State.StencilBackOpFail   =    (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilBackOpFail);
-                State.StencilBackOpZFail  =    (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilBackOpZFail);
-                State.StencilBackOpZPass  =    (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilBackOpZPass);
-                State.StencilBackMask     =            (uint)ReadRegister(NvGpuEngine3dReg.StencilBackMask);
+                GalComparisonOp DepthFunc = (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.DepthTestFunction);
 
-                State.StencilFrontFuncFunc = (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.StencilFrontFuncFunc);
-                State.StencilFrontFuncRef  =                  ReadRegister(NvGpuEngine3dReg.StencilFrontFuncRef);
-                State.StencilFrontFuncMask =            (uint)ReadRegister(NvGpuEngine3dReg.StencilFrontFuncMask);
-                State.StencilFrontOpFail   =    (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilFrontOpFail);
-                State.StencilFrontOpZFail  =    (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilFrontOpZFail);
-                State.StencilFrontOpZPass  =    (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilFrontOpZPass);
-                State.StencilFrontMask     =            (uint)ReadRegister(NvGpuEngine3dReg.StencilFrontMask);
+                Gpu.Renderer.Pipeline.SetDepthFunc(DepthFunc);
+            }
+
+            if (DepthTestEnabled || DepthWriteEnabled)
+            {
+                float DepthRangeNear = ReadRegisterFloat(NvGpuEngine3dReg.DepthRangeNNear);
+                float DepthRangeFar  = ReadRegisterFloat(NvGpuEngine3dReg.DepthRangeNFar);
+
+                Gpu.Renderer.Pipeline.SetDepthRange(DepthRangeNear, DepthRangeFar);
             }
         }
 
-        private void SetBlending(GalPipelineState State)
+        private void UpdateStencil()
+        {
+            bool StencilTestEnabled = ReadRegisterBool(NvGpuEngine3dReg.StencilEnable);
+
+            Gpu.Renderer.Pipeline.SetStencilTestEnabled(StencilTestEnabled);
+
+            if (StencilTestEnabled)
+            {
+                Gpu.Renderer.Pipeline.SetStencilTest(
+                    (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.StencilBackFuncFunc),
+                                     ReadRegister(NvGpuEngine3dReg.StencilBackFuncRef),
+                               (uint)ReadRegister(NvGpuEngine3dReg.StencilBackFuncMask),
+                       (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilBackOpFail),
+                       (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilBackOpZFail),
+                       (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilBackOpZPass),
+                               (uint)ReadRegister(NvGpuEngine3dReg.StencilBackMask),
+                    (GalComparisonOp)ReadRegister(NvGpuEngine3dReg.StencilFrontFuncFunc),
+                                     ReadRegister(NvGpuEngine3dReg.StencilFrontFuncRef),
+                               (uint)ReadRegister(NvGpuEngine3dReg.StencilFrontFuncMask),
+                       (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilFrontOpFail),
+                       (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilFrontOpZFail),
+                       (GalStencilOp)ReadRegister(NvGpuEngine3dReg.StencilFrontOpZPass),
+                               (uint)ReadRegister(NvGpuEngine3dReg.StencilFrontMask));
+            }
+        }
+
+        private void UpdateBlend()
         {
             bool BlendIndependent = ReadRegisterBool(NvGpuEngine3dReg.BlendIndependent);
 
-            State.BlendIndependent = BlendIndependent;
-
-            for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
+            if (BlendIndependent)
             {
-                if (BlendIndependent)
+                for (int Index = 0; Index < RenderTargetsCount; Index++)
                 {
-                    State.Blends[Index].Enabled = ReadRegisterBool(NvGpuEngine3dReg.IBlendNEnable + Index);
+                    bool Enabled = ReadRegisterBool(NvGpuEngine3dReg.IBlendNEnable + Index);
 
-                    if (State.Blends[Index].Enabled)
+                    Gpu.Renderer.Pipeline.SetBlendEnabled(Index, Enabled);
+
+                    if (Enabled)
                     {
-                        State.Blends[Index].SeparateAlpha = ReadRegisterBool(NvGpuEngine3dReg.IBlendNSeparateAlpha + Index * 8);
+                        bool SeparateAlpha = ReadRegisterBool(NvGpuEngine3dReg.IBlendNSeparateAlpha + Index * 8);
 
-                        State.Blends[Index].EquationRgb   = ReadBlendEquation(NvGpuEngine3dReg.IBlendNEquationRgb   + Index * 8);
-                        State.Blends[Index].FuncSrcRgb    = ReadBlendFactor  (NvGpuEngine3dReg.IBlendNFuncSrcRgb    + Index * 8);
-                        State.Blends[Index].FuncDstRgb    = ReadBlendFactor  (NvGpuEngine3dReg.IBlendNFuncDstRgb    + Index * 8);
-                        State.Blends[Index].EquationAlpha = ReadBlendEquation(NvGpuEngine3dReg.IBlendNEquationAlpha + Index * 8);
-                        State.Blends[Index].FuncSrcAlpha  = ReadBlendFactor  (NvGpuEngine3dReg.IBlendNFuncSrcAlpha  + Index * 8);
-                        State.Blends[Index].FuncDstAlpha  = ReadBlendFactor  (NvGpuEngine3dReg.IBlendNFuncDstAlpha  + Index * 8);
+                        GalBlendEquation EquationRgb = ReadBlendEquation(NvGpuEngine3dReg.IBlendNEquationRgb + Index * 8);
+                        GalBlendFactor   FuncSrcRgb  = ReadBlendFactor  (NvGpuEngine3dReg.IBlendNFuncSrcRgb  + Index * 8);
+                        GalBlendFactor   FuncDstRgb  = ReadBlendFactor  (NvGpuEngine3dReg.IBlendNFuncDstRgb  + Index * 8);
+
+                        if (SeparateAlpha)
+                        {
+                            GalBlendEquation EquationAlpha = ReadBlendEquation(NvGpuEngine3dReg.IBlendNEquationAlpha + Index * 8);
+                            GalBlendFactor   FuncSrcAlpha  = ReadBlendFactor  (NvGpuEngine3dReg.IBlendNFuncSrcAlpha  + Index * 8);
+                            GalBlendFactor   FuncDstAlpha  = ReadBlendFactor  (NvGpuEngine3dReg.IBlendNFuncDstAlpha  + Index * 8);
+
+                            Gpu.Renderer.Pipeline.SetBlendSeparate(
+                                Index,
+                                EquationRgb,
+                                FuncSrcRgb,
+                                FuncDstRgb,
+                                EquationAlpha,
+                                FuncSrcAlpha,
+                                FuncDstAlpha);
+                        }
+                        else
+                        {
+                            Gpu.Renderer.Pipeline.SetBlend(Index, EquationRgb, FuncSrcRgb, FuncDstRgb);
+                        }
                     }
                 }
-                else
+            }
+            else
+            {
+                //It seems that even when independent blend is disabled, the first IBlend enable
+                //register is still set to indicate whenever blend is enabled or not (?).
+                bool Enabled = ReadRegisterBool(NvGpuEngine3dReg.IBlendNEnable);
+
+                Gpu.Renderer.Pipeline.SetBlendEnabled(Enabled);
+
+                if (Enabled)
                 {
-                    //It seems that even when independent blend is disabled, the first IBlend enable
-                    //register is still set to indicate whenever blend is enabled or not (?).
-                    State.Blends[Index].Enabled = ReadRegisterBool(NvGpuEngine3dReg.IBlendNEnable);
+                    bool SeparateAlpha = ReadRegisterBool(NvGpuEngine3dReg.BlendSeparateAlpha);
 
-                    if (State.Blends[Index].Enabled)
+                    GalBlendEquation EquationRgb = ReadBlendEquation(NvGpuEngine3dReg.BlendEquationRgb);
+                    GalBlendFactor   FuncSrcRgb  = ReadBlendFactor  (NvGpuEngine3dReg.BlendFuncSrcRgb);
+                    GalBlendFactor   FuncDstRgb  = ReadBlendFactor  (NvGpuEngine3dReg.BlendFuncDstRgb);
+
+                    if (SeparateAlpha)
                     {
-                        State.Blends[Index].SeparateAlpha = ReadRegisterBool(NvGpuEngine3dReg.BlendSeparateAlpha);
+                        GalBlendEquation EquationAlpha = ReadBlendEquation(NvGpuEngine3dReg.BlendEquationAlpha);
+                        GalBlendFactor   FuncSrcAlpha  = ReadBlendFactor  (NvGpuEngine3dReg.BlendFuncSrcAlpha);
+                        GalBlendFactor   FuncDstAlpha  = ReadBlendFactor  (NvGpuEngine3dReg.BlendFuncDstAlpha);
 
-                        State.Blends[Index].EquationRgb   = ReadBlendEquation(NvGpuEngine3dReg.BlendEquationRgb);
-                        State.Blends[Index].FuncSrcRgb    = ReadBlendFactor  (NvGpuEngine3dReg.BlendFuncSrcRgb);
-                        State.Blends[Index].FuncDstRgb    = ReadBlendFactor  (NvGpuEngine3dReg.BlendFuncDstRgb);
-                        State.Blends[Index].EquationAlpha = ReadBlendEquation(NvGpuEngine3dReg.BlendEquationAlpha);
-                        State.Blends[Index].FuncSrcAlpha  = ReadBlendFactor  (NvGpuEngine3dReg.BlendFuncSrcAlpha);
-                        State.Blends[Index].FuncDstAlpha  = ReadBlendFactor  (NvGpuEngine3dReg.BlendFuncDstAlpha);
+                        Gpu.Renderer.Pipeline.SetBlendSeparate(
+                            EquationRgb,
+                            FuncSrcRgb,
+                            FuncDstRgb,
+                            EquationAlpha,
+                            FuncSrcAlpha,
+                            FuncDstAlpha);
+                    }
+                    else
+                    {
+                        Gpu.Renderer.Pipeline.SetBlend(EquationRgb, FuncSrcRgb, FuncDstRgb);
                     }
                 }
             }
@@ -462,30 +542,48 @@ namespace Ryujinx.Graphics.Graphics3d
             return (GalBlendFactor)ReadRegister(Register);
         }
 
-        private void SetColorMask(GalPipelineState State)
+        private void UpdateColorMask()
         {
             bool ColorMaskCommon = ReadRegisterBool(NvGpuEngine3dReg.ColorMaskCommon);
 
-            State.ColorMaskCommon = ColorMaskCommon;
-
-            for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
+            if (ColorMaskCommon)
             {
-                int ColorMask = ReadRegister(NvGpuEngine3dReg.ColorMaskN + (ColorMaskCommon ? 0 : Index));
+                int ColorMask = ReadRegister(NvGpuEngine3dReg.ColorMaskN);
 
-                State.ColorMasks[Index].Red   = ((ColorMask >> 0)  & 0xf) != 0;
-                State.ColorMasks[Index].Green = ((ColorMask >> 4)  & 0xf) != 0;
-                State.ColorMasks[Index].Blue  = ((ColorMask >> 8)  & 0xf) != 0;
-                State.ColorMasks[Index].Alpha = ((ColorMask >> 12) & 0xf) != 0;
+                bool RedMask   = ((ColorMask >> 0)  & 0xf) != 0;
+                bool GreenMask = ((ColorMask >> 4)  & 0xf) != 0;
+                bool BlueMask  = ((ColorMask >> 8)  & 0xf) != 0;
+                bool AlphaMask = ((ColorMask >> 12) & 0xf) != 0;
+
+                Gpu.Renderer.Pipeline.SetColorMask(RedMask, GreenMask, BlueMask, AlphaMask);
+            }
+            else
+            {
+                for (int Index = 0; Index < RenderTargetsCount; Index++)
+                {
+                    int ColorMask = ReadRegister(NvGpuEngine3dReg.ColorMaskN + Index);
+
+                    bool RedMask   = ((ColorMask >> 0)  & 0xf) != 0;
+                    bool GreenMask = ((ColorMask >> 4)  & 0xf) != 0;
+                    bool BlueMask  = ((ColorMask >> 8)  & 0xf) != 0;
+                    bool AlphaMask = ((ColorMask >> 12) & 0xf) != 0;
+
+                    Gpu.Renderer.Pipeline.SetColorMask(Index, RedMask, GreenMask, BlueMask, AlphaMask);
+                }
             }
         }
 
-        private void SetPrimitiveRestart(GalPipelineState State)
+        private void UpdatePrimRestart()
         {
-            State.PrimitiveRestartEnabled = ReadRegisterBool(NvGpuEngine3dReg.PrimRestartEnable);
+            bool PrimitiveRestartEnabled = ReadRegisterBool(NvGpuEngine3dReg.PrimRestartEnable);
 
-            if (State.PrimitiveRestartEnabled)
+            Gpu.Renderer.Pipeline.SetPrimitiveRestartEnabled(PrimitiveRestartEnabled);
+
+            if (PrimitiveRestartEnabled)
             {
-                State.PrimitiveRestartIndex = (uint)ReadRegister(NvGpuEngine3dReg.PrimRestartIndex);
+                int Index = ReadRegister(NvGpuEngine3dReg.PrimRestartIndex);
+
+                Gpu.Renderer.Pipeline.SetPrimitiveRestartIndex(Index);
             }
         }
 
@@ -517,7 +615,7 @@ namespace Ryujinx.Graphics.Graphics3d
             }
         }
 
-        private void UploadTextures(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)
+        private void UploadTextures(NvGpuVmm Vmm, long[] Keys)
         {
             long BaseShPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.ShaderAddress);
 
@@ -609,10 +707,14 @@ namespace Ryujinx.Graphics.Graphics3d
             return (Key, Image, Sampler);
         }
 
-        private void UploadConstBuffers(NvGpuVmm Vmm, GalPipelineState State, long[] Keys)
+        private void UploadConstBuffers(NvGpuVmm Vmm, long[] Keys)
         {
+            long[][] ConstBufferKeys = new long[6][];
+
             for (int Stage = 0; Stage < Keys.Length; Stage++)
             {
+                ConstBufferKeys[Stage] = new long[18];
+
                 foreach (ShaderDeclInfo DeclInfo in Gpu.Renderer.Shader.GetConstBufferUsage(Keys[Stage]))
                 {
                     ConstBuffer Cb = ConstBuffers[Stage][DeclInfo.Cbuf];
@@ -636,13 +738,16 @@ namespace Ryujinx.Graphics.Graphics3d
                         }
                     }
 
-                    State.ConstBufferKeys[Stage][DeclInfo.Cbuf] = Key;
+                    ConstBufferKeys[Stage][DeclInfo.Cbuf] = Key;
                 }
             }
+
+            Gpu.Renderer.Pipeline.BindConstBuffers(ConstBufferKeys);
         }
 
-        private void UploadVertexArrays(NvGpuVmm Vmm, GalPipelineState State)
+        private void UploadVertexArrays(NvGpuVmm Vmm)
         {
+            //Upload index buffers.
             long IbPosition = MakeInt64From2xInt32(NvGpuEngine3dReg.IndexArrayAddress);
 
             long IboKey = Vmm.GetPhysicalAddress(IbPosition);
@@ -750,8 +855,6 @@ namespace Ryujinx.Graphics.Graphics3d
                 Attribs[ArrayIndex].Add(new GalVertexAttrib(Attr, IsConst, Offset, Data, Size, Type, IsRgba));
             }
 
-            State.VertexBindings = new GalVertexBinding[32];
-
             for (int Index = 0; Index < 32; Index++)
             {
                 if (Attribs[Index] == null)
@@ -805,17 +908,10 @@ namespace Ryujinx.Graphics.Graphics3d
                         Gpu.Renderer.Rasterizer.CreateVbo(VboKey, Vmm.ReadBytes(VbPosition, VbSize));
                     }
                 }
-
-                State.VertexBindings[Index].Enabled   = true;
-                State.VertexBindings[Index].Stride    = Stride;
-                State.VertexBindings[Index].VboKey    = VboKey;
-                State.VertexBindings[Index].Instanced = Instanced;
-                State.VertexBindings[Index].Divisor   = VertexDivisor;
-                State.VertexBindings[Index].Attribs   = Attribs[Index].ToArray();
             }
         }
 
-        private void DispatchRender(NvGpuVmm Vmm, GalPipelineState State)
+        private void DispatchRender(NvGpuVmm Vmm)
         {
             int IndexCount = ReadRegister(NvGpuEngine3dReg.IndexBatchCount);
             int PrimCtrl   = ReadRegister(NvGpuEngine3dReg.VertexBeginGl);
@@ -839,9 +935,19 @@ namespace Ryujinx.Graphics.Graphics3d
                 CurrentInstance = 0;
             }
 
-            State.Instance = CurrentInstance;
+            float FlipX = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleX);
+            float FlipY = GetFlipSign(NvGpuEngine3dReg.ViewportNScaleY);
 
-            Gpu.Renderer.Pipeline.Bind(State);
+            int ScreenYControl = ReadRegister(NvGpuEngine3dReg.ScreenYControl);
+
+            bool NegateY = (ScreenYControl & 1) != 0;
+
+            if (NegateY)
+            {
+                FlipY = -FlipY;
+            }
+
+            Gpu.Renderer.Pipeline.SetFlip(FlipX, FlipY, CurrentInstance);
 
             Gpu.Renderer.RenderTarget.Bind();
 
