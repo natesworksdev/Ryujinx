@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         private const int NativeWidth  = 1280;
         private const int NativeHeight = 720;
 
-        private const int RenderTargetsCount = GalPipelineState.RenderTargetsCount;
+        private const int RenderTargetsCount = 8;
 
         private struct Rect
         {

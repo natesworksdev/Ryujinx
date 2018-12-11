@@ -31,11 +31,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             Shader = new OGLShader(Buffer as OGLConstBuffer);
 
-            Pipeline = new OGLPipeline(
-                Buffer       as OGLConstBuffer,
-                RenderTarget as OGLRenderTarget,
-                Rasterizer   as OGLRasterizer,
-                Shader       as OGLShader);
+            Pipeline = new OGLPipeline(Buffer as OGLConstBuffer, Shader as OGLShader);
 
             ActionsQueue = new ConcurrentQueue<Action>();
         }

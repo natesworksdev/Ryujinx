@@ -2,6 +2,8 @@ namespace Ryujinx.Graphics.Gal
 {
     public interface IGalRenderTarget
     {
+        bool FramebufferSrgb { get; set; }
+
         void Bind();
 
         void BindColor(long Key, int Attachment);
