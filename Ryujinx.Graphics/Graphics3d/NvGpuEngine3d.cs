@@ -934,13 +934,15 @@ namespace Ryujinx.Graphics.Graphics3d
         {
             long Position = MakeInt64From2xInt32(NvGpuEngine3dReg.ConstBufferAddress);
 
+            long Key = Vmm.GetPhysicalAddress(Position);
+
             int Offset = ReadRegister(NvGpuEngine3dReg.ConstBufferOffset);
 
             Vmm.WriteInt32(Position + Offset, MethCall.Argument);
 
             WriteRegister(NvGpuEngine3dReg.ConstBufferOffset, Offset + 4);
 
-            Gpu.ResourceManager.ClearPbCache(NvGpuBufferType.ConstBuffer);
+            Gpu.ResourceManager.RemoveFromPbCache(NvGpuBufferType.ConstBuffer, Key);
         }
 
         private void CbBind(NvGpuVmm Vmm, GpuMethodCall MethCall)

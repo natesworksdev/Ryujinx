@@ -132,9 +132,9 @@ namespace Ryujinx.Graphics
             }
         }
 
-        public void ClearPbCache(NvGpuBufferType Type)
+        public void RemoveFromPbCache(NvGpuBufferType Type, long Key)
         {
-            UploadedKeys[(int)Type].Clear();
+            UploadedKeys[(int)Type].Remove(Key);
         }
     }
 }
