@@ -6,7 +6,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     class OGLTexture : IGalTexture
     {
-        private const long MaxTextureCacheSize = 768 * 1024 * 1024;
 
         private OGLCachedResource<ImageHandler> TextureCache;
 
@@ -14,7 +13,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public OGLTexture()
         {
-            TextureCache = new OGLCachedResource<ImageHandler>(DeleteTexture, MaxTextureCacheSize);
+            TextureCache = new OGLCachedResource<ImageHandler>(DeleteTexture, OGLResourceLimits.TextureLimit);
         }
 
         public void LockCache()
