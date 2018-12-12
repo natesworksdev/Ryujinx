@@ -178,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 KThread currentThread = _system.Scheduler.GetCurrentThread();
 
                 currentThread.SignaledObj   = null;
-                currentThread.ObjSyncResult = 0;
+                currentThread.ObjSyncResult = KernelResult.Success;
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
@@ -194,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 _system.CriticalSection.Leave();
 
-                return (KernelResult)currentThread.ObjSyncResult;
+                return currentThread.ObjSyncResult;
             }
             else
             {
@@ -208,7 +208,7 @@ namespace Ryujinx.HLE.HOS.Kernel
         {
             HleIpcMessage ipcMessage = (HleIpcMessage)state;
 
-            ipcMessage.Thread.ObjSyncResult = (int)IpcHandler.IpcCall(
+            ipcMessage.Thread.ObjSyncResult = IpcHandler.IpcCall(
                 _device,
                 _process,
                 _memory,

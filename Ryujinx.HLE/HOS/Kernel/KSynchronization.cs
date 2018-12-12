@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 currentThread.WaitingSync   = true;
                 currentThread.SignaledObj   = null;
-                currentThread.ObjSyncResult = (int)result;
+                currentThread.ObjSyncResult = result;
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 _system.CriticalSection.Enter();
 
-                result = (KernelResult)currentThread.ObjSyncResult;
+                result = currentThread.ObjSyncResult;
 
                 handleIndex = -1;
 
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
                     {
                         thread.SignaledObj   = syncObj;
-                        thread.ObjSyncResult = 0;
+                        thread.ObjSyncResult = KernelResult.Success;
 
                         thread.Reschedule(ThreadSchedState.Running);
                     }

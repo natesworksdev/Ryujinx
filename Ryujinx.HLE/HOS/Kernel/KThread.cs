@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using static Ryujinx.HLE.HOS.ErrorCode;
-
 namespace Ryujinx.HLE.HOS.Kernel
 {
     class KThread : KSynchronizationObject, IKFutureSchedulerObject
@@ -48,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         private ThreadSchedState _forcePauseFlags;
 
-        public int ObjSyncResult { get; set; }
+        public KernelResult ObjSyncResult { get; set; }
 
         public int DynamicPriority { get; set; }
         public int CurrentCore     { get; set; }
@@ -113,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             DynamicPriority = priority;
             BasePriority    = priority;
 
-            ObjSyncResult = 0x7201;
+            ObjSyncResult = KernelResult.ThreadNotStarted;
 
             _entrypoint = entrypoint;
 
@@ -274,7 +272,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             System.CriticalSection.Leave();
         }
 
-        public long Sleep(long timeout)
+        public KernelResult Sleep(long timeout)
         {
             System.CriticalSection.Enter();
 
@@ -282,7 +280,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 System.CriticalSection.Leave();
 
-                return MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
+                return KernelResult.ThreadTerminating;
             }
 
             SetNewSchedFlags(ThreadSchedState.Paused);
@@ -553,7 +551,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             else
             {
                 SignaledObj   = null;
-                ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Cancelled);
+                ObjSyncResult = KernelResult.Cancelled;
 
                 SetNewSchedFlags(ThreadSchedState.Running);
 
@@ -1017,7 +1015,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 thread.MutexOwner             = null;
                 thread._preferredCoreOverride = 0;
-                thread.ObjSyncResult          = 0xfa01;
+                thread.ObjSyncResult          = KernelResult.InvalidState;
 
                 thread.ReleaseAndResume();
             }

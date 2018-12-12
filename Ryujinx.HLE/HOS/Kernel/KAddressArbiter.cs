@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using static Ryujinx.HLE.HOS.ErrorCode;
-
 namespace Ryujinx.HLE.HOS.Kernel
 {
     class KAddressArbiter
@@ -29,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             _system.CriticalSection.Enter();
 
             currentThread.SignaledObj   = null;
-            currentThread.ObjSyncResult = 0;
+            currentThread.ObjSyncResult = KernelResult.Success;
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
@@ -87,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (result != KernelResult.Success && newOwnerThread != null)
             {
                 newOwnerThread.SignaledObj   = null;
-                newOwnerThread.ObjSyncResult = (int)result;
+                newOwnerThread.ObjSyncResult = result;
             }
 
             _system.CriticalSection.Leave();
@@ -106,7 +104,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             KThread currentThread = _system.Scheduler.GetCurrentThread();
 
             currentThread.SignaledObj   = null;
-            currentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+            currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             if (currentThread.ShallBeTerminated ||
                 currentThread.SchedFlags == ThreadSchedState.TerminationPending)
@@ -178,7 +176,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
 
                 newOwnerThread.SignaledObj   = null;
-                newOwnerThread.ObjSyncResult = 0;
+                newOwnerThread.ObjSyncResult = KernelResult.Success;
 
                 newOwnerThread.ReleaseAndResume();
             }
@@ -236,7 +234,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 currentProcess.CpuMemory.ClearExclusive(0);
 
                 requester.SignaledObj   = null;
-                requester.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
+                requester.ObjSyncResult = KernelResult.InvalidMemState;
 
                 return null;
             }
@@ -270,7 +268,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 //We now own the mutex.
                 requester.SignaledObj   = null;
-                requester.ObjSyncResult = 0;
+                requester.ObjSyncResult = KernelResult.Success;
 
                 requester.ReleaseAndResume();
 
@@ -290,7 +288,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 //Invalid mutex owner.
                 requester.SignaledObj   = null;
-                requester.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+                requester.ObjSyncResult = KernelResult.InvalidHandle;
 
                 requester.ReleaseAndResume();
             }
@@ -313,7 +311,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             currentThread.SignaledObj   = null;
-            currentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+            currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             if (!KernelTransfer.UserToKernelInt32(_system, address, out int currentValue))
             {
@@ -388,7 +386,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
 
             currentThread.SignaledObj   = null;
-            currentThread.ObjSyncResult = (int)MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+            currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
@@ -641,7 +639,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             while (signaledThreads.TryDequeue(out KThread thread))
             {
                 thread.SignaledObj   = null;
-                thread.ObjSyncResult = 0;
+                thread.ObjSyncResult = KernelResult.Success;
 
                 thread.ReleaseAndResume();
 

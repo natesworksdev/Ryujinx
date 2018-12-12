@@ -4,6 +4,7 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         Success            = 0,
         InvalidCapability  = 0x1c01,
+        ThreadNotStarted   = 0x7201,
         ThreadTerminating  = 0x7601,
         InvalidSize        = 0xca01,
         InvalidAddress     = 0xcc01,
