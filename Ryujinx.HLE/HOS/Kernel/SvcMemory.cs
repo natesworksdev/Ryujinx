@@ -1,75 +1,55 @@
-using ChocolArm64.State;
-using Ryujinx.Common.Logging;
-
-using static Ryujinx.HLE.HOS.ErrorCode;
-
 namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {
-        private void SvcSetHeapSize(CpuThreadState threadState)
+        public KernelResult SetHeapSize64(ulong size, out ulong position)
         {
-            ulong size = threadState.X1;
-
-            if ((size & 0xfffffffe001fffff) != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Heap size 0x{size:x16} is not aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
-            }
-
-            KernelResult result = _process.MemoryManager.SetHeapSize(size, out ulong position);
-
-            threadState.X0 = (ulong)result;
-
-            if (result == KernelResult.Success)
-            {
-                threadState.X1 = position;
-            }
-            else
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{result}\".");
-            }
+            return SetHeapSize(size, out position);
         }
 
-        private void SvcSetMemoryAttribute(CpuThreadState threadState)
+        private KernelResult SetHeapSize(ulong size, out ulong position)
         {
-            ulong position = threadState.X0;
-            ulong size     = threadState.X1;
+            if ((size & 0xfffffffe001fffff) != 0)
+            {
+                position = 0;
 
+                return KernelResult.InvalidSize;
+            }
+
+            return _process.MemoryManager.SetHeapSize(size, out position);
+        }
+
+        public KernelResult SetMemoryAttribute64(
+            ulong           position,
+            ulong           size,
+            MemoryAttribute attributeMask,
+            MemoryAttribute attributeValue)
+        {
+            return SetMemoryAttribute(position, size, attributeMask, attributeValue);
+        }
+
+        private KernelResult SetMemoryAttribute(
+            ulong           position,
+            ulong           size,
+            MemoryAttribute attributeMask,
+            MemoryAttribute attributeValue)
+        {
             if (!PageAligned(position))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{position:x16} is not page aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{size:x16} is not page aligned or is zero!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
+                return KernelResult.InvalidSize;
             }
-
-            MemoryAttribute attributeMask  = (MemoryAttribute)threadState.X2;
-            MemoryAttribute attributeValue = (MemoryAttribute)threadState.X3;
 
             MemoryAttribute attributes = attributeMask | attributeValue;
 
             if (attributes != attributeMask ||
                (attributes | MemoryAttribute.Uncached) != MemoryAttribute.Uncached)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, "Invalid memory attributes!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMaskValue);
-
-                return;
+                return KernelResult.InvalidCombination;
             }
 
             KernelResult result = _process.MemoryManager.SetMemoryAttribute(
@@ -78,210 +58,138 @@ namespace Ryujinx.HLE.HOS.Kernel
                 attributeMask,
                 attributeValue);
 
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{result}\".");
-            }
-            else
+            if (result == KernelResult.Success)
             {
                 _memory.StopObservingRegion((long)position, (long)size);
             }
 
-            threadState.X0 = (ulong)result;
+            return result;
         }
 
-        private void SvcMapMemory(CpuThreadState threadState)
+        public KernelResult MapMemory64(ulong dst, ulong src, ulong size)
         {
-            ulong dst  = threadState.X0;
-            ulong src  = threadState.X1;
-            ulong size = threadState.X2;
+            return MapMemory(dst, src, size);
+        }
 
+        private KernelResult MapMemory(ulong dst, ulong src, ulong size)
+        {
             if (!PageAligned(src | dst))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, "Addresses are not page aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{size:x16} is not page aligned or is zero!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
+                return KernelResult.InvalidSize;
             }
 
             if (src + size <= src || dst + size <= dst)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(src, size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Src address 0x{src:x16} out of range!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             if (currentProcess.MemoryManager.OutsideStackRegion(dst, size) ||
                 currentProcess.MemoryManager.InsideHeapRegion  (dst, size) ||
                 currentProcess.MemoryManager.InsideAliasRegion (dst, size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{dst:x16} out of range!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
-
-                return;
+                return KernelResult.InvalidMemRange;
             }
 
-            KernelResult result = _process.MemoryManager.Map(dst, src, size);
-
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-            }
-
-            threadState.X0 = (ulong)result;
+            return _process.MemoryManager.Map(dst, src, size);
         }
 
-        private void SvcUnmapMemory(CpuThreadState threadState)
+        public KernelResult UnmapMemory64(ulong dst, ulong src, ulong size)
         {
-            ulong dst  = threadState.X0;
-            ulong src  = threadState.X1;
-            ulong size = threadState.X2;
+            return UnmapMemory(dst, src, size);
+        }
 
+        private KernelResult UnmapMemory(ulong dst, ulong src, ulong size)
+        {
             if (!PageAligned(src | dst))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, "Addresses are not page aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{size:x16} is not page aligned or is zero!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
+                return KernelResult.InvalidSize;
             }
 
             if (src + size <= src || dst + size <= dst)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, "Addresses outside of range!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(src, size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Src address 0x{src:x16} out of range!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             if (currentProcess.MemoryManager.OutsideStackRegion(dst, size) ||
                 currentProcess.MemoryManager.InsideHeapRegion  (dst, size) ||
                 currentProcess.MemoryManager.InsideAliasRegion (dst, size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Dst address 0x{dst:x16} out of range!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidMemRange);
-
-                return;
+                return KernelResult.InvalidMemRange;
             }
 
-            KernelResult result = _process.MemoryManager.Unmap(dst, src, size);
-
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-            }
-
-            threadState.X0 = (ulong)result;
+            return _process.MemoryManager.Unmap(dst, src, size);
         }
 
-        private void SvcQueryMemory(CpuThreadState threadState)
+        public KernelResult QueryMemory64(ulong infoPtr, ulong x1, ulong position)
         {
-            long  infoPtr  = (long)threadState.X0;
-            ulong position =       threadState.X2;
+            return QueryMemory(infoPtr, position);
+        }
 
+        private KernelResult QueryMemory(ulong infoPtr, ulong position)
+        {
             KMemoryInfo blkInfo = _process.MemoryManager.QueryMemory(position);
 
-            _memory.WriteUInt64(infoPtr + 0x00, blkInfo.Address);
-            _memory.WriteUInt64(infoPtr + 0x08, blkInfo.Size);
-            _memory.WriteInt32 (infoPtr + 0x10, (int)blkInfo.State & 0xff);
-            _memory.WriteInt32 (infoPtr + 0x14, (int)blkInfo.Attribute);
-            _memory.WriteInt32 (infoPtr + 0x18, (int)blkInfo.Permission);
-            _memory.WriteInt32 (infoPtr + 0x1c, blkInfo.IpcRefCount);
-            _memory.WriteInt32 (infoPtr + 0x20, blkInfo.DeviceRefCount);
-            _memory.WriteInt32 (infoPtr + 0x24, 0);
+            _memory.WriteUInt64((long)infoPtr + 0x00, blkInfo.Address);
+            _memory.WriteUInt64((long)infoPtr + 0x08, blkInfo.Size);
+            _memory.WriteInt32 ((long)infoPtr + 0x10, (int)blkInfo.State & 0xff);
+            _memory.WriteInt32 ((long)infoPtr + 0x14, (int)blkInfo.Attribute);
+            _memory.WriteInt32 ((long)infoPtr + 0x18, (int)blkInfo.Permission);
+            _memory.WriteInt32 ((long)infoPtr + 0x1c, blkInfo.IpcRefCount);
+            _memory.WriteInt32 ((long)infoPtr + 0x20, blkInfo.DeviceRefCount);
+            _memory.WriteInt32 ((long)infoPtr + 0x24, 0);
 
-            threadState.X0 = 0;
-            threadState.X1 = 0;
+            return KernelResult.Success;
         }
 
-        private void SvcMapSharedMemory(CpuThreadState threadState)
+        public KernelResult MapSharedMemory64(int handle, ulong address, ulong size, MemoryPermission permission)
         {
-            int   handle  =  (int)threadState.X0;
-            ulong address =       threadState.X1;
-            ulong size    =       threadState.X2;
+            return MapSharedMemory(handle, address, size, permission);
+        }
 
+        private KernelResult MapSharedMemory(int handle, ulong address, ulong size, MemoryPermission permission)
+        {
             if (!PageAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{address:x16} is not page aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{size:x16} is not page aligned or is zero!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
+                return KernelResult.InvalidSize;
             }
 
             if (address + size <= address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{address:x16} / size 0x{size:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
-
-            MemoryPermission permission = (MemoryPermission)threadState.X3;
 
             if ((permission | MemoryPermission.Write) != MemoryPermission.ReadAndWrite)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid permission {permission}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidPermission);
-
-                return;
+                return KernelResult.InvalidPermission;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
@@ -290,70 +198,44 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (sharedMemory == null)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid shared memory handle 0x{handle:x8}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
-
-                return;
+                return KernelResult.InvalidHandle;
             }
 
             if (currentProcess.MemoryManager.IsInvalidRegion  (address, size) ||
                 currentProcess.MemoryManager.InsideHeapRegion (address, size) ||
                 currentProcess.MemoryManager.InsideAliasRegion(address, size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{address:x16} out of range!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemRange;
             }
 
-            KernelResult result = sharedMemory.MapIntoProcess(
+            return sharedMemory.MapIntoProcess(
                 currentProcess.MemoryManager,
                 address,
                 size,
                 currentProcess,
                 permission);
-
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{result}\".");
-            }
-
-            threadState.X0 = (ulong)result;
         }
 
-        private void SvcUnmapSharedMemory(CpuThreadState threadState)
+        public KernelResult UnmapSharedMemory64(int handle, ulong address, ulong size)
         {
-            int   handle  =  (int)threadState.X0;
-            ulong address =       threadState.X1;
-            ulong size    =       threadState.X2;
+            return UnmapSharedMemory(handle, address, size);
+        }
 
+        private KernelResult UnmapSharedMemory(int handle, ulong address, ulong size)
+        {
             if (!PageAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{address:x16} is not page aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{size:x16} is not page aligned or is zero!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
+                return KernelResult.InvalidSize;
             }
 
             if (address + size <= address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{address:x16} / size 0x{size:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
@@ -362,215 +244,142 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             if (sharedMemory == null)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid shared memory handle 0x{handle:x8}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
-
-                return;
+                return KernelResult.InvalidHandle;
             }
 
             if (currentProcess.MemoryManager.IsInvalidRegion  (address, size) ||
                 currentProcess.MemoryManager.InsideHeapRegion (address, size) ||
                 currentProcess.MemoryManager.InsideAliasRegion(address, size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{address:x16} out of range!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemRange;
             }
 
-            KernelResult result = sharedMemory.UnmapFromProcess(
+            return sharedMemory.UnmapFromProcess(
                 currentProcess.MemoryManager,
                 address,
                 size,
                 currentProcess);
-
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error \"{result}\".");
-            }
-
-            threadState.X0 = (ulong)result;
         }
 
-        private void SvcCreateTransferMemory(CpuThreadState threadState)
+        public KernelResult CreateTransferMemory64(
+            ulong            address,
+            ulong            size,
+            MemoryPermission permission,
+            out int          handle)
         {
-            ulong address = threadState.X1;
-            ulong size    = threadState.X2;
+            return CreateTransferMemory(address, size, permission, out handle);
+        }
+
+        private KernelResult CreateTransferMemory(ulong address, ulong size, MemoryPermission permission, out int handle)
+        {
+            handle = 0;
 
             if (!PageAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{address:x16} is not page aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{size:x16} is not page aligned or is zero!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidSize;
             }
 
             if (address + size <= address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{address:x16} / size 0x{size:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
-
-            MemoryPermission permission = (MemoryPermission)threadState.X3;
 
             if (permission > MemoryPermission.ReadAndWrite || permission == MemoryPermission.Write)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid permission {permission}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidPermission);
-
-                return;
+                return KernelResult.InvalidPermission;
             }
 
-            _process.MemoryManager.ReserveTransferMemory(address, size, permission);
+            KernelResult result = _process.MemoryManager.ReserveTransferMemory(address, size, permission);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
 
             KTransferMemory transferMemory = new KTransferMemory(address, size);
 
-            KernelResult result = _process.HandleTable.GenerateHandle(transferMemory, out int handle);
-
-            threadState.X0 = (uint)result;
-            threadState.X1 = (ulong)handle;
+            return _process.HandleTable.GenerateHandle(transferMemory, out handle);
         }
 
-        private void SvcMapPhysicalMemory(CpuThreadState threadState)
+        public KernelResult MapPhysicalMemory64(ulong address, ulong size)
         {
-            ulong address = threadState.X0;
-            ulong size    = threadState.X1;
+            return MapPhysicalMemory(address, size);
+        }
 
+        private KernelResult MapPhysicalMemory(ulong address, ulong size)
+        {
             if (!PageAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{address:x16} is not page aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{size:x16} is not page aligned or is zero!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
+                return KernelResult.InvalidSize;
             }
 
             if (address + size <= address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{address:x16} / size 0x{size:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemRange;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
             if ((currentProcess.PersonalMmHeapPagesCount & 0xfffffffffffff) == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"System resource size is zero.");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
-
-                return;
+                return KernelResult.InvalidState;
             }
 
             if (!currentProcess.MemoryManager.InsideAddrSpace   (address, size) ||
                  currentProcess.MemoryManager.OutsideAliasRegion(address, size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address {address:x16}.");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemRange;
             }
 
-            KernelResult result = _process.MemoryManager.MapPhysicalMemory(address, size);
-
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-            }
-
-            threadState.X0 = (ulong)result;
+            return _process.MemoryManager.MapPhysicalMemory(address, size);
         }
 
-        private void SvcUnmapPhysicalMemory(CpuThreadState threadState)
+        public KernelResult UnmapPhysicalMemory64(ulong address, ulong size)
         {
-            ulong address = threadState.X0;
-            ulong size    = threadState.X1;
+            return MapPhysicalMemory(address, size);
+        }
 
+        private KernelResult UnmapPhysicalMemory(ulong address, ulong size)
+        {
             if (!PageAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Address 0x{address:x16} is not page aligned!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Size 0x{size:x16} is not page aligned or is zero!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidSize);
-
-                return;
+                return KernelResult.InvalidSize;
             }
 
             if (address + size <= address)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid region address 0x{address:x16} / size 0x{size:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemRange;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
             if ((currentProcess.PersonalMmHeapPagesCount & 0xfffffffffffff) == 0)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"System resource size is zero.");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
-
-                return;
+                return KernelResult.InvalidState;
             }
 
             if (!currentProcess.MemoryManager.InsideAddrSpace   (address, size) ||
                  currentProcess.MemoryManager.OutsideAliasRegion(address, size))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address {address:x16}.");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemRange;
             }
 
-            KernelResult result = _process.MemoryManager.UnmapPhysicalMemory(address, size);
-
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-            }
-
-            threadState.X0 = (ulong)result;
+            return _process.MemoryManager.UnmapPhysicalMemory(address, size);
         }
 
         private static bool PageAligned(ulong position)

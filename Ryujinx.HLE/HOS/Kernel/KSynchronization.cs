@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 
-using static Ryujinx.HLE.HOS.ErrorCode;
-
 namespace Ryujinx.HLE.HOS.Kernel
 {
     class KSynchronization
@@ -13,9 +11,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             _system = system;
         }
 
-        public long WaitFor(KSynchronizationObject[] syncObjs, long timeout, ref int hndIndex)
+        public KernelResult WaitFor(KSynchronizationObject[] syncObjs, long timeout, out int handleIndex)
         {
-            long result = MakeError(ErrorModule.Kernel, KernelErr.Timeout);
+            handleIndex = 0;
+
+            KernelResult result = KernelResult.TimedOut;
 
             _system.CriticalSection.Enter();
 
@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     continue;
                 }
 
-                hndIndex = index;
+                handleIndex = index;
 
                 _system.CriticalSection.Leave();
 
@@ -46,13 +46,13 @@ namespace Ryujinx.HLE.HOS.Kernel
             if (currentThread.ShallBeTerminated ||
                 currentThread.SchedFlags == ThreadSchedState.TerminationPending)
             {
-                result = MakeError(ErrorModule.Kernel, KernelErr.ThreadTerminating);
+                result = KernelResult.ThreadTerminating;
             }
             else if (currentThread.SyncCancelled)
             {
                 currentThread.SyncCancelled = false;
 
-                result = MakeError(ErrorModule.Kernel, KernelErr.Cancelled);
+                result = KernelResult.Cancelled;
             }
             else
             {
@@ -85,9 +85,9 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 _system.CriticalSection.Enter();
 
-                result = (uint)currentThread.ObjSyncResult;
+                result = (KernelResult)currentThread.ObjSyncResult;
 
-                hndIndex = -1;
+                handleIndex = -1;
 
                 for (int index = 0; index < syncObjs.Length; index++)
                 {
@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                     if (syncObjs[index] == currentThread.SignaledObj)
                     {
-                        hndIndex = index;
+                        handleIndex = index;
                     }
                 }
             }

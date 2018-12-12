@@ -1,27 +1,28 @@
 using ChocolArm64.Memory;
-using ChocolArm64.State;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services;
-using System;
 using System.Threading;
-
-using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {
-        private void SvcExitProcess(CpuThreadState threadState)
+        public void ExitProcess64()
+        {
+            ExitProcess();
+        }
+
+        private void ExitProcess()
         {
             _system.Scheduler.GetCurrentProcess().Terminate();
         }
 
-        private void SignalEvent64(CpuThreadState threadState)
+        public KernelResult SignalEvent64(int handle)
         {
-            threadState.X0 = (ulong)SignalEvent((int)threadState.X0);
+            return SignalEvent(handle);
         }
 
         private KernelResult SignalEvent(int handle)
@@ -41,17 +42,12 @@ namespace Ryujinx.HLE.HOS.Kernel
                 result = KernelResult.InvalidHandle;
             }
 
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
-            }
-
             return result;
         }
 
-        private void ClearEvent64(CpuThreadState threadState)
+        public KernelResult ClearEvent64(int handle)
         {
-            threadState.X0 = (ulong)ClearEvent((int)threadState.X0);
+            return ClearEvent(handle);
         }
 
         private KernelResult ClearEvent(int handle)
@@ -71,29 +67,23 @@ namespace Ryujinx.HLE.HOS.Kernel
                 result = writableEvent.Clear();
             }
 
-            if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
-            }
-
             return result;
         }
 
-        private void SvcCloseHandle(CpuThreadState threadState)
+        public KernelResult CloseHandle64(int handle)
         {
-            int handle = (int)threadState.X0;
+            return CloseHandle(handle);
+        }
 
+        private KernelResult CloseHandle(int handle)
+        {
             object obj = _process.HandleTable.GetObject<object>(handle);
 
             _process.HandleTable.CloseHandle(handle);
 
             if (obj == null)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid handle 0x{handle:x8}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
-
-                return;
+                return KernelResult.InvalidHandle;
             }
 
             if (obj is KSession session)
@@ -107,12 +97,12 @@ namespace Ryujinx.HLE.HOS.Kernel
                     transferMemory.Size);
             }
 
-            threadState.X0 = 0;
+            return KernelResult.Success;
         }
 
-        private void ResetSignal64(CpuThreadState threadState)
+        public KernelResult ResetSignal64(int handle)
         {
-            threadState.X0 = (ulong)ResetSignal((int)threadState.X0);
+            return ResetSignal(handle);
         }
 
         private KernelResult ResetSignal(int handle)
@@ -141,60 +131,43 @@ namespace Ryujinx.HLE.HOS.Kernel
                 }
             }
 
-            if (result == KernelResult.InvalidState)
-            {
-                Logger.PrintDebug(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
-            }
-            else if (result != KernelResult.Success)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, "Operation failed with error: " + result + "!");
-            }
-
             return result;
         }
 
-        private void SvcGetSystemTick(CpuThreadState threadState)
+        public ulong GetSystemTick64()
         {
-            threadState.X0 = threadState.CntpctEl0;
+            return _system.Scheduler.GetCurrentThread().Context.ThreadState.CntpctEl0;
         }
 
-        private void SvcConnectToNamedPort(CpuThreadState threadState)
+        public KernelResult ConnectToNamedPort64(ulong namePtr, out int handle)
         {
-            long stackPtr = (long)threadState.X0;
-            long namePtr  = (long)threadState.X1;
+            return ConnectToNamedPort(namePtr, out handle);
+        }
 
-            string name = MemoryHelper.ReadAsciiString(_memory, namePtr, 8);
+        private KernelResult ConnectToNamedPort(ulong namePtr, out int handle)
+        {
+            string name = MemoryHelper.ReadAsciiString(_memory, (long)namePtr, 8);
 
             //TODO: Validate that app has perms to access the service, and that the service
             //actually exists, return error codes otherwise.
             KSession session = new KSession(ServiceFactory.MakeService(_system, name), name);
 
-            if (_process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            threadState.X0 = 0;
-            threadState.X1 = (uint)handle;
+            return _process.HandleTable.GenerateHandle(session, out handle);
         }
 
-        private void SvcSendSyncRequest(CpuThreadState threadState)
+        public KernelResult SendSyncRequest64(int handle)
         {
-            SendSyncRequest(threadState, threadState.Tpidr, 0x100, (int)threadState.X0);
+            return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.ThreadState.Tpidr, 0x100, handle);
         }
 
-        private void SvcSendSyncRequestWithUserBuffer(CpuThreadState threadState)
+        public KernelResult SendSyncRequestWithUserBuffer64(ulong messagePtr, ulong size, int handle)
         {
-            SendSyncRequest(
-                      threadState,
-                (long)threadState.X0,
-                (long)threadState.X1,
-                 (int)threadState.X2);
+            return SendSyncRequest(messagePtr, size, handle);
         }
 
-        private void SendSyncRequest(CpuThreadState threadState, long messagePtr, long size, int handle)
+        private KernelResult SendSyncRequest(ulong messagePtr, ulong size, int handle)
         {
-            byte[] messageData = _memory.ReadBytes(messagePtr, size);
+            byte[] messageData = _memory.ReadBytes((long)messagePtr, (long)size);
 
             KSession session = _process.HandleTable.GetObject<KSession>(handle);
 
@@ -209,25 +182,25 @@ namespace Ryujinx.HLE.HOS.Kernel
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
-                IpcMessage message = new IpcMessage(messageData, messagePtr);
+                IpcMessage message = new IpcMessage(messageData, (long)messagePtr);
 
                 ThreadPool.QueueUserWorkItem(ProcessIpcRequest, new HleIpcMessage(
                     currentThread,
                     session,
                     message,
-                    messagePtr));
+                    (long)messagePtr));
 
                 _system.ThreadCounter.AddCount();
 
                 _system.CriticalSection.Leave();
 
-                threadState.X0 = (ulong)currentThread.ObjSyncResult;
+                return (KernelResult)currentThread.ObjSyncResult;
             }
             else
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Invalid session handle 0x{handle:x8}!");
 
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
+                return KernelResult.InvalidHandle;
             }
         }
 
@@ -248,14 +221,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             ipcMessage.Thread.Reschedule(ThreadSchedState.Running);
         }
 
-        private void GetProcessId64(CpuThreadState threadState)
+        public KernelResult GetProcessId64(int handle, out long pid)
         {
-            int handle = (int)threadState.X1;
-
-            KernelResult result = GetProcessId(handle, out long pid);
-
-            threadState.X0 = (ulong)result;
-            threadState.X1 = (ulong)pid;
+            return GetProcessId(handle, out pid);
         }
 
         private KernelResult GetProcessId(int handle, out long pid)
@@ -283,15 +251,16 @@ namespace Ryujinx.HLE.HOS.Kernel
                 : KernelResult.InvalidHandle;
         }
 
-        private void SvcBreak(CpuThreadState threadState)
+        public void Break64(ulong reason, ulong x1, ulong info)
         {
-            long reason  = (long)threadState.X0;
-            long unknown = (long)threadState.X1;
-            long info    = (long)threadState.X2;
+            Break(reason);
+        }
 
+        private void Break(ulong reason)
+        {
             KThread currentThread = _system.Scheduler.GetCurrentThread();
 
-            if ((reason & (1 << 31)) == 0)
+            if ((reason & (1UL << 31)) == 0)
             {
                 currentThread.PrintGuestStackTrace();
 
@@ -305,29 +274,21 @@ namespace Ryujinx.HLE.HOS.Kernel
             }
         }
 
-        private void SvcOutputDebugString(CpuThreadState threadState)
+        public void OutputDebugString64(ulong strPtr, ulong size)
         {
-            long position = (long)threadState.X0;
-            long size     = (long)threadState.X1;
-
-            string str = MemoryHelper.ReadAsciiString(_memory, position, size);
-
-            Logger.PrintWarning(LogClass.KernelSvc, str);
-
-            threadState.X0 = 0;
+            OutputDebugString(strPtr, size);
         }
 
-        private void GetInfo64(CpuThreadState threadState)
+        private void OutputDebugString(ulong strPtr, ulong size)
         {
-            long stackPtr = (long)threadState.X0;
-            uint id       = (uint)threadState.X1;
-            int  handle   =  (int)threadState.X2;
-            long subId    = (long)threadState.X3;
+            string str = MemoryHelper.ReadAsciiString(_memory, (long)strPtr, (long)size);
 
-            KernelResult result = GetInfo(id, handle, subId, out long value);
+            Logger.PrintWarning(LogClass.KernelSvc, str);
+        }
 
-            threadState.X0 = (ulong)result;
-            threadState.X1 = (ulong)value;
+        public KernelResult GetInfo64(uint id, int handle, long subId, out long value)
+        {
+            return GetInfo(id, handle, subId, out value);
         }
 
         private KernelResult GetInfo(uint id, int handle, long subId, out long value)
@@ -556,13 +517,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             return KernelResult.Success;
         }
 
-        private void CreateEvent64(CpuThreadState state)
+        public KernelResult CreateEvent64(out int wEventHandle, out int rEventHandle)
         {
-            KernelResult result = CreateEvent(out int wEventHandle, out int rEventHandle);
-
-            state.X0 = (ulong)result;
-            state.X1 = (ulong)wEventHandle;
-            state.X2 = (ulong)rEventHandle;
+            return CreateEvent(out wEventHandle, out rEventHandle);
         }
 
         private KernelResult CreateEvent(out int wEventHandle, out int rEventHandle)
@@ -588,15 +545,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             return result;
         }
 
-        private void GetProcessList64(CpuThreadState state)
+        public KernelResult GetProcessList64(ulong address, int maxCount, out int count)
         {
-            ulong address =      state.X1;
-            int   maxOut  = (int)state.X2;
-
-            KernelResult result = GetProcessList(address, maxOut, out int count);
-
-            state.X0 = (ulong)result;
-            state.X1 = (ulong)count;
+            return GetProcessList(address, maxCount, out count);
         }
 
         private KernelResult GetProcessList(ulong address, int maxCount, out int count)
@@ -633,7 +584,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                 {
                     if (copyCount < maxCount)
                     {
-                        if (!KernelTransfer.KernelToUserInt64(_system, (long)address + copyCount * 8, process.Pid))
+                        if (!KernelTransfer.KernelToUserInt64(_system, address + (ulong)copyCount * 8, process.Pid))
                         {
                             return KernelResult.UserCopyFailed;
                         }
@@ -648,16 +599,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             return KernelResult.Success;
         }
 
-        private void GetSystemInfo64(CpuThreadState state)
+        public KernelResult GetSystemInfo64(uint id, int handle, long subId, out long value)
         {
-            uint id     = (uint)state.X1;
-            int  handle =  (int)state.X2;
-            long subId  = (long)state.X3;
-
-            KernelResult result = GetSystemInfo(id, handle, subId, out long value);
-
-            state.X0 = (ulong)result;
-            state.X1 = (ulong)value;
+            return GetSystemInfo(id, handle, subId, out value);
         }
 
         private KernelResult GetSystemInfo(uint id, int handle, long subId, out long value)
@@ -716,28 +660,20 @@ namespace Ryujinx.HLE.HOS.Kernel
             return KernelResult.Success;
         }
 
-        private void CreatePort64(CpuThreadState state)
+        public KernelResult CreatePort64(
+            int     maxSessions,
+            bool    isLight,
+            ulong   namePtr,
+            out int serverPortHandle,
+            out int clientPortHandle)
         {
-            int  maxSessions =  (int)state.X2;
-            bool isLight     =      (state.X3 & 1) != 0;
-            long nameAddress = (long)state.X4;
-
-            KernelResult result = CreatePort(
-                maxSessions,
-                isLight,
-                nameAddress,
-                out int serverPortHandle,
-                out int clientPortHandle);
-
-            state.X0 = (ulong)result;
-            state.X1 = (ulong)serverPortHandle;
-            state.X2 = (ulong)clientPortHandle;
+            return CreatePort(maxSessions, isLight, namePtr, out serverPortHandle, out clientPortHandle);
         }
 
         private KernelResult CreatePort(
             int     maxSessions,
             bool    isLight,
-            long    nameAddress,
+            ulong   namePtr,
             out int serverPortHandle,
             out int clientPortHandle)
         {
@@ -750,7 +686,7 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             KPort port = new KPort(_system);
 
-            port.Initialize(maxSessions, isLight, nameAddress);
+            port.Initialize(maxSessions, isLight, (long)namePtr);
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
@@ -771,22 +707,16 @@ namespace Ryujinx.HLE.HOS.Kernel
             return result;
         }
 
-        private void ManageNamedPort64(CpuThreadState state)
+        public KernelResult ManageNamedPort64(ulong namePtr, int maxSessions, out int handle)
         {
-            long nameAddress = (long)state.X1;
-            int  maxSessions =  (int)state.X2;
-
-            KernelResult result = ManageNamedPort(nameAddress, maxSessions, out int handle);
-
-            state.X0 = (ulong)result;
-            state.X1 = (ulong)handle;
+            return ManageNamedPort(namePtr, maxSessions, out handle);
         }
 
-        private KernelResult ManageNamedPort(long nameAddress, int maxSessions, out int handle)
+        private KernelResult ManageNamedPort(ulong namePtr, int maxSessions, out int handle)
         {
             handle = 0;
 
-            if (!KernelTransfer.UserToKernelString(_system, nameAddress, 12, out string name))
+            if (!KernelTransfer.UserToKernelString(_system, namePtr, 12, out string name))
             {
                 return KernelResult.UserCopyFailed;
             }

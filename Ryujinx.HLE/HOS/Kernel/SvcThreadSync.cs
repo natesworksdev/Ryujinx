@@ -1,38 +1,28 @@
-using ChocolArm64.State;
-using Ryujinx.Common.Logging;
 using System.Collections.Generic;
-
-using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Kernel
 {
     partial class SvcHandler
     {
-        private void SvcWaitSynchronization(CpuThreadState threadState)
+        public KernelResult WaitSynchronization64(ulong handlesPtr, int handlesCount, long timeout, out int handleIndex)
         {
-            long handlesPtr   = (long)threadState.X1;
-            int  handlesCount =  (int)threadState.X2;
-            long timeout      = (long)threadState.X3;
+            return WaitSynchronization(handlesPtr, handlesCount, timeout, out handleIndex);
+        }
 
-            Logger.PrintDebug(LogClass.KernelSvc,
-                "HandlesPtr = 0x"   + handlesPtr  .ToString("x16") + ", " +
-                "HandlesCount = 0x" + handlesCount.ToString("x8")  + ", " +
-                "Timeout = 0x"      + timeout     .ToString("x16"));
+        private KernelResult WaitSynchronization(ulong handlesPtr, int handlesCount, long timeout, out int handleIndex)
+        {
+            handleIndex = 0;
 
             if ((uint)handlesCount > 0x40)
             {
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.CountOutOfRange);
-
-                return;
+                return KernelResult.MaximumExceeded;
             }
 
             List<KSynchronizationObject> syncObjs = new List<KSynchronizationObject>();
 
             for (int index = 0; index < handlesCount; index++)
             {
-                int handle = _memory.ReadInt32(handlesPtr + index * 4);
-
-                Logger.PrintDebug(LogClass.KernelSvc, $"Sync handle 0x{handle:x8}");
+                int handle = _memory.ReadInt32((long)handlesPtr + index * 4);
 
                 KSynchronizationObject syncObj = _process.HandleTable.GetObject<KSynchronizationObject>(handle);
 
@@ -44,232 +34,140 @@ namespace Ryujinx.HLE.HOS.Kernel
                 syncObjs.Add(syncObj);
             }
 
-            int hndIndex = (int)threadState.X1;
-
-            ulong high = threadState.X1 & (0xffffffffUL << 32);
-
-            long result = _system.Synchronization.WaitFor(syncObjs.ToArray(), timeout, ref hndIndex);
-
-            if (result != 0)
-            {
-                if (result == MakeError(ErrorModule.Kernel, KernelErr.Timeout) ||
-                    result == MakeError(ErrorModule.Kernel, KernelErr.Cancelled))
-                {
-                    Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-                }
-                else
-                {
-                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-                }
-            }
-
-            threadState.X0 = (ulong)result;
-            threadState.X1 = (uint)hndIndex | high;
+            return _system.Synchronization.WaitFor(syncObjs.ToArray(), timeout, out handleIndex);
         }
 
-        private void SvcCancelSynchronization(CpuThreadState threadState)
+        public KernelResult CancelSynchronization64(int handle)
         {
-            int threadHandle = (int)threadState.X0;
+            return CancelSynchronization(handle);
+        }
 
-            Logger.PrintDebug(LogClass.KernelSvc, "ThreadHandle = 0x" + threadHandle.ToString("x8"));
-
-            KThread thread = _process.HandleTable.GetKThread(threadHandle);
+        private KernelResult CancelSynchronization(int handle)
+        {
+            KThread thread = _process.HandleTable.GetKThread(handle);
 
             if (thread == null)
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid thread handle 0x{threadHandle:x8}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidHandle);
-
-                return;
+                return KernelResult.InvalidHandle;
             }
 
             thread.CancelSynchronization();
 
-            threadState.X0 = 0;
+            return KernelResult.Success;
         }
 
-        private void SvcArbitrateLock(CpuThreadState threadState)
+        public KernelResult ArbitrateLock64(int ownerHandle, ulong mutexAddress, int requesterHandle)
         {
-            int  ownerHandle     =  (int)threadState.X0;
-            long mutexAddress    = (long)threadState.X1;
-            int  requesterHandle =  (int)threadState.X2;
+            return ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
+        }
 
-            Logger.PrintDebug(LogClass.KernelSvc,
-                "OwnerHandle = 0x"     + ownerHandle    .ToString("x8")  + ", " +
-                "MutexAddress = 0x"    + mutexAddress   .ToString("x16") + ", " +
-                "RequesterHandle = 0x" + requesterHandle.ToString("x8"));
-
+        private KernelResult ArbitrateLock(int ownerHandle, ulong mutexAddress, int requesterHandle)
+        {
             if (IsPointingInsideKernel(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{mutexAddress:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             if (IsAddressNotWordAligned(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{mutexAddress:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
-            long result = currentProcess.AddressArbiter.ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
-
-            if (result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-            }
-
-            threadState.X0 = (ulong)result;
+            return currentProcess.AddressArbiter.ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
         }
 
-        private void SvcArbitrateUnlock(CpuThreadState threadState)
+        public KernelResult ArbitrateUnlock64(ulong mutexAddress)
         {
-            long mutexAddress = (long)threadState.X0;
+            return ArbitrateUnlock(mutexAddress);
+        }
 
-            Logger.PrintDebug(LogClass.KernelSvc, "MutexAddress = 0x" + mutexAddress.ToString("x16"));
-
+        private KernelResult ArbitrateUnlock(ulong mutexAddress)
+        {
             if (IsPointingInsideKernel(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{mutexAddress:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             if (IsAddressNotWordAligned(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{mutexAddress:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
-            long result = currentProcess.AddressArbiter.ArbitrateUnlock(mutexAddress);
-
-            if (result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-            }
-
-            threadState.X0 = (ulong)result;
+            return currentProcess.AddressArbiter.ArbitrateUnlock(mutexAddress);
         }
 
-        private void SvcWaitProcessWideKeyAtomic(CpuThreadState threadState)
+        public KernelResult WaitProcessWideKeyAtomic64(
+            ulong mutexAddress,
+            ulong condVarAddress,
+            int   handle,
+            long  timeout)
         {
-            long  mutexAddress   = (long)threadState.X0;
-            long  condVarAddress = (long)threadState.X1;
-            int   threadHandle   =  (int)threadState.X2;
-            long  timeout        = (long)threadState.X3;
+            return WaitProcessWideKeyAtomic(mutexAddress, condVarAddress, handle, timeout);
+        }
 
-            Logger.PrintDebug(LogClass.KernelSvc,
-                "MutexAddress = 0x"   + mutexAddress  .ToString("x16") + ", " +
-                "CondVarAddress = 0x" + condVarAddress.ToString("x16") + ", " +
-                "ThreadHandle = 0x"   + threadHandle  .ToString("x8")  + ", " +
-                "Timeout = 0x"        + timeout       .ToString("x16"));
-
+        private KernelResult WaitProcessWideKeyAtomic(
+            ulong mutexAddress,
+            ulong condVarAddress,
+            int   handle,
+            long  timeout)
+        {
             if (IsPointingInsideKernel(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid mutex address 0x{mutexAddress:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             if (IsAddressNotWordAligned(mutexAddress))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned mutex address 0x{mutexAddress:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
-            long result = currentProcess.AddressArbiter.WaitProcessWideKeyAtomic(
+            return currentProcess.AddressArbiter.WaitProcessWideKeyAtomic(
                 mutexAddress,
                 condVarAddress,
-                threadHandle,
+                handle,
                 timeout);
-
-            if (result != 0)
-            {
-                if (result == MakeError(ErrorModule.Kernel, KernelErr.Timeout))
-                {
-                    Logger.PrintDebug(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-                }
-                else
-                {
-                    Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-                }
-            }
-
-            threadState.X0 = (ulong)result;
         }
 
-        private void SvcSignalProcessWideKey(CpuThreadState threadState)
+        public KernelResult SignalProcessWideKey64(ulong address, int count)
         {
-            long address = (long)threadState.X0;
-            int  count   =  (int)threadState.X1;
+            return SignalProcessWideKey(address, count);
+        }
 
-            Logger.PrintDebug(LogClass.KernelSvc,
-                "Address = 0x" + address.ToString("x16") + ", " +
-                "Count = 0x"   + count  .ToString("x8"));
-
+        private KernelResult SignalProcessWideKey(ulong address, int count)
+        {
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
             currentProcess.AddressArbiter.SignalProcessWideKey(address, count);
 
-            threadState.X0 = 0;
+            return KernelResult.Success;
         }
 
-        private void SvcWaitForAddress(CpuThreadState threadState)
+        public KernelResult WaitForAddress64(ulong address, ArbitrationType type, int value, long timeout)
         {
-            long            address =            (long)threadState.X0;
-            ArbitrationType type    = (ArbitrationType)threadState.X1;
-            int             value   =             (int)threadState.X2;
-            long            timeout =            (long)threadState.X3;
+            return WaitForAddress(address, type, value, timeout);
+        }
 
-            Logger.PrintDebug(LogClass.KernelSvc,
-                "Address = 0x" + address.ToString("x16") + ", " +
-                "Type = "      + type   .ToString()      + ", " +
-                "Value = 0x"   + value  .ToString("x8")  + ", " +
-                "Timeout = 0x" + timeout.ToString("x16"));
-
+        private KernelResult WaitForAddress(ulong address, ArbitrationType type, int value, long timeout)
+        {
             if (IsPointingInsideKernel(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{address:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             if (IsAddressNotWordAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{address:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
-            long result;
+            KernelResult result;
 
             switch (type)
             {
@@ -286,52 +184,33 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
 
                 default:
-                    result = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
+                    result = KernelResult.InvalidEnumValue;
                     break;
             }
 
-            if (result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-            }
-
-            threadState.X0 = (ulong)result;
+            return result;
         }
 
-        private void SvcSignalToAddress(CpuThreadState threadState)
+        public KernelResult SignalToAddress64(ulong address, SignalType type, int value, int count)
         {
-            long       address =       (long)threadState.X0;
-            SignalType type    = (SignalType)threadState.X1;
-            int        value   =        (int)threadState.X2;
-            int        count   =        (int)threadState.X3;
+            return SignalToAddress(address, type, value, count);
+        }
 
-            Logger.PrintDebug(LogClass.KernelSvc,
-                "Address = 0x" + address.ToString("x16") + ", " +
-                "Type = "      + type   .ToString()      + ", " +
-                "Value = 0x"   + value  .ToString("x8")  + ", " +
-                "Count = 0x"   + count  .ToString("x8"));
-
+        private KernelResult SignalToAddress(ulong address, SignalType type, int value, int count)
+        {
             if (IsPointingInsideKernel(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Invalid address 0x{address:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.NoAccessPerm);
-
-                return;
+                return KernelResult.InvalidMemState;
             }
 
             if (IsAddressNotWordAligned(address))
             {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Unaligned address 0x{address:x16}!");
-
-                threadState.X0 = MakeError(ErrorModule.Kernel, KernelErr.InvalidAddress);
-
-                return;
+                return KernelResult.InvalidAddress;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
-            long result;
+            KernelResult result;
 
             switch (type)
             {
@@ -348,24 +227,19 @@ namespace Ryujinx.HLE.HOS.Kernel
                     break;
 
                 default:
-                    result = MakeError(ErrorModule.Kernel, KernelErr.InvalidEnumValue);
+                    result = KernelResult.InvalidEnumValue;
                     break;
             }
 
-            if (result != 0)
-            {
-                Logger.PrintWarning(LogClass.KernelSvc, $"Operation failed with error 0x{result:x}!");
-            }
-
-            threadState.X0 = (ulong)result;
+            return result;
         }
 
-        private bool IsPointingInsideKernel(long address)
+        private bool IsPointingInsideKernel(ulong address)
         {
-            return ((ulong)address + 0x1000000000) < 0xffffff000;
+            return (address + 0x1000000000) < 0xffffff000;
         }
 
-        private bool IsAddressNotWordAligned(long address)
+        private bool IsAddressNotWordAligned(ulong address)
         {
             return (address & 3) != 0;
         }

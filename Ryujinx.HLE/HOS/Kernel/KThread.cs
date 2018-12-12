@@ -20,11 +20,11 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public KSynchronizationObject SignaledObj { get; set; }
 
-        public long CondVarAddress { get; set; }
+        public ulong CondVarAddress { get; set; }
 
         private ulong _entrypoint;
 
-        public long MutexAddress { get; set; }
+        public ulong MutexAddress { get; set; }
 
         public KProcess Owner { get; private set; }
 
@@ -468,9 +468,9 @@ namespace Ryujinx.HLE.HOS.Kernel
             System.CriticalSection.Leave();
         }
 
-        public long SetActivity(bool pause)
+        public KernelResult SetActivity(bool pause)
         {
-            long result = 0;
+            KernelResult result = KernelResult.Success;
 
             System.CriticalSection.Enter();
 
@@ -480,7 +480,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             {
                 System.CriticalSection.Leave();
 
-                return MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+                return KernelResult.InvalidState;
             }
 
             System.CriticalSection.Enter();
@@ -498,7 +498,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     }
                     else
                     {
-                        result = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+                        result = KernelResult.InvalidState;
                     }
                 }
                 else
@@ -521,7 +521,7 @@ namespace Ryujinx.HLE.HOS.Kernel
                     }
                     else
                     {
-                        result = MakeError(ErrorModule.Kernel, KernelErr.InvalidState);
+                        result = KernelResult.InvalidState;
                     }
                 }
             }
@@ -716,7 +716,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             UpdatePriorityInheritance();
         }
 
-        public KThread RelinquishMutex(long mutexAddress, out int count)
+        public KThread RelinquishMutex(ulong mutexAddress, out int count)
         {
             count = 0;
 
