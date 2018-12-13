@@ -3,13 +3,13 @@ using System.IO;
 
 namespace Ryujinx.Graphics.Gal
 {
-    static class ShaderDumper
+    public static class ShaderHelper
     {
         private static string RuntimeDir;
 
         public static int DumpIndex { get; private set; } = 1;
 
-        public static void Dump(IGalMemory Memory, long Position, GalShaderType Type, string ExtSuffix = "")
+        public static void Dump(byte[] Binary, GalShaderType Type, string ExtSuffix = "")
         {
             if (!IsDumpEnabled())
             {
@@ -23,47 +23,20 @@ namespace Ryujinx.Graphics.Gal
 
             DumpIndex++;
 
-            using (FileStream FullFile = File.Create(FullPath))
             using (FileStream CodeFile = File.Create(CodePath))
+            using (BinaryWriter Writer = new BinaryWriter(CodeFile))
             {
-                BinaryWriter FullWriter = new BinaryWriter(FullFile);
-                BinaryWriter CodeWriter = new BinaryWriter(CodeFile);
+                long Offset;
 
-                for (long i = 0; i < 0x50; i += 4)
+                for (Offset = 0; Offset + 0x50 < Binary.LongLength; Offset++)
                 {
-                    FullWriter.Write(Memory.ReadInt32(Position + i));
+                    Writer.Write(Binary[Offset + 0x50]);
                 }
 
-                long Offset = 0;
-
-                ulong Instruction = 0;
-
-                //Dump until a NOP instruction is found
-                while ((Instruction >> 52 & 0xfff8) != 0x50b0)
-                {
-                    uint Word0 = (uint)Memory.ReadInt32(Position + 0x50 + Offset + 0);
-                    uint Word1 = (uint)Memory.ReadInt32(Position + 0x50 + Offset + 4);
-
-                    Instruction = Word0 | (ulong)Word1 << 32;
-
-                    //Zero instructions (other kind of NOP) stop immediatly,
-                    //this is to avoid two rows of zeroes
-                    if (Instruction == 0)
-                    {
-                        break;
-                    }
-
-                    FullWriter.Write(Instruction);
-                    CodeWriter.Write(Instruction);
-
-                    Offset += 8;
-                }
-
-                //Align to meet nvdisasm requeriments
+                //Align to meet nvdisasm requirements
                 while (Offset % 0x20 != 0)
                 {
-                    FullWriter.Write(0);
-                    CodeWriter.Write(0);
+                    Writer.Write(0);
 
                     Offset += 4;
                 }

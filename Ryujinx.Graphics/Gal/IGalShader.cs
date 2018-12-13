@@ -4,9 +4,9 @@ namespace Ryujinx.Graphics.Gal
 {
     public interface IGalShader
     {
-        void Create(IGalMemory Memory, long Key, GalShaderType Type);
+        void Create(long KeyA, long KeyB, byte[] BinaryA, byte[] BinaryB, GalShaderType Type);
 
-        void Create(IGalMemory Memory, long VpAPos, long Key, GalShaderType Type);
+        bool TryGetSize(long Key, out long Size);
 
         IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long Key);
         IEnumerable<ShaderDeclInfo> GetTextureUsage(long Key);

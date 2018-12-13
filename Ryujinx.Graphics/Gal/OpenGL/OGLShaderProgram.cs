@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
@@ -17,8 +18,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
     {
         public int Handle { get; private set; }
 
-        public bool IsCompiled { get; private set; }
-
         public GalShaderType Type { get; private set; }
 
         public string Code { get; private set; }
@@ -26,13 +25,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public IEnumerable<ShaderDeclInfo> ConstBufferUsage { get; private set; }
         public IEnumerable<ShaderDeclInfo> TextureUsage     { get; private set; }
 
+        private byte[] BinaryA;
+        private byte[] BinaryB;
+
         public OGLShaderStage(
             GalShaderType               Type,
+            byte[]                      BinaryA,
+            byte[]                      BinaryB,
             string                      Code,
             IEnumerable<ShaderDeclInfo> ConstBufferUsage,
             IEnumerable<ShaderDeclInfo> TextureUsage)
         {
             this.Type             = Type;
+            this.BinaryA          = BinaryA;
+            this.BinaryB          = BinaryB;
             this.Code             = Code;
             this.ConstBufferUsage = ConstBufferUsage;
             this.TextureUsage     = TextureUsage;
@@ -61,6 +67,21 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 Handle = 0;
             }
+        }
+
+        public bool EqualsBinary(byte[] BinaryA, byte[] BinaryB)
+        {
+            if (!BinaryB.SequenceEqual(this.BinaryB))
+            {
+                return false;
+            }
+
+            if (BinaryA != null)
+            {
+                return BinaryA.SequenceEqual(this.BinaryA);
+            }
+
+            return true;
         }
 
         public static void CompileAndCheck(int Handle, string Code)

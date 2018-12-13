@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.Shader
@@ -8,14 +9,12 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private const bool AddDbgComments = true;
 
-        public static ShaderIrBlock[] Decode(IGalMemory Memory, long Start)
+        public static ShaderIrBlock[] Decode(byte[] Binary)
         {
             Dictionary<int, ShaderIrBlock> Visited    = new Dictionary<int, ShaderIrBlock>();
             Dictionary<int, ShaderIrBlock> VisitedEnd = new Dictionary<int, ShaderIrBlock>();
 
             Queue<ShaderIrBlock> Blocks = new Queue<ShaderIrBlock>();
-
-            long Beginning = Start + HeaderSize;
 
             ShaderIrBlock Enqueue(int Position, ShaderIrBlock Source = null)
             {
@@ -36,13 +35,13 @@ namespace Ryujinx.Graphics.Gal.Shader
                 return Output;
             }
 
-            ShaderIrBlock Entry = Enqueue(0);
+            ShaderIrBlock Entry = Enqueue((int)HeaderSize);
 
             while (Blocks.Count > 0)
             {
                 ShaderIrBlock Current = Blocks.Dequeue();
 
-                FillBlock(Memory, Current, Beginning);
+                FillBlock(Binary, Current, HeaderSize);
 
                 //Set child blocks. "Branch" is the block the branch instruction
                 //points to (when taken), "Next" is the block at the next address,
@@ -136,26 +135,23 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Graph;
         }
 
-        private static void FillBlock(IGalMemory Memory, ShaderIrBlock Block, long Beginning)
+        private static void FillBlock(byte[] Binary, ShaderIrBlock Block, long Beginning)
         {
             int Position = Block.Position;
 
             do
             {
                 //Ignore scheduling instructions, which are written every 32 bytes.
-                if ((Position & 0x1f) == 0)
+                if (((Position - Beginning) & 0x1f) == 0)
                 {
                     Position += 8;
 
                     continue;
                 }
 
-                uint Word0 = (uint)Memory.ReadInt32(Position + Beginning + 0);
-                uint Word1 = (uint)Memory.ReadInt32(Position + Beginning + 4);
+                long OpCode = BitConverter.ToInt64(Binary, Position);
 
                 Position += 8;
-
-                long OpCode = Word0 | (long)Word1 << 32;
 
                 ShaderDecodeFunc Decode = ShaderOpCodeTable.GetDecoder(OpCode);
 
