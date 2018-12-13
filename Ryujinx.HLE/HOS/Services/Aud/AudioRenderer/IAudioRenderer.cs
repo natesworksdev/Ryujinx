@@ -38,6 +38,8 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         private VoiceContext[] _voices;
 
+        private EffectContext[] _effects;
+
         private int _track;
 
         private PlayState _playState;
@@ -74,6 +76,8 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             _memoryPools = CreateArray<MemoryPoolContext>(Params.EffectCount + Params.VoiceCount * 4);
 
             _voices = CreateArray<VoiceContext>(Params.VoiceCount);
+
+            _effects = CreateArray<EffectContext>(Params.EffectCount);
 
             InitializeAudioOut();
 
@@ -210,6 +214,18 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
                 voiceCtx.PlayState      = voice.PlayState;
             }
 
+            EffectIn[] effectsIn = reader.Read<EffectIn>(inputHeader.EffectSize);
+
+            for (int index = 0; index < effectsIn.Length; index++)
+            {
+                EffectIn effect = effectsIn[index];
+
+                if (effect.FirstUpdate != 0)
+                {
+                    _effects[index].OutStatus.State = EffectState.New;
+                }
+            }
+
             UpdateAudio();
 
             UpdateDataHeader outputHeader = new UpdateDataHeader();
@@ -241,6 +257,11 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
             foreach (VoiceContext voice in _voices)
             {
                 writer.Write(voice.OutStatus);
+            }
+
+            foreach (EffectContext effect in _effects)
+            {
+                writer.Write(effect.OutStatus);
             }
 
             return 0;
