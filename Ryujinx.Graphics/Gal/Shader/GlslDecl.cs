@@ -39,8 +39,9 @@ namespace Ryujinx.Graphics.Gal.Shader
         public const string FragmentOutputName = "FragColor";
 
         public const string ExtraUniformBlockName = "Extra";
-        public const string FlipUniformName = "flip";
-        public const string InstanceUniformName = "instance";
+        public const string GmemUniformBlockName  = "Gmem";
+        public const string FlipUniformName       = "flip";
+        public const string InstanceUniformName   = "instance";
 
         public const string BasicBlockName  = "bb";
         public const string BasicBlockAName = BasicBlockName + "_a";
@@ -79,6 +80,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public IReadOnlyDictionary<int, ShaderDeclInfo> Gprs  => m_Gprs;
         public IReadOnlyDictionary<int, ShaderDeclInfo> Preds => m_Preds;
+
+        public ShaderDeclInfo   GmemBase     { get; private set; }
+        public ShaderIrOperCbuf GmemBaseCbuf { get; private set; }
 
         public GalShaderType ShaderType { get; private set; }
 
@@ -281,6 +285,52 @@ namespace Ryujinx.Graphics.Gal.Shader
                     break;
                 }
 
+                case ShaderIrOperGmem Gmem:
+                {
+                    if (Gmem.BaseAddress is ShaderIrOperGpr BaseAddress)
+                    {
+                        ShaderIrOperCbuf BaseSrc = null;
+
+                        int Index = Array.IndexOf(Nodes, Parent) - 1;
+
+                        for (; Index >= 0; Index--)
+                        {
+                            ShaderIrNode Curr = Nodes[Index];
+
+                            if (Curr is ShaderIrAsg Asg && Asg.Dst is ShaderIrOperGpr Gpr && Gpr.Index == BaseAddress.Index)
+                            {
+                                if (Asg.Src is ShaderIrOperGpr GprSrc)
+                                {
+                                    BaseAddress = GprSrc;
+
+                                    continue;
+                                }
+
+                                if (Asg.Src is ShaderIrOp Op && Op.Inst == ShaderIrInst.Add && Op.OperandB is ShaderIrOperCbuf Addend)
+                                {
+                                    BaseSrc = Addend;
+                                }
+
+                                break;
+                            }
+                        }
+
+                        if (BaseSrc != null)
+                        {
+                            GmemBaseCbuf = BaseSrc;
+
+                            string Name = StagePrefix + TextureName + "_cb" + BaseSrc.Index + "_" + BaseSrc.Pos;
+
+                            GmemBase = new ShaderDeclInfo(Name, BaseSrc.Pos, true, BaseSrc.Index);
+                        }
+                        else
+                        {
+                            throw new NotImplementedException("Shader LDG instruction is not fully supported!");
+                        }
+                    }
+                    break;
+                }
+
                 case ShaderIrOperAbuf Abuf:
                 {
                     //This is a built-in variable.
@@ -354,7 +404,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case ShaderIrOperPred Pred:
                 {
                     if (!Pred.IsConst && !HasName(m_Preds, Pred.Index))
-                    {
+                    { 
                         string Name = PredName + Pred.Index;
 
                         m_Preds.TryAdd(Pred.Index, new ShaderDeclInfo(Name, Pred.Index));

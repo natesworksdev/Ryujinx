@@ -97,6 +97,56 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
+        public static void Ld_G(ShaderIrBlock Block, long OpCode, int Position)
+        {
+            int Type = OpCode.Read(48, 7);
+
+            int Offset = (int)(OpCode >> 12) >> 8;
+
+            ShaderIrOperGpr Temp = ShaderIrOperGpr.MakeTemporary();
+
+            Block.AddNode(new ShaderIrAsg(Temp, OpCode.Gpr8()));
+
+            int Count = 1;
+
+            if (Type > 5)
+            {
+                Count = 4;
+            }
+            else if (Type == 5)
+            {
+                Count = 2;
+            }
+
+            for (int Index = 0; Index < Count; Index++)
+            {
+                ShaderIrOperGmem OperA = new ShaderIrOperGmem(Temp, Offset + Index * 4);
+
+                ShaderIrOperGpr OperD = OpCode.Gpr0();
+
+                OperD.Index += Index;
+
+                if (!OperD.IsValidRegister)
+                {
+                    break;
+                }
+
+                ShaderIrNode Node = OperA;
+
+                if (Type < 4)
+                {
+                    //Is this a 8 bit or 16 bit type.
+                    bool Signed = (Type & 1) != 0;
+
+                    int Size = 8 << (Type >> 1);
+
+                    Node = ExtendTo32(Node, Signed, Size);
+                }
+
+                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(OperD, Node)));
+            }
+        }
+
         public static void St_A(ShaderIrBlock Block, long OpCode, int Position)
         {
             ShaderIrNode[] Opers = OpCode.Abuf20();

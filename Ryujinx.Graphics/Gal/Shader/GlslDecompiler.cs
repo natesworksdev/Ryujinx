@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             I32
         }
 
-        private const string IdentationStr = "    ";
+        private const string IndentationStr = "    ";
 
         private const int MaxVertexInput = 3;
 
@@ -181,7 +181,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             TextureInfo.AddRange(Decl.Textures.Values);
             TextureInfo.AddRange(IterateCbTextures());
 
-            return new GlslProgram(GlslCode, TextureInfo, Decl.Uniforms.Values);
+            return new GlslProgram(GlslCode, Decl.GmemBase, TextureInfo, Decl.Uniforms.Values);
         }
 
         private void PrintDeclHeader()
@@ -247,9 +247,19 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 SB.AppendLine("layout (std140) uniform " + GlslDecl.ExtraUniformBlockName + " {");
 
-                SB.AppendLine(IdentationStr + "vec2 " + GlslDecl.FlipUniformName + ";");
+                SB.AppendLine(IndentationStr + "vec2 " + GlslDecl.FlipUniformName + ";");
 
-                SB.AppendLine(IdentationStr + "int " + GlslDecl.InstanceUniformName + ";");
+                SB.AppendLine(IndentationStr + "int " + GlslDecl.InstanceUniformName + ";");
+
+                SB.AppendLine("};");
+                SB.AppendLine();
+            }
+
+            if (Decl.GmemBase != null)
+            {
+                SB.AppendLine("layout (std140) uniform" + GlslDecl.GmemUniformBlockName + " {");
+
+                SB.AppendLine($"{IndentationStr}vec4 {GlslDecl.GmemUniformBlockName}_data[{GlslDecl.MaxUboSize}];");
 
                 SB.AppendLine("};");
                 SB.AppendLine();
@@ -259,7 +269,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 SB.AppendLine($"layout (std140) uniform {DeclInfo.Name} {{");
 
-                SB.AppendLine($"{IdentationStr}vec4 {DeclInfo.Name}_data[{GlslDecl.MaxUboSize}];");
+                SB.AppendLine($"{IndentationStr}vec4 {DeclInfo.Name}_data[{GlslDecl.MaxUboSize}];");
 
                 SB.AppendLine("};");
             }
@@ -294,7 +304,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         if (DeclInfo.Index >= 0)
                         {
-                            SB.AppendLine(IdentationStr + "layout (location = " + DeclInfo.Index + ") vec4 " + DeclInfo.Name + "; ");
+                            SB.AppendLine(IndentationStr + "layout (location = " + DeclInfo.Index + ") vec4 " + DeclInfo.Name + "; ");
                         }
                     }
 
@@ -440,16 +450,16 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                         string Src = "block_in[" + Vertex + "]." + DeclInfo.Name;
 
-                        SB.AppendLine(IdentationStr + Dst + " = " + Src + ";");
+                        SB.AppendLine(IndentationStr + Dst + " = " + Src + ";");
                     }
                 }
                 else
                 {
-                    SB.AppendLine(IdentationStr + Attr.Name + " = " + DeclInfo.Name + ";");
+                    SB.AppendLine(IndentationStr + Attr.Name + " = " + DeclInfo.Name + ";");
                 }
             }
 
-            SB.AppendLine(IdentationStr + "uint pc;");
+            SB.AppendLine(IndentationStr + "uint pc;");
 
             if (BlocksB != null)
             {
@@ -470,7 +480,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 if (Header.OmapDepth)
                 {
-                    SB.AppendLine(IdentationStr + "gl_FragDepth = " + GlslDecl.GetGprName(Header.DepthRegister) + ";");
+                    SB.AppendLine(IndentationStr + "gl_FragDepth = " + GlslDecl.GetGprName(Header.DepthRegister) + ";");
                 }
 
                 int GprIndex = 0;
@@ -485,7 +495,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     {
                         if (Target.ComponentEnabled(Component))
                         {
-                            SB.AppendLine(IdentationStr + Output + "[" + Component + "] = " + GlslDecl.GetGprName(GprIndex) + ";");
+                            SB.AppendLine(IndentationStr + Output + "[" + Component + "] = " + GlslDecl.GetGprName(GprIndex) + ";");
 
                             GprIndex++;
                         }
@@ -498,10 +508,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private void PrintProgram(ShaderIrBlock[] Blocks, string Name)
         {
-            const string Ident1 = IdentationStr;
-            const string Ident2 = Ident1 + IdentationStr;
-            const string Ident3 = Ident2 + IdentationStr;
-            const string Ident4 = Ident3 + IdentationStr;
+            const string Ident1 = IndentationStr;
+            const string Ident2 = Ident1 + IndentationStr;
+            const string Ident3 = Ident2 + IndentationStr;
+            const string Ident4 = Ident3 + IndentationStr;
 
             SB.AppendLine(Ident1 + "pc = " + GetBlockPosition(Blocks[0]) + ";");
             SB.AppendLine(Ident1 + "do {");
@@ -522,7 +532,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             SB.AppendLine(Ident1 + "} while (pc != 0);");
         }
 
-        private void PrintAttrToOutput(string Identation = IdentationStr)
+        private void PrintAttrToOutput(string Identation = IndentationStr)
         {
             foreach (KeyValuePair<int, ShaderDeclInfo> KV in Decl.OutAttributes)
             {
@@ -571,12 +581,12 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             foreach (ShaderIrNode Node in Nodes)
             {
-                PrintNode(Block, Node, IdentationStr);
+                PrintNode(Block, Node, IndentationStr);
             }
 
             if (Nodes.Length == 0)
             {
-                SB.AppendLine(IdentationStr + "return 0u;");
+                SB.AppendLine(IndentationStr + "return 0u;");
 
                 return;
             }
@@ -601,11 +611,11 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 if (Block.Next != null)
                 {
-                    SB.AppendLine(IdentationStr + "return " + GetBlockPosition(Block.Next) + ";");
+                    SB.AppendLine(IndentationStr + "return " + GetBlockPosition(Block.Next) + ";");
                 }
                 else
                 {
-                    SB.AppendLine(IdentationStr + "return 0u;");
+                    SB.AppendLine(IndentationStr + "return 0u;");
                 }
             }
         }
@@ -623,7 +633,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 SB.AppendLine(Identation + "if (" + IfExpr + ") {");
 
-                PrintNode(Block, Cond.Child, Identation + IdentationStr);
+                PrintNode(Block, Cond.Child, Identation + IndentationStr);
 
                 SB.AppendLine(Identation + "}");
             }
@@ -739,6 +749,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case ShaderIrOperAbuf Abuf: return GetName (Abuf);
                 case ShaderIrOperCbuf Cbuf: return GetName (Cbuf);
                 case ShaderIrOperGpr  Gpr:  return GetName (Gpr);
+                case ShaderIrOperGmem Gmem: return GetName (Gmem);
                 case ShaderIrOperImm  Imm:  return GetValue(Imm);
                 case ShaderIrOperImmf Immf: return GetValue(Immf);
                 case ShaderIrOperPred Pred: return GetName (Pred);
@@ -799,6 +810,16 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 return $"{DeclInfo.Name}_data[{Cbuf.Pos / 4}][{Cbuf.Pos % 4}]";
             }
+        }
+
+        private string GetName(ShaderIrOperGmem Gmem)
+        {
+            string Index = "(floatBitsToInt(" + GetSrcExpr(Gmem.BaseAddress) + ") - " +
+                            "floatBitsToInt(" + GetName(Decl.GmemBaseCbuf) + ")";
+
+            Index += " + " + Gmem.Offset.ToString(CultureInfo.InvariantCulture) + ")";
+
+            return $"{GlslDecl.GmemUniformBlockName}_data[{Index} / 16][({Index} / 4) % 4]";
         }
 
         private string GetOutAbufName(ShaderIrOperAbuf Abuf)
@@ -1350,6 +1371,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                         : OperType.F32;
 
                 case ShaderIrOperCbuf Cbuf: return OperType.F32;
+                case ShaderIrOperGmem Gmem: return OperType.F32;
                 case ShaderIrOperGpr  Gpr:  return OperType.F32;
                 case ShaderIrOperImm  Imm:  return OperType.I32;
                 case ShaderIrOperImmf Immf: return OperType.F32;
