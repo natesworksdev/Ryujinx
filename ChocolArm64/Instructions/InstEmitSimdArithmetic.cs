@@ -321,17 +321,60 @@ namespace ChocolArm64.Instructions
 
             int sizeF = op.Size & 1;
 
-            EmitVectorExtractF(context, op.Rn, 0, sizeF);
-            EmitVectorExtractF(context, op.Rn, 1, sizeF);
+            if (Optimizations.FastFP && Optimizations.UseSse3)
+            {
+                if (sizeF == 0)
+                {
+                    Type[] typesAddH = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
-            context.Emit(OpCodes.Add);
+                    context.EmitLdvec(op.Rn);
+                    context.Emit(OpCodes.Dup);
 
-            EmitScalarSetF(context, op.Rd, sizeF);
+                    context.EmitCall(typeof(Sse3).GetMethod(nameof(Sse3.HorizontalAdd), typesAddH));
+
+                    context.EmitStvec(op.Rd);
+
+                    EmitVectorZero32_128(context, op.Rd);
+                }
+                else /* if (sizeF == 1) */
+                {
+                    Type[] typesAddH = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    context.Emit(OpCodes.Dup);
+
+                    context.EmitCall(typeof(Sse3).GetMethod(nameof(Sse3.HorizontalAdd), typesAddH));
+
+                    EmitStvecWithCastFromDouble(context, op.Rd);
+
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+            else
+            {
+                EmitVectorExtractF(context, op.Rn, 0, sizeF);
+                EmitVectorExtractF(context, op.Rn, 1, sizeF);
+
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd));
+
+                EmitScalarSetF(context, op.Rd, sizeF);
+            }
         }
 
         public static void Faddp_V(ILEmitterCtx context)
         {
-            EmitVectorPairwiseOpF(context, () => context.Emit(OpCodes.Add));
+            if (Optimizations.FastFP && Optimizations.UseSse
+                                     && Optimizations.UseSse2)
+            {
+                EmitVectorPairwiseSseOrSse2OpF(context, nameof(Sse.Add));
+            }
+            else
+            {
+                EmitVectorPairwiseOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd));
+                });
+            }
         }
 
         public static void Fdiv_S(ILEmitterCtx context)
@@ -462,10 +505,18 @@ namespace ChocolArm64.Instructions
 
         public static void Fmaxp_V(ILEmitterCtx context)
         {
-            EmitVectorPairwiseOpF(context, () =>
+            if (Optimizations.FastFP && Optimizations.UseSse
+                                     && Optimizations.UseSse2)
             {
-                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax));
-            });
+                EmitVectorPairwiseSseOrSse2OpF(context, nameof(Sse.Max));
+            }
+            else
+            {
+                EmitVectorPairwiseOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax));
+                });
+            }
         }
 
         public static void Fmin_S(ILEmitterCtx context)
@@ -518,10 +569,18 @@ namespace ChocolArm64.Instructions
 
         public static void Fminp_V(ILEmitterCtx context)
         {
-            EmitVectorPairwiseOpF(context, () =>
+            if (Optimizations.FastFP && Optimizations.UseSse
+                                     && Optimizations.UseSse2)
             {
-                EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin));
-            });
+                EmitVectorPairwiseSseOrSse2OpF(context, nameof(Sse.Min));
+            }
+            else
+            {
+                EmitVectorPairwiseOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin));
+                });
+            }
         }
 
         public static void Fmla_Se(ILEmitterCtx context)
