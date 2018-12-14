@@ -1033,7 +1033,7 @@ namespace Ryujinx.Tests.Cpu
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE0E1(z, z);
-            Vector128<float> v1 = MakeVectorE0E1(a, z);
+            Vector128<float> v1 = MakeVectorE0(a);
 
             int rnd = (int)TestContext.CurrentContext.Random.NextUInt();
 
@@ -1051,7 +1051,7 @@ namespace Ryujinx.Tests.Cpu
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE1(z);
-            Vector128<float> v1 = MakeVectorE0E1(a, z);
+            Vector128<float> v1 = MakeVectorE0(a);
 
             int rnd = (int)TestContext.CurrentContext.Random.NextUInt();
 
