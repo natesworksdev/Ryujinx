@@ -826,6 +826,94 @@ namespace ChocolArm64.Instructions
             return result;
         }
 
+        public static float FPCompareEQ(float value1, float value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat32.FPCompareEQ: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            value1 = value1.FPUnpack(out FpType type1, out _, out _, state);
+            value2 = value2.FPUnpack(out FpType type2, out _, out _, state);
+
+            float result;
+
+            if (type1 == FpType.SNaN || type1 == FpType.QNaN || type2 == FpType.SNaN || type2 == FpType.QNaN)
+            {
+                result = ZerosOrOnes(false);
+
+                if (type1 == FpType.SNaN || type2 == FpType.SNaN)
+                {
+                    FPProcessException(FpExc.InvalidOp, state);
+                }
+            }
+            else
+            {
+                result = ZerosOrOnes(value1 == value2);
+            }
+
+            return result;
+        }
+
+        public static float FPCompareGE(float value1, float value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat32.FPCompareGE: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            value1 = value1.FPUnpack(out FpType type1, out _, out _, state);
+            value2 = value2.FPUnpack(out FpType type2, out _, out _, state);
+
+            float result;
+
+            if (type1 == FpType.SNaN || type1 == FpType.QNaN || type2 == FpType.SNaN || type2 == FpType.QNaN)
+            {
+                result = ZerosOrOnes(false);
+
+                FPProcessException(FpExc.InvalidOp, state);
+            }
+            else
+            {
+                result = ZerosOrOnes(value1 >= value2);
+            }
+
+            return result;
+        }
+
+        public static float FPCompareGT(float value1, float value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat32.FPCompareGT: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            value1 = value1.FPUnpack(out FpType type1, out _, out _, state);
+            value2 = value2.FPUnpack(out FpType type2, out _, out _, state);
+
+            float result;
+
+            if (type1 == FpType.SNaN || type1 == FpType.QNaN || type2 == FpType.SNaN || type2 == FpType.QNaN)
+            {
+                result = ZerosOrOnes(false);
+
+                FPProcessException(FpExc.InvalidOp, state);
+            }
+            else
+            {
+                result = ZerosOrOnes(value1 > value2);
+            }
+
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float FPCompareLE(float value1, float value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat32.FPCompareLE: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            return FPCompareGE(value2, value1, state);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float FPCompareLT(float value1, float value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat32.FPCompareLT: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            return FPCompareGT(value2, value1, state);
+        }
+
         public static float FPDiv(float value1, float value2, CpuThreadState state)
         {
             Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat32.FPDiv: state.Fpcr = 0x{state.Fpcr:X8}");
@@ -1417,6 +1505,11 @@ namespace ChocolArm64.Instructions
             return -value;
         }
 
+        private static float ZerosOrOnes(bool zeros)
+        {
+            return BitConverter.Int32BitsToSingle(!zeros ? 0 : -1);
+        }
+
         private static float FPUnpack(
             this float value,
             out FpType type,
@@ -1656,6 +1749,94 @@ namespace ChocolArm64.Instructions
             }
 
             return result;
+        }
+
+        public static double FPCompareEQ(double value1, double value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat64.FPCompareEQ: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            value1 = value1.FPUnpack(out FpType type1, out _, out _, state);
+            value2 = value2.FPUnpack(out FpType type2, out _, out _, state);
+
+            double result;
+
+            if (type1 == FpType.SNaN || type1 == FpType.QNaN || type2 == FpType.SNaN || type2 == FpType.QNaN)
+            {
+                result = ZerosOrOnes(false);
+
+                if (type1 == FpType.SNaN || type2 == FpType.SNaN)
+                {
+                    FPProcessException(FpExc.InvalidOp, state);
+                }
+            }
+            else
+            {
+                result = ZerosOrOnes(value1 == value2);
+            }
+
+            return result;
+        }
+
+        public static double FPCompareGE(double value1, double value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat64.FPCompareGE: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            value1 = value1.FPUnpack(out FpType type1, out _, out _, state);
+            value2 = value2.FPUnpack(out FpType type2, out _, out _, state);
+
+            double result;
+
+            if (type1 == FpType.SNaN || type1 == FpType.QNaN || type2 == FpType.SNaN || type2 == FpType.QNaN)
+            {
+                result = ZerosOrOnes(false);
+
+                FPProcessException(FpExc.InvalidOp, state);
+            }
+            else
+            {
+                result = ZerosOrOnes(value1 >= value2);
+            }
+
+            return result;
+        }
+
+        public static double FPCompareGT(double value1, double value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat64.FPCompareGT: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            value1 = value1.FPUnpack(out FpType type1, out _, out _, state);
+            value2 = value2.FPUnpack(out FpType type2, out _, out _, state);
+
+            double result;
+
+            if (type1 == FpType.SNaN || type1 == FpType.QNaN || type2 == FpType.SNaN || type2 == FpType.QNaN)
+            {
+                result = ZerosOrOnes(false);
+
+                FPProcessException(FpExc.InvalidOp, state);
+            }
+            else
+            {
+                result = ZerosOrOnes(value1 > value2);
+            }
+
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double FPCompareLE(double value1, double value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat64.FPCompareLE: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            return FPCompareGE(value2, value1, state);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double FPCompareLT(double value1, double value2, CpuThreadState state)
+        {
+            Debug.WriteLineIf(state.Fpcr != 0, $"SoftFloat64.FPCompareLT: state.Fpcr = 0x{state.Fpcr:X8}");
+
+            return FPCompareGT(value2, value1, state);
         }
 
         public static double FPDiv(double value1, double value2, CpuThreadState state)
@@ -2247,6 +2428,11 @@ namespace ChocolArm64.Instructions
         private static double FPNeg(this double value)
         {
             return -value;
+        }
+
+        private static double ZerosOrOnes(bool zeros)
+        {
+            return BitConverter.Int64BitsToDouble(!zeros ? 0L : -1L);
         }
 
         private static double FPUnpack(
