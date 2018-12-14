@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (Decl.GmemBase != null)
             {
-                SB.AppendLine("layout (std140) uniform" + GlslDecl.GmemUniformBlockName + " {");
+                SB.AppendLine($"layout (std140) uniform {GlslDecl.GmemUniformBlockName} {{");
 
                 SB.AppendLine($"{IndentationStr}vec4 {GlslDecl.GmemUniformBlockName}_data[{GlslDecl.MaxUboSize}];");
 
