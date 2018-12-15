@@ -3,22 +3,18 @@
 
 Experimental Switch emulator written in C#
 
-Don't expect much from this. Some homebrew apps work, Puyo Puyo Tetris shows the intro logo (sometimes), and a handful of games boot / work; but that's about it for now.
-Contributions are always welcome.
+Many games boot, only a handful are playable, see the compatiblity list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues).
 
 **Building**
 
-To build this emulator, you will need the .NET Core 2.1 (RC1) (or higher) SDK. https://www.microsoft.com/net/download/
-In release builds, memory checks are disabled to improve performances.
-
-Or just drag'n'drop the *.NRO / *.NSO or the game folder on the executable if you have a pre-build version.
+To build this emulator, you will need the [.NET Core 2.1 (RC1) (or higher) SDK](https://www.microsoft.com/net/download/)
+or just drag'n'drop the homebrew *.NRO / *.NSO or the game *.NSP / *.XCI on the executable if you have a pre-built version.
 
 **Features**
 
- - Audio is partially supported (glitched) on Windows but you need to install the OpenAL Core SDK.
-https://openal.org/downloads/OpenAL11CoreSDK.zip
+ - Audio is partially supported.
 
- - Keyboard Input is partially supported:
+ - Keyboard Input is supported:
    - Left Joycon:
 	 - Stick Up = W
 	 - Stick Down = S
@@ -48,7 +44,7 @@ https://openal.org/downloads/OpenAL11CoreSDK.zip
 	 - ZR = O
    - For more information on how to configure these buttons see [CONFIG.md](CONFIG.md)
 
- - Controller Input is partially supported:
+ - Controller Input is supported:
    - Left Joycon:
      - Analog Stick = Left Analog Stick
 	 - DPad Up = DPad Up
@@ -75,26 +71,25 @@ https://openal.org/downloads/OpenAL11CoreSDK.zip
 
 **Help**
 
-If you have some homebrew that currently doesn't work within the emulator, you can contact us through our Discord with the compiled NRO/NSO (and source code if possible) and then we'll make changes in order to make the requested app / game work.
+If you have some homebrew that currently doesn't work within the emulator, you can contact us through our Discord with the compiled *.NRO / *.NSO (and source code if possible) and then we'll make changes in order to make the requested app / game work.
 
 **Contact**
 
-For help, support, suggestions, or if you just want to get in touch with the team; join our Discord server!  
-https://discord.gg/VkQYXAZ
+For help, support, suggestions, or if you just want to get in touch with the team; join our [Discord server](https://discord.gg/VkQYXAZ)!
 
-For donation support, please take a look at our Patreon: https://www.patreon.com/ryujinx
+For donation support, please take a look at our [Patreon](https://www.patreon.com/ryujinx).
 
 **Running**
 
-To run this emulator, you need the .NET Core 2.1 (or higher) SDK *and* the OpenAL 11 Core SDK.  
+To run this emulator, you need the .NET Core 2.1 (or higher) SDK.  
 Run `dotnet run -c Release -- path\to\homebrew.nro` inside the Ryujinx solution folder to run homebrew apps.  
-Run `dotnet run -c Release -- path\to\game_exefs_and_romfs_folder` to run official games (they need to be decrypted and extracted first!)
+Run `dotnet run -c Release -- path\to\game.nsp/xci` to run official games.
 
 **Compatibility**
 
-You can check out the compatibility list within the Wiki. Only a handful of games actually work.
+You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues).
 
 **Latest build**
 
 These builds are compiled automatically for each commit on the master branch. They may be unstable or might not work at all.  
-The latest automatic build for Windows (64-bit) can be found on the [official website](https://ryujinx.org/#/Build).
+The latest automatic build for Windows, Mac, and Linux can be found on the [official website](https://ryujinx.org/#/Build).
