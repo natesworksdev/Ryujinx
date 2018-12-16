@@ -69,7 +69,9 @@ namespace Ryujinx
 
                 foreach (var prop in props)
                 {
-                    sb.Append($"{prop.Name}: {prop.GetValue(e.Data)}");
+                    sb.Append(prop.Name);
+                    sb.Append(": ");
+                    sb.Append(prop.GetValue(e.Data));
                     sb.Append(" - ");
                 }
 
