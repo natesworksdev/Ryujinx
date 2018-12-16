@@ -6,15 +6,18 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 {
     class IRequest : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> m_Commands;
+        private Dictionary<int, ServiceProcessRequest> _commands;
 
-        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => m_Commands;
+        public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
         public IRequest()
         {
-            m_Commands = new Dictionary<int, ServiceProcessRequest>()
+            _commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 1, InitializeOld },
+                { 0, InitializeOld },
+                { 1, FinalizeOld   },
+                { 2, SetAndWaitOld },
+                { 3, GetOld        },
                 { 4, Initialize    },
                 { 5, Finalize      },
                 { 6, SetAndWait    },
@@ -23,45 +26,91 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         }
 
         // InitializeOld(u32, u32, u32)
-        public long InitializeOld(ServiceCtx Context)
+        public long InitializeOld(ServiceCtx context)
         {
-            int Unknown0 = Context.RequestData.ReadInt32();
-            int Unknown1 = Context.RequestData.ReadInt32();
-            int Unknown2 = Context.RequestData.ReadInt32();
+            int unknown0 = context.RequestData.ReadInt32();
+            int unknown1 = context.RequestData.ReadInt32();
+            int unknown2 = context.RequestData.ReadInt32();
+
+            Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {unknown0} - " +
+                                                 $"Unknown1: {unknown1} - Unknown2: {unknown2}");
+
+            return 0;
+        }
+
+        // FinalizeOld(u32)
+        public long FinalizeOld(ServiceCtx context)
+        {
+            context.Device.Gpu.UninitializeVideoDecoder();
 
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
         }
 
-        public long Initialize(ServiceCtx Context)
+        // SetAndWaitOld(u32, u32, u32)
+        public long SetAndWaitOld(ServiceCtx context)
+        {
+            int unknown0 = context.RequestData.ReadInt32();
+            int unknown1 = context.RequestData.ReadInt32();
+            int unknown2 = context.RequestData.ReadInt32();
+
+            Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {unknown0} - " +
+                                                 $"Unknown1: {unknown1} - Unknown2: {unknown2}");
+            return 0;
+        }
+
+        // GetOld(u32) -> u32
+        public long GetOld(ServiceCtx context)
+        {
+            int unknown0 = context.RequestData.ReadInt32();
+
+            Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {unknown0}");
+
+            context.ResponseData.Write(0);
+
+            return 0;
+        }
+
+        // Initialize()
+        public long Initialize(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
         }
 
-        public long Finalize(ServiceCtx Context)
+        // Finalize(u32)
+        public long Finalize(ServiceCtx context)
         {
-            Context.Device.Gpu.UninitializeVideoDecoder();
+            context.Device.Gpu.UninitializeVideoDecoder();
 
             Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
 
             return 0;
         }
 
-        public long SetAndWait(ServiceCtx Context)
+        // SetAndWait(u32, u32, u32)
+        public long SetAndWait(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
+            int unknown0 = context.RequestData.ReadInt32();
+            int unknown1 = context.RequestData.ReadInt32();
+            int unknown2 = context.RequestData.ReadInt32();
+
+            Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {unknown0} - " +
+                                                 $"Unknown1: {unknown1} - Unknown2: {unknown2}");
 
             return 0;
         }
 
-        public long Get(ServiceCtx Context)
+        // Get(u32) -> u32
+        public long Get(ServiceCtx context)
         {
-            Context.ResponseData.Write(0);
+            int unknown0 = context.RequestData.ReadInt32();
 
-            Logger.PrintStub(LogClass.ServiceMm, "Stubbed.");
+            Logger.PrintStub(LogClass.ServiceMm, $"Stubbed. Unknown0: {unknown0}");
+
+            context.ResponseData.Write(0);
 
             return 0;
         }

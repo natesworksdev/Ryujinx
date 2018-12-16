@@ -164,15 +164,17 @@ namespace Ryujinx
 
             leftJoystick = new HidJoystickPosition
             {
-                DX = leftJoystickDx,
-                DY = leftJoystickDy
+                Dx = leftJoystickDx,
+                Dy = leftJoystickDy
             };
 
             rightJoystick = new HidJoystickPosition
             {
-                DX = rightJoystickDx,
-                DY = rightJoystickDy
+                Dx = rightJoystickDx,
+                Dy = rightJoystickDy
             };
+
+            currentButton |= _device.Hid.UpdateStickButtons(leftJoystick, rightJoystick);
 
             bool hasTouch = false;
 
