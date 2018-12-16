@@ -541,9 +541,9 @@ namespace ChocolArm64
             SetA64("0x001110<<100001001010xxxxxxxxxx", InstEmit.Xtn_V,           typeof(OpCodeSimd64));
             SetA64("0>001110<<0xxxxx001110xxxxxxxxxx", InstEmit.Zip1_V,          typeof(OpCodeSimdReg64));
             SetA64("0>001110<<0xxxxx011110xxxxxxxxxx", InstEmit.Zip2_V,          typeof(OpCodeSimdReg64));
-            #endregion
+#endregion
 
-            #region "Generate InstA64FastLookup Table (AArch64)"
+#region "Generate InstA64FastLookup Table (AArch64)"
             var tmp = new List<InstInfo>[_fastLookupSize];
             for (int i = 0; i < _fastLookupSize; i++)
             {
