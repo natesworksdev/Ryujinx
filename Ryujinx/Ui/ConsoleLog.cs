@@ -2,6 +2,8 @@ using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
 using System.Threading;
 
 namespace Ryujinx
@@ -51,22 +53,44 @@ namespace Ryujinx
 
         private static void PrintLog(LogEventArgs e)
         {
-            string formattedTime = e.Time.ToString(@"hh\:mm\:ss\.fff");
+            StringBuilder sb = new StringBuilder();
 
-            string currentThread = e.ThreadId.ToString("d4");
+            sb.AppendFormat(@"{0:hh\:mm\:ss\.fff}", e.Time);
+            sb.Append(" | ");
+            sb.AppendFormat("{0:d4}", e.ThreadId);
+            sb.Append(' ');
+            sb.Append(e.Message);
 
-            string message = formattedTime + " | " + currentThread + " " + e.Message;
+            if (e.Data != null)
+            {
+                PropertyInfo[] props = e.Data.GetType().GetProperties();
+
+                sb.Append(' ');
+
+                foreach (var prop in props)
+                {
+                    sb.Append($"{prop.Name}: {prop.GetValue(e.Data)}");
+                    sb.Append(" - ");
+                }
+
+                // We remove the final '-' from the string
+                if (props.Length > 0)
+                {
+                    sb.Remove(sb.Length - 3, 3);
+                }
+            }
 
             if (_logColors.TryGetValue(e.Level, out ConsoleColor color))
             {
                 Console.ForegroundColor = color;
 
-                Console.WriteLine(message);
+                Console.WriteLine(sb.ToString());
+
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine(message);
+                Console.WriteLine(sb.ToString());
             }
         }
 

@@ -71,46 +71,12 @@ namespace Ryujinx.Common.Logging
 
         public static void PrintStub<T>(LogClass logClass, T obj, [CallerMemberName] string caller = "")
         {
-            StringBuilder  sb    = new StringBuilder();
-            PropertyInfo[] props = typeof(T).GetProperties();
-
-            sb.Append("Stubbed. ");
-
-            foreach (var prop in props)
-            {
-                sb.Append($"{prop.Name}: {prop.GetValue(obj)}");
-                sb.Append(" - ");
-            }
-
-            if (props.Length > 0)
-            {
-                sb.Remove(sb.Length - 3, 3);
-            }
-
-            Print(LogLevel.Stub, logClass, GetFormattedMessage(logClass, sb.ToString(), caller));
+            Print(LogLevel.Stub, logClass, GetFormattedMessage(logClass, "Stubbed.", caller), obj);
         }
 
         public static void PrintStub<T>(LogClass logClass, string message, T obj, [CallerMemberName] string caller = "")
         {
-            StringBuilder  sb    = new StringBuilder();
-            PropertyInfo[] props = typeof(T).GetProperties();
-
-            sb.Append("Stubbed. ");
-            sb.Append(message);
-            sb.Append(' ');
-
-            foreach (var prop in props)
-            {
-                sb.Append($"{prop.Name}: {prop.GetValue(obj)}");
-                sb.Append(" - ");
-            }
-
-            if (props.Length > 0)
-            {
-                sb.Remove(sb.Length - 3, 3);
-            }
-
-            Print(LogLevel.Stub, logClass, GetFormattedMessage(logClass, sb.ToString(), caller));
+            Print(LogLevel.Stub, logClass, GetFormattedMessage(logClass, "Stubbed. " + message, caller), obj);
         }
 
         private static void Print(LogLevel logLevel, LogClass logClass, string message)
@@ -118,6 +84,14 @@ namespace Ryujinx.Common.Logging
             if (m_EnabledLevels[(int)logLevel] && m_EnabledClasses[(int)logClass])
             {
                 Updated?.Invoke(null, new LogEventArgs(logLevel, m_Time.Elapsed, Thread.CurrentThread.ManagedThreadId, message));
+            }
+        }
+
+        private static void Print(LogLevel logLevel, LogClass logClass, string message, object data)
+        {
+            if (m_EnabledLevels[(int)logLevel] && m_EnabledClasses[(int)logClass])
+            {
+                Updated?.Invoke(null, new LogEventArgs(logLevel, m_Time.Elapsed, Thread.CurrentThread.ManagedThreadId, message, data));
             }
         }
 
