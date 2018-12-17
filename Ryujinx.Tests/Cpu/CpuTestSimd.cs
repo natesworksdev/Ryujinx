@@ -472,6 +472,42 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
+        private static uint[] _F_Recpe_Rsqrte_S_S_()
+        {
+            return new uint[]
+            {
+                0x5EA1D820u, // FRECPE  S0, S1
+                0x7EA1D820u  // FRSQRTE S0, S1
+            };
+        }
+
+        private static uint[] _F_Recpe_Rsqrte_S_D_()
+        {
+            return new uint[]
+            {
+                0x5EE1D820u, // FRECPE  D0, D1
+                0x7EE1D820u  // FRSQRTE D0, D1
+            };
+        }
+
+        private static uint[] _F_Recpe_Rsqrte_V_2S_4S_()
+        {
+            return new uint[]
+            {
+                0x0EA1D800u, // FRECPE  V0.2S, V0.2S
+                0x2EA1D800u  // FRSQRTE V0.2S, V0.2S
+            };
+        }
+
+        private static uint[] _F_Recpe_Rsqrte_V_2D_()
+        {
+            return new uint[]
+            {
+                0x4EE1D800u, // FRECPE  V0.2D, V0.2D
+                0x6EE1D800u  // FRSQRTE V0.2D, V0.2D
+            };
+        }
+
         private static uint[] _SU_Cvt_F_S_S_()
         {
             return new uint[]
@@ -1433,6 +1469,96 @@ namespace Ryujinx.Tests.Cpu
             SingleOpcode(opcodes, v0: v0, v1: v1);
 
             CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Recpe_Rsqrte_S_S([ValueSource("_F_Recpe_Rsqrte_S_S_")] uint opcodes,
+                                       [ValueSource("_1S_F_")] ulong a,
+                                       [Values(RMode.Rn)] RMode rMode)
+        {
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            int rnd = (int)TestContext.CurrentContext.Random.NextUInt();
+
+            int fpcr = (int)rMode << (int)Fpcr.RMode;
+            fpcr |= rnd & (1 << (int)Fpcr.Fz);
+            fpcr |= rnd & (1 << (int)Fpcr.Dn);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Recpe_Rsqrte_S_D([ValueSource("_F_Recpe_Rsqrte_S_D_")] uint opcodes,
+                                       [ValueSource("_1D_F_")] ulong a,
+                                       [Values(RMode.Rn)] RMode rMode)
+        {
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE1(z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            int rnd = (int)TestContext.CurrentContext.Random.NextUInt();
+
+            int fpcr = (int)rMode << (int)Fpcr.RMode;
+            fpcr |= rnd & (1 << (int)Fpcr.Fz);
+            fpcr |= rnd & (1 << (int)Fpcr.Dn);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Recpe_Rsqrte_V_2S_4S([ValueSource("_F_Recpe_Rsqrte_V_2S_4S_")] uint opcodes,
+                                           [Values(0u)]     uint rd,
+                                           [Values(1u, 0u)] uint rn,
+                                           [ValueSource("_2S_F_")] ulong z,
+                                           [ValueSource("_2S_F_")] ulong a,
+                                           [Values(0b0u, 0b1u)] uint q, // <2S, 4S>
+                                           [Values(RMode.Rn)] RMode rMode)
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
+
+            int rnd = (int)TestContext.CurrentContext.Random.NextUInt();
+
+            int fpcr = (int)rMode << (int)Fpcr.RMode;
+            fpcr |= rnd & (1 << (int)Fpcr.Fz);
+            fpcr |= rnd & (1 << (int)Fpcr.Dn);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Recpe_Rsqrte_V_2D([ValueSource("_F_Recpe_Rsqrte_V_2D_")] uint opcodes,
+                                        [Values(0u)]     uint rd,
+                                        [Values(1u, 0u)] uint rn,
+                                        [ValueSource("_1D_F_")] ulong z,
+                                        [ValueSource("_1D_F_")] ulong a,
+                                        [Values(RMode.Rn)] RMode rMode)
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
+
+            int rnd = (int)TestContext.CurrentContext.Random.NextUInt();
+
+            int fpcr = (int)rMode << (int)Fpcr.RMode;
+            fpcr |= rnd & (1 << (int)Fpcr.Fz);
+            fpcr |= rnd & (1 << (int)Fpcr.Dn);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
+
+            CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
         }
 
         [Test, Pairwise, Description("NEG <V><d>, <V><n>")]
