@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private StringBuilder SB;
 
-        public static int MaxUboSize { get; private set; }
+        public int MaxUboSize { get; }
 
         public GlslDecompiler(int MaxUboSize)
         {
@@ -109,7 +109,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 { ShaderIrInst.Xor,    GetXorExpr    }
             };
 
-            GlslDecompiler.MaxUboSize = MaxUboSize / 16;
+            this.MaxUboSize = MaxUboSize / 16;
         }
 
         public GlslProgram Decompile(
