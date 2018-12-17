@@ -322,26 +322,6 @@ namespace ChocolArm64.Instructions
             context.EmitCall(mthdInfo);
         }
 
-        public static void EmitUnarySoftFloatCall(ILEmitterCtx context, string name)
-        {
-            IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
-
-            int sizeF = op.Size & 1;
-
-            MethodInfo mthdInfo;
-
-            if (sizeF == 0)
-            {
-                mthdInfo = typeof(SoftFloat).GetMethod(name, new Type[] { typeof(float) });
-            }
-            else /* if (sizeF == 1) */
-            {
-                mthdInfo = typeof(SoftFloat).GetMethod(name, new Type[] { typeof(double) });
-            }
-
-            context.EmitCall(mthdInfo);
-        }
-
         public static void EmitSoftFloatCall(ILEmitterCtx context, string name)
         {
             IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
