@@ -1146,7 +1146,7 @@ namespace ChocolArm64.Instructions
         {
             EmitScalarUnaryOpF(context, () =>
             {
-                EmitUnarySoftFloatCall(context, nameof(SoftFloat.RecipEstimate));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipEstimate));
             });
         }
 
@@ -1154,7 +1154,7 @@ namespace ChocolArm64.Instructions
         {
             EmitVectorUnaryOpF(context, () =>
             {
-                EmitUnarySoftFloatCall(context, nameof(SoftFloat.RecipEstimate));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipEstimate));
             });
         }
 
@@ -1443,7 +1443,7 @@ namespace ChocolArm64.Instructions
         {
             EmitScalarUnaryOpF(context, () =>
             {
-                EmitUnarySoftFloatCall(context, nameof(SoftFloat.InvSqrtEstimate));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtEstimate));
             });
         }
 
@@ -1451,7 +1451,7 @@ namespace ChocolArm64.Instructions
         {
             EmitVectorUnaryOpF(context, () =>
             {
-                EmitUnarySoftFloatCall(context, nameof(SoftFloat.InvSqrtEstimate));
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtEstimate));
             });
         }
 
