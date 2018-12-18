@@ -13,19 +13,19 @@ namespace Ryujinx.Common.Logging
 
         public LogEventArgs(LogLevel level, TimeSpan time, int threadId, string message)
         {
-            this.Level = level;
-            this.Time = time;
+            this.Level    = level;
+            this.Time     = time;
             this.ThreadId = threadId;
-            this.Message = message;
+            this.Message  = message;
         }
 
         public LogEventArgs(LogLevel level, TimeSpan time, int threadId, string message, object data)
         {
-            this.Level = level;
-            this.Time = time;
+            this.Level    = level;
+            this.Time     = time;
             this.ThreadId = threadId;
-            this.Message = message;
-            this.Data = data;
+            this.Message  = message;
+            this.Data     = data;
         }
     }
 }

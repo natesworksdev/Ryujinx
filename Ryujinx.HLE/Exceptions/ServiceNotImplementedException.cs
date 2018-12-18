@@ -64,19 +64,19 @@ namespace Ryujinx.HLE.Exceptions
 
             if (callingType != null && callingMethod != null)
             {
-                var ipcService = Context.Session.Service;
+                var ipcService  = Context.Session.Service;
                 var ipcCommands = ipcService.Commands;
 
                 // Find the handler for the method called
-                var ipcHandler = ipcCommands.FirstOrDefault(x => x.Value.Method == callingMethod);
+                var ipcHandler   = ipcCommands.FirstOrDefault(x => x.Value.Method == callingMethod);
                 var ipcCommandId = ipcHandler.Key;
-                var ipcMethod = ipcHandler.Value;
+                var ipcMethod    = ipcHandler.Value;
 
-                if(ipcMethod != null)
+                if (ipcMethod != null)
                 {
                     sb.AppendLine($"Service Command: {Session.ServiceName} {ipcService.GetType().Name}: {ipcCommandId} ({ipcMethod.Method.Name})");
                     sb.AppendLine();
-                }                
+                }
             }
 
             // Print buffer information
@@ -85,6 +85,7 @@ namespace Ryujinx.HLE.Exceptions
             if (Request.PtrBuff.Count > 0)
             {
                 sb.AppendLine("\tPtrBuff:");
+
                 foreach (var buff in Request.PtrBuff)
                 {
                     sb.AppendLine($"\t[{buff.Index}] Position: 0x{buff.Position:x16} Size: 0x{buff.Size:x16}");
@@ -94,6 +95,7 @@ namespace Ryujinx.HLE.Exceptions
             if (Request.SendBuff.Count > 0)
             {
                 sb.AppendLine("\tSendBuff:");
+
                 foreach (var buff in Request.SendBuff)
                 {
                     sb.AppendLine($"\tPosition: 0x{buff.Position:x16} Size: 0x{buff.Size:x16} Flags: {buff.Flags}");
@@ -103,6 +105,7 @@ namespace Ryujinx.HLE.Exceptions
             if (Request.ReceiveBuff.Count > 0)
             {
                 sb.AppendLine("\tReceiveBuff:");
+
                 foreach (var buff in Request.ReceiveBuff)
                 {
                     sb.AppendLine($"\tPosition: 0x{buff.Position:x16} Size: 0x{buff.Size:x16} Flags: {buff.Flags}");
@@ -112,6 +115,7 @@ namespace Ryujinx.HLE.Exceptions
             if (Request.ExchangeBuff.Count > 0)
             {
                 sb.AppendLine("\tExchangeBuff:");
+
                 foreach (var buff in Request.ExchangeBuff)
                 {
                     sb.AppendLine($"\tPosition: 0x{buff.Position:x16} Size: 0x{buff.Size:x16} Flags: {buff.Flags}");
@@ -121,6 +125,7 @@ namespace Ryujinx.HLE.Exceptions
             if (Request.RecvListBuff.Count > 0)
             {
                 sb.AppendLine("\tRecvListBuff:");
+
                 foreach (var buff in Request.RecvListBuff)
                 {
                     sb.AppendLine($"\tPosition: 0x{buff.Position:x16} Size: 0x{buff.Size:x16}");

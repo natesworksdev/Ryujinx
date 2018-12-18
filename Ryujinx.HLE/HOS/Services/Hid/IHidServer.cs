@@ -377,7 +377,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             int  sixAxisSensorHandle  = context.RequestData.ReadInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            Logger.PrintStub(LogClass.ServiceHid, new {appletResourceUserId, sixAxisSensorHandle });
+            Logger.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle });
 
             return 0;
         }
