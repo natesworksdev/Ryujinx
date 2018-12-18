@@ -9,12 +9,12 @@ namespace ChocolArm64.Instructions
     {
         static SoftFloat()
         {
-            RecipEstimateTable   = BuildRecipEstimateTable();
-            InvSqrtEstimateTable = BuildInvSqrtEstimateTable();
+            RecipEstimateTable     = BuildRecipEstimateTable();
+            RecipSqrtEstimateTable = BuildRecipSqrtEstimateTable();
         }
 
         internal static readonly byte[] RecipEstimateTable;
-        internal static readonly byte[] InvSqrtEstimateTable;
+        internal static readonly byte[] RecipSqrtEstimateTable;
 
         private static byte[] BuildRecipEstimateTable()
         {
@@ -28,7 +28,7 @@ namespace ChocolArm64.Instructions
 
                 src = (src << 1) + 1u;
 
-                uint aux = 0x00080000u / src;
+                uint aux = (1u << 19) / src;
 
                 uint dst = (aux + 1u) >> 1;
 
@@ -40,7 +40,7 @@ namespace ChocolArm64.Instructions
             return tbl;
         }
 
-        private static byte[] BuildInvSqrtEstimateTable()
+        private static byte[] BuildRecipSqrtEstimateTable()
         {
             byte[] tbl = new byte[384];
 
@@ -62,7 +62,7 @@ namespace ChocolArm64.Instructions
 
                 uint aux = 512u;
 
-                while (src * (aux + 1u) * (aux + 1u) < 0x10000000u)
+                while (src * (aux + 1u) * (aux + 1u) < (1u << 28))
                 {
                     aux = aux + 1u;
                 }
@@ -276,12 +276,12 @@ namespace ChocolArm64.Instructions
             {
                 intMant++;
 
-                if (intMant == (uint)Math.Pow(2d, f))
+                if (intMant == 1u << f)
                 {
                     biasedExp = 1u;
                 }
 
-                if (intMant == (uint)Math.Pow(2d, f + 1))
+                if (intMant == 1u << (f + 1))
                 {
                     biasedExp++;
                     intMant >>= 1;
@@ -290,7 +290,7 @@ namespace ChocolArm64.Instructions
 
             float result;
 
-            if (biasedExp >= (uint)Math.Pow(2d, e) - 1u)
+            if (biasedExp >= (1u << e) - 1u)
             {
                 result = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
 
@@ -547,12 +547,12 @@ namespace ChocolArm64.Instructions
             {
                 intMant++;
 
-                if (intMant == (uint)Math.Pow(2d, f))
+                if (intMant == 1u << f)
                 {
                     biasedExp = 1u;
                 }
 
-                if (intMant == (uint)Math.Pow(2d, f + 1))
+                if (intMant == 1u << (f + 1))
                 {
                     biasedExp++;
                     intMant >>= 1;
@@ -563,7 +563,7 @@ namespace ChocolArm64.Instructions
 
             if (!state.GetFpcrFlag(Fpcr.Ahp))
             {
-                if (biasedExp >= (uint)Math.Pow(2d, e) - 1u)
+                if (biasedExp >= (1u << e) - 1u)
                 {
                     resultBits = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
 
@@ -578,7 +578,7 @@ namespace ChocolArm64.Instructions
             }
             else
             {
-                if (biasedExp >= (uint)Math.Pow(2d, e))
+                if (biasedExp >= 1u << e)
                 {
                     resultBits = (ushort)((sign ? 1u : 0u) << 15 | 0x7FFFu);
 
@@ -1225,7 +1225,7 @@ namespace ChocolArm64.Instructions
 
                 uint resultExp = 253u - exp;
 
-                uint estimate = (uint)SoftFloat.RecipEstimateTable[(int)(scaled - 256u)] + 256u;
+                uint estimate = (uint)SoftFloat.RecipEstimateTable[scaled - 256u] + 256u;
 
                 fraction = (ulong)(estimate & 0xFFu) << 44;
 
@@ -1370,7 +1370,7 @@ namespace ChocolArm64.Instructions
 
                 uint resultExp = (380u - exp) >> 1;
 
-                uint estimate = (uint)SoftFloat.InvSqrtEstimateTable[(int)(scaled - 128u)] + 256u;
+                uint estimate = (uint)SoftFloat.RecipSqrtEstimateTable[scaled - 128u] + 256u;
 
                 result = BitConverter.Int32BitsToSingle((int)((resultExp & 0xFFu) << 23 | (estimate & 0xFFu) << 15));
             }
@@ -2309,7 +2309,7 @@ namespace ChocolArm64.Instructions
 
                 uint resultExp = 2045u - exp;
 
-                uint estimate = (uint)SoftFloat.RecipEstimateTable[(int)(scaled - 256u)] + 256u;
+                uint estimate = (uint)SoftFloat.RecipEstimateTable[scaled - 256u] + 256u;
 
                 fraction = (ulong)(estimate & 0xFFu) << 44;
 
@@ -2454,7 +2454,7 @@ namespace ChocolArm64.Instructions
 
                 uint resultExp = (3068u - exp) >> 1;
 
-                uint estimate = (uint)SoftFloat.InvSqrtEstimateTable[(int)(scaled - 128u)] + 256u;
+                uint estimate = (uint)SoftFloat.RecipSqrtEstimateTable[scaled - 128u] + 256u;
 
                 result = BitConverter.Int64BitsToDouble((long)((resultExp & 0x7FFul) << 52 | (estimate & 0xFFul) << 44));
             }
