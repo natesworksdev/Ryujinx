@@ -20,9 +20,9 @@ namespace ChocolArm64.Instructions
         {
             byte[] tbl = new byte[256];
 
-            for (uint idx = 0u; idx < 256u; idx++)
+            for (int idx = 0; idx < 256; idx++)
             {
-                uint src = idx + 256u;
+                uint src = (uint)idx + 256u;
 
                 Debug.Assert(256u <= src && src < 512u);
 
@@ -44,9 +44,9 @@ namespace ChocolArm64.Instructions
         {
             byte[] tbl = new byte[384];
 
-            for (uint idx = 0u; idx < 384u; idx++)
+            for (int idx = 0; idx < 384; idx++)
             {
-                uint src = idx + 128u;
+                uint src = (uint)idx + 128u;
 
                 Debug.Assert(128u <= src && src < 512u);
 
@@ -1225,7 +1225,7 @@ namespace ChocolArm64.Instructions
 
                 uint resultExp = 253u - exp;
 
-                uint estimate = SoftFloat.RecipEstimateTable[scaled - 256u] + 256u;
+                uint estimate = (uint)SoftFloat.RecipEstimateTable[(int)(scaled - 256u)] + 256u;
 
                 fraction = (ulong)(estimate & 0xFFu) << 44;
 
@@ -1370,7 +1370,7 @@ namespace ChocolArm64.Instructions
 
                 uint resultExp = (380u - exp) >> 1;
 
-                uint estimate = SoftFloat.InvSqrtEstimateTable[scaled - 128u] + 256u;
+                uint estimate = (uint)SoftFloat.InvSqrtEstimateTable[(int)(scaled - 128u)] + 256u;
 
                 result = BitConverter.Int32BitsToSingle((int)((resultExp & 0xFFu) << 23 | (estimate & 0xFFu) << 15));
             }
@@ -2309,7 +2309,7 @@ namespace ChocolArm64.Instructions
 
                 uint resultExp = 2045u - exp;
 
-                uint estimate = SoftFloat.RecipEstimateTable[scaled - 256u] + 256u;
+                uint estimate = (uint)SoftFloat.RecipEstimateTable[(int)(scaled - 256u)] + 256u;
 
                 fraction = (ulong)(estimate & 0xFFu) << 44;
 
@@ -2454,7 +2454,7 @@ namespace ChocolArm64.Instructions
 
                 uint resultExp = (3068u - exp) >> 1;
 
-                uint estimate = SoftFloat.InvSqrtEstimateTable[scaled - 128u] + 256u;
+                uint estimate = (uint)SoftFloat.InvSqrtEstimateTable[(int)(scaled - 128u)] + 256u;
 
                 result = BitConverter.Int64BitsToDouble((long)((resultExp & 0x7FFul) << 52 | (estimate & 0xFFul) << 44));
             }
