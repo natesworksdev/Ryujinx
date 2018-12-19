@@ -176,12 +176,119 @@ namespace ChocolArm64.Instructions
 
         public static void Fabd_S(ILEmitterCtx context)
         {
-            EmitScalarBinaryOpF(context, () =>
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                context.Emit(OpCodes.Sub);
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
 
-                EmitUnaryMathCall(context, nameof(Math.Abs));
-            });
+                int sizeF = op.Size & 1;
+
+                if (sizeF == 0)
+                {
+                    Type[] typesSsv       = new Type[] { typeof(float) };
+                    Type[] typesSubAndNot = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    context.EmitLdc_R4(-0f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), typesSsv));
+
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), typesSubAndNot));
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot), typesSubAndNot));
+
+                    context.EmitStvec(op.Rd);
+
+                    EmitVectorZero32_128(context, op.Rd);
+                }
+                else /* if (sizeF == 1) */
+                {
+                    Type[] typesSsv       = new Type[] { typeof(double) };
+                    Type[] typesSubAndNot = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+
+                    context.EmitLdc_R8(-0d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), typesSsv));
+
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rm);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), typesSubAndNot));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), typesSubAndNot));
+
+                    EmitStvecWithCastFromDouble(context, op.Rd);
+
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+            else
+            {
+                EmitScalarBinaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub));
+
+                    EmitUnaryMathCall(context, nameof(Math.Abs));
+                });
+            }
+        }
+
+        public static void Fabd_V(ILEmitterCtx context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
+
+                int sizeF = op.Size & 1;
+
+                if (sizeF == 0)
+                {
+                    Type[] typesSav       = new Type[] { typeof(float) };
+                    Type[] typesSubAndNot = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+
+                    context.EmitLdc_R4(-0f);
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), typesSav));
+
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), typesSubAndNot));
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot), typesSubAndNot));
+
+                    context.EmitStvec(op.Rd);
+
+                    if (op.RegisterSize == RegisterSize.Simd64)
+                    {
+                        EmitVectorZeroUpper(context, op.Rd);
+                    }
+                }
+                else /* if (sizeF == 1) */
+                {
+                    Type[] typesSav       = new Type[] { typeof(double) };
+                    Type[] typesSubAndNot = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+
+                    context.EmitLdc_R8(-0d);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    EmitLdvecWithCastToDouble(context, op.Rm);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), typesSubAndNot));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), typesSubAndNot));
+
+                    EmitStvecWithCastFromDouble(context, op.Rd);
+                }
+            }
+            else
+            {
+                EmitVectorBinaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub));
+
+                    EmitUnaryMathCall(context, nameof(Math.Abs));
+                });
+            }
         }
 
         public static void Fabs_S(ILEmitterCtx context)
