@@ -206,6 +206,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new uint[]
             {
+                0x7EA2D420u, // FABD  S0, S1, S2
                 0x1E222820u, // FADD  S0, S1, S2
                 0x1E221820u, // FDIV  S0, S1, S2
                 0x1E220820u, // FMUL  S0, S1, S2
@@ -218,6 +219,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new uint[]
             {
+                0x7EE2D420u, // FABD  D0, D1, D2
                 0x1E622820u, // FADD  D0, D1, D2
                 0x1E621820u, // FDIV  D0, D1, D2
                 0x1E620820u, // FMUL  D0, D1, D2
@@ -230,6 +232,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new uint[]
             {
+                0x2EA0D400u, // FABD  V0.2S, V0.2S, V0.2S
                 0x0E20D400u, // FADD  V0.2S, V0.2S, V0.2S
                 0x2E20D400u, // FADDP V0.2S, V0.2S, V0.2S
                 0x2E20FC00u, // FDIV  V0.2S, V0.2S, V0.2S
@@ -243,6 +246,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new uint[]
             {
+                0x6EE0D400u, // FABD  V0.2D, V0.2D, V0.2D
                 0x4E60D400u, // FADD  V0.2D, V0.2D, V0.2D
                 0x6E60D400u, // FADDP V0.2D, V0.2D, V0.2D
                 0x6E60FC00u, // FDIV  V0.2D, V0.2D, V0.2D
