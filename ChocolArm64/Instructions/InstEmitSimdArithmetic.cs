@@ -1251,18 +1251,42 @@ namespace ChocolArm64.Instructions
 
         public static void Frecpe_S(ILEmitterCtx context)
         {
-            EmitScalarUnaryOpF(context, () =>
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+
+            if (Optimizations.FastFP && Optimizations.UseSse
+                                     && sizeF == 0)
             {
-                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipEstimate));
-            });
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.ReciprocalScalar));
+            }
+            else
+            {
+                EmitScalarUnaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipEstimate));
+                });
+            }
         }
 
         public static void Frecpe_V(ILEmitterCtx context)
         {
-            EmitVectorUnaryOpF(context, () =>
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+
+            if (Optimizations.FastFP && Optimizations.UseSse
+                                     && sizeF == 0)
             {
-                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipEstimate));
-            });
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.Reciprocal));
+            }
+            else
+            {
+                EmitVectorUnaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipEstimate));
+                });
+            }
         }
 
         public static void Frecps_S(ILEmitterCtx context) // Fused.
@@ -1548,18 +1572,42 @@ namespace ChocolArm64.Instructions
 
         public static void Frsqrte_S(ILEmitterCtx context)
         {
-            EmitScalarUnaryOpF(context, () =>
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+
+            if (Optimizations.FastFP && Optimizations.UseSse
+                                     && sizeF == 0)
             {
-                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtEstimate));
-            });
+                EmitScalarSseOrSse2OpF(context, nameof(Sse.ReciprocalSqrtScalar));
+            }
+            else
+            {
+                EmitScalarUnaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtEstimate));
+                });
+            }
         }
 
         public static void Frsqrte_V(ILEmitterCtx context)
         {
-            EmitVectorUnaryOpF(context, () =>
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+
+            if (Optimizations.FastFP && Optimizations.UseSse
+                                     && sizeF == 0)
             {
-                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtEstimate));
-            });
+                EmitVectorSseOrSse2OpF(context, nameof(Sse.ReciprocalSqrt));
+            }
+            else
+            {
+                EmitVectorUnaryOpF(context, () =>
+                {
+                    EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtEstimate));
+                });
+            }
         }
 
         public static void Frsqrts_S(ILEmitterCtx context) // Fused.
