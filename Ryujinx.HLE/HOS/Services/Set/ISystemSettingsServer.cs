@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using LibHac;
+using LibHac.IO;
 using Ryujinx.HLE.FileSystem;
 
 namespace Ryujinx.HLE.HOS.Services.Set
@@ -173,7 +174,6 @@ namespace Ryujinx.HLE.HOS.Services.Set
 
         public static byte[] GetFirmwareData(Switch device)
         {
-            byte[] data        = null;
             long   titleId     = 0x0100000000000809;
             string contentPath = device.System.ContentManager.GetInstalledContentPath(titleId, StorageId.NandSystem, ContentType.Data);
 
@@ -182,32 +182,28 @@ namespace Ryujinx.HLE.HOS.Services.Set
                 return null;
             }
 
-            string     firmwareTitlePath = device.FileSystem.SwitchPathToSystemPath(contentPath);
-            FileStream firmwareStream    = File.Open(firmwareTitlePath, FileMode.Open, FileAccess.Read);
-            Nca        firmwareContent   = new Nca(device.System.KeySet, firmwareStream, false);
-            Stream     romFsStream       = firmwareContent.OpenSection(0, false, device.System.FsIntegrityCheckLevel);
+            string firmwareTitlePath = device.FileSystem.SwitchPathToSystemPath(contentPath);
 
-            if(romFsStream == null)
-            {
-                return null;
-            }
+            using(FileStream firmwareStream = File.Open(firmwareTitlePath, FileMode.Open, FileAccess.Read))
+            { 
+                Nca                firmwareContent = new Nca(device.System.KeySet, firmwareStream.AsStorage(), false);
+                LibHac.IO.IStorage romFsStorage    = firmwareContent.OpenSection(0, false, device.System.FsIntegrityCheckLevel, false);
 
-            Romfs firmwareRomFs = new Romfs(romFsStream);
-
-            using(MemoryStream memoryStream = new MemoryStream())
-            {
-                using (Stream firmwareFile = firmwareRomFs.OpenFile("/file"))
+                if(romFsStorage == null)
                 {
-                    firmwareFile.CopyTo(memoryStream);
+                    return null;
                 }
 
-                data = memoryStream.ToArray();
+                Romfs firmwareRomFs = new Romfs(romFsStorage);
+
+                LibHac.IO.IStorage firmwareFile = firmwareRomFs.OpenFile("/file");
+
+                byte[] data = new byte[firmwareFile.Length];
+
+                firmwareFile.Read(data, 0);
+
+                return data;
             }
-
-            firmwareContent.Dispose();
-            firmwareStream.Dispose();
-
-            return data;
         }
     }
 }

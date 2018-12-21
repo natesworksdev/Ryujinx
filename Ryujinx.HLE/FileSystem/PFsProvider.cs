@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using LibHac.IO;
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.FileSystem
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.FileSystem
 
             if (_pfs.FileExists(name))
             {
-                Stream stream = _pfs.OpenFile(name);
+                Stream stream = _pfs.OpenFile(name).AsStream();
                 fileInterface = new IFile(stream, name);
 
                 return 0;
