@@ -46,6 +46,8 @@ namespace Ryujinx.Graphics.Graphics3d
             bool DstLinear = ReadRegister(NvGpuEngine2dReg.DstLinear) != 0;
             int  DstWidth  = ReadRegister(NvGpuEngine2dReg.DstWidth);
             int  DstHeight = ReadRegister(NvGpuEngine2dReg.DstHeight);
+            int  DstDepth  = ReadRegister(NvGpuEngine2dReg.DstDepth);
+            int  DstLayer  = ReadRegister(NvGpuEngine2dReg.DstLayer);
             int  DstPitch  = ReadRegister(NvGpuEngine2dReg.DstPitch);
             int  DstBlkDim = ReadRegister(NvGpuEngine2dReg.DstBlockDimensions);
 
@@ -53,6 +55,8 @@ namespace Ryujinx.Graphics.Graphics3d
             bool SrcLinear = ReadRegister(NvGpuEngine2dReg.SrcLinear) != 0;
             int  SrcWidth  = ReadRegister(NvGpuEngine2dReg.SrcWidth);
             int  SrcHeight = ReadRegister(NvGpuEngine2dReg.SrcHeight);
+            int  SrcDepth  = ReadRegister(NvGpuEngine2dReg.SrcDepth);
+            int  SrcLayer  = ReadRegister(NvGpuEngine2dReg.SrcLayer);
             int  SrcPitch  = ReadRegister(NvGpuEngine2dReg.SrcPitch);
             int  SrcBlkDim = ReadRegister(NvGpuEngine2dReg.SrcBlockDimensions);
 
@@ -82,21 +86,47 @@ namespace Ryujinx.Graphics.Graphics3d
             long SrcKey = Vmm.GetPhysicalAddress(SrcAddress);
             long DstKey = Vmm.GetPhysicalAddress(DstAddress);
 
+            GalTextureTarget SrcTarget = GalTextureTarget.TwoD;
+
+            if (SrcDepth != 0)
+            {
+                SrcTarget = GalTextureTarget.TwoDArray;
+                SrcDepth++;
+            }
+            else
+            {
+                SrcDepth = 1;
+            }
+
+            GalTextureTarget DstTarget = GalTextureTarget.TwoD;
+
+            if (DstDepth != 0)
+            {
+                DstTarget = GalTextureTarget.TwoDArray;
+                DstDepth++;
+            }
+            else
+            {
+                DstDepth = 1;
+            }
+
             GalImage SrcTexture = new GalImage(
                 SrcWidth,
-                SrcHeight, 1, 1,
+                SrcHeight,
+                SrcDepth, 1,
                 SrcBlockHeight,
                 SrcLayout,
                 SrcImgFormat,
-                GalTextureTarget.TwoD);
+                SrcTarget);
 
             GalImage DstTexture = new GalImage(
                 DstWidth,
-                DstHeight, 1, 1,
+                DstHeight,
+                DstDepth, 1,
                 DstBlockHeight,
                 DstLayout,
                 DstImgFormat,
-                GalTextureTarget.TwoD);
+                DstTarget);
 
             SrcTexture.Pitch = SrcPitch;
             DstTexture.Pitch = DstPitch;
@@ -110,6 +140,7 @@ namespace Ryujinx.Graphics.Graphics3d
             int SrcBlitX2 = (int)(SrcBlitX + DstBlitW * BlitDuDx >> 32);
             int SrcBlitY2 = (int)(SrcBlitY + DstBlitH * BlitDvDy >> 32);
 
+            // TODO: support 2d array copy
             Gpu.Renderer.RenderTarget.Copy(
                 SrcKey,
                 DstKey,
