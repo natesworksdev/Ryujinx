@@ -389,16 +389,20 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         }
 
         public void Copy(
-            long SrcKey,
-            long DstKey,
-            int  SrcX0,
-            int  SrcY0,
-            int  SrcX1,
-            int  SrcY1,
-            int  DstX0,
-            int  DstY0,
-            int  DstX1,
-            int  DstY1)
+            GalImage SrcImage,
+            GalImage DstImage,
+            long     SrcKey,
+            long     DstKey,
+            int      SrcLayer,
+            int      DstLayer,
+            int      SrcX0,
+            int      SrcY0,
+            int      SrcX1,
+            int      SrcY1,
+            int      DstX0,
+            int      DstY0,
+            int      DstX1,
+            int      DstY1)
         {
             if (Texture.TryGetImageHandler(SrcKey, out ImageHandler SrcTex) &&
                 Texture.TryGetImageHandler(DstKey, out ImageHandler DstTex))
@@ -425,8 +429,24 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
                 FramebufferAttachment Attachment = GetAttachment(SrcTex);
 
-                GL.FramebufferTexture(FramebufferTarget.ReadFramebuffer, Attachment, SrcTex.Handle, 0);
-                GL.FramebufferTexture(FramebufferTarget.DrawFramebuffer, Attachment, DstTex.Handle, 0);
+                if (ImageUtils.IsArray(SrcImage.TextureTarget) && SrcLayer > 0)
+                {
+                    GL.FramebufferTextureLayer(FramebufferTarget.ReadFramebuffer, Attachment, SrcTex.Handle, 0, SrcLayer);
+                }
+                else
+                {
+                    GL.FramebufferTexture(FramebufferTarget.ReadFramebuffer, Attachment, SrcTex.Handle, 0);
+                }
+
+                if (ImageUtils.IsArray(DstImage.TextureTarget) && DstLayer > 0)
+                {
+                    GL.FramebufferTextureLayer(FramebufferTarget.DrawFramebuffer, Attachment, DstTex.Handle, 0, DstLayer);
+                }
+                else
+                {
+                    GL.FramebufferTexture(FramebufferTarget.DrawFramebuffer, Attachment, DstTex.Handle, 0);
+                }
+
 
                 BlitFramebufferFilter Filter = BlitFramebufferFilter.Nearest;
 

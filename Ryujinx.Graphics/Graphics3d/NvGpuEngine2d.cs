@@ -86,12 +86,16 @@ namespace Ryujinx.Graphics.Graphics3d
             long SrcKey = Vmm.GetPhysicalAddress(SrcAddress);
             long DstKey = Vmm.GetPhysicalAddress(DstAddress);
 
+            bool IsSrcLayered = false;
+            bool IsDstLayered = false;
+
             GalTextureTarget SrcTarget = GalTextureTarget.TwoD;
 
             if (SrcDepth != 0)
             {
                 SrcTarget = GalTextureTarget.TwoDArray;
                 SrcDepth++;
+                IsSrcLayered = true;
             }
             else
             {
@@ -104,6 +108,7 @@ namespace Ryujinx.Graphics.Graphics3d
             {
                 DstTarget = GalTextureTarget.TwoDArray;
                 DstDepth++;
+                IsDstLayered = true;
             }
             else
             {
@@ -131,8 +136,49 @@ namespace Ryujinx.Graphics.Graphics3d
             SrcTexture.Pitch = SrcPitch;
             DstTexture.Pitch = DstPitch;
 
+            long GetLayerOffset(GalImage Image, int Layer)
+            {
+                // FIXME: CALCULATE THE REAL TEXTURE SIZE (GPU SIZE NOT OGL SIZE)
+                // TODO: mip map
+                return ImageUtils.GetSize(Image) * Layer;
+            }
+
+            int SrcLayerIndex = -1;
+
+            if (IsSrcLayered && Gpu.ResourceManager.TryGetTextureMirorLayer(SrcKey, out SrcLayerIndex))
+            {
+                SrcKey = SrcKey - GetLayerOffset(SrcTexture, SrcLayerIndex);
+            }
+
+            int DstLayerIndex = -1;
+
+            if (IsDstLayered && Gpu.ResourceManager.TryGetTextureMirorLayer(DstKey, out DstLayerIndex))
+            {
+                DstKey = DstKey - GetLayerOffset(DstTexture, DstLayerIndex);
+            }
+
             Gpu.ResourceManager.SendTexture(Vmm, SrcKey, SrcTexture);
             Gpu.ResourceManager.SendTexture(Vmm, DstKey, DstTexture);
+
+            if (IsSrcLayered && SrcLayerIndex == -1)
+            {
+                for (int Layer = 0; Layer < SrcTexture.Depth; Layer++)
+                {
+                    Gpu.ResourceManager.SetTextureMirror(SrcKey + GetLayerOffset(SrcTexture, Layer), Layer);
+                }
+
+                SrcLayerIndex = 0;
+            }
+
+            if (IsDstLayered && DstLayerIndex == -1)
+            {
+                for (int Layer = 0; Layer < DstTexture.Depth; Layer++)
+                {
+                    Gpu.ResourceManager.SetTextureMirror(DstKey + GetLayerOffset(DstTexture, Layer), Layer);
+                }
+
+                DstLayerIndex = 0;
+            }
 
             int SrcBlitX1 = (int)(SrcBlitX >> 32);
             int SrcBlitY1 = (int)(SrcBlitY >> 32);
@@ -140,10 +186,13 @@ namespace Ryujinx.Graphics.Graphics3d
             int SrcBlitX2 = (int)(SrcBlitX + DstBlitW * BlitDuDx >> 32);
             int SrcBlitY2 = (int)(SrcBlitY + DstBlitH * BlitDvDy >> 32);
 
-            // TODO: support 2d array copy
             Gpu.Renderer.RenderTarget.Copy(
+                SrcTexture,
+                DstTexture,
                 SrcKey,
                 DstKey,
+                SrcLayerIndex,
+                DstLayerIndex,
                 SrcBlitX1,
                 SrcBlitY1,
                 SrcBlitX2,
@@ -157,6 +206,8 @@ namespace Ryujinx.Graphics.Graphics3d
             //the texture is modified by the guest, however it doesn't
             //work when resources that the gpu can write to are copied,
             //like framebuffers.
+
+            // FIXME: SUPPORT MULTILAYER CORRECTLY HERE (this will cause weird stuffs on the first layer)
             ImageUtils.CopyTexture(
                 Vmm,
                 SrcTexture,

@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics
@@ -11,6 +12,7 @@ namespace Ryujinx.Graphics
         {
             None,
             Texture,
+            TextureMirror,
             ColorBuffer,
             ZetaBuffer
         }
@@ -20,6 +22,7 @@ namespace Ryujinx.Graphics
         private HashSet<long>[] UploadedKeys;
 
         private Dictionary<long, ImageType> ImageTypes;
+        private Dictionary<long, int>      MirroredTextures;
 
         public GpuResourceManager(NvGpu Gpu)
         {
@@ -33,6 +36,7 @@ namespace Ryujinx.Graphics
             }
 
             ImageTypes = new Dictionary<long, ImageType>();
+            MirroredTextures = new Dictionary<long, int>();
         }
 
         public void SendColorBuffer(NvGpuVmm Vmm, long Position, int Attachment, GalImage NewImage)
@@ -68,6 +72,30 @@ namespace Ryujinx.Graphics
             PrepareSendTexture(Vmm, Position, NewImage);
 
             ImageTypes[Position] = ImageType.Texture;
+        }
+
+        public bool TryGetTextureMirorLayer(long Position, out int Layer)
+        {
+            if (MirroredTextures.TryGetValue(Position, out Layer))
+            {
+                ImageType Type = ImageTypes[Position];
+
+                if (Type != ImageType.Texture && Type != ImageType.TextureMirror)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                return true;
+            }
+
+            Layer = -1;
+            return false;
+        }
+
+        public void SetTextureMirror(long Position, int Layer)
+        {
+            ImageTypes[Position] = ImageType.TextureMirror;
+            MirroredTextures[Position] = Layer;
         }
 
         private void PrepareSendTexture(NvGpuVmm Vmm, long Position, GalImage NewImage)
