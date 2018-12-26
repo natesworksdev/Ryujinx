@@ -114,13 +114,11 @@ namespace Ryujinx.HLE.Loaders.Executables
 
         private byte[] ReadSegment(SegmentHeader header, Stream input)
         {
-            long end = input.Position + header.CompressedSize;
+            byte[] data = new byte[header.DecompressedSize];
 
-            input.Seek(end, SeekOrigin.Begin);
+            input.Read(data, 0, header.CompressedSize);
 
-            byte[] data = BackwardsLz.Decompress(input, header.DecompressedSize);
-
-            input.Seek(end, SeekOrigin.Begin);
+            BackwardsLz.DecompressInPlace(data, header.CompressedSize);
 
             return data;
         }
