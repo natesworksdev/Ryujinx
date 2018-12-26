@@ -113,6 +113,40 @@ namespace Ryujinx.HLE
             }
         }
 
+        public void Set(ulong address, byte value, ulong size)
+        {
+            ulong size8 = size & ~7UL;
+
+            ulong valueRep = (ulong)value * 0x0101010101010101;
+
+            for (ulong offs = 0; offs < size8; offs += 8)
+            {
+                WriteUInt64((long)(address + offs), valueRep);
+            }
+
+            for (ulong offs = size8; offs < (size - size8); offs++)
+            {
+                WriteByte((long)(address + offs), value);
+            }
+        }
+
+        public void Copy(ulong dst, ulong src, ulong size)
+        {
+            ulong size8 = size & ~7UL;
+
+            for (ulong offs = 0; offs < size8; offs += 8)
+            {
+                WriteUInt64((long)(dst + offs), ReadUInt64((long)(src + offs)));
+
+                System.Console.WriteLine((dst + offs).ToString("X16") + " <- " + (src + offs).ToString("X16") + " " + ReadUInt64((long)(src + offs)).ToString("X16"));
+            }
+
+            for (ulong offs = size8; offs < (size - size8); offs++)
+            {
+                WriteByte((long)(dst + offs), ReadByte((long)(src + offs)));
+            }
+        }
+
         public void Dispose()
         {
             Dispose(true);

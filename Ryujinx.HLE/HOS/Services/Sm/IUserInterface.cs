@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 return 0;
             }
 
-            KSession session = new KSession(ServiceFactory.MakeService(context.Device.System, name), name);
+            KSession session = new KSession(context.Device.System, ServiceFactory.MakeService(context.Device.System, name), name);
 
             if (context.Process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
             {

@@ -156,8 +156,8 @@ namespace Ryujinx.HLE.HOS
             hidPageList .AddRange(hidPa,  HidSize  / KMemoryManager.PageSize);
             fontPageList.AddRange(fontPa, FontSize / KMemoryManager.PageSize);
 
-            HidSharedMem  = new KSharedMemory(hidPageList,  0, 0, MemoryPermission.Read);
-            FontSharedMem = new KSharedMemory(fontPageList, 0, 0, MemoryPermission.Read);
+            HidSharedMem  = new KSharedMemory(this, hidPageList,  0, 0, MemoryPermission.Read);
+            FontSharedMem = new KSharedMemory(this, fontPageList, 0, 0, MemoryPermission.Read);
 
             AppletState = new AppletStateMgr(this);
 
@@ -256,6 +256,14 @@ namespace Ryujinx.HLE.HOS
             ContentManager.LoadEntries();
 
             LoadNca(mainNca, controlNca);
+        }
+
+        public void LoadKip(string kipFile)
+        {
+            using (FileStream fs = new FileStream(kipFile, FileMode.Open))
+            {
+                ProgramLoader.LoadKernelInitalProcess(this, new KernelInitialProcess(fs));
+            }
         }
 
         private (Nca Main, Nca Control) GetXciGameData(Xci xci)

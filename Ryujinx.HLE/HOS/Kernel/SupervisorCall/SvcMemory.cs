@@ -305,7 +305,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return result;
             }
 
-            KTransferMemory transferMemory = new KTransferMemory(address, size);
+            KTransferMemory transferMemory = new KTransferMemory(_system, address, size);
 
             return _process.HandleTable.GenerateHandle(transferMemory, out handle);
         }

@@ -15,6 +15,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     partial class SvcHandler
     {
+        private const bool UseLegacyIpc = true;
+
         public void ExitProcess64()
         {
             ExitProcess();
@@ -82,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private KernelResult CloseHandle(int handle)
         {
-            object obj = _process.HandleTable.GetObject<object>(handle);
+            KAutoObject obj = _process.HandleTable.GetObject<KAutoObject>(handle);
 
             _process.HandleTable.CloseHandle(handle);
 
@@ -146,6 +148,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult ConnectToNamedPort64(ulong namePtr, out int handle)
         {
+            if (!UseLegacyIpc)
+            {
+                return ConnectToNamedPort_(namePtr, out handle);
+            }
+
             return ConnectToNamedPort(namePtr, out handle);
         }
 
@@ -155,13 +162,62 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             //TODO: Validate that app has perms to access the service, and that the service
             //actually exists, return error codes otherwise.
-            KSession session = new KSession(ServiceFactory.MakeService(_system, name), name);
+            KSession session = new KSession(_system, ServiceFactory.MakeService(_system, name), name);
 
             return _process.HandleTable.GenerateHandle(session, out handle);
         }
 
+        private KernelResult ConnectToNamedPort_(ulong namePtr, out int handle)
+        {
+            handle = 0;
+
+            if (!KernelTransfer.UserToKernelString(_system, namePtr, 12, out string name))
+            {
+                return KernelResult.UserCopyFailed;
+            }
+
+            if (name.Length > 11)
+            {
+                return KernelResult.MaximumExceeded;
+            }
+
+            KAutoObject autoObj = KAutoObject.FindNamedObject(_system, name);
+
+            if (!(autoObj is KClientPort clientPort))
+            {
+                return KernelResult.NotFound;
+            }
+
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            KernelResult result = currentProcess.HandleTable.ReserveHandle(out handle);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
+
+            result = clientPort.Connect(out KClientSession session);
+
+            if (result != KernelResult.Success)
+            {
+                currentProcess.HandleTable.CancelHandleReservation(handle);
+
+                return result;
+            }
+
+            currentProcess.HandleTable.SetReservedHandleObj(handle, session);
+
+            return result;
+        }
+
         public KernelResult SendSyncRequest64(int handle)
         {
+            if (!UseLegacyIpc)
+            {
+                return SendSyncRequest_(handle);
+            }
+
             return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.ThreadState.Tpidr, 0x100, handle);
         }
 
@@ -224,6 +280,20 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _system.ThreadCounter.Signal();
 
             ipcMessage.Thread.Reschedule(ThreadSchedState.Running);
+        }
+
+        private KernelResult SendSyncRequest_(int handle)
+        {
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            KClientSession session = currentProcess.HandleTable.GetObject<KClientSession>(handle);
+
+            if (session == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            return session.SendSyncRequest();
         }
 
         public KernelResult GetProcessId64(int handle, out long pid)
@@ -522,6 +592,139 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return KernelResult.Success;
         }
 
+        public KernelResult AcceptSession64(int portHandle, out int sessionHandle)
+        {
+            return AcceptSession(portHandle, out sessionHandle);
+        }
+
+        private KernelResult AcceptSession(int portHandle, out int sessionHandle)
+        {
+            sessionHandle = 0;
+
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            KServerPort serverPort = currentProcess.HandleTable.GetObject<KServerPort>(portHandle);
+
+            if (serverPort == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            KernelResult result = currentProcess.HandleTable.ReserveHandle(out int handle);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
+
+            KServerSession session = serverPort.IsLight
+                ? serverPort.AcceptLightIncomingConnection()
+                : serverPort.AcceptIncomingConnection();
+
+            if (session != null)
+            {
+                currentProcess.HandleTable.SetReservedHandleObj(handle, session);
+
+                sessionHandle = handle;
+
+                result = KernelResult.Success;
+            }
+            else
+            {
+                currentProcess.HandleTable.CancelHandleReservation(handle);
+
+                result = KernelResult.NotFound;
+            }
+
+            return result;
+        }
+
+        public KernelResult ReplyAndReceive64(
+            ulong   handlesPtr,
+            int     handlesCount,
+            int     replyTargetHandle,
+            long    timeout,
+            out int handleIndex)
+        {
+            handleIndex = 0;
+
+            if ((uint)handlesCount > 0x40)
+            {
+                return KernelResult.MaximumExceeded;
+            }
+
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            ulong copySize = (ulong)((long)handlesCount * 4);
+
+            if (!currentProcess.MemoryManager.InsideAddrSpace(handlesPtr, copySize))
+            {
+                return KernelResult.UserCopyFailed;
+            }
+
+            if (handlesPtr + copySize < handlesPtr)
+            {
+                return KernelResult.UserCopyFailed;
+            }
+
+            int[] handles = new int[handlesCount];
+
+            if (!KernelTransfer.UserToKernelInt32Array(_system, handlesPtr, handles))
+            {
+                return KernelResult.UserCopyFailed;
+            }
+
+            KSynchronizationObject[] syncObjs = new KSynchronizationObject[handlesCount];
+
+            for (int index = 0; index < handlesCount; index++)
+            {
+                KSynchronizationObject obj = currentProcess.HandleTable.GetObject<KSynchronizationObject>(handles[index]);
+
+                if (obj == null)
+                {
+                    return KernelResult.InvalidHandle;
+                }
+
+                syncObjs[index] = obj;
+            }
+
+            KernelResult result;
+
+            if (replyTargetHandle != 0)
+            {
+                KServerSession replyTarget = currentProcess.HandleTable.GetObject<KServerSession>(replyTargetHandle);
+
+                if (replyTarget == null)
+                {
+                    return KernelResult.InvalidHandle;
+                }
+
+                result = replyTarget.Reply();
+
+                if (result != KernelResult.Success)
+                {
+                    return result;
+                }
+            }
+
+            while ((result = _system.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
+            {
+                KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
+
+                if (session == null)
+                {
+                    break;
+                }
+
+                if ((result = session.Receive()) != KernelResult.NotFound)
+                {
+                    break;
+                }
+            }
+
+            return result;
+        }
+
         public KernelResult CreateEvent64(out int wEventHandle, out int rEventHandle)
         {
             return CreateEvent(out wEventHandle, out rEventHandle);
@@ -749,7 +952,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             port.Initialize(maxSessions, false, 0);
 
-            result = port.SetName(name);
+            result = port.ClientPort.SetName(name);
 
             if (result != KernelResult.Success)
             {

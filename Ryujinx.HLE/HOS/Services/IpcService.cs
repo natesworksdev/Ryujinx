@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services
             }
             else
             {
-                KSession session = new KSession(obj, context.Session.ServiceName);
+                KSession session = new KSession(context.Device.System, obj, context.Session.ServiceName);
 
                 if (context.Process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
                 {

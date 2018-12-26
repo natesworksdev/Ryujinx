@@ -63,6 +63,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x33, nameof(SvcHandler.GetThreadContext364)             },
                 { 0x34, nameof(SvcHandler.WaitForAddress64)                },
                 { 0x35, nameof(SvcHandler.SignalToAddress64)               },
+                { 0x41, nameof(SvcHandler.AcceptSession64)                 },
+                { 0x43, nameof(SvcHandler.ReplyAndReceive64)               },
                 { 0x45, nameof(SvcHandler.CreateEvent64)                   },
                 { 0x65, nameof(SvcHandler.GetProcessList64)                },
                 { 0x6f, nameof(SvcHandler.GetSystemInfo64)                 },
