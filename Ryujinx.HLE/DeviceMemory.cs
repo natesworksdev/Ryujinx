@@ -137,8 +137,6 @@ namespace Ryujinx.HLE
             for (ulong offs = 0; offs < size8; offs += 8)
             {
                 WriteUInt64((long)(dst + offs), ReadUInt64((long)(src + offs)));
-
-                System.Console.WriteLine((dst + offs).ToString("X16") + " <- " + (src + offs).ToString("X16") + " " + ReadUInt64((long)(src + offs)).ToString("X16"));
             }
 
             for (ulong offs = size8; offs < (size - size8); offs++)

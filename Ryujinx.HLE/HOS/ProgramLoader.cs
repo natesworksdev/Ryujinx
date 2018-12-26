@@ -103,6 +103,8 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
+            process.DefaultCpuCore = kip.DefaultProcessorId;
+
             result = process.Start(kip.MainThreadPriority, (ulong)kip.MainThreadStackSize);
 
             if (result != KernelResult.Success)
@@ -227,6 +229,8 @@ namespace Ryujinx.HLE.HOS
                     return false;
                 }
             }
+
+            process.DefaultCpuCore = metaData.DefaultCpuId;
 
             result = process.Start(metaData.MainThreadPriority, (ulong)metaData.MainThreadStackSize);
 

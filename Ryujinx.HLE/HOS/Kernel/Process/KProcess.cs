@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private SortedDictionary<ulong, KTlsPageInfo> _fullTlsPages;
         private SortedDictionary<ulong, KTlsPageInfo> _freeTlsPages;
 
-        public int DefaultCpuCore { get; private set; }
+        public int DefaultCpuCore { get; set; }
 
         public bool Debug { get; private set; }
 
