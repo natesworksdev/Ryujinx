@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
             MainThreadStackSize = segments[1].Attribute;
 
-            Capabilities = new int[8];
+            Capabilities = new int[32];
 
             for (int index = 0; index < Capabilities.Length; index++)
             {
