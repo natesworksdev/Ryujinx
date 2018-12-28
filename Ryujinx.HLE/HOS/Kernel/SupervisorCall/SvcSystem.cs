@@ -573,6 +573,66 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return KernelResult.Success;
         }
 
+        public KernelResult CreateSession64(
+            bool    isLight,
+            ulong   namePtr,
+            out int serverSessionHandle,
+            out int clientSessionHandle)
+        {
+            return CreateSession(isLight, namePtr, out serverSessionHandle, out clientSessionHandle);
+        }
+
+        private KernelResult CreateSession(
+            bool    isLight,
+            ulong   namePtr,
+            out int serverSessionHandle,
+            out int clientSessionHandle)
+        {
+            serverSessionHandle = 0;
+            clientSessionHandle = 0;
+
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            KResourceLimit resourceLimit = currentProcess.ResourceLimit;
+
+            KernelResult result = KernelResult.Success;
+
+            if (resourceLimit != null && !resourceLimit.Reserve(LimitableResource.Session, 1))
+            {
+                return KernelResult.ResLimitExceeded;
+            }
+
+            KSession session;
+
+            if (isLight)
+            {
+                session = new KLightSession(_system);
+            }
+            else
+            {
+                session = new KSession(_system);
+            }
+
+            result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
+
+            if (result == KernelResult.Success)
+            {
+                result = currentProcess.HandleTable.GenerateHandle(session.ClientSession, out clientSessionHandle);
+
+                if (result != KernelResult.Success)
+                {
+                    currentProcess.HandleTable.CloseHandle(serverSessionHandle);
+
+                    serverSessionHandle = 0;
+                }
+            }
+
+            session.ServerSession.DecrementReferenceCount();
+            session.ClientSession.DecrementReferenceCount();
+
+            return result;
+        }
+
         public KernelResult AcceptSession64(int portHandle, out int sessionHandle)
         {
             return AcceptSession(portHandle, out sessionHandle);

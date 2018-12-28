@@ -13,6 +13,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public int ResourceStatus { get; private set; }
 
+        //TODO: Remove that, we need it for now to allow HLE
+        //services implementation to work with the new IPC system.
         public IpcService Service { get; set; }
 
         public KClientSession(Horizon system, KSession parent) : base(system)

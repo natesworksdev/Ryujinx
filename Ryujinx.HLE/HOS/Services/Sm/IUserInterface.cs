@@ -2,7 +2,9 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Sm
 {
@@ -12,15 +14,20 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
+        private ConcurrentDictionary<string, KPort> _registeredServices;
+
         private bool _isInitialized;
 
         public IUserInterface()
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                { 0, Initialize },
-                { 1, GetService }
+                { 0, Initialize      },
+                { 1, GetService      },
+                { 2, RegisterService }
             };
+
+            _registeredServices = new ConcurrentDictionary<string, KPort>();
         }
 
         public static void InitializePort(Horizon system)
@@ -34,8 +41,6 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             port.ClientPort.Service = new IUserInterface();
         }
 
-        private const int SmNotInitialized = 0x415;
-
         public long Initialize(ServiceCtx context)
         {
             _isInitialized = true;
@@ -45,12 +50,89 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
         public long GetService(ServiceCtx context)
         {
-            //Only for kernel version > 3.0.0.
             if (!_isInitialized)
             {
-                //return SmNotInitialized;
+                return ErrorCode.MakeError(ErrorModule.Sm, SmErr.NotInitialized);
             }
 
+            string name = ReadName(context);
+
+            if (name == string.Empty)
+            {
+                return ErrorCode.MakeError(ErrorModule.Sm, SmErr.InvalidName);
+            }
+
+            KSession session = new KSession(context.Device.System);
+
+            if (_registeredServices.TryGetValue(name, out KPort port))
+            {
+                KernelResult result = port.EnqueueIncomingSession(session.ServerSession);
+
+                if (result != KernelResult.Success)
+                {
+                    throw new InvalidOperationException($"Session enqueue on port returned error \"{result}\".");
+                }
+            }
+            else
+            {
+                session.ClientSession.Service = ServiceFactory.MakeService(context.Device.System, name);
+            }
+
+            if (context.Process.HandleTable.GenerateHandle(session.ClientSession, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
+
+            return 0;
+        }
+
+        public long RegisterService(ServiceCtx context)
+        {
+            if (!_isInitialized)
+            {
+                return ErrorCode.MakeError(ErrorModule.Sm, SmErr.NotInitialized);
+            }
+
+            long namePosition = context.RequestData.BaseStream.Position;
+
+            string name = ReadName(context);
+
+            context.RequestData.BaseStream.Seek(namePosition + 8, SeekOrigin.Begin);
+
+            bool isLight = (context.RequestData.ReadInt32() & 1) != 0;
+
+            int maxSessions = context.RequestData.ReadInt32();
+
+            if (name == string.Empty)
+            {
+                return ErrorCode.MakeError(ErrorModule.Sm, SmErr.InvalidName);
+            }
+
+            System.Console.WriteLine("register service " + name + " " + maxSessions);
+
+            KPort port = new KPort(context.Device.System);
+
+            port.Initialize(maxSessions, isLight, 0);
+
+            if (!_registeredServices.TryAdd(name, port))
+            {
+                return ErrorCode.MakeError(ErrorModule.Sm, SmErr.AlreadyRegistered);
+            }
+
+            if (context.Process.HandleTable.GenerateHandle(port.ServerPort, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
+
+            return 0;
+        }
+
+        private static string ReadName(ServiceCtx context)
+        {
             string name = string.Empty;
 
             for (int index = 0; index < 8 &&
@@ -65,23 +147,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 }
             }
 
-            if (name == string.Empty)
-            {
-                return 0;
-            }
-
-            KSession session = new KSession(context.Device.System);
-
-            session.ClientSession.Service = ServiceFactory.MakeService(context.Device.System, name);
-
-            if (context.Process.HandleTable.GenerateHandle(session.ClientSession, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
-
-            return 0;
+            return name;
         }
     }
 }
