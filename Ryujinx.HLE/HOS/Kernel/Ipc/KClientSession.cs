@@ -1,6 +1,7 @@
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
@@ -11,6 +12,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         private KSession _parent;
 
         public int ResourceStatus { get; private set; }
+
+        public IpcService Service { get; set; }
 
         public KClientSession(Horizon system, KSession parent) : base(system)
         {

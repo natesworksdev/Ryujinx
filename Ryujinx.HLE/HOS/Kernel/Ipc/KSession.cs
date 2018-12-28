@@ -1,6 +1,5 @@
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Services;
 using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
@@ -12,20 +11,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private bool _hasBeenInitialized;
 
-        public IpcService Service { get; private set; }
-
-        public string ServiceName { get; private set; }
-
         public KSession(Horizon system) : base(system)
         {
             ServerSession = new KServerSession(system, this);
             ClientSession = new KClientSession(system, this);
-        }
-
-        public KSession(Horizon system, IpcService service, string serviceName) : base(system)
-        {
-            Service     = service;
-            ServiceName = serviceName;
         }
 
         public void Dispose()
@@ -35,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing && Service is IDisposable disposableService)
+            if (disposing && ClientSession.Service is IDisposable disposableService)
             {
                 disposableService.Dispose();
             }

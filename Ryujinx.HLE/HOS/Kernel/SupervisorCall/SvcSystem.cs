@@ -8,15 +8,12 @@ using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.HLE.HOS.Services;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     partial class SvcHandler
     {
-        private const bool UseLegacyIpc = true;
-
         public void ExitProcess64()
         {
             ExitProcess();
@@ -148,26 +145,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult ConnectToNamedPort64(ulong namePtr, out int handle)
         {
-            if (!UseLegacyIpc)
-            {
-                return ConnectToNamedPort_(namePtr, out handle);
-            }
-
             return ConnectToNamedPort(namePtr, out handle);
         }
 
         private KernelResult ConnectToNamedPort(ulong namePtr, out int handle)
-        {
-            string name = MemoryHelper.ReadAsciiString(_memory, (long)namePtr, 8);
-
-            //TODO: Validate that app has perms to access the service, and that the service
-            //actually exists, return error codes otherwise.
-            KSession session = new KSession(_system, ServiceFactory.MakeService(_system, name), name);
-
-            return _process.HandleTable.GenerateHandle(session, out handle);
-        }
-
-        private KernelResult ConnectToNamedPort_(ulong namePtr, out int handle)
         {
             handle = 0;
 
@@ -213,11 +194,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult SendSyncRequest64(int handle)
         {
-            if (!UseLegacyIpc)
-            {
-                return SendSyncRequest_(handle);
-            }
-
             return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.ThreadState.Tpidr, 0x100, handle);
         }
 
@@ -230,9 +206,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             byte[] messageData = _memory.ReadBytes((long)messagePtr, (long)size);
 
-            KSession session = _process.HandleTable.GetObject<KSession>(handle);
+            KClientSession clientSession = _process.HandleTable.GetObject<KClientSession>(handle);
 
-            if (session != null)
+            if (clientSession == null || clientSession.Service == null)
+            {
+                return SendSyncRequest_(handle);
+            }
+
+            if (clientSession != null)
             {
                 _system.CriticalSection.Enter();
 
@@ -247,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 ThreadPool.QueueUserWorkItem(ProcessIpcRequest, new HleIpcMessage(
                     currentThread,
-                    session,
+                    clientSession,
                     message,
                     (long)messagePtr));
 

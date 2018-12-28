@@ -23,6 +23,17 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             };
         }
 
+        public static void InitializePort(Horizon system)
+        {
+            KPort port = new KPort(system);
+
+            port.Initialize(256, false, 0);
+
+            port.ClientPort.SetName("sm:");
+
+            port.ClientPort.Service = new IUserInterface();
+        }
+
         private const int SmNotInitialized = 0x415;
 
         public long Initialize(ServiceCtx context)
@@ -59,9 +70,11 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 return 0;
             }
 
-            KSession session = new KSession(context.Device.System, ServiceFactory.MakeService(context.Device.System, name), name);
+            KSession session = new KSession(context.Device.System);
 
-            if (context.Process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
+            session.ClientSession.Service = ServiceFactory.MakeService(context.Device.System, name);
+
+            if (context.Process.HandleTable.GenerateHandle(session.ClientSession, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }

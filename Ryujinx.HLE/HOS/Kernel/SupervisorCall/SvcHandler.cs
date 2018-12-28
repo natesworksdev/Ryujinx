@@ -18,16 +18,16 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private struct HleIpcMessage
         {
-            public KThread    Thread     { get; private set; }
-            public KSession   Session    { get; private set; }
-            public IpcMessage Message    { get; private set; }
-            public long       MessagePtr { get; private set; }
+            public KThread        Thread     { get; private set; }
+            public KClientSession Session    { get; private set; }
+            public IpcMessage     Message    { get; private set; }
+            public long           MessagePtr { get; private set; }
 
             public HleIpcMessage(
-                KThread    thread,
-                KSession   session,
-                IpcMessage message,
-                long       messagePtr)
+                KThread        thread,
+                KClientSession session,
+                IpcMessage     message,
+                long           messagePtr)
             {
                 Thread     = thread;
                 Session    = session;

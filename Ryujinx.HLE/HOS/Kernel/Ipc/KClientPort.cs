@@ -1,5 +1,6 @@
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.HLE.HOS.Services;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
@@ -12,6 +13,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         private KPort _parent;
 
         private object _countIncLock;
+
+        //TODO: Remove that, we need it for now to allow HLE
+        //SM implementation to work with the new IPC system.
+        public IpcService Service { get; set; }
 
         public KClientPort(Horizon system) : base(system)
         {
@@ -56,6 +61,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             KSession session = new KSession(System);
+
+            if (Service != null)
+            {
+                session.ClientSession.Service = Service;
+            }
 
             KernelResult result = _parent.EnqueueIncomingSession(session.ServerSession);
 
