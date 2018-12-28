@@ -350,7 +350,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult UnmapPhysicalMemory64(ulong address, ulong size)
         {
-            return MapPhysicalMemory(address, size);
+            return UnmapPhysicalMemory(address, size);
         }
 
         private KernelResult UnmapPhysicalMemory(ulong address, ulong size)
