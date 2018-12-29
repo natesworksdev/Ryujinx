@@ -246,14 +246,23 @@ namespace Ryujinx
 
             _device.Statistics.RecordSystemFrameTime();
 
+            // System
             double hostFps = _device.Statistics.GetSystemFrameRate();
+            double hostFrameTime = _device.Statistics.GetSystemFrameTime();
+            double hostAvgFrameTime = _device.Statistics.GetSystemAverageFrameTime();
+
+            // Game
             double gameFps = _device.Statistics.GetGameFrameRate();
+            double gameFrameTime =_device.Statistics.GetGameFrameTime();
+            double gameAvgFrameTime = _device.Statistics.GetGameAverageFrameTime();
 
             string titleSection = string.IsNullOrWhiteSpace(_device.System.CurrentTitle) ? string.Empty
                 : " | " + _device.System.CurrentTitle;
 
-            _newTitle = $"Ryujinx{titleSection} | Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0} | " +
-                $"Game Vsync: {(_device.EnableDeviceVsync ? "On" : "Off")}";
+            _newTitle = $"Ryujinx{titleSection} | " +
+                        $"Host FPS: {hostFps:0.0} ({hostFrameTime:000.00}ms, Avg: {hostAvgFrameTime:000.00}ms) | " +
+                        $"Game FPS: {gameFps:0.0} ({gameFrameTime:000.00}ms, Avg: {gameAvgFrameTime:000.00}ms) | " +
+                        $"Game Vsync: {(_device.EnableDeviceVsync ? "On" : "Off")}";
 
             _titleEvent = true;
 
