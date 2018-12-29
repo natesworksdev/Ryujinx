@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
@@ -107,6 +108,8 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             {
                 return ErrorCode.MakeError(ErrorModule.Sm, SmErr.InvalidName);
             }
+
+            Logger.PrintInfo(LogClass.ServiceSm, $"Register \"{name}\".");
 
             KPort port = new KPort(context.Device.System, maxSessions, isLight, 0);
 
