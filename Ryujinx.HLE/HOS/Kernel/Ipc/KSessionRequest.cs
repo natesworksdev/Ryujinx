@@ -1,3 +1,4 @@
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
@@ -6,7 +7,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
     {
         public KBufferDescriptorTable BufferDescriptorTable { get; }
 
-        public KThread SenderThread { get; }
+        public KThread ClientThread { get; }
+
+        public KProcess ServerProcess { get; set; }
 
         public KWritableEvent AsyncEvent { get; }
 
@@ -14,11 +17,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         public ulong CustomCmdBuffSize { get; }
 
         public KSessionRequest(
-            KThread senderThread,
+            KThread clientThread,
             ulong   customCmdBuffAddr,
             ulong   customCmdBuffSize)
         {
-            SenderThread      = senderThread;
+            ClientThread      = clientThread;
             CustomCmdBuffAddr = customCmdBuffAddr;
             CustomCmdBuffSize = customCmdBuffSize;
 

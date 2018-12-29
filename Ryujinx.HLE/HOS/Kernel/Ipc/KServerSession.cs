@@ -173,20 +173,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public KernelResult EnqueueRequest(KSessionRequest request)
         {
-            if (_parent.ClientSession.ResourceStatus != 1)
+            if (_parent.ClientSession.State != ChannelState.Open)
             {
                 return KernelResult.PortRemoteClosed;
             }
 
             if (request.AsyncEvent == null)
             {
-                if (request.SenderThread.ShallBeTerminated ||
-                    request.SenderThread.SchedFlags == ThreadSchedState.TerminationPending)
+                if (request.ClientThread.ShallBeTerminated ||
+                    request.ClientThread.SchedFlags == ThreadSchedState.TerminationPending)
                 {
                     return KernelResult.ThreadTerminating;
                 }
 
-                request.SenderThread.Reschedule(ThreadSchedState.Paused);
+                request.ClientThread.Reschedule(ThreadSchedState.Paused);
             }
 
             _requests.AddLast(request);
@@ -206,37 +206,35 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             System.CriticalSection.Enter();
 
-            if (_parent.ClientSession.ResourceStatus != 1)
+            if (_parent.ClientSession.State != ChannelState.Open)
             {
                 System.CriticalSection.Leave();
 
                 return KernelResult.PortRemoteClosed;
             }
 
-            if (_activeRequest != null || _requests.Count == 0)
+            if (_activeRequest != null || !PickRequest(out KSessionRequest request))
             {
                 System.CriticalSection.Leave();
 
                 return KernelResult.NotFound;
             }
 
-            KSessionRequest request = _requests.First.Value;
-
-            _requests.RemoveFirst();
-
-            if (request.SenderThread == null)
+            if (request.ClientThread == null)
             {
                 System.CriticalSection.Leave();
 
                 return KernelResult.PortRemoteClosed;
             }
 
-            KThread  clientThread  = request.SenderThread;
+            KThread  clientThread  = request.ClientThread;
             KProcess clientProcess = clientThread.Owner;
 
             System.CriticalSection.Leave();
 
             _activeRequest = request;
+
+            request.ServerProcess = serverProcess;
 
             Message clientMsg = new Message(
                 clientThread,
@@ -259,7 +257,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             void CleanUpForError()
             {
-                request.BufferDescriptorTable.UnmapServerBuffers(serverProcess.MemoryManager);
+                if (request.BufferDescriptorTable.UnmapServerBuffers(serverProcess.MemoryManager) == KernelResult.Success)
+                {
+                    request.BufferDescriptorTable.RestoreClientBuffers(clientProcess.MemoryManager);
+                }
 
                 CloseAllHandles(serverMsg, header, serverProcess);
 
@@ -274,29 +275,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 System.CriticalSection.Leave();
 
-                if (request.AsyncEvent != null)
-                {
-                    System.Device.Memory.WriteInt64((long)clientMsg.DramAddress + 0, 0);
-                    System.Device.Memory.WriteInt32((long)clientMsg.DramAddress + 8, (int)clientResult);
-
-                    clientProcess.MemoryManager.UnborrowIpcBuffer(clientMsg.Address, clientMsg.Size);
-
-                    request.AsyncEvent.Signal();
-                }
-                else
-                {
-                    System.CriticalSection.Enter();
-
-                    if ((clientThread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
-                    {
-                        clientThread.SignaledObj   = null;
-                        clientThread.ObjSyncResult = clientResult;
-
-                        clientThread.Reschedule(ThreadSchedState.Running);
-                    }
-
-                    System.CriticalSection.Leave();
-                }
+                WakeClient(request, clientResult);
             }
 
             if (header.ReceiveListType < 2 && header.ReceiveListOffset > clientMsg.Size)
@@ -386,7 +365,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                     if (clientResult == KernelResult.Success && handle != 0)
                     {
-                        clientResult = GetCopyObjectHandle(clientThread, handle, out newHandle);
+                        clientResult = GetCopyObjectHandle(clientThread, serverProcess, handle, out newHandle);
                     }
 
                     serverProcess.CpuMemory.WriteInt32((long)serverMsg.Address + offset * 4, newHandle);
@@ -404,7 +383,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     {
                         if (clientResult == KernelResult.Success)
                         {
-                            clientResult = GetMoveObjectHandle(serverProcess, handle, out newHandle);
+                            clientResult = GetMoveObjectHandle(clientProcess, serverProcess, handle, out newHandle);
                         }
                         else
                         {
@@ -640,7 +619,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             System.CriticalSection.Leave();
 
-            KThread  clientThread  = request.SenderThread;
+            KThread  clientThread  = request.ClientThread;
             KProcess clientProcess = clientThread.Owner;
 
             Message clientMsg = new Message(
@@ -662,46 +641,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             KernelResult clientResult = KernelResult.Success;
             KernelResult serverResult = KernelResult.Success;
 
-            void SendResultToClient()
-            {
-                if (request.AsyncEvent != null)
-                {
-                    if (clientResult != KernelResult.Success)
-                    {
-                        System.Device.Memory.WriteInt64((long)clientMsg.DramAddress + 0, 0);
-                        System.Device.Memory.WriteInt32((long)clientMsg.DramAddress + 8, (int)clientResult);
-                    }
-
-                    clientProcess.MemoryManager.UnborrowIpcBuffer(clientMsg.Address, clientMsg.Size);
-
-                    request.AsyncEvent.Signal();
-                }
-                else
-                {
-                    System.CriticalSection.Enter();
-
-                    if ((clientThread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
-                    {
-                        clientThread.SignaledObj   = null;
-                        clientThread.ObjSyncResult = clientResult;
-
-                        clientThread.Reschedule(ThreadSchedState.Running);
-                    }
-
-                    System.CriticalSection.Leave();
-                }
-            }
-
             void CleanUpForError()
             {
-                CloseAllHandles(clientMsg, header, serverProcess);
+                CloseAllHandles(clientMsg, header, clientProcess);
 
-                if (request.BufferDescriptorTable.UnmapServerBuffers(serverProcess.MemoryManager) == KernelResult.Success)
-                {
-                    request.BufferDescriptorTable.RestoreClientBuffers(serverProcess.MemoryManager);
-                }
-
-                SendResultToClient();
+                CancelRequest(request, clientResult);
             }
 
             if (header.ReceiveListType < 2 && header.ReceiveListOffset > clientMsg.Size)
@@ -735,18 +679,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 CleanUpForError();
 
                 return KernelResult.CmdBufferTooSmall;
-            }
-
-            //Close move handles.
-            uint pidSizeInWords = header.HasPid ? 2u : 0u;
-
-            ulong moveHandlesAddr = serverMsg.Address + (3u + pidSizeInWords + header.CopyHandlesCount) * 4;
-
-            for (int index = 0; index < header.MoveHandlesCount; index++)
-            {
-                int handle = serverProcess.CpuMemory.ReadInt32((long)moveHandlesAddr + index * 4);
-
-                serverProcess.HandleTable.CloseHandle(handle);
             }
 
             //Read receive list.
@@ -806,10 +738,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                     if (handle != 0)
                     {
-                        GetCopyObjectHandle(clientThread, handle, out newHandle);
+                        GetCopyObjectHandle(serverThread, clientProcess, handle, out newHandle);
                     }
 
-                    serverProcess.CpuMemory.WriteInt32((long)serverMsg.Address + offset * 4, newHandle);
+                    System.Device.Memory.WriteInt32((long)clientMsg.DramAddress + offset * 4, newHandle);
 
                     offset++;
                 }
@@ -824,7 +756,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     {
                         if (clientResult == KernelResult.Success)
                         {
-                            clientResult = GetMoveObjectHandle(serverProcess, handle, out newHandle);
+                            clientResult = GetMoveObjectHandle(serverProcess, clientProcess, handle, out newHandle);
                         }
                         else
                         {
@@ -832,7 +764,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         }
                     }
 
-                    serverProcess.CpuMemory.WriteInt32((long)serverMsg.Address + offset * 4, newHandle);
+                    System.Device.Memory.WriteInt32((long)clientMsg.DramAddress + offset * 4, newHandle);
 
                     offset++;
                 }
@@ -941,36 +873,39 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return serverResult;
             }
 
-            //Wake client thread.
-            SendResultToClient();
+            WakeClient(request, clientResult);
 
             return serverResult;
         }
 
-        private KernelResult GetCopyObjectHandle(KThread thread, int srcHandle, out int dstHandle)
+        private KernelResult GetCopyObjectHandle(
+            KThread  srcThread,
+            KProcess dstProcess,
+            int      srcHandle,
+            out int  dstHandle)
         {
             dstHandle = 0;
 
-            KProcess process = thread.Owner;
+            KProcess srcProcess = srcThread.Owner;
 
             KAutoObject obj;
 
             if (srcHandle == KHandleTable.SelfProcessHandle)
             {
-                obj = process;
+                obj = srcProcess;
             }
             else if (srcHandle == KHandleTable.SelfThreadHandle)
             {
-                obj = thread;
+                obj = srcThread;
             }
             else
             {
-                obj = process.HandleTable.GetObject<KAutoObject>(srcHandle);
+                obj = srcProcess.HandleTable.GetObject<KAutoObject>(srcHandle);
             }
 
             if (obj != null)
             {
-                return process.HandleTable.GenerateHandle(obj, out dstHandle);
+                return dstProcess.HandleTable.GenerateHandle(obj, out dstHandle);
             }
             else
             {
@@ -978,7 +913,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
         }
 
-        private KernelResult GetMoveObjectHandle(KProcess srcProcess, int srcHandle, out int dstHandle)
+        private KernelResult GetMoveObjectHandle(
+            KProcess srcProcess,
+            KProcess dstProcess,
+            int      srcHandle,
+            out int  dstHandle)
         {
             dstHandle = 0;
 
@@ -986,7 +925,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             if (obj != null)
             {
-                KernelResult result = srcProcess.HandleTable.GenerateHandle(obj, out dstHandle);
+                KernelResult result = dstProcess.HandleTable.GenerateHandle(obj, out dstHandle);
 
                 srcProcess.HandleTable.CloseHandle(srcHandle);
 
@@ -1102,7 +1041,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public override bool IsSignaled()
         {
-            if (_parent.ClientSession.ResourceStatus != 1)
+            if (_parent.ClientSession.State != ChannelState.Open)
             {
                 return true;
             }
@@ -1112,7 +1051,110 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         protected override void Destroy()
         {
+            _parent.DisconnectServer();
+
+            CancelAllRequests(KernelResult.PortRemoteClosed);
+
             _parent.DecrementReferenceCount();
+        }
+
+        private void CancelAllRequests(KernelResult result)
+        {
+            System.CriticalSection.Enter();
+
+            if (_activeRequest != null)
+            {
+                KSessionRequest request = _activeRequest;
+
+                _activeRequest = null;
+
+                CancelRequest(request, result);
+
+                System.CriticalSection.Leave();
+            }
+            else
+            {
+                System.CriticalSection.Leave();
+            }
+
+            while (PickRequest(out KSessionRequest request))
+            {
+                CancelRequest(request, result);
+            }
+        }
+
+        private bool PickRequest(out KSessionRequest request)
+        {
+            request = null;
+
+            System.CriticalSection.Enter();
+
+            bool hasRequest = _requests.First != null;
+
+            if (hasRequest)
+            {
+                request = _requests.First.Value;
+
+                _requests.RemoveFirst();
+            }
+
+            System.CriticalSection.Leave();
+
+            return hasRequest;
+        }
+
+        private void CancelRequest(KSessionRequest request, KernelResult result)
+        {
+            KProcess clientProcess = request.ClientThread.Owner;
+            KProcess serverProcess = request.ServerProcess;
+
+            KernelResult unmapResult = KernelResult.Success;
+
+            if (serverProcess != null)
+            {
+                unmapResult = request.BufferDescriptorTable.UnmapServerBuffers(serverProcess.MemoryManager);
+            }
+
+            if (unmapResult == KernelResult.Success)
+            {
+                request.BufferDescriptorTable.RestoreClientBuffers(clientProcess.MemoryManager);
+            }
+
+            WakeClient(request, result);
+        }
+
+        private void WakeClient(KSessionRequest request, KernelResult result)
+        {
+            KThread  clientThread  = request.ClientThread;
+            KProcess clientProcess = clientThread.Owner;
+
+            if (request.AsyncEvent != null)
+            {
+                ulong address = clientProcess.MemoryManager.GetDramAddressFromVa(request.CustomCmdBuffAddr);
+
+                System.Device.Memory.WriteInt64((long)address + 0, 0);
+                System.Device.Memory.WriteInt32((long)address + 8, (int)result);
+
+                clientProcess.MemoryManager.UnborrowIpcBuffer(
+                    request.CustomCmdBuffAddr,
+                    request.CustomCmdBuffSize);
+
+                request.AsyncEvent.Signal();
+            }
+            else
+            {
+                System.CriticalSection.Enter();
+
+                if ((clientThread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
+                {
+                    clientThread.SignaledObj   = null;
+                    clientThread.ObjSyncResult = result;
+
+                    clientThread.Reschedule(ThreadSchedState.Running);
+                }
+
+                System.CriticalSection.Leave();
+            }
         }
     }
 }

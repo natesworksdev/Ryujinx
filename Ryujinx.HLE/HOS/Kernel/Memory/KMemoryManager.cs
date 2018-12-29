@@ -1778,7 +1778,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 if (visitedSize != 0)
                 {
-                    InsertBlock(address, size, SetIpcMappingPermissions, permissionMask);
+                    InsertBlock(address, visitedSize / PageSize, SetIpcMappingPermissions, permissionMask);
                 }
             }
 
@@ -1850,14 +1850,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 firstPageFillAddress += unusedSizeBefore + copySize;
 
-                unusedSizeAfter = addressRounded - endAddr;
+                unusedSizeAfter = addressRounded > endAddr ? addressRounded - endAddr : 0;
             }
             else
             {
                 unusedSizeAfter = PageSize;
             }
 
-            _system.Device.Memory.Set(firstPageFillAddress, 0, unusedSizeAfter);
+            if (unusedSizeAfter != 0)
+            {
+                _system.Device.Memory.Set(firstPageFillAddress, 0, unusedSizeAfter);
+            }
 
             KPageList pages = new KPageList();
 
@@ -1989,15 +1992,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 if (pageList.Nodes.Count != 0)
                 {
-                    if (MapPages(va, pageList, permission) != KernelResult.Success)
+                    KernelResult result = MapPages(va, pageList, permission);
+
+                    if (result != KernelResult.Success)
                     {
-                        throw new InvalidOperationException("Unexpected failure while trying to map pages.");
+                        return result;
                     }
                 }
-                else
-                {
-                    InsertBlock(va, neededPagesCount, state, permission);
-                }
+
+                InsertBlock(va, neededPagesCount, state, permission);
 
                 mappedVa = va;
             }

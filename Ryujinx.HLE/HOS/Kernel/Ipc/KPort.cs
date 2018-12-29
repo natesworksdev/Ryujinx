@@ -8,25 +8,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         public KClientPort ClientPort { get; }
 
         private long _nameAddress;
-        private int  _resourceStatus;
+
+        private ChannelState _state;
 
         public bool IsLight { get; private set; }
 
-        public KPort(Horizon system) : base(system)
+        public KPort(Horizon system, int maxSessions, bool isLight, long nameAddress) : base(system)
         {
-            ServerPort = new KServerPort(system);
-            ClientPort = new KClientPort(system);
-        }
-
-        public void Initialize(int maxSessions, bool isLight, long nameAddress)
-        {
-            ServerPort.Initialize(this);
-            ClientPort.Initialize(this, maxSessions);
+            ServerPort = new KServerPort(system, this);
+            ClientPort = new KClientPort(system, this, maxSessions);
 
             IsLight      = isLight;
             _nameAddress = nameAddress;
 
-            _resourceStatus = 1;
+            _state = ChannelState.Open;
         }
 
         public KernelResult EnqueueIncomingSession(KServerSession session)
@@ -35,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             System.CriticalSection.Enter();
 
-            if (_resourceStatus == 1)
+            if (_state == ChannelState.Open)
             {
                 ServerPort.EnqueueIncomingSession(session);
 

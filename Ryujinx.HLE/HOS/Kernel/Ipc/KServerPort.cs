@@ -12,15 +12,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public bool IsLight => _parent.IsLight;
 
-        public KServerPort(Horizon system) : base(system)
-        {
-            _incomingConnections      = new LinkedList<KServerSession>();
-            _lightIncomingConnections = new LinkedList<KServerSession>();
-        }
-
-        public void Initialize(KPort parent)
+        public KServerPort(Horizon system, KPort parent) : base(system)
         {
             _parent = parent;
+
+            _incomingConnections      = new LinkedList<KServerSession>();
+            _lightIncomingConnections = new LinkedList<KServerSession>();
         }
 
         public void EnqueueIncomingSession(KServerSession session)

@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private KSession _parent;
 
-        public int ResourceStatus { get; private set; }
+        public ChannelState State { get; set; }
 
         //TODO: Remove that, we need it for now to allow HLE
         //services implementation to work with the new IPC system.
@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             _parent = parent;
 
-            ResourceStatus = 1;
+            State = ChannelState.Open;
         }
 
         public KernelResult SendSyncRequest(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
@@ -51,6 +51,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         protected override void Destroy()
         {
+            _parent.DisconnectClient();
             _parent.DecrementReferenceCount();
         }
     }

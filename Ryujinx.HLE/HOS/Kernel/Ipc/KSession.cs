@@ -17,6 +17,24 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             ClientSession = new KClientSession(system, this);
         }
 
+        public void DisconnectClient()
+        {
+            if (ClientSession.State == ChannelState.Open)
+            {
+                ClientSession.State = ChannelState.ClientDisconnected;
+
+                //TODO: Wake up client, etc.
+            }
+        }
+
+        public void DisconnectServer()
+        {
+            if (ClientSession.State == ChannelState.Open)
+            {
+                ClientSession.State = ChannelState.ServerDisconnected;
+            }
+        }
+
         public void Dispose()
         {
             Dispose(true);

@@ -18,15 +18,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         //SM implementation to work with the new IPC system.
         public IpcService Service { get; set; }
 
-        public KClientPort(Horizon system) : base(system)
-        {
-            _countIncLock = new object();
-        }
-
-        public void Initialize(KPort parent, int maxSessions)
+        public KClientPort(Horizon system, KPort parent, int maxSessions) : base(system)
         {
             _maxSessions = maxSessions;
             _parent      = parent;
+
+            _countIncLock = new object();
         }
 
         public KernelResult Connect(out KClientSession clientSession)

@@ -666,6 +666,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             {
                 currentProcess.HandleTable.SetReservedHandleObj(handle, session);
 
+                session.DecrementReferenceCount();
+
                 sessionHandle = handle;
 
                 result = KernelResult.Success;
@@ -933,9 +935,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.MaximumExceeded;
             }
 
-            KPort port = new KPort(_system);
-
-            port.Initialize(maxSessions, isLight, (long)namePtr);
+            KPort port = new KPort(_system, maxSessions, isLight, (long)namePtr);
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
@@ -980,7 +980,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KClientPort.RemoveName(_system, name);
             }
 
-            KPort port = new KPort(_system);
+            KPort port = new KPort(_system, maxSessions, false, 0);
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
 
@@ -990,8 +990,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             {
                 return result;
             }
-
-            port.Initialize(maxSessions, false, 0);
 
             result = port.ClientPort.SetName(name);
 

@@ -115,6 +115,16 @@ namespace Ryujinx.HLE
 
         public void Set(ulong address, byte value, ulong size)
         {
+            if (address + size < address)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+
+            if (address + size > RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(address));
+            }
+
             ulong size8 = size & ~7UL;
 
             ulong valueRep = (ulong)value * 0x0101010101010101;
@@ -132,6 +142,21 @@ namespace Ryujinx.HLE
 
         public void Copy(ulong dst, ulong src, ulong size)
         {
+            if (dst + size < dst || src + size < src)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+
+            if (dst + size > RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dst));
+            }
+
+            if (src + size > RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(src));
+            }
+
             ulong size8 = size & ~7UL;
 
             for (ulong offs = 0; offs < size8; offs += 8)
