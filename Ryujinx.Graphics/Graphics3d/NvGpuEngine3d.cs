@@ -863,22 +863,17 @@ namespace Ryujinx.Graphics.Graphics3d
                 //Quad primitive types were deprecated on OpenGL 3.x,
                 //they are converted to a triangles index buffer on IB creation,
                 //so we should use the triangles type here too.
-                if (PrimType == GalPrimitiveType.Quads ||
-                    PrimType == GalPrimitiveType.QuadStrip)
+                if (PrimType == GalPrimitiveType.Quads || PrimType == GalPrimitiveType.QuadStrip)
                 {
-                    PrimType = GalPrimitiveType.Triangles;
-
                     //Note: We assume that index first points to the first
                     //vertex of a quad, if it points to the middle of a
                     //quad (First % 4 != 0 for Quads) then it will not work properly.
                     if (PrimType == GalPrimitiveType.Quads)
-                    {
                         IndexFirst = QuadHelper.ConvertIbSizeQuadsToTris(IndexFirst);
-                    }
-                    else /* if (PrimType == GalPrimitiveType.QuadStrip) */
-                    {
+                    else // QuadStrip
                         IndexFirst = QuadHelper.ConvertIbSizeQuadStripToTris(IndexFirst);
-                    }
+
+                    PrimType = GalPrimitiveType.Triangles;
                 }
 
                 Gpu.Renderer.Rasterizer.DrawElements(IboKey, IndexFirst, VertexBase, PrimType);
