@@ -816,6 +816,7 @@ namespace Ryujinx.Graphics.Graphics3d
                     {
                         // Convert quad buffer to triangles
                         byte[] data = Vmm.ReadBytes(VbPosition, VbSize);
+
                         if (PrimType == GalPrimitiveType.Quads)
                             data = QuadHelper.ConvertIbQuadsToTris(data, Stride, (int)(VbSize / Stride));
                         else
