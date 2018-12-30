@@ -48,6 +48,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private struct MessageHeader
         {
+            public uint Word0 { get; }
+            public uint Word1 { get; }
+            public uint Word2 { get; }
+
             public uint PointerBuffersCount  { get; }
             public uint SendBuffersCount     { get; }
             public uint ReceiveBuffersCount  { get; }
@@ -70,6 +74,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             public MessageHeader(uint word0, uint word1, uint word2)
             {
+                Word0 = word0;
+                Word1 = word1;
+                Word2 = word2;
+
                 HasHandles = word1 >> 31 != 0;
 
                 uint handleDescSizeInWords = 0;
@@ -241,16 +249,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 request.CustomCmdBuffAddr,
                 request.CustomCmdBuffSize);
 
-            Message serverMsg = new Message(
-                serverThread,
-                customCmdBuffAddr,
-                customCmdBuffSize);
+            Message serverMsg = new Message(serverThread, customCmdBuffAddr, customCmdBuffSize);
 
-            uint word0 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 0);
-            uint word1 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 4);
-            uint word2 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 8);
-
-            MessageHeader header = new MessageHeader(word0, word1, word2);
+            MessageHeader header = GetClientMessageHeader(clientMsg);
 
             KernelResult serverResult = KernelResult.NotFound;
             KernelResult clientResult = KernelResult.Success;
@@ -278,19 +279,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 WakeClient(request, clientResult);
             }
 
-            if (header.ReceiveListType < 2 && header.ReceiveListOffset > clientMsg.Size)
+            if (header.ReceiveListType < 2 &&
+                header.ReceiveListOffset > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.InvalidCombination;
             }
-            else if (header.ReceiveListType == 2 && header.ReceiveListOffset + 8 > clientMsg.Size)
+            else if (header.ReceiveListType == 2 &&
+                     header.ReceiveListOffset + 8 > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.InvalidCombination;
             }
-            else if (header.ReceiveListType * 8 - 0x10 + header.ReceiveListOffset > clientMsg.Size)
+            else if (header.ReceiveListType > 2 &&
+                     header.ReceiveListType * 8 - 0x10 + header.ReceiveListOffset > clientMsg.Size)
             {
                 CleanUpForError();
 
@@ -311,28 +315,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return KernelResult.CmdBufferTooSmall;
             }
 
-            int recvListSize = 0;
+            ulong[] receiveList = GetReceiveList(clientMsg, header.ReceiveListType, header.ReceiveListOffset);
 
-            if (header.ReceiveListType >= 3)
-            {
-                recvListSize = (int)header.ReceiveListType - 2;
-            }
-            else if (header.ReceiveListType == 2)
-            {
-                recvListSize = 1;
-            }
-
-            ulong[] receiveList = new ulong[recvListSize];
-
-            long recvListAddress = (long)serverMsg.Address + header.ReceiveListOffset;
-
-            for (int index = 0; index < recvListSize; index++)
-            {
-                receiveList[index] = serverProcess.CpuMemory.ReadUInt64(recvListAddress + index * 8);
-            }
-
-            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 0, word0);
-            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 4, word1);
+            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 0, header.Word0);
+            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 4, header.Word1);
 
             uint offset;
 
@@ -346,7 +332,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     return KernelResult.InvalidCombination;
                 }
 
-                serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 8, word2);
+                serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 8, header.Word2);
 
                 offset = 3;
 
@@ -417,7 +403,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 if (descriptor.BufferSize != 0)
                 {
-                    clientResult = GetReceiveListAddress(serverMsg, header, descriptor, receiveList, out ulong recvListBufferAddress);
+                    clientResult = GetReceiveListAddress(
+                        descriptor,
+                        serverMsg,
+                        header.ReceiveListType,
+                        header.MessageSizeInWords,
+                        receiveList,
+                        out ulong recvListBufferAddress);
 
                     if (clientResult != KernelResult.Success)
                     {
@@ -627,16 +619,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 request.CustomCmdBuffAddr,
                 request.CustomCmdBuffSize);
 
-            Message serverMsg = new Message(
-                serverThread,
-                customCmdBuffAddr,
-                customCmdBuffSize);
+            Message serverMsg = new Message(serverThread, customCmdBuffAddr, customCmdBuffSize);
 
             uint word0 = serverProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 0);
             uint word1 = serverProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 4);
             uint word2 = serverProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 8);
 
             MessageHeader header = new MessageHeader(word0, word1, word2);
+
+            MessageHeader clientHeader = GetClientMessageHeader(clientMsg);
 
             KernelResult clientResult = KernelResult.Success;
             KernelResult serverResult = KernelResult.Success;
@@ -648,26 +639,29 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 CancelRequest(request, clientResult);
             }
 
-            if (header.ReceiveListType < 2 && header.ReceiveListOffset > clientMsg.Size)
+            if (clientHeader.ReceiveListType < 2 &&
+                clientHeader.ReceiveListOffset > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.InvalidCombination;
             }
-            else if (header.ReceiveListType == 2 && header.ReceiveListOffset + 8 > clientMsg.Size)
+            else if (clientHeader.ReceiveListType == 2 &&
+                     clientHeader.ReceiveListOffset + 8 > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.InvalidCombination;
             }
-            else if (header.ReceiveListType * 8 - 0x10 + header.ReceiveListOffset > clientMsg.Size)
+            else if (clientHeader.ReceiveListType > 2 &&
+                     clientHeader.ReceiveListType * 8 - 0x10 + clientHeader.ReceiveListOffset > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.InvalidCombination;
             }
 
-            if (header.ReceiveListOffsetInWords < header.MessageSizeInWords)
+            if (clientHeader.ReceiveListOffsetInWords < clientHeader.MessageSizeInWords)
             {
                 CleanUpForError();
 
@@ -681,24 +675,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return KernelResult.CmdBufferTooSmall;
             }
 
-            //Read receive list.
-            ulong[] receiveList = null;
-
-            if (header.ReceiveListType >= 2)
+            if (header.SendBuffersCount     != 0 ||
+                header.ReceiveBuffersCount  != 0 ||
+                header.ExchangeBuffersCount != 0)
             {
-                uint count = header.ReceiveListType == 2 ? 1 : header.ReceiveListType - 2;
+                CleanUpForError();
 
-                receiveList = new ulong[count];
-
-                ulong receiveListAddress = clientMsg.DramAddress + header.ReceiveListOffset;
-
-                for (uint index = 0; index < count; index++)
-                {
-                    ulong dword = System.Device.Memory.ReadUInt64((long)receiveListAddress + index * 8);
-
-                    receiveList[index] = dword;
-                }
+                return KernelResult.InvalidCombination;
             }
+
+            //Read receive list.
+            ulong[] receiveList = GetReceiveList(
+                clientMsg,
+                clientHeader.ReceiveListType,
+                clientHeader.ReceiveListOffset);
 
             //Copy receive and exchange buffers.
             clientResult = request.BufferDescriptorTable.CopyBuffersToClient(clientProcess.MemoryManager);
@@ -783,7 +773,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 if (descriptor.BufferSize != 0)
                 {
-                    clientResult = GetReceiveListAddress(serverMsg, header, descriptor, receiveList, out ulong recvListBufferAddress);
+                    clientResult = GetReceiveListAddress(
+                        descriptor,
+                        clientMsg,
+                        clientHeader.ReceiveListType,
+                        header.MessageSizeInWords,
+                        receiveList,
+                        out ulong recvListBufferAddress);
 
                     if (clientResult != KernelResult.Success)
                     {
@@ -878,6 +874,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return serverResult;
         }
 
+        private MessageHeader GetClientMessageHeader(Message clientMsg)
+        {
+            uint word0 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 0);
+            uint word1 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 4);
+            uint word2 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 8);
+
+            return new MessageHeader(word0, word1, word2);
+        }
+
         private KernelResult GetCopyObjectHandle(
             KThread  srcThread,
             KProcess dstProcess,
@@ -937,27 +942,53 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
         }
 
+        private ulong[] GetReceiveList(Message message, uint recvListType, uint recvListOffset)
+        {
+            int recvListSize = 0;
+
+            if (recvListType >= 3)
+            {
+                recvListSize = (int)recvListType - 2;
+            }
+            else if (recvListType == 2)
+            {
+                recvListSize = 1;
+            }
+
+            ulong[] receiveList = new ulong[recvListSize];
+
+            long recvListAddress = (long)message.DramAddress + recvListOffset;
+
+            for (int index = 0; index < recvListSize; index++)
+            {
+                receiveList[index] = System.Device.Memory.ReadUInt64(recvListAddress + index * 8);
+            }
+
+            return receiveList;
+        }
+
         private KernelResult GetReceiveListAddress(
-            Message           message,
-            MessageHeader     header,
             PointerBufferDesc descriptor,
+            Message           message,
+            uint              recvListType,
+            uint              messageSizeInWords,
             ulong[]           receiveList,
             out ulong         address)
         {
             ulong recvListBufferAddress = address = 0;
 
-            if (header.ReceiveListType == 0)
+            if (recvListType == 0)
             {
                 return KernelResult.OutOfResource;
             }
-            else if (header.ReceiveListType == 1 || header.ReceiveListType == 2)
+            else if (recvListType == 1 || recvListType == 2)
             {
                 ulong recvListBaseAddr;
                 ulong recvListEndAddr;
 
-                if (header.ReceiveListType == 1)
+                if (recvListType == 1)
                 {
-                    recvListBaseAddr = message.Address + header.MessageSizeInWords * 4;
+                    recvListBaseAddr = message.Address + messageSizeInWords * 4;
                     recvListEndAddr  = message.Address + message.Size;
                 }
                 else /* if (recvListType == 2) */
