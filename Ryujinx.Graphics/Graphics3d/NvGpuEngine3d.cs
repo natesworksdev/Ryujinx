@@ -803,9 +803,13 @@ namespace Ryujinx.Graphics.Graphics3d
                 if (Stride == 0)
                 {
                     if (PrimType == GalPrimitiveType.Quads)
+                    {
                         ModifiedVbSize = QuadHelper.ConvertSizeQuadsToTris(ModifiedVbSize);
+                    }
                     else if (PrimType == GalPrimitiveType.QuadStrip)
+                    {
                         ModifiedVbSize = QuadHelper.ConvertSizeQuadStripToTris(ModifiedVbSize);
+                    }
                 }
 
                 bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VboKey, ModifiedVbSize);
@@ -818,15 +822,23 @@ namespace Ryujinx.Graphics.Graphics3d
                         byte[] data = Vmm.ReadBytes(VbPosition, VbSize);
 
                         if (PrimType == GalPrimitiveType.Quads)
+                        {
                             data = QuadHelper.ConvertQuadsToTris(data, Stride, (int)(VbSize / Stride));
+                        }
                         else
+                        {
                             data = QuadHelper.ConvertQuadStripToTris(data, Stride, (int)(VbSize / Stride));
+                        }
                         Gpu.Renderer.Rasterizer.CreateVbo(VboKey, data);
                     }
                     else if (Vmm.TryGetHostAddress(VbPosition, VbSize, out IntPtr VbPtr))
+                    {
                         Gpu.Renderer.Rasterizer.CreateVbo(VboKey, (int)VbSize, VbPtr);
+                    }
                     else
+                    {
                         Gpu.Renderer.Rasterizer.CreateVbo(VboKey, Vmm.ReadBytes(VbPosition, VbSize));
+                    }
                 }
 
                 State.VertexBindings[Index].Enabled   = true;
@@ -887,9 +899,13 @@ namespace Ryujinx.Graphics.Graphics3d
                     //vertex of a quad, if it points to the middle of a
                     //quad (First % 4 != 0 for Quads) then it will not work properly.
                     if (PrimType == GalPrimitiveType.Quads)
+                    {
                         IndexFirst = QuadHelper.ConvertSizeQuadsToTris(IndexFirst);
+                    }
                     else // QuadStrip
+                    {
                         IndexFirst = QuadHelper.ConvertSizeQuadStripToTris(IndexFirst);
+                    }
 
                     PrimType = GalPrimitiveType.Triangles;
                 }
@@ -910,9 +926,13 @@ namespace Ryujinx.Graphics.Graphics3d
                     //vertex of a quad, if it points to the middle of a
                     //quad (First % 4 != 0 for Quads) then it will not work properly.
                     if (PrimType == GalPrimitiveType.Quads)
+                    {
                         VertexFirst = QuadHelper.ConvertSizeQuadsToTris(VertexFirst);
+                    }
                     else // QuadStrip
+                    {
                         VertexFirst = QuadHelper.ConvertSizeQuadStripToTris(VertexFirst);
+                    }
 
                     PrimType = GalPrimitiveType.Triangles;
                     VertexCount = QuadHelper.ConvertSizeQuadsToTris(VertexCount);
