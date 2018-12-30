@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics
         {
             None,
             Texture,
-            TextureMirror,
+            TextureArrayLayer,
             ColorBuffer,
             ZetaBuffer
         }
@@ -74,13 +74,13 @@ namespace Ryujinx.Graphics
             ImageTypes[Position] = ImageType.Texture;
         }
 
-        public bool TryGetTextureMirorLayer(long Position, out int Layer)
+        public bool TryGetTextureLayer(long Position, out int LayerIndex)
         {
-            if (MirroredTextures.TryGetValue(Position, out Layer))
+            if (MirroredTextures.TryGetValue(Position, out LayerIndex))
             {
                 ImageType Type = ImageTypes[Position];
 
-                if (Type != ImageType.Texture && Type != ImageType.TextureMirror)
+                if (Type != ImageType.Texture && Type != ImageType.TextureArrayLayer)
                 {
                     throw new InvalidOperationException();
                 }
@@ -88,14 +88,14 @@ namespace Ryujinx.Graphics
                 return true;
             }
 
-            Layer = -1;
+            LayerIndex = -1;
             return false;
         }
 
-        public void SetTextureMirror(long Position, int Layer)
+        public void SetTextureArrayLayer(long Position, int LayerIndex)
         {
-            ImageTypes[Position] = ImageType.TextureMirror;
-            MirroredTextures[Position] = Layer;
+            ImageTypes[Position] = ImageType.TextureArrayLayer;
+            MirroredTextures[Position] = LayerIndex;
         }
 
         private void PrepareSendTexture(NvGpuVmm Vmm, long Position, GalImage NewImage)

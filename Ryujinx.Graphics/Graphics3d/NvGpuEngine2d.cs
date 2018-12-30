@@ -138,21 +138,20 @@ namespace Ryujinx.Graphics.Graphics3d
 
             long GetLayerOffset(GalImage Image, int Layer)
             {
-                // FIXME: CALCULATE THE REAL TEXTURE SIZE (GPU SIZE NOT OGL SIZE)
                 // TODO: mip map
-                return ImageUtils.GetSize(Image) * Layer;
+                return (ImageUtils.GetGpuSize(Image) / Image.Depth) * Layer;
             }
 
             int SrcLayerIndex = -1;
 
-            if (IsSrcLayered && Gpu.ResourceManager.TryGetTextureMirorLayer(SrcKey, out SrcLayerIndex))
+            if (IsSrcLayered && Gpu.ResourceManager.TryGetTextureLayer(SrcKey, out SrcLayerIndex) && SrcLayerIndex != 0)
             {
                 SrcKey = SrcKey - GetLayerOffset(SrcTexture, SrcLayerIndex);
             }
 
             int DstLayerIndex = -1;
 
-            if (IsDstLayered && Gpu.ResourceManager.TryGetTextureMirorLayer(DstKey, out DstLayerIndex))
+            if (IsDstLayered && Gpu.ResourceManager.TryGetTextureLayer(DstKey, out DstLayerIndex) && DstLayerIndex != 0)
             {
                 DstKey = DstKey - GetLayerOffset(DstTexture, DstLayerIndex);
             }
@@ -164,7 +163,7 @@ namespace Ryujinx.Graphics.Graphics3d
             {
                 for (int Layer = 0; Layer < SrcTexture.Depth; Layer++)
                 {
-                    Gpu.ResourceManager.SetTextureMirror(SrcKey + GetLayerOffset(SrcTexture, Layer), Layer);
+                    Gpu.ResourceManager.SetTextureArrayLayer(SrcKey + GetLayerOffset(SrcTexture, Layer), Layer);
                 }
 
                 SrcLayerIndex = 0;
@@ -174,7 +173,7 @@ namespace Ryujinx.Graphics.Graphics3d
             {
                 for (int Layer = 0; Layer < DstTexture.Depth; Layer++)
                 {
-                    Gpu.ResourceManager.SetTextureMirror(DstKey + GetLayerOffset(DstTexture, Layer), Layer);
+                    Gpu.ResourceManager.SetTextureArrayLayer(DstKey + GetLayerOffset(DstTexture, Layer), Layer);
                 }
 
                 DstLayerIndex = 0;
