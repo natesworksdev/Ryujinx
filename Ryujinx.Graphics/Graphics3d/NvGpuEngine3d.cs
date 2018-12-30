@@ -691,11 +691,11 @@ namespace Ryujinx.Graphics.Graphics3d
 
                         if (PrimType == GalPrimitiveType.Quads)
                         {
-                            Buffer = QuadHelper.ConvertIbQuadsToTris(Buffer, IndexEntrySize, IndexCount);
+                            Buffer = QuadHelper.ConvertQuadsToTris(Buffer, IndexEntrySize, IndexCount);
                         }
                         else /* if (PrimType == GalPrimitiveType.QuadStrip) */
                         {
-                            Buffer = QuadHelper.ConvertIbQuadStripToTris(Buffer, IndexEntrySize, IndexCount);
+                            Buffer = QuadHelper.ConvertQuadStripToTris(Buffer, IndexEntrySize, IndexCount);
                         }
 
                         Gpu.Renderer.Rasterizer.CreateIbo(IboKey, IbSize, Buffer);
@@ -710,11 +710,11 @@ namespace Ryujinx.Graphics.Graphics3d
                 {
                     if (PrimType == GalPrimitiveType.Quads)
                     {
-                        Gpu.Renderer.Rasterizer.SetIndexArray(QuadHelper.ConvertIbSizeQuadsToTris(IbSize), IndexFormat);
+                        Gpu.Renderer.Rasterizer.SetIndexArray(QuadHelper.ConvertSizeQuadsToTris(IbSize), IndexFormat);
                     }
                     else /* if (PrimType == GalPrimitiveType.QuadStrip) */
                     {
-                        Gpu.Renderer.Rasterizer.SetIndexArray(QuadHelper.ConvertIbSizeQuadStripToTris(IbSize), IndexFormat);
+                        Gpu.Renderer.Rasterizer.SetIndexArray(QuadHelper.ConvertSizeQuadStripToTris(IbSize), IndexFormat);
                     }
                 }
             }
@@ -803,9 +803,9 @@ namespace Ryujinx.Graphics.Graphics3d
                 if (Stride == 0)
                 {
                     if (PrimType == GalPrimitiveType.Quads)
-                        ModifiedVbSize = QuadHelper.ConvertIbSizeQuadsToTris(ModifiedVbSize);
+                        ModifiedVbSize = QuadHelper.ConvertSizeQuadsToTris(ModifiedVbSize);
                     else if (PrimType == GalPrimitiveType.QuadStrip)
-                        ModifiedVbSize = QuadHelper.ConvertIbSizeQuadStripToTris(ModifiedVbSize);
+                        ModifiedVbSize = QuadHelper.ConvertSizeQuadStripToTris(ModifiedVbSize);
                 }
 
                 bool VboCached = Gpu.Renderer.Rasterizer.IsVboCached(VboKey, ModifiedVbSize);
@@ -818,9 +818,9 @@ namespace Ryujinx.Graphics.Graphics3d
                         byte[] data = Vmm.ReadBytes(VbPosition, VbSize);
 
                         if (PrimType == GalPrimitiveType.Quads)
-                            data = QuadHelper.ConvertIbQuadsToTris(data, Stride, (int)(VbSize / Stride));
+                            data = QuadHelper.ConvertQuadsToTris(data, Stride, (int)(VbSize / Stride));
                         else
-                            data = QuadHelper.ConvertIbQuadStripToTris(data, Stride, (int)(VbSize / Stride));
+                            data = QuadHelper.ConvertQuadStripToTris(data, Stride, (int)(VbSize / Stride));
                         Gpu.Renderer.Rasterizer.CreateVbo(VboKey, data);
                     }
                     else if (Vmm.TryGetHostAddress(VbPosition, VbSize, out IntPtr VbPtr))
@@ -887,9 +887,9 @@ namespace Ryujinx.Graphics.Graphics3d
                     //vertex of a quad, if it points to the middle of a
                     //quad (First % 4 != 0 for Quads) then it will not work properly.
                     if (PrimType == GalPrimitiveType.Quads)
-                        IndexFirst = QuadHelper.ConvertIbSizeQuadsToTris(IndexFirst);
+                        IndexFirst = QuadHelper.ConvertSizeQuadsToTris(IndexFirst);
                     else // QuadStrip
-                        IndexFirst = QuadHelper.ConvertIbSizeQuadStripToTris(IndexFirst);
+                        IndexFirst = QuadHelper.ConvertSizeQuadStripToTris(IndexFirst);
 
                     PrimType = GalPrimitiveType.Triangles;
                 }
@@ -910,12 +910,12 @@ namespace Ryujinx.Graphics.Graphics3d
                     //vertex of a quad, if it points to the middle of a
                     //quad (First % 4 != 0 for Quads) then it will not work properly.
                     if (PrimType == GalPrimitiveType.Quads)
-                        VertexFirst = QuadHelper.ConvertIbSizeQuadsToTris(VertexFirst);
+                        VertexFirst = QuadHelper.ConvertSizeQuadsToTris(VertexFirst);
                     else // QuadStrip
-                        VertexFirst = QuadHelper.ConvertIbSizeQuadStripToTris(VertexFirst);
+                        VertexFirst = QuadHelper.ConvertSizeQuadStripToTris(VertexFirst);
 
                     PrimType = GalPrimitiveType.Triangles;
-                    VertexCount = QuadHelper.ConvertIbSizeQuadsToTris(VertexCount);
+                    VertexCount = QuadHelper.ConvertSizeQuadsToTris(VertexCount);
                 }
 
                 Gpu.Renderer.Rasterizer.DrawArrays(VertexFirst, VertexCount, PrimType);
