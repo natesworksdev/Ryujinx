@@ -253,7 +253,7 @@ namespace Ryujinx
 
             // Game
             double gameFps           = _device.Statistics.GetGameFrameRate();
-            double gameFrameTime     =_device.Statistics.GetGameFrameTime();
+            double gameFrameTime     = _device.Statistics.GetGameFrameTime();
             double gameAvgFrameTime  = _device.Statistics.GetGameAverageFrameTime();
 
             string titleSection = string.IsNullOrWhiteSpace(_device.System.CurrentTitle) ? string.Empty
