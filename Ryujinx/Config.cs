@@ -1,4 +1,4 @@
-using LibHac;
+using LibHac.IO;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
@@ -9,7 +9,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using LibHac.IO;
 
 namespace Ryujinx
 {

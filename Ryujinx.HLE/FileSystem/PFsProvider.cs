@@ -1,11 +1,12 @@
 ﻿using LibHac;
+using LibHac.IO;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.FspSrv;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LibHac.IO;
+
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.FileSystem

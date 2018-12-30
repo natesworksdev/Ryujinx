@@ -1,4 +1,5 @@
 using LibHac;
+using LibHac.IO;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.Resource;
@@ -6,7 +7,7 @@ using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LibHac.IO;
+
 using static Ryujinx.HLE.Utilities.FontUtils;
 
 namespace Ryujinx.HLE.HOS.Font

@@ -1,11 +1,12 @@
 using LibHac;
+using LibHac.IO;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LibHac.IO;
+
 using static Ryujinx.HLE.FileSystem.VirtualFileSystem;
 using static Ryujinx.HLE.HOS.ErrorCode;
 using static Ryujinx.HLE.Utilities.StringUtils;

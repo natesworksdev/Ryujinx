@@ -1,4 +1,5 @@
 using LibHac;
+using LibHac.IO;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
@@ -16,7 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using LibHac.IO;
+
 using NxStaticObject = Ryujinx.HLE.Loaders.Executables.NxStaticObject;
 
 namespace Ryujinx.HLE.HOS
@@ -281,7 +282,7 @@ namespace Ryujinx.HLE.HOS
 
             foreach (PfsFileEntry fileEntry in xci.SecurePartition.Files.Where(x => x.Name.EndsWith(".nca")))
             {
-                LibHac.IO.IStorage ncaStorage = xci.SecurePartition.OpenFile(fileEntry);
+                IStorage ncaStorage = xci.SecurePartition.OpenFile(fileEntry);
 
                 Nca nca = new Nca(KeySet, ncaStorage, true);
 
@@ -328,7 +329,7 @@ namespace Ryujinx.HLE.HOS
         {
             Romfs controlRomfs = new Romfs(controlNca.OpenSection(0, false, FsIntegrityCheckLevel, true));
 
-            LibHac.IO.IStorage controlFile = controlRomfs.OpenFile("/control.nacp");
+            IStorage controlFile = controlRomfs.OpenFile("/control.nacp");
 
             ControlData = new Nacp(controlFile.AsStream());
         }
@@ -394,8 +395,8 @@ namespace Ryujinx.HLE.HOS
                 return;
             }
 
-            LibHac.IO.IStorage romfsStorage = mainNca.OpenSection(ProgramPartitionType.Data, false, FsIntegrityCheckLevel, false);
-            LibHac.IO.IStorage exefsStorage = mainNca.OpenSection(ProgramPartitionType.Code, false, FsIntegrityCheckLevel, true);
+            IStorage romfsStorage = mainNca.OpenSection(ProgramPartitionType.Data, false, FsIntegrityCheckLevel, false);
+            IStorage exefsStorage = mainNca.OpenSection(ProgramPartitionType.Code, false, FsIntegrityCheckLevel, true);
 
             if (exefsStorage == null)
             {
@@ -453,7 +454,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Romfs controlRomfs = new Romfs(controlNca.OpenSection(0, false, FsIntegrityCheckLevel, true));
 
-                LibHac.IO.IStorage controlFile = controlRomfs.OpenFile("/control.nacp");
+                IStorage controlFile = controlRomfs.OpenFile("/control.nacp");
 
                 Nacp controlData = new Nacp(controlFile.AsStream());
 

@@ -1,13 +1,13 @@
+using LibHac;
+using LibHac.IO;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using LibHac;
-using LibHac.IO;
-using Ryujinx.HLE.FileSystem;
 
 namespace Ryujinx.HLE.HOS.Services.Set
 {
@@ -186,8 +186,8 @@ namespace Ryujinx.HLE.HOS.Services.Set
 
             using(FileStream firmwareStream = File.Open(firmwareTitlePath, FileMode.Open, FileAccess.Read))
             { 
-                Nca                firmwareContent = new Nca(device.System.KeySet, firmwareStream.AsStorage(), false);
-                LibHac.IO.IStorage romFsStorage    = firmwareContent.OpenSection(0, false, device.System.FsIntegrityCheckLevel, false);
+                Nca      firmwareContent = new Nca(device.System.KeySet, firmwareStream.AsStorage(), false);
+                IStorage romFsStorage    = firmwareContent.OpenSection(0, false, device.System.FsIntegrityCheckLevel, false);
 
                 if(romFsStorage == null)
                 {
@@ -196,7 +196,7 @@ namespace Ryujinx.HLE.HOS.Services.Set
 
                 Romfs firmwareRomFs = new Romfs(romFsStorage);
 
-                LibHac.IO.IStorage firmwareFile = firmwareRomFs.OpenFile("/file");
+                IStorage firmwareFile = firmwareRomFs.OpenFile("/file");
 
                 byte[] data = new byte[firmwareFile.Length];
 

@@ -1,10 +1,10 @@
 ﻿using LibHac;
+using LibHac.IO;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LibHac.IO;
 
 namespace Ryujinx.HLE.FileSystem.Content
 {
