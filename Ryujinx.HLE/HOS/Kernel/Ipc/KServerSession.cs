@@ -44,6 +44,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     Size        = 0x100;
                 }
             }
+
+            public Message(KSessionRequest request) : this(
+                request.ClientThread,
+                request.CustomCmdBuffAddr,
+                request.CustomCmdBuffSize) { }
         }
 
         private struct MessageHeader
@@ -244,14 +249,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             request.ServerProcess = serverProcess;
 
-            Message clientMsg = new Message(
-                clientThread,
-                request.CustomCmdBuffAddr,
-                request.CustomCmdBuffSize);
-
+            Message clientMsg = new Message(request);
             Message serverMsg = new Message(serverThread, customCmdBuffAddr, customCmdBuffSize);
 
-            MessageHeader header = GetClientMessageHeader(clientMsg);
+            MessageHeader clientHeader = GetClientMessageHeader(clientMsg);
+            MessageHeader serverHeader = GetServerMessageHeader(serverMsg);
 
             KernelResult serverResult = KernelResult.NotFound;
             KernelResult clientResult = KernelResult.Success;
@@ -263,7 +265,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     request.BufferDescriptorTable.RestoreClientBuffers(clientProcess.MemoryManager);
                 }
 
-                CloseAllHandles(serverMsg, header, serverProcess);
+                CloseAllHandles(serverMsg, clientHeader, serverProcess);
 
                 System.CriticalSection.Enter();
 
@@ -279,71 +281,74 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 WakeClient(request, clientResult);
             }
 
-            if (header.ReceiveListType < 2 &&
-                header.ReceiveListOffset > clientMsg.Size)
+            if (clientHeader.ReceiveListType < 2 &&
+                clientHeader.ReceiveListOffset > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.InvalidCombination;
             }
-            else if (header.ReceiveListType == 2 &&
-                     header.ReceiveListOffset + 8 > clientMsg.Size)
+            else if (clientHeader.ReceiveListType == 2 &&
+                     clientHeader.ReceiveListOffset + 8 > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.InvalidCombination;
             }
-            else if (header.ReceiveListType > 2 &&
-                     header.ReceiveListType * 8 - 0x10 + header.ReceiveListOffset > clientMsg.Size)
-            {
-                CleanUpForError();
-
-                return KernelResult.InvalidCombination;
-            }
-
-            if (header.ReceiveListOffsetInWords < header.MessageSizeInWords)
+            else if (clientHeader.ReceiveListType > 2 &&
+                     clientHeader.ReceiveListType * 8 - 0x10 + clientHeader.ReceiveListOffset > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.InvalidCombination;
             }
 
-            if (header.MessageSizeInWords * 4 > clientMsg.Size)
+            if (clientHeader.ReceiveListOffsetInWords < clientHeader.MessageSizeInWords)
+            {
+                CleanUpForError();
+
+                return KernelResult.InvalidCombination;
+            }
+
+            if (clientHeader.MessageSizeInWords * 4 > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.CmdBufferTooSmall;
             }
 
-            ulong[] receiveList = GetReceiveList(clientMsg, header.ReceiveListType, header.ReceiveListOffset);
+            ulong[] receiveList = GetReceiveList(
+                serverMsg,
+                serverHeader.ReceiveListType,
+                serverHeader.ReceiveListOffset);
 
-            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 0, header.Word0);
-            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 4, header.Word1);
+            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 0, clientHeader.Word0);
+            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 4, clientHeader.Word1);
 
             uint offset;
 
             //Copy handles.
-            if (header.HasHandles)
+            if (clientHeader.HasHandles)
             {
-                if (header.MoveHandlesCount != 0)
+                if (clientHeader.MoveHandlesCount != 0)
                 {
                     CleanUpForError();
 
                     return KernelResult.InvalidCombination;
                 }
 
-                serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 8, header.Word2);
+                serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 8, clientHeader.Word2);
 
                 offset = 3;
 
-                if (header.HasPid)
+                if (clientHeader.HasPid)
                 {
                     serverProcess.CpuMemory.WriteInt64((long)serverMsg.Address + offset * 4, clientProcess.Pid);
 
                     offset += 2;
                 }
 
-                for (int index = 0; index < header.CopyHandlesCount; index++)
+                for (int index = 0; index < clientHeader.CopyHandlesCount; index++)
                 {
                     int newHandle = 0;
 
@@ -359,7 +364,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     offset++;
                 }
 
-                for (int index = 0; index < header.MoveHandlesCount; index++)
+                for (int index = 0; index < clientHeader.MoveHandlesCount; index++)
                 {
                     int newHandle = 0;
 
@@ -395,7 +400,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             //Copy pointer/receive list buffers.
-            for (int index = 0; index < header.PointerBuffersCount; index++)
+            uint recvListDstOffset = 0;
+
+            for (int index = 0; index < clientHeader.PointerBuffersCount; index++)
             {
                 ulong pointerDesc = System.Device.Memory.ReadUInt64((long)clientMsg.DramAddress + offset * 4);
 
@@ -406,9 +413,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     clientResult = GetReceiveListAddress(
                         descriptor,
                         serverMsg,
-                        header.ReceiveListType,
-                        header.MessageSizeInWords,
+                        serverHeader.ReceiveListType,
+                        clientHeader.MessageSizeInWords,
                         receiveList,
+                        ref       recvListDstOffset,
                         out ulong recvListBufferAddress);
 
                     if (clientResult != KernelResult.Success)
@@ -449,9 +457,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             //Copy send, receive and exchange buffers.
             uint totalBuffersCount =
-                header.SendBuffersCount    +
-                header.ReceiveBuffersCount +
-                header.ExchangeBuffersCount;
+                clientHeader.SendBuffersCount    +
+                clientHeader.ReceiveBuffersCount +
+                clientHeader.ExchangeBuffersCount;
 
             for (int index = 0; index < totalBuffersCount; index++)
             {
@@ -461,13 +469,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 uint descWord1 = System.Device.Memory.ReadUInt32(clientDescAddress + 4);
                 uint descWord2 = System.Device.Memory.ReadUInt32(clientDescAddress + 8);
 
-                bool isSendDesc     = index <  header.SendBuffersCount;
-                bool isExchangeDesc = index >= header.SendBuffersCount + header.ReceiveBuffersCount;
+                bool isSendDesc     = index <  clientHeader.SendBuffersCount;
+                bool isExchangeDesc = index >= clientHeader.SendBuffersCount + clientHeader.ReceiveBuffersCount;
 
                 bool notReceiveDesc = isSendDesc || isExchangeDesc;
                 bool isReceiveDesc  = !notReceiveDesc;
 
-                MemoryPermission permission = index >= header.SendBuffersCount
+                MemoryPermission permission = index >= clientHeader.SendBuffersCount
                     ? MemoryPermission.ReadAndWrite
                     : MemoryPermission.Read;
 
@@ -544,12 +552,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             //Copy raw data.
-            if (header.RawDataSizeInWords != 0)
+            if (clientHeader.RawDataSizeInWords != 0)
             {
                 ulong copySrc = clientMsg.Address + offset * 4;
                 ulong copyDst = serverMsg.Address + offset * 4;
 
-                ulong copySize = header.RawDataSizeInWords * 4;
+                ulong copySize = clientHeader.RawDataSizeInWords * 4;
 
                 if (serverMsg.IsCustom || clientMsg.IsCustom)
                 {
@@ -614,27 +622,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             KThread  clientThread  = request.ClientThread;
             KProcess clientProcess = clientThread.Owner;
 
-            Message clientMsg = new Message(
-                clientThread,
-                request.CustomCmdBuffAddr,
-                request.CustomCmdBuffSize);
-
+            Message clientMsg = new Message(request);
             Message serverMsg = new Message(serverThread, customCmdBuffAddr, customCmdBuffSize);
 
-            uint word0 = serverProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 0);
-            uint word1 = serverProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 4);
-            uint word2 = serverProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 8);
-
-            MessageHeader header = new MessageHeader(word0, word1, word2);
-
             MessageHeader clientHeader = GetClientMessageHeader(clientMsg);
+            MessageHeader serverHeader = GetServerMessageHeader(serverMsg);
 
             KernelResult clientResult = KernelResult.Success;
             KernelResult serverResult = KernelResult.Success;
 
             void CleanUpForError()
             {
-                CloseAllHandles(clientMsg, header, clientProcess);
+                CloseAllHandles(clientMsg, serverHeader, clientProcess);
 
                 CancelRequest(request, clientResult);
             }
@@ -668,16 +667,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return KernelResult.InvalidCombination;
             }
 
-            if (header.MessageSizeInWords * 4 > clientMsg.Size)
+            if (serverHeader.MessageSizeInWords * 4 > clientMsg.Size)
             {
                 CleanUpForError();
 
                 return KernelResult.CmdBufferTooSmall;
             }
 
-            if (header.SendBuffersCount     != 0 ||
-                header.ReceiveBuffersCount  != 0 ||
-                header.ExchangeBuffersCount != 0)
+            if (serverHeader.SendBuffersCount     != 0 ||
+                serverHeader.ReceiveBuffersCount  != 0 ||
+                serverHeader.ExchangeBuffersCount != 0)
             {
                 CleanUpForError();
 
@@ -701,26 +700,26 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             //Copy header.
-            System.Device.Memory.WriteUInt32((long)clientMsg.DramAddress + 0, word0);
-            System.Device.Memory.WriteUInt32((long)clientMsg.DramAddress + 4, word1);
+            System.Device.Memory.WriteUInt32((long)clientMsg.DramAddress + 0, serverHeader.Word0);
+            System.Device.Memory.WriteUInt32((long)clientMsg.DramAddress + 4, serverHeader.Word1);
 
             //Copy handles.
             uint offset;
 
-            if (header.HasHandles)
+            if (serverHeader.HasHandles)
             {
                 offset = 3;
 
-                System.Device.Memory.WriteUInt32((long)clientMsg.DramAddress + 8, word2);
+                System.Device.Memory.WriteUInt32((long)clientMsg.DramAddress + 8, serverHeader.Word2);
 
-                if (header.HasPid)
+                if (serverHeader.HasPid)
                 {
                     System.Device.Memory.WriteInt64((long)clientMsg.DramAddress + offset * 4, serverProcess.Pid);
 
                     offset += 2;
                 }
 
-                for (int index = 0; index < header.CopyHandlesCount; index++)
+                for (int index = 0; index < serverHeader.CopyHandlesCount; index++)
                 {
                     int newHandle = 0;
 
@@ -736,7 +735,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     offset++;
                 }
 
-                for (int index = 0; index < header.MoveHandlesCount; index++)
+                for (int index = 0; index < serverHeader.MoveHandlesCount; index++)
                 {
                     int newHandle = 0;
 
@@ -765,7 +764,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             //Copy pointer/receive list buffers.
-            for (int index = 0; index < header.PointerBuffersCount; index++)
+            uint recvListDstOffset = 0;
+
+            for (int index = 0; index < serverHeader.PointerBuffersCount; index++)
             {
                 ulong pointerDesc = serverProcess.CpuMemory.ReadUInt64((long)serverMsg.Address + offset * 4);
 
@@ -777,8 +778,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         descriptor,
                         clientMsg,
                         clientHeader.ReceiveListType,
-                        header.MessageSizeInWords,
+                        serverHeader.MessageSizeInWords,
                         receiveList,
+                        ref       recvListDstOffset,
                         out ulong recvListBufferAddress);
 
                     if (clientResult != KernelResult.Success)
@@ -811,9 +813,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             //Set send, receive and exchange buffer descriptors to zero.
             uint totalBuffersCount =
-                header.SendBuffersCount    +
-                header.ReceiveBuffersCount +
-                header.ExchangeBuffersCount;
+                serverHeader.SendBuffersCount    +
+                serverHeader.ReceiveBuffersCount +
+                serverHeader.ExchangeBuffersCount;
 
             for (int index = 0; index < totalBuffersCount; index++)
             {
@@ -827,12 +829,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             //Copy raw data.
-            if (header.RawDataSizeInWords != 0)
+            if (serverHeader.RawDataSizeInWords != 0)
             {
                 ulong copyDst = clientMsg.Address + offset * 4;
                 ulong copySrc = serverMsg.Address + offset * 4;
 
-                ulong copySize = header.RawDataSizeInWords * 4;
+                ulong copySize = serverHeader.RawDataSizeInWords * 4;
 
                 if (serverMsg.IsCustom || clientMsg.IsCustom)
                 {
@@ -879,6 +881,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             uint word0 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 0);
             uint word1 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 4);
             uint word2 = System.Device.Memory.ReadUInt32((long)clientMsg.DramAddress + 8);
+
+            return new MessageHeader(word0, word1, word2);
+        }
+
+        private MessageHeader GetServerMessageHeader(Message serverMsg)
+        {
+            KProcess currentProcess = System.Scheduler.GetCurrentProcess();
+
+            uint word0 = currentProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 0);
+            uint word1 = currentProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 4);
+            uint word2 = currentProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 8);
 
             return new MessageHeader(word0, word1, word2);
         }
@@ -973,6 +986,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             uint              recvListType,
             uint              messageSizeInWords,
             ulong[]           receiveList,
+            ref uint          dstOffset,
             out ulong         address)
         {
             ulong recvListBufferAddress = address = 0;
@@ -1007,7 +1021,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     recvListEndAddr = recvListBaseAddr + size;
                 }
 
-                recvListBufferAddress = BitUtils.AlignUp(recvListBaseAddr + descriptor.ReceiveIndex, 0x10);
+                recvListBufferAddress = BitUtils.AlignUp(recvListBaseAddr + dstOffset, 0x10);
+
+                ulong endAddress = recvListBufferAddress + descriptor.BufferSize;
+
+                dstOffset = (uint)endAddress - (uint)recvListBaseAddr;
 
                 if (recvListBufferAddress + descriptor.BufferSize <= recvListBufferAddress ||
                     recvListBufferAddress + descriptor.BufferSize >  recvListEndAddr)
