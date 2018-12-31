@@ -15,6 +15,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             ServerSession = new KServerSession(system, this);
             ClientSession = new KClientSession(system, this);
+
+            _hasBeenInitialized = true;
         }
 
         public void DisconnectClient()
@@ -23,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             {
                 ClientSession.State = ChannelState.ClientDisconnected;
 
-                //TODO: Wake up client, etc.
+                ServerSession.CancelAllRequestsClientDisconnected();
             }
         }
 
@@ -55,6 +57,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 KProcess creatorProcess = ClientSession.CreatorProcess;
 
                 creatorProcess.ResourceLimit?.Release(LimitableResource.Session, 1);
+
+                creatorProcess.DecrementReferenceCount();
             }
         }
     }

@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return result;
             }
 
-            result = clientPort.Connect(out KClientSession session);
+            result = clientPort.Connect(out KClientSession clientSession);
 
             if (result != KernelResult.Success)
             {
@@ -74,7 +74,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return result;
             }
 
-            currentProcess.HandleTable.SetReservedHandleObj(handle, session);
+            currentProcess.HandleTable.SetReservedHandleObj(handle, clientSession);
+
+            clientSession.DecrementReferenceCount();
 
             return result;
         }

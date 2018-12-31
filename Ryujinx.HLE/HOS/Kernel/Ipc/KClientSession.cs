@@ -22,6 +22,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             _parent = parent;
 
             State = ChannelState.Open;
+
+            CreatorProcess = system.Scheduler.GetCurrentProcess();
+
+            CreatorProcess.IncrementReferenceCount();
         }
 
         public KernelResult SendSyncRequest(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
@@ -29,8 +33,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             KThread currentThread = System.Scheduler.GetCurrentThread();
 
             KSessionRequest request = new KSessionRequest(currentThread, customCmdBuffAddr, customCmdBuffSize);
-
-            currentThread.IncrementReferenceCount();
 
             System.CriticalSection.Enter();
 

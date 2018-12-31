@@ -226,7 +226,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return KernelResult.PortRemoteClosed;
             }
 
-            if (_activeRequest != null || !PickRequest(out KSessionRequest request))
+            if (_activeRequest != null || !DequeueRequest(out KSessionRequest request))
             {
                 System.CriticalSection.Leave();
 
@@ -278,7 +278,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 System.CriticalSection.Leave();
 
-                WakeClient(request, clientResult);
+                WakeClientThread(request, clientResult);
             }
 
             if (clientHeader.ReceiveListType < 2 &&
@@ -871,7 +871,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return serverResult;
             }
 
-            WakeClient(request, clientResult);
+            WakeClientThread(request, clientResult);
 
             return serverResult;
         }
@@ -1044,9 +1044,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 recvListBufferAddress = packed & 0x7fffffffff;
 
-                uint transferSize = (uint)(packed >> 48);
+                uint size = (uint)(packed >> 48);
 
-                if (recvListBufferAddress == 0 || transferSize == 0 || transferSize < descriptor.BufferSize)
+                if (recvListBufferAddress == 0 || size == 0 || size < descriptor.BufferSize)
                 {
                     return KernelResult.OutOfResource;
                 }
@@ -1102,12 +1102,42 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             _parent.DisconnectServer();
 
-            CancelAllRequests(KernelResult.PortRemoteClosed);
+            CancelAllRequestsServerDisconnected();
 
             _parent.DecrementReferenceCount();
         }
 
-        private void CancelAllRequests(KernelResult result)
+        private void CancelAllRequestsServerDisconnected()
+        {
+            foreach (KSessionRequest request in IterateWithRemovalOfAllRequests())
+            {
+                CancelRequest(request, KernelResult.PortRemoteClosed);
+            }
+        }
+
+        public void CancelAllRequestsClientDisconnected()
+        {
+            foreach (KSessionRequest request in IterateWithRemovalOfAllRequests())
+            {
+                if (request.ClientThread.ShallBeTerminated ||
+                    request.ClientThread.SchedFlags == ThreadSchedState.TerminationPending)
+                {
+                    continue;
+                }
+
+                //Client sessions can only be disconnected on async requests (because
+                //the client would be otherwise blocked waiting for the response), so
+                //we only need to handle the async case here.
+                if (request.AsyncEvent != null)
+                {
+                    SendResultToAsyncRequestClient(request, KernelResult.PortRemoteClosed);
+                }
+            }
+
+            WakeServerThreads(KernelResult.PortRemoteClosed);
+        }
+
+        private IEnumerable<KSessionRequest> IterateWithRemovalOfAllRequests()
         {
             System.CriticalSection.Enter();
 
@@ -1117,22 +1147,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 _activeRequest = null;
 
-                CancelRequest(request, result);
-
                 System.CriticalSection.Leave();
+
+                yield return request;
             }
             else
             {
                 System.CriticalSection.Leave();
             }
 
-            while (PickRequest(out KSessionRequest request))
+            while (DequeueRequest(out KSessionRequest request))
             {
-                CancelRequest(request, result);
+                yield return request;
             }
         }
 
-        private bool PickRequest(out KSessionRequest request)
+        private bool DequeueRequest(out KSessionRequest request)
         {
             request = null;
 
@@ -1169,40 +1199,63 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 request.BufferDescriptorTable.RestoreClientBuffers(clientProcess.MemoryManager);
             }
 
-            WakeClient(request, result);
+            WakeClientThread(request, result);
         }
 
-        private void WakeClient(KSessionRequest request, KernelResult result)
+        private void WakeClientThread(KSessionRequest request, KernelResult result)
         {
-            KThread  clientThread  = request.ClientThread;
-            KProcess clientProcess = clientThread.Owner;
-
+            //Wait client thread waiting for a response for the given request.
             if (request.AsyncEvent != null)
             {
-                ulong address = clientProcess.MemoryManager.GetDramAddressFromVa(request.CustomCmdBuffAddr);
-
-                System.Device.Memory.WriteInt64((long)address + 0, 0);
-                System.Device.Memory.WriteInt32((long)address + 8, (int)result);
-
-                clientProcess.MemoryManager.UnborrowIpcBuffer(
-                    request.CustomCmdBuffAddr,
-                    request.CustomCmdBuffSize);
-
-                request.AsyncEvent.Signal();
+                SendResultToAsyncRequestClient(request, result);
             }
             else
             {
                 System.CriticalSection.Enter();
 
-                if ((clientThread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
-                {
-                    clientThread.SignaledObj   = null;
-                    clientThread.ObjSyncResult = result;
-
-                    clientThread.Reschedule(ThreadSchedState.Running);
-                }
+                WakeAndSetResult(request.ClientThread, result);
 
                 System.CriticalSection.Leave();
+            }
+        }
+
+        private void SendResultToAsyncRequestClient(KSessionRequest request, KernelResult result)
+        {
+            KProcess clientProcess = request.ClientThread.Owner;
+
+            ulong address = clientProcess.MemoryManager.GetDramAddressFromVa(request.CustomCmdBuffAddr);
+
+            System.Device.Memory.WriteInt64((long)address + 0, 0);
+            System.Device.Memory.WriteInt32((long)address + 8, (int)result);
+
+            clientProcess.MemoryManager.UnborrowIpcBuffer(
+                request.CustomCmdBuffAddr,
+                request.CustomCmdBuffSize);
+
+            request.AsyncEvent.Signal();
+        }
+
+        private void WakeServerThreads(KernelResult result)
+        {
+            //Wake all server threads waiting for requests.
+            System.CriticalSection.Enter();
+
+            foreach (KThread thread in WaitingThreads)
+            {
+                WakeAndSetResult(thread, result);
+            }
+
+            System.CriticalSection.Leave();
+        }
+
+        private void WakeAndSetResult(KThread thread, KernelResult result)
+        {
+            if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
+            {
+                thread.SignaledObj   = null;
+                thread.ObjSyncResult = result;
+
+                thread.Reschedule(ThreadSchedState.Running);
             }
         }
     }
