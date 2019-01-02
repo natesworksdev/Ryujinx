@@ -70,7 +70,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x65, nameof(SvcHandler.GetProcessList64)                },
                 { 0x6f, nameof(SvcHandler.GetSystemInfo64)                 },
                 { 0x70, nameof(SvcHandler.CreatePort64)                    },
-                { 0x71, nameof(SvcHandler.ManageNamedPort64)               }
+                { 0x71, nameof(SvcHandler.ManageNamedPort64)               },
+                { 0x72, nameof(SvcHandler.ConnectToPort64)                 }
             };
 
             _svcTable64 = new Action<SvcHandler, CpuThreadState>[0x80];

@@ -195,33 +195,48 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.ResLimitExceeded;
             }
 
-            KSession session;
-
             if (isLight)
             {
-                session = new KLightSession(_system);
+                KLightSession session = new KLightSession(_system);
+
+                result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
+
+                if (result == KernelResult.Success)
+                {
+                    result = currentProcess.HandleTable.GenerateHandle(session.ClientSession, out clientSessionHandle);
+
+                    if (result != KernelResult.Success)
+                    {
+                        currentProcess.HandleTable.CloseHandle(serverSessionHandle);
+
+                        serverSessionHandle = 0;
+                    }
+                }
+
+                session.ServerSession.DecrementReferenceCount();
+                session.ClientSession.DecrementReferenceCount();
             }
             else
             {
-                session = new KSession(_system);
-            }
+                KSession session = new KSession(_system);
 
-            result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
+                result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
 
-            if (result == KernelResult.Success)
-            {
-                result = currentProcess.HandleTable.GenerateHandle(session.ClientSession, out clientSessionHandle);
-
-                if (result != KernelResult.Success)
+                if (result == KernelResult.Success)
                 {
-                    currentProcess.HandleTable.CloseHandle(serverSessionHandle);
+                    result = currentProcess.HandleTable.GenerateHandle(session.ClientSession, out clientSessionHandle);
 
-                    serverSessionHandle = 0;
+                    if (result != KernelResult.Success)
+                    {
+                        currentProcess.HandleTable.CloseHandle(serverSessionHandle);
+
+                        serverSessionHandle = 0;
+                    }
                 }
-            }
 
-            session.ServerSession.DecrementReferenceCount();
-            session.ClientSession.DecrementReferenceCount();
+                session.ServerSession.DecrementReferenceCount();
+                session.ClientSession.DecrementReferenceCount();
+            }
 
             return result;
         }
@@ -251,9 +266,16 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return result;
             }
 
-            KServerSession session = serverPort.IsLight
-                ? serverPort.AcceptLightIncomingConnection()
-                : serverPort.AcceptIncomingConnection();
+            KAutoObject session;
+
+            if (serverPort.IsLight)
+            {
+                session = serverPort.AcceptIncomingLightConnection();
+            }
+            else
+            {
+                session = serverPort.AcceptIncomingConnection();
+            }
 
             if (session != null)
             {
@@ -447,6 +469,62 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             {
                 currentProcess.HandleTable.CloseHandle(handle);
             }
+
+            return result;
+        }
+
+        public KernelResult ConnectToPort64(int clientPortHandle, out int clientSessionHandle)
+        {
+            return ConnectToPort(clientPortHandle, out clientSessionHandle);
+        }
+
+        private KernelResult ConnectToPort(int clientPortHandle, out int clientSessionHandle)
+        {
+            clientSessionHandle = 0;
+
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            KClientPort clientPort = currentProcess.HandleTable.GetObject<KClientPort>(clientPortHandle);
+
+            if (clientPort == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            KernelResult result = currentProcess.HandleTable.ReserveHandle(out int handle);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
+
+            KAutoObject session;
+
+            if (clientPort.IsLight)
+            {
+                result = clientPort.ConnectLight(out KLightClientSession clientSession);
+
+                session = clientSession;
+            }
+            else
+            {
+                result = clientPort.Connect(out KClientSession clientSession);
+
+                session = clientSession;
+            }
+
+            if (result != KernelResult.Success)
+            {
+                currentProcess.HandleTable.CancelHandleReservation(handle);
+
+                return result;
+            }
+
+            currentProcess.HandleTable.SetReservedHandleObj(handle, session);
+
+            session.DecrementReferenceCount();
+
+            clientSessionHandle = handle;
 
             return result;
         }

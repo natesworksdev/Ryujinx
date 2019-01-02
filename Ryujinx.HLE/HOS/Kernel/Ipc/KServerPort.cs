@@ -5,8 +5,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
     class KServerPort : KSynchronizationObject
     {
-        private LinkedList<KServerSession> _incomingConnections;
-        private LinkedList<KServerSession> _lightIncomingConnections;
+        private LinkedList<KServerSession>      _incomingConnections;
+        private LinkedList<KLightServerSession> _lightIncomingConnections;
 
         private KPort _parent;
 
@@ -17,16 +17,26 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             _parent = parent;
 
             _incomingConnections      = new LinkedList<KServerSession>();
-            _lightIncomingConnections = new LinkedList<KServerSession>();
+            _lightIncomingConnections = new LinkedList<KLightServerSession>();
         }
 
         public void EnqueueIncomingSession(KServerSession session)
         {
+            AcceptIncomingConnection(_incomingConnections, session);
+        }
+
+        public void EnqueueIncomingLightSession(KLightServerSession session)
+        {
+            AcceptIncomingConnection(_lightIncomingConnections, session);
+        }
+
+        private void AcceptIncomingConnection<T>(LinkedList<T> list, T session)
+        {
             System.CriticalSection.Enter();
 
-            _incomingConnections.AddLast(session);
+            list.AddLast(session);
 
-            if (_incomingConnections.Count == 1)
+            if (list.Count == 1)
             {
                 Signal();
             }
@@ -39,14 +49,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return AcceptIncomingConnection(_incomingConnections);
         }
 
-        public KServerSession AcceptLightIncomingConnection()
+        public KLightServerSession AcceptIncomingLightConnection()
         {
             return AcceptIncomingConnection(_lightIncomingConnections);
         }
 
-        private KServerSession AcceptIncomingConnection(LinkedList<KServerSession> list)
+        private T AcceptIncomingConnection<T>(LinkedList<T> list)
         {
-            KServerSession session = null;
+            T session = default(T);
 
             System.CriticalSection.Enter();
 

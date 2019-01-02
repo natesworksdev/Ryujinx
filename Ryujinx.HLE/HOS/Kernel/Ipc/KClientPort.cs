@@ -12,6 +12,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private KPort _parent;
 
+        public bool IsLight => _parent.IsLight;
+
         private object _countIncLock;
 
         //TODO: Remove that, we need it for now to allow HLE
@@ -65,6 +67,49 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             KernelResult result = _parent.EnqueueIncomingSession(session.ServerSession);
+
+            if (result != KernelResult.Success)
+            {
+                session.ClientSession.DecrementReferenceCount();
+                session.ServerSession.DecrementReferenceCount();
+
+                return result;
+            }
+
+            clientSession = session.ClientSession;
+
+            return result;
+        }
+
+        public KernelResult ConnectLight(out KLightClientSession clientSession)
+        {
+            clientSession = null;
+
+            KProcess currentProcess = System.Scheduler.GetCurrentProcess();
+
+            if (currentProcess.ResourceLimit != null &&
+               !currentProcess.ResourceLimit.Reserve(LimitableResource.Session, 1))
+            {
+                return KernelResult.ResLimitExceeded;
+            }
+
+            lock (_countIncLock)
+            {
+                if (_sessionsCount < _maxSessions)
+                {
+                    _sessionsCount++;
+                }
+                else
+                {
+                    currentProcess.ResourceLimit?.Release(LimitableResource.Session, 1);
+
+                    return KernelResult.SessionCountExceeded;
+                }
+            }
+
+            KLightSession session = new KLightSession(System);
+
+            KernelResult result = _parent.EnqueueIncomingLightSession(session.ServerSession);
 
             if (result != KernelResult.Success)
             {

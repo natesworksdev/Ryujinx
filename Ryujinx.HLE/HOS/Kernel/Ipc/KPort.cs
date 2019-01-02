@@ -45,5 +45,27 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             return result;
         }
+
+        public KernelResult EnqueueIncomingLightSession(KLightServerSession session)
+        {
+            KernelResult result;
+
+            System.CriticalSection.Enter();
+
+            if (_state == ChannelState.Open)
+            {
+                ServerPort.EnqueueIncomingLightSession(session);
+
+                result = KernelResult.Success;
+            }
+            else
+            {
+                result = KernelResult.PortClosed;
+            }
+
+            System.CriticalSection.Leave();
+
+            return result;
+        }
     }
 }
