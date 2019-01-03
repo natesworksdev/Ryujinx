@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services
             }
             else
             {
-                string dbgMessage = $"{context.Session.ServiceName} {service.GetType().Name}: {commandId}";
+                string dbgMessage = $"{service.GetType().FullName}: {commandId}";
 
                 throw new NotImplementedException(dbgMessage);
             }
@@ -131,9 +131,11 @@ namespace Ryujinx.HLE.HOS.Services
             }
             else
             {
-                KSession session = new KSession(obj, context.Session.ServiceName);
+                KSession session = new KSession(context.Device.System);
 
-                if (context.Process.HandleTable.GenerateHandle(session, out int handle) != KernelResult.Success)
+                session.ClientSession.Service = obj;
+
+                if (context.Process.HandleTable.GenerateHandle(session.ClientSession, out int handle) != KernelResult.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }
@@ -150,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Services
             {
                 int handle = context.Request.HandleDesc.ToMove[index];
 
-                KSession session = context.Process.HandleTable.GetObject<KSession>(handle);
+                KClientSession session = context.Process.HandleTable.GetObject<KClientSession>(handle);
 
                 return session?.Service is T ? (T)session.Service : null;
             }
