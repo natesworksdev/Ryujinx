@@ -386,6 +386,75 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _process.MemoryManager.UnmapPhysicalMemory(address, size);
         }
 
+        public KernelResult CreateDeviceAddressSpace64(ulong address, ulong size, out int handle)
+        {
+            return CreateDeviceAddressSpace(address, size, out handle);
+        }
+
+        private KernelResult CreateDeviceAddressSpace(ulong address, ulong size, out int handle)
+        {
+            handle = 0;
+
+            if (!PageAligned(address))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            if (!PageAligned(size) || size == 0 || address + size <= address)
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            KDeviceAddressSpace deviceAs = new KDeviceAddressSpace(_system);
+
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            return currentProcess.HandleTable.GenerateHandle(deviceAs, out handle);
+        }
+
+        public KernelResult AttachDeviceAddressSpace64(DeviceName deviceName, int handle)
+        {
+            return AttachDeviceAddressSpace(deviceName, handle);
+        }
+
+        private KernelResult AttachDeviceAddressSpace(DeviceName deviceName, int handle)
+        {
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            KDeviceAddressSpace deviceAs = currentProcess.HandleTable.GetObject<KDeviceAddressSpace>(handle);
+
+            if (deviceAs == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            return deviceAs.Attach(deviceName);
+        }
+
+        public KernelResult MapDeviceAddressSpace64(
+            int              dasHandle,
+            int              processHandle,
+            ulong            mapAddress,
+            ulong            dasSize,
+            ulong            dasAddress,
+            MemoryPermission permission)
+        {
+            return MapDeviceAddressSpace(dasHandle, processHandle, mapAddress, dasSize, dasAddress, permission);
+        }
+
+        private KernelResult MapDeviceAddressSpace(
+            int              dasHandle,
+            int              processHandle,
+            ulong            mapAddress,
+            ulong            dasSize,
+            ulong            dasAddress,
+            MemoryPermission permission)
+        {
+            //TODO.
+
+            return KernelResult.Success;
+        }
+
         private static bool PageAligned(ulong position)
         {
             return (position & (KMemoryManager.PageSize - 1)) == 0;
