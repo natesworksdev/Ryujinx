@@ -169,20 +169,23 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
             //TODO: Errors.
             int slot            = parcelReader.ReadInt32();
-            int unknown4        = parcelReader.ReadInt32();
-            int unknown8        = parcelReader.ReadInt32();
-            int unknownC        = parcelReader.ReadInt32();
-            int timestamp       = parcelReader.ReadInt32();
-            int isAutoTimestamp = parcelReader.ReadInt32();
+
+            int flatternedObjSize = parcelReader.ReadInt32();
+            int fdCount           = parcelReader.ReadInt32();
+
+            long timestamp       = parcelReader.ReadInt64();
+            int  isAutoTimestamp = parcelReader.ReadInt32();
+
             int cropTop         = parcelReader.ReadInt32();
             int cropLeft        = parcelReader.ReadInt32();
             int cropRight       = parcelReader.ReadInt32();
             int cropBottom      = parcelReader.ReadInt32();
+
             int scalingMode     = parcelReader.ReadInt32();
             int transform       = parcelReader.ReadInt32();
             int stickyTransform = parcelReader.ReadInt32();
             int unknown34       = parcelReader.ReadInt32();
-            int unknown38       = parcelReader.ReadInt32();
+            int swapInterval    = parcelReader.ReadInt32();
             int isFenceValid    = parcelReader.ReadInt32();
             int fence0Id        = parcelReader.ReadInt32();
             int fence0Value     = parcelReader.ReadInt32();
@@ -244,9 +247,9 @@ namespace Ryujinx.HLE.HOS.Services.Android
         {
             int slot = parcelReader.ReadInt32();
 
-            int bufferCount = parcelReader.ReadInt32();
+            bool hasInput = parcelReader.ReadInt32() == 1;
 
-            if (bufferCount > 0)
+            if (hasInput)
             {
                 long bufferSize = parcelReader.ReadInt64();
 
@@ -290,6 +293,11 @@ namespace Ryujinx.HLE.HOS.Services.Android
             int fbHeight = _bufferQueue[slot].Data.Height;
 
             int nvMapHandle  = BitConverter.ToInt32(_bufferQueue[slot].Data.RawData, 0x4c);
+            if (nvMapHandle == 0)
+            {
+                nvMapHandle = BitConverter.ToInt32(_bufferQueue[slot].Data.RawData, 0x4);
+            }
+
             int bufferOffset = BitConverter.ToInt32(_bufferQueue[slot].Data.RawData, 0x50);
 
             NvMapHandle map = NvMapIoctl.GetNvMap(context, nvMapHandle);
