@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -60,6 +61,40 @@ namespace Ryujinx.HLE.HOS.Services.Android
         public long Size;
     }
 
+    [StructLayout(LayoutKind.Explicit)]
+    struct NvGraphicBufferSurfaceArray
+    {
+        [FieldOffset(0x0)]
+        private NvGraphicBufferSurface Surface0;
+
+        [FieldOffset(0x58)]
+        private NvGraphicBufferSurface Surface1;
+
+        [FieldOffset(0xb0)]
+        private NvGraphicBufferSurface Surface2;
+
+        public NvGraphicBufferSurface this[int index]
+        {
+            get
+            {
+                if (index == 0)
+                {
+                    return Surface0;
+                }
+                else if (index == 1)
+                {
+                    return Surface1;
+                }
+                else if (index == 2)
+                {
+                    return Surface2;
+                }
+
+                throw new IndexOutOfRangeException();
+            }
+        }
+    }
+
     [StructLayout(LayoutKind.Explicit, Size = 0x144)]
     struct NvGraphicBuffer
     {
@@ -93,19 +128,8 @@ namespace Ryujinx.HLE.HOS.Services.Android
         [FieldOffset(0x2C)]
         public int PlanesCount;
 
-        // This throw an exception because C# is dumb and want to make every entries of the array appears at the FieldOffset
-        /*[FieldOffset(0x34)]
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        public NvGraphicBufferSurface[] Surfaces;*/
-        
         [FieldOffset(0x34)]
-        public NvGraphicBufferSurface Surface0;
-
-        [FieldOffset(0x8c)]
-        public NvGraphicBufferSurface Surface1;
-
-        [FieldOffset(0xe4)]
-        public NvGraphicBufferSurface Surface2;
+        public NvGraphicBufferSurfaceArray Surfaces;
     }
 
     struct GbpBuffer

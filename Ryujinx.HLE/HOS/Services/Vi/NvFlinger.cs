@@ -385,14 +385,14 @@ namespace Ryujinx.HLE.HOS.Services.Android
             int fbWidth  = _bufferQueue[slot].Data.Header.Width;
             int fbHeight = _bufferQueue[slot].Data.Header.Height;
 
-            int nvMapHandle = _bufferQueue[slot].Data.Buffer.Surface0.NvMapHandle;
+            int nvMapHandle = _bufferQueue[slot].Data.Buffer.Surfaces[0].NvMapHandle;
 
             if (nvMapHandle == 0)
             {
                 nvMapHandle = _bufferQueue[slot].Data.Buffer.NvMapId;
             }
 
-            int bufferOffset = _bufferQueue[slot].Data.Buffer.Surface0.Offset;
+            int bufferOffset = _bufferQueue[slot].Data.Buffer.Surfaces[0].Offset;
 
             NvMapHandle map = NvMapIoctl.GetNvMap(context, nvMapHandle);
 
