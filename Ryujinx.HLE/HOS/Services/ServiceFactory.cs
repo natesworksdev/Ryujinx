@@ -16,6 +16,7 @@ using Ryujinx.HLE.HOS.Services.Nfp;
 using Ryujinx.HLE.HOS.Services.Ns;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Pctl;
+using Ryujinx.HLE.HOS.Services.Pcv;
 using Ryujinx.HLE.HOS.Services.Pl;
 using Ryujinx.HLE.HOS.Services.Prepo;
 using Ryujinx.HLE.HOS.Services.Psm;
@@ -157,6 +158,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                 case "pctl":
                     return new IParentalControlServiceFactory();
+
+                case "pcv":
+                    return new IPcvService();
 
                 case "pl:u":
                     return new ISharedFontManager();

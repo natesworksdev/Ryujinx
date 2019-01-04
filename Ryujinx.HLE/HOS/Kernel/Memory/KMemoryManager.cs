@@ -464,15 +464,72 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        public KernelResult MapNormalMemory(long address, long size, MemoryPermission permission)
+        public KernelResult MapPhysical(ulong address, ulong size, MemoryPermission permission)
         {
             //TODO.
             return KernelResult.Success;
         }
 
-        public KernelResult MapIoMemory(long address, long size, MemoryPermission permission)
+        public KernelResult MapIo(ulong pa, ulong size, MemoryPermission permission)
         {
-            //TODO.
+            ulong endAddr = pa + size;
+
+            if (pa >> 31 <= 4 && (endAddr >> 31) != 0)
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!ValidateIoPhysicalAddress(pa, size))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            ulong neededPagesCount = size / PageSize;
+
+            ulong regionPagesCount = (TlsIoRegionEnd - TlsIoRegionStart) / PageSize;
+
+            if (regionPagesCount < neededPagesCount)
+            {
+                return KernelResult.OutOfMemory;
+            }
+
+            lock (_blocks)
+            {
+                ulong va = 0;
+
+                for (int unit = MappingUnitSizes.Length - 1; unit >= 0 && va == 0; unit--)
+                {
+                    int alignemnt = MappingUnitSizes[unit];
+
+                    va = AllocateVa(TlsIoRegionStart, regionPagesCount, neededPagesCount, alignemnt);
+                }
+
+                if (va == 0)
+                {
+                    return KernelResult.OutOfVaSpace;
+                }
+
+                if (!_blockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                {
+                    return KernelResult.OutOfResource;
+                }
+
+                KernelResult result = DoMmuOperation(
+                    va,
+                    neededPagesCount,
+                    pa,
+                    true,
+                    permission,
+                    MemoryOperation.MapPa);
+
+                if (result != KernelResult.Success)
+                {
+                    return result;
+                }
+
+                InsertBlock(va, neededPagesCount, MemoryState.Io, permission);
+            }
+
             return KernelResult.Success;
         }
 
@@ -938,6 +995,64 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     0,
                     0);
             }
+        }
+
+        public KernelResult QueryIoMapping(ulong pa, ulong size, out ulong va)
+        {
+            va = 0;
+
+            KernelResult result = KernelResult.NotFound;
+
+            ulong paEnd = pa + size;
+
+            ulong tlsIoRegionSize = TlsIoRegionEnd - TlsIoRegionStart;
+
+            lock (_blocks)
+            {
+                ulong offset = 0;
+
+                foreach ((long mapPa, long mapSize) in _cpuMemory.IteratePages((long)TlsIoRegionStart))
+                {
+                    ulong mapPaEnd = (ulong)mapPa + (ulong)mapSize;
+
+                    if ((ulong)mapPa <= pa && paEnd <= mapPaEnd)
+                    {
+                        ulong paSubOffs = pa - (ulong)mapPa;
+
+                        ulong ioAddr = TlsIoRegionStart + offset + paSubOffs;
+
+                        if (CheckRange(
+                            ioAddr,
+                            size,
+                            MemoryState.Mask,
+                            MemoryState.Io,
+                            MemoryPermission.Read,
+                            MemoryPermission.Read,
+                            MemoryAttribute.None,
+                            MemoryAttribute.None,
+                            MemoryAttribute.IpcAndDeviceMapped,
+                            out _,
+                            out _,
+                            out _))
+                        {
+                            va = ioAddr;
+
+                            result = KernelResult.Success;
+                        }
+
+                        break;
+                    }
+
+                    offset += (ulong)mapSize;
+
+                    if (offset >= tlsIoRegionSize)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
 
         public KernelResult Map(ulong dst, ulong src, ulong size)
@@ -1958,6 +2073,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             mappedVa = 0;
 
+            if (AliasRegionEnd - AliasRegionStart <= size)
+            {
+                return KernelResult.OutOfVaSpace;
+            }
+
             lock (_blocks)
             {
                 if (!_blockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
@@ -2718,16 +2838,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             ulong regionEndAddr = regionStart + regionPagesCount * PageSize;
 
-            LinkedListNode<KMemoryBlock> node = FindBlockNode(regionStart);
-
-            KMemoryInfo info = node.Value.GetInfo();
-
-            while (regionEndAddr >= info.Address)
+            foreach (KMemoryInfo info in IterateOverRange(regionStart, regionEndAddr))
             {
                 if (info.State == MemoryState.Unmapped)
                 {
-                    ulong currBaseAddr = info.Address + reservedSize;
-                    ulong currEndAddr  = info.Address + info.Size - 1;
+                    ulong currBaseAddr = GetAddrInRange(info, regionStart) + reservedSize;
 
                     ulong address = BitUtils.AlignDown(currBaseAddr, alignment) + reservedStart;
 
@@ -2738,22 +2853,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     ulong allocationEndAddr = address + totalNeededSize - 1;
 
-                    if (allocationEndAddr <= regionEndAddr &&
-                        allocationEndAddr <= currEndAddr   &&
+                    ulong currEndAddr = info.Address + info.Size - 1;
+
+                    if (allocationEndAddr <= regionEndAddr - 1 &&
+                        allocationEndAddr <= currEndAddr       &&
                         address           <  allocationEndAddr)
                     {
                         return address;
                     }
                 }
-
-                node = node.Next;
-
-                if (node == null)
-                {
-                    break;
-                }
-
-                info = node.Value.GetInfo();
             }
 
             return 0;
@@ -2786,6 +2894,60 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
 
             return null;
+        }
+
+        private static bool ValidateIoPhysicalAddress(ulong pa, ulong size)
+        {
+            //Size would cause an overflow (or the address is invalid).
+            if (pa + size < pa)
+            {
+                return false;
+            }
+
+            ulong endAddr = pa + size - 1;
+
+            //ARM registers, interrupt controller, etc region.
+            if (0x50040000 <= endAddr && pa <= 0x5005ffff)
+            {
+                return false;
+            }
+
+            //Check exception vectors region.
+            if (0x6000f000 <= endAddr && pa <= 0x6000ffff)
+            {
+                return false;
+            }
+
+            //Check IPATCH region.
+            if (0x6001dc00 <= endAddr && pa <= 0x6001dfff)
+            {
+                return false;
+            }
+
+            //MC region.
+            if (0x70019000 <= endAddr && pa <= 0x70019fff)
+            {
+                return false;
+            }
+
+            //RTC and PMC region.
+            if (0x7000e000 <= endAddr && pa <= 0x7000efff)
+            {
+                return false;
+            }
+
+            //MC0 and MC1 region.
+            if (0x7001c000 <= endAddr && pa <= 0x7001dfff)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool InsideRange(ulong start, ulong end, ulong rgStart, ulong rgEnd)
+        {
+            return start <= rgEnd && rgStart <= end;
         }
 
         private bool ValidateRegionForState(ulong address, ulong size, MemoryState state)
@@ -3038,7 +3200,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 {
                     ulong size = pagesCount * PageSize;
 
-                    _cpuMemory.Map((long)dstVa, (long)(srcPa - DramMemoryMap.DramBase), (long)size);
+                    MapMemoryOrIo(dstVa, srcPa, size);
 
                     result = KernelResult.Success;
 
@@ -3105,7 +3267,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             {
                 ulong size = pageNode.PagesCount * PageSize;
 
-                _cpuMemory.Map((long)address, (long)(pageNode.Address - DramMemoryMap.DramBase), (long)size);
+                MapMemoryOrIo(address, pageNode.Address, size);
 
                 address += size;
             }
@@ -3113,14 +3275,28 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return KernelResult.Success;
         }
 
+        private void MapMemoryOrIo(ulong va, ulong pa, ulong size)
+        {
+            if (pa >= DramMemoryMap.DramBase)
+            {
+                IntPtr ptr = _system.Device.Memory.GetRamPointer(pa - DramMemoryMap.DramBase, size);
+
+                _cpuMemory.Map((long)va, (long)pa, ptr, (long)size);
+            }
+            else
+            {
+                _cpuMemory.Map((long)va, (long)pa, IntPtr.Zero, (long)size);
+            }
+        }
+
         public ulong GetDramAddressFromVa(ulong va)
         {
-            return (ulong)_cpuMemory.GetPhysicalAddress((long)va);
+            return (ulong)_cpuMemory.GetPhysicalAddress((long)va) - DramMemoryMap.DramBase;
         }
 
         public bool ConvertVaToPa(ulong va, out ulong pa)
         {
-            pa = DramMemoryMap.DramBase + (ulong)_cpuMemory.GetPhysicalAddress((long)va);
+            pa = (ulong)_cpuMemory.GetPhysicalAddress((long)va);
 
             return true;
         }

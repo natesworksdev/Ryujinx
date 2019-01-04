@@ -4,14 +4,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KReadableEvent : KSynchronizationObject
     {
-        private KEvent _parent;
-
         private bool _signaled;
 
-        public KReadableEvent(Horizon system, KEvent parent) : base(system)
-        {
-            _parent = parent;
-        }
+        public KReadableEvent(Horizon system) : base(system) { }
 
         public override void Signal()
         {

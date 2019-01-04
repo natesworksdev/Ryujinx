@@ -45,29 +45,33 @@ namespace ChocolArm64.Memory
 
         private Dictionary<int, ArmMonitor> _monitors;
 
-        private ConcurrentDictionary<long, IntPtr> _observedPages;
+        private ConcurrentDictionary<long, Pte> _observedPages;
 
-        public IntPtr Ram { get; private set; }
+        private IBus _bus;
 
-        private byte* _ramPtr;
+        private struct Pte
+        {
+            public byte* ptr;
 
-        private byte*** _pageTable;
+            public long pa;
+
+            public bool IsUnmapped => ptr == null && pa == 0;
+        }
+
+        private Pte** _pageTable;
 
         public event EventHandler<MemoryAccessEventArgs> InvalidAccess;
-
         public event EventHandler<MemoryAccessEventArgs> ObservedAccess;
 
-        public MemoryManager(IntPtr ram)
+        public MemoryManager(IBus bus = null)
         {
             _monitors = new Dictionary<int, ArmMonitor>();
 
-            _observedPages = new ConcurrentDictionary<long, IntPtr>();
+            _observedPages = new ConcurrentDictionary<long, Pte>();
 
-            Ram = ram;
+            _bus = bus;
 
-            _ramPtr = (byte*)ram;
-
-            _pageTable = (byte***)Marshal.AllocHGlobal(PtLvl0Size * IntPtr.Size);
+            _pageTable = (Pte**)Marshal.AllocHGlobal(PtLvl0Size * IntPtr.Size);
 
             for (int l0 = 0; l0 < PtLvl0Size; l0++)
             {
@@ -197,14 +201,48 @@ namespace ChocolArm64.Memory
 
         public byte ReadByte(long position)
         {
-            return *((byte*)Translate(position));
+            Pte pte = GetPtEntry(position);
+
+            long pageOffset = position & PageMask;
+
+            if (pte.ptr != null)
+            {
+                return *((byte*)(pte.ptr + pageOffset));
+            }
+            else if (pte.pa != 0)
+            {
+                return _bus?.ReadByte((ulong)(pte.pa + pageOffset)) ?? 0;
+            }
+            else
+            {
+                InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+
+                return 0;
+            }
         }
 
         public ushort ReadUInt16(long position)
         {
             if ((position & 1) == 0)
             {
-                return *((ushort*)Translate(position));
+                Pte pte = GetPtEntry(position);
+
+                long pageOffset = position & PageMask;
+
+                if (pte.ptr != null)
+                {
+                    return *((ushort*)(pte.ptr + pageOffset));
+                }
+                else if (pte.pa != 0)
+                {
+                    return _bus?.ReadUInt16((ulong)(pte.pa + pageOffset)) ?? 0;
+                }
+                else
+                {
+                    InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+
+                    return 0;
+                }
             }
             else
             {
@@ -217,7 +255,24 @@ namespace ChocolArm64.Memory
         {
             if ((position & 3) == 0)
             {
-                return *((uint*)Translate(position));
+                Pte pte = GetPtEntry(position);
+
+                long pageOffset = position & PageMask;
+
+                if (pte.ptr != null)
+                {
+                    return *((uint*)(pte.ptr + pageOffset));
+                }
+                else if (pte.pa != 0)
+                {
+                    return _bus?.ReadUInt32((ulong)(pte.pa + pageOffset)) ?? 0;
+                }
+                else
+                {
+                    InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+
+                    return 0;
+                }
             }
             else
             {
@@ -230,7 +285,24 @@ namespace ChocolArm64.Memory
         {
             if ((position & 7) == 0)
             {
-                return *((ulong*)Translate(position));
+                Pte pte = GetPtEntry(position);
+
+                long pageOffset = position & PageMask;
+
+                if (pte.ptr != null)
+                {
+                    return *((ulong*)(pte.ptr + pageOffset));
+                }
+                else if (pte.pa != 0)
+                {
+                    return _bus?.ReadUInt64((ulong)(pte.pa + pageOffset)) ?? 0;
+                }
+                else
+                {
+                    InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+
+                    return 0;
+                }
             }
             else
             {
@@ -419,14 +491,44 @@ namespace ChocolArm64.Memory
 
         public void WriteByte(long position, byte value)
         {
-            *((byte*)TranslateWrite(position)) = value;
+            Pte pte = GetPtEntryForWrite(position);
+
+            long pageOffset = position & PageMask;
+
+            if (pte.ptr != null)
+            {
+                *((byte*)(pte.ptr + pageOffset)) = value;
+            }
+            else if (pte.pa != 0)
+            {
+                _bus?.WriteByte((ulong)(pte.pa + pageOffset), value);
+            }
+            else
+            {
+                InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+            }
         }
 
         public void WriteUInt16(long position, ushort value)
         {
             if ((position & 1) == 0)
             {
-                *((ushort*)TranslateWrite(position)) = value;
+                Pte pte = GetPtEntryForWrite(position);
+
+                long pageOffset = position & PageMask;
+
+                if (pte.ptr != null)
+                {
+                    *((ushort*)(pte.ptr + pageOffset)) = value;
+                }
+                else if (pte.pa != 0)
+                {
+                    _bus?.WriteUInt16((ulong)(pte.pa + pageOffset), value);
+                }
+                else
+                {
+                    InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+                }
             }
             else
             {
@@ -439,7 +541,22 @@ namespace ChocolArm64.Memory
         {
             if ((position & 3) == 0)
             {
-                *((uint*)TranslateWrite(position)) = value;
+                Pte pte = GetPtEntryForWrite(position);
+
+                long pageOffset = position & PageMask;
+
+                if (pte.ptr != null)
+                {
+                    *((uint*)(pte.ptr + pageOffset)) = value;
+                }
+                else if (pte.pa != 0)
+                {
+                    _bus?.WriteUInt32((ulong)(pte.pa + pageOffset), value);
+                }
+                else
+                {
+                    InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+                }
             }
             else
             {
@@ -452,7 +569,22 @@ namespace ChocolArm64.Memory
         {
             if ((position & 7) == 0)
             {
-                *((ulong*)TranslateWrite(position)) = value;
+                Pte pte = GetPtEntryForWrite(position);
+
+                long pageOffset = position & PageMask;
+
+                if (pte.ptr != null)
+                {
+                    *((ulong*)(pte.ptr + pageOffset)) = value;
+                }
+                else if (pte.pa != 0)
+                {
+                    _bus?.WriteUInt64((ulong)(pte.pa + pageOffset), value);
+                }
+                else
+                {
+                    InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+                }
             }
             else
             {
@@ -607,14 +739,14 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public void Map(long va, long pa, long size)
+        public void Map(long va, long pa, IntPtr ptr, long size)
         {
-            SetPtEntries(va, _ramPtr + pa, size);
+            SetPtEntries(va, pa, (byte*)ptr, size);
         }
 
         public void Unmap(long position, long size)
         {
-            SetPtEntries(position, null, size);
+            SetPtEntries(position, 0, null, size);
 
             StopObservingRegion(position, size);
         }
@@ -634,14 +766,64 @@ namespace ChocolArm64.Memory
                 return false;
             }
 
-            return _pageTable[l0][l1] != null || _observedPages.ContainsKey(position >> PageBits);
+            return _pageTable[l0][l1].ptr != null || _observedPages.ContainsKey(position >> PageBits);
+        }
+
+        public IEnumerable<(long, long)> IteratePages(long address)
+        {
+            long l0 = (address >> PtLvl0Bit) & PtLvl0Mask;
+            long l1 = (address >> PtLvl1Bit) & PtLvl1Mask;
+
+            long currPa = 0;
+            long size   = 0;
+
+            for (; l0 < PtLvl0Size; l0++, l1 = 0)
+            {
+                if (IsL0Null((int)l0))
+                {
+                    if (currPa != 0)
+                    {
+                        yield return (currPa, size);
+
+                        currPa = 0;
+                        size   = 0;
+                    }
+
+                    size += PtLvl1Size * PageSize;
+
+                    continue;
+                }
+
+                for (; l1 < PtLvl1Size; l1++)
+                {
+                    Pte pte = GetPtEntry((l0 << PtLvl0Bit) | (l1 << PtLvl1Bit));
+
+                    if ((currPa != 0 || pte.pa != 0) && pte.pa != currPa + size)
+                    {
+                        yield return (currPa, size);
+
+                        currPa = pte.pa;
+                        size   = 0;
+                    }
+
+                    size += PageSize;
+                }
+            }
+
+            if (size != 0)
+            {
+                yield return (currPa, size);
+            }
+        }
+
+        private bool IsL0Null(int l0)
+        {
+            return _pageTable[l0] == null;
         }
 
         public long GetPhysicalAddress(long virtualAddress)
         {
-            byte* ptr = Translate(virtualAddress);
-
-            return (long)(ptr - _ramPtr);
+            return GetPtEntry(virtualAddress).pa + (virtualAddress & PageMask);
         }
 
         internal byte* Translate(long position)
@@ -651,7 +833,7 @@ namespace ChocolArm64.Memory
 
             long old = position;
 
-            byte** lvl1 = _pageTable[l0];
+            Pte* lvl1 = _pageTable[l0];
 
             if ((position >> (PtLvl0Bit + PtLvl0Bits)) != 0)
             {
@@ -665,7 +847,7 @@ namespace ChocolArm64.Memory
 
             position &= PageMask;
 
-            byte* ptr = lvl1[l1];
+            byte* ptr = lvl1[l1].ptr;
 
             if (ptr == null)
             {
@@ -682,9 +864,9 @@ Unmapped:
         {
             long key = position >> PageBits;
 
-            if (_observedPages.TryGetValue(key, out IntPtr ptr))
+            if (_observedPages.TryGetValue(key, out Pte pte))
             {
-                return (byte*)ptr + (position & PageMask);
+                return pte.ptr + (position & PageMask);
             }
 
             InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
@@ -699,7 +881,7 @@ Unmapped:
 
             long old = position;
 
-            byte** lvl1 = _pageTable[l0];
+            Pte* lvl1 = _pageTable[l0];
 
             if ((position >> (PtLvl0Bit + PtLvl0Bits)) != 0)
             {
@@ -713,7 +895,7 @@ Unmapped:
 
             position &= PageMask;
 
-            byte* ptr = lvl1[l1];
+            byte* ptr = lvl1[l1].ptr;
 
             if (ptr == null)
             {
@@ -728,17 +910,17 @@ Unmapped:
 
         private byte* HandleNullPteWrite(long position)
         {
-            long key = position >> PageBits;
-
             MemoryAccessEventArgs e = new MemoryAccessEventArgs(position);
 
-            if (_observedPages.TryGetValue(key, out IntPtr ptr))
+            long key = position >> PageBits;
+
+            if (_observedPages.TryGetValue(key, out Pte pte))
             {
-                SetPtEntry(position, (byte*)ptr);
+                SetPtEntry(position, pte.pa, pte.ptr);
 
                 ObservedAccess?.Invoke(this, e);
 
-                return (byte*)ptr + (position & PageMask);
+                return (byte*)pte.ptr + (position & PageMask);
             }
 
             InvalidAccess?.Invoke(this, e);
@@ -746,15 +928,87 @@ Unmapped:
             throw new VmmPageFaultException(position);
         }
 
-        private void SetPtEntries(long va, byte* ptr, long size)
+        private Pte GetPtEntry(long position)
+        {
+            long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
+            long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
+
+            long old = position;
+
+            Pte* lvl1 = _pageTable[l0];
+
+            if ((position >> (PtLvl0Bit + PtLvl0Bits)) != 0)
+            {
+                return default(Pte);
+            }
+
+            if (lvl1 == null)
+            {
+                return default(Pte);
+            }
+
+            position &= PageMask;
+
+            Pte pte = lvl1[l1];
+
+            if (pte.IsUnmapped && !_observedPages.TryGetValue(old >> PageBits, out pte))
+            {
+                return default(Pte);
+            }
+
+            return pte;
+        }
+
+        private Pte GetPtEntryForWrite(long position)
+        {
+            long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
+            long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
+
+            long old = position;
+
+            Pte* lvl1 = _pageTable[l0];
+
+            if ((position >> (PtLvl0Bit + PtLvl0Bits)) != 0)
+            {
+                return default(Pte);
+            }
+
+            if (lvl1 == null)
+            {
+                return default(Pte);
+            }
+
+            position &= PageMask;
+
+            Pte pte = lvl1[l1];
+
+            if (pte.IsUnmapped)
+            {
+                if (!_observedPages.TryGetValue(old >> PageBits, out pte))
+                {
+                    return default(Pte);
+                }
+                else
+                {
+                    SetPtEntry(position, pte.pa, pte.ptr);
+
+                    ObservedAccess?.Invoke(this, new MemoryAccessEventArgs(position));
+                }
+            }
+
+            return pte;
+        }
+
+        private void SetPtEntries(long va, long pa, byte* ptr, long size)
         {
             long endPosition = (va + size + PageMask) & ~PageMask;
 
             while ((ulong)va < (ulong)endPosition)
             {
-                SetPtEntry(va, ptr);
+                SetPtEntry(va, pa, ptr);
 
                 va += PageSize;
+                pa += PageSize;
 
                 if (ptr != null)
                 {
@@ -763,7 +1017,7 @@ Unmapped:
             }
         }
 
-        private void SetPtEntry(long position, byte* ptr)
+        private void SetPtEntry(long position, long pa, byte* ptr)
         {
             if (!IsValidPosition(position))
             {
@@ -775,11 +1029,11 @@ Unmapped:
 
             if (_pageTable[l0] == null)
             {
-                byte** lvl1 = (byte**)Marshal.AllocHGlobal(PtLvl1Size * IntPtr.Size);
+                Pte* lvl1 = (Pte*)Marshal.AllocHGlobal(PtLvl1Size * sizeof(Pte));
 
                 for (int zl1 = 0; zl1 < PtLvl1Size; zl1++)
                 {
-                    lvl1[zl1] = null;
+                    lvl1[zl1] = default(Pte);
                 }
 
                 Thread.MemoryBarrier();
@@ -787,7 +1041,8 @@ Unmapped:
                 _pageTable[l0] = lvl1;
             }
 
-            _pageTable[l0][l1] = ptr;
+            _pageTable[l0][l1].ptr = ptr;
+            _pageTable[l0][l1].pa  = pa;
         }
 
         public void StartObservingRegion(long position, long size)
@@ -798,9 +1053,9 @@ Unmapped:
 
             while ((ulong)position < (ulong)endPosition)
             {
-                _observedPages[position >> PageBits] = (IntPtr)Translate(position);
+                _observedPages[position >> PageBits] = GetPtEntry(position);
 
-                SetPtEntry(position, null);
+                SetPtEntry(position, 0, null);
 
                 position += PageSize;
             }
@@ -814,9 +1069,9 @@ Unmapped:
             {
                 lock (_observedPages)
                 {
-                    if (_observedPages.TryRemove(position >> PageBits, out IntPtr ptr))
+                    if (_observedPages.TryRemove(position >> PageBits, out Pte pte))
                     {
-                        SetPtEntry(position, (byte*)ptr);
+                        SetPtEntry(position, pte.pa, pte.ptr);
                     }
                 }
 

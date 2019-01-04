@@ -113,6 +113,24 @@ namespace Ryujinx.HLE
             }
         }
 
+        public IntPtr GetRamPointer(ulong address, ulong size)
+        {
+            if (address + size < address)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+
+            if (address + size > RamSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(address));
+            }
+
+            unsafe
+            {
+                return new IntPtr(_ramPtr + address);
+            }
+        }
+
         public void Set(ulong address, byte value, ulong size)
         {
             if (address + size < address)

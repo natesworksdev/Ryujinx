@@ -1,6 +1,7 @@
 using ChocolArm64;
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
+using Luea.Devices;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -91,7 +92,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _processLock   = new object();
             _threadingLock = new object();
 
-            CpuMemory = new MemoryManager(system.Device.Memory.RamPointer);
+            DummyDevice device = new DummyDevice();
+
+            CpuMemory = new MemoryManager(device);
 
             CpuMemory.InvalidAccess += InvalidAccessHandler;
 
@@ -1010,6 +1013,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private void InvalidAccessHandler(object sender, MemoryAccessEventArgs e)
         {
             PrintCurrentThreadStackTrace();
+
+            throw new Exception($"Attempted to access unmapped address 0x{e.VirtualAddress:X16}.");
         }
 
         public void PrintCurrentThreadStackTrace()

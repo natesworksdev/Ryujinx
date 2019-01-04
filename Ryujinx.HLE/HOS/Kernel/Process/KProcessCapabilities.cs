@@ -83,8 +83,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         return KernelResult.InvalidSize;
                     }
 
-                    long address = ((long)(uint)prevCap << 5) & 0xffffff000;
-                    long size    = ((long)(uint)cap     << 5) & 0xfffff000;
+                    ulong address = ((ulong)(uint)prevCap << 5) & 0xffffff000;
+                    ulong size    = ((ulong)(uint)cap     << 5) & 0xfffff000;
 
                     if (((ulong)(address + size - 1) >> 36) != 0)
                     {
@@ -99,11 +99,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                     if ((cap >> 31) != 0)
                     {
-                        result = memoryManager.MapNormalMemory(address, size, perm);
+                        result = memoryManager.MapPhysical(address, size, perm);
                     }
                     else
                     {
-                        result = memoryManager.MapIoMemory(address, size, perm);
+                        result = memoryManager.MapIo(address, size, perm);
                     }
 
                     if (result != KernelResult.Success)
@@ -214,9 +214,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 case 0x80:
                 {
-                    long address = ((long)(uint)cap << 4) & 0xffffff000;
+                    ulong address = ((ulong)(uint)cap << 4) & 0xffffff000;
 
-                    memoryManager.MapIoMemory(address, KMemoryManager.PageSize, MemoryPermission.ReadAndWrite);
+                    memoryManager.MapIo(address, KMemoryManager.PageSize, MemoryPermission.ReadAndWrite);
 
                     break;
                 }

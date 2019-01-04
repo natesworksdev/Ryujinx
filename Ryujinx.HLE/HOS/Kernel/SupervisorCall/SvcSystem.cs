@@ -3,6 +3,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.HOS.Kernel.Interrupt;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
@@ -463,6 +464,37 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             return result;
+        }
+
+        public KernelResult CreateInterruptEvent64(int irqId, uint flags, out int handle)
+        {
+            return CreateInterruptEvent(irqId, flags, out handle);
+        }
+
+        private KernelResult CreateInterruptEvent(int irqId, uint flags, out int handle)
+        {
+            handle = 0;
+
+            if (flags > 1)
+            {
+                return KernelResult.InvalidEnumValue;
+            }
+
+            if ((uint)irqId > 0x3ff)
+            {
+                return KernelResult.NotFound;
+            }
+
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            if ((currentProcess.Capabilities.IrqAccessMask[irqId / 8] & (1 << (irqId & 7))) == 0)
+            {
+                return KernelResult.NotFound;
+            }
+
+            KInterruptEvent interruptEvent = new KInterruptEvent(_system);
+
+            return currentProcess.HandleTable.GenerateHandle(interruptEvent.Event, out handle);
         }
 
         public KernelResult GetProcessList64(ulong address, int maxCount, out int count)

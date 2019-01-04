@@ -26,14 +26,14 @@ namespace Ryujinx.Graphics.Memory
 
         private void MemoryAccessHandler(object sender, MemoryAccessEventArgs e)
         {
-            long pa = _memory.GetPhysicalAddress(e.Position);
+            long pa = _memory.GetPhysicalAddress(e.VirtualAddress) - 0x80000000;
 
             CachedPages[pa >> PageBits]?.Clear();
         }
 
         public bool IsRegionModified(long position, long size, NvGpuBufferType bufferType)
         {
-            long pa = _memory.GetPhysicalAddress(position);
+            long pa = _memory.GetPhysicalAddress(position) - 0x80000000;
 
             long addr = pa;
 

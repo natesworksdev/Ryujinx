@@ -386,6 +386,30 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _process.MemoryManager.UnmapPhysicalMemory(address, size);
         }
 
+        public KernelResult QueryIoMapping64(ulong pa, ulong size, out ulong va)
+        {
+            return QueryIoMapping(pa, size, out va);
+        }
+
+        private KernelResult QueryIoMapping(ulong pa, ulong size, out ulong va)
+        {
+            va = 0;
+
+            if (size == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (pa + size <= pa)
+            {
+                return KernelResult.NotFound;
+            }
+
+            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+
+            return currentProcess.MemoryManager.QueryIoMapping(pa, size, out va);
+        }
+
         public KernelResult CreateDeviceAddressSpace64(ulong address, ulong size, out int handle)
         {
             return CreateDeviceAddressSpace(address, size, out handle);
@@ -431,7 +455,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return deviceAs.Attach(deviceName);
         }
 
-        public KernelResult MapDeviceAddressSpace64(
+        public KernelResult MapDeviceAddressSpaceByForce64(
             int              dasHandle,
             int              processHandle,
             ulong            mapAddress,

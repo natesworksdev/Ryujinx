@@ -6,4 +6,8 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ChocolArm64\ChocolArm64.csproj" />
+  </ItemGroup>
+
 </Project>

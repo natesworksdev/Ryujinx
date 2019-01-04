@@ -31,6 +31,7 @@ namespace Ryujinx.Common.Logging
         ServiceNs,
         ServiceNv,
         ServicePctl,
+        ServicePcv,
         ServicePl,
         ServicePrepo,
         ServicePsm,

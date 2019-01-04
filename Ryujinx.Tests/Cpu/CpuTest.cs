@@ -50,8 +50,8 @@ namespace Ryujinx.Tests.Cpu
 
             Translator translator = new Translator();
             _ramPointer = Marshal.AllocHGlobal(new IntPtr(_size));
-            _memory = new MemoryManager(_ramPointer);
-            _memory.Map(Position, 0, _size);
+            _memory = new MemoryManager();
+            _memory.Map(Position, Position, _ramPointer, _size);
             _thread = new CpuThread(translator, _memory, _entryPoint);
 
             if (_unicornAvailable)
