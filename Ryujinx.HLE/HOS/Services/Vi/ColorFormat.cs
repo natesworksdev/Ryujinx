@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ryujinx.HLE.HOS.Services.Android
+﻿namespace Ryujinx.HLE.HOS.Services.Android
 {
     class ColorShift
     {
@@ -59,22 +55,22 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
     enum ColorComponent : uint
     {
-        X1           = (0x1 << ColorShift.Component)  | ColorBytePerPixel.Bpp1,
-        X2           = (0x2 << ColorShift.Component)  | ColorBytePerPixel.Bpp2,
-        X4           = (0x3 << ColorShift.Component)  | ColorBytePerPixel.Bpp4,
-        X8           = (0x4 << ColorShift.Component)  | ColorBytePerPixel.Bpp8,
-        Y4X4         = (0x5 << ColorShift.Component)  | ColorBytePerPixel.Bpp8,
-        X3Y3Z2       = (0x6 << ColorShift.Component)  | ColorBytePerPixel.Bpp8,
-        X8Y8         = (0x7 << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        X8Y8X8Z8     = (0x8 << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        Y8X8Z8X8     = (0x9 << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        X16          = (0xA << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        Y2X14        = (0xB << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        Y4X12        = (0xC << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        Y6X10        = (0xD << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        Y8X8         = (0xE << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        X10          = (0xF << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
-        X12          = (0x10 << ColorShift.Component)  | ColorBytePerPixel.Bpp16,
+        X1           = (0x01 << ColorShift.Component) | ColorBytePerPixel.Bpp1,
+        X2           = (0x02 << ColorShift.Component) | ColorBytePerPixel.Bpp2,
+        X4           = (0x03 << ColorShift.Component) | ColorBytePerPixel.Bpp4,
+        X8           = (0x04 << ColorShift.Component) | ColorBytePerPixel.Bpp8,
+        Y4X4         = (0x05 << ColorShift.Component) | ColorBytePerPixel.Bpp8,
+        X3Y3Z2       = (0x06 << ColorShift.Component) | ColorBytePerPixel.Bpp8,
+        X8Y8         = (0x07 << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        X8Y8X8Z8     = (0x08 << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        Y8X8Z8X8     = (0x09 << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        X16          = (0x0A << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        Y2X14        = (0x0B << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        Y4X12        = (0x0C << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        Y6X10        = (0x0D << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        Y8X8         = (0x0E << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        X10          = (0x0F << ColorShift.Component) | ColorBytePerPixel.Bpp16,
+        X12          = (0x10 << ColorShift.Component) | ColorBytePerPixel.Bpp16,
         Z5Y5X6       = (0x11 << ColorShift.Component) | ColorBytePerPixel.Bpp16,
         X5Y6Z5       = (0x12 << ColorShift.Component) | ColorBytePerPixel.Bpp16,
         X6Y5Z5       = (0x13 << ColorShift.Component) | ColorBytePerPixel.Bpp16,
@@ -106,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
     enum ColorSpace : ulong
     {
-        NonColor    = 0x0L  << ColorShift.Space,
+        NonColor    = 0x0L << ColorShift.Space,
         LinearRGBA  = 0x1L << ColorShift.Space,
         SRGB        = 0x2L << ColorShift.Space,
 
@@ -126,7 +122,6 @@ namespace Ryujinx.HLE.HOS.Services.Android
         YCbCr709    = 0xDL << ColorShift.Space,
 
         UnknownE    = 0xEL << ColorShift.Space,
-
 
         BayerRGGB   = 0x10L << ColorShift.Space,
         BayerBGGR   = 0x11L << ColorShift.Space,
