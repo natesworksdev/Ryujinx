@@ -398,6 +398,8 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
             GalImageFormat imageFormat = ConvertColorFormat(_bufferQueue[slot].Data.Buffer.Surfaces[0].ColorFormat);
 
+            int BlockHeight = 1 << _bufferQueue[slot].Data.Buffer.Surfaces[0].BlockHeightLog2;
+
             //Note: Rotation is being ignored.
 
             int top    = crop.Top;
@@ -413,7 +415,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
                 {
                     image = new GalImage(
                         fbWidth,
-                        fbHeight, 1, 16,
+                        fbHeight, 1, BlockHeight,
                         GalMemoryLayout.BlockLinear,
                         imageFormat);
                 }
