@@ -411,8 +411,10 @@ namespace Ryujinx.Graphics.Graphics3d
         private void SetScissor(GalPipelineState State)
         {
             int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight);
-            State.ScissorTestCount = 1; // FIXME: Stubbed, only the first scissor test is valid without a geometry shader loaded. At time of writing geometry shaders are also stubbed.
-                                        // Once geometry shaders are fixed it should be equal to GalPipelineState.RenderTargetCount when shader loaded, otherwise equal to 1
+
+            // FIXME: Stubbed, only the first scissor test is valid without a geometry shader loaded. At time of writing geometry shaders are also stubbed.
+            // Once geometry shaders are fixed it should be equal to GalPipelineState.RenderTargetCount when shader loaded, otherwise equal to 1
+            State.ScissorTestCount = 1;
 
             for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
             {
