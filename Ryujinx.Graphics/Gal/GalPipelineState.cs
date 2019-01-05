@@ -116,7 +116,7 @@
                 ConstBufferKeys[Stage] = new long[ConstBuffersPerStage];
             }
 
-            Blends              = new BlendState[RenderTargetsCount];
+            Blends = new BlendState[RenderTargetsCount];
 
             ScissorTestEnabled  = new bool[RenderTargetsCount];
             ScissorTestY        = new int[RenderTargetsCount];
@@ -124,7 +124,7 @@
             ScissorTestWidth    = new int[RenderTargetsCount];
             ScissorTestHeight   = new int[RenderTargetsCount];
 
-            ColorMasks          = new ColorMaskState[RenderTargetsCount];
+            ColorMasks = new ColorMaskState[RenderTargetsCount];
         }
     }
 }
