@@ -282,7 +282,15 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 {
                     if (New.ScissorTestEnabled[Index])
                     {
-                        GL.Enable(IndexedEnableCap.ScissorTest, Index);
+                        // If there is only 1 scissor test geometry shaders are disables so the scissor test applies to all viewports
+                        if (New.ScissorTestCount == 1)
+                        {
+                            GL.Enable(EnableCap.ScissorTest);
+                        }
+                        else
+                        {
+                            GL.Enable(IndexedEnableCap.ScissorTest, Index);
+                        }
                         forceUpdate = true;
                     }
                     else
