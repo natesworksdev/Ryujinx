@@ -298,8 +298,17 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     New.ScissorTestHeight[Index] != Old.ScissorTestHeight[Index] ||
                     forceUpdate)) // Force update intentionally last to reduce if comparisons
                 {
-                    GL.ScissorIndexed(Index, New.ScissorTestX[Index], New.ScissorTestY[Index],
-                                             New.ScissorTestWidth[Index], New.ScissorTestHeight[Index]);
+                    // If there is only 1 scissor test geometry shaders are disables so the scissor test applies to all viewports
+                    if (New.ScissorTestCount == 1)
+                    {
+                        GL.Scissor(New.ScissorTestX[Index], New.ScissorTestY[Index],
+                                   New.ScissorTestWidth[Index], New.ScissorTestHeight[Index]);
+                    }
+                    else
+                    {
+                        GL.ScissorIndexed(Index, New.ScissorTestX[Index], New.ScissorTestY[Index],
+                                                 New.ScissorTestWidth[Index], New.ScissorTestHeight[Index]);
+                    }
                 }
             }
 
