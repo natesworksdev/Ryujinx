@@ -379,6 +379,21 @@ namespace Ryujinx.HLE.HOS.Services.Android
             return 0;
         }
 
+        private GalImageFormat ConvertColorFormat(ColorFormat colorFormat)
+        {
+            switch (colorFormat)
+            {
+                case ColorFormat.A8B8G8R8:
+                    return GalImageFormat.RGBA8 | GalImageFormat.Unorm;
+                case ColorFormat.X8B8G8R8:
+                    return GalImageFormat.RGBX8 | GalImageFormat.Unorm;
+                case ColorFormat.R5G6B5:
+                    return GalImageFormat.RGB565 | GalImageFormat.Unorm;
+                default:
+                    throw new NotImplementedException($"Color Format \"{colorFormat}\" not implemented!");
+            }
+        }
+
         // TODO: support multi surface
         private void SendFrameBuffer(ServiceCtx context, int slot)
         {
@@ -405,12 +420,15 @@ namespace Ryujinx.HLE.HOS.Services.Android
             bool flipX = _bufferQueue[slot].Transform.HasFlag(HalTransform.FlipX);
             bool flipY = _bufferQueue[slot].Transform.HasFlag(HalTransform.FlipY);
 
+            GalImageFormat imageFormat = ConvertColorFormat(_bufferQueue[slot].Data.Buffer.Surfaces[0].ColorFormat);
+
             //Note: Rotation is being ignored.
 
             int top    = crop.Top;
             int left   = crop.Left;
             int right  = crop.Right;
             int bottom = crop.Bottom;
+
 
             NvGpuVmm vmm = NvGpuASIoctl.GetASCtx(context).Vmm;
 
@@ -422,7 +440,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
                         fbWidth,
                         fbHeight, 1, 16,
                         GalMemoryLayout.BlockLinear,
-                        GalImageFormat.RGBA8 | GalImageFormat.Unorm);
+                        imageFormat);
                 }
 
                 context.Device.Gpu.ResourceManager.ClearPbCache();
