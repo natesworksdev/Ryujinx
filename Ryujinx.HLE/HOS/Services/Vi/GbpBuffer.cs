@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
         public uint Height;
 
         [FieldOffset(0x8)]
-        public ulong ColorFormat;
+        public ColorFormat ColorFormat;
 
         [FieldOffset(0x10)]
         public int Layout;
