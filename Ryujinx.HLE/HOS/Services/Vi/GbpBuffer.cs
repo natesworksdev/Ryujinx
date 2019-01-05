@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -141,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
         public GbpBuffer(BinaryReader reader)
         {
-            Header = NvFlinger.ReadStruct<GraphicBufferHeader>(reader);
+            Header = reader.ReadStruct<GraphicBufferHeader>();
 
             // ignore fds
             // TODO: check if that is used in official implementation
@@ -152,13 +153,13 @@ namespace Ryujinx.HLE.HOS.Services.Android
                 throw new System.NotImplementedException($"Unexpected Graphic Buffer ints count (expected 0x51, found 0x{Header.IntsCount:x}");
             }
 
-            Buffer = NvFlinger.ReadStruct<NvGraphicBuffer>(reader);
+            Buffer = reader.ReadStruct<NvGraphicBuffer>();
         }
 
         public void Write(BinaryWriter writer)
         {
-            NvFlinger.WriteStruct(writer, Header);
-            NvFlinger.WriteStruct(writer, Buffer);
+            writer.WriteStruct(Header);
+            writer.WriteStruct(Buffer);
         }
     }
 }

@@ -85,31 +85,31 @@ namespace Ryujinx.HLE.HOS.Services.Android
         private struct QueueBufferObject
         {
             [FieldOffset(0x0)]
-            public long         Timestamp;
+            public long Timestamp;
 
             [FieldOffset(0x8)]
-            public int          IsAutoTimestamp;
+            public int IsAutoTimestamp;
 
             [FieldOffset(0xC)]
-            public Rect         Crop;
+            public Rect Crop;
 
             [FieldOffset(0x1C)]
-            public int          ScalingMode;
+            public int ScalingMode;
 
             [FieldOffset(0x20)]
             public HalTransform Transform;
 
             [FieldOffset(0x24)]
-            public int          StickyTransform;
+            public int StickyTransform;
 
             [FieldOffset(0x28)]
-            public int          Unknown;
+            public int Unknown;
 
             [FieldOffset(0x2C)]
-            public int          SwapInterval;
+            public int SwapInterval;
 
             [FieldOffset(0x30)]
-            public MultiFence   Fence;
+            public MultiFence Fence;
         }
 
         private struct BufferEntry
@@ -238,7 +238,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
             parcelReader.BaseStream.Position = Position;
 
             _bufferQueue[slot].Transform = queueBufferObject.Transform;
-            _bufferQueue[slot].Crop = queueBufferObject.Crop;
+            _bufferQueue[slot].Crop      = queueBufferObject.Crop;
 
             _bufferQueue[slot].State = BufferState.Queued;
 
@@ -325,34 +325,6 @@ namespace Ryujinx.HLE.HOS.Services.Android
             }
         }
 
-        // FIXME: move this (extension?)
-        public unsafe static T ReadStruct<T>(BinaryReader reader) where T : struct
-        {
-            int size = Marshal.SizeOf<T>();
-
-            byte[] data = reader.ReadBytes(size);
-
-            fixed (byte* ptr = data)
-            {
-                return Marshal.PtrToStructure<T>((IntPtr)ptr);
-            }
-        }
-
-        // FIXME: move this (extension?)
-        public unsafe static void WriteStruct<T>(BinaryWriter writer, T value) where T : struct
-        {
-            long size = Marshal.SizeOf<T>();
-
-            byte[] data = new byte[size];
-
-            fixed (byte* ptr = data)
-            {
-                Marshal.StructureToPtr<T>(value, (IntPtr)ptr, false);
-            }
-
-            writer.Write(data);
-        }
-
         private long MakeReplyParcel(ServiceCtx context, params int[] ints)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -428,7 +400,6 @@ namespace Ryujinx.HLE.HOS.Services.Android
             int left   = crop.Left;
             int right  = crop.Right;
             int bottom = crop.Bottom;
-
 
             NvGpuVmm vmm = NvGpuASIoctl.GetASCtx(context).Vmm;
 
