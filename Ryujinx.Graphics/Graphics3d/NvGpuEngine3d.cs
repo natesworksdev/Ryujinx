@@ -24,6 +24,9 @@ namespace Ryujinx.Graphics.Graphics3d
 
         private ConstBuffer[][] ConstBuffers;
 
+        // Height kept for flipping y axis
+        private int ViewportHeight = 0;
+
         private int CurrentInstance = 0;
 
         public NvGpuEngine3d(NvGpu Gpu)
@@ -208,6 +211,8 @@ namespace Ryujinx.Graphics.Graphics3d
             GalImage Image = new GalImage(Width, Height, 1, GobBlockHeight, Layout, Format);
 
             Gpu.ResourceManager.SendColorBuffer(Vmm, Key, FbIndex, Image);
+
+            ViewportHeight = VpH;
 
             Gpu.Renderer.RenderTarget.SetViewport(FbIndex, VpX, VpY, VpW, VpH);
         }
@@ -410,8 +415,6 @@ namespace Ryujinx.Graphics.Graphics3d
 
         private void SetScissor(GalPipelineState State)
         {
-            int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight);
-
             // FIXME: Stubbed, only the first scissor test is valid without a geometry shader loaded. At time of writing geometry shaders are also stubbed.
             // Once geometry shaders are fixed it should be equal to GalPipelineState.RenderTargetCount when shader loaded, otherwise equal to 1
             State.ScissorTestCount = 1;
@@ -434,7 +437,7 @@ namespace Ryujinx.Graphics.Graphics3d
                     // Y coordinates may have to be flipped
                     if ((int)State.FlipY == -1)
                     {
-                        State.ScissorTestY[Index] = Height - State.ScissorTestY[Index] - State.ScissorTestHeight[Index];
+                        State.ScissorTestY[Index] = ViewportHeight - State.ScissorTestY[Index] - State.ScissorTestHeight[Index];
                     }
                 }
             }
