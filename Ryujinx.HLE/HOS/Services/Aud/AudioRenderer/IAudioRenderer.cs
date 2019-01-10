@@ -75,8 +75,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
             _memoryPools = CreateArray<MemoryPoolContext>(Params.EffectCount + Params.VoiceCount * 4);
 
-            _voices = CreateArray<VoiceContext>(Params.VoiceCount);
-
+            _voices  = CreateArray<VoiceContext>(Params.VoiceCount);
             _effects = CreateArray<EffectContext>(Params.EffectCount);
 
             InitializeAudioOut();
