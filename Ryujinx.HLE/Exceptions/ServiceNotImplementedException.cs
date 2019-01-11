@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.Exceptions
             StringBuilder sb = new StringBuilder();
 
             // Print the IPC command details (service name, command ID, and handler)
-            (Type callingType, MethodBase callingMethod) = WalkStrackTrace(new StackTrace(this));
+            (Type callingType, MethodBase callingMethod) = WalkStackTrace(new StackTrace(this));
 
             if (callingType != null && callingMethod != null)
             {
@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.Exceptions
             return sb.ToString();
         }
 
-        private (Type, MethodBase) WalkStrackTrace(StackTrace trace)
+        private (Type, MethodBase) WalkStackTrace(StackTrace trace)
         {
             int i = 0;
 
@@ -148,7 +148,7 @@ namespace Ryujinx.HLE.Exceptions
             // Find the IIpcService method that threw this exception
             while ((frame = trace.GetFrame(i++)) != null)
             {
-                var method = frame.GetMethod();
+                var method   = frame.GetMethod();
                 var declType = method.DeclaringType;
 
                 if (typeof(IIpcService).IsAssignableFrom(declType))
