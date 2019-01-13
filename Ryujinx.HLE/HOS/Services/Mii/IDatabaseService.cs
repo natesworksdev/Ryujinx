@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.Utilities;
 using System;
@@ -125,19 +126,19 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         // IsFullDatabase() -> bool
         private long IsFullDatabase(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         // GetCount(i32) -> i32
         private long GetCount(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         // Get(i32) -> (i32, array<nn::mii::CharInfoElement, 6>)
         private long Get(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         // Get1(i32) -> (i32, array<nn::mii::CharInfo, 6>)
@@ -155,12 +156,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private long UpdateLatest(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long BuildRandom(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         // BuildDefault(i32) -> nn::mii::CharInfo
@@ -242,72 +243,72 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private long Get2(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long Get3(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long UpdateLatest1(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long FindIndex(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long Move(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long AddOrReplace(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long Delete(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long DestroyFile(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long DeleteFile(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long Format(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long Import(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long Export(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long IsBrokenDatabaseWithClearFlag(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         private long GetIndex(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
 
         // SetInterfaceVersion(u32)
@@ -322,7 +323,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private long Convert(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            throw new ServiceNotImplementedException(context);
         }
     }
 }
