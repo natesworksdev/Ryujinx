@@ -1,3 +1,4 @@
+using System.Runtime.Intrinsics;
 using ChocolArm64.State;
 
 using NUnit.Framework;
@@ -76,8 +77,8 @@ namespace Ryujinx.Tests.Cpu
             */
 
             SetThreadState(
-                v0: Sse.SetScalarVector128(a),
-                v1: Sse.SetScalarVector128(b));
+                v0: Vector128.CreateScalar(a),
+                v1: Vector128.CreateScalar(b));
             Opcode(0x1E2E1002);
             Opcode(0x1E201840);
             Opcode(0x1E211841);
@@ -125,8 +126,8 @@ namespace Ryujinx.Tests.Cpu
             */
 
             SetThreadState(
-                v0: Sse.StaticCast<double, float>(Sse2.SetScalarVector128(a)),
-                v1: Sse.StaticCast<double, float>(Sse2.SetScalarVector128(b)));
+                v0: Vector128.CreateScalar(a).As<float>(),
+                v1: Vector128.CreateScalar(b).As<float>());
             Opcode(0x1E6E1002);
             Opcode(0x1E601840);
             Opcode(0x1E611841);

@@ -29,7 +29,7 @@ namespace ChocolArm64.Instructions
                     case 2: context.Emit(OpCodes.Conv_U4); break;
                 }
 
-                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+                context.EmitCall(typeof(Vector128).GetMethod(nameof(Vector128.Create), typesSav));
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
             }
@@ -78,7 +78,7 @@ namespace ChocolArm64.Instructions
                     case 2: context.Emit(OpCodes.Conv_U4); break;
                 }
 
-                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+                context.EmitCall(typeof(Vector128).GetMethod(nameof(Vector128.Create), typesSav));
 
                 EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
             }
@@ -404,7 +404,7 @@ namespace ChocolArm64.Instructions
                 context.EmitLdc_I8(masks[op.Size]);
                 context.Emit(OpCodes.Dup);
 
-                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSve));
+                context.EmitCall(typeof(Vector128).GetMethod(nameof(Vector128.Create), typesSve));
 
                 context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), typesSfl));
 

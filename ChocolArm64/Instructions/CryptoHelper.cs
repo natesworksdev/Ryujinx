@@ -318,11 +318,11 @@ namespace ChocolArm64.Instructions
                 throw new PlatformNotSupportedException();
             }
 
-            op = Sse.StaticCast<byte, float>(Sse2.SetVector128(
+            op = Vector128.Create(
                 state[15], state[14], state[13], state[12],
                 state[11], state[10], state[9],  state[8],
                 state[7],  state[6],  state[5],  state[4],
-                state[3],  state[2],  state[1],  state[0]));
+                state[3],  state[2],  state[1],  state[0]).As<float>();
         }
     }
 }

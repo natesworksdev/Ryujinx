@@ -217,7 +217,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse41.IsSupported)
             {
-                return BitConverter.Int64BitsToDouble(Sse41.Extract(Sse.StaticCast<float, long>(vector), index));
+                return BitConverter.Int64BitsToDouble(Sse41.Extract(vector.As<long>(), index));
             }
             else if (Sse2.IsSupported)
             {
@@ -234,19 +234,19 @@ namespace ChocolArm64.Instructions
             {
                 if (size == 0)
                 {
-                    return (sbyte)Sse41.Extract(Sse.StaticCast<float, byte>(vector), index);
+                    return (sbyte)Sse41.Extract(vector.As<byte>(), index);
                 }
                 else if (size == 1)
                 {
-                    return (short)Sse2.Extract(Sse.StaticCast<float, ushort>(vector), index);
+                    return (short)Sse2.Extract(vector.As<ushort>(), index);
                 }
                 else if (size == 2)
                 {
-                    return Sse41.Extract(Sse.StaticCast<float, int>(vector), index);
+                    return Sse41.Extract(vector.As<int>(), index);
                 }
                 else if (size == 3)
                 {
-                    return Sse41.Extract(Sse.StaticCast<float, long>(vector), index);
+                    return Sse41.Extract(vector.As<long>(), index);
                 }
                 else
                 {
@@ -287,19 +287,19 @@ namespace ChocolArm64.Instructions
             {
                 if (size == 0)
                 {
-                    return Sse41.Extract(Sse.StaticCast<float, byte>(vector), index);
+                    return Sse41.Extract(vector.As<byte>(), index);
                 }
                 else if (size == 1)
                 {
-                    return Sse2.Extract(Sse.StaticCast<float, ushort>(vector), index);
+                    return Sse2.Extract(vector.As<ushort>(), index);
                 }
                 else if (size == 2)
                 {
-                    return Sse41.Extract(Sse.StaticCast<float, uint>(vector), index);
+                    return Sse41.Extract(vector.As<uint>(), index);
                 }
                 else if (size == 3)
                 {
-                    return Sse41.Extract(Sse.StaticCast<float, ulong>(vector), index);
+                    return Sse41.Extract(vector.As<ulong>(), index);
                 }
                 else
                 {
@@ -312,7 +312,7 @@ namespace ChocolArm64.Instructions
                     ? index >> 1
                     : index << (size - 1);
 
-                ushort value = Sse2.Extract(Sse.StaticCast<float, ushort>(vector), (byte)shortIdx);
+                ushort value = Sse2.Extract(vector.As<ushort>(), (byte)shortIdx);
 
                 if (size == 0)
                 {
@@ -324,15 +324,15 @@ namespace ChocolArm64.Instructions
                 }
                 else if (size == 2 || size == 3)
                 {
-                    ushort value1 = Sse2.Extract(Sse.StaticCast<float, ushort>(vector), (byte)(shortIdx + 1));
+                    ushort value1 = Sse2.Extract(vector.As<ushort>(), (byte)(shortIdx + 1));
 
                     if (size == 2)
                     {
                         return (uint)(value | (value1 << 16));
                     }
 
-                    ushort value2 = Sse2.Extract(Sse.StaticCast<float, ushort>(vector), (byte)(shortIdx + 2));
-                    ushort value3 = Sse2.Extract(Sse.StaticCast<float, ushort>(vector), (byte)(shortIdx + 3));
+                    ushort value2 = Sse2.Extract(vector.As<ushort>(), (byte)(shortIdx + 2));
+                    ushort value3 = Sse2.Extract(vector.As<ushort>(), (byte)(shortIdx + 3));
 
                     return ((ulong)value  <<  0) |
                            ((ulong)value1 << 16) |
@@ -357,7 +357,7 @@ namespace ChocolArm64.Instructions
             }
             else if (Sse2.IsSupported)
             {
-                Vector128<ushort> shortVector = Sse.StaticCast<float, ushort>(vector);
+                Vector128<ushort> shortVector = vector.As<ushort>();
 
                 int low  = Sse2.Extract(shortVector, (byte)(index * 2 + 0));
                 int high = Sse2.Extract(shortVector, (byte)(index * 2 + 1));
@@ -381,19 +381,19 @@ namespace ChocolArm64.Instructions
             {
                 if (size == 0)
                 {
-                    return Sse.StaticCast<byte, float>(Sse41.Insert(Sse.StaticCast<float, byte>(vector), (byte)value, index));
+                    return Sse41.Insert(vector.As<byte>(), (byte)value, index).As<float>();
                 }
                 else if (size == 1)
                 {
-                    return Sse.StaticCast<ushort, float>(Sse2.Insert(Sse.StaticCast<float, ushort>(vector), (ushort)value, index));
+                    return Sse2.Insert(vector.As<ushort>(), (ushort)value, index).As<float>();
                 }
                 else if (size == 2)
                 {
-                    return Sse.StaticCast<uint, float>(Sse41.Insert(Sse.StaticCast<float, uint>(vector), (uint)value, index));
+                    return Sse41.Insert(vector.As<uint>(), (uint)value, index).As<float>();
                 }
                 else if (size == 3)
                 {
-                    return Sse.StaticCast<ulong, float>(Sse41.Insert(Sse.StaticCast<float, ulong>(vector), value, index));
+                    return Sse41.Insert(vector.As<ulong>(), value, index).As<float>();
                 }
                 else
                 {
@@ -402,7 +402,7 @@ namespace ChocolArm64.Instructions
             }
             else if (Sse2.IsSupported)
             {
-                Vector128<ushort> shortVector = Sse.StaticCast<float, ushort>(vector);
+                Vector128<ushort> shortVector = vector.As<ushort>();
 
                 int shortIdx = size == 0
                     ? index >> 1
@@ -410,7 +410,7 @@ namespace ChocolArm64.Instructions
 
                 if (size == 0)
                 {
-                    ushort shortVal = Sse2.Extract(Sse.StaticCast<float, ushort>(vector), (byte)shortIdx);
+                    ushort shortVal = Sse2.Extract(vector.As<ushort>(), (byte)shortIdx);
 
                     int shift = (index & 1) * 8;
 
@@ -418,11 +418,11 @@ namespace ChocolArm64.Instructions
 
                     shortVal |= (ushort)((byte)value << shift);
 
-                    return Sse.StaticCast<ushort, float>(Sse2.Insert(shortVector, shortVal, (byte)shortIdx));
+                    return Sse2.Insert(shortVector, shortVal, (byte)shortIdx).As<float>();
                 }
                 else if (size == 1)
                 {
-                    return Sse.StaticCast<ushort, float>(Sse2.Insert(Sse.StaticCast<float, ushort>(vector), (ushort)value, index));
+                    return Sse2.Insert(vector.As<ushort>(), (ushort)value, index).As<float>();
                 }
                 else if (size == 2 || size == 3)
                 {
@@ -435,7 +435,7 @@ namespace ChocolArm64.Instructions
                         shortVector = Sse2.Insert(shortVector, (ushort)(value >> 48), (byte)(shortIdx + 3));
                     }
 
-                    return Sse.StaticCast<ushort, float>(shortVector);
+                    return shortVector.As<float>();
                 }
                 else
                 {
@@ -456,19 +456,19 @@ namespace ChocolArm64.Instructions
                 //jump table fallback.
                 if (index == 0)
                 {
-                    return Sse41.Insert(vector, value, 0x00);
+                    return Sse41.Insert(vector, Vector128.CreateScalarUnsafe(value), 0x00);
                 }
                 else if (index == 1)
                 {
-                    return Sse41.Insert(vector, value, 0x10);
+                    return Sse41.Insert(vector, Vector128.CreateScalarUnsafe(value), 0x10);
                 }
                 else if (index == 2)
                 {
-                    return Sse41.Insert(vector, value, 0x20);
+                    return Sse41.Insert(vector, Vector128.CreateScalarUnsafe(value), 0x20);
                 }
                 else if (index == 3)
                 {
-                    return Sse41.Insert(vector, value, 0x30);
+                    return Sse41.Insert(vector, Vector128.CreateScalarUnsafe(value), 0x30);
                 }
                 else
                 {
@@ -482,12 +482,12 @@ namespace ChocolArm64.Instructions
                 ushort low  = (ushort)(intValue >>  0);
                 ushort high = (ushort)(intValue >> 16);
 
-                Vector128<ushort> shortVector = Sse.StaticCast<float, ushort>(vector);
+                Vector128<ushort> shortVector = vector.As<ushort>();
 
                 shortVector = Sse2.Insert(shortVector, low,  (byte)(index * 2 + 0));
                 shortVector = Sse2.Insert(shortVector, high, (byte)(index * 2 + 1));
 
-                return Sse.StaticCast<ushort, float>(shortVector);
+                return shortVector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -497,7 +497,7 @@ namespace ChocolArm64.Instructions
         public static Vector128<float> Sse41VectorInsertScalarSingle(float value, Vector128<float> vector)
         {
             //Note: 0b1110 is the mask to zero the upper bits.
-            return Sse41.Insert(vector, value, 0b1110);
+            return Sse41.Insert(vector, Vector128.CreateScalarUnsafe(value), 0b1110);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -505,7 +505,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse2.IsSupported)
             {
-                return Sse2.SetZeroVector128<sbyte>();
+                return Vector128<sbyte>.Zero;
             }
 
             throw new PlatformNotSupportedException();
@@ -516,7 +516,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse2.IsSupported)
             {
-                return Sse2.SetZeroVector128<short>();
+                return Vector128<short>.Zero;
             }
 
             throw new PlatformNotSupportedException();
@@ -527,7 +527,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse2.IsSupported)
             {
-                return Sse2.SetZeroVector128<int>();
+                return Vector128<int>.Zero;
             }
 
             throw new PlatformNotSupportedException();
@@ -538,7 +538,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse2.IsSupported)
             {
-                return Sse2.SetZeroVector128<long>();
+                return Vector128<long>.Zero;
             }
 
             throw new PlatformNotSupportedException();
@@ -549,7 +549,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.SetZeroVector128();
+                return Vector128<float>.Zero;
             }
 
             throw new PlatformNotSupportedException();
@@ -560,7 +560,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse2.IsSupported)
             {
-                return Sse2.SetZeroVector128<double>();
+                return Vector128<double>.Zero;
             }
 
             throw new PlatformNotSupportedException();
@@ -571,7 +571,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, sbyte>(vector);
+                return vector.As<sbyte>();
             }
 
             throw new PlatformNotSupportedException();
@@ -582,7 +582,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, short>(vector);
+                return vector.As<short>();
             }
 
             throw new PlatformNotSupportedException();
@@ -593,7 +593,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, int>(vector);
+                return vector.As<int>();
             }
 
             throw new PlatformNotSupportedException();
@@ -604,7 +604,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, long>(vector);
+                return vector.As<long>();
             }
 
             throw new PlatformNotSupportedException();
@@ -615,7 +615,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, byte>(vector);
+                return vector.As<byte>();
             }
 
             throw new PlatformNotSupportedException();
@@ -626,7 +626,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, ushort>(vector);
+                return vector.As<ushort>();
             }
 
             throw new PlatformNotSupportedException();
@@ -637,7 +637,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, uint>(vector);
+                return vector.As<uint>();
             }
 
             throw new PlatformNotSupportedException();
@@ -648,7 +648,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, ulong>(vector);
+                return vector.As<ulong>();
             }
 
             throw new PlatformNotSupportedException();
@@ -659,7 +659,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<float, double>(vector);
+                return vector.As<double>();
             }
 
             throw new PlatformNotSupportedException();
@@ -670,7 +670,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<sbyte, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -681,7 +681,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<short, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -692,7 +692,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<int, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -703,7 +703,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<long, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -714,7 +714,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<byte, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -725,7 +725,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<ushort, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -736,7 +736,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<uint, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -747,7 +747,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<ulong, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();
@@ -758,7 +758,7 @@ namespace ChocolArm64.Instructions
         {
             if (Sse.IsSupported)
             {
-                return Sse.StaticCast<double, float>(vector);
+                return vector.As<float>();
             }
 
             throw new PlatformNotSupportedException();

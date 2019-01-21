@@ -243,7 +243,7 @@ namespace ChocolArm64.Memory
         {
             if (Sse2.IsSupported)
             {
-                return Sse.StaticCast<byte, float>(Sse2.SetVector128(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ReadByte(position)));
+                return Vector128.Create(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ReadByte(position)).As<float>();
             }
             else
             {
@@ -260,7 +260,7 @@ namespace ChocolArm64.Memory
         {
             if (Sse2.IsSupported && (position & 1) == 0)
             {
-                return Sse.StaticCast<ushort, float>(Sse2.Insert(Sse2.SetZeroVector128<ushort>(), ReadUInt16(position), 0));
+                return Sse2.Insert(Vector128<ushort>.Zero, ReadUInt16(position), 0).As<float>();
             }
             else
             {
@@ -294,7 +294,7 @@ namespace ChocolArm64.Memory
         {
             if (Sse2.IsSupported && (position & 7) == 0)
             {
-                return Sse.StaticCast<double, float>(Sse2.LoadScalarVector128((double*)Translate(position)));
+                return Sse2.LoadScalarVector128((double*)Translate(position)).As<float>();
             }
             else
             {
@@ -466,11 +466,11 @@ namespace ChocolArm64.Memory
         {
             if (Sse41.IsSupported)
             {
-                WriteByte(position, Sse41.Extract(Sse.StaticCast<float, byte>(value), 0));
+                WriteByte(position, Sse41.Extract(value.As<byte>(), 0));
             }
             else if (Sse2.IsSupported)
             {
-                WriteByte(position, (byte)Sse2.Extract(Sse.StaticCast<float, ushort>(value), 0));
+                WriteByte(position, (byte)Sse2.Extract(value.As<ushort>(), 0));
             }
             else
             {
@@ -483,7 +483,7 @@ namespace ChocolArm64.Memory
         {
             if (Sse2.IsSupported)
             {
-                WriteUInt16(position, Sse2.Extract(Sse.StaticCast<float, ushort>(value), 0));
+                WriteUInt16(position, Sse2.Extract(value.As<ushort>(), 0));
             }
             else
             {
@@ -509,7 +509,7 @@ namespace ChocolArm64.Memory
         {
             if (Sse2.IsSupported && (position & 7) == 0)
             {
-                Sse2.StoreScalar((double*)TranslateWrite(position), Sse.StaticCast<float, double>(value));
+                Sse2.StoreScalar((double*)TranslateWrite(position), value.As<double>());
             }
             else
             {
