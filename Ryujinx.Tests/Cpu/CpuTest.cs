@@ -437,7 +437,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Vector128.Create(0, BitConverter.DoubleToInt64Bits(e0)).As<float>();
+            return Vector128.Create(BitConverter.DoubleToInt64Bits(e0), 0).As<float>();
         }
 
         protected static Vector128<float> MakeVectorE0E1(double e0, double e1)
@@ -491,7 +491,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Vector128.Create(0, e0).As<float>();
+            return Vector128.Create(e0, 0).As<float>();
         }
 
         protected static Vector128<float> MakeVectorE0E1(ulong e0, ulong e1)
@@ -501,7 +501,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Vector128.Create(e1, e0).As<float>();
+            return Vector128.Create(e0, e1).As<float>();
         }
 
         protected static Vector128<float> MakeVectorE1(ulong e1)
@@ -511,7 +511,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Vector128.Create(e1, 0).As<float>();
+            return Vector128.Create(0, e1).As<float>();
         }
 
         protected static ulong GetVectorE0(Vector128<float> vector)
