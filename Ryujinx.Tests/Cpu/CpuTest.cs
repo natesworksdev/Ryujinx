@@ -437,7 +437,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Sse.StaticCast<long, float>(Sse2.SetVector128(0, BitConverter.DoubleToInt64Bits(e0)));
+            return Vector128.Create(0, BitConverter.DoubleToInt64Bits(e0)).As<float>();
         }
 
         protected static Vector128<float> MakeVectorE0E1(double e0, double e1)
@@ -447,8 +447,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Sse.StaticCast<long, float>(
-                Sse2.SetVector128(BitConverter.DoubleToInt64Bits(e1), BitConverter.DoubleToInt64Bits(e0)));
+            return Vector128.Create(BitConverter.DoubleToInt64Bits(e1), BitConverter.DoubleToInt64Bits(e0)).As<float>();
         }
 
         protected static Vector128<float> MakeVectorE1(double e1)
@@ -458,7 +457,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Sse.StaticCast<long, float>(Sse2.SetVector128(BitConverter.DoubleToInt64Bits(e1), 0));
+            return Vector128.Create(BitConverter.DoubleToInt64Bits(e1), 0).As<float>();
         }
 
         protected static float VectorExtractSingle(Vector128<float> vector, byte index)
@@ -468,7 +467,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            int value = Sse41.Extract(Sse.StaticCast<float, int>(vector), index);
+            int value = Sse41.Extract(vector.As<int>(), index);
 
             return BitConverter.Int32BitsToSingle(value);
         }
@@ -480,7 +479,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            long value = Sse41.Extract(Sse.StaticCast<float, long>(vector), index);
+            long value = Sse41.Extract(vector.As<long>(), index);
 
             return BitConverter.Int64BitsToDouble(value);
         }
@@ -492,7 +491,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Sse.StaticCast<ulong, float>(Sse2.SetVector128(0, e0));
+            return Vector128.Create(0, e0).As<float>();
         }
 
         protected static Vector128<float> MakeVectorE0E1(ulong e0, ulong e1)
@@ -502,7 +501,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Sse.StaticCast<ulong, float>(Sse2.SetVector128(e1, e0));
+            return Vector128.Create(e1, e0).As<float>();
         }
 
         protected static Vector128<float> MakeVectorE1(ulong e1)
@@ -512,7 +511,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Sse.StaticCast<ulong, float>(Sse2.SetVector128(e1, 0));
+            return Vector128.Create(e1, 0).As<float>();
         }
 
         protected static ulong GetVectorE0(Vector128<float> vector)
@@ -522,7 +521,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Sse41.Extract(Sse.StaticCast<float, ulong>(vector), (byte)0);
+            return Sse41.Extract(vector.As<ulong>(), (byte)0);
         }
 
         protected static ulong GetVectorE1(Vector128<float> vector)
@@ -532,7 +531,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Sse41.Extract(Sse.StaticCast<float, ulong>(vector), (byte)1);
+            return Sse41.Extract(vector.As<ulong>(), (byte)1);
         }
 
         protected static ushort GenNormalH()
