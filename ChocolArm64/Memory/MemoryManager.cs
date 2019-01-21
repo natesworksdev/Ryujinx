@@ -243,7 +243,7 @@ namespace ChocolArm64.Memory
         {
             if (Sse2.IsSupported)
             {
-                return Vector128.Create(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ReadByte(position)).As<float>();
+                return Vector128.Create(ReadByte(position), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0).As<float>();
             }
             else
             {
