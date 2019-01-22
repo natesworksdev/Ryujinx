@@ -427,35 +427,11 @@ namespace Ryujinx.Tests.Cpu
             bool IsNormalOrSubnormalD(double d) => double.IsNormal(d) || double.IsSubnormal(d);
         }
 
-        protected static Vector128<float> MakeVectorE0(double e0)
-        {
-            if (!Sse2.IsSupported)
-            {
-                throw new PlatformNotSupportedException();
-            }
+        protected static Vector128<float> MakeVectorE0(double e0)              => Vector128.Create(BitConverter.DoubleToInt64Bits(e0), 0).As<float>();
 
-            return Vector128.Create(BitConverter.DoubleToInt64Bits(e0), 0).As<float>();
-        }
+        protected static Vector128<float> MakeVectorE0E1(double e0, double e1) => Vector128.Create(BitConverter.DoubleToInt64Bits(e0), BitConverter.DoubleToInt64Bits(e1)).As<float>();
 
-        protected static Vector128<float> MakeVectorE0E1(double e0, double e1)
-        {
-            if (!Sse2.IsSupported)
-            {
-                throw new PlatformNotSupportedException();
-            }
-
-            return Vector128.Create(BitConverter.DoubleToInt64Bits(e0), BitConverter.DoubleToInt64Bits(e1)).As<float>();
-        }
-
-        protected static Vector128<float> MakeVectorE1(double e1)
-        {
-            if (!Sse2.IsSupported)
-            {
-                throw new PlatformNotSupportedException();
-            }
-
-            return Vector128.Create(0, BitConverter.DoubleToInt64Bits(e1)).As<float>();
-        }
+        protected static Vector128<float> MakeVectorE1(double e1)              => Vector128.Create(0, BitConverter.DoubleToInt64Bits(e1)).As<float>();
 
         protected static float VectorExtractSingle(Vector128<float> vector, byte index)
         {
@@ -481,35 +457,11 @@ namespace Ryujinx.Tests.Cpu
             return BitConverter.Int64BitsToDouble(value);
         }
 
-        protected static Vector128<float> MakeVectorE0(ulong e0)
-        {
-            if (!Sse2.IsSupported)
-            {
-                throw new PlatformNotSupportedException();
-            }
+        protected static Vector128<float> MakeVectorE0(ulong e0)             => Vector128.Create(e0, 0).As<float>();
 
-            return Vector128.Create(e0, 0).As<float>();
-        }
+        protected static Vector128<float> MakeVectorE0E1(ulong e0, ulong e1) => Vector128.Create(e0, e1).As<float>();
 
-        protected static Vector128<float> MakeVectorE0E1(ulong e0, ulong e1)
-        {
-            if (!Sse2.IsSupported)
-            {
-                throw new PlatformNotSupportedException();
-            }
-
-            return Vector128.Create(e0, e1).As<float>();
-        }
-
-        protected static Vector128<float> MakeVectorE1(ulong e1)
-        {
-            if (!Sse2.IsSupported)
-            {
-                throw new PlatformNotSupportedException();
-            }
-
-            return Vector128.Create(0, e1).As<float>();
-        }
+        protected static Vector128<float> MakeVectorE1(ulong e1)             => Vector128.Create(0, e1).As<float>();
 
         protected static ulong GetVectorE0(Vector128<float> vector)
         {

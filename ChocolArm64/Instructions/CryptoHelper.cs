@@ -313,11 +313,6 @@ namespace ChocolArm64.Instructions
 
         private static void FromByteArrayToVector(byte[] state, ref Vector128<float> op)
         {
-            if (!Sse2.IsSupported)
-            {
-                throw new PlatformNotSupportedException();
-            }
-
             op = Vector128.Create(
                 state[0],  state[1],  state[2],  state[3],
                 state[4],  state[5],  state[6],  state[7],
