@@ -306,9 +306,9 @@ namespace ChocolArm64.Instructions
                 Type[] typesSfl = new Type[] { typeof(Vector128<sbyte>), typeof(Vector128<sbyte>) };
 
                 EmitLdvecWithSignedCast(context, op.Rn, 0); // value
-
-                context.EmitLdc_I8(14L << 56 | 15L << 48 | 12L << 40 | 13L << 32 | 10L << 24 | 11L << 16 | 08L << 8 | 09L << 0); // maskE1
+                
                 context.EmitLdc_I8(06L << 56 | 07L << 48 | 04L << 40 | 05L << 32 | 02L << 24 | 03L << 16 | 00L << 8 | 01L << 0); // maskE0
+                context.EmitLdc_I8(14L << 56 | 15L << 48 | 12L << 40 | 13L << 32 | 10L << 24 | 11L << 16 | 08L << 8 | 09L << 0); // maskE1
 
                 context.EmitCall(typeof(Vector128).GetMethod(nameof(Vector128.Create), typesSve));
 
@@ -340,13 +340,13 @@ namespace ChocolArm64.Instructions
 
                 if (op.Size == 0)
                 {
-                    context.EmitLdc_I8(12L << 56 | 13L << 48 | 14L << 40 | 15L << 32 | 08L << 24 | 09L << 16 | 10L << 8 | 11L << 0); // maskE1
                     context.EmitLdc_I8(04L << 56 | 05L << 48 | 06L << 40 | 07L << 32 | 00L << 24 | 01L << 16 | 02L << 8 | 03L << 0); // maskE0
+                    context.EmitLdc_I8(12L << 56 | 13L << 48 | 14L << 40 | 15L << 32 | 08L << 24 | 09L << 16 | 10L << 8 | 11L << 0); // maskE1
                 }
                 else /* if (op.Size == 1) */
                 {
-                    context.EmitLdc_I8(13L << 56 | 12L << 48 | 15L << 40 | 14L << 32 | 09L << 24 | 08L << 16 | 11L << 8 | 10L << 0); // maskE1
                     context.EmitLdc_I8(05L << 56 | 04L << 48 | 07L << 40 | 06L << 32 | 01L << 24 | 00L << 16 | 03L << 8 | 02L << 0); // maskE0
+                    context.EmitLdc_I8(13L << 56 | 12L << 48 | 15L << 40 | 14L << 32 | 09L << 24 | 08L << 16 | 11L << 8 | 10L << 0); // maskE1
                 }
 
                 context.EmitCall(typeof(Vector128).GetMethod(nameof(Vector128.Create), typesSve));
@@ -379,18 +379,18 @@ namespace ChocolArm64.Instructions
 
                 if (op.Size == 0)
                 {
-                    context.EmitLdc_I8(08L << 56 | 09L << 48 | 10L << 40 | 11L << 32 | 12L << 24 | 13L << 16 | 14L << 8 | 15L << 0); // maskE1
                     context.EmitLdc_I8(00L << 56 | 01L << 48 | 02L << 40 | 03L << 32 | 04L << 24 | 05L << 16 | 06L << 8 | 07L << 0); // maskE0
+                    context.EmitLdc_I8(08L << 56 | 09L << 48 | 10L << 40 | 11L << 32 | 12L << 24 | 13L << 16 | 14L << 8 | 15L << 0); // maskE1
                 }
                 else if (op.Size == 1)
                 {
-                    context.EmitLdc_I8(09L << 56 | 08L << 48 | 11L << 40 | 10L << 32 | 13L << 24 | 12L << 16 | 15L << 8 | 14L << 0); // maskE1
                     context.EmitLdc_I8(01L << 56 | 00L << 48 | 03L << 40 | 02L << 32 | 05L << 24 | 04L << 16 | 07L << 8 | 06L << 0); // maskE0
+                    context.EmitLdc_I8(09L << 56 | 08L << 48 | 11L << 40 | 10L << 32 | 13L << 24 | 12L << 16 | 15L << 8 | 14L << 0); // maskE1
                 }
                 else /* if (op.Size == 2) */
                 {
-                    context.EmitLdc_I8(11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 15L << 24 | 14L << 16 | 13L << 8 | 12L << 0); // maskE1
                     context.EmitLdc_I8(03L << 56 | 02L << 48 | 01L << 40 | 00L << 32 | 07L << 24 | 06L << 16 | 05L << 8 | 04L << 0); // maskE0
+                    context.EmitLdc_I8(11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 15L << 24 | 14L << 16 | 13L << 8 | 12L << 0); // maskE1
                 }
 
                 context.EmitCall(typeof(Vector128).GetMethod(nameof(Vector128.Create), typesSve));

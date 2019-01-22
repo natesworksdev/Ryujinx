@@ -444,7 +444,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Vector128.Create(BitConverter.DoubleToInt64Bits(e1), BitConverter.DoubleToInt64Bits(e0)).As<float>();
+            return Vector128.Create(BitConverter.DoubleToInt64Bits(e0), BitConverter.DoubleToInt64Bits(e1)).As<float>();
         }
 
         protected static Vector128<float> MakeVectorE1(double e1)
@@ -454,7 +454,7 @@ namespace Ryujinx.Tests.Cpu
                 throw new PlatformNotSupportedException();
             }
 
-            return Vector128.Create(BitConverter.DoubleToInt64Bits(e1), 0).As<float>();
+            return Vector128.Create(0, BitConverter.DoubleToInt64Bits(e1)).As<float>();
         }
 
         protected static float VectorExtractSingle(Vector128<float> vector, byte index)
