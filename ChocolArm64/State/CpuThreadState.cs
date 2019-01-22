@@ -8,21 +8,10 @@ namespace ChocolArm64.State
 {
     public class CpuThreadState
     {
-        internal const int LrIndex = 30;
-        internal const int ZrIndex = 31;
-
         internal const int ErgSizeLog2 = 4;
         internal const int DczSizeLog2 = 4;
 
         private const int MinInstForCheck = 4000000;
-
-        internal ExecutionMode ExecutionMode;
-
-        //AArch32 state.
-        public uint R0,  R1,  R2,  R3,
-                    R4,  R5,  R6,  R7,
-                    R8,  R9,  R10, R11,
-                    R12, R13, R14, R15;
 
         public bool Thumb;
 
@@ -41,6 +30,10 @@ namespace ChocolArm64.State
         public bool Carry;
         public bool Zero;
         public bool Negative;
+
+        public bool IsAarch32;
+
+        public int ElrHyp;
 
         public bool Running { get; set; }
         public int  Core    { get; set; }
@@ -144,6 +137,18 @@ namespace ChocolArm64.State
         internal void OnUndefined(long position, int rawOpCode)
         {
             Undefined?.Invoke(this, new InstUndefinedEventArgs(position, rawOpCode));
+        }
+
+        internal ExecutionMode GetExecutionMode()
+        {
+            if (!IsAarch32)
+            {
+                return ExecutionMode.Aarch64;
+            }
+            else
+            {
+                return Thumb ? ExecutionMode.Aarch32Thumb : ExecutionMode.Aarch32Arm;
+            }
         }
 
         internal bool GetFpcrFlag(Fpcr flag)

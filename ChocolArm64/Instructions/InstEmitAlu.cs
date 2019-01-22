@@ -398,5 +398,22 @@ namespace ChocolArm64.Instructions
 
             context.EmitStflg((int)PState.CBit);
         }
+
+        public static void EmitDataStore(ILEmitterCtx context)  => EmitDataStore(context, false);
+        public static void EmitDataStoreS(ILEmitterCtx context) => EmitDataStore(context, true);
+
+        public static void EmitDataStore(ILEmitterCtx context, bool setFlags)
+        {
+            IOpCodeAlu64 op = (IOpCodeAlu64)context.CurrOp;
+
+            if (setFlags || op is IOpCodeAluRs64)
+            {
+                context.EmitStintzr(op.Rd);
+            }
+            else
+            {
+                context.EmitStint(op.Rd);
+            }
+        }
     }
 }

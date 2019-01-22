@@ -25,7 +25,7 @@ namespace ChocolArm64.Decoders
             Cond  = (Cond)((opCode >> 12) & 0xf);
             RmImm =        (opCode >> 16) & 0x1f;
 
-            Rd = CpuThreadState.ZrIndex;
+            Rd = RegisterAlias.Zr;
         }
     }
 }

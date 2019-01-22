@@ -1,6 +1,7 @@
 using ChocolArm64.Decoders;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
+using System;
 using System.Reflection.Emit;
 
 namespace ChocolArm64.Instructions
@@ -122,33 +123,74 @@ namespace ChocolArm64.Instructions
 
         public static void EmitDataLoadRm(ILEmitterCtx context)
         {
-            context.EmitLdintzr(((IOpCodeAluRs64)context.CurrOp).Rm);
+            if (context.CurrOp is IOpCodeAluRs64 op)
+            {
+                context.EmitLdintzr(op.Rm);
+            }
+            else if (context.CurrOp is OpCodeAluRsImm32 op32)
+            {
+                InstEmit32Helper.EmitLoadFromRegister(context, op32.Rm);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
 
-        public static void EmitDataLoadOpers(ILEmitterCtx context)
+        public static void EmitDataLoadOpers(ILEmitterCtx context, bool setCarry = true)
         {
             EmitDataLoadRn(context);
-            EmitDataLoadOper2(context);
+            EmitDataLoadOper2(context, setCarry);
         }
 
         public static void EmitDataLoadRn(ILEmitterCtx context)
         {
-            IOpCodeAlu64 op = (IOpCodeAlu64)context.CurrOp;
-
-            if (op.DataOp == DataOp.Logical || op is IOpCodeAluRs64)
+            if (context.CurrOp is IOpCodeAlu64 op)
             {
-                context.EmitLdintzr(op.Rn);
+                if (op.DataOp == DataOp.Logical || op is IOpCodeAluRs64)
+                {
+                    context.EmitLdintzr(op.Rn);
+                }
+                else
+                {
+                    context.EmitLdint(op.Rn);
+                }
+            }
+            else if (context.CurrOp is IOpCodeAlu32 op32)
+            {
+                InstEmit32Helper.EmitLoadFromRegister(context, op32.Rn);
             }
             else
             {
-                context.EmitLdint(op.Rn);
+                throw new InvalidOperationException();
             }
         }
 
-        public static void EmitDataLoadOper2(ILEmitterCtx context)
+        public static void EmitDataLoadOper2(ILEmitterCtx context, bool setCarry = true)
         {
             switch (context.CurrOp)
             {
+                //ARM32.
+                case OpCodeAluImm32 op:
+                    context.EmitLdc_I4(op.Imm);
+
+                    if (op.SetFlags && op.IsRotated)
+                    {
+                        context.EmitLdc_I4((int)((uint)op.Imm >> 31));
+
+                        context.EmitStflg((int)PState.CBit);
+                    }
+                    break;
+
+                case OpCodeAluRsImm32 op:
+                    EmitLoadRmShiftedByImmediate(context, op, setCarry);
+                    break;
+
+                case OpCodeAluImm8T16 op:
+                    context.EmitLdc_I4(op.Imm);
+                    break;
+
+                //ARM64.
                 case IOpCodeAluImm64 op:
                     context.EmitLdc_I(op.Imm);
                     break;
@@ -170,23 +212,8 @@ namespace ChocolArm64.Instructions
                     context.EmitCast(op.IntType);
                     context.EmitLsl(op.Shift);
                     break;
-            }
-        }
 
-        public static void EmitDataStore(ILEmitterCtx context)  => EmitDataStore(context, false);
-        public static void EmitDataStoreS(ILEmitterCtx context) => EmitDataStore(context, true);
-
-        public static void EmitDataStore(ILEmitterCtx context, bool setFlags)
-        {
-            IOpCodeAlu64 op = (IOpCodeAlu64)context.CurrOp;
-
-            if (setFlags || op is IOpCodeAluRs64)
-            {
-                context.EmitStintzr(op.Rd);
-            }
-            else
-            {
-                context.EmitStint(op.Rd);
+                default: throw new InvalidOperationException();
             }
         }
 
@@ -216,6 +243,220 @@ namespace ChocolArm64.Instructions
             context.Emit(OpCodes.Ldc_I4_1);
             context.Emit(OpCodes.And);
             context.EmitStflg((int)PState.NBit);
+        }
+
+        //ARM32 helpers.
+        private static void EmitLoadRmShiftedByImmediate(ILEmitterCtx context, OpCodeAluRsImm32 op, bool setCarry)
+        {
+            int shift = op.Imm;
+
+            if (shift == 0)
+            {
+                switch (op.ShiftType)
+                {
+                    case ShiftType.Lsr: shift = 32; break;
+                    case ShiftType.Asr: shift = 32; break;
+                    case ShiftType.Ror: shift = 1;  break;
+                }
+            }
+
+            context.EmitLdint(op.Rm);
+
+            if (shift != 0)
+            {
+                setCarry &= op.SetFlags;
+
+                switch (op.ShiftType)
+                {
+                    case ShiftType.Lsl: EmitLslC(context, setCarry, shift); break;
+                    case ShiftType.Lsr: EmitLsrC(context, setCarry, shift); break;
+                    case ShiftType.Asr: EmitAsrC(context, setCarry, shift); break;
+                    case ShiftType.Ror:
+                        if (op.Imm != 0)
+                        {
+                            EmitRorC(context, setCarry, shift);
+                        }
+                        else
+                        {
+                            EmitRrxC(context, setCarry);
+                        }
+                        break;
+                }
+            }
+        }
+
+        private static void EmitLslC(ILEmitterCtx context, bool setCarry, int shift)
+        {
+            if ((uint)shift > 32)
+            {
+                EmitShiftByMoreThan32(context, setCarry);
+            }
+            else if (shift == 32)
+            {
+                if (setCarry)
+                {
+                    context.EmitLdc_I4(1);
+
+                    context.Emit(OpCodes.And);
+
+                    context.EmitStflg((int)PState.CBit);
+                }
+                else
+                {
+                    context.Emit(OpCodes.Pop);
+                }
+
+                context.EmitLdc_I4(0);
+            }
+            else
+            {
+                if (setCarry)
+                {
+                    context.Emit(OpCodes.Dup);
+
+                    context.EmitLsr(32 - shift);
+
+                    context.EmitLdc_I4(1);
+
+                    context.Emit(OpCodes.And);
+
+                    context.EmitStflg((int)PState.CBit);
+                }
+
+                context.EmitLsl(shift);
+            }
+        }
+
+        private static void EmitLsrC(ILEmitterCtx context, bool setCarry, int shift)
+        {
+            if ((uint)shift > 32)
+            {
+                EmitShiftByMoreThan32(context, setCarry);
+            }
+            else if (shift == 32)
+            {
+                if (setCarry)
+                {
+                    context.EmitLsr(31);
+
+                    context.EmitStflg((int)PState.CBit);
+                }
+                else
+                {
+                    context.Emit(OpCodes.Pop);
+                }
+
+                context.EmitLdc_I4(0);
+            }
+            else
+            {
+                context.Emit(OpCodes.Dup);
+
+                context.EmitLsr(shift - 1);
+
+                context.EmitLdc_I4(1);
+
+                context.Emit(OpCodes.And);
+
+                context.EmitStflg((int)PState.CBit);
+
+                context.EmitLsr(shift);
+            }
+        }
+
+        private static void EmitShiftByMoreThan32(ILEmitterCtx context, bool setCarry)
+        {
+            context.Emit(OpCodes.Pop);
+
+            context.EmitLdc_I4(0);
+
+            if (setCarry)
+            {
+                context.Emit(OpCodes.Dup);
+
+                context.EmitStflg((int)PState.CBit);
+            }
+        }
+
+        private static void EmitAsrC(ILEmitterCtx context, bool setCarry, int shift)
+        {
+            if ((uint)shift >= 32)
+            {
+                context.EmitAsr(31);
+
+                if (setCarry)
+                {
+                    context.Emit(OpCodes.Dup);
+
+                    context.EmitLdc_I4(1);
+
+                    context.Emit(OpCodes.And);
+
+                    context.EmitStflg((int)PState.CBit);
+                }
+            }
+            else
+            {
+                if (setCarry)
+                {
+                    context.Emit(OpCodes.Dup);
+
+                    context.EmitLsr(shift - 1);
+
+                    context.EmitLdc_I4(1);
+
+                    context.Emit(OpCodes.And);
+
+                    context.EmitStflg((int)PState.CBit);
+                }
+
+                context.EmitAsr(shift);
+            }
+        }
+
+        private static void EmitRorC(ILEmitterCtx context, bool setCarry, int shift)
+        {
+            shift &= 0x1f;
+
+            context.EmitRor(shift);
+
+            if (setCarry)
+            {
+                context.Emit(OpCodes.Dup);
+
+                context.EmitLsr(31);
+
+                context.EmitStflg((int)PState.CBit);
+            }
+        }
+
+        private static void EmitRrxC(ILEmitterCtx context, bool setCarry)
+        {
+            //Rotate right by 1 with carry.
+            if (setCarry)
+            {
+                context.Emit(OpCodes.Dup);
+
+                context.EmitLdc_I4(1);
+
+                context.Emit(OpCodes.And);
+
+                context.EmitSttmp();
+            }
+
+            context.EmitLsr(1);
+
+            context.EmitLdflg((int)PState.CBit);
+
+            context.EmitLsl(31);
+
+            context.Emit(OpCodes.Or);
+
+            if (setCarry)
+            {
+                context.EmitLdtmp();
+                context.EmitStflg((int)PState.CBit);
+            }
         }
     }
 }

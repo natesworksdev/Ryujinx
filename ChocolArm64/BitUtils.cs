@@ -36,6 +36,16 @@ namespace ChocolArm64
             return bits == 64 ? -1L : (1L << bits) - 1;
         }
 
+        public static int RotateRight(int bits, int shift, int size)
+        {
+            return (int)RotateRight((uint)bits, shift, size);
+        }
+
+        public static uint RotateRight(uint bits, int shift, int size)
+        {
+            return (bits >> shift) | (bits << (size - shift));
+        }
+
         public static long RotateRight(long bits, int shift, int size)
         {
             return (long)RotateRight((ulong)bits, shift, size);
