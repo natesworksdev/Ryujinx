@@ -125,7 +125,7 @@ namespace ChocolArm64.Translation
                 //after this one, then we have to return right now, with the address
                 //of the next instruction to be executed (in the case that the condition
                 //is false, and the branch was not taken, as all basic blocks should end with
-                //some kind of branch.
+                //some kind of branch).
                 if (CurrOp == CurrBlock.GetLastOp() && CurrBlock.Next == null)
                 {
                     EmitStoreState();

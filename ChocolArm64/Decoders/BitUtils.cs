@@ -1,4 +1,4 @@
-namespace ChocolArm64
+namespace ChocolArm64.Decoders
 {
     static class BitUtils
     {
