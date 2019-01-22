@@ -11,14 +11,14 @@ namespace ChocolArm64.Decoders
             uint pc = GetPc();
 
             //When the codition is never, the instruction is BLX to Thumb mode.
-            if (Cond != Cond.Nv)
+            if (Cond != Condition.Nv)
             {
                 pc &= ~3u;
             }
 
             Imm = pc + DecoderHelper.DecodeImm24_2(opCode);
 
-            if (Cond == Cond.Nv)
+            if (Cond == Condition.Nv)
             {
                 long H = (opCode >> 23) & 2;
 

@@ -6,7 +6,7 @@ namespace ChocolArm64.Decoders
     {
         public OpCodeT16(Inst inst, long position, int opCode) : base(inst, position, opCode)
         {
-            Cond = Cond.Al;
+            Cond = Condition.Al;
 
             OpCodeSizeInBytes = 2;
         }

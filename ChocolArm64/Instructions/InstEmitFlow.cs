@@ -102,7 +102,7 @@ namespace ChocolArm64.Instructions
             EmitBranch(context, ilOp);
         }
 
-        private static void EmitBranch(ILEmitterCtx context, Cond cond)
+        private static void EmitBranch(ILEmitterCtx context, Condition cond)
         {
             OpCodeBImm64 op = (OpCodeBImm64)context.CurrOp;
 

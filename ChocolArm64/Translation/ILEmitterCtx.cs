@@ -108,7 +108,7 @@ namespace ChocolArm64.Translation
             //used by some unconditional instructions.
             ILLabel lblSkip = null;
 
-            if (CurrOp is OpCode32 op && op.Cond < Cond.Al)
+            if (CurrOp is OpCode32 op && op.Cond < Condition.Al)
             {
                 lblSkip = new ILLabel();
 
@@ -138,11 +138,11 @@ namespace ChocolArm64.Translation
             _ilBlock.Add(new ILBarrier());
         }
 
-        private Cond GetInverseCond(Cond cond)
+        private Condition GetInverseCond(Condition cond)
         {
             //Bit 0 of all conditions is basically a negation bit, so
             //inverting this bit has the effect of inverting the condition.
-            return (Cond)((int)cond ^ 1);
+            return (Condition)((int)cond ^ 1);
         }
 
         private void EmitSynchronization()
@@ -292,21 +292,21 @@ namespace ChocolArm64.Translation
             Stloc(CmpOptTmp1Index, IoType.Int);
         }
 
-        private Dictionary<Cond, OpCode> _branchOps = new Dictionary<Cond, OpCode>()
+        private Dictionary<Condition, OpCode> _branchOps = new Dictionary<Condition, OpCode>()
         {
-            { Cond.Eq,   OpCodes.Beq    },
-            { Cond.Ne,   OpCodes.Bne_Un },
-            { Cond.GeUn, OpCodes.Bge_Un },
-            { Cond.LtUn, OpCodes.Blt_Un },
-            { Cond.GtUn, OpCodes.Bgt_Un },
-            { Cond.LeUn, OpCodes.Ble_Un },
-            { Cond.Ge,   OpCodes.Bge    },
-            { Cond.Lt,   OpCodes.Blt    },
-            { Cond.Gt,   OpCodes.Bgt    },
-            { Cond.Le,   OpCodes.Ble    }
+            { Condition.Eq,   OpCodes.Beq    },
+            { Condition.Ne,   OpCodes.Bne_Un },
+            { Condition.GeUn, OpCodes.Bge_Un },
+            { Condition.LtUn, OpCodes.Blt_Un },
+            { Condition.GtUn, OpCodes.Bgt_Un },
+            { Condition.LeUn, OpCodes.Ble_Un },
+            { Condition.Ge,   OpCodes.Bge    },
+            { Condition.Lt,   OpCodes.Blt    },
+            { Condition.Gt,   OpCodes.Bgt    },
+            { Condition.Le,   OpCodes.Ble    }
         };
 
-        public void EmitCondBranch(ILLabel target, Cond cond)
+        public void EmitCondBranch(ILLabel target, Condition cond)
         {
             OpCode ilOp;
 

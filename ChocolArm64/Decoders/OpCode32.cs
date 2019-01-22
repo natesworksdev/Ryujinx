@@ -5,13 +5,13 @@ namespace ChocolArm64.Decoders
 {
     class OpCode32 : OpCode64
     {
-        public Cond Cond { get; protected set; }
+        public Condition Cond { get; protected set; }
 
         public OpCode32(Inst inst, long position, int opCode) : base(inst, position, opCode)
         {
             RegisterSize = RegisterSize.Int32;
 
-            Cond = (Cond)((uint)opCode >> 28);
+            Cond = (Condition)((uint)opCode >> 28);
         }
 
         public uint GetPc()

@@ -161,7 +161,7 @@ namespace ChocolArm64.Decoders
             //Note: On ARM32, most instructions have conditional execution,
             //so there's no "Always" (unconditional) branch like on ARM64.
             //We need to check if the condition is "Always" instead.
-            return IsAarch32Branch(op) && op.Cond >= Cond.Al;
+            return IsAarch32Branch(op) && op.Cond >= Condition.Al;
         }
 
         private static bool IsAarch32Branch(OpCode64 opCode)
