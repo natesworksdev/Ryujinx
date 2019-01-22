@@ -500,268 +500,78 @@ namespace ChocolArm64.Instructions
             return Sse41.Insert(vector, Vector128.CreateScalarUnsafe(value), 0b1110);
         }
 
+        // Zero helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<sbyte> VectorSByteZero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Vector128<sbyte>.Zero;
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<sbyte> VectorSByteZero()   => Vector128<sbyte>.Zero;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<short> VectorInt16Zero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Vector128<short>.Zero;
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<short> VectorInt16Zero()   => Vector128<short>.Zero;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<int> VectorInt32Zero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Vector128<int>.Zero;
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<int> VectorInt32Zero()     => Vector128<int>.Zero;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<long> VectorInt64Zero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Vector128<long>.Zero;
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<long> VectorInt64Zero()    => Vector128<long>.Zero;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorSingleZero()
-        {
-            if (Sse.IsSupported)
-            {
-                return Vector128<float>.Zero;
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorSingleZero()  => Vector128<float>.Zero;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<double> VectorDoubleZero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Vector128<double>.Zero;
-            }
+        public static Vector128<double> VectorDoubleZero() => Vector128<double>.Zero;
 
-            throw new PlatformNotSupportedException();
-        }
+        // Cast helpers
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<sbyte> VectorSingleToSByte(Vector128<float> vector)   => vector.As<sbyte>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<sbyte> VectorSingleToSByte(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<sbyte>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<short> VectorSingleToInt16(Vector128<float> vector)   => vector.As<short>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<short> VectorSingleToInt16(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<short>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<int> VectorSingleToInt32(Vector128<float> vector)     => vector.As<int>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<int> VectorSingleToInt32(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<int>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<long> VectorSingleToInt64(Vector128<float> vector)    => vector.As<long>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<long> VectorSingleToInt64(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<long>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<byte> VectorSingleToByte(Vector128<float> vector)     => vector.As<byte>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<byte> VectorSingleToByte(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<byte>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<ushort> VectorSingleToUInt16(Vector128<float> vector) => vector.As<ushort>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<ushort> VectorSingleToUInt16(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<ushort>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<uint> VectorSingleToUInt32(Vector128<float> vector)   => vector.As<uint>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<uint> VectorSingleToUInt32(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<uint>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<ulong> VectorSingleToUInt64(Vector128<float> vector)  => vector.As<ulong>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<ulong> VectorSingleToUInt64(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<ulong>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<double> VectorSingleToDouble(Vector128<float> vector) => vector.As<double>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<double> VectorSingleToDouble(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<double>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorSByteToSingle(Vector128<sbyte> vector)   => vector.As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorSByteToSingle(Vector128<sbyte> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorInt16ToSingle(Vector128<short> vector)   => vector.As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorInt16ToSingle(Vector128<short> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorInt32ToSingle(Vector128<int> vector)     => vector.As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorInt32ToSingle(Vector128<int> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorInt64ToSingle(Vector128<long> vector)    => vector.As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorInt64ToSingle(Vector128<long> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorByteToSingle(Vector128<byte> vector)     => vector.As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorByteToSingle(Vector128<byte> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorUInt16ToSingle(Vector128<ushort> vector) => vector.As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorUInt16ToSingle(Vector128<ushort> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorUInt32ToSingle(Vector128<uint> vector)   => vector.As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorUInt32ToSingle(Vector128<uint> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorUInt64ToSingle(Vector128<ulong> vector)  => vector.As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorUInt64ToSingle(Vector128<ulong> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorDoubleToSingle(Vector128<double> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return vector.As<float>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
+        public static Vector128<float> VectorDoubleToSingle(Vector128<double> vector) => vector.As<float>();
     }
 }
