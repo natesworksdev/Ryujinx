@@ -15,7 +15,7 @@ namespace ChocolArm64.Instructions
             context.EmitLdtmp();
             context.EmitLdtmp();
 
-            EmitDataLoadRn(context);
+            EmitAluLoadRn(context);
 
             context.Emit(OpCodes.Ceq);
 
@@ -25,7 +25,7 @@ namespace ChocolArm64.Instructions
 
             context.EmitLdtmp();
 
-            EmitDataLoadRn(context);
+            EmitAluLoadRn(context);
 
             context.Emit(OpCodes.Clt_Un);
             context.Emit(OpCodes.Or);
@@ -38,7 +38,7 @@ namespace ChocolArm64.Instructions
             //C = Rd < Rn
             context.Emit(OpCodes.Dup);
 
-            EmitDataLoadRn(context);
+            EmitAluLoadRn(context);
 
             context.Emit(OpCodes.Clt_Un);
 
@@ -50,11 +50,11 @@ namespace ChocolArm64.Instructions
             //V = (Rd ^ Rn) & ~(Rn ^ Rm) < 0
             context.Emit(OpCodes.Dup);
 
-            EmitDataLoadRn(context);
+            EmitAluLoadRn(context);
 
             context.Emit(OpCodes.Xor);
 
-            EmitDataLoadOpers(context);
+            EmitAluLoadOpers(context);
 
             context.Emit(OpCodes.Xor);
             context.Emit(OpCodes.Not);
@@ -70,7 +70,7 @@ namespace ChocolArm64.Instructions
         public static void EmitSbcsCCheck(ILEmitterCtx context)
         {
             //C = (Rn == Rm && CIn) || Rn > Rm
-            EmitDataLoadOpers(context);
+            EmitAluLoadOpers(context);
 
             context.Emit(OpCodes.Ceq);
 
@@ -78,7 +78,7 @@ namespace ChocolArm64.Instructions
 
             context.Emit(OpCodes.And);
 
-            EmitDataLoadOpers(context);
+            EmitAluLoadOpers(context);
 
             context.Emit(OpCodes.Cgt_Un);
             context.Emit(OpCodes.Or);
@@ -89,7 +89,7 @@ namespace ChocolArm64.Instructions
         public static void EmitSubsCCheck(ILEmitterCtx context)
         {
             //C = Rn == Rm || Rn > Rm = !(Rn < Rm)
-            EmitDataLoadOpers(context);
+            EmitAluLoadOpers(context);
 
             context.Emit(OpCodes.Clt_Un);
 
@@ -105,11 +105,11 @@ namespace ChocolArm64.Instructions
             //V = (Rd ^ Rn) & (Rn ^ Rm) < 0
             context.Emit(OpCodes.Dup);
 
-            EmitDataLoadRn(context);
+            EmitAluLoadRn(context);
 
             context.Emit(OpCodes.Xor);
 
-            EmitDataLoadOpers(context);
+            EmitAluLoadOpers(context);
 
             context.Emit(OpCodes.Xor);
             context.Emit(OpCodes.And);
@@ -121,7 +121,7 @@ namespace ChocolArm64.Instructions
             context.EmitStflg((int)PState.VBit);
         }
 
-        public static void EmitDataLoadRm(ILEmitterCtx context)
+        public static void EmitAluLoadRm(ILEmitterCtx context)
         {
             if (context.CurrOp is IOpCodeAluRs64 op)
             {
@@ -137,13 +137,13 @@ namespace ChocolArm64.Instructions
             }
         }
 
-        public static void EmitDataLoadOpers(ILEmitterCtx context, bool setCarry = true)
+        public static void EmitAluLoadOpers(ILEmitterCtx context, bool setCarry = true)
         {
-            EmitDataLoadRn(context);
-            EmitDataLoadOper2(context, setCarry);
+            EmitAluLoadRn(context);
+            EmitAluLoadOper2(context, setCarry);
         }
 
-        public static void EmitDataLoadRn(ILEmitterCtx context)
+        public static void EmitAluLoadRn(ILEmitterCtx context)
         {
             if (context.CurrOp is IOpCodeAlu64 op)
             {
@@ -166,7 +166,7 @@ namespace ChocolArm64.Instructions
             }
         }
 
-        public static void EmitDataLoadOper2(ILEmitterCtx context, bool setCarry = true)
+        public static void EmitAluLoadOper2(ILEmitterCtx context, bool setCarry = true)
         {
             switch (context.CurrOp)
             {

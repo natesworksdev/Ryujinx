@@ -14,7 +14,7 @@ namespace ChocolArm64.Instructions
         {
             IOpCodeAlu32 op = (IOpCodeAlu32)context.CurrOp;
 
-            EmitDataLoadOpers(context, setCarry: false);
+            EmitAluLoadOpers(context, setCarry: false);
 
             context.Emit(OpCodes.Add);
 
@@ -33,7 +33,7 @@ namespace ChocolArm64.Instructions
         {
             IOpCodeAlu32 op = (IOpCodeAlu32)context.CurrOp;
 
-            EmitDataLoadOper2(context);
+            EmitAluLoadOper2(context);
 
             if (op.SetFlags)
             {
@@ -47,7 +47,7 @@ namespace ChocolArm64.Instructions
         {
             IOpCodeAlu32 op = (IOpCodeAlu32)context.CurrOp;
 
-            EmitDataLoadOpers(context, setCarry: false);
+            EmitAluLoadOpers(context, setCarry: false);
 
             context.Emit(OpCodes.Sub);
 

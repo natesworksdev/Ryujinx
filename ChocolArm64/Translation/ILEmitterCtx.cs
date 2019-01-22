@@ -286,7 +286,7 @@ namespace ChocolArm64.Translation
         {
             _optOpLastCompare = CurrOp;
 
-            InstEmitAluHelper.EmitDataLoadOpers(this);
+            InstEmitAluHelper.EmitAluLoadOpers(this);
 
             Stloc(CmpOptTmp2Index, IoType.Int);
             Stloc(CmpOptTmp1Index, IoType.Int);
