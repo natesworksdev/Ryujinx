@@ -239,21 +239,7 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public Vector128<float> ReadVector8(long position)
-        {
-            if (Sse2.IsSupported)
-            {
-                return Vector128.Create(ReadByte(position), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0).As<float>();
-            }
-            else
-            {
-                Vector128<float> value = VectorHelper.VectorSingleZero();
-
-                value = VectorHelper.VectorInsertInt(ReadByte(position), value, 0, 0);
-
-                return value;
-            }
-        }
+        public Vector128<float> ReadVector8(long position) => Vector128.Create(ReadByte(position), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0).As<float>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector128<float> ReadVector16(long position)

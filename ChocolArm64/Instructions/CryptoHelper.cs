@@ -317,11 +317,6 @@ namespace ChocolArm64.Instructions
 
         private unsafe static void FromByteArrayToVector(byte[] state, ref Vector128<float> op)
         {
-            if (!Sse2.IsSupported)
-            {
-                throw new PlatformNotSupportedException();
-            }
-
             fixed (byte* ptr = &state[0])
             {
                 op = Sse.StaticCast<byte, float>(Sse2.LoadVector128(ptr));
