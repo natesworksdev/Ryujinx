@@ -1,5 +1,6 @@
 ﻿using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.FspSrv;
+using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -278,6 +279,31 @@ namespace Ryujinx.HLE.FileSystem
             }
 
             throw new InvalidOperationException($"Path {path} is not a child directory of {_rootPath}");
+        }
+
+
+        public (DateTime, DateTime, DateTime) GetFileTimeStampRaw(string name)
+        {
+            CheckIfDescendentOfRootPath(name);
+
+            DateTime creationDate   = DateTime.UnixEpoch;
+            DateTime modifiedDate   = DateTime.UnixEpoch;
+            DateTime lastAccessDate = DateTime.UnixEpoch;
+
+            if (File.Exists(name))
+            {
+                creationDate = File.GetCreationTime(name);
+                modifiedDate = File.GetLastWriteTime(name);
+                lastAccessDate = File.GetLastAccessTime(name);
+            }
+            else if (Directory.Exists(name))
+            {
+                creationDate = Directory.GetCreationTime(name);
+                modifiedDate = Directory.GetLastWriteTime(name);
+                lastAccessDate = Directory.GetLastAccessTime(name);
+            }
+
+            return (creationDate, modifiedDate, lastAccessDate);
         }
     }
 }

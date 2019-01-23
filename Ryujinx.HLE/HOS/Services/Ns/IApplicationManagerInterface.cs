@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Ipc;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Ns
@@ -15,8 +16,16 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                
+                { 400, GetApplicationControlData }
             };
+        }
+
+        // TODO: implement this at some point
+        public long GetApplicationControlData(ServiceCtx context)
+        {
+            Logger.PrintStub(LogClass.ServiceNs, "Stubbed.");
+
+            return 0xDEAD;
         }
     }
 }
