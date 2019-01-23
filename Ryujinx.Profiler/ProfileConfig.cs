@@ -15,7 +15,7 @@ namespace Ryujinx.Profiler
         {
             public static ProfileConfig Test = new ProfileConfig()
             {
-                Name = "Test",
+                Name = "CPU.Test",
             };
         }
     }
