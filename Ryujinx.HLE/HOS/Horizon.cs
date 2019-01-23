@@ -225,11 +225,6 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            if (!metaData.Is64Bits)
-            {
-                throw new NotImplementedException("32-bit titles are unsupported!");
-            }
-
             CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
 
             LoadNso("rtld");
@@ -541,11 +536,6 @@ namespace Ryujinx.HLE.HOS
             else
             {
                 CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
-            }
-
-            if (!metaData.Is64Bits)
-            {
-                throw new NotImplementedException("32-bit titles are not supported!");
             }
 
             LoadNso("rtld");
