@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Ryujinx.Profiler;
 
 namespace Ryujinx
 {
@@ -61,6 +62,15 @@ namespace Ryujinx
                     }
                 }
             }
+
+
+            string profilePath = parser.Value("Profile_Dump_Path");
+            Profile.Configure(new ProfilerSettings()
+            {
+                Enabled         = Convert.ToBoolean(parser.Value("Profiling_Enabled")),
+                FileDumpEnabled = profilePath != "",
+                DumpLocation    = profilePath,
+            });
 
             SystemLanguage SetLanguage = Enum.Parse<SystemLanguage>(parser.Value("System_Language"));
 

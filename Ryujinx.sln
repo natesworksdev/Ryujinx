@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luea", "Ryujinx.LLE\Luea.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Common", "Ryujinx.Common\Ryujinx.Common.csproj", "{5FD4E4F6-8928-4B3C-BE07-28A675C17226}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Profiler", "Ryujinx.Profiler\Ryujinx.Profiler.csproj", "{4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{5FD4E4F6-8928-4B3C-BE07-28A675C17226}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FD4E4F6-8928-4B3C-BE07-28A675C17226}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FD4E4F6-8928-4B3C-BE07-28A675C17226}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
