@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
@@ -80,9 +81,10 @@ namespace Ryujinx.Graphics
             {
                 ImageType Type = ImageTypes[Position];
 
+                // FIXME(thog): I'm actually unsure if we should allow other image type, gpu testing needs to be done here.
                 if (Type != ImageType.Texture && Type != ImageType.TextureArrayLayer)
                 {
-                    throw new InvalidOperationException();
+                    Logger.PrintWarning(LogClass.Gpu, $"Possible invalid layer type detected! (ImageType.{Type})");
                 }
 
                 return true;
