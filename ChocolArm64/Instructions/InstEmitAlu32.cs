@@ -106,7 +106,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitAluWritePc(ILEmitterCtx context)
         {
-            if (context.CurrOp is OpCodeT16)
+            if (IsThumb(context.CurrOp))
             {
                 context.EmitLdc_I4(~1);
 
