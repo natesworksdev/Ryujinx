@@ -10,10 +10,10 @@ namespace Ryujinx.Profiler
             String fileData = "";
             foreach (var time in profile.Timers)
             {
-                fileData += $"{time.Key} - " +
+                fileData += $"{time.Key.Tag} - " +
                             $"Total: {profile.ConvertTicksToMS(time.Value.TotalTime)}ms, " +
                             $"Average: {profile.ConvertTicksToMS(time.Value.AverageTime)}ms, " +
-                            $"Count: {time.Value.Count}\n";
+                            $"Count: {time.Value.Count}\r\n";
             }
 
             // Ensure file directory exists before write

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Profiler
 {
-    public class Profile
+    public static class Profile
     {
         // Static
         private static InternalProfile ProfileInstance;
@@ -55,6 +55,13 @@ namespace Ryujinx.Profiler
             Begin(config);
             method();
             End(config);
+        }
+
+        public static int GetSession()
+        {
+            if (!ProfilingEnabled())
+                return 0;
+            return ProfileInstance.GetSession();
         }
     }
 }

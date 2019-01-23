@@ -7,11 +7,14 @@ namespace Ryujinx.Profiler
     public class InternalProfile
     {
         private Stopwatch SW;
-        internal ConcurrentDictionary<string, TimingInfo> Timers;
+        internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers;
+
+        private object sessionLock = new object();
+        private int sessionCounter = 0;
 
         public InternalProfile()
         {
-            Timers = new ConcurrentDictionary<string, TimingInfo>();
+            Timers = new ConcurrentDictionary<ProfileConfig, TimingInfo>();
             SW = new Stopwatch();
             SW.Start();
         }
@@ -20,8 +23,8 @@ namespace Ryujinx.Profiler
         {
             long timestamp = SW.ElapsedTicks;
 
-            Timers.AddOrUpdate(config.Name,
-                (string s) => CreateTimer(timestamp),
+            Timers.AddOrUpdate(config,
+                (c) => CreateTimer(timestamp),
                 ((s, info) =>
                 {
                     info.BeginTime = timestamp;
@@ -33,8 +36,8 @@ namespace Ryujinx.Profiler
         {
             long timestamp = SW.ElapsedTicks;
 
-            Timers.AddOrUpdate(config.Name,
-                (s => new TimingInfo()),
+            Timers.AddOrUpdate(config,
+                (c => new TimingInfo()),
                 ((s, time) => UpdateTimer(time, timestamp)));
         }
 
@@ -60,6 +63,15 @@ namespace Ryujinx.Profiler
         public double ConvertTicksToMS(long ticks)
         {
             return (((double)ticks) / Stopwatch.Frequency) * 1000.0;
+        }
+
+        public int GetSession()
+        {
+            // Can be called from multiple threads so locked to ensure no duplicate sessions are generated
+            lock (sessionLock)
+            {
+                return sessionCounter++;
+            }
         }
     }
 }
