@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Ryujinx.Profiler;
+using Ryujinx.Ui;
 
 namespace Ryujinx
 {
@@ -18,6 +19,7 @@ namespace Ryujinx
     {
         public static NpadKeyboard   NpadKeyboard   { get; private set; }
         public static NpadController NpadController { get; private set; }
+        public static NPadDebug      NPadDebug      { get; private set; }
 
         public static void Read(Switch device)
         {
@@ -158,6 +160,12 @@ namespace Ryujinx
                     ButtonPlus  = ToId(parser.Value("Controls_Right_JoyConController_Button_Plus")),
                     ButtonR     = ToId(parser.Value("Controls_Right_JoyConController_Button_R")),
                     ButtonZr    = ToId(parser.Value("Controls_Right_JoyConController_Button_ZR"))
+                });
+
+            NPadDebug = new NPadDebug(
+                new NPadDebugButtons()
+                {
+                    ToggleProfiler = Convert.ToInt16(parser.Value(("Controls_Debug_Toggle_Profiler"))),
                 });
         }
 

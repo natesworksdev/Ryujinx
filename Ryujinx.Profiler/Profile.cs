@@ -8,7 +8,7 @@ namespace Ryujinx.Profiler
         private static InternalProfile ProfileInstance;
         private static ProfilerSettings Settings;
 
-        private static bool ProfilingEnabled()
+        public static bool ProfilingEnabled()
         {
             if (!Settings.Enabled)
                 return false;

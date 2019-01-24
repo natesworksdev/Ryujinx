@@ -4,6 +4,8 @@ using OpenTK.Input;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
+using Ryujinx.Profiler;
+using Ryujinx.Profiler.UI;
 using System;
 using System.Threading;
 
@@ -28,6 +30,8 @@ namespace Ryujinx
 
         private Thread _renderThread;
 
+        private ProfileWindowManager _profileWindow;
+
         private bool _resizeEvent;
 
         private bool _titleEvent;
@@ -46,6 +50,9 @@ namespace Ryujinx
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
+            
+            // Start profile window, it will handle itself from there
+            _profileWindow = new ProfileWindowManager();
         }
 
         private void RenderLoop()
@@ -142,6 +149,14 @@ namespace Ryujinx
             {
                 KeyboardState keyboard = _keyboard.Value;
 
+                // Debug
+                if (Config.NPadDebug.TogglePressed(keyboard))
+                {
+                    _profileWindow.ToggleVisible();
+                }
+                Config.NPadDebug.SetPrevKeyboardState(keyboard);
+
+                // Normal Input
                 currentButton = Config.NpadKeyboard.GetButtons(keyboard);
 
                 (leftJoystickDx, leftJoystickDy) = Config.NpadKeyboard.GetLeftStick(keyboard);
