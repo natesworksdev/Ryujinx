@@ -65,12 +65,12 @@ namespace Ryujinx.Profiler
             return (((double)ticks) / Stopwatch.Frequency) * 1000.0;
         }
 
-        public int GetSession()
+        public string GetSession()
         {
             // Can be called from multiple threads so locked to ensure no duplicate sessions are generated
             lock (sessionLock)
             {
-                return sessionCounter++;
+                return (sessionCounter++).ToString();
             }
         }
     }

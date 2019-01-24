@@ -10,6 +10,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Tests.Unicorn", "Ryujinx.Tests.Unicorn\Ryujinx.Tests.Unicorn.csproj", "{D8F72938-78EF-4E8C-BAFE-531C9C3C8F15}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.HLE", "Ryujinx.HLE\Ryujinx.HLE.csproj", "{CB92CFF9-1D62-4D4F-9E88-8130EF61E351}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34} = {4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChocolArm64", "ChocolArm64\ChocolArm64.csproj", "{2345A1A7-8DEF-419B-9AFB-4DFD41D20D05}"
 EndProject
@@ -23,7 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luea", "Ryujinx.LLE\Luea.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Common", "Ryujinx.Common\Ryujinx.Common.csproj", "{5FD4E4F6-8928-4B3C-BE07-28A675C17226}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Profiler", "Ryujinx.Profiler\Ryujinx.Profiler.csproj", "{4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Profiler", "Ryujinx.Profiler\Ryujinx.Profiler.csproj", "{4E69B67F-8CA7-42CF-A9E1-CCB0915DFB34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,7 +7,7 @@ namespace Ryujinx.Profiler
     public struct ProfileConfig
     {
         public string Name;
-        public int? Session;
+        public string Session;
 
         private string cachedTag;
 
@@ -31,5 +31,10 @@ namespace Ryujinx.Profiler
                 Name = "CPU.Test",
             };
         }
+
+        public static ProfileConfig ServiceCall = new ProfileConfig()
+        {
+            Name = "ServiceCall",
+        };
     }
 }

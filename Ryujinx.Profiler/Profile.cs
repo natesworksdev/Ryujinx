@@ -57,10 +57,10 @@ namespace Ryujinx.Profiler
             End(config);
         }
 
-        public static int GetSession()
+        public static string GetSession()
         {
             if (!ProfilingEnabled())
-                return 0;
+                return null;
             return ProfileInstance.GetSession();
         }
     }
