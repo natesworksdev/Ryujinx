@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace Ryujinx.Profiler
 {
@@ -8,7 +9,7 @@ namespace Ryujinx.Profiler
         public static void ToFile(string path, InternalProfile profile)
         {
             String fileData = "";
-            foreach (var time in profile.Timers)
+            foreach (var time in profile.Timers.OrderBy(key => key.Key.Tag))
             {
                 fileData += $"{time.Key.Tag} - " +
                             $"Total: {profile.ConvertTicksToMS(time.Value.TotalTime)}ms, " +
