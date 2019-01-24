@@ -6,7 +6,7 @@ namespace Ryujinx.Profiler
 {
     public struct ProfileConfig
     {
-        public string Name;
+        public string Category;
         public string SessionGroup, SessionItem;
 
         private string cachedTag, cachedSession;
@@ -16,7 +16,7 @@ namespace Ryujinx.Profiler
             get
             {
                 if (cachedTag == null)
-                    cachedTag = $"{Name}{(Session == "" ? "" : $" ({Session})")}";
+                    cachedTag = $"{Category}{(Session == "" ? "" : $" ({Session})")}";
                 return cachedTag;
             }
         }
@@ -56,14 +56,14 @@ namespace Ryujinx.Profiler
         {
             public static ProfileConfig Test = new ProfileConfig()
             {
-                Name = "CPU",
+                Category = "CPU",
                 SessionGroup = "Test"
             };
         }
 
         public static ProfileConfig ServiceCall = new ProfileConfig()
         {
-            Name = "ServiceCall",
+            Category = "ServiceCall",
         };
     }
 }

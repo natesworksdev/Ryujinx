@@ -8,11 +8,11 @@ namespace Ryujinx.Profiler
     {
         public static void ToFile(string path, InternalProfile profile)
         {
-            String fileData = "Name,Session Group,Session Item,Count,Average(ms),Total(ms)\r\n";
+            String fileData = "Category,Session Group,Session Item,Count,Average(ms),Total(ms)\r\n";
 
             foreach (var time in profile.Timers.OrderBy(key => key.Key.Tag))
             {
-                fileData += $"{time.Key.Name}," +
+                fileData += $"{time.Key.Category}," +
                             $"{time.Key.SessionGroup}," +
                             $"{time.Key.SessionItem}," +
                             $"{time.Value.Count}," +
