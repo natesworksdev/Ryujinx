@@ -8,13 +8,15 @@ namespace Ryujinx.Profiler
     {
         public static void ToFile(string path, InternalProfile profile)
         {
-            String fileData = "";
+            String fileData = "Name,Session,Count,Average(ms),Total(ms)\r\n";
+
             foreach (var time in profile.Timers.OrderBy(key => key.Key.Tag))
             {
-                fileData += $"{time.Key.Tag} - " +
-                            $"Total: {profile.ConvertTicksToMS(time.Value.TotalTime)}ms, " +
-                            $"Average: {profile.ConvertTicksToMS(time.Value.AverageTime)}ms, " +
-                            $"Count: {time.Value.Count}\r\n";
+                fileData += $"{time.Key.Name}," +
+                            $"{time.Key.Session}," +
+                            $"{time.Value.Count}," +
+                            $"{profile.ConvertTicksToMS(time.Value.AverageTime)}," +
+                            $"{profile.ConvertTicksToMS(time.Value.TotalTime)}\r\n";
             }
 
             // Ensure file directory exists before write
