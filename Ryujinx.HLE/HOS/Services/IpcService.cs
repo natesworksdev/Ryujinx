@@ -97,7 +97,8 @@ namespace Ryujinx.HLE.HOS.Services
                 Logger.PrintDebug(LogClass.KernelIpc, $"{service.GetType().Name}: {processRequest.Method.Name}");
 
                 ProfileConfig profile = Profiles.ServiceCall;
-                profile.Session = $"{service.GetType().Name}: {processRequest.Method.Name}";
+                profile.SessionGroup = service.GetType().Name;
+                profile.SessionItem = processRequest.Method.Name;
 
                 Profile.Begin(profile);
                 long result = processRequest(context);

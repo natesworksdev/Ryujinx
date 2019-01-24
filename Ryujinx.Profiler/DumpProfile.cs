@@ -8,12 +8,13 @@ namespace Ryujinx.Profiler
     {
         public static void ToFile(string path, InternalProfile profile)
         {
-            String fileData = "Name,Session,Count,Average(ms),Total(ms)\r\n";
+            String fileData = "Name,Session Group,Session Item,Count,Average(ms),Total(ms)\r\n";
 
             foreach (var time in profile.Timers.OrderBy(key => key.Key.Tag))
             {
                 fileData += $"{time.Key.Name}," +
-                            $"{time.Key.Session}," +
+                            $"{time.Key.SessionGroup}," +
+                            $"{time.Key.SessionItem}," +
                             $"{time.Value.Count}," +
                             $"{profile.ConvertTicksToMS(time.Value.AverageTime)}," +
                             $"{profile.ConvertTicksToMS(time.Value.TotalTime)}\r\n";

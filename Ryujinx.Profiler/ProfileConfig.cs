@@ -7,17 +7,45 @@ namespace Ryujinx.Profiler
     public struct ProfileConfig
     {
         public string Name;
-        public string Session;
+        public string SessionGroup, SessionItem;
 
-        private string cachedTag;
+        private string cachedTag, cachedSession;
 
         public string Tag
         {
             get
             {
                 if (cachedTag == null)
-                    cachedTag = $"{Name}{(Session == null ? "" : $" ({Session})")}";
+                    cachedTag = $"{Name}{(Session == "" ? "" : $" ({Session})")}";
                 return cachedTag;
+            }
+        }
+
+        public string Session
+        {
+            get
+            {
+                if (cachedSession == null)
+                {
+                    if (SessionGroup != null && SessionItem != null)
+                    {
+                        cachedSession = $"{SessionGroup}: {SessionItem}";
+                    }
+                    else if (SessionGroup != null)
+                    {
+                        cachedSession = $"{SessionGroup}";
+                    }
+                    else if (SessionItem != null)
+                    {
+                        cachedSession = $"---: {SessionItem}";
+                    }
+                    else
+                    {
+                        cachedSession = "";
+                    }
+                }
+
+                return cachedSession;
             }
         }
     }
@@ -28,7 +56,8 @@ namespace Ryujinx.Profiler
         {
             public static ProfileConfig Test = new ProfileConfig()
             {
-                Name = "CPU.Test",
+                Name = "CPU",
+                SessionGroup = "Test"
             };
         }
 
