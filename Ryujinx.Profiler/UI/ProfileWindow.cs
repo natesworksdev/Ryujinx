@@ -22,7 +22,8 @@ namespace Ryujinx
             AverageTitle = 2,
             TotalTitle = 3,
             FilterBar = 4,
-            ShowHideInactive = 5
+            ShowHideInactive = 5,
+            Pause = 6,
         }
 
         private bool visible = true, initComplete = false;
@@ -39,7 +40,7 @@ namespace Ryujinx
         private string FilterText = "";
         private double BackspaceDownTime, UpdateTimer;
         private bool BackspaceDown = false, prevBackspaceDown = false, regexEnabled = false, ProfileUpdated = false;
-        private bool showInactive = true;
+        private bool showInactive = true, Paused = false;
 
         public ProfileWindow()
             : base(400, 720)
@@ -73,7 +74,7 @@ namespace Ryujinx
             fontService.InitalizeTextures();
             fontService.UpdateScreenHeight(Height);
 
-            buttons = new ProfileButton[6];
+            buttons = new ProfileButton[7];
             buttons[(int)ButtonIndex.TagTitle]         = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TagAscending());
             buttons[(int)ButtonIndex.InstantTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.InstantAscending());
             buttons[(int)ButtonIndex.AverageTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.AverageAscending());
@@ -87,6 +88,11 @@ namespace Ryujinx
             {
                 ProfileUpdated = true;
                 showInactive = !showInactive;
+            });
+            buttons[(int)ButtonIndex.Pause] = new ProfileButton(fontService, () =>
+            {
+                ProfileUpdated = true;
+                Paused = !Paused;
             });
         }
         #endregion
@@ -154,7 +160,7 @@ namespace Ryujinx
 
             // Get timing data if enough time has passed
             UpdateTimer += e.Time;
-            if (UpdateTimer > Profile.GetUpdateRate())
+            if (!Paused && (UpdateTimer > Profile.GetUpdateRate()))
             {
                 UpdateTimer %= Profile.GetUpdateRate();
                 rawPofileData = Profile.GetProfilingData().ToList();
@@ -425,11 +431,14 @@ namespace Ryujinx
             buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);
 
             // Show/Hide Inactive
-            width = buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(showInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
+            float widthShowHideButton = buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(showInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
+
+            // Play/Pause
+            width = buttons[(int)ButtonIndex.Pause].UpdateSize(Paused ? "Play" : "Pause", 15 + (int)widthShowHideButton, 5, 4, 16) + widthShowHideButton;
 
             // Filter bar
-            fontService.DrawText($"{(regexEnabled ? "Regex " : "Filter")}: {FilterText}", 15 + width, 7, 16);
-            buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(15 + width), 0, 0, Width, filterHeight);
+            fontService.DrawText($"{(regexEnabled ? "Regex " : "Filter")}: {FilterText}", 25 + width, 7, 16);
+            buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(25 + width), 0, 0, Width, filterHeight);
 
             // Draw buttons
             foreach (ProfileButton button in buttons)
@@ -449,8 +458,11 @@ namespace Ryujinx
             GL.Vertex2(Width, filterHeight);
 
             // Bottom vertical divider
-            GL.Vertex2(width + 10, 0);
-            GL.Vertex2(width + 10, filterHeight);
+            GL.Vertex2(widthShowHideButton + 10, 0);
+            GL.Vertex2(widthShowHideButton + 10, filterHeight);
+
+            GL.Vertex2(width + 20, 0);
+            GL.Vertex2(width + 20, filterHeight);
             GL.End();
             SwapBuffers();
         }
