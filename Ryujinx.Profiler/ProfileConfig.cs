@@ -9,7 +9,7 @@ namespace Ryujinx.Profiler
         public string Category;
         public string SessionGroup, SessionItem;
 
-        private string cachedTag, cachedSession;
+        private string CachedTag, CachedSession;
 
         public string Search => $"{Category}.{SessionGroup}.{SessionItem}";
 
@@ -17,9 +17,9 @@ namespace Ryujinx.Profiler
         {
             get
             {
-                if (cachedTag == null)
-                    cachedTag = $"{Category}{(Session == "" ? "" : $" ({Session})")}";
-                return cachedTag;
+                if (CachedTag == null)
+                    CachedTag = $"{Category}{(Session == "" ? "" : $" ({Session})")}";
+                return CachedTag;
             }
         }
 
@@ -27,27 +27,27 @@ namespace Ryujinx.Profiler
         {
             get
             {
-                if (cachedSession == null)
+                if (CachedSession == null)
                 {
                     if (SessionGroup != null && SessionItem != null)
                     {
-                        cachedSession = $"{SessionGroup}: {SessionItem}";
+                        CachedSession = $"{SessionGroup}: {SessionItem}";
                     }
                     else if (SessionGroup != null)
                     {
-                        cachedSession = $"{SessionGroup}";
+                        CachedSession = $"{SessionGroup}";
                     }
                     else if (SessionItem != null)
                     {
-                        cachedSession = $"---: {SessionItem}";
+                        CachedSession = $"---: {SessionItem}";
                     }
                     else
                     {
-                        cachedSession = "";
+                        CachedSession = "";
                     }
                 }
 
-                return cachedSession;
+                return CachedSession;
             }
         }
     }

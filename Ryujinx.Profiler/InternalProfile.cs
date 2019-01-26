@@ -11,8 +11,8 @@ namespace Ryujinx.Profiler
         private Stopwatch SW;
         internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers;
 
-        private readonly object sessionLock = new object();
-        private int sessionCounter = 0;
+        private readonly object SessionLock = new object();
+        private int SessionCounter = 0;
 
         public InternalProfile()
         {
@@ -69,9 +69,9 @@ namespace Ryujinx.Profiler
         public string GetSession()
         {
             // Can be called from multiple threads so locked to ensure no duplicate sessions are generated
-            lock (sessionLock)
+            lock (SessionLock)
             {
-                return (sessionCounter++).ToString();
+                return (SessionCounter++).ToString();
             }
         }
 

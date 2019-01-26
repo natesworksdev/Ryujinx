@@ -19,7 +19,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
         private const int SheetWidth = 256;
         private const int SheetHeight = 256;
         private int ScreenWidth, ScreenHeight;
-        private int characterTextureSheet;
+        private int CharacterTextureSheet;
         private CharacterInfo[] characters;
 
         public Color fontColor = Color.Black;
@@ -62,8 +62,8 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             }
 
             // Convert raw data into texture
-            characterTextureSheet = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, characterTextureSheet);
+            CharacterTextureSheet = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, CharacterTextureSheet);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
@@ -93,7 +93,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             if (draw)
             {
                 // Use font map texture
-                GL.BindTexture(TextureTarget.Texture2D, characterTextureSheet);
+                GL.BindTexture(TextureTarget.Texture2D, CharacterTextureSheet);
 
                 // Enable blending and textures
                 GL.Enable(EnableCap.Texture2D);

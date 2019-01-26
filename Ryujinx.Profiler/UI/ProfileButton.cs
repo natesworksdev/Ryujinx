@@ -10,10 +10,10 @@ namespace Ryujinx.Profiler.UI
 {
     public class ProfileButton
     {
-        private int padding;
+        private int Padding;
         private FontService FontService;
         private int X, Y, Right, Top, Height;
-        private int textX, textY;
+        private int TextX, TextY;
         private string Label;
         private Action Clicked;
         private bool Visible;
@@ -55,8 +55,8 @@ namespace Ryujinx.Profiler.UI
             Height = height;
             X = x;
             Y = y;
-            textX = x + padding / 2;
-            textY = y + padding / 2;
+            TextX = x + padding / 2;
+            TextY = y + padding / 2;
             Top = y + height + padding;
             Right = x + width + padding;
         }
@@ -79,7 +79,7 @@ namespace Ryujinx.Profiler.UI
             GL.Vertex2(X, Y);
             GL.End();
 
-            FontService.DrawText(Label, textX, textY, Height);
+            FontService.DrawText(Label, TextX, TextY, Height);
         }
 
         public bool ProcessClick(int x, int y)

@@ -26,28 +26,28 @@ namespace Ryujinx
             Pause = 6,
         }
 
-        private bool visible = true, initComplete = false, viewportUpdated = true;
-        public bool visibleChanged;
-        private FontService fontService;
-        private List<KeyValuePair<ProfileConfig, TimingInfo>> rawPofileData, profileData;
+        private bool VisibleLocal = true, InitComplete = false, ViewportUpdated = true;
+        public bool VisibleChangedLocal;
+        private FontService FontServ;
+        private List<KeyValuePair<ProfileConfig, TimingInfo>> RawPofileData, ProfileData;
 
-        private float scrollPos = 0;
-        private float minScroll = 0, maxScroll = 0;
+        private float ScrollPos = 0;
+        private float MinScroll = 0, MaxScroll = 0;
 
-        private ProfileButton[] buttons;
-        private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> sortAction;
+        private ProfileButton[] Buttons;
+        private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> SortAction;
 
         private string FilterText = "";
         private double BackspaceDownTime, UpdateTimer;
-        private bool BackspaceDown = false, prevBackspaceDown = false, regexEnabled = false, ProfileUpdated = false;
-        private bool showInactive = true, Paused = false;
+        private bool BackspaceDown = false, PrevBackspaceDown = false, RegexEnabled = false, ProfileUpdated = false;
+        private bool ShowInactive = true, Paused = false;
 
         public ProfileWindow()
             : base(1280, 720)
         {
             Location = new Point(DisplayDevice.Default.Width - 1280, (DisplayDevice.Default.Height - 720) - 50);
             Title = "Profiler";
-            sortAction = null;
+            SortAction = null;
             BackspaceDownTime = 0;
 
             // Large number to force an update on first update
@@ -57,8 +57,8 @@ namespace Ryujinx
         #region Public Methods
         public void ToggleVisible()
         {
-            visible = !visible;
-            visibleChanged = true;
+            VisibleLocal = !VisibleLocal;
+            VisibleChangedLocal = true;
         }
         #endregion
 
@@ -70,26 +70,26 @@ namespace Ryujinx
         protected override void OnLoad(EventArgs e)
         {
             GL.ClearColor(Color.MidnightBlue);
-            fontService = new FontService();
-            fontService.InitalizeTextures();
-            fontService.UpdateScreenHeight(Height);
+            FontServ = new FontService();
+            FontServ.InitalizeTextures();
+            FontServ.UpdateScreenHeight(Height);
 
-            buttons = new ProfileButton[7];
-            buttons[(int)ButtonIndex.TagTitle]         = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TagAscending());
-            buttons[(int)ButtonIndex.InstantTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.InstantAscending());
-            buttons[(int)ButtonIndex.AverageTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.AverageAscending());
-            buttons[(int)ButtonIndex.TotalTitle]       = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TotalAscending());
-            buttons[(int)ButtonIndex.FilterBar]        = new ProfileButton(fontService, () =>
+            Buttons = new ProfileButton[7];
+            Buttons[(int)ButtonIndex.TagTitle]         = new ProfileButton(FontServ, () => SortAction = new ProfileSorters.TagAscending());
+            Buttons[(int)ButtonIndex.InstantTitle]     = new ProfileButton(FontServ, () => SortAction = new ProfileSorters.InstantAscending());
+            Buttons[(int)ButtonIndex.AverageTitle]     = new ProfileButton(FontServ, () => SortAction = new ProfileSorters.AverageAscending());
+            Buttons[(int)ButtonIndex.TotalTitle]       = new ProfileButton(FontServ, () => SortAction = new ProfileSorters.TotalAscending());
+            Buttons[(int)ButtonIndex.FilterBar]        = new ProfileButton(FontServ, () =>
             {
                 ProfileUpdated = true;
-                regexEnabled = !regexEnabled;
+                RegexEnabled = !RegexEnabled;
             });
-            buttons[(int)ButtonIndex.ShowHideInactive] = new ProfileButton(fontService, () =>
+            Buttons[(int)ButtonIndex.ShowHideInactive] = new ProfileButton(FontServ, () =>
             {
                 ProfileUpdated = true;
-                showInactive = !showInactive;
+                ShowInactive = !ShowInactive;
             });
-            buttons[(int)ButtonIndex.Pause] = new ProfileButton(fontService, () =>
+            Buttons[(int)ButtonIndex.Pause] = new ProfileButton(FontServ, () =>
             {
                 ProfileUpdated = true;
                 Paused = !Paused;
@@ -105,7 +105,7 @@ namespace Ryujinx
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnResize(EventArgs e)
         {
-            viewportUpdated = true;
+            ViewportUpdated = true;
         }
         #endregion
 
@@ -115,8 +115,8 @@ namespace Ryujinx
         /// </summary>
         protected override void OnClosing(CancelEventArgs e)
         {
-            visible = false;
-            visibleChanged = true;
+            VisibleLocal = false;
+            VisibleChangedLocal = true;
             e.Cancel = true;
             base.OnClosing(e);
         }
@@ -130,12 +130,12 @@ namespace Ryujinx
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            initComplete = true;
+            InitComplete = true;
             
             // Backspace handling
             if (BackspaceDown)
             {
-                if (!prevBackspaceDown)
+                if (!PrevBackspaceDown)
                 {
                     BackspaceDownTime = 0;
                     FilterBackspace();
@@ -150,42 +150,42 @@ namespace Ryujinx
                     }
                 }
             }
-            prevBackspaceDown = BackspaceDown;
+            PrevBackspaceDown = BackspaceDown;
 
             // Get timing data if enough time has passed
             UpdateTimer += e.Time;
             if (!Paused && (UpdateTimer > Profile.GetUpdateRate()))
             {
                 UpdateTimer %= Profile.GetUpdateRate();
-                rawPofileData = Profile.GetProfilingData().ToList();
+                RawPofileData = Profile.GetProfilingData().ToList();
                 ProfileUpdated = true;
             }
             
             // Filtering
             if (ProfileUpdated)
             {
-                if (showInactive)
+                if (ShowInactive)
                 {
-                    profileData = rawPofileData;
+                    ProfileData = RawPofileData;
                 }
                 else
                 {
-                    profileData = rawPofileData.FindAll(kvp => kvp.Value.Instant > 0.001f);
+                    ProfileData = RawPofileData.FindAll(kvp => kvp.Value.Instant > 0.001f);
                 }
 
-                if (sortAction != null)
+                if (SortAction != null)
                 {
-                    profileData.Sort(sortAction);
+                    ProfileData.Sort(SortAction);
                 }
 
-                if (regexEnabled)
+                if (RegexEnabled)
                 {
                     try
                     {
                         Regex filterRegex = new Regex(FilterText, RegexOptions.IgnoreCase);
                         if (FilterText != "")
                         {
-                            profileData = profileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
+                            ProfileData = ProfileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
                         }
                     }
                     catch (ArgumentException argException)
@@ -196,7 +196,7 @@ namespace Ryujinx
                 else
                 {
                     // Regular filtering
-                    profileData = profileData.Where((pair => pair.Key.Search.ToLower().Contains(FilterText.ToLower()))).ToList();
+                    ProfileData = ProfileData.Where((pair => pair.Key.Search.ToLower().Contains(FilterText.ToLower()))).ToList();
                 }
 
                 ProfileUpdated = false;
@@ -212,19 +212,19 @@ namespace Ryujinx
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnRenderFrame(FrameEventArgs e)
         {
-            if (visibleChanged)
+            if (VisibleChangedLocal)
             {
-                Visible = visible;
-                visibleChanged = false;
+                Visible = VisibleLocal;
+                VisibleChangedLocal = false;
             }
 
-            if (!visible || !initComplete)
+            if (!VisibleLocal || !InitComplete)
             {
                 return;
             }
             
             // Update viewport
-            if (viewportUpdated)
+            if (ViewportUpdated)
             {
                 GL.Viewport(0, 0, Width, Height);
 
@@ -232,16 +232,16 @@ namespace Ryujinx
                 GL.LoadIdentity();
                 GL.Ortho(0, Width, 0, Height, 0.0, 4.0);
 
-                fontService.UpdateScreenHeight(Height);
+                FontServ.UpdateScreenHeight(Height);
 
-                viewportUpdated = false;
+                ViewportUpdated = false;
             }
 
             // Frame setup
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.ClearColor(Color.Black);
 
-            fontService.fontColor = Color.White;
+            FontServ.fontColor = Color.White;
             int verticalIndex = 0;
             int lineHeight = 16;
             int titleHeight = 24;
@@ -252,7 +252,7 @@ namespace Ryujinx
 
             float width;
             float maxWidth = 0;
-            float yOffset = scrollPos - titleHeight;
+            float yOffset = ScrollPos - titleHeight;
             float xOffset = 10;
 
             // Background lines to make reading easier
@@ -260,7 +260,7 @@ namespace Ryujinx
             GL.Scissor(0, filterHeight, Width, Height - titleHeight - filterHeight);
             GL.Begin(PrimitiveType.Triangles);
             GL.Color3(0.2f, 0.2f, 0.2f);
-            for (int i = 0; i < profileData.Count; i += 2)
+            for (int i = 0; i < ProfileData.Count; i += 2)
             {
                 float top = GetLineY(yOffset, lineHeight, linePadding, false, i - 1);
                 float bottom = GetLineY(yOffset, lineHeight, linePadding, false, i);
@@ -278,14 +278,14 @@ namespace Ryujinx
                 GL.Vertex2(0, bottom);
             }
             GL.End();
-            maxScroll = (lineHeight + linePadding) * (profileData.Count - 1);
+            MaxScroll = (lineHeight + linePadding) * (ProfileData.Count - 1);
 
             // Display category
             verticalIndex = 0;
-            foreach (var entry in profileData)
+            foreach (var entry in ProfileData)
             {
                 float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                width = fontService.DrawText(entry.Key.Category, xOffset, y, lineHeight);
+                width = FontServ.DrawText(entry.Key.Category, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
@@ -293,7 +293,7 @@ namespace Ryujinx
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            width = fontService.DrawText("Category", xOffset, Height - titleFontHeight, titleFontHeight);
+            width = FontServ.DrawText("Category", xOffset, Height - titleFontHeight, titleFontHeight);
             if (width > maxWidth)
                 maxWidth = width;
 
@@ -304,10 +304,10 @@ namespace Ryujinx
             maxWidth = 0;
             verticalIndex = 0;
             GL.Enable(EnableCap.ScissorTest);
-            foreach (var entry in profileData)
+            foreach (var entry in ProfileData)
             {
                 float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                width = fontService.DrawText(entry.Key.SessionGroup, xOffset, y, lineHeight);
+                width = FontServ.DrawText(entry.Key.SessionGroup, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
@@ -315,7 +315,7 @@ namespace Ryujinx
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            width = fontService.DrawText("Group", xOffset, Height - titleFontHeight, titleFontHeight);
+            width = FontServ.DrawText("Group", xOffset, Height - titleFontHeight, titleFontHeight);
             if (width > maxWidth)
                 maxWidth = width;
 
@@ -325,10 +325,10 @@ namespace Ryujinx
             maxWidth = 0;
             verticalIndex = 0;
             GL.Enable(EnableCap.ScissorTest);
-            foreach (var entry in profileData)
+            foreach (var entry in ProfileData)
             {
                 float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                width = fontService.DrawText(entry.Key.SessionItem, xOffset, y, lineHeight);
+                width = FontServ.DrawText(entry.Key.SessionItem, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
@@ -336,15 +336,15 @@ namespace Ryujinx
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            width = fontService.DrawText("Item", xOffset, Height - titleFontHeight, titleFontHeight);
+            width = FontServ.DrawText("Item", xOffset, Height - titleFontHeight, titleFontHeight);
             if (width > maxWidth)
                 maxWidth = width;
 
             xOffset += maxWidth + columnSpacing;
-            buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - titleFontHeight, 0, (int)xOffset, titleFontHeight);
+            Buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - titleFontHeight, 0, (int)xOffset, titleFontHeight);
 
             // Time bars
-            if (profileData.Count != 0)
+            if (ProfileData.Count != 0)
             {
                 width = Width - xOffset - 370;
                 long maxAverage, maxTotal;
@@ -353,7 +353,7 @@ namespace Ryujinx
 
                 // Get max values
                 var maxInstant = maxAverage = maxTotal = 0;
-                foreach (KeyValuePair<ProfileConfig, TimingInfo> kvp in profileData)
+                foreach (KeyValuePair<ProfileConfig, TimingInfo> kvp in ProfileData)
                 {
                     maxInstant = Math.Max(maxInstant, kvp.Value.Instant);
                     maxAverage = Math.Max(maxAverage, kvp.Value.AverageTime);
@@ -362,7 +362,7 @@ namespace Ryujinx
 
                 GL.Enable(EnableCap.ScissorTest);
                 GL.Begin(PrimitiveType.Triangles);
-                foreach (var entry in profileData)
+                foreach (var entry in ProfileData)
                 {
                     // Instant
                     GL.Color3(Color.Blue);
@@ -413,44 +413,44 @@ namespace Ryujinx
                 GL.Disable(EnableCap.ScissorTest);
             }
 
-            fontService.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - titleFontHeight, titleFontHeight);
+            FontServ.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - titleFontHeight, titleFontHeight);
             xOffset = Width - 360;
 
             // Display timestamps
             verticalIndex = 0;
             GL.Enable(EnableCap.ScissorTest);
-            foreach (var entry in profileData)
+            foreach (var entry in ProfileData)
             {
                 float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, lineHeight);
-                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", columnSpacing + 120 + xOffset, y, lineHeight);
-                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", columnSpacing + columnSpacing + 200 + xOffset, y, lineHeight);
+                FontServ.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, lineHeight);
+                FontServ.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", columnSpacing + 120 + xOffset, y, lineHeight);
+                FontServ.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", columnSpacing + columnSpacing + 200 + xOffset, y, lineHeight);
             }
             GL.Disable(EnableCap.ScissorTest);
 
             float yHeight = Height - titleFontHeight;
 
-            fontService.DrawText("Instant (ms, count)", xOffset, yHeight, titleFontHeight);
-            buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
+            FontServ.DrawText("Instant (ms, count)", xOffset, yHeight, titleFontHeight);
+            Buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
 
-            fontService.DrawText("Average (ms)", columnSpacing + 120 + xOffset, yHeight, titleFontHeight);
-            buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(columnSpacing + 120 + xOffset), (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
+            FontServ.DrawText("Average (ms)", columnSpacing + 120 + xOffset, yHeight, titleFontHeight);
+            Buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(columnSpacing + 120 + xOffset), (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
 
-            fontService.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, yHeight, titleFontHeight);
-            buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);
+            FontServ.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, yHeight, titleFontHeight);
+            Buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);
 
             // Show/Hide Inactive
-            float widthShowHideButton = buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(showInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
+            float widthShowHideButton = Buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(ShowInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
 
             // Play/Pause
-            width = buttons[(int)ButtonIndex.Pause].UpdateSize(Paused ? "Play" : "Pause", 15 + (int)widthShowHideButton, 5, 4, 16) + widthShowHideButton;
+            width = Buttons[(int)ButtonIndex.Pause].UpdateSize(Paused ? "Play" : "Pause", 15 + (int)widthShowHideButton, 5, 4, 16) + widthShowHideButton;
 
             // Filter bar
-            fontService.DrawText($"{(regexEnabled ? "Regex " : "Filter")}: {FilterText}", 25 + width, 7, 16);
-            buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(25 + width), 0, 0, Width, filterHeight);
+            FontServ.DrawText($"{(RegexEnabled ? "Regex " : "Filter")}: {FilterText}", 25 + width, 7, 16);
+            Buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(25 + width), 0, 0, Width, filterHeight);
 
             // Draw buttons
-            foreach (ProfileButton button in buttons)
+            foreach (ProfileButton button in Buttons)
             {
                 button.Draw();
             }
@@ -522,7 +522,7 @@ namespace Ryujinx
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
-            foreach (ProfileButton button in buttons)
+            foreach (ProfileButton button in Buttons)
             {
                 if (button.ProcessClick(e.X, Height - e.Y))
                     return;
@@ -535,11 +535,11 @@ namespace Ryujinx
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
-            scrollPos += e.Delta * -30;
-            if (scrollPos < minScroll)
-                scrollPos = minScroll;
-            if (scrollPos > maxScroll)
-                scrollPos = maxScroll;
+            ScrollPos += e.Delta * -30;
+            if (ScrollPos < MinScroll)
+                ScrollPos = MinScroll;
+            if (ScrollPos > MaxScroll)
+                ScrollPos = MaxScroll;
         }
     }
 }
