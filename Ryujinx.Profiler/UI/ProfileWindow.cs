@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using OpenTK.Input;
 using Ryujinx.Profiler;
 using Ryujinx.Profiler.UI.SharpFontHelpers;
 
@@ -14,6 +15,9 @@ namespace Ryujinx
         public bool visibleChanged;
         private FontService fontService;
         private Dictionary<ProfileConfig, TimingInfo> profileData;
+
+        private float scrollPos = 0;
+        private float maxScroll = 0;
 
         public ProfileWindow()
             : base(400, 720)
@@ -114,14 +118,15 @@ namespace Ryujinx
             int linePadding = 2;
 
             float maxWidth = 0;
+            float yOffset = scrollPos;
 
             // Background lines to make reading easier
             GL.Begin(PrimitiveType.Triangles);
             GL.Color3(0.2f, 0.2f, 0.2f);
             for (int i = 0; i < profileData.Count; i += 2)
             {
-                int top = Height - linePadding - (lineHeight + linePadding) * (i + 1);
-                int bottom = Height - (linePadding * 2) - (lineHeight + linePadding) * i;
+                float top = yOffset + Height - linePadding - (lineHeight + linePadding) * (i + 1);
+                float bottom = yOffset + Height - (linePadding * 2) - (lineHeight + linePadding) * i;
                 GL.Vertex2(0, bottom);
                 GL.Vertex2(0, top);
                 GL.Vertex2(Width, top);
@@ -131,11 +136,12 @@ namespace Ryujinx
                 GL.Vertex2(0, bottom);
             }
             GL.End();
+            maxScroll = (lineHeight + linePadding) * (profileData.Count - 1);
 
             // Display tags
             foreach (var entry in profileData)
             {
-                float y = Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
+                float y = yOffset + Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
                 float width = fontService.DrawText(entry.Key.Tag, 50, y, lineHeight);
                 if (width > maxWidth)
                 {
@@ -147,7 +153,7 @@ namespace Ryujinx
             verticalIndex = 0;
             foreach (var entry in profileData)
             {
-                float y = Height - (lineHeight + 2) * (verticalIndex++ + 1);
+                float y = yOffset + Height - (lineHeight + 2) * (verticalIndex++ + 1);
                 fontService.DrawText($"{entry.Value.AverageTime:F3}", 75 + maxWidth, y, lineHeight);
                 fontService.DrawText($"{entry.Value.LastTime:F3}", 175 + maxWidth, y, lineHeight);
             }
@@ -155,5 +161,26 @@ namespace Ryujinx
             SwapBuffers();
         }
         #endregion
+
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+        }
+
+        protected override void OnMouseUp(MouseButtonEventArgs e)
+        {
+        }
+
+        protected override void OnMouseMove(MouseMoveEventArgs e)
+        {
+        }
+
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            scrollPos += e.Delta * -30;
+            if (scrollPos < 0)
+                scrollPos = 0;
+            if (scrollPos > maxScroll)
+                scrollPos = maxScroll;
+        }
     }
 }
