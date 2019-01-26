@@ -77,5 +77,10 @@ namespace Ryujinx.Profiler
                 return new Dictionary<ProfileConfig, TimingInfo>();
             return ProfileInstance.GetProfilingData();
         }
+
+        public static float GetUpdateRate()
+        {
+            return Settings.UpdateRate;
+        }
     }
 }

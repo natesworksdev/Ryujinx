@@ -11,7 +11,7 @@ namespace Ryujinx.Profiler
         private Stopwatch SW;
         internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers;
 
-        private object sessionLock = new object();
+        private readonly object sessionLock = new object();
         private int sessionCounter = 0;
 
         public InternalProfile()

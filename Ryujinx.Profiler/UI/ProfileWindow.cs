@@ -27,7 +27,7 @@ namespace Ryujinx
         private bool visible = true, initComplete = false;
         public bool visibleChanged;
         private FontService fontService;
-        private List<KeyValuePair<ProfileConfig, TimingInfo>> profileData;
+        private List<KeyValuePair<ProfileConfig, TimingInfo>> rawPofileData, profileData;
 
         private float scrollPos = 0;
         private float minScroll = 0, maxScroll = 0;
@@ -36,8 +36,8 @@ namespace Ryujinx
         private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> sortAction;
 
         private string FilterText = "";
-        private double BackspaceDownTime = -1;
-        private bool BackspaceDown = false, prevBackspaceDown = false, regexEnabled = false;
+        private double BackspaceDownTime, UpdateTimer;
+        private bool BackspaceDown = false, prevBackspaceDown = false, regexEnabled = false, ProfileUpdated = false;
 
         public ProfileWindow()
             : base(400, 720)
@@ -45,6 +45,10 @@ namespace Ryujinx
             Location = new Point(DisplayDevice.Default.Width - 400, (DisplayDevice.Default.Height - 720) / 2);
             Title = "Profiler";
             sortAction = null;
+            BackspaceDownTime = 0;
+
+            // Large number to force an update on first update
+            UpdateTimer = 0xFFFF;
         }
 
         #region Public Methods
@@ -137,32 +141,47 @@ namespace Ryujinx
             }
             prevBackspaceDown = BackspaceDown;
 
-            // Filtering
-            profileData = Profile.GetProfilingData().ToList();
-            if (sortAction != null)
+            // Get timing data if enough time has passed
+            UpdateTimer += e.Time;
+            if (UpdateTimer > Profile.GetUpdateRate())
             {
-                profileData.Sort(sortAction);
+                UpdateTimer %= Profile.GetUpdateRate();
+                rawPofileData = Profile.GetProfilingData().ToList();
+                ProfileUpdated = true;
             }
-
-            if (regexEnabled)
+            
+            // Filtering
+            if (ProfileUpdated)
             {
-                try
+                profileData = rawPofileData;
+
+                if (sortAction != null)
                 {
-                    Regex filterRegex = new Regex(FilterText, RegexOptions.IgnoreCase);
-                    if (FilterText != "")
+                    profileData.Sort(sortAction);
+                }
+
+                if (regexEnabled)
+                {
+                    try
                     {
-                        profileData = profileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
+                        Regex filterRegex = new Regex(FilterText, RegexOptions.IgnoreCase);
+                        if (FilterText != "")
+                        {
+                            profileData = profileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
+                        }
+                    }
+                    catch (ArgumentException argException)
+                    {
+                        // Skip filtering for invalid regex
                     }
                 }
-                catch (ArgumentException argException)
+                else
                 {
-                    // Skip filtering for invalid regex
+                    // Regular filtering
+                    profileData = profileData.Where((pair => pair.Key.Search.ToLower().Contains(FilterText.ToLower()))).ToList();
                 }
-            }
-            else
-            {
-                // Regular filtering
-                profileData = profileData.Where((pair => pair.Key.Search.ToLower().Contains(FilterText.ToLower()))).ToList();
+
+                ProfileUpdated = false;
             }
         }
         #endregion
@@ -421,13 +440,14 @@ namespace Ryujinx
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             FilterText += e.KeyChar;
+            ProfileUpdated = true;
         }
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
         {
             if (e.Key == Key.BackSpace)
             {
-                BackspaceDown = true;
+                ProfileUpdated = BackspaceDown = true;
                 return;
             }
             base.OnKeyUp(e);
