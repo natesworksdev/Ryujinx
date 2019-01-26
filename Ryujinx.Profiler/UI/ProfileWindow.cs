@@ -22,6 +22,7 @@ namespace Ryujinx
             AverageTitle = 2,
             TotalTitle = 3,
             FilterBar = 4,
+            ShowHideInactive = 5
         }
 
         private bool visible = true, initComplete = false;
@@ -38,6 +39,7 @@ namespace Ryujinx
         private string FilterText = "";
         private double BackspaceDownTime, UpdateTimer;
         private bool BackspaceDown = false, prevBackspaceDown = false, regexEnabled = false, ProfileUpdated = false;
+        private bool showInactive = true;
 
         public ProfileWindow()
             : base(400, 720)
@@ -71,12 +73,21 @@ namespace Ryujinx
             fontService.InitalizeTextures();
             fontService.UpdateScreenHeight(Height);
 
-            buttons = new ProfileButton[5];
-            buttons[(int)ButtonIndex.TagTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TagAscending());
-            buttons[(int)ButtonIndex.InstantTitle] = new ProfileButton(fontService, () => sortAction = new ProfileSorters.InstantAscending());
-            buttons[(int)ButtonIndex.AverageTitle] = new ProfileButton(fontService, () => sortAction = new ProfileSorters.AverageAscending());
-            buttons[(int)ButtonIndex.TotalTitle]   = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TotalAscending());
-            buttons[(int)ButtonIndex.FilterBar]    = new ProfileButton(fontService, () => regexEnabled = !regexEnabled);
+            buttons = new ProfileButton[6];
+            buttons[(int)ButtonIndex.TagTitle]         = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TagAscending());
+            buttons[(int)ButtonIndex.InstantTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.InstantAscending());
+            buttons[(int)ButtonIndex.AverageTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.AverageAscending());
+            buttons[(int)ButtonIndex.TotalTitle]       = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TotalAscending());
+            buttons[(int)ButtonIndex.FilterBar]        = new ProfileButton(fontService, () =>
+            {
+                ProfileUpdated = true;
+                regexEnabled = !regexEnabled;
+            });
+            buttons[(int)ButtonIndex.ShowHideInactive] = new ProfileButton(fontService, () =>
+            {
+                ProfileUpdated = true;
+                showInactive = !showInactive;
+            });
         }
         #endregion
 
@@ -153,7 +164,14 @@ namespace Ryujinx
             // Filtering
             if (ProfileUpdated)
             {
-                profileData = rawPofileData;
+                if (showInactive)
+                {
+                    profileData = rawPofileData;
+                }
+                else
+                {
+                    profileData = rawPofileData.FindAll(kvp => kvp.Value.Instant > 0.001f);
+                }
 
                 if (sortAction != null)
                 {
@@ -406,9 +424,12 @@ namespace Ryujinx
             fontService.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, yHeight, titleFontHeight);
             buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);
 
+            // Show/Hide Inactive
+            width = buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(showInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
+
             // Filter bar
-            fontService.DrawText($"{(regexEnabled ? "Regex " : "Filter")}: {FilterText}", 10, 5, 16);
-            buttons[(int) ButtonIndex.FilterBar].UpdateSize(0, 0, 0, Width, filterHeight);
+            fontService.DrawText($"{(regexEnabled ? "Regex " : "Filter")}: {FilterText}", 15 + width, 7, 16);
+            buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(15 + width), 0, 0, Width, filterHeight);
 
             // Draw buttons
             foreach (ProfileButton button in buttons)
@@ -416,6 +437,21 @@ namespace Ryujinx
                 button.Draw();
             }
 
+            // Dividing lines
+            GL.Color3(Color.White);
+            GL.Begin(PrimitiveType.Lines);
+            // Top divider
+            GL.Vertex2(0, Height -titleHeight);
+            GL.Vertex2(Width, Height - titleHeight);
+
+            // Bottom divider
+            GL.Vertex2(0, filterHeight);
+            GL.Vertex2(Width, filterHeight);
+
+            // Bottom vertical divider
+            GL.Vertex2(width + 10, 0);
+            GL.Vertex2(width + 10, filterHeight);
+            GL.End();
             SwapBuffers();
         }
         #endregion

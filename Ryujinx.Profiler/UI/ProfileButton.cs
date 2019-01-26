@@ -32,18 +32,22 @@ namespace Ryujinx.Profiler.UI
 
         public ProfileButton(FontService fontService, string label, Action clicked, int x, int y, int padding, int height, int width = -1)
         {
-            Visible = true;
             FontService = fontService;
-            Label = label;
             Clicked = clicked;
+            UpdateSize(label, x, y, padding, height, width);
+        }
 
+        public int UpdateSize(string label, int x, int y, int padding, int height, int width = -1)
+        {
+            Visible = true;
+            Label = label;
             if (width == -1)
             {
                 // Dummy draw to measure size
-                width = (int)fontService.DrawText(Label, 0, 0, height, false);
+                width = (int)FontService.DrawText(label, 0, 0, height, false);
             }
-
             UpdateSize(x, y, padding, width, height);
+            return Right - X;
         }
 
         public void UpdateSize(int x, int y, int padding, int width, int height)
@@ -65,7 +69,7 @@ namespace Ryujinx.Profiler.UI
             }
 
             GL.Begin(PrimitiveType.Triangles);
-            GL.Color3(Color.Blue);
+            GL.Color3(Color.Black);
             GL.Vertex2(X, Y);
             GL.Vertex2(X, Top);
             GL.Vertex2(Right, Top);
