@@ -111,12 +111,31 @@ namespace Ryujinx
             fontService.fontColor = Color.White;
             int verticalIndex = 0;
             int lineHeight = 12;
+            int linePadding = 2;
 
             float maxWidth = 0;
 
+            // Background lines to make reading easier
+            GL.Begin(PrimitiveType.Triangles);
+            GL.Color3(0.2f, 0.2f, 0.2f);
+            for (int i = 0; i < profileData.Count; i += 2)
+            {
+                int top = Height - linePadding - (lineHeight + linePadding) * (i + 1);
+                int bottom = Height - (linePadding * 2) - (lineHeight + linePadding) * i;
+                GL.Vertex2(0, bottom);
+                GL.Vertex2(0, top);
+                GL.Vertex2(Width, top);
+
+                GL.Vertex2(Width, top);
+                GL.Vertex2(Width, bottom);
+                GL.Vertex2(0, bottom);
+            }
+            GL.End();
+
+            // Display tags
             foreach (var entry in profileData)
             {
-                float y = Height - (lineHeight + 2) * (verticalIndex++ + 1);
+                float y = Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
                 float width = fontService.DrawText(entry.Key.Tag, 50, y, lineHeight);
                 if (width > maxWidth)
                 {
@@ -124,8 +143,8 @@ namespace Ryujinx
                 }
             }
 
+            // Display timestamps
             verticalIndex = 0;
-
             foreach (var entry in profileData)
             {
                 float y = Height - (lineHeight + 2) * (verticalIndex++ + 1);
