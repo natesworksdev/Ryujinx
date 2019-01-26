@@ -43,9 +43,9 @@ namespace Ryujinx
         private bool showInactive = true, Paused = false;
 
         public ProfileWindow()
-            : base(400, 720)
+            : base(1280, 720)
         {
-            Location = new Point(DisplayDevice.Default.Width - 400, (DisplayDevice.Default.Height - 720) / 2);
+            Location = new Point(DisplayDevice.Default.Width - 1280, (DisplayDevice.Default.Height - 720) - 50);
             Title = "Profiler";
             sortAction = null;
             BackspaceDownTime = 0;
