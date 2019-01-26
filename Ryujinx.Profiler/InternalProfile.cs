@@ -50,14 +50,18 @@ namespace Ryujinx.Profiler
                 BeginTime = timestamp,
                 LastTime = 0,
                 Count = 0,
+                Instant = 0,
+                InstantCount = 0,
             };
         }
 
         private TimingInfo UpdateTimer(TimingInfo time, long timestamp)
         {
             time.Count++;
+            time.InstantCount++;
             time.LastTime = timestamp - time.BeginTime;
             time.TotalTime += time.LastTime;
+            time.Instant += time.LastTime;
 
             return time;
         }
@@ -81,6 +85,18 @@ namespace Ryujinx.Profiler
             for (int i = 0; i < configs.Length; i++)
             {
                 outDict.Add(configs[i], times[i]);
+            }
+
+            foreach (ProfileConfig key in Timers.Keys)
+            {
+                TimingInfo value, prevValue;
+                if (Timers.TryGetValue(key, out value))
+                {
+                    prevValue = value;
+                    value.Instant = 0;
+                    value.InstantCount = 0;
+                    Timers.TryUpdate(key, value, prevValue);
+                }
             }
 
             return outDict;

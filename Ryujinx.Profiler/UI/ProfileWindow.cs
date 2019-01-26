@@ -137,10 +137,17 @@ namespace Ryujinx
                 profileData.Sort(sortAction);
             }
 
-            Regex filterRegex = new Regex(FilterText);
-            if (FilterText != "")
+            try
             {
-                profileData = profileData.Where((pair => filterRegex.IsMatch(pair.Key.Tag))).ToList();
+                Regex filterRegex = new Regex(FilterText);
+                if (FilterText != "")
+                {
+                    profileData = profileData.Where((pair => filterRegex.IsMatch(pair.Key.Tag))).ToList();
+                }
+            }
+            catch (ArgumentException argException)
+            {
+                // Skip filtering for invalid regex
             }
         }
         #endregion
@@ -268,7 +275,7 @@ namespace Ryujinx
             if (profileData.Count != 0)
             {
                 width = Width - xOffset - 370;
-                int maxInstant = profileData.Max((kvp) => (int) kvp.Value.LastTime);
+                int maxInstant = profileData.Max((kvp) => (int) kvp.Value.Instant);
                 int maxAverage = profileData.Max((kvp) => (int) kvp.Value.AverageTime);
                 int maxTotal = profileData.Max((kvp) => (int) kvp.Value.TotalTime);
                 float barHeight = (lineHeight - linePadding) / 3.0f;
@@ -282,7 +289,7 @@ namespace Ryujinx
                     GL.Color3(Color.Blue);
                     float bottom = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
                     float top = bottom + barHeight;
-                    float right = (float) entry.Value.LastTime / maxInstant * width + xOffset;
+                    float right = (float) entry.Value.Instant / maxInstant * width + xOffset;
                     GL.Vertex2(xOffset, bottom);
                     GL.Vertex2(xOffset, top);
                     GL.Vertex2(right, top);
@@ -331,19 +338,19 @@ namespace Ryujinx
             foreach (var entry in profileData)
             {
                 float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.LastTime):F3}", xOffset, y, lineHeight);
-                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", columnSpacing + 100 + xOffset, y, lineHeight);
+                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, lineHeight);
+                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", columnSpacing + 120 + xOffset, y, lineHeight);
                 fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", columnSpacing + columnSpacing + 200 + xOffset, y, lineHeight);
             }
             GL.Disable(EnableCap.ScissorTest);
 
             float yHeight = Height - titleFontHeight;
 
-            fontService.DrawText("Instant (ms)", xOffset, yHeight, titleFontHeight);
+            fontService.DrawText("Instant (ms, count)", xOffset, yHeight, titleFontHeight);
             buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
 
-            fontService.DrawText("Average (ms)", columnSpacing + 100 + xOffset, yHeight, titleFontHeight);
-            buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(columnSpacing + 100 + xOffset), (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
+            fontService.DrawText("Average (ms)", columnSpacing + 120 + xOffset, yHeight, titleFontHeight);
+            buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(columnSpacing + 120 + xOffset), (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
 
             fontService.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, yHeight, titleFontHeight);
             buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);

@@ -9,7 +9,7 @@ namespace Ryujinx.Profiler.UI
         public class InstantAscending : IComparer<KeyValuePair<ProfileConfig, TimingInfo>>
         {
             public int Compare(KeyValuePair<ProfileConfig, TimingInfo> pair1, KeyValuePair<ProfileConfig, TimingInfo> pair2)
-                => pair2.Value.LastTime.CompareTo(pair1.Value.LastTime);
+                => pair2.Value.Instant.CompareTo(pair1.Value.Instant);
         }
 
         public class AverageAscending : IComparer<KeyValuePair<ProfileConfig, TimingInfo>>
