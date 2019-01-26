@@ -26,7 +26,7 @@ namespace Ryujinx
             Pause = 6,
         }
 
-        private bool visible = true, initComplete = false;
+        private bool visible = true, initComplete = false, viewportUpdated = true;
         public bool visibleChanged;
         private FontService fontService;
         private List<KeyValuePair<ProfileConfig, TimingInfo>> rawPofileData, profileData;
@@ -105,13 +105,7 @@ namespace Ryujinx
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnResize(EventArgs e)
         {
-            GL.Viewport(0, 0, Width, Height);
-
-            GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadIdentity();
-            GL.Ortho(0, Width, 0, Height, 0.0, 4.0);
-
-            fontService.UpdateScreenHeight(Height);
+            viewportUpdated = true;
         }
         #endregion
 
@@ -228,10 +222,25 @@ namespace Ryujinx
             {
                 return;
             }
+            
+            // Update viewport
+            if (viewportUpdated)
+            {
+                GL.Viewport(0, 0, Width, Height);
 
+                GL.MatrixMode(MatrixMode.Projection);
+                GL.LoadIdentity();
+                GL.Ortho(0, Width, 0, Height, 0.0, 4.0);
+
+                fontService.UpdateScreenHeight(Height);
+
+                viewportUpdated = false;
+            }
+
+            // Frame setup
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
             GL.ClearColor(Color.Black);
+
             fontService.fontColor = Color.White;
             int verticalIndex = 0;
             int lineHeight = 16;
