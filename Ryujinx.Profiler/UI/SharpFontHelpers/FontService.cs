@@ -12,7 +12,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
         private struct CharacterInfo
         {
             public float left, right, bottom, top;
-            public float height, aspectRatio;
+            public float height, aspectRatio, bearing;
             public int width;
         }
 
@@ -39,9 +39,11 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Update raw data for each character
             for (int i = 0; i < 94; i++)
             {
-                var surface = RenderSurface((char)(i + 33), font);
+                float bearing;
+                var surface = RenderSurface((char)(i + 33), font, out bearing);
 
                 characters[i] = UpdateTexture(surface, ref rawCharacterSheet, ref x, ref y, ref lineOffset);
+                characters[i].bearing = bearing;
 
                 if (maxHeight < characters[i].height)
                     maxHeight = (int)characters[i].height;
@@ -50,6 +52,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Fix height for characters shorter than line height
             for (int i = 0; i < 94; i++)
             {
+                characters[i].bearing /= characters[i].height;
                 characters[i].height /= maxHeight;
                 characters[i].aspectRatio = (float)characters[i].width / maxHeight;
             }
@@ -94,7 +97,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
 
                 CharacterInfo charInfo = characters[text[i] - 33];
                 float right = x + (charInfo.aspectRatio * height);
-                DrawChar(charInfo, x, right, y + height * charInfo.height, y);
+                DrawChar(charInfo, x, right, y + height * (charInfo.height + charInfo.bearing), y + height * charInfo.bearing);
                 x = right + characterSpacing;
             }
 
@@ -120,9 +123,11 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             GL.TexCoord2(charInfo.left, charInfo.bottom);  GL.Vertex2(left, bottom);
         }
 
-        public unsafe Surface RenderSurface(char c, FontFace font)
+        public unsafe Surface RenderSurface(char c, FontFace font, out float bearing)
         {
             var glyph = font.GetGlyph(c, 32);
+            bearing = glyph.HorizontalMetrics.Bearing.Y;
+
             var surface = new Surface
             {
                 Bits = Marshal.AllocHGlobal(glyph.RenderWidth * glyph.RenderHeight),
