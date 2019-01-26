@@ -12,7 +12,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
         private struct CharacterInfo
         {
             public float left, right, bottom, top;
-            public float height, aspectRatio, bearing;
+            public float height, aspectRatio, xBearing, yBearing, advance;
             public int width;
         }
 
@@ -21,7 +21,6 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
         private int characterTextureSheet;
         private CharacterInfo[] characters;
 
-        public float characterSpacing = 1;
         public Color fontColor = Color.Black;
 
         public void InitalizeTextures()
@@ -39,11 +38,13 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Update raw data for each character
             for (int i = 0; i < 94; i++)
             {
-                float bearing;
-                var surface = RenderSurface((char)(i + 33), font, out bearing);
+                float xBearing, yBearing, advance;
+                var surface = RenderSurface((char)(i + 33), font, out xBearing, out yBearing, out advance);
 
                 characters[i] = UpdateTexture(surface, ref rawCharacterSheet, ref x, ref y, ref lineOffset);
-                characters[i].bearing = bearing;
+                characters[i].xBearing = xBearing;
+                characters[i].yBearing = yBearing;
+                characters[i].advance = advance;
 
                 if (maxHeight < characters[i].height)
                     maxHeight = (int)characters[i].height;
@@ -52,7 +53,9 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Fix height for characters shorter than line height
             for (int i = 0; i < 94; i++)
             {
-                characters[i].bearing /= characters[i].height;
+                characters[i].xBearing /= characters[i].width;
+                characters[i].yBearing /= maxHeight;
+                characters[i].advance /= characters[i].width;
                 characters[i].height /= maxHeight;
                 characters[i].aspectRatio = (float)characters[i].width / maxHeight;
             }
@@ -96,9 +99,11 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
                 }
 
                 CharacterInfo charInfo = characters[text[i] - 33];
-                float right = x + (charInfo.aspectRatio * height);
-                DrawChar(charInfo, x, right, y + height * (charInfo.height + charInfo.bearing), y + height * charInfo.bearing);
-                x = right + characterSpacing;
+                float width = (charInfo.aspectRatio * height);
+                x += (charInfo.xBearing * charInfo.aspectRatio) * width;
+                float right = x + width;
+                DrawChar(charInfo, x, right, y + height * (charInfo.height - charInfo.yBearing), y - height * charInfo.yBearing);
+                x = right + charInfo.advance * charInfo.aspectRatio;
             }
 
             GL.End();
@@ -123,10 +128,12 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             GL.TexCoord2(charInfo.left, charInfo.bottom);  GL.Vertex2(left, bottom);
         }
 
-        public unsafe Surface RenderSurface(char c, FontFace font, out float bearing)
+        public unsafe Surface RenderSurface(char c, FontFace font, out float xBearing, out float yBearing, out float advance)
         {
             var glyph = font.GetGlyph(c, 32);
-            bearing = glyph.HorizontalMetrics.Bearing.Y;
+            xBearing = glyph.HorizontalMetrics.Bearing.X;
+            yBearing = glyph.RenderHeight - glyph.HorizontalMetrics.Bearing.Y;
+            advance = glyph.HorizontalMetrics.Advance;
 
             var surface = new Surface
             {
