@@ -1,16 +1,19 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using Ryujinx.Profiler;
 using Ryujinx.Profiler.UI.SharpFontHelpers;
 
 namespace Ryujinx
 {
     public class ProfileWindow : GameWindow
     {
-        private bool visible = true;
+        private bool visible = true, initComplete = false;
         public bool visibleChanged;
         private FontService fontService;
+        private Dictionary<ProfileConfig, TimingInfo> profileData;
 
         public ProfileWindow()
             : base(400, 720)
@@ -78,7 +81,8 @@ namespace Ryujinx
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            // Nothing to do!
+            initComplete = true;
+            profileData = Profile.GetProfilingData();
         }
         #endregion
 
@@ -96,18 +100,40 @@ namespace Ryujinx
                 visibleChanged = false;
             }
 
-            if (!visible)
+            if (!visible || !initComplete)
             {
                 return;
             }
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            GL.ClearColor(Color.White);
-            fontService.fontColor = Color.Black;
-            fontService.DrawText("This is a test", 50, 50, 32);
+            GL.ClearColor(Color.Black);
+            fontService.fontColor = Color.White;
+            int verticalIndex = 0;
+            int lineHeight = 12;
 
-            this.SwapBuffers();
+            float maxWidth = 0;
+
+            foreach (var entry in profileData)
+            {
+                float y = Height - (lineHeight + 2) * (verticalIndex++ + 1);
+                float width = fontService.DrawText(entry.Key.Tag, 50, y, lineHeight);
+                if (width > maxWidth)
+                {
+                    maxWidth = width;
+                }
+            }
+
+            verticalIndex = 0;
+
+            foreach (var entry in profileData)
+            {
+                float y = Height - (lineHeight + 2) * (verticalIndex++ + 1);
+                fontService.DrawText($"{entry.Value.AverageTime:F3}", 75 + maxWidth, y, lineHeight);
+                fontService.DrawText($"{entry.Value.LastTime:F3}", 175 + maxWidth, y, lineHeight);
+            }
+
+            SwapBuffers();
         }
         #endregion
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Profiler
 {
@@ -62,6 +63,13 @@ namespace Ryujinx.Profiler
             if (!ProfilingEnabled())
                 return null;
             return ProfileInstance.GetSession();
+        }
+
+        public static Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
+        {
+            if (!ProfilingEnabled())
+                return new Dictionary<ProfileConfig, TimingInfo>();
+            return ProfileInstance.GetProfilingData();
         }
     }
 }

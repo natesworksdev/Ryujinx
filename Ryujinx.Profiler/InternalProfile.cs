@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Ryujinx.Profiler
 {
@@ -72,6 +74,21 @@ namespace Ryujinx.Profiler
             {
                 return (sessionCounter++).ToString();
             }
+        }
+
+        public Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
+        {
+            // Forcibly get copy so user doesn't block profiling
+            ProfileConfig[] configs = Timers.Keys.ToArray();
+            TimingInfo[] times = Timers.Values.ToArray();
+            Dictionary<ProfileConfig, TimingInfo> outDict = new Dictionary<ProfileConfig, TimingInfo>();
+
+            for (int i = 0; i < configs.Length; i++)
+            {
+                outDict.Add(configs[i], times[i]);
+            }
+
+            return outDict;
         }
     }
 }

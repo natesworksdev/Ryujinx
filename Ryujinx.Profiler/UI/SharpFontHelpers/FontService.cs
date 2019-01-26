@@ -68,8 +68,10 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 
-        public void DrawText(string text, float x, float y, float height)
+        public float DrawText(string text, float x, float y, float height)
         {
+            float originalX = x;
+
             // Use font map texture
             GL.BindTexture(TextureTarget.Texture2D, characterTextureSheet);
 
@@ -102,6 +104,9 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             GL.BindTexture(TextureTarget.Texture2D, 0);
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Blend);
+
+            // Return width of rendered text
+            return x - originalX;
         }
 
         private void DrawChar(CharacterInfo charInfo, float left, float right, float top, float bottom)
