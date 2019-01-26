@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using OpenTK.Input;
 using Ryujinx.Profiler;
 using Ryujinx.Profiler.UI;
@@ -32,6 +33,10 @@ namespace Ryujinx
 
         private ProfileButton[] buttons;
         private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> sortAction;
+
+        private string FilterText = "";
+        private double BackspaceDownTime = -1;
+        private bool BackspaceDown = false, prevBackspaceDown = false;
 
         public ProfileWindow()
             : base(400, 720)
@@ -106,10 +111,36 @@ namespace Ryujinx
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             initComplete = true;
+
+            if (BackspaceDown)
+            {
+                if (!prevBackspaceDown)
+                {
+                    BackspaceDownTime = 0;
+                    FilterBackspace();
+                }
+                else
+                {
+                    BackspaceDownTime += e.Time;
+                    if (BackspaceDownTime > 0.3)
+                    {
+                        BackspaceDownTime -= 0.05;
+                        FilterBackspace();
+                    }
+                }
+            }
+            prevBackspaceDown = BackspaceDown;
+
             profileData = Profile.GetProfilingData().ToList();
             if (sortAction != null)
             {
                 profileData.Sort(sortAction);
+            }
+
+            Regex filterRegex = new Regex(FilterText);
+            if (FilterText != "")
+            {
+                profileData = profileData.Where((pair => filterRegex.IsMatch(pair.Key.Tag))).ToList();
             }
         }
         #endregion
@@ -143,6 +174,7 @@ namespace Ryujinx
             int titleFontHeight = 16;
             int linePadding = 2;
             int columnSpacing = 30;
+            int filterHeight = 24;
 
             float width;
             float maxWidth = 0;
@@ -151,7 +183,7 @@ namespace Ryujinx
 
             // Background lines to make reading easier
             GL.Enable(EnableCap.ScissorTest);
-            GL.Scissor(0, 0, Width, Height - titleHeight);
+            GL.Scissor(0, filterHeight, Width, Height - titleHeight - filterHeight);
             GL.Begin(PrimitiveType.Triangles);
             GL.Color3(0.2f, 0.2f, 0.2f);
             for (int i = 0; i < profileData.Count; i += 2)
@@ -233,58 +265,63 @@ namespace Ryujinx
             buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - titleFontHeight, 0, (int)xOffset, titleFontHeight);
 
             // Time bars
-            width = Width - xOffset - 370;
-            int maxInstant = profileData.Max((kvp) => (int)kvp.Value.LastTime);
-            int maxAverage = profileData.Max((kvp) => (int)kvp.Value.AverageTime);
-            int maxTotal = profileData.Max((kvp) => (int)kvp.Value.TotalTime);
-            float barHeight = (lineHeight - linePadding) / 3.0f;
-            verticalIndex = 0;
-
-            GL.Enable(EnableCap.ScissorTest);
-            GL.Begin(PrimitiveType.Triangles);
-            foreach (var entry in profileData)
+            if (profileData.Count != 0)
             {
-                // Instant
-                GL.Color3(Color.Blue);
-                float bottom = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                float top = bottom + barHeight;
-                float right = (float)entry.Value.LastTime / maxInstant * width + xOffset;
-                GL.Vertex2(xOffset, bottom);
-                GL.Vertex2(xOffset, top);
-                GL.Vertex2(right, top);
+                width = Width - xOffset - 370;
+                int maxInstant = profileData.Max((kvp) => (int) kvp.Value.LastTime);
+                int maxAverage = profileData.Max((kvp) => (int) kvp.Value.AverageTime);
+                int maxTotal = profileData.Max((kvp) => (int) kvp.Value.TotalTime);
+                float barHeight = (lineHeight - linePadding) / 3.0f;
+                verticalIndex = 0;
 
-                GL.Vertex2(right, top);
-                GL.Vertex2(right, bottom);
-                GL.Vertex2(xOffset, bottom);
+                GL.Enable(EnableCap.ScissorTest);
+                GL.Begin(PrimitiveType.Triangles);
+                foreach (var entry in profileData)
+                {
+                    // Instant
+                    GL.Color3(Color.Blue);
+                    float bottom = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
+                    float top = bottom + barHeight;
+                    float right = (float) entry.Value.LastTime / maxInstant * width + xOffset;
+                    GL.Vertex2(xOffset, bottom);
+                    GL.Vertex2(xOffset, top);
+                    GL.Vertex2(right, top);
 
-                // Average
-                GL.Color3(Color.Green);
-                top += barHeight;
-                bottom += barHeight;
-                right = (float)entry.Value.AverageTime / maxAverage * width + xOffset;
-                GL.Vertex2(xOffset, bottom);
-                GL.Vertex2(xOffset, top);
-                GL.Vertex2(right, top);
+                    GL.Vertex2(right, top);
+                    GL.Vertex2(right, bottom);
+                    GL.Vertex2(xOffset, bottom);
 
-                GL.Vertex2(right, top);
-                GL.Vertex2(right, bottom);
-                GL.Vertex2(xOffset, bottom);
+                    // Average
+                    GL.Color3(Color.Green);
+                    top += barHeight;
+                    bottom += barHeight;
+                    right = (float) entry.Value.AverageTime / maxAverage * width + xOffset;
+                    GL.Vertex2(xOffset, bottom);
+                    GL.Vertex2(xOffset, top);
+                    GL.Vertex2(right, top);
 
-                // Total
-                GL.Color3(Color.Red);
-                top += barHeight;
-                bottom += barHeight;
-                right = (float)entry.Value.TotalTime / maxTotal * width + xOffset;
-                GL.Vertex2(xOffset, bottom);
-                GL.Vertex2(xOffset, top);
-                GL.Vertex2(right, top);
+                    GL.Vertex2(right, top);
+                    GL.Vertex2(right, bottom);
+                    GL.Vertex2(xOffset, bottom);
 
-                GL.Vertex2(right, top);
-                GL.Vertex2(right, bottom);
-                GL.Vertex2(xOffset, bottom);
+                    // Total
+                    GL.Color3(Color.Red);
+                    top += barHeight;
+                    bottom += barHeight;
+                    right = (float) entry.Value.TotalTime / maxTotal * width + xOffset;
+                    GL.Vertex2(xOffset, bottom);
+                    GL.Vertex2(xOffset, top);
+                    GL.Vertex2(right, top);
+
+                    GL.Vertex2(right, top);
+                    GL.Vertex2(right, bottom);
+                    GL.Vertex2(xOffset, bottom);
+                }
+
+                GL.End();
+                GL.Disable(EnableCap.ScissorTest);
             }
-            GL.End();
-            GL.Disable(EnableCap.ScissorTest);
+
             fontService.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - titleFontHeight, titleFontHeight);
             xOffset = Width - 360;
 
@@ -311,6 +348,9 @@ namespace Ryujinx
             fontService.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, yHeight, titleFontHeight);
             buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);
 
+            // Filter bar
+            fontService.DrawText($"Filter: {FilterText}", 10, 5, 16);
+
             // Draw buttons
             foreach (ProfileButton button in buttons)
             {
@@ -321,13 +361,46 @@ namespace Ryujinx
         }
         #endregion
 
+        private void FilterBackspace()
+        {
+            if (FilterText.Length <= 1)
+            {
+                FilterText = "";
+            }
+            else
+            {
+                FilterText = FilterText.Remove(FilterText.Length - 1, 1);
+            }
+        }
+
         private float GetLineY(float offset, float lineHeight, float padding, bool centre, int line)
         {
             return Height + offset - lineHeight - padding - ((lineHeight + padding) * line) + ((centre) ? padding : 0);
         }
 
-        protected override void OnMouseDown(MouseButtonEventArgs e)
+        protected override void OnKeyPress(KeyPressEventArgs e)
         {
+            FilterText += e.KeyChar;
+        }
+
+        protected override void OnKeyDown(KeyboardKeyEventArgs e)
+        {
+            if (e.Key == Key.BackSpace)
+            {
+                BackspaceDown = true;
+                return;
+            }
+            base.OnKeyUp(e);
+        }
+
+        protected override void OnKeyUp(KeyboardKeyEventArgs e)
+        {
+            if (e.Key == Key.BackSpace)
+            {
+                BackspaceDown = false;
+                return;
+            }
+            base.OnKeyUp(e);
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
