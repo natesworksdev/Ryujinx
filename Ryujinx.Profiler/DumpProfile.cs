@@ -16,8 +16,8 @@ namespace Ryujinx.Profiler
                             $"{time.Key.SessionGroup}," +
                             $"{time.Key.SessionItem}," +
                             $"{time.Value.Count}," +
-                            $"{profile.ConvertTicksToMS(time.Value.AverageTime)}," +
-                            $"{profile.ConvertTicksToMS(time.Value.TotalTime)}\r\n";
+                            $"{Profile.ConvertTicksToMS(time.Value.AverageTime)}," +
+                            $"{Profile.ConvertTicksToMS(time.Value.TotalTime)}\r\n";
             }
 
             // Ensure file directory exists before write

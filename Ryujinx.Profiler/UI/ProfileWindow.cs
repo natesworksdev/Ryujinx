@@ -213,8 +213,8 @@ namespace Ryujinx
             foreach (var entry in profileData)
             {
                 float y = yOffset + Height - (lineHeight + 2) * (verticalIndex++ + 1);
-                fontService.DrawText($"{entry.Value.AverageTime:F3}", xOffset, y, lineHeight);
-                fontService.DrawText($"{entry.Value.LastTime:F3}", columnSpacing + 100 + xOffset, y, lineHeight);
+                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", xOffset, y, lineHeight);
+                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.LastTime):F3}", columnSpacing + 100 + xOffset, y, lineHeight);
             }
             GL.Disable(EnableCap.ScissorTest);
 

@@ -62,11 +62,6 @@ namespace Ryujinx.Profiler
             return time;
         }
 
-        public double ConvertTicksToMS(long ticks)
-        {
-            return (((double)ticks) / Stopwatch.Frequency) * 1000.0;
-        }
-
         public string GetSession()
         {
             // Can be called from multiple threads so locked to ensure no duplicate sessions are generated

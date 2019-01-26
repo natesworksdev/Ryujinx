@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Ryujinx.Profiler
 {
@@ -63,6 +64,11 @@ namespace Ryujinx.Profiler
             if (!ProfilingEnabled())
                 return null;
             return ProfileInstance.GetSession();
+        }
+
+        public static double ConvertTicksToMS(long ticks)
+        {
+            return (((double)ticks) / Stopwatch.Frequency) * 1000.0;
         }
 
         public static Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
