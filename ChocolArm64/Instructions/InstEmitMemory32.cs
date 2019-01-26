@@ -29,7 +29,7 @@ namespace ChocolArm64.Instructions
 
         public static void Ldm(ILEmitterCtx context)
         {
-            OpCodeMemMult32 op = (OpCodeMemMult32)context.CurrOp;
+            OpCode32MemMult op = (OpCode32MemMult)context.CurrOp;
 
             EmitLoadFromRegister(context, op.Rn);
 
@@ -112,7 +112,7 @@ namespace ChocolArm64.Instructions
 
         public static void Stm(ILEmitterCtx context)
         {
-            OpCodeMemMult32 op = (OpCodeMemMult32)context.CurrOp;
+            OpCode32MemMult op = (OpCode32MemMult)context.CurrOp;
 
             EmitLoadFromRegister(context, op.Rn);
 
@@ -185,7 +185,7 @@ namespace ChocolArm64.Instructions
 
         private static void EmitLoadOrStore(ILEmitterCtx context, int size, AccessType accType)
         {
-            OpCodeMem32 op = (OpCodeMem32)context.CurrOp;
+            OpCode32Mem op = (OpCode32Mem)context.CurrOp;
 
             if (op.Index || op.WBack)
             {

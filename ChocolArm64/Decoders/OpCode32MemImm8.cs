@@ -2,7 +2,7 @@ using ChocolArm64.Instructions;
 
 namespace ChocolArm64.Decoders
 {
-    class OpCode32MemImm8 : OpCodeMem32
+    class OpCode32MemImm8 : OpCode32Mem
     {
         public OpCode32MemImm8(Inst inst, long position, int opCode) : base(inst, position, opCode)
         {

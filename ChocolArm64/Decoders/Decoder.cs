@@ -168,7 +168,7 @@ namespace ChocolArm64.Decoders
         {
             //Note: On ARM32, most ALU operations can write to R15 (PC),
             //so we must consider such operations as a branch in potential aswell.
-            if (opCode is IOpCodeAlu32 opAlu && opAlu.Rd == RegisterAlias.Aarch32Pc)
+            if (opCode is IOpCode32Alu opAlu && opAlu.Rd == RegisterAlias.Aarch32Pc)
             {
                 return true;
             }
@@ -177,19 +177,19 @@ namespace ChocolArm64.Decoders
             //register (Rt == 15 or (mask & (1 << 15)) != 0), and cases where there is
             //a write back to PC (wback == true && Rn == 15), however the later may
             //be "undefined" depending on the CPU, so compilers should not produce that.
-            if (opCode is IOpCodeMem32 || opCode is IOpCodeMemMult32)
+            if (opCode is IOpCode32Mem || opCode is IOpCode32MemMult)
             {
                 int rt, rn;
 
                 bool wBack;
 
-                if (opCode is IOpCodeMem32 opMem)
+                if (opCode is IOpCode32Mem opMem)
                 {
                     rt    = opMem.Rt;
                     rn    = opMem.Rn;
                     wBack = opMem.WBack;
                 }
-                else if (opCode is IOpCodeMemMult32 opMemMult)
+                else if (opCode is IOpCode32MemMult opMemMult)
                 {
                     const int pcMask = 1 << RegisterAlias.Aarch32Pc;
 
@@ -210,8 +210,8 @@ namespace ChocolArm64.Decoders
             }
 
             //Explicit branch instructions.
-            return opCode is IOpCodeBImm32 ||
-                   opCode is IOpCodeBReg32;
+            return opCode is IOpCode32BImm ||
+                   opCode is IOpCode32BReg;
         }
 
         private static bool IsException(OpCode64 opCode)

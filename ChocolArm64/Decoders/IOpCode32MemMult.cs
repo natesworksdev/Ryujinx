@@ -1,6 +1,6 @@
 namespace ChocolArm64.Decoders
 {
-    interface IOpCodeMemMult32 : IOpCode32
+    interface IOpCode32MemMult : IOpCode32
     {
         int Rn { get; }
 

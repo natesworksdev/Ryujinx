@@ -2,7 +2,7 @@ using ChocolArm64.Instructions;
 
 namespace ChocolArm64.Decoders
 {
-    class OpCodeMemMult32 : OpCode32, IOpCodeMemMult32
+    class OpCode32MemMult : OpCode32, IOpCode32MemMult
     {
         public int Rn { get; private set; }
 
@@ -10,7 +10,7 @@ namespace ChocolArm64.Decoders
         public int Offset       { get; private set; }
         public int PostOffset   { get; private set; }
 
-        public OpCodeMemMult32(Inst inst, long position, int opCode) : base(inst, position, opCode)
+        public OpCode32MemMult(Inst inst, long position, int opCode) : base(inst, position, opCode)
         {
             Rn = (opCode >> 16) & 0xf;
 
