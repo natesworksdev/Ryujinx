@@ -2268,6 +2268,15 @@ namespace ChocolArm64.Instructions
             }
         }
 
+        public static void Smlal_Ve(ILEmitterCtx context)
+        {
+            EmitVectorWidenTernaryOpByElemSx(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
+            });
+        }
+
         public static void Smlsl_V(ILEmitterCtx context)
         {
             OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
@@ -2319,9 +2328,23 @@ namespace ChocolArm64.Instructions
             }
         }
 
+        public static void Smlsl_Ve(ILEmitterCtx context)
+        {
+            EmitVectorWidenTernaryOpByElemSx(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
+            });
+        }
+
         public static void Smull_V(ILEmitterCtx context)
         {
             EmitVectorWidenRnRmBinaryOpSx(context, () => context.Emit(OpCodes.Mul));
+        }
+
+        public static void Smull_Ve(ILEmitterCtx context)
+        {
+            EmitVectorWidenBinaryOpByElemSx(context, () => context.Emit(OpCodes.Mul));
         }
 
         public static void Sqabs_S(ILEmitterCtx context)
@@ -2929,6 +2952,15 @@ namespace ChocolArm64.Instructions
             }
         }
 
+        public static void Umlal_Ve(ILEmitterCtx context)
+        {
+            EmitVectorWidenTernaryOpByElemZx(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Add);
+            });
+        }
+
         public static void Umlsl_V(ILEmitterCtx context)
         {
             OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
@@ -2980,9 +3012,23 @@ namespace ChocolArm64.Instructions
             }
         }
 
+        public static void Umlsl_Ve(ILEmitterCtx context)
+        {
+            EmitVectorWidenTernaryOpByElemZx(context, () =>
+            {
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Sub);
+            });
+        }
+
         public static void Umull_V(ILEmitterCtx context)
         {
             EmitVectorWidenRnRmBinaryOpZx(context, () => context.Emit(OpCodes.Mul));
+        }
+
+        public static void Umull_Ve(ILEmitterCtx context)
+        {
+            EmitVectorWidenBinaryOpByElemZx(context, () => context.Emit(OpCodes.Mul));
         }
 
         public static void Uqadd_S(ILEmitterCtx context)
