@@ -74,21 +74,24 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 
-        public float DrawText(string text, float x, float y, float height)
+        public float DrawText(string text, float x, float y, float height, bool draw = true)
         {
             float originalX = x;
 
-            // Use font map texture
-            GL.BindTexture(TextureTarget.Texture2D, characterTextureSheet);
+            if (draw)
+            {
+                // Use font map texture
+                GL.BindTexture(TextureTarget.Texture2D, characterTextureSheet);
 
-            // Enable blending and textures
-            GL.Enable(EnableCap.Texture2D);
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-            
-            // Draw all characters
-            GL.Begin(PrimitiveType.Triangles);
-            GL.Color4(fontColor);
+                // Enable blending and textures
+                GL.Enable(EnableCap.Texture2D);
+                GL.Enable(EnableCap.Blend);
+                GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+                // Draw all characters
+                GL.Begin(PrimitiveType.Triangles);
+                GL.Color4(fontColor);
+            }
 
             for (int i = 0; i < text.Length; i++)
             {
@@ -102,16 +105,22 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
                 float width = (charInfo.aspectRatio * height);
                 x += (charInfo.xBearing * charInfo.aspectRatio) * width;
                 float right = x + width;
-                DrawChar(charInfo, x, right, y + height * (charInfo.height - charInfo.yBearing), y - height * charInfo.yBearing);
+                if (draw)
+                {
+                    DrawChar(charInfo, x, right, y + height * (charInfo.height - charInfo.yBearing), y - height * charInfo.yBearing);
+                }
                 x = right + charInfo.advance * charInfo.aspectRatio;
             }
 
-            GL.End();
+            if (draw)
+            {
+                GL.End();
 
-            // Cleanup for caller
-            GL.BindTexture(TextureTarget.Texture2D, 0);
-            GL.Disable(EnableCap.Texture2D);
-            GL.Disable(EnableCap.Blend);
+                // Cleanup for caller
+                GL.BindTexture(TextureTarget.Texture2D, 0);
+                GL.Disable(EnableCap.Texture2D);
+                GL.Disable(EnableCap.Blend);
+            }
 
             // Return width of rendered text
             return x - originalX;

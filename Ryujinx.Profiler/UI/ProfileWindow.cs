@@ -1,31 +1,44 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using OpenTK.Input;
 using Ryujinx.Profiler;
+using Ryujinx.Profiler.UI;
 using Ryujinx.Profiler.UI.SharpFontHelpers;
 
 namespace Ryujinx
 {
     public class ProfileWindow : GameWindow
     {
+        private enum ButtonIndex
+        {
+            TagTitle = 0,
+            InstantTitle = 1,
+            AverageTitle = 2,
+            TotalTitle = 3,
+        }
+
         private bool visible = true, initComplete = false;
         public bool visibleChanged;
         private FontService fontService;
-        private Dictionary<ProfileConfig, TimingInfo> profileData;
+        private List<KeyValuePair<ProfileConfig, TimingInfo>> profileData;
 
         private float scrollPos = 0;
         private float minScroll = 0, maxScroll = 0;
 
+        private ProfileButton[] buttons;
+        private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> sortAction;
+
         public ProfileWindow()
             : base(400, 720)
         {
-            //Keyboard.KeyDown += Keyboard_KeyDown;
             Location = new Point(DisplayDevice.Default.Width - 400, (DisplayDevice.Default.Height - 720) / 2);
             Title = "Profiler";
+            sortAction = null;
         }
 
         #region Public Methods
@@ -46,6 +59,12 @@ namespace Ryujinx
             GL.ClearColor(Color.MidnightBlue);
             fontService = new FontService();
             fontService.InitalizeTextures();
+
+            buttons = new ProfileButton[4];
+            buttons[(int)ButtonIndex.TagTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TagAscending());
+            buttons[(int)ButtonIndex.InstantTitle] = new ProfileButton(fontService, () => sortAction = new ProfileSorters.InstantAscending());
+            buttons[(int)ButtonIndex.AverageTitle] = new ProfileButton(fontService, () => sortAction = new ProfileSorters.AverageAscending());
+            buttons[(int)ButtonIndex.TotalTitle]   = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TotalAscending());
         }
         #endregion
 
@@ -87,7 +106,11 @@ namespace Ryujinx
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             initComplete = true;
-            profileData = Profile.GetProfilingData();
+            profileData = Profile.GetProfilingData().ToList();
+            if (sortAction != null)
+            {
+                profileData.Sort(sortAction);
+            }
         }
         #endregion
 
@@ -207,6 +230,7 @@ namespace Ryujinx
                 maxWidth = width;
 
             xOffset += maxWidth + columnSpacing;
+            buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - titleFontHeight, 0, (int)xOffset, titleFontHeight);
 
             // Time bars
             width = Width - xOffset - 370;
@@ -276,9 +300,22 @@ namespace Ryujinx
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            fontService.DrawText("Instant (ms)", xOffset, Height - titleFontHeight, titleFontHeight);
-            fontService.DrawText("Average (ms)", columnSpacing + 100 + xOffset, Height - titleFontHeight, titleFontHeight);
-            fontService.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, Height - titleFontHeight, titleFontHeight);
+            float yHeight = Height - titleFontHeight;
+
+            fontService.DrawText("Instant (ms)", xOffset, yHeight, titleFontHeight);
+            buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
+
+            fontService.DrawText("Average (ms)", columnSpacing + 100 + xOffset, yHeight, titleFontHeight);
+            buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(columnSpacing + 100 + xOffset), (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
+
+            fontService.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, yHeight, titleFontHeight);
+            buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);
+
+            // Draw buttons
+            foreach (ProfileButton button in buttons)
+            {
+                button.Draw();
+            }
 
             SwapBuffers();
         }
@@ -295,6 +332,11 @@ namespace Ryujinx
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
+            foreach (ProfileButton button in buttons)
+            {
+                if (button.ProcessClick(e.X, Height - e.Y))
+                    return;
+            }
         }
 
         protected override void OnMouseMove(MouseMoveEventArgs e)
