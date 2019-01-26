@@ -21,6 +21,7 @@ namespace Ryujinx
             InstantTitle = 1,
             AverageTitle = 2,
             TotalTitle = 3,
+            FilterBar = 4,
         }
 
         private bool visible = true, initComplete = false;
@@ -36,7 +37,7 @@ namespace Ryujinx
 
         private string FilterText = "";
         private double BackspaceDownTime = -1;
-        private bool BackspaceDown = false, prevBackspaceDown = false;
+        private bool BackspaceDown = false, prevBackspaceDown = false, regexEnabled = false;
 
         public ProfileWindow()
             : base(400, 720)
@@ -64,12 +65,14 @@ namespace Ryujinx
             GL.ClearColor(Color.MidnightBlue);
             fontService = new FontService();
             fontService.InitalizeTextures();
+            fontService.UpdateScreenHeight(Height);
 
-            buttons = new ProfileButton[4];
+            buttons = new ProfileButton[5];
             buttons[(int)ButtonIndex.TagTitle]     = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TagAscending());
             buttons[(int)ButtonIndex.InstantTitle] = new ProfileButton(fontService, () => sortAction = new ProfileSorters.InstantAscending());
             buttons[(int)ButtonIndex.AverageTitle] = new ProfileButton(fontService, () => sortAction = new ProfileSorters.AverageAscending());
             buttons[(int)ButtonIndex.TotalTitle]   = new ProfileButton(fontService, () => sortAction = new ProfileSorters.TotalAscending());
+            buttons[(int)ButtonIndex.FilterBar]    = new ProfileButton(fontService, () => regexEnabled = !regexEnabled);
         }
         #endregion
 
@@ -86,6 +89,8 @@ namespace Ryujinx
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
             GL.Ortho(0, Width, 0, Height, 0.0, 4.0);
+
+            fontService.UpdateScreenHeight(Height);
         }
         #endregion
 
@@ -111,7 +116,8 @@ namespace Ryujinx
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             initComplete = true;
-
+            
+            // Backspace handling
             if (BackspaceDown)
             {
                 if (!prevBackspaceDown)
@@ -131,23 +137,32 @@ namespace Ryujinx
             }
             prevBackspaceDown = BackspaceDown;
 
+            // Filtering
             profileData = Profile.GetProfilingData().ToList();
             if (sortAction != null)
             {
                 profileData.Sort(sortAction);
             }
 
-            try
+            if (regexEnabled)
             {
-                Regex filterRegex = new Regex(FilterText);
-                if (FilterText != "")
+                try
                 {
-                    profileData = profileData.Where((pair => filterRegex.IsMatch(pair.Key.Tag))).ToList();
+                    Regex filterRegex = new Regex(FilterText, RegexOptions.IgnoreCase);
+                    if (FilterText != "")
+                    {
+                        profileData = profileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
+                    }
+                }
+                catch (ArgumentException argException)
+                {
+                    // Skip filtering for invalid regex
                 }
             }
-            catch (ArgumentException argException)
+            else
             {
-                // Skip filtering for invalid regex
+                // Regular filtering
+                profileData = profileData.Where((pair => pair.Key.Search.ToLower().Contains(FilterText.ToLower()))).ToList();
             }
         }
         #endregion
@@ -197,6 +212,11 @@ namespace Ryujinx
             {
                 float top = GetLineY(yOffset, lineHeight, linePadding, false, i - 1);
                 float bottom = GetLineY(yOffset, lineHeight, linePadding, false, i);
+
+                // Skip rendering out of bounds bars
+                if (top < 0 || bottom > Height)
+                    continue;
+
                 GL.Vertex2(0, bottom);
                 GL.Vertex2(0, top);
                 GL.Vertex2(Width, top);
@@ -275,11 +295,18 @@ namespace Ryujinx
             if (profileData.Count != 0)
             {
                 width = Width - xOffset - 370;
-                int maxInstant = profileData.Max((kvp) => (int) kvp.Value.Instant);
-                int maxAverage = profileData.Max((kvp) => (int) kvp.Value.AverageTime);
-                int maxTotal = profileData.Max((kvp) => (int) kvp.Value.TotalTime);
+                long maxAverage, maxTotal;
                 float barHeight = (lineHeight - linePadding) / 3.0f;
                 verticalIndex = 0;
+
+                // Get max values
+                var maxInstant = maxAverage = maxTotal = 0;
+                foreach (KeyValuePair<ProfileConfig, TimingInfo> kvp in profileData)
+                {
+                    maxInstant = Math.Max(maxInstant, kvp.Value.Instant);
+                    maxAverage = Math.Max(maxAverage, kvp.Value.AverageTime);
+                    maxTotal = Math.Max(maxTotal, kvp.Value.TotalTime);
+                }
 
                 GL.Enable(EnableCap.ScissorTest);
                 GL.Begin(PrimitiveType.Triangles);
@@ -290,6 +317,11 @@ namespace Ryujinx
                     float bottom = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
                     float top = bottom + barHeight;
                     float right = (float) entry.Value.Instant / maxInstant * width + xOffset;
+
+                    // Skip rendering out of bounds bars
+                    if (top < 0 || bottom > Height)
+                        continue;
+
                     GL.Vertex2(xOffset, bottom);
                     GL.Vertex2(xOffset, top);
                     GL.Vertex2(right, top);
@@ -356,7 +388,8 @@ namespace Ryujinx
             buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);
 
             // Filter bar
-            fontService.DrawText($"Filter: {FilterText}", 10, 5, 16);
+            fontService.DrawText($"{(regexEnabled ? "Regex " : "Filter")}: {FilterText}", 10, 5, 16);
+            buttons[(int) ButtonIndex.FilterBar].UpdateSize(0, 0, 0, Width, filterHeight);
 
             // Draw buttons
             foreach (ProfileButton button in buttons)

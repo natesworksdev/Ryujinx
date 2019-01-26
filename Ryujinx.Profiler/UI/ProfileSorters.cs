@@ -27,7 +27,7 @@ namespace Ryujinx.Profiler.UI
         public class TagAscending : IComparer<KeyValuePair<ProfileConfig, TimingInfo>>
         {
             public int Compare(KeyValuePair<ProfileConfig, TimingInfo> pair1, KeyValuePair<ProfileConfig, TimingInfo> pair2)
-                => StringComparer.CurrentCulture.Compare(pair1.Key.Tag, pair2.Key.Tag);
+                => StringComparer.CurrentCulture.Compare(pair1.Key.Search, pair2.Key.Search);
         }
     }
 }

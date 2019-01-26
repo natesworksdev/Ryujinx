@@ -11,6 +11,8 @@ namespace Ryujinx.Profiler
 
         private string cachedTag, cachedSession;
 
+        public string Search => $"{Category}.{SessionGroup}.{SessionItem}";
+
         public string Tag
         {
             get

@@ -18,6 +18,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
 
         private const int SheetWidth = 256;
         private const int SheetHeight = 256;
+        private int ScreenWidth, ScreenHeight;
         private int characterTextureSheet;
         private CharacterInfo[] characters;
 
@@ -74,9 +75,20 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 
+        public void UpdateScreenHeight(int height)
+        {
+            ScreenHeight = height;
+        }
+
         public float DrawText(string text, float x, float y, float height, bool draw = true)
         {
             float originalX = x;
+
+            // Skip out of bounds draw
+            if (y < height * -2 || y > ScreenHeight + height * 2)
+            {
+                draw = false;
+            }
 
             if (draw)
             {
