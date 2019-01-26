@@ -28,6 +28,7 @@
     <ProjectReference Include="..\Ryujinx.Audio\Ryujinx.Audio.csproj" />
     <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics\Ryujinx.Graphics.csproj" />
+    <ProjectReference Include="..\Ryujinx.Profiler\Ryujinx.Profiler.csproj" />
   </ItemGroup>
 
   <ItemGroup>
