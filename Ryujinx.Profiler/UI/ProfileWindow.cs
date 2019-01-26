@@ -17,7 +17,7 @@ namespace Ryujinx
         private Dictionary<ProfileConfig, TimingInfo> profileData;
 
         private float scrollPos = 0;
-        private float maxScroll = 0;
+        private float minScroll = 0, maxScroll = 0;
 
         public ProfileWindow()
             : base(400, 720)
@@ -115,14 +115,19 @@ namespace Ryujinx
             fontService.fontColor = Color.White;
             int verticalIndex = 0;
             int lineHeight = 12;
+            int titleHeight = 24;
+            int titleFontHeight = 16;
             int linePadding = 2;
             int columnSpacing = 30;
 
+            float width;
             float maxWidth = 0;
-            float yOffset = scrollPos;
+            float yOffset = scrollPos - titleHeight;
             float xOffset = 10;
 
             // Background lines to make reading easier
+            GL.Enable(EnableCap.ScissorTest);
+            GL.Scissor(0, 0, Width, Height - titleHeight);
             GL.Begin(PrimitiveType.Triangles);
             GL.Color3(0.2f, 0.2f, 0.2f);
             for (int i = 0; i < profileData.Count; i += 2)
@@ -144,50 +149,77 @@ namespace Ryujinx
             foreach (var entry in profileData)
             {
                 float y = yOffset + Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
-                float width = fontService.DrawText(entry.Key.Category, xOffset, y, lineHeight);
+                width = fontService.DrawText(entry.Key.Category, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
                 }
             }
+            GL.Disable(EnableCap.ScissorTest);
+
+            width = fontService.DrawText("Category", xOffset, Height - titleFontHeight, titleFontHeight);
+            if (width > maxWidth)
+                maxWidth = width;
+
             xOffset += maxWidth + columnSpacing;
+
+            
 
             // Display session group
             maxWidth = 0;
             verticalIndex = 0;
+            GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in profileData)
             {
                 float y = yOffset + Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
-                float width = fontService.DrawText(entry.Key.SessionGroup, xOffset, y, lineHeight);
+                width = fontService.DrawText(entry.Key.SessionGroup, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
                 }
             }
+            GL.Disable(EnableCap.ScissorTest);
+
+            width = fontService.DrawText("Group", xOffset, Height - titleFontHeight, titleFontHeight);
+            if (width > maxWidth)
+                maxWidth = width;
+
             xOffset += maxWidth + columnSpacing;
 
             // Display session item
             maxWidth = 0;
             verticalIndex = 0;
+            GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in profileData)
             {
                 float y = yOffset + Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
-                float width = fontService.DrawText(entry.Key.SessionItem, xOffset, y, lineHeight);
+                width = fontService.DrawText(entry.Key.SessionItem, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
                 }
             }
+            GL.Disable(EnableCap.ScissorTest);
+
+            width = fontService.DrawText("Item", xOffset, Height - titleFontHeight, titleFontHeight);
+            if (width > maxWidth)
+                maxWidth = width;
+
             xOffset += maxWidth + columnSpacing;
 
             // Display timestamps
             verticalIndex = 0;
+            GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in profileData)
             {
                 float y = yOffset + Height - (lineHeight + 2) * (verticalIndex++ + 1);
                 fontService.DrawText($"{entry.Value.AverageTime:F3}", xOffset, y, lineHeight);
-                fontService.DrawText($"{entry.Value.LastTime:F3}", columnSpacing + 50 + xOffset, y, lineHeight);
+                fontService.DrawText($"{entry.Value.LastTime:F3}", columnSpacing + 100 + xOffset, y, lineHeight);
             }
+            GL.Disable(EnableCap.ScissorTest);
+
+            fontService.DrawText("Average (ms)", xOffset, Height - titleFontHeight, titleFontHeight);
+            fontService.DrawText("Instant (ms)", columnSpacing + 100 + xOffset, Height - titleFontHeight, titleFontHeight);
 
             SwapBuffers();
         }
@@ -208,8 +240,8 @@ namespace Ryujinx
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             scrollPos += e.Delta * -30;
-            if (scrollPos < 0)
-                scrollPos = 0;
+            if (scrollPos < minScroll)
+                scrollPos = minScroll;
             if (scrollPos > maxScroll)
                 scrollPos = maxScroll;
         }
