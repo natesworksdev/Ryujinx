@@ -2,6 +2,7 @@
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.ComponentModel;
+using Ryujinx.Profiler.UI.SharpFontHelpers;
 
 namespace Ryujinx
 {
@@ -9,6 +10,7 @@ namespace Ryujinx
     {
         private bool visible = true;
         public bool visibleChanged;
+        private FontService fontService;
 
         public ProfileWindow()
             : base(400, 720)
@@ -34,6 +36,8 @@ namespace Ryujinx
         protected override void OnLoad(EventArgs e)
         {
             GL.ClearColor(Color.MidnightBlue);
+            fontService = new FontService();
+            fontService.InitalizeTextures();
         }
         #endregion
 
@@ -97,18 +101,11 @@ namespace Ryujinx
                 return;
             }
 
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            GL.Begin(BeginMode.Triangles);
-
-            GL.Color3(Color.MidnightBlue);
-            GL.Vertex2(0.0f, 0.0f);
-            GL.Color3(Color.SpringGreen);
-            GL.Vertex2(50.0f, 100.0f);
-            GL.Color3(Color.Ivory);
-            GL.Vertex2(100.0f, 0.0f);
-
-            GL.End();
+            GL.ClearColor(Color.White);
+            fontService.fontColor = Color.Black;
+            fontService.DrawText("This is a test", 50, 50, 32);
 
             this.SwapBuffers();
         }
