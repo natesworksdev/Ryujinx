@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using OpenTK.Input;
 using Ryujinx.Profiler;
 using Ryujinx.Profiler.UI.SharpFontHelpers;
@@ -114,7 +115,7 @@ namespace Ryujinx
             GL.ClearColor(Color.Black);
             fontService.fontColor = Color.White;
             int verticalIndex = 0;
-            int lineHeight = 12;
+            int lineHeight = 16;
             int titleHeight = 24;
             int titleFontHeight = 16;
             int linePadding = 2;
@@ -132,8 +133,8 @@ namespace Ryujinx
             GL.Color3(0.2f, 0.2f, 0.2f);
             for (int i = 0; i < profileData.Count; i += 2)
             {
-                float top = yOffset + Height - linePadding - (lineHeight + linePadding) * (i + 1);
-                float bottom = yOffset + Height - (linePadding * 2) - (lineHeight + linePadding) * i;
+                float top = GetLineY(yOffset, lineHeight, linePadding, false, i - 1);
+                float bottom = GetLineY(yOffset, lineHeight, linePadding, false, i);
                 GL.Vertex2(0, bottom);
                 GL.Vertex2(0, top);
                 GL.Vertex2(Width, top);
@@ -146,9 +147,10 @@ namespace Ryujinx
             maxScroll = (lineHeight + linePadding) * (profileData.Count - 1);
 
             // Display category
+            verticalIndex = 0;
             foreach (var entry in profileData)
             {
-                float y = yOffset + Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
+                float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
                 width = fontService.DrawText(entry.Key.Category, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
@@ -162,7 +164,6 @@ namespace Ryujinx
                 maxWidth = width;
 
             xOffset += maxWidth + columnSpacing;
-
             
 
             // Display session group
@@ -171,7 +172,7 @@ namespace Ryujinx
             GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in profileData)
             {
-                float y = yOffset + Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
+                float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
                 width = fontService.DrawText(entry.Key.SessionGroup, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
@@ -192,7 +193,7 @@ namespace Ryujinx
             GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in profileData)
             {
-                float y = yOffset + Height - (lineHeight + linePadding) * (verticalIndex++ + 1);
+                float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
                 width = fontService.DrawText(entry.Key.SessionItem, xOffset, y, lineHeight);
                 if (width > maxWidth)
                 {
@@ -207,23 +208,86 @@ namespace Ryujinx
 
             xOffset += maxWidth + columnSpacing;
 
+            // Time bars
+            width = Width - xOffset - 370;
+            int maxInstant = profileData.Max((kvp) => (int)kvp.Value.LastTime);
+            int maxAverage = profileData.Max((kvp) => (int)kvp.Value.AverageTime);
+            int maxTotal = profileData.Max((kvp) => (int)kvp.Value.TotalTime);
+            float barHeight = (lineHeight - linePadding) / 3.0f;
+            verticalIndex = 0;
+
+            GL.Enable(EnableCap.ScissorTest);
+            GL.Begin(PrimitiveType.Triangles);
+            foreach (var entry in profileData)
+            {
+                // Instant
+                GL.Color3(Color.Blue);
+                float bottom = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
+                float top = bottom + barHeight;
+                float right = (float)entry.Value.LastTime / maxInstant * width + xOffset;
+                GL.Vertex2(xOffset, bottom);
+                GL.Vertex2(xOffset, top);
+                GL.Vertex2(right, top);
+
+                GL.Vertex2(right, top);
+                GL.Vertex2(right, bottom);
+                GL.Vertex2(xOffset, bottom);
+
+                // Average
+                GL.Color3(Color.Green);
+                top += barHeight;
+                bottom += barHeight;
+                right = (float)entry.Value.AverageTime / maxAverage * width + xOffset;
+                GL.Vertex2(xOffset, bottom);
+                GL.Vertex2(xOffset, top);
+                GL.Vertex2(right, top);
+
+                GL.Vertex2(right, top);
+                GL.Vertex2(right, bottom);
+                GL.Vertex2(xOffset, bottom);
+
+                // Total
+                GL.Color3(Color.Red);
+                top += barHeight;
+                bottom += barHeight;
+                right = (float)entry.Value.TotalTime / maxTotal * width + xOffset;
+                GL.Vertex2(xOffset, bottom);
+                GL.Vertex2(xOffset, top);
+                GL.Vertex2(right, top);
+
+                GL.Vertex2(right, top);
+                GL.Vertex2(right, bottom);
+                GL.Vertex2(xOffset, bottom);
+            }
+            GL.End();
+            GL.Disable(EnableCap.ScissorTest);
+            fontService.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - titleFontHeight, titleFontHeight);
+            xOffset = Width - 360;
+
             // Display timestamps
             verticalIndex = 0;
             GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in profileData)
             {
-                float y = yOffset + Height - (lineHeight + 2) * (verticalIndex++ + 1);
-                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", xOffset, y, lineHeight);
-                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.LastTime):F3}", columnSpacing + 100 + xOffset, y, lineHeight);
+                float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
+                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.LastTime):F3}", xOffset, y, lineHeight);
+                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", columnSpacing + 100 + xOffset, y, lineHeight);
+                fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", columnSpacing + columnSpacing + 200 + xOffset, y, lineHeight);
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            fontService.DrawText("Average (ms)", xOffset, Height - titleFontHeight, titleFontHeight);
-            fontService.DrawText("Instant (ms)", columnSpacing + 100 + xOffset, Height - titleFontHeight, titleFontHeight);
+            fontService.DrawText("Instant (ms)", xOffset, Height - titleFontHeight, titleFontHeight);
+            fontService.DrawText("Average (ms)", columnSpacing + 100 + xOffset, Height - titleFontHeight, titleFontHeight);
+            fontService.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, Height - titleFontHeight, titleFontHeight);
 
             SwapBuffers();
         }
         #endregion
+
+        private float GetLineY(float offset, float lineHeight, float padding, bool centre, int line)
+        {
+            return Height + offset - lineHeight - padding - ((lineHeight + padding) * line) + ((centre) ? padding : 0);
+        }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
