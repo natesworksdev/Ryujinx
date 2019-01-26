@@ -29,6 +29,22 @@ namespace ChocolArm64.Instructions
             EmitAluStore(context);
         }
 
+        public static void Cmp(ILEmitterCtx context)
+        {
+            IOpCodeAlu32 op = (IOpCodeAlu32)context.CurrOp;
+
+            EmitAluLoadOpers(context, setCarry: false);
+
+            context.Emit(OpCodes.Sub);
+
+            context.EmitZnFlagCheck();
+
+            EmitSubsCCheck(context);
+            EmitSubsVCheck(context);
+
+            context.Emit(OpCodes.Pop);
+        }
+
         public static void Mov(ILEmitterCtx context)
         {
             IOpCodeAlu32 op = (IOpCodeAlu32)context.CurrOp;
@@ -106,6 +122,8 @@ namespace ChocolArm64.Instructions
 
         private static void EmitAluWritePc(ILEmitterCtx context)
         {
+            context.EmitStoreState();
+
             if (IsThumb(context.CurrOp))
             {
                 context.EmitLdc_I4(~1);

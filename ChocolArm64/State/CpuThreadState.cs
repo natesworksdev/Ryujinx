@@ -13,7 +13,7 @@ namespace ChocolArm64.State
 
         private const int MinInstForCheck = 4000000;
 
-        public bool Thumb;
+
 
         public ulong X0,  X1,  X2,  X3,  X4,  X5,  X6,  X7,
                      X8,  X9,  X10, X11, X12, X13, X14, X15,
@@ -25,12 +25,15 @@ namespace ChocolArm64.State
                                 V16, V17, V18, V19, V20, V21, V22, V23,
                                 V24, V25, V26, V27, V28, V29, V30, V31;
 
+        public bool Aarch32;
+
+        public bool Thumb;
+        public bool BigEndian;
+
         public bool Overflow;
         public bool Carry;
         public bool Zero;
         public bool Negative;
-
-        public bool IsAarch32;
 
         public int ElrHyp;
 
@@ -140,7 +143,7 @@ namespace ChocolArm64.State
 
         internal ExecutionMode GetExecutionMode()
         {
-            if (!IsAarch32)
+            if (!Aarch32)
             {
                 return ExecutionMode.Aarch64;
             }

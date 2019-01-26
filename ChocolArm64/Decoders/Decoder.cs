@@ -168,9 +168,50 @@ namespace ChocolArm64.Decoders
         {
             //Note: On ARM32, most ALU operations can write to R15 (PC),
             //so we must consider such operations as a branch in potential aswell.
-            return  opCode is IOpCodeBImm32 ||
-                    opCode is IOpCodeBReg32 ||
-                   (opCode is IOpCodeAlu32 op && op.Rd == RegisterAlias.Aarch32Pc);
+            if (opCode is IOpCodeAlu32 opAlu && opAlu.Rd == RegisterAlias.Aarch32Pc)
+            {
+                return true;
+            }
+
+            //Same thing for memory operations. We have the cases where PC is a target
+            //register (Rt == 15 or (mask & (1 << 15)) != 0), and cases where there is
+            //a write back to PC (wback == true && Rn == 15), however the later may
+            //be "undefined" depending on the CPU, so compilers should not produce that.
+            if (opCode is IOpCodeMem32 || opCode is IOpCodeMemMult32)
+            {
+                int rt, rn;
+
+                bool wBack;
+
+                if (opCode is IOpCodeMem32 opMem)
+                {
+                    rt    = opMem.Rt;
+                    rn    = opMem.Rn;
+                    wBack = opMem.WBack;
+                }
+                else if (opCode is IOpCodeMemMult32 opMemMult)
+                {
+                    const int pcMask = 1 << RegisterAlias.Aarch32Pc;
+
+                    rt    = (opMemMult.RegisterMask & pcMask) != 0 ? RegisterAlias.Aarch32Pc : 0;
+                    rn    =  opMemMult.Rn;
+                    wBack =  opMemMult.PostOffset != 0;
+                }
+                else
+                {
+                    throw new NotImplementedException($"The type \"{opCode.GetType().Name}\" is not implemented on the decoder.");
+                }
+
+                if ((rn == RegisterAlias.Aarch32Pc && wBack) ||
+                     rt == RegisterAlias.Aarch32Pc)
+                {
+                    return true;
+                }
+            }
+
+            //Explicit branch instructions.
+            return opCode is IOpCodeBImm32 ||
+                   opCode is IOpCodeBReg32;
         }
 
         private static bool IsException(OpCode64 opCode)

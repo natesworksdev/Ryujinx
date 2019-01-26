@@ -6,6 +6,7 @@ namespace ChocolArm64.State
     enum PState
     {
         TBit = 5,
+        EBit = 9,
 
         VBit = 28,
         CBit = 29,
@@ -13,6 +14,7 @@ namespace ChocolArm64.State
         NBit = 31,
 
         T = 1 << TBit,
+        E = 1 << EBit,
 
         V = 1 << VBit,
         C = 1 << CBit,

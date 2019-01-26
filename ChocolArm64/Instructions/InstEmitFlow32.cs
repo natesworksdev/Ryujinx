@@ -78,22 +78,5 @@ namespace ChocolArm64.Instructions
 
             InstEmitFlowHelper.EmitCall(context, op.Imm);
         }
-
-        private static void EmitBxWritePc(ILEmitterCtx context)
-        {
-            context.Emit(OpCodes.Dup);
-
-            context.EmitLdc_I4(1);
-
-            context.Emit(OpCodes.And);
-
-            context.EmitStflg((int)PState.TBit);
-
-            context.EmitLdc_I4(~1);
-
-            context.Emit(OpCodes.And);
-            context.Emit(OpCodes.Conv_U8);
-            context.Emit(OpCodes.Ret);
-        }
     }
 }
