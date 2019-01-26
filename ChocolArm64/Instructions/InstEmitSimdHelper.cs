@@ -809,6 +809,64 @@ namespace ChocolArm64.Instructions
             context.EmitStvec(op.Rd);
         }
 
+        public static void EmitVectorWidenBinaryOpByElemSx(ILEmitterCtx context, Action emit)
+        {
+            OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
+
+            EmitVectorWidenOpByElem(context, emit, op.Index, false, true);
+        }
+
+        public static void EmitVectorWidenBinaryOpByElemZx(ILEmitterCtx context, Action emit)
+        {
+            OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
+
+            EmitVectorWidenOpByElem(context, emit, op.Index, false, false);
+        }
+
+        public static void EmitVectorWidenTernaryOpByElemSx(ILEmitterCtx context, Action emit)
+        {
+            OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
+
+            EmitVectorWidenOpByElem(context, emit, op.Index, true, true);
+        }
+
+        public static void EmitVectorWidenTernaryOpByElemZx(ILEmitterCtx context, Action emit)
+        {
+            OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
+
+            EmitVectorWidenOpByElem(context, emit, op.Index, true, false);
+        }
+
+        public static void EmitVectorWidenOpByElem(ILEmitterCtx context, Action emit, int elem, bool ternary, bool signed)
+        {
+            OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
+
+            int elems = 8 >> op.Size;
+
+            int part = op.RegisterSize == RegisterSize.Simd128 ? elems : 0;
+
+            EmitVectorExtract(context, op.Rm, elem, op.Size, signed);
+            context.EmitSttmp();
+
+            for (int index = 0; index < elems; index++)
+            {
+                if (ternary)
+                {
+                    EmitVectorExtract(context, op.Rd, index, op.Size + 1, signed);
+                }
+
+                EmitVectorExtract(context, op.Rn, part + index, op.Size, signed);
+                context.EmitLdtmp();
+
+                emit();
+
+                EmitVectorInsertTmp(context, index, op.Size + 1);
+            }
+
+            context.EmitLdvectmp();
+            context.EmitStvec(op.Rd);
+        }
+
         public static void EmitVectorPairwiseOpSx(ILEmitterCtx context, Action emit)
         {
             EmitVectorPairwiseOp(context, emit, true);
