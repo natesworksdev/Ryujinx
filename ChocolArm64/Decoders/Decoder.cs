@@ -189,6 +189,13 @@ namespace ChocolArm64.Decoders
                     rn     = opMem.Rn;
                     wBack  = opMem.WBack;
                     isLoad = opMem.IsLoad;
+
+                    //For the dual load, we also need to take into account the
+                    //case were Rt2 == 15 (PC).
+                    if (rt == 14 && opMem.Emitter == InstEmit32.Ldrd)
+                    {
+                        rt = RegisterAlias.Aarch32Pc;
+                    }
                 }
                 else if (opCode is IOpCode32MemMult opMemMult)
                 {
