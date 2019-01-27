@@ -1,6 +1,7 @@
 using ChocolArm64;
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
+using ChocolArm64.Translation;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;

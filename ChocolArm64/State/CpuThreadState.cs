@@ -1,4 +1,5 @@
 using ChocolArm64.Events;
+using ChocolArm64.Translation;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;

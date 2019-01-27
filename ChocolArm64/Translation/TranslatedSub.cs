@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace ChocolArm64
+namespace ChocolArm64.Translation
 {
     class TranslatedSub
     {

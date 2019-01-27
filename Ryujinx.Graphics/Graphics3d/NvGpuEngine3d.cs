@@ -100,7 +100,7 @@ namespace Ryujinx.Graphics.Graphics3d
             SetCullFace(State);
             SetDepth(State);
             SetStencil(State);
-            //SetScissor(State);
+            SetScissor(State);
             SetBlending(State);
             SetColorMask(State);
             SetPrimitiveRestart(State);

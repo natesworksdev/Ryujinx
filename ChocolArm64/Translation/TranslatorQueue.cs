@@ -1,10 +1,12 @@
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace ChocolArm64
+namespace ChocolArm64.Translation
 {
     class TranslatorQueue
     {
+        //This is the maximum numbers of functions that the queue can hold to be translated.
+        //The value may need some tuning to find the sweet spot.
         private const int MaxQueueSize = 1024;
 
         private ConcurrentStack<TranslatorQueueItem>[] _translationQueue;

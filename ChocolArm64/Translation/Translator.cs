@@ -2,11 +2,10 @@ using ChocolArm64.Decoders;
 using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
-using ChocolArm64.Translation;
 using System;
 using System.Threading;
 
-namespace ChocolArm64
+namespace ChocolArm64.Translation
 {
     public class Translator
     {

@@ -1,6 +1,6 @@
 using ChocolArm64.State;
 
-namespace ChocolArm64
+namespace ChocolArm64.Translation
 {
     struct TranslatorQueueItem
     {

@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace ChocolArm64
+namespace ChocolArm64.Translation
 {
     class TranslatorCache
     {
