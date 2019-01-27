@@ -11,9 +11,19 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
     {
         private struct CharacterInfo
         {
-            public float left, right, bottom, top;
-            public float height, aspectRatio, xBearing, yBearing, advance;
-            public int width;
+            public float Left;
+            public float Right;
+            public float Top;
+            public float Bottom;
+
+            public int Width;
+            public float Height;
+
+            public float AspectRatio;
+
+            public float BearingX;
+            public float BearingY;
+            public float Advance;
         }
 
         private const int SheetWidth = 256;
@@ -28,7 +38,11 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
         {
             // Create and init some vars
             uint[] rawCharacterSheet = new uint[SheetWidth * SheetHeight];
-            int x, y, lineOffset, maxHeight;
+            int x;
+            int y;
+            int lineOffset;
+            int maxHeight;
+
             x = y = lineOffset = maxHeight = 0;
             characters = new CharacterInfo[94];
 
@@ -39,26 +53,25 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Update raw data for each character
             for (int i = 0; i < 94; i++)
             {
-                float xBearing, yBearing, advance;
-                var surface = RenderSurface((char)(i + 33), font, out xBearing, out yBearing, out advance);
+                var surface = RenderSurface((char)(i + 33), font, out var xBearing, out var yBearing, out var advance);
 
                 characters[i] = UpdateTexture(surface, ref rawCharacterSheet, ref x, ref y, ref lineOffset);
-                characters[i].xBearing = xBearing;
-                characters[i].yBearing = yBearing;
-                characters[i].advance = advance;
+                characters[i].BearingX = xBearing;
+                characters[i].BearingY = yBearing;
+                characters[i].Advance  = advance;
 
-                if (maxHeight < characters[i].height)
-                    maxHeight = (int)characters[i].height;
+                if (maxHeight < characters[i].Height)
+                    maxHeight = (int)characters[i].Height;
             }
 
             // Fix height for characters shorter than line height
             for (int i = 0; i < 94; i++)
             {
-                characters[i].xBearing /= characters[i].width;
-                characters[i].yBearing /= maxHeight;
-                characters[i].advance /= characters[i].width;
-                characters[i].height /= maxHeight;
-                characters[i].aspectRatio = (float)characters[i].width / maxHeight;
+                characters[i].BearingX   /= characters[i].Width;
+                characters[i].BearingY   /= maxHeight;
+                characters[i].Advance    /= characters[i].Width;
+                characters[i].Height     /= maxHeight;
+                characters[i].AspectRatio = (float)characters[i].Width / maxHeight;
             }
 
             // Convert raw data into texture
@@ -67,8 +80,8 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,     (int)TextureWrapMode.Clamp);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,     (int)TextureWrapMode.Clamp);
             
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, SheetWidth, SheetHeight, 0, PixelFormat.Rgba, PixelType.UnsignedInt8888, rawCharacterSheet);
 
@@ -114,14 +127,14 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
                 }
 
                 CharacterInfo charInfo = characters[text[i] - 33];
-                float width = (charInfo.aspectRatio * height);
-                x += (charInfo.xBearing * charInfo.aspectRatio) * width;
+                float width = (charInfo.AspectRatio * height);
+                x += (charInfo.BearingX * charInfo.AspectRatio) * width;
                 float right = x + width;
                 if (draw)
                 {
-                    DrawChar(charInfo, x, right, y + height * (charInfo.height - charInfo.yBearing), y - height * charInfo.yBearing);
+                    DrawChar(charInfo, x, right, y + height * (charInfo.Height - charInfo.BearingY), y - height * charInfo.BearingY);
                 }
-                x = right + charInfo.advance * charInfo.aspectRatio;
+                x = right + charInfo.Advance * charInfo.AspectRatio;
             }
 
             if (draw)
@@ -140,28 +153,28 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
 
         private void DrawChar(CharacterInfo charInfo, float left, float right, float top, float bottom)
         {
-            GL.TexCoord2(charInfo.left, charInfo.bottom);  GL.Vertex2(left, bottom);
-            GL.TexCoord2(charInfo.left, charInfo.top);     GL.Vertex2(left, top);
-            GL.TexCoord2(charInfo.right, charInfo.top);    GL.Vertex2(right, top);
+            GL.TexCoord2(charInfo.Left, charInfo.Bottom);  GL.Vertex2(left, bottom);
+            GL.TexCoord2(charInfo.Left, charInfo.Top);     GL.Vertex2(left, top);
+            GL.TexCoord2(charInfo.Right, charInfo.Top);    GL.Vertex2(right, top);
 
-            GL.TexCoord2(charInfo.right, charInfo.top);    GL.Vertex2(right, top);
-            GL.TexCoord2(charInfo.right, charInfo.bottom); GL.Vertex2(right, bottom);
-            GL.TexCoord2(charInfo.left, charInfo.bottom);  GL.Vertex2(left, bottom);
+            GL.TexCoord2(charInfo.Right, charInfo.Top);    GL.Vertex2(right, top);
+            GL.TexCoord2(charInfo.Right, charInfo.Bottom); GL.Vertex2(right, bottom);
+            GL.TexCoord2(charInfo.Left, charInfo.Bottom);  GL.Vertex2(left, bottom);
         }
 
         public unsafe Surface RenderSurface(char c, FontFace font, out float xBearing, out float yBearing, out float advance)
         {
             var glyph = font.GetGlyph(c, 32);
-            xBearing = glyph.HorizontalMetrics.Bearing.X;
-            yBearing = glyph.RenderHeight - glyph.HorizontalMetrics.Bearing.Y;
-            advance = glyph.HorizontalMetrics.Advance;
+            xBearing  = glyph.HorizontalMetrics.Bearing.X;
+            yBearing  = glyph.RenderHeight - glyph.HorizontalMetrics.Bearing.Y;
+            advance   = glyph.HorizontalMetrics.Advance;
 
             var surface = new Surface
             {
-                Bits = Marshal.AllocHGlobal(glyph.RenderWidth * glyph.RenderHeight),
-                Width = glyph.RenderWidth,
+                Bits   = Marshal.AllocHGlobal(glyph.RenderWidth * glyph.RenderHeight),
+                Width  = glyph.RenderWidth,
                 Height = glyph.RenderHeight,
-                Pitch = glyph.RenderWidth
+                Pitch  = glyph.RenderWidth
             };
 
             var stuff = (byte*)surface.Bits;
@@ -175,9 +188,9 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
 
         private CharacterInfo UpdateTexture(Surface surface, ref uint[] rawCharMap, ref int posX, ref int posY, ref int lineOffset)
         {
-            int width = surface.Width;
-            int height = surface.Height;
-            int len = width * height;
+            int width   = surface.Width;
+            int height  = surface.Height;
+            int len     = width * height;
             byte[] data = new byte[len];
 
             // Get character bitmap
@@ -186,8 +199,8 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Find a slot
             if (posX + width > SheetWidth)
             {
-                posX = 0;
-                posY += lineOffset;
+                posX       = 0;
+                posY      += lineOffset;
                 lineOffset = 0;
             }
 
@@ -200,8 +213,9 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Copy char to sheet
             for (int y = 0; y < height; y++)
             {
-                int destOffset = (y + posY) * SheetWidth + posX;
+                int destOffset   = (y + posY) * SheetWidth + posX;
                 int sourceOffset = y * width;
+
                 for (int x = 0; x < width; x++)
                 {
                     rawCharMap[destOffset + x] = (uint)((0xFFFFFF << 8) | data[sourceOffset + x]);
@@ -211,12 +225,12 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Generate character info
             CharacterInfo charInfo = new CharacterInfo()
             {
-                left = (float)posX / SheetWidth,
-                right = (float)(posX + width) / SheetWidth,
-                top = (float)(posY - 1) / SheetHeight,
-                bottom = (float)(posY + height) / SheetHeight,
-                width = width,
-                height = height,
+                Left   = (float)posX / SheetWidth,
+                Right  = (float)(posX + width) / SheetWidth,
+                Top    = (float)(posY - 1) / SheetHeight,
+                Bottom = (float)(posY + height) / SheetHeight,
+                Width  = width,
+                Height = height,
             };
 
             // Update x
