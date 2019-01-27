@@ -1,6 +1,7 @@
 using ChocolArm64.Decoders;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
+using System.Reflection;
 using System.Reflection.Emit;
 
 namespace ChocolArm64.Instructions
@@ -60,6 +61,20 @@ namespace ChocolArm64.Instructions
 
             context.EmitStoreState();
             context.EmitLdintzr(op.Rn);
+
+            context.Emit(OpCodes.Dup);
+
+            context.EmitSttmp();
+            context.EmitLdarg(TranslatedSub.StateArgIdx);
+
+            context.EmitFieldLoad(typeof(CpuThreadState).GetField(nameof(CpuThreadState.CurrentTranslator),
+                BindingFlags.Instance |
+                BindingFlags.NonPublic));
+
+            context.EmitLdarg(TranslatedSub.StateArgIdx);
+            context.EmitLdtmp();
+
+            context.EmitPrivateCall(typeof(Translator), nameof(Translator.TranslateVirtualSubroutine));
 
             context.Emit(OpCodes.Ret);
         }

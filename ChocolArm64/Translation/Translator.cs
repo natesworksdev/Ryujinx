@@ -72,16 +72,27 @@ namespace ChocolArm64.Translation
             state.CurrentTranslator = null;
         }
 
-        internal TranslatedSub GetOrTranslateVirtualSubroutine(CpuThreadState state, long position)
+        internal void TranslateVirtualSubroutine(CpuThreadState state, long position)
         {
-            if (!_cache.TryGetSubroutine(position, out TranslatedSub subroutine))
+            if (!_cache.TryGetSubroutine(position, out TranslatedSub sub) || sub.Tier == TranslationTier.Tier0)
             {
                 _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier1));
+            }
+        }
 
-                subroutine = TranslateLowCq(position, state.GetExecutionMode());
+        internal TranslatedSub GetOrTranslateVirtualSubroutine(CpuThreadState state, long position)
+        {
+            if (!_cache.TryGetSubroutine(position, out TranslatedSub sub))
+            {
+                sub = TranslateLowCq(position, state.GetExecutionMode());
             }
 
-            return subroutine;
+            if (sub.Tier == TranslationTier.Tier0)
+            {
+                _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier1));
+            }
+
+            return sub;
         }
 
         internal TranslatedSub GetOrTranslateSubroutine(CpuThreadState state, long position)

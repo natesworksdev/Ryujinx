@@ -31,6 +31,8 @@ namespace ChocolArm64.Translation
         {
             ConcurrentStack<TranslatorQueueItem> queue = _translationQueue[(int)item.Tier];
 
+            System.Console.WriteLine("qc " + queue.Count);
+
             if (queue.Count >= MaxQueueSize)
             {
                 queue.TryPop(out _);
