@@ -7,22 +7,22 @@ namespace Ryujinx.Profiler
     public static class Profile
     {
         // Static
-        private static InternalProfile ProfileInstance;
-        private static ProfilerSettings Settings;
+        private static InternalProfile  _profileInstance;
+        private static ProfilerSettings _settings;
 
         public static bool ProfilingEnabled()
         {
-            if (!Settings.Enabled)
+            if (!_settings.Enabled)
                 return false;
 
-            if (ProfileInstance == null)
-                ProfileInstance = new InternalProfile();
+            if (_profileInstance == null)
+                _profileInstance = new InternalProfile();
             return true;
         }
 
         public static void Configure(ProfilerSettings settings)
         {
-            Settings = settings;
+            _settings = settings;
         }
 
         public static void FinishProfiling()
@@ -30,22 +30,22 @@ namespace Ryujinx.Profiler
             if (!ProfilingEnabled())
                 return;
 
-            if (Settings.FileDumpEnabled)
-                DumpProfile.ToFile(Settings.DumpLocation, ProfileInstance);
+            if (_settings.FileDumpEnabled)
+                DumpProfile.ToFile(_settings.DumpLocation, _profileInstance);
         }
 
         public static void Begin(ProfileConfig config)
         {
             if (!ProfilingEnabled())
                 return;
-            ProfileInstance.BeginProfile(config);
+            _profileInstance.BeginProfile(config);
         }
 
         public static void End(ProfileConfig config)
         {
             if (!ProfilingEnabled())
                 return;
-            ProfileInstance.EndProfile(config);
+            _profileInstance.EndProfile(config);
         }
 
         public static void Method(ProfileConfig config, Action method)
@@ -63,7 +63,7 @@ namespace Ryujinx.Profiler
         {
             if (!ProfilingEnabled())
                 return null;
-            return ProfileInstance.GetSession();
+            return _profileInstance.GetSession();
         }
 
         public static double ConvertTicksToMS(long ticks)
@@ -75,12 +75,12 @@ namespace Ryujinx.Profiler
         {
             if (!ProfilingEnabled())
                 return new Dictionary<ProfileConfig, TimingInfo>();
-            return ProfileInstance.GetProfilingData();
+            return _profileInstance.GetProfilingData();
         }
 
         public static float GetUpdateRate()
         {
-            return Settings.UpdateRate;
+            return _settings.UpdateRate;
         }
     }
 }
