@@ -4,19 +4,19 @@ namespace Ryujinx.Profiler.UI
 {
     public class ProfileWindowManager
     {
-        private ProfileWindow Window;
-        private Thread ProfileThread;
+        private ProfileWindow _window;
+        private Thread _profileThread;
 
         public ProfileWindowManager()
         {
             if (Profile.ProfilingEnabled())
             {
-                ProfileThread = new Thread(() =>
+                _profileThread = new Thread(() =>
                 {
-                    Window = new ProfileWindow();
-                    Window.Run(60, 60);
+                    _window = new ProfileWindow();
+                    _window.Run(60, 60);
                 });
-                ProfileThread.Start();
+                _profileThread.Start();
             }
         }
 
@@ -24,21 +24,21 @@ namespace Ryujinx.Profiler.UI
         {
             if (Profile.ProfilingEnabled())
             {
-                Window.ToggleVisible();
+                _window.ToggleVisible();
             }
         }
 
         public void Close()
         {
-            if (Window != null)
+            if (_window != null)
             {
-                Window.Close();
-                Window.Dispose();
+                _window.Close();
+                _window.Dispose();
             }
 
-            ProfileThread.Join();
+            _profileThread.Join();
 
-            Window = null;
+            _window = null;
         }
     }
 }
