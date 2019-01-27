@@ -7,19 +7,36 @@ namespace Ryujinx.Profiler
     public struct ProfileConfig
     {
         public string Category;
-        public string SessionGroup, SessionItem;
+        public string SessionGroup;
+        public string SessionItem;
 
-        private string CachedTag, CachedSession;
+        // Private cached variables
+        private string _cachedTag;
+        private string _cachedSession;
+        private string _cachedSearch;
 
-        public string Search => $"{Category}.{SessionGroup}.{SessionItem}";
+        // Public helpers to get config in more user friendly format,
+        // Cached because they never change and are called often
+        public string Search
+        {
+            get
+            {
+                if (_cachedSearch == null)
+                {
+                    _cachedSearch = $"{Category}.{SessionGroup}.{SessionItem}";
+                }
+
+                return _cachedSearch;
+            }
+        }
 
         public string Tag
         {
             get
             {
-                if (CachedTag == null)
-                    CachedTag = $"{Category}{(Session == "" ? "" : $" ({Session})")}";
-                return CachedTag;
+                if (_cachedTag == null)
+                    _cachedTag = $"{Category}{(Session == "" ? "" : $" ({Session})")}";
+                return _cachedTag;
             }
         }
 
@@ -27,31 +44,35 @@ namespace Ryujinx.Profiler
         {
             get
             {
-                if (CachedSession == null)
+                if (_cachedSession == null)
                 {
                     if (SessionGroup != null && SessionItem != null)
                     {
-                        CachedSession = $"{SessionGroup}: {SessionItem}";
+                        _cachedSession = $"{SessionGroup}: {SessionItem}";
                     }
                     else if (SessionGroup != null)
                     {
-                        CachedSession = $"{SessionGroup}";
+                        _cachedSession = $"{SessionGroup}";
                     }
                     else if (SessionItem != null)
                     {
-                        CachedSession = $"---: {SessionItem}";
+                        _cachedSession = $"---: {SessionItem}";
                     }
                     else
                     {
-                        CachedSession = "";
+                        _cachedSession = "";
                     }
                 }
 
-                return CachedSession;
+                return _cachedSession;
             }
         }
     }
 
+    /// <summary>
+    /// Predefined configs to make profiling easier,
+    /// nested so you can reference as Profiles.Category.Group.Item where item and group may be optional
+    /// </summary>
     public static class Profiles
     {
         public static class CPU
