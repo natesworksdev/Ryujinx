@@ -2,11 +2,17 @@
 {
     public struct TimingInfo
     {
-        public long BeginTime, LastTime, TotalTime, Instant;
-        public int Count, InstantCount;
-        public long AverageTime
-        {
-            get => (Count == 0) ? -1 : TotalTime / Count;
-        }
+        // Timestamps
+        public long BeginTime;
+        public long LastTime;
+        public long TotalTime;
+        public long Instant;
+
+        // Measurement counts
+        public int  Count;
+        public int  InstantCount;
+        
+        // Work out average
+        public long AverageTime => (Count == 0) ? -1 : TotalTime / Count;
     }
 }
