@@ -6,9 +6,10 @@ namespace Ryujinx.Profiler
 {
     public class ProfilerSettings
     {
-        public bool Enabled = true;
-        public bool FileDumpEnabled = false;
-        public string DumpLocation = "";
-        public float UpdateRate = 0.1f;
+        // Default settings for profiler
+        public bool   Enabled         = false;
+        public bool   FileDumpEnabled = false;
+        public string DumpLocation    = "";
+        public float  UpdateRate      = 0.1f;
     }
 }
