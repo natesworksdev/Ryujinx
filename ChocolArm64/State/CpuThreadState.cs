@@ -82,6 +82,8 @@ namespace ChocolArm64.State
 
         private static double _hostTickFreq;
 
+        internal Translator CurrentTranslator;
+
         static CpuThreadState()
         {
             _hostTickFreq = 1.0 / Stopwatch.Frequency;

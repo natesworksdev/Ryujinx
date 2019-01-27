@@ -11,6 +11,7 @@ namespace ChocolArm64.Translation
     class ILEmitterCtx
     {
         private TranslatorCache _cache;
+        private TranslatorQueue _queue;
 
         private Dictionary<long, ILLabel> _labels;
 
@@ -47,9 +48,10 @@ namespace ChocolArm64.Translation
         private const int VecTmp1Index    = -5;
         private const int VecTmp2Index    = -6;
 
-        public ILEmitterCtx(TranslatorCache cache, Block graph)
+        public ILEmitterCtx(TranslatorCache cache, TranslatorQueue queue, Block graph)
         {
             _cache     = cache ?? throw new ArgumentNullException(nameof(cache));
+            _queue     = queue ?? throw new ArgumentNullException(nameof(queue));
             _currBlock = graph ?? throw new ArgumentNullException(nameof(graph));
 
             _labels = new Dictionary<long, ILLabel>();
@@ -243,6 +245,16 @@ namespace ChocolArm64.Translation
             return new ILBlock();
         }
 
+        public void TranslateAhead(long position, ExecutionMode mode = ExecutionMode.Aarch64)
+        {
+            if (_cache.TryGetSubroutine(position, out TranslatedSub sub) && sub.Tier != TranslationTier.Tier0)
+            {
+                return;
+            }
+
+            _queue.Enqueue(new TranslatorQueueItem(position, mode, TranslationTier.Tier1));
+        }
+
         public bool TryOptEmitSubroutineCall()
         {
             if (_currBlock.Next == null)
@@ -276,8 +288,6 @@ namespace ChocolArm64.Translation
             }
 
             EmitCall(subroutine.Method);
-
-            subroutine.AddCaller(_subPosition);
 
             return true;
         }
@@ -463,7 +473,12 @@ namespace ChocolArm64.Translation
             _ilBlock.Add(new ILOpCodeBranch(ilOp, label));
         }
 
-        public void Emit(string text)
+        public void EmitFieldLoad(FieldInfo info)
+        {
+            _ilBlock.Add(new ILOpCodeLoadField(info));
+        }
+
+        public void EmitPrint(string text)
         {
             _ilBlock.Add(new ILOpCodeLog(text));
         }

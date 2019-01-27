@@ -26,7 +26,7 @@ namespace ChocolArm64.Translation
             _subName  = subName;
         }
 
-        public TranslatedSub GetSubroutine()
+        public TranslatedSub GetSubroutine(TranslationTier tier)
         {
             LocalAlloc = new LocalAlloc(_ilBlocks, _ilBlocks[0]);
 
@@ -52,7 +52,7 @@ namespace ChocolArm64.Translation
 
             Generator = method.GetILGenerator();
 
-            TranslatedSub subroutine = new TranslatedSub(method, subArgs);
+            TranslatedSub subroutine = new TranslatedSub(method, subArgs, tier);
 
             int argsStart = TranslatedSub.FixedArgTypes.Length;
 

@@ -58,6 +58,31 @@ namespace ChocolArm64
             _sortedCache = new LinkedList<long>();
         }
 
+        public TranslatedSub GetOrAdd(long position, TranslatedSub subroutine, int size)
+        {
+            ClearCacheIfNeeded();
+
+            lock (_sortedCache)
+            {
+                LinkedListNode<long> node = _sortedCache.AddLast(position);
+
+                CacheBucket bucket = new CacheBucket(subroutine, node, size);
+
+                bucket = _cache.GetOrAdd(position, bucket);
+
+                if (bucket.Node == node)
+                {
+                    _totalSize += size;
+                }
+                else
+                {
+                    _sortedCache.Remove(node);
+                }
+
+                return bucket.Subroutine;
+            }
+        }
+
         public void AddOrUpdate(long position, TranslatedSub subroutine, int size)
         {
             ClearCacheIfNeeded();

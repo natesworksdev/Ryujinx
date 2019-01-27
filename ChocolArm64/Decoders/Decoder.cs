@@ -28,11 +28,7 @@ namespace ChocolArm64.Decoders
             return block;
         }
 
-        public static Block DecodeSubroutine(
-            TranslatorCache cache,
-            MemoryManager   memory,
-            long            start,
-            ExecutionMode   mode)
+        public static Block DecodeSubroutine(MemoryManager memory, long start, ExecutionMode mode)
         {
             Dictionary<long, Block> visited    = new Dictionary<long, Block>();
             Dictionary<long, Block> visitedEnd = new Dictionary<long, Block>();
@@ -67,23 +63,17 @@ namespace ChocolArm64.Decoders
                 //(except BL/BLR that are sub calls) or end of executable, Next is null.
                 if (current.OpCodes.Count > 0)
                 {
-                    bool hasCachedSub = false;
-
                     OpCode64 lastOp = current.GetLastOp();
 
-                    if (lastOp is IOpCodeBImm op)
+                    bool isCall = lastOp.Emitter == InstEmit.Bl ||
+                                  lastOp.Emitter == InstEmit.Blr;
+
+                    if (lastOp is IOpCodeBImm op && !isCall)
                     {
-                        if (op.Emitter == InstEmit.Bl)
-                        {
-                            hasCachedSub = cache.HasSubroutine(op.Imm);
-                        }
-                        else
-                        {
-                            current.Branch = Enqueue(op.Imm);
-                        }
+                        current.Branch = Enqueue(op.Imm);
                     }
 
-                    if (!IsUnconditionalBranch(lastOp) || hasCachedSub)
+                    if (!IsUnconditionalBranch(lastOp) || isCall)
                     {
                         current.Next = Enqueue(current.EndPosition);
                     }

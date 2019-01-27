@@ -4,29 +4,59 @@ using ChocolArm64.Memory;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
 using System;
+using System.Threading;
 
 namespace ChocolArm64
 {
     public class Translator
     {
+        private MemoryManager _memory;
+
+        private CpuThreadState _dummyThreadState;
+
         private TranslatorCache _cache;
+        private TranslatorQueue _queue;
+
+        private Thread _backgroundTranslator;
 
         public event EventHandler<CpuTraceEventArgs> CpuTrace;
 
         public bool EnableCpuTrace { get; set; }
 
-        public Translator()
+        private volatile int _threadCount;
+
+        public Translator(MemoryManager memory)
         {
+            _memory = memory;
+
+            _dummyThreadState = new CpuThreadState();
+
+            _dummyThreadState.Running = false;
+
             _cache = new TranslatorCache();
+            _queue = new TranslatorQueue();
         }
 
         internal void ExecuteSubroutine(CpuThread thread, long position)
         {
+            if (Interlocked.Increment(ref _threadCount) == 1)
+            {
+                _backgroundTranslator = new Thread(TranslateQueuedSubs);
+                _backgroundTranslator.Start();
+            }
+
             ExecuteSubroutine(thread.ThreadState, thread.Memory, position);
+
+            if (Interlocked.Decrement(ref _threadCount) == 0)
+            {
+                _queue.ForceSignal();
+            }
         }
 
         private void ExecuteSubroutine(CpuThreadState state, MemoryManager memory, long position)
         {
+            state.CurrentTranslator = this;
+
             do
             {
                 if (EnableCpuTrace)
@@ -34,50 +64,88 @@ namespace ChocolArm64
                     CpuTrace?.Invoke(this, new CpuTraceEventArgs(position));
                 }
 
-                if (!_cache.TryGetSubroutine(position, out TranslatedSub sub))
-                {
-                    sub = TranslateTier0(memory, position, state.GetExecutionMode());
-                }
+                TranslatedSub subroutine = GetOrTranslateSubroutine(state, memory, position);
 
-                if (sub.ShouldReJit())
-                {
-                    TranslateTier1(memory, position, state.GetExecutionMode());
-                }
-
-                position = sub.Execute(state, memory);
+                position = subroutine.Execute(state, memory);
             }
             while (position != 0 && state.Running);
+
+            state.CurrentTranslator = null;
         }
 
-        internal bool HasCachedSub(long position)
+        internal TranslatedSub GetOrTranslateVirtualSubroutine(CpuThreadState state, MemoryManager memory, long position)
         {
-            return _cache.HasSubroutine(position);
+            if (!_cache.TryGetSubroutine(position, out TranslatedSub subroutine))
+            {
+                _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier2));
+
+                subroutine = TranslateLowCq(memory, position, state.GetExecutionMode());
+            }
+
+            return subroutine;
         }
 
-        private TranslatedSub TranslateTier0(MemoryManager memory, long position, ExecutionMode mode)
+        internal TranslatedSub GetOrTranslateSubroutine(CpuThreadState state, MemoryManager memory, long position)
+        {
+            if (!_cache.TryGetSubroutine(position, out TranslatedSub subroutine))
+            {
+                subroutine = TranslateLowCq(memory, position, state.GetExecutionMode());
+            }
+
+            return subroutine;
+        }
+
+        private void TranslateQueuedSubs()
+        {
+            while (_threadCount != 0)
+            {
+                if (_queue.TryDequeue(out TranslatorQueueItem item))
+                {
+                    bool isCached = _cache.TryGetSubroutine(item.Position, out TranslatedSub sub);
+
+                    if (isCached && item.Tier <= sub.Tier)
+                    {
+                        continue;
+                    }
+
+                    if (item.Tier == TranslationTier.Tier0)
+                    {
+                        TranslateLowCq(_memory, item.Position, item.Mode);
+                    }
+                    else
+                    {
+                        TranslateHighCq(_memory, item.Position, item.Mode);
+                    }
+                }
+                else
+                {
+                    _queue.WaitForItems();
+                }
+            }
+        }
+
+        private TranslatedSub TranslateLowCq(MemoryManager memory, long position, ExecutionMode mode)
         {
             Block block = Decoder.DecodeBasicBlock(memory, position, mode);
 
-            ILEmitterCtx context = new ILEmitterCtx(_cache, block);
+            ILEmitterCtx context = new ILEmitterCtx(_cache, _queue, block);
 
             string subName = GetSubroutineName(position);
 
             ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(context.GetILBlocks(), subName);
 
-            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine();
+            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier0);
 
-            subroutine.SetType(TranslatedSubType.SubTier0);
+            TranslatedSub cacheSub = _cache.GetOrAdd(position, subroutine, block.OpCodes.Count);
 
-            _cache.AddOrUpdate(position, subroutine, block.OpCodes.Count);
-
-            return subroutine;
+            return cacheSub;
         }
 
-        private void TranslateTier1(MemoryManager memory, long position, ExecutionMode mode)
+        private void TranslateHighCq(MemoryManager memory, long position, ExecutionMode mode)
         {
-            Block graph = Decoder.DecodeSubroutine(_cache, memory, position, mode);
+            Block graph = Decoder.DecodeSubroutine(memory, position, mode);
 
-            ILEmitterCtx context = new ILEmitterCtx(_cache, graph);
+            ILEmitterCtx context = new ILEmitterCtx(_cache, _queue, graph);
 
             ILBlock[] ilBlocks = context.GetILBlocks();
 
@@ -85,9 +153,7 @@ namespace ChocolArm64
 
             ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(ilBlocks, subName);
 
-            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine();
-
-            subroutine.SetType(TranslatedSubType.SubTier1);
+            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier1);
 
             int ilOpCount = 0;
 
@@ -98,23 +164,17 @@ namespace ChocolArm64
 
             _cache.AddOrUpdate(position, subroutine, ilOpCount);
 
-            //Mark all methods that calls this method for ReJiting,
-            //since we can now call it directly which is faster.
-            if (_cache.TryGetSubroutine(position, out TranslatedSub oldSub))
-            {
-                foreach (long callerPos in oldSub.GetCallerPositions())
-                {
-                    if (_cache.TryGetSubroutine(position, out TranslatedSub callerSub))
-                    {
-                        callerSub.MarkForReJit();
-                    }
-                }
-            }
+            ForceAheadOfTimeCompilation(subroutine);
         }
 
         private string GetSubroutineName(long position)
         {
             return $"Sub{position:x16}";
+        }
+
+        private void ForceAheadOfTimeCompilation(TranslatedSub subroutine)
+        {
+            subroutine.Execute(_dummyThreadState, null);
         }
     }
 }

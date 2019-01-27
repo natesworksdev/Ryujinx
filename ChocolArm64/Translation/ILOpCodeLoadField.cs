@@ -3,18 +3,18 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
-    struct ILOpCodeCall : IILEmit
+    struct ILOpCodeLoadField : IILEmit
     {
-        public MethodInfo Info { get; private set; }
+        public FieldInfo Info { get; private set; }
 
-        public ILOpCodeCall(MethodInfo info)
+        public ILOpCodeLoadField(FieldInfo info)
         {
             Info = info;
         }
 
         public void Emit(ILMethodBuilder context)
         {
-            context.Generator.Emit(OpCodes.Call, Info);
+            context.Generator.Emit(OpCodes.Ldfld, Info);
         }
     }
 }
