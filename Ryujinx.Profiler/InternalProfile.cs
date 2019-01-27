@@ -11,12 +11,13 @@ namespace Ryujinx.Profiler
         private Stopwatch SW;
         internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers;
 
-        private readonly object SessionLock = new object();
-        private int SessionCounter = 0;
+        private readonly object _sessionLock = new object();
+        private int _sessionCounter = 0;
 
         public InternalProfile()
         {
             Timers = new ConcurrentDictionary<ProfileConfig, TimingInfo>();
+
             SW = new Stopwatch();
             SW.Start();
         }
@@ -69,18 +70,19 @@ namespace Ryujinx.Profiler
         public string GetSession()
         {
             // Can be called from multiple threads so locked to ensure no duplicate sessions are generated
-            lock (SessionLock)
+            lock (_sessionLock)
             {
-                return (SessionCounter++).ToString();
+                return (_sessionCounter++).ToString();
             }
         }
 
         public Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
         {
+            Dictionary<ProfileConfig, TimingInfo> outDict = new Dictionary<ProfileConfig, TimingInfo>();
+
             // Forcibly get copy so user doesn't block profiling
             ProfileConfig[] configs = Timers.Keys.ToArray();
-            TimingInfo[] times = Timers.Values.ToArray();
-            Dictionary<ProfileConfig, TimingInfo> outDict = new Dictionary<ProfileConfig, TimingInfo>();
+            TimingInfo[]    times   = Timers.Values.ToArray();
 
             for (int i = 0; i < configs.Length; i++)
             {
