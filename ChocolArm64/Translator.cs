@@ -45,7 +45,7 @@ namespace ChocolArm64
                 _backgroundTranslator.Start();
             }
 
-            ExecuteSubroutine(thread.ThreadState, thread.Memory, position);
+            ExecuteSubroutine(thread.ThreadState, position);
 
             if (Interlocked.Decrement(ref _threadCount) == 0)
             {
@@ -53,7 +53,7 @@ namespace ChocolArm64
             }
         }
 
-        private void ExecuteSubroutine(CpuThreadState state, MemoryManager memory, long position)
+        private void ExecuteSubroutine(CpuThreadState state, long position)
         {
             state.CurrentTranslator = this;
 
@@ -64,32 +64,32 @@ namespace ChocolArm64
                     CpuTrace?.Invoke(this, new CpuTraceEventArgs(position));
                 }
 
-                TranslatedSub subroutine = GetOrTranslateSubroutine(state, memory, position);
+                TranslatedSub subroutine = GetOrTranslateSubroutine(state, position);
 
-                position = subroutine.Execute(state, memory);
+                position = subroutine.Execute(state, _memory);
             }
             while (position != 0 && state.Running);
 
             state.CurrentTranslator = null;
         }
 
-        internal TranslatedSub GetOrTranslateVirtualSubroutine(CpuThreadState state, MemoryManager memory, long position)
+        internal TranslatedSub GetOrTranslateVirtualSubroutine(CpuThreadState state, long position)
         {
             if (!_cache.TryGetSubroutine(position, out TranslatedSub subroutine))
             {
-                _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier2));
+                _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier1));
 
-                subroutine = TranslateLowCq(memory, position, state.GetExecutionMode());
+                subroutine = TranslateLowCq(position, state.GetExecutionMode());
             }
 
             return subroutine;
         }
 
-        internal TranslatedSub GetOrTranslateSubroutine(CpuThreadState state, MemoryManager memory, long position)
+        internal TranslatedSub GetOrTranslateSubroutine(CpuThreadState state, long position)
         {
             if (!_cache.TryGetSubroutine(position, out TranslatedSub subroutine))
             {
-                subroutine = TranslateLowCq(memory, position, state.GetExecutionMode());
+                subroutine = TranslateLowCq(position, state.GetExecutionMode());
             }
 
             return subroutine;
@@ -110,11 +110,11 @@ namespace ChocolArm64
 
                     if (item.Tier == TranslationTier.Tier0)
                     {
-                        TranslateLowCq(_memory, item.Position, item.Mode);
+                        TranslateLowCq(item.Position, item.Mode);
                     }
                     else
                     {
-                        TranslateHighCq(_memory, item.Position, item.Mode);
+                        TranslateHighCq(item.Position, item.Mode);
                     }
                 }
                 else
@@ -124,9 +124,9 @@ namespace ChocolArm64
             }
         }
 
-        private TranslatedSub TranslateLowCq(MemoryManager memory, long position, ExecutionMode mode)
+        private TranslatedSub TranslateLowCq(long position, ExecutionMode mode)
         {
-            Block block = Decoder.DecodeBasicBlock(memory, position, mode);
+            Block block = Decoder.DecodeBasicBlock(_memory, position, mode);
 
             ILEmitterCtx context = new ILEmitterCtx(_cache, _queue, block);
 
@@ -136,14 +136,12 @@ namespace ChocolArm64
 
             TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier0);
 
-            TranslatedSub cacheSub = _cache.GetOrAdd(position, subroutine, block.OpCodes.Count);
-
-            return cacheSub;
+            return _cache.GetOrAdd(position, subroutine, block.OpCodes.Count);
         }
 
-        private void TranslateHighCq(MemoryManager memory, long position, ExecutionMode mode)
+        private void TranslateHighCq(long position, ExecutionMode mode)
         {
-            Block graph = Decoder.DecodeSubroutine(memory, position, mode);
+            Block graph = Decoder.DecodeSubroutine(_memory, position, mode);
 
             ILEmitterCtx context = new ILEmitterCtx(_cache, _queue, graph);
 

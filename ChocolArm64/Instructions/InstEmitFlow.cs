@@ -17,8 +17,6 @@ namespace ChocolArm64.Instructions
             }
             else
             {
-                //context.TranslateAhead(op.Imm);
-
                 context.EmitStoreState();
                 context.EmitLdc_I8(op.Imm);
 
@@ -37,8 +35,6 @@ namespace ChocolArm64.Instructions
         {
             OpCodeBImmAl64 op = (OpCodeBImmAl64)context.CurrOp;
 
-            //context.TranslateAhead(op.Position + 4);
-
             context.EmitLdc_I(op.Position + 4);
             context.EmitStint(RegisterAlias.Lr);
             context.EmitStoreState();
@@ -49,8 +45,6 @@ namespace ChocolArm64.Instructions
         public static void Blr(ILEmitterCtx context)
         {
             OpCodeBReg64 op = (OpCodeBReg64)context.CurrOp;
-
-            //context.TranslateAhead(op.Position + 4);
 
             context.EmitLdintzr(op.Rn);
             context.EmitLdc_I(op.Position + 4);
@@ -112,15 +106,20 @@ namespace ChocolArm64.Instructions
         {
             OpCodeBImm64 op = (OpCodeBImm64)context.CurrOp;
 
-            if (context.CurrBlock.Next   != null &&
-                context.CurrBlock.Branch != null)
+            if (context.CurrBlock.Branch != null)
             {
                 context.EmitCondBranch(context.GetLabel(op.Imm), cond);
+
+                if (context.CurrBlock.Next == null)
+                {
+                    context.EmitStoreState();
+                    context.EmitLdc_I8(op.Position + 4);
+
+                    context.Emit(OpCodes.Ret);
+                }
             }
             else
             {
-                //BranchTranslateAhead(context, op);
-
                 context.EmitStoreState();
 
                 ILLabel lblTaken = new ILLabel();
@@ -143,15 +142,20 @@ namespace ChocolArm64.Instructions
         {
             OpCodeBImm64 op = (OpCodeBImm64)context.CurrOp;
 
-            if (context.CurrBlock.Next   != null &&
-                context.CurrBlock.Branch != null)
+            if (context.CurrBlock.Branch != null)
             {
                 context.Emit(ilOp, context.GetLabel(op.Imm));
+
+                if (context.CurrBlock.Next == null)
+                {
+                    context.EmitStoreState();
+                    context.EmitLdc_I8(op.Position + 4);
+
+                    context.Emit(OpCodes.Ret);
+                }
             }
             else
             {
-                //BranchTranslateAhead(context, op);
-
                 context.EmitStoreState();
 
                 ILLabel lblTaken = new ILLabel();
@@ -168,12 +172,6 @@ namespace ChocolArm64.Instructions
 
                 context.Emit(OpCodes.Ret);
             }
-        }
-
-        private static void BranchTranslateAhead(ILEmitterCtx context, OpCodeBImm64 op)
-        {
-            context.TranslateAhead(op.Position + 4);
-            context.TranslateAhead(op.Imm);
         }
     }
 }

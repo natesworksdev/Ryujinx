@@ -20,8 +20,6 @@ namespace ChocolArm64.Instructions
                     BindingFlags.NonPublic));
 
                 context.EmitLdarg(TranslatedSub.StateArgIdx);
-                context.EmitLdarg(TranslatedSub.MemoryArgIdx);
-
                 context.EmitLdc_I8(imm);
 
                 context.EmitPrivateCall(typeof(Translator), nameof(Translator.GetOrTranslateSubroutine));
@@ -45,7 +43,6 @@ namespace ChocolArm64.Instructions
                 BindingFlags.NonPublic));
 
             context.EmitLdarg(TranslatedSub.StateArgIdx);
-            context.EmitLdarg(TranslatedSub.MemoryArgIdx);
             context.EmitLdtmp();
 
             context.EmitPrivateCall(typeof(Translator), nameof(Translator.GetOrTranslateVirtualSubroutine));
