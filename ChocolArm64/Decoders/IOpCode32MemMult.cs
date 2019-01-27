@@ -7,5 +7,7 @@ namespace ChocolArm64.Decoders
         int RegisterMask { get; }
 
         int PostOffset { get; }
+
+        bool IsLoad { get; }
     }
 }

@@ -181,29 +181,31 @@ namespace ChocolArm64.Decoders
             {
                 int rt, rn;
 
-                bool wBack;
+                bool wBack, isLoad;
 
                 if (opCode is IOpCode32Mem opMem)
                 {
-                    rt    = opMem.Rt;
-                    rn    = opMem.Rn;
-                    wBack = opMem.WBack;
+                    rt     = opMem.Rt;
+                    rn     = opMem.Rn;
+                    wBack  = opMem.WBack;
+                    isLoad = opMem.IsLoad;
                 }
                 else if (opCode is IOpCode32MemMult opMemMult)
                 {
                     const int pcMask = 1 << RegisterAlias.Aarch32Pc;
 
-                    rt    = (opMemMult.RegisterMask & pcMask) != 0 ? RegisterAlias.Aarch32Pc : 0;
-                    rn    =  opMemMult.Rn;
-                    wBack =  opMemMult.PostOffset != 0;
+                    rt     = (opMemMult.RegisterMask & pcMask) != 0 ? RegisterAlias.Aarch32Pc : 0;
+                    rn     =  opMemMult.Rn;
+                    wBack  =  opMemMult.PostOffset != 0;
+                    isLoad =  opMemMult.IsLoad;
                 }
                 else
                 {
                     throw new NotImplementedException($"The type \"{opCode.GetType().Name}\" is not implemented on the decoder.");
                 }
 
-                if ((rn == RegisterAlias.Aarch32Pc && wBack) ||
-                     rt == RegisterAlias.Aarch32Pc)
+                if ((rt == RegisterAlias.Aarch32Pc && isLoad) ||
+                    (rn == RegisterAlias.Aarch32Pc && wBack))
                 {
                     return true;
                 }

@@ -6,5 +6,7 @@ namespace ChocolArm64.Decoders
         int Rn { get; }
 
         bool WBack { get; }
+
+        bool IsLoad { get; }
     }
 }
