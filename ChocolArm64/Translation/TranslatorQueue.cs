@@ -5,7 +5,7 @@ namespace ChocolArm64.Translation
 {
     class TranslatorQueue
     {
-        //This is the maximum numbers of functions that the queue can hold to be translated.
+        //This is the maximum number of functions to be translated that the queue can hold.
         //The value may need some tuning to find the sweet spot.
         private const int MaxQueueSize = 1024;
 
