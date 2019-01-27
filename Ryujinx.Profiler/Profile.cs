@@ -52,7 +52,10 @@ namespace Ryujinx.Profiler
         {
             // If profiling is disabled just call the method
             if (!ProfilingEnabled())
+            {
                 method();
+                return;
+            }
 
             Begin(config);
             method();
