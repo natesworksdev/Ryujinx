@@ -73,6 +73,7 @@ namespace Ryujinx
                 FileDumpEnabled = profilePath != "",
                 DumpLocation    = profilePath,
                 UpdateRate      = 1.0f / Convert.ToSingle(parser.Value("Profiling_Update_Rate")),
+                History         = Profile.ConvertSecondsToTicks(Convert.ToDouble(parser.Value("Profiling_History"))),
             });
 
             SystemLanguage SetLanguage = Enum.Parse<SystemLanguage>(parser.Value("System_Language"));

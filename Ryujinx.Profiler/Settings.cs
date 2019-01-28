@@ -11,5 +11,8 @@ namespace Ryujinx.Profiler
         public bool   FileDumpEnabled = false;
         public string DumpLocation    = "";
         public float  UpdateRate      = 0.1f;
+
+        // 19531225 = 5 seconds in ticks
+        public long   History         = 19531225;
     }
 }

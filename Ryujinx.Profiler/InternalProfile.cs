@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace Ryujinx.Profiler
 {
@@ -14,57 +15,58 @@ namespace Ryujinx.Profiler
         private readonly object _sessionLock = new object();
         private int _sessionCounter = 0;
 
-        public InternalProfile()
+        // Cleanup thread
+        private readonly Thread _cleanupThread;
+        private bool _cleanupRunning;
+        private readonly long _history;
+
+        public InternalProfile(long history)
         {
-            Timers = new ConcurrentDictionary<ProfileConfig, TimingInfo>();
+            Timers          = new ConcurrentDictionary<ProfileConfig, TimingInfo>();
+            _history        = history;
+            _cleanupRunning = true;
+
+            // Create low priority cleanup thread, it only cleans up RAM hence the low priority
+            _cleanupThread = new Thread(CleanupLoop)
+            {
+                Priority = ThreadPriority.Lowest
+            };
+            _cleanupThread.Start();
 
             SW = new Stopwatch();
             SW.Start();
         }
 
+        private void CleanupLoop()
+        {
+            while (_cleanupRunning)
+            {
+                foreach (var timer in Timers)
+                {
+                    timer.Value.Cleanup(SW.ElapsedTicks - _history);
+                }
+
+                // No need to run too often
+                Thread.Sleep(50);
+            }
+        }
+
         public void BeginProfile(ProfileConfig config)
         {
-            long timestamp = SW.ElapsedTicks;
-
-            Timers.AddOrUpdate(config,
-                (c) => CreateTimer(timestamp),
-                ((s, info) =>
-                {
-                    info.BeginTime = timestamp;
-                    return info;
-                }));
+            Timers.GetOrAdd(config, profileConfig => new TimingInfo()).Begin(SW.ElapsedTicks);
         }
 
         public void EndProfile(ProfileConfig config)
         {
-            long timestamp = SW.ElapsedTicks;
-
-            Timers.AddOrUpdate(config,
-                (c => new TimingInfo()),
-                ((s, time) => UpdateTimer(time, timestamp)));
-        }
-
-        private TimingInfo CreateTimer(long timestamp)
-        {
-            return new TimingInfo()
+            if (Timers.TryGetValue(config, out var timingInfo))
             {
-                BeginTime = timestamp,
-                LastTime = 0,
-                Count = 0,
-                Instant = 0,
-                InstantCount = 0,
-            };
-        }
-
-        private TimingInfo UpdateTimer(TimingInfo time, long timestamp)
-        {
-            time.Count++;
-            time.InstantCount++;
-            time.LastTime = timestamp - time.BeginTime;
-            time.TotalTime += time.LastTime;
-            time.Instant += time.LastTime;
-
-            return time;
+                timingInfo.End(SW.ElapsedTicks);
+            }
+            else
+            {
+                // Throw exception if config isn't already being tracked
+                throw new Exception($"Profiler end called before begin for {config.Tag}");
+            }
         }
 
         public string GetSession()
@@ -94,14 +96,20 @@ namespace Ryujinx.Profiler
                 TimingInfo value, prevValue;
                 if (Timers.TryGetValue(key, out value))
                 {
-                    prevValue = value;
-                    value.Instant = 0;
+                    prevValue          = value;
+                    value.Instant      = 0;
                     value.InstantCount = 0;
                     Timers.TryUpdate(key, value, prevValue);
                 }
             }
 
             return outDict;
+        }
+
+        public void Dispose()
+        {
+            _cleanupRunning = false;
+            _cleanupThread.Join();
         }
     }
 }

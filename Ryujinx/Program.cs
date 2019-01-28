@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
 using System;
 using System.IO;
+using Ryujinx.Profiler;
 
 namespace Ryujinx
 {
@@ -79,6 +80,8 @@ namespace Ryujinx
             using (GlScreen screen = new GlScreen(device, renderer))
             {
                 screen.MainLoop();
+
+                Profile.FinishProfiling();
 
                 device.Dispose();
             }

@@ -16,7 +16,8 @@ namespace Ryujinx.Profiler
                 return false;
 
             if (_profileInstance == null)
-                _profileInstance = new InternalProfile();
+                _profileInstance = new InternalProfile(_settings.History);
+
             return true;
         }
 
@@ -32,6 +33,8 @@ namespace Ryujinx.Profiler
 
             if (_settings.FileDumpEnabled)
                 DumpProfile.ToFile(_settings.DumpLocation, _profileInstance);
+
+            _profileInstance.Dispose();
         }
 
         public static void Begin(ProfileConfig config)
@@ -72,6 +75,11 @@ namespace Ryujinx.Profiler
         public static double ConvertTicksToMS(long ticks)
         {
             return (((double)ticks) / Stopwatch.Frequency) * 1000.0;
+        }
+
+        public static long ConvertSecondsToTicks(double seconds)
+        {
+            return (long)(seconds * Stopwatch.Frequency);
         }
 
         public static Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
