@@ -22,50 +22,70 @@ namespace Ryujinx.Profiler
         // Work out average
         public long AverageTime => (Count == 0) ? -1 : TotalTime / Count;
 
+        // Intentionally not locked as it's only a get count
+        public bool IsActive => _timestamps.Count > 0;
+
+        public long BeginTime
+        {
+            get
+            {
+                lock (_timestampLock)
+                {
+                    if (_depth > 0)
+                    {
+                        return _currentTimestamp.BeginTime;
+                    }
+
+                    return -1;
+                }
+            }
+        }
+
         // Timestamp collection
-        public List<Timestamp> Timestamps;
-        private readonly object timestampLock = new object();
-        private Timestamp currentTimestamp;
+        private List<Timestamp> _timestamps;
+        private readonly object _timestampLock     = new object();
+        private readonly object _timestampListLock = new object();
+        private Timestamp _currentTimestamp;
 
         // Depth of current timer,
         // each begin call increments and each end call decrements
-        private int depth;
+        private int _depth;
         
 
         public TimingInfo()
         {
-            Timestamps = new List<Timestamp>();
-            depth      = 0;
+            _timestamps = new List<Timestamp>();
+            _depth      = 0;
         }
 
         public void Begin(long beginTime)
         {
-            lock (timestampLock)
+            lock (_timestampLock)
             {
                 // Finish current timestamp if already running
-                if (depth > 0)
+                if (_depth > 0)
                 {
                     EndUnsafe(beginTime);
                 }
 
                 BeginUnsafe(beginTime);
-                depth++;
+                _depth++;
             }
         }
 
         private void BeginUnsafe(long beginTime)
         {
-            currentTimestamp.BeginTime = beginTime;
-            currentTimestamp.EndTime   = -1;
+            _currentTimestamp.BeginTime = beginTime;
+            _currentTimestamp.EndTime   = -1;
         }
 
         public void End(long endTime)
         {
-            lock (timestampLock)
+            lock (_timestampLock)
             {
-                depth--;
+                _depth--;
 
-                if (depth < 0)
+                if (_depth < 0)
                 {
                     throw new Exception("Timing info end called without corresponding begin");
                 }
@@ -73,7 +93,7 @@ namespace Ryujinx.Profiler
                 EndUnsafe(endTime);
 
                 // Still have others using this timing info so recreate start for them
-                if (depth > 0)
+                if (_depth > 0)
                 {
                     BeginUnsafe(endTime);
                 }
@@ -82,10 +102,13 @@ namespace Ryujinx.Profiler
 
         private void EndUnsafe(long endTime)
         {
-            currentTimestamp.EndTime = endTime;
-            Timestamps.Add(currentTimestamp);
+            _currentTimestamp.EndTime = endTime;
+            lock (_timestampListLock)
+            {
+                _timestamps.Add(_currentTimestamp);
+            }
 
-            var delta  = currentTimestamp.EndTime - currentTimestamp.BeginTime;
+            var delta  = _currentTimestamp.EndTime - _currentTimestamp.BeginTime;
             TotalTime += delta;
             Instant   += delta;
 
@@ -96,13 +119,13 @@ namespace Ryujinx.Profiler
         // Remove any timestamps before given timestamp to free memory
         public void Cleanup(long before)
         {
-            lock (timestampLock)
+            lock (_timestampListLock)
             {
                 int toRemove = 0;
 
-                for (int i = 0; i < Timestamps.Count; i++)
+                for (int i = 0; i < _timestamps.Count; i++)
                 {
-                    if (Timestamps[i].EndTime < before)
+                    if (_timestamps[i].EndTime < before)
                     {
                         toRemove++;
                     }
@@ -114,7 +137,19 @@ namespace Ryujinx.Profiler
                 }
 
                 if (toRemove > 0)
-                    Timestamps.RemoveRange(0, toRemove);
+                {
+                    _timestamps.RemoveRange(0, toRemove);
+                }
+            }
+        }
+
+        public Timestamp[] GetAllTimestamps()
+        {
+            lock (_timestampListLock)
+            {
+                Timestamp[] returnTimestamps = new Timestamp[_timestamps.Count];
+                _timestamps.CopyTo(returnTimestamps);
+                return returnTimestamps;
             }
         }
     }

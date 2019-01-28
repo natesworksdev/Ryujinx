@@ -8,73 +8,72 @@ namespace Ryujinx.Profiler.UI
 {
     public partial class ProfileWindow
     {
-        private void DrawGraph(float xOffset, float yOffset)
+        private void DrawGraph(float xOffset, float yOffset, float width)
         {
             if (_sortedProfileData.Count != 0)
             {
-                long maxAverage;
-                long maxTotal;
+                int   left, right;
+                float top, bottom;
 
-                int verticalIndex = 0;
-                float barHeight = (LineHeight - LinePadding) / 3.0f;
-                float width = Width - xOffset - 370;
-
-                // Get max values
-                var maxInstant = maxAverage = maxTotal = 0;
-                foreach (KeyValuePair<ProfileConfig, TimingInfo> kvp in _sortedProfileData)
-                {
-                    maxInstant = Math.Max(maxInstant, kvp.Value.Instant);
-                    maxAverage = Math.Max(maxAverage, kvp.Value.AverageTime);
-                    maxTotal = Math.Max(maxTotal, kvp.Value.TotalTime);
-                }
+                int   verticalIndex = 0;
+                float barHeight     = (LineHeight - LinePadding);
+                long  timeWidth     = Profile.HistoryLength;
 
                 GL.Enable(EnableCap.ScissorTest);
                 GL.Begin(PrimitiveType.Triangles);
                 foreach (var entry in _sortedProfileData)
                 {
-                    // Instant
-                    GL.Color3(Color.Purple);
-                    float bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
-                    float top = bottom + barHeight;
-                    float right = (float)entry.Value.Instant / maxInstant * width + xOffset;
+                    GL.Color3(Color.Green);
+                    foreach (Timestamp timestamp in entry.Value.GetAllTimestamps())
+                    {
+                        left   = (int)(xOffset + width - (((float)_captureTime - timestamp.BeginTime) / timeWidth) * width);
+                        right  = (int)(xOffset + width - (((float)_captureTime - timestamp.EndTime) / timeWidth) * width);
+                        bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex);
+                        top    = bottom + barHeight;
 
-                    // Skip rendering out of bounds bars
-                    if (top < 0 || bottom > Height)
-                        continue;
+                        // Make sure width is at least 1px
+                        right = Math.Max(left + 1, right);
 
-                    GL.Vertex2(xOffset, bottom);
-                    GL.Vertex2(xOffset, top);
-                    GL.Vertex2(right, top);
+                        // Skip rendering out of bounds bars
+                        if (top < 0 || bottom > Height)
+                            continue;
 
-                    GL.Vertex2(right, top);
-                    GL.Vertex2(right, bottom);
-                    GL.Vertex2(xOffset, bottom);
+                        GL.Vertex2(left,  bottom);
+                        GL.Vertex2(left,  top);
+                        GL.Vertex2(right, top);
 
-                    // Average
-                    GL.Color3(Color.Purple);
-                    top += barHeight;
-                    bottom += barHeight;
-                    right = (float)entry.Value.AverageTime / maxAverage * width + xOffset;
-                    GL.Vertex2(xOffset, bottom);
-                    GL.Vertex2(xOffset, top);
-                    GL.Vertex2(right, top);
+                        GL.Vertex2(right, top);
+                        GL.Vertex2(right, bottom);
+                        GL.Vertex2(left,  bottom);
+                    }
 
-                    GL.Vertex2(right, top);
-                    GL.Vertex2(right, bottom);
-                    GL.Vertex2(xOffset, bottom);
+                    GL.Color3(Color.Red);
+                    // Currently capturing timestamp
+                    long entryBegin = entry.Value.BeginTime;
+                    if (entryBegin != -1)
+                    {
+                        left   = (int)(xOffset + width - (((float)_captureTime - entryBegin) / timeWidth) * width);
+                        bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex);
+                        top    = bottom + barHeight;
+                        right  = (int)(xOffset + width);
 
-                    // Total
-                    GL.Color3(Color.Purple);
-                    top += barHeight;
-                    bottom += barHeight;
-                    right = (float)entry.Value.TotalTime / maxTotal * width + xOffset;
-                    GL.Vertex2(xOffset, bottom);
-                    GL.Vertex2(xOffset, top);
-                    GL.Vertex2(right, top);
+                        // Make sure width is at least 1px
+                        left = Math.Min(left - 1, right);
 
-                    GL.Vertex2(right, top);
-                    GL.Vertex2(right, bottom);
-                    GL.Vertex2(xOffset, bottom);
+                        // Skip rendering out of bounds bars
+                        if (top < 0 || bottom > Height)
+                            continue;
+
+                        GL.Vertex2(left,  bottom);
+                        GL.Vertex2(left,  top);
+                        GL.Vertex2(right, top);
+
+                        GL.Vertex2(right, top);
+                        GL.Vertex2(right, bottom);
+                        GL.Vertex2(left,  bottom);
+                    }
+
+                    verticalIndex++;
                 }
 
                 GL.End();

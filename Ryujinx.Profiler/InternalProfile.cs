@@ -9,6 +9,8 @@ namespace Ryujinx.Profiler
 {
     public class InternalProfile
     {
+        public long CurrentTime => SW.ElapsedTicks;
+
         private Stopwatch SW;
         internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers;
 

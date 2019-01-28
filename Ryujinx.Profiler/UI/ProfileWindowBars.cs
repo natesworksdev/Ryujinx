@@ -7,7 +7,7 @@ namespace Ryujinx.Profiler.UI
 {
     public partial class ProfileWindow
     {
-        private void DrawBars(float xOffset, float yOffset)
+        private void DrawBars(float xOffset, float yOffset, float width)
         {
             if (_sortedProfileData.Count != 0)
             {
@@ -16,7 +16,6 @@ namespace Ryujinx.Profiler.UI
 
                 int verticalIndex = 0;
                 float barHeight   = (LineHeight - LinePadding) / 3.0f;
-                float width       = Width - xOffset - 370;
 
                 // Get max values
                 var maxInstant = maxAverage = maxTotal = 0;

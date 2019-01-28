@@ -6,9 +6,11 @@ namespace Ryujinx.Profiler
 {
     public static class Profile
     {
-        // Static
         private static InternalProfile  _profileInstance;
         private static ProfilerSettings _settings;
+
+        public static float UpdateRate   => _settings.UpdateRate;
+        public static long HistoryLength => _settings.History;
 
         public static bool ProfilingEnabled()
         {
@@ -89,9 +91,13 @@ namespace Ryujinx.Profiler
             return _profileInstance.GetProfilingData();
         }
 
-        public static float GetUpdateRate()
+        
+
+        public static long GetCurrentTime()
         {
-            return _settings.UpdateRate;
+            if (!ProfilingEnabled())
+                return 0;
+            return _profileInstance.CurrentTime;
         }
     }
 }

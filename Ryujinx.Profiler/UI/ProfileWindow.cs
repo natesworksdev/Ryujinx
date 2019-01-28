@@ -51,7 +51,7 @@ namespace Ryujinx.Profiler.UI
         private const int TitleHeight     = 24;
         private const int TitleFontHeight = 16;
         private const int LinePadding     = 2;
-        private const int ColumnSpacing   = 30;
+        private const int ColumnSpacing   = 15;
         private const int FilterHeight    = 24;
 
         // Sorting
@@ -69,6 +69,7 @@ namespace Ryujinx.Profiler.UI
 
         // Profile data storage
         private List<KeyValuePair<ProfileConfig, TimingInfo>> _sortedProfileData;
+        private long _captureTime;
 
         // Input
         private bool _backspaceDown       = false;
@@ -78,7 +79,8 @@ namespace Ryujinx.Profiler.UI
         // Event management
         private double _updateTimer;
         private double _processEventTimer;
-        private bool  _profileUpdated = false;
+        private bool   _profileUpdated           = false;
+        private readonly object _profileDataLock = new object();
         
 
         public ProfileWindow()
@@ -207,49 +209,46 @@ namespace Ryujinx.Profiler.UI
 
             // Get timing data if enough time has passed
             _updateTimer += e.Time;
-            if (!_paused && (_updateTimer > Profile.GetUpdateRate()))
+            if (!_paused && (_updateTimer > Profile.UpdateRate))
             {
                 _updateTimer         = 0;
                 _unsortedProfileData = Profile.GetProfilingData().ToList();
+                _captureTime         = Profile.GetCurrentTime();
                 _profileUpdated      = true;
             }
             
             // Filtering
             if (_profileUpdated)
             {
-                if (_showInactive)
+                lock (_profileDataLock)
                 {
-                    _sortedProfileData = _unsortedProfileData;
-                }
-                else
-                {
-                    _sortedProfileData = _unsortedProfileData.FindAll(kvp => kvp.Value.Instant > 0.001f);
-                }
+                    _sortedProfileData = _showInactive ? _unsortedProfileData : _unsortedProfileData.FindAll(kvp => kvp.Value.IsActive);
 
-                if (_sortAction != null)
-                {
-                    _sortedProfileData.Sort(_sortAction);
-                }
-
-                if (_regexEnabled)
-                {
-                    try
+                    if (_sortAction != null)
                     {
-                        Regex filterRegex = new Regex(_filterText, RegexOptions.IgnoreCase);
-                        if (_filterText != "")
+                        _sortedProfileData.Sort(_sortAction);
+                    }
+
+                    if (_regexEnabled)
+                    {
+                        try
                         {
-                            _sortedProfileData = _sortedProfileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
+                            Regex filterRegex = new Regex(_filterText, RegexOptions.IgnoreCase);
+                            if (_filterText != "")
+                            {
+                                _sortedProfileData = _sortedProfileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
+                            }
+                        }
+                        catch (ArgumentException argException)
+                        {
+                            // Skip filtering for invalid regex
                         }
                     }
-                    catch (ArgumentException argException)
+                    else
                     {
-                        // Skip filtering for invalid regex
+                        // Regular filtering
+                        _sortedProfileData = _sortedProfileData.Where((pair => pair.Key.Search.ToLower().Contains(_filterText.ToLower()))).ToList();
                     }
-                }
-                else
-                {
-                    // Regular filtering
-                    _sortedProfileData = _sortedProfileData.Where((pair => pair.Key.Search.ToLower().Contains(_filterText.ToLower()))).ToList();
                 }
 
                 _profileUpdated = false;
@@ -316,6 +315,8 @@ namespace Ryujinx.Profiler.UI
             float maxWidth = 0;
             float yOffset  = _scrollPos - TitleHeight;
             float xOffset  = 10;
+            float timingDataLeft;
+            float timingWidth;
 
             // Background lines to make reading easier
             #region Background Lines
@@ -343,115 +344,130 @@ namespace Ryujinx.Profiler.UI
             GL.End();
             _maxScroll = (LineHeight + LinePadding) * (_sortedProfileData.Count - 1);
             #endregion
-
-            // Display category
-            #region Category
-            verticalIndex = 0;
-            foreach (var entry in _sortedProfileData)
+            
+            lock (_profileDataLock)
             {
-                float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
-                width = _fontService.DrawText(entry.Key.Category, xOffset, y, LineHeight);
-                if (width > maxWidth)
+                // Display category
+                #region Category
+                verticalIndex = 0;
+                foreach (var entry in _sortedProfileData)
                 {
-                    maxWidth = width;
+                    float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
+                    width   = _fontService.DrawText(entry.Key.Category, xOffset, y, LineHeight);
+
+                    if (width > maxWidth)
+                    {
+                        maxWidth = width;
+                    }
                 }
-            }
-            GL.Disable(EnableCap.ScissorTest);
+                GL.Disable(EnableCap.ScissorTest);
 
-            width = _fontService.DrawText("Category", xOffset, Height - TitleFontHeight, TitleFontHeight);
-            if (width > maxWidth)
-                maxWidth = width;
-
-            xOffset += maxWidth + ColumnSpacing;
-            #endregion
-
-            // Display session group
-            #region Session Group
-            maxWidth      = 0;
-            verticalIndex = 0;
-
-            GL.Enable(EnableCap.ScissorTest);
-            foreach (var entry in _sortedProfileData)
-            {
-                float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
-                width = _fontService.DrawText(entry.Key.SessionGroup, xOffset, y, LineHeight);
+                width = _fontService.DrawText("Category", xOffset, Height - TitleFontHeight, TitleFontHeight);
                 if (width > maxWidth)
-                {
                     maxWidth = width;
+
+                xOffset += maxWidth + ColumnSpacing;
+                #endregion
+
+                // Display session group
+                #region Session Group
+                maxWidth      = 0;
+                verticalIndex = 0;
+
+                GL.Enable(EnableCap.ScissorTest);
+                foreach (var entry in _sortedProfileData)
+                {
+                    float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
+                    width   = _fontService.DrawText(entry.Key.SessionGroup, xOffset, y, LineHeight);
+
+                    if (width > maxWidth)
+                    {
+                        maxWidth = width;
+                    }
                 }
-            }
-            GL.Disable(EnableCap.ScissorTest);
+                GL.Disable(EnableCap.ScissorTest);
 
-            width = _fontService.DrawText("Group", xOffset, Height - TitleFontHeight, TitleFontHeight);
-            if (width > maxWidth)
-                maxWidth = width;
-
-            xOffset += maxWidth + ColumnSpacing;
-            #endregion
-
-            // Display session item
-
-            #region Session Item
-            maxWidth      = 0;
-            verticalIndex = 0;
-            GL.Enable(EnableCap.ScissorTest);
-            foreach (var entry in _sortedProfileData)
-            {
-                float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
-                width = _fontService.DrawText(entry.Key.SessionItem, xOffset, y, LineHeight);
+                width = _fontService.DrawText("Group", xOffset, Height - TitleFontHeight, TitleFontHeight);
                 if (width > maxWidth)
-                {
                     maxWidth = width;
+
+                xOffset += maxWidth + ColumnSpacing;
+                #endregion
+
+                // Display session item
+                #region Session Item
+                maxWidth      = 0;
+                verticalIndex = 0;
+                GL.Enable(EnableCap.ScissorTest);
+                foreach (var entry in _sortedProfileData)
+                {
+                    float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
+                    width   = _fontService.DrawText(entry.Key.SessionItem, xOffset, y, LineHeight);
+
+                    if (width > maxWidth)
+                    {
+                        maxWidth = width;
+                    }
                 }
+                GL.Disable(EnableCap.ScissorTest);
+
+                width = _fontService.DrawText("Item", xOffset, Height - TitleFontHeight, TitleFontHeight);
+                if (width > maxWidth)
+                    maxWidth = width;
+
+                xOffset += maxWidth + ColumnSpacing;
+                _buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - TitleFontHeight, 0, (int)xOffset, TitleFontHeight);
+                #endregion
+
+                // Timing data
+                timingWidth    = Width - xOffset - 370;
+                timingDataLeft = xOffset;
+
+                GL.Scissor((int)xOffset, FilterHeight, (int)timingWidth, Height - TitleHeight - FilterHeight);
+
+                if (_displayGraph)
+                {
+                    DrawGraph(xOffset, yOffset, timingWidth);
+                }
+                else
+                {
+                    DrawBars(xOffset, yOffset, timingWidth);
+                }
+
+                GL.Scissor(0, FilterHeight, Width, Height - TitleHeight - FilterHeight);
+
+                if (!_displayGraph)
+                {
+                    _fontService.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - TitleFontHeight, TitleFontHeight);
+                }
+
+                xOffset = Width - 360;
+
+                // Display timestamps
+                #region Timestamps
+                verticalIndex = 0;
+                GL.Enable(EnableCap.ScissorTest);
+                foreach (var entry in _sortedProfileData)
+                {
+                    float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
+                    _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
+                    _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", 150 + xOffset, y, LineHeight);
+                    _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", 260 + xOffset, y, LineHeight);
+                }
+                GL.Disable(EnableCap.ScissorTest);
+
+                float yHeight = Height - TitleFontHeight;
+
+                _fontService.DrawText("Instant (ms, count)", xOffset, yHeight, TitleFontHeight);
+                _buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, 130, TitleFontHeight);
+
+                _fontService.DrawText("Average (ms)", 150 + xOffset, yHeight, TitleFontHeight);
+                _buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(150 + xOffset), (int)yHeight, 0, 130, TitleFontHeight);
+
+                _fontService.DrawText("Total (ms)", 260 + xOffset, yHeight, TitleFontHeight);
+                _buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(260 + xOffset), (int)yHeight, 0, Width, TitleFontHeight);
+                #endregion
             }
-            GL.Disable(EnableCap.ScissorTest);
-
-            width = _fontService.DrawText("Item", xOffset, Height - TitleFontHeight, TitleFontHeight);
-            if (width > maxWidth)
-                maxWidth = width;
-
-            xOffset += maxWidth + ColumnSpacing;
-            _buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - TitleFontHeight, 0, (int)xOffset, TitleFontHeight);
-            #endregion
-
-            // Time bars
-            if (_displayGraph)
-            {
-                DrawGraph(xOffset, yOffset);
-            }
-            else
-            {
-                DrawBars(xOffset, yOffset);
-            }
-
-            _fontService.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - TitleFontHeight, TitleFontHeight);
-            xOffset = Width - 360;
-
-            // Display timestamps
-
-            #region Timestamps
-            verticalIndex = 0;
-            GL.Enable(EnableCap.ScissorTest);
-            foreach (var entry in _sortedProfileData)
-            {
-                float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", ColumnSpacing + 120 + xOffset, y, LineHeight);
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", ColumnSpacing + ColumnSpacing + 200 + xOffset, y, LineHeight);
-            }
-            GL.Disable(EnableCap.ScissorTest);
-
-            float yHeight = Height - TitleFontHeight;
-
-            _fontService.DrawText("Instant (ms, count)", xOffset, yHeight, TitleFontHeight);
-            _buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, (int)(ColumnSpacing + 100), TitleFontHeight);
-
-            _fontService.DrawText("Average (ms)", ColumnSpacing + 120 + xOffset, yHeight, TitleFontHeight);
-            _buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(ColumnSpacing + 120 + xOffset), (int)yHeight, 0, (int)(ColumnSpacing + 100), TitleFontHeight);
-
-            _fontService.DrawText("Total (ms)", ColumnSpacing + ColumnSpacing + 200 + xOffset, yHeight, TitleFontHeight);
-            _buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(ColumnSpacing + ColumnSpacing + 200 + xOffset), (int)yHeight, 0, Width, TitleFontHeight);
-            #endregion
 
             #region Bottom bar
             // Show/Hide Inactive
@@ -495,6 +511,16 @@ namespace Ryujinx.Profiler.UI
 
             GL.Vertex2(width + 30, 0);
             GL.Vertex2(width + 30, FilterHeight);
+
+            // Column dividers
+            float timingDataTop = Height - TitleHeight;
+
+            GL.Vertex2(timingDataLeft, FilterHeight);
+            GL.Vertex2(timingDataLeft, timingDataTop);
+
+            
+            GL.Vertex2(timingWidth + timingDataLeft, FilterHeight);
+            GL.Vertex2(timingWidth + timingDataLeft, timingDataTop);
             GL.End();
             #endregion
 
