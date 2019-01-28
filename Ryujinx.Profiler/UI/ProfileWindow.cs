@@ -22,9 +22,10 @@ namespace Ryujinx.Profiler.UI
             FilterBar         = 4,
             ShowHideInactive  = 5,
             Pause             = 6,
+            ChangeDisplay     = 7,
 
             // Update this when new buttons are added
-            Count             = 7,
+            Count             = 8,
         }
 
         // Font service
@@ -39,6 +40,8 @@ namespace Ryujinx.Profiler.UI
         private bool _visibleChanged  = true;
         private bool _viewportUpdated = true;
         private bool _redrawPending   = true;
+
+        private bool _displayGraph    = true;
 
         private bool _showInactive    = true;
         private bool _paused          = false;
@@ -118,11 +121,12 @@ namespace Ryujinx.Profiler.UI
             _fontService.UpdateScreenHeight(Height);
 
             _buttons = new ProfileButton[(int)ButtonIndex.Count];
-            _buttons[(int)ButtonIndex.TagTitle]     = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TagAscending()));
-            _buttons[(int)ButtonIndex.InstantTitle] = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.InstantAscending()));
-            _buttons[(int)ButtonIndex.AverageTitle] = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.AverageAscending()));
-            _buttons[(int)ButtonIndex.TotalTitle]   = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TotalAscending()));
-            _buttons[(int)ButtonIndex.FilterBar]    = new ProfileButton(_fontService, () =>
+            _buttons[(int)ButtonIndex.TagTitle]      = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TagAscending()));
+            _buttons[(int)ButtonIndex.InstantTitle]  = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.InstantAscending()));
+            _buttons[(int)ButtonIndex.AverageTitle]  = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.AverageAscending()));
+            _buttons[(int)ButtonIndex.TotalTitle]    = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TotalAscending()));
+            _buttons[(int)ButtonIndex.ChangeDisplay] = new ProfileButton(_fontService, () => _displayGraph = !_displayGraph);
+            _buttons[(int)ButtonIndex.FilterBar]     = new ProfileButton(_fontService, () =>
             {
                 _profileUpdated = true;
                 _regexEnabled = !_regexEnabled;
@@ -411,7 +415,14 @@ namespace Ryujinx.Profiler.UI
             #endregion
 
             // Time bars
-            DrawBars(xOffset, yOffset);
+            if (_displayGraph)
+            {
+                DrawGraph(xOffset, yOffset);
+            }
+            else
+            {
+                DrawBars(xOffset, yOffset);
+            }
 
             _fontService.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - TitleFontHeight, TitleFontHeight);
             xOffset = Width - 360;
@@ -447,11 +458,14 @@ namespace Ryujinx.Profiler.UI
             float widthShowHideButton = _buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(_showInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
 
             // Play/Pause
-            width = _buttons[(int)ButtonIndex.Pause].UpdateSize(_paused ? "Play" : "Pause", 15 + (int)widthShowHideButton, 5, 4, 16) + widthShowHideButton;
+            float widthPlayPauseButton = _buttons[(int)ButtonIndex.Pause].UpdateSize(_paused ? "Play" : "Pause", 15 + (int)widthShowHideButton, 5, 4, 16) + widthShowHideButton;
+
+            // Change display
+            width = _buttons[(int)ButtonIndex.ChangeDisplay].UpdateSize($"View: {(_displayGraph ? "Graph" : "Bars")}", 25 + (int)widthPlayPauseButton, 5, 4, 16) + widthPlayPauseButton;
 
             // Filter bar
-            _fontService.DrawText($"{(_regexEnabled ? "Regex " : "Filter")}: {_filterText}", 25 + width, 7, 16);
-            _buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(25 + width), 0, 0, Width, FilterHeight);
+            _fontService.DrawText($"{(_regexEnabled ? "Regex " : "Filter")}: {_filterText}", 35 + width, 7, 16);
+            _buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(35 + width), 0, 0, Width, FilterHeight);
             #endregion
 
             // Draw buttons
@@ -472,12 +486,15 @@ namespace Ryujinx.Profiler.UI
             GL.Vertex2(0, FilterHeight);
             GL.Vertex2(Width, FilterHeight);
 
-            // Bottom vertical divider
+            // Bottom vertical dividers
             GL.Vertex2(widthShowHideButton + 10, 0);
             GL.Vertex2(widthShowHideButton + 10, FilterHeight);
 
-            GL.Vertex2(width + 20, 0);
-            GL.Vertex2(width + 20, FilterHeight);
+            GL.Vertex2(widthPlayPauseButton + 20, 0);
+            GL.Vertex2(widthPlayPauseButton + 20, FilterHeight);
+
+            GL.Vertex2(width + 30, 0);
+            GL.Vertex2(width + 30, FilterHeight);
             GL.End();
             #endregion
 
