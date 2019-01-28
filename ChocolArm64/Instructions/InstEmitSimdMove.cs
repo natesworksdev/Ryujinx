@@ -12,6 +12,34 @@ namespace ChocolArm64.Instructions
 {
     static partial class InstEmit
     {
+#region "Masks"
+        private static readonly long[] _masksE0_TrnUzpXtn = new long[]
+        {
+            14L << 56 | 12L << 48 | 10L << 40 | 08L << 32 | 06L << 24 | 04L << 16 | 02L << 8 | 00L << 0,
+            13L << 56 | 12L << 48 | 09L << 40 | 08L << 32 | 05L << 24 | 04L << 16 | 01L << 8 | 00L << 0,
+            11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 03L << 24 | 02L << 16 | 01L << 8 | 00L << 0
+        };
+
+        private static readonly long[] _masksE1_TrnUzp = new long[]
+        {
+            15L << 56 | 13L << 48 | 11L << 40 | 09L << 32 | 07L << 24 | 05L << 16 | 03L << 8 | 01L << 0,
+            15L << 56 | 14L << 48 | 11L << 40 | 10L << 32 | 07L << 24 | 06L << 16 | 03L << 8 | 02L << 0,
+            15L << 56 | 14L << 48 | 13L << 40 | 12L << 32 | 07L << 24 | 06L << 16 | 05L << 8 | 04L << 0
+        };
+
+        private static readonly long[] _masksE0_Uzp = new long[]
+        {
+            13L << 56 | 09L << 48 | 05L << 40 | 01L << 32 | 12L << 24 | 08L << 16 | 04L << 8 | 00L << 0,
+            11L << 56 | 10L << 48 | 03L << 40 | 02L << 32 | 09L << 24 | 08L << 16 | 01L << 8 | 00L << 0
+        };
+
+        private static readonly long[] _masksE1_Uzp = new long[]
+        {
+            15L << 56 | 11L << 48 | 07L << 40 | 03L << 32 | 14L << 24 | 10L << 16 | 06L << 8 | 02L << 0,
+            15L << 56 | 14L << 48 | 07L << 40 | 06L << 32 | 13L << 24 | 12L << 16 | 05L << 8 | 04L << 0
+        };
+#endregion
+
         public static void Dup_Gp(ILEmitterCtx context)
         {
             OpCodeSimdIns64 op = (OpCodeSimdIns64)context.CurrOp;
@@ -379,15 +407,7 @@ namespace ChocolArm64.Instructions
 
             if (Optimizations.UseSsse3)
             {
-                long[] masks = new long[]
-                {
-                    14L << 56 | 12L << 48 | 10L << 40 | 08L << 32 | 06L << 24 | 04L << 16 | 02L << 8 | 00L << 0,
-                    13L << 56 | 12L << 48 | 09L << 40 | 08L << 32 | 05L << 24 | 04L << 16 | 01L << 8 | 00L << 0,
-                    11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 03L << 24 | 02L << 16 | 01L << 8 | 00L << 0
-                };
-
-                Type[] typesSve = new Type[] { typeof(long),             typeof(long)             };
-                Type[] typesSfl = new Type[] { typeof(Vector128<sbyte>), typeof(Vector128<sbyte>) };
+                Type[] typesSve = new Type[] { typeof(long), typeof(long) };
 
                 string nameMov = op.RegisterSize == RegisterSize.Simd128
                     ? nameof(Sse.MoveLowToHigh)
@@ -398,14 +418,14 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MoveLowToHigh)));
 
-                EmitLdvecWithSignedCast(context, op.Rn, 0);
+                EmitLdvecWithSignedCast(context, op.Rn, 0); // value
 
-                context.EmitLdc_I8(masks[op.Size]);
-                context.Emit(OpCodes.Dup);
+                context.EmitLdc_I8(_masksE0_TrnUzpXtn[op.Size]); // mask
+                context.Emit(OpCodes.Dup); // mask
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSve));
 
-                context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), typesSfl));
+                context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
 
                 context.EmitCall(typeof(Sse).GetMethod(nameMov));
 
@@ -466,22 +486,6 @@ namespace ChocolArm64.Instructions
 
             if (Optimizations.UseSsse3)
             {
-                Type[] GetTypesUpkSfl(int size) => new Type[] { VectorIntTypesPerSizeLog2[size], VectorIntTypesPerSizeLog2[size] };
-
-                long[] masksE1 = new long[]
-                {
-                    15L << 56 | 13L << 48 | 11L << 40 | 09L << 32 | 07L << 24 | 05L << 16 | 03L << 8 | 01L << 0,
-                    15L << 56 | 14L << 48 | 11L << 40 | 10L << 32 | 07L << 24 | 06L << 16 | 03L << 8 | 02L << 0,
-                    15L << 56 | 14L << 48 | 13L << 40 | 12L << 32 | 07L << 24 | 06L << 16 | 05L << 8 | 04L << 0
-                };
-
-                long[] masksE0 = new long[]
-                {
-                    14L << 56 | 12L << 48 | 10L << 40 | 08L << 32 | 06L << 24 | 04L << 16 | 02L << 8 | 00L << 0,
-                    13L << 56 | 12L << 48 | 09L << 40 | 08L << 32 | 05L << 24 | 04L << 16 | 01L << 8 | 00L << 0,
-                    11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 03L << 24 | 02L << 16 | 01L << 8 | 00L << 0
-                };
-
                 Type[] typesSve = new Type[] { typeof(long), typeof(long) };
 
                 string nameUpk = part == 0
@@ -492,27 +496,27 @@ namespace ChocolArm64.Instructions
 
                 if (op.Size < 3)
                 {
-                    context.EmitLdc_I8(masksE1[op.Size]); // maskE1
-                    context.EmitLdc_I8(masksE0[op.Size]); // maskE0
+                    context.EmitLdc_I8(_masksE1_TrnUzp   [op.Size]); // maskE1
+                    context.EmitLdc_I8(_masksE0_TrnUzpXtn[op.Size]); // maskE0
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSve));
 
-                    context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesUpkSfl(0)));
+                    context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
                 }
 
                 EmitLdvecWithSignedCast(context, op.Rm, op.Size); // value
 
                 if (op.Size < 3)
                 {
-                    context.EmitLdc_I8(masksE1[op.Size]); // maskE1
-                    context.EmitLdc_I8(masksE0[op.Size]); // maskE0
+                    context.EmitLdc_I8(_masksE1_TrnUzp   [op.Size]); // maskE1
+                    context.EmitLdc_I8(_masksE0_TrnUzpXtn[op.Size]); // maskE0
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSve));
 
-                    context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesUpkSfl(0)));
+                    context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
                 }
 
-                context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesUpkSfl(op.Size)));
+                context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(op.Size)));
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
             }
@@ -548,8 +552,6 @@ namespace ChocolArm64.Instructions
 
             if (Optimizations.UseSsse3)
             {
-                Type[] GetTypesUpkSfl(int size) => new Type[] { VectorIntTypesPerSizeLog2[size], VectorIntTypesPerSizeLog2[size] };
-
                 Type[] typesSve = new Type[] { typeof(long), typeof(long) };
 
                 string nameUpk = part == 0
@@ -558,80 +560,54 @@ namespace ChocolArm64.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    long[] masksE1 = new long[]
-                    {
-                        15L << 56 | 13L << 48 | 11L << 40 | 09L << 32 | 07L << 24 | 05L << 16 | 03L << 8 | 01L << 0,
-                        15L << 56 | 14L << 48 | 11L << 40 | 10L << 32 | 07L << 24 | 06L << 16 | 03L << 8 | 02L << 0,
-                        15L << 56 | 14L << 48 | 13L << 40 | 12L << 32 | 07L << 24 | 06L << 16 | 05L << 8 | 04L << 0
-                    };
-
-                    long[] masksE0 = new long[]
-                    {
-                        14L << 56 | 12L << 48 | 10L << 40 | 08L << 32 | 06L << 24 | 04L << 16 | 02L << 8 | 00L << 0,
-                        13L << 56 | 12L << 48 | 09L << 40 | 08L << 32 | 05L << 24 | 04L << 16 | 01L << 8 | 00L << 0,
-                        11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 03L << 24 | 02L << 16 | 01L << 8 | 00L << 0
-                    };
-
                     EmitLdvecWithSignedCast(context, op.Rn, op.Size); // value
 
                     if (op.Size < 3)
                     {
-                        context.EmitLdc_I8(masksE1[op.Size]); // maskE1
-                        context.EmitLdc_I8(masksE0[op.Size]); // maskE0
+                        context.EmitLdc_I8(_masksE1_TrnUzp   [op.Size]); // maskE1
+                        context.EmitLdc_I8(_masksE0_TrnUzpXtn[op.Size]); // maskE0
 
                         context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSve));
 
-                        context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesUpkSfl(0)));
+                        context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
                     }
 
                     EmitLdvecWithSignedCast(context, op.Rm, op.Size); // value
 
                     if (op.Size < 3)
                     {
-                        context.EmitLdc_I8(masksE1[op.Size]); // maskE1
-                        context.EmitLdc_I8(masksE0[op.Size]); // maskE0
+                        context.EmitLdc_I8(_masksE1_TrnUzp   [op.Size]); // maskE1
+                        context.EmitLdc_I8(_masksE0_TrnUzpXtn[op.Size]); // maskE0
 
                         context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSve));
 
-                        context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesUpkSfl(0)));
+                        context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
                     }
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesUpkSfl(3)));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(3)));
 
                     EmitStvecWithSignedCast(context, op.Rd, op.Size);
                 }
                 else
                 {
-                    long[] masksE1 = new long[]
-                    {
-                        15L << 56 | 11L << 48 | 07L << 40 | 03L << 32 | 14L << 24 | 10L << 16 | 06L << 8 | 02L << 0,
-                        15L << 56 | 14L << 48 | 07L << 40 | 06L << 32 | 13L << 24 | 12L << 16 | 05L << 8 | 04L << 0
-                    };
-
-                    long[] masksE0 = new long[]
-                    {
-                        13L << 56 | 09L << 48 | 05L << 40 | 01L << 32 | 12L << 24 | 08L << 16 | 04L << 8 | 00L << 0,
-                        11L << 56 | 10L << 48 | 03L << 40 | 02L << 32 | 09L << 24 | 08L << 16 | 01L << 8 | 00L << 0
-                    };
-
                     EmitLdvecWithSignedCast(context, op.Rn, op.Size);
                     EmitLdvecWithSignedCast(context, op.Rm, op.Size);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesUpkSfl(op.Size))); // value
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(op.Size))); // value
 
                     if (op.Size < 2)
                     {
-                        context.EmitLdc_I8(masksE1[op.Size]); // maskE1
-                        context.EmitLdc_I8(masksE0[op.Size]); // maskE0
+                        context.EmitLdc_I8(_masksE1_Uzp[op.Size]); // maskE1
+                        context.EmitLdc_I8(_masksE0_Uzp[op.Size]); // maskE0
 
                         context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSve));
 
-                        context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesUpkSfl(0)));
+                        context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
                     }
 
                     VectorHelper.EmitCall(context, nameof(VectorHelper.VectorInt64Zero));
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesUpkSfl(3)));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(3)));
 
                     EmitStvecWithSignedCast(context, op.Rd, op.Size);
                 }
@@ -668,8 +644,6 @@ namespace ChocolArm64.Instructions
 
             if (Optimizations.UseSse2)
             {
-                Type[] GetTypesUpk(int size) => new Type[] { VectorIntTypesPerSizeLog2[size], VectorIntTypesPerSizeLog2[size] };
-
                 string nameUpk = part == 0
                     ? nameof(Sse2.UnpackLow)
                     : nameof(Sse2.UnpackHigh);
@@ -679,14 +653,14 @@ namespace ChocolArm64.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesUpk(op.Size)));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(op.Size)));
                 }
                 else
                 {
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesUpk(op.Size)));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(op.Size)));
                     VectorHelper.EmitCall(context, nameof(VectorHelper.VectorInt64Zero));
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesUpk(3)));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(3)));
                 }
 
                 EmitStvecWithSignedCast(context, op.Rd, op.Size);
@@ -717,6 +691,11 @@ namespace ChocolArm64.Instructions
                     EmitVectorZeroUpper(context, op.Rd);
                 }
             }
+        }
+
+        private static Type[] GetTypesSflUpk(int size)
+        {
+            return new Type[] { VectorIntTypesPerSizeLog2[size], VectorIntTypesPerSizeLog2[size] };
         }
     }
 }
