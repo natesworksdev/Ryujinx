@@ -1,7 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -39,15 +38,16 @@ namespace Ryujinx
         private bool _initComplete    = false;
 
         private bool _visible         = true;
-        private bool _visibleChanged  = false;
+        private bool _visibleChanged  = true;
         private bool _viewportUpdated = true;
+        private bool _redrawPending   = true;
 
         private bool _showInactive    = true;
         private bool _paused          = false;
 
         // Sorting
-        private List<KeyValuePair<ProfileConfig, TimingInfo>> _unsortedPofileData;
-        private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> _sortAction = null;
+        private List<KeyValuePair<ProfileConfig, TimingInfo>> _unsortedProfileData;
+        private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> _sortAction = new ProfileSorters.TagAscending();
 
         // Filtering
         private string _filterText = "";
@@ -68,6 +68,7 @@ namespace Ryujinx
 
         // Event management
         private double _updateTimer;
+        private double _processEventTimer;
         private bool  _profileUpdated = false;
         
 
@@ -80,6 +81,11 @@ namespace Ryujinx
 
             // Large number to force an update on first update
             _updateTimer = 0xFFFF;
+
+            Init();
+
+            // Release context for render thread
+            Context.MakeCurrent(null);
         }
         
         public void ToggleVisible()
@@ -88,23 +94,28 @@ namespace Ryujinx
             _visibleChanged = true;
         }
 
+        private void SetSort(IComparer<KeyValuePair<ProfileConfig, TimingInfo>> filter)
+        {
+            _sortAction = filter;
+            _profileUpdated = true;
+        }
+
         #region OnLoad
         /// <summary>
         /// Setup OpenGL and load resources
         /// </summary>
-        /// <param name="e">Not used.</param>
-        protected override void OnLoad(EventArgs e)
+        public void Init()
         {
-            GL.ClearColor(Color.MidnightBlue);
+            GL.ClearColor(Color.Black);
             _fontService = new FontService();
             _fontService.InitalizeTextures();
             _fontService.UpdateScreenHeight(Height);
 
             _buttons = new ProfileButton[(int)ButtonIndex.Count];
-            _buttons[(int)ButtonIndex.TagTitle]     = new ProfileButton(_fontService, () => _sortAction = new ProfileSorters.TagAscending());
-            _buttons[(int)ButtonIndex.InstantTitle] = new ProfileButton(_fontService, () => _sortAction = new ProfileSorters.InstantAscending());
-            _buttons[(int)ButtonIndex.AverageTitle] = new ProfileButton(_fontService, () => _sortAction = new ProfileSorters.AverageAscending());
-            _buttons[(int)ButtonIndex.TotalTitle]   = new ProfileButton(_fontService, () => _sortAction = new ProfileSorters.TotalAscending());
+            _buttons[(int)ButtonIndex.TagTitle]     = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TagAscending()));
+            _buttons[(int)ButtonIndex.InstantTitle] = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.InstantAscending()));
+            _buttons[(int)ButtonIndex.AverageTitle] = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.AverageAscending()));
+            _buttons[(int)ButtonIndex.TotalTitle]   = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TotalAscending()));
             _buttons[(int)ButtonIndex.FilterBar]    = new ProfileButton(_fontService, () =>
             {
                 _profileUpdated = true;
@@ -122,6 +133,8 @@ namespace Ryujinx
                 _profileUpdated = true;
                 _paused = !_paused;
             });
+
+            Visible = _visible;
         }
         #endregion
 
@@ -160,10 +173,8 @@ namespace Ryujinx
         /// </summary>
         /// <param name="e">Contains timing information.</param>
         /// <remarks>There is no need to call the base implementation.</remarks>
-        protected override void OnUpdateFrame(FrameEventArgs e)
+        public void Update(FrameEventArgs e)
         {
-            _initComplete = true;
-            
             // Backspace handling
             if (_backspaceDown)
             {
@@ -188,8 +199,8 @@ namespace Ryujinx
             _updateTimer += e.Time;
             if (!_paused && (_updateTimer > Profile.GetUpdateRate()))
             {
-                _updateTimer        %= Profile.GetUpdateRate();
-                _unsortedPofileData  = Profile.GetProfilingData().ToList();
+                _updateTimer         = 0;
+                _unsortedProfileData = Profile.GetProfilingData().ToList();
                 _profileUpdated      = true;
             }
             
@@ -198,11 +209,11 @@ namespace Ryujinx
             {
                 if (_showInactive)
                 {
-                    _sortedProfileData = _unsortedPofileData;
+                    _sortedProfileData = _unsortedProfileData;
                 }
                 else
                 {
-                    _sortedProfileData = _unsortedPofileData.FindAll(kvp => kvp.Value.Instant > 0.001f);
+                    _sortedProfileData = _unsortedProfileData.FindAll(kvp => kvp.Value.Instant > 0.001f);
                 }
 
                 if (_sortAction != null)
@@ -232,6 +243,16 @@ namespace Ryujinx
                 }
 
                 _profileUpdated = false;
+                _redrawPending  = true;
+                _initComplete   = true;
+            }
+
+            // Check for events 20 times a second
+            _processEventTimer += e.Time;
+            if (_processEventTimer > 0.05)
+            {
+                ProcessEvents();
+                _processEventTimer = 0;
             }
         }
         #endregion
@@ -240,9 +261,8 @@ namespace Ryujinx
         /// <summary>
         /// Profile Render Loop
         /// </summary>
-        /// <param name="e">Contains timing information.</param>
         /// <remarks>There is no need to call the base implementation.</remarks>
-        protected override void OnRenderFrame(FrameEventArgs e)
+        public void Draw()
         {
             if (_visibleChanged)
             {
@@ -267,6 +287,12 @@ namespace Ryujinx
                 _fontService.UpdateScreenHeight(Height);
 
                 _viewportUpdated = false;
+                _redrawPending   = true;
+            }
+
+            if (!_redrawPending)
+            {
+                return;
             }
 
             // Frame setup
@@ -508,6 +534,8 @@ namespace Ryujinx
             GL.Vertex2(width + 20, 0);
             GL.Vertex2(width + 20, filterHeight);
             GL.End();
+
+            _redrawPending = false;
             SwapBuffers();
         }
         #endregion
@@ -571,6 +599,8 @@ namespace Ryujinx
                 _scrollPos = _minScroll;
             if (_scrollPos > _maxScroll)
                 _scrollPos = _maxScroll;
+
+            _redrawPending = true;
         }
     }
 }

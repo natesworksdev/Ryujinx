@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.Diagnostics;
+using System.Threading;
+using OpenTK;
 
 namespace Ryujinx.Profiler.UI
 {
@@ -6,16 +8,21 @@ namespace Ryujinx.Profiler.UI
     {
         private ProfileWindow _window;
         private Thread _profileThread;
+        private Thread _renderThread;
+        private bool _profilerRunning;
+
+        // Timing
+        private Stopwatch _sw;
+        private double _prevTime;
 
         public ProfileWindowManager()
         {
             if (Profile.ProfilingEnabled())
             {
-                _profileThread = new Thread(() =>
-                {
-                    _window = new ProfileWindow();
-                    _window.Run(60, 60);
-                });
+                _profilerRunning = true;
+                _prevTime        = 0;
+                _sw              = Stopwatch.StartNew();
+                _profileThread   = new Thread(ProfileLoop);
                 _profileThread.Start();
             }
         }
@@ -32,6 +39,7 @@ namespace Ryujinx.Profiler.UI
         {
             if (_window != null)
             {
+                _profilerRunning = false;
                 _window.Close();
                 _window.Dispose();
             }
@@ -39,6 +47,37 @@ namespace Ryujinx.Profiler.UI
             _profileThread.Join();
 
             _window = null;
+        }
+
+        private void ProfileLoop()
+        {
+            using (_window = new ProfileWindow())
+            {
+                // Create thread for render loop
+                _renderThread = new Thread(RenderLoop);
+                _renderThread.Start();
+
+                while (_profilerRunning)
+                {
+                    double time = _sw.ElapsedMilliseconds / 1000.0;
+                    _window.Update(new FrameEventArgs(time - _prevTime));
+                    _prevTime = time;
+
+                    // Sleep to be less taxing, update usually does very little
+                    Thread.Sleep(1);
+                }
+            }
+        }
+
+        private void RenderLoop()
+        {
+            _window.Context.MakeCurrent(_window.WindowInfo);
+
+            while (_profilerRunning)
+            {
+                _window.Draw();
+                Thread.Sleep(1);
+            }
         }
     }
 }
