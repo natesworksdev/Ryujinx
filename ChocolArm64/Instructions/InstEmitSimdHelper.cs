@@ -642,21 +642,21 @@ namespace ChocolArm64.Instructions
         {
             OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
-            EmitVectorOpByElem(context, emit, op.Index, false, true);
+            EmitVectorOpByElem(context, emit, op.Index, ternary: false, signed: true);
         }
 
         public static void EmitVectorBinaryOpByElemZx(ILEmitterCtx context, Action emit)
         {
             OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
-            EmitVectorOpByElem(context, emit, op.Index, false, false);
+            EmitVectorOpByElem(context, emit, op.Index, ternary: false, signed: false);
         }
 
         public static void EmitVectorTernaryOpByElemZx(ILEmitterCtx context, Action emit)
         {
             OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
-            EmitVectorOpByElem(context, emit, op.Index, true, false);
+            EmitVectorOpByElem(context, emit, op.Index, ternary: true, signed: false);
         }
 
         public static void EmitVectorOpByElem(ILEmitterCtx context, Action emit, int elem, bool ternary, bool signed)
@@ -813,28 +813,28 @@ namespace ChocolArm64.Instructions
         {
             OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
-            EmitVectorWidenOpByElem(context, emit, op.Index, false, true);
+            EmitVectorWidenOpByElem(context, emit, op.Index, ternary: false, signed: true);
         }
 
         public static void EmitVectorWidenBinaryOpByElemZx(ILEmitterCtx context, Action emit)
         {
             OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
-            EmitVectorWidenOpByElem(context, emit, op.Index, false, false);
+            EmitVectorWidenOpByElem(context, emit, op.Index, ternary: false, signed: false);
         }
 
         public static void EmitVectorWidenTernaryOpByElemSx(ILEmitterCtx context, Action emit)
         {
             OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
-            EmitVectorWidenOpByElem(context, emit, op.Index, true, true);
+            EmitVectorWidenOpByElem(context, emit, op.Index, ternary: true, signed: true);
         }
 
         public static void EmitVectorWidenTernaryOpByElemZx(ILEmitterCtx context, Action emit)
         {
             OpCodeSimdRegElem64 op = (OpCodeSimdRegElem64)context.CurrOp;
 
-            EmitVectorWidenOpByElem(context, emit, op.Index, true, false);
+            EmitVectorWidenOpByElem(context, emit, op.Index, ternary: true, signed: false);
         }
 
         public static void EmitVectorWidenOpByElem(ILEmitterCtx context, Action emit, int elem, bool ternary, bool signed)
