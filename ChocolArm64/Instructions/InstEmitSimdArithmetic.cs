@@ -392,8 +392,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fadd_S(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.AddScalar));
             }
@@ -408,8 +407,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fadd_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Add));
             }
@@ -470,8 +468,7 @@ namespace ChocolArm64.Instructions
 
         public static void Faddp_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorPairwiseSseOrSse2OpF(context, nameof(Sse.Add));
             }
@@ -486,8 +483,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fdiv_S(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.DivideScalar));
             }
@@ -502,8 +498,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fdiv_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Divide));
             }
@@ -564,8 +559,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmax_S(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.MaxScalar));
             }
@@ -580,8 +574,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmax_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Max));
             }
@@ -612,8 +605,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmaxp_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorPairwiseSseOrSse2OpF(context, nameof(Sse.Max));
             }
@@ -628,8 +620,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmin_S(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.MinScalar));
             }
@@ -644,8 +635,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmin_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Min));
             }
@@ -676,8 +666,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fminp_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorPairwiseSseOrSse2OpF(context, nameof(Sse.Min));
             }
@@ -984,8 +973,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmul_S(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.MultiplyScalar));
             }
@@ -1005,8 +993,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fmul_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Multiply));
             }
@@ -1753,8 +1740,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fsqrt_S(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.SqrtScalar));
             }
@@ -1769,8 +1755,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fsqrt_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Sqrt));
             }
@@ -1785,8 +1770,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fsub_S(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitScalarSseOrSse2OpF(context, nameof(Sse.SubtractScalar));
             }
@@ -1801,8 +1785,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fsub_V(ILEmitterCtx context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse
-                                     && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorSseOrSse2OpF(context, nameof(Sse.Subtract));
             }
