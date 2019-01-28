@@ -1474,7 +1474,7 @@ namespace ChocolArm64.Instructions
             if (Optimizations.UseSse)
             {
                 //TODO: Use Sse2.MoveScalar once it is fixed,
-                //as of the time of writing it just crashes the JIT (SDK 2.1.500).
+                //as of the time of writing it just crashes the JIT (SDK 2.1.503).
 
                 /*Type[] typesMov = new Type[] { typeof(Vector128<ulong>) };
 
