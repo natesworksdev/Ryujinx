@@ -1,18 +1,16 @@
-﻿using OpenTK;
-using OpenTK.Graphics.OpenGL;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using OpenTK;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
-using Ryujinx.Profiler;
-using Ryujinx.Profiler.UI;
 using Ryujinx.Profiler.UI.SharpFontHelpers;
 
-namespace Ryujinx
+namespace Ryujinx.Profiler.UI
 {
-    public class ProfileWindow : GameWindow
+    public partial class ProfileWindow : GameWindow
     {
         // List all buttons for index in button array
         private enum ButtonIndex
@@ -44,6 +42,14 @@ namespace Ryujinx
 
         private bool _showInactive    = true;
         private bool _paused          = false;
+
+        // Layout
+        private const int LineHeight      = 16;
+        private const int TitleHeight     = 24;
+        private const int TitleFontHeight = 16;
+        private const int LinePadding     = 2;
+        private const int ColumnSpacing   = 30;
+        private const int FilterHeight    = 24;
 
         // Sorting
         private List<KeyValuePair<ProfileConfig, TimingInfo>> _unsortedProfileData;
@@ -301,27 +307,22 @@ namespace Ryujinx
 
             _fontService.fontColor = Color.White;
             int verticalIndex   = 0;
-            int lineHeight      = 16;
-            int titleHeight     = 24;
-            int titleFontHeight = 16;
-            int linePadding     = 2;
-            int columnSpacing   = 30;
-            int filterHeight    = 24;
 
             float width;
             float maxWidth = 0;
-            float yOffset  = _scrollPos - titleHeight;
+            float yOffset  = _scrollPos - TitleHeight;
             float xOffset  = 10;
 
             // Background lines to make reading easier
+            #region Background Lines
             GL.Enable(EnableCap.ScissorTest);
-            GL.Scissor(0, filterHeight, Width, Height - titleHeight - filterHeight);
+            GL.Scissor(0, FilterHeight, Width, Height - TitleHeight - FilterHeight);
             GL.Begin(PrimitiveType.Triangles);
             GL.Color3(0.2f, 0.2f, 0.2f);
             for (int i = 0; i < _sortedProfileData.Count; i += 2)
             {
-                float top    = GetLineY(yOffset, lineHeight, linePadding, false, i - 1);
-                float bottom = GetLineY(yOffset, lineHeight, linePadding, false, i);
+                float top    = GetLineY(yOffset, LineHeight, LinePadding, false, i - 1);
+                float bottom = GetLineY(yOffset, LineHeight, LinePadding, false, i);
 
                 // Skip rendering out of bounds bars
                 if (top < 0 || bottom > Height)
@@ -336,14 +337,16 @@ namespace Ryujinx
                 GL.Vertex2(0, bottom);
             }
             GL.End();
-            _maxScroll = (lineHeight + linePadding) * (_sortedProfileData.Count - 1);
+            _maxScroll = (LineHeight + LinePadding) * (_sortedProfileData.Count - 1);
+            #endregion
 
             // Display category
+            #region Category
             verticalIndex = 0;
             foreach (var entry in _sortedProfileData)
             {
-                float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                width = _fontService.DrawText(entry.Key.Category, xOffset, y, lineHeight);
+                float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
+                width = _fontService.DrawText(entry.Key.Category, xOffset, y, LineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
@@ -351,21 +354,23 @@ namespace Ryujinx
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            width = _fontService.DrawText("Category", xOffset, Height - titleFontHeight, titleFontHeight);
+            width = _fontService.DrawText("Category", xOffset, Height - TitleFontHeight, TitleFontHeight);
             if (width > maxWidth)
                 maxWidth = width;
 
-            xOffset += maxWidth + columnSpacing;
+            xOffset += maxWidth + ColumnSpacing;
+            #endregion
 
             // Display session group
+            #region Session Group
             maxWidth      = 0;
             verticalIndex = 0;
 
             GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in _sortedProfileData)
             {
-                float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                width = _fontService.DrawText(entry.Key.SessionGroup, xOffset, y, lineHeight);
+                float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
+                width = _fontService.DrawText(entry.Key.SessionGroup, xOffset, y, LineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
@@ -373,20 +378,23 @@ namespace Ryujinx
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            width = _fontService.DrawText("Group", xOffset, Height - titleFontHeight, titleFontHeight);
+            width = _fontService.DrawText("Group", xOffset, Height - TitleFontHeight, TitleFontHeight);
             if (width > maxWidth)
                 maxWidth = width;
 
-            xOffset += maxWidth + columnSpacing;
+            xOffset += maxWidth + ColumnSpacing;
+            #endregion
 
             // Display session item
+
+            #region Session Item
             maxWidth      = 0;
             verticalIndex = 0;
             GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in _sortedProfileData)
             {
-                float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                width = _fontService.DrawText(entry.Key.SessionItem, xOffset, y, lineHeight);
+                float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
+                width = _fontService.DrawText(entry.Key.SessionItem, xOffset, y, LineHeight);
                 if (width > maxWidth)
                 {
                     maxWidth = width;
@@ -394,112 +402,47 @@ namespace Ryujinx
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            width = _fontService.DrawText("Item", xOffset, Height - titleFontHeight, titleFontHeight);
+            width = _fontService.DrawText("Item", xOffset, Height - TitleFontHeight, TitleFontHeight);
             if (width > maxWidth)
                 maxWidth = width;
 
-            xOffset += maxWidth + columnSpacing;
-            _buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - titleFontHeight, 0, (int)xOffset, titleFontHeight);
+            xOffset += maxWidth + ColumnSpacing;
+            _buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - TitleFontHeight, 0, (int)xOffset, TitleFontHeight);
+            #endregion
 
             // Time bars
-            if (_sortedProfileData.Count != 0)
-            {
-                long maxAverage;
-                long maxTotal;
+            DrawBars(xOffset, yOffset);
 
-                float barHeight = (lineHeight - linePadding) / 3.0f;
-
-                width         = Width - xOffset - 370;
-                verticalIndex = 0;
-
-                // Get max values
-                var maxInstant = maxAverage = maxTotal = 0;
-                foreach (KeyValuePair<ProfileConfig, TimingInfo> kvp in _sortedProfileData)
-                {
-                    maxInstant = Math.Max(maxInstant, kvp.Value.Instant);
-                    maxAverage = Math.Max(maxAverage, kvp.Value.AverageTime);
-                    maxTotal   = Math.Max(maxTotal, kvp.Value.TotalTime);
-                }
-
-                GL.Enable(EnableCap.ScissorTest);
-                GL.Begin(PrimitiveType.Triangles);
-                foreach (var entry in _sortedProfileData)
-                {
-                    // Instant
-                    GL.Color3(Color.Blue);
-                    float bottom = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                    float top    = bottom + barHeight;
-                    float right  = (float) entry.Value.Instant / maxInstant * width + xOffset;
-
-                    // Skip rendering out of bounds bars
-                    if (top < 0 || bottom > Height)
-                        continue;
-
-                    GL.Vertex2(xOffset, bottom);
-                    GL.Vertex2(xOffset, top);
-                    GL.Vertex2(right, top);
-
-                    GL.Vertex2(right, top);
-                    GL.Vertex2(right, bottom);
-                    GL.Vertex2(xOffset, bottom);
-
-                    // Average
-                    GL.Color3(Color.Green);
-                    top += barHeight;
-                    bottom += barHeight;
-                    right = (float) entry.Value.AverageTime / maxAverage * width + xOffset;
-                    GL.Vertex2(xOffset, bottom);
-                    GL.Vertex2(xOffset, top);
-                    GL.Vertex2(right, top);
-
-                    GL.Vertex2(right, top);
-                    GL.Vertex2(right, bottom);
-                    GL.Vertex2(xOffset, bottom);
-
-                    // Total
-                    GL.Color3(Color.Red);
-                    top += barHeight;
-                    bottom += barHeight;
-                    right = (float) entry.Value.TotalTime / maxTotal * width + xOffset;
-                    GL.Vertex2(xOffset, bottom);
-                    GL.Vertex2(xOffset, top);
-                    GL.Vertex2(right, top);
-
-                    GL.Vertex2(right, top);
-                    GL.Vertex2(right, bottom);
-                    GL.Vertex2(xOffset, bottom);
-                }
-
-                GL.End();
-                GL.Disable(EnableCap.ScissorTest);
-            }
-
-            _fontService.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - titleFontHeight, titleFontHeight);
+            _fontService.DrawText("Blue: Instant,  Green: Avg,  Red: Total", xOffset, Height - TitleFontHeight, TitleFontHeight);
             xOffset = Width - 360;
 
             // Display timestamps
+
+            #region Timestamps
             verticalIndex = 0;
             GL.Enable(EnableCap.ScissorTest);
             foreach (var entry in _sortedProfileData)
             {
-                float y = GetLineY(yOffset, lineHeight, linePadding, true, verticalIndex++);
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, lineHeight);
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", columnSpacing + 120 + xOffset, y, lineHeight);
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", columnSpacing + columnSpacing + 200 + xOffset, y, lineHeight);
+                float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
+                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
+                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", ColumnSpacing + 120 + xOffset, y, LineHeight);
+                _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", ColumnSpacing + ColumnSpacing + 200 + xOffset, y, LineHeight);
             }
             GL.Disable(EnableCap.ScissorTest);
 
-            float yHeight = Height - titleFontHeight;
+            float yHeight = Height - TitleFontHeight;
 
-            _fontService.DrawText("Instant (ms, count)", xOffset, yHeight, titleFontHeight);
-            _buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
+            _fontService.DrawText("Instant (ms, count)", xOffset, yHeight, TitleFontHeight);
+            _buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, (int)(ColumnSpacing + 100), TitleFontHeight);
 
-            _fontService.DrawText("Average (ms)", columnSpacing + 120 + xOffset, yHeight, titleFontHeight);
-            _buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(columnSpacing + 120 + xOffset), (int)yHeight, 0, (int)(columnSpacing + 100), titleFontHeight);
+            _fontService.DrawText("Average (ms)", ColumnSpacing + 120 + xOffset, yHeight, TitleFontHeight);
+            _buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(ColumnSpacing + 120 + xOffset), (int)yHeight, 0, (int)(ColumnSpacing + 100), TitleFontHeight);
 
-            _fontService.DrawText("Total (ms)", columnSpacing + columnSpacing + 200 + xOffset, yHeight, titleFontHeight);
-            _buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(columnSpacing + columnSpacing + 200 + xOffset), (int)yHeight, 0, Width, titleFontHeight);
+            _fontService.DrawText("Total (ms)", ColumnSpacing + ColumnSpacing + 200 + xOffset, yHeight, TitleFontHeight);
+            _buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(ColumnSpacing + ColumnSpacing + 200 + xOffset), (int)yHeight, 0, Width, TitleFontHeight);
+            #endregion
 
+            #region Bottom bar
             // Show/Hide Inactive
             float widthShowHideButton = _buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(_showInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
 
@@ -508,32 +451,35 @@ namespace Ryujinx
 
             // Filter bar
             _fontService.DrawText($"{(_regexEnabled ? "Regex " : "Filter")}: {_filterText}", 25 + width, 7, 16);
-            _buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(25 + width), 0, 0, Width, filterHeight);
+            _buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(25 + width), 0, 0, Width, FilterHeight);
+            #endregion
 
             // Draw buttons
             foreach (ProfileButton button in _buttons)
             {
                 button.Draw();
             }
-
+            
             // Dividing lines
+            #region Dividing lines
             GL.Color3(Color.White);
             GL.Begin(PrimitiveType.Lines);
             // Top divider
-            GL.Vertex2(0, Height -titleHeight);
-            GL.Vertex2(Width, Height - titleHeight);
+            GL.Vertex2(0, Height -TitleHeight);
+            GL.Vertex2(Width, Height - TitleHeight);
 
             // Bottom divider
-            GL.Vertex2(0, filterHeight);
-            GL.Vertex2(Width, filterHeight);
+            GL.Vertex2(0, FilterHeight);
+            GL.Vertex2(Width, FilterHeight);
 
             // Bottom vertical divider
             GL.Vertex2(widthShowHideButton + 10, 0);
-            GL.Vertex2(widthShowHideButton + 10, filterHeight);
+            GL.Vertex2(widthShowHideButton + 10, FilterHeight);
 
             GL.Vertex2(width + 20, 0);
-            GL.Vertex2(width + 20, filterHeight);
+            GL.Vertex2(width + 20, FilterHeight);
             GL.End();
+            #endregion
 
             _redrawPending = false;
             SwapBuffers();
