@@ -53,6 +53,7 @@ namespace Ryujinx.Profiler.UI
         private const int LinePadding     = 2;
         private const int ColumnSpacing   = 15;
         private const int FilterHeight    = 24;
+        private const int BottomBarHeight = FilterHeight + LineHeight;
 
         // Sorting
         private List<KeyValuePair<ProfileConfig, TimingInfo>> _unsortedProfileData;
@@ -321,7 +322,7 @@ namespace Ryujinx.Profiler.UI
             // Background lines to make reading easier
             #region Background Lines
             GL.Enable(EnableCap.ScissorTest);
-            GL.Scissor(0, FilterHeight, Width, Height - TitleHeight - FilterHeight);
+            GL.Scissor(0, BottomBarHeight, Width, Height - TitleHeight - BottomBarHeight);
             GL.Begin(PrimitiveType.Triangles);
             GL.Color3(0.2f, 0.2f, 0.2f);
             for (int i = 0; i < _sortedProfileData.Count; i += 2)
@@ -423,7 +424,7 @@ namespace Ryujinx.Profiler.UI
                 timingWidth    = Width - xOffset - 370;
                 timingDataLeft = xOffset;
 
-                GL.Scissor((int)xOffset, FilterHeight, (int)timingWidth, Height - TitleHeight - FilterHeight);
+                GL.Scissor((int)xOffset, BottomBarHeight, (int)timingWidth, Height - TitleHeight - BottomBarHeight);
 
                 if (_displayGraph)
                 {
@@ -434,7 +435,7 @@ namespace Ryujinx.Profiler.UI
                     DrawBars(xOffset, yOffset, timingWidth);
                 }
 
-                GL.Scissor(0, FilterHeight, Width, Height - TitleHeight - FilterHeight);
+                GL.Scissor(0, BottomBarHeight, Width, Height - TitleHeight - BottomBarHeight);
 
                 if (!_displayGraph)
                 {
@@ -445,7 +446,12 @@ namespace Ryujinx.Profiler.UI
 
                 // Display timestamps
                 #region Timestamps
-                verticalIndex = 0;
+                verticalIndex     = 0;
+                long totalInstant = 0;
+                long totalAverage = 0;
+                long totalTime    = 0;
+                long totalCount   = 0;
+
                 GL.Enable(EnableCap.ScissorTest);
                 foreach (var entry in _sortedProfileData)
                 {
@@ -453,6 +459,11 @@ namespace Ryujinx.Profiler.UI
                     _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
                     _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", 150 + xOffset, y, LineHeight);
                     _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", 260 + xOffset, y, LineHeight);
+
+                    totalInstant += entry.Value.Instant;
+                    totalAverage += entry.Value.AverageTime;
+                    totalTime    += entry.Value.TotalTime;
+                    totalCount   += entry.Value.InstantCount;
                 }
                 GL.Disable(EnableCap.ScissorTest);
 
@@ -466,6 +477,12 @@ namespace Ryujinx.Profiler.UI
 
                 _fontService.DrawText("Total (ms)", 260 + xOffset, yHeight, TitleFontHeight);
                 _buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(260 + xOffset), (int)yHeight, 0, Width, TitleFontHeight);
+
+                // Totals
+                yHeight = FilterHeight + 2;
+                _fontService.DrawText($"{Profile.ConvertTicksToMS(totalInstant):F3} ({totalCount})", xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText($"{Profile.ConvertTicksToMS(totalAverage):F3}", 150 + xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText($"{Profile.ConvertTicksToMS(totalTime):F3}", 260 + xOffset, yHeight, TitleFontHeight);
                 #endregion
             }
 
@@ -499,8 +516,11 @@ namespace Ryujinx.Profiler.UI
             GL.Vertex2(Width, Height - TitleHeight);
 
             // Bottom divider
-            GL.Vertex2(0, FilterHeight);
+            GL.Vertex2(0,     FilterHeight);
             GL.Vertex2(Width, FilterHeight);
+
+            GL.Vertex2(0,     BottomBarHeight);
+            GL.Vertex2(Width, BottomBarHeight);
 
             // Bottom vertical dividers
             GL.Vertex2(widthShowHideButton + 10, 0);
