@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
@@ -8,6 +6,12 @@ namespace Ryujinx.Profiler.UI
 {
     public partial class ProfileWindow
     {
+        private const float GraphMoveSpeed = 100;
+        private const float GraphZoomSpeed = 5;
+
+        private float _graphZoom     = 1;
+        private float _graphPosition = 0;
+
         private void DrawGraph(float xOffset, float yOffset, float width)
         {
             if (_sortedProfileData.Count != 0)
@@ -17,7 +21,7 @@ namespace Ryujinx.Profiler.UI
 
                 int   verticalIndex = 0;
                 float barHeight     = (LineHeight - LinePadding);
-                long  timeWidth     = Profile.HistoryLength;
+                long  timeWidth     = (long)(Profile.HistoryLength / _graphZoom);
 
                 GL.Enable(EnableCap.ScissorTest);
                 GL.Begin(PrimitiveType.Triangles);
@@ -26,8 +30,8 @@ namespace Ryujinx.Profiler.UI
                     GL.Color3(Color.Green);
                     foreach (Timestamp timestamp in entry.Value.GetAllTimestamps())
                     {
-                        left   = (int)(xOffset + width - (((float)_captureTime - timestamp.BeginTime) / timeWidth) * width);
-                        right  = (int)(xOffset + width - (((float)_captureTime - timestamp.EndTime) / timeWidth) * width);
+                        left   = (int)(xOffset + width + _graphPosition - (((float)_captureTime - timestamp.BeginTime) / timeWidth) * width);
+                        right  = (int)(xOffset + width + _graphPosition - (((float)_captureTime - timestamp.EndTime) / timeWidth) * width);
                         bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex);
                         top    = bottom + barHeight;
 
@@ -52,7 +56,7 @@ namespace Ryujinx.Profiler.UI
                     long entryBegin = entry.Value.BeginTime;
                     if (entryBegin != -1)
                     {
-                        left   = (int)(xOffset + width - (((float)_captureTime - entryBegin) / timeWidth) * width);
+                        left   = (int)(xOffset + width + _graphPosition - (((float)_captureTime - entryBegin) / timeWidth) * width);
                         bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex);
                         top    = bottom + barHeight;
                         right  = (int)(xOffset + width);

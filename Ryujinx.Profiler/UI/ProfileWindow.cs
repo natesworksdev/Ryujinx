@@ -77,6 +77,8 @@ namespace Ryujinx.Profiler.UI
         private bool _prevBackspaceDown   = false;
         private double _backspaceDownTime = 0;
 
+        private Key _graphControlKey = Key.F35;
+
         // Event management
         private double _updateTimer;
         private double _processEventTimer;
@@ -262,6 +264,26 @@ namespace Ryujinx.Profiler.UI
             if (_processEventTimer > 0.05)
             {
                 ProcessEvents();
+
+                switch (_graphControlKey)
+                {
+                    case Key.Left:
+                        _graphPosition += (float)(GraphMoveSpeed * e.Time);
+                        break;
+
+                    case Key.Right:
+                        _graphPosition = MathF.Max(_graphPosition - (float)(GraphMoveSpeed * e.Time), 0);
+                        break;
+
+                    case Key.Up:
+                        _graphZoom = MathF.Min(_graphZoom + (float)(GraphZoomSpeed * e.Time), 100.0f);
+                        break;
+
+                    case Key.Down:
+                        _graphZoom = MathF.Max(_graphZoom - (float)(GraphZoomSpeed * e.Time), 1f);
+                        break;
+                }
+
                 _processEventTimer = 0;
             }
         }
@@ -574,20 +596,36 @@ namespace Ryujinx.Profiler.UI
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
         {
-            if (e.Key == Key.BackSpace)
+            switch (e.Key)
             {
-                _profileUpdated = _backspaceDown = true;
-                return;
-            }
+                case Key.BackSpace:
+                    _profileUpdated = _backspaceDown = true;
+                    return;
+
+                case Key.Left:
+                case Key.Right:
+                case Key.Up:
+                case Key.Down:
+                    _graphControlKey = e.Key;
+                    return;
+        }
             base.OnKeyUp(e);
         }
 
         protected override void OnKeyUp(KeyboardKeyEventArgs e)
         {
-            if (e.Key == Key.BackSpace)
+            switch (e.Key)
             {
-                _backspaceDown = false;
-                return;
+                case Key.BackSpace:
+                    _backspaceDown = false;
+                    return;
+
+                case Key.Left:
+                case Key.Right:
+                case Key.Up:
+                case Key.Down:
+                    _graphControlKey = Key.F35;
+                    return;
             }
             base.OnKeyUp(e);
         }
