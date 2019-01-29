@@ -39,6 +39,13 @@ namespace Ryujinx.Profiler
             _profileInstance.Dispose();
         }
 
+        public static void FlagTime(TimingFlagType flagType)
+        {
+            if (!ProfilingEnabled())
+                return;
+            _profileInstance.FlagTime(flagType);
+        }
+
         public static void Begin(ProfileConfig config)
         {
             if (!ProfilingEnabled())
@@ -96,7 +103,12 @@ namespace Ryujinx.Profiler
             return _profileInstance.GetProfilingData();
         }
 
-        
+        public static TimingFlag[] GetTimingFlags()
+        {
+            if (!ProfilingEnabled())
+                return new TimingFlag[0];
+            return _profileInstance.GetTimingFlags();
+        }
 
         public static long GetCurrentTime()
         {

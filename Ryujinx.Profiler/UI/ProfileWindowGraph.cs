@@ -6,8 +6,8 @@ namespace Ryujinx.Profiler.UI
 {
     public partial class ProfileWindow
     {
-        private const float GraphMoveSpeed = 20000;
-        private const float GraphZoomSpeed = 10;
+        private const float GraphMoveSpeed = 40000;
+        private const float GraphZoomSpeed = 50;
 
         private float _graphZoom      = 1;
         private float  _graphPosition = 0;
@@ -32,7 +32,20 @@ namespace Ryujinx.Profiler.UI
                     _graphPosition = (float)Profile.ConvertTicksToMS(graphPositionTicks);
                 }
 
+                // Draw timing flags
+                TimingFlag[] timingFlags = Profile.GetTimingFlags();
                 GL.Enable(EnableCap.ScissorTest);
+                GL.Color3(Color.Gray);
+                GL.Begin(PrimitiveType.Lines);
+                foreach (TimingFlag timingFlag in timingFlags)
+                {
+                    int x = (int)(xOffset + width - ((float)(_captureTime - (timingFlag.Timestamp + graphPositionTicks)) / timeWidthTicks) * width);
+                    GL.Vertex2(x, 0);
+                    GL.Vertex2(x, Height);
+                }
+                GL.End();
+                
+                // Draw bars
                 GL.Begin(PrimitiveType.Triangles);
                 foreach (var entry in _sortedProfileData)
                 {

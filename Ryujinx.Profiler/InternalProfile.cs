@@ -22,8 +22,16 @@ namespace Ryujinx.Profiler
         private bool _cleanupRunning;
         private readonly long _history;
 
+        // Timing flags
+        private TimingFlag[] _timingFlags;
+        private int _timingFlagCount;
+        private int _timingFlagIndex;
+
+        private const int MaxFlags = 50;
+
         public InternalProfile(long history)
         {
+            _timingFlags    = new TimingFlag[MaxFlags];
             Timers          = new ConcurrentDictionary<ProfileConfig, TimingInfo>();
             _history        = history;
             _cleanupRunning = true;
@@ -51,6 +59,20 @@ namespace Ryujinx.Profiler
                 // No need to run too often
                 Thread.Sleep(50);
             }
+        }
+
+        public void FlagTime(TimingFlagType flagType)
+        {
+            _timingFlags[_timingFlagIndex] = new TimingFlag()
+            {
+                FlagType  = flagType,
+                Timestamp = SW.ElapsedTicks
+            };
+
+            if (++_timingFlagIndex >= MaxFlags)
+                _timingFlagIndex = 0;
+
+            _timingFlagCount = Math.Max(_timingFlagCount + 1, MaxFlags);
         }
 
         public void BeginProfile(ProfileConfig config)
@@ -106,6 +128,21 @@ namespace Ryujinx.Profiler
             }
 
             return outDict;
+        }
+
+        public TimingFlag[] GetTimingFlags()
+        {
+            int count = Math.Max(_timingFlagCount, MaxFlags);
+            TimingFlag[] outFlags = new TimingFlag[count];
+            
+            for (int i = 0, sourceIndex = _timingFlagIndex; i < count; i++, sourceIndex++)
+            {
+                if (sourceIndex >= MaxFlags)
+                    sourceIndex = 0;
+                outFlags[i] = _timingFlags[sourceIndex];
+            }
+
+            return outFlags;
         }
 
         public void Dispose()
