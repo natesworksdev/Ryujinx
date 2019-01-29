@@ -6,11 +6,11 @@ namespace Ryujinx.Profiler.UI
 {
     public partial class ProfileWindow
     {
-        private const float GraphMoveSpeed = 100;
-        private const float GraphZoomSpeed = 5;
+        private const float GraphMoveSpeed = 20000;
+        private const float GraphZoomSpeed = 10;
 
-        private float _graphZoom     = 1;
-        private float _graphPosition = 0;
+        private float _graphZoom      = 1;
+        private float  _graphPosition = 0;
 
         private void DrawGraph(float xOffset, float yOffset, float width)
         {
@@ -19,9 +19,18 @@ namespace Ryujinx.Profiler.UI
                 int   left, right;
                 float top, bottom;
 
-                int   verticalIndex = 0;
-                float barHeight     = (LineHeight - LinePadding);
-                long  timeWidth     = (long)(Profile.HistoryLength / _graphZoom);
+                int   verticalIndex      = 0;
+                float barHeight          = (LineHeight - LinePadding);
+                long  history            = Profile.HistoryLength;
+                long  timeWidthTicks     = (long)(history / (double)_graphZoom);
+                long  graphPositionTicks = Profile.ConvertMSToTicks(_graphPosition);
+
+                // Reset start point if out of bounds
+                if (timeWidthTicks + graphPositionTicks > history)
+                {
+                    graphPositionTicks = history - timeWidthTicks;
+                    _graphPosition = (float)Profile.ConvertTicksToMS(graphPositionTicks);
+                }
 
                 GL.Enable(EnableCap.ScissorTest);
                 GL.Begin(PrimitiveType.Triangles);
@@ -30,8 +39,8 @@ namespace Ryujinx.Profiler.UI
                     GL.Color3(Color.Green);
                     foreach (Timestamp timestamp in entry.Value.GetAllTimestamps())
                     {
-                        left   = (int)(xOffset + width + _graphPosition - (((float)_captureTime - timestamp.BeginTime) / timeWidth) * width);
-                        right  = (int)(xOffset + width + _graphPosition - (((float)_captureTime - timestamp.EndTime) / timeWidth) * width);
+                        left   = (int)(xOffset + width - ((float)(_captureTime - (timestamp.BeginTime + graphPositionTicks)) / timeWidthTicks) * width);
+                        right  = (int)(xOffset + width - ((float)(_captureTime - (timestamp.EndTime + graphPositionTicks)) / timeWidthTicks) * width);
                         bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex);
                         top    = bottom + barHeight;
 
@@ -56,7 +65,7 @@ namespace Ryujinx.Profiler.UI
                     long entryBegin = entry.Value.BeginTime;
                     if (entryBegin != -1)
                     {
-                        left   = (int)(xOffset + width + _graphPosition - (((float)_captureTime - entryBegin) / timeWidth) * width);
+                        left   = (int)(xOffset + width + _graphPosition - (((float)_captureTime - entryBegin) / timeWidthTicks) * width);
                         bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex);
                         top    = bottom + barHeight;
                         right  = (int)(xOffset + width);
@@ -82,6 +91,14 @@ namespace Ryujinx.Profiler.UI
 
                 GL.End();
                 GL.Disable(EnableCap.ScissorTest);
+
+                string label = $"-{MathF.Round(_graphPosition, 2)} ms";
+
+                // Dummy draw for measure
+                float labelWidth = _fontService.DrawText(label, 0, 0, LineHeight, false);
+                _fontService.DrawText(label, xOffset + width - labelWidth - LinePadding, FilterHeight + LinePadding, LineHeight);
+                
+                _fontService.DrawText($"-{MathF.Round((float)(Profile.ConvertTicksToMS(timeWidthTicks) + _graphPosition), 2)} ms", xOffset + LinePadding, FilterHeight + LinePadding, LineHeight);
             }
         }
     }

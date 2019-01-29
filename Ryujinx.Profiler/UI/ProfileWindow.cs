@@ -265,23 +265,28 @@ namespace Ryujinx.Profiler.UI
             {
                 ProcessEvents();
 
-                switch (_graphControlKey)
+                if (_graphControlKey != Key.F35)
                 {
-                    case Key.Left:
-                        _graphPosition += (float)(GraphMoveSpeed * e.Time);
-                        break;
+                    switch (_graphControlKey)
+                    {
+                        case Key.Left:
+                            _graphPosition += (long) (GraphMoveSpeed * e.Time);
+                            break;
 
-                    case Key.Right:
-                        _graphPosition = MathF.Max(_graphPosition - (float)(GraphMoveSpeed * e.Time), 0);
-                        break;
+                        case Key.Right:
+                            _graphPosition = Math.Max(_graphPosition - (long) (GraphMoveSpeed * e.Time), 0);
+                            break;
 
-                    case Key.Up:
-                        _graphZoom = MathF.Min(_graphZoom + (float)(GraphZoomSpeed * e.Time), 100.0f);
-                        break;
+                        case Key.Up:
+                            _graphZoom = MathF.Min(_graphZoom + (float) (GraphZoomSpeed * e.Time), 100.0f);
+                            break;
 
-                    case Key.Down:
-                        _graphZoom = MathF.Max(_graphZoom - (float)(GraphZoomSpeed * e.Time), 1f);
-                        break;
+                        case Key.Down:
+                            _graphZoom = MathF.Max(_graphZoom - (float) (GraphZoomSpeed * e.Time), 1f);
+                            break;
+                    }
+
+                    _redrawPending = true;
                 }
 
                 _processEventTimer = 0;

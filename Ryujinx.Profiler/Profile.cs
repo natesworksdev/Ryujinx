@@ -84,6 +84,11 @@ namespace Ryujinx.Profiler
             return (long)(seconds * Stopwatch.Frequency);
         }
 
+        public static long ConvertMSToTicks(double ms)
+        {
+            return (long)((ms / 1000) * Stopwatch.Frequency);
+        }
+
         public static Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
         {
             if (!ProfilingEnabled())
