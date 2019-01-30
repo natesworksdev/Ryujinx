@@ -30,13 +30,15 @@ namespace Ryujinx
 
         private Thread _renderThread;
 
-        private ProfileWindowManager _profileWindow;
-
         private bool _resizeEvent;
 
         private bool _titleEvent;
 
         private string _newTitle;
+
+        #if USE_PROFILING
+        private ProfileWindowManager _profileWindow;
+        #endif
 
         public GlScreen(Switch device, IGalRenderer renderer)
             : base(1280, 720,
@@ -51,8 +53,10 @@ namespace Ryujinx
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
             
+            #if USE_PROFILING
             // Start profile window, it will handle itself from there
             _profileWindow = new ProfileWindowManager();
+            #endif
         }
 
         private void RenderLoop()
@@ -149,12 +153,14 @@ namespace Ryujinx
             {
                 KeyboardState keyboard = _keyboard.Value;
 
+                #if USE_PROFILING
                 // Debug
                 if (Config.NPadDebug.TogglePressed(keyboard))
                 {
                     _profileWindow.ToggleVisible();
                 }
                 Config.NPadDebug.SetPrevKeyboardState(keyboard);
+                #endif
 
                 // Normal Input
                 currentButton = Config.NpadKeyboard.GetButtons(keyboard);

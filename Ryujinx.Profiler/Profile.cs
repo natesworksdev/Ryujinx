@@ -14,6 +14,7 @@ namespace Ryujinx.Profiler
 
         public static bool ProfilingEnabled()
         {
+            #if USE_PROFILING
             if (!_settings.Enabled)
                 return false;
 
@@ -21,13 +22,18 @@ namespace Ryujinx.Profiler
                 _profileInstance = new InternalProfile(_settings.History);
 
             return true;
+            #else
+            return false;
+            #endif
         }
 
+        [Conditional("USE_PROFILING")]
         public static void Configure(ProfilerSettings settings)
         {
             _settings = settings;
         }
 
+        [Conditional("USE_PROFILING")]
         public static void FinishProfiling()
         {
             if (!ProfilingEnabled())
@@ -39,6 +45,7 @@ namespace Ryujinx.Profiler
             _profileInstance.Dispose();
         }
 
+        [Conditional("USE_PROFILING")]
         public static void FlagTime(TimingFlagType flagType)
         {
             if (!ProfilingEnabled())
@@ -46,6 +53,7 @@ namespace Ryujinx.Profiler
             _profileInstance.FlagTime(flagType);
         }
 
+        [Conditional("USE_PROFILING")]
         public static void RegisterFlagReciever(Action<TimingFlag> reciever)
         {
             if (!ProfilingEnabled())
@@ -53,13 +61,16 @@ namespace Ryujinx.Profiler
             _profileInstance.RegisterFlagReciever(reciever);
         }
 
+        [Conditional("USE_PROFILING")]
         public static void Begin(ProfileConfig config)
         {
             if (!ProfilingEnabled())
                 return;
             _profileInstance.BeginProfile(config);
+            Console.WriteLine("");
         }
 
+        [Conditional("USE_PROFILING")]
         public static void End(ProfileConfig config)
         {
             if (!ProfilingEnabled())
@@ -69,6 +80,7 @@ namespace Ryujinx.Profiler
 
         public static void Method(ProfileConfig config, Action method)
         {
+            #if USE_PROFILING
             // If profiling is disabled just call the method
             if (!ProfilingEnabled())
             {
@@ -79,13 +91,20 @@ namespace Ryujinx.Profiler
             Begin(config);
             method();
             End(config);
+            #else
+            method();
+            #endif
         }
 
         public static string GetSession()
         {
+            #if USE_PROFILING
             if (!ProfilingEnabled())
                 return null;
             return _profileInstance.GetSession();
+            #else
+            return "";
+            #endif
         }
 
         public static double ConvertTicksToMS(long ticks)
@@ -105,23 +124,35 @@ namespace Ryujinx.Profiler
 
         public static Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
         {
+            #if USE_PROFILING
             if (!ProfilingEnabled())
                 return new Dictionary<ProfileConfig, TimingInfo>();
             return _profileInstance.GetProfilingData();
+            #else
+            return new Dictionary<ProfileConfig, TimingInfo>();
+            #endif
         }
 
         public static TimingFlag[] GetTimingFlags()
         {
+            #if USE_PROFILING
             if (!ProfilingEnabled())
                 return new TimingFlag[0];
             return _profileInstance.GetTimingFlags();
+            #else
+            return new TimingFlag[0];
+            #endif
         }
 
         public static long GetCurrentTime()
         {
+            #if USE_PROFILING
             if (!ProfilingEnabled())
                 return 0;
             return _profileInstance.CurrentTime;
+            #else
+            return 0;
+            #endif
         }
     }
 }
