@@ -17,8 +17,6 @@ namespace ChocolArm64.Translation
 
         private long _subPosition;
 
-        public long SubPosition => _subPosition;
-
         private int _opcIndex;
 
         private Block _currBlock;
