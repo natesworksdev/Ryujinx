@@ -67,7 +67,6 @@ namespace Ryujinx.Profiler
             if (!ProfilingEnabled())
                 return;
             _profileInstance.BeginProfile(config);
-            Console.WriteLine("");
         }
 
         [Conditional("USE_PROFILING")]
