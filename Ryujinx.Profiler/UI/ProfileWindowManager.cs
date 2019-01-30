@@ -43,8 +43,6 @@ namespace Ryujinx.Profiler.UI
                 _window.Dispose();
             }
 
-            _profileThread.Join();
-
             _window = null;
         }
 

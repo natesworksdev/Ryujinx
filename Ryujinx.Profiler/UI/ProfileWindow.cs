@@ -209,6 +209,12 @@ namespace Ryujinx.Profiler.UI
         /// <remarks>There is no need to call the base implementation.</remarks>
         public void Update(FrameEventArgs e)
         {
+            if (_visibleChanged)
+            {
+                Visible = _visible;
+                _visibleChanged = false;
+            }
+
             // Backspace handling
             if (_backspaceDown)
             {
@@ -322,12 +328,6 @@ namespace Ryujinx.Profiler.UI
         /// <remarks>There is no need to call the base implementation.</remarks>
         public void Draw()
         {
-            if (_visibleChanged)
-            {
-                Visible = _visible;
-                _visibleChanged = false;
-            }
-
             if (!_visible || !_initComplete)
             {
                 return;

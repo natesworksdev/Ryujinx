@@ -287,6 +287,10 @@ namespace Ryujinx
 
         protected override void OnUnload(EventArgs e)
         {
+            #if USE_PROFILING
+            _profileWindow.Close();
+            #endif
+
             _renderThread.Join();
 
             base.OnUnload(e);
