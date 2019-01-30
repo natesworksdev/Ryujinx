@@ -6,11 +6,11 @@ namespace Ryujinx.Profiler
 {
     public static class Profile
     {
+        public static float UpdateRate => _settings.UpdateRate;
+        public static long HistoryLength => _settings.History;
+
         private static InternalProfile  _profileInstance;
         private static ProfilerSettings _settings;
-
-        public static float UpdateRate   => _settings.UpdateRate;
-        public static long HistoryLength => _settings.History;
 
         public static bool ProfilingEnabled()
         {
@@ -44,6 +44,13 @@ namespace Ryujinx.Profiler
             if (!ProfilingEnabled())
                 return;
             _profileInstance.FlagTime(flagType);
+        }
+
+        public static void RegisterFlagReciever(Action<TimingFlag> reciever)
+        {
+            if (!ProfilingEnabled())
+                return;
+            _profileInstance.RegisterFlagReciever(reciever);
         }
 
         public static void Begin(ProfileConfig config)

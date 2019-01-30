@@ -65,14 +65,14 @@ namespace Ryujinx
                 }
             }
 
-
             string profilePath = parser.Value("Profile_Dump_Path");
+            double updateRateHz = Convert.ToSingle(parser.Value("Profiling_Update_Rate"));
             Profile.Configure(new ProfilerSettings()
             {
                 Enabled         = Convert.ToBoolean(parser.Value("Profiling_Enabled")),
                 FileDumpEnabled = profilePath != "",
                 DumpLocation    = profilePath,
-                UpdateRate      = 1.0f / Convert.ToSingle(parser.Value("Profiling_Update_Rate")),
+                UpdateRate      = (float)((updateRateHz <= 0) ? -1 : 1.0f / updateRateHz),
                 History         = Profile.ConvertSecondsToTicks(Convert.ToDouble(parser.Value("Profiling_History"))),
             });
 

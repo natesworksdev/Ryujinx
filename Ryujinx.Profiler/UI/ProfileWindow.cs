@@ -98,6 +98,18 @@ namespace Ryujinx.Profiler.UI
             Location = new Point(DisplayDevice.Default.Width - 1280,
                               (DisplayDevice.Default.Height - 720) - 50);
 
+            if (Profile.UpdateRate <= 0)
+            {
+                // Perform step regardless of flag type
+                Profile.RegisterFlagReciever((t) =>
+                {
+                    if (!_paused)
+                    {
+                        _doStep = true;
+                    }
+                });
+            }
+
             // Large number to force an update on first update
             _updateTimer = 0xFFFF;
 
@@ -218,7 +230,7 @@ namespace Ryujinx.Profiler.UI
 
             // Get timing data if enough time has passed
             _updateTimer += e.Time;
-            if (_doStep || (!_paused && (_updateTimer > Profile.UpdateRate)))
+            if (_doStep || ((Profile.UpdateRate > 0) && (!_paused && (_updateTimer > Profile.UpdateRate))))
             {
                 _updateTimer         = 0;
                 _unsortedProfileData = Profile.GetProfilingData().ToList();

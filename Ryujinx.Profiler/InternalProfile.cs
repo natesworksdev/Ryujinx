@@ -30,6 +30,8 @@ namespace Ryujinx.Profiler
 
         private const int MaxFlags = 50;
 
+        private Action<TimingFlag> _timingFlagCallback;
+
         public InternalProfile(long history)
         {
             _timingFlags    = new TimingFlag[MaxFlags];
@@ -71,9 +73,13 @@ namespace Ryujinx.Profiler
             };
 
             if (++_timingFlagIndex >= MaxFlags)
+            {
                 _timingFlagIndex = 0;
+            }
 
             _timingFlagCount = Math.Max(_timingFlagCount + 1, MaxFlags);
+
+            _timingFlagCallback?.Invoke(_timingFlags[_timingFlagIndex]);
         }
 
         public void BeginProfile(ProfileConfig config)
@@ -146,6 +152,11 @@ namespace Ryujinx.Profiler
             }
 
             return outFlags;
+        }
+
+        public void RegisterFlagReciever(Action<TimingFlag> reciever)
+        {
+            _timingFlagCallback = reciever;
         }
 
         public void Dispose()
