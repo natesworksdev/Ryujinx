@@ -286,9 +286,6 @@ namespace Ryujinx
             _renderThread.Join();
 
             base.OnUnload(e);
-
-            // TODO: Find a better home for this, currently only called on OGL window close
-            Profile.FinishProfiling();
         }
 
         protected override void OnResize(EventArgs e)
