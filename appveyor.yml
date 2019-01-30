@@ -8,11 +8,6 @@ configuration:
   - Profile Release
 environment:
   config_name: test
-for:
-  -
-    configuration: Profile Release
-    environment:
-      config_name: profiled-
 build_script:
 - ps: >-
     dotnet --version
