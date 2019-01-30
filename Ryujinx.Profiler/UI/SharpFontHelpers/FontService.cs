@@ -32,7 +32,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
         private int CharacterTextureSheet;
         private CharacterInfo[] characters;
 
-        public Color fontColor = Color.Black;
+        public Color fontColor { get; set; } = Color.Black;
 
         public void InitalizeTextures()
         {

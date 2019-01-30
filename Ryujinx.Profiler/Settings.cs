@@ -7,12 +7,12 @@ namespace Ryujinx.Profiler
     public class ProfilerSettings
     {
         // Default settings for profiler
-        public bool   Enabled         = false;
-        public bool   FileDumpEnabled = false;
-        public string DumpLocation    = "";
-        public float  UpdateRate      = 0.1f;
+        public bool   Enabled         { get; set; } = false;
+        public bool   FileDumpEnabled { get; set; } = false;
+        public string DumpLocation    { get; set; } = "";
+        public float  UpdateRate      { get; set; } = 0.1f;
 
         // 19531225 = 5 seconds in ticks
-        public long   History         = 19531225;
+        public long   History         { get; set; } = 19531225;
     }
 }

@@ -10,7 +10,7 @@ namespace Ryujinx.Profiler
 {
     public class InternalProfile
     {
-        internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers;
+        internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers { get; set; }
 
         private readonly object _sessionLock = new object();
         private int _sessionCounter = 0;

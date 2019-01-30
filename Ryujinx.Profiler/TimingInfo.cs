@@ -12,13 +12,13 @@ namespace Ryujinx.Profiler
     public class TimingInfo
     {
         // Timestamps
-        public long TotalTime;
-        public long Instant;
+        public long TotalTime { get; set; }
+        public long Instant   { get; set; }
 
         // Measurement counts
-        public int  Count;
-        public int  InstantCount;
-        
+        public int  Count        { get; set; }
+        public int  InstantCount { get; set; }
+
         // Work out average
         public long AverageTime => (Count == 0) ? -1 : TotalTime / Count;
 
