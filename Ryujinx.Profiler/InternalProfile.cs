@@ -10,7 +10,17 @@ namespace Ryujinx.Profiler
 {
     public class InternalProfile
     {
-        internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers { get; set; }
+        private struct TimerQueueValue
+        {
+            public ProfileConfig Config;
+            public long Time;
+            public bool IsBegin;
+        }
+
+        internal Dictionary<ProfileConfig, TimingInfo> Timers { get; set; }
+
+        private readonly object _timerQueueClearLock = new object();
+        private ConcurrentQueue<TimerQueueValue> _timerQueue;
 
         private readonly object _sessionLock = new object();
         private int _sessionCounter = 0;
@@ -32,8 +42,9 @@ namespace Ryujinx.Profiler
 
         public InternalProfile(long history)
         {
+            Timers          = new Dictionary<ProfileConfig, TimingInfo>();
             _timingFlags    = new TimingFlag[MaxFlags];
-            Timers          = new ConcurrentDictionary<ProfileConfig, TimingInfo>();
+            _timerQueue     = new ConcurrentQueue<TimerQueueValue>();
             _history        = history;
             _cleanupRunning = true;
 
@@ -49,6 +60,8 @@ namespace Ryujinx.Profiler
         {
             while (_cleanupRunning)
             {
+                ClearTimerQueue();
+
                 foreach (var timer in Timers)
                 {
                     timer.Value.Cleanup(PerformanceCounter.ElapsedTicks - _history, _preserve - _history, _preserve);
@@ -57,6 +70,34 @@ namespace Ryujinx.Profiler
                 // No need to run too often
                 Thread.Sleep(50);
             }
+        }
+
+        private void ClearTimerQueue()
+        {
+            // Ensure we only ever have 1 instance running
+            if (!Monitor.TryEnter(_timerQueueClearLock))
+            {
+                return;
+            }
+
+            while (_timerQueue.TryDequeue(out var item))
+            {
+                if (!Timers.TryGetValue(item.Config, out var value))
+                {
+                    value = new TimingInfo();
+                    Timers.Add(item.Config, value);
+                }
+
+                if (item.IsBegin)
+                {
+                    value.Begin(item.Time);
+                }
+                else
+                {
+                    value.End(item.Time);
+                }
+            }
+            Monitor.Exit(_timerQueueClearLock);
         }
 
         public void FlagTime(TimingFlagType flagType)
@@ -79,20 +120,22 @@ namespace Ryujinx.Profiler
 
         public void BeginProfile(ProfileConfig config)
         {
-            Timers.GetOrAdd(config, profileConfig => new TimingInfo()).Begin(PerformanceCounter.ElapsedTicks);
+            _timerQueue.Enqueue(new TimerQueueValue()
+            {
+                Config  = config,
+                IsBegin = true,
+                Time    = PerformanceCounter.ElapsedTicks,
+            });
         }
 
         public void EndProfile(ProfileConfig config)
         {
-            if (Timers.TryGetValue(config, out var timingInfo))
+            _timerQueue.Enqueue(new TimerQueueValue()
             {
-                timingInfo.End(PerformanceCounter.ElapsedTicks);
-            }
-            else
-            {
-                // Throw exception if config isn't already being tracked
-                throw new Exception($"Profiler end called before begin for {config.Tag}");
-            }
+                Config  = config,
+                IsBegin = false,
+                Time    = PerformanceCounter.ElapsedTicks,
+            });
         }
 
         public string GetSession()
@@ -106,32 +149,10 @@ namespace Ryujinx.Profiler
 
         public Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
         {
-            Dictionary<ProfileConfig, TimingInfo> outDict = new Dictionary<ProfileConfig, TimingInfo>();
-
             _preserve = PerformanceCounter.ElapsedTicks;
+            ClearTimerQueue();
 
-            // Forcibly get copy so user doesn't block profiling
-            ProfileConfig[] configs = Timers.Keys.ToArray();
-            TimingInfo[]    times   = Timers.Values.ToArray();
-
-            for (int i = 0; i < configs.Length; i++)
-            {
-                outDict.Add(configs[i], times[i]);
-            }
-
-            foreach (ProfileConfig key in Timers.Keys)
-            {
-                TimingInfo value, prevValue;
-                if (Timers.TryGetValue(key, out value))
-                {
-                    prevValue          = value;
-                    value.Instant      = 0;
-                    value.InstantCount = 0;
-                    Timers.TryUpdate(key, value, prevValue);
-                }
-            }
-
-            return outDict;
+            return Timers;
         }
 
         public TimingFlag[] GetTimingFlags()
