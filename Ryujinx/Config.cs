@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using Ryujinx.Profiler;
 using Ryujinx.Ui;
+using Ryujinx.Common;
 
 namespace Ryujinx
 {
@@ -73,7 +74,7 @@ namespace Ryujinx
                 FileDumpEnabled = profilePath != "",
                 DumpLocation    = profilePath,
                 UpdateRate      = (float)((updateRateHz <= 0) ? -1 : 1.0f / updateRateHz),
-                History         = Profile.ConvertSecondsToTicks(Convert.ToDouble(parser.Value("Profiling_History"))),
+                History         = (long)(Convert.ToDouble(parser.Value("Profiling_History")) * PerformanceCounter.TicksPerSecond),
             });
 
             SystemLanguage SetLanguage = Enum.Parse<SystemLanguage>(parser.Value("System_Language"));

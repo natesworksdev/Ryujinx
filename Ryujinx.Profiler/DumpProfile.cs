@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Common;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -16,8 +17,8 @@ namespace Ryujinx.Profiler
                             $"{time.Key.SessionGroup}," +
                             $"{time.Key.SessionItem}," +
                             $"{time.Value.Count}," +
-                            $"{Profile.ConvertTicksToMS(time.Value.AverageTime)}," +
-                            $"{Profile.ConvertTicksToMS(time.Value.TotalTime)}\r\n";
+                            $"{time.Value.AverageTime / PerformanceCounter.TicksPerMillisecond}," +
+                            $"{time.Value.TotalTime / PerformanceCounter.TicksPerMillisecond}\r\n";
             }
 
             // Ensure file directory exists before write

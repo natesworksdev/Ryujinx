@@ -1,6 +1,7 @@
 ﻿using System;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common;
 
 namespace Ryujinx.Profiler.UI
 {
@@ -25,13 +26,13 @@ namespace Ryujinx.Profiler.UI
                 float barHeight          = (LineHeight - LinePadding);
                 long  history            = Profile.HistoryLength;
                 long  timeWidthTicks     = (long)(history / (double)_graphZoom);
-                long  graphPositionTicks = Profile.ConvertMSToTicks(_graphPosition);
+                long  graphPositionTicks = (long)(_graphPosition * PerformanceCounter.TicksPerMillisecond);
 
                 // Reset start point if out of bounds
                 if (timeWidthTicks + graphPositionTicks > history)
                 {
                     graphPositionTicks = history - timeWidthTicks;
-                    _graphPosition = (float)Profile.ConvertTicksToMS(graphPositionTicks);
+                    _graphPosition = (float)graphPositionTicks / PerformanceCounter.TicksPerMillisecond;
                 }
 
                 // Draw timing flags
@@ -112,7 +113,7 @@ namespace Ryujinx.Profiler.UI
                 float labelWidth = _fontService.DrawText(label, 0, 0, LineHeight, false);
                 _fontService.DrawText(label, xOffset + width - labelWidth - LinePadding, FilterHeight + LinePadding, LineHeight);
                 
-                _fontService.DrawText($"-{MathF.Round((float)(Profile.ConvertTicksToMS(timeWidthTicks) + _graphPosition), 2)} ms", xOffset + LinePadding, FilterHeight + LinePadding, LineHeight);
+                _fontService.DrawText($"-{MathF.Round((float)((timeWidthTicks / PerformanceCounter.TicksPerMillisecond) + _graphPosition), 2)} ms", xOffset + LinePadding, FilterHeight + LinePadding, LineHeight);
             }
         }
     }

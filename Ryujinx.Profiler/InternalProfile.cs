@@ -4,14 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Ryujinx.Common;
 
 namespace Ryujinx.Profiler
 {
     public class InternalProfile
     {
-        public long CurrentTime => SW.ElapsedTicks;
-
-        private Stopwatch SW;
         internal ConcurrentDictionary<ProfileConfig, TimingInfo> Timers;
 
         private readonly object _sessionLock = new object();
@@ -45,9 +43,6 @@ namespace Ryujinx.Profiler
                 Priority = ThreadPriority.Lowest
             };
             _cleanupThread.Start();
-
-            SW = new Stopwatch();
-            SW.Start();
         }
 
         private void CleanupLoop()
@@ -56,7 +51,7 @@ namespace Ryujinx.Profiler
             {
                 foreach (var timer in Timers)
                 {
-                    timer.Value.Cleanup(SW.ElapsedTicks - _history, _preserve - _history, _preserve);
+                    timer.Value.Cleanup(PerformanceCounter.ElapsedTicks - _history, _preserve - _history, _preserve);
                 }
 
                 // No need to run too often
@@ -69,7 +64,7 @@ namespace Ryujinx.Profiler
             _timingFlags[_timingFlagIndex] = new TimingFlag()
             {
                 FlagType  = flagType,
-                Timestamp = SW.ElapsedTicks
+                Timestamp = PerformanceCounter.ElapsedTicks
             };
 
             if (++_timingFlagIndex >= MaxFlags)
@@ -84,14 +79,14 @@ namespace Ryujinx.Profiler
 
         public void BeginProfile(ProfileConfig config)
         {
-            Timers.GetOrAdd(config, profileConfig => new TimingInfo()).Begin(SW.ElapsedTicks);
+            Timers.GetOrAdd(config, profileConfig => new TimingInfo()).Begin(PerformanceCounter.ElapsedTicks);
         }
 
         public void EndProfile(ProfileConfig config)
         {
             if (Timers.TryGetValue(config, out var timingInfo))
             {
-                timingInfo.End(SW.ElapsedTicks);
+                timingInfo.End(PerformanceCounter.ElapsedTicks);
             }
             else
             {
@@ -113,7 +108,7 @@ namespace Ryujinx.Profiler
         {
             Dictionary<ProfileConfig, TimingInfo> outDict = new Dictionary<ProfileConfig, TimingInfo>();
 
-            _preserve = SW.ElapsedTicks;
+            _preserve = PerformanceCounter.ElapsedTicks;
 
             // Forcibly get copy so user doesn't block profiling
             ProfileConfig[] configs = Timers.Keys.ToArray();

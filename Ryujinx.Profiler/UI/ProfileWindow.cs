@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using Ryujinx.Common;
 using Ryujinx.Profiler.UI.SharpFontHelpers;
 
 namespace Ryujinx.Profiler.UI
@@ -234,7 +235,7 @@ namespace Ryujinx.Profiler.UI
             {
                 _updateTimer         = 0;
                 _unsortedProfileData = Profile.GetProfilingData().ToList();
-                _captureTime         = Profile.GetCurrentTime();
+                _captureTime         = PerformanceCounter.ElapsedTicks;
                 _timingFlags         = Profile.GetTimingFlags();
                 _profileUpdated      = true;
                 _doStep              = false;
@@ -503,9 +504,9 @@ namespace Ryujinx.Profiler.UI
                 foreach (var entry in _sortedProfileData)
                 {
                     float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
-                    _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.Instant):F3} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
-                    _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.AverageTime):F3}", 150 + xOffset, y, LineHeight);
-                    _fontService.DrawText($"{Profile.ConvertTicksToMS(entry.Value.TotalTime):F3}", 260 + xOffset, y, LineHeight);
+                    _fontService.DrawText($"{entry.Value.Instant / PerformanceCounter.TicksPerMillisecond:F3} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
+                    _fontService.DrawText($"{entry.Value.AverageTime / PerformanceCounter.TicksPerMillisecond:F3}", 150 + xOffset, y, LineHeight);
+                    _fontService.DrawText($"{entry.Value.TotalTime / PerformanceCounter.TicksPerMillisecond:F3}", 260 + xOffset, y, LineHeight);
 
                     totalInstant += entry.Value.Instant;
                     totalAverage += entry.Value.AverageTime;
@@ -527,9 +528,9 @@ namespace Ryujinx.Profiler.UI
 
                 // Totals
                 yHeight = FilterHeight + 2;
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(totalInstant):F3} ({totalCount})", xOffset, yHeight, TitleFontHeight);
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(totalAverage):F3}", 150 + xOffset, yHeight, TitleFontHeight);
-                _fontService.DrawText($"{Profile.ConvertTicksToMS(totalTime):F3}", 260 + xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText($"{totalInstant / PerformanceCounter.TicksPerMillisecond:F3} ({totalCount})", xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText($"{totalAverage / PerformanceCounter.TicksPerMillisecond:F3}", 150 + xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText($"{totalTime / PerformanceCounter.TicksPerMillisecond:F3}", 260 + xOffset, yHeight, TitleFontHeight);
                 #endregion
             }
 

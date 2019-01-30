@@ -107,21 +107,6 @@ namespace Ryujinx.Profiler
             #endif
         }
 
-        public static double ConvertTicksToMS(long ticks)
-        {
-            return (((double)ticks) / Stopwatch.Frequency) * 1000.0;
-        }
-
-        public static long ConvertSecondsToTicks(double seconds)
-        {
-            return (long)(seconds * Stopwatch.Frequency);
-        }
-
-        public static long ConvertMSToTicks(double ms)
-        {
-            return (long)((ms / 1000) * Stopwatch.Frequency);
-        }
-
         public static Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
         {
             #if USE_PROFILING
@@ -141,17 +126,6 @@ namespace Ryujinx.Profiler
             return _profileInstance.GetTimingFlags();
             #else
             return new TimingFlag[0];
-            #endif
-        }
-
-        public static long GetCurrentTime()
-        {
-            #if USE_PROFILING
-            if (!ProfilingEnabled())
-                return 0;
-            return _profileInstance.CurrentTime;
-            #else
-            return 0;
             #endif
         }
     }

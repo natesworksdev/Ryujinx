@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Threading;
 using OpenTK;
+using Ryujinx.Common;
 
 namespace Ryujinx.Profiler.UI
 {
@@ -12,7 +13,6 @@ namespace Ryujinx.Profiler.UI
         private bool _profilerRunning;
 
         // Timing
-        private Stopwatch _sw;
         private double _prevTime;
 
         public ProfileWindowManager()
@@ -21,7 +21,6 @@ namespace Ryujinx.Profiler.UI
             {
                 _profilerRunning = true;
                 _prevTime        = 0;
-                _sw              = Stopwatch.StartNew();
                 _profileThread   = new Thread(ProfileLoop);
                 _profileThread.Start();
             }
@@ -59,7 +58,7 @@ namespace Ryujinx.Profiler.UI
 
                 while (_profilerRunning)
                 {
-                    double time = _sw.ElapsedMilliseconds / 1000.0;
+                    double time = (double)PerformanceCounter.ElapsedTicks / PerformanceCounter.TicksPerSecond;
                     _window.Update(new FrameEventArgs(time - _prevTime));
                     _prevTime = time;
 
