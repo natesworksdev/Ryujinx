@@ -7,7 +7,7 @@ configuration:
   - Release
   - Profile Release
 environment:
-  config_name:
+  config_name: test
 for:
   -
     configuration: Profile Release
