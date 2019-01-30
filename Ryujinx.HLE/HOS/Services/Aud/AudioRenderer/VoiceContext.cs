@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud.AudioRenderer
 
         public AdpcmDecoderContext AdpcmCtx { get; set; }
 
-        public WaveBuffer[] WaveBuffers { get; set; }
+        public WaveBuffer[] WaveBuffers { get; }
 
         public WaveBuffer CurrentWaveBuffer => WaveBuffers[_bufferIndex];
 
