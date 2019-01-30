@@ -6,11 +6,11 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
+    delegate long ArmSubroutine(CpuThreadState register, MemoryManager memory);
+
     class TranslatedSub
     {
-        private delegate long ArmSubroutine(CpuThreadState register, MemoryManager memory);
-
-        private ArmSubroutine _execDelegate;
+        public ArmSubroutine Delegate { get; private set; }
 
         public static int StateArgIdx  { get; private set; }
         public static int MemoryArgIdx { get; private set; }
@@ -54,12 +54,12 @@ namespace ChocolArm64.Translation
 
         public void PrepareMethod()
         {
-            _execDelegate = (ArmSubroutine)Method.CreateDelegate(typeof(ArmSubroutine));
+            Delegate = (ArmSubroutine)Method.CreateDelegate(typeof(ArmSubroutine));
         }
 
         public long Execute(CpuThreadState threadState, MemoryManager memory)
         {
-            return _execDelegate(threadState, memory);
+            return Delegate(threadState, memory);
         }
     }
 }

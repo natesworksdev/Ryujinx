@@ -72,7 +72,15 @@ namespace ChocolArm64.Translation
             state.CurrentTranslator = null;
         }
 
-        internal TranslatedSub GetOrTranslateVirtualSubroutine(CpuThreadState state, long position)
+        internal void TranslateVirtualSubroutine(CpuThreadState state, long position)
+        {
+            if (!_cache.TryGetSubroutine(position, out TranslatedSub sub) || sub.Tier == TranslationTier.Tier0)
+            {
+                _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier1));
+            }
+        }
+
+        internal ArmSubroutine GetOrTranslateVirtualSubroutine(CpuThreadState state, long position)
         {
             if (!_cache.TryGetSubroutine(position, out TranslatedSub sub))
             {
@@ -84,7 +92,7 @@ namespace ChocolArm64.Translation
                 _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier1));
             }
 
-            return sub;
+            return sub.Delegate;
         }
 
         internal TranslatedSub GetOrTranslateSubroutine(CpuThreadState state, long position)
@@ -130,7 +138,7 @@ namespace ChocolArm64.Translation
         {
             Block block = Decoder.DecodeBasicBlock(_memory, position, mode);
 
-            ILEmitterCtx context = new ILEmitterCtx(_cache, _queue, block);
+            ILEmitterCtx context = new ILEmitterCtx(_cache, _queue, TranslationTier.Tier0, block);
 
             string subName = GetSubroutineName(position);
 
@@ -145,7 +153,7 @@ namespace ChocolArm64.Translation
         {
             Block graph = Decoder.DecodeSubroutine(_memory, position, mode);
 
-            ILEmitterCtx context = new ILEmitterCtx(_cache, _queue, graph);
+            ILEmitterCtx context = new ILEmitterCtx(_cache, _queue, TranslationTier.Tier1, graph);
 
             ILBlock[] ilBlocks = context.GetILBlocks();
 

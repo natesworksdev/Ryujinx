@@ -17,12 +17,16 @@ namespace ChocolArm64.Translation
 
         private long _subPosition;
 
+        public long SubPosition => _subPosition;
+
         private int _opcIndex;
 
         private Block _currBlock;
 
         public Block    CurrBlock => _currBlock;
         public OpCode64 CurrOp    => _currBlock?.OpCodes[_opcIndex];
+
+        public TranslationTier Tier { get; }
 
         public Aarch32Mode Mode { get; } = Aarch32Mode.User; //TODO
 
@@ -48,11 +52,13 @@ namespace ChocolArm64.Translation
         private const int VecTmp1Index    = -5;
         private const int VecTmp2Index    = -6;
 
-        public ILEmitterCtx(TranslatorCache cache, TranslatorQueue queue, Block graph)
+        public ILEmitterCtx(TranslatorCache cache, TranslatorQueue queue, TranslationTier tier, Block graph)
         {
             _cache     = cache ?? throw new ArgumentNullException(nameof(cache));
             _queue     = queue ?? throw new ArgumentNullException(nameof(queue));
             _currBlock = graph ?? throw new ArgumentNullException(nameof(graph));
+
+            Tier = tier;
 
             _labels = new Dictionary<long, ILLabel>();
 
@@ -623,9 +629,9 @@ namespace ChocolArm64.Translation
             EmitCall(objType.GetMethod(mthdName, BindingFlags.Instance | BindingFlags.NonPublic));
         }
 
-        public void EmitCall(MethodInfo mthdInfo)
+        public void EmitCall(MethodInfo mthdInfo, bool isVirtual = false)
         {
-            _ilBlock.Add(new ILOpCodeCall(mthdInfo ?? throw new ArgumentNullException(nameof(mthdInfo))));
+            _ilBlock.Add(new ILOpCodeCall(mthdInfo ?? throw new ArgumentNullException(nameof(mthdInfo)), isVirtual));
         }
 
         public void EmitLdc_I(long value)

@@ -9,6 +9,17 @@ namespace ChocolArm64.Instructions
     {
         public static void EmitCall(ILEmitterCtx context, long imm)
         {
+            if (context.Tier == TranslationTier.Tier0)
+            {
+                context.TranslateAhead(imm);
+
+                context.EmitLdc_I8(imm);
+
+                context.Emit(OpCodes.Ret);
+
+                return;
+            }
+
             if (!context.TryOptEmitSubroutineCall())
             {
                 context.TranslateAhead(imm);
@@ -45,39 +56,62 @@ namespace ChocolArm64.Instructions
 
         private static void EmitVirtualCallOrJump(ILEmitterCtx context, bool isJump)
         {
-            context.EmitSttmp();
-            context.EmitLdarg(TranslatedSub.StateArgIdx);
-
-            context.EmitFieldLoad(typeof(CpuThreadState).GetField(nameof(CpuThreadState.CurrentTranslator),
-                BindingFlags.Instance |
-                BindingFlags.NonPublic));
-
-            context.EmitLdarg(TranslatedSub.StateArgIdx);
-            context.EmitLdtmp();
-
-            context.EmitPrivateCall(typeof(Translator), nameof(Translator.GetOrTranslateVirtualSubroutine));
-
-            context.EmitLdarg(TranslatedSub.StateArgIdx);
-            context.EmitLdarg(TranslatedSub.MemoryArgIdx);
-
-            if (isJump)
+            if (context.Tier == TranslationTier.Tier0)
             {
-                //The tail prefix allows the JIT to jump to the next function,
-                //while releasing the stack space used by the current one.
-                //This is ideal for BR ARM instructions, which are
-                //basically indirect tail calls.
-                context.Emit(OpCodes.Tailcall);
-            }
+                context.Emit(OpCodes.Dup);
 
-            context.EmitCall(typeof(TranslatedSub), nameof(TranslatedSub.Execute));
+                context.EmitSttmp();
+                context.EmitLdarg(TranslatedSub.StateArgIdx);
 
-            if (!isJump)
-            {
-                EmitContinueOrReturnCheck(context);
+                context.EmitFieldLoad(typeof(CpuThreadState).GetField(nameof(CpuThreadState.CurrentTranslator),
+                    BindingFlags.Instance |
+                    BindingFlags.NonPublic));
+
+                context.EmitLdarg(TranslatedSub.StateArgIdx);
+                context.EmitLdtmp();
+
+                context.EmitPrivateCall(typeof(Translator), nameof(Translator.TranslateVirtualSubroutine));
+
+                context.Emit(OpCodes.Ret);
             }
             else
             {
-                context.Emit(OpCodes.Ret);
+                context.EmitSttmp();
+                context.EmitLdarg(TranslatedSub.StateArgIdx);
+
+                context.EmitFieldLoad(typeof(CpuThreadState).GetField(nameof(CpuThreadState.CurrentTranslator),
+                    BindingFlags.Instance |
+                    BindingFlags.NonPublic));
+
+                context.EmitLdarg(TranslatedSub.StateArgIdx);
+                context.EmitLdtmp();
+
+                context.EmitPrivateCall(typeof(Translator), nameof(Translator.GetOrTranslateVirtualSubroutine));
+
+                context.EmitLdarg(TranslatedSub.StateArgIdx);
+                context.EmitLdarg(TranslatedSub.MemoryArgIdx);
+
+                if (isJump)
+                {
+                    //The tail prefix allows the JIT to jump to the next function,
+                    //while releasing the stack space used by the current one.
+                    //This is ideal for BR ARM instructions, which are
+                    //basically indirect tail calls.
+                    context.Emit(OpCodes.Tailcall);
+                }
+
+                MethodInfo mthdInfo = typeof(ArmSubroutine).GetMethod("Invoke");
+
+                context.EmitCall(mthdInfo, isVirtual: true);
+
+                if (!isJump)
+                {
+                    EmitContinueOrReturnCheck(context);
+                }
+                else
+                {
+                    context.Emit(OpCodes.Ret);
+                }
             }
         }
 

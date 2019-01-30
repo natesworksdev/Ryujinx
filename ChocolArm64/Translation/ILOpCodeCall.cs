@@ -7,14 +7,17 @@ namespace ChocolArm64.Translation
     {
         public MethodInfo Info { get; private set; }
 
-        public ILOpCodeCall(MethodInfo info)
+        public bool IsVirtual { get; private set; }
+
+        public ILOpCodeCall(MethodInfo info, bool isVirtual)
         {
-            Info = info;
+            Info      = info;
+            IsVirtual = isVirtual;
         }
 
         public void Emit(ILMethodBuilder context)
         {
-            context.Generator.Emit(OpCodes.Call, Info);
+            context.Generator.Emit(IsVirtual ? OpCodes.Callvirt : OpCodes.Call, Info);
         }
     }
 }
