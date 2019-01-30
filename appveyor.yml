@@ -7,12 +7,10 @@ configuration:
   - Release
   - Profile Release
 environment:
-  config_name: '-'
-for:
-  -
-    configuration: Profile Release
-    environment:
-      config_name: '-profiled-'
+  matrix:
+    - config_name: '-'
+
+    - config_name: '-profiled-'
 build_script:
 - ps: >-
     dotnet --version
