@@ -3,7 +3,9 @@ branches:
   only:
   - master
 image: Visual Studio 2017
-configuration: Release
+configuration:
+- Release
+- Profile Release
 build_script:
 - ps: >-
     dotnet --version
