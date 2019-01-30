@@ -9,6 +9,7 @@ configuration:
 environment:
   config_name:
 for:
+  -
     configuration: Profile Release
     environment:
       config_name: profiled-
