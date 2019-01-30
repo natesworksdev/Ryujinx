@@ -283,8 +283,6 @@ namespace Ryujinx
             _device.System.SignalVsync();
 
             _device.VsyncEvent.Set();
-
-            Profile.FlagTime(TimingFlagType.FrameSwap);
         }
 
         protected override void OnUnload(EventArgs e)

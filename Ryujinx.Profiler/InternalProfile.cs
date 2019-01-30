@@ -28,7 +28,7 @@ namespace Ryujinx.Profiler
         private int _timingFlagCount;
         private int _timingFlagIndex;
 
-        private const int MaxFlags = 50;
+        private const int MaxFlags = 500;
 
         private Action<TimingFlag> _timingFlagCallback;
 
