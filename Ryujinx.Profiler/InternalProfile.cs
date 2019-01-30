@@ -21,6 +21,7 @@ namespace Ryujinx.Profiler
         private readonly Thread _cleanupThread;
         private bool _cleanupRunning;
         private readonly long _history;
+        private long _preserve;
 
         // Timing flags
         private TimingFlag[] _timingFlags;
@@ -53,7 +54,7 @@ namespace Ryujinx.Profiler
             {
                 foreach (var timer in Timers)
                 {
-                    timer.Value.Cleanup(SW.ElapsedTicks - _history);
+                    timer.Value.Cleanup(SW.ElapsedTicks - _history, _preserve - _history, _preserve);
                 }
 
                 // No need to run too often
@@ -105,6 +106,8 @@ namespace Ryujinx.Profiler
         public Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
         {
             Dictionary<ProfileConfig, TimingInfo> outDict = new Dictionary<ProfileConfig, TimingInfo>();
+
+            _preserve = SW.ElapsedTicks;
 
             // Forcibly get copy so user doesn't block profiling
             ProfileConfig[] configs = Timers.Keys.ToArray();

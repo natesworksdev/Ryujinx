@@ -117,15 +117,25 @@ namespace Ryujinx.Profiler
         }
 
         // Remove any timestamps before given timestamp to free memory
-        public void Cleanup(long before)
+        public void Cleanup(long before, long preserveStart, long preserveEnd)
         {
             lock (_timestampListLock)
             {
-                int toRemove = 0;
+                int toRemove        = 0;
+                int toPreserveStart = 0;
+                int toPreserveLen   = 0;
 
                 for (int i = 0; i < _timestamps.Count; i++)
                 {
-                    if (_timestamps[i].EndTime < before)
+                    if (_timestamps[i].EndTime < preserveStart)
+                    {
+                        toPreserveStart++;
+                    }
+                    else if (_timestamps[i].EndTime < preserveEnd)
+                    {
+                        toPreserveLen++;
+                    }
+                    else if (_timestamps[i].EndTime < before)
                     {
                         toRemove++;
                     }
@@ -136,9 +146,14 @@ namespace Ryujinx.Profiler
                     }
                 }
 
+                if (toPreserveStart > 0)
+                {
+                    _timestamps.RemoveRange(0, toPreserveStart);
+                }
+
                 if (toRemove > 0)
                 {
-                    _timestamps.RemoveRange(0, toRemove);
+                    _timestamps.RemoveRange(toPreserveStart + toPreserveLen, toRemove);
                 }
             }
         }

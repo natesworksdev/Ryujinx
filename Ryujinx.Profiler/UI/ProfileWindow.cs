@@ -217,6 +217,7 @@ namespace Ryujinx.Profiler.UI
                 _updateTimer         = 0;
                 _unsortedProfileData = Profile.GetProfilingData().ToList();
                 _captureTime         = Profile.GetCurrentTime();
+                _timingFlags         = Profile.GetTimingFlags();
                 _profileUpdated      = true;
             }
             

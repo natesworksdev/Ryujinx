@@ -6,6 +6,8 @@ namespace Ryujinx.Profiler.UI
 {
     public partial class ProfileWindow
     {
+        private TimingFlag[] _timingFlags;
+
         private const float GraphMoveSpeed = 40000;
         private const float GraphZoomSpeed = 50;
 
@@ -33,11 +35,10 @@ namespace Ryujinx.Profiler.UI
                 }
 
                 // Draw timing flags
-                TimingFlag[] timingFlags = Profile.GetTimingFlags();
                 GL.Enable(EnableCap.ScissorTest);
                 GL.Color3(Color.Gray);
                 GL.Begin(PrimitiveType.Lines);
-                foreach (TimingFlag timingFlag in timingFlags)
+                foreach (TimingFlag timingFlag in _timingFlags)
                 {
                     int x = (int)(xOffset + width - ((float)(_captureTime - (timingFlag.Timestamp + graphPositionTicks)) / timeWidthTicks) * width);
                     GL.Vertex2(x, 0);
