@@ -4,8 +4,14 @@ branches:
   - master
 image: Visual Studio 2017
 configuration:
-- Release
-- Profile Release
+  - Release
+  - Profile Release
+environment:
+  config_name:
+for:
+    configuration: Profile Release
+    environment:
+      config_name: profiled-
 build_script:
 - ps: >-
     dotnet --version
@@ -16,15 +22,15 @@ build_script:
     
     dotnet publish -c $env:CONFIGURATION -r osx-x64
 
-    7z a ryujinx-$env:CONFIGURATION-$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:CONFIGURATION\netcoreapp2.1\win-x64\publish\
+    7z a ryujinx-$env:config_name-$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:CONFIGURATION\netcoreapp2.1\win-x64\publish\
 
-    7z a ryujinx-$env:CONFIGURATION-$env:APPVEYOR_BUILD_VERSION-linux_x64.tar $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:CONFIGURATION\netcoreapp2.1\linux-x64\publish\
+    7z a ryujinx-$env:config_name-$env:APPVEYOR_BUILD_VERSION-linux_x64.tar $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:CONFIGURATION\netcoreapp2.1\linux-x64\publish\
 
-    7z a ryujinx-$env:CONFIGURATION-$env:APPVEYOR_BUILD_VERSION-linux_x64.tar.gz ryujinx-$env:CONFIGURATION-$env:APPVEYOR_BUILD_VERSION-linux_x64.tar
+    7z a ryujinx-$env:config_name-$env:APPVEYOR_BUILD_VERSION-linux_x64.tar.gz ryujinx-$env:config_name-$env:APPVEYOR_BUILD_VERSION-linux_x64.tar
 
-    7z a ryujinx-$env:CONFIGURATION-$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:CONFIGURATION\netcoreapp2.1\osx-x64\publish\
+    7z a ryujinx-$env:config_name-$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:CONFIGURATION\netcoreapp2.1\osx-x64\publish\
 
 artifacts:
-- path: ryujinx-%CONFIGURATION%-%APPVEYOR_BUILD_VERSION%-win_x64.zip
-- path: ryujinx-%CONFIGURATION%-%APPVEYOR_BUILD_VERSION%-linux_x64.tar.gz
-- path: ryujinx-%CONFIGURATION%-%APPVEYOR_BUILD_VERSION%-osx_x64.zip
+- path: ryujinx-%config_name%%APPVEYOR_BUILD_VERSION%-win_x64.zip
+- path: ryujinx-%config_name%-%APPVEYOR_BUILD_VERSION%-linux_x64.tar.gz
+- path: ryujinx-%config_name%%APPVEYOR_BUILD_VERSION%-osx_x64.zip
