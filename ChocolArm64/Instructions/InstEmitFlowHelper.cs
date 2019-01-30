@@ -33,7 +33,17 @@ namespace ChocolArm64.Instructions
             EmitContinueOrReturnCheck(context);
         }
 
-        public static void EmitCallVirtual(ILEmitterCtx context)
+        public static void EmitVirtualCall(ILEmitterCtx context)
+        {
+            EmitVirtualCallOrJump(context, isJump: false);
+        }
+
+        public static void EmitVirtualJump(ILEmitterCtx context)
+        {
+            EmitVirtualCallOrJump(context, isJump: true);
+        }
+
+        private static void EmitVirtualCallOrJump(ILEmitterCtx context, bool isJump)
         {
             context.EmitSttmp();
             context.EmitLdarg(TranslatedSub.StateArgIdx);
@@ -50,9 +60,25 @@ namespace ChocolArm64.Instructions
             context.EmitLdarg(TranslatedSub.StateArgIdx);
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
 
+            if (isJump)
+            {
+                //The tail prefix allows the JIT to jump to the next function,
+                //while releasing the stack space used by the current one.
+                //This is ideal for BR ARM instructions, which are
+                //basically indirect tail calls.
+                context.Emit(OpCodes.Tailcall);
+            }
+
             context.EmitCall(typeof(TranslatedSub), nameof(TranslatedSub.Execute));
 
-            EmitContinueOrReturnCheck(context);
+            if (!isJump)
+            {
+                EmitContinueOrReturnCheck(context);
+            }
+            else
+            {
+                context.Emit(OpCodes.Ret);
+            }
         }
 
         private static void EmitContinueOrReturnCheck(ILEmitterCtx context)

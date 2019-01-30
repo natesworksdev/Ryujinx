@@ -277,16 +277,6 @@ namespace ChocolArm64.Translation
                 EmitLdarg(index);
             }
 
-            foreach (Register reg in subroutine.SubArgs)
-            {
-                switch (reg.Type)
-                {
-                    case RegisterType.Flag:   Ldloc(reg.Index, IoType.Flag);   break;
-                    case RegisterType.Int:    Ldloc(reg.Index, IoType.Int);    break;
-                    case RegisterType.Vector: Ldloc(reg.Index, IoType.Vector); break;
-                }
-            }
-
             EmitCall(subroutine.Method);
 
             return true;
@@ -635,12 +625,7 @@ namespace ChocolArm64.Translation
 
         public void EmitCall(MethodInfo mthdInfo)
         {
-            if (mthdInfo == null)
-            {
-                throw new ArgumentNullException(nameof(mthdInfo));
-            }
-
-            _ilBlock.Add(new ILOpCodeCall(mthdInfo));
+            _ilBlock.Add(new ILOpCodeCall(mthdInfo ?? throw new ArgumentNullException(nameof(mthdInfo))));
         }
 
         public void EmitLdc_I(long value)

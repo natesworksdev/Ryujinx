@@ -1,8 +1,9 @@
 using ChocolArm64.Decoders;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
-using System.Reflection;
 using System.Reflection.Emit;
+
+using static ChocolArm64.Instructions.InstEmitFlowHelper;
 
 namespace ChocolArm64.Instructions
 {
@@ -40,7 +41,7 @@ namespace ChocolArm64.Instructions
             context.EmitStint(RegisterAlias.Lr);
             context.EmitStoreState();
 
-            InstEmitFlowHelper.EmitCall(context, op.Imm);
+            EmitCall(context, op.Imm);
         }
 
         public static void Blr(ILEmitterCtx context)
@@ -52,7 +53,7 @@ namespace ChocolArm64.Instructions
             context.EmitStint(RegisterAlias.Lr);
             context.EmitStoreState();
 
-            InstEmitFlowHelper.EmitCallVirtual(context);
+            EmitVirtualCall(context);
         }
 
         public static void Br(ILEmitterCtx context)
@@ -62,21 +63,7 @@ namespace ChocolArm64.Instructions
             context.EmitStoreState();
             context.EmitLdintzr(op.Rn);
 
-            context.Emit(OpCodes.Dup);
-
-            context.EmitSttmp();
-            context.EmitLdarg(TranslatedSub.StateArgIdx);
-
-            context.EmitFieldLoad(typeof(CpuThreadState).GetField(nameof(CpuThreadState.CurrentTranslator),
-                BindingFlags.Instance |
-                BindingFlags.NonPublic));
-
-            context.EmitLdarg(TranslatedSub.StateArgIdx);
-            context.EmitLdtmp();
-
-            context.EmitPrivateCall(typeof(Translator), nameof(Translator.TranslateVirtualSubroutine));
-
-            context.Emit(OpCodes.Ret);
+            EmitVirtualJump(context);
         }
 
         public static void Cbnz(ILEmitterCtx context) => EmitCb(context, OpCodes.Bne_Un);
