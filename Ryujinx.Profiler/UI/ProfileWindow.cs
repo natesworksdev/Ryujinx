@@ -24,8 +24,12 @@ namespace Ryujinx.Profiler.UI
             Pause             = 6,
             ChangeDisplay     = 7,
 
+            // Don't automatically draw after here
+            Step              = 8,
+
             // Update this when new buttons are added
-            Count             = 8,
+            Count             = 9,
+            Autodraw          = 8,
         }
 
         // Font service
@@ -45,6 +49,7 @@ namespace Ryujinx.Profiler.UI
 
         private bool _showInactive    = true;
         private bool _paused          = false;
+        private bool _doStep          = false;
 
         // Layout
         private const int LineHeight      = 16;
@@ -131,6 +136,7 @@ namespace Ryujinx.Profiler.UI
             _buttons[(int)ButtonIndex.AverageTitle]  = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.AverageAscending()));
             _buttons[(int)ButtonIndex.TotalTitle]    = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TotalAscending()));
             _buttons[(int)ButtonIndex.ChangeDisplay] = new ProfileButton(_fontService, () => _displayGraph = !_displayGraph);
+            _buttons[(int)ButtonIndex.Step]          = new ProfileButton(_fontService, () => _doStep = true);
             _buttons[(int)ButtonIndex.FilterBar]     = new ProfileButton(_fontService, () =>
             {
                 _profileUpdated = true;
@@ -212,13 +218,14 @@ namespace Ryujinx.Profiler.UI
 
             // Get timing data if enough time has passed
             _updateTimer += e.Time;
-            if (!_paused && (_updateTimer > Profile.UpdateRate))
+            if (_doStep || (!_paused && (_updateTimer > Profile.UpdateRate)))
             {
                 _updateTimer         = 0;
                 _unsortedProfileData = Profile.GetProfilingData().ToList();
                 _captureTime         = Profile.GetCurrentTime();
                 _timingFlags         = Profile.GetTimingFlags();
                 _profileUpdated      = true;
+                _doStep              = false;
             }
             
             // Filtering
@@ -521,18 +528,27 @@ namespace Ryujinx.Profiler.UI
             // Play/Pause
             float widthPlayPauseButton = _buttons[(int)ButtonIndex.Pause].UpdateSize(_paused ? "Play" : "Pause", 15 + (int)widthShowHideButton, 5, 4, 16) + widthShowHideButton;
 
+            // Step
+            float widthStepButton = widthPlayPauseButton;
+
+            if (_paused)
+            {
+                widthStepButton += _buttons[(int)ButtonIndex.Step].UpdateSize("Step", (int)(25 + widthPlayPauseButton), 5, 4, 16) + 10;
+                _buttons[(int)ButtonIndex.Step].Draw();
+            }
+
             // Change display
-            width = _buttons[(int)ButtonIndex.ChangeDisplay].UpdateSize($"View: {(_displayGraph ? "Graph" : "Bars")}", 25 + (int)widthPlayPauseButton, 5, 4, 16) + widthPlayPauseButton;
+            width = _buttons[(int)ButtonIndex.ChangeDisplay].UpdateSize($"View: {(_displayGraph ? "Graph" : "Bars")}", 25 + (int)widthStepButton, 5, 4, 16) + widthStepButton;
 
             // Filter bar
             _fontService.DrawText($"{(_regexEnabled ? "Regex " : "Filter")}: {_filterText}", 35 + width, 7, 16);
-            _buttons[(int) ButtonIndex.FilterBar].UpdateSize((int)(35 + width), 0, 0, Width, FilterHeight);
+            _buttons[(int)ButtonIndex.FilterBar].UpdateSize((int)(45 + width), 0, 0, Width, FilterHeight);
             #endregion
 
             // Draw buttons
-            foreach (ProfileButton button in _buttons)
+            for (int i = 0; i < (int)ButtonIndex.Autodraw; i++)
             {
-                button.Draw();
+                _buttons[i].Draw();
             }
             
             // Dividing lines
@@ -556,6 +572,12 @@ namespace Ryujinx.Profiler.UI
 
             GL.Vertex2(widthPlayPauseButton + 20, 0);
             GL.Vertex2(widthPlayPauseButton + 20, FilterHeight);
+
+            if (_paused)
+            {
+                GL.Vertex2(widthStepButton + 20, 0);
+                GL.Vertex2(widthStepButton + 20, FilterHeight);
+            }
 
             GL.Vertex2(width + 30, 0);
             GL.Vertex2(width + 30, FilterHeight);
