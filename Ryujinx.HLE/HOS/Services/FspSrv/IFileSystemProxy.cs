@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             return 0;
         }
 
-        // OpenFileSystemWithId(nn::fssrv::sf::FileSystemType filesystem_type, nn::ApplicationId tid, buffer<bytes<0x301>, 0x19, 0x301> path) 
+        // OpenFileSystemWithId(nn::fssrv::sf::FileSystemType filesystem_type, nn::ApplicationId tid, buffer<bytes<0x301>, 0x19, 0x301> path)
         // -> object<nn::fssrv::sf::IFileSystem> contentFs
         public long OpenFileSystemWithId(ServiceCtx context)
         {
@@ -151,6 +151,19 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             byte[]    padding   = context.RequestData.ReadBytes(7);
             long      titleId   = context.RequestData.ReadInt64();
 
+            if (storageId == StorageId.None)
+            {
+                Nca nca = context.Device.System.ContentManager.GetCurrentApplicationAocData(titleId);
+
+                NcaSection romfsSection = nca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
+
+                Stream romfsStream = nca.OpenSection(romfsSection.SectionNum, false, context.Device.System.FsIntegrityCheckLevel, false).AsStream();
+
+                MakeObject(context, new IStorage(romfsStream));
+
+                return 0;
+            }
+
             ContentType contentType = ContentType.Data;
 
             StorageId installedStorage =
@@ -175,22 +188,25 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
                     if (File.Exists(ncaPath))
                     {
-                        LibHac.IO.IStorage ncaStorage   = new FileStream(ncaPath, FileMode.Open, FileAccess.Read).AsStorage();
-                        Nca                nca          = new Nca(context.Device.System.KeySet, ncaStorage, false);
-                        NcaSection         romfsSection = nca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
-                        Stream             romfsStream  = nca.OpenSection(romfsSection.SectionNum, false, context.Device.System.FsIntegrityCheckLevel, false).AsStream();
+                        LibHac.IO.IStorage ncaStorage = new FileStream(ncaPath, FileMode.Open, FileAccess.Read).AsStorage();
+
+                        Nca nca = new Nca(context.Device.System.KeySet, ncaStorage, false);
+
+                        NcaSection romfsSection = nca.Sections.FirstOrDefault(x => x?.Type == SectionType.Romfs);
+
+                        Stream romfsStream = nca.OpenSection(romfsSection.SectionNum, false, context.Device.System.FsIntegrityCheckLevel, false).AsStream();
 
                         MakeObject(context, new IStorage(romfsStream));
 
                         return 0;
                     }
                     else
-                    { 
+                    {
                         throw new FileNotFoundException($"No Nca found in Path `{ncaPath}`.");
                     }
                 }
                 else
-                { 
+                {
                     throw new DirectoryNotFoundException($"Path for title id {titleId:x16} on Storage {storageId} was not found in Path {installPath}.");
                 }
             }
@@ -221,7 +237,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             long titleId = context.RequestData.ReadInt64();
 
             UInt128 userId = new UInt128(
-                context.RequestData.ReadInt64(), 
+                context.RequestData.ReadInt64(),
                 context.RequestData.ReadInt64());
 
             long               saveId             = context.RequestData.ReadInt64();
@@ -297,7 +313,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 Pfs nsp = new Pfs(pfsFile.AsStorage());
 
                 ImportTitleKeysFromNsp(nsp, context.Device.System.KeySet);
-                
+
                 string filename = fullPath.Replace(archivePath.FullName, string.Empty).TrimStart('\\');
 
                 if (nsp.FileExists(filename))

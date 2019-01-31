@@ -292,6 +292,8 @@ namespace Ryujinx.HLE.HOS
 
                 Nca nca = new Nca(KeySet, ncaStorage, true);
 
+                nca.Filename = fileEntry.Name;
+
                 if (nca.Header.ContentType == ContentType.Program)
                 {
                     if (nca.Sections.Any(x => x?.Type == SectionType.Romfs))
@@ -302,6 +304,10 @@ namespace Ryujinx.HLE.HOS
                     {
                         patchNca = nca;
                     }
+                }
+                else if (nca.Header.ContentType == ContentType.AocData)
+                {
+                    ContentManager.SetCurrentApplicationAocData(fileEntry.Index, nca);
                 }
                 else if (nca.Header.ContentType == ContentType.Control)
                 {
