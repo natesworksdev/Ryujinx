@@ -47,6 +47,8 @@ namespace Ryujinx.Profiler.UI
                 }
                 GL.End();
                 
+                int furthest = 0;
+
                 // Draw bars
                 GL.Begin(PrimitiveType.Triangles);
                 foreach (var entry in _sortedProfileData)
@@ -54,13 +56,20 @@ namespace Ryujinx.Profiler.UI
                     GL.Color3(Color.Green);
                     foreach (Timestamp timestamp in entry.Value.GetAllTimestamps())
                     {
+                        right = (int)(xOffset + width - ((float)(_captureTime - (timestamp.EndTime + graphPositionTicks)) / timeWidthTicks) * width);
+
+                        // Skip drawing multiple timestamps on same pixel
+                        if (right <= furthest)
+                            continue;
+
                         left   = (int)(xOffset + width - ((float)(_captureTime - (timestamp.BeginTime + graphPositionTicks)) / timeWidthTicks) * width);
-                        right  = (int)(xOffset + width - ((float)(_captureTime - (timestamp.EndTime + graphPositionTicks)) / timeWidthTicks) * width);
                         bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex);
                         top    = bottom + barHeight;
 
                         // Make sure width is at least 1px
                         right = Math.Max(left + 1, right);
+
+                        furthest = right;
 
                         // Skip rendering out of bounds bars
                         if (top < 0 || bottom > Height)
