@@ -60,11 +60,17 @@ namespace Ryujinx.Profiler
         {
             while (_cleanupRunning)
             {
-                ClearTimerQueue();
-
-                foreach (var timer in Timers)
+                // Ensure we only ever have 1 instance modifying timers or timerQueue
+                if (Monitor.TryEnter(_timerQueueClearLock))
                 {
-                    timer.Value.Cleanup(PerformanceCounter.ElapsedTicks - _history, _preserve - _history, _preserve);
+                    ClearTimerQueue();
+
+                    foreach (var timer in Timers)
+                    {
+                        timer.Value.Cleanup(PerformanceCounter.ElapsedTicks - _history, _preserve - _history, _preserve);
+                    }
+
+                    Monitor.Exit(_timerQueueClearLock);
                 }
 
                 // No need to run too often
@@ -74,12 +80,6 @@ namespace Ryujinx.Profiler
 
         private void ClearTimerQueue()
         {
-            // Ensure we only ever have 1 instance running
-            if (!Monitor.TryEnter(_timerQueueClearLock))
-            {
-                return;
-            }
-
             while (_timerQueue.TryDequeue(out var item))
             {
                 if (!Timers.TryGetValue(item.Config, out var value))
@@ -97,7 +97,6 @@ namespace Ryujinx.Profiler
                     value.End(item.Time);
                 }
             }
-            Monitor.Exit(_timerQueueClearLock);
         }
 
         public void FlagTime(TimingFlagType flagType)
@@ -150,13 +149,11 @@ namespace Ryujinx.Profiler
         public Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
         {
             _preserve = PerformanceCounter.ElapsedTicks;
-            ClearTimerQueue();
 
-            // Reset all instant counts
-            foreach (KeyValuePair<ProfileConfig, TimingInfo> timer in Timers)
+            // Make sure to clear queue
+            lock (_timerQueueClearLock)
             {
-                timer.Value.Instant = 0;
-                timer.Value.InstantCount = 0;
+                ClearTimerQueue();
             }
 
             return Timers;

@@ -130,6 +130,8 @@ namespace Ryujinx.Profiler
                     if (_timestamps[i].EndTime < preserveStart)
                     {
                         toPreserveStart++;
+                        InstantCount--;
+                        Instant -= _timestamps[i].EndTime - _timestamps[i].BeginTime;
                     }
                     else if (_timestamps[i].EndTime < preserveEnd)
                     {
@@ -138,6 +140,8 @@ namespace Ryujinx.Profiler
                     else if (_timestamps[i].EndTime < before)
                     {
                         toRemove++;
+                        InstantCount--;
+                        Instant -= _timestamps[i].EndTime - _timestamps[i].BeginTime;
                     }
                     else
                     {
