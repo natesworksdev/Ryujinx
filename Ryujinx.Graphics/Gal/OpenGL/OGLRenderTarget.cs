@@ -366,6 +366,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GL.Disable(EnableCap.FramebufferSrgb);
+            GL.Disable(EnableCap.ScissorTest);
 
             GL.BlitFramebuffer(
                 SrcX0,
