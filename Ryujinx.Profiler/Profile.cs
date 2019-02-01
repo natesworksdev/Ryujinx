@@ -77,24 +77,6 @@ namespace Ryujinx.Profiler
             _profileInstance.EndProfile(config);
         }
 
-        public static void Method(ProfileConfig config, Action method)
-        {
-            #if USE_PROFILING
-            // If profiling is disabled just call the method
-            if (!ProfilingEnabled())
-            {
-                method();
-                return;
-            }
-
-            Begin(config);
-            method();
-            End(config);
-            #else
-            method();
-            #endif
-        }
-
         public static string GetSession()
         {
             #if USE_PROFILING
