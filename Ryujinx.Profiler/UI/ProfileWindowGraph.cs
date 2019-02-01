@@ -46,13 +46,13 @@ namespace Ryujinx.Profiler.UI
                     GL.Vertex2(x, Height);
                 }
                 GL.End();
-                
-                int furthest = 0;
 
                 // Draw bars
                 GL.Begin(PrimitiveType.Triangles);
                 foreach (var entry in _sortedProfileData)
                 {
+                    int furthest = 0;
+
                     GL.Color3(Color.Green);
                     foreach (Timestamp timestamp in entry.Value.GetAllTimestamps())
                     {
