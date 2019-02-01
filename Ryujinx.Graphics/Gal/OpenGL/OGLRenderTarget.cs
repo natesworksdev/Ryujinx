@@ -366,6 +366,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GL.Disable(EnableCap.FramebufferSrgb);
+
+            // Will be re-enabled if needed while binding, called before any game GL calls
             GL.Disable(EnableCap.ScissorTest);
 
             GL.BlitFramebuffer(
