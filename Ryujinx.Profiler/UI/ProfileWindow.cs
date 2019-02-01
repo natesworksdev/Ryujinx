@@ -401,6 +401,9 @@ namespace Ryujinx.Profiler.UI
                 verticalIndex = 0;
                 foreach (var entry in _sortedProfileData)
                 {
+                    if (entry.Key.Category == null)
+                        continue;
+
                     float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
                     width   = _fontService.DrawText(entry.Key.Category, xOffset, y, LineHeight);
 
@@ -426,6 +429,9 @@ namespace Ryujinx.Profiler.UI
                 GL.Enable(EnableCap.ScissorTest);
                 foreach (var entry in _sortedProfileData)
                 {
+                    if (entry.Key.SessionGroup == null)
+                        continue;
+
                     float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
                     width   = _fontService.DrawText(entry.Key.SessionGroup, xOffset, y, LineHeight);
 
@@ -450,6 +456,9 @@ namespace Ryujinx.Profiler.UI
                 GL.Enable(EnableCap.ScissorTest);
                 foreach (var entry in _sortedProfileData)
                 {
+                    if (entry.Key.SessionItem == null)
+                        continue;
+
                     float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
                     width   = _fontService.DrawText(entry.Key.SessionItem, xOffset, y, LineHeight);
 
