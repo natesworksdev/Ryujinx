@@ -522,9 +522,14 @@ namespace Ryujinx.Profiler.UI
                 foreach (var entry in _sortedProfileData)
                 {
                     float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
-                    _fontService.DrawText($"{entry.Value.Instant / PerformanceCounter.TicksPerMillisecond:F3} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
-                    _fontService.DrawText($"{entry.Value.AverageTime / PerformanceCounter.TicksPerMillisecond:F3}", 150 + xOffset, y, LineHeight);
-                    _fontService.DrawText($"{entry.Value.TotalTime / PerformanceCounter.TicksPerMillisecond:F3}", 260 + xOffset, y, LineHeight);
+
+                    float instant = (float)entry.Value.Instant / PerformanceCounter.TicksPerMillisecond;
+                    _fontService.DrawText($"{((instant < 1) ? $"{instant * 1000:F3}us" : $"{instant:F3}ms")} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
+
+                    float average = (float)entry.Value.AverageTime / PerformanceCounter.TicksPerMillisecond;
+                    _fontService.DrawText((average < 1) ? $"{average * 1000:F3}us" : $"{average:F3}ms", 150 + xOffset, y, LineHeight);
+
+                    _fontService.DrawText($"{(float)entry.Value.TotalTime / PerformanceCounter.TicksPerMillisecond:F3}", 260 + xOffset, y, LineHeight);
 
                     totalInstant += entry.Value.Instant;
                     totalAverage += entry.Value.AverageTime;
@@ -535,10 +540,10 @@ namespace Ryujinx.Profiler.UI
 
                 float yHeight = Height - TitleFontHeight;
 
-                _fontService.DrawText("Instant (ms, count)", xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText("Instant (Count)", xOffset, yHeight, TitleFontHeight);
                 _buttons[(int)ButtonIndex.InstantTitle].UpdateSize((int)xOffset, (int)yHeight, 0, 130, TitleFontHeight);
 
-                _fontService.DrawText("Average (ms)", 150 + xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText("Average", 150 + xOffset, yHeight, TitleFontHeight);
                 _buttons[(int)ButtonIndex.AverageTitle].UpdateSize((int)(150 + xOffset), (int)yHeight, 0, 130, TitleFontHeight);
 
                 _fontService.DrawText("Total (ms)", 260 + xOffset, yHeight, TitleFontHeight);
