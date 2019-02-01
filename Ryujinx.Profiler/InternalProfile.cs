@@ -68,7 +68,7 @@ namespace Ryujinx.Profiler
                 }
 
                 // No need to run too often
-                Thread.Sleep(50);
+                Thread.Sleep(5);
             }
         }
 
