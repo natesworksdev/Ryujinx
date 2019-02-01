@@ -37,7 +37,7 @@ namespace Ryujinx.Profiler.UI
 
                 // Draw timing flags
                 GL.Enable(EnableCap.ScissorTest);
-                GL.Color3(Color.Gray);
+                GL.Color3(0.25f, 0.25f, 0.25f);
                 GL.Begin(PrimitiveType.Lines);
                 foreach (TimingFlag timingFlag in _timingFlags)
                 {
