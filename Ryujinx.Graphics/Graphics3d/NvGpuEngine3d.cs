@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
+using Ryujinx.Profiler;
 
 namespace Ryujinx.Graphics.Graphics3d
 {
@@ -91,6 +92,8 @@ namespace Ryujinx.Graphics.Graphics3d
 
         private void VertexEndGl(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
+            Profile.Begin(Profiles.GPU.Engine3d.VertexEnd);
+
             LockCaches();
 
             GalPipelineState State = new GalPipelineState();
@@ -125,6 +128,8 @@ namespace Ryujinx.Graphics.Graphics3d
             DispatchRender(Vmm, State);
 
             UnlockCaches();
+
+            Profile.End(Profiles.GPU.Engine3d.VertexEnd);
         }
 
         private void LockCaches()

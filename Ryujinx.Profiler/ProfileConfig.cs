@@ -90,6 +90,19 @@ namespace Ryujinx.Profiler
             };
         }
 
+        public static class GPU
+        {
+            public static class Engine3d
+            {
+                public static ProfileConfig VertexEnd = new ProfileConfig()
+                {
+                    Category     = "GPU",
+                    SessionGroup = "Engine3D",
+                    SessionItem  = "VertexEnd"
+                };
+            }
+        }
+
         public static ProfileConfig ServiceCall = new ProfileConfig()
         {
             Category = "ServiceCall",
