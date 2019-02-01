@@ -77,10 +77,16 @@ namespace Ryujinx.Profiler
     {
         public static class CPU
         {
-            public static ProfileConfig Test = new ProfileConfig()
+            public static ProfileConfig TranslateTier0 = new ProfileConfig()
             {
                 Category = "CPU",
-                SessionGroup = "Test"
+                SessionGroup = "TranslateTier0"
+            };
+
+            public static ProfileConfig TranslateTier1 = new ProfileConfig()
+            {
+                Category = "CPU",
+                SessionGroup = "TranslateTier1"
             };
         }
 

@@ -3,8 +3,9 @@ using ChocolArm64.Events;
 using ChocolArm64.Memory;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
+using Ryujinx.Profiler;
 using System;
-using System.Reflection.Emit;
+using System.Threading;
 
 namespace ChocolArm64
 {
@@ -52,6 +53,12 @@ namespace ChocolArm64
 
         private void ExecuteSubroutineA64(CpuThreadState state, MemoryManager memory, long position)
         {
+            ProfileConfig tier0   = Profiles.CPU.TranslateTier0;
+            ProfileConfig tier1   = Profiles.CPU.TranslateTier1;
+
+            // Grab thread id to differentiate
+            tier0.SessionItem = tier1.SessionItem = Thread.CurrentThread.ManagedThreadId.ToString();
+
             do
             {
                 if (EnableCpuTrace)
@@ -61,12 +68,16 @@ namespace ChocolArm64
 
                 if (!_cache.TryGetSubroutine(position, out TranslatedSub sub))
                 {
+                    Profile.Begin(tier0);
                     sub = TranslateTier0(state, memory, position);
+                    Profile.End(tier0);
                 }
 
                 if (sub.ShouldReJit())
                 {
+                    Profile.Begin(tier1);
                     TranslateTier1(state, memory, position);
+                    Profile.End(tier1);
                 }
 
                 position = sub.Execute(state, memory);
