@@ -152,6 +152,13 @@ namespace Ryujinx.Profiler
             _preserve = PerformanceCounter.ElapsedTicks;
             ClearTimerQueue();
 
+            // Reset all instant counts
+            foreach (KeyValuePair<ProfileConfig, TimingInfo> timer in Timers)
+            {
+                timer.Value.Instant = 0;
+                timer.Value.InstantCount = 0;
+            }
+
             return Timers;
         }
 
