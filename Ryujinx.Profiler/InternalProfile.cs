@@ -48,11 +48,8 @@ namespace Ryujinx.Profiler
             _history        = history;
             _cleanupRunning = true;
 
-            // Create low priority cleanup thread, it only cleans up RAM hence the low priority
-            _cleanupThread = new Thread(CleanupLoop)
-            {
-                Priority = ThreadPriority.Lowest
-            };
+            // Create cleanup thread.
+            _cleanupThread = new Thread(CleanupLoop);
             _cleanupThread.Start();
         }
 
