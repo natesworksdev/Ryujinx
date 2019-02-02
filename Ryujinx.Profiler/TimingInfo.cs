@@ -157,7 +157,7 @@ namespace Ryujinx.Profiler
 
                 if (toRemove > 0)
                 {
-                    _timestamps.RemoveRange(toPreserveStart + toPreserveLen, toRemove);
+                    _timestamps.RemoveRange(toPreserveLen, toRemove);
                 }
             }
         }
