@@ -23,7 +23,10 @@ namespace Ryujinx
 
             Config.Read(device);
 
-            Logger.Updated += ConsoleLog.Log;
+            Logger.Updated += Log.LogMessage;
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
 
             if (args.Length == 1)
             {
@@ -62,6 +65,7 @@ namespace Ryujinx
                             device.LoadNca(args[0]);
                             break;
                         case ".nsp":
+                        case ".pfs0":
                             Console.WriteLine("Loading as NSP.");
                             device.LoadNsp(args[0]);
                             break;
@@ -87,6 +91,23 @@ namespace Ryujinx
             }
 
             audioOut.Dispose();
+        }
+
+        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        {
+            Log.Close();
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = e.ExceptionObject as Exception;
+
+            Logger.PrintError(LogClass.Emulation, $"Unhandled exception caught: {exception}");
+
+            if (e.IsTerminating)
+            {
+                Log.Close();
+            }
         }
 
         /// <summary>

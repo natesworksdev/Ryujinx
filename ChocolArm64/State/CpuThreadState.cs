@@ -8,25 +8,11 @@ namespace ChocolArm64.State
 {
     public class CpuThreadState
     {
-        internal const int LrIndex = 30;
-        internal const int ZrIndex = 31;
-
         internal const int ErgSizeLog2 = 4;
         internal const int DczSizeLog2 = 4;
 
         private const int MinInstForCheck = 4000000;
 
-        internal ExecutionMode ExecutionMode;
-
-        //AArch32 state.
-        public uint R0,  R1,  R2,  R3,
-                    R4,  R5,  R6,  R7,
-                    R8,  R9,  R10, R11,
-                    R12, R13, R14, R15;
-
-        public bool Thumb;
-
-        //AArch64 state.
         public ulong X0,  X1,  X2,  X3,  X4,  X5,  X6,  X7,
                      X8,  X9,  X10, X11, X12, X13, X14, X15,
                      X16, X17, X18, X19, X20, X21, X22, X23,
@@ -37,10 +23,17 @@ namespace ChocolArm64.State
                                 V16, V17, V18, V19, V20, V21, V22, V23,
                                 V24, V25, V26, V27, V28, V29, V30, V31;
 
+        public bool Aarch32;
+
+        public bool Thumb;
+        public bool BigEndian;
+
         public bool Overflow;
         public bool Carry;
         public bool Zero;
         public bool Negative;
+
+        public int ElrHyp;
 
         public bool Running { get; set; }
         public int  Core    { get; set; }
@@ -59,10 +52,10 @@ namespace ChocolArm64.State
         {
             get
             {
-                return (Negative ? (int)PState.N : 0) |
-                       (Zero     ? (int)PState.Z : 0) |
-                       (Carry    ? (int)PState.C : 0) |
-                       (Overflow ? (int)PState.V : 0);
+                return (Negative ? (int)PState.NMask : 0) |
+                       (Zero     ? (int)PState.ZMask : 0) |
+                       (Carry    ? (int)PState.CMask : 0) |
+                       (Overflow ? (int)PState.VMask : 0);
             }
         }
 
@@ -144,6 +137,18 @@ namespace ChocolArm64.State
         internal void OnUndefined(long position, int rawOpCode)
         {
             Undefined?.Invoke(this, new InstUndefinedEventArgs(position, rawOpCode));
+        }
+
+        internal ExecutionMode GetExecutionMode()
+        {
+            if (!Aarch32)
+            {
+                return ExecutionMode.Aarch64;
+            }
+            else
+            {
+                return Thumb ? ExecutionMode.Aarch32Thumb : ExecutionMode.Aarch32Arm;
+            }
         }
 
         internal bool GetFpcrFlag(Fpcr flag)
