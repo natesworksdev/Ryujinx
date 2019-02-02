@@ -82,7 +82,13 @@ namespace Ryujinx.Graphics.Graphics3d
         {
             if (Methods.TryGetValue(MethCall.Method, out NvGpuMethod Method))
             {
+                ProfileConfig profile = Profiles.GPU.Engine3d.CallMethod;
+                profile.SessionItem = Method.Method.Name;
+                Profile.Begin(profile);
+
                 Method(Vmm, MethCall);
+
+                Profile.End(profile);
             }
             else
             {

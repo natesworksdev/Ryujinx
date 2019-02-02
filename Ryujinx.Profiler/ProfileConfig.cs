@@ -105,6 +105,12 @@ namespace Ryujinx.Profiler
 
             public static class Engine3d
             {
+                public static ProfileConfig CallMethod = new ProfileConfig()
+                {
+                    Category = "GPU.Engine3D",
+                    SessionGroup = "CallMethod",
+                };
+
                 public static ProfileConfig VertexEnd = new ProfileConfig()
                 {
                     Category     = "GPU.Engine3D",
