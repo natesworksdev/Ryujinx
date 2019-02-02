@@ -13,7 +13,7 @@ namespace Ryujinx.Profiler.UI
         private const float GraphZoomSpeed = 50;
 
         private float _graphZoom      = 1;
-        private float  _graphPosition = 0;
+        private float _graphPosition  = 0;
 
         private void DrawGraph(float xOffset, float yOffset, float width)
         {
@@ -28,13 +28,13 @@ namespace Ryujinx.Profiler.UI
                 long   history            = Profile.HistoryLength;
                 double timeWidthTicks     = history / (double)_graphZoom;
                 long   graphPositionTicks = (long)(_graphPosition * PerformanceCounter.TicksPerMillisecond);
-                long ticksPerPixel        = (long)(timeWidthTicks / width);
+                long   ticksPerPixel      = (long)(timeWidthTicks / width);
 
                 // Reset start point if out of bounds
                 if (timeWidthTicks + graphPositionTicks > history)
                 {
                     graphPositionTicks = history - (long)timeWidthTicks;
-                    _graphPosition = (float)graphPositionTicks / PerformanceCounter.TicksPerMillisecond;
+                    _graphPosition     = (float)graphPositionTicks / PerformanceCounter.TicksPerMillisecond;
                 }
 
                 graphPositionTicks = _captureTime - graphPositionTicks;
@@ -58,7 +58,7 @@ namespace Ryujinx.Profiler.UI
                     long furthest = 0;
 
                     bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex);
-                    top = bottom + barHeight;
+                    top    = bottom + barHeight;
 
                     // Skip rendering out of bounds bars
                     if (top < 0 || bottom > Height)
@@ -93,7 +93,7 @@ namespace Ryujinx.Profiler.UI
                     long entryBegin = entry.Value.BeginTime;
                     if (entryBegin != -1)
                     {
-                        left   = (int)(graphRight - ((graphPositionTicks - entryBegin) / timeWidthTicks) * width);
+                        left = (int)(graphRight - ((graphPositionTicks - entryBegin) / timeWidthTicks) * width);
 
                         // Make sure width is at least 1px
                         left = Math.Min(left - 1, (int)graphRight);
