@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Ryujinx.Common;
 
 namespace Ryujinx.Profiler
@@ -55,28 +54,37 @@ namespace Ryujinx.Profiler
 
         private void CleanupLoop()
         {
+            bool queueCleared = false;
+
             while (_cleanupRunning)
             {
                 // Ensure we only ever have 1 instance modifying timers or timerQueue
                 if (Monitor.TryEnter(_timerQueueClearLock))
                 {
-                    ClearTimerQueue();
+                    queueCleared = ClearTimerQueue();
 
-                    foreach (var timer in Timers)
-                    {
-                        timer.Value.Cleanup(PerformanceCounter.ElapsedTicks - _history, _preserve - _history, _preserve);
-                    }
+                    // Calculate before foreach to mitigate redundant calculations
+                    long cleanupBefore = PerformanceCounter.ElapsedTicks - _history;
+                    long preserveStart = _preserve - _history;
+
+                    // Each cleanup is self contained so run in parallel for maximum efficiency
+                    Parallel.ForEach(Timers, (t) => t.Value.Cleanup(cleanupBefore, preserveStart, _preserve));
 
                     Monitor.Exit(_timerQueueClearLock);
                 }
 
-                // No need to run too often
-                Thread.Sleep(5);
+                // Only sleep if queue was sucessfully cleared
+                if (queueCleared)
+                {
+                    Thread.Sleep(5);
+                }
             }
         }
 
-        private void ClearTimerQueue()
+        private bool ClearTimerQueue()
         {
+            int count = 0;
+
             while (_timerQueue.TryDequeue(out var item))
             {
                 if (!Timers.TryGetValue(item.Config, out var value))
@@ -93,7 +101,15 @@ namespace Ryujinx.Profiler
                 {
                     value.End(item.Time);
                 }
+
+                // Don't block for too long as memory disposal is blocked while this function runs
+                if (count++ > 10000)
+                {
+                    return false;
+                }
             }
+
+            return true;
         }
 
         public void FlagTime(TimingFlagType flagType)
