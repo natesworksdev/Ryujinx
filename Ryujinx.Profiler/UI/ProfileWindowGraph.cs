@@ -62,7 +62,10 @@ namespace Ryujinx.Profiler.UI
 
                     // Skip rendering out of bounds bars
                     if (top < 0 || bottom > Height)
+                    {
+                        verticalIndex++;
                         continue;
+                    }
 
 
                     GL.Color3(Color.Green);
