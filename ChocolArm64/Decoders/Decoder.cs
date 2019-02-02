@@ -19,20 +19,20 @@ namespace ChocolArm64.Decoders
             _opActivators = new ConcurrentDictionary<Type, OpActivator>();
         }
 
-        public static Block DecodeBasicBlock(CpuThreadState state, MemoryManager memory, long start)
+        public static Block DecodeBasicBlock(MemoryManager memory, long start, ExecutionMode mode)
         {
             Block block = new Block(start);
 
-            FillBlock(state, memory, block);
+            FillBlock(memory, mode, block);
 
             return block;
         }
 
         public static Block DecodeSubroutine(
             TranslatorCache cache,
-            CpuThreadState  state,
             MemoryManager   memory,
-            long            start)
+            long            start,
+            ExecutionMode   mode)
         {
             Dictionary<long, Block> visited    = new Dictionary<long, Block>();
             Dictionary<long, Block> visitedEnd = new Dictionary<long, Block>();
@@ -59,7 +59,7 @@ namespace ChocolArm64.Decoders
             {
                 Block current = blocks.Dequeue();
 
-                FillBlock(state, memory, current);
+                FillBlock(memory, mode, current);
 
                 //Set child blocks. "Branch" is the block the branch instruction
                 //points to (when taken), "Next" is the block at the next address,
@@ -71,7 +71,7 @@ namespace ChocolArm64.Decoders
 
                     OpCode64 lastOp = current.GetLastOp();
 
-                    if (lastOp is OpCodeBImm64 op)
+                    if (lastOp is IOpCodeBImm op)
                     {
                         if (op.Emitter == InstEmit.Bl)
                         {
@@ -83,8 +83,7 @@ namespace ChocolArm64.Decoders
                         }
                     }
 
-                    if (!((lastOp is OpCodeBImmAl64) ||
-                          (lastOp is OpCodeBReg64)) || hasCachedSub)
+                    if (!IsUnconditionalBranch(lastOp) || hasCachedSub)
                     {
                         current.Next = Enqueue(current.EndPosition);
                     }
@@ -121,7 +120,7 @@ namespace ChocolArm64.Decoders
             return entry;
         }
 
-        private static void FillBlock(CpuThreadState state, MemoryManager memory, Block block)
+        private static void FillBlock(MemoryManager memory, ExecutionMode mode, Block block)
         {
             long position = block.Position;
 
@@ -129,13 +128,11 @@ namespace ChocolArm64.Decoders
 
             do
             {
-                //TODO: This needs to be changed to support both AArch32 and AArch64,
-                //once JIT support is introduced on AArch32 aswell.
-                opCode = DecodeOpCode(state, memory, position);
+                opCode = DecodeOpCode(memory, position, mode);
 
                 block.OpCodes.Add(opCode);
 
-                position += 4;
+                position += opCode.OpCodeSizeInBytes;
             }
             while (!(IsBranch(opCode) || IsException(opCode)));
 
@@ -145,7 +142,85 @@ namespace ChocolArm64.Decoders
         private static bool IsBranch(OpCode64 opCode)
         {
             return opCode is OpCodeBImm64 ||
-                   opCode is OpCodeBReg64;
+                   opCode is OpCodeBReg64 || IsAarch32Branch(opCode);
+        }
+
+        private static bool IsUnconditionalBranch(OpCode64 opCode)
+        {
+            return opCode is OpCodeBImmAl64 ||
+                   opCode is OpCodeBReg64   || IsAarch32UnconditionalBranch(opCode);
+        }
+
+        private static bool IsAarch32UnconditionalBranch(OpCode64 opCode)
+        {
+            if (!(opCode is OpCode32 op))
+            {
+                return false;
+            }
+
+            //Note: On ARM32, most instructions have conditional execution,
+            //so there's no "Always" (unconditional) branch like on ARM64.
+            //We need to check if the condition is "Always" instead.
+            return IsAarch32Branch(op) && op.Cond >= Condition.Al;
+        }
+
+        private static bool IsAarch32Branch(OpCode64 opCode)
+        {
+            //Note: On ARM32, most ALU operations can write to R15 (PC),
+            //so we must consider such operations as a branch in potential aswell.
+            if (opCode is IOpCode32Alu opAlu && opAlu.Rd == RegisterAlias.Aarch32Pc)
+            {
+                return true;
+            }
+
+            //Same thing for memory operations. We have the cases where PC is a target
+            //register (Rt == 15 or (mask & (1 << 15)) != 0), and cases where there is
+            //a write back to PC (wback == true && Rn == 15), however the later may
+            //be "undefined" depending on the CPU, so compilers should not produce that.
+            if (opCode is IOpCode32Mem || opCode is IOpCode32MemMult)
+            {
+                int rt, rn;
+
+                bool wBack, isLoad;
+
+                if (opCode is IOpCode32Mem opMem)
+                {
+                    rt     = opMem.Rt;
+                    rn     = opMem.Rn;
+                    wBack  = opMem.WBack;
+                    isLoad = opMem.IsLoad;
+
+                    //For the dual load, we also need to take into account the
+                    //case were Rt2 == 15 (PC).
+                    if (rt == 14 && opMem.Emitter == InstEmit32.Ldrd)
+                    {
+                        rt = RegisterAlias.Aarch32Pc;
+                    }
+                }
+                else if (opCode is IOpCode32MemMult opMemMult)
+                {
+                    const int pcMask = 1 << RegisterAlias.Aarch32Pc;
+
+                    rt     = (opMemMult.RegisterMask & pcMask) != 0 ? RegisterAlias.Aarch32Pc : 0;
+                    rn     =  opMemMult.Rn;
+                    wBack  =  opMemMult.PostOffset != 0;
+                    isLoad =  opMemMult.IsLoad;
+                }
+                else
+                {
+                    throw new NotImplementedException($"The type \"{opCode.GetType().Name}\" is not implemented on the decoder.");
+                }
+
+                if ((rt == RegisterAlias.Aarch32Pc && isLoad) ||
+                    (rn == RegisterAlias.Aarch32Pc && wBack))
+                {
+                    return true;
+                }
+            }
+
+            //Explicit branch instructions.
+            return opCode is IOpCode32BImm ||
+                   opCode is IOpCode32BReg;
         }
 
         private static bool IsException(OpCode64 opCode)
@@ -155,20 +230,26 @@ namespace ChocolArm64.Decoders
                    opCode.Emitter == InstEmit.Und;
         }
 
-        public static OpCode64 DecodeOpCode(CpuThreadState state, MemoryManager memory, long position)
+        public static OpCode64 DecodeOpCode(MemoryManager memory, long position, ExecutionMode mode)
         {
             int opCode = memory.ReadInt32(position);
 
             Inst inst;
 
-            if (state.ExecutionMode == ExecutionMode.AArch64)
+            if (mode == ExecutionMode.Aarch64)
             {
                 inst = OpCodeTable.GetInstA64(opCode);
             }
             else
             {
-                //TODO: Thumb support.
-                inst = OpCodeTable.GetInstA32(opCode);
+                if (mode == ExecutionMode.Aarch32Arm)
+                {
+                    inst = OpCodeTable.GetInstA32(opCode);
+                }
+                else /* if (mode == ExecutionMode.Aarch32Thumb) */
+                {
+                    inst = OpCodeTable.GetInstT32(opCode);
+                }
             }
 
             OpCode64 decodedOpCode = new OpCode64(Inst.Undefined, position, opCode);

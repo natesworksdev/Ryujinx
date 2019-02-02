@@ -5,19 +5,20 @@ namespace ChocolArm64.State
     [Flags]
     enum PState
     {
+        TBit = 5,
+        EBit = 9,
+
         VBit = 28,
         CBit = 29,
         ZBit = 30,
         NBit = 31,
 
-        V = 1 << VBit,
-        C = 1 << CBit,
-        Z = 1 << ZBit,
-        N = 1 << NBit,
+        TMask = 1 << TBit,
+        EMask = 1 << EBit,
 
-        Nz = N | Z,
-        Cv = C | V,
-
-        Nzcv = Nz | Cv
+        VMask = 1 << VBit,
+        CMask = 1 << CBit,
+        ZMask = 1 << ZBit,
+        NMask = 1 << NBit
     }
 }
