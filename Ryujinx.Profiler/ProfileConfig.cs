@@ -92,6 +92,15 @@ namespace Ryujinx.Profiler
 
         public static class GPU
         {
+            public static class Engine2d
+            {
+                public static ProfileConfig TextureCopy = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine2D",
+                    SessionGroup = "TextureCopy"
+                };
+            }
+
             public static class Engine3d
             {
                 public static ProfileConfig VertexEnd = new ProfileConfig()
