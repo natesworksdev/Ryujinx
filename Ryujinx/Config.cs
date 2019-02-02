@@ -75,6 +75,7 @@ namespace Ryujinx
                 DumpLocation    = profilePath,
                 UpdateRate      = (float)((updateRateHz <= 0) ? -1 : 1.0f / updateRateHz),
                 History         = (long)(Convert.ToDouble(parser.Value("Profiling_History")) * PerformanceCounter.TicksPerSecond),
+                MaxLevel        = Convert.ToInt32(parser.Value("Profiling_Max_Level")),
             });
 
             SystemLanguage SetLanguage = Enum.Parse<SystemLanguage>(parser.Value("System_Language"));

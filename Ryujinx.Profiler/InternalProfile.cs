@@ -150,10 +150,11 @@ namespace Ryujinx.Profiler
         {
             _preserve = PerformanceCounter.ElapsedTicks;
 
-            // Make sure to clear queue
-            lock (_timerQueueClearLock)
+            // Skip clearing queue if already clearing
+            if (Monitor.TryEnter(_timerQueueClearLock))
             {
                 ClearTimerQueue();
+                Monitor.Exit(_timerQueueClearLock);
             }
 
             return Timers;

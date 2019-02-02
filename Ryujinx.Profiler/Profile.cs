@@ -66,6 +66,8 @@ namespace Ryujinx.Profiler
         {
             if (!ProfilingEnabled())
                 return;
+            if (config.Level > _settings.MaxLevel)
+                return;
             _profileInstance.BeginProfile(config);
         }
 
@@ -73,6 +75,8 @@ namespace Ryujinx.Profiler
         public static void End(ProfileConfig config)
         {
             if (!ProfilingEnabled())
+                return;
+            if (config.Level > _settings.MaxLevel)
                 return;
             _profileInstance.EndProfile(config);
         }
