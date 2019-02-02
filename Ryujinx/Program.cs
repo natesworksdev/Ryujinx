@@ -10,6 +10,9 @@ namespace Ryujinx
 {
     class Program
     {
+        static ILogTarget _fileTarget;
+        static ILogTarget _consoleTarget;
+
         static void Main(string[] args)
         {
             Console.Title = "Ryujinx Console";
@@ -22,7 +25,11 @@ namespace Ryujinx
 
             Config.Read(device);
 
-            Logger.Updated += Log.LogMessage;
+            _fileTarget = new AsyncLogTargetWrapper(new FileLogTarget("Ryujinx.log"), 1000, AsyncLogTargetOverflowAction.Block);
+            _consoleTarget = new AsyncLogTargetWrapper(new ConsoleLogTarget(), 1000, AsyncLogTargetOverflowAction.Block);
+
+            Logger.Updated += _fileTarget.Log;
+            Logger.Updated += _consoleTarget.Log;
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
@@ -92,7 +99,8 @@ namespace Ryujinx
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            Log.Close();
+            _fileTarget.Dispose();
+            _consoleTarget.Dispose();
         }
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -103,7 +111,8 @@ namespace Ryujinx
 
             if (e.IsTerminating)
             {
-                Log.Close();
+                _fileTarget.Dispose();
+                _consoleTarget.Dispose();
             }
         }
 
