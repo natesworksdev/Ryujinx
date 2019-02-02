@@ -96,9 +96,62 @@ namespace Ryujinx.Profiler
             {
                 public static ProfileConfig VertexEnd = new ProfileConfig()
                 {
-                    Category     = "GPU",
-                    SessionGroup = "Engine3D",
-                    SessionItem  = "VertexEnd"
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "VertexEnd"
+                };
+
+                public static ProfileConfig ClearBuffers = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "ClearBuffers"
+                };
+
+                public static ProfileConfig SetFrameBuffer = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "SetFrameBuffer",
+                };
+
+                public static ProfileConfig SetZeta = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "SetZeta"
+                };
+
+                public static ProfileConfig UploadShaders = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "UploadShaders"
+                };
+
+                public static ProfileConfig UploadTextures = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "UploadTextures"
+                };
+
+                public static ProfileConfig UploadTexture = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "UploadTexture"
+                };
+
+                public static ProfileConfig UploadConstBuffers = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "UploadConstBuffers"
+                };
+
+                public static ProfileConfig UploadVertexArrays = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "UploadVertexArrays"
+                };
+
+                public static ProfileConfig ConfigureState = new ProfileConfig()
+                {
+                    Category     = "GPU.Engine3D",
+                    SessionGroup = "ConfigureState"
                 };
             }
         }
