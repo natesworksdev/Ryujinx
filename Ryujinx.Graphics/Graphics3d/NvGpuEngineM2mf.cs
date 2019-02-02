@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
 using System.Collections.Generic;
+using Ryujinx.Profiler;
 
 namespace Ryujinx.Graphics.Graphics3d
 {
@@ -37,7 +38,12 @@ namespace Ryujinx.Graphics.Graphics3d
         {
             if (Methods.TryGetValue(MethCall.Method, out NvGpuMethod Method))
             {
+                ProfileConfig profile = Profiles.GPU.EngineM2mf.CallMethod;
+                profile.SessionItem   = Method.Method.Name;
+
+                Profile.Begin(profile);
                 Method(Vmm, MethCall);
+                Profile.End(profile);
             }
             else
             {
@@ -47,6 +53,8 @@ namespace Ryujinx.Graphics.Graphics3d
 
         private void Execute(NvGpuVmm Vmm, GpuMethodCall MethCall)
         {
+            Profile.Begin(Profiles.GPU.EngineM2mf.Execute);
+
             //TODO: Some registers and copy modes are still not implemented.
             int Control = MethCall.Argument;
 
@@ -160,6 +168,8 @@ namespace Ryujinx.Graphics.Graphics3d
             {
                 Vmm.Memory.CopyBytes(SrcPA, DstPA, XCount);
             }
+
+            Profile.End(Profiles.GPU.EngineM2mf.Execute);
         }
 
         private long MakeInt64From2xInt32(NvGpuEngineM2mfReg Reg)

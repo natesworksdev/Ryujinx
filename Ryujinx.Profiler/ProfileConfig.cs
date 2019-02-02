@@ -192,6 +192,51 @@ namespace Ryujinx.Profiler
                     SessionGroup = "ConfigureState"
                 };
             }
+
+            public static class EngineM2mf
+            {
+                public static ProfileConfig CallMethod = new ProfileConfig()
+                {
+                    Category     = "GPU.EngineM2mf",
+                    SessionGroup = "CallMethod",
+                };
+
+                public static ProfileConfig Execute = new ProfileConfig()
+                {
+                    Category     = "GPU.EngineM2mf",
+                    SessionGroup = "Execute",
+                };
+            }
+
+            public static class EngineP2mf
+            {
+                public static ProfileConfig CallMethod = new ProfileConfig()
+                {
+                    Category     = "GPU.EngineP2mf",
+                    SessionGroup = "CallMethod",
+                };
+
+                public static ProfileConfig Execute = new ProfileConfig()
+                {
+                    Category     = "GPU.EngineP2mf",
+                    SessionGroup = "Execute",
+                };
+
+                public static ProfileConfig PushData = new ProfileConfig()
+                {
+                    Category     = "GPU.EngineP2mf",
+                    SessionGroup = "PushData",
+                };
+            }
+
+            public static class Shader
+            {
+                public static ProfileConfig Decompile = new ProfileConfig()
+                {
+                    Category     = "GPU.Shader",
+                    SessionGroup = "Decompile",
+                };
+            }
         }
 
         public static ProfileConfig ServiceCall = new ProfileConfig()

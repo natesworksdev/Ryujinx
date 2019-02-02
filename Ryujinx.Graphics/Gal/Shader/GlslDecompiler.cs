@@ -1,3 +1,4 @@
+using Ryujinx.Profiler;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -118,6 +119,8 @@ namespace Ryujinx.Graphics.Gal.Shader
             long          VpBPosition,
             GalShaderType ShaderType)
         {
+            Profile.Begin(Profiles.GPU.Shader.Decompile);
+
             Header  = new ShaderHeader(Memory, VpAPosition);
             HeaderB = new ShaderHeader(Memory, VpBPosition);
 
@@ -129,11 +132,17 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             Decl = GlslDecl.Merge(DeclVpA, DeclVpB);
 
-            return Decompile();
+            GlslProgram result = Decompile();
+
+            Profile.End(Profiles.GPU.Shader.Decompile);
+
+            return result;
         }
 
         public GlslProgram Decompile(IGalMemory Memory, long Position, GalShaderType ShaderType)
         {
+            Profile.Begin(Profiles.GPU.Shader.Decompile);
+
             Header  = new ShaderHeader(Memory, Position);
             HeaderB = null;
 
@@ -142,7 +151,11 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             Decl = new GlslDecl(Blocks, ShaderType, Header);
 
-            return Decompile();
+            GlslProgram result = Decompile();
+
+            Profile.End(Profiles.GPU.Shader.Decompile);
+
+            return result;
         }
 
         private GlslProgram Decompile()
