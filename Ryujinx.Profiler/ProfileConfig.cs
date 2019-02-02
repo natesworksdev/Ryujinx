@@ -69,6 +69,27 @@ namespace Ryujinx.Profiler
                 return _cachedSession;
             }
         }
+
+        /// <summary>
+        /// This equals overload is vital
+        /// The default comparison is far too slow for the number of comparisons needed because it doesn't know what's important to compare
+        /// </summary>
+        /// <param name="obj">Object to compare to</param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (!(obj is ProfileConfig))
+                return false;
+
+            ProfileConfig cmpObj = (ProfileConfig)obj;
+
+            // Order here is important.
+            // Multiple entries with the same item is considerable less likely that multiple items with the same group.
+            // Likewise for group and category.
+            return (cmpObj.SessionItem  == SessionItem && 
+                    cmpObj.SessionGroup == SessionGroup && 
+                    cmpObj.Category     == Category);
+        }
     }
 
     /// <summary>
