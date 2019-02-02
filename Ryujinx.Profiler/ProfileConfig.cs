@@ -10,6 +10,8 @@ namespace Ryujinx.Profiler
         public string SessionGroup;
         public string SessionItem;
 
+        public int Level;
+
         // Private cached variables
         private string _cachedTag;
         private string _cachedSession;
