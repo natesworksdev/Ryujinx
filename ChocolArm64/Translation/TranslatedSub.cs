@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 
 namespace ChocolArm64.Translation
 {
-    delegate long ArmSubroutine(CpuThreadState register, MemoryManager memory);
+    delegate long ArmSubroutine(CpuThreadState state, MemoryManager memory);
 
     class TranslatedSub
     {
