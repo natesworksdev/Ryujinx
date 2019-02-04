@@ -25,7 +25,7 @@ namespace Ryujinx.Common.Logging
 
         private BlockingCollection<LogEventArgs> _messageQueue;
 
-        private AsyncLogTargetOverflowAction _overflowAction;
+        private readonly int _overflowTimeout;
 
         public AsyncLogTargetWrapper(ILogTarget target)
             : this(target, -1, AsyncLogTargetOverflowAction.Block)
@@ -34,10 +34,8 @@ namespace Ryujinx.Common.Logging
         public AsyncLogTargetWrapper(ILogTarget target, int queueLimit, AsyncLogTargetOverflowAction overflowAction)
         {
             _target = target;
-
-            _overflowAction = overflowAction;
-
             _messageQueue = new BlockingCollection<LogEventArgs>(queueLimit);
+            _overflowTimeout = overflowAction == AsyncLogTargetOverflowAction.Block ? -1 : 0;
 
             _messageThread = new Thread(() => {
                 while (!_messageQueue.IsCompleted)
@@ -65,10 +63,7 @@ namespace Ryujinx.Common.Logging
         {
             if (!_messageQueue.IsAddingCompleted)
             {
-                if(!_messageQueue.TryAdd(e) && _overflowAction == AsyncLogTargetOverflowAction.Block)
-                {
-                    _messageQueue.Add(e);
-                }
+                _messageQueue.TryAdd(e, _overflowTimeout);
             }
         }
 

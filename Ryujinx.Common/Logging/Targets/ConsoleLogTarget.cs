@@ -8,6 +8,8 @@ namespace Ryujinx.Common.Logging
 {
     public class ConsoleLogTarget : ILogTarget
     {
+        private static readonly ObjectPool<StringBuilder> _stringBuilderPool = SharedPools.Default<StringBuilder>();
+
         private static readonly ConcurrentDictionary<LogLevel, ConsoleColor> _logColors;
 
         static ConsoleLogTarget()
@@ -22,46 +24,55 @@ namespace Ryujinx.Common.Logging
 
         public void Log(object sender, LogEventArgs e)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = _stringBuilderPool.Allocate();
 
-            sb.AppendFormat(@"{0:hh\:mm\:ss\.fff}", e.Time);
-            sb.Append(" | ");
-            sb.AppendFormat("{0:d4}", e.ThreadId);
-            sb.Append(' ');
-            sb.Append(e.Message);
-
-            if (e.Data != null)
+            try
             {
-                PropertyInfo[] props = e.Data.GetType().GetProperties();
+                sb.Clear();
 
+                sb.AppendFormat(@"{0:hh\:mm\:ss\.fff}", e.Time);
+                sb.Append(" | ");
+                sb.AppendFormat("{0:d4}", e.ThreadId);
                 sb.Append(' ');
+                sb.Append(e.Message);
 
-                foreach (var prop in props)
+                if (e.Data != null)
                 {
-                    sb.Append(prop.Name);
-                    sb.Append(": ");
-                    sb.Append(prop.GetValue(e.Data));
-                    sb.Append(" - ");
+                    PropertyInfo[] props = e.Data.GetType().GetProperties();
+
+                    sb.Append(' ');
+
+                    foreach (var prop in props)
+                    {
+                        sb.Append(prop.Name);
+                        sb.Append(": ");
+                        sb.Append(prop.GetValue(e.Data));
+                        sb.Append(" - ");
+                    }
+
+                    // We remove the final '-' from the string
+                    if (props.Length > 0)
+                    {
+                        sb.Remove(sb.Length - 3, 3);
+                    }
                 }
 
-                // We remove the final '-' from the string
-                if (props.Length > 0)
+                if (_logColors.TryGetValue(e.Level, out ConsoleColor color))
                 {
-                    sb.Remove(sb.Length - 3, 3);
+                    Console.ForegroundColor = color;
+
+                    Console.WriteLine(sb.ToString());
+
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.WriteLine(sb.ToString());
                 }
             }
-
-            if (_logColors.TryGetValue(e.Level, out ConsoleColor color))
+            finally
             {
-                Console.ForegroundColor = color;
-
-                Console.WriteLine(sb.ToString());
-
-                Console.ResetColor();
-            }
-            else
-            {
-                Console.WriteLine(sb.ToString());
+                _stringBuilderPool.Release(sb);
             }
         }
 

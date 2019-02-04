@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Ryujinx.Common
+{
+    public static class SharedPools
+    {
+        private static class DefaultPool<T>
+            where T : class, new()
+        {
+            public static readonly ObjectPool<T> Instance = new ObjectPool<T>(() => new T(), 20);
+        }
+
+        public static ObjectPool<T> Default<T>() where T : class, new()
+        {
+            return DefaultPool<T>.Instance;
+        }
+    }
+}

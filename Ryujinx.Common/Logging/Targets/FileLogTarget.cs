@@ -6,54 +6,61 @@ namespace Ryujinx.Common.Logging
 {
     public class FileLogTarget : ILogTarget
     {
-        private StreamWriter _logWriter;
+        private static readonly ObjectPool<StringBuilder> _stringBuilderPool = SharedPools.Default<StringBuilder>();
 
-        public string Path { get; private set; }
-        
+        private readonly StreamWriter _logWriter;
+
         public FileLogTarget(string path)
             : this(path, FileShare.Read, FileMode.Append)
         { }
 
         public FileLogTarget(string path, FileShare fileShare, FileMode fileMode)
         {
-            this.Path = path;
-
-            this._logWriter = new StreamWriter(File.Open(path, fileMode, FileAccess.Write, fileShare));
+            _logWriter = new StreamWriter(File.Open(path, fileMode, FileAccess.Write, fileShare));
         }
 
         public void Log(object sender, LogEventArgs e)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = _stringBuilderPool.Allocate();
 
-            sb.AppendFormat(@"{0:hh\:mm\:ss\.fff}", e.Time);
-            sb.Append(" | ");
-            sb.AppendFormat("{0:d4}", e.ThreadId);
-            sb.Append(' ');
-            sb.Append(e.Message);
-
-            if (e.Data != null)
+            try
             {
-                PropertyInfo[] props = e.Data.GetType().GetProperties();
+                sb.Clear();
 
+                sb.AppendFormat(@"{0:hh\:mm\:ss\.fff}", e.Time);
+                sb.Append(" | ");
+                sb.AppendFormat("{0:d4}", e.ThreadId);
                 sb.Append(' ');
+                sb.Append(e.Message);
 
-                foreach (var prop in props)
+                if (e.Data != null)
                 {
-                    sb.Append(prop.Name);
-                    sb.Append(": ");
-                    sb.Append(prop.GetValue(e.Data));
-                    sb.Append(" - ");
+                    PropertyInfo[] props = e.Data.GetType().GetProperties();
+
+                    sb.Append(' ');
+
+                    foreach (var prop in props)
+                    {
+                        sb.Append(prop.Name);
+                        sb.Append(": ");
+                        sb.Append(prop.GetValue(e.Data));
+                        sb.Append(" - ");
+                    }
+
+                    // We remove the final '-' from the string
+                    if (props.Length > 0)
+                    {
+                        sb.Remove(sb.Length - 3, 3);
+                    }
                 }
 
-                // We remove the final '-' from the string
-                if (props.Length > 0)
-                {
-                    sb.Remove(sb.Length - 3, 3);
-                }
+                _logWriter.WriteLine(sb.ToString());
+                _logWriter.Flush();
             }
-
-            _logWriter.WriteLine(sb.ToString());
-            _logWriter.Flush();
+            finally
+            {
+                _stringBuilderPool.Release(sb);
+            }
         }
 
         public void Dispose()
