@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 
 namespace Ryujinx.Common.Logging
 {
     public class ConsoleLogTarget : ILogTarget
     {
-        private static readonly ObjectPool<StringBuilder> _stringBuilderPool = SharedPools.Default<StringBuilder>();
-
         private static readonly ConcurrentDictionary<LogLevel, ConsoleColor> _logColors;
+
+        private readonly ILogFormatter _formatter;
 
         static ConsoleLogTarget()
         {
@@ -22,57 +19,24 @@ namespace Ryujinx.Common.Logging
             };
         }
 
-        public void Log(object sender, LogEventArgs e)
+        public ConsoleLogTarget()
         {
-            StringBuilder sb = _stringBuilderPool.Allocate();
+            _formatter = new DefaultLogFormatter();
+        }
 
-            try
+        public void Log(object sender, LogEventArgs args)
+        {
+            if (_logColors.TryGetValue(args.Level, out ConsoleColor color))
             {
-                sb.Clear();
+                Console.ForegroundColor = color;
 
-                sb.AppendFormat(@"{0:hh\:mm\:ss\.fff}", e.Time);
-                sb.Append(" | ");
-                sb.AppendFormat("{0:d4}", e.ThreadId);
-                sb.Append(' ');
-                sb.Append(e.Message);
+                Console.WriteLine(_formatter.Format(args));
 
-                if (e.Data != null)
-                {
-                    PropertyInfo[] props = e.Data.GetType().GetProperties();
-
-                    sb.Append(' ');
-
-                    foreach (var prop in props)
-                    {
-                        sb.Append(prop.Name);
-                        sb.Append(": ");
-                        sb.Append(prop.GetValue(e.Data));
-                        sb.Append(" - ");
-                    }
-
-                    // We remove the final '-' from the string
-                    if (props.Length > 0)
-                    {
-                        sb.Remove(sb.Length - 3, 3);
-                    }
-                }
-
-                if (_logColors.TryGetValue(e.Level, out ConsoleColor color))
-                {
-                    Console.ForegroundColor = color;
-
-                    Console.WriteLine(sb.ToString());
-
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.WriteLine(sb.ToString());
-                }
+                Console.ResetColor();
             }
-            finally
+            else
             {
-                _stringBuilderPool.Release(sb);
+                Console.WriteLine(_formatter.Format(args));
             }
         }
 
