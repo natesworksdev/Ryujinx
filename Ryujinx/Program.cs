@@ -20,7 +20,7 @@ namespace Ryujinx
 
             Switch device = new Switch(renderer, audioOut);
 
-            Configuration.Load("Config.json");
+            Configuration.Load("Config.jsonc");
             Configuration.Configure(device);
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;

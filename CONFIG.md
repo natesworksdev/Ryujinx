@@ -1,6 +1,6 @@
 ## Config File
 
-`Config.json` should be present in executable folder. The available settings follow:
+`Config.jsonc` should be present in executable folder. The available settings follow:
 
 - `Logging_Enable_Info` *(bool)*
 
