@@ -1,6 +1,5 @@
 using OpenTK.Input;
 using Ryujinx.HLE.Input;
-using Utf8Json;
 
 namespace Ryujinx.UI.Input
 {

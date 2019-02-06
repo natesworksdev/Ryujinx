@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ryujinx.Common
+﻿namespace Ryujinx.Common
 {
     public static class SharedPools
     {

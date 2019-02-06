@@ -2,7 +2,6 @@
 using OpenTK.Input;
 using Ryujinx.HLE.Input;
 using System;
-using System.Runtime.Serialization;
 
 namespace Ryujinx.UI.Input
 {

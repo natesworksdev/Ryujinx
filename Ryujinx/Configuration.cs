@@ -7,16 +7,9 @@ using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Input;
 using Ryujinx.UI.Input;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Threading.Tasks;
 using Utf8Json;
-using Utf8Json.Formatters;
-using Utf8Json.Internal;
 using Utf8Json.Resolvers;
 
 namespace Ryujinx
