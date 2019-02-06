@@ -574,7 +574,7 @@
               "$id": "#/properties/keyboard_controls/properties/right_joycon/properties/button_a",
               "$ref": "#/definitions/key",
               "title": "Button A",
-              "default": "A"
+              "default": "Z"
             },
             "button_b": {
               "$id": "#/properties/keyboard_controls/properties/right_joycon/properties/button_b",
