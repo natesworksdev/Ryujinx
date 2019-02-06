@@ -32,7 +32,7 @@
     // Enable or Disable Docked Mode
     "docked_mode": false,
     
-    // Enable Game Vsync
+    // Enable or Disable Game Vsync
     "enable_vsync": true,
     
     // Enable or Disable Multi-core scheduling of threads
