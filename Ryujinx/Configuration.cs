@@ -26,7 +26,7 @@ namespace Ryujinx
         /// <summary>
         /// The default configuration instance
         /// </summary>
-        public static Configuration Default { get; private set; }
+        public static Configuration Instance { get; private set; }
 
         /// <summary>
         /// Dumps shaders in this local directory
@@ -94,17 +94,17 @@ namespace Ryujinx
         public bool EnableFsIntegrityChecks { get; private set; }
 
         /// <summary>
-        /// 
+        ///  The primary controller's type
         /// </summary>
         public HidControllerType ControllerType { get; private set; }
 
         /// <summary>
-        /// 
+        /// Keyboard control bindings
         /// </summary>
         public NpadKeyboard KeyboardControls { get; private set; }
 
         /// <summary>
-        /// 
+        /// Controller control bindings
         /// </summary>
         public NpadController GamepadControls { get; private set; }
 
@@ -121,7 +121,7 @@ namespace Ryujinx
 
             using (Stream stream = File.OpenRead(path))
             {
-                Default = JsonSerializer.Deserialize<Configuration>(stream, resolver);
+                Instance = JsonSerializer.Deserialize<Configuration>(stream, resolver);
             }
         }
 
@@ -131,11 +131,14 @@ namespace Ryujinx
         /// <param name="path">The path to the JSON configuration file</param>
         public static async Task LoadAsync(string path)
         {
-            var resolver = CompositeResolver.Create(StandardResolver.AllowPrivateSnakeCase);
+            var resolver = CompositeResolver.Create(
+                new[] { new ConfigurationEnumFormatter<Key>() },
+                new[] { StandardResolver.AllowPrivateSnakeCase }
+            );
 
             using (Stream stream = File.OpenRead(path))
             {
-                Default = await JsonSerializer.DeserializeAsync<Configuration>(stream, resolver);
+                Instance = await JsonSerializer.DeserializeAsync<Configuration>(stream, resolver);
             }
         }
 
@@ -145,12 +148,12 @@ namespace Ryujinx
         /// <param name="device">The instance to configure</param>
         public static void Configure(Switch device)
         {
-            if (Default == null)
+            if (Instance == null)
             {
                 throw new InvalidOperationException("Configuration has not been loaded yet.");
             }
 
-            GraphicsConfig.ShadersDumpPath = Default.GraphicsShadersDumpPath;
+            GraphicsConfig.ShadersDumpPath = Instance.GraphicsShadersDumpPath;
 
             Logger.AddTarget(new AsyncLogTargetWrapper(
                 new ConsoleLogTarget(),
@@ -158,7 +161,7 @@ namespace Ryujinx
                 AsyncLogTargetOverflowAction.Block
             ));
 
-            if (Default.EnableFileLog)
+            if (Instance.EnableFileLog)
             {
                 Logger.AddTarget(new AsyncLogTargetWrapper(
                     new FileLogTarget("Ryujinx.log"),
@@ -167,49 +170,49 @@ namespace Ryujinx
                 ));
             }
 
-            Logger.SetEnable(LogLevel.Debug,   Default.LoggingEnableDebug);
-            Logger.SetEnable(LogLevel.Stub,    Default.LoggingEnableStub);
-            Logger.SetEnable(LogLevel.Info,    Default.LoggingEnableInfo);
-            Logger.SetEnable(LogLevel.Warning, Default.LoggingEnableWarn);
-            Logger.SetEnable(LogLevel.Error,   Default.LoggingEnableError);
+            Logger.SetEnable(LogLevel.Debug,   Instance.LoggingEnableDebug);
+            Logger.SetEnable(LogLevel.Stub,    Instance.LoggingEnableStub);
+            Logger.SetEnable(LogLevel.Info,    Instance.LoggingEnableInfo);
+            Logger.SetEnable(LogLevel.Warning, Instance.LoggingEnableWarn);
+            Logger.SetEnable(LogLevel.Error,   Instance.LoggingEnableError);
 
-            if (Default.LoggingFilteredClasses.Length > 0)
+            if (Instance.LoggingFilteredClasses.Length > 0)
             {
                 foreach (var logClass in EnumExtensions.GetValues<LogClass>())
                 {
                     Logger.SetEnable(logClass, false);
                 }
 
-                foreach (var logClass in Default.LoggingFilteredClasses)
+                foreach (var logClass in Instance.LoggingFilteredClasses)
                 {
                     Logger.SetEnable(logClass, true);
                 }
             }
 
-            device.EnableDeviceVsync = Default.EnableVsync;
+            device.EnableDeviceVsync = Instance.EnableVsync;
 
-            device.System.State.DockedMode = Default.DockedMode;
+            device.System.State.DockedMode = Instance.DockedMode;
 
-            device.System.State.SetLanguage(Default.SystemLanguage);
+            device.System.State.SetLanguage(Instance.SystemLanguage);
 
-            if (Default.EnableMultiCoreScheduling)
+            if (Instance.EnableMultiCoreScheduling)
             {
                 device.System.EnableMultiCoreScheduling();
             }
 
-            device.System.FsIntegrityCheckLevel = Default.EnableFsIntegrityChecks
+            device.System.FsIntegrityCheckLevel = Instance.EnableFsIntegrityChecks
                 ? IntegrityCheckLevel.ErrorOnInvalid
                 : IntegrityCheckLevel.None;
 
-            if(Default.GamepadControls.Enabled)
+            if(Instance.GamepadControls.Enabled)
             {
-                if (GamePad.GetName(Default.GamepadControls.Index) == "Unmapped Controller")
+                if (GamePad.GetName(Instance.GamepadControls.Index) == "Unmapped Controller")
                 {
-                    Default.GamepadControls.SetEnabled(false);
+                    Instance.GamepadControls.SetEnabled(false);
                 }
             }
 
-            device.Hid.InitilizePrimaryController(Default.ControllerType);
+            device.Hid.InitilizePrimaryController(Instance.ControllerType);
         }
 
         private class ConfigurationEnumFormatter<T> : IJsonFormatter<T>

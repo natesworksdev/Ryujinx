@@ -15,8 +15,8 @@ namespace Ryujinx.Common
 
         public ObjectPool(Func<T> factory, int size)
         {
+            _items   = new T[size - 1];
             _factory = factory;
-            _items = new T[size - 1];
         }
 
         public T Allocate()
@@ -69,7 +69,6 @@ namespace Ryujinx.Common
                 if (items[i] == null)
                 {
                     items[i] = obj;
-
                     break;
                 }
             }

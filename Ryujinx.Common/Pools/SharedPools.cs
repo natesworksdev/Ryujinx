@@ -12,7 +12,8 @@ namespace Ryujinx.Common
             public static readonly ObjectPool<T> Instance = new ObjectPool<T>(() => new T(), 20);
         }
 
-        public static ObjectPool<T> Default<T>() where T : class, new()
+        public static ObjectPool<T> Default<T>()
+            where T : class, new()
         {
             return DefaultPool<T>.Instance;
         }

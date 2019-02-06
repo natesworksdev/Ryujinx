@@ -15,7 +15,7 @@ namespace Ryujinx.Common.Logging
 
         public JsonLogTarget(Stream stream, bool leaveOpen)
         {
-            _stream = stream;
+            _stream    = stream;
             _leaveOpen = leaveOpen;
         }
 

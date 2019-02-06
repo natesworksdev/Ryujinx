@@ -10,23 +10,23 @@ namespace Ryujinx.UI.Input
     {
         Invalid,
         LStick,
-        DPadUp,
-        DPadDown,
-        DPadLeft,
-        DPadRight,
-        Back,
-        LShoulder,
         RStick,
-        A,
-        B,
-        X,
-        Y,
-        Start,
+        LShoulder,
         RShoulder,
         LTrigger,
         RTrigger,
         LJoystick,
-        RJoystick
+        RJoystick,
+        DPadUp,
+        DPadDown,
+        DPadLeft,
+        DPadRight,
+        Start,
+        Back,
+        A,
+        B,
+        X,
+        Y
     }
 
     public struct NpadControllerLeft
@@ -60,17 +60,17 @@ namespace Ryujinx.UI.Input
         /// <summary>
         /// Enables or disables controller support
         /// </summary>
-        public bool  Enabled          { get; private set; }
+        public bool Enabled { get; private set; }
 
         /// <summary>
         /// Controller Device Index
         /// </summary>
-        public int   Index            { get; private set; }
+        public int Index { get; private set; }
 
         /// <summary>
         /// Controller Analog Stick Deadzone
         /// </summary>
-        public float Deadzone         { get; private set; }
+        public float Deadzone { get; private set; }
 
         /// <summary>
         /// Controller Trigger Threshold
@@ -80,7 +80,7 @@ namespace Ryujinx.UI.Input
         /// <summary>
         /// Left JoyCon Controller Bindings
         /// </summary>
-        public NpadControllerLeft  LeftJoycon  { get; private set; }
+        public NpadControllerLeft LeftJoycon { get; private set; }
 
         /// <summary>
         /// Right JoyCon Controller Bindings
