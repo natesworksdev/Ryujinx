@@ -111,9 +111,8 @@ namespace Ryujinx.HLE
         {
             if (disposing)
             {
-                //System.Dispose();
-
-                //VsyncEvent.Dispose();
+                System.Dispose();
+                VsyncEvent.Dispose();
             }
         }
     }

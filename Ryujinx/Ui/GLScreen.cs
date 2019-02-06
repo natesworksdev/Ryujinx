@@ -142,24 +142,24 @@ namespace Ryujinx
             {
                 KeyboardState keyboard = _keyboard.Value;
 
-                currentButton = Config.NpadKeyboard.GetButtons(keyboard);
+                currentButton = Configuration.Default.KeyboardControls.GetButtons(keyboard);
 
-                (leftJoystickDx, leftJoystickDy) = Config.NpadKeyboard.GetLeftStick(keyboard);
+                (leftJoystickDx, leftJoystickDy) = Configuration.Default.KeyboardControls.GetLeftStick(keyboard);
 
-                (rightJoystickDx, rightJoystickDy) = Config.NpadKeyboard.GetRightStick(keyboard);
+                (rightJoystickDx, rightJoystickDy) = Configuration.Default.KeyboardControls.GetRightStick(keyboard);
             }
             
-            currentButton |= Config.NpadController.GetButtons();
+            currentButton |= Configuration.Default.GamepadControls.GetButtons();
 
             //Keyboard has priority stick-wise
             if (leftJoystickDx == 0 && leftJoystickDy == 0)
             {
-                (leftJoystickDx, leftJoystickDy) = Config.NpadController.GetLeftStick();
+                (leftJoystickDx, leftJoystickDy) = Configuration.Default.GamepadControls.GetLeftStick();
             }
 
             if (rightJoystickDx == 0 && rightJoystickDy == 0)
             {
-                (rightJoystickDx, rightJoystickDy) = Config.NpadController.GetRightStick();
+                (rightJoystickDx, rightJoystickDy) = Configuration.Default.GamepadControls.GetRightStick();
             }
 
             leftJoystick = new HidJoystickPosition

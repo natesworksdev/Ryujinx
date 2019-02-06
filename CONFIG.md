@@ -1,6 +1,6 @@
 ## Config File
 
-`Ryujinx.conf` should be present in executable folder (It's an *.ini file) following this format:
+`Config.json` should be present in executable folder. The available settings follow:
 
 - `Logging_Enable_Info` *(bool)*
 
