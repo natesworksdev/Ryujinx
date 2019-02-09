@@ -26,13 +26,27 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             public float Advance;
         }
 
-        private const int SheetWidth = 256;
-        private const int SheetHeight = 256;
+        private const int SheetWidth  = 1024;
+        private const int SheetHeight = 512;
         private int ScreenWidth, ScreenHeight;
         private int CharacterTextureSheet;
         private CharacterInfo[] characters;
 
         public Color fontColor { get; set; } = Color.Black;
+
+        private string GetFontPath()
+        {
+            string fontFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+
+            // Only uses Arial, add more font here if wanted
+            string path = Path.Combine(fontFolder, "arial.ttf");
+            if (File.Exists(path))
+            {
+                return path;
+            }
+
+            throw new Exception($"Profiler exception. Required font Courier New or Arial not installed to {fontFolder}");
+        }
 
         public void InitalizeTextures()
         {
@@ -47,8 +61,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             characters = new CharacterInfo[94];
 
             // Get font
-            var font = new FontFace(File.OpenRead(Path.Combine(Environment.GetFolderPath(
-                Environment.SpecialFolder.ApplicationData), @"RyuFs\system\fonts\FontStandard.ttf")));
+            var font = new FontFace(File.OpenRead(GetFontPath()));
 
             // Update raw data for each character
             for (int i = 0; i < 94; i++)
@@ -134,7 +147,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
                 {
                     DrawChar(charInfo, x, right, y + height * (charInfo.Height - charInfo.BearingY), y - height * charInfo.BearingY);
                 }
-                x = right + charInfo.Advance * charInfo.AspectRatio;
+                x = right + charInfo.Advance * charInfo.AspectRatio + 1;
             }
 
             if (draw)
@@ -164,7 +177,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
 
         public unsafe Surface RenderSurface(char c, FontFace font, out float xBearing, out float yBearing, out float advance)
         {
-            var glyph = font.GetGlyph(c, 32);
+            var glyph = font.GetGlyph(c, 64);
             xBearing  = glyph.HorizontalMetrics.Bearing.X;
             yBearing  = glyph.RenderHeight - glyph.HorizontalMetrics.Bearing.Y;
             advance   = glyph.HorizontalMetrics.Advance;
