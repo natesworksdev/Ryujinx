@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using OpenTK;
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using Ryujinx.Common;
@@ -93,11 +94,12 @@ namespace Ryujinx.Profiler.UI
         
 
         public ProfileWindow()
-            : base(1280, 720)
+                               // Graphigs mode enables 2xAA
+            : base(1280, 720, new GraphicsMode(new ColorFormat(8, 8, 8, 8), 1, 1, 2))
         {
             Title    = "Profiler";
-            Location = new Point(DisplayDevice.Default.Width - 1280,
-                              (DisplayDevice.Default.Height - 720) - 50);
+            Location = new Point(DisplayDevice.Default.Width  - 1280,
+                                (DisplayDevice.Default.Height - 720) - 50);
 
             if (Profile.UpdateRate <= 0)
             {
