@@ -557,6 +557,8 @@ namespace Ryujinx.HLE.HOS
                     ? (IExecutable)new NxRelocatableObject(input)
                     : new NxStaticObject(input);
 
+                ContentManager.LoadEntries();
+
                 ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
             }
         }
