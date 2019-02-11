@@ -19,5 +19,20 @@ namespace SoundIOSharp
 		{
 			Marshal.WriteInt64 (handle, offset, BitConverter.DoubleToInt64Bits (value));
 		}
+
+        public static float ReadFloat (IntPtr handle, int offset = 0)
+		{
+			return BitConverter.Int32BitsToSingle (Marshal.ReadInt32 (handle, offset));
+		}
+
+		public static void WriteFloat (IntPtr handle, float value)
+		{
+            WriteFloat(handle, 0, value);
+		}
+
+		public static void WriteFloat (IntPtr handle, int offset, float value)
+		{
+			Marshal.WriteInt32 (handle, offset, BitConverter.SingleToInt32Bits (value));
+		}
 	}
 }
