@@ -77,7 +77,7 @@ namespace SoundIOSharp
 		}
 		static readonly int software_latency_offset = (int)Marshal.OffsetOf<SoundIoOutStream> ("software_latency");
 
-        public float Volume {
+		public float Volume {
 			get { return MarshalEx.ReadFloat (handle, volume_offset); }
 			set { MarshalEx.WriteFloat (handle, volume_offset, value); }
 		}
@@ -244,7 +244,7 @@ namespace SoundIOSharp
 			}
 		}
 
-        public void SetVolume (double volume)
+		public void SetVolume (double volume)
 		{
 			var ret = (SoundIoError) Natives.soundio_outstream_set_volume (handle, volume);
 			if (ret != SoundIoError.SoundIoErrorNone)
