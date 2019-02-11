@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
         // GetApplicationPid() -> u64
         public long GetApplicationPid(ServiceCtx context)
         {
-            // FIXME: This is wrong but needed to make hbmenu works
+            // FIXME: This is wrong but needed to make hb loader works
             // TODO: Change this when we will have a way to process via a PM like interface.
             long pid = context.Process.Pid;
 

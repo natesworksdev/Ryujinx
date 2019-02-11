@@ -102,6 +102,8 @@ namespace Ryujinx.HLE.HOS
 
         public Horizon(Switch device)
         {
+            ControlData = new Nacp();
+
             Device = device;
 
             State = new SystemStateMgr();
