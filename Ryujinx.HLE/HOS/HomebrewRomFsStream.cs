@@ -65,5 +65,13 @@ namespace Ryujinx.HLE.HOS
         {
             throw new NotImplementedException();
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _baseStream.Dispose();
+            }
+        }
     }
 }
