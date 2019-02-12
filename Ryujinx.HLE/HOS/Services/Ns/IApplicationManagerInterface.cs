@@ -64,10 +64,9 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             context.Memory.WriteBytes(position, isbn);
             position += isbn.Length;
 
-            context.Memory.WriteByte(position, nacp.StartupUserAccount);
-            context.Memory.WriteByte(position + 1, nacp.TouchScreenUsageMode);
-            context.Memory.WriteByte(position + 2, nacp.AocRegistrationType);
-            position += 3;
+            context.Memory.WriteByte(position++, nacp.StartupUserAccount);
+            context.Memory.WriteByte(position++, nacp.TouchScreenUsageMode);
+            context.Memory.WriteByte(position++, nacp.AocRegistrationType);
 
             context.Memory.WriteInt32(position, nacp.AttributeFlag);
             position += 4;
@@ -78,19 +77,17 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             context.Memory.WriteUInt32(position, nacp.ParentalControlFlag);
             position += 4;
 
-            context.Memory.WriteByte(position, nacp.Screenshot);
-            context.Memory.WriteByte(position + 1, nacp.VideoCapture);
-            context.Memory.WriteByte(position + 2, nacp.DataLossConfirmation);
-            context.Memory.WriteByte(position + 3, nacp.PlayLogPolicy);
-            position += 4;
+            context.Memory.WriteByte(position++, nacp.Screenshot);
+            context.Memory.WriteByte(position++, nacp.VideoCapture);
+            context.Memory.WriteByte(position++, nacp.DataLossConfirmation);
+            context.Memory.WriteByte(position++, nacp.PlayLogPolicy);
 
             context.Memory.WriteUInt64(position, nacp.PresenceGroupId);
             position += 8;
 
             for (int i = 0; i < nacp.RatingAge.Length; i++)
             {
-                context.Memory.WriteSByte(position, nacp.RatingAge[i]);
-                position++;
+                context.Memory.WriteSByte(position++, nacp.RatingAge[i]);
             }
 
             byte[] displayVersion = new byte[0x10];
@@ -142,19 +139,18 @@ namespace Ryujinx.HLE.HOS.Services.Ns
                 position += 8;
             }
 
-            context.Memory.WriteByte(position, nacp.LogoType);
-            context.Memory.WriteByte(position + 1, nacp.LogoHandling);
-            context.Memory.WriteByte(position + 2, nacp.RuntimeAddOnContentInstall);
+            context.Memory.WriteByte(position++, nacp.LogoType);
+            context.Memory.WriteByte(position++, nacp.LogoHandling);
+            context.Memory.WriteByte(position++, nacp.RuntimeAddOnContentInstall);
 
             byte[] reserved000 = new byte[0x3];
-            context.Memory.WriteBytes(position + 3, reserved000);
-            position += 3;
+            context.Memory.WriteBytes(position, reserved000);
             position += reserved000.Length;
 
-            context.Memory.WriteByte(position, nacp.CrashReport);
-            context.Memory.WriteByte(position + 1, nacp.Hdcp);
-            context.Memory.WriteUInt64(position + 2, nacp.SeedForPseudoDeviceId);
-            position += 10;
+            context.Memory.WriteByte(position++, nacp.CrashReport);
+            context.Memory.WriteByte(position++, nacp.Hdcp);
+            context.Memory.WriteUInt64(position, nacp.SeedForPseudoDeviceId);
+            position += 8;
 
             byte[] bcatPassphrase = new byte[65];
             if (nacp.BcatPassphrase != null)
@@ -166,8 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             context.Memory.WriteBytes(position, bcatPassphrase);
             position += bcatPassphrase.Length;
 
-            context.Memory.WriteByte(position, nacp.Reserved01);
-            position++;
+            context.Memory.WriteByte(position++, nacp.Reserved01);
 
             byte[] reserved02 = new byte[0x6];
             context.Memory.WriteBytes(position, reserved02);
@@ -218,14 +213,9 @@ namespace Ryujinx.HLE.HOS.Services.Ns
                 position += 8;
             }
 
-            context.Memory.WriteByte(position, nacp.PlayLogQueryCapability);
-            position++;
-
-            context.Memory.WriteByte(position, nacp.RepairFlag);
-            position++;
-
-            context.Memory.WriteByte(position, nacp.ProgramIndex);
-            position++;
+            context.Memory.WriteByte(position++, nacp.PlayLogQueryCapability);
+            context.Memory.WriteByte(position++, nacp.RepairFlag);
+            context.Memory.WriteByte(position++, nacp.ProgramIndex);
 
             return 0;
         }
