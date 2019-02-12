@@ -377,11 +377,11 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             if (_provider.FileExists(path) || _provider.DirectoryExists(path))
             {
-                (DateTime creationTime, DateTime modifiedTime, DateTime accessTime) = _provider.GetFileTimeStampRaw(path);
+                FileTimestamp timestamp = _provider.GetFileTimeStampRaw(path);
 
-                context.ResponseData.Write(new DateTimeOffset(creationTime).ToUnixTimeSeconds());
-                context.ResponseData.Write(new DateTimeOffset(modifiedTime).ToUnixTimeSeconds());
-                context.ResponseData.Write(new DateTimeOffset(accessTime).ToUnixTimeSeconds());
+                context.ResponseData.Write(new DateTimeOffset(timestamp.CreationDateTime).ToUnixTimeSeconds());
+                context.ResponseData.Write(new DateTimeOffset(timestamp.ModifiedDateTime).ToUnixTimeSeconds());
+                context.ResponseData.Write(new DateTimeOffset(timestamp.LastAccessDateTime).ToUnixTimeSeconds());
 
                 byte[] data = new byte[8];
 

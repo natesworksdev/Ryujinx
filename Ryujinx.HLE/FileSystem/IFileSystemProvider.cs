@@ -38,6 +38,6 @@ namespace Ryujinx.HLE.FileSystem
 
         long GetTotalSpace(ServiceCtx context);
 
-        (DateTime, DateTime, DateTime) GetFileTimeStampRaw(string name);
+        FileTimestamp GetFileTimeStampRaw(string name);
     }
 }

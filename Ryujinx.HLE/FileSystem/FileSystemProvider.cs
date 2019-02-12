@@ -282,28 +282,33 @@ namespace Ryujinx.HLE.FileSystem
         }
 
 
-        public (DateTime, DateTime, DateTime) GetFileTimeStampRaw(string name)
+        public FileTimestamp GetFileTimeStampRaw(string name)
         {
             CheckIfDescendentOfRootPath(name);
 
-            DateTime creationDate   = DateTime.UnixEpoch;
-            DateTime modifiedDate   = DateTime.UnixEpoch;
-            DateTime lastAccessDate = DateTime.UnixEpoch;
+            DateTime creationDateTime   = DateTime.UnixEpoch;
+            DateTime modifiedDateTime   = DateTime.UnixEpoch;
+            DateTime lastAccessDateTime = DateTime.UnixEpoch;
 
             if (File.Exists(name))
             {
-                creationDate = File.GetCreationTime(name);
-                modifiedDate = File.GetLastWriteTime(name);
-                lastAccessDate = File.GetLastAccessTime(name);
+                creationDateTime   = File.GetCreationTime(name);
+                modifiedDateTime   = File.GetLastWriteTime(name);
+                lastAccessDateTime = File.GetLastAccessTime(name);
             }
             else if (Directory.Exists(name))
             {
-                creationDate = Directory.GetCreationTime(name);
-                modifiedDate = Directory.GetLastWriteTime(name);
-                lastAccessDate = Directory.GetLastAccessTime(name);
+                creationDateTime   = Directory.GetCreationTime(name);
+                modifiedDateTime   = Directory.GetLastWriteTime(name);
+                lastAccessDateTime = Directory.GetLastAccessTime(name);
             }
 
-            return (creationDate, modifiedDate, lastAccessDate);
+            return new FileTimestamp
+            {
+                CreationDateTime   = creationDateTime,
+                ModifiedDateTime   = modifiedDateTime,
+                LastAccessDateTime = lastAccessDateTime
+            };
         }
     }
 }

@@ -161,7 +161,7 @@ namespace Ryujinx.HLE.FileSystem
             throw new NotSupportedException();
         }
 
-        public (DateTime, DateTime, DateTime) GetFileTimeStampRaw(string name)
+        public FileTimestamp GetFileTimeStampRaw(string name)
         {
             throw new NotImplementedException();
         }
