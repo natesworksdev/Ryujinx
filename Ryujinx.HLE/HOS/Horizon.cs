@@ -585,7 +585,7 @@ namespace Ryujinx.HLE.HOS
 
                             if (romfsSize != 0)
                             {
-                                Device.FileSystem.SetRomFs(new HomebrewRomFs(input, obj.FileSize + (long)romfsOffset));
+                                Device.FileSystem.SetRomFs(new HomebrewRomFsStream(input, obj.FileSize + (long)romfsOffset));
                             }
                         }
                         else

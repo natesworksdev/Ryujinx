@@ -3,36 +3,36 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS
 {
-    class HomebrewRomFs : Stream
+    class HomebrewRomFsStream : Stream
     {
         private Stream _baseStream;
-        private long   _basePosition;
+        private long   _positionOffset;
 
-        public HomebrewRomFs(Stream baseStream, long basePosition)
+        public HomebrewRomFsStream(Stream baseStream, long positionOffset)
         {
-            _baseStream   = baseStream;
-            _basePosition = basePosition;
+            _baseStream     = baseStream;
+            _positionOffset = positionOffset;
 
-            _baseStream.Position = _basePosition;
+            _baseStream.Position = _positionOffset;
         }
 
         public override bool CanRead => _baseStream.CanRead;
 
         public override bool CanSeek => _baseStream.CanSeek;
 
-        public override bool CanWrite => _baseStream.CanWrite;
+        public override bool CanWrite => false;
 
-        public override long Length => _baseStream.Length - _basePosition;
+        public override long Length => _baseStream.Length - _positionOffset;
 
         public override long Position
         {
             get
             {
-                return _baseStream.Position - _basePosition;
+                return _baseStream.Position - _positionOffset;
             }
             set
             {
-                _baseStream.Position = value + _basePosition;
+                _baseStream.Position = value + _positionOffset;
             }
         }
 
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (origin == SeekOrigin.Begin)
             {
-                offset += _basePosition;
+                offset += _positionOffset;
             }
 
            return _baseStream.Seek(offset, origin);
