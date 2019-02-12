@@ -349,6 +349,26 @@ namespace ChocolArm64.Instructions
             EmitScalarSetF(context, op.Rd, op.Size);
         }
 
+        public static void Ucvtf_Gp_Fixed(ILEmitterCtx context)
+        {
+            OpCodeSimdCvt64 op = (OpCodeSimdCvt64)context.CurrOp;
+
+            context.EmitLdintzr(op.Rn);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U4);
+            }
+
+            context.Emit(OpCodes.Conv_R_Un);
+
+            EmitFloatCast(context, op.Size);
+
+            EmitI2fFBitsMul(context, op.Size, op.FBits);
+
+            EmitScalarSetF(context, op.Rd, op.Size);
+        }
+
         public static void Ucvtf_S(ILEmitterCtx context)
         {
             OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
@@ -530,9 +550,7 @@ namespace ChocolArm64.Instructions
                     context.Emit(OpCodes.Conv_R_Un);
                 }
 
-                context.Emit(sizeF == 0
-                    ? OpCodes.Conv_R4
-                    : OpCodes.Conv_R8);
+                EmitFloatCast(context, sizeF);
 
                 EmitI2fFBitsMul(context, sizeF, fBits);
 
