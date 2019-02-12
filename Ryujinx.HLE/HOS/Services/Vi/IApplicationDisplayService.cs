@@ -35,6 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
                 { 2030, CreateStrayLayer                     },
                 { 2031, DestroyStrayLayer                    },
                 { 2101, SetLayerScalingMode                  },
+                { 2102, ConvertScalingMode                   },
                 { 5202, GetDisplayVSyncEvent                 }
             };
 
@@ -172,6 +173,17 @@ namespace Ryujinx.HLE.HOS.Services.Vi
         {
             int  scalingMode = context.RequestData.ReadInt32();
             long unknown     = context.RequestData.ReadInt64();
+
+            return 0;
+        }
+
+        private long ConvertScalingMode(ServiceCtx context)
+        {
+            int ScalingMode = context.RequestData.ReadInt32();
+
+            // Currently, the "source" scaling mode is mapped 1:1
+            // to the "target" scaling mode.
+            context.ResponseData.Write((ulong)ScalingMode);
 
             return 0;
         }
