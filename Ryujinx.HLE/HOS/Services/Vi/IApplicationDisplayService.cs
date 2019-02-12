@@ -179,11 +179,11 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         private long ConvertScalingMode(ServiceCtx context)
         {
-            int ScalingMode = context.RequestData.ReadInt32();
+            int scalingMode = context.RequestData.ReadInt32();
 
             // Currently, the "source" scaling mode is mapped 1:1
             // to the "target" scaling mode.
-            context.ResponseData.Write((ulong)ScalingMode);
+            context.ResponseData.Write((ulong)scalingMode);
 
             return 0;
         }
