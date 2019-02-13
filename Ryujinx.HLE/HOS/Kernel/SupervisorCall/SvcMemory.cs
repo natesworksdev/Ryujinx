@@ -487,8 +487,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidSize;
             }
 
-            if (permission > MemoryPermission.ReadAndExecute ||
-                (((permission & MemoryPermission.Execute) != 0) && ((permission & MemoryPermission.Write) != 0)))
+            if (permission != MemoryPermission.None &&
+                permission != MemoryPermission.Read &&
+                permission != MemoryPermission.ReadAndWrite &&
+                permission != MemoryPermission.ReadAndExecute)
             {
                 return KernelResult.InvalidPermission;
             }
