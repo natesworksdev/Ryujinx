@@ -412,6 +412,19 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidHandle;
             }
 
+            if (targetProcess.MemoryManager.OutsideAddrSpace(dst, size) ||
+                targetProcess.MemoryManager.OutsideAddrSpace(src, size) ||
+                targetProcess.MemoryManager.InsideAliasRegion(dst, size) ||
+                targetProcess.MemoryManager.InsideHeapRegion(dst, size))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            if (size + dst <= dst || size + src <= src)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
             return targetProcess.MemoryManager.MapProcessCodeMemory(dst, src, size);
         }
 
@@ -441,6 +454,19 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidHandle;
             }
 
+            if (targetProcess.MemoryManager.OutsideAddrSpace(dst, size) ||
+                targetProcess.MemoryManager.OutsideAddrSpace(src, size) ||
+                targetProcess.MemoryManager.InsideAliasRegion(dst, size) ||
+                targetProcess.MemoryManager.InsideHeapRegion(dst, size))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            if (size + dst <= dst || size + src <= src)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
             return targetProcess.MemoryManager.UnmapProcessCodeMemory(dst, src, size);
         }
 
@@ -459,6 +485,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             if (!PageAligned(size) || size == 0)
             {
                 return KernelResult.InvalidSize;
+            }
+
+            if (permission > MemoryPermission.ReadAndExecute || ((1 << (int)permission) & 0x2B) == 0)
+            {
+                return KernelResult.InvalidPermission;
             }
 
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();

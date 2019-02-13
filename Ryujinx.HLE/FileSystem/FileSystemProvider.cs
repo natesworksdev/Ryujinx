@@ -281,7 +281,6 @@ namespace Ryujinx.HLE.FileSystem
             throw new InvalidOperationException($"Path {path} is not a child directory of {_rootPath}");
         }
 
-
         public FileTimestamp GetFileTimeStampRaw(string name)
         {
             CheckIfDescendentOfRootPath(name);
