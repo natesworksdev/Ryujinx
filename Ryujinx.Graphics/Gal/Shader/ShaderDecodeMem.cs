@@ -306,16 +306,14 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 CoordReg.Index += Index;
 
-                Coords[Index].Index += IndexExtraCoord;
+                CoordReg.Index += IndexExtraCoord;
 
                 if (!CoordReg.IsValidRegister)
                 {
                     CoordReg.Index = ShaderIrOperGpr.ZRIndex;
                 }
 
-                Coords[Index] = ShaderIrOperGpr.MakeTemporary(Index);
-
-                Block.AddNode(new ShaderIrAsg(Coords[Index], CoordReg));
+                Coords[Index] = CoordReg;
             }
 
             int ChMask = OpCode.Read(31, 0xf);
@@ -360,6 +358,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                 : (ShaderIrNode)OpCode.Imm13_36();
 
             ShaderIrInst Inst = GprHandle ? ShaderIrInst.Texb : ShaderIrInst.Texs;
+
+            Coords = CoordsRegistersToTempRegisters(Block, Coords);
 
             int RegInc = 0;
 
@@ -694,6 +694,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             ShaderIrNode OperC = OpCode.Imm13_36();
+            Coords = CoordsRegistersToTempRegisters(Block, Coords);
 
             for (int Ch = 0; Ch < 4; Ch++)
             {
@@ -820,28 +821,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 OperBIndex++;
             }
 
-
-            for (int Ch = 0; Ch < 4; Ch++)
-            {
-                // Avoid usuless variable creation
-                if (!IsChannelUsed(ChMask, Ch))
-                {
-                    continue;
-                }
-
-                ShaderIrOperGpr Dst = new ShaderIrOperGpr(TempRegStart + Ch);
-
-                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, TextureInstructionSuffix, Coords)
-                {
-                    Component    = Component,
-                    Offset       = Offset,
-                    DepthCompare = DepthCompare
-                };
-
-                ShaderIrOp Op = new ShaderIrOp(ShaderIrInst.Tld4, OperA, OperB, OperC, Meta);
-
-                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Op)));
-            }
+            Coords = CoordsRegistersToTempRegisters(Block, Coords);
 
             int RegInc = 0;
 
@@ -852,18 +832,25 @@ namespace Ryujinx.Graphics.Gal.Shader
                     continue;
                 }
 
-                ShaderIrOperGpr Src = new ShaderIrOperGpr(TempRegStart + Ch);
-
                 ShaderIrOperGpr Dst = OpCode.Gpr0();
 
                 Dst.Index += RegInc++;
 
-                if (Dst.Index >= ShaderIrOperGpr.ZRIndex)
+                if (!Dst.IsValidRegister || Dst.IsConst)
                 {
                     continue;
                 }
 
-                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Src)));
+                ShaderIrMetaTex Meta = new ShaderIrMetaTex(Ch, TextureType, TextureInstructionSuffix, Coords)
+                {
+                    Component = Component,
+                    Offset = Offset,
+                    DepthCompare = DepthCompare
+                };
+
+                ShaderIrOp Op = new ShaderIrOp(ShaderIrInst.Tld4, OperA, OperB, OperC, Meta);
+
+                Block.AddNode(OpCode.PredNode(new ShaderIrAsg(Dst, Op)));
             }
         }
 
