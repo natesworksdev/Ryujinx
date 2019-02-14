@@ -504,6 +504,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidHandle;
             }
 
+            if (targetProcess.MemoryManager.OutsideAddrSpace(src, size))
+            {
+                return KernelResult.InvalidMemState;
+            }
+
             return targetProcess.MemoryManager.SetProcessMemoryPermission(src, size, permission);
         }
 
