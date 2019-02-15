@@ -152,9 +152,11 @@ namespace Ryujinx
             if (_keyboard.HasValue)
             {
                 KeyboardState keyboard = _keyboard.Value;
-                
+
+                #if USE_PROFILING
                 // Profiler input, lets the profiler get access to the main windows keyboard state
                 _profileWindow.UpdateKeyInput(keyboard);
+                #endif
 
                 // Normal Input
                 currentButton = Configuration.Instance.KeyboardControls.GetButtons(keyboard);

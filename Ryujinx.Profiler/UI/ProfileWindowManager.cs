@@ -47,7 +47,6 @@ namespace Ryujinx.Profiler.UI
             _window = null;
         }
 
-        [Conditional("USE_PROFILING")]
         public void UpdateKeyInput(KeyboardState keyboard)
         {
             if (Profile.Controls.TogglePressed(keyboard))
