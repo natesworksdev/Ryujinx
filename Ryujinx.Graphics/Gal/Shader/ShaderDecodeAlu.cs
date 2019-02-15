@@ -1268,13 +1268,13 @@ namespace Ryujinx.Graphics.Gal.Shader
                 {
                     ShaderIrOperImm Imm31 = new ShaderIrOperImm(31);
 
-                    ShaderIrOp SignAjustA = new ShaderIrOp(ShaderIrInst.Lsr, OperA,  Imm31);
-                    ShaderIrOp SignAjustB = new ShaderIrOp(ShaderIrInst.Lsr, OperB2, Imm31);
+                    ShaderIrOp SignAdjustA = new ShaderIrOp(ShaderIrInst.Lsr, OperA,  Imm31);
+                    ShaderIrOp SignAdjustB = new ShaderIrOp(ShaderIrInst.Lsr, OperB2, Imm31);
 
-                    SignAjustA = new ShaderIrOp(ShaderIrInst.Lsl, SignAjustA, Imm16);
-                    SignAjustB = new ShaderIrOp(ShaderIrInst.Lsl, SignAjustB, Imm16);
+                    SignAdjustA = new ShaderIrOp(ShaderIrInst.Lsl, SignAdjustA, Imm16);
+                    SignAdjustB = new ShaderIrOp(ShaderIrInst.Lsl, SignAdjustB, Imm16);
 
-                    ShaderIrOp SignAdjust = new ShaderIrOp(ShaderIrInst.Add, SignAjustA, SignAjustB);
+                    ShaderIrOp SignAdjust = new ShaderIrOp(ShaderIrInst.Add, SignAdjustA, SignAdjustB);
 
                     OperC = new ShaderIrOp(ShaderIrInst.Sub, OperC, SignAdjust);
 
