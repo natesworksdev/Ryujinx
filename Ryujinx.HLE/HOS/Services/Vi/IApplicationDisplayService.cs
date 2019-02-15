@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text;
 
+using static Ryujinx.HLE.HOS.ErrorCode;
 using static Ryujinx.HLE.HOS.Services.Android.Parcel;
 
 namespace Ryujinx.HLE.HOS.Services.Vi
@@ -177,15 +178,33 @@ namespace Ryujinx.HLE.HOS.Services.Vi
             return 0;
         }
 
-        private long ConvertScalingMode(ServiceCtx context)
+        public long ConvertScalingMode(ServiceCtx context)
         {
-            int scalingMode = context.RequestData.ReadInt32();
+            SrcScalingMode  scalingMode     = (SrcScalingMode)context.RequestData.ReadInt32();
+            DstScalingMode? destScalingMode = ConvetScalingModeImpl(scalingMode);
 
-            // Currently, the "source" scaling mode is mapped 1:1
-            // to the "target" scaling mode.
-            context.ResponseData.Write((ulong)scalingMode);
+            if (!destScalingMode.HasValue)
+            {
+                return MakeError(ErrorModule.Vi, 1);
+            }
+
+            context.ResponseData.Write((ulong)destScalingMode);
 
             return 0;
+        }
+
+        private DstScalingMode? ConvetScalingModeImpl(SrcScalingMode srcScalingMode)
+        {
+            switch (srcScalingMode)
+            {
+                case SrcScalingMode.None:                return DstScalingMode.None;
+                case SrcScalingMode.Freeze:              return DstScalingMode.Freeze;
+                case SrcScalingMode.ScaleAndCrop:        return DstScalingMode.ScaleAndCrop;
+                case SrcScalingMode.ScaleToWindow:       return DstScalingMode.ScaleToWindow;
+                case SrcScalingMode.PreserveAspectRatio: return DstScalingMode.PreserveAspectRatio;
+            }
+
+            return null;
         }
 
         public long GetDisplayVSyncEvent(ServiceCtx context)
