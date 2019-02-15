@@ -49,22 +49,22 @@ namespace Ryujinx.Common
             return (value + dividend - 1) / dividend;
         }
 
-        public static int Pow2RoundUp(int Value)
+        public static int Pow2RoundUp(int value)
         {
-            Value--;
+            value--;
 
-            Value |= (Value >>  1);
-            Value |= (Value >>  2);
-            Value |= (Value >>  4);
-            Value |= (Value >>  8);
-            Value |= (Value >> 16);
+            value |= (value >>  1);
+            value |= (value >>  2);
+            value |= (value >>  4);
+            value |= (value >>  8);
+            value |= (value >> 16);
 
-            return ++Value;
+            return ++value;
         }
 
-        public static int Pow2RoundDown(int Value)
+        public static int Pow2RoundDown(int value)
         {
-            return IsPowerOfTwo32(Value) ? Value : Pow2RoundUp(Value) >> 1;
+            return IsPowerOfTwo32(value) ? value : Pow2RoundUp(value) >> 1;
         }
 
         public static bool IsPowerOfTwo32(int value)
@@ -108,16 +108,16 @@ namespace Ryujinx.Common
             return (ulong)count;
         }
 
-        public static int CountTrailingZeros32(int Value)
+        public static int CountTrailingZeros32(int value)
         {
-            int Count = 0;
+            int count = 0;
 
-            while (((Value >> Count) & 1) == 0)
+            while (((value >> count) & 1) == 0)
             {
-                Count++;
+                count++;
             }
 
-            return Count;
+            return count;
         }
 
         public static long ReverseBits64(long value)
