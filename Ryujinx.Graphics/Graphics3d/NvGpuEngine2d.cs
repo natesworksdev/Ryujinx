@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 SrcWidth,
                 SrcHeight,
                 SrcDepth, 1,
-                SrcBlockHeight,
+                SrcBlockHeight, 1,
                 SrcLayout,
                 SrcImgFormat,
                 SrcTarget);
@@ -128,7 +128,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 DstWidth,
                 DstHeight,
                 DstDepth, 1,
-                DstBlockHeight,
+                DstBlockHeight, 1,
                 DstLayout,
                 DstImgFormat,
                 DstTarget);

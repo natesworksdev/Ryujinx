@@ -35,14 +35,16 @@ namespace Ryujinx.Graphics.Texture
                 Layout = GalMemoryLayout.Pitch;
             }
 
-            int BlockHeightLog2 = (Tic[3] >> 3)  & 7;
-            int TileWidthLog2   = (Tic[3] >> 10) & 7;
+            int GobBlockHeightLog2 = (Tic[3] >> 3)  & 7;
+            int GobBlockDepthLog2  = (Tic[3] >> 6)  & 7;
+            int TileWidthLog2      = (Tic[3] >> 10) & 7;
 
-            int BlockHeight = 1 << BlockHeightLog2;
-            int TileWidth   = 1 << TileWidthLog2;
+            int GobBlockHeight = 1 << GobBlockHeightLog2;
+            int GobBlockDepth  = 1 << GobBlockDepthLog2;
+            int TileWidth      = 1 << TileWidthLog2;
 
-            int Width  = (Tic[4] & 0xffff) + 1;
-            int Height = (Tic[5] & 0xffff) + 1;
+            int Width  = ((Tic[4] >> 0)  & 0xffff) + 1;
+            int Height = ((Tic[5] >> 0)  & 0xffff) + 1;
             int Depth  = ((Tic[5] >> 16) & 0x3fff) + 1;
 
             if (TextureTarget == GalTextureTarget.OneD)
@@ -64,7 +66,8 @@ namespace Ryujinx.Graphics.Texture
                 Height,
                 Depth,
                 TileWidth,
-                BlockHeight,
+                GobBlockHeight,
+                GobBlockDepth,
                 Layout,
                 Format,
                 TextureTarget,

@@ -9,6 +9,7 @@ namespace Ryujinx.Graphics.Gal
         public int Depth;
         public int TileWidth;
         public int GobBlockHeight;
+        public int GobBlockDepth;
         public int Pitch;
         public int MaxMipmapLevel;
 
@@ -26,6 +27,7 @@ namespace Ryujinx.Graphics.Gal
             int              Depth,
             int              TileWidth,
             int              GobBlockHeight,
+            int              GobBlockDepth,
             GalMemoryLayout  Layout,
             GalImageFormat   Format,
             GalTextureTarget TextureTarget,
@@ -40,6 +42,7 @@ namespace Ryujinx.Graphics.Gal
             this.Depth          = Depth;
             this.TileWidth      = TileWidth;
             this.GobBlockHeight = GobBlockHeight;
+            this.GobBlockDepth  = GobBlockDepth;
             this.Layout         = Layout;
             this.Format         = Format;
             this.MaxMipmapLevel = MaxMipmapLevel;

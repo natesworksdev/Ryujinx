@@ -129,7 +129,11 @@ namespace Ryujinx.Graphics.Graphics3d
                     }
                     else
                     {
-                        SrcSwizzle = new BlockLinearSwizzle(SrcSizeX, SrcSizeY, SrcCpp, SrcBlockHeight);
+                        SrcSwizzle = new BlockLinearSwizzle(
+                            SrcSizeX,
+                            SrcSizeY, 1,
+                            SrcBlockHeight, 1,
+                            SrcCpp);
                     }
 
                     ISwizzle DstSwizzle;
@@ -140,7 +144,11 @@ namespace Ryujinx.Graphics.Graphics3d
                     }
                     else
                     {
-                        DstSwizzle = new BlockLinearSwizzle(DstSizeX, DstSizeY, DstCpp, DstBlockHeight);
+                        DstSwizzle = new BlockLinearSwizzle(
+                            DstSizeX,
+                            DstSizeY, 1,
+                            DstBlockHeight, 1,
+                            DstCpp);
                     }
 
                     for (int Y = 0; Y < YCount; Y++)
