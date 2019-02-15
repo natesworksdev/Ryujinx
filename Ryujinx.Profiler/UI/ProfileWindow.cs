@@ -680,6 +680,13 @@ namespace Ryujinx.Profiler.UI
 
         protected override void OnKeyUp(KeyboardKeyEventArgs e)
         {
+            // Can't go into switch as value isn't constant
+            if (e.Key == Profile.Controls.Buttons.ToggleProfiler)
+            {
+                ToggleVisible();
+                return;
+            }
+
             switch (e.Key)
             {
                 case Key.BackSpace:
