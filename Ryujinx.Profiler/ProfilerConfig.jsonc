@@ -1,0 +1,18 @@
+﻿{
+  "$schema": "./_schema.json",
+
+  // Enable profiling (Only available on a profiling enabled build)
+  "enabled": true,
+
+  // Set profile file dump location, if blank file dumping disabled. (e.g. `ProfileDump.csv`)
+  "dump_path": "",
+
+  // Update rate for profiler UI, in hertz. -1 updates every time a frame is issued
+  "update_rate": 4,
+
+  // Set how long to keep profiling data in seconds, reduce if profiling is taking too much RAM
+  "history": 5,
+
+  // Set the maximum profiling level. Higher values may cause a heavy load on your system but will allow you to profile in more detail
+  "max_level": 0
+}

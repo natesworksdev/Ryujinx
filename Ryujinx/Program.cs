@@ -26,6 +26,8 @@ namespace Ryujinx
             Configuration.Load(Path.Combine(ApplicationDirectory, "Config.jsonc"));
             Configuration.Configure(device);
 
+            Profile.Initalize();
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
 

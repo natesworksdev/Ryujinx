@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Common;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -11,6 +12,23 @@ namespace Ryujinx.Profiler
 
         private static InternalProfile  _profileInstance;
         private static ProfilerSettings _settings;
+
+
+        [Conditional("USE_PROFILING")]
+        public static void Initalize()
+        {
+            var config = ProfilerConfiguration.Load("ProfilerConfig.jsonc");
+
+            _settings = new ProfilerSettings()
+            {
+                Enabled         = config.Enabled,
+                FileDumpEnabled = config.DumpPath != "",
+                DumpLocation    = config.DumpPath,
+                UpdateRate      = (config.UpdateRate <= 0) ? -1 : 1.0f / config.UpdateRate,
+                History         = (long)(config.History * PerformanceCounter.TicksPerSecond),
+                MaxLevel        = config.MaxLevel,
+            };
+        }
 
         public static bool ProfilingEnabled()
         {
@@ -25,12 +43,6 @@ namespace Ryujinx.Profiler
             #else
             return false;
             #endif
-        }
-
-        [Conditional("USE_PROFILING")]
-        public static void Configure(ProfilerSettings settings)
-        {
-            _settings = settings;
         }
 
         [Conditional("USE_PROFILING")]
