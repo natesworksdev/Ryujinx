@@ -15,5 +15,8 @@ namespace Ryujinx.Profiler
 
         // 19531225 = 5 seconds in ticks
         public long   History         { get; set; } = 19531225;
+
+        // Controls
+        public NpadDebug Controls;
     }
 }

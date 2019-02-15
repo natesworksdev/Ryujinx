@@ -152,15 +152,9 @@ namespace Ryujinx
             if (_keyboard.HasValue)
             {
                 KeyboardState keyboard = _keyboard.Value;
-
-                #if USE_PROFILING
-                // Debug
-                if (Config.NPadDebug.TogglePressed(keyboard))
-                {
-                    _profileWindow.ToggleVisible();
-                }
-                Config.NPadDebug.SetPrevKeyboardState(keyboard);
-                #endif
+                
+                // Profiler input, lets the profiler get access to the main windows keyboard state
+                _profileWindow.UpdateKeyInput(keyboard);
 
                 // Normal Input
                 currentButton = Configuration.Instance.KeyboardControls.GetButtons(keyboard);

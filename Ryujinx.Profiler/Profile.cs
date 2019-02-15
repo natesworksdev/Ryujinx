@@ -7,8 +7,9 @@ namespace Ryujinx.Profiler
 {
     public static class Profile
     {
-        public static float UpdateRate => _settings.UpdateRate;
-        public static long HistoryLength => _settings.History;
+        public static float     UpdateRate    => _settings.UpdateRate;
+        public static long      HistoryLength => _settings.History;
+        public static NpadDebug Controls      => _settings.Controls;
 
         private static InternalProfile  _profileInstance;
         private static ProfilerSettings _settings;
@@ -27,6 +28,7 @@ namespace Ryujinx.Profiler
                 UpdateRate      = (config.UpdateRate <= 0) ? -1 : 1.0f / config.UpdateRate,
                 History         = (long)(config.History * PerformanceCounter.TicksPerSecond),
                 MaxLevel        = config.MaxLevel,
+                Controls        = config.Controls,
             };
         }
 

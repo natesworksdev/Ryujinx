@@ -17,6 +17,8 @@ namespace Ryujinx.Profiler
         public int    MaxLevel   { get; private set; }
         public float  History    { get; private set; }
 
+        public NpadDebug Controls { get; private set; }
+
         /// <summary>
         /// Loads a configuration file from disk
         /// </summary>
