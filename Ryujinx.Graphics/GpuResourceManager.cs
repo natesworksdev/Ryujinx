@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics
 
         private bool TryReuse(NvGpuVmm Vmm, long Position, GalImage NewImage)
         {
-            if (Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage) && CachedImage.SizeMatches(NewImage))
+            if (Gpu.Renderer.Texture.TryGetImage(Position, out GalImage CachedImage) && CachedImage.TextureTarget == NewImage.TextureTarget && CachedImage.SizeMatches(NewImage))
             {
                 Gpu.Renderer.RenderTarget.Reinterpret(Position, NewImage);
 

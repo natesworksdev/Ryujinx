@@ -472,7 +472,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             if (NewImage.Format == OldImage.Format &&
                 NewImage.Width  == OldImage.Width  &&
-                NewImage.Height == OldImage.Height)
+                NewImage.Height == OldImage.Height &&
+                NewImage.TextureTarget == OldImage.TextureTarget)
             {
                 return;
             }
