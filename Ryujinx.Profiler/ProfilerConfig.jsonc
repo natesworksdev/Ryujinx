@@ -14,6 +14,9 @@
   // Set the maximum profiling level. Higher values may cause a heavy load on your system but will allow you to profile in more detail
   "max_level": 0,
 
+  // Sets the maximum number of flags to keep
+  "max_flags": 1000, 
+
   // Keyboard Controls
   // https://github.com/opentk/opentk/blob/master/src/OpenTK/Input/Key.cs
   "controls": {

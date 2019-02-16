@@ -29,6 +29,7 @@ namespace Ryujinx.Profiler
                 History         = (long)(config.History * PerformanceCounter.TicksPerSecond),
                 MaxLevel        = config.MaxLevel,
                 Controls        = config.Controls,
+                MaxFlags        = config.MaxFlags,
             };
         }
 
@@ -39,7 +40,7 @@ namespace Ryujinx.Profiler
                 return false;
 
             if (_profileInstance == null)
-                _profileInstance = new InternalProfile(_settings.History);
+                _profileInstance = new InternalProfile(_settings.History, _settings.MaxFlags);
 
             return true;
             #else

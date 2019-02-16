@@ -24,7 +24,6 @@ namespace Ryujinx.Profiler.UI
         private Action _clicked;
         private bool   _visible;
 
-
         public ProfileButton(FontService fontService, Action clicked)
             : this(fontService, clicked, 0, 0, 0, 0, 0)
         {

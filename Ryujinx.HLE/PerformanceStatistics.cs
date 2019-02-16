@@ -83,6 +83,7 @@ namespace Ryujinx.HLE
         public void RecordSystemFrameTime()
         {
             RecordFrameTime(FrameTypeSystem);
+            Profile.FlagTime(TimingFlagType.SystemFrame);
         }
 
         public void RecordGameFrameTime()

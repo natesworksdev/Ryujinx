@@ -32,20 +32,25 @@ namespace Ryujinx.Profiler
 
         // Timing flags
         private TimingFlag[] _timingFlags;
+        private long[] _timingFlagAverages;
+        private long[] _timingFlagLast;
         private int _timingFlagCount;
         private int _timingFlagIndex;
 
-        private const int MaxFlags = 500;
+        private int _maxFlags;
 
         private Action<TimingFlag> _timingFlagCallback;
 
-        public InternalProfile(long history)
+        public InternalProfile(long history, int maxFlags)
         {
-            Timers          = new Dictionary<ProfileConfig, TimingInfo>();
-            _timingFlags    = new TimingFlag[MaxFlags];
-            _timerQueue     = new ConcurrentQueue<TimerQueueValue>();
-            _history        = history;
-            _cleanupRunning = true;
+            _maxFlags           = maxFlags;
+            Timers              = new Dictionary<ProfileConfig, TimingInfo>();
+            _timingFlags        = new TimingFlag[_maxFlags];
+            _timingFlagAverages = new long[(int)TimingFlagType.Count];
+            _timingFlagLast     = new long[(int)TimingFlagType.Count];
+            _timerQueue         = new ConcurrentQueue<TimerQueueValue>();
+            _history            = history;
+            _cleanupRunning     = true;
 
             // Create cleanup thread.
             _cleanupThread = new Thread(CleanupLoop);
@@ -114,20 +119,36 @@ namespace Ryujinx.Profiler
 
         public void FlagTime(TimingFlagType flagType)
         {
+            int flagId = (int)flagType;
+
             _timingFlags[_timingFlagIndex] = new TimingFlag()
             {
                 FlagType  = flagType,
                 Timestamp = PerformanceCounter.ElapsedTicks
             };
 
-            if (++_timingFlagIndex >= MaxFlags)
+            if (++_timingFlagIndex >= _maxFlags)
             {
                 _timingFlagIndex = 0;
             }
 
-            _timingFlagCount = Math.Max(_timingFlagCount + 1, MaxFlags);
+            _timingFlagCount = Math.Max(_timingFlagCount + 1, _maxFlags);
 
+            // Work out average
+            if (_timingFlagLast[flagId] == 0)
+            {
+                _timingFlagAverages[flagId] = _timingFlags[_timingFlagIndex].Timestamp;
+            }
+            else
+            {
+                _timingFlagAverages[flagId] = (_timingFlags[_timingFlagIndex].Timestamp + _timingFlagLast[flagId]) / 2;
+            }
+
+            // Notify subscribers
             _timingFlagCallback?.Invoke(_timingFlags[_timingFlagIndex]);
+
+            // Set last time for average
+            _timingFlagLast[flagId] = _timingFlags[_timingFlagIndex].Timestamp;
         }
 
         public void BeginProfile(ProfileConfig config)
@@ -175,12 +196,12 @@ namespace Ryujinx.Profiler
 
         public TimingFlag[] GetTimingFlags()
         {
-            int count = Math.Max(_timingFlagCount, MaxFlags);
+            int count = Math.Max(_timingFlagCount, _maxFlags);
             TimingFlag[] outFlags = new TimingFlag[count];
             
             for (int i = 0, sourceIndex = _timingFlagIndex; i < count; i++, sourceIndex++)
             {
-                if (sourceIndex >= MaxFlags)
+                if (sourceIndex >= _maxFlags)
                     sourceIndex = 0;
                 outFlags[i] = _timingFlags[sourceIndex];
             }
