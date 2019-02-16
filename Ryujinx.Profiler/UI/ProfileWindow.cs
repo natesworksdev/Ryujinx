@@ -41,14 +41,11 @@ namespace Ryujinx.Profiler.UI
         private ProfileButton[] _buttons;
 
         private bool _initComplete    = false;
-
         private bool _visible         = true;
         private bool _visibleChanged  = true;
         private bool _viewportUpdated = true;
         private bool _redrawPending   = true;
-
         private bool _displayGraph    = true;
-
         private bool _showInactive    = true;
         private bool _paused          = false;
         private bool _doStep          = false;
@@ -84,6 +81,7 @@ namespace Ryujinx.Profiler.UI
         private bool _prevBackspaceDown   = false;
         private double _backspaceDownTime = 0;
 
+        // F35 used as no key
         private Key _graphControlKey = Key.F35;
 
         // Event management
@@ -91,7 +89,6 @@ namespace Ryujinx.Profiler.UI
         private double _processEventTimer;
         private bool   _profileUpdated           = false;
         private readonly object _profileDataLock = new object();
-        
 
         public ProfileWindow()
                                // Graphigs mode enables 2xAA
@@ -553,9 +550,9 @@ namespace Ryujinx.Profiler.UI
 
                 // Totals
                 yHeight = FilterHeight + 2;
-                _fontService.DrawText($"{totalInstant / PerformanceCounter.TicksPerMillisecond:F3} ({totalCount})", xOffset, yHeight, TitleFontHeight);
-                _fontService.DrawText($"{totalAverage / PerformanceCounter.TicksPerMillisecond:F3}", 150 + xOffset, yHeight, TitleFontHeight);
-                _fontService.DrawText($"{totalTime / PerformanceCounter.TicksPerMillisecond:F3}", 260 + xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText($"{totalInstant / PerformanceCounter.TicksPerMillisecond:F3} ({totalCount})", xOffset,       yHeight, TitleFontHeight);
+                _fontService.DrawText($"{totalAverage / PerformanceCounter.TicksPerMillisecond:F3}",                150 + xOffset, yHeight, TitleFontHeight);
+                _fontService.DrawText($"{totalTime    / PerformanceCounter.TicksPerMillisecond:F3}",                260 + xOffset, yHeight, TitleFontHeight);
                 #endregion
             }
 
