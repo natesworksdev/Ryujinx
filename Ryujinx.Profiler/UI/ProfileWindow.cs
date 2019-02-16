@@ -238,12 +238,17 @@ namespace Ryujinx.Profiler.UI
             _updateTimer += e.Time;
             if (_doStep || ((Profile.UpdateRate > 0) && (!_paused && (_updateTimer > Profile.UpdateRate))))
             {
-                _updateTimer         = 0;
-                _unsortedProfileData = Profile.GetProfilingData().ToList();
-                _captureTime         = PerformanceCounter.ElapsedTicks;
-                _timingFlags         = Profile.GetTimingFlags();
-                _profileUpdated      = true;
-                _doStep              = false;
+                _updateTimer = 0;
+                _captureTime = PerformanceCounter.ElapsedTicks;
+                _timingFlags = Profile.GetTimingFlags();
+                _doStep      = false;
+
+                Dictionary<ProfileConfig, TimingInfo> data = Profile.GetProfilingData();
+                if (data.Count > 0)
+                {
+                    _unsortedProfileData = data.ToList();
+                    _profileUpdated      = true;
+                }
             }
             
             // Filtering
