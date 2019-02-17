@@ -311,15 +311,20 @@ namespace ChocolArm64.Instructions
 
             fixed (byte* ptr = &state[0])
             {
-                Sse2.Store(ptr, Sse.StaticCast<float, byte>(op));
+                Sse2.Store(ptr, op.As<byte>());
             }
         }
 
         private unsafe static void FromByteArrayToVector(byte[] state, ref Vector128<float> op)
         {
+            if (!Sse2.IsSupported)
+            {
+                throw new PlatformNotSupportedException();
+            }
+
             fixed (byte* ptr = &state[0])
             {
-                op = Sse.StaticCast<byte, float>(Sse2.LoadVector128(ptr));
+                op = Sse2.LoadVector128(ptr).As<float>();
             }
         }
     }
