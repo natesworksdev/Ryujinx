@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ryujinx.Common;
@@ -178,18 +179,15 @@ namespace Ryujinx.Profiler
             }
         }
 
-        public Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
+        public List<KeyValuePair<ProfileConfig, TimingInfo>> GetProfilingData()
         {
             _preserve = PerformanceCounter.ElapsedTicks;
 
-            // Skip clearing queue if already clearing
-            if (Monitor.TryEnter(_timerQueueClearLock))
+            lock (_timerQueueClearLock)
             {
                 ClearTimerQueue();
-                Monitor.Exit(_timerQueueClearLock);
+                return Timers.ToList();
             }
-
-            return Timers;
         }
 
         public TimingFlag[] GetTimingFlags()

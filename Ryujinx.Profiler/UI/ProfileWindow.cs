@@ -27,10 +27,11 @@ namespace Ryujinx.Profiler.UI
             ChangeDisplay     = 7,
 
             // Don't automatically draw after here
-            Step              = 8,
+            ToggleFlags       = 8,
+            Step              = 9,
 
             // Update this when new buttons are added
-            Count             = 9,
+            Count             = 10,
             Autodraw          = 8,
         }
 
@@ -46,6 +47,7 @@ namespace Ryujinx.Profiler.UI
         private bool _viewportUpdated = true;
         private bool _redrawPending   = true;
         private bool _displayGraph    = true;
+        private bool _displayFlags    = true;
         private bool _showInactive    = true;
         private bool _paused          = false;
         private bool _doStep          = false;
@@ -151,7 +153,6 @@ namespace Ryujinx.Profiler.UI
             _buttons[(int)ButtonIndex.InstantTitle]  = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.InstantAscending()));
             _buttons[(int)ButtonIndex.AverageTitle]  = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.AverageAscending()));
             _buttons[(int)ButtonIndex.TotalTitle]    = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TotalAscending()));
-            _buttons[(int)ButtonIndex.ChangeDisplay] = new ProfileButton(_fontService, () => _displayGraph = !_displayGraph);
             _buttons[(int)ButtonIndex.Step]          = new ProfileButton(_fontService, () => _doStep = true);
             _buttons[(int)ButtonIndex.FilterBar]     = new ProfileButton(_fontService, () =>
             {
@@ -169,6 +170,18 @@ namespace Ryujinx.Profiler.UI
             {
                 _profileUpdated = true;
                 _paused = !_paused;
+            });
+
+            _buttons[(int)ButtonIndex.ToggleFlags] = new ProfileButton(_fontService, () =>
+            {
+                _displayFlags = !_displayFlags;
+                _redrawPending = true;
+            });
+
+            _buttons[(int)ButtonIndex.ChangeDisplay] = new ProfileButton(_fontService, () =>
+            {
+                _displayGraph = !_displayGraph;
+                _redrawPending = true;
             });
 
             Visible = _visible;
@@ -242,18 +255,15 @@ namespace Ryujinx.Profiler.UI
             _updateTimer += e.Time;
             if (_doStep || ((Profile.UpdateRate > 0) && (!_paused && (_updateTimer > Profile.UpdateRate))))
             {
-                _updateTimer = 0;
-                _captureTime = PerformanceCounter.ElapsedTicks;
-                _timingFlags = Profile.GetTimingFlags();
-                _doStep      = false;
+                _updateTimer    = 0;
+                _captureTime    = PerformanceCounter.ElapsedTicks;
+                _timingFlags    = Profile.GetTimingFlags();
+                _doStep         = false;
+                _profileUpdated = true;
 
-                Dictionary<ProfileConfig, TimingInfo> data = Profile.GetProfilingData();
-                if (data.Count > 0)
-                {
-                    (_timingFlagsAverages, _timingFlagsLast) = Profile.GetTimingAveragesAndLast();
-                    _unsortedProfileData = data.ToList();
-                    _profileUpdated      = true;
-                }
+                _unsortedProfileData                     = Profile.GetProfilingData();
+                (_timingFlagsAverages, _timingFlagsLast) = Profile.GetTimingAveragesAndLast();
+                
             }
             
             // Filtering
@@ -593,7 +603,15 @@ namespace Ryujinx.Profiler.UI
             }
 
             // Change display
-            width = _buttons[(int)ButtonIndex.ChangeDisplay].UpdateSize($"View: {(_displayGraph ? "Graph" : "Bars")}", 25 + (int)widthStepButton, 5, 4, 16) + widthStepButton;
+            float widthChangeDisplay = _buttons[(int)ButtonIndex.ChangeDisplay].UpdateSize($"View: {(_displayGraph ? "Graph" : "Bars")}", 25 + (int)widthStepButton, 5, 4, 16) + widthStepButton;
+
+            width = widthChangeDisplay;
+
+            if (_displayGraph)
+            {
+                width += _buttons[(int) ButtonIndex.ToggleFlags].UpdateSize($"{(_displayFlags ? "Hide" : "Show")} Flags", 35 + (int)widthChangeDisplay, 5, 4, 16) + 10;
+                _buttons[(int)ButtonIndex.ToggleFlags].Draw();
+            }
 
             // Filter bar
             _fontService.DrawText($"{(_regexEnabled ? "Regex " : "Filter")}: {_filterText}", 35 + width, 7, 16);
@@ -634,6 +652,12 @@ namespace Ryujinx.Profiler.UI
                 GL.Vertex2(widthStepButton + 20, FilterHeight);
             }
 
+            if (_displayGraph)
+            {
+                GL.Vertex2(widthChangeDisplay + 30, 0);
+                GL.Vertex2(widthChangeDisplay + 30, FilterHeight);
+            }
+
             GL.Vertex2(width + 30, 0);
             GL.Vertex2(width + 30, FilterHeight);
 
@@ -642,7 +666,6 @@ namespace Ryujinx.Profiler.UI
 
             GL.Vertex2(timingDataLeft, FilterHeight);
             GL.Vertex2(timingDataLeft, timingDataTop);
-
             
             GL.Vertex2(timingWidth + timingDataLeft, FilterHeight);
             GL.Vertex2(timingWidth + timingDataLeft, timingDataTop);

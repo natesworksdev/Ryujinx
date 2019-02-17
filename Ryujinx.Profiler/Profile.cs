@@ -107,14 +107,14 @@ namespace Ryujinx.Profiler
             #endif
         }
 
-        public static Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
+        public static List<KeyValuePair<ProfileConfig, TimingInfo>> GetProfilingData()
         {
             #if USE_PROFILING
             if (!ProfilingEnabled())
-                return new Dictionary<ProfileConfig, TimingInfo>();
+                return new List<KeyValuePair<ProfileConfig, TimingInfo>>();
             return _profileInstance.GetProfilingData();
             #else
-            return new Dictionary<ProfileConfig, TimingInfo>();
+            return new List<KeyValuePair<ProfileConfig, TimingInfo>>();
             #endif
         }
 

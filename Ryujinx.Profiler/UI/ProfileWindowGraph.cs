@@ -46,28 +46,32 @@ namespace Ryujinx.Profiler.UI
 
                 graphPositionTicks = _captureTime - graphPositionTicks;
 
-                // Draw timing flags
-                TimingFlagType prevType = TimingFlagType.Count;
-
                 GL.Enable(EnableCap.ScissorTest);
-                GL.Enable(EnableCap.Blend);
-                GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-                GL.Begin(PrimitiveType.Lines);
-                foreach (TimingFlag timingFlag in _timingFlags)
+                // Draw timing flags
+                if (_displayFlags)
                 {
-                    if (prevType != timingFlag.FlagType)
-                    {
-                        prevType = timingFlag.FlagType;
-                        GL.Color4(_timingFlagColours[(int)prevType]);
-                    }
+                    TimingFlagType prevType = TimingFlagType.Count;
 
-                    int x = (int)(graphRight - ((graphPositionTicks - timingFlag.Timestamp) / timeWidthTicks) * width);
-                    GL.Vertex2(x, 0);
-                    GL.Vertex2(x, Height);
+                    GL.Enable(EnableCap.Blend);
+                    GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+                    GL.Begin(PrimitiveType.Lines);
+                    foreach (TimingFlag timingFlag in _timingFlags)
+                    {
+                        if (prevType != timingFlag.FlagType)
+                        {
+                            prevType = timingFlag.FlagType;
+                            GL.Color4(_timingFlagColours[(int)prevType]);
+                        }
+
+                        int x = (int)(graphRight - ((graphPositionTicks - timingFlag.Timestamp) / timeWidthTicks) * width);
+                        GL.Vertex2(x, 0);
+                        GL.Vertex2(x, Height);
+                    }
+                    GL.End();
+                    GL.Disable(EnableCap.Blend);
                 }
-                GL.End();
-                GL.Disable(EnableCap.Blend);
 
                 // Draw bars
                 GL.Begin(PrimitiveType.Triangles);
