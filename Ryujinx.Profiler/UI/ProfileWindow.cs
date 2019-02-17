@@ -560,11 +560,14 @@ namespace Ryujinx.Profiler.UI
                 yHeight = FilterHeight + 3;
                 int textHeight = LineHeight - 2;
 
+                _fontService.fontColor = new Color(100, 100, 255, 255);
                 float tempWidth = _fontService.DrawText($"Host {GetTimeString(_timingFlagsLast[(int)TimingFlagType.SystemFrame])} " +
                                                             $"({GetTimeString(_timingFlagsAverages[(int)TimingFlagType.SystemFrame])})", 5, yHeight, textHeight);
 
+                _fontService.fontColor = Color.Red;
                 _fontService.DrawText($"Game {GetTimeString(_timingFlagsLast[(int)TimingFlagType.FrameSwap])} " +
                                           $"({GetTimeString(_timingFlagsAverages[(int)TimingFlagType.FrameSwap])})", 15 + tempWidth, yHeight, textHeight);
+                _fontService.fontColor = Color.White;
                 
 
                 _fontService.DrawText($"{GetTimeString(totalInstant)} ({totalCount})", xOffset,       yHeight, textHeight);
