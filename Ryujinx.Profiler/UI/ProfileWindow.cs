@@ -63,6 +63,10 @@ namespace Ryujinx.Profiler.UI
         private List<KeyValuePair<ProfileConfig, TimingInfo>> _unsortedProfileData;
         private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> _sortAction = new ProfileSorters.TagAscending();
 
+        // Flag data
+        private long[] _timingFlagsAverages;
+        private long[] _timingFlagsLast;
+
         // Filtering
         private string _filterText = "";
         private bool _regexEnabled = false;
@@ -246,6 +250,7 @@ namespace Ryujinx.Profiler.UI
                 Dictionary<ProfileConfig, TimingInfo> data = Profile.GetProfilingData();
                 if (data.Count > 0)
                 {
+                    (_timingFlagsAverages, _timingFlagsLast) = Profile.GetTimingAveragesAndLast();
                     _unsortedProfileData = data.ToList();
                     _profileUpdated      = true;
                 }
@@ -527,13 +532,11 @@ namespace Ryujinx.Profiler.UI
                 {
                     float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
 
-                    float instant = (float)entry.Value.Instant / PerformanceCounter.TicksPerMillisecond;
-                    _fontService.DrawText($"{((instant < 1) ? $"{instant * 1000:F3}us" : $"{instant:F3}ms")} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
+                    _fontService.DrawText($"{GetTimeString(entry.Value.Instant)} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
 
-                    float average = (float)entry.Value.AverageTime / PerformanceCounter.TicksPerMillisecond;
-                    _fontService.DrawText((average < 1) ? $"{average * 1000:F3}us" : $"{average:F3}ms", 150 + xOffset, y, LineHeight);
+                    _fontService.DrawText(GetTimeString(entry.Value.AverageTime), 150 + xOffset, y, LineHeight);
 
-                    _fontService.DrawText($"{(float)entry.Value.TotalTime / PerformanceCounter.TicksPerMillisecond:F3}", 260 + xOffset, y, LineHeight);
+                    _fontService.DrawText(GetTimeString(entry.Value.TotalTime), 260 + xOffset, y, LineHeight);
 
                     totalInstant += entry.Value.Instant;
                     totalAverage += entry.Value.AverageTime;
@@ -554,10 +557,19 @@ namespace Ryujinx.Profiler.UI
                 _buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(260 + xOffset), (int)yHeight, 0, Width, TitleFontHeight);
 
                 // Totals
-                yHeight = FilterHeight + 2;
-                _fontService.DrawText($"{totalInstant / PerformanceCounter.TicksPerMillisecond:F3} ({totalCount})", xOffset,       yHeight, TitleFontHeight);
-                _fontService.DrawText($"{totalAverage / PerformanceCounter.TicksPerMillisecond:F3}",                150 + xOffset, yHeight, TitleFontHeight);
-                _fontService.DrawText($"{totalTime    / PerformanceCounter.TicksPerMillisecond:F3}",                260 + xOffset, yHeight, TitleFontHeight);
+                yHeight = FilterHeight + 3;
+                int textHeight = LineHeight - 2;
+
+                float tempWidth = _fontService.DrawText($"Host {GetTimeString(_timingFlagsLast[(int)TimingFlagType.SystemFrame])} " +
+                                                            $"({GetTimeString(_timingFlagsAverages[(int)TimingFlagType.SystemFrame])})", 5, yHeight, textHeight);
+
+                _fontService.DrawText($"Game {GetTimeString(_timingFlagsLast[(int)TimingFlagType.FrameSwap])} " +
+                                          $"({GetTimeString(_timingFlagsAverages[(int)TimingFlagType.FrameSwap])})", 15 + tempWidth, yHeight, textHeight);
+                
+
+                _fontService.DrawText($"{GetTimeString(totalInstant)} ({totalCount})", xOffset,       yHeight, textHeight);
+                _fontService.DrawText(GetTimeString(totalAverage),                     150 + xOffset, yHeight, textHeight);
+                _fontService.DrawText(GetTimeString(totalTime),                        260 + xOffset, yHeight, textHeight);
                 #endregion
             }
 
@@ -638,6 +650,12 @@ namespace Ryujinx.Profiler.UI
             SwapBuffers();
         }
         #endregion
+
+        private string GetTimeString(long timestamp)
+        {
+            float time = (float)timestamp / PerformanceCounter.TicksPerMillisecond;
+            return (time < 1) ? $"{time * 1000:F3}us" : $"{time:F3}ms";
+        }
 
         private void FilterBackspace()
         {

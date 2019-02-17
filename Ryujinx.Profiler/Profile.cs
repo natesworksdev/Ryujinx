@@ -128,5 +128,16 @@ namespace Ryujinx.Profiler
             return new TimingFlag[0];
             #endif
         }
+
+        public static (long[], long[]) GetTimingAveragesAndLast()
+        {
+            #if USE_PROFILING
+            if (!ProfilingEnabled())
+                return (new long[0], new long[0]);
+            return _profileInstance.GetTimingAveragesAndLast();
+            #else
+            return (new long[0], new long[0]);
+            #endif
+        }
     }
 }
