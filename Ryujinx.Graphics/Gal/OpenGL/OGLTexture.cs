@@ -108,24 +108,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         Type,
                         IntPtr.Zero);
                     break;
-                case TextureTarget.TextureCubeMap:
-
-                    int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
-
-                    for (int Face = 0; Face < 6; Face++)
-                    {
-                        GL.TexImage2D(
-                            TextureTarget.TextureCubeMapPositiveX + Face,
-                            Level,
-                            InternalFmt,
-                            Image.Width,
-                            Image.Height,
-                            Border,
-                            Format,
-                            Type,
-                            IntPtr.Zero);
-                    }
-                    break;
                 default:
                     throw new NotImplementedException($"Unsupported texture target type: {Target}");
             }
@@ -171,7 +153,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Data.Length,
                             Data);
                         break;
-                    case TextureTarget.Texture2DArray:
                     case TextureTarget.Texture3D:
                         GL.CompressedTexImage3D(
                             Target,
@@ -184,33 +165,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Data.Length,
                             Data);
                         break;
-                    case TextureTarget.TextureCubeMap:
-                        Span<byte> Array = new Span<byte>(Data);
-
-                        // FIXME: wrong
-                        int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
-
-                        for (int Face = 0; Face < 6; Face++)
-                        {
-                            GL.CompressedTexImage2D(
-                                TextureTarget.TextureCubeMapPositiveX + Face,
-                                Level,
-                                InternalFmt,
-                                Image.Width,
-                                Image.Height,
-                                Border,
-                                FaceSize,
-                                Array.Slice(Face * FaceSize, FaceSize).ToArray());
-                        }
-                        break;
-                    case TextureTarget.TextureCubeMapArray:
+                    case TextureTarget.Texture2DArray:
                         GL.CompressedTexImage3D(
                             Target,
                             Level,
                             InternalFmt,
                             Image.Width,
                             Image.Height,
-                            Image.LayerCount * 6,
+                            Image.LayerCount,
                             Border,
                             Data.Length,
                             Data);
@@ -295,26 +257,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Format,
                             Type,
                             Data);
-                        break;
-                    case TextureTarget.TextureCubeMap:
-                        Span<byte> Array = new Span<byte>(Data);
-
-                        // FIXME: wrong
-                        int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
-
-                        for (int Face = 0; Face < 6; Face++)
-                        {
-                            GL.TexImage2D(
-                                TextureTarget.TextureCubeMapPositiveX + Face,
-                                Level,
-                                InternalFmt,
-                                Image.Width,
-                                Image.Height,
-                                Border,
-                                Format,
-                                Type,
-                                Array.Slice(Face * FaceSize, FaceSize).ToArray());
-                        }
                         break;
                     default:
                         throw new NotImplementedException($"Unsupported texture target type: {Target}");

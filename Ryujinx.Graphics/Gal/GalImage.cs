@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Gal
                 return false;
             }
 
-            return Height == Image.Height;
+            return Height == Image.Height && Depth == Image.Depth && LayerCount == Image.LayerCount;
         }
     }
 }
