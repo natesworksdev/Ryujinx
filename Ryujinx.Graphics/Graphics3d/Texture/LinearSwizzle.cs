@@ -23,14 +23,18 @@ namespace Ryujinx.Graphics.Texture
 
         public int GetMipOffset(int Level)
         {
+            if (Level == 1)
+                return SliceSize;
             throw new NotImplementedException();
         }
 
         public int GetImageSize(int MipsCount)
         {
-            if (MipsCount == 1)
-                return SliceSize;
-            throw new NotImplementedException();
+            int Size = GetMipOffset(MipsCount);
+
+            Size = (Size + 0x1fff) & ~0x1fff;
+
+            return Size;
         }
 
         public int GetSwizzleOffset(int X, int Y, int Z)

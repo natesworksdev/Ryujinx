@@ -252,24 +252,32 @@ namespace Ryujinx.Graphics.Texture
             //Note: Each row of the texture needs to be aligned to 4 bytes.
             int Pitch = (Width * BytesPerPixel + 3) & ~3;
 
-            byte[] Data = new byte[Height * Pitch * Depth];
-            for (int Z = 0; Z < Depth; Z++)
+
+            int DataLayerSize = Height * Pitch * Depth;
+            byte[] Data = new byte[DataLayerSize * Image.LayerCount];
+
+            int TargetMipLevel = Image.MaxMipmapLevel <= 1 ? 1 : Image.MaxMipmapLevel - 1;
+            int LayerOffset = ImageUtils.GetLayerOffset(Image, TargetMipLevel);
+
+            for (int Layer = 0; Layer < Image.LayerCount; Layer++)
             {
-                for (int Y = 0; Y < Height; Y++)
+                for (int Z = 0; Z < Depth; Z++)
                 {
-                    int OutOffs = Y * Pitch + (Z * Width * Height * BytesPerPixel);
-
-                    for (int X = 0; X < Width; X++)
+                    for (int Y = 0; Y < Height; Y++)
                     {
-                        long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y, Z);
+                        int OutOffs = (DataLayerSize * Layer) + Y * Pitch + (Z * Width * Height * BytesPerPixel);
 
-                        CpuMemory.ReadBytes(Position + Offset, Data, OutOffs, BytesPerPixel);
+                        for (int X = 0; X < Width; X++)
+                        {
+                            long Offset = (uint)Swizzle.GetSwizzleOffset(X, Y, Z);
 
-                        OutOffs += BytesPerPixel;
+                            CpuMemory.ReadBytes(Position + (LayerOffset * Layer) + Offset, Data, OutOffs, BytesPerPixel);
+
+                            OutOffs += BytesPerPixel;
+                        }
                     }
                 }
             }
-
 
             return Data;
         }
@@ -367,6 +375,16 @@ namespace Ryujinx.Graphics.Texture
         public static int GetGpuSize(GalImage Image, bool forcePitch = false)
         {
             return TextureHelper.GetSwizzle(Image).GetImageSize(Image.MaxMipmapLevel) * Image.LayerCount;
+        }
+
+        public static int GetLayerOffset(GalImage Image, int MipLevel)
+        {
+            if (MipLevel <= 0)
+            {
+                MipLevel = 1;
+            }
+
+            return TextureHelper.GetSwizzle(Image).GetMipOffset(MipLevel);
         }
 
         public static int GetPitch(GalImageFormat Format, int Width)

@@ -609,7 +609,7 @@ namespace Ryujinx.Graphics.Graphics3d
             {
                 //FIXME: Some games like puyo puyo will use handles with the value 0.
                 //This is a bug, most likely caused by sync issues.
-                //return (0, default(GalImage), default(GalTextureSampler));
+                return (0, default(GalImage), default(GalTextureSampler));
             }
 
             bool LinkedTsc = ReadRegisterBool(NvGpuEngine3dReg.LinkedTsc);

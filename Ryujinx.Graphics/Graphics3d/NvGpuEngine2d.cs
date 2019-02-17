@@ -139,7 +139,8 @@ namespace Ryujinx.Graphics.Graphics3d
 
             long GetLayerOffset(GalImage Image, int Layer)
             {
-                return (ImageUtils.GetGpuSize(Image) / Image.LayerCount) * Layer;
+                int TargetMipLevel = Image.MaxMipmapLevel <= 1 ? 1 : Image.MaxMipmapLevel - 1;
+                return ImageUtils.GetLayerOffset(Image, TargetMipLevel) * Layer;
             }
 
             int SrcLayerIndex = -1;
