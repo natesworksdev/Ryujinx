@@ -75,6 +75,9 @@ namespace Ryujinx
                             break;
                     }
                 }
+                else {
+                    Logger.PrintInfo(LogClass.Application, "ROM not found.");
+                }
             }
             else
             {
