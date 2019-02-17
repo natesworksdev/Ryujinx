@@ -47,6 +47,15 @@ namespace Ryujinx.Graphics.Texture
             int Height = ((Tic[5] >> 0)  & 0xffff) + 1;
             int Depth  = ((Tic[5] >> 16) & 0x3fff) + 1;
 
+            int LayoutCount = 1;
+
+            // TODO: check this
+            if (ImageUtils.IsArray(TextureTarget))
+            {
+                LayoutCount = Depth;
+                Depth = 1;
+            }
+
             if (TextureTarget == GalTextureTarget.OneD)
             {
                 Height = 1;
@@ -58,6 +67,7 @@ namespace Ryujinx.Graphics.Texture
             }
             else if (TextureTarget == GalTextureTarget.CubeMap)
             {
+                // TODO: WRONG
                 Depth = 6;
             }
 
@@ -65,6 +75,7 @@ namespace Ryujinx.Graphics.Texture
                 Width,
                 Height,
                 Depth,
+                LayoutCount,
                 TileWidth,
                 GobBlockHeight,
                 GobBlockDepth,

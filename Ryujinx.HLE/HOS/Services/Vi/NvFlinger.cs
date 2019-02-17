@@ -416,7 +416,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
                 {
                     image = new GalImage(
                         fbWidth,
-                        fbHeight, 1, 1, BlockHeight, 1,
+                        fbHeight, 1, 1, 1, BlockHeight, 1,
                         GalMemoryLayout.BlockLinear,
                         imageFormat,
                         GalTextureTarget.TwoD);

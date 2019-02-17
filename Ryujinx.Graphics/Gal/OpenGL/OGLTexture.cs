@@ -82,7 +82,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         Type,
                         IntPtr.Zero);
                     break;
-                case TextureTarget.Texture2DArray:
                 case TextureTarget.Texture3D:
                     GL.TexImage3D(
                         Target,
@@ -91,6 +90,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         Image.Width,
                         Image.Height,
                         Image.Depth,
+                        Border,
+                        Format,
+                        Type,
+                        IntPtr.Zero);
+                    break;
+                case TextureTarget.Texture2DArray:
+                    GL.TexImage3D(
+                        Target,
+                        Level,
+                        InternalFmt,
+                        Image.Width,
+                        Image.Height,
+                        Image.LayerCount,
                         Border,
                         Format,
                         Type,
@@ -175,6 +187,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     case TextureTarget.TextureCubeMap:
                         Span<byte> Array = new Span<byte>(Data);
 
+                        // FIXME: wrong
                         int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
 
                         for (int Face = 0; Face < 6; Face++)
@@ -197,7 +210,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             InternalFmt,
                             Image.Width,
                             Image.Height,
-                            Image.Depth * 6,
+                            Image.LayerCount * 6,
                             Border,
                             Data.Length,
                             Data);
@@ -257,7 +270,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Type,
                             Data);
                         break;
-                    case TextureTarget.Texture2DArray:
                     case TextureTarget.Texture3D:
                         GL.TexImage3D(
                             Target,
@@ -271,9 +283,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             Type,
                             Data);
                         break;
+                    case TextureTarget.Texture2DArray:
+                        GL.TexImage3D(
+                            Target,
+                            Level,
+                            InternalFmt,
+                            Image.Width,
+                            Image.Height,
+                            Image.LayerCount,
+                            Border,
+                            Format,
+                            Type,
+                            Data);
+                        break;
                     case TextureTarget.TextureCubeMap:
                         Span<byte> Array = new Span<byte>(Data);
 
+                        // FIXME: wrong
                         int FaceSize = ImageUtils.GetSize(Image) / Image.Depth;
 
                         for (int Face = 0; Face < 6; Face++)

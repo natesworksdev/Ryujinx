@@ -6,7 +6,10 @@ namespace Ryujinx.Graphics.Gal
     {
         public int Width;
         public int Height;
+
+        // FIXME: separate layer and depth
         public int Depth;
+        public int LayerCount;
         public int TileWidth;
         public int GobBlockHeight;
         public int GobBlockDepth;
@@ -25,6 +28,7 @@ namespace Ryujinx.Graphics.Gal
             int              Width,
             int              Height,
             int              Depth,
+            int              LayerCount,
             int              TileWidth,
             int              GobBlockHeight,
             int              GobBlockDepth,
@@ -39,6 +43,7 @@ namespace Ryujinx.Graphics.Gal
         {
             this.Width          = Width;
             this.Height         = Height;
+            this.LayerCount     = LayerCount;
             this.Depth          = Depth;
             this.TileWidth      = TileWidth;
             this.GobBlockHeight = GobBlockHeight;

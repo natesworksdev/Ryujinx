@@ -208,7 +208,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
             GalImageFormat Format = ImageUtils.ConvertSurface((GalSurfaceFormat)SurfFormat);
 
-            GalImage Image = new GalImage(Width, Height, 1, 1, GobBlockHeight, 1, Layout, Format, GalTextureTarget.TwoD);
+            GalImage Image = new GalImage(Width, Height, 1, 1, 1, GobBlockHeight, 1, Layout, Format, GalTextureTarget.TwoD);
 
             Gpu.ResourceManager.SendColorBuffer(Vmm, Key, FbIndex, Image);
 
@@ -263,7 +263,7 @@ namespace Ryujinx.Graphics.Graphics3d
             GalImageFormat Format = ImageUtils.ConvertZeta((GalZetaFormat)ZetaFormat);
 
             // TODO: Support non 2D?
-            GalImage Image = new GalImage(Width, Height, 1, 1, GobBlockHeight, 1, Layout, Format, GalTextureTarget.TwoD);
+            GalImage Image = new GalImage(Width, Height, 1, 1, 1, GobBlockHeight, 1, Layout, Format, GalTextureTarget.TwoD);
 
             Gpu.ResourceManager.SendZetaBuffer(Vmm, Key, Image);
         }
@@ -609,7 +609,7 @@ namespace Ryujinx.Graphics.Graphics3d
             {
                 //FIXME: Some games like puyo puyo will use handles with the value 0.
                 //This is a bug, most likely caused by sync issues.
-                return (0, default(GalImage), default(GalTextureSampler));
+                //return (0, default(GalImage), default(GalTextureSampler));
             }
 
             bool LinkedTsc = ReadRegisterBool(NvGpuEngine3dReg.LinkedTsc);

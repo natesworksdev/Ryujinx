@@ -216,7 +216,7 @@ namespace Ryujinx.Graphics.VDec
 
             GalImage Image = new GalImage(
                 OutputConfig.SurfaceWidth,
-                OutputConfig.SurfaceHeight, 1, 1,
+                OutputConfig.SurfaceHeight, 1, 1, 1,
                 OutputConfig.GobBlockHeight, 1,
                 GalMemoryLayout.BlockLinear,
                 GalImageFormat.RGBA8 | GalImageFormat.Unorm,

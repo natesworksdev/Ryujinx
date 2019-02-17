@@ -364,89 +364,9 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        // from envytools
-        private static readonly int GobSizeX = 64;
-        private static readonly int GobSizeY = 8;
-        private static readonly int GobSizeZ = 1;
-
-        // https://github.com/mesa3d/mesa/blob/master/src/gallium/drivers/nouveau/nvc0/nvc0_miptree.c
-        // FIXME: the width is never set to anything, maybe there is other variants?
-        // TODO: miplevels
-        private static (int TileWidth, int TileHeight, int TileDepth) GetTileDimensions(GalImage Image)
-        {
-            (int Width, int Height, int Depth) = GetImageSizeInBlocks(Image);
-
-            int TileWidth = 0;
-            int TileHeight = 0;
-            int TileDepth = 0;
-
-            if (Height > 64)
-            {
-                TileHeight = 4;
-            }
-            else if (Height > 32)
-            {
-                TileHeight = 3;
-            }
-            else if (Height > 16)
-            {
-                TileHeight = 2;
-            }
-            else if (Height > 8)
-            {
-                TileHeight = 1;
-            }
-
-            if (Image.TextureTarget == GalTextureTarget.ThreeD)
-            {
-                if (TileHeight > 2)
-                {
-                    TileHeight = 2;
-                }
-
-                if (Depth > 16 && TileDepth < 2)
-                {
-                    TileDepth = 5;
-                }
-                else if (Depth > 8)
-                {
-                    TileDepth = 4;
-                }
-                else if (Depth > 4)
-                {
-                    TileDepth = 3;
-                }
-                else if (Depth > 2)
-                {
-                    TileDepth = 2;
-                }
-                else if (Depth > 1)
-                {
-                    TileDepth = 1;
-                }
-            }
-
-            return (GobSizeX << TileWidth, GobSizeY << TileHeight, GobSizeZ << TileDepth);
-        }
-
         public static int GetGpuSize(GalImage Image, bool forcePitch = false)
         {
-            ImageDescriptor Desc = GetImageDescriptor(Image.Format);
-
-            if (Image.Layout == GalMemoryLayout.Pitch || forcePitch)
-            {
-                // TODO: check this
-                return Image.Width * Image.Height * Image.Depth * Desc.BytesPerPixel;
-            }
-
-            (int TileWidth, int TileHeight, int TileDepth) = GetTileDimensions(Image);
-            (int BlockX, int BlockY, int _) = GetImageSizeInBlocks(Image);
-
-            int Pitch = BitUtils.AlignUp(BlockX * Desc.BytesPerPixel, TileWidth);
-            int Height = BitUtils.AlignUp(BlockY, TileHeight);
-            int Depth = BitUtils.AlignUp(Image.Depth, TileDepth);
-
-            return BitUtils.AlignUp(Pitch * Height * Depth, (GobSizeX * GobSizeY) << (TileWidth + TileHeight + TileDepth));
+            return TextureHelper.GetSwizzle(Image).GetImageSize(Image.MaxMipmapLevel) * Image.LayerCount;
         }
 
         public static int GetPitch(GalImageFormat Format, int Width)

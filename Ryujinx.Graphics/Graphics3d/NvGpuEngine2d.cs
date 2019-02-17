@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
@@ -118,7 +119,7 @@ namespace Ryujinx.Graphics.Graphics3d
             GalImage SrcTexture = new GalImage(
                 SrcWidth,
                 SrcHeight,
-                SrcDepth, 1,
+                1, SrcDepth, 1,
                 SrcBlockHeight, 1,
                 SrcLayout,
                 SrcImgFormat,
@@ -127,7 +128,7 @@ namespace Ryujinx.Graphics.Graphics3d
             GalImage DstTexture = new GalImage(
                 DstWidth,
                 DstHeight,
-                DstDepth, 1,
+                1, DstDepth, 1,
                 DstBlockHeight, 1,
                 DstLayout,
                 DstImgFormat,
@@ -138,8 +139,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
             long GetLayerOffset(GalImage Image, int Layer)
             {
-                // TODO: mip map
-                return (ImageUtils.GetGpuSize(Image) / Image.Depth) * Layer;
+                return (ImageUtils.GetGpuSize(Image) / Image.LayerCount) * Layer;
             }
 
             int SrcLayerIndex = -1;
@@ -161,7 +161,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
             if (IsSrcLayered && SrcLayerIndex == -1)
             {
-                for (int Layer = 0; Layer < SrcTexture.Depth; Layer++)
+                for (int Layer = 0; Layer < SrcTexture.LayerCount; Layer++)
                 {
                     Gpu.ResourceManager.SetTextureArrayLayer(SrcKey + GetLayerOffset(SrcTexture, Layer), Layer);
                 }
@@ -171,7 +171,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
             if (IsDstLayered && DstLayerIndex == -1)
             {
-                for (int Layer = 0; Layer < DstTexture.Depth; Layer++)
+                for (int Layer = 0; Layer < DstTexture.LayerCount; Layer++)
                 {
                     Gpu.ResourceManager.SetTextureArrayLayer(DstKey + GetLayerOffset(DstTexture, Layer), Layer);
                 }
