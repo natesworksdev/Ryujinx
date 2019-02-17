@@ -16,6 +16,11 @@ namespace ChocolArm64.Memory
 
                 return MemoryAllocWindows.Allocate(sizeNint);
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return MemoryAllocUnix.Allocate(size);
+            }
             else
             {
                 throw new PlatformNotSupportedException();
@@ -30,23 +35,40 @@ namespace ChocolArm64.Memory
 
                 return MemoryAllocWindows.AllocateWriteTracked(sizeNint);
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return MemoryAllocUnix.Allocate(size);
+            }
             else
             {
                 throw new PlatformNotSupportedException();
             }
         }
 
-        public static bool Reprotect(IntPtr address, ulong size, MemoryProtection permission)
+        public static void Reprotect(IntPtr address, ulong size, MemoryProtection permission)
         {
+            bool result;
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 IntPtr sizeNint = new IntPtr((long)size);
 
-                return MemoryAllocWindows.Reprotect(address, sizeNint, permission);
+                result = MemoryAllocWindows.Reprotect(address, sizeNint, permission);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                result = MemoryAllocUnix.Reprotect(address, size, permission);
             }
             else
             {
                 throw new PlatformNotSupportedException();
+            }
+
+            if (!result)
+            {
+                throw new MemoryProtectionException(permission);
             }
         }
 
@@ -55,6 +77,11 @@ namespace ChocolArm64.Memory
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return MemoryAllocWindows.Free(address);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return MemoryAllocUnix.Free(address);
             }
             else
             {
@@ -69,6 +96,9 @@ namespace ChocolArm64.Memory
             IntPtr[]  addresses,
             out ulong count)
         {
+            //This is only supported on windows, but returning
+            //false (failed) is also valid for platforms without
+            //write tracking support on the OS.
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return MemoryAllocWindows.GetModifiedPages(address, size, addresses, out count);

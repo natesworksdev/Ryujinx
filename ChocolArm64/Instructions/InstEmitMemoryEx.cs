@@ -93,9 +93,9 @@ namespace ChocolArm64.Instructions
 
             if (pair)
             {
-                //Exclusive loads should be atomic, for pairwise loads, the need to
-                //read all the data at once. for a 32-bits pairwise load, we do a
-                //simple 64-bits load, for 128-bits load, we need to call a special
+                //Exclusive loads should be atomic. For pairwise loads, we need to
+                //read all the data at once. For a 32-bits pairwise load, we do a
+                //simple 64-bits load, for a 128-bits load, we need to call a special
                 //method to read 128-bits atomically.
                 if (op.Size == 2)
                 {
@@ -169,7 +169,7 @@ namespace ChocolArm64.Instructions
             }
             else
             {
-                //8, 16, 32 or 64-bits load, or 64-bits pair load.
+                //8, 16, 32 or 64-bits (non-pairwise) load.
                 context.EmitLdarg(TranslatedSub.MemoryArgIdx);
                 context.EmitLdtmp();
 
@@ -181,24 +181,6 @@ namespace ChocolArm64.Instructions
                 }
 
                 context.EmitStintzr(op.Rt);
-
-                if (pair)
-                {
-                    context.EmitLdarg(TranslatedSub.MemoryArgIdx);
-                    context.EmitLdtmp();
-                    context.EmitLdc_I8(1 << op.Size);
-
-                    context.Emit(OpCodes.Add);
-
-                    EmitReadZxCall(context, op.Size);
-
-                    if (exclusive)
-                    {
-                        WriteExclusiveValue(nameof(CpuThreadState.ExclusiveValueHigh));
-                    }
-
-                    context.EmitStintzr(op.Rt2);
-                }
             }
         }
 
