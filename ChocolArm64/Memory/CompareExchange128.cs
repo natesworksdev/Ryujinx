@@ -55,15 +55,15 @@ namespace ChocolArm64.Memory
             {
                 interlockedCompareExchange128Code = new byte[]
                 {
-                        0x53,                         // push %rbx
-                        0x49, 0x89, 0xd1,             // mov  %rdx,%r9
-                        0x48, 0x89, 0xcb,             // mov  %rcx,%rbx
-                        0x48, 0x89, 0xf0,             // mov  %rsi,%rax
-                        0x4c, 0x89, 0xca,             // mov  %r9,%rdx
-                        0x4c, 0x89, 0xc1,             // mov  %r8,%rcx
-                        0xf0, 0x48, 0x0f, 0xc7, 0x0f, // lock cmpxchg16b (%rdi)
-                        0x5b,                         // pop  %rbx
-                        0xc3                          // retq
+                        0x53,                         // push rbx
+                        0x49, 0x89, 0xd1,             // mov  r9,rdx
+                        0x48, 0x89, 0xcb,             // mov  rbx,rcx
+                        0x48, 0x89, 0xf0,             // mov  rax,rsi
+                        0x4c, 0x89, 0xca,             // mov  rdx,r9
+                        0x4c, 0x89, 0xc1,             // mov  rcx,r8
+                        0xf0, 0x48, 0x0f, 0xc7, 0x0f, // lock cmpxchg16b [rdi]
+                        0x5b,                         // pop  rbx
+                        0xc3                          // ret
                 };
             }
             else
