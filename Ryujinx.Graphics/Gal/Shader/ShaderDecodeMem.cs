@@ -88,6 +88,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case 8:
                 case 0xa:
                 case 0xc:
+                case 0x18:
                     return GalTextureTarget.TwoD;
                 case 0x10:
                     return GalTextureTarget.TwoDArray;

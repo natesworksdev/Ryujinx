@@ -1255,7 +1255,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
             {
-                return "texelFetchOffset(" + Sampler + ", " + Coords + ", " + Lod + ", " + GetOperExpr(Op, Meta.Offset) + ")." + Ch;
+                string Offset = GetTextureOffset(Meta, GetOperExpr(Op, Meta.Offset));
+                return "texelFetchOffset(" + Sampler + ", " + Coords + ", " + Lod + ", " + Offset + ")." + Ch;
             }
 
             return "texelFetch(" + Sampler + ", " + Coords + ", " + Lod + ")." + Ch;
