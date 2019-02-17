@@ -74,6 +74,9 @@ namespace Ryujinx
                             device.LoadProgram(args[0]);
                             break;
                     }
+                } 
+                else{
+                    Logger.PrintInfo(LogClass.Application, "Specified game path is invalid.");
                 }
             }
             else
