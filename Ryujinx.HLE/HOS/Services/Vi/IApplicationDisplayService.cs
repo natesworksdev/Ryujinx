@@ -188,7 +188,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
                 return MakeError(ErrorModule.Vi, 1);
             }
 
-            if (scalingMode != SrcScalingMode.ScaleAndCrop &&
+            if (scalingMode != SrcScalingMode.ScaleToWindow &&
                 scalingMode != SrcScalingMode.PreserveAspectRatio)
             {
                 //Invalid scaling mode specified.
