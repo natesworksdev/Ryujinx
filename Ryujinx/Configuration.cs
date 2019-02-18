@@ -2,6 +2,7 @@ using LibHac.IO;
 using OpenTK.Input;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Input;
@@ -60,6 +61,11 @@ namespace Ryujinx
         /// Enables or disables logging to a file on disk
         /// </summary>
         public bool EnableFileLog { get; private set; }
+
+        /// <summary>
+        /// Enables or disables stict OpenGL
+        /// </summary>
+        public bool EnableStrictOpengl { get; private set; }
 
         /// <summary>
         /// Change System Language
@@ -181,6 +187,8 @@ namespace Ryujinx
                     Logger.SetEnable(logClass, true);
                 }
             }
+
+            OGLExtension.SetStrictOpenGL(Instance.EnableStrictOpengl);
 
             device.EnableDeviceVsync = Instance.EnableVsync;
 
