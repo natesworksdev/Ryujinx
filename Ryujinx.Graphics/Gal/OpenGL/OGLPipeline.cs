@@ -283,7 +283,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     {
                         // If viewport arrays are unavailable apply first scissor test to all or
                         // there is only 1 scissor test and it's the first, the scissor test applies to all viewports
-                        if (!OGLExtension.ViewportArrayStrict || (Index == 0 && New.ScissorTestCount == 1))
+                        if (!OGLExtension.Strict.ViewportArray || (Index == 0 && New.ScissorTestCount == 1))
                         {
                             GL.Enable(EnableCap.ScissorTest);
                             applyToAll = true;
@@ -312,7 +312,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         }
 
                         // If all scissor tests have been applied, or viewport arrays are unavailable we can skip remaining itterations
-                        if (!OGLExtension.ViewportArrayStrict || ++scissorsApplied == New.ScissorTestCount)
+                        if (!OGLExtension.Strict.ViewportArray || ++scissorsApplied == New.ScissorTestCount)
                         {
                             break;
                         }

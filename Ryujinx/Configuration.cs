@@ -188,7 +188,7 @@ namespace Ryujinx
                 }
             }
 
-            OGLExtension.SetStrictOpenGL(Instance.EnableStrictOpengl);
+            OGLExtension.Strict.SetStrictOpenGL(Instance.EnableStrictOpengl);
 
             device.EnableDeviceVsync = Instance.EnableVsync;
 
