@@ -42,7 +42,7 @@
     "enable_fs_integrity_checks": true,
 
     // Enable strict OpenGL. Required OpenGL extensions/features will throw exceptions rather than potentially problamatic fallbacks
-    "enable_strict_opengl": true,  
+    "enable_strict_opengl": false,  
 
     // The primary controller's type
     // Supported Values: Handheld, ProController, NpadPair, NpadLeft, NpadRight
