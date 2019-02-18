@@ -2,19 +2,19 @@
 {
     enum SrcScalingMode
     {
-        Freeze              = 0,
-        ScaleToWindow       = 1,
-        ScaleAndCrop        = 2,
-        None                = 3,
+        None                = 0,
+        Freeze              = 1,
+        ScaleToWindow       = 2,
+        ScaleAndCrop        = 3,
         PreserveAspectRatio = 4
     }
 
     enum DstScalingMode
     {
-        ScaleToWindow       = 0,
-        ScaleAndCrop        = 1,
-        None                = 2,
-        Freeze              = 3,
+        Freeze              = 0,
+        ScaleToWindow       = 1,
+        ScaleAndCrop        = 2,
+        None                = 3,
         PreserveAspectRatio = 4
     }
 }
