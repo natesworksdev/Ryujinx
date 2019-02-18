@@ -82,11 +82,11 @@ namespace ChocolArm64.Memory
             byte[] getCpuIdCode = new byte[]
             {
                 0x53,                         // push rbx
-                0xB8, 0x01, 0x00, 0x00, 0x00, // mov eax, 0x1
-                0x0F, 0xA2,                   // cpuid
-                0x89, 0xC8,                   // mov eax, ecx
-                0x5B,                         // pop rbx
-                0xC3                          // ret
+                0xb8, 0x01, 0x00, 0x00, 0x00, // mov eax, 0x1
+                0x0f, 0xa2,                   // cpuid
+                0x89, 0xc8,                   // mov eax, ecx
+                0x5b,                         // pop rbx
+                0xc3                          // ret
             };
 
             IntPtr funcPtr = MapCodeAsExecutable(getCpuIdCode);
