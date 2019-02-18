@@ -399,6 +399,17 @@
         false
       ]
     },
+    "enable_strict_opengl": {
+      "$id": "#/properties/enable_strict_opengl",
+      "type": "boolean",
+      "title": "Enable Strict OpenGL",
+      "description": "Required OpenGL extensions/features will throw exceptions rather than potentially problamatic fallbacks",
+      "default": false,
+      "examples": [
+        true,
+        false
+      ]
+    },
     "controller_type": {
       "$id": "#/properties/controller_type",
       "type": "string",
