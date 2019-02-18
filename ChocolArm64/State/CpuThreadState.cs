@@ -120,7 +120,7 @@ namespace ChocolArm64.State
 
         private ulong GetMaskedExclusiveAddress(ulong address)
         {
-            return address & ~((1UL << ErgSizeLog2) - 1);
+            return address & ~((4UL << ErgSizeLog2) - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

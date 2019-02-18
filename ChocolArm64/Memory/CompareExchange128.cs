@@ -19,12 +19,13 @@ namespace ChocolArm64.Memory
 
         private delegate Int128 InterlockedCompareExchange(IntPtr address, Int128 expected, Int128 desired);
 
+        private delegate int GetCpuId();
+
         private static InterlockedCompareExchange _interlockedCompareExchange;
 
         static CompareExchange128()
         {
-            //TODO: Also check if cmpxchg16b is supported on cpu flags.
-            if (RuntimeInformation.OSArchitecture != Architecture.X64)
+            if (RuntimeInformation.OSArchitecture != Architecture.X64 || !IsCmpxchg16bSupported())
             {
                 throw new PlatformNotSupportedException();
             }
@@ -36,18 +37,18 @@ namespace ChocolArm64.Memory
                 interlockedCompareExchange128Code = new byte[]
                 {
                     0x53,                         // push rbx
-                    0x49, 0x8B, 0x00,             // mov  rax, [r8]
-                    0x49, 0x8B, 0x19,             // mov  rbx, [r9]
-                    0x49, 0x89, 0xCA,             // mov  r10, rcx
-                    0x49, 0x89, 0xD3,             // mov  r11, rdx
-                    0x49, 0x8B, 0x49, 0x08,       // mov  rcx, [r9+8]
-                    0x49, 0x8B, 0x50, 0x08,       // mov  rdx, [r8+8]
-                    0xF0, 0x49, 0x0F, 0xC7, 0x0B, // lock cmpxchg16b [r11]
+                    0x49, 0x8b, 0x00,             // mov  rax, [r8]
+                    0x49, 0x8b, 0x19,             // mov  rbx, [r9]
+                    0x49, 0x89, 0xca,             // mov  r10, rcx
+                    0x49, 0x89, 0xd3,             // mov  r11, rdx
+                    0x49, 0x8b, 0x49, 0x08,       // mov  rcx, [r9+8]
+                    0x49, 0x8b, 0x50, 0x08,       // mov  rdx, [r8+8]
+                    0xf0, 0x49, 0x0f, 0xc7, 0x0b, // lock cmpxchg16b [r11]
                     0x49, 0x89, 0x02,             // mov  [r10], rax
-                    0x4C, 0x89, 0xD0,             // mov  rax, r10
+                    0x4c, 0x89, 0xd0,             // mov  rax, r10
                     0x49, 0x89, 0x52, 0x08,       // mov  [r10+8], rdx
-                    0x5B,                         // pop  rbx
-                    0xC3                          // ret
+                    0x5b,                         // pop  rbx
+                    0xc3                          // ret
                 };
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
@@ -56,11 +57,11 @@ namespace ChocolArm64.Memory
                 interlockedCompareExchange128Code = new byte[]
                 {
                     0x53,                         // push rbx
-                    0x49, 0x89, 0xd1,             // mov  r9,rdx
-                    0x48, 0x89, 0xcb,             // mov  rbx,rcx
-                    0x48, 0x89, 0xf0,             // mov  rax,rsi
-                    0x4c, 0x89, 0xca,             // mov  rdx,r9
-                    0x4c, 0x89, 0xc1,             // mov  rcx,r8
+                    0x49, 0x89, 0xd1,             // mov  r9, rdx
+                    0x48, 0x89, 0xcb,             // mov  rbx, rcx
+                    0x48, 0x89, 0xf0,             // mov  rax, rsi
+                    0x4c, 0x89, 0xca,             // mov  rdx, r9
+                    0x4c, 0x89, 0xc1,             // mov  rcx, r8
                     0xf0, 0x48, 0x0f, 0xc7, 0x0f, // lock cmpxchg16b [rdi]
                     0x5b,                         // pop  rbx
                     0xc3                          // ret
@@ -71,13 +72,43 @@ namespace ChocolArm64.Memory
                 throw new PlatformNotSupportedException();
             }
 
-            ulong codeLength = (ulong)interlockedCompareExchange128Code.Length;
+            IntPtr funcPtr = MapCodeAsExecutable(interlockedCompareExchange128Code);
+
+            _interlockedCompareExchange = Marshal.GetDelegateForFunctionPointer<InterlockedCompareExchange>(funcPtr);
+        }
+
+        private static bool IsCmpxchg16bSupported()
+        {
+            byte[] getCpuIdCode = new byte[]
+            {
+                0x53,                         // push rbx
+                0xB8, 0x01, 0x00, 0x00, 0x00, // mov eax, 0x1
+                0x0F, 0xA2,                   // cpuid
+                0x89, 0xC8,                   // mov eax, ecx
+                0x5B,                         // pop rbx
+                0xC3                          // ret
+            };
+
+            IntPtr funcPtr = MapCodeAsExecutable(getCpuIdCode);
+
+            GetCpuId getCpuId = Marshal.GetDelegateForFunctionPointer<GetCpuId>(funcPtr);
+
+            int cpuId = getCpuId();
+
+            MemoryAlloc.Free(funcPtr);
+
+            return (cpuId & (1 << 13)) != 0;
+        }
+
+        private static IntPtr MapCodeAsExecutable(byte[] code)
+        {
+            ulong codeLength = (ulong)code.Length;
 
             IntPtr funcPtr = MemoryAlloc.Allocate(codeLength);
 
             unsafe
             {
-                fixed (byte* codePtr = interlockedCompareExchange128Code)
+                fixed (byte* codePtr = code)
                 {
                     byte* dest = (byte*)funcPtr;
 
@@ -89,7 +120,7 @@ namespace ChocolArm64.Memory
 
             MemoryAlloc.Reprotect(funcPtr, codeLength, MemoryProtection.Execute);
 
-            _interlockedCompareExchange = Marshal.GetDelegateForFunctionPointer<InterlockedCompareExchange>(funcPtr);
+            return funcPtr;
         }
 
         public static bool InterlockedCompareExchange128(
