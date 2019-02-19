@@ -439,7 +439,7 @@ namespace Ryujinx.Graphics.Graphics3d
                     int height = Math.Abs(top   - bottom);
 
                     // If the scissor test covers the whole possible viewport, i.e. uninititalized, disable scissor test
-                    if ((width > 16383 && height > 16383) || width <= 0 || height <= 0)
+                    if ((width > NvGpu.MaxViewportSize && height > NvGpu.MaxViewportSize) || width <= 0 || height <= 0)
                     {
                         State.ScissorTestEnabled[Index] = false;
                         continue;
