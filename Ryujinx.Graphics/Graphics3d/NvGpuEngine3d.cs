@@ -100,7 +100,14 @@ namespace Ryujinx.Graphics.Graphics3d
 
             GalPipelineState State = new GalPipelineState();
 
+            // Framebuffer must be run configured because viewport dimensions may be used in other methods
             SetFrameBuffer(State);
+
+            for (int FbIndex = 0; FbIndex < 8; FbIndex++)
+            {
+                SetFrameBuffer(Vmm, FbIndex);
+            }
+
             SetFrontFace(State);
             SetCullFace(State);
             SetDepth(State);
@@ -109,11 +116,6 @@ namespace Ryujinx.Graphics.Graphics3d
             SetBlending(State);
             SetColorMask(State);
             SetPrimitiveRestart(State);
-
-            for (int FbIndex = 0; FbIndex < 8; FbIndex++)
-            {
-                SetFrameBuffer(Vmm, FbIndex);
-            }
 
             SetZeta(Vmm);
 
