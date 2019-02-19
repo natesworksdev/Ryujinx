@@ -55,7 +55,6 @@ namespace ChocolArm64.Translation
         private const int IntGpTmp2Index   = ReservedLocalsCount + 4;
         private const int UserIntTempStart = ReservedLocalsCount + 5;
 
-
         //Vectors are part of another "set" of locals.
         private const int VecGpTmp1Index   = ReservedLocalsCount + 0;
         private const int VecGpTmp2Index   = ReservedLocalsCount + 1;
@@ -174,7 +173,7 @@ namespace ChocolArm64.Translation
             _ilBlock.Add(new ILBarrier());
         }
 
-        private Condition GetInverseCond(Condition cond)
+        private static Condition GetInverseCond(Condition cond)
         {
             //Bit 0 of all conditions is basically a negation bit, so
             //inverting this bit has the effect of inverting the condition.
@@ -640,62 +639,12 @@ namespace ChocolArm64.Translation
 
         public void EmitCallPropGet(Type objType, string propName)
         {
-            if (objType == null)
-            {
-                throw new ArgumentNullException(nameof(objType));
-            }
-
-            if (propName == null)
-            {
-                throw new ArgumentNullException(nameof(propName));
-            }
-
-            EmitCall(objType.GetMethod($"get_{propName}"));
+            EmitCall(objType, $"get_{propName}");
         }
 
         public void EmitCallPropSet(Type objType, string propName)
         {
-            if (objType == null)
-            {
-                throw new ArgumentNullException(nameof(objType));
-            }
-
-            if (propName == null)
-            {
-                throw new ArgumentNullException(nameof(propName));
-            }
-
-            EmitCall(objType.GetMethod($"set_{propName}"));
-        }
-
-        public void EmitCallPrivatePropGet(Type objType, string propName)
-        {
-            if (objType == null)
-            {
-                throw new ArgumentNullException(nameof(objType));
-            }
-
-            if (propName == null)
-            {
-                throw new ArgumentNullException(nameof(propName));
-            }
-
-            EmitPrivateCall(objType, $"get_{propName}");
-        }
-
-        public void EmitCallPrivatePropSet(Type objType, string propName)
-        {
-            if (objType == null)
-            {
-                throw new ArgumentNullException(nameof(objType));
-            }
-
-            if (propName == null)
-            {
-                throw new ArgumentNullException(nameof(propName));
-            }
-
-            EmitPrivateCall(objType, $"set_{propName}");
+            EmitCall(objType, $"set_{propName}");
         }
 
         public void EmitCall(Type objType, string mthdName)
@@ -711,6 +660,16 @@ namespace ChocolArm64.Translation
             }
 
             EmitCall(objType.GetMethod(mthdName));
+        }
+
+        public void EmitCallPrivatePropGet(Type objType, string propName)
+        {
+            EmitPrivateCall(objType, $"get_{propName}");
+        }
+
+        public void EmitCallPrivatePropSet(Type objType, string propName)
+        {
+            EmitPrivateCall(objType, $"set_{propName}");
         }
 
         public void EmitPrivateCall(Type objType, string mthdName)

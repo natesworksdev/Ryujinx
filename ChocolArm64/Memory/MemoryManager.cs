@@ -7,7 +7,7 @@ using System.Runtime.Intrinsics.X86;
 using System.Threading;
 
 using static ChocolArm64.Memory.CompareExchange128;
-using static ChocolArm64.Memory.MemoryAlloc;
+using static ChocolArm64.Memory.MemoryManagement;
 
 namespace ChocolArm64.Memory
 {
@@ -29,7 +29,7 @@ namespace ChocolArm64.Memory
 
         internal IntPtr PageTable => _pageTable;
 
-        public bool HasWriteWatchSupport => MemoryAlloc.HasWriteWatchSupport;
+        public bool HasWriteWatchSupport => MemoryManagement.HasWriteWatchSupport;
 
         public long AddressSpaceSize { get; }
 
