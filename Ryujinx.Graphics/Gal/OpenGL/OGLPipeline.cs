@@ -383,6 +383,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Old = New;
         }
 
+        public void Unbind(GalPipelineState State)
+        {
+            if (State.ScissorTestCount > 0)
+            {
+                GL.Disable(EnableCap.ScissorTest);
+            }
+        }
+
         private void SetAllBlendState(BlendState New)
         {
             Enable(EnableCap.Blend, New.Enabled);

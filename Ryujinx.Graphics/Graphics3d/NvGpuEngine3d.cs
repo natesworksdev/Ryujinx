@@ -1074,6 +1074,9 @@ namespace Ryujinx.Graphics.Graphics3d
                 Gpu.Renderer.Rasterizer.DrawArrays(VertexFirst, VertexCount, PrimType);
             }
 
+            // Reset pipeline for host OpenGL calls
+            Gpu.Renderer.Pipeline.Unbind(State);
+
             //Is the GPU really clearing those registers after draw?
             WriteRegister(NvGpuEngine3dReg.IndexBatchFirst, 0);
             WriteRegister(NvGpuEngine3dReg.IndexBatchCount, 0);
