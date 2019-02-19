@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
                 return MakeError(ErrorModule.Vi, 6);
             }
 
-            context.ResponseData.Write((ulong)ConvertScalingMode(scalingMode));
+            context.ResponseData.Write((ulong)convertedScalingMode);
 
             return 0;
         }
