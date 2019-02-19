@@ -403,7 +403,7 @@
       "$id": "#/properties/enable_strict_opengl",
       "type": "boolean",
       "title": "Enable Strict OpenGL",
-      "description": "Required OpenGL extensions/features will throw exceptions rather than potentially problamatic fallbacks",
+      "description": "Required OpenGL extensions/features will throw exceptions rather than potentially problematic fallbacks",
       "default": false,
       "examples": [
         true,

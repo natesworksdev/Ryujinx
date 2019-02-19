@@ -41,7 +41,7 @@
     // Enable integrity checks on Switch content files
     "enable_fs_integrity_checks": true,
 
-    // Enable strict OpenGL. Required OpenGL extensions/features will throw exceptions rather than potentially problamatic fallbacks
+    // Enable strict OpenGL. Required OpenGL extensions/features will throw exceptions rather than potentially problematic fallbacks
     "enable_strict_opengl": false,  
 
     // The primary controller's type
