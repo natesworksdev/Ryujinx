@@ -62,11 +62,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 attributeMask,
                 attributeValue);
 
-            if (result == KernelResult.Success)
-            {
-                _memory.StopObservingRegion((long)position, (long)size);
-            }
-
             return result;
         }
 

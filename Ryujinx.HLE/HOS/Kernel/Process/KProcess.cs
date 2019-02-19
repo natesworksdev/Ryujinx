@@ -95,8 +95,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             CpuMemory = new MemoryManager(system.Device.Memory.RamPointer);
 
-            CpuMemory.InvalidAccess += InvalidAccessHandler;
-
             AddressArbiter = new KAddressArbiter(system);
 
             MemoryManager = new KMemoryManager(system, CpuMemory);
@@ -1008,11 +1006,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     System.Scheduler.CoreManager.Set(thread.Context.Work);
                 }
             }
-        }
-
-        private void InvalidAccessHandler(object sender, MemoryAccessEventArgs e)
-        {
-            PrintCurrentThreadStackTrace();
         }
 
         public void PrintCurrentThreadStackTrace()
