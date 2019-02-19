@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
         {
             SrcScalingMode scalingMode = (SrcScalingMode)context.RequestData.ReadInt32();
 
-            DstScalingMode? convertedScalingMode = ConvetScalingMode(scalingMode);
+            DstScalingMode? convertedScalingMode = ConvertScalingMode(scalingMode);
 
             if (!convertedScalingMode.HasValue)
             {
@@ -197,12 +197,12 @@ namespace Ryujinx.HLE.HOS.Services.Vi
                 return MakeError(ErrorModule.Vi, 6);
             }
 
-            context.ResponseData.Write((ulong)ConvetScalingMode(scalingMode));
+            context.ResponseData.Write((ulong)ConvertScalingMode(scalingMode));
 
             return 0;
         }
 
-        private DstScalingMode? ConvetScalingMode(SrcScalingMode source)
+        private DstScalingMode? ConvertScalingMode(SrcScalingMode source)
         {
             switch (source)
             {
