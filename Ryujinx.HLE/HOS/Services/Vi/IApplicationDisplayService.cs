@@ -182,7 +182,9 @@ namespace Ryujinx.HLE.HOS.Services.Vi
         {
             SrcScalingMode scalingMode = (SrcScalingMode)context.RequestData.ReadInt32();
 
-            if (scalingMode > SrcScalingMode.PreserveAspectRatio)
+            DstScalingMode? convertedScalingMode = ConvetScalingMode(scalingMode);
+
+            if (!convertedScalingMode.HasValue)
             {
                 //Scaling mode out of the range of valid values.
                 return MakeError(ErrorModule.Vi, 1);
@@ -200,7 +202,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
             return 0;
         }
 
-        private DstScalingMode ConvetScalingMode(SrcScalingMode source)
+        private DstScalingMode? ConvetScalingMode(SrcScalingMode source)
         {
             switch (source)
             {
@@ -211,7 +213,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
                 case SrcScalingMode.PreserveAspectRatio: return DstScalingMode.PreserveAspectRatio;
             }
 
-            throw new ArgumentException($"Invalid scaling mode \"{source}\" specified.");
+            return null;
         }
 
         public long GetDisplayVSyncEvent(ServiceCtx context)
