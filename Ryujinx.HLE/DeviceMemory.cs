@@ -1,6 +1,5 @@
 using ChocolArm64.Memory;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE
 {

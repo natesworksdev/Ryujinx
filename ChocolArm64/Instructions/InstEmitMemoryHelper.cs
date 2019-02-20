@@ -161,7 +161,7 @@ namespace ChocolArm64.Instructions
 
             EmitReadIntFallback(context, size);
 
-            context.Emit(OpCodes.Br_S, lblEnd);
+            context.Emit(OpCodes.Br, lblEnd);
 
             context.MarkLabel(lblFastPath);
 
@@ -192,7 +192,7 @@ namespace ChocolArm64.Instructions
 
             EmitReadVectorFallback(context, size);
 
-            context.Emit(OpCodes.Br_S, lblEnd);
+            context.Emit(OpCodes.Br, lblEnd);
 
             context.MarkLabel(lblFastPath);
 
@@ -217,7 +217,7 @@ namespace ChocolArm64.Instructions
 
             EmitWriteIntFallback(context, size);
 
-            context.Emit(OpCodes.Br_S, lblEnd);
+            context.Emit(OpCodes.Br, lblEnd);
 
             context.MarkLabel(lblFastPath);
 
@@ -255,7 +255,7 @@ namespace ChocolArm64.Instructions
 
             EmitWriteVectorFallback(context, size);
 
-            context.Emit(OpCodes.Br_S, lblEnd);
+            context.Emit(OpCodes.Br, lblEnd);
 
             context.MarkLabel(lblFastPath);
 
@@ -283,24 +283,40 @@ namespace ChocolArm64.Instructions
 
         private static void EmitPtPointerLoad(ILEmitterCtx context, ILLabel lblFallbackPath)
         {
-            context.EmitLdint(_tempIntAddress);
-
-            context.EmitLsr(MemoryManager.PageBits);
-
-            context.EmitLdc_I(IntPtr.Size);
-
-            context.Emit(OpCodes.Mul);
-
-            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
-            {
-                context.Emit(OpCodes.Conv_U8);
-            }
-
             context.EmitLdc_I8(context.Memory.PageTable.ToInt64());
 
-            context.Emit(OpCodes.Add);
             context.Emit(OpCodes.Conv_I);
-            context.Emit(OpCodes.Ldind_I);
+
+            int bit = MemoryManager.PageBits;
+
+            do
+            {
+                context.EmitLdint(_tempIntAddress);
+
+                if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+                {
+                    context.Emit(OpCodes.Conv_U8);
+                }
+
+                context.EmitLsr(bit);
+
+                bit += context.Memory.PtLevelBits;
+
+                if (bit < context.Memory.AddressSpaceBits)
+                {
+                    context.EmitLdc_I8(context.Memory.PtLevelMask);
+
+                    context.Emit(OpCodes.And);
+                }
+
+                context.EmitLdc_I8(IntPtr.Size);
+
+                context.Emit(OpCodes.Mul);
+                context.Emit(OpCodes.Conv_I);
+                context.Emit(OpCodes.Add);
+                context.Emit(OpCodes.Ldind_I);
+            }
+            while (bit < context.Memory.AddressSpaceBits);
 
             if (!context.Memory.HasWriteWatchSupport)
             {

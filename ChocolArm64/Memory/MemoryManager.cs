@@ -29,21 +29,46 @@ namespace ChocolArm64.Memory
 
         internal IntPtr PageTable => _pageTable;
 
+        internal int PtLevelBits { get; }
+        internal int PtLevelSize { get; }
+        internal int PtLevelMask { get; }
+
         public bool HasWriteWatchSupport => MemoryManagement.HasWriteWatchSupport;
 
+        public int  AddressSpaceBits { get; }
         public long AddressSpaceSize { get; }
 
-        public MemoryManager(IntPtr ram, long addressSpaceSize = 1L << 39)
+        public MemoryManager(
+            IntPtr ram,
+            int    addressSpaceBits = 48,
+            bool   useFlatPageTable = false)
         {
             Ram = ram;
 
             _ramPtr = (byte*)ram;
 
-            AddressSpaceSize = addressSpaceSize;
+            AddressSpaceBits = addressSpaceBits;
+            AddressSpaceSize = 1L << addressSpaceBits;
 
-            long pageTableSize = (addressSpaceSize / PageSize) * IntPtr.Size;
+            //When flag page table is requested, we use a single
+            //array for the mappings of the entire address space.
+            //This has better performance, but also high RAM usage.
+            //The multi level page table uses 9 bits per level, so
+            //the RAM usage is lower, but the performance is also
+            //lower, because it's needed to do multiple reads per translation.
+            if (useFlatPageTable)
+            {
+                PtLevelBits = addressSpaceBits - PageBits;
+            }
+            else
+            {
+                PtLevelBits = 9;
+            }
 
-            _pageTable = Allocate((ulong)pageTableSize);
+            PtLevelSize = 1 << PtLevelBits;
+            PtLevelMask = PtLevelSize - 1;
+
+            _pageTable = Allocate((ulong)(PtLevelSize * IntPtr.Size));
         }
 
         public void Map(long va, long pa, long size)
@@ -75,13 +100,9 @@ namespace ChocolArm64.Memory
                 return IntPtr.Zero;
             }
 
-            byte* ptr = ((byte**)_pageTable)[position >> PageBits];
-
-            IntPtr* pt = (IntPtr*)_pageTable;
+            byte* ptr = GetPtEntry(position);
 
             ulong ptrUlong = (ulong)ptr;
-
-            long ptrLong = (long)ptr;
 
             if ((ptrUlong & PteFlagsMask) != 0)
             {
@@ -100,7 +121,7 @@ namespace ChocolArm64.Memory
                 return IntPtr.Zero;
             }
 
-            byte* ptr = ((byte**)_pageTable)[position >> PageBits];
+            byte* ptr = GetPtEntry(position);
 
             ulong ptrUlong = (ulong)ptr;
 
@@ -117,6 +138,11 @@ namespace ChocolArm64.Memory
             }
 
             return new IntPtr(ptr + (position & PageMask));
+        }
+
+        private byte* GetPtEntry(long position)
+        {
+            return *(byte**)GetPtPtr(position);
         }
 
         private void SetPtEntries(long va, byte* ptr, long size)
@@ -138,12 +164,7 @@ namespace ChocolArm64.Memory
 
         private void SetPtEntry(long position, byte* ptr)
         {
-            if (!IsValidPosition(position))
-            {
-                throw new ArgumentOutOfRangeException(nameof(position));
-            }
-
-            ((byte**)_pageTable)[position >> PageBits] = ptr;
+            *(byte**)GetPtPtr(position) = ptr;
         }
 
         private void SetPtEntryFlag(long position, long flag)
@@ -162,19 +183,79 @@ namespace ChocolArm64.Memory
 
             while (true)
             {
-                IntPtr old = pt[position >> PageBits];
+                IntPtr* ptPtr = GetPtPtr(position);
 
-                IntPtr modified = setFlag
-                    ? new IntPtr(old.ToInt64() |  flag)
-                    : new IntPtr(old.ToInt64() & ~flag);
+                IntPtr old = *ptPtr;
 
-                IntPtr origValue = Interlocked.CompareExchange(ref pt[position >> PageBits], modified, old);
+                long modified = old.ToInt64();
+
+                if (setFlag)
+                {
+                    modified |= flag;
+                }
+                else
+                {
+                    modified &= ~flag;
+                }
+
+                IntPtr origValue = Interlocked.CompareExchange(ref *ptPtr, new IntPtr(modified), old);
 
                 if (origValue == old)
                 {
                     break;
                 }
             }
+        }
+
+        private IntPtr* GetPtPtr(long position)
+        {
+            if (!IsValidPosition(position))
+            {
+                throw new ArgumentOutOfRangeException(nameof(position));
+            }
+
+            IntPtr nextPtr = _pageTable;
+
+            IntPtr* ptePtr = null;
+
+            int bit = PageBits;
+
+            while (true)
+            {
+                long index = (position >> bit) & PtLevelMask;
+
+                ptePtr = &((IntPtr*)nextPtr)[index];
+
+                bit += PtLevelBits;
+
+                if (bit >= AddressSpaceBits)
+                {
+                    break;
+                }
+
+                nextPtr = *ptePtr;
+
+                if (nextPtr == IntPtr.Zero)
+                {
+                    //Entry does not yet exist, allocate a new one.
+                    IntPtr newPtr = Allocate((ulong)(PtLevelSize * IntPtr.Size));
+
+                    //Try to swap the current pointer (should be zero), with the allocated one.
+                    nextPtr = Interlocked.Exchange(ref *ptePtr, newPtr);
+
+                    //If the old pointer is not null, then another thread already has set it.
+                    if (nextPtr != IntPtr.Zero)
+                    {
+                        Free(newPtr);
+                    }
+                    else
+                    {
+                        nextPtr = newPtr;
+                    }
+                }
+            }
+
+            return ptePtr;
         }
 
         public bool IsRegionModified(long position, long size)
@@ -318,7 +399,7 @@ namespace ChocolArm64.Memory
 
         public bool IsValidPosition(long position)
         {
-            return (ulong)position <= (ulong)AddressSpaceSize;
+            return (ulong)position < (ulong)AddressSpaceSize;
         }
 
         internal bool AtomicCompareExchange2xInt32(
@@ -899,8 +980,32 @@ namespace ChocolArm64.Memory
 
             if (ptr != IntPtr.Zero)
             {
-                Free(ptr);
+                FreePageTableEntry(ptr, PageBits);
             }
+        }
+
+        private void FreePageTableEntry(IntPtr ptr, int levelBitEnd)
+        {
+            levelBitEnd += PtLevelBits;
+
+            if (levelBitEnd >= AddressSpaceBits)
+            {
+                Free(ptr);
+
+                return;
+            }
+
+            for (int index = 0; index < PtLevelSize; index++)
+            {
+                IntPtr ptePtr = ((IntPtr*)ptr)[index];
+
+                if (ptePtr != IntPtr.Zero)
+                {
+                    FreePageTableEntry(ptePtr, levelBitEnd);
+                }
+            }
+
+            Free(ptr);
         }
     }
 }
