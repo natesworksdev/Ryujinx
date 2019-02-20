@@ -50,7 +50,7 @@ namespace ChocolArm64.Memory
             AddressSpaceBits = addressSpaceBits;
             AddressSpaceSize = 1L << addressSpaceBits;
 
-            //When flag page table is requested, we use a single
+            //When flat page table is requested, we use a single
             //array for the mappings of the entire address space.
             //This has better performance, but also high RAM usage.
             //The multi level page table uses 9 bits per level, so
