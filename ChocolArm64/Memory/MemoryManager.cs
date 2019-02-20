@@ -52,10 +52,10 @@ namespace ChocolArm64.Memory
 
             //When flat page table is requested, we use a single
             //array for the mappings of the entire address space.
-            //This has better performance, but also high RAM usage.
+            //This has better performance, but also high memory usage.
             //The multi level page table uses 9 bits per level, so
-            //the RAM usage is lower, but the performance is also
-            //lower, because it's needed to do multiple reads per translation.
+            //the memory usage is lower, but the performance is also
+            //lower, since each address translation requires multiple reads.
             if (useFlatPageTable)
             {
                 PtLevelBits = addressSpaceBits - PageBits;
