@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
@@ -188,6 +189,10 @@ namespace Ryujinx.Graphics.Graphics3d
             int Width  = ReadRegister(NvGpuEngine3dReg.FrameBufferNWidth  + FbIndex * 0x10);
             int Height = ReadRegister(NvGpuEngine3dReg.FrameBufferNHeight + FbIndex * 0x10);
 
+            int ArrayMode   = ReadRegister(NvGpuEngine3dReg.FrameBufferNArrayMode + FbIndex * 0x10);
+            int LayerCount  = ArrayMode & 0xFFFF;
+            int LayerStride = ReadRegister(NvGpuEngine3dReg.FrameBufferNLayerStride + FbIndex * 0x10);
+            int BaseLayer   = ReadRegister(NvGpuEngine3dReg.FrameBufferNBaseLayer + FbIndex * 0x10);
             int BlockDim = ReadRegister(NvGpuEngine3dReg.FrameBufferNBlockDim + FbIndex * 0x10);
 
             int GobBlockHeight = 1 << ((BlockDim >> 4) & 7);
@@ -1091,6 +1096,7 @@ namespace Ryujinx.Graphics.Graphics3d
         private void WriteRegister(GpuMethodCall MethCall)
         {
             Registers[MethCall.Method] = MethCall.Argument;
+            Logger.PrintDebug(LogClass.Gpu, $"[3D] Writing to register {(NvGpuEngine3dReg)MethCall.Method} value {MethCall.Argument:x}");
         }
 
         private int ReadRegister(NvGpuEngine3dReg Reg)

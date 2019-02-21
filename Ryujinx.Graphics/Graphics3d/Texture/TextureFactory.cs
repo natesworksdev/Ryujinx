@@ -67,8 +67,15 @@ namespace Ryujinx.Graphics.Texture
             }
             else if (TextureTarget == GalTextureTarget.CubeMap)
             {
-                // TODO: WRONG
-                Depth = 6;
+                // FIXME: This is a bit hacky but I guess it's fine for now
+                LayoutCount = 6;
+                Depth = 1;
+            }
+            else if (TextureTarget == GalTextureTarget.CubeArray)
+            {
+                // FIXME: This is a really really hacky but I guess it's fine for now
+                LayoutCount *= 6;
+                Depth = 1;
             }
 
             GalImage Image = new GalImage(

@@ -241,6 +241,7 @@ namespace Ryujinx.Graphics.Graphics3d
         private void WriteRegister(GpuMethodCall MethCall)
         {
             Registers[MethCall.Method] = MethCall.Argument;
+            Logger.PrintDebug(LogClass.Gpu, $"[2D] Writing to register {(NvGpuEngine2dReg)MethCall.Method} value {MethCall.Argument:x}");
         }
 
         private long ReadRegisterFixed1_31_32(NvGpuEngine2dReg Reg)

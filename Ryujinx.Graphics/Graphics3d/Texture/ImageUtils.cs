@@ -362,11 +362,11 @@ namespace Ryujinx.Graphics.Texture
             switch (ComponentCount)
             {
                 case 1:
-                    return Desc.BytesPerPixel * Width;
+                    return Desc.BytesPerPixel * Width * Image.LayerCount;
                 case 2:
-                    return Desc.BytesPerPixel * Width * Height;
+                    return Desc.BytesPerPixel * Width * Height * Image.LayerCount;
                 case 3:
-                    return Desc.BytesPerPixel * Width * Height * Depth;
+                    return Desc.BytesPerPixel * Width * Height * Depth * Image.LayerCount;
                 default:
                     throw new InvalidOperationException($"Invalid component count: {ComponentCount}");
             }
@@ -511,6 +511,8 @@ namespace Ryujinx.Graphics.Texture
                     return TextureTarget.Texture3D;
                 case GalTextureTarget.OneDArray:
                     return TextureTarget.Texture1DArray;
+                case GalTextureTarget.OneDBuffer:
+                    return TextureTarget.TextureBuffer;
                 case GalTextureTarget.TwoDArray:
                     return TextureTarget.Texture2DArray;
                 case GalTextureTarget.CubeMap:
@@ -542,6 +544,7 @@ namespace Ryujinx.Graphics.Texture
                 case GalTextureTarget.OneD:
                     return 1;
                 case GalTextureTarget.OneDArray:
+                case GalTextureTarget.OneDBuffer:
                 case GalTextureTarget.TwoD:
                 case GalTextureTarget.TwoDNoMipMap:
                     return 2;

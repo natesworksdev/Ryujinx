@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
 using System.Collections.Generic;
@@ -180,6 +181,7 @@ namespace Ryujinx.Graphics.Graphics3d
         private void WriteRegister(GpuMethodCall MethCall)
         {
             Registers[MethCall.Method] = MethCall.Argument;
+            Logger.PrintWarning(LogClass.Gpu, $"[2D] Writing to register {(NvGpuEngine2dReg)MethCall.Method} value {MethCall.Argument:x}");
         }
 
         private int ReadRegister(NvGpuEngineM2mfReg Reg)

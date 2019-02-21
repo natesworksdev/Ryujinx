@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Gal
             Pitch = ImageUtils.GetPitch(Format, Width);
         }
 
-        public bool SizeMatches(GalImage Image)
+        public bool SizeMatches(GalImage Image, bool IgnoreLayer = false)
         {
             if (ImageUtils.GetBytesPerPixel(Format) !=
                 ImageUtils.GetBytesPerPixel(Image.Format))
@@ -74,7 +74,14 @@ namespace Ryujinx.Graphics.Gal
                 return false;
             }
 
-            return Height == Image.Height && Depth == Image.Depth && LayerCount == Image.LayerCount;
+            bool Result = Height == Image.Height && Depth == Image.Depth;
+
+            if (!IgnoreLayer)
+            {
+                Result = Result && LayerCount == Image.LayerCount;
+            }
+
+            return Result;
         }
     }
 }
