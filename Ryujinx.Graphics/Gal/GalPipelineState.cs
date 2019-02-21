@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Gal
 
         public bool Equals(ColorMaskState other)
         {
-            return other.Red != Red || other.Green != Green || other.Blue != Blue || other.Alpha != Alpha;
+            return other.Red == Red && other.Green == Green && other.Blue == Blue && other.Alpha == Alpha;
         }
     }
 
