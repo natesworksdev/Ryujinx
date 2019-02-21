@@ -341,25 +341,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 if (New.ColorMaskCommon != Old.ColorMaskCommon || !New.ColorMasks[0].Equals(Old.ColorMasks[0]))
                 {
+                    var newColorMask = New.ColorMasks[0];
                     GL.ColorMask(
-                        New.ColorMasks[0].Red,
-                        New.ColorMasks[0].Green,
-                        New.ColorMasks[0].Blue,
-                        New.ColorMasks[0].Alpha);
+                        newColorMask.Red,
+                        newColorMask.Green,
+                        newColorMask.Blue,
+                        newColorMask.Alpha);
                 }
             }
             else
             {
+                ColorMaskState newMaskState;
+                
                 for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
                 {
-                    if (!New.ColorMasks[Index].Equals(Old.ColorMasks[Index]))
+                    var newColorMask = New.ColorMasks[Index];
+                    var oldColorMask = New.ColorMasks[Index];
+                    if (!(newMaskState = New.ColorMasks[Index]).Equals(Old.ColorMasks[Index]))
                     {
                         GL.ColorMask(
                             Index,
-                            New.ColorMasks[Index].Red,
-                            New.ColorMasks[Index].Green,
-                            New.ColorMasks[Index].Blue,
-                            New.ColorMasks[Index].Alpha);
+                            newMaskState.Red,
+                            newMaskState.Green,
+                            newMaskState.Blue,
+                            newMaskState.Alpha);
                     }
                 }
             }
