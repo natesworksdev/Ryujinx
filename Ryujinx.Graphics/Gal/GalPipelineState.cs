@@ -1,12 +1,14 @@
-﻿namespace Ryujinx.Graphics.Gal
+﻿using System;
+
+namespace Ryujinx.Graphics.Gal
 {
-    public struct ColorMaskState
+    public struct ColorMaskState : IEquatable<ColorMaskState>
     {
         private static readonly ColorMaskState _Default = new ColorMaskState()
         {
-            Red   = true,
+            Red = true,
             Green = true,
-            Blue  = true,
+            Blue = true,
             Alpha = true
         };
 
@@ -16,6 +18,11 @@
         public bool Green;
         public bool Blue;
         public bool Alpha;
+
+        public bool Equals(ColorMaskState other)
+        {
+            return other.Red != Red || other.Green != Green || other.Blue != Blue || other.Alpha != Alpha;
+        }
     }
 
     public struct BlendState
