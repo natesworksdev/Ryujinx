@@ -283,7 +283,7 @@ namespace ChocolArm64.Instructions
 
             switch (size)
             {
-                case 2: context.EmitCall(typeof(Sse), nameof(Sse.StoreScalar));  break;
+                case 2: context.EmitCall(typeof(Sse), nameof(Sse.StoreScalar)); break;
 
                 case 3:
                 {
