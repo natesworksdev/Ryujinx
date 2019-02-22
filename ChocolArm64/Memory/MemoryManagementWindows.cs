@@ -59,7 +59,7 @@ namespace ChocolArm64.Memory
         [DllImport("kernel32.dll")]
         private static extern bool VirtualFree(
             IntPtr         lpAddress,
-            uint           dwSize,
+            IntPtr         dwSize,
             AllocationType dwFreeType);
 
         [DllImport("kernel32.dll")]
@@ -127,7 +127,7 @@ namespace ChocolArm64.Memory
 
         public static bool Free(IntPtr address)
         {
-            return VirtualFree(address, 0, AllocationType.Release);
+            return VirtualFree(address, IntPtr.Zero, AllocationType.Release);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
