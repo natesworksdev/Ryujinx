@@ -21,7 +21,7 @@ namespace ChocolArm64.Memory
         }
 
         [Flags]
-        private enum MemoryProtection
+        private enum MemoryProtection : uint
         {
             NoAccess                 = 0x01,
             ReadOnly                 = 0x02,
