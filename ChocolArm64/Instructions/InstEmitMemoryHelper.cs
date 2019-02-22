@@ -51,7 +51,7 @@ namespace ChocolArm64.Instructions
 
             if (isSimd)
             {
-                if (size != 4)
+                if (context.Tier == TranslationTier.Tier0 || !Sse2.IsSupported || size < 2)
                 {
                     EmitReadVectorFallback(context, size);
                 }
@@ -118,7 +118,7 @@ namespace ChocolArm64.Instructions
 
             if (isSimd)
             {
-                if (size != 4)
+                if (context.Tier == TranslationTier.Tier0 || !Sse2.IsSupported || size < 2)
                 {
                     EmitWriteVectorFallback(context, size);
                 }
@@ -198,7 +198,25 @@ namespace ChocolArm64.Instructions
 
             EmitPtPointerLoad(context, lblSlowPath);
 
-            context.EmitCall(typeof(Sse), nameof(Sse.LoadVector128));
+            switch (size)
+            {
+                case 2: context.EmitCall(typeof(Sse),  nameof(Sse.LoadScalarVector128));  break;
+
+                case 3:
+                {
+                    Type[] types = new Type[] { typeof(double*) };
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.LoadScalarVector128), types));
+
+                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleToSingle));
+
+                    break;
+                }
+
+                case 4: context.EmitCall(typeof(Sse),  nameof(Sse.LoadAlignedVector128)); break;
+
+                throw new InvalidOperationException($"Invalid vector load size of {1 << size} bytes.");
+            }
 
             context.MarkLabel(lblEnd);
         }
@@ -263,7 +281,14 @@ namespace ChocolArm64.Instructions
 
             context.EmitLdvec(_tempVecValue);
 
-            context.EmitCall(typeof(Sse), nameof(Sse.Store));
+            switch (size)
+            {
+                case 2: context.EmitCall(typeof(Sse),  nameof(Sse.StoreScalar));  break;
+                case 3: context.EmitCall(typeof(Sse2), nameof(Sse2.StoreScalar)); break;
+                case 4: context.EmitCall(typeof(Sse),  nameof(Sse.StoreAligned)); break;
+
+                default: throw new InvalidOperationException($"Invalid vector store size of {1 << size} bytes.");
+            }
 
             context.MarkLabel(lblEnd);
         }
@@ -350,6 +375,11 @@ namespace ChocolArm64.Instructions
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
             context.EmitLdint(_tempIntAddress);
 
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
+
             string fallbackMethodName = null;
 
             switch (size)
@@ -367,6 +397,11 @@ namespace ChocolArm64.Instructions
         {
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
             context.EmitLdint(_tempIntAddress);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
 
             string fallbackMethodName = null;
 
@@ -386,6 +421,12 @@ namespace ChocolArm64.Instructions
         {
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
             context.EmitLdint(_tempIntAddress);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
+
             context.EmitLdint(_tempIntValue);
 
             if (size < 3)
@@ -410,6 +451,12 @@ namespace ChocolArm64.Instructions
         {
             context.EmitLdarg(TranslatedSub.MemoryArgIdx);
             context.EmitLdint(_tempIntAddress);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U8);
+            }
+
             context.EmitLdvec(_tempVecValue);
 
             string fallbackMethodName = null;

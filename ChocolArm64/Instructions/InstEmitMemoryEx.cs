@@ -158,7 +158,7 @@ namespace ChocolArm64.Instructions
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Invalid store size of {1 << op.Size} bytes.");
+                    throw new InvalidOperationException($"Invalid load size of {1 << op.Size} bytes.");
                 }
             }
             else
