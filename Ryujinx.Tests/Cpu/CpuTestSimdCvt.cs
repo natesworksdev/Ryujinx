@@ -95,6 +95,18 @@ namespace Ryujinx.Tests.Cpu
                 yield return rnd2;
             }
         }
+
+        private static uint[] _W_()
+        {
+            return new uint[] { 0x00000000u, 0x7FFFFFFFu,
+                                0x80000000u, 0xFFFFFFFFu };
+        }
+
+        private static ulong[] _X_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
 #endregion
 
 #region "ValueSource (Opcodes)"
@@ -131,6 +143,42 @@ namespace Ryujinx.Tests.Cpu
             {
                 0x9E580000u, // FCVTZS X0, D0, #64
                 0x9E590000u  // FCVTZU X0, D0, #64
+            };
+        }
+
+        private static uint[] _SU_Cvt_F_S_WS_()
+        {
+            return new uint[]
+            {
+                0x1E028000u, // SCVTF S0, W0, #32
+                0x1E038000u  // UCVTF S0, W0, #32
+            };
+        }
+
+        private static uint[] _SU_Cvt_F_S_WD_()
+        {
+            return new uint[]
+            {
+                0x1E428000u, // SCVTF D0, W0, #32
+                0x1E438000u  // UCVTF D0, W0, #32
+            };
+        }
+
+        private static uint[] _SU_Cvt_F_S_XS_()
+        {
+            return new uint[]
+            {
+                0x9E020000u, // SCVTF S0, X0, #64
+                0x9E030000u  // UCVTF S0, X0, #64
+            };
+        }
+
+        private static uint[] _SU_Cvt_F_S_XD_()
+        {
+            return new uint[]
+            {
+                0x9E420000u, // SCVTF D0, X0, #64
+                0x9E430000u  // UCVTF D0, X0, #64
             };
         }
 #endregion
@@ -220,6 +268,90 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v1 = MakeVectorE0(a);
 
             SingleOpcode(opcodes, x31: x31, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void SU_Cvt_F_S_WS([ValueSource("_SU_Cvt_F_S_WS_")] uint opcodes,
+                                  [Values(0u)]      uint rd,
+                                  [Values(1u, 31u)] uint rn,
+                                  [ValueSource("_W_")] [Random(RndCnt)] uint wn,
+                                  [Values(1u, 32u)] [Random(2u, 31u, RndCntFbits)] uint fbits)
+        {
+            uint scale = (64u - fbits) & 0x3Fu;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (scale << 10);
+
+            uint  w31 = TestContext.CurrentContext.Random.NextUInt();
+            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+
+            SingleOpcode(opcodes, x1: wn, x31: w31, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void SU_Cvt_F_S_WD([ValueSource("_SU_Cvt_F_S_WD_")] uint opcodes,
+                                  [Values(0u)]      uint rd,
+                                  [Values(1u, 31u)] uint rn,
+                                  [ValueSource("_W_")] [Random(RndCnt)] uint wn,
+                                  [Values(1u, 32u)] [Random(2u, 31u, RndCntFbits)] uint fbits)
+        {
+            uint scale = (64u - fbits) & 0x3Fu;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (scale << 10);
+
+            uint  w31 = TestContext.CurrentContext.Random.NextUInt();
+            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE1(z);
+
+            SingleOpcode(opcodes, x1: wn, x31: w31, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void SU_Cvt_F_S_XS([ValueSource("_SU_Cvt_F_S_XS_")] uint opcodes,
+                                  [Values(0u)]      uint rd,
+                                  [Values(1u, 31u)] uint rn,
+                                  [ValueSource("_X_")] [Random(RndCnt)] ulong xn,
+                                  [Values(1u, 64u)] [Random(2u, 63u, RndCntFbits)] uint fbits)
+        {
+            uint scale = (64u - fbits) & 0x3Fu;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (scale << 10);
+
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
+            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+
+            SingleOpcode(opcodes, x1: xn, x31: x31, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void SU_Cvt_F_S_XD([ValueSource("_SU_Cvt_F_S_XD_")] uint opcodes,
+                                  [Values(0u)]      uint rd,
+                                  [Values(1u, 31u)] uint rn,
+                                  [ValueSource("_X_")] [Random(RndCnt)] ulong xn,
+                                  [Values(1u, 64u)] [Random(2u, 63u, RndCntFbits)] uint fbits)
+        {
+            uint scale = (64u - fbits) & 0x3Fu;
+
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= (scale << 10);
+
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
+            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE1(z);
+
+            SingleOpcode(opcodes, x1: xn, x31: x31, v0: v0);
 
             CompareAgainstUnicorn();
         }
