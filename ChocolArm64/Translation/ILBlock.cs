@@ -39,7 +39,7 @@ namespace ChocolArm64.Translation
             }
             else if (emitter is ILOpCodeLoad ld && ILMethodBuilder.IsRegIndex(ld.Index))
             {
-                switch (ld.IoType)
+                switch (ld.VarType)
                 {
                     case VarType.Flag:   IntInputs |= ((1L << ld.Index) << 32) & ~_intAwOutputs; break;
                     case VarType.Int:    IntInputs |=  (1L << ld.Index)        & ~_intAwOutputs; break;
@@ -48,7 +48,7 @@ namespace ChocolArm64.Translation
             }
             else if (emitter is ILOpCodeStore st && ILMethodBuilder.IsRegIndex(st.Index))
             {
-                switch (st.IoType)
+                switch (st.VarType)
                 {
                     case VarType.Flag:   IntOutputs |= (1L << st.Index) << 32; break;
                     case VarType.Int:    IntOutputs |=  1L << st.Index;        break;

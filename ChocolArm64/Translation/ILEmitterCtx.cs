@@ -644,19 +644,19 @@ namespace ChocolArm64.Translation
             Stloc(index, VarType.Flag);
         }
 
-        private void Ldloc(int index, VarType ioType)
+        private void Ldloc(int index, VarType varType)
         {
-            _ilBlock.Add(new ILOpCodeLoad(index, ioType, CurrOp.RegisterSize));
+            _ilBlock.Add(new ILOpCodeLoad(index, varType, CurrOp.RegisterSize));
         }
 
-        private void Ldloc(int index, VarType ioType, RegisterSize registerSize)
+        private void Ldloc(int index, VarType varType, RegisterSize registerSize)
         {
-            _ilBlock.Add(new ILOpCodeLoad(index, ioType, registerSize));
+            _ilBlock.Add(new ILOpCodeLoad(index, varType, registerSize));
         }
 
-        private void Stloc(int index, VarType ioType)
+        private void Stloc(int index, VarType varType)
         {
-            _ilBlock.Add(new ILOpCodeStore(index, ioType, CurrOp.RegisterSize));
+            _ilBlock.Add(new ILOpCodeStore(index, varType, CurrOp.RegisterSize));
         }
 
         public void EmitCallPropGet(Type objType, string propName)

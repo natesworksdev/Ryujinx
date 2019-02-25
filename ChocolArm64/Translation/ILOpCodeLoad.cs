@@ -7,20 +7,20 @@ namespace ChocolArm64.Translation
     {
         public int Index { get; }
 
-        public VarType IoType { get; }
+        public VarType VarType { get; }
 
         public RegisterSize RegisterSize { get; }
 
-        public ILOpCodeLoad(int index, VarType ioType, RegisterSize registerSize = 0)
+        public ILOpCodeLoad(int index, VarType varType, RegisterSize registerSize = 0)
         {
             Index        = index;
-            IoType       = ioType;
+            VarType      = varType;
             RegisterSize = registerSize;
         }
 
         public void Emit(ILMethodBuilder context)
         {
-            switch (IoType)
+            switch (VarType)
             {
                 case VarType.Arg: context.Generator.EmitLdarg(Index); break;
 
