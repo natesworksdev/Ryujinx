@@ -60,6 +60,8 @@ namespace ChocolArm64.Instructions
         {
             OpCodeBReg64 op = (OpCodeBReg64)context.CurrOp;
 
+            context.HasIndirectJump = true;
+
             context.EmitStoreState();
             context.EmitLdintzr(op.Rn);
 

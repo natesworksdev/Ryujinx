@@ -18,17 +18,29 @@ namespace ChocolArm64.Translation
 
         private string _subName;
 
+        public bool IsAarch64 { get; }
+
+        public bool IsSubComplete { get; }
+
         private int _localsCount;
 
-        public ILMethodBuilder(ILBlock[] ilBlocks, string subName)
+        public ILMethodBuilder(
+            ILBlock[] ilBlocks,
+            string    subName,
+            bool      isAarch64,
+            bool      isSubComplete = false)
         {
-            _ilBlocks = ilBlocks;
-            _subName  = subName;
+            _ilBlocks     = ilBlocks;
+            _subName      = subName;
+            IsAarch64     = isAarch64;
+            IsSubComplete = isSubComplete;
         }
 
         public TranslatedSub GetSubroutine(TranslationTier tier)
         {
-            LocalAlloc = new LocalAlloc(_ilBlocks, _ilBlocks[0]);
+            LocalAlloc = new LocalAlloc();
+
+            LocalAlloc.BuildUses(_ilBlocks[0]);
 
             DynamicMethod method = new DynamicMethod(_subName, typeof(long), TranslatedSub.FixedArgTypes);
 
@@ -39,8 +51,6 @@ namespace ChocolArm64.Translation
             _locals = new Dictionary<Register, int>();
 
             _localsCount = 0;
-
-            new ILOpCodeLoadState(_ilBlocks[0]).Emit(this);
 
             foreach (ILBlock ilBlock in _ilBlocks)
             {

@@ -86,7 +86,11 @@ namespace ChocolArm64.Instructions
                 context.EmitLdarg(TranslatedSub.StateArgIdx);
                 context.EmitLdtmp();
 
-                context.EmitPrivateCall(typeof(Translator), nameof(Translator.GetOrTranslateVirtualSubroutine));
+                string name = isJump
+                    ? nameof(Translator.GetOrTranslateVirtualSubroutineForJump)
+                    : nameof(Translator.GetOrTranslateVirtualSubroutine);
+
+                context.EmitPrivateCall(typeof(Translator), name);
 
                 context.EmitLdarg(TranslatedSub.StateArgIdx);
                 context.EmitLdarg(TranslatedSub.MemoryArgIdx);

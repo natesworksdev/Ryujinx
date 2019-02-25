@@ -4,7 +4,7 @@ namespace ChocolArm64.Translation
 {
     struct ILOpCodeBranch : IILEmit
     {
-        private OpCode   _ilOp;
+        private OpCode  _ilOp;
         private ILLabel _label;
 
         public ILOpCodeBranch(OpCode ilOp, ILLabel label)

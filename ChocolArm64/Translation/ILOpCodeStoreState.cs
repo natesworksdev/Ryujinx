@@ -17,6 +17,12 @@ namespace ChocolArm64.Translation
             long intOutputs = context.LocalAlloc.GetIntOutputs(_block);
             long vecOutputs = context.LocalAlloc.GetVecOutputs(_block);
 
+            if (Optimizations.AssumeStrictAbiCompliance && context.IsSubComplete)
+            {
+                intOutputs = LocalAlloc.ClearCallerSavedIntRegs(intOutputs, context.IsAarch64);
+                vecOutputs = LocalAlloc.ClearCallerSavedVecRegs(vecOutputs, context.IsAarch64);
+            }
+
             StoreLocals(context, intOutputs, RegisterType.Int);
             StoreLocals(context, vecOutputs, RegisterType.Vector);
         }

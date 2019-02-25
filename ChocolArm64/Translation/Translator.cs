@@ -80,16 +80,21 @@ namespace ChocolArm64.Translation
             }
         }
 
+        internal ArmSubroutine GetOrTranslateVirtualSubroutineForJump(CpuThreadState state, long position)
+        {
+            return GetOrTranslateVirtualSubroutineImpl(state, position, isJump: true);
+        }
+
         internal ArmSubroutine GetOrTranslateVirtualSubroutine(CpuThreadState state, long position)
+        {
+            return GetOrTranslateVirtualSubroutineImpl(state, position, isJump: false);
+        }
+
+        private ArmSubroutine GetOrTranslateVirtualSubroutineImpl(CpuThreadState state, long position, bool isJump)
         {
             if (!_cache.TryGetSubroutine(position, out TranslatedSub sub))
             {
-                sub = TranslateLowCq(position, state.GetExecutionMode());
-            }
-
-            if (sub.Tier == TranslationTier.Tier0)
-            {
-                _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier1));
+                sub = TranslateHighCq(position, state.GetExecutionMode(), !isJump);
             }
 
             return sub.Delegate;
@@ -99,7 +104,7 @@ namespace ChocolArm64.Translation
         {
             if (!_cache.TryGetSubroutine(position, out TranslatedSub subroutine))
             {
-                subroutine = TranslateLowCq(position, state.GetExecutionMode());
+                subroutine = TranslateHighCq(position, state.GetExecutionMode(), true);
             }
 
             return subroutine;
@@ -124,7 +129,7 @@ namespace ChocolArm64.Translation
                     }
                     else
                     {
-                        TranslateHighCq(item.Position, item.Mode);
+                        TranslateHighCq(item.Position, item.Mode, item.IsComplete);
                     }
                 }
                 else
@@ -142,14 +147,16 @@ namespace ChocolArm64.Translation
 
             string subName = GetSubroutineName(position);
 
-            ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(context.GetILBlocks(), subName);
+            bool isAarch64 = mode == ExecutionMode.Aarch64;
+
+            ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(context.GetILBlocks(), subName, isAarch64);
 
             TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier0);
 
             return _cache.GetOrAdd(position, subroutine, block.OpCodes.Count);
         }
 
-        private void TranslateHighCq(long position, ExecutionMode mode)
+        private TranslatedSub TranslateHighCq(long position, ExecutionMode mode, bool isComplete)
         {
             Block graph = Decoder.DecodeSubroutine(_memory, position, mode);
 
@@ -159,7 +166,11 @@ namespace ChocolArm64.Translation
 
             string subName = GetSubroutineName(position);
 
-            ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(ilBlocks, subName);
+            bool isAarch64 = mode == ExecutionMode.Aarch64;
+
+            isComplete &= !context.HasIndirectJump;
+
+            ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(ilBlocks, subName, isAarch64, isComplete);
 
             TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier1);
 
@@ -173,6 +184,8 @@ namespace ChocolArm64.Translation
             _cache.AddOrUpdate(position, subroutine, ilOpCount);
 
             ForceAheadOfTimeCompilation(subroutine);
+
+            return subroutine;
         }
 
         private string GetSubroutineName(long position)
