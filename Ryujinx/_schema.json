@@ -399,6 +399,17 @@
         false
       ]
     },
+    "enable_aggressive_cpu_opts": {
+      "$id": "#/properties/enable_aggressive_cpu_opts",
+      "type": "boolean",
+      "title": "Enable Aggressive CPU Optimizations",
+      "description": "Enable or disable aggressive CPU optimizations",
+      "default": true,
+      "examples": [
+        true,
+        false
+      ]
+    },
     "controller_type": {
       "$id": "#/properties/controller_type",
       "type": "string",

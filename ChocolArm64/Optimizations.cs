@@ -2,7 +2,7 @@ using System.Runtime.Intrinsics.X86;
 
 public static class Optimizations
 {
-    public static bool AssumeStrictAbiCompliance { get; set; } = true;
+    public static bool AssumeStrictAbiCompliance { get; set; }
 
     public static bool FastFP { get; set; } = true;
 
