@@ -22,6 +22,8 @@ namespace ChocolArm64.Instructions
 
             if (!context.TryOptEmitSubroutineCall())
             {
+                context.EmitStoreState();
+
                 context.TranslateAhead(imm);
 
                 context.EmitLdarg(TranslatedSub.StateArgIdx);

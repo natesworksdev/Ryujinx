@@ -12,19 +12,28 @@ namespace ChocolArm64.Translation
     {
         public ArmSubroutine Delegate { get; private set; }
 
-        public static int StateArgIdx  { get; private set; }
-        public static int MemoryArgIdx { get; private set; }
+        public static int StateArgIdx  { get; }
+        public static int MemoryArgIdx { get; }
 
-        public static Type[] FixedArgTypes { get; private set; }
+        public static Type[] FixedArgTypes { get; }
 
-        public DynamicMethod Method { get; private set; }
+        public DynamicMethod Method { get; }
 
-        public TranslationTier Tier { get; private set; }
+        public TranslationTier Tier { get; }
 
-        public TranslatedSub(DynamicMethod method, TranslationTier tier)
+        public long IntNiRegsMask { get; }
+        public long VecNiRegsMask { get; }
+
+        public TranslatedSub(
+            DynamicMethod   method,
+            TranslationTier tier,
+            long            intNiRegsMask,
+            long            vecNiRegsMask)
         {
-            Method = method ?? throw new ArgumentNullException(nameof(method));;
-            Tier   = tier;
+            Method        = method ?? throw new ArgumentNullException(nameof(method));;
+            Tier          = tier;
+            IntNiRegsMask = intNiRegsMask;
+            VecNiRegsMask = vecNiRegsMask;
         }
 
         static TranslatedSub()

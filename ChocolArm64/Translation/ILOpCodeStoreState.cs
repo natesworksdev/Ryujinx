@@ -7,9 +7,12 @@ namespace ChocolArm64.Translation
     {
         private ILBlock _block;
 
-        public ILOpCodeStoreState(ILBlock block)
+        private TranslatedSub _callSub;
+
+        public ILOpCodeStoreState(ILBlock block, TranslatedSub callSub = null)
         {
-            _block = block;
+            _block   = block;
+            _callSub = callSub;
         }
 
         public void Emit(ILMethodBuilder context)
@@ -21,6 +24,15 @@ namespace ChocolArm64.Translation
             {
                 intOutputs = RegisterUsage.ClearCallerSavedIntRegs(intOutputs, context.IsAarch64);
                 vecOutputs = RegisterUsage.ClearCallerSavedVecRegs(vecOutputs, context.IsAarch64);
+            }
+
+            if (_callSub != null)
+            {
+                //Those register are assigned on the callee function, without
+                //reading it's value first. We don't need to write them because
+                //they are not going to be read on the callee.
+                intOutputs &= ~_callSub.IntNiRegsMask;
+                vecOutputs &= ~_callSub.VecNiRegsMask;
             }
 
             StoreLocals(context, intOutputs, RegisterType.Int);

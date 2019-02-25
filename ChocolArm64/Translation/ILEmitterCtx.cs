@@ -315,17 +315,19 @@ namespace ChocolArm64.Translation
                 return false;
             }
 
-            if (!_cache.TryGetSubroutine(((OpCodeBImmAl64)CurrOp).Imm, out TranslatedSub subroutine))
+            if (!_cache.TryGetSubroutine(((OpCodeBImmAl64)CurrOp).Imm, out TranslatedSub sub))
             {
                 return false;
             }
+
+            EmitStoreState(sub);
 
             for (int index = 0; index < TranslatedSub.FixedArgTypes.Length; index++)
             {
                 EmitLdarg(index);
             }
 
-            EmitCall(subroutine.Method);
+            EmitCall(sub.Method);
 
             return true;
         }
@@ -601,6 +603,11 @@ namespace ChocolArm64.Translation
         public void EmitStoreState()
         {
             _ilBlock.Add(new ILOpCodeStoreState(_ilBlock));
+        }
+
+        private void EmitStoreState(TranslatedSub callSub)
+        {
+            _ilBlock.Add(new ILOpCodeStoreState(_ilBlock, callSub));
         }
 
         public void EmitLdtmp() => EmitLdint(IntGpTmp1Index);

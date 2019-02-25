@@ -238,6 +238,25 @@ namespace ChocolArm64.Translation
             return inputs;
         }
 
+        public long GetIntNotInputs(ILBlock entry) => GetNotInputsImpl(entry, _intPaths.Values);
+        public long GetVecNotInputs(ILBlock entry) => GetNotInputsImpl(entry, _vecPaths.Values);
+
+        private long GetNotInputsImpl(ILBlock entry, IEnumerable<PathIo> values)
+        {
+            //Returns a mask with registers that are written to
+            //before being read. Only those registers that are
+            //written in all paths, and is not read before being
+            //written to on those paths, should be set on the mask.
+            long mask = -1L;
+
+            foreach (PathIo path in values)
+            {
+                mask &= path.GetOutputs() & ~path.GetInputs(entry);
+            }
+
+            return mask;
+        }
+
         public long GetIntOutputs(ILBlock block) => _intPaths[block].GetOutputs();
         public long GetVecOutputs(ILBlock block) => _vecPaths[block].GetOutputs();
 

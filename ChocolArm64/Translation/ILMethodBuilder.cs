@@ -47,7 +47,10 @@ namespace ChocolArm64.Translation
 
             DynamicMethod method = new DynamicMethod(_subName, typeof(long), TranslatedSub.FixedArgTypes);
 
-            TranslatedSub subroutine = new TranslatedSub(method, tier);
+            long intNiRegsMask = RegUsage.GetIntNotInputs(_ilBlocks[0]);
+            long vecNiRegsMask = RegUsage.GetVecNotInputs(_ilBlocks[0]);
+
+            TranslatedSub subroutine = new TranslatedSub(method, tier, intNiRegsMask, vecNiRegsMask);
 
             _locals = new Dictionary<Register, int>();
 
