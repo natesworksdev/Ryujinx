@@ -14,13 +14,13 @@ namespace ChocolArm64.Translation
 
         public void Emit(ILMethodBuilder context)
         {
-            long intOutputs = context.LocalAlloc.GetIntOutputs(_block);
-            long vecOutputs = context.LocalAlloc.GetVecOutputs(_block);
+            long intOutputs = context.RegUsage.GetIntOutputs(_block);
+            long vecOutputs = context.RegUsage.GetVecOutputs(_block);
 
             if (Optimizations.AssumeStrictAbiCompliance && context.IsSubComplete)
             {
-                intOutputs = LocalAlloc.ClearCallerSavedIntRegs(intOutputs, context.IsAarch64);
-                vecOutputs = LocalAlloc.ClearCallerSavedVecRegs(vecOutputs, context.IsAarch64);
+                intOutputs = RegisterUsage.ClearCallerSavedIntRegs(intOutputs, context.IsAarch64);
+                vecOutputs = RegisterUsage.ClearCallerSavedVecRegs(vecOutputs, context.IsAarch64);
             }
 
             StoreLocals(context, intOutputs, RegisterType.Int);

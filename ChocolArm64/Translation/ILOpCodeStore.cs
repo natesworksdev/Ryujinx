@@ -5,13 +5,13 @@ namespace ChocolArm64.Translation
 {
     struct ILOpCodeStore : IILEmit
     {
-        public int Index { get; private set; }
+        public int Index { get; }
 
-        public IoType IoType { get; private set; }
+        public VarType IoType { get; }
 
-        public RegisterSize RegisterSize { get; private set; }
+        public RegisterSize RegisterSize { get; }
 
-        public ILOpCodeStore(int index, IoType ioType, RegisterSize registerSize = 0)
+        public ILOpCodeStore(int index, VarType ioType, RegisterSize registerSize = 0)
         {
             Index        = index;
             IoType       = ioType;
@@ -22,11 +22,11 @@ namespace ChocolArm64.Translation
         {
             switch (IoType)
             {
-                case IoType.Arg: context.Generator.EmitStarg(Index); break;
+                case VarType.Arg: context.Generator.EmitStarg(Index); break;
 
-                case IoType.Flag:   EmitStloc(context, Index, RegisterType.Flag);   break;
-                case IoType.Int:    EmitStloc(context, Index, RegisterType.Int);    break;
-                case IoType.Vector: EmitStloc(context, Index, RegisterType.Vector); break;
+                case VarType.Flag:   EmitStloc(context, Index, RegisterType.Flag);   break;
+                case VarType.Int:    EmitStloc(context, Index, RegisterType.Int);    break;
+                case VarType.Vector: EmitStloc(context, Index, RegisterType.Vector); break;
             }
         }
 

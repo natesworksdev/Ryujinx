@@ -336,8 +336,8 @@ namespace ChocolArm64.Translation
 
             InstEmitAluHelper.EmitAluLoadOpers(this);
 
-            Stloc(CmpOptTmp2Index, IoType.Int);
-            Stloc(CmpOptTmp1Index, IoType.Int);
+            Stloc(CmpOptTmp2Index, VarType.Int);
+            Stloc(CmpOptTmp1Index, VarType.Int);
         }
 
         private Dictionary<Condition, OpCode> _branchOps = new Dictionary<Condition, OpCode>()
@@ -361,8 +361,8 @@ namespace ChocolArm64.Translation
             {
                 if (_optOpLastCompare.Emitter == InstEmit.Subs)
                 {
-                    Ldloc(CmpOptTmp1Index, IoType.Int, _optOpLastCompare.RegisterSize);
-                    Ldloc(CmpOptTmp2Index, IoType.Int, _optOpLastCompare.RegisterSize);
+                    Ldloc(CmpOptTmp1Index, VarType.Int, _optOpLastCompare.RegisterSize);
+                    Ldloc(CmpOptTmp2Index, VarType.Int, _optOpLastCompare.RegisterSize);
 
                     Emit(_branchOps[cond], target);
 
@@ -384,7 +384,7 @@ namespace ChocolArm64.Translation
                     //Such invalid values can't be encoded on the immediate encodings.
                     if (_optOpLastCompare is IOpCodeAluImm64 op)
                     {
-                        Ldloc(CmpOptTmp1Index, IoType.Int, _optOpLastCompare.RegisterSize);
+                        Ldloc(CmpOptTmp1Index, VarType.Int, _optOpLastCompare.RegisterSize);
 
                         if (_optOpLastCompare.RegisterSize == RegisterSize.Int32)
                         {
@@ -506,14 +506,14 @@ namespace ChocolArm64.Translation
         {
             if (amount > 0)
             {
-                Stloc(RorTmpIndex, IoType.Int);
-                Ldloc(RorTmpIndex, IoType.Int);
+                Stloc(RorTmpIndex, VarType.Int);
+                Ldloc(RorTmpIndex, VarType.Int);
 
                 EmitLdc_I4(amount);
 
                 Emit(OpCodes.Shr_Un);
 
-                Ldloc(RorTmpIndex, IoType.Int);
+                Ldloc(RorTmpIndex, VarType.Int);
 
                 EmitLdc_I4(CurrOp.GetBitsCount() - amount);
 
@@ -561,7 +561,7 @@ namespace ChocolArm64.Translation
 
         public void EmitLdarg(int index)
         {
-            _ilBlock.Add(new ILOpCodeLoad(index, IoType.Arg));
+            _ilBlock.Add(new ILOpCodeLoad(index, VarType.Arg));
         }
 
         public void EmitLdintzr(int index)
@@ -615,13 +615,13 @@ namespace ChocolArm64.Translation
         public void EmitLdvectmp2() => EmitLdvec(VecGpTmp2Index);
         public void EmitStvectmp2() => EmitStvec(VecGpTmp2Index);
 
-        public void EmitLdint(int index) => Ldloc(index, IoType.Int);
-        public void EmitStint(int index) => Stloc(index, IoType.Int);
+        public void EmitLdint(int index) => Ldloc(index, VarType.Int);
+        public void EmitStint(int index) => Stloc(index, VarType.Int);
 
-        public void EmitLdvec(int index) => Ldloc(index, IoType.Vector);
-        public void EmitStvec(int index) => Stloc(index, IoType.Vector);
+        public void EmitLdvec(int index) => Ldloc(index, VarType.Vector);
+        public void EmitStvec(int index) => Stloc(index, VarType.Vector);
 
-        public void EmitLdflg(int index) => Ldloc(index, IoType.Flag);
+        public void EmitLdflg(int index) => Ldloc(index, VarType.Flag);
         public void EmitStflg(int index)
         {
             //Set this only if any of the NZCV flag bits were modified.
@@ -634,20 +634,20 @@ namespace ChocolArm64.Translation
                 _optOpLastFlagSet = CurrOp;
             }
 
-            Stloc(index, IoType.Flag);
+            Stloc(index, VarType.Flag);
         }
 
-        private void Ldloc(int index, IoType ioType)
+        private void Ldloc(int index, VarType ioType)
         {
             _ilBlock.Add(new ILOpCodeLoad(index, ioType, CurrOp.RegisterSize));
         }
 
-        private void Ldloc(int index, IoType ioType, RegisterSize registerSize)
+        private void Ldloc(int index, VarType ioType, RegisterSize registerSize)
         {
             _ilBlock.Add(new ILOpCodeLoad(index, ioType, registerSize));
         }
 
-        private void Stloc(int index, IoType ioType)
+        private void Stloc(int index, VarType ioType)
         {
             _ilBlock.Add(new ILOpCodeStore(index, ioType, CurrOp.RegisterSize));
         }

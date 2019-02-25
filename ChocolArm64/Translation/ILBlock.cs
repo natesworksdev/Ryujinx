@@ -41,18 +41,18 @@ namespace ChocolArm64.Translation
             {
                 switch (ld.IoType)
                 {
-                    case IoType.Flag:   IntInputs |= ((1L << ld.Index) << 32) & ~_intAwOutputs; break;
-                    case IoType.Int:    IntInputs |=  (1L << ld.Index)        & ~_intAwOutputs; break;
-                    case IoType.Vector: VecInputs |=  (1L << ld.Index)        & ~_vecAwOutputs; break;
+                    case VarType.Flag:   IntInputs |= ((1L << ld.Index) << 32) & ~_intAwOutputs; break;
+                    case VarType.Int:    IntInputs |=  (1L << ld.Index)        & ~_intAwOutputs; break;
+                    case VarType.Vector: VecInputs |=  (1L << ld.Index)        & ~_vecAwOutputs; break;
                 }
             }
             else if (emitter is ILOpCodeStore st && ILMethodBuilder.IsRegIndex(st.Index))
             {
                 switch (st.IoType)
                 {
-                    case IoType.Flag:   IntOutputs |= (1L << st.Index) << 32; break;
-                    case IoType.Int:    IntOutputs |=  1L << st.Index;        break;
-                    case IoType.Vector: VecOutputs |=  1L << st.Index;        break;
+                    case VarType.Flag:   IntOutputs |= (1L << st.Index) << 32; break;
+                    case VarType.Int:    IntOutputs |=  1L << st.Index;        break;
+                    case VarType.Vector: VecOutputs |=  1L << st.Index;        break;
                 }
             }
             else if (emitter is ILOpCodeStoreState)

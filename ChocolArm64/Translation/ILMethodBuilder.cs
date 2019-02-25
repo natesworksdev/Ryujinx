@@ -8,7 +8,10 @@ namespace ChocolArm64.Translation
 {
     class ILMethodBuilder
     {
-        public LocalAlloc LocalAlloc { get; private set; }
+        private const int RegsCount = 32;
+        private const int RegsMask  = RegsCount - 1;
+
+        public RegisterUsage RegUsage { get; private set; }
 
         public ILGenerator Generator { get; private set; }
 
@@ -38,19 +41,19 @@ namespace ChocolArm64.Translation
 
         public TranslatedSub GetSubroutine(TranslationTier tier)
         {
-            LocalAlloc = new LocalAlloc();
+            RegUsage = new RegisterUsage();
 
-            LocalAlloc.BuildUses(_ilBlocks[0]);
+            RegUsage.BuildUses(_ilBlocks[0]);
 
             DynamicMethod method = new DynamicMethod(_subName, typeof(long), TranslatedSub.FixedArgTypes);
-
-            Generator = method.GetILGenerator();
 
             TranslatedSub subroutine = new TranslatedSub(method, tier);
 
             _locals = new Dictionary<Register, int>();
 
             _localsCount = 0;
+
+            Generator = method.GetILGenerator();
 
             foreach (ILBlock ilBlock in _ilBlocks)
             {
@@ -90,13 +93,13 @@ namespace ChocolArm64.Translation
 
         public static Register GetRegFromBit(int bit, RegisterType baseType)
         {
-            if (bit < 32)
+            if (bit < RegsCount)
             {
                 return new Register(bit, baseType);
             }
             else if (baseType == RegisterType.Int)
             {
-                return new Register(bit & 0x1f, RegisterType.Flag);
+                return new Register(bit & RegsMask, RegisterType.Flag);
             }
             else
             {
@@ -106,7 +109,7 @@ namespace ChocolArm64.Translation
 
         public static bool IsRegIndex(int index)
         {
-            return (uint)index < 32;
+            return (uint)index < RegsCount;
         }
     }
 }

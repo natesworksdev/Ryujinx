@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ChocolArm64.Translation
 {
-    class LocalAlloc
+    class RegisterUsage
     {
         public const long CallerSavedIntRegistersMask = 0x7fL  << 9;
         public const long PStateNzcvFlagsMask         = 0xfL   << 60;
@@ -23,31 +23,30 @@ namespace ChocolArm64.Translation
                 _cmnOutputs = new Dictionary<ILBlock, long>();
             }
 
-            public PathIo(ILBlock root, long inputs, long outputs) : this()
+            public void Set(ILBlock entry, long inputs, long outputs)
             {
-                Set(root, inputs, outputs);
-            }
-
-            public void Set(ILBlock root, long inputs, long outputs)
-            {
-                if (!_allInputs.TryAdd(root, inputs))
+                if (!_allInputs.TryAdd(entry, inputs))
                 {
-                    _allInputs[root] |= inputs;
+                    _allInputs[entry] |= inputs;
                 }
 
-                if (!_cmnOutputs.TryAdd(root, outputs))
+                if (!_cmnOutputs.TryAdd(entry, outputs))
                 {
-                    _cmnOutputs[root] &= outputs;
+                    _cmnOutputs[entry] &= outputs;
                 }
 
                 _allOutputs |= outputs;
             }
 
-            public long GetInputs(ILBlock root)
+            public long GetInputs(ILBlock entry)
             {
-                if (_allInputs.TryGetValue(root, out long inputs))
+                if (_allInputs.TryGetValue(entry, out long inputs))
                 {
-                    return inputs | (_allOutputs & ~_cmnOutputs[root]);
+                    //We also need to read the registers that may not be written
+                    //by all paths that can reach a exit point, to ensure that
+                    //the local variable will not remain uninitialized depending
+                    //on the flow path taken.
+                    return inputs | (_allOutputs & ~_cmnOutputs[entry]);
                 }
 
                 return 0;
@@ -62,9 +61,7 @@ namespace ChocolArm64.Translation
         private Dictionary<ILBlock, PathIo> _intPaths;
         private Dictionary<ILBlock, PathIo> _vecPaths;
 
-        private HashSet<ILBlock> _entryBlocks;
-
-        private struct BlockIo
+        private struct BlockIo : IEquatable<BlockIo>
         {
             public ILBlock Block { get; }
             public ILBlock Entry { get; }
@@ -104,6 +101,11 @@ namespace ChocolArm64.Translation
                     return false;
                 }
 
+                return Equals(other);
+            }
+
+            public bool Equals(BlockIo other)
+            {
                 return other.Block      == Block      &&
                        other.Entry      == Entry      &&
                        other.IntInputs  == IntInputs  &&
@@ -128,12 +130,10 @@ namespace ChocolArm64.Translation
             }
         }
 
-        public LocalAlloc()
+        public RegisterUsage()
         {
             _intPaths = new Dictionary<ILBlock, PathIo>();
             _vecPaths = new Dictionary<ILBlock, PathIo>();
-
-            _entryBlocks = new HashSet<ILBlock>();
         }
 
         public void BuildUses(ILBlock entry)
@@ -144,7 +144,7 @@ namespace ChocolArm64.Translation
             //When a block can be reached by more than one path, then the
             //output from all paths needs to be set for this block, and
             //only outputs present in all of the parent blocks can be considered
-            //when doing input elimination. Each block chain have a entry, that's where
+            //when doing input elimination. Each block chain has a entry, that's where
             //the code starts executing. They are present on the subroutine start point,
             //and on call return points too (address written to X30 by BL).
             HashSet<BlockIo> visited = new HashSet<BlockIo>();
@@ -158,8 +158,6 @@ namespace ChocolArm64.Translation
                     unvisited.Enqueue(block);
                 }
             }
-
-            _entryBlocks.Add(entry);
 
             Enqueue(new BlockIo(entry, entry));
 
@@ -198,8 +196,6 @@ namespace ChocolArm64.Translation
                     if (retTarget)
                     {
                         blockIo = new BlockIo(block, block);
-
-                        _entryBlocks.Add(block);
                     }
                     else
                     {
@@ -227,16 +223,16 @@ namespace ChocolArm64.Translation
             }
         }
 
-        public long GetIntInputs(ILBlock root) => GetInputsImpl(root, _intPaths.Values);
-        public long GetVecInputs(ILBlock root) => GetInputsImpl(root, _vecPaths.Values);
+        public long GetIntInputs(ILBlock entry) => GetInputsImpl(entry, _intPaths.Values);
+        public long GetVecInputs(ILBlock entry) => GetInputsImpl(entry, _vecPaths.Values);
 
-        private long GetInputsImpl(ILBlock root, IEnumerable<PathIo> values)
+        private long GetInputsImpl(ILBlock entry, IEnumerable<PathIo> values)
         {
             long inputs = 0;
 
             foreach (PathIo path in values)
             {
-                inputs |= path.GetInputs(root);
+                inputs |= path.GetInputs(entry);
             }
 
             return inputs;
@@ -250,10 +246,8 @@ namespace ChocolArm64.Translation
             //TODO: ARM32 support.
             if (isAarch64)
             {
-                mask &= ~CallerSavedIntRegistersMask;
-                mask &= ~PStateNzcvFlagsMask;
+                mask &= ~(CallerSavedIntRegistersMask | PStateNzcvFlagsMask);
             }
-
 
             return mask;
         }
