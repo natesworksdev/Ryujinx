@@ -10,6 +10,11 @@ namespace ChocolArm64.Translation
 
     class TranslatedSub
     {
+        //This is the minimum amount of calls needed for the method
+        //to be retranslated with higher quality code. It's only worth
+        //doing that for hot code.
+        private const int MinCallCountForOpt = 30;
+
         public ArmSubroutine Delegate { get; private set; }
 
         public static int StateArgIdx  { get; }
@@ -24,16 +29,22 @@ namespace ChocolArm64.Translation
         public long IntNiRegsMask { get; }
         public long VecNiRegsMask { get; }
 
+        private bool _isWorthOptimizing;
+
+        private int _callCount;
+
         public TranslatedSub(
             DynamicMethod   method,
-            TranslationTier tier,
             long            intNiRegsMask,
-            long            vecNiRegsMask)
+            long            vecNiRegsMask,
+            TranslationTier tier,
+            bool            isWorthOptimizing)
         {
-            Method        = method ?? throw new ArgumentNullException(nameof(method));;
-            Tier          = tier;
-            IntNiRegsMask = intNiRegsMask;
-            VecNiRegsMask = vecNiRegsMask;
+            Method             = method ?? throw new ArgumentNullException(nameof(method));;
+            IntNiRegsMask      = intNiRegsMask;
+            VecNiRegsMask      = vecNiRegsMask;
+            _isWorthOptimizing = isWorthOptimizing;
+            Tier               = tier;
         }
 
         static TranslatedSub()
@@ -69,6 +80,25 @@ namespace ChocolArm64.Translation
         public long Execute(CpuThreadState threadState, MemoryManager memory)
         {
             return Delegate(threadState, memory);
+        }
+
+        public bool IsWorthOptimizing()
+        {
+           if (!_isWorthOptimizing)
+            {
+                return false;
+            }
+
+            if (_callCount++ < MinCallCountForOpt)
+            {
+                return false;
+            }
+
+            //Only return true once, so that it is
+            //added to the queue only once.
+            _isWorthOptimizing = false;
+
+            return true;
         }
     }
 }

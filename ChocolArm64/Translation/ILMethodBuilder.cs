@@ -39,7 +39,7 @@ namespace ChocolArm64.Translation
             IsSubComplete = isSubComplete;
         }
 
-        public TranslatedSub GetSubroutine(TranslationTier tier)
+        public TranslatedSub GetSubroutine(TranslationTier tier, bool isWorthOptimizing)
         {
             RegUsage = new RegisterUsage();
 
@@ -50,7 +50,12 @@ namespace ChocolArm64.Translation
             long intNiRegsMask = RegUsage.GetIntNotInputs(_ilBlocks[0]);
             long vecNiRegsMask = RegUsage.GetVecNotInputs(_ilBlocks[0]);
 
-            TranslatedSub subroutine = new TranslatedSub(method, tier, intNiRegsMask, vecNiRegsMask);
+            TranslatedSub subroutine = new TranslatedSub(
+                method,
+                intNiRegsMask,
+                vecNiRegsMask,
+                tier,
+                isWorthOptimizing);
 
             _locals = new Dictionary<Register, int>();
 

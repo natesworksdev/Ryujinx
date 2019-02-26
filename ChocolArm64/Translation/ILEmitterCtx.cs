@@ -33,6 +33,8 @@ namespace ChocolArm64.Translation
 
         public bool HasIndirectJump { get; set; }
 
+        public bool HasSlowCall { get; set; }
+
         private Dictionary<Block, ILBlock> _visitedBlocks;
 
         private Queue<Block> _branchTargets;
@@ -300,22 +302,31 @@ namespace ChocolArm64.Translation
                 return;
             }
 
-            _queue.Enqueue(new TranslatorQueueItem(position, mode, TranslationTier.Tier1, isComplete: true));
+            _queue.Enqueue(position, mode, TranslationTier.Tier1, isComplete: true);
         }
 
         public bool TryOptEmitSubroutineCall()
         {
+            //Calls should always have a next block, unless
+            //we're translating a single basic block.
             if (_currBlock.Next == null)
             {
                 return false;
             }
 
-            if (CurrOp.Emitter != InstEmit.Bl)
+            if (!(CurrOp is IOpCodeBImm op))
             {
                 return false;
             }
 
-            if (!_cache.TryGetSubroutine(((OpCodeBImmAl64)CurrOp).Imm, out TranslatedSub sub))
+            if (!_cache.TryGetSubroutine(op.Imm, out TranslatedSub sub))
+            {
+                return false;
+            }
+
+            //It's not worth to call a Tier0 method, because
+            //it contains slow code, rather than the entire function.
+            if (sub.Tier == TranslationTier.Tier0)
             {
                 return false;
             }

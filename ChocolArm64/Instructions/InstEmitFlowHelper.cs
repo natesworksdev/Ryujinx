@@ -11,6 +11,8 @@ namespace ChocolArm64.Instructions
         {
             if (context.Tier == TranslationTier.Tier0)
             {
+                context.EmitStoreState();
+
                 context.TranslateAhead(imm);
 
                 context.EmitLdc_I8(imm);
@@ -22,6 +24,8 @@ namespace ChocolArm64.Instructions
 
             if (!context.TryOptEmitSubroutineCall())
             {
+                context.HasSlowCall = true;
+
                 context.EmitStoreState();
 
                 context.TranslateAhead(imm);
@@ -34,6 +38,7 @@ namespace ChocolArm64.Instructions
 
                 context.EmitLdarg(TranslatedSub.StateArgIdx);
                 context.EmitLdc_I8(imm);
+                context.EmitLdc_I4((int)CallType.Call);
 
                 context.EmitPrivateCall(typeof(Translator), nameof(Translator.GetOrTranslateSubroutine));
 
@@ -60,20 +65,6 @@ namespace ChocolArm64.Instructions
         {
             if (context.Tier == TranslationTier.Tier0)
             {
-                context.Emit(OpCodes.Dup);
-
-                context.EmitSttmp();
-                context.EmitLdarg(TranslatedSub.StateArgIdx);
-
-                context.EmitFieldLoad(typeof(CpuThreadState).GetField(nameof(CpuThreadState.CurrentTranslator),
-                    BindingFlags.Instance |
-                    BindingFlags.NonPublic));
-
-                context.EmitLdarg(TranslatedSub.StateArgIdx);
-                context.EmitLdtmp();
-
-                context.EmitPrivateCall(typeof(Translator), nameof(Translator.TranslateVirtualSubroutine));
-
                 context.Emit(OpCodes.Ret);
             }
             else
@@ -87,12 +78,11 @@ namespace ChocolArm64.Instructions
 
                 context.EmitLdarg(TranslatedSub.StateArgIdx);
                 context.EmitLdtmp();
+                context.EmitLdc_I4(isJump
+                    ? (int)CallType.VirtualJump
+                    : (int)CallType.VirtualCall);
 
-                string name = isJump
-                    ? nameof(Translator.GetOrTranslateVirtualSubroutineForJump)
-                    : nameof(Translator.GetOrTranslateVirtualSubroutine);
-
-                context.EmitPrivateCall(typeof(Translator), name);
+                context.EmitPrivateCall(typeof(Translator), nameof(Translator.GetOrTranslateSubroutine));
 
                 context.EmitLdarg(TranslatedSub.StateArgIdx);
                 context.EmitLdarg(TranslatedSub.MemoryArgIdx);

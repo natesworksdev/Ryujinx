@@ -63,51 +63,34 @@ namespace ChocolArm64.Translation
                     CpuTrace?.Invoke(this, new CpuTraceEventArgs(position));
                 }
 
-                TranslatedSub subroutine = GetOrTranslateSubroutine(state, position);
+                if (!_cache.TryGetSubroutine(position, out TranslatedSub sub))
+                {
+                    sub = TranslateLowCq(position, state.GetExecutionMode());
+                }
 
-                position = subroutine.Execute(state, _memory);
+                position = sub.Execute(state, _memory);
             }
             while (position != 0 && state.Running);
 
             state.CurrentTranslator = null;
         }
 
-        internal void TranslateVirtualSubroutine(CpuThreadState state, long position)
-        {
-            if (!_cache.TryGetSubroutine(position, out TranslatedSub sub) || sub.Tier == TranslationTier.Tier0)
-            {
-                _queue.Enqueue(new TranslatorQueueItem(position, state.GetExecutionMode(), TranslationTier.Tier1));
-            }
-        }
-
-        internal ArmSubroutine GetOrTranslateVirtualSubroutineForJump(CpuThreadState state, long position)
-        {
-            return GetOrTranslateVirtualSubroutineImpl(state, position, isJump: true);
-        }
-
-        internal ArmSubroutine GetOrTranslateVirtualSubroutine(CpuThreadState state, long position)
-        {
-            return GetOrTranslateVirtualSubroutineImpl(state, position, isJump: false);
-        }
-
-        private ArmSubroutine GetOrTranslateVirtualSubroutineImpl(CpuThreadState state, long position, bool isJump)
+        internal ArmSubroutine GetOrTranslateSubroutine(CpuThreadState state, long position, CallType cs)
         {
             if (!_cache.TryGetSubroutine(position, out TranslatedSub sub))
             {
-                sub = TranslateHighCq(position, state.GetExecutionMode(), !isJump);
+                sub = TranslateLowCq(position, state.GetExecutionMode());
+            }
+
+            if (sub.IsWorthOptimizing())
+            {
+                bool isComplete = cs == CallType.Call ||
+                                  cs == CallType.VirtualCall;
+
+                _queue.Enqueue(position, state.GetExecutionMode(), TranslationTier.Tier1, isComplete);
             }
 
             return sub.Delegate;
-        }
-
-        internal TranslatedSub GetOrTranslateSubroutine(CpuThreadState state, long position)
-        {
-            if (!_cache.TryGetSubroutine(position, out TranslatedSub subroutine))
-            {
-                subroutine = TranslateHighCq(position, state.GetExecutionMode(), true);
-            }
-
-            return subroutine;
         }
 
         private void TranslateQueuedSubs()
@@ -151,7 +134,7 @@ namespace ChocolArm64.Translation
 
             ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(context.GetILBlocks(), subName, isAarch64);
 
-            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier0);
+            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier0, isWorthOptimizing: true);
 
             return _cache.GetOrAdd(position, subroutine, block.OpCodes.Count);
         }
@@ -172,7 +155,7 @@ namespace ChocolArm64.Translation
 
             ILMethodBuilder ilMthdBuilder = new ILMethodBuilder(ilBlocks, subName, isAarch64, isComplete);
 
-            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier1);
+            TranslatedSub subroutine = ilMthdBuilder.GetSubroutine(TranslationTier.Tier1, context.HasSlowCall);
 
             int ilOpCount = 0;
 
