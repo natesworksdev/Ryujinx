@@ -35,7 +35,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public int MaxUboSize { get; }
 
-        public GlslDecompiler(int MaxUboSize)
+        private bool IsNvidiaDriver;
+
+        public GlslDecompiler(int MaxUboSize, bool IsNvidiaDriver)
         {
             InstsExpr = new Dictionary<ShaderIrInst, GetInstExpr>()
             {
@@ -113,6 +115,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             };
 
             this.MaxUboSize = MaxUboSize / 16;
+            this.IsNvidiaDriver = IsNvidiaDriver;
         }
 
         public GlslProgram Decompile(
@@ -1233,6 +1236,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             return GetTextureGatherOperation(Op, Sampler, Coords, Ch);
         }
 
+        // TODO: support AOFFI on non nvidia drivers
         private string GetTxlfExpr(ShaderIrOp Op)
         {
             // TODO: Support all suffixes
@@ -1253,7 +1257,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 Lod = GetOperExpr(Op, Meta.LevelOfDetail);
             }
 
-            if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
+            if ((Suffix & TextureInstructionSuffix.AOffI) != 0 && IsNvidiaDriver)
             {
                 string Offset = GetTextureOffset(Meta, GetOperExpr(Op, Meta.Offset));
                 return "texelFetchOffset(" + Sampler + ", " + Coords + ", " + Lod + ", " + Offset + ")." + Ch;
@@ -1421,6 +1425,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
         }
 
+        // TODO: support AOFFI on non nvidia drivers
         private string GetTextureGatherOperation(ShaderIrOp Op, string Sampler, string Coords, string Ch)
         {
             ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
@@ -1436,7 +1441,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 Comp = GetOperExpr(Op, Meta.DepthCompare);
             }
 
-            if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
+            if ((Suffix & TextureInstructionSuffix.AOffI) != 0 && IsNvidiaDriver)
             {
                 string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))", 8, 0x3F);
 
@@ -1456,6 +1461,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             return "textureGather(" + Sampler + ", " + Coords + ", " + Comp + ")" + ChString;
         }
 
+        // TODO: support AOFFI on non nvidia drivers
         private string GetTextureOperation(ShaderIrOp Op, string Sampler, string Coords, string Ch)
         {
             ShaderIrMetaTex Meta = (ShaderIrMetaTex)Op.MetaData;
@@ -1472,7 +1478,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             // TODO: Support LBA and LLA
             if ((Suffix & TextureInstructionSuffix.LZ) != 0)
             {
-                if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
+                if ((Suffix & TextureInstructionSuffix.AOffI) != 0 && IsNvidiaDriver)
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
@@ -1483,7 +1489,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
             else if ((Suffix & TextureInstructionSuffix.LB) != 0)
             {
-                if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
+                if ((Suffix & TextureInstructionSuffix.AOffI) != 0 && IsNvidiaDriver)
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
@@ -1494,7 +1500,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
             else if ((Suffix & TextureInstructionSuffix.LL) != 0)
             {
-                if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
+                if ((Suffix & TextureInstructionSuffix.AOffI) != 0 && IsNvidiaDriver)
                 {
                     string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
@@ -1503,7 +1509,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 return "textureLod(" + Sampler + ", " + Coords + ", " + GetOperExpr(Op, Meta.LevelOfDetail) + ")" + ChString;
             }
-            else if ((Suffix & TextureInstructionSuffix.AOffI) != 0)
+            else if ((Suffix & TextureInstructionSuffix.AOffI) != 0 && IsNvidiaDriver)
             {
                 string Offset = GetTextureOffset(Meta, "floatBitsToInt((" + GetOperExpr(Op, Meta.Offset) + "))");
 
