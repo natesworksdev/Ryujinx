@@ -164,9 +164,9 @@ namespace ChocolArm64.Translation
                 ilOpCount += ilBlock.Count;
             }
 
-            _cache.AddOrUpdate(position, subroutine, ilOpCount);
-
             ForceAheadOfTimeCompilation(subroutine);
+
+            _cache.AddOrUpdate(position, subroutine, ilOpCount);
 
             return subroutine;
         }
