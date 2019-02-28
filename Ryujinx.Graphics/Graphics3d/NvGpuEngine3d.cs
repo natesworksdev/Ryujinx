@@ -193,7 +193,7 @@ namespace Ryujinx.Graphics.Graphics3d
             int LayerCount  = ArrayMode & 0xFFFF;
             int LayerStride = ReadRegister(NvGpuEngine3dReg.FrameBufferNLayerStride + FbIndex * 0x10);
             int BaseLayer   = ReadRegister(NvGpuEngine3dReg.FrameBufferNBaseLayer + FbIndex * 0x10);
-            int BlockDim = ReadRegister(NvGpuEngine3dReg.FrameBufferNBlockDim + FbIndex * 0x10);
+            int BlockDim    = ReadRegister(NvGpuEngine3dReg.FrameBufferNBlockDim + FbIndex * 0x10);
 
             int GobBlockHeight = 1 << ((BlockDim >> 4) & 7);
 
