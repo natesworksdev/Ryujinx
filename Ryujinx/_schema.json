@@ -17,6 +17,7 @@
     "enable_vsync",
     "enable_multicore_scheduling",
     "enable_fs_integrity_checks",
+    "enable_aggressive_cpu_opts",
     "controller_type",
     "keyboard_controls",
     "gamepad_controls"
