@@ -490,45 +490,10 @@ namespace Ryujinx.Graphics.Graphics3d
                     }
 
                     // Handle out of active viewport dimensions
-                    // Left
-                    if (left < ViewportX0)
-                    {
-                        left = ViewportX0;
-                    }
-                    else if (left > ViewportX1)
-                    {
-                        left = ViewportX1;
-                    }
-
-                    // Right
-                    if (right < ViewportX0)
-                    {
-                        right = ViewportX0;
-                    }
-                    else if (right > ViewportX1)
-                    {
-                        right = ViewportX1;
-                    }
-
-                    // Bottom
-                    if (bottom < ViewportY0)
-                    {
-                        bottom = ViewportY0;
-                    }
-                    else if (bottom > ViewportY1)
-                    {
-                        bottom = ViewportY1;
-                    }
-
-                    // Top
-                    if (top < ViewportX0)
-                    {
-                        top = ViewportX0;
-                    }
-                    else if (top > ViewportX1)
-                    {
-                        top = ViewportX1;
-                    }
+                    left   = Math.Clamp(left,   ViewportX0, ViewportX1);
+                    right  = Math.Clamp(right,  ViewportX0, ViewportX1);
+                    top    = Math.Clamp(top,    ViewportY0, ViewportY1);
+                    bottom = Math.Clamp(bottom, ViewportY0, ViewportY1);
 
                     // Save values to state
                     State.ScissorTestX[Index] = left;
