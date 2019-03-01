@@ -59,7 +59,7 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
 
-                EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
+                context.EmitStvec(op.Rd);
             }
             else
             {
@@ -108,7 +108,7 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
 
-                EmitStvecWithUnsignedCast(context, op.Rd, op.Size);
+                context.EmitStvec(op.Rd);
             }
             else
             {
@@ -138,7 +138,7 @@ namespace ChocolArm64.Instructions
                 Type[] typesShs = new Type[] { typeof(Vector128<byte>), typeof(byte) };
                 Type[] typesOr  = new Type[] { typeof(Vector128<byte>), typeof(Vector128<byte>) };
 
-                EmitLdvecWithUnsignedCast(context, op.Rn, 0);
+                context.EmitLdvec(op.Rn);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -150,7 +150,7 @@ namespace ChocolArm64.Instructions
                 context.EmitLdc_I4(op.Imm4);
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightLogical128BitLane), typesShs));
 
-                EmitLdvecWithUnsignedCast(context, op.Rm, 0);
+                context.EmitLdvec(op.Rm);
 
                 context.EmitLdc_I4((op.RegisterSize == RegisterSize.Simd64 ? 8 : 16) - op.Imm4);
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftLeftLogical128BitLane), typesShs));
@@ -164,7 +164,7 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Or), typesOr));
 
-                EmitStvecWithUnsignedCast(context, op.Rd, 0);
+                context.EmitStvec(op.Rd);
             }
             else
             {
@@ -318,12 +318,26 @@ namespace ChocolArm64.Instructions
 
         public static void Movi_V(ILEmitterCtx context)
         {
-            EmitVectorImmUnaryOp(context, () => { });
+            if (Optimizations.UseSse2)
+            {
+                EmitMoviMvni(context, not: false);
+            }
+            else
+            {
+                EmitVectorImmUnaryOp(context, () => { });
+            }
         }
 
         public static void Mvni_V(ILEmitterCtx context)
         {
-            EmitVectorImmUnaryOp(context, () => context.Emit(OpCodes.Not));
+            if (Optimizations.UseSse2)
+            {
+                EmitMoviMvni(context, not: true);
+            }
+            else
+            {
+                EmitVectorImmUnaryOp(context, () => context.Emit(OpCodes.Not));
+            }
         }
 
         public static void Smov_S(ILEmitterCtx context)
@@ -418,7 +432,7 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MoveLowToHigh)));
 
-                EmitLdvecWithSignedCast(context, op.Rn, 0); // value
+                context.EmitLdvec(op.Rn); // value
 
                 context.EmitLdc_I8(_masksE0_TrnUzpXtn[op.Size]); // mask
                 context.Emit(OpCodes.Dup); // mask
@@ -480,6 +494,38 @@ namespace ChocolArm64.Instructions
             }
         }
 
+        private static void EmitMoviMvni(ILEmitterCtx context, bool not)
+        {
+            OpCodeSimdImm64 op = (OpCodeSimdImm64)context.CurrOp;
+
+            Type[] typesSav = new Type[] { UIntTypesPerSizeLog2[op.Size] };
+
+            long imm = op.Imm;
+
+            if (not)
+            {
+                imm = ~imm;
+            }
+
+            if (op.Size < 3)
+            {
+                context.EmitLdc_I4((int)imm);
+            }
+            else
+            {
+                context.EmitLdc_I8(imm);
+            }
+
+            context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+            context.EmitStvec(op.Rd);
+
+            if (op.RegisterSize == RegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
+        }
+
         private static void EmitVectorTranspose(ILEmitterCtx context, int part)
         {
             OpCodeSimdReg64 op = (OpCodeSimdReg64)context.CurrOp;
@@ -492,7 +538,7 @@ namespace ChocolArm64.Instructions
                     ? nameof(Sse2.UnpackLow)
                     : nameof(Sse2.UnpackHigh);
 
-                EmitLdvecWithSignedCast(context, op.Rn, op.Size); // value
+                context.EmitLdvec(op.Rn); // value
 
                 if (op.Size < 3)
                 {
@@ -504,7 +550,7 @@ namespace ChocolArm64.Instructions
                     context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
                 }
 
-                EmitLdvecWithSignedCast(context, op.Rm, op.Size); // value
+                context.EmitLdvec(op.Rm); // value
 
                 if (op.Size < 3)
                 {
@@ -518,7 +564,7 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(op.Size)));
 
-                EmitStvecWithSignedCast(context, op.Rd, op.Size);
+                context.EmitStvec(op.Rd);
             }
             else
             {
@@ -560,7 +606,7 @@ namespace ChocolArm64.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    EmitLdvecWithSignedCast(context, op.Rn, op.Size); // value
+                    context.EmitLdvec(op.Rn); // value
 
                     if (op.Size < 3)
                     {
@@ -572,7 +618,7 @@ namespace ChocolArm64.Instructions
                         context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
                     }
 
-                    EmitLdvecWithSignedCast(context, op.Rm, op.Size); // value
+                    context.EmitLdvec(op.Rm); // value
 
                     if (op.Size < 3)
                     {
@@ -586,12 +632,12 @@ namespace ChocolArm64.Instructions
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(3)));
 
-                    EmitStvecWithSignedCast(context, op.Rd, op.Size);
+                    context.EmitStvec(op.Rd);
                 }
                 else
                 {
-                    EmitLdvecWithSignedCast(context, op.Rn, op.Size);
-                    EmitLdvecWithSignedCast(context, op.Rm, op.Size);
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(op.Size))); // value
 
@@ -609,7 +655,7 @@ namespace ChocolArm64.Instructions
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(3)));
 
-                    EmitStvecWithSignedCast(context, op.Rd, op.Size);
+                    context.EmitStvec(op.Rd);
                 }
             }
             else
@@ -648,8 +694,8 @@ namespace ChocolArm64.Instructions
                     ? nameof(Sse2.UnpackLow)
                     : nameof(Sse2.UnpackHigh);
 
-                EmitLdvecWithSignedCast(context, op.Rn, op.Size);
-                EmitLdvecWithSignedCast(context, op.Rm, op.Size);
+                context.EmitLdvec(op.Rn);
+                context.EmitLdvec(op.Rm);
 
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
@@ -663,7 +709,7 @@ namespace ChocolArm64.Instructions
                     context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(3)));
                 }
 
-                EmitStvecWithSignedCast(context, op.Rd, op.Size);
+                context.EmitStvec(op.Rd);
             }
             else
             {

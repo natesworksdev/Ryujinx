@@ -1,178 +1,540 @@
-using ChocolArm64.Events;
-using ChocolArm64.Exceptions;
 using ChocolArm64.Instructions;
-using ChocolArm64.State;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Threading;
 
+using static ChocolArm64.Memory.CompareExchange128;
+using static ChocolArm64.Memory.MemoryManagement;
+
 namespace ChocolArm64.Memory
 {
     public unsafe class MemoryManager : IMemory, IDisposable
     {
-        private const int PtLvl0Bits = 13;
-        private const int PtLvl1Bits = 14;
-        public  const int PageBits = 12;
+        public const int PageBits = 12;
+        public const int PageSize = 1 << PageBits;
+        public const int PageMask = PageSize - 1;
 
-        private const int PtLvl0Size = 1 << PtLvl0Bits;
-        private const int PtLvl1Size = 1 << PtLvl1Bits;
-        public  const int PageSize   = 1 << PageBits;
+        private const long PteFlagNotModified = 1;
 
-        private const int PtLvl0Mask = PtLvl0Size - 1;
-        private const int PtLvl1Mask = PtLvl1Size - 1;
-        public  const int PageMask   = PageSize   - 1;
-
-        private const int PtLvl0Bit = PageBits + PtLvl1Bits;
-        private const int PtLvl1Bit = PageBits;
-
-        private const long ErgMask = (4 << CpuThreadState.ErgSizeLog2) - 1;
-
-        private class ArmMonitor
-        {
-            public long Position;
-            public bool ExState;
-
-            public bool HasExclusiveAccess(long position)
-            {
-                return Position == position && ExState;
-            }
-        }
-
-        private Dictionary<int, ArmMonitor> _monitors;
-
-        private ConcurrentDictionary<long, IntPtr> _observedPages;
+        internal const long PteFlagsMask = 7;
 
         public IntPtr Ram { get; private set; }
 
         private byte* _ramPtr;
 
-        private byte*** _pageTable;
+        private IntPtr _pageTable;
 
-        public event EventHandler<MemoryAccessEventArgs> InvalidAccess;
+        internal IntPtr PageTable => _pageTable;
 
-        public event EventHandler<MemoryAccessEventArgs> ObservedAccess;
+        internal int PtLevelBits { get; }
+        internal int PtLevelSize { get; }
+        internal int PtLevelMask { get; }
 
-        public MemoryManager(IntPtr ram)
+        public bool HasWriteWatchSupport => MemoryManagement.HasWriteWatchSupport;
+
+        public int  AddressSpaceBits { get; }
+        public long AddressSpaceSize { get; }
+
+        public MemoryManager(
+            IntPtr ram,
+            int    addressSpaceBits = 48,
+            bool   useFlatPageTable = false)
         {
-            _monitors = new Dictionary<int, ArmMonitor>();
-
-            _observedPages = new ConcurrentDictionary<long, IntPtr>();
-
             Ram = ram;
 
             _ramPtr = (byte*)ram;
 
-            _pageTable = (byte***)Marshal.AllocHGlobal(PtLvl0Size * IntPtr.Size);
+            AddressSpaceBits = addressSpaceBits;
+            AddressSpaceSize = 1L << addressSpaceBits;
 
-            for (int l0 = 0; l0 < PtLvl0Size; l0++)
+            //When flat page table is requested, we use a single
+            //array for the mappings of the entire address space.
+            //This has better performance, but also high memory usage.
+            //The multi level page table uses 9 bits per level, so
+            //the memory usage is lower, but the performance is also
+            //lower, since each address translation requires multiple reads.
+            if (useFlatPageTable)
             {
-                _pageTable[l0] = null;
+                PtLevelBits = addressSpaceBits - PageBits;
             }
+            else
+            {
+                PtLevelBits = 9;
+            }
+
+            PtLevelSize = 1 << PtLevelBits;
+            PtLevelMask = PtLevelSize - 1;
+
+            _pageTable = Allocate((ulong)(PtLevelSize * IntPtr.Size));
         }
 
-        public void RemoveMonitor(int core)
+        public void Map(long va, long pa, long size)
         {
-            lock (_monitors)
-            {
-                ClearExclusive(core);
-
-                _monitors.Remove(core);
-            }
+            SetPtEntries(va, _ramPtr + pa, size);
         }
 
-        public void SetExclusive(int core, long position)
+        public void Unmap(long position, long size)
         {
-            position &= ~ErgMask;
+            SetPtEntries(position, null, size);
+        }
 
-            lock (_monitors)
+        public bool IsMapped(long position)
+        {
+            return Translate(position) != IntPtr.Zero;
+        }
+
+        public long GetPhysicalAddress(long virtualAddress)
+        {
+            byte* ptr = (byte*)Translate(virtualAddress);
+
+            return (long)(ptr - _ramPtr);
+        }
+
+        private IntPtr Translate(long position)
+        {
+            if (!IsValidPosition(position))
             {
-                foreach (ArmMonitor mon in _monitors.Values)
+                return IntPtr.Zero;
+            }
+
+            byte* ptr = GetPtEntry(position);
+
+            ulong ptrUlong = (ulong)ptr;
+
+            if ((ptrUlong & PteFlagsMask) != 0)
+            {
+                ptrUlong &= ~(ulong)PteFlagsMask;
+
+                ptr = (byte*)ptrUlong;
+            }
+
+            return new IntPtr(ptr + (position & PageMask));
+        }
+
+        private IntPtr TranslateWrite(long position)
+        {
+            if (!IsValidPosition(position))
+            {
+                return IntPtr.Zero;
+            }
+
+            byte* ptr = GetPtEntry(position);
+
+            ulong ptrUlong = (ulong)ptr;
+
+            if ((ptrUlong & PteFlagsMask) != 0)
+            {
+                if ((ptrUlong & PteFlagNotModified) != 0)
                 {
-                    if (mon.Position == position && mon.ExState)
+                    ClearPtEntryFlag(position, PteFlagNotModified);
+                }
+
+                ptrUlong &= ~(ulong)PteFlagsMask;
+
+                ptr = (byte*)ptrUlong;
+            }
+
+            return new IntPtr(ptr + (position & PageMask));
+        }
+
+        private byte* GetPtEntry(long position)
+        {
+            return *(byte**)GetPtPtr(position);
+        }
+
+        private void SetPtEntries(long va, byte* ptr, long size)
+        {
+            long endPosition = (va + size + PageMask) & ~PageMask;
+
+            while ((ulong)va < (ulong)endPosition)
+            {
+                SetPtEntry(va, ptr);
+
+                va += PageSize;
+
+                if (ptr != null)
+                {
+                    ptr += PageSize;
+                }
+            }
+        }
+
+        private void SetPtEntry(long position, byte* ptr)
+        {
+            *(byte**)GetPtPtr(position) = ptr;
+        }
+
+        private void SetPtEntryFlag(long position, long flag)
+        {
+            ModifyPtEntryFlag(position, flag, setFlag: true);
+        }
+
+        private void ClearPtEntryFlag(long position, long flag)
+        {
+            ModifyPtEntryFlag(position, flag, setFlag: false);
+        }
+
+        private void ModifyPtEntryFlag(long position, long flag, bool setFlag)
+        {
+            IntPtr* pt = (IntPtr*)_pageTable;
+
+            while (true)
+            {
+                IntPtr* ptPtr = GetPtPtr(position);
+
+                IntPtr old = *ptPtr;
+
+                long modified = old.ToInt64();
+
+                if (setFlag)
+                {
+                    modified |= flag;
+                }
+                else
+                {
+                    modified &= ~flag;
+                }
+
+                IntPtr origValue = Interlocked.CompareExchange(ref *ptPtr, new IntPtr(modified), old);
+
+                if (origValue == old)
+                {
+                    break;
+                }
+            }
+        }
+
+        private IntPtr* GetPtPtr(long position)
+        {
+            if (!IsValidPosition(position))
+            {
+                throw new ArgumentOutOfRangeException(nameof(position));
+            }
+
+            IntPtr nextPtr = _pageTable;
+
+            IntPtr* ptePtr = null;
+
+            int bit = PageBits;
+
+            while (true)
+            {
+                long index = (position >> bit) & PtLevelMask;
+
+                ptePtr = &((IntPtr*)nextPtr)[index];
+
+                bit += PtLevelBits;
+
+                if (bit >= AddressSpaceBits)
+                {
+                    break;
+                }
+
+                nextPtr = *ptePtr;
+
+                if (nextPtr == IntPtr.Zero)
+                {
+                    //Entry does not yet exist, allocate a new one.
+                    IntPtr newPtr = Allocate((ulong)(PtLevelSize * IntPtr.Size));
+
+                    //Try to swap the current pointer (should be zero), with the allocated one.
+                    nextPtr = Interlocked.Exchange(ref *ptePtr, newPtr);
+
+                    //If the old pointer is not null, then another thread already has set it.
+                    if (nextPtr != IntPtr.Zero)
                     {
-                        mon.ExState = false;
+                        Free(newPtr);
+                    }
+                    else
+                    {
+                        nextPtr = newPtr;
                     }
                 }
+            }
 
-                if (!_monitors.TryGetValue(core, out ArmMonitor threadMon))
+            return ptePtr;
+        }
+
+        public bool IsRegionModified(long position, long size)
+        {
+            if (!HasWriteWatchSupport)
+            {
+                return IsRegionModifiedFallback(position, size);
+            }
+
+            IntPtr address = Translate(position);
+
+            IntPtr baseAddr     = address;
+            IntPtr expectedAddr = address;
+
+            long pendingPages = 0;
+
+            long pages = size / PageSize;
+
+            bool modified = false;
+
+            bool IsAnyPageModified()
+            {
+                IntPtr pendingSize = new IntPtr(pendingPages * PageSize);
+
+                IntPtr[] addresses = new IntPtr[pendingPages];
+
+                bool result = GetModifiedPages(baseAddr, pendingSize, addresses, out ulong count);
+
+                if (result)
                 {
-                    threadMon = new ArmMonitor();
-
-                    _monitors.Add(core, threadMon);
+                    return count != 0;
                 }
-
-                threadMon.Position = position;
-                threadMon.ExState  = true;
-            }
-        }
-
-        public bool TestExclusive(int core, long position)
-        {
-            //Note: Any call to this method also should be followed by a
-            //call to ClearExclusiveForStore if this method returns true.
-            position &= ~ErgMask;
-
-            Monitor.Enter(_monitors);
-
-            if (!_monitors.TryGetValue(core, out ArmMonitor threadMon))
-            {
-                Monitor.Exit(_monitors);
-
-                return false;
-            }
-
-            bool exState = threadMon.HasExclusiveAccess(position);
-
-            if (!exState)
-            {
-                Monitor.Exit(_monitors);
-            }
-
-            return exState;
-        }
-
-        public void ClearExclusiveForStore(int core)
-        {
-            if (_monitors.TryGetValue(core, out ArmMonitor threadMon))
-            {
-                threadMon.ExState = false;
-            }
-
-            Monitor.Exit(_monitors);
-        }
-
-        public void ClearExclusive(int core)
-        {
-            lock (_monitors)
-            {
-                if (_monitors.TryGetValue(core, out ArmMonitor threadMon))
+                else
                 {
-                    threadMon.ExState = false;
+                    return true;
                 }
             }
+
+            while (pages-- > 0)
+            {
+                if (address != expectedAddr)
+                {
+                    modified |= IsAnyPageModified();
+
+                    baseAddr = address;
+
+                    pendingPages = 0;
+                }
+
+                expectedAddr = address + PageSize;
+
+                pendingPages++;
+
+                if (pages == 0)
+                {
+                    break;
+                }
+
+                position += PageSize;
+
+                address = Translate(position);
+            }
+
+            if (pendingPages != 0)
+            {
+                modified |= IsAnyPageModified();
+            }
+
+            return modified;
         }
 
-        public void WriteInt32ToSharedAddr(long position, int value)
+        private unsafe bool IsRegionModifiedFallback(long position, long size)
         {
-            long maskedPosition = position & ~ErgMask;
+            long endAddr = (position + size + PageMask) & ~PageMask;
 
-            lock (_monitors)
+            bool modified = false;
+
+            while ((ulong)position < (ulong)endAddr)
             {
-                foreach (ArmMonitor mon in _monitors.Values)
+                if (IsValidPosition(position))
                 {
-                    if (mon.Position == maskedPosition && mon.ExState)
+                    byte* ptr = ((byte**)_pageTable)[position >> PageBits];
+
+                    ulong ptrUlong = (ulong)ptr;
+
+                    if ((ptrUlong & PteFlagNotModified) == 0)
                     {
-                        mon.ExState = false;
+                        modified = true;
+
+                        SetPtEntryFlag(position, PteFlagNotModified);
                     }
                 }
+                else
+                {
+                    modified = true;
+                }
 
-                WriteInt32(position, value);
+                position += PageSize;
             }
+
+            return modified;
+        }
+
+        public bool TryGetHostAddress(long position, long size, out IntPtr ptr)
+        {
+            if (IsContiguous(position, size))
+            {
+                ptr = (IntPtr)Translate(position);
+
+                return true;
+            }
+
+            ptr = IntPtr.Zero;
+
+            return false;
+        }
+
+        private bool IsContiguous(long position, long size)
+        {
+            long endPos = position + size;
+
+            position &= ~PageMask;
+
+            long expectedPa = GetPhysicalAddress(position);
+
+            while ((ulong)position < (ulong)endPos)
+            {
+                long pa = GetPhysicalAddress(position);
+
+                if (pa != expectedPa)
+                {
+                    return false;
+                }
+
+                position   += PageSize;
+                expectedPa += PageSize;
+            }
+
+            return true;
+        }
+
+        public bool IsValidPosition(long position)
+        {
+            return (ulong)position < (ulong)AddressSpaceSize;
+        }
+
+        internal bool AtomicCompareExchange2xInt32(
+            long position,
+            int  expectedLow,
+            int  expectedHigh,
+            int  desiredLow,
+            int  desiredHigh)
+        {
+            long expected = (uint)expectedLow;
+            long desired  = (uint)desiredLow;
+
+            expected |= (long)expectedHigh << 32;
+            desired  |= (long)desiredHigh  << 32;
+
+            return AtomicCompareExchangeInt64(position, expected, desired);
+        }
+
+        internal bool AtomicCompareExchangeInt128(
+            long  position,
+            ulong expectedLow,
+            ulong expectedHigh,
+            ulong desiredLow,
+            ulong desiredHigh)
+        {
+            if ((position & 0xf) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
+
+            IntPtr ptr = TranslateWrite(position);
+
+            return InterlockedCompareExchange128(ptr, expectedLow, expectedHigh, desiredLow, desiredHigh);
+        }
+
+        internal Vector128<float> AtomicReadInt128(long position)
+        {
+            if ((position & 0xf) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
+
+            IntPtr ptr = Translate(position);
+
+            InterlockedRead128(ptr, out ulong low, out ulong high);
+
+            Vector128<float> vector = default(Vector128<float>);
+
+            vector = VectorHelper.VectorInsertInt(low,  vector, 0, 3);
+            vector = VectorHelper.VectorInsertInt(high, vector, 1, 3);
+
+            return vector;
+        }
+
+        public bool AtomicCompareExchangeByte(long position, byte expected, byte desired)
+        {
+            int* ptr = (int*)Translate(position);
+
+            int currentValue = *ptr;
+
+            int expected32 = (currentValue & ~byte.MaxValue) | expected;
+            int desired32  = (currentValue & ~byte.MaxValue) | desired;
+
+            return Interlocked.CompareExchange(ref *ptr, desired32, expected32) == expected32;
+        }
+
+        public bool AtomicCompareExchangeInt16(long position, short expected, short desired)
+        {
+            if ((position & 1) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
+
+            int* ptr = (int*)Translate(position);
+
+            int currentValue = *ptr;
+
+            int expected32 = (currentValue & ~ushort.MaxValue) | (ushort)expected;
+            int desired32  = (currentValue & ~ushort.MaxValue) | (ushort)desired;
+
+            return Interlocked.CompareExchange(ref *ptr, desired32, expected32) == expected32;
+        }
+
+        public bool AtomicCompareExchangeInt32(long position, int expected, int desired)
+        {
+            if ((position & 3) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
+
+            int* ptr = (int*)TranslateWrite(position);
+
+            return Interlocked.CompareExchange(ref *ptr, desired, expected) == expected;
+        }
+
+        public bool AtomicCompareExchangeInt64(long position, long expected, long desired)
+        {
+            if ((position & 7) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
+
+            long* ptr = (long*)TranslateWrite(position);
+
+            return Interlocked.CompareExchange(ref *ptr, desired, expected) == expected;
+        }
+
+        public int AtomicIncrementInt32(long position)
+        {
+            if ((position & 3) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
+
+            int* ptr = (int*)TranslateWrite(position);
+
+            return Interlocked.Increment(ref *ptr);
+        }
+
+        public int AtomicDecrementInt32(long position)
+        {
+            if ((position & 3) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
+
+            int* ptr = (int*)TranslateWrite(position);
+
+            return Interlocked.Decrement(ref *ptr);
+        }
+
+        private void AbortWithAlignmentFault(long position)
+        {
+            //TODO: Abort mode and exception support on the CPU.
+            throw new InvalidOperationException($"Tried to compare exchange a misaligned address 0x{position:X16}.");
         }
 
         public sbyte ReadSByte(long position)
@@ -353,7 +715,7 @@ namespace ChocolArm64.Memory
 
                 int copySize = (int)(pageLimit - position);
 
-                Marshal.Copy((IntPtr)Translate(position), data, offset, copySize);
+                Marshal.Copy(Translate(position), data, offset, copySize);
 
                 position += copySize;
                 offset   += copySize;
@@ -390,7 +752,7 @@ namespace ChocolArm64.Memory
 
                 int copySize = (int)(pageLimit - position);
 
-                Marshal.Copy((IntPtr)Translate(position), data, offset, copySize);
+                Marshal.Copy(Translate(position), data, offset, copySize);
 
                 position += copySize;
                 offset   += copySize;
@@ -553,7 +915,7 @@ namespace ChocolArm64.Memory
 
                 int copySize = (int)(pageLimit - position);
 
-                Marshal.Copy(data, offset, (IntPtr)TranslateWrite(position), copySize);
+                Marshal.Copy(data, offset, TranslateWrite(position), copySize);
 
                 position += copySize;
                 offset   += copySize;
@@ -583,7 +945,7 @@ namespace ChocolArm64.Memory
 
                 int copySize = (int)(pageLimit - position);
 
-                Marshal.Copy(data, offset, (IntPtr)TranslateWrite(position), copySize);
+                Marshal.Copy(data, offset, Translate(position), copySize);
 
                 position += copySize;
                 offset   += copySize;
@@ -596,8 +958,8 @@ namespace ChocolArm64.Memory
             if (IsContiguous(src, size) &&
                 IsContiguous(dst, size))
             {
-                byte* srcPtr = Translate(src);
-                byte* dstPtr = TranslateWrite(dst);
+                byte* srcPtr = (byte*)Translate(src);
+                byte* dstPtr = (byte*)Translate(dst);
 
                 Buffer.MemoryCopy(srcPtr, dstPtr, size, size);
             }
@@ -607,266 +969,6 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public void Map(long va, long pa, long size)
-        {
-            SetPtEntries(va, _ramPtr + pa, size);
-        }
-
-        public void Unmap(long position, long size)
-        {
-            SetPtEntries(position, null, size);
-
-            StopObservingRegion(position, size);
-        }
-
-        public bool IsMapped(long position)
-        {
-            if (!(IsValidPosition(position)))
-            {
-                return false;
-            }
-
-            long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
-            long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
-
-            if (_pageTable[l0] == null)
-            {
-                return false;
-            }
-
-            return _pageTable[l0][l1] != null || _observedPages.ContainsKey(position >> PageBits);
-        }
-
-        public long GetPhysicalAddress(long virtualAddress)
-        {
-            byte* ptr = Translate(virtualAddress);
-
-            return (long)(ptr - _ramPtr);
-        }
-
-        internal byte* Translate(long position)
-        {
-            long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
-            long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
-
-            long old = position;
-
-            byte** lvl1 = _pageTable[l0];
-
-            if ((position >> (PtLvl0Bit + PtLvl0Bits)) != 0)
-            {
-                goto Unmapped;
-            }
-
-            if (lvl1 == null)
-            {
-                goto Unmapped;
-            }
-
-            position &= PageMask;
-
-            byte* ptr = lvl1[l1];
-
-            if (ptr == null)
-            {
-                goto Unmapped;
-            }
-
-            return ptr + position;
-
-Unmapped:
-            return HandleNullPte(old);
-        }
-
-        private byte* HandleNullPte(long position)
-        {
-            long key = position >> PageBits;
-
-            if (_observedPages.TryGetValue(key, out IntPtr ptr))
-            {
-                return (byte*)ptr + (position & PageMask);
-            }
-
-            InvalidAccess?.Invoke(this, new MemoryAccessEventArgs(position));
-
-            throw new VmmPageFaultException(position);
-        }
-
-        internal byte* TranslateWrite(long position)
-        {
-            long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
-            long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
-
-            long old = position;
-
-            byte** lvl1 = _pageTable[l0];
-
-            if ((position >> (PtLvl0Bit + PtLvl0Bits)) != 0)
-            {
-                goto Unmapped;
-            }
-
-            if (lvl1 == null)
-            {
-                goto Unmapped;
-            }
-
-            position &= PageMask;
-
-            byte* ptr = lvl1[l1];
-
-            if (ptr == null)
-            {
-                goto Unmapped;
-            }
-
-            return ptr + position;
-
-Unmapped:
-            return HandleNullPteWrite(old);
-        }
-
-        private byte* HandleNullPteWrite(long position)
-        {
-            long key = position >> PageBits;
-
-            MemoryAccessEventArgs e = new MemoryAccessEventArgs(position);
-
-            if (_observedPages.TryGetValue(key, out IntPtr ptr))
-            {
-                SetPtEntry(position, (byte*)ptr);
-
-                ObservedAccess?.Invoke(this, e);
-
-                return (byte*)ptr + (position & PageMask);
-            }
-
-            InvalidAccess?.Invoke(this, e);
-
-            throw new VmmPageFaultException(position);
-        }
-
-        private void SetPtEntries(long va, byte* ptr, long size)
-        {
-            long endPosition = (va + size + PageMask) & ~PageMask;
-
-            while ((ulong)va < (ulong)endPosition)
-            {
-                SetPtEntry(va, ptr);
-
-                va += PageSize;
-
-                if (ptr != null)
-                {
-                    ptr += PageSize;
-                }
-            }
-        }
-
-        private void SetPtEntry(long position, byte* ptr)
-        {
-            if (!IsValidPosition(position))
-            {
-                throw new ArgumentOutOfRangeException(nameof(position));
-            }
-
-            long l0 = (position >> PtLvl0Bit) & PtLvl0Mask;
-            long l1 = (position >> PtLvl1Bit) & PtLvl1Mask;
-
-            if (_pageTable[l0] == null)
-            {
-                byte** lvl1 = (byte**)Marshal.AllocHGlobal(PtLvl1Size * IntPtr.Size);
-
-                for (int zl1 = 0; zl1 < PtLvl1Size; zl1++)
-                {
-                    lvl1[zl1] = null;
-                }
-
-                Thread.MemoryBarrier();
-
-                _pageTable[l0] = lvl1;
-            }
-
-            _pageTable[l0][l1] = ptr;
-        }
-
-        public void StartObservingRegion(long position, long size)
-        {
-            long endPosition = (position + size + PageMask) & ~PageMask;
-
-            position &= ~PageMask;
-
-            while ((ulong)position < (ulong)endPosition)
-            {
-                _observedPages[position >> PageBits] = (IntPtr)Translate(position);
-
-                SetPtEntry(position, null);
-
-                position += PageSize;
-            }
-        }
-
-        public void StopObservingRegion(long position, long size)
-        {
-            long endPosition = (position + size + PageMask) & ~PageMask;
-
-            while (position < endPosition)
-            {
-                lock (_observedPages)
-                {
-                    if (_observedPages.TryRemove(position >> PageBits, out IntPtr ptr))
-                    {
-                        SetPtEntry(position, (byte*)ptr);
-                    }
-                }
-
-                position += PageSize;
-            }
-        }
-
-        public bool TryGetHostAddress(long position, long size, out IntPtr ptr)
-        {
-            if (IsContiguous(position, size))
-            {
-                ptr = (IntPtr)Translate(position);
-
-                return true;
-            }
-
-            ptr = IntPtr.Zero;
-
-            return false;
-        }
-
-        private bool IsContiguous(long position, long size)
-        {
-            long endPos = position + size;
-
-            position &= ~PageMask;
-
-            long expectedPa = GetPhysicalAddress(position);
-
-            while ((ulong)position < (ulong)endPos)
-            {
-                long pa = GetPhysicalAddress(position);
-
-                if (pa != expectedPa)
-                {
-                    return false;
-                }
-
-                position   += PageSize;
-                expectedPa += PageSize;
-            }
-
-            return true;
-        }
-
-        public bool IsValidPosition(long position)
-        {
-            return position >> (PtLvl0Bits + PtLvl1Bits + PageBits) == 0;
-        }
-
         public void Dispose()
         {
             Dispose(true);
@@ -874,24 +976,36 @@ Unmapped:
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_pageTable == null)
+            IntPtr ptr = Interlocked.Exchange(ref _pageTable, IntPtr.Zero);
+
+            if (ptr != IntPtr.Zero)
             {
+                FreePageTableEntry(ptr, PageBits);
+            }
+        }
+
+        private void FreePageTableEntry(IntPtr ptr, int levelBitEnd)
+        {
+            levelBitEnd += PtLevelBits;
+
+            if (levelBitEnd >= AddressSpaceBits)
+            {
+                Free(ptr);
+
                 return;
             }
 
-            for (int l0 = 0; l0 < PtLvl0Size; l0++)
+            for (int index = 0; index < PtLevelSize; index++)
             {
-                if (_pageTable[l0] != null)
-                {
-                    Marshal.FreeHGlobal((IntPtr)_pageTable[l0]);
-                }
+                IntPtr ptePtr = ((IntPtr*)ptr)[index];
 
-                _pageTable[l0] = null;
+                if (ptePtr != IntPtr.Zero)
+                {
+                    FreePageTableEntry(ptePtr, levelBitEnd);
+                }
             }
 
-            Marshal.FreeHGlobal((IntPtr)_pageTable);
-
-            _pageTable = null;
+            Free(ptr);
         }
     }
 }

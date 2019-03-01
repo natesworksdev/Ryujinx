@@ -23,7 +23,7 @@ namespace ChocolArm64.Instructions
                     //Double -> Single.
                     VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
 
-                    EmitLdvecWithCastToDouble(context, op.Rn);
+                    context.EmitLdvec(op.Rn);
 
                     Type[] types = new Type[] { typeof(Vector128<float>), typeof(Vector128<double>) };
 
@@ -42,7 +42,7 @@ namespace ChocolArm64.Instructions
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Double), types));
 
-                    EmitStvecWithCastFromDouble(context, op.Rd);
+                    context.EmitStvec(op.Rd);
                 }
                 else
                 {
@@ -91,7 +91,7 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToVector128Double), typesCvt));
 
-                EmitStvecWithCastFromDouble(context, op.Rd);
+                context.EmitStvec(op.Rd);
             }
             else
             {
@@ -154,7 +154,7 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MoveLowToHigh)));
 
-                EmitLdvecWithCastToDouble(context, op.Rn);
+                context.EmitLdvec(op.Rn);
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToVector128Single), typesCvt));
                 context.Emit(OpCodes.Dup);
 
@@ -244,7 +244,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcvtzs_Gp_Fixed(ILEmitterCtx context)
         {
-            EmitFcvtzs_Gp_Fix(context);
+            EmitFcvtzs_Gp_Fixed(context);
         }
 
         public static void Fcvtzs_S(ILEmitterCtx context)
@@ -264,7 +264,7 @@ namespace ChocolArm64.Instructions
 
         public static void Fcvtzu_Gp_Fixed(ILEmitterCtx context)
         {
-            EmitFcvtzu_Gp_Fix(context);
+            EmitFcvtzu_Gp_Fixed(context);
         }
 
         public static void Fcvtzu_S(ILEmitterCtx context)
@@ -293,6 +293,24 @@ namespace ChocolArm64.Instructions
             EmitScalarSetF(context, op.Rd, op.Size);
         }
 
+        public static void Scvtf_Gp_Fixed(ILEmitterCtx context)
+        {
+            OpCodeSimdCvt64 op = (OpCodeSimdCvt64)context.CurrOp;
+
+            context.EmitLdintzr(op.Rn);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_I4);
+            }
+
+            EmitFloatCast(context, op.Size);
+
+            EmitI2fFBitsMul(context, op.Size, op.FBits);
+
+            EmitScalarSetF(context, op.Rd, op.Size);
+        }
+
         public static void Scvtf_S(ILEmitterCtx context)
         {
             OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
@@ -314,7 +332,7 @@ namespace ChocolArm64.Instructions
             {
                 Type[] typesCvt = new Type[] { typeof(Vector128<int>) };
 
-                EmitLdvecWithSignedCast(context, op.Rn, 2);
+                context.EmitLdvec(op.Rn);
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToVector128Single), typesCvt));
 
@@ -349,6 +367,26 @@ namespace ChocolArm64.Instructions
             EmitScalarSetF(context, op.Rd, op.Size);
         }
 
+        public static void Ucvtf_Gp_Fixed(ILEmitterCtx context)
+        {
+            OpCodeSimdCvt64 op = (OpCodeSimdCvt64)context.CurrOp;
+
+            context.EmitLdintzr(op.Rn);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                context.Emit(OpCodes.Conv_U4);
+            }
+
+            context.Emit(OpCodes.Conv_R_Un);
+
+            EmitFloatCast(context, op.Size);
+
+            EmitI2fFBitsMul(context, op.Size, op.FBits);
+
+            EmitScalarSetF(context, op.Rd, op.Size);
+        }
+
         public static void Ucvtf_S(ILEmitterCtx context)
         {
             OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
@@ -365,32 +403,6 @@ namespace ChocolArm64.Instructions
         public static void Ucvtf_V(ILEmitterCtx context)
         {
             EmitVectorCvtf(context, signed: false);
-        }
-
-        private static int GetFBits(ILEmitterCtx context)
-        {
-            if (context.CurrOp is OpCodeSimdShImm64 op)
-            {
-                return GetImmShr(op);
-            }
-
-            return 0;
-        }
-
-        private static void EmitFloatCast(ILEmitterCtx context, int size)
-        {
-            if (size == 0)
-            {
-                context.Emit(OpCodes.Conv_R4);
-            }
-            else if (size == 1)
-            {
-                context.Emit(OpCodes.Conv_R8);
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(size));
-            }
         }
 
         private static void EmitFcvtn(ILEmitterCtx context, bool signed, bool scalar)
@@ -476,17 +488,17 @@ namespace ChocolArm64.Instructions
             context.EmitStintzr(op.Rd);
         }
 
-        private static void EmitFcvtzs_Gp_Fix(ILEmitterCtx context)
+        private static void EmitFcvtzs_Gp_Fixed(ILEmitterCtx context)
         {
-            EmitFcvtz__Gp_Fix(context, true);
+            EmitFcvtz__Gp_Fixed(context, true);
         }
 
-        private static void EmitFcvtzu_Gp_Fix(ILEmitterCtx context)
+        private static void EmitFcvtzu_Gp_Fixed(ILEmitterCtx context)
         {
-            EmitFcvtz__Gp_Fix(context, false);
+            EmitFcvtz__Gp_Fixed(context, false);
         }
 
-        private static void EmitFcvtz__Gp_Fix(ILEmitterCtx context, bool signed)
+        private static void EmitFcvtz__Gp_Fixed(ILEmitterCtx context, bool signed)
         {
             OpCodeSimdCvt64 op = (OpCodeSimdCvt64)context.CurrOp;
 
@@ -530,9 +542,7 @@ namespace ChocolArm64.Instructions
                     context.Emit(OpCodes.Conv_R_Un);
                 }
 
-                context.Emit(sizeF == 0
-                    ? OpCodes.Conv_R4
-                    : OpCodes.Conv_R8);
+                EmitFloatCast(context, sizeF);
 
                 EmitI2fFBitsMul(context, sizeF, fBits);
 
@@ -641,6 +651,32 @@ namespace ChocolArm64.Instructions
             if (op.RegisterSize == RegisterSize.Simd64)
             {
                 EmitVectorZeroUpper(context, op.Rd);
+            }
+        }
+
+        private static int GetFBits(ILEmitterCtx context)
+        {
+            if (context.CurrOp is OpCodeSimdShImm64 op)
+            {
+                return GetImmShr(op);
+            }
+
+            return 0;
+        }
+
+        private static void EmitFloatCast(ILEmitterCtx context, int size)
+        {
+            if (size == 0)
+            {
+                context.Emit(OpCodes.Conv_R4);
+            }
+            else if (size == 1)
+            {
+                context.Emit(OpCodes.Conv_R8);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
         }
 

@@ -4,17 +4,21 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    public static class OGLExtension
+    static class OGLExtension
     {
         // Private lazy backing variables
         private static Lazy<bool> s_EnhancedLayouts    = new Lazy<bool>(() => HasExtension("GL_ARB_enhanced_layouts"));
         private static Lazy<bool> s_TextureMirrorClamp = new Lazy<bool>(() => HasExtension("GL_EXT_texture_mirror_clamp"));
         private static Lazy<bool> s_ViewportArray      = new Lazy<bool>(() => HasExtension("GL_ARB_viewport_array"));
 
+        private static Lazy<bool> s_NvidiaDriver      = new Lazy<bool>(() => IsNvidiaDriver());
+
         // Public accessors
         public static bool EnhancedLayouts    => s_EnhancedLayouts.Value;
         public static bool TextureMirrorClamp => s_TextureMirrorClamp.Value;
         public static bool ViewportArray      => s_ViewportArray.Value;
+		
+        public static bool NvidiaDrvier       => s_NvidiaDriver.Value;
 
         private static bool HasExtension(string Name)
         {
@@ -31,6 +35,11 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Logger.PrintInfo(LogClass.Gpu, $"OpenGL extension {Name} unavailable. You may experience some performance degredation");
 
             return false;
+        }
+		
+		private static bool IsNvidiaDriver()
+		{
+            return GL.GetString(StringName.Vendor).Equals("NVIDIA Corporation");
         }
 
         public static class Required
