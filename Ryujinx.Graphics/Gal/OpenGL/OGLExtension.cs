@@ -28,40 +28,31 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 }
             }
 
-            Logger.PrintWarning(LogClass.Gpu, $"OpenGL extension {Name} unavailable. You may experience some rendering issues or performance degredation");
+            Logger.PrintInfo(LogClass.Gpu, $"OpenGL extension {Name} unavailable. You may experience some performance degredation");
 
             return false;
         }
 
-        public static class Strict
+        public static class Required
         {
-            // Strict enabled
-            public static void SetStrictOpenGL(bool enabled) => _strictOpenGL = enabled;
-
-            private static bool _strictOpenGL;
-
             // Public accessors
-            public static bool EnhancedLayouts    => s_EnhancedLayoutsStrict.Value;
-            public static bool TextureMirrorClamp => s_TextureMirrorClampStrict.Value;
-            public static bool ViewportArray      => s_ViewportArrayStrict.Value;
+            public static bool EnhancedLayouts    => s_EnhancedLayoutsRequired.Value;
+            public static bool TextureMirrorClamp => s_TextureMirrorClampRequired.Value;
+            public static bool ViewportArray      => s_ViewportArrayRequired.Value;
 
             // Private lazy backing variables
-            private static Lazy<bool> s_EnhancedLayoutsStrict    = new Lazy<bool>(() => HasExtensionStrict(OGLExtension.EnhancedLayouts,    "GL_ARB_enhanced_layouts"));
-            private static Lazy<bool> s_TextureMirrorClampStrict = new Lazy<bool>(() => HasExtensionStrict(OGLExtension.TextureMirrorClamp, "GL_EXT_texture_mirror_clamp"));
-            private static Lazy<bool> s_ViewportArrayStrict      = new Lazy<bool>(() => HasExtensionStrict(OGLExtension.ViewportArray,      "GL_ARB_viewport_array"));
+            private static Lazy<bool> s_EnhancedLayoutsRequired    = new Lazy<bool>(() => HasExtensionRequired(OGLExtension.EnhancedLayouts,    "GL_ARB_enhanced_layouts"));
+            private static Lazy<bool> s_TextureMirrorClampRequired = new Lazy<bool>(() => HasExtensionRequired(OGLExtension.TextureMirrorClamp, "GL_EXT_texture_mirror_clamp"));
+            private static Lazy<bool> s_ViewportArrayRequired      = new Lazy<bool>(() => HasExtensionRequired(OGLExtension.ViewportArray,      "GL_ARB_viewport_array"));
 
-            private static bool HasExtensionStrict(bool Value, string Name)
+            private static bool HasExtensionRequired(bool Value, string Name)
             {
                 if (Value)
                 {
                     return true;
                 }
 
-                if (_strictOpenGL)
-                {
-                    throw new Exception($"Required OpenGL extension {Name} unavailable. You can ignore this message by disabling 'enable_strict_opengl' " +
-                                        $"in the config however you may experience some rendering issues or performance degredation");
-                }
+                Logger.PrintWarning(LogClass.Gpu, $"Required OpenGL extension {Name} unavailable. You may experience some rendering issues");
 
                 return false;
             }

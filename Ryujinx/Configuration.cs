@@ -63,11 +63,6 @@ namespace Ryujinx
         public bool EnableFileLog { get; private set; }
 
         /// <summary>
-        /// Enables or disables stict OpenGL
-        /// </summary>
-        public bool EnableStrictOpengl { get; private set; }
-
-        /// <summary>
         /// Change System Language
         /// </summary>
         public SystemLanguage SystemLanguage { get; private set; }
@@ -187,8 +182,6 @@ namespace Ryujinx
                     Logger.SetEnable(logClass, true);
                 }
             }
-
-            OGLExtension.Strict.SetStrictOpenGL(Instance.EnableStrictOpengl);
 
             device.EnableDeviceVsync = Instance.EnableVsync;
 
