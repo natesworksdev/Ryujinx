@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public static bool EnhancedLayouts    => s_EnhancedLayouts.Value;
         public static bool TextureMirrorClamp => s_TextureMirrorClamp.Value;
         public static bool ViewportArray      => s_ViewportArray.Value;
-		
+
         public static bool NvidiaDrvier       => s_NvidiaDriver.Value;
 
         private static bool HasExtension(string Name)
@@ -36,9 +36,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
             return false;
         }
-		
-		private static bool IsNvidiaDriver()
-		{
+
+        private static bool IsNvidiaDriver()
+        {
             return GL.GetString(StringName.Vendor).Equals("NVIDIA Corporation");
         }
 

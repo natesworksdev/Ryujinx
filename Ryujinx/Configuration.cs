@@ -2,7 +2,6 @@ using LibHac.IO;
 using OpenTK.Input;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Input;
