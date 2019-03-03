@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                     int textureBlockHeight = ImageUtils.GetBlockHeight(image.Format);
                     int textureBlockDepth  = ImageUtils.GetBlockDepth(image.Format);
 
-                    data = ASTCDecoder.DecodeToRGBA8888(
+                    data = AstcDecoder.DecodeToRGBA8888(
                         data,
                         textureBlockWidth,
                         textureBlockHeight,
