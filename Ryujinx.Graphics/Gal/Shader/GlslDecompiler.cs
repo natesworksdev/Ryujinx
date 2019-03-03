@@ -280,14 +280,14 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 TextureTarget target = ImageUtils.GetTextureTarget(declInfo.TextureTarget);
                 _sb.AppendLine($"// {declInfo.TextureSuffix}");
-                _sb.AppendLine("uniform " + GetSamplerType(target, (declInfo.TextureSuffix & TextureInstructionSuffix.DC) != 0) + " " + declInfo.Name + ";");
+                _sb.AppendLine("uniform " + GetSamplerType(target, (declInfo.TextureSuffix & TextureInstructionSuffix.Dc) != 0) + " " + declInfo.Name + ";");
             }
 
             foreach (ShaderDeclInfo declInfo in _decl.Textures.Values.OrderBy(DeclKeySelector))
             {
                 TextureTarget target = ImageUtils.GetTextureTarget(declInfo.TextureTarget);
                 _sb.AppendLine($"// {declInfo.TextureSuffix}");
-                _sb.AppendLine("uniform " + GetSamplerType(target, (declInfo.TextureSuffix & TextureInstructionSuffix.DC) != 0) + " " + declInfo.Name + ";");
+                _sb.AppendLine("uniform " + GetSamplerType(target, (declInfo.TextureSuffix & TextureInstructionSuffix.Dc) != 0) + " " + declInfo.Name + ";");
             }
         }
 
@@ -1341,7 +1341,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         {
             ShaderIrMetaTex meta = (ShaderIrMetaTex)op.MetaData;
 
-            bool hasDepth = (meta.TextureInstructionSuffix & TextureInstructionSuffix.DC) != 0;
+            bool hasDepth = (meta.TextureInstructionSuffix & TextureInstructionSuffix.Dc) != 0;
 
             int coords = ImageUtils.GetCoordsCountTextureTarget(meta.TextureTarget);
 
@@ -1436,7 +1436,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             string comp = meta.Component.ToString();
 
-            if ((suffix & TextureInstructionSuffix.DC) != 0)
+            if ((suffix & TextureInstructionSuffix.Dc) != 0)
             {
                 comp = GetOperExpr(op, meta.DepthCompare);
             }
@@ -1445,7 +1445,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             {
                 string offset = GetTextureOffset(meta, "floatBitsToInt((" + GetOperExpr(op, meta.Offset) + "))", 8, 0x3F);
 
-                if ((suffix & TextureInstructionSuffix.DC) != 0)
+                if ((suffix & TextureInstructionSuffix.Dc) != 0)
                 {
                     return "textureGatherOffset(" + sampler + ", " + coords + ", " + comp + ", " + offset + ")" + chString;
                 }
@@ -1453,7 +1453,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 return "textureGatherOffset(" + sampler + ", " + coords + ", " + offset + ", " + comp + ")" + chString;
             }
             // TODO: Support PTP
-            else if ((suffix & TextureInstructionSuffix.PTP) != 0)
+            else if ((suffix & TextureInstructionSuffix.Ptp) != 0)
             {
                 throw new NotImplementedException();
             }
@@ -1470,13 +1470,13 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             string chString = "." + ch;
 
-            if ((suffix & TextureInstructionSuffix.DC) != 0)
+            if ((suffix & TextureInstructionSuffix.Dc) != 0)
             {
                 chString = "";
             }
 
             // TODO: Support LBA and LLA
-            if ((suffix & TextureInstructionSuffix.LZ) != 0)
+            if ((suffix & TextureInstructionSuffix.Lz) != 0)
             {
                 if ((suffix & TextureInstructionSuffix.AOffI) != 0 && _isNvidiaDriver)
                 {
@@ -1487,7 +1487,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 return "textureLod(" + sampler + ", " + coords + ", 0.0)" + chString;
             }
-            else if ((suffix & TextureInstructionSuffix.LB) != 0)
+            else if ((suffix & TextureInstructionSuffix.Lb) != 0)
             {
                 if ((suffix & TextureInstructionSuffix.AOffI) != 0 && _isNvidiaDriver)
                 {
@@ -1498,7 +1498,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
                 return "texture(" + sampler + ", " + coords + ", " + GetOperExpr(op, meta.LevelOfDetail) + ")" + chString;
             }
-            else if ((suffix & TextureInstructionSuffix.LL) != 0)
+            else if ((suffix & TextureInstructionSuffix.Ll) != 0)
             {
                 if ((suffix & TextureInstructionSuffix.AOffI) != 0 && _isNvidiaDriver)
                 {

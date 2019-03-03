@@ -212,19 +212,19 @@ namespace Ryujinx.Graphics.Gal.Shader
                     suffix = TextureInstructionSuffix.None;
                     break;
                 case 0x8:
-                    suffix = TextureInstructionSuffix.LZ;
+                    suffix = TextureInstructionSuffix.Lz;
                     break;
                 case 0x10:
-                    suffix = TextureInstructionSuffix.LB;
+                    suffix = TextureInstructionSuffix.Lb;
                     break;
                 case 0x18:
-                    suffix = TextureInstructionSuffix.LL;
+                    suffix = TextureInstructionSuffix.Ll;
                     break;
                 case 0x30:
-                    suffix = TextureInstructionSuffix.LBA;
+                    suffix = TextureInstructionSuffix.Lba;
                     break;
                 case 0x38:
-                    suffix = TextureInstructionSuffix.LLA;
+                    suffix = TextureInstructionSuffix.Lla;
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid Suffix for TEX instruction {rawSuffix}");
@@ -250,19 +250,19 @@ namespace Ryujinx.Graphics.Gal.Shader
                     suffix = TextureInstructionSuffix.None;
                     break;
                 case 0x2:
-                    suffix = TextureInstructionSuffix.LZ;
+                    suffix = TextureInstructionSuffix.Lz;
                     break;
                 case 0x4:
-                    suffix = TextureInstructionSuffix.LB;
+                    suffix = TextureInstructionSuffix.Lb;
                     break;
                 case 0x6:
-                    suffix = TextureInstructionSuffix.LL;
+                    suffix = TextureInstructionSuffix.Ll;
                     break;
                 case 0xc:
-                    suffix = TextureInstructionSuffix.LBA;
+                    suffix = TextureInstructionSuffix.Lba;
                     break;
                 case 0xe:
-                    suffix = TextureInstructionSuffix.LLA;
+                    suffix = TextureInstructionSuffix.Lla;
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid Suffix for TEX.B instruction {rawSuffix}");
@@ -286,7 +286,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (hasDepthCompare)
             {
-                textureInstructionSuffix |= TextureInstructionSuffix.DC;
+                textureInstructionSuffix |= TextureInstructionSuffix.Dc;
             }
 
             ShaderIrOperGpr[] coords = new ShaderIrOperGpr[ImageUtils.GetCoordsCountTextureTarget(textureTarget)];
@@ -326,10 +326,10 @@ namespace Ryujinx.Graphics.Gal.Shader
             // TODO: determine first argument when TEX.B is used
             int operBIndex = gprHandle ? 1 : 0;
 
-            if ((textureInstructionSuffix & TextureInstructionSuffix.LL) != 0 ||
-                (textureInstructionSuffix & TextureInstructionSuffix.LB) != 0 ||
-                (textureInstructionSuffix & TextureInstructionSuffix.LBA) != 0 ||
-                (textureInstructionSuffix & TextureInstructionSuffix.LLA) != 0)
+            if ((textureInstructionSuffix & TextureInstructionSuffix.Ll) != 0 ||
+                (textureInstructionSuffix & TextureInstructionSuffix.Lb) != 0 ||
+                (textureInstructionSuffix & TextureInstructionSuffix.Lba) != 0 ||
+                (textureInstructionSuffix & TextureInstructionSuffix.Lla) != 0)
             {
                 levelOfDetail        = opCode.Gpr20();
                 levelOfDetail.Index += operBIndex;
@@ -345,7 +345,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 operBIndex++;
             }
 
-            if ((textureInstructionSuffix & TextureInstructionSuffix.DC) != 0)
+            if ((textureInstructionSuffix & TextureInstructionSuffix.Dc) != 0)
             {
                 depthCompare        = opCode.Gpr20();
                 depthCompare.Index += operBIndex;
@@ -405,14 +405,14 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case 0x4:
                 case 0x10:
                 case 0x16:
-                    suffix = TextureInstructionSuffix.LZ;
+                    suffix = TextureInstructionSuffix.Lz;
                     break;
                 case 0x6:
                 case 0x1a:
-                    suffix = TextureInstructionSuffix.LL;
+                    suffix = TextureInstructionSuffix.Ll;
                     break;
                 case 0x8:
-                    suffix = TextureInstructionSuffix.DC;
+                    suffix = TextureInstructionSuffix.Dc;
                     break;
                 case 0x2:
                 case 0xe:
@@ -421,11 +421,11 @@ namespace Ryujinx.Graphics.Gal.Shader
                     suffix = TextureInstructionSuffix.None;
                     break;
                 case 0xa:
-                    suffix = TextureInstructionSuffix.LL | TextureInstructionSuffix.DC;
+                    suffix = TextureInstructionSuffix.Ll | TextureInstructionSuffix.Dc;
                     break;
                 case 0xc:
                 case 0x12:
-                    suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.DC;
+                    suffix = TextureInstructionSuffix.Lz | TextureInstructionSuffix.Dc;
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid Suffix for TEXS instruction {rawSuffix}");
@@ -447,21 +447,21 @@ namespace Ryujinx.Graphics.Gal.Shader
                 case 0:
                 case 0x4:
                 case 0x8:
-                    suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.AOffI;
+                    suffix = TextureInstructionSuffix.Lz | TextureInstructionSuffix.AOffI;
                     break;
                 case 0xc:
-                    suffix = TextureInstructionSuffix.LZ | TextureInstructionSuffix.MZ;
+                    suffix = TextureInstructionSuffix.Lz | TextureInstructionSuffix.Mz;
                     break;
                 case 0xe:
                 case 0x10:
-                    suffix = TextureInstructionSuffix.LZ;
+                    suffix = TextureInstructionSuffix.Lz;
                     break;
                 case 0x2:
                 case 0xa:
-                    suffix = TextureInstructionSuffix.LL;
+                    suffix = TextureInstructionSuffix.Ll;
                     break;
                 case 0x18:
-                    suffix = TextureInstructionSuffix.LL | TextureInstructionSuffix.AOffI;
+                    suffix = TextureInstructionSuffix.Ll | TextureInstructionSuffix.AOffI;
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid Suffix for TLDS instruction {rawSuffix}");
@@ -487,7 +487,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     suffix = TextureInstructionSuffix.AOffI;
                     break;
                 case 0x8:
-                    suffix = TextureInstructionSuffix.PTP;
+                    suffix = TextureInstructionSuffix.Ptp;
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid Suffix for TLD4 instruction {rawSuffix}");
@@ -502,7 +502,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (isShadow)
             {
-                suffix |= TextureInstructionSuffix.DC;
+                suffix |= TextureInstructionSuffix.Dc;
             }
 
             EmitTld4(block, opCode, textureTarget, suffix, chMask, opCode.Read(0x38, 0x3), false);
@@ -522,7 +522,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             if (isShadow)
             {
-                suffix |= TextureInstructionSuffix.DC;
+                suffix |= TextureInstructionSuffix.Dc;
             }
 
             // TLD4S seems to only support 2D textures with RGBA mask?
@@ -598,7 +598,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             // Encoding of TEXS/TLDS is a bit special and change for 2d textures
             // NOTE: OperA seems to hold at best two args.
             // On 2D textures, if no suffix need an additional values, Y is stored in OperB, otherwise coords are in OperA and the additional values is in OperB.
-            if (textureInstructionSuffix != TextureInstructionSuffix.None && textureInstructionSuffix != TextureInstructionSuffix.LZ && textureTarget == GalTextureTarget.TwoD)
+            if (textureInstructionSuffix != TextureInstructionSuffix.None && textureInstructionSuffix != TextureInstructionSuffix.Lz && textureTarget == GalTextureTarget.TwoD)
             {
                 coords[coords.Length - coordStartIndex - 1]        = opCode.Gpr8();
                 coords[coords.Length - coordStartIndex - 1].Index += coords.Length - coordStartIndex - 1;
@@ -606,7 +606,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             }
 
             // TODO: Find what MZ does and what changes about the encoding (Maybe Multisample?)
-            if ((textureInstructionSuffix & TextureInstructionSuffix.LL) != 0)
+            if ((textureInstructionSuffix & TextureInstructionSuffix.Ll) != 0)
             {
                 levelOfDetail        = opCode.Gpr20();
                 levelOfDetail.Index += operBIndex;
@@ -620,7 +620,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 operBIndex++;
             }
 
-            if ((textureInstructionSuffix & TextureInstructionSuffix.DC) != 0)
+            if ((textureInstructionSuffix & TextureInstructionSuffix.Dc) != 0)
             {
                 depthCompare        = opCode.Gpr20();
                 depthCompare.Index += operBIndex;
@@ -815,7 +815,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                 operBIndex++;
             }
 
-            if ((textureInstructionSuffix & TextureInstructionSuffix.DC) != 0)
+            if ((textureInstructionSuffix & TextureInstructionSuffix.Dc) != 0)
             {
                 depthCompare = opCode.Gpr20();
                 depthCompare.Index += operBIndex;
