@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    static class OGLExtension
+    static class OglExtension
     {
         private static Lazy<bool> _enhancedLayouts    = new Lazy<bool>(() => HasExtension("GL_ARB_enhanced_layouts"));
         private static Lazy<bool> _textureMirrorClamp = new Lazy<bool>(() => HasExtension("GL_EXT_texture_mirror_clamp"));
@@ -16,13 +16,13 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public static bool ViewportArray      => _viewportArray.Value;
         public static bool NvidiaDriver       => _nvidiaDriver.Value;
 
-        private static bool HasExtension(string Name)
+        private static bool HasExtension(string name)
         {
-            int NumExtensions = GL.GetInteger(GetPName.NumExtensions);
+            int numExtensions = GL.GetInteger(GetPName.NumExtensions);
 
-            for (int Extension = 0; Extension < NumExtensions; Extension++)
+            for (int extension = 0; extension < numExtensions; extension++)
             {
-                if (GL.GetString(StringNameIndexed.Extensions, Extension) == Name)
+                if (GL.GetString(StringNameIndexed.Extensions, extension) == name)
                 {
                     return true;
                 }

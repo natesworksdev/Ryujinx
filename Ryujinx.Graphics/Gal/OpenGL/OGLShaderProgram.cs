@@ -4,16 +4,16 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    struct OGLShaderProgram
+    struct OglShaderProgram
     {
-        public OGLShaderStage Vertex;
-        public OGLShaderStage TessControl;
-        public OGLShaderStage TessEvaluation;
-        public OGLShaderStage Geometry;
-        public OGLShaderStage Fragment;
+        public OglShaderStage Vertex;
+        public OglShaderStage TessControl;
+        public OglShaderStage TessEvaluation;
+        public OglShaderStage Geometry;
+        public OglShaderStage Fragment;
     }
 
-    class OGLShaderStage : IDisposable
+    class OglShaderStage : IDisposable
     {
         public int Handle { get; private set; }
 
@@ -26,23 +26,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         public IEnumerable<ShaderDeclInfo> ConstBufferUsage { get; private set; }
         public IEnumerable<ShaderDeclInfo> TextureUsage     { get; private set; }
 
-        public OGLShaderStage(
-            GalShaderType               Type,
-            string                      Code,
-            IEnumerable<ShaderDeclInfo> ConstBufferUsage,
-            IEnumerable<ShaderDeclInfo> TextureUsage)
+        public OglShaderStage(
+            GalShaderType               type,
+            string                      code,
+            IEnumerable<ShaderDeclInfo> constBufferUsage,
+            IEnumerable<ShaderDeclInfo> textureUsage)
         {
-            this.Type             = Type;
-            this.Code             = Code;
-            this.ConstBufferUsage = ConstBufferUsage;
-            this.TextureUsage     = TextureUsage;
+            Type             = type;
+            Code             = code;
+            ConstBufferUsage = constBufferUsage;
+            TextureUsage     = textureUsage;
         }
 
         public void Compile()
         {
             if (Handle == 0)
             {
-                Handle = GL.CreateShader(OGLEnumConverter.GetShaderType(Type));
+                Handle = GL.CreateShader(OglEnumConverter.GetShaderType(Type));
 
                 CompileAndCheck(Handle, Code);
             }
@@ -53,9 +53,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             Dispose(true);
         }
 
-        protected virtual void Dispose(bool Disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Disposing && Handle != 0)
+            if (disposing && Handle != 0)
             {
                 GL.DeleteShader(Handle);
 
@@ -63,23 +63,23 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
         }
 
-        public static void CompileAndCheck(int Handle, string Code)
+        public static void CompileAndCheck(int handle, string code)
         {
-            GL.ShaderSource(Handle, Code);
-            GL.CompileShader(Handle);
+            GL.ShaderSource(handle, code);
+            GL.CompileShader(handle);
 
-            CheckCompilation(Handle);
+            CheckCompilation(handle);
         }
 
-        private static void CheckCompilation(int Handle)
+        private static void CheckCompilation(int handle)
         {
-            int Status = 0;
+            int status = 0;
 
-            GL.GetShader(Handle, ShaderParameter.CompileStatus, out Status);
+            GL.GetShader(handle, ShaderParameter.CompileStatus, out status);
 
-            if (Status == 0)
+            if (status == 0)
             {
-                throw new ShaderException(GL.GetShaderInfoLog(Handle));
+                throw new ShaderException(GL.GetShaderInfoLog(handle));
             }
         }
     }

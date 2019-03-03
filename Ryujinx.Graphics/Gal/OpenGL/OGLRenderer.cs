@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace Ryujinx.Graphics.Gal.OpenGL
 {
-    public class OGLRenderer : IGalRenderer
+    public class OglRenderer : IGalRenderer
     {
         public IGalConstBuffer Buffer { get; private set; }
 
@@ -17,41 +17,41 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         public IGalTexture Texture { get; private set; }
 
-        private ConcurrentQueue<Action> ActionsQueue;
+        private ConcurrentQueue<Action> _actionsQueue;
 
-        public OGLRenderer()
+        public OglRenderer()
         {
-            Buffer = new OGLConstBuffer();
+            Buffer = new OglConstBuffer();
 
-            Texture = new OGLTexture();
+            Texture = new OglTexture();
 
-            RenderTarget = new OGLRenderTarget(Texture as OGLTexture);
+            RenderTarget = new OglRenderTarget(Texture as OglTexture);
 
-            Rasterizer = new OGLRasterizer();
+            Rasterizer = new OglRasterizer();
 
-            Shader = new OGLShader(Buffer as OGLConstBuffer);
+            Shader = new OglShader(Buffer as OglConstBuffer);
 
-            Pipeline = new OGLPipeline(
-                Buffer       as OGLConstBuffer,
-                RenderTarget as OGLRenderTarget,
-                Rasterizer   as OGLRasterizer,
-                Shader       as OGLShader);
+            Pipeline = new OglPipeline(
+                Buffer       as OglConstBuffer,
+                RenderTarget as OglRenderTarget,
+                Rasterizer   as OglRasterizer,
+                Shader       as OglShader);
 
-            ActionsQueue = new ConcurrentQueue<Action>();
+            _actionsQueue = new ConcurrentQueue<Action>();
         }
 
-        public void QueueAction(Action ActionMthd)
+        public void QueueAction(Action actionMthd)
         {
-            ActionsQueue.Enqueue(ActionMthd);
+            _actionsQueue.Enqueue(actionMthd);
         }
 
         public void RunActions()
         {
-            int Count = ActionsQueue.Count;
+            int count = _actionsQueue.Count;
 
-            while (Count-- > 0 && ActionsQueue.TryDequeue(out Action RenderAction))
+            while (count-- > 0 && _actionsQueue.TryDequeue(out Action renderAction))
             {
-                RenderAction();
+                renderAction();
             }
         }
     }
