@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Graphics3d
 {
-    enum NvGpuEngine2dReg
+    enum NvGpuEngine2DReg
     {
         DstFormat          = 0x80,
         DstLinear          = 0x81,

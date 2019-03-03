@@ -31,11 +31,11 @@ namespace Ryujinx.Graphics.Texture
 
             public ImageDescriptor(int bytesPerPixel, int blockWidth, int blockHeight, int blockDepth, TargetBuffer target)
             {
-                this.BytesPerPixel = bytesPerPixel;
-                this.BlockWidth    = blockWidth;
-                this.BlockHeight   = blockHeight;
-                this.BlockDepth    = blockDepth;
-                this.Target        = target;
+                BytesPerPixel = bytesPerPixel;
+                BlockWidth    = blockWidth;
+                BlockHeight   = blockHeight;
+                BlockDepth    = blockDepth;
+                Target        = target;
             }
         }
 
@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Texture
             byte[] data = new byte[dataLayerSize * image.LayerCount];
 
             int targetMipLevel = image.MaxMipmapLevel <= 1 ? 1 : image.MaxMipmapLevel - 1;
-            int layerOffset = ImageUtils.GetLayerOffset(image, targetMipLevel);
+            int layerOffset = GetLayerOffset(image, targetMipLevel);
 
             for (int layer = 0; layer < image.LayerCount; layer++)
             {
@@ -288,7 +288,7 @@ namespace Ryujinx.Graphics.Texture
 
             ImageDescriptor desc = GetImageDescriptor(image.Format);
 
-            (int width, int height, int depth) = ImageUtils.GetImageSizeInBlocks(image);
+            (int width, int height, int depth) = GetImageSizeInBlocks(image);
 
             int bytesPerPixel = desc.BytesPerPixel;
 

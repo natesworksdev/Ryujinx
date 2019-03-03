@@ -14,12 +14,12 @@ namespace Ryujinx.Graphics.Graphics3d
         DstSizeY   = 0x1c5,
         DstSizeZ   = 0x1c6,
         DstPosZ    = 0x1c7,
-        DstPosXY   = 0x1c8,
+        DstPosXy   = 0x1c8,
         SrcBlkDim  = 0x1ca,
         SrcSizeX   = 0x1cb,
         SrcSizeY   = 0x1cc,
         SrcSizeZ   = 0x1cd,
         SrcPosZ    = 0x1ce,
-        SrcPosXY   = 0x1cf
+        SrcPosXy   = 0x1cf
     }
 }

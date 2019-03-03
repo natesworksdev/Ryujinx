@@ -11,8 +11,8 @@ namespace Ryujinx.Graphics.Texture
 
         public LinearSwizzle(int pitch, int bpp, int width, int height)
         {
-            this._pitch  = pitch;
-            this._bpp    = bpp;
+            _pitch  = pitch;
+            _bpp    = bpp;
             _sliceSize   = width * height * bpp;
         }
 

@@ -111,8 +111,8 @@ namespace Ryujinx.Graphics.Texture
 
             public GobBlockSizes(int gobBlockHeight, int gobBlockDepth)
             {
-                this.Height = gobBlockHeight;
-                this.Depth  = gobBlockDepth;
+                Height = gobBlockHeight;
+                Depth  = gobBlockDepth;
             }
         }
 
@@ -144,8 +144,8 @@ namespace Ryujinx.Graphics.Texture
 
             public RobAndSliceSizes(int robSize, int sliceSize)
             {
-                this.RobSize   = robSize;
-                this.SliceSize = sliceSize;
+                RobSize   = robSize;
+                SliceSize = sliceSize;
             }
         }
 
