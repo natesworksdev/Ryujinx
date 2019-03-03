@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             GlslProgram Program;
 
-            GlslDecompiler Decompiler = new GlslDecompiler(OGLLimit.MaxUboSize, OGLExtension.NvidiaDrvier);
+            GlslDecompiler Decompiler = new GlslDecompiler(OGLLimit.MaxUboSize, OGLExtension.NvidiaDriver);
 
             int ShaderDumpIndex = ShaderDumper.DumpIndex;
 

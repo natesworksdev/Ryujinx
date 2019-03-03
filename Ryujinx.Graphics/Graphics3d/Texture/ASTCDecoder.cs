@@ -587,8 +587,8 @@ namespace Ryujinx.Graphics.Texture
                         case 2:
                         {
                             C = 23;
-                            int b = (BitValue >> 1) & 1;
-                            B = (b << 6) | (b << 2) | b;
+                            int b2 = (BitValue >> 1) & 1;
+                            B = (b2 << 6) | (b2 << 2) | b2;
 
                             break;
                         }
@@ -634,8 +634,8 @@ namespace Ryujinx.Graphics.Texture
                         case 2:
                         {
                             C = 13;
-                            int b = (BitValue >> 1) & 1;
-                            B = (b << 6) | (b << 1);
+                            int b2 = (BitValue >> 1) & 1;
+                            B = (b2 << 6) | (b2 << 1);
 
                             break;
                         }

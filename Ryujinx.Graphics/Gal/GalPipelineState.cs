@@ -2,7 +2,7 @@
 {
     public struct ColorMaskState
     {
-        private static readonly ColorMaskState _Default = new ColorMaskState()
+        private static readonly ColorMaskState DefaultBackingField = new ColorMaskState()
         {
             Red   = true,
             Green = true,
@@ -10,7 +10,7 @@
             Alpha = true
         };
 
-        public static ColorMaskState Default => _Default;
+        public static ColorMaskState Default => DefaultBackingField;
 
         public bool Red;
         public bool Green;
@@ -20,7 +20,7 @@
 
     public struct BlendState
     {
-        private static readonly BlendState _Default = new BlendState()
+        private static readonly BlendState DefaultBackingField = new BlendState()
         {
             Enabled       = false,
             SeparateAlpha = false,
@@ -32,7 +32,7 @@
             FuncDstAlpha  = GalBlendFactor.Zero
         };
 
-        public static BlendState Default => _Default;
+        public static BlendState Default => DefaultBackingField;
 
         public bool             Enabled;
         public bool             SeparateAlpha;

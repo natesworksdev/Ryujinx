@@ -167,7 +167,7 @@ namespace Ryujinx.Graphics.Texture
         {
             // Implement the algorithm in section C.2.12
             int[] m = new int[3];
-            int[] q = new int[3];
+            int[] qa = new int[3];
             int Q;
 
             // Read the trit encoded block according to
@@ -182,33 +182,33 @@ namespace Ryujinx.Graphics.Texture
             BitArrayStream Qb = new BitArrayStream(new BitArray(new int[] { Q }));
             if (Qb.ReadBits(1, 2) == 3 && Qb.ReadBits(5, 6) == 0)
             {
-                q[0] = q[1] = 4;
-                q[2] = (Qb.ReadBit(0) << 2) | ((Qb.ReadBit(4) & ~Qb.ReadBit(0)) << 1) | (Qb.ReadBit(3) & ~Qb.ReadBit(0));
+                qa[0] = qa[1] = 4;
+                qa[2] = (Qb.ReadBit(0) << 2) | ((Qb.ReadBit(4) & ~Qb.ReadBit(0)) << 1) | (Qb.ReadBit(3) & ~Qb.ReadBit(0));
             }
             else
             {
                 int C = 0;
                 if (Qb.ReadBits(1, 2) == 3)
                 {
-                    q[2] = 4;
+                    qa[2] = 4;
                     C    = (Qb.ReadBits(3, 4) << 3) | ((~Qb.ReadBits(5, 6) & 3) << 1) | Qb.ReadBit(0);
                 }
                 else
                 {
-                    q[2] = Qb.ReadBits(5, 6);
+                    qa[2] = Qb.ReadBits(5, 6);
                     C    = Qb.ReadBits(0, 4);
                 }
 
                 BitArrayStream Cb = new BitArrayStream(new BitArray(new int[] { C }));
                 if (Cb.ReadBits(0, 2) == 5)
                 {
-                    q[1] = 4;
-                    q[0] = Cb.ReadBits(3, 4);
+                    qa[1] = 4;
+                    qa[0] = Cb.ReadBits(3, 4);
                 }
                 else
                 {
-                    q[1] = Cb.ReadBits(3, 4);
-                    q[0] = Cb.ReadBits(0, 2);
+                    qa[1] = Cb.ReadBits(3, 4);
+                    qa[0] = Cb.ReadBits(0, 2);
                 }
             }
 
@@ -217,7 +217,7 @@ namespace Ryujinx.Graphics.Texture
                 IntegerEncoded IntEncoded = new IntegerEncoded(EIntegerEncoding.Quint, NumberBitsPerValue)
                 {
                     BitValue   = m[i],
-                    QuintValue = q[i]
+                    QuintValue = qa[i]
                 };
                 ListIntegerEncoded.Add(IntEncoded);
             }

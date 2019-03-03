@@ -5,16 +5,16 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 {
     static class OGLExtension
     {
-        private static Lazy<bool> s_EnhancedLayouts    = new Lazy<bool>(() => HasExtension("GL_ARB_enhanced_layouts"));
-        private static Lazy<bool> s_TextureMirrorClamp = new Lazy<bool>(() => HasExtension("GL_EXT_texture_mirror_clamp"));
-        private static Lazy<bool> s_ViewportArray      = new Lazy<bool>(() => HasExtension("GL_ARB_viewport_array"));
+        private static Lazy<bool> _enhancedLayouts    = new Lazy<bool>(() => HasExtension("GL_ARB_enhanced_layouts"));
+        private static Lazy<bool> _textureMirrorClamp = new Lazy<bool>(() => HasExtension("GL_EXT_texture_mirror_clamp"));
+        private static Lazy<bool> _viewportArray      = new Lazy<bool>(() => HasExtension("GL_ARB_viewport_array"));
 
-        private static Lazy<bool> s_NvidiaDriver      = new Lazy<bool>(() => IsNvidiaDriver());
+        private static Lazy<bool> _nvidiaDriver      = new Lazy<bool>(() => IsNvidiaDriver());
 
-        public static bool EnhancedLayouts    => s_EnhancedLayouts.Value;
-        public static bool TextureMirrorClamp => s_TextureMirrorClamp.Value;
-        public static bool ViewportArray      => s_ViewportArray.Value;
-        public static bool NvidiaDrvier       => s_NvidiaDriver.Value;
+        public static bool EnhancedLayouts    => _enhancedLayouts.Value;
+        public static bool TextureMirrorClamp => _textureMirrorClamp.Value;
+        public static bool ViewportArray      => _viewportArray.Value;
+        public static bool NvidiaDriver       => _nvidiaDriver.Value;
 
         private static bool HasExtension(string Name)
         {
