@@ -1,8 +1,6 @@
-using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.Graphics.Texture;
-using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics

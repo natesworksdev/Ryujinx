@@ -1,4 +1,3 @@
-using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;

@@ -1,6 +1,5 @@
 ﻿using ChocolArm64.Memory;
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Common;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
 using System;
@@ -159,7 +158,7 @@ namespace Ryujinx.Graphics.Texture
 
             if (!HasDepth(imageFormat) && (rType != gType || rType != bType || rType != aType))
             {
-                throw new NotImplementedException($"Per component types are not implemented!");
+                throw new NotImplementedException("Per component types are not implemented!");
             }
 
             GalImageFormat formatType = convSrgb ? Srgb : GetFormatType(rType);

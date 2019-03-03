@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Gal.Shader
                     return isArray ? GalTextureTarget.TwoDArray : GalTextureTarget.TwoD;
                 case 4:
                     if (isArray)
-                        throw new InvalidOperationException($"ARRAY bit set on a TEX with 3D texture!");
+                        throw new InvalidOperationException("ARRAY bit set on a TEX with 3D texture!");
                     return GalTextureTarget.ThreeD;
                 case 6:
                     return isArray ? GalTextureTarget.CubeArray : GalTextureTarget.CubeMap;

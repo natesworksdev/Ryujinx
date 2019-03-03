@@ -646,7 +646,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             return type;
         }
 
-        private unsafe static void SetConstAttrib(GalVertexAttrib attrib)
+        private static unsafe void SetConstAttrib(GalVertexAttrib attrib)
         {
             if (attrib.Size == GalVertexAttribSize._10_10_10_2 ||
                 attrib.Size == GalVertexAttribSize._11_11_10)

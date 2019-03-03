@@ -15,9 +15,9 @@ namespace Ryujinx.Graphics.VDec
         private int    _numRefIdxL1DefaultActiveMinus1;
         private bool   _deblockingFilterControlPresentFlag;
         private bool   _redundantPicCntPresentFlag;
-        private bool   Transform8x8ModeFlag;
+        private bool   _transform8x8ModeFlag;
         private bool   _mbAdaptiveFrameFieldFlag;
-        private bool   Direct8x8InferenceFlag;
+        private bool   _direct8x8InferenceFlag;
         private bool   _weightedPredFlag;
         private bool   _constrainedIntraPredFlag;
         private bool   _fieldPicFlag;
@@ -46,10 +46,10 @@ namespace Ryujinx.Graphics.VDec
             _numRefIdxL1DefaultActiveMinus1        = Params.NumRefIdxL1DefaultActiveMinus1;
             _deblockingFilterControlPresentFlag    = Params.DeblockingFilterControlPresentFlag;
             _redundantPicCntPresentFlag            = Params.RedundantPicCntPresentFlag;
-            Transform8x8ModeFlag                  = Params.Transform8x8ModeFlag;
+            _transform8x8ModeFlag                  = Params.Transform8x8ModeFlag;
 
             _mbAdaptiveFrameFieldFlag = ((Params.Flags >> 0) & 1) != 0;
-            Direct8x8InferenceFlag   = ((Params.Flags >> 1) & 1) != 0;
+            _direct8x8InferenceFlag   = ((Params.Flags >> 1) & 1) != 0;
             _weightedPredFlag         = ((Params.Flags >> 2) & 1) != 0;
             _constrainedIntraPredFlag = ((Params.Flags >> 3) & 1) != 0;
             _fieldPicFlag             = ((Params.Flags >> 5) & 1) != 0;
@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.VDec
                     writer.WriteBit(_mbAdaptiveFrameFieldFlag);
                 }
 
-                writer.WriteBit(Direct8x8InferenceFlag);
+                writer.WriteBit(_direct8x8InferenceFlag);
                 writer.WriteBit(false); //Frame cropping flag
                 writer.WriteBit(false); //VUI parameter present flag
 
@@ -167,7 +167,7 @@ namespace Ryujinx.Graphics.VDec
                 writer.WriteBit(_deblockingFilterControlPresentFlag);
                 writer.WriteBit(_constrainedIntraPredFlag);
                 writer.WriteBit(_redundantPicCntPresentFlag);
-                writer.WriteBit(Transform8x8ModeFlag);
+                writer.WriteBit(_transform8x8ModeFlag);
 
                 writer.WriteBit(true);
 
@@ -178,7 +178,7 @@ namespace Ryujinx.Graphics.VDec
                     WriteScalingList(writer, _scalingMatrix4, index * 16, 16);
                 }
 
-                if (Transform8x8ModeFlag)
+                if (_transform8x8ModeFlag)
                 {
                     for (int index = 0; index < 2; index++)
                     {

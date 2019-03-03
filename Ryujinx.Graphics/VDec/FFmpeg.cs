@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.VDec
 {
-    unsafe static class FFmpegWrapper
+    static unsafe class FFmpegWrapper
     {
         private static AVCodec*        _codec;
         private static AVCodecContext* _context;
