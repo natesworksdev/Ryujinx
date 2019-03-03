@@ -270,47 +270,52 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
 
             // Scissor Test
-            bool forceUpdate;
-
-            for (int index = 0; index < New.ScissorTestCount; index++)
+            // All scissor test are disabled before drawing final framebuffer to screen so we don't need to handle disabling
+            // Skip if there are no scissor tests to enable
+            if (New.ScissorTestCount != 0)
             {
-                forceUpdate = false;
+                int  scissorsApplied = 0;
+                bool applyToAll      = false;
 
-                if (New.ScissorTestEnabled[index])
+                for (int index = 0; index < GalPipelineState.RenderTargetsCount; index++)
                 {
-                    // If there is only 1 scissor test, geometry shaders are disabled so the scissor test applies to all viewports
-                    if (New.ScissorTestCount == 1)
+                    if (New.ScissorTestEnabled[index])
                     {
-                        GL.Enable(EnableCap.ScissorTest);
-                    }
-                    else
-                    {
-                        GL.Enable(IndexedEnableCap.ScissorTest, index);
-                    }
-                    forceUpdate = true;
-                }
-                else
-                {
-                    GL.Disable(IndexedEnableCap.ScissorTest, index);
-                }
+                        // If viewport arrays are unavailable apply first scissor test to all or
+                        // there is only 1 scissor test and it's the first, the scissor test applies to all viewports
+                        if (!OglExtension.Required.ViewportArray || (index == 0 && New.ScissorTestCount == 1))
+                        {
+                            GL.Enable(EnableCap.ScissorTest);
+                            applyToAll = true;
+                        }
+                        else
+                        {
+                            GL.Enable(IndexedEnableCap.ScissorTest, index);
+                        }
 
-                if (New.ScissorTestEnabled[index] &&
-                   (New.ScissorTestX[index]      != _old.ScissorTestX[index]      ||
-                    New.ScissorTestY[index]      != _old.ScissorTestY[index]      ||
-                    New.ScissorTestWidth[index]  != _old.ScissorTestWidth[index]  ||
-                    New.ScissorTestHeight[index] != _old.ScissorTestHeight[index] ||
-                    forceUpdate)) // Force update intentionally last to reduce if comparisons
-                {
-                    // If there is only 1 scissor test geometry shaders are disables so the scissor test applies to all viewports
-                    if (New.ScissorTestCount == 1)
-                    {
-                        GL.Scissor(New.ScissorTestX[index], New.ScissorTestY[index],
-                                   New.ScissorTestWidth[index], New.ScissorTestHeight[index]);
-                    }
-                    else
-                    {
-                        GL.ScissorIndexed(index, New.ScissorTestX[index], New.ScissorTestY[index],
-                                                 New.ScissorTestWidth[index], New.ScissorTestHeight[index]);
+                        if (New.ScissorTestEnabled[index] != _old.ScissorTestEnabled[index] ||
+                            New.ScissorTestX[index]       != _old.ScissorTestX[index]       ||
+                            New.ScissorTestY[index]       != _old.ScissorTestY[index]       ||
+                            New.ScissorTestWidth[index]   != _old.ScissorTestWidth[index]   ||
+                            New.ScissorTestHeight[index]  != _old.ScissorTestHeight[index])
+                        {
+                            if (applyToAll)
+                            {
+                                GL.Scissor(New.ScissorTestX[index],     New.ScissorTestY[index],
+                                           New.ScissorTestWidth[index], New.ScissorTestHeight[index]);
+                            }
+                            else
+                            {
+                                GL.ScissorIndexed(index, New.ScissorTestX[index],     New.ScissorTestY[index],
+                                                         New.ScissorTestWidth[index], New.ScissorTestHeight[index]);
+                            }
+                        }
+
+                        // If all scissor tests have been applied, or viewport arrays are unavailable we can skip remaining iterations
+                        if (!OglExtension.Required.ViewportArray || ++scissorsApplied == New.ScissorTestCount)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -376,6 +381,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             }
 
             _old = New;
+        }
+
+        public void Unbind(GalPipelineState state)
+        {
+            if (state.ScissorTestCount > 0)
+            {
+                GL.Disable(EnableCap.ScissorTest);
+            }
         }
 
         private void SetAllBlendState(BlendState New)
