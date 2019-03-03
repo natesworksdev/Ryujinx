@@ -9,8 +9,8 @@ namespace Ryujinx.Graphics.Gal.OpenGL
         {
             switch (frontFace)
             {
-                case GalFrontFace.CW:  return FrontFaceDirection.Cw;
-                case GalFrontFace.CCW: return FrontFaceDirection.Ccw;
+                case GalFrontFace.Cw:  return FrontFaceDirection.Cw;
+                case GalFrontFace.Ccw: return FrontFaceDirection.Ccw;
             }
 
             throw new ArgumentException(nameof(frontFace) + " \"" + frontFace + "\" is not valid!");

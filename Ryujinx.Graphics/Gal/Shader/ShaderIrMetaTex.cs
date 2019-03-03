@@ -15,10 +15,10 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrMetaTex(int elem, GalTextureTarget textureTarget, TextureInstructionSuffix textureInstructionSuffix, params ShaderIrNode[] coordinates)
         {
-            this.Elem                     = elem;
-            this.TextureTarget            = textureTarget;
-            this.TextureInstructionSuffix = textureInstructionSuffix;
-            this.Coordinates              = coordinates;
+            Elem                     = elem;
+            TextureTarget            = textureTarget;
+            TextureInstructionSuffix = textureInstructionSuffix;
+            Coordinates              = coordinates;
         }
     }
 }

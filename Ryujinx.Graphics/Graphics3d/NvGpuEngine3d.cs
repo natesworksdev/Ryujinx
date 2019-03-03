@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
             WriteRegister(NvGpuEngine3dReg.FrameBufferSrgb, 1);
 
-            WriteRegister(NvGpuEngine3dReg.FrontFace, (int)GalFrontFace.CW);
+            WriteRegister(NvGpuEngine3dReg.FrontFace, (int)GalFrontFace.Cw);
 
             for (int Index = 0; Index < GalPipelineState.RenderTargetsCount; Index++)
             {
@@ -364,8 +364,8 @@ namespace Ryujinx.Graphics.Graphics3d
             {
                 switch (FrontFace)
                 {
-                    case GalFrontFace.CW:  FrontFace = GalFrontFace.CCW; break;
-                    case GalFrontFace.CCW: FrontFace = GalFrontFace.CW;  break;
+                    case GalFrontFace.Cw:  FrontFace = GalFrontFace.Ccw; break;
+                    case GalFrontFace.Ccw: FrontFace = GalFrontFace.Cw;  break;
                 }
             }
 

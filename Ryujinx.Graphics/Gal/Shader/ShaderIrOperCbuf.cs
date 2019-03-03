@@ -9,9 +9,9 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrOperCbuf(int index, int pos, ShaderIrNode offs = null)
         {
-            this.Index = index;
-            this.Pos   = pos;
-            this.Offs  = offs;
+            Index = index;
+            Pos   = pos;
+            Offs  = offs;
         }
     }
 }

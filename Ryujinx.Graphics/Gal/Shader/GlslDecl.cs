@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         private GlslDecl(GalShaderType shaderType)
         {
-            this.ShaderType = shaderType;
+            ShaderType = shaderType;
 
             m_CbTextures = new Dictionary<ShaderIrOp, ShaderDeclInfo>();
 

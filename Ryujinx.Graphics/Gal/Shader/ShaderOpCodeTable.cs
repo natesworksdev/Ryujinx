@@ -14,8 +14,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             public ShaderDecodeEntry(ShaderDecodeFunc func, int xBits)
             {
-                this.Func  = func;
-                this.XBits = xBits;
+                Func  = func;
+                XBits = xBits;
             }
         }
 

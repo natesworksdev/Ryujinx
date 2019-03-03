@@ -15,15 +15,15 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrOperGpr(int index)
         {
-            this.Index = index;
+            Index = index;
 
             RegisterSize = ShaderRegisterSize.Single;
         }
 
         public ShaderIrOperGpr(int index, int halfPart)
         {
-            this.Index    = index;
-            this.HalfPart = halfPart;
+            Index    = index;
+            HalfPart = halfPart;
 
             RegisterSize = ShaderRegisterSize.Half;
         }

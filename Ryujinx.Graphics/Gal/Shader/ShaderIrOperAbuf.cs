@@ -8,8 +8,8 @@ namespace Ryujinx.Graphics.Gal.Shader
 
         public ShaderIrOperAbuf(int offs, ShaderIrNode vertex)
         {
-            this.Offs   = offs;
-            this.Vertex = vertex;
+            Offs   = offs;
+            Vertex = vertex;
         }
     }
 }

@@ -114,8 +114,8 @@ namespace Ryujinx.Graphics.Gal.Shader
                 { ShaderIrInst.Xor,    GetXorExpr    }
             };
 
-            this.MaxUboSize = maxUboSize / 16;
-            this._isNvidiaDriver = isNvidiaDriver;
+            MaxUboSize = maxUboSize / 16;
+            _isNvidiaDriver = isNvidiaDriver;
         }
 
         public GlslProgram Decompile(

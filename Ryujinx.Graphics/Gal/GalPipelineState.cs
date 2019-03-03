@@ -111,9 +111,9 @@
         {
             ConstBufferKeys = new long[Stages][];
 
-            for (int Stage = 0; Stage < Stages; Stage++)
+            for (int stage = 0; stage < Stages; stage++)
             {
-                ConstBufferKeys[Stage] = new long[ConstBuffersPerStage];
+                ConstBufferKeys[stage] = new long[ConstBuffersPerStage];
             }
 
             Blends = new BlendState[RenderTargetsCount];
