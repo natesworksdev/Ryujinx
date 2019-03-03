@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
         private void Call2DMethod(NvGpuVmm vmm, GpuMethodCall methCall)
         {
-            _gpu.Engine2d.CallMethod(vmm, methCall);
+            _gpu.Engine2D.CallMethod(vmm, methCall);
         }
 
         private void Call3DMethod(NvGpuVmm vmm, GpuMethodCall methCall)
@@ -131,7 +131,7 @@ namespace Ryujinx.Graphics.Graphics3d
                     {
                         int position = methCall.Argument;
 
-                        _macros[_currMacroBindIndex] = new CachedMacro(this, _gpu.Engine3d, position);
+                        _macros[_currMacroBindIndex] = new CachedMacro(this, _gpu.Engine3D, position);
 
                         break;
                     }
@@ -141,7 +141,7 @@ namespace Ryujinx.Graphics.Graphics3d
             }
             else if (methCall.Method < 0xe00)
             {
-                _gpu.Engine3d.CallMethod(vmm, methCall);
+                _gpu.Engine3D.CallMethod(vmm, methCall);
             }
             else
             {

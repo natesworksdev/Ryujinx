@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Vic
 
         public VideoImageComposer(NvGpu gpu)
         {
-            this._gpu = gpu;
+            _gpu = gpu;
         }
 
         public void Process(NvGpuVmm vmm, int methodOffset, int[] arguments)

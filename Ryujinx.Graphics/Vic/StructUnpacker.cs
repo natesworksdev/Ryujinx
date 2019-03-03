@@ -14,8 +14,8 @@ namespace Ryujinx.Graphics.Vic
 
         public StructUnpacker(NvGpuVmm vmm, long position)
         {
-            this._vmm      = vmm;
-            this._position = position;
+            _vmm      = vmm;
+            _position = position;
 
             _buffPos = 64;
         }

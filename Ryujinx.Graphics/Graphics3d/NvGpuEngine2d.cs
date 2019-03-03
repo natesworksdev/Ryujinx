@@ -224,9 +224,9 @@ namespace Ryujinx.Graphics.Graphics3d
             vmm.IsRegionModified(dstKey, ImageUtils.GetSize(dstTexture), NvGpuBufferType.Texture);
         }
 
-        private static GalMemoryLayout GetLayout(bool Linear)
+        private static GalMemoryLayout GetLayout(bool linear)
         {
-            return Linear
+            return linear
                 ? GalMemoryLayout.Pitch
                 : GalMemoryLayout.BlockLinear;
         }
