@@ -13,12 +13,12 @@ namespace Ryujinx.Graphics.Gal.Shader
         public ShaderIrOperGpr          DepthCompare;
         public int                      Component; // for TLD4(S)
 
-        public ShaderIrMetaTex(int Elem, GalTextureTarget TextureTarget, TextureInstructionSuffix TextureInstructionSuffix, params ShaderIrNode[] Coordinates)
+        public ShaderIrMetaTex(int elem, GalTextureTarget textureTarget, TextureInstructionSuffix textureInstructionSuffix, params ShaderIrNode[] coordinates)
         {
-            this.Elem                     = Elem;
-            this.TextureTarget            = TextureTarget;
-            this.TextureInstructionSuffix = TextureInstructionSuffix;
-            this.Coordinates              = Coordinates;
+            this.Elem                     = elem;
+            this.TextureTarget            = textureTarget;
+            this.TextureInstructionSuffix = textureInstructionSuffix;
+            this.Coordinates              = coordinates;
         }
     }
 }
