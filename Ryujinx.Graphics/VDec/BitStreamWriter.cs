@@ -45,9 +45,9 @@ namespace Ryujinx.Graphics.VDec
 
                 _buffer |= ((value >> srcShift) & mask) << dstShift;
 
-                valuePos  += copySize;
+                valuePos   += copySize;
                 _bufferPos += copySize;
-                remaining -= copySize;
+                remaining  -= copySize;
             }
         }
 

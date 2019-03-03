@@ -76,8 +76,8 @@ namespace Ryujinx.Graphics.VDec
 
             int shift = NormLut[range];
 
-            range <<= shift;
-            _count +=  shift;
+            range  <<= shift;
+            _count  += shift;
 
             if (_count >= 0)
             {
