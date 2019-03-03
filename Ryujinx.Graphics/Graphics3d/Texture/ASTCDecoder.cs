@@ -955,8 +955,8 @@ namespace Ryujinx.Graphics.Texture
                             {
                                 C = 93;
                                 // B = b000b0bb0
-                                int b = (BitValue >> 1) & 1;
-                                B = (b << 8) | (b << 4) | (b << 2) | (b << 1);
+                                int b2 = (BitValue >> 1) & 1;
+                                B = (b2 << 8) | (b2 << 4) | (b2 << 2) | (b2 << 1);
 
                                 break;
                             }
@@ -1026,8 +1026,8 @@ namespace Ryujinx.Graphics.Texture
                             {
                                 C = 54;
                                 // B = b0000bb00
-                                int b = (BitValue >> 1) & 1;
-                                B = (b << 8) | (b << 3) | (b << 2);
+                                int b2 = (BitValue >> 1) & 1;
+                                B = (b2 << 8) | (b2 << 3) | (b2 << 2);
 
                                 break;
                             }
