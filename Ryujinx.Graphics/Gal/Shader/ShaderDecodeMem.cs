@@ -7,6 +7,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 {
     static partial class ShaderDecode
     {
+        // ReSharper disable InconsistentNaming
         private const int ____ = 0x0;
         private const int R___ = 0x1;
         private const int _G__ = 0x2;
@@ -21,6 +22,7 @@ namespace Ryujinx.Graphics.Gal.Shader
         private const int R_BA = 0xd;
         private const int _GBA = 0xe;
         private const int RGBA = 0xf;
+        // ReSharper restore InconsistentNaming
 
         private static int[,] _maskLut = new int[,]
         {

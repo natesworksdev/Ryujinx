@@ -1309,11 +1309,11 @@ namespace Ryujinx.Graphics.Gal.Shader
             string a = GetOperExpr(op, op.OperandA);
             string b = GetOperExpr(op, op.OperandB);
 
-            string NaNCheck =
+            string nanCheck =
                 " || isnan(" + a + ")" +
                 " || isnan(" + b + ")";
 
-            return a + " " + opr + " " + b + NaNCheck;
+            return a + " " + opr + " " + b + nanCheck;
         }
 
         private string GetTernaryExpr(ShaderIrOp op, string opr1, string opr2)

@@ -198,8 +198,8 @@ namespace Ryujinx.Graphics.VDec
         {
             switch (outputConfig.PixelFormat)
             {
-                case SurfacePixelFormat.RGBA8:   CopyPlanesRgba8  (vmm, outputConfig); break;
-                case SurfacePixelFormat.YUV420P: CopyPlanesYuv420P(vmm, outputConfig); break;
+                case SurfacePixelFormat.Rgba8:   CopyPlanesRgba8  (vmm, outputConfig); break;
+                case SurfacePixelFormat.Yuv420P: CopyPlanesYuv420P(vmm, outputConfig); break;
 
                 default: ThrowUnimplementedPixelFormat(outputConfig.PixelFormat); break;
             }
@@ -219,7 +219,7 @@ namespace Ryujinx.Graphics.VDec
                 outputConfig.SurfaceHeight, 1, 1, 1,
                 outputConfig.GobBlockHeight, 1,
                 GalMemoryLayout.BlockLinear,
-                GalImageFormat.RGBA8 | GalImageFormat.Unorm,
+                GalImageFormat.Rgba8 | GalImageFormat.Unorm,
                 GalTextureTarget.TwoD);
 
             ImageUtils.WriteTexture(vmm, image, vmm.GetPhysicalAddress(outputConfig.SurfaceLumaAddress), frame.Data);

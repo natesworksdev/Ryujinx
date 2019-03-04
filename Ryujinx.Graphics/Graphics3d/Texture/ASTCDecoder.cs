@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        public static byte[] DecodeToRGBA8888(
+        public static byte[] DecodeToRgba8888(
             byte[] inputBuffer, 
             int    blockX, 
             int    blockY, 
@@ -330,7 +330,7 @@ namespace Ryujinx.Graphics.Texture
             {
                 for (int i = 0; i < blockWidth; i++)
                 {
-                    int partition = Select2DPartition(partitionIndex, i, j, numberPartitions, ((blockHeight * blockWidth) < 32));
+                    int partition = Select2dPartition(partitionIndex, i, j, numberPartitions, ((blockHeight * blockWidth) < 32));
                     Debug.Assert(partition < numberPartitions);
 
                     AstcPixel pixel = new AstcPixel(0, 0, 0, 0);
@@ -369,7 +369,7 @@ namespace Ryujinx.Graphics.Texture
             return true;
         }
 
-        private static int Select2DPartition(int seed, int x, int y, int partitionCount, bool isSmallBlock)
+        private static int Select2dPartition(int seed, int x, int y, int partitionCount, bool isSmallBlock)
         {
             return SelectPartition(seed, x, y, 0, partitionCount, isSmallBlock);
         }

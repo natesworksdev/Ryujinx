@@ -4,7 +4,7 @@ using Ryujinx.Graphics.Texture;
 
 namespace Ryujinx.Graphics.Graphics3d
 {
-    class NvGpuEngine2D : INvGpuEngine
+    class NvGpuEngine2d : INvGpuEngine
     {
         private enum CopyOperation
         {
@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Graphics3d
 
         private NvGpu _gpu;
 
-        public NvGpuEngine2D(NvGpu gpu)
+        public NvGpuEngine2d(NvGpu gpu)
         {
             _gpu = gpu;
 
@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Graphics3d
         {
             WriteRegister(methCall);
 
-            if ((NvGpuEngine2DReg)methCall.Method == NvGpuEngine2DReg.BlitSrcYInt)
+            if ((NvGpuEngine2dReg)methCall.Method == NvGpuEngine2dReg.BlitSrcYInt)
             {
                 TextureCopy(vmm);
             }
@@ -40,36 +40,36 @@ namespace Ryujinx.Graphics.Graphics3d
 
         private void TextureCopy(NvGpuVmm vmm)
         {
-            CopyOperation operation = (CopyOperation)ReadRegister(NvGpuEngine2DReg.CopyOperation);
+            CopyOperation operation = (CopyOperation)ReadRegister(NvGpuEngine2dReg.CopyOperation);
 
-            int  dstFormat = ReadRegister(NvGpuEngine2DReg.DstFormat);
-            bool dstLinear = ReadRegister(NvGpuEngine2DReg.DstLinear) != 0;
-            int  dstWidth  = ReadRegister(NvGpuEngine2DReg.DstWidth);
-            int  dstHeight = ReadRegister(NvGpuEngine2DReg.DstHeight);
-            int  dstDepth  = ReadRegister(NvGpuEngine2DReg.DstDepth);
-            int  dstLayer  = ReadRegister(NvGpuEngine2DReg.DstLayer);
-            int  dstPitch  = ReadRegister(NvGpuEngine2DReg.DstPitch);
-            int  dstBlkDim = ReadRegister(NvGpuEngine2DReg.DstBlockDimensions);
+            int  dstFormat = ReadRegister(NvGpuEngine2dReg.DstFormat);
+            bool dstLinear = ReadRegister(NvGpuEngine2dReg.DstLinear) != 0;
+            int  dstWidth  = ReadRegister(NvGpuEngine2dReg.DstWidth);
+            int  dstHeight = ReadRegister(NvGpuEngine2dReg.DstHeight);
+            int  dstDepth  = ReadRegister(NvGpuEngine2dReg.DstDepth);
+            int  dstLayer  = ReadRegister(NvGpuEngine2dReg.DstLayer);
+            int  dstPitch  = ReadRegister(NvGpuEngine2dReg.DstPitch);
+            int  dstBlkDim = ReadRegister(NvGpuEngine2dReg.DstBlockDimensions);
 
-            int  srcFormat = ReadRegister(NvGpuEngine2DReg.SrcFormat);
-            bool srcLinear = ReadRegister(NvGpuEngine2DReg.SrcLinear) != 0;
-            int  srcWidth  = ReadRegister(NvGpuEngine2DReg.SrcWidth);
-            int  srcHeight = ReadRegister(NvGpuEngine2DReg.SrcHeight);
-            int  srcDepth  = ReadRegister(NvGpuEngine2DReg.SrcDepth);
-            int  srcLayer  = ReadRegister(NvGpuEngine2DReg.SrcLayer);
-            int  srcPitch  = ReadRegister(NvGpuEngine2DReg.SrcPitch);
-            int  srcBlkDim = ReadRegister(NvGpuEngine2DReg.SrcBlockDimensions);
+            int  srcFormat = ReadRegister(NvGpuEngine2dReg.SrcFormat);
+            bool srcLinear = ReadRegister(NvGpuEngine2dReg.SrcLinear) != 0;
+            int  srcWidth  = ReadRegister(NvGpuEngine2dReg.SrcWidth);
+            int  srcHeight = ReadRegister(NvGpuEngine2dReg.SrcHeight);
+            int  srcDepth  = ReadRegister(NvGpuEngine2dReg.SrcDepth);
+            int  srcLayer  = ReadRegister(NvGpuEngine2dReg.SrcLayer);
+            int  srcPitch  = ReadRegister(NvGpuEngine2dReg.SrcPitch);
+            int  srcBlkDim = ReadRegister(NvGpuEngine2dReg.SrcBlockDimensions);
 
-            int dstBlitX = ReadRegister(NvGpuEngine2DReg.BlitDstX);
-            int dstBlitY = ReadRegister(NvGpuEngine2DReg.BlitDstY);
-            int dstBlitW = ReadRegister(NvGpuEngine2DReg.BlitDstW);
-            int dstBlitH = ReadRegister(NvGpuEngine2DReg.BlitDstH);
+            int dstBlitX = ReadRegister(NvGpuEngine2dReg.BlitDstX);
+            int dstBlitY = ReadRegister(NvGpuEngine2dReg.BlitDstY);
+            int dstBlitW = ReadRegister(NvGpuEngine2dReg.BlitDstW);
+            int dstBlitH = ReadRegister(NvGpuEngine2dReg.BlitDstH);
 
-            long blitDuDx = ReadRegisterFixed1_31_32(NvGpuEngine2DReg.BlitDuDxFract);
-            long blitDvDy = ReadRegisterFixed1_31_32(NvGpuEngine2DReg.BlitDvDyFract);
+            long blitDuDx = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitDuDxFract);
+            long blitDvDy = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitDvDyFract);
 
-            long srcBlitX = ReadRegisterFixed1_31_32(NvGpuEngine2DReg.BlitSrcXFract);
-            long srcBlitY = ReadRegisterFixed1_31_32(NvGpuEngine2DReg.BlitSrcYFract);
+            long srcBlitX = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitSrcXFract);
+            long srcBlitY = ReadRegisterFixed1_31_32(NvGpuEngine2dReg.BlitSrcYFract);
 
             GalImageFormat srcImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)srcFormat);
             GalImageFormat dstImgFormat = ImageUtils.ConvertSurface((GalSurfaceFormat)dstFormat);
@@ -80,8 +80,8 @@ namespace Ryujinx.Graphics.Graphics3d
             int srcBlockHeight = 1 << ((srcBlkDim >> 4) & 0xf);
             int dstBlockHeight = 1 << ((dstBlkDim >> 4) & 0xf);
 
-            long srcAddress = MakeInt64From2xInt32(NvGpuEngine2DReg.SrcAddress);
-            long dstAddress = MakeInt64From2xInt32(NvGpuEngine2DReg.DstAddress);
+            long srcAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.SrcAddress);
+            long dstAddress = MakeInt64From2xInt32(NvGpuEngine2dReg.DstAddress);
 
             long srcKey = vmm.GetPhysicalAddress(srcAddress);
             long dstKey = vmm.GetPhysicalAddress(dstAddress);
@@ -230,7 +230,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 : GalMemoryLayout.BlockLinear;
         }
 
-        private long MakeInt64From2xInt32(NvGpuEngine2DReg reg)
+        private long MakeInt64From2xInt32(NvGpuEngine2dReg reg)
         {
             return
                 (long)Registers[(int)reg + 0] << 32 |
@@ -242,7 +242,7 @@ namespace Ryujinx.Graphics.Graphics3d
             Registers[methCall.Method] = methCall.Argument;
         }
 
-        private long ReadRegisterFixed1_31_32(NvGpuEngine2DReg reg)
+        private long ReadRegisterFixed1_31_32(NvGpuEngine2dReg reg)
         {
             long low  = (uint)ReadRegister(reg + 0);
             long high = (uint)ReadRegister(reg + 1);
@@ -250,7 +250,7 @@ namespace Ryujinx.Graphics.Graphics3d
             return low | (high << 32);
         }
 
-        private int ReadRegister(NvGpuEngine2DReg reg)
+        private int ReadRegister(NvGpuEngine2dReg reg)
         {
             return Registers[(int)reg];
         }

@@ -87,20 +87,20 @@ namespace Ryujinx.Graphics.Graphics3d
             {
                 switch (_subChannels[methCall.SubChannel])
                 {
-                    case NvGpuEngine._2D:  Call2DMethod  (vmm, methCall); break;
-                    case NvGpuEngine._3D:  Call3DMethod  (vmm, methCall); break;
+                    case NvGpuEngine._2d:  Call2dMethod  (vmm, methCall); break;
+                    case NvGpuEngine._3d:  Call3dMethod  (vmm, methCall); break;
                     case NvGpuEngine.P2mf: CallP2mfMethod(vmm, methCall); break;
                     case NvGpuEngine.M2mf: CallM2mfMethod(vmm, methCall); break;
                 }
             }
         }
 
-        private void Call2DMethod(NvGpuVmm vmm, GpuMethodCall methCall)
+        private void Call2dMethod(NvGpuVmm vmm, GpuMethodCall methCall)
         {
-            _gpu.Engine2D.CallMethod(vmm, methCall);
+            _gpu.Engine2d.CallMethod(vmm, methCall);
         }
 
-        private void Call3DMethod(NvGpuVmm vmm, GpuMethodCall methCall)
+        private void Call3dMethod(NvGpuVmm vmm, GpuMethodCall methCall)
         {
             if (methCall.Method < 0x80)
             {
@@ -131,7 +131,7 @@ namespace Ryujinx.Graphics.Graphics3d
                     {
                         int position = methCall.Argument;
 
-                        _macros[_currMacroBindIndex] = new CachedMacro(this, _gpu.Engine3D, position);
+                        _macros[_currMacroBindIndex] = new CachedMacro(this, _gpu.Engine3d, position);
 
                         break;
                     }
@@ -141,7 +141,7 @@ namespace Ryujinx.Graphics.Graphics3d
             }
             else if (methCall.Method < 0xe00)
             {
-                _gpu.Engine3D.CallMethod(vmm, methCall);
+                _gpu.Engine3d.CallMethod(vmm, methCall);
             }
             else
             {

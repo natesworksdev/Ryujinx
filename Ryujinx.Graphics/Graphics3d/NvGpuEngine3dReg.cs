@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Graphics3d
 {
-    enum NvGpuEngine3DReg
+    enum NvGpuEngine3dReg
     {
         FrameBufferNAddress     = 0x200,
         FrameBufferNWidth       = 0x202,

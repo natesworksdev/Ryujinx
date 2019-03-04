@@ -17,8 +17,8 @@ namespace Ryujinx.Graphics
         public DmaPusher Pusher { get; private set; }
 
         internal NvGpuFifo       Fifo       { get; private set; }
-        internal NvGpuEngine2D   Engine2D   { get; private set; }
-        internal NvGpuEngine3D   Engine3D   { get; private set; }
+        internal NvGpuEngine2d   Engine2d   { get; private set; }
+        internal NvGpuEngine3d   Engine3d   { get; private set; }
         internal NvGpuEngineM2mf EngineM2mf { get; private set; }
         internal NvGpuEngineP2mf EngineP2mf { get; private set; }
 
@@ -35,8 +35,8 @@ namespace Ryujinx.Graphics
             Pusher = new DmaPusher(this);
 
             Fifo       = new NvGpuFifo(this);
-            Engine2D   = new NvGpuEngine2D(this);
-            Engine3D   = new NvGpuEngine3D(this);
+            Engine2d   = new NvGpuEngine2d(this);
+            Engine3d   = new NvGpuEngine3d(this);
             EngineM2mf = new NvGpuEngineM2mf(this);
             EngineP2mf = new NvGpuEngineP2mf(this);
 
