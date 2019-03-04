@@ -11,9 +11,9 @@ namespace Ryujinx.Graphics.Texture
 
         public LinearSwizzle(int pitch, int bpp, int width, int height)
         {
-            _pitch  = pitch;
-            _bpp    = bpp;
-            _sliceSize   = width * height * bpp;
+            _pitch     = pitch;
+            _bpp       = bpp;
+            _sliceSize = width * height * bpp;
         }
 
         public void SetMipLevel(int level)

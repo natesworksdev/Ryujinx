@@ -69,24 +69,24 @@ namespace Ryujinx.Graphics.Graphics3d
             int dstSizeX  = ReadRegister(NvGpuEngineM2mfReg.DstSizeX);
             int dstSizeY  = ReadRegister(NvGpuEngineM2mfReg.DstSizeY);
             int dstSizeZ  = ReadRegister(NvGpuEngineM2mfReg.DstSizeZ);
-            int dstPosXy  = ReadRegister(NvGpuEngineM2mfReg.DstPosXy);
+            int dstPosXY  = ReadRegister(NvGpuEngineM2mfReg.DstPosXY);
             int dstPosZ   = ReadRegister(NvGpuEngineM2mfReg.DstPosZ);
 
             int srcBlkDim = ReadRegister(NvGpuEngineM2mfReg.SrcBlkDim);
             int srcSizeX  = ReadRegister(NvGpuEngineM2mfReg.SrcSizeX);
             int srcSizeY  = ReadRegister(NvGpuEngineM2mfReg.SrcSizeY);
             int srcSizeZ  = ReadRegister(NvGpuEngineM2mfReg.SrcSizeZ);
-            int srcPosXy  = ReadRegister(NvGpuEngineM2mfReg.SrcPosXy);
+            int srcPosXY  = ReadRegister(NvGpuEngineM2mfReg.SrcPosXY);
             int srcPosZ   = ReadRegister(NvGpuEngineM2mfReg.SrcPosZ);
 
             int srcCpp = ((swizzle >> 20) & 7) + 1;
             int dstCpp = ((swizzle >> 24) & 7) + 1;
 
-            int dstPosX = (dstPosXy >>  0) & 0xffff;
-            int dstPosY = (dstPosXy >> 16) & 0xffff;
+            int dstPosX = (dstPosXY >>  0) & 0xffff;
+            int dstPosY = (dstPosXY >> 16) & 0xffff;
 
-            int srcPosX = (srcPosXy >>  0) & 0xffff;
-            int srcPosY = (srcPosXy >> 16) & 0xffff;
+            int srcPosX = (srcPosXY >>  0) & 0xffff;
+            int srcPosY = (srcPosXY >> 16) & 0xffff;
 
             int srcBlockHeight = 1 << ((srcBlkDim >> 4) & 0xf);
             int dstBlockHeight = 1 << ((dstBlkDim >> 4) & 0xf);

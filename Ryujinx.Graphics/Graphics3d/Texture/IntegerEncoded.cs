@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Texture
 
         public IntegerEncoded(EIntegerEncoding encoding, int numBits)
         {
-            _encoding   = encoding;
+            _encoding  = encoding;
             NumberBits = numBits;
             BitValue   = 0;
             TritValue  = 0;
