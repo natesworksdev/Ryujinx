@@ -12,10 +12,10 @@ namespace ChocolArm64.Instructions
 {
     static partial class InstEmit
     {
-        private static int StVecTemp0 = ILEmitterCtx.GetVecTempIndex();
-        private static int StVecTemp1 = ILEmitterCtx.GetVecTempIndex();
-        private static int StVecTemp2 = ILEmitterCtx.GetVecTempIndex();
-        private static int StVecTemp3 = ILEmitterCtx.GetVecTempIndex();
+        private static int _stVecTemp0 = ILEmitterCtx.GetVecTempIndex();
+        private static int _stVecTemp1 = ILEmitterCtx.GetVecTempIndex();
+        private static int _stVecTemp2 = ILEmitterCtx.GetVecTempIndex();
+        private static int _stVecTemp3 = ILEmitterCtx.GetVecTempIndex();
 
         public static void Ld__Vms(ILEmitterCtx context)
         {
@@ -159,10 +159,10 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
 
-                context.EmitStvec(StVecTemp3);
-                context.EmitStvec(StVecTemp2);
-                context.EmitStvec(StVecTemp1);
-                context.EmitStvec(StVecTemp0);
+                context.EmitStvec(_stVecTemp3);
+                context.EmitStvec(_stVecTemp2);
+                context.EmitStvec(_stVecTemp1);
+                context.EmitStvec(_stVecTemp0);
 
                 if (elemSize < 3)
                 {
@@ -171,30 +171,30 @@ namespace ChocolArm64.Instructions
                     //this step is not necessary.
                     elemSize++;
 
-                    context.EmitLdvec(StVecTemp0);
-                    context.EmitLdvec(StVecTemp1);
+                    context.EmitLdvec(_stVecTemp0);
+                    context.EmitLdvec(_stVecTemp1);
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(elemSize)));
 
-                    context.EmitLdvec(StVecTemp0);
-                    context.EmitLdvec(StVecTemp1);
+                    context.EmitLdvec(_stVecTemp0);
+                    context.EmitLdvec(_stVecTemp1);
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
 
-                    context.EmitLdvec(StVecTemp2);
-                    context.EmitLdvec(StVecTemp3);
+                    context.EmitLdvec(_stVecTemp2);
+                    context.EmitLdvec(_stVecTemp3);
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(elemSize)));
 
-                    context.EmitLdvec(StVecTemp2);
-                    context.EmitLdvec(StVecTemp3);
+                    context.EmitLdvec(_stVecTemp2);
+                    context.EmitLdvec(_stVecTemp3);
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
 
-                    context.EmitStvec(StVecTemp3);
-                    context.EmitStvec(StVecTemp2);
-                    context.EmitStvec(StVecTemp1);
-                    context.EmitStvec(StVecTemp0);
+                    context.EmitStvec(_stVecTemp3);
+                    context.EmitStvec(_stVecTemp2);
+                    context.EmitStvec(_stVecTemp1);
+                    context.EmitStvec(_stVecTemp0);
                 }
 
                 //Store as if the data was linear.
@@ -212,10 +212,10 @@ namespace ChocolArm64.Instructions
 
                     switch (index)
                     {
-                        case 0: context.EmitLdvec(StVecTemp0); break;
-                        case 1: context.EmitLdvec(StVecTemp1); break;
-                        case 2: context.EmitLdvec(StVecTemp2); break;
-                        case 3: context.EmitLdvec(StVecTemp3); break;
+                        case 0: context.EmitLdvec(_stVecTemp0); break;
+                        case 1: context.EmitLdvec(_stVecTemp1); break;
+                        case 2: context.EmitLdvec(_stVecTemp2); break;
+                        case 3: context.EmitLdvec(_stVecTemp3); break;
                     }
 
                     EmitWriteCall(context, vectorSizeLog2);
