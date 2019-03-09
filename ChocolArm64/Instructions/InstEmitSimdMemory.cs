@@ -3,6 +3,7 @@ using ChocolArm64.State;
 using ChocolArm64.Translation;
 using System;
 using System.Reflection.Emit;
+using System.Runtime.Intrinsics.X86;
 
 using static ChocolArm64.Instructions.InstEmitMemoryHelper;
 using static ChocolArm64.Instructions.InstEmitSimdHelper;
@@ -11,6 +12,11 @@ namespace ChocolArm64.Instructions
 {
     static partial class InstEmit
     {
+        private static int StVecTemp0 = ILEmitterCtx.GetVecTempIndex();
+        private static int StVecTemp1 = ILEmitterCtx.GetVecTempIndex();
+        private static int StVecTemp2 = ILEmitterCtx.GetVecTempIndex();
+        private static int StVecTemp3 = ILEmitterCtx.GetVecTempIndex();
+
         public static void Ld__Vms(ILEmitterCtx context)
         {
             EmitSimdMemMs(context, isLoad: true);
@@ -35,43 +41,226 @@ namespace ChocolArm64.Instructions
         {
             OpCodeSimdMemMs64 op = (OpCodeSimdMemMs64)context.CurrOp;
 
+            const int vectorSizeLog2 = 4;
+            const int vectorSize     = 1 << vectorSizeLog2;
+
             int offset = 0;
 
-            for (int rep   = 0; rep   < op.Reps;   rep++)
-            for (int elem  = 0; elem  < op.Elems;  elem++)
-            for (int sElem = 0; sElem < op.SElems; sElem++)
+            bool sseOptPath = Optimizations.UseSse2 && op.SElems == 4;
+
+            if (sseOptPath && isLoad)
             {
-                int rtt = (op.Rt + rep + sElem) & 0x1f;
+                //Load as if the data was linear.
+                int totalVecs = op.Reps * op.SElems;
 
-                if (isLoad)
+                for (int index = 0; index < totalVecs; index++)
                 {
-                    context.EmitLdint(op.Rn);
-                    context.EmitLdc_I8(offset);
+                    int rtt = (op.Rt + index) & 0x1f;
 
-                    context.Emit(OpCodes.Add);
-
-                    EmitReadZxCall(context, op.Size);
-
-                    EmitVectorInsert(context, rtt, elem, op.Size);
-
-                    if (op.RegisterSize == RegisterSize.Simd64 && elem == op.Elems - 1)
+                    if (op.RegisterSize == RegisterSize.Simd64 && index >= totalVecs / 2)
                     {
-                        EmitVectorZeroUpper(context, rtt);
+                        EmitVectorZeroAll(context, rtt);
+                    }
+                    else
+                    {
+                        context.EmitLdint(op.Rn);
+                        context.EmitLdc_I8(offset);
+
+                        context.Emit(OpCodes.Add);
+
+                        EmitReadZxCall(context, vectorSizeLog2);
+
+                        context.EmitStvec(rtt);
+
+                        offset += vectorSize;
                     }
                 }
-                else
+
+                int structsTotalSize = op.SElems * vectorSize;
+
+                int structSize = op.SElems * (1 << op.Size);
+
+                for (int extensionSize = structSize; extensionSize < structsTotalSize; extensionSize <<= 1)
+                {
+                    int rt0 = (op.Rt + 0) & 0x1f;
+                    int rt1 = (op.Rt + 1) & 0x1f;
+                    int rt2 = (op.Rt + 2) & 0x1f;
+                    int rt3 = (op.Rt + 3) & 0x1f;
+
+                    int elemSize = op.Size;
+
+                    if (extensionSize > vectorSize)
+                    {
+                        //The struct elements are spanning two vectors.
+                        //We need to skip a vector for the second operand.
+                        //To do that, we just invert two registers (rt1 and rt2).
+                        context.EmitLdvec(rt1);
+                        context.EmitLdvec(rt2);
+                        context.EmitStvec(rt1);
+                        context.EmitStvec(rt2);
+
+                        elemSize = vectorSizeLog2 - 1;
+                    }
+
+                    context.EmitLdvec(rt0);
+                    context.EmitLdvec(rt1);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(elemSize)));
+
+                    context.EmitLdvec(rt0);
+                    context.EmitLdvec(rt1);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
+
+                    context.EmitLdvec(rt2);
+                    context.EmitLdvec(rt3);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(elemSize)));
+
+                    context.EmitLdvec(rt2);
+                    context.EmitLdvec(rt3);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
+
+                    context.EmitStvec(rt3);
+                    context.EmitStvec(rt2);
+                    context.EmitStvec(rt1);
+                    context.EmitStvec(rt0);
+                }
+            }
+            else if (sseOptPath /* && !isLoad */)
+            {
+                int totalVecs = op.Reps * op.SElems;
+
+                int elemSize = op.Size;
+
+                int rt0 = (op.Rt + 0) & 0x1f;
+                int rt1 = (op.Rt + 1) & 0x1f;
+                int rt2 = (op.Rt + 2) & 0x1f;
+                int rt3 = (op.Rt + 3) & 0x1f;
+
+                context.EmitLdvec(rt0);
+                context.EmitLdvec(rt1);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(elemSize)));
+
+                context.EmitLdvec(rt2);
+                context.EmitLdvec(rt3);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(elemSize)));
+
+                context.EmitLdvec(rt0);
+                context.EmitLdvec(rt1);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
+
+                context.EmitLdvec(rt2);
+                context.EmitLdvec(rt3);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
+
+                context.EmitStvec(StVecTemp3);
+                context.EmitStvec(StVecTemp2);
+                context.EmitStvec(StVecTemp1);
+                context.EmitStvec(StVecTemp0);
+
+                if (elemSize < 3)
+                {
+                    //This only runs if the struct fits into the vector.
+                    //For the case where the struct doesn't fit (it's split across two vectors),
+                    //this step is not necessary.
+                    elemSize++;
+
+                    context.EmitLdvec(StVecTemp0);
+                    context.EmitLdvec(StVecTemp1);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(elemSize)));
+
+                    context.EmitLdvec(StVecTemp0);
+                    context.EmitLdvec(StVecTemp1);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
+
+                    context.EmitLdvec(StVecTemp2);
+                    context.EmitLdvec(StVecTemp3);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(elemSize)));
+
+                    context.EmitLdvec(StVecTemp2);
+                    context.EmitLdvec(StVecTemp3);
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), GetTypesSflUpk(elemSize)));
+
+                    context.EmitStvec(StVecTemp3);
+                    context.EmitStvec(StVecTemp2);
+                    context.EmitStvec(StVecTemp1);
+                    context.EmitStvec(StVecTemp0);
+                }
+
+                //Store as if the data was linear.
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    totalVecs /= 2;
+                }
+
+                for (int index = 0; index < totalVecs; index++)
                 {
                     context.EmitLdint(op.Rn);
                     context.EmitLdc_I8(offset);
 
                     context.Emit(OpCodes.Add);
 
-                    EmitVectorExtractZx(context, rtt, elem, op.Size);
+                    switch (index)
+                    {
+                        case 0: context.EmitLdvec(StVecTemp0); break;
+                        case 1: context.EmitLdvec(StVecTemp1); break;
+                        case 2: context.EmitLdvec(StVecTemp2); break;
+                        case 3: context.EmitLdvec(StVecTemp3); break;
+                    }
 
-                    EmitWriteCall(context, op.Size);
+                    EmitWriteCall(context, vectorSizeLog2);
+
+                    offset += vectorSize;
                 }
+            }
+            else
+            {
+                for (int rep   = 0; rep   < op.Reps;   rep++)
+                for (int elem  = 0; elem  < op.Elems;  elem++)
+                for (int sElem = 0; sElem < op.SElems; sElem++)
+                {
+                    int rtt = (op.Rt + rep + sElem) & 0x1f;
 
-                offset += 1 << op.Size;
+                    if (isLoad)
+                    {
+                        context.EmitLdint(op.Rn);
+                        context.EmitLdc_I8(offset);
+
+                        context.Emit(OpCodes.Add);
+
+                        EmitReadZxCall(context, op.Size);
+
+                        EmitVectorInsert(context, rtt, elem, op.Size);
+
+                        if (op.RegisterSize == RegisterSize.Simd64 && elem == op.Elems - 1)
+                        {
+                            EmitVectorZeroUpper(context, rtt);
+                        }
+                    }
+                    else
+                    {
+                        context.EmitLdint(op.Rn);
+                        context.EmitLdc_I8(offset);
+
+                        context.Emit(OpCodes.Add);
+
+                        EmitVectorExtractZx(context, rtt, elem, op.Size);
+
+                        EmitWriteCall(context, op.Size);
+                    }
+
+                    offset += 1 << op.Size;
+                }
             }
 
             if (op.WBack)

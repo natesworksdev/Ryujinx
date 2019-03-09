@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading;
 
 namespace ChocolArm64.Translation
 {
@@ -105,12 +106,12 @@ namespace ChocolArm64.Translation
 
         public static int GetIntTempIndex()
         {
-            return UserIntTempStart + _userIntTempCount++;
+            return UserIntTempStart + Interlocked.Increment(ref _userIntTempCount) - 1;
         }
 
         public static int GetVecTempIndex()
         {
-            return UserVecTempStart + _userVecTempCount++;
+            return UserVecTempStart + Interlocked.Increment(ref _userVecTempCount) - 1;
         }
 
         public ILBlock[] GetILBlocks()

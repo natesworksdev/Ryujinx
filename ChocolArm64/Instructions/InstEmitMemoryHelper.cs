@@ -42,7 +42,7 @@ namespace ChocolArm64.Instructions
             //Save the address into a temp.
             context.EmitStint(_tempIntAddress);
 
-            bool isSimd = IsSimd(context);
+            bool isSimd = IsSimd(context) || size == 4;
 
             if (size < 0 || size > (isSimd ? 4 : 3))
             {
@@ -96,7 +96,7 @@ namespace ChocolArm64.Instructions
 
         public static void EmitWriteCall(ILEmitterCtx context, int size)
         {
-            bool isSimd = IsSimd(context);
+            bool isSimd = IsSimd(context) || size == 4;
 
             //Save the value into a temp.
             if (isSimd)
