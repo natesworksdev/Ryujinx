@@ -120,7 +120,6 @@ namespace ChocolArm64.Instructions
                     }
 
                     context.Emit(OpCodes.And);
-
                     context.Emit(OpCodes.Xor);
 
                     EmitVectorInsert(context, op.Rd, index, 3);
@@ -142,8 +141,7 @@ namespace ChocolArm64.Instructions
                 Type[] typesXorAnd = new Type[] { typeof(Vector128<byte>), typeof(Vector128<byte>) };
 
                 context.EmitLdvec(op.Rm);
-                context.Emit(OpCodes.Dup);
-
+                context.EmitLdvec(op.Rm);
                 context.EmitLdvec(op.Rn);
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), typesXorAnd));
@@ -151,7 +149,6 @@ namespace ChocolArm64.Instructions
                 context.EmitLdvec(op.Rd);
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), typesXorAnd));
-
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), typesXorAnd));
 
                 context.EmitStvec(op.Rd);
