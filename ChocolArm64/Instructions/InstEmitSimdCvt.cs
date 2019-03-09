@@ -85,7 +85,7 @@ namespace ChocolArm64.Instructions
                     : nameof(Sse.MoveLowToHigh);
 
                 context.EmitLdvec(op.Rn);
-                context.Emit(OpCodes.Dup);
+                context.EmitLdvec(op.Rn);
 
                 context.EmitCall(typeof(Sse).GetMethod(nameMov));
 
@@ -249,12 +249,12 @@ namespace ChocolArm64.Instructions
 
         public static void Fcvtzs_S(ILEmitterCtx context)
         {
-            EmitScalarFcvtzs(context);
+            EmitFcvtz(context, signed: true, scalar: true);
         }
 
         public static void Fcvtzs_V(ILEmitterCtx context)
         {
-            EmitVectorFcvtzs(context);
+            EmitFcvtz(context, signed: true, scalar: false);
         }
 
         public static void Fcvtzu_Gp(ILEmitterCtx context)
@@ -269,12 +269,12 @@ namespace ChocolArm64.Instructions
 
         public static void Fcvtzu_S(ILEmitterCtx context)
         {
-            EmitScalarFcvtzu(context);
+            EmitFcvtz(context, signed: false, scalar: true);
         }
 
         public static void Fcvtzu_V(ILEmitterCtx context)
         {
-            EmitVectorFcvtzu(context);
+            EmitFcvtz(context, signed: false, scalar: false);
         }
 
         public static void Scvtf_Gp(ILEmitterCtx context)
@@ -415,11 +415,6 @@ namespace ChocolArm64.Instructions
             int bytes = op.GetBitsCount() >> 3;
             int elems = !scalar ? bytes >> sizeI : 1;
 
-            if (scalar && (sizeF == 0))
-            {
-                EmitVectorZeroLowerTmp(context);
-            }
-
             for (int index = 0; index < elems; index++)
             {
                 EmitVectorExtractF(context, op.Rn, index, sizeF);
@@ -441,13 +436,62 @@ namespace ChocolArm64.Instructions
                         : nameof(VectorHelper.SatF64ToU64));
                 }
 
-                EmitVectorInsertTmp(context, index, sizeI);
+                if (scalar)
+                {
+                    EmitVectorZeroAll(context, op.Rd);
+                }
+
+                EmitVectorInsert(context, op.Rd, index, sizeI);
             }
 
-            context.EmitLdvectmp();
-            context.EmitStvec(op.Rd);
+            if (op.RegisterSize == RegisterSize.Simd64)
+            {
+                EmitVectorZeroUpper(context, op.Rd);
+            }
+        }
 
-            if ((op.RegisterSize == RegisterSize.Simd64) || scalar)
+        private static void EmitFcvtz(ILEmitterCtx context, bool signed, bool scalar)
+        {
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+            int sizeI = sizeF + 2;
+
+            int fBits = GetFBits(context);
+
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = !scalar ? bytes >> sizeI : 1;
+
+            for (int index = 0; index < elems; index++)
+            {
+                EmitVectorExtractF(context, op.Rn, index, sizeF);
+
+                EmitF2iFBitsMul(context, sizeF, fBits);
+
+                if (sizeF == 0)
+                {
+                    VectorHelper.EmitCall(context, signed
+                        ? nameof(VectorHelper.SatF32ToS32)
+                        : nameof(VectorHelper.SatF32ToU32));
+
+                    context.Emit(OpCodes.Conv_U8);
+                }
+                else /* if (sizeF == 1) */
+                {
+                    VectorHelper.EmitCall(context, signed
+                        ? nameof(VectorHelper.SatF64ToS64)
+                        : nameof(VectorHelper.SatF64ToU64));
+                }
+
+                if (scalar)
+                {
+                    EmitVectorZeroAll(context, op.Rd);
+                }
+
+                EmitVectorInsert(context, op.Rd, index, sizeI);
+            }
+
+            if (op.RegisterSize == RegisterSize.Simd64)
             {
                 EmitVectorZeroUpper(context, op.Rd);
             }
@@ -547,105 +591,6 @@ namespace ChocolArm64.Instructions
                 EmitI2fFBitsMul(context, sizeF, fBits);
 
                 EmitVectorInsertF(context, op.Rd, index, sizeF);
-            }
-
-            if (op.RegisterSize == RegisterSize.Simd64)
-            {
-                EmitVectorZeroUpper(context, op.Rd);
-            }
-        }
-
-        private static void EmitScalarFcvtzs(ILEmitterCtx context)
-        {
-            EmitScalarFcvtz(context, true);
-        }
-
-        private static void EmitScalarFcvtzu(ILEmitterCtx context)
-        {
-            EmitScalarFcvtz(context, false);
-        }
-
-        private static void EmitScalarFcvtz(ILEmitterCtx context, bool signed)
-        {
-            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
-
-            int sizeF = op.Size & 1;
-            int sizeI = sizeF + 2;
-
-            int fBits = GetFBits(context);
-
-            EmitVectorExtractF(context, op.Rn, 0, sizeF);
-
-            EmitF2iFBitsMul(context, sizeF, fBits);
-
-            if (sizeF == 0)
-            {
-                VectorHelper.EmitCall(context, signed
-                    ? nameof(VectorHelper.SatF32ToS32)
-                    : nameof(VectorHelper.SatF32ToU32));
-            }
-            else /* if (sizeF == 1) */
-            {
-                VectorHelper.EmitCall(context, signed
-                    ? nameof(VectorHelper.SatF64ToS64)
-                    : nameof(VectorHelper.SatF64ToU64));
-            }
-
-            if (sizeF == 0)
-            {
-                context.Emit(OpCodes.Conv_U8);
-            }
-
-            EmitScalarSet(context, op.Rd, sizeI);
-        }
-
-        private static void EmitVectorFcvtzs(ILEmitterCtx context)
-        {
-            EmitVectorFcvtz(context, true);
-        }
-
-        private static void EmitVectorFcvtzu(ILEmitterCtx context)
-        {
-            EmitVectorFcvtz(context, false);
-        }
-
-        private static void EmitVectorFcvtz(ILEmitterCtx context, bool signed)
-        {
-            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
-
-            int sizeF = op.Size & 1;
-            int sizeI = sizeF + 2;
-
-            int fBits = GetFBits(context);
-
-            int bytes = op.GetBitsCount() >> 3;
-            int elems = bytes >> sizeI;
-
-            for (int index = 0; index < elems; index++)
-            {
-                EmitVectorExtractF(context, op.Rn, index, sizeF);
-
-                EmitF2iFBitsMul(context, sizeF, fBits);
-
-                if (sizeF == 0)
-                {
-                    VectorHelper.EmitCall(context, signed
-                        ? nameof(VectorHelper.SatF32ToS32)
-                        : nameof(VectorHelper.SatF32ToU32));
-                }
-                else /* if (sizeF == 1) */
-                {
-                    VectorHelper.EmitCall(context, signed
-                        ? nameof(VectorHelper.SatF64ToS64)
-                        : nameof(VectorHelper.SatF64ToU64));
-                }
-
-                if (sizeF == 0)
-                {
-                    context.Emit(OpCodes.Conv_U8);
-                }
-
-                EmitVectorInsert(context, op.Rd, index, sizeI);
             }
 
             if (op.RegisterSize == RegisterSize.Simd64)
