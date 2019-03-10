@@ -749,11 +749,13 @@ namespace ChocolArm64.Instructions
 
                     context.EmitLdvec(op.Rd);
                     context.EmitLdvec(op.Rn);
+
                     context.EmitLdvec(op.Rm);
                     context.EmitLdvec(op.Rm);
 
                     context.EmitLdc_I4(op.Index | op.Index << 2 | op.Index << 4 | op.Index << 6);
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle),  typesSfl));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle), typesSfl));
+
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), typesMulAdd));
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Add),      typesMulAdd));
 
@@ -771,11 +773,13 @@ namespace ChocolArm64.Instructions
 
                     context.EmitLdvec(op.Rd);
                     context.EmitLdvec(op.Rn);
+
                     context.EmitLdvec(op.Rm);
                     context.EmitLdvec(op.Rm);
 
                     context.EmitLdc_I4(op.Index | op.Index << 1);
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Shuffle),  typesSfl));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Shuffle), typesSfl));
+
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), typesMulAdd));
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add),      typesMulAdd));
 
@@ -864,11 +868,13 @@ namespace ChocolArm64.Instructions
 
                     context.EmitLdvec(op.Rd);
                     context.EmitLdvec(op.Rn);
+
                     context.EmitLdvec(op.Rm);
                     context.EmitLdvec(op.Rm);
 
                     context.EmitLdc_I4(op.Index | op.Index << 2 | op.Index << 4 | op.Index << 6);
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle),  typesSfl));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle), typesSfl));
+
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), typesMulSub));
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), typesMulSub));
 
@@ -886,11 +892,13 @@ namespace ChocolArm64.Instructions
 
                     context.EmitLdvec(op.Rd);
                     context.EmitLdvec(op.Rn);
+
                     context.EmitLdvec(op.Rm);
                     context.EmitLdvec(op.Rm);
 
                     context.EmitLdc_I4(op.Index | op.Index << 1);
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Shuffle),  typesSfl));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Shuffle), typesSfl));
+
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), typesMulSub));
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), typesMulSub));
 
@@ -1001,11 +1009,13 @@ namespace ChocolArm64.Instructions
                     Type[] typesMul = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
                     context.EmitLdvec(op.Rn);
+
                     context.EmitLdvec(op.Rm);
                     context.EmitLdvec(op.Rm);
 
                     context.EmitLdc_I4(op.Index | op.Index << 2 | op.Index << 4 | op.Index << 6);
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle),  typesSfl));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle), typesSfl));
+
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), typesMul));
 
                     context.EmitStvec(op.Rd);
@@ -1021,11 +1031,13 @@ namespace ChocolArm64.Instructions
                     Type[] typesMul = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
                     context.EmitLdvec(op.Rn);
+
                     context.EmitLdvec(op.Rm);
                     context.EmitLdvec(op.Rm);
 
                     context.EmitLdc_I4(op.Index | op.Index << 1);
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Shuffle),  typesSfl));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Shuffle), typesSfl));
+
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), typesMul));
 
                     context.EmitStvec(op.Rd);
@@ -2037,7 +2049,8 @@ namespace ChocolArm64.Instructions
 
                 context.Emit(OpCodes.Ldc_I4_1);
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightArithmetic), typesSra));
-                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add),                  typesAndXorAdd));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add), typesAndXorAdd));
 
                 context.EmitStvec(op.Rd);
 
@@ -2738,7 +2751,8 @@ namespace ChocolArm64.Instructions
 
                 context.Emit(OpCodes.Ldc_I4_1);
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightLogical), typesSrl));
-                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add),               typesAndXorAdd));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add), typesAndXorAdd));
 
                 context.EmitStvec(op.Rd);
 
