@@ -1372,11 +1372,11 @@ namespace ChocolArm64.Instructions
 
                 /*Type[] typesMov = new Type[] { typeof(Vector128<ulong>) };
 
-                EmitLdvecWithUnsignedCast(context, reg, 3);
+                context.EmitLdvec(reg);
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MoveScalar), typesMov));
 
-                EmitStvecWithUnsignedCast(context, reg, 3);*/
+                context.EmitStvec(reg);*/
 
                 context.EmitLdvec(reg);
                 VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
