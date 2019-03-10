@@ -564,8 +564,8 @@ namespace ChocolArm64.Instructions
                 context.EmitLdvec(op.Rn);
 
                 context.EmitLdc_I4(GetImmShr(op));
-
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightArithmetic), typesSra));
+
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add), typesAdd));
 
                 context.EmitStvec(op.Rd);
@@ -889,8 +889,8 @@ namespace ChocolArm64.Instructions
                 context.EmitLdvec(op.Rn);
 
                 context.EmitLdc_I4(GetImmShr(op));
-
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ShiftRightLogical), typesSrl));
+
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add), typesAdd));
 
                 context.EmitStvec(op.Rd);
@@ -1129,11 +1129,7 @@ namespace ChocolArm64.Instructions
         }
 
         // dst64 = (Int(src64, signed) + roundConst) >> shift;
-        private static void EmitShrImm64(
-            ILEmitterCtx context,
-            bool signed,
-            long roundConst,
-            int  shift)
+        private static void EmitShrImm64(ILEmitterCtx context, bool signed, long roundConst, int shift)
         {
             context.EmitLdc_I8(roundConst);
             context.EmitLdc_I4(shift);
