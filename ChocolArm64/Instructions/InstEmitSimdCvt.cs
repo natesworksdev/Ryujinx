@@ -21,26 +21,24 @@ namespace ChocolArm64.Instructions
                 if (op.Size == 1 && op.Opc == 0)
                 {
                     //Double -> Single.
-                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
+                    Type[] typesCvt = new Type[] { typeof(Vector128<float>), typeof(Vector128<double>) };
 
+                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
                     context.EmitLdvec(op.Rn);
 
-                    Type[] types = new Type[] { typeof(Vector128<float>), typeof(Vector128<double>) };
-
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Single), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Single), typesCvt));
 
                     context.EmitStvec(op.Rd);
                 }
                 else if (op.Size == 0 && op.Opc == 1)
                 {
                     //Single -> Double.
-                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleZero));
+                    Type[] typesCvt = new Type[] { typeof(Vector128<double>), typeof(Vector128<float>) };
 
+                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleZero));
                     context.EmitLdvec(op.Rn);
 
-                    Type[] types = new Type[] { typeof(Vector128<double>), typeof(Vector128<float>) };
-
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Double), types));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Double), typesCvt));
 
                     context.EmitStvec(op.Rd);
                 }
@@ -80,14 +78,14 @@ namespace ChocolArm64.Instructions
             {
                 Type[] typesCvt = new Type[] { typeof(Vector128<float>) };
 
-                string nameMov = op.RegisterSize == RegisterSize.Simd128
-                    ? nameof(Sse.MoveHighToLow)
-                    : nameof(Sse.MoveLowToHigh);
-
-                context.EmitLdvec(op.Rn);
                 context.EmitLdvec(op.Rn);
 
-                context.EmitCall(typeof(Sse).GetMethod(nameMov));
+                if (op.RegisterSize == RegisterSize.Simd128)
+                {
+                    context.EmitLdvec(op.Rn);
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.MoveHighToLow)));
+                }
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToVector128Double), typesCvt));
 
