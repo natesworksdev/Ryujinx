@@ -185,8 +185,8 @@ namespace ChocolArm64.Instructions
 
                 if (sizeF == 0)
                 {
-                    Type[] typesSsv       = new Type[] { typeof(float) };
-                    Type[] typesSubAndNot = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                    Type[] typesSsv    = new Type[] { typeof(float) };
+                    Type[] typesSubAnt = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
                     context.EmitLdc_R4(-0f);
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), typesSsv));
@@ -194,8 +194,8 @@ namespace ChocolArm64.Instructions
                     context.EmitLdvec(op.Rn);
                     context.EmitLdvec(op.Rm);
 
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), typesSubAndNot));
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot),         typesSubAndNot));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SubtractScalar), typesSubAnt));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot),         typesSubAnt));
 
                     context.EmitStvec(op.Rd);
 
@@ -203,8 +203,8 @@ namespace ChocolArm64.Instructions
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Type[] typesSsv       = new Type[] { typeof(double) };
-                    Type[] typesSubAndNot = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    Type[] typesSsv    = new Type[] { typeof(double) };
+                    Type[] typesSubAnt = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
                     context.EmitLdc_R8(-0d);
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), typesSsv));
@@ -212,8 +212,8 @@ namespace ChocolArm64.Instructions
                     context.EmitLdvec(op.Rn);
                     context.EmitLdvec(op.Rm);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), typesSubAndNot));
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot),         typesSubAndNot));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SubtractScalar), typesSubAnt));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot),         typesSubAnt));
 
                     context.EmitStvec(op.Rd);
 
@@ -241,8 +241,8 @@ namespace ChocolArm64.Instructions
 
                 if (sizeF == 0)
                 {
-                    Type[] typesSav       = new Type[] { typeof(float) };
-                    Type[] typesSubAndNot = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                    Type[] typesSav    = new Type[] { typeof(float) };
+                    Type[] typesSubAnt = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
                     context.EmitLdc_R4(-0f);
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), typesSav));
@@ -250,8 +250,8 @@ namespace ChocolArm64.Instructions
                     context.EmitLdvec(op.Rn);
                     context.EmitLdvec(op.Rm);
 
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), typesSubAndNot));
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot),   typesSubAndNot));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), typesSubAnt));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot),   typesSubAnt));
 
                     context.EmitStvec(op.Rd);
 
@@ -262,8 +262,8 @@ namespace ChocolArm64.Instructions
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Type[] typesSav       = new Type[] { typeof(double) };
-                    Type[] typesSubAndNot = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    Type[] typesSav    = new Type[] { typeof(double) };
+                    Type[] typesSubAnt = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
                     context.EmitLdc_R8(-0d);
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
@@ -271,8 +271,8 @@ namespace ChocolArm64.Instructions
                     context.EmitLdvec(op.Rn);
                     context.EmitLdvec(op.Rm);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), typesSubAndNot));
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot),   typesSubAndNot));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), typesSubAnt));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot),   typesSubAnt));
 
                     context.EmitStvec(op.Rd);
                 }
@@ -296,15 +296,15 @@ namespace ChocolArm64.Instructions
 
                 if (op.Size == 0)
                 {
-                    Type[] typesSsv    = new Type[] { typeof(float) };
-                    Type[] typesAndNot = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                    Type[] typesSsv = new Type[] { typeof(float) };
+                    Type[] typesAnt = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
                     context.EmitLdc_R4(-0f);
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetScalarVector128), typesSsv));
 
                     context.EmitLdvec(op.Rn);
 
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot), typesAndNot));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot), typesAnt));
 
                     context.EmitStvec(op.Rd);
 
@@ -312,15 +312,15 @@ namespace ChocolArm64.Instructions
                 }
                 else /* if (op.Size == 1) */
                 {
-                    Type[] typesSsv    = new Type[] { typeof(double) };
-                    Type[] typesAndNot = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    Type[] typesSsv = new Type[] { typeof(double) };
+                    Type[] typesAnt = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
                     context.EmitLdc_R8(-0d);
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetScalarVector128), typesSsv));
 
                     context.EmitLdvec(op.Rn);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), typesAndNot));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), typesAnt));
 
                     context.EmitStvec(op.Rd);
 
@@ -346,15 +346,15 @@ namespace ChocolArm64.Instructions
 
                 if (sizeF == 0)
                 {
-                    Type[] typesSav    = new Type[] { typeof(float) };
-                    Type[] typesAndNot = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                    Type[] typesSav = new Type[] { typeof(float) };
+                    Type[] typesAnt = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
                     context.EmitLdc_R4(-0f);
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.SetAllVector128), typesSav));
 
                     context.EmitLdvec(op.Rn);
 
-                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot), typesAndNot));
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.AndNot), typesAnt));
 
                     context.EmitStvec(op.Rd);
 
@@ -365,15 +365,15 @@ namespace ChocolArm64.Instructions
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Type[] typesSav    = new Type[] { typeof(double) };
-                    Type[] typesAndNot = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                    Type[] typesSav = new Type[] { typeof(double) };
+                    Type[] typesAnt = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
                     context.EmitLdc_R8(-0d);
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
 
                     context.EmitLdvec(op.Rn);
 
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), typesAndNot));
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.AndNot), typesAnt));
 
                     context.EmitStvec(op.Rd);
                 }
