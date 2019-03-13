@@ -1863,13 +1863,7 @@ namespace ChocolArm64.Instructions
 
                 Type[] typesSub = new Type[] { VectorIntTypesPerSizeLog2[op.Size], VectorIntTypesPerSizeLog2[op.Size] };
 
-                string[] namesSzv = new string[] { nameof(VectorHelper.VectorSByteZero),
-                                                   nameof(VectorHelper.VectorInt16Zero),
-                                                   nameof(VectorHelper.VectorInt32Zero),
-                                                   nameof(VectorHelper.VectorInt64Zero) };
-
-                VectorHelper.EmitCall(context, namesSzv[op.Size]);
-
+                VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
                 context.EmitLdvec(op.Rn);
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), typesSub));
