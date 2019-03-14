@@ -507,8 +507,8 @@ namespace ChocolArm64.Instructions
                         context.EmitLdvec(op.Rm);
                     }
 
-                    context.Emit(OpCodes.Dup);
                     context.EmitStvectmp();
+                    context.EmitLdvectmp();
 
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareOrderedScalar), typesCmp));
                     VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
@@ -570,8 +570,8 @@ namespace ChocolArm64.Instructions
                         context.EmitLdvec(op.Rm);
                     }
 
-                    context.Emit(OpCodes.Dup);
                     context.EmitStvectmp();
+                    context.EmitLdvectmp();
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareOrderedScalar), typesCmp));
                     VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleZero));
