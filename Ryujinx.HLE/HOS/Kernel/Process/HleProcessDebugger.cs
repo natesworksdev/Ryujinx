@@ -4,6 +4,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.Loaders.Elf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,13 +42,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _images = new List<Image>();
         }
 
-        public void PrintGuestStackTrace(CpuThreadState threadState)
+        public string GetGuestStackTrace(CpuThreadState threadState)
         {
             EnsureLoaded();
 
             StringBuilder trace = new StringBuilder();
-
-            trace.AppendLine("Guest stack trace:");
 
             void AppendTrace(long address)
             {
@@ -68,13 +67,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                     string imageName = GetGuessedNsoNameFromIndex(imageIndex);
 
-                    string imageNameAndOffset = $"[{_owner.Name}] {imageName}:0x{offset:x8}";
+                    string imageNameAndOffset = $"{imageName}:0x{offset:x8}";
 
                     trace.AppendLine($" {imageNameAndOffset} {subName}");
                 }
                 else
                 {
-                    trace.AppendLine($" [{_owner.Name}] ??? {subName}");
+                    trace.AppendLine($" ??? {subName}");
                 }
             }
 
@@ -83,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             while (framePointer != 0)
             {
-                if ((framePointer & 7) != 0                  ||
+                if ((framePointer & 7) != 0 ||
                     !_owner.CpuMemory.IsMapped(framePointer) ||
                     !_owner.CpuMemory.IsMapped(framePointer + 8))
                 {
@@ -96,6 +95,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 framePointer = _owner.CpuMemory.ReadInt64(framePointer);
             }
+
+            return trace.ToString();
+        }
+
+        [Obsolete("Use GetGuestStackTrace")]
+        public void PrintGuestStackTrace(CpuThreadState threadState)
+        {
+            EnsureLoaded();
+
+            StringBuilder trace = new StringBuilder();
+
+            trace.AppendLine("Guest stack trace:");
+
+            trace.AppendLine(GetGuestStackTrace(threadState));
 
             Logger.PrintInfo(LogClass.Cpu, trace.ToString());
         }
