@@ -99,20 +99,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return trace.ToString();
         }
 
-        [Obsolete("Use GetGuestStackTrace")]
-        public void PrintGuestStackTrace(CpuThreadState threadState)
-        {
-            EnsureLoaded();
-
-            StringBuilder trace = new StringBuilder();
-
-            trace.AppendLine("Guest stack trace:");
-
-            trace.AppendLine(GetGuestStackTrace(threadState));
-
-            Logger.PrintInfo(LogClass.Cpu, trace.ToString());
-        }
-
         private bool TryGetSubName(Image image, long address, out string name)
         {
             address -= image.BaseAddress;
