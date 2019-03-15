@@ -67,18 +67,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                     string imageName = GetGuessedNsoNameFromIndex(imageIndex);
 
-                    string imageNameAndOffset = $"{imageName}:0x{offset:x8}";
-
-                    trace.AppendLine($" {imageNameAndOffset} {subName}");
+                    trace.AppendLine($"   {imageName}:0x{offset:x8} {subName}");
                 }
                 else
                 {
-                    trace.AppendLine($" ??? {subName}");
+                    trace.AppendLine($"   ??? {subName}");
                 }
             }
 
             //TODO: ARM32.
             long framePointer = (long)threadState.X29;
+
+            trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
 
             while (framePointer != 0)
             {
