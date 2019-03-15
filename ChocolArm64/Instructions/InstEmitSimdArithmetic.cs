@@ -1968,7 +1968,8 @@ namespace ChocolArm64.Instructions
 
             if (Optimizations.UseSse41 && op.Size < 2)
             {
-                Type[] typesCmpSub = new Type[] { VectorIntTypesPerSizeLog2[op.Size + 1], VectorIntTypesPerSizeLog2[op.Size + 1] };
+                Type[] typesCmpSub = new Type[] { VectorIntTypesPerSizeLog2[op.Size + 1],
+                                                  VectorIntTypesPerSizeLog2[op.Size + 1] };
                 Type[] typesSrl    = new Type[] { VectorIntTypesPerSizeLog2[op.Size], typeof(byte) };
                 Type[] typesAndOr  = new Type[] { typeof(Vector128<long>), typeof(Vector128<long>) };
                 Type[] typesCvt    = new Type[] { VectorIntTypesPerSizeLog2[op.Size] };
@@ -2769,8 +2770,10 @@ namespace ChocolArm64.Instructions
 
             if (Optimizations.UseSse41 && op.Size < 2)
             {
-                Type[] typesMax    = new Type[] { VectorUIntTypesPerSizeLog2[op.Size + 1], VectorUIntTypesPerSizeLog2[op.Size + 1] };
-                Type[] typesCmpSub = new Type[] { VectorIntTypesPerSizeLog2 [op.Size + 1], VectorIntTypesPerSizeLog2 [op.Size + 1] };
+                Type[] typesMax    = new Type[] { VectorUIntTypesPerSizeLog2[op.Size + 1],
+                                                  VectorUIntTypesPerSizeLog2[op.Size + 1] };
+                Type[] typesCmpSub = new Type[] { VectorIntTypesPerSizeLog2 [op.Size + 1],
+                                                  VectorIntTypesPerSizeLog2 [op.Size + 1] };
                 Type[] typesSrl    = new Type[] { VectorUIntTypesPerSizeLog2[op.Size], typeof(byte) };
                 Type[] typesAndOr  = new Type[] { typeof(Vector128<long>), typeof(Vector128<long>) };
                 Type[] typesCvt    = new Type[] { VectorUIntTypesPerSizeLog2[op.Size] };
