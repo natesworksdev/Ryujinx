@@ -415,7 +415,7 @@ namespace ChocolArm64.Instructions
 
                 for (int index = 0; index < op.Size; index++)
                 {
-                    context.EmitLdvec((op.Rn + index) & 0x1f);
+                    context.EmitLdvec((op.Rn + index) & 0x1F);
                 }
 
                 switch (op.Size)
