@@ -132,7 +132,7 @@ namespace Ryujinx.Tests.Cpu
                                           [Values(0u)] uint rd,
                                           [Values(1u)] uint rn,
                                           [Values(2u)] uint rm,
-                                          [Random(RndCntTbls)] ulong table0,
+                                          [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table0,
                                           [ValueSource("_GenIdxsForTbl1_")] ulong indexes,
                                           [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
@@ -154,8 +154,8 @@ namespace Ryujinx.Tests.Cpu
                                        [Values(0u)] uint rd,
                                        [Values(1u)] uint rn,
                                        [Values(3u)] uint rm,
-                                       [Random(RndCntTbls)] ulong table0,
-                                       [Random(RndCntTbls)] ulong table1,
+                                       [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table0,
+                                       [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table1,
                                        [ValueSource("_GenIdxsForTbl2_")] ulong indexes,
                                        [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
@@ -178,8 +178,8 @@ namespace Ryujinx.Tests.Cpu
                                            [Values(30u, 1u)] uint rd,
                                            [Values(31u)]     uint rn,
                                            [Values(1u, 30u)] uint rm,
-                                           [Random(RndCntTbls)] ulong table0,
-                                           [Random(RndCntTbls)] ulong table1,
+                                           [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table0,
+                                           [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table1,
                                            [ValueSource("_GenIdxsForTbl2_")] ulong indexes,
                                            [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
@@ -202,9 +202,9 @@ namespace Ryujinx.Tests.Cpu
                                          [Values(0u)] uint rd,
                                          [Values(1u)] uint rn,
                                          [Values(4u)] uint rm,
-                                         [Random(RndCntTbls)] ulong table0,
-                                         [Random(RndCntTbls)] ulong table1,
-                                         [Random(RndCntTbls)] ulong table2,
+                                         [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table0,
+                                         [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table1,
+                                         [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table2,
                                          [ValueSource("_GenIdxsForTbl3_")] ulong indexes,
                                          [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
@@ -228,9 +228,9 @@ namespace Ryujinx.Tests.Cpu
                                              [Values(30u, 2u)] uint rd,
                                              [Values(31u)]     uint rn,
                                              [Values(2u, 30u)] uint rm,
-                                             [Random(RndCntTbls)] ulong table0,
-                                             [Random(RndCntTbls)] ulong table1,
-                                             [Random(RndCntTbls)] ulong table2,
+                                             [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table0,
+                                             [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table1,
+                                             [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table2,
                                              [ValueSource("_GenIdxsForTbl3_")] ulong indexes,
                                              [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
@@ -254,10 +254,10 @@ namespace Ryujinx.Tests.Cpu
                                         [Values(0u)] uint rd,
                                         [Values(1u)] uint rn,
                                         [Values(5u)] uint rm,
-                                        [Random(RndCntTbls)] ulong table0,
-                                        [Random(RndCntTbls)] ulong table1,
-                                        [Random(RndCntTbls)] ulong table2,
-                                        [Random(RndCntTbls)] ulong table3,
+                                        [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table0,
+                                        [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table1,
+                                        [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table2,
+                                        [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table3,
                                         [ValueSource("_GenIdxsForTbl4_")] ulong indexes,
                                         [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
@@ -282,10 +282,10 @@ namespace Ryujinx.Tests.Cpu
                                             [Values(30u, 3u)] uint rd,
                                             [Values(31u)]     uint rn,
                                             [Values(3u, 30u)] uint rm,
-                                            [Random(RndCntTbls)] ulong table0,
-                                            [Random(RndCntTbls)] ulong table1,
-                                            [Random(RndCntTbls)] ulong table2,
-                                            [Random(RndCntTbls)] ulong table3,
+                                            [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table0,
+                                            [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table1,
+                                            [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table2,
+                                            [Values(0x0000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCntTbls)] ulong table3,
                                             [ValueSource("_GenIdxsForTbl4_")] ulong indexes,
                                             [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
