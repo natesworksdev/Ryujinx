@@ -367,6 +367,9 @@ namespace ChocolArm64.Instructions
                 context.EmitLdc_I8(0x0F0F0F0F0F0F0F0FL);
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
 
+                context.EmitStvectmp2();
+                context.EmitLdvectmp2();
+
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareGreaterThan), typesCmpSflSub));
 
                 context.EmitLdvec(op.Rm);
@@ -388,8 +391,7 @@ namespace ChocolArm64.Instructions
                     context.EmitStvectmp();
                     context.EmitLdvectmp();
 
-                    context.EmitLdc_I8(0x0F0F0F0F0F0F0F0FL);
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+                    context.EmitLdvectmp2();
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareGreaterThan), typesCmpSflSub));
 
