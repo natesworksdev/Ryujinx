@@ -18,7 +18,8 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                { 1, Initialize }
+                { 1,    Initialize                       },
+                { 1001, CheckFreeCommunicationPermission }
             };
 
             _needInitialize = needInitialize;
@@ -34,6 +35,13 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
             {
                 Logger.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
             }
+
+            return 0;
+        }
+
+        public long CheckFreeCommunicationPermission(ServiceCtx context)
+        {
+            Logger.PrintStub(LogClass.ServicePctl);
 
             return 0;
         }
