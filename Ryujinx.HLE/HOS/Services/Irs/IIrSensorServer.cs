@@ -16,8 +16,9 @@ namespace Ryujinx.HLE.HOS.Services.Irs
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                { 302, ActivateIrsensor   },
-                { 303, DeactivateIrsensor }
+                { 302, ActivateIrsensor                  },
+                { 303, DeactivateIrsensor                },
+                { 319, ActivateIrsensorWithFunctionLevel }
             };
         }
 
@@ -37,6 +38,17 @@ namespace Ryujinx.HLE.HOS.Services.Irs
             long appletResourceUserId = context.RequestData.ReadInt64();
 
             Logger.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId });
+
+            return 0;
+        }
+
+        // ActivateIrsensorWithFunctionLevel(nn::applet::AppletResourceUserId, nn::irsensor::PackedFunctionLevel, pid)
+        public long ActivateIrsensorWithFunctionLevel(ServiceCtx context)
+        {
+            long appletResourceUserId = context.RequestData.ReadInt64();
+            int  packedFunctionLevel  = context.RequestData.ReadInt32();
+
+            Logger.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, packedFunctionLevel });
 
             return 0;
         }
