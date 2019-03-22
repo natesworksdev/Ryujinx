@@ -151,6 +151,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         public long DumpGraphicsMemoryInfo(ServiceCtx context)
         {
+            Logger.PrintStub(LogClass.ServiceNv);
+
             return 0;
         }
 
