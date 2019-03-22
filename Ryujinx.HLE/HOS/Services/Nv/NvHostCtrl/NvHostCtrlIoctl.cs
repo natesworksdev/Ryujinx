@@ -37,6 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                 case 0x001d: return EventWait     (context);
                 case 0x001e: return EventWaitAsync(context);
                 case 0x001f: return EventRegister (context);
+                case 0x0021: return EventKill     (context);
             }
 
             throw new NotImplementedException(cmd.ToString("x8"));
@@ -144,6 +145,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
             long outputPosition = context.Request.GetBufferType0x22().Position;
 
             int eventId = context.Memory.ReadInt32(inputPosition);
+
+            Logger.PrintStub(LogClass.ServiceNv);
+
+            return NvResult.Success;
+        }
+
+        private static int EventKill(ServiceCtx context)
+        {
+            long inputPosition  = context.Request.GetBufferType0x21().Position;
+            long outputPosition = context.Request.GetBufferType0x22().Position;
+
+            long events = context.Memory.ReadInt64(inputPosition);
 
             Logger.PrintStub(LogClass.ServiceNv);
 
