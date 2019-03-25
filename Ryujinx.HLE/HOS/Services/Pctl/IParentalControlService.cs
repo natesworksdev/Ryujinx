@@ -41,6 +41,8 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
 
         public long CheckFreeCommunicationPermission(ServiceCtx context)
         {
+            bool enable = context.RequestData.ReadByte() != 0;
+
             Logger.PrintStub(LogClass.ServicePctl);
 
             return 0;
