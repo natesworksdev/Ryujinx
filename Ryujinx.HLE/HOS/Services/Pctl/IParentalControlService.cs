@@ -25,6 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
             _needInitialize = needInitialize;
         }
 
+        // Initialize()
         public long Initialize(ServiceCtx context)
         {
             if (_needInitialize && !_initialized)
@@ -39,6 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
             return 0;
         }
 
+        // CheckFreeCommunicationPermission(bool)
         public long CheckFreeCommunicationPermission(ServiceCtx context)
         {
             bool enable = context.RequestData.ReadByte() != 0;
