@@ -18,14 +18,12 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                { 1,    Initialize                       },
-                { 1001, CheckFreeCommunicationPermission }
+                { 1, Initialize }
             };
 
             _needInitialize = needInitialize;
         }
 
-        // Initialize()
         public long Initialize(ServiceCtx context)
         {
             if (_needInitialize && !_initialized)
@@ -36,16 +34,6 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
             {
                 Logger.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
             }
-
-            return 0;
-        }
-
-        // CheckFreeCommunicationPermission(bool)
-        public long CheckFreeCommunicationPermission(ServiceCtx context)
-        {
-            bool enable = context.RequestData.ReadByte() != 0;
-
-            Logger.PrintStub(LogClass.ServicePctl);
 
             return 0;
         }
