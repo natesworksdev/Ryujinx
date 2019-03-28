@@ -1,5 +1,4 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
-using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
@@ -7,7 +6,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
     {
         public static StructuredProgramInfo MakeStructuredProgram(BasicBlock[] blocks)
         {
-            RemovePhis(blocks);
+            PhiFunction.Remove(blocks);
 
             StructuredProgramContext context = new StructuredProgramContext(blocks);
 
@@ -19,83 +18,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 foreach (INode node in block.Operations)
                 {
-                    if (node is Operation operation)
-                    {
-                        Instruction inst = operation.Inst;
-
-                        if (operation.Dest != null                     &&
-                            operation.Inst != Instruction.MarkLabel    &&
-                            operation.Inst != Instruction.Branch       &&
-                            operation.Inst != Instruction.BranchIfTrue &&
-                            operation.Inst != Instruction.BranchIfFalse)
-                        {
-                            AstOperand dest = context.GetOperandDef(operation.Dest);
-
-                            IAstNode[] sources = new IAstNode[operation.SourcesCount];
-
-                            for (int index = 0; index < sources.Length; index++)
-                            {
-                                sources[index] = context.GetOperandUse(operation.GetSource(index));
-                            }
-
-                            if (inst == Instruction.LoadConstant)
-                            {
-                                context.Info.ConstantBuffers.Add((sources[0] as AstOperand).Value);
-                            }
-
-                            AstAssignment astAsg;
-
-                            if (inst == Instruction.Copy)
-                            {
-                                //Copies are pretty much a typeless operation,
-                                //so it's better to get the type from the source
-                                //operand used on the copy, to avoid unnecessary
-                                //reinterpret casts on the generated code.
-                                dest.VarType = GetVarTypeFromUses(operation.Dest);
-
-                                astAsg = new AstAssignment(dest, sources[0]);
-                            }
-                            else
-                            {
-                                dest.VarType = InstructionInfo.GetDestVarType(inst);
-
-                                AstOperation astOperation;
-
-                                if (operation is TextureOperation texOp)
-                                {
-                                    if (!context.Info.Samplers.TryAdd(texOp.TextureHandle, texOp.Type))
-                                    {
-                                        //TODO: Warning.
-                                    }
-
-                                    int[] components = new int[] { texOp.ComponentIndex };
-
-                                    astOperation = new AstTextureOperation(
-                                        inst,
-                                        texOp.Type,
-                                        texOp.TextureHandle,
-                                        components,
-                                        sources);
-                                }
-                                else
-                                {
-                                    astOperation = new AstOperation(inst, sources);
-                                }
-
-                                astAsg = new AstAssignment(dest, astOperation);
-                            }
-
-                            context.AddNode(astAsg);
-                        }
-                        else
-                        {
-                            //If dest is null, it's assumed that all the source
-                            //operands are also null.
-                            AstOperation astOperation = new AstOperation(inst);
-
-                            context.AddNode(astOperation);
-                        }
-                    }
+                    AddOperation(context, (Operation)node);
                 }
 
                 context.LeaveBlock(block);
@@ -106,66 +29,87 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             return context.Info;
         }
 
-        private static void RemovePhis(BasicBlock[] blocks)
+        private static void AddOperation(StructuredProgramContext context, Operation operation)
         {
-            for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
+            Instruction inst = operation.Inst;
+
+            if (operation.Dest != null && !IsBranchInst(inst))
             {
-                BasicBlock block = blocks[blkIndex];
+                AstOperand dest = context.GetOperandDef(operation.Dest);
 
-                LinkedListNode<INode> node = block.Operations.First;
+                IAstNode[] sources = new IAstNode[operation.SourcesCount];
 
-                while (node != null)
+                for (int index = 0; index < sources.Length; index++)
                 {
-                    LinkedListNode<INode> nextNode = node.Next;
-
-                    if (!(node.Value is PhiNode phi))
-                    {
-                        node = nextNode;
-
-                        continue;
-                    }
-
-                    for (int index = 0; index < phi.SourcesCount; index++)
-                    {
-                        Operand src = phi.GetSource(index);
-
-                        BasicBlock srcBlock = phi.GetBlock(index);
-
-                        Operation copyOp = new Operation(Instruction.Copy, phi.Dest, src);
-
-                        AddBeforeBranch(srcBlock, copyOp);
-                    }
-
-                    block.Operations.Remove(node);
-
-                    node = nextNode;
+                    sources[index] = context.GetOperandUse(operation.GetSource(index));
                 }
-            }
-        }
 
-        private static void AddBeforeBranch(BasicBlock block, INode node)
-        {
-            INode lastOp = block.GetLastOp();
+                if (inst == Instruction.LoadConstant)
+                {
+                    context.Info.ConstantBuffers.Add((sources[0] as AstOperand).Value);
+                }
 
-            if (lastOp is Operation operation && IsControlFlowInst(operation.Inst))
-            {
-                block.Operations.AddBefore(block.Operations.Last, node);
+                AstAssignment astAsg;
+
+                if (inst == Instruction.Copy)
+                {
+                    //Copies are pretty much a typeless operation,
+                    //so it's better to get the type from the source
+                    //operand used on the copy, to avoid unnecessary
+                    //reinterpret casts on the generated code.
+                    dest.VarType = GetVarTypeFromUses(operation.Dest);
+
+                    astAsg = new AstAssignment(dest, sources[0]);
+                }
+                else
+                {
+                    dest.VarType = InstructionInfo.GetDestVarType(inst);
+
+                    AstOperation astOperation;
+
+                    if (operation is TextureOperation texOp)
+                    {
+                        if (!context.Info.Samplers.TryAdd(texOp.TextureHandle, texOp.Type))
+                        {
+                            //TODO: Warning.
+                        }
+
+                        int[] components = new int[] { texOp.ComponentIndex };
+
+                        astOperation = new AstTextureOperation(
+                            inst,
+                            texOp.Type,
+                            texOp.TextureHandle,
+                            components,
+                            sources);
+                    }
+                    else
+                    {
+                        astOperation = new AstOperation(inst, sources);
+                    }
+
+                    astAsg = new AstAssignment(dest, astOperation);
+                }
+
+                context.AddNode(astAsg);
             }
             else
             {
-                block.Operations.AddLast(node);
+                //If dest is null, it's assumed that all the source
+                //operands are also null.
+                AstOperation astOperation = new AstOperation(inst);
+
+                context.AddNode(astOperation);
             }
         }
 
-        private static bool IsControlFlowInst(Instruction inst)
+        private static bool IsBranchInst(Instruction inst)
         {
             switch (inst)
             {
                 case Instruction.Branch:
                 case Instruction.BranchIfFalse:
                 case Instruction.BranchIfTrue:
-                case Instruction.Discard:
-                case Instruction.Return:
                     return true;
             }
 
