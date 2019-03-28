@@ -1,5 +1,5 @@
 ﻿using Ryujinx.Graphics.Gal;
-using Ryujinx.Graphics.Gal.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.IO;
 
@@ -13,7 +13,7 @@ namespace Ryujinx.ShaderTools
         {
             if (args.Length == 2)
             {
-                GlslDecompiler Decompiler = new GlslDecompiler(MaxUboSize, true);
+                //GlslDecompiler Decompiler = new GlslDecompiler(MaxUboSize);
 
                 GalShaderType ShaderType = GalShaderType.Vertex;
 
@@ -30,9 +30,11 @@ namespace Ryujinx.ShaderTools
                 {
                     Memory Mem = new Memory(FS);
 
-                    GlslProgram Program = Decompiler.Decompile(Mem, 0, ShaderType);
+                    Translator.Translate(Mem, 0, ShaderType);
 
-                    Console.WriteLine(Program.Code);
+                    //GlslProgram Program = Decompiler.Decompile(Mem, 0, ShaderType);
+
+                    //Console.WriteLine(Program.Code);
                 }
             }
             else

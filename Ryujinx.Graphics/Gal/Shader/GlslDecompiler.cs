@@ -1,4 +1,5 @@
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Graphics.Shader.Translation;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
@@ -138,6 +139,8 @@ namespace Ryujinx.Graphics.Gal.Shader
             return Decompile();
         }
 
+        private string _newCode;
+
         public GlslProgram Decompile(IGalMemory memory, long position, GalShaderType shaderType)
         {
             _header  = new ShaderHeader(memory, position);
@@ -147,6 +150,8 @@ namespace Ryujinx.Graphics.Gal.Shader
             _blocksB = null;
 
             _decl = new GlslDecl(_blocks, shaderType, _header);
+
+            _newCode = Translator.Translate(memory, (ulong)position, shaderType);
 
             return Decompile();
         }
@@ -184,7 +189,7 @@ namespace Ryujinx.Graphics.Gal.Shader
 
             PrintMain();
 
-            string glslCode = _sb.ToString();
+            string glslCode = _newCode; //_sb.ToString();
 
             List<ShaderDeclInfo> textureInfo = new List<ShaderDeclInfo>();
 

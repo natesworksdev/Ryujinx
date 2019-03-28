@@ -464,7 +464,7 @@ namespace Ryujinx.Graphics.Graphics3d
                         left  = _viewportX1 - (left  - _viewportX0);
                         right = _viewportX1 - (right - _viewportX0);
                     }
-                    
+
                     // Ensure X is in the right order
                     if (left > right)
                     {
