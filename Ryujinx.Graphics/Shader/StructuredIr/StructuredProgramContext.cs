@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             //- The branch should be unconditional.
             //- This should be the last block on the current (if) statement.
             //- The statement before the else must be an if statement.
-            //- The branch target must be before or at (but not after) the end of the encloding block.
+            //- The branch target must be before or at (but not after) the end of the enclosing block.
             if (block.Branch == null || block.Next != null || block.Index + 1 != _currEndIndex)
             {
                 return false;

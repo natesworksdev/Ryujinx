@@ -364,7 +364,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             if (!isMasked)
             {
                 //Clamped shift value.
-                Operand isLessThan32 = context.ICompareLessUnsigned(res, Const(32));
+                Operand isLessThan32 = context.ICompareLessUnsigned(srcB, Const(32));
 
                 res = context.ConditionalSelect(isLessThan32, res, Const(0));
             }
@@ -413,7 +413,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     resShiftBy32 = Const(0);
                 }
 
-                Operand isLessThan32 = context.ICompareLessUnsigned(res, Const(32));
+                Operand isLessThan32 = context.ICompareLessUnsigned(srcB, Const(32));
 
                 res = context.ConditionalSelect(isLessThan32, res, resShiftBy32);
             }
