@@ -105,6 +105,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("000000010000xx", InstEmit.Mov,    typeof(OpCodeAluImm32));
             Set("0101110010011x", InstEmit.Mov,    typeof(OpCodeAluReg));
             Set("0101000010000x", InstEmit.Mufu,   typeof(OpCodeFArith));
+            Set("1111101111100x", InstEmit.Out,    typeof(OpCode));
             Set("0101000010010x", InstEmit.Psetp,  typeof(OpCodePsetp));
             Set("0100110010010x", InstEmit.Rro,    typeof(OpCodeFArithCbuf));
             Set("0011100x10010x", InstEmit.Rro,    typeof(OpCodeFArithImm));

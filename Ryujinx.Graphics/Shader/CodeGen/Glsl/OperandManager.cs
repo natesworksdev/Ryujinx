@@ -88,7 +88,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     ? DefaultNames.OAttributePrefix
                     : DefaultNames.IAttributePrefix;
 
-                return $"{prefix}{(value >> 4)}.{swzMask}";
+                string name = $"{prefix}{(value >> 4)}";
+
+                if (context.ShaderType == GalShaderType.Geometry && !isOutAttr)
+                {
+                    name += "[0]";
+                }
+
+                name += "." + swzMask;
+
+                return name;
             }
             else
             {
@@ -113,7 +122,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         }
                     }
 
-                    return builtInAttr.Name;
+                    string name = builtInAttr.Name;
+
+                    if (context.ShaderType == GalShaderType.Geometry && !isOutAttr)
+                    {
+                        name = "gl_in[0]." + name;
+                    }
+
+                    return name;
                 }
             }
 

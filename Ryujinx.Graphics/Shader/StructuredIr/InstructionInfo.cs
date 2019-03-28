@@ -93,6 +93,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public static VariableType GetSrcVarType(Instruction inst, int index)
         {
+            if (IsTextureInst(inst))
+            {
+                return VariableType.F32;
+            }
+
             return GetFinalVarType(_infoTbl[(int)(inst & Instruction.Mask)].SrcTypes[index], inst);
         }
 

@@ -39,6 +39,8 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         Cosine,
         Discard,
         Divide,
+        EmitVertex,
+        EndPrimitive,
         ExponentB2,
         Floor,
         FusedMultiplyAdd,

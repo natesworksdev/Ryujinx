@@ -122,6 +122,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 case Instruction.Divide:
                     return GetBinaryExpr(context, operation, "/");
 
+                case Instruction.EmitVertex:
+                    return "EmitVertex()";
+
+                case Instruction.EndPrimitive:
+                    return "EndPrimitive()";
+
                 case Instruction.ExponentB2:
                     return GetUnaryCallExpr(context, operation, "exp2");
 

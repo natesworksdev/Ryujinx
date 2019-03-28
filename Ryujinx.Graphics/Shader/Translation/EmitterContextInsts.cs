@@ -96,6 +96,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.Discard);
         }
 
+        public static Operand EmitVertex(this EmitterContext context)
+        {
+            return context.Add(Instruction.EmitVertex);
+        }
+
+        public static Operand EndPrimitive(this EmitterContext context)
+        {
+            return context.Add(Instruction.EndPrimitive);
+        }
+
         public static Operand FPAbsNeg(this EmitterContext context, Operand a, bool abs, bool neg)
         {
             return context.FPNegate(context.FPAbsolute(a, abs), neg);

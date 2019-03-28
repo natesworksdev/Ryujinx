@@ -114,6 +114,29 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
         }
 
+        public static void Out(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            bool emit = op.RawOpCode.Extract(39);
+            bool cut  = op.RawOpCode.Extract(40);
+
+            if (!(emit || cut))
+            {
+                //TODO: Warning.
+            }
+
+            if (emit)
+            {
+                context.EmitVertex();
+            }
+
+            if (cut)
+            {
+                context.EndPrimitive();
+            }
+        }
+
         public static void Tex(EmitterContext context)
         {
             OpCodeTex op = (OpCodeTex)context.CurrOp;

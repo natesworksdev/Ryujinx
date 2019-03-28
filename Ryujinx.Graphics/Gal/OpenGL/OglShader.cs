@@ -130,16 +130,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private void Bind(OglShaderStage stage)
         {
-            if (stage.Type == GalShaderType.Geometry)
-            {
-                //Enhanced layouts are required for Geometry shaders
-                //skip this stage if current driver has no ARB_enhanced_layouts
-                if (!OglExtension.EnhancedLayouts)
-                {
-                    return;
-                }
-            }
-
             switch (stage.Type)
             {
                 case GalShaderType.Vertex:         Current.Vertex         = stage; break;

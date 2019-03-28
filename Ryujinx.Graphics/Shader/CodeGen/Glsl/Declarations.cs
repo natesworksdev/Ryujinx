@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
@@ -15,6 +16,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine();
 
             context.AppendLine($"const int {DefaultNames.UndefinedName} = 0;");
+
+            context.AppendLine();
+
+            if (context.ShaderType == GalShaderType.Geometry)
+            {
+                context.AppendLine("layout (points) in;");
+                context.AppendLine("layout (triangle_strip, max_vertices = 4) out;");
+            }
 
             context.AppendLine();
 
@@ -92,9 +101,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo prgInfo)
         {
+            string suffix = context.ShaderType == GalShaderType.Geometry ? "[]" : string.Empty;
+
             foreach (int attr in prgInfo.IAttributes.OrderBy(x => x))
             {
-                context.AppendLine($"layout (location = {attr}) in vec4 {DefaultNames.IAttributePrefix}{attr};");
+                context.AppendLine($"layout (location = {attr}) in vec4 {DefaultNames.IAttributePrefix}{attr}{suffix};");
             }
         }
 
