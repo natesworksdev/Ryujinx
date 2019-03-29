@@ -87,7 +87,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             IOpCodeFArith op = (IOpCodeFArith)context.CurrOp;
 
-            bool negateB = op.RawOpCode.Extract(48);
+            bool negateB = !(op is OpCodeFArithImm32) && op.RawOpCode.Extract(48);
 
             Operand srcA = GetSrcA(context);
 
