@@ -123,6 +123,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("1111000011111x", InstEmit.Sync,   typeof(OpCodeSync));
             Set("110000xxxx111x", InstEmit.Tex,    typeof(OpCodeTex));
             Set("1101x00xxxxxxx", InstEmit.Texs,   typeof(OpCodeTexs));
+            Set("110010xxxx111x", InstEmit.Tld4,   typeof(OpCodeTex));
             Set("0100111xxxxxxx", InstEmit.Xmad,   typeof(OpCodeAluCbuf));
             Set("0011011x00xxxx", InstEmit.Xmad,   typeof(OpCodeAluImm));
             Set("010100010xxxxx", InstEmit.Xmad,   typeof(OpCodeAluRegCbuf));

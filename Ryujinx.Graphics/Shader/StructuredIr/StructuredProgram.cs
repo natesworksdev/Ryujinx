@@ -79,6 +79,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                         astOperation = new AstTextureOperation(
                             inst,
                             texOp.Type,
+                            texOp.Flags,
                             texOp.TextureHandle,
                             components,
                             sources);

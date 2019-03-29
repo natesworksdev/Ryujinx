@@ -12,12 +12,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         Mask = 0xff,
 
-        Array        = 1 << 8,
-        DepthCompare = 1 << 9,
-        LodBias      = 1 << 10,
-        LodLevel     = 1 << 11,
-        Offset       = 1 << 12,
-
-        LodLevelDepthCompare = LodLevel | DepthCompare
+        Array  = 1 << 8,
+        Shadow = 1 << 9
     }
 }

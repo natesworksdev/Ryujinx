@@ -251,20 +251,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
 
-            bool isShadow = (context.Info.Samplers[texOp.TextureHandle] & TextureType.DepthCompare) != 0;
+            bool isGather = (texOp.Flags & TextureFlags.Gather) != 0;
+            bool isShadow = (texOp.Type  & TextureType.Shadow)  != 0;
 
             string samplerName = OperandManager.GetSamplerName(context.ShaderType, texOp.TextureHandle);
 
             string texCall = "texture";
 
-            if ((texOp.Type & TextureType.LodLevel) != 0)
+            if (isGather)
+            {
+                texCall += "Gather";
+            }
+
+            if ((texOp.Flags & TextureFlags.LodLevel) != 0)
             {
                 texCall += "Lod";
             }
 
-            if ((texOp.Type & TextureType.Offset) != 0)
+            if ((texOp.Flags & TextureFlags.Offset) != 0)
             {
                 texCall += "Offset";
+            }
+            else if ((texOp.Flags & TextureFlags.Offsets) != 0)
+            {
+                texCall += "Offsets";
             }
 
             texCall += "(" + samplerName;
@@ -292,12 +302,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 arrayIndexElem = pCount++;
             }
 
-            if ((texOp.Type & TextureType.DepthCompare) != 0)
+            if (isShadow && !isGather)
             {
                 pCount++;
             }
 
-            bool hasExtraCompareArg = false;
+            //On textureGather*, the comparison value is always specified as an extra argument.
+            bool hasExtraCompareArg = isShadow && isGather;
 
             if (pCount == 5)
             {
@@ -348,24 +359,48 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 texCall += ", " + Src(VariableType.F32);
             }
 
-            if ((texOp.Type & TextureType.LodLevel) != 0)
+            if ((texOp.Flags & TextureFlags.LodLevel) != 0)
             {
                 texCall += ", " + Src(VariableType.F32);
             }
 
-            if ((texOp.Type & TextureType.Offset) != 0)
+            if ((texOp.Flags & TextureFlags.Offset) != 0)
             {
                 texCall += ", " + AssembleVector(elemsCount, VariableType.S32);
             }
+            else if ((texOp.Flags & TextureFlags.Offsets) != 0)
+            {
+                const int gatherTexelsCount = 4;
 
-            if ((texOp.Type & TextureType.LodBias) != 0)
+                texCall += $", ivec{elemsCount}[{gatherTexelsCount}](";
+
+                for (int index = 0; index < gatherTexelsCount; index++)
+                {
+                    texCall += AssembleVector(elemsCount, VariableType.S32);
+
+                    if (index < gatherTexelsCount - 1)
+                    {
+                        texCall += ", ";
+                    }
+                }
+
+                texCall += ")";
+            }
+
+            if ((texOp.Flags & TextureFlags.LodBias) != 0)
             {
                 texCall += ", " + Src(VariableType.F32);
+            }
+
+            //textureGather* optional extra component index, not needed for shadow samplers.
+            if (isGather && !isShadow)
+            {
+                texCall += ", " + Src(VariableType.S32);
             }
 
             texCall += ")";
 
-            if (!isShadow)
+            if (isGather || !isShadow)
             {
                 texCall += ".";
 

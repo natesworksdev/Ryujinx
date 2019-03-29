@@ -136,7 +136,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 typeName += "Array";
             }
 
-            if ((type & TextureType.DepthCompare) != 0)
+            if ((type & TextureType.Shadow) != 0)
             {
                 typeName += "Shadow";
             }

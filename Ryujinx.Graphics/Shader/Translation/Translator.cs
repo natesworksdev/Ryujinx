@@ -103,8 +103,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             string glslProgram = generator.Generate(prgInfo, shaderType);
 
-            System.Console.WriteLine(glslProgram);
-
             return glslProgram;
         }
     }

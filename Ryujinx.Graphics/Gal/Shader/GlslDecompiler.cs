@@ -1460,7 +1460,7 @@ namespace Ryujinx.Graphics.Gal.Shader
             // TODO: Support PTP
             else if ((suffix & TextureInstructionSuffix.Ptp) != 0)
             {
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
             }
 
             return "textureGather(" + sampler + ", " + coords + ", " + comp + ")" + chString;
