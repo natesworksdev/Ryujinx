@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class ConstantFolding
     {
-        public static void FoldOperation(Operation operation)
+        public static void Fold(Operation operation)
         {
             if (!AreAllSourcesConstant(operation))
             {
@@ -89,6 +89,10 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     EvaluateBinary(operation, (x, y) => (uint)x < (uint)y);
                     break;
 
+                case Instruction.CompareNotEqual:
+                    EvaluateBinary(operation, (x, y) => x != y);
+                    break;
+
                 case Instruction.Divide:
                     EvaluateBinary(operation, (x, y) => y != 0 ? x / y : 0);
                     break;
@@ -119,6 +123,10 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 case Instruction.FP | Instruction.CompareLessOrEqual:
                     EvaluateFPBinary(operation, (x, y) => x <= y);
+                    break;
+
+                case Instruction.FP | Instruction.CompareNotEqual:
+                    EvaluateFPBinary(operation, (x, y) => x != y);
                     break;
 
                 case Instruction.FP | Instruction.Divide:

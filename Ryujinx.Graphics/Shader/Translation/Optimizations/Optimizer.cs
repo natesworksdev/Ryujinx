@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                             continue;
                         }
 
-                        ConstantFolding.FoldOperation(operation);
+                        ConstantFolding.Fold(operation);
 
                         Simplification.Simplify(operation);
 
