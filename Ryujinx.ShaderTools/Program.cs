@@ -30,7 +30,9 @@ namespace Ryujinx.ShaderTools
                 {
                     Memory Mem = new Memory(FS);
 
-                    Translator.Translate(Mem, 0, ShaderType);
+                    string code = Translator.Translate(Mem, 0, ShaderType);
+
+                    Console.WriteLine(code);
 
                     //GlslProgram Program = Decompiler.Decompile(Mem, 0, ShaderType);
 

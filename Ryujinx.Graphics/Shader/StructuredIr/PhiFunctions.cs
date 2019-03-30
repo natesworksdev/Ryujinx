@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    static class PhiFunction
+    static class PhiFunctions
     {
         public static void Remove(BasicBlock[] blocks)
         {

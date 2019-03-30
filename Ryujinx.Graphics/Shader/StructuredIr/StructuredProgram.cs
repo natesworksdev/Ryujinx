@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
     {
         public static StructuredProgramInfo MakeStructuredProgram(BasicBlock[] blocks)
         {
-            PhiFunction.Remove(blocks);
+            PhiFunctions.Remove(blocks);
 
             StructuredProgramContext context = new StructuredProgramContext(blocks);
 

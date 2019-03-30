@@ -2,7 +2,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
     class Operation : INode
     {
-        public Instruction Inst { get; }
+        public Instruction Inst { get; private set; }
 
         private Operand _dest;
 
@@ -56,6 +56,23 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             }
 
             _sources[index] = operand;
+        }
+
+        public void TurnIntoCopy(Operand source)
+        {
+            Inst = Instruction.Copy;
+
+            foreach (Operand oldSrc in _sources)
+            {
+                if (oldSrc.Type == OperandType.LocalVariable)
+                {
+                    oldSrc.UseOps.Remove(this);
+                }
+            }
+
+            source.UseOps.Add(this);
+
+            _sources = new Operand[] { source };
         }
     }
 }

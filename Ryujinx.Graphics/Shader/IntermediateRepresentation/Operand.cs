@@ -1,13 +1,14 @@
 using Ryujinx.Graphics.Shader.Decoders;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
     class Operand
     {
-        private const int AttrSlotBits = 5;
-        private const int AttrSlotLsb  = 32 - AttrSlotBits;
-        private const int AttrSlotMask = (1 << AttrSlotBits) - 1;
+        private const int CbufSlotBits = 5;
+        private const int CbufSlotLsb  = 32 - CbufSlotBits;
+        private const int CbufSlotMask = (1 << CbufSlotBits) - 1;
 
         public OperandType Type { get; }
 
@@ -47,7 +48,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         private static int PackCbufInfo(int slot, int offset)
         {
-            return (slot << AttrSlotLsb) | offset;
+            return (slot << CbufSlotLsb) | offset;
         }
 
         private static int PackRegInfo(int index, RegisterType type)
@@ -57,17 +58,22 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         public int GetCbufSlot()
         {
-            return (Value >> AttrSlotLsb) & AttrSlotMask;
+            return (Value >> CbufSlotLsb) & CbufSlotMask;
         }
 
         public int GetCbufOffset()
         {
-            return Value & ~(AttrSlotMask << AttrSlotLsb);
+            return Value & ~(CbufSlotMask << CbufSlotLsb);
         }
 
         public Register GetRegister()
         {
             return new Register(Value & 0xffffff, (RegisterType)(Value >> 24));
+        }
+
+        public float AsFloat()
+        {
+            return BitConverter.Int32BitsToSingle(Value);
         }
     }
 }

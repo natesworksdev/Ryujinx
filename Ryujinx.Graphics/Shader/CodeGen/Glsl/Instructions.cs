@@ -1,7 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
-using System.Globalization;
 
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.TypeConversion;
 using static Ryujinx.Graphics.Shader.StructuredIr.InstructionInfo;
@@ -24,7 +23,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         return OperandManager.GetAttributeName(context, operand);
 
                     case OperandType.Constant:
-                        return "0x" + operand.Value.ToString("X8", CultureInfo.InvariantCulture);
+                        return NumberFormatter.FormatInt(operand.Value);
 
                     case OperandType.ConstantBuffer:
                         return OperandManager.GetConstantBufferName(context.ShaderType, operand);
@@ -415,7 +414,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static string GetSoureExpr(CodeGenContext context, IAstNode node, VariableType dstType)
         {
-            return ReinterpretCast(GetExpression(context, node), OperandManager.GetNodeDestType(node), dstType);
+            return ReinterpretCast(context, node, OperandManager.GetNodeDestType(node), dstType);
         }
     }
 }

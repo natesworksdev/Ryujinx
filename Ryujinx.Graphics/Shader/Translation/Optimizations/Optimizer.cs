@@ -1,7 +1,7 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
 
-namespace Ryujinx.Graphics.Shader.Translation
+namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class Optimizer
     {
@@ -38,6 +38,10 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                             continue;
                         }
+
+                        ConstantFolding.FoldOperation(operation);
+
+                        Simplification.Simplify(operation);
 
                         if (operation.Inst == Instruction.Copy && DestIsLocalVar(operation))
                         {

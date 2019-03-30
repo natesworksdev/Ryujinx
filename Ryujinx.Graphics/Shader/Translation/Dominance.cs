@@ -61,11 +61,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             entry.ImmediateDominator = entry;
 
-            bool changed;
+            bool modified;
 
             do
             {
-                changed = false;
+                modified = false;
 
                 for (int blkIndex = postOrderBlocks.Count - 2; blkIndex >= 0; blkIndex--)
                 {
@@ -92,11 +92,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                     {
                         block.ImmediateDominator = newIDom;
 
-                        changed = true;
+                        modified = true;
                     }
                 }
             }
-            while (changed);
+            while (modified);
         }
 
         public static void FindDominanceFrontiers(BasicBlock[] blocks)
