@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         dest = Instructions.GetExpression(context, asg.Destination);
                     }
 
-                    string src = ReinterpretCast(Instructions.GetExpression(context, asg.Source), srcType, dstType);
+                    string src = ReinterpretCast(context, asg.Source, srcType, dstType);
 
                     context.AppendLine(dest + " = " + src + ";");
                 }
