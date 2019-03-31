@@ -710,7 +710,7 @@ namespace ChocolArm64.Instructions
                         context.EmitCall(typeof(Ssse3).GetMethod(nameof(Ssse3.Shuffle), GetTypesSflUpk(0)));
                     }
 
-                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorInt64Zero));
+                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(3)));
 
@@ -763,7 +763,7 @@ namespace ChocolArm64.Instructions
                 else
                 {
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), GetTypesSflUpk(op.Size)));
-                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorInt64Zero));
+                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameUpk, GetTypesSflUpk(3)));
                 }
