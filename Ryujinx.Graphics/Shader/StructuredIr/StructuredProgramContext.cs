@@ -1,17 +1,24 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
     class StructuredProgramContext
     {
-        private BasicBlock[] _blocks;
+        private HashSet<BasicBlock> _loopTails;
 
-        private List<(AstBlock Block, int EndIndex)> _blockStack;
+        private Stack<(AstBlock Block, int EndIndex)> _blockStack;
 
-        private Dictionary<Operand, AstOperand> _locals;
+        private Dictionary<Operand, AstOperand> _localsMap;
+
+        private List<AstOperand> _locals;
+
+        private Dictionary<int, AstAssignment> _gotoTempAsgs;
+
+        private List<GotoStatement> _gotos;
 
         private AstBlock _currBlock;
 
@@ -19,17 +26,23 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public StructuredProgramInfo Info { get; }
 
-        public StructuredProgramContext(BasicBlock[] blocks)
+        public StructuredProgramContext(int blocksCount)
         {
-            _blocks = blocks;
+            _loopTails = new HashSet<BasicBlock>();
 
-            _blockStack = new List<(AstBlock, int)>();
+            _blockStack = new Stack<(AstBlock, int)>();
 
-            _locals = new Dictionary<Operand, AstOperand>();
+            _localsMap = new Dictionary<Operand, AstOperand>();
+
+            _locals = new List<AstOperand>();
+
+            _gotoTempAsgs = new Dictionary<int, AstAssignment>();
+
+            _gotos = new List<GotoStatement>();
 
             _currBlock = new AstBlock(AstBlockType.Main);
 
-            _currEndIndex = blocks.Length;
+            _currEndIndex = blocksCount;
 
             Info = new StructuredProgramInfo(_currBlock);
         }
@@ -38,7 +51,12 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             while (_currEndIndex == block.Index)
             {
-                PopBlock();
+                (_currBlock, _currEndIndex) = _blockStack.Pop();
+            }
+
+            if (_gotoTempAsgs.TryGetValue(block.Index, out AstAssignment gotoTempAsg))
+            {
+                AddGotoTempReset(block, gotoTempAsg);
             }
 
             LookForDoWhileStatements(block);
@@ -46,13 +64,15 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public void LeaveBlock(BasicBlock block)
         {
-            LookForIfElseStatements(block);
+            LookForIfStatements(block);
         }
 
         private void LookForDoWhileStatements(BasicBlock block)
         {
             //Check if we have any predecessor whose index is greater than the
             //current block, this indicates a loop.
+            bool done = false;
+
             foreach (BasicBlock predecessor in block.Predecessors.OrderByDescending(x => x.Index))
             {
                 if (predecessor.Index < block.Index)
@@ -60,181 +80,175 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     break;
                 }
 
-                if (predecessor.Index < _currEndIndex)
+                if (predecessor.Index < _currEndIndex && !done)
                 {
                     Operation branchOp = (Operation)predecessor.GetLastOp();
 
                     NewBlock(AstBlockType.DoWhile, branchOp, predecessor.Index + 1);
+
+                    _loopTails.Add(predecessor);
+
+                    done = true;
                 }
-                else /* if (predecessor.Index >= _currEndIndex) */
+                else
                 {
-                    //TODO: Handle unstructured case.
+                    AddGotoTempReset(block, GetGotoTempAsg(block.Index));
+
+                    break;
                 }
             }
         }
 
-        private void LookForIfElseStatements(BasicBlock block)
+        private void LookForIfStatements(BasicBlock block)
         {
-            if (block.Branch == null || block.Branch.Index <= block.Index)
+            if (block.Branch == null)
             {
                 return;
             }
 
             Operation branchOp = (Operation)block.GetLastOp();
 
-            if (block.Branch.Index <= _currEndIndex)
+            bool isLoop = block.Branch.Index <= block.Index;
+
+            AstOperation branch = _currBlock.Last as AstOperation;
+
+            if (block.Branch.Index <= _currEndIndex && !isLoop)
             {
-                //If (conditional branch forward).
+                _currBlock.Remove(branch);
+
                 NewBlock(AstBlockType.If, branchOp, block.Branch.Index);
             }
-            else if (IsElseSkipBlock(block))
+            else if (_loopTails.Contains(block))
             {
-                //Else (unconditional branch forward).
-                int topBlockIndex = TopBlockIndexOnStack();
-
-                //We need to pop enough elements so that the one at
-                //"topBlockIndex" is the last one poped from the stack.
-                while (_blockStack.Count > topBlockIndex)
-                {
-                    PopBlock();
-                }
-
-                NewBlock(AstBlockType.Else, branchOp, block.Branch.Index);
+                //Loop handled by "LookForDoWhileStatements".
+                //We can safely remove the branch as it was already taken care of.
+                _currBlock.Remove(branch);
             }
-            else if (IsElseSkipBlock(_blocks[_currEndIndex - 1]) && block.Branch == _blocks[_currEndIndex - 1].Branch)
+            else
             {
-                //If (conditional branch forward).
-                NewBlock(AstBlockType.If, branchOp, _currEndIndex);
-            }
-            else if (block.Branch.Index > _currEndIndex)
-            {
-                //TODO: Handle unstructured case.
+                AstAssignment gotoTempAsg = GetGotoTempAsg(block.Branch.Index);
+
+                IAstNode cond = GetBranchCond(AstBlockType.DoWhile, branchOp);
+
+                _currBlock.AddBefore(branch, Assign(gotoTempAsg.Destination, cond));
+
+                GotoStatement gotoStmt = new GotoStatement(branch, gotoTempAsg, isLoop);
+
+                _gotos.Add(gotoStmt);
             }
         }
 
-        private bool IsElseSkipBlock(BasicBlock block)
+        private AstAssignment GetGotoTempAsg(int index)
         {
-            //Checks performed (in order):
-            //- The block should end with a branch.
-            //- The branch should be unconditional.
-            //- This should be the last block on the current (if) statement.
-            //- The statement before the else must be an if statement.
-            //- The branch target must be before or at (but not after) the end of the enclosing block.
-            if (block.Branch == null || block.Next != null || block.Index + 1 != _currEndIndex)
+            if (_gotoTempAsgs.TryGetValue(index, out AstAssignment gotoTempAsg))
             {
-                return false;
+                return gotoTempAsg;
             }
 
-            (AstBlock parentBlock, int parentEndIndex) = _blockStack[TopBlockIndexOnStack()];
+            AstOperand gotoTemp = NewTemp(VariableType.Bool);
 
-            if ((parentBlock.Nodes.Last.Value as AstBlock).Type != AstBlockType.If)
+            gotoTempAsg = Assign(gotoTemp, Const(IrConsts.False));
+
+            _gotoTempAsgs.Add(index, gotoTempAsg);
+
+            return gotoTempAsg;
+        }
+
+        private void AddGotoTempReset(BasicBlock block, AstAssignment gotoTempAsg)
+        {
+            AddNode(gotoTempAsg);
+
+            //For block 0, we don't need to add the extra "reset" at the beggining,
+            //because it is already the first node to be executed on the shader,
+            //so it is reset to false by the "local" assignment anyway.
+            if (block.Index != 0)
             {
-                return false;
+                Info.MainBlock.AddFirst(Assign(gotoTempAsg.Destination, Const(IrConsts.False)));
             }
-
-            return block.Branch.Index <= parentEndIndex;
         }
 
         private void NewBlock(AstBlockType type, Operation branchOp, int endIndex)
         {
-            Instruction inst = branchOp.Inst;
+            NewBlock(type, GetBranchCond(type, branchOp), endIndex);
+        }
 
-            if (type == AstBlockType.If)
-            {
-                //For ifs, the if block is only executed executed if the
-                //branch is not taken, that is, if the condition is false.
-                //So, we invert the condition to take that into account.
-                if (inst == Instruction.BranchIfFalse)
-                {
-                    inst = Instruction.BranchIfTrue;
-                }
-                else if (inst == Instruction.BranchIfTrue)
-                {
-                    inst = Instruction.BranchIfFalse;
-                }
-            }
-
-            IAstNode cond;
-
-            switch (inst)
-            {
-                case Instruction.Branch:
-                    cond = new AstOperand(OperandType.Constant, IrConsts.True);
-                    break;
-
-                case Instruction.BranchIfFalse:
-                    cond = new AstOperation(Instruction.BitwiseNot, GetOperandUse(branchOp.GetSource(0)));
-                    break;
-
-                case Instruction.BranchIfTrue:
-                    cond = GetOperandUse(branchOp.GetSource(0));
-                    break;
-
-                default: throw new InvalidOperationException($"Invalid branch instruction \"{branchOp.Inst}\".");
-            }
-
+        private void NewBlock(AstBlockType type, IAstNode cond, int endIndex)
+        {
             AstBlock childBlock = new AstBlock(type, cond);
 
             AddNode(childBlock);
 
-            PushBlock();
+            _blockStack.Push((_currBlock, _currEndIndex));
 
-            _currBlock = childBlock;
-
+            _currBlock    = childBlock;
             _currEndIndex = endIndex;
+        }
+
+        private IAstNode GetBranchCond(AstBlockType type, Operation branchOp)
+        {
+            IAstNode cond;
+
+            if (branchOp.Inst == Instruction.Branch)
+            {
+                cond = Const(type == AstBlockType.If ? IrConsts.False : IrConsts.True);
+            }
+            else
+            {
+                cond = GetOperandUse(branchOp.GetSource(0));
+
+                Instruction invInst = type == AstBlockType.If
+                    ? Instruction.BranchIfTrue
+                    : Instruction.BranchIfFalse;
+
+                if (branchOp.Inst == invInst)
+                {
+                    cond = new AstOperation(Instruction.LogicalNot, cond);
+                }
+            }
+
+            return cond;
         }
 
         public void AddNode(IAstNode node)
         {
-            _currBlock.Nodes.AddLast(node);
-        }
-
-        private void PushBlock()
-        {
-            _blockStack.Add((_currBlock, _currEndIndex));
-        }
-
-        private void PopBlock()
-        {
-            int lastIndex = _blockStack.Count - 1;
-
-            (_currBlock, _currEndIndex) = _blockStack[lastIndex];
-
-            _blockStack.RemoveAt(lastIndex);
-        }
-
-        private int TopBlockIndexOnStack()
-        {
-            for (int index = _blockStack.Count - 1; index >= 0; index--)
-            {
-                if (_blockStack[index].EndIndex > _currEndIndex)
-                {
-                    return index;
-                }
-            }
-
-            return 0;
+            _currBlock.Add(node);
         }
 
         public void PrependLocalDeclarations()
         {
             AstBlock mainBlock = Info.MainBlock;
 
-            LinkedListNode<IAstNode> declNode = null;
+            AstDeclaration decl = null;
 
-            foreach (AstOperand operand in _locals.Values)
+            foreach (AstOperand operand in _locals)
             {
-                AstDeclaration astDecl = new AstDeclaration(operand);
+                AstDeclaration oldDecl = decl;
 
-                if (declNode == null)
+                decl = new AstDeclaration(operand);
+
+                if (oldDecl == null)
                 {
-                    declNode = mainBlock.Nodes.AddFirst(astDecl);
+                    mainBlock.AddFirst(decl);
                 }
                 else
                 {
-                    declNode = mainBlock.Nodes.AddAfter(declNode, astDecl);
+                    mainBlock.AddAfter(oldDecl, decl);
                 }
             }
+        }
+
+        public GotoStatement[] GetGotos()
+        {
+            return _gotos.ToArray();
+        }
+
+        private AstOperand NewTemp(VariableType type)
+        {
+            AstOperand newTemp = Local(type);
+
+            _locals.Add(newTemp);
+
+            return newTemp;
         }
 
         public AstOperand GetOperandDef(Operand operand)
@@ -273,11 +287,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 return new AstOperand(operand);
             }
 
-            if (!_locals.TryGetValue(operand, out AstOperand astOperand))
+            if (!_localsMap.TryGetValue(operand, out AstOperand astOperand))
             {
                 astOperand = new AstOperand(operand);
 
-                _locals.Add(operand, astOperand);
+                _localsMap.Add(operand, astOperand);
+
+                _locals.Add(astOperand);
             }
 
             return astOperand;

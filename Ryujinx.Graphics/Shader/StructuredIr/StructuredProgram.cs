@@ -1,4 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
@@ -8,7 +10,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             PhiFunctions.Remove(blocks);
 
-            StructuredProgramContext context = new StructuredProgramContext(blocks);
+            StructuredProgramContext context = new StructuredProgramContext(blocks.Length);
 
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
@@ -24,6 +26,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 context.LeaveBlock(block);
             }
 
+            GotoElimination.Eliminate(context.GetGotos());
+
             context.PrependLocalDeclarations();
 
             return context.Info;
@@ -33,75 +37,165 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             Instruction inst = operation.Inst;
 
+            IAstNode[] sources = new IAstNode[operation.SourcesCount];
+
+            for (int index = 0; index < sources.Length; index++)
+            {
+                sources[index] = context.GetOperandUse(operation.GetSource(index));
+            }
+
             if (operation.Dest != null && !IsBranchInst(inst))
             {
                 AstOperand dest = context.GetOperandDef(operation.Dest);
-
-                IAstNode[] sources = new IAstNode[operation.SourcesCount];
-
-                for (int index = 0; index < sources.Length; index++)
-                {
-                    sources[index] = context.GetOperandUse(operation.GetSource(index));
-                }
 
                 if (inst == Instruction.LoadConstant)
                 {
                     context.Info.ConstantBuffers.Add((sources[0] as AstOperand).Value);
                 }
 
-                AstAssignment astAsg;
+                AstAssignment assignment;
 
-                if (inst == Instruction.Copy)
+                //If all the sources are bool, it's better to use short-circuiting
+                //logical operations, rather than forcing a cast to int and doing
+                //a bitwise operation with the value, as it is likely to be used as
+                //a bool in the end.
+                if (IsBitwiseInst(inst) && AreAllSourceTypesEqual(sources, VariableType.Bool))
                 {
-                    //Copies are pretty much a typeless operation,
-                    //so it's better to get the type from the source
-                    //operand used on the copy, to avoid unnecessary
-                    //reinterpret casts on the generated code.
-                    dest.VarType = GetVarTypeFromUses(operation.Dest);
+                    inst = GetLogicalFromBitwiseInst(inst);
+                }
 
-                    astAsg = new AstAssignment(dest, sources[0]);
+                bool isCondSel = inst == Instruction.ConditionalSelect;
+                bool isCopy    = inst == Instruction.Copy;
+
+                if (isCondSel || isCopy)
+                {
+                    VariableType type = GetVarTypeFromUses(operation.Dest);
+
+                    if (isCondSel && type == VariableType.F32)
+                    {
+                        inst |= Instruction.FP;
+                    }
+
+                    dest.VarType = type;
                 }
                 else
                 {
                     dest.VarType = InstructionInfo.GetDestVarType(inst);
-
-                    AstOperation astOperation;
-
-                    if (operation is TextureOperation texOp)
-                    {
-                        if (!context.Info.Samplers.TryAdd(texOp.TextureHandle, texOp.Type))
-                        {
-                            //TODO: Warning.
-                        }
-
-                        int[] components = new int[] { texOp.ComponentIndex };
-
-                        astOperation = new AstTextureOperation(
-                            inst,
-                            texOp.Type,
-                            texOp.Flags,
-                            texOp.TextureHandle,
-                            components,
-                            sources);
-                    }
-                    else
-                    {
-                        astOperation = new AstOperation(inst, sources);
-                    }
-
-                    astAsg = new AstAssignment(dest, astOperation);
                 }
 
-                context.AddNode(astAsg);
+                IAstNode source;
+
+                if (operation is TextureOperation texOp)
+                {
+                    if (!context.Info.Samplers.TryAdd(texOp.TextureHandle, texOp.Type))
+                    {
+                        //TODO: Warning.
+                    }
+
+                    int[] components = new int[] { texOp.ComponentIndex };
+
+                    source = new AstTextureOperation(
+                        inst,
+                        texOp.Type,
+                        texOp.Flags,
+                        texOp.TextureHandle,
+                        components,
+                        sources);
+                }
+                else if (!isCopy)
+                {
+                    source = new AstOperation(inst, sources);
+                }
+                else
+                {
+                    source = sources[0];
+                }
+
+                assignment = new AstAssignment(dest, source);
+
+                context.AddNode(assignment);
             }
             else
             {
-                //If dest is null, it's assumed that all the source
-                //operands are also null.
-                AstOperation astOperation = new AstOperation(inst);
-
-                context.AddNode(astOperation);
+                context.AddNode(new AstOperation(inst, sources));
             }
+        }
+
+        private static VariableType GetVarTypeFromUses(Operand dest)
+        {
+            HashSet<Operand> visited = new HashSet<Operand>();
+
+            Queue<Operand> pending = new Queue<Operand>();
+
+            bool Enqueue(Operand operand)
+            {
+                if (visited.Add(operand))
+                {
+                    pending.Enqueue(operand);
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            Enqueue(dest);
+
+            while (pending.TryDequeue(out Operand operand))
+            {
+                foreach (INode useNode in operand.UseOps)
+                {
+                    if (!(useNode is Operation operation))
+                    {
+                        continue;
+                    }
+
+                    if (operation.Inst == Instruction.Copy)
+                    {
+                        if (operation.Dest.Type == OperandType.LocalVariable)
+                        {
+                            if (Enqueue(operation.Dest))
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            return OperandInfo.GetVarType(operation.Dest.Type);
+                        }
+                    }
+                    else
+                    {
+                        for (int index = 0; index < operation.SourcesCount; index++)
+                        {
+                            if (operation.GetSource(index) == operand)
+                            {
+                                return InstructionInfo.GetSrcVarType(operation.Inst, index);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return VariableType.S32;
+        }
+
+        private static bool AreAllSourceTypesEqual(IAstNode[] sources, VariableType type)
+        {
+            foreach (IAstNode node in sources)
+            {
+                if (!(node is AstOperand operand))
+                {
+                    return false;
+                }
+
+                if (operand.VarType != type)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool IsBranchInst(Instruction inst)
@@ -117,34 +211,31 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             return false;
         }
 
-        private static VariableType GetVarTypeFromUses(Operand dest)
+        private static bool IsBitwiseInst(Instruction inst)
         {
-            foreach (INode useNode in dest.UseOps)
+            switch (inst)
             {
-                if (useNode is Operation operation)
-                {
-                    if (operation.Inst == Instruction.Copy)
-                    {
-                        if (operation.Dest.Type == OperandType.LocalVariable)
-                        {
-                            //TODO: Search through copies.
-                            return VariableType.S32;
-                        }
-
-                        return OperandInfo.GetVarType(operation.Dest.Type);
-                    }
-
-                    for (int index = 0; index < operation.SourcesCount; index++)
-                    {
-                        if (operation.GetSource(index) == dest)
-                        {
-                            return InstructionInfo.GetSrcVarType(operation.Inst, index);
-                        }
-                    }
-                }
+                case Instruction.BitwiseAnd:
+                case Instruction.BitwiseExclusiveOr:
+                case Instruction.BitwiseNot:
+                case Instruction.BitwiseOr:
+                    return true;
             }
 
-            return VariableType.S32;
+            return false;
+        }
+
+        private static Instruction GetLogicalFromBitwiseInst(Instruction inst)
+        {
+            switch (inst)
+            {
+                case Instruction.BitwiseAnd:         return Instruction.LogicalAnd;
+                case Instruction.BitwiseExclusiveOr: return Instruction.LogicalExclusiveOr;
+                case Instruction.BitwiseNot:         return Instruction.LogicalNot;
+                case Instruction.BitwiseOr:          return Instruction.LogicalOr;
+            }
+
+            throw new ArgumentException($"Unexpected instruction \"{inst}\".");
         }
     }
 }

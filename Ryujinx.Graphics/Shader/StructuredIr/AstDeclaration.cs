@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstDeclaration : IAstNode
+    class AstDeclaration : AstNode
     {
         public AstOperand Operand { get; }
 

@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstOperand : IAstNode
+    class AstOperand : AstNode
     {
         public OperandType Type { get; }
 
@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
         }
 
-        public AstOperand(OperandType type, int value)  : this()
+        public AstOperand(OperandType type, int value = 0)  : this()
         {
             Type  = type;
             Value = value;

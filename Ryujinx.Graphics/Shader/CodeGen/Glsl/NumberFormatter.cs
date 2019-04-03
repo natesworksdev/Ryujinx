@@ -45,6 +45,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             formatted = value.ToString("G9", CultureInfo.InvariantCulture);
 
+            if (!(formatted.Contains('.') ||
+                  formatted.Contains('e') ||
+                  formatted.Contains('E')))
+            {
+                formatted += ".0";
+            }
+
             return true;
         }
 

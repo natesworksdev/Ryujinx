@@ -145,6 +145,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 case Instruction.LogarithmB2:
                     return GetUnaryCallExpr(context, operation, "log2");
 
+                case Instruction.LogicalAnd:
+                    return GetBinaryExpr(context, operation, "&&");
+
+                case Instruction.LogicalExclusiveOr:
+                    return GetBinaryExpr(context, operation, "^^");
+
+                case Instruction.LogicalNot:
+                    return GetUnaryExpr(context, operation, "!");
+
+                case Instruction.LogicalOr:
+                    return GetBinaryExpr(context, operation, "||");
+
+                case Instruction.LoopBreak:
+                    return "break";
+
+                case Instruction.LoopContinue:
+                    return "continue";
+
                 case Instruction.Maximum:
                 case Instruction.MaximumU32:
                     return GetBinaryCallExpr(context, operation, "max");
@@ -188,7 +206,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     return GetUnaryCallExpr(context, operation, "trunc");
             }
 
-            return "// " + operation.Inst;
+            throw new ArgumentException($"Operation has invalid instruction \"{operation.Inst}\".");
         }
 
         private static string GetUnaryCallExpr(CodeGenContext context, AstOperation operation, string funcName)

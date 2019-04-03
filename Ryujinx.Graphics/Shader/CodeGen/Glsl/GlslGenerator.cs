@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             context.EnterScope();
 
-            foreach (IAstNode node in block.Nodes)
+            foreach (IAstNode node in block)
             {
                 if (node is AstBlock subBlock)
                 {

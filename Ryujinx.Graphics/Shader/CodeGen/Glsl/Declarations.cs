@@ -23,9 +23,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 context.AppendLine("layout (points) in;");
                 context.AppendLine("layout (triangle_strip, max_vertices = 4) out;");
-            }
 
-            context.AppendLine();
+                context.AppendLine();
+            }
 
             context.AppendLine("layout (std140) uniform Extra");
 

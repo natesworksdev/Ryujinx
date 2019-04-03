@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstAssignment : IAstNode
+    class AstAssignment : AstNode
     {
         public IAstNode Destination { get; }
         public IAstNode Source      { get; }

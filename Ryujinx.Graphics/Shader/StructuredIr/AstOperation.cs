@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
-    class AstOperation : IAstNode
+    class AstOperation : AstNode
     {
         public Instruction Inst { get; }
 

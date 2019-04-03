@@ -61,6 +61,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.IsNan,                    VariableType.Bool,   VariableType.F32);
             Add(Instruction.LoadConstant,             VariableType.F32,    VariableType.S32,    VariableType.S32);
             Add(Instruction.LogarithmB2,              VariableType.Scalar, VariableType.Scalar);
+            Add(Instruction.LogicalAnd,               VariableType.Bool,   VariableType.Bool,   VariableType.Bool);
+            Add(Instruction.LogicalExclusiveOr,       VariableType.Bool,   VariableType.Bool,   VariableType.Bool);
+            Add(Instruction.LogicalNot,               VariableType.Bool,   VariableType.Bool);
+            Add(Instruction.LogicalOr,                VariableType.Bool,   VariableType.Bool,   VariableType.Bool);
             Add(Instruction.ShiftLeft,                VariableType.Int,    VariableType.Int,    VariableType.Int);
             Add(Instruction.ShiftRightS32,            VariableType.S32,    VariableType.S32,    VariableType.Int);
             Add(Instruction.ShiftRightU32,            VariableType.U32,    VariableType.U32,    VariableType.Int);
