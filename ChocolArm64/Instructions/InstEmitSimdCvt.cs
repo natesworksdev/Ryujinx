@@ -811,9 +811,9 @@ namespace ChocolArm64.Instructions
             if (op.Size == 0)
             {
                 Type[] typesCmpMul = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
-                Type[] typesAnd    = new Type[] { typeof(Vector128<long> ), typeof(Vector128<long> ) };
+                Type[] typesAnd    = new Type[] { typeof(Vector128<long>),  typeof(Vector128<long>) };
                 Type[] typesRndCvt = new Type[] { typeof(Vector128<float>) };
-                Type[] typesCvt    = new Type[] { typeof(Vector128<int>  ) };
+                Type[] typesCvt    = new Type[] { typeof(Vector128<int>) };
                 Type[] typesSav    = new Type[] { typeof(int) };
 
                 //string nameCvt;
@@ -855,8 +855,8 @@ namespace ChocolArm64.Instructions
                 context.EmitStvectmp();
                 context.EmitLdvectmp();
 
-                // TODO: Use Sse.ConvertToInt64 once it is fixed,
-                // remove the following if/else and comment out the code.
+                // TODO: Use Sse.ConvertToInt64 once it is fixed (in .NET Core 3.0),
+                // remove the following if/else and uncomment the code.
 
                 //context.EmitCall(typeof(Sse).GetMethod(nameCvt, typesRndCvt));
 
@@ -895,9 +895,9 @@ namespace ChocolArm64.Instructions
             else /* if (op.Size == 1) */
             {
                 Type[] typesCmpMul = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
-                Type[] typesAnd    = new Type[] { typeof(Vector128<long>  ), typeof(Vector128<long>  ) };
+                Type[] typesAnd    = new Type[] { typeof(Vector128<long>),   typeof(Vector128<long>) };
                 Type[] typesRndCvt = new Type[] { typeof(Vector128<double>) };
-                Type[] typesCvt    = new Type[] { typeof(Vector128<int>   ) };
+                Type[] typesCvt    = new Type[] { typeof(Vector128<int>) };
                 Type[] typesSav    = new Type[] { typeof(long) };
 
                 string nameCvt;
@@ -975,7 +975,7 @@ namespace ChocolArm64.Instructions
             if (sizeF == 0)
             {
                 Type[] typesCmpMul = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
-                Type[] typesAndXor = new Type[] { typeof(Vector128<long> ), typeof(Vector128<long> ) };
+                Type[] typesAndXor = new Type[] { typeof(Vector128<long>),  typeof(Vector128<long>) };
                 Type[] typesRndCvt = new Type[] { typeof(Vector128<float>) };
                 Type[] typesSav    = new Type[] { typeof(int) };
 
@@ -1030,9 +1030,9 @@ namespace ChocolArm64.Instructions
             }
             else /* if (sizeF == 1) */
             {
-                Type[] typesCmpMulUpk = new Type[] { typeof(Vector128<double> ), typeof(Vector128<double>) };
-                Type[] typesAndXor    = new Type[] { typeof(Vector128<long>   ), typeof(Vector128<long>  ) };
-                Type[] typesRndCvt    = new Type[] { typeof(Vector128<double> ) };
+                Type[] typesCmpMulUpk = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                Type[] typesAndXor    = new Type[] { typeof(Vector128<long>),   typeof(Vector128<long>) };
+                Type[] typesRndCvt    = new Type[] { typeof(Vector128<double>) };
                 Type[] typesSv        = new Type[] { typeof(long), typeof(long) };
                 Type[] typesSav       = new Type[] { typeof(long) };
 
