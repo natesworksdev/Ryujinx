@@ -358,7 +358,7 @@ namespace ChocolArm64.Instructions
             if (Optimizations.UseSsse3)
             {
                 Type[] typesCmpSflSub = new Type[] { typeof(Vector128<sbyte>), typeof(Vector128<sbyte>) };
-                Type[] typesOr        = new Type[] { typeof(Vector128<long> ), typeof(Vector128<long> ) };
+                Type[] typesOr        = new Type[] { typeof(Vector128<long>),  typeof(Vector128<long>) };
                 Type[] typesSav       = new Type[] { typeof(long) };
 
                 context.EmitLdvec(op.Rn);
