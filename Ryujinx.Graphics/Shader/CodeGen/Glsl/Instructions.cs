@@ -92,6 +92,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             Add(Instruction.LogicalExclusiveOr,       InstFlags.OpBinary,       "^^",              10);
             Add(Instruction.LogicalNot,               InstFlags.OpUnary,        "!",               0);
             Add(Instruction.LogicalOr,                InstFlags.OpBinary,       "||",              11);
+            Add(Instruction.LoopBreak,                InstFlags.OpNullary,      "break");
+            Add(Instruction.LoopContinue,             InstFlags.OpNullary,      "continue");
             Add(Instruction.ShiftLeft,                InstFlags.OpBinary,       "<<",              3);
             Add(Instruction.ShiftRightS32,            InstFlags.OpBinary,       ">>",              3);
             Add(Instruction.ShiftRightU32,            InstFlags.OpBinary,       ">>",              3);

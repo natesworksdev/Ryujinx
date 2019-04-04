@@ -4,8 +4,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
     class PhiNode : INode
     {
-        public BasicBlock Parent { get; set; }
-
         private Operand _dest;
 
         public Operand Dest

@@ -44,14 +44,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 switch (srcType)
                 {
-                    case VariableType.Bool: return $"intBitsToFloat({ReinterpretBoolToInt(expr, VariableType.S32)})";
+                    case VariableType.Bool: return $"intBitsToFloat({ReinterpretBoolToInt(expr, node, VariableType.S32)})";
                     case VariableType.S32:  return $"intBitsToFloat({expr})";
                     case VariableType.U32:  return $"uintBitsToFloat({expr})";
                 }
             }
             else if (srcType == VariableType.Bool)
             {
-                return ReinterpretBoolToInt(expr, dstType);
+                return ReinterpretBoolToInt(expr, node, dstType);
             }
             else if (dstType == VariableType.Bool)
             {
@@ -71,12 +71,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             throw new ArgumentException($"Invalid reinterpret cast from \"{srcType}\" to \"{dstType}\".");
         }
 
-        private static string ReinterpretBoolToInt(string expr, VariableType dstType)
+        private static string ReinterpretBoolToInt(string expr, IAstNode node, VariableType dstType)
         {
             string trueExpr  = NumberFormatter.FormatInt(IrConsts.True,  dstType);
             string falseExpr = NumberFormatter.FormatInt(IrConsts.False, dstType);
 
-            return $"(({expr}) ? {trueExpr} : {falseExpr})";
+            expr = Instructions.Enclose(expr, node, Instruction.ConditionalSelect, isLhs: false);
+
+            return $"({expr} ? {trueExpr} : {falseExpr})";
         }
     }
 }
