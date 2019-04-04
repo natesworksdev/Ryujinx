@@ -14,8 +14,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         private Dictionary<Operand, AstOperand> _localsMap;
 
-        private List<AstOperand> _locals;
-
         private Dictionary<int, AstAssignment> _gotoTempAsgs;
 
         private List<GotoStatement> _gotos;
@@ -33,8 +31,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             _blockStack = new Stack<(AstBlock, int)>();
 
             _localsMap = new Dictionary<Operand, AstOperand>();
-
-            _locals = new List<AstOperand>();
 
             _gotoTempAsgs = new Dictionary<int, AstAssignment>();
 
@@ -62,9 +58,9 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             LookForDoWhileStatements(block);
         }
 
-        public void LeaveBlock(BasicBlock block)
+        public void LeaveBlock(BasicBlock block, Operation branchOp)
         {
-            LookForIfStatements(block);
+            LookForIfStatements(block, branchOp);
         }
 
         private void LookForDoWhileStatements(BasicBlock block)
@@ -99,38 +95,30 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
         }
 
-        private void LookForIfStatements(BasicBlock block)
+        private void LookForIfStatements(BasicBlock block, Operation branchOp)
         {
             if (block.Branch == null)
             {
                 return;
             }
 
-            Operation branchOp = (Operation)block.GetLastOp();
-
             bool isLoop = block.Branch.Index <= block.Index;
-
-            AstOperation branch = _currBlock.Last as AstOperation;
 
             if (block.Branch.Index <= _currEndIndex && !isLoop)
             {
-                _currBlock.Remove(branch);
-
                 NewBlock(AstBlockType.If, branchOp, block.Branch.Index);
             }
-            else if (_loopTails.Contains(block))
-            {
-                //Loop handled by "LookForDoWhileStatements".
-                //We can safely remove the branch as it was already taken care of.
-                _currBlock.Remove(branch);
-            }
-            else
+            else if (!_loopTails.Contains(block))
             {
                 AstAssignment gotoTempAsg = GetGotoTempAsg(block.Branch.Index);
 
                 IAstNode cond = GetBranchCond(AstBlockType.DoWhile, branchOp);
 
-                _currBlock.AddBefore(branch, Assign(gotoTempAsg.Destination, cond));
+                AddNode(Assign(gotoTempAsg.Destination, cond));
+
+                AstOperation branch = new AstOperation(branchOp.Inst);
+
+                AddNode(branch);
 
                 GotoStatement gotoStmt = new GotoStatement(branch, gotoTempAsg, isLoop);
 
@@ -214,29 +202,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             _currBlock.Add(node);
         }
 
-        public void PrependLocalDeclarations()
-        {
-            AstBlock mainBlock = Info.MainBlock;
-
-            AstDeclaration decl = null;
-
-            foreach (AstOperand operand in _locals)
-            {
-                AstDeclaration oldDecl = decl;
-
-                decl = new AstDeclaration(operand);
-
-                if (oldDecl == null)
-                {
-                    mainBlock.AddFirst(decl);
-                }
-                else
-                {
-                    mainBlock.AddAfter(oldDecl, decl);
-                }
-            }
-        }
-
         public GotoStatement[] GetGotos()
         {
             return _gotos.ToArray();
@@ -246,7 +211,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             AstOperand newTemp = Local(type);
 
-            _locals.Add(newTemp);
+            Info.Locals.Add(newTemp);
 
             return newTemp;
         }
@@ -293,7 +258,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 _localsMap.Add(operand, astOperand);
 
-                _locals.Add(astOperand);
+                Info.Locals.Add(astOperand);
             }
 
             return astOperand;

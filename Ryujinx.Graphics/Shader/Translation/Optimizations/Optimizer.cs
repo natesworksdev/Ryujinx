@@ -54,6 +54,13 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                         node = nextNode;
                     }
+
+                    if (BranchElimination.Eliminate(block))
+                    {
+                        RemoveNode(block, block.Operations.Last);
+
+                        modified = true;
+                    }
                 }
             }
             while (modified);

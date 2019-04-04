@@ -20,15 +20,22 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 foreach (INode node in block.Operations)
                 {
-                    AddOperation(context, (Operation)node);
-                }
+                    Operation operation = (Operation)node;
 
-                context.LeaveBlock(block);
+                    if (IsBranchInst(operation.Inst))
+                    {
+                        context.LeaveBlock(block, operation);
+                    }
+                    else
+                    {
+                        AddOperation(context, operation);
+                    }
+                }
             }
 
             GotoElimination.Eliminate(context.GetGotos());
 
-            context.PrependLocalDeclarations();
+            AstOptimizer.Optimize(context.Info);
 
             return context.Info;
         }
@@ -44,13 +51,20 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 sources[index] = context.GetOperandUse(operation.GetSource(index));
             }
 
-            if (operation.Dest != null && !IsBranchInst(inst))
+            if (operation.Dest != null)
             {
                 AstOperand dest = context.GetOperandDef(operation.Dest);
 
                 if (inst == Instruction.LoadConstant)
                 {
-                    context.Info.ConstantBuffers.Add((sources[0] as AstOperand).Value);
+                    Operand ldcSource = operation.GetSource(0);
+
+                    if (ldcSource.Type != OperandType.Constant)
+                    {
+                        throw new InvalidOperationException("Found LDC with non-constant constant buffer slot.");
+                    }
+
+                    context.Info.ConstantBuffers.Add(ldcSource.Value);
                 }
 
                 AstAssignment assignment;

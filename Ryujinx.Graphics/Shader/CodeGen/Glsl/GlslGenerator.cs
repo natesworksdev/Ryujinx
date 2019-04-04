@@ -9,47 +9,73 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
     class GlslGenerator
     {
-        public string Generate(StructuredProgramInfo prgInfo, GalShaderType shaderType)
+        public string Generate(StructuredProgramInfo info, GalShaderType shaderType)
         {
-            CodeGenContext cgContext = new CodeGenContext(prgInfo, shaderType);
+            CodeGenContext context = new CodeGenContext(info, shaderType);
 
-            Declarations.Declare(cgContext, prgInfo);
+            Declarations.Declare(context, info);
 
-            PrintBlock(cgContext, prgInfo.MainBlock);
+            PrintMainBlock(context, info);
 
-            return cgContext.GetCode();
+            return context.GetCode();
+        }
+
+        private void PrintMainBlock(CodeGenContext context, StructuredProgramInfo info)
+        {
+            context.AppendLine("void main()");
+
+            context.EnterScope();
+
+            Declarations.DeclareLocals(context, info);
+
+            PrintBlock(context, info.MainBlock);
+
+            context.LeaveScope();
         }
 
         private void PrintBlock(CodeGenContext context, AstBlock block)
         {
-            switch (block.Type)
+            AstBlockVisitor visitor = new AstBlockVisitor(block);
+
+            visitor.BlockEntered += (sender, e) =>
             {
-                case AstBlockType.DoWhile:
-                    context.AppendLine("do");
-                    break;
-
-                case AstBlockType.Else:
-                    context.AppendLine("else");
-                    break;
-
-                case AstBlockType.If:
-                    context.AppendLine($"if ({GetCondExpr(context, block.Condition)})");
-                    break;
-
-                case AstBlockType.Main:
-                    context.AppendLine("void main()");
-                    break;
-            }
-
-            context.EnterScope();
-
-            foreach (IAstNode node in block)
-            {
-                if (node is AstBlock subBlock)
+                switch (e.Block.Type)
                 {
-                    PrintBlock(context, subBlock);
+                    case AstBlockType.DoWhile:
+                        context.AppendLine("do");
+                        break;
+
+                    case AstBlockType.Else:
+                        context.AppendLine("else");
+                        break;
+
+                    case AstBlockType.ElseIf:
+                        context.AppendLine($"else if ({GetCondExpr(context, e.Block.Condition)})");
+                        break;
+
+                    case AstBlockType.If:
+                        context.AppendLine($"if ({GetCondExpr(context, e.Block.Condition)})");
+                        break;
+
+                    default: throw new InvalidOperationException($"Found unexpected block type \"{e.Block.Type}\".");
                 }
-                else if (node is AstOperation operation)
+
+                context.EnterScope();
+            };
+
+            visitor.BlockLeft += (sender, e) =>
+            {
+                context.LeaveScope();
+
+                if (e.Block.Type == AstBlockType.DoWhile)
+                {
+                    context.AppendLine($"while ({GetCondExpr(context, e.Block.Condition)});");
+                }
+            };
+
+            foreach (IAstNode node in visitor.Visit())
+            {
+                if (node is AstOperation operation)
                 {
                     if (operation.Inst == Instruction.Return)
                     {
@@ -58,39 +84,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     context.AppendLine(Instructions.GetExpression(context, operation) + ";");
                 }
-                else if (node is AstAssignment asg)
+                else if (node is AstAssignment assignment)
                 {
-                    VariableType srcType = OperandManager.GetNodeDestType(asg.Source);
-                    VariableType dstType = OperandManager.GetNodeDestType(asg.Destination);
+                    VariableType srcType = OperandManager.GetNodeDestType(assignment.Source);
+                    VariableType dstType = OperandManager.GetNodeDestType(assignment.Destination);
 
                     string dest;
 
-                    if (asg.Destination is AstOperand operand && operand.Type == OperandType.Attribute)
+                    if (assignment.Destination is AstOperand operand && operand.Type == OperandType.Attribute)
                     {
                         dest = OperandManager.GetOutAttributeName(context, operand);
                     }
                     else
                     {
-                        dest = Instructions.GetExpression(context, asg.Destination);
+                        dest = Instructions.GetExpression(context, assignment.Destination);
                     }
 
-                    string src = ReinterpretCast(context, asg.Source, srcType, dstType);
+                    string src = ReinterpretCast(context, assignment.Source, srcType, dstType);
 
                     context.AppendLine(dest + " = " + src + ";");
                 }
-                else if (node is AstDeclaration decl && decl.Operand.Type != OperandType.Undefined)
+                else
                 {
-                    string name = context.DeclareLocal(decl.Operand);
-
-                    context.AppendLine(GetVarTypeName(decl.Operand.VarType) + " " + name + ";");
+                    throw new InvalidOperationException($"Found unexpected node type \"{node?.GetType().Name ?? "null"}\".");
                 }
-            }
-
-            context.LeaveScope();
-
-            if (block.Type == AstBlockType.DoWhile)
-            {
-                context.AppendLine($"while ({GetCondExpr(context, block.Condition)});");
             }
         }
 
@@ -98,20 +115,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             VariableType srcType = OperandManager.GetNodeDestType(cond);
 
-            return ReinterpretCast(Instructions.GetExpression(context, cond), srcType, VariableType.Bool);
-        }
-
-        private string GetVarTypeName(VariableType type)
-        {
-            switch (type)
-            {
-                case VariableType.Bool: return "bool";
-                case VariableType.F32:  return "float";
-                case VariableType.S32:  return "int";
-                case VariableType.U32:  return "uint";
-            }
-
-            throw new ArgumentException($"Invalid variable type \"{type}\".");
+            return ReinterpretCast(context, cond, srcType, VariableType.Bool);
         }
 
         private static void PrepareForReturn(CodeGenContext context)

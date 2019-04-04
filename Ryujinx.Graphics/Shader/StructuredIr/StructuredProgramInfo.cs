@@ -7,6 +7,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
     {
         public AstBlock MainBlock { get; }
 
+        public HashSet<AstOperand> Locals { get; }
+
         public HashSet<int> ConstantBuffers { get; }
 
         public HashSet<int> IAttributes { get; }
@@ -17,6 +19,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         public StructuredProgramInfo(AstBlock mainBlock)
         {
             MainBlock = mainBlock;
+
+            Locals = new HashSet<AstOperand>();
 
             ConstantBuffers = new HashSet<int>();
 

@@ -2,6 +2,8 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
 
+using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
+
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
     static class GotoElimination
@@ -290,14 +292,14 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         private static bool ContainsCondComb(IAstNode node, Instruction inst, IAstNode newCond)
         {
-            while (node is AstOperation operation && operation.Sources.Length == 2)
+            while (node is AstOperation operation && operation.SourcesCount == 2)
             {
-                if (operation.Inst == inst && IsSameCond(operation.Sources[1], newCond))
+                if (operation.Inst == inst && IsSameCond(operation.GetSource(1), newCond))
                 {
                     return true;
                 }
 
-                node = operation.Sources[0];
+                node = operation.GetSource(0);
             }
 
             return false;
@@ -396,8 +398,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     return false;
                 }
 
-                lCond = lCondOp.Sources[0];
-                rCond = rCondOp.Sources[0];
+                lCond = lCondOp.GetSource(0);
+                rCond = rCondOp.GetSource(0);
             }
 
             return lCond == rCond;
@@ -446,21 +448,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
 
             return level;
-        }
-
-        private static IAstNode InverseCond(IAstNode cond)
-        {
-            return new AstOperation(Instruction.LogicalNot, cond);
-        }
-
-        private static IAstNode Next(IAstNode node)
-        {
-            return node.LLNode.Next?.Value;
-        }
-
-        private static IAstNode Previous(IAstNode node)
-        {
-            return node.LLNode.Previous?.Value;
         }
     }
 }

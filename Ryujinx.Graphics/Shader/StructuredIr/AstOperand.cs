@@ -1,9 +1,13 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
     class AstOperand : AstNode
     {
+        public HashSet<IAstNode> Defs { get; }
+        public HashSet<IAstNode> Uses { get; }
+
         public OperandType Type { get; }
 
         public VariableType VarType { get; set; }
@@ -15,6 +19,9 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         private AstOperand()
         {
+            Defs = new HashSet<IAstNode>();
+            Uses = new HashSet<IAstNode>();
+
             VarType = VariableType.S32;
         }
 

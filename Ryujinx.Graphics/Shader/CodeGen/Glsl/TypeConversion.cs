@@ -22,10 +22,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             string expr = Instructions.GetExpression(context, node);
 
-            return ReinterpretCast(expr, srcType, dstType);
+            return ReinterpretCast(expr, node, srcType, dstType);
         }
 
-        public static string ReinterpretCast(string expr, VariableType srcType, VariableType dstType)
+        private static string ReinterpretCast(string expr, IAstNode node, VariableType srcType, VariableType dstType)
         {
             if (srcType == dstType)
             {
@@ -55,7 +55,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else if (dstType == VariableType.Bool)
             {
-                return $"(({expr}) != 0)";
+                expr = Instructions.Enclose(expr, node, Instruction.CompareNotEqual, isLhs: true);
+
+                return $"({expr} != 0)";
             }
             else if (dstType == VariableType.S32)
             {

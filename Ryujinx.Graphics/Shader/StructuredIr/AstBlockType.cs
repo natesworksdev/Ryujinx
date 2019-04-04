@@ -5,6 +5,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         DoWhile,
         If,
         Else,
+        ElseIf,
         Main,
         While
     }

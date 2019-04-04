@@ -1,20 +1,39 @@
-using System;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+
+using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
 {
     class AstBlock : AstNode, IEnumerable<IAstNode>
     {
-        public AstBlockType Type { get; }
+        public AstBlockType Type { get; private set; }
 
-        public IAstNode Condition { get; private set; }
+        private IAstNode _condition;
+
+        public IAstNode Condition
+        {
+            get
+            {
+                return _condition;
+            }
+            set
+            {
+                RemoveUse(_condition, this);
+
+                AddUse(value, this);
+
+                _condition = value;
+            }
+        }
 
         private LinkedList<IAstNode> _nodes;
 
         public IAstNode First => _nodes.First?.Value;
-        public IAstNode Last  => _nodes.Last?.Value;
+
+        public int Count => _nodes.Count;
 
         public AstBlock(AstBlockType type, IAstNode condition = null)
         {
@@ -34,14 +53,14 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(node, _nodes.AddFirst(node));
         }
 
-        public void AddBefore(IAstNode oldNode, IAstNode node)
+        public void AddBefore(IAstNode next, IAstNode node)
         {
-            Add(node, _nodes.AddBefore(oldNode.LLNode, node));
+            Add(node, _nodes.AddBefore(next.LLNode, node));
         }
 
-        public void AddAfter(IAstNode oldNode, IAstNode node)
+        public void AddAfter(IAstNode prev, IAstNode node)
         {
-            Add(node, _nodes.AddAfter(oldNode.LLNode, node));
+            Add(node, _nodes.AddAfter(prev.LLNode, node));
         }
 
         private void Add(IAstNode node, LinkedListNode<IAstNode> newNode)
@@ -71,6 +90,17 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         public void OrCondition(IAstNode cond)
         {
             Condition = new AstOperation(Instruction.LogicalOr, Condition, cond);
+        }
+        public void TurnIntoIf(IAstNode cond)
+        {
+            Condition = cond;
+
+            Type = AstBlockType.If;
+        }
+
+        public void TurnIntoElseIf()
+        {
+            Type = AstBlockType.ElseIf;
         }
 
         public IEnumerator<IAstNode> GetEnumerator()

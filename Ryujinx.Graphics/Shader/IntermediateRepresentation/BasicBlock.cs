@@ -24,6 +24,8 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             set => _branch = AddSuccessor(_branch, value);
         }
 
+        public bool HasBranch => _branch != null;
+
         public List<BasicBlock> Predecessors { get; }
 
         public HashSet<BasicBlock> DominanceFrontiers { get; }
@@ -47,7 +49,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         private BasicBlock AddSuccessor(BasicBlock oldBlock, BasicBlock newBlock)
         {
             oldBlock?.Predecessors.Remove(this);
-            newBlock.Predecessors.Add(this);
+            newBlock?.Predecessors.Add(this);
 
             return newBlock;
         }

@@ -67,6 +67,29 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
+        public static void DeclareLocals(CodeGenContext context, StructuredProgramInfo prgInfo)
+        {
+            foreach (AstOperand decl in prgInfo.Locals)
+            {
+                string name = context.DeclareLocal(decl);
+
+                context.AppendLine(GetVarTypeName(decl.VarType) + " " + name + ";");
+            }
+        }
+
+        private static string GetVarTypeName(VariableType type)
+        {
+            switch (type)
+            {
+                case VariableType.Bool: return "bool";
+                case VariableType.F32:  return "float";
+                case VariableType.S32:  return "int";
+                case VariableType.U32:  return "uint";
+            }
+
+            throw new ArgumentException($"Invalid variable type \"{type}\".");
+        }
+
         private static void DeclareUniforms(CodeGenContext context, StructuredProgramInfo prgInfo)
         {
             foreach (int cbufSlot in prgInfo.ConstantBuffers.OrderBy(x => x))

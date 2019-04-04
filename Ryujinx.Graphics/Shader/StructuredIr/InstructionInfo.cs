@@ -77,6 +77,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.ReciprocalSquareRoot,     VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.Sine,                     VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.SquareRoot,               VariableType.Scalar, VariableType.Scalar);
+            Add(Instruction.Subtract,                 VariableType.Scalar, VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.Truncate,                 VariableType.F32,    VariableType.F32);
         }
 
@@ -128,6 +129,21 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         private static bool IsTextureInst(Instruction inst)
         {
             return inst == Instruction.TextureSample;
+        }
+
+        public static bool IsUnary(Instruction inst)
+        {
+            if (inst == Instruction.TextureSample)
+            {
+                return false;
+            }
+
+            if (inst == Instruction.Copy)
+            {
+                return true;
+            }
+
+            return _infoTbl[(int)(inst & Instruction.Mask)].SrcTypes.Length == 1;
         }
     }
 }

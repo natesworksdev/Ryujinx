@@ -2,6 +2,8 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
     class Operation : INode
     {
+        public BasicBlock Parent { get; set; }
+
         public Instruction Inst { get; private set; }
 
         private Operand _dest;
