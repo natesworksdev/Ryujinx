@@ -43,11 +43,15 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     BlockEntered?.Invoke(this, new BlockVisitationEventArgs(Block));
                 }
 
-                IAstNode next = Next(node);
+                //Node may be null, if the block is empty.
+                if (node != null)
+                {
+                    IAstNode next = Next(node);
 
-                yield return node;
+                    yield return node;
 
-                node = next;
+                    node = next;
+                }
 
                 //We reached the end of the list, go up on tree to the parent blocks.
                 while (node == null && Block.Type != AstBlockType.Main)
