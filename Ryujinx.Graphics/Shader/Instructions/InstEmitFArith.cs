@@ -292,7 +292,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
 
-            if (!(op is OpCodeAluImm32))
+            if (!(op is IOpCodeImm))
             {
                 swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(28, 2);
             }
@@ -312,16 +312,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             Operand[] operands = GetHalfSources(context, GetSrcB(context), swizzle);
 
             return FPAbsNeg(context, operands, absoluteB, negateB);
-        }
-
-        private static Operand[] FPAbsNeg(EmitterContext context, Operand[] operands, bool abs, bool neg)
-        {
-            for (int index = 0; index < operands.Length; index++)
-            {
-                operands[index] = context.FPAbsNeg(operands[index], abs, neg);
-            }
-
-            return operands;
         }
 
         private static Operand[] GetHalfSources(EmitterContext context, Operand src, FPHalfSwizzle swizzle)
@@ -355,6 +345,16 @@ namespace Ryujinx.Graphics.Shader.Instructions
             throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
         }
 
+        private static Operand[] FPAbsNeg(EmitterContext context, Operand[] operands, bool abs, bool neg)
+        {
+            for (int index = 0; index < operands.Length; index++)
+            {
+                operands[index] = context.FPAbsNeg(operands[index], abs, neg);
+            }
+
+            return operands;
+        }
+
         private static Operand GetHalfPacked(EmitterContext context, Operand[] results)
         {
             OpCode op = context.CurrOp;
@@ -368,13 +368,38 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             switch (swizzle)
             {
-                case FPHalfSwizzle.FP16:  return context.PackHalf2x16(results[0], results[1]);
-                case FPHalfSwizzle.FP32:  return results[0];
-                case FPHalfSwizzle.DupH0: return context.PackHalf2x16(results[0], results[0]);
-                case FPHalfSwizzle.DupH1: return context.PackHalf2x16(results[1], results[1]);
+                case FPHalfSwizzle.FP16: return context.PackHalf2x16(results[0], results[1]);
+
+                case FPHalfSwizzle.FP32: return results[0];
+
+                case FPHalfSwizzle.DupH0:
+                {
+                    Operand h1 = GetHalfDest(context, isHigh: true);
+
+                    return context.PackHalf2x16(results[0], h1);
+                }
+
+                case FPHalfSwizzle.DupH1:
+                {
+                    Operand h0 = GetHalfDest(context, isHigh: false);
+
+                    return context.PackHalf2x16(h0, results[1]);
+                }
             }
 
             throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
+        }
+
+        private static Operand GetHalfDest(EmitterContext context, bool isHigh)
+        {
+            if (isHigh)
+            {
+                return context.UnpackHalf2x16High(GetDest(context));
+            }
+            else
+            {
+                return context.UnpackHalf2x16Low(GetDest(context));
+            }
         }
 
         private static Operand GetFPComparison(

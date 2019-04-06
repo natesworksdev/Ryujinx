@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
@@ -43,13 +44,25 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                         Simplification.Simplify(operation);
 
-                        if (operation.Inst == Instruction.Copy && DestIsLocalVar(operation))
+                        if (DestIsLocalVar(operation))
                         {
-                            PropagateCopy(operation);
+                            if (operation.Inst == Instruction.Copy)
+                            {
+                                PropagateCopy(operation);
 
-                            RemoveNode(block, node);
+                                RemoveNode(block, node);
 
-                            modified = true;
+                                modified = true;
+                            }
+                            else if (operation.Inst == Instruction.PackHalf2x16 && PropagatePack(operation))
+                            {
+                                if (operation.Dest.UseOps.Count == 0)
+                                {
+                                    RemoveNode(block, node);
+                                }
+
+                                modified = true;
+                            }
                         }
 
                         node = nextNode;
@@ -83,6 +96,51 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     }
                 }
             }
+        }
+
+        private static bool PropagatePack(Operation packOp)
+        {
+            //Propagate pack source operands to uses by unpack
+            //instruction. The source depends on the unpack instruction.
+            bool modified = false;
+
+            Operand dest = packOp.Dest;
+            Operand src0 = packOp.GetSource(0);
+            Operand src1 = packOp.GetSource(1);
+
+            INode[] uses = dest.UseOps.ToArray();
+
+            foreach (INode useNode in uses)
+            {
+                if (!(useNode is Operation operation))
+                {
+                    continue;
+                }
+
+                Operand src;
+
+                if (operation.Inst == Instruction.UnpackHalf2x16High)
+                {
+                    src = src1;
+                }
+                else if (operation.Inst == Instruction.UnpackHalf2x16Low)
+                {
+                    src = src0;
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (operation.GetSource(0) == dest)
+                {
+                    operation.TurnIntoCopy(src);
+
+                    modified = true;
+                }
+            }
+
+            return modified;
         }
 
         private static void RemoveNode(BasicBlock block, LinkedListNode<INode> llNode)

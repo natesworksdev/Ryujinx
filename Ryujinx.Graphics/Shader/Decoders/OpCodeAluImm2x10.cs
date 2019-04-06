@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Shader.Instructions;
 
 namespace Ryujinx.Graphics.Shader.Decoders
 {
-    class OpCodeAluImm2x10 : OpCode, IOpCodeImm
+    class OpCodeAluImm2x10 : OpCodeAlu, IOpCodeImm
     {
         public int Immediate { get; }
 
