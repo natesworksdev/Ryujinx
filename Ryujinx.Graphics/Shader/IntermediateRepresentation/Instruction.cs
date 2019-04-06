@@ -76,8 +76,10 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         Subtract,
         TextureSample,
         Truncate,
-        UnpackDouble2x32,
-        UnpackHalf2x16,
+        UnpackDouble2x32High,
+        UnpackDouble2x32Low,
+        UnpackHalf2x16High,
+        UnpackHalf2x16Low,
 
         Count,
         FP   = 1 << 16,

@@ -35,9 +35,9 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             return new Operand(OperandType.LocalVariable);
         }
 
-        public static Operand Register(Register reg, int increment)
+        public static Operand Register(int index, RegisterType type)
         {
-            return new Operand(new Register(reg.Index + increment, reg.Type));
+            return Register(new Register(index, type));
         }
 
         public static Operand Register(Register reg)

@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     return Const(0);
                 }
 
-                return context.Copy(Register(new Register(raIndex++, RegisterType.Gpr)));
+                return context.Copy(Register(raIndex++, RegisterType.Gpr));
             }
 
             Operand Rb()
@@ -166,7 +166,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     return Const(0);
                 }
 
-                return context.Copy(Register(new Register(rbIndex++, RegisterType.Gpr)));
+                return context.Copy(Register(rbIndex++, RegisterType.Gpr));
             }
 
             Operand arrayIndex = op.IsArray ? Ra() : null;
@@ -240,7 +240,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     return Const(0);
                 }
 
-                return Register(new Register(rdIndex++, RegisterType.Gpr));
+                return Register(rdIndex++, RegisterType.Gpr);
             }
 
             int textureHandle = op.Immediate;
@@ -291,7 +291,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     regIndex += index & 1;
                 }
 
-                return context.Copy(Register(new Register(regIndex, RegisterType.Gpr)));
+                return context.Copy(Register(regIndex, RegisterType.Gpr));
             }
 
             switch (op.Type)
@@ -363,28 +363,35 @@ namespace Ryujinx.Graphics.Shader.Instructions
             TextureType  type  = GetTextureType (op.Type);
             TextureFlags flags = GetTextureFlags(op.Type);
 
+            Operand[] rd0 = new Operand[2] { ConstF(0), ConstF(0) };
+            Operand[] rd1 = new Operand[2] { ConstF(0), ConstF(0) };
+
             int destIncrement = 0;
 
             Operand GetDest()
             {
-                int rdIndex;
+                int high = destIncrement >> 1;
+                int low  = destIncrement &  1;
 
-                if (op.Rd1.IsRZ)
+                destIncrement++;
+
+                if (op.IsFp16)
                 {
-                    rdIndex = op.Rd0.Index;
-                }
-                else if (op.Rd0.IsRZ)
-                {
-                    rdIndex = op.Rd1.Index;
+                    return high != 0
+                        ? (rd1[low] = Local())
+                        : (rd0[low] = Local());
                 }
                 else
                 {
-                    rdIndex = (destIncrement >> 1) != 0 ? op.Rd1.Index : op.Rd0.Index;
+                    int rdIndex = high != 0 ? op.Rd1.Index : op.Rd0.Index;
+
+                    if (rdIndex < RegisterConsts.RegisterZeroIndex)
+                    {
+                        rdIndex += low;
+                    }
+
+                    return Register(rdIndex, RegisterType.Gpr);
                 }
-
-                rdIndex += destIncrement++ & 1;
-
-                return Register(new Register(rdIndex, RegisterType.Gpr));
             }
 
             int textureHandle = op.Immediate;
@@ -406,6 +413,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                     context.Add(operation);
                 }
+            }
+
+            if (op.IsFp16)
+            {
+                context.Copy(Register(op.Rd0), context.PackHalf2x16(rd0[0], rd0[1]));
+                context.Copy(Register(op.Rd1), context.PackHalf2x16(rd1[0], rd1[1]));
             }
         }
 
@@ -432,7 +445,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     return Const(0);
                 }
 
-                return context.Copy(Register(new Register(raIndex++, RegisterType.Gpr)));
+                return context.Copy(Register(raIndex++, RegisterType.Gpr));
             }
 
             Operand Rb()
@@ -442,7 +455,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     return Const(0);
                 }
 
-                return context.Copy(Register(new Register(rbIndex++, RegisterType.Gpr)));
+                return context.Copy(Register(rbIndex++, RegisterType.Gpr));
             }
 
             Operand arrayIndex = op.IsArray ? Ra() : null;
@@ -506,7 +519,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     return Const(0);
                 }
 
-                return Register(new Register(rdIndex++, RegisterType.Gpr));
+                return Register(rdIndex++, RegisterType.Gpr);
             }
 
             int textureHandle = op.Immediate;

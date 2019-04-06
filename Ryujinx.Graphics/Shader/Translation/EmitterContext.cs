@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     Operand dest = Attribute(AttributeConsts.FragmentOutputDepth);
 
-                    Operand src = Register(new Register(_header.DepthRegister, RegisterType.Gpr));
+                    Operand src = Register(_header.DepthRegister, RegisterType.Gpr);
 
                     this.Copy(dest, src);
                 }
@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         {
                             Operand dest = Attribute(AttributeConsts.FragmentOutputColorBase + regIndex * 4);
 
-                            Operand src = Register(new Register(regIndex, RegisterType.Gpr));
+                            Operand src = Register(regIndex, RegisterType.Gpr);
 
                             this.Copy(dest, src);
 

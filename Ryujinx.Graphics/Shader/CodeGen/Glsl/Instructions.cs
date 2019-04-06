@@ -103,6 +103,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             Add(Instruction.MinimumU32,               InstFlags.CallBinary,     "min");
             Add(Instruction.Multiply,                 InstFlags.OpBinary,       "*",               1);
             Add(Instruction.Negate,                   InstFlags.OpUnary,        "-",               0);
+            Add(Instruction.PackHalf2x16,             InstFlags.Call);
             Add(Instruction.ReciprocalSquareRoot,     InstFlags.CallUnary,      "inversesqrt");
             Add(Instruction.Return,                   InstFlags.OpNullary,      "return");
             Add(Instruction.Sine,                     InstFlags.CallUnary,      "sin");
@@ -110,6 +111,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             Add(Instruction.Subtract,                 InstFlags.OpBinary,       "-",               2);
             Add(Instruction.TextureSample,            InstFlags.Call);
             Add(Instruction.Truncate,                 InstFlags.CallUnary,      "trunc");
+            Add(Instruction.UnpackHalf2x16High,       InstFlags.Call);
+            Add(Instruction.UnpackHalf2x16Low,        InstFlags.Call);
         }
 
         private static void Add(Instruction inst, InstFlags flags, string opName = null, int precedence = 0)
@@ -158,11 +161,25 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 case Instruction.LoadConstant:
                     return GetLoadConstantExpr(context, operation);
 
+                case Instruction.PackHalf2x16:
+                    return GetPackHalf2x16Expr(context, operation);
+
                 case Instruction.TextureSample:
                     return GetTextureSampleExpr(context, operation);
+
+                case Instruction.UnpackHalf2x16High:
+                    return GetUnpackHalf2x16Expr(context, operation, 1);
+
+                case Instruction.UnpackHalf2x16Low:
+                    return GetUnpackHalf2x16Expr(context, operation, 0);
             }
 
             InstInfo info = _infoTbl[(int)inst];
+
+            if (info.OpName == null)
+            {
+                throw new InvalidOperationException($"Unknown instruction \"{inst}\".");
+            }
 
             if ((info.Flags & InstFlags.Call) != 0)
             {
@@ -246,6 +263,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             offsetExpr = Enclose(offsetExpr, src1, Instruction.ShiftRightS32, isLhs: true);
 
             return OperandManager.GetConstantBufferName(context, operation.GetSource(0), offsetExpr);
+        }
+
+        private static string GetPackHalf2x16Expr(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src0 = operation.GetSource(0);
+            IAstNode src1 = operation.GetSource(1);
+
+            string src0Expr = GetSoureExpr(context, src0, GetSrcVarType(operation.Inst, 0));
+            string src1Expr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 1));
+
+            return $"packHalf2x16(vec2({src0Expr}, {src1Expr}))";
+        }
+
+        private static string GetUnpackHalf2x16Expr(CodeGenContext context, AstOperation operation, int elem)
+        {
+            IAstNode src = operation.GetSource(0);
+
+            string srcExpr = GetSoureExpr(context, src, GetSrcVarType(operation.Inst, 0));
+
+            return $"unpackHalf2x16({srcExpr}).{"xy".Substring(elem, 1)}";
         }
 
         private static string GetTextureSampleExpr(CodeGenContext context, AstOperation operation)

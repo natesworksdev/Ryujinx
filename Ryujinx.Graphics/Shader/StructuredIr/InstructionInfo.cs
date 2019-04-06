@@ -74,11 +74,14 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.MinimumU32,               VariableType.U32,    VariableType.U32,    VariableType.U32);
             Add(Instruction.Multiply,                 VariableType.Scalar, VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.Negate,                   VariableType.Scalar, VariableType.Scalar);
+            Add(Instruction.PackHalf2x16,             VariableType.U32,    VariableType.F32,    VariableType.F32);
             Add(Instruction.ReciprocalSquareRoot,     VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.Sine,                     VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.SquareRoot,               VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.Subtract,                 VariableType.Scalar, VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.Truncate,                 VariableType.F32,    VariableType.F32);
+            Add(Instruction.UnpackHalf2x16High,       VariableType.F32,    VariableType.U32);
+            Add(Instruction.UnpackHalf2x16Low,        VariableType.F32,    VariableType.U32);
         }
 
         private static void Add(Instruction inst, VariableType destType, params VariableType[] srcTypes)

@@ -371,6 +371,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.LoadConstant, Local(), a, b);
         }
 
+        public static Operand PackHalf2x16(this EmitterContext context, Operand a, Operand b)
+        {
+            return context.Add(Instruction.PackHalf2x16, Local(), a, b);
+        }
+
         public static Operand Return(this EmitterContext context)
         {
             context.PrepareForReturn();
@@ -391,6 +396,16 @@ namespace Ryujinx.Graphics.Shader.Translation
         public static Operand ShiftRightU32(this EmitterContext context, Operand a, Operand b)
         {
             return context.Add(Instruction.ShiftRightU32, Local(), a, b);
+        }
+
+        public static Operand UnpackHalf2x16High(this EmitterContext context, Operand a)
+        {
+            return context.Add(Instruction.UnpackHalf2x16High, Local(), a);
+        }
+
+        public static Operand UnpackHalf2x16Low(this EmitterContext context, Operand a)
+        {
+            return context.Add(Instruction.UnpackHalf2x16Low, Local(), a);
         }
     }
 }

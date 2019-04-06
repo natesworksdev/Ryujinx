@@ -3,8 +3,8 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 
-using static Ryujinx.Graphics.Shader.Instructions.InstEmitHelper;
 using static Ryujinx.Graphics.Shader.Instructions.InstEmitAluHelper;
+using static Ryujinx.Graphics.Shader.Instructions.InstEmitHelper;
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Instructions
@@ -175,6 +175,44 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Copy(Register(op.Predicate0), p1Res);
         }
 
+        public static void Hadd2(EmitterContext context)
+        {
+            Hadd2Hmul2Impl(context, isAdd: true);
+        }
+
+        public static void Hmul2(EmitterContext context)
+        {
+            Hadd2Hmul2Impl(context, isAdd: false);
+        }
+
+        private static void Hadd2Hmul2Impl(EmitterContext context, bool isAdd)
+        {
+            OpCode op = context.CurrOp;
+
+            bool saturate = op.RawOpCode.Extract(op is OpCodeAluImm32 ? 52 : 32);
+
+            Operand[] srcA = GetHalfSrcA(context);
+            Operand[] srcB = GetHalfSrcB(context);
+
+            Operand[] res = new Operand[2];
+
+            for (int index = 0; index < res.Length; index++)
+            {
+                if (isAdd)
+                {
+                    res[index] = context.FPAdd(srcA[index], srcB[index]);
+                }
+                else
+                {
+                    res[index] = context.FPMultiply(srcA[index], srcB[index]);
+                }
+
+                res[index] = context.FPSaturate(res[index], saturate);
+            }
+
+            context.Copy(GetDest(context), GetHalfPacked(context, res));
+        }
+
         public static void Mufu(EmitterContext context)
         {
             IOpCodeFArith op = (IOpCodeFArith)context.CurrOp;
@@ -219,6 +257,124 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
 
             context.Copy(GetDest(context), context.FPSaturate(res, op.Saturate));
+        }
+
+        private static Operand[] GetHalfSrcA(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            bool absoluteA = false, negateA = false;
+
+            if (op is IOpCodeCbuf || op is IOpCodeImm)
+            {
+                negateA   = op.RawOpCode.Extract(43);
+                absoluteA = op.RawOpCode.Extract(44);
+            }
+            else if (op is IOpCodeReg)
+            {
+                absoluteA = op.RawOpCode.Extract(44);
+            }
+            else if (op is OpCodeAluImm32 && op.Emitter == Hadd2)
+            {
+                negateA = op.RawOpCode.Extract(56);
+            }
+
+            FPHalfSwizzle swizzle = (FPHalfSwizzle)context.CurrOp.RawOpCode.Extract(47, 2);
+
+            Operand[] operands = GetHalfSources(context, GetSrcA(context), swizzle);
+
+            return FPAbsNeg(context, operands, absoluteA, negateA);
+        }
+
+        private static Operand[] GetHalfSrcB(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
+
+            if (!(op is OpCodeAluImm32))
+            {
+                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(28, 2);
+            }
+
+            bool absoluteB = false, negateB = false;
+
+            if (op is IOpCodeReg)
+            {
+                absoluteB = op.RawOpCode.Extract(30);
+                negateB   = op.RawOpCode.Extract(31);
+            }
+            else if (op is IOpCodeCbuf)
+            {
+                absoluteB = op.RawOpCode.Extract(54);
+            }
+
+            Operand[] operands = GetHalfSources(context, GetSrcB(context), swizzle);
+
+            return FPAbsNeg(context, operands, absoluteB, negateB);
+        }
+
+        private static Operand[] FPAbsNeg(EmitterContext context, Operand[] operands, bool abs, bool neg)
+        {
+            for (int index = 0; index < operands.Length; index++)
+            {
+                operands[index] = context.FPAbsNeg(operands[index], abs, neg);
+            }
+
+            return operands;
+        }
+
+        private static Operand[] GetHalfSources(EmitterContext context, Operand src, FPHalfSwizzle swizzle)
+        {
+            switch (swizzle)
+            {
+                case FPHalfSwizzle.FP16:
+                    return new Operand[]
+                    {
+                        context.UnpackHalf2x16Low (src),
+                        context.UnpackHalf2x16High(src)
+                    };
+
+                case FPHalfSwizzle.FP32: return new Operand[] { src, src };
+
+                case FPHalfSwizzle.DupH0:
+                    return new Operand[]
+                    {
+                        context.UnpackHalf2x16Low(src),
+                        context.UnpackHalf2x16Low(src)
+                    };
+
+                case FPHalfSwizzle.DupH1:
+                    return new Operand[]
+                    {
+                        context.UnpackHalf2x16High(src),
+                        context.UnpackHalf2x16High(src)
+                    };
+            }
+
+            throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
+        }
+
+        private static Operand GetHalfPacked(EmitterContext context, Operand[] results)
+        {
+            OpCode op = context.CurrOp;
+
+            FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
+
+            if (!(op is OpCodeAluImm32))
+            {
+                swizzle = (FPHalfSwizzle)context.CurrOp.RawOpCode.Extract(49, 2);
+            }
+
+            switch (swizzle)
+            {
+                case FPHalfSwizzle.FP16:  return context.PackHalf2x16(results[0], results[1]);
+                case FPHalfSwizzle.FP32:  return results[0];
+                case FPHalfSwizzle.DupH0: return context.PackHalf2x16(results[0], results[0]);
+                case FPHalfSwizzle.DupH1: return context.PackHalf2x16(results[1], results[1]);
+            }
+
+            throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
         }
 
         private static Operand GetFPComparison(

@@ -11,22 +11,22 @@ namespace Ryujinx.Graphics.Shader.Instructions
     {
         public static Operand GetZF(EmitterContext context)
         {
-            return Register(new Register(0, RegisterType.Flag));
+            return Register(0, RegisterType.Flag);
         }
 
         public static Operand GetNF(EmitterContext context)
         {
-            return Register(new Register(1, RegisterType.Flag));
+            return Register(1, RegisterType.Flag);
         }
 
         public static Operand GetCF(EmitterContext context)
         {
-            return Register(new Register(2, RegisterType.Flag));
+            return Register(2, RegisterType.Flag);
         }
 
         public static Operand GetVF(EmitterContext context)
         {
-            return Register(new Register(3, RegisterType.Flag));
+            return Register(3, RegisterType.Flag);
         }
 
         public static Operand GetDest(EmitterContext context)
