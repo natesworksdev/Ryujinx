@@ -288,6 +288,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         break;
 
                     case TldsType.Texture2DLodZeroOffset:
+                    case TldsType.Texture2DLodZeroMultisample:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
                         sourcesList.Add(ConstF(0));
@@ -297,13 +298,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     case TldsType.Texture2DLodLevel:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
-                        sourcesList.Add(Rb());
-                        break;
-
-                    case TldsType.Texture2DLodZeroMultisample:
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(ConstF(0));
                         sourcesList.Add(Rb());
                         break;
 
