@@ -16,15 +16,15 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             if (negateH0)
             {
-                immH0 |= 1 << 10;
+                immH0 |= 1 << 9;
             }
 
             if (negateH1)
             {
-                immH1 |= 1 << 10;
+                immH1 |= 1 << 9;
             }
 
-            Immediate = immH1 << 16 | immH0;
+            Immediate = immH1 << 22 | immH0 << 6;
         }
     }
 }

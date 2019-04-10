@@ -74,14 +74,21 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             return _sources[index].Block;
         }
 
-        public void SetSource(int index, Operand operand)
+        public void SetSource(int index, Operand source)
         {
-            if (operand.Type == OperandType.LocalVariable)
+            Operand oldSrc = _sources[index].Operand;
+
+            if (oldSrc != null && oldSrc.Type == OperandType.LocalVariable)
             {
-                operand.UseOps.Add(this);
+                oldSrc.UseOps.Remove(this);
             }
 
-            _sources[index].Operand = operand;
+            if (source.Type == OperandType.LocalVariable)
+            {
+                source.UseOps.Add(this);
+            }
+
+            _sources[index].Operand = source;
         }
     }
 }

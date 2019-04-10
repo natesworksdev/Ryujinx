@@ -34,5 +34,20 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             return null;
         }
+
+        public void UpdateSsyOpCodes()
+        {
+            SsyOpCodes.Clear();
+
+            for (int index = 0; index < OpCodes.Count; index++)
+            {
+                if (!(OpCodes[index] is OpCodeSsy op))
+                {
+                    continue;
+                }
+
+                SsyOpCodes.Add(op);
+            }
+        }
     }
 }

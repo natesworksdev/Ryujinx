@@ -180,6 +180,33 @@ namespace Ryujinx.Graphics.Shader.Instructions
             Hadd2Hmul2Impl(context, isAdd: true);
         }
 
+        public static void Hfma2(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            bool saturate = false;
+
+            if (!(op is OpCodeAluImm32))
+            {
+                saturate = op.RawOpCode.Extract(op is IOpCodeReg ? 32 : 52);
+            }
+
+            Operand[] srcA = GetHfmaSrcA(context);
+            Operand[] srcB = GetHfmaSrcB(context);
+            Operand[] srcC = GetHfmaSrcC(context);
+
+            Operand[] res = new Operand[2];
+
+            for (int index = 0; index < res.Length; index++)
+            {
+                res[index] = context.FPFusedMultiplyAdd(srcA[index], srcB[index], srcC[index]);
+
+                res[index] = context.FPSaturate(res[index], saturate);
+            }
+
+            context.Copy(GetDest(context), GetHalfPacked(context, res));
+        }
+
         public static void Hmul2(EmitterContext context)
         {
             Hadd2Hmul2Impl(context, isAdd: false);
@@ -259,148 +286,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Copy(GetDest(context), context.FPSaturate(res, op.Saturate));
         }
 
-        private static Operand[] GetHalfSrcA(EmitterContext context)
-        {
-            OpCode op = context.CurrOp;
-
-            bool absoluteA = false, negateA = false;
-
-            if (op is IOpCodeCbuf || op is IOpCodeImm)
-            {
-                negateA   = op.RawOpCode.Extract(43);
-                absoluteA = op.RawOpCode.Extract(44);
-            }
-            else if (op is IOpCodeReg)
-            {
-                absoluteA = op.RawOpCode.Extract(44);
-            }
-            else if (op is OpCodeAluImm32 && op.Emitter == Hadd2)
-            {
-                negateA = op.RawOpCode.Extract(56);
-            }
-
-            FPHalfSwizzle swizzle = (FPHalfSwizzle)context.CurrOp.RawOpCode.Extract(47, 2);
-
-            Operand[] operands = GetHalfSources(context, GetSrcA(context), swizzle);
-
-            return FPAbsNeg(context, operands, absoluteA, negateA);
-        }
-
-        private static Operand[] GetHalfSrcB(EmitterContext context)
-        {
-            OpCode op = context.CurrOp;
-
-            FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
-
-            bool absoluteB = false, negateB = false;
-
-            if (op is IOpCodeReg)
-            {
-                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(28, 2);
-
-                absoluteB = op.RawOpCode.Extract(30);
-                negateB   = op.RawOpCode.Extract(31);
-            }
-            else if (op is IOpCodeCbuf)
-            {
-                swizzle = FPHalfSwizzle.FP32;
-
-                absoluteB = op.RawOpCode.Extract(54);
-            }
-
-            Operand[] operands = GetHalfSources(context, GetSrcB(context), swizzle);
-
-            return FPAbsNeg(context, operands, absoluteB, negateB);
-        }
-
-        private static Operand[] GetHalfSources(EmitterContext context, Operand src, FPHalfSwizzle swizzle)
-        {
-            switch (swizzle)
-            {
-                case FPHalfSwizzle.FP16:
-                    return new Operand[]
-                    {
-                        context.UnpackHalf2x16Low (src),
-                        context.UnpackHalf2x16High(src)
-                    };
-
-                case FPHalfSwizzle.FP32: return new Operand[] { src, src };
-
-                case FPHalfSwizzle.DupH0:
-                    return new Operand[]
-                    {
-                        context.UnpackHalf2x16Low(src),
-                        context.UnpackHalf2x16Low(src)
-                    };
-
-                case FPHalfSwizzle.DupH1:
-                    return new Operand[]
-                    {
-                        context.UnpackHalf2x16High(src),
-                        context.UnpackHalf2x16High(src)
-                    };
-            }
-
-            throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
-        }
-
-        private static Operand[] FPAbsNeg(EmitterContext context, Operand[] operands, bool abs, bool neg)
-        {
-            for (int index = 0; index < operands.Length; index++)
-            {
-                operands[index] = context.FPAbsNeg(operands[index], abs, neg);
-            }
-
-            return operands;
-        }
-
-        private static Operand GetHalfPacked(EmitterContext context, Operand[] results)
-        {
-            OpCode op = context.CurrOp;
-
-            FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
-
-            if (!(op is OpCodeAluImm32))
-            {
-                swizzle = (FPHalfSwizzle)context.CurrOp.RawOpCode.Extract(49, 2);
-            }
-
-            switch (swizzle)
-            {
-                case FPHalfSwizzle.FP16: return context.PackHalf2x16(results[0], results[1]);
-
-                case FPHalfSwizzle.FP32: return results[0];
-
-                case FPHalfSwizzle.DupH0:
-                {
-                    Operand h1 = GetHalfDest(context, isHigh: true);
-
-                    return context.PackHalf2x16(results[0], h1);
-                }
-
-                case FPHalfSwizzle.DupH1:
-                {
-                    Operand h0 = GetHalfDest(context, isHigh: false);
-
-                    return context.PackHalf2x16(h0, results[1]);
-                }
-            }
-
-            throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
-        }
-
-        private static Operand GetHalfDest(EmitterContext context, bool isHigh)
-        {
-            if (isHigh)
-            {
-                return context.UnpackHalf2x16High(GetDest(context));
-            }
-            else
-            {
-                return context.UnpackHalf2x16Low(GetDest(context));
-            }
-        }
-
         private static Operand GetFPComparison(
             EmitterContext context,
             Condition      cond,
@@ -461,6 +346,90 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 context.Copy(GetZF(context), context.FPCompareEqual(dest, ConstF(0)));
                 context.Copy(GetNF(context), context.FPCompareLess (dest, ConstF(0)));
             }
+        }
+
+        private static Operand[] GetHfmaSrcA(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            FPHalfSwizzle swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(47, 2);
+
+            return GetHalfSources(context, GetSrcA(context), swizzle);
+        }
+
+        private static Operand[] GetHfmaSrcB(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
+
+            bool negateB = false;
+
+            //Note: OpCodeAluRegCbuf also implements IOpCodeReg.
+            //Check IOpCodeRegCbuf before checking IOpCodeReg.
+            if (op is IOpCodeRegCbuf)
+            {
+                negateB = op.RawOpCode.Extract(56);
+
+                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(53, 2);
+            }
+            else if (op is IOpCodeReg)
+            {
+                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(28, 2);
+
+                negateB = op.RawOpCode.Extract(31);
+            }
+            else if (op is IOpCodeCbuf)
+            {
+                swizzle = FPHalfSwizzle.FP32;
+
+                negateB = op.RawOpCode.Extract(56);
+            }
+
+            Operand[] operands = GetHalfSources(context, GetSrcB(context), swizzle);
+
+            return FPAbsNeg(context, operands, abs: false, neg: negateB);
+        }
+
+        private static Operand[] GetHfmaSrcC(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            Operand[] operands;
+
+            if (op is OpCodeAluImm32)
+            {
+                operands = GetHalfSources(context, GetDest(context), FPHalfSwizzle.FP16);
+
+                return FPAbsNeg(context, operands, abs: false, neg: op.RawOpCode.Extract(52));
+            }
+
+            FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
+
+            bool negateC = false;
+
+            //Note: OpCodeAluRegCbuf also implements IOpCodeReg.
+            //Check IOpCodeRegCbuf before checking IOpCodeReg.
+            if (op is IOpCodeRegCbuf)
+            {
+                swizzle = FPHalfSwizzle.FP32;
+
+                negateC = op.RawOpCode.Extract(51);
+            }
+            else if (op is IOpCodeReg)
+            {
+                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(35, 2);
+
+                negateC = op.RawOpCode.Extract(30);
+            }
+            else
+            {
+                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(53, 2);
+            }
+
+            operands = GetHalfSources(context, GetSrcC(context), swizzle);
+
+            return FPAbsNeg(context, operands, abs: false, neg: negateC);
         }
     }
 }

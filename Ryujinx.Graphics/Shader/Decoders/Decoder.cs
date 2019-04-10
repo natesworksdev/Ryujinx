@@ -98,6 +98,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
                         current.OpCodes.Count - smaller.OpCodes.Count,
                         smaller.OpCodes.Count);
 
+                    current.UpdateSsyOpCodes();
+                    smaller.UpdateSsyOpCodes();
+
                     visitedEnd[smaller.EndAddress] = smaller;
                 }
 
@@ -289,15 +292,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 OpCode op = MakeOpCode(opCodeType, emitter, opAddress, opCode);
 
                 block.OpCodes.Add(op);
-
-                if (op.Emitter == InstEmit.Ssy)
-                {
-                    block.SsyOpCodes.Add((OpCodeSsy)op);
-                }
             }
             while (!IsBranch(block.GetLastOp()));
 
             block.EndAddress = address;
+
+            block.UpdateSsyOpCodes();
         }
 
         private static bool IsUnconditionalBranch(OpCode opCode)

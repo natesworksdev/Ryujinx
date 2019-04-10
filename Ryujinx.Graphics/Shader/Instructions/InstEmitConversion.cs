@@ -45,11 +45,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             srcB = context.FPSaturate(srcB, op.Saturate);
 
-            Operand dest = GetDest(context);
+            WriteFP(context, dstType, srcB);
 
-            context.Copy(dest, srcB);
-
-            SetZnFlags(context, dest, op.SetCondCode);
+            //TODO: CC.
         }
 
         public static void F2I(EmitterContext context)
@@ -105,18 +103,18 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             context.Copy(dest, srcB);
 
-            SetZnFlags(context, dest, op.SetCondCode);
+            //TODO: CC.
         }
 
         public static void I2F(EmitterContext context)
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
-            FPType floatType = (FPType)op.RawOpCode.Extract(8, 2);
+            FPType dstType = (FPType)op.RawOpCode.Extract(8, 2);
 
-            IntegerType intType = (IntegerType)op.RawOpCode.Extract(10, 2);
+            IntegerType srcType = (IntegerType)op.RawOpCode.Extract(10, 2);
 
-            bool isSmallInt = intType <= IntegerType.U16;
+            bool isSmallInt = srcType <= IntegerType.U16;
 
             bool isSignedInt = op.RawOpCode.Extract(13);
             bool negateB     = op.RawOpCode.Extract(45);
@@ -126,23 +124,20 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (isSmallInt)
             {
-                int size = intType == IntegerType.U16 ? 16 : 8;
+                int size = srcType == IntegerType.U16 ? 16 : 8;
 
                 srcB = isSignedInt
                     ? context.BitfieldExtractS32(srcB, Const(op.ByteSelection * 8), Const(size))
                     : context.BitfieldExtractU32(srcB, Const(op.ByteSelection * 8), Const(size));
             }
 
-            Operand dest = GetDest(context);
+            srcB = isSignedInt
+                ? context.IConvertS32ToFP(srcB)
+                : context.IConvertU32ToFP(srcB);
 
-            if (isSignedInt)
-            {
-                context.Copy(dest, context.IConvertS32ToFP(srcB));
-            }
-            else
-            {
-                context.Copy(dest, context.IConvertU32ToFP(srcB));
-            }
+            WriteFP(context, dstType, srcB);
+
+            //TODO: CC.
         }
 
         public static void I2I(EmitterContext context)
@@ -195,6 +190,24 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Copy(GetDest(context), srcB);
 
             //TODO: CC.
+        }
+
+        private static void WriteFP(EmitterContext context, FPType type, Operand srcB)
+        {
+            Operand dest = GetDest(context);
+
+            if (type == FPType.FP32)
+            {
+                context.Copy(dest, srcB);
+            }
+            else if (type == FPType.FP16)
+            {
+                context.Copy(dest, context.PackHalf2x16(srcB, ConstF(0)));
+            }
+            else
+            {
+                //TODO.
+            }
         }
     }
 }

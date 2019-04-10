@@ -41,7 +41,22 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static Operand GetSrcB(EmitterContext context, FPType floatType)
         {
-            return GetSrcB(context);
+            if (floatType == FPType.FP32)
+            {
+                return GetSrcB(context);
+            }
+            else if (floatType == FPType.FP16)
+            {
+                int h = context.CurrOp.RawOpCode.Extract(41, 1);
+
+                return GetHalfSources(context, GetSrcB(context), FPHalfSwizzle.FP16)[h];
+            }
+            else if (floatType == FPType.FP64)
+            {
+                //TODO.
+            }
+
+            throw new ArgumentException($"Invalid floating point type \"{floatType}\".");
         }
 
         public static Operand GetSrcB(EmitterContext context)
@@ -76,6 +91,148 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
 
             throw new InvalidOperationException($"Unexpected opcode type \"{context.CurrOp.GetType().Name}\".");
+        }
+
+        public static Operand[] GetHalfSrcA(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            bool absoluteA = false, negateA = false;
+
+            if (op is IOpCodeCbuf || op is IOpCodeImm)
+            {
+                negateA   = op.RawOpCode.Extract(43);
+                absoluteA = op.RawOpCode.Extract(44);
+            }
+            else if (op is IOpCodeReg)
+            {
+                absoluteA = op.RawOpCode.Extract(44);
+            }
+            else if (op is OpCodeAluImm32 && op.Emitter == InstEmit.Hadd2)
+            {
+                negateA = op.RawOpCode.Extract(56);
+            }
+
+            FPHalfSwizzle swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(47, 2);
+
+            Operand[] operands = GetHalfSources(context, GetSrcA(context), swizzle);
+
+            return FPAbsNeg(context, operands, absoluteA, negateA);
+        }
+
+        public static Operand[] GetHalfSrcB(EmitterContext context)
+        {
+            OpCode op = context.CurrOp;
+
+            FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
+
+            bool absoluteB = false, negateB = false;
+
+            if (op is IOpCodeReg)
+            {
+                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(28, 2);
+
+                absoluteB = op.RawOpCode.Extract(30);
+                negateB   = op.RawOpCode.Extract(31);
+            }
+            else if (op is IOpCodeCbuf)
+            {
+                swizzle = FPHalfSwizzle.FP32;
+
+                absoluteB = op.RawOpCode.Extract(54);
+            }
+
+            Operand[] operands = GetHalfSources(context, GetSrcB(context), swizzle);
+
+            return FPAbsNeg(context, operands, absoluteB, negateB);
+        }
+
+        public static Operand[] FPAbsNeg(EmitterContext context, Operand[] operands, bool abs, bool neg)
+        {
+            for (int index = 0; index < operands.Length; index++)
+            {
+                operands[index] = context.FPAbsNeg(operands[index], abs, neg);
+            }
+
+            return operands;
+        }
+
+        public static Operand[] GetHalfSources(EmitterContext context, Operand src, FPHalfSwizzle swizzle)
+        {
+            switch (swizzle)
+            {
+                case FPHalfSwizzle.FP16:
+                    return new Operand[]
+                    {
+                        context.UnpackHalf2x16Low (src),
+                        context.UnpackHalf2x16High(src)
+                    };
+
+                case FPHalfSwizzle.FP32: return new Operand[] { src, src };
+
+                case FPHalfSwizzle.DupH0:
+                    return new Operand[]
+                    {
+                        context.UnpackHalf2x16Low(src),
+                        context.UnpackHalf2x16Low(src)
+                    };
+
+                case FPHalfSwizzle.DupH1:
+                    return new Operand[]
+                    {
+                        context.UnpackHalf2x16High(src),
+                        context.UnpackHalf2x16High(src)
+                    };
+            }
+
+            throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
+        }
+
+        public static Operand GetHalfPacked(EmitterContext context, Operand[] results)
+        {
+            OpCode op = context.CurrOp;
+
+            FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
+
+            if (!(op is OpCodeAluImm32))
+            {
+                swizzle = (FPHalfSwizzle)context.CurrOp.RawOpCode.Extract(49, 2);
+            }
+
+            switch (swizzle)
+            {
+                case FPHalfSwizzle.FP16: return context.PackHalf2x16(results[0], results[1]);
+
+                case FPHalfSwizzle.FP32: return results[0];
+
+                case FPHalfSwizzle.DupH0:
+                {
+                    Operand h1 = GetHalfDest(context, isHigh: true);
+
+                    return context.PackHalf2x16(results[0], h1);
+                }
+
+                case FPHalfSwizzle.DupH1:
+                {
+                    Operand h0 = GetHalfDest(context, isHigh: false);
+
+                    return context.PackHalf2x16(h0, results[1]);
+                }
+            }
+
+            throw new ArgumentException($"Invalid swizzle \"{swizzle}\".");
+        }
+
+        public static Operand GetHalfDest(EmitterContext context, bool isHigh)
+        {
+            if (isHigh)
+            {
+                return context.UnpackHalf2x16High(GetDest(context));
+            }
+            else
+            {
+                return context.UnpackHalf2x16Low(GetDest(context));
+            }
         }
 
         public static Operand GetPredicate39(EmitterContext context)

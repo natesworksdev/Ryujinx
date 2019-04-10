@@ -86,7 +86,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             Operand dest = copyOp.Dest;
             Operand src  = copyOp.GetSource(0);
 
-            foreach (INode useNode in dest.UseOps)
+            INode[] uses = dest.UseOps.ToArray();
+
+            foreach (INode useNode in uses)
             {
                 for (int index = 0; index < useNode.SourcesCount; index++)
                 {
@@ -112,25 +114,14 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             foreach (INode useNode in uses)
             {
-                if (!(useNode is Operation operation))
-                {
-                    continue;
-                }
-
-                Operand src;
-
-                if (operation.Inst == Instruction.UnpackHalf2x16)
-                {
-                    src = operation.ComponentIndex == 1 ? src1 : src0;
-                }
-                else
+                if (!(useNode is Operation operation) || operation.Inst != Instruction.UnpackHalf2x16)
                 {
                     continue;
                 }
 
                 if (operation.GetSource(0) == dest)
                 {
-                    operation.TurnIntoCopy(src);
+                    operation.TurnIntoCopy(operation.ComponentIndex == 1 ? src1 : src0);
 
                     modified = true;
                 }

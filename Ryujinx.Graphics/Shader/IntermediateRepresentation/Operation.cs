@@ -20,13 +20,15 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         public Operation(Instruction inst, Operand dest, params Operand[] sources)
         {
-            Inst     = inst;
-            Dest     = dest;
-            _sources = sources;
+            Inst = inst;
+            Dest = dest;
 
-            for (int index = 0; index < sources.Length; index++)
+            //The array may be modified externally, so we store a copy.
+            _sources = (Operand[])sources.Clone();
+
+            for (int index = 0; index < _sources.Length; index++)
             {
-                Operand source = sources[index];
+                Operand source = _sources[index];
 
                 if (source.Type == OperandType.LocalVariable)
                 {
@@ -59,14 +61,21 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             return _sources[index];
         }
 
-        public void SetSource(int index, Operand operand)
+        public void SetSource(int index, Operand source)
         {
-            if (operand.Type == OperandType.LocalVariable)
+            Operand oldSrc = _sources[index];
+
+            if (oldSrc != null && oldSrc.Type == OperandType.LocalVariable)
             {
-                operand.UseOps.Add(this);
+                oldSrc.UseOps.Remove(this);
             }
 
-            _sources[index] = operand;
+            if (source.Type == OperandType.LocalVariable)
+            {
+                source.UseOps.Add(this);
+            }
+
+            _sources[index] = source;
         }
 
         public void TurnIntoCopy(Operand source)
@@ -81,7 +90,10 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
                 }
             }
 
-            source.UseOps.Add(this);
+            if (source.Type == OperandType.LocalVariable)
+            {
+                source.UseOps.Add(this);
+            }
 
             _sources = new Operand[] { source };
         }
