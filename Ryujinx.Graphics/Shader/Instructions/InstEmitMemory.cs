@@ -43,12 +43,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             for (int index = 0; index < op.Count; index++)
             {
-                Register rd = new Register(op.Rd.Index + index, RegisterType.Gpr);
-
-                if (rd.IsRZ)
+                if (op.Rd.Index + index > RegisterConsts.RegisterZeroIndex)
                 {
                     break;
                 }
+
+                Register rd = new Register(op.Rd.Index + index, RegisterType.Gpr);
 
                 Operand dest = Attribute(op.AttributeOffset + index * 4);
 
