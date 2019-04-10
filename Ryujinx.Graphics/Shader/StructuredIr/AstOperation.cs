@@ -8,6 +8,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
     {
         public Instruction Inst { get; }
 
+        public int ComponentMask { get; }
+
         private IAstNode[] _sources;
 
         public int SourcesCount => _sources.Length;
@@ -21,6 +23,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             {
                 AddUse(source, this);
             }
+
+            ComponentMask = 1;
+        }
+
+        public AstOperation(Instruction inst, int compMask, params IAstNode[] sources) : this(inst, sources)
+        {
+            ComponentMask = compMask;
         }
 
         public IAstNode GetSource(int index)

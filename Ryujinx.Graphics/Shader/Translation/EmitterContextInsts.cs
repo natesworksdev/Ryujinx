@@ -400,12 +400,21 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public static Operand UnpackHalf2x16High(this EmitterContext context, Operand a)
         {
-            return context.Add(Instruction.UnpackHalf2x16High, Local(), a);
+            return UnpackHalf2x16(context, a, 1);
         }
 
         public static Operand UnpackHalf2x16Low(this EmitterContext context, Operand a)
         {
-            return context.Add(Instruction.UnpackHalf2x16Low, Local(), a);
+            return UnpackHalf2x16(context, a, 0);
+        }
+
+        private static Operand UnpackHalf2x16(this EmitterContext context, Operand a, int index)
+        {
+            Operand dest = Local();
+
+            context.Add(new Operation(Instruction.UnpackHalf2x16, index, dest, a));
+
+            return dest;
         }
     }
 }

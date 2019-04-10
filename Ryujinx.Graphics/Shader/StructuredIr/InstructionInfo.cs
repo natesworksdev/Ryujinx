@@ -79,9 +79,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.Sine,                     VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.SquareRoot,               VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.Subtract,                 VariableType.Scalar, VariableType.Scalar, VariableType.Scalar);
+            Add(Instruction.TextureSample,            VariableType.F32);
+            Add(Instruction.TextureSize,              VariableType.S32,    VariableType.S32,    VariableType.S32);
             Add(Instruction.Truncate,                 VariableType.F32,    VariableType.F32);
-            Add(Instruction.UnpackHalf2x16High,       VariableType.F32,    VariableType.U32);
-            Add(Instruction.UnpackHalf2x16Low,        VariableType.F32,    VariableType.U32);
+            Add(Instruction.UnpackHalf2x16,           VariableType.F32,    VariableType.U32);
         }
 
         private static void Add(Instruction inst, VariableType destType, params VariableType[] srcTypes)
@@ -91,17 +92,12 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public static VariableType GetDestVarType(Instruction inst)
         {
-            if (IsTextureInst(inst))
-            {
-                return VariableType.F32;
-            }
-
             return GetFinalVarType(_infoTbl[(int)(inst & Instruction.Mask)].DestType, inst);
         }
 
         public static VariableType GetSrcVarType(Instruction inst, int index)
         {
-            if (IsTextureInst(inst))
+            if (inst == Instruction.TextureSample)
             {
                 return VariableType.F32;
             }
@@ -129,21 +125,15 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             return type;
         }
 
-        private static bool IsTextureInst(Instruction inst)
-        {
-            return inst == Instruction.TextureSample;
-        }
-
         public static bool IsUnary(Instruction inst)
         {
-            if (inst == Instruction.TextureSample)
-            {
-                return false;
-            }
-
             if (inst == Instruction.Copy)
             {
                 return true;
+            }
+            else if (inst == Instruction.TextureSample)
+            {
+                return false;
             }
 
             return _infoTbl[(int)(inst & Instruction.Mask)].SrcTypes.Length == 1;

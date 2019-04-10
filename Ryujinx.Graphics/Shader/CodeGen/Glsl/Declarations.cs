@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
     {
         public static void Declare(CodeGenContext context, StructuredProgramInfo prgInfo)
         {
-            context.AppendLine("#version 410 core");
+            context.AppendLine("#version 420 core");
 
             context.AppendLine();
 
@@ -110,13 +110,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareSamplers(CodeGenContext context, StructuredProgramInfo prgInfo)
         {
-            foreach (KeyValuePair<int, TextureType> kv in prgInfo.Samplers.OrderBy(x => x.Key))
+            HashSet<string> samplerNames = new HashSet<string>();
+
+            foreach (AstTextureOperation texOp in prgInfo.Samplers.OrderBy(x => x.Handle))
             {
-                int textureHandle = kv.Key;
+                string samplerName = OperandManager.GetSamplerName(context.ShaderType, texOp);
 
-                string samplerTypeName = GetSamplerTypeName(kv.Value);
+                if (!samplerNames.Add(samplerName))
+                {
+                    continue;
+                }
 
-                string samplerName = OperandManager.GetSamplerName(context.ShaderType, textureHandle);
+                string samplerTypeName = GetSamplerTypeName(texOp.Type);
 
                 context.AppendLine("uniform " + samplerTypeName + " " + samplerName + ";");
             }
@@ -152,6 +157,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 case TextureType.TextureCube: typeName = "samplerCube"; break;
 
                 default: throw new ArgumentException($"Invalid sampler type \"{type}\".");
+            }
+
+            if ((type & TextureType.Multisample) != 0)
+            {
+                typeName += "MS";
             }
 
             if ((type & TextureType.Array) != 0)

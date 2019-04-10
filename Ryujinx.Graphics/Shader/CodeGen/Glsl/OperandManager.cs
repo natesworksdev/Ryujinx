@@ -118,7 +118,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                             case AttributeConsts.PositionX: return "gl_FragCoord.x";
                             case AttributeConsts.PositionY: return "gl_FragCoord.y";
                             case AttributeConsts.PositionZ: return "gl_FragCoord.z";
-                            case AttributeConsts.PositionW: return "1";
+                            case AttributeConsts.PositionW: return "1.0";
                         }
                     }
 
@@ -145,9 +145,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return ubName + "_" + DefaultNames.UniformNameSuffix;
         }
 
-        public static string GetSamplerName(GalShaderType shaderType, int textureHandle)
+        public static string GetSamplerName(GalShaderType shaderType, AstTextureOperation texOp)
         {
-            string suffix = (textureHandle - 8).ToString();
+            string suffix;
+
+            if ((texOp.Flags & TextureFlags.Bindless) != 0)
+            {
+                AstOperand operand = texOp.GetSource(0) as AstOperand;
+
+                suffix = "_cb" + operand.CbufSlot + "_" + operand.CbufOffset;
+            }
+            else
+            {
+                suffix = (texOp.Handle - 8).ToString();
+            }
 
             return GetShaderStagePrefix(shaderType) + "_" + DefaultNames.SamplerNamePrefix + suffix;
         }

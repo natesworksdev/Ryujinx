@@ -119,13 +119,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 Operand src;
 
-                if (operation.Inst == Instruction.UnpackHalf2x16High)
+                if (operation.Inst == Instruction.UnpackHalf2x16)
                 {
-                    src = src1;
-                }
-                else if (operation.Inst == Instruction.UnpackHalf2x16Low)
-                {
-                    src = src0;
+                    src = operation.ComponentIndex == 1 ? src1 : src0;
                 }
                 else
                 {

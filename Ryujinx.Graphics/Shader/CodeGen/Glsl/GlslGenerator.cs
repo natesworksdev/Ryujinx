@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.Gal;
+using Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
@@ -82,7 +83,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         PrepareForReturn(context);
                     }
 
-                    context.AppendLine(Instructions.GetExpression(context, operation) + ";");
+                    context.AppendLine(InstGen.GetExpression(context, operation) + ";");
                 }
                 else if (node is AstAssignment assignment)
                 {
@@ -97,7 +98,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     }
                     else
                     {
-                        dest = Instructions.GetExpression(context, assignment.Destination);
+                        dest = InstGen.GetExpression(context, assignment.Destination);
                     }
 
                     string src = ReinterpretCast(context, assignment.Source, srcType, dstType);

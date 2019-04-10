@@ -1,4 +1,3 @@
-using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
@@ -14,7 +13,9 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         public HashSet<int> IAttributes { get; }
         public HashSet<int> OAttributes { get; }
 
-        public Dictionary<int, TextureType> Samplers { get; }
+        private HashSet<int> _textureHandles;
+
+        public HashSet<AstTextureOperation> Samplers { get; }
 
         public StructuredProgramInfo(AstBlock mainBlock)
         {
@@ -27,7 +28,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             IAttributes = new HashSet<int>();
             OAttributes = new HashSet<int>();
 
-            Samplers = new Dictionary<int, TextureType>();
+            Samplers = new HashSet<AstTextureOperation>();
         }
     }
 }

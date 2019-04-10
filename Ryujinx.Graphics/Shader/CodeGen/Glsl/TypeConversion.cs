@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
@@ -20,7 +21,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 }
             }
 
-            string expr = Instructions.GetExpression(context, node);
+            string expr = InstGen.GetExpression(context, node);
 
             return ReinterpretCast(expr, node, srcType, dstType);
         }
@@ -55,7 +56,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else if (dstType == VariableType.Bool)
             {
-                expr = Instructions.Enclose(expr, node, Instruction.CompareNotEqual, isLhs: true);
+                expr = InstGenHelper.Enclose(expr, node, Instruction.CompareNotEqual, isLhs: true);
 
                 return $"({expr} != 0)";
             }
@@ -76,7 +77,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             string trueExpr  = NumberFormatter.FormatInt(IrConsts.True,  dstType);
             string falseExpr = NumberFormatter.FormatInt(IrConsts.False, dstType);
 
-            expr = Instructions.Enclose(expr, node, Instruction.ConditionalSelect, isLhs: false);
+            expr = InstGenHelper.Enclose(expr, node, Instruction.ConditionalSelect, isLhs: false);
 
             return $"({expr} ? {trueExpr} : {falseExpr})";
         }

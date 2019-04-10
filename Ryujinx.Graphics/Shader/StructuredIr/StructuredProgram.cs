@@ -97,28 +97,27 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     dest.VarType = InstructionInfo.GetDestVarType(inst);
                 }
 
+                int componentMask = 1 << operation.ComponentIndex;
+
                 IAstNode source;
 
                 if (operation is TextureOperation texOp)
                 {
-                    if (!context.Info.Samplers.TryAdd(texOp.TextureHandle, texOp.Type))
-                    {
-                        //TODO: Warning.
-                    }
-
-                    int[] components = new int[] { texOp.ComponentIndex };
-
-                    source = new AstTextureOperation(
+                    AstTextureOperation astTexOp = new AstTextureOperation(
                         inst,
                         texOp.Type,
                         texOp.Flags,
-                        texOp.TextureHandle,
-                        components,
+                        texOp.Handle,
+                        componentMask,
                         sources);
+
+                    context.Info.Samplers.Add(astTexOp);
+
+                    source = astTexOp;
                 }
                 else if (!isCopy)
                 {
-                    source = new AstOperation(inst, sources);
+                    source = new AstOperation(inst, componentMask, sources);
                 }
                 else
                 {
