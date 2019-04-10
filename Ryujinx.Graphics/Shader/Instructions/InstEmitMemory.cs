@@ -277,24 +277,48 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         break;
 
                     case TldsType.Texture1DLodLevel:
-                    case TldsType.Texture2DLodZero:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
                         break;
 
+                    case TldsType.Texture2DLodZero:
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Rb());
+                        sourcesList.Add(ConstF(0));
+                        break;
+
                     case TldsType.Texture2DLodZeroOffset:
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(ConstF(0));
+                        sourcesList.Add(Rb());
+                        break;
+
                     case TldsType.Texture2DLodLevel:
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Rb());
+                        break;
+
                     case TldsType.Texture2DLodZeroMultisample:
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(ConstF(0));
+                        sourcesList.Add(Rb());
+                        break;
+
                     case TldsType.Texture3DLodZero:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
+                        sourcesList.Add(ConstF(0));
                         break;
 
                     case TldsType.Texture2DArrayLodZero:
                         sourcesList.Add(Rb());
                         sourcesList.Add(Rb());
                         sourcesList.Add(Ra());
+                        sourcesList.Add(ConstF(0));
                         break;
 
                     case TldsType.Texture2DLodLevelOffset:
