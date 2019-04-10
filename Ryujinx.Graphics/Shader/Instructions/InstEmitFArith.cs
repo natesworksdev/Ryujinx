@@ -292,20 +292,19 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             FPHalfSwizzle swizzle = FPHalfSwizzle.FP16;
 
-            if (!(op is IOpCodeImm))
-            {
-                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(28, 2);
-            }
-
             bool absoluteB = false, negateB = false;
 
             if (op is IOpCodeReg)
             {
+                swizzle = (FPHalfSwizzle)op.RawOpCode.Extract(28, 2);
+
                 absoluteB = op.RawOpCode.Extract(30);
                 negateB   = op.RawOpCode.Extract(31);
             }
             else if (op is IOpCodeCbuf)
             {
+                swizzle = FPHalfSwizzle.FP32;
+
                 absoluteB = op.RawOpCode.Extract(54);
             }
 

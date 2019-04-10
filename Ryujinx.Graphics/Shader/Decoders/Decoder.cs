@@ -307,6 +307,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         private static bool IsUnconditional(OpCode opCode)
         {
+            if (opCode is OpCodeExit op && op.Condition != Condition.Always)
+            {
+                return false;
+            }
+
             return opCode.Predicate.Index == RegisterConsts.PredicateTrueIndex && !opCode.InvertPredicate;
         }
 

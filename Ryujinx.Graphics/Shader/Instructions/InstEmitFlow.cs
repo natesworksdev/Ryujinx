@@ -17,7 +17,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static void Exit(EmitterContext context)
         {
-            context.Return();
+            OpCodeExit op = (OpCodeExit)context.CurrOp;
+
+            //TODO: Figure out how this is supposed to work in the
+            //presence of other condition codes.
+            if (op.Condition == Condition.Always)
+            {
+                context.Return();
+            }
         }
 
         public static void Kil(EmitterContext context)
