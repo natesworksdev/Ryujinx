@@ -273,7 +273,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     case TldsType.Texture1DLodZero:
                         sourcesList.Add(Ra());
-                        sourcesList.Add(ConstF(0));
+                        sourcesList.Add(Const(0));
                         break;
 
                     case TldsType.Texture1DLodLevel:
@@ -284,14 +284,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     case TldsType.Texture2DLodZero:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
-                        sourcesList.Add(ConstF(0));
+                        sourcesList.Add(Const(0));
                         break;
 
                     case TldsType.Texture2DLodZeroOffset:
                     case TldsType.Texture2DLodZeroMultisample:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
-                        sourcesList.Add(ConstF(0));
+                        sourcesList.Add(Const(0));
                         sourcesList.Add(Rb());
                         break;
 
@@ -305,14 +305,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
-                        sourcesList.Add(ConstF(0));
+                        sourcesList.Add(Const(0));
                         break;
 
                     case TldsType.Texture2DArrayLodZero:
                         sourcesList.Add(Rb());
                         sourcesList.Add(Rb());
                         sourcesList.Add(Ra());
-                        sourcesList.Add(ConstF(0));
+                        sourcesList.Add(Const(0));
                         break;
 
                     case TldsType.Texture2DLodLevelOffset:
@@ -339,19 +339,26 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 type  = TextureType.Texture2D;
                 flags = TextureFlags.Gather;
 
-                if (tld4sOp.HasOffset)
-                {
-                    sourcesList.Add(Rb());
-
-                    flags |= TextureFlags.Offset;
-                }
-
                 if (tld4sOp.HasDepthCompare)
                 {
                     sourcesList.Add(Rb());
 
                     type |= TextureType.Shadow;
                 }
+
+                if (tld4sOp.HasOffset)
+                {
+                    Operand packedOffs = Rb();
+
+                    for (int index = 0; index < type.GetCoordsCount(); index++)
+                    {
+                        sourcesList.Add(context.BitfieldExtractS32(packedOffs, Const(index * 8), Const(6)));
+                    }
+
+                    flags |= TextureFlags.Offset;
+                }
+
+                sourcesList.Add(Const(tld4sOp.GatherCompIndex));
             }
             else
             {
