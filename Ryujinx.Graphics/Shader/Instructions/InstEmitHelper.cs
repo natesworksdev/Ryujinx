@@ -74,6 +74,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 case IOpCodeReg op:
                     return Register(op.Rb);
+
+                case IOpCodeRegCbuf op:
+                    return Register(op.Rc);
             }
 
             throw new InvalidOperationException($"Unexpected opcode type \"{context.CurrOp.GetType().Name}\".");

@@ -68,11 +68,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("0111101x0xxxxx", InstEmit.Hadd2,  typeof(OpCodeAluImm2x10));
             Set("0010110xxxxxxx", InstEmit.Hadd2,  typeof(OpCodeAluImm32));
             Set("0101110100010x", InstEmit.Hadd2,  typeof(OpCodeAluReg));
-            Set("01110xxx1xxxxx", InstEmit.Hfma2,  typeof(OpCodeAluCbuf));
-            Set("01110xxx0xxxxx", InstEmit.Hfma2,  typeof(OpCodeAluImm2x10));
-            Set("0010100xxxxxxx", InstEmit.Hfma2,  typeof(OpCodeAluImm32));
-            Set("0101110100000x", InstEmit.Hfma2,  typeof(OpCodeAluReg));
-            Set("01100xxx1xxxxx", InstEmit.Hfma2,  typeof(OpCodeAluRegCbuf));
+            Set("01110xxx1xxxxx", InstEmit.Hfma2,  typeof(OpCodeHfmaCbuf));
+            Set("01110xxx0xxxxx", InstEmit.Hfma2,  typeof(OpCodeHfmaImm2x10));
+            Set("0010100xxxxxxx", InstEmit.Hfma2,  typeof(OpCodeHfmaImm32));
+            Set("0101110100000x", InstEmit.Hfma2,  typeof(OpCodeHfmaReg));
+            Set("01100xxx1xxxxx", InstEmit.Hfma2,  typeof(OpCodeHfmaRegCbuf));
             Set("0111100x1xxxxx", InstEmit.Hmul2,  typeof(OpCodeAluCbuf));
             Set("0111100x0xxxxx", InstEmit.Hmul2,  typeof(OpCodeAluImm2x10));
             Set("0010101xxxxxxx", InstEmit.Hmul2,  typeof(OpCodeAluImm32));

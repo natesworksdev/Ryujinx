@@ -1,10 +1,8 @@
 namespace Ryujinx.Graphics.Shader.Decoders
 {
-    interface IOpCodeRegCbuf : IOpCode
+    interface IOpCodeRegCbuf : IOpCodeRc
     {
         int Offset { get; }
         int Slot   { get; }
-
-        Register Rb { get; }
     }
 }
