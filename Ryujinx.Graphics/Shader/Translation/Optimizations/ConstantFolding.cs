@@ -188,6 +188,10 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 case Instruction.Subtract:
                     EvaluateBinary(operation, (x, y) => x - y);
                     break;
+
+                case Instruction.UnpackHalf2x16:
+                    UnpackHalf2x16(operation);
+                    break;
             }
         }
 
@@ -227,6 +231,15 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             int length = operation.GetSource(2).Value;
 
             return value.Extract(lsb, length);
+        }
+
+        private static void UnpackHalf2x16(Operation operation)
+        {
+            int value = operation.GetSource(0).Value;
+
+            value = (value >> operation.ComponentIndex * 16) & 0xffff;
+
+            operation.TurnIntoCopy(ConstF(HalfConversion.HalfToSingle(value)));
         }
 
         private static void FPNegate(Operation operation)
