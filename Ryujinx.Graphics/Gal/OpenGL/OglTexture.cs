@@ -95,6 +95,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                         type,
                         IntPtr.Zero);
                     break;
+                case TextureTarget.TextureCubeMapArray:
                 case TextureTarget.Texture2DArray:
                     GL.TexImage3D(
                         target,
