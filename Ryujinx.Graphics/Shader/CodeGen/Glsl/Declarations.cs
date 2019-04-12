@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             context.AppendLine();
 
-            if (context.ShaderType == GalShaderType.Geometry)
+            if (context.Config.Type == GalShaderType.Geometry)
             {
                 context.AppendLine("layout (points) in;");
                 context.AppendLine("layout (triangle_strip, max_vertices = 4) out;");
@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             foreach (int cbufSlot in info.CBuffers.OrderBy(x => x))
             {
-                string ubName = OperandManager.GetShaderStagePrefix(context.ShaderType);
+                string ubName = OperandManager.GetShaderStagePrefix(context.Config.Type);
 
                 ubName += "_" + DefaultNames.UniformNamePrefix + cbufSlot;
 
@@ -104,7 +104,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 context.EnterScope();
 
-                context.AppendLine("vec4 " + OperandManager.GetUbName(context.ShaderType, cbufSlot) + "[4096];");
+                string ubSize = "[" + NumberFormatter.FormatInt(context.Config.MaxCBufferSize / 16) + "]";
+
+                context.AppendLine("vec4 " + OperandManager.GetUbName(context.Config.Type, cbufSlot) + ubSize + ";");
 
                 context.LeaveScope(";");
             }
@@ -116,7 +118,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             foreach (AstTextureOperation texOp in info.Samplers.OrderBy(x => x.Handle))
             {
-                string samplerName = OperandManager.GetSamplerName(context.ShaderType, texOp);
+                string samplerName = OperandManager.GetSamplerName(context.Config.Type, texOp);
 
                 if (!samplers.TryAdd(samplerName, texOp))
                 {
@@ -153,7 +155,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
-            string suffix = context.ShaderType == GalShaderType.Geometry ? "[]" : string.Empty;
+            string suffix = context.Config.Type == GalShaderType.Geometry ? "[]" : string.Empty;
 
             foreach (int attr in info.IAttributes.OrderBy(x => x))
             {

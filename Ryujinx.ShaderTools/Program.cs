@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Graphics.Gal;
+using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.IO;
@@ -26,7 +27,9 @@ namespace Ryujinx.ShaderTools
                 {
                     Memory mem = new Memory(fs);
 
-                    string code = Translator.Translate(mem, 0, type).Code;
+                    ShaderConfig config = new ShaderConfig(type, 65536);
+
+                    string code = Translator.Translate(mem, 0, config).Code;
 
                     Console.WriteLine(code);
                 }

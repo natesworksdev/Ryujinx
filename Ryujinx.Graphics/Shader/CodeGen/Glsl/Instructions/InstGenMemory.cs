@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool isMultisample = (texOp.Type  & TextureType.Multisample) != 0;
             bool isShadow      = (texOp.Type  & TextureType.Shadow)      != 0;
 
-            string samplerName = OperandManager.GetSamplerName(context.ShaderType, texOp);
+            string samplerName = OperandManager.GetSamplerName(context.Config.Type, texOp);
 
             string texCall = intCoords ? "texelFetch" : "texture";
 
@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless  = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            string samplerName = OperandManager.GetSamplerName(context.ShaderType, texOp);
+            string samplerName = OperandManager.GetSamplerName(context.Config.Type, texOp);
 
             IAstNode src0 = operation.GetSource(isBindless ? 1 : 0);
 

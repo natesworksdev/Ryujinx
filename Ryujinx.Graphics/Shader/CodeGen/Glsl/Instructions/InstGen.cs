@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                         return NumberFormatter.FormatInt(operand.Value);
 
                     case OperandType.ConstantBuffer:
-                        return OperandManager.GetConstantBufferName(context.ShaderType, operand);
+                        return OperandManager.GetConstantBufferName(context.Config.Type, operand);
 
                     case OperandType.LocalVariable:
                         return context.GetLocalName(operand);

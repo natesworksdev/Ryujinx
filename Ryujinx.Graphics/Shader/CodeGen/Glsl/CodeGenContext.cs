@@ -1,4 +1,3 @@
-using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +8,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
     {
         private const string Tab = "    ";
 
-        public GalShaderType ShaderType { get; }
+        public ShaderConfig Config { get; }
 
         public List<CBufferDescriptor> CBufferDescriptors { get; }
         public List<TextureDescriptor> TextureDescriptors { get; }
@@ -22,9 +21,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private string _identation;
 
-        public CodeGenContext(GalShaderType shaderType)
+        public CodeGenContext(ShaderConfig config)
         {
-            ShaderType = shaderType;
+            Config = config;
 
             CBufferDescriptors = new List<CBufferDescriptor>();
             TextureDescriptors = new List<TextureDescriptor>();

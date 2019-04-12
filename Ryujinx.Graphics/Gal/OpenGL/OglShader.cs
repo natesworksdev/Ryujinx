@@ -52,28 +52,30 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             bool          isDualVp,
             GalShaderType type)
         {
-            ShaderProgram program;
+            ShaderConfig config = new ShaderConfig(type, OglLimit.MaxUboSize);
 
-            int shaderDumpIndex = ShaderDumper.DumpIndex;
+            ShaderProgram program;
 
             if (isDualVp)
             {
                 ShaderDumper.Dump(memory, position,  type, "a");
                 ShaderDumper.Dump(memory, positionB, type, "b");
 
-                program = Translator.Translate(memory, (ulong)position, (ulong)positionB, type);
+                program = Translator.Translate(memory, (ulong)position, (ulong)positionB, config);
             }
             else
             {
                 ShaderDumper.Dump(memory, position, type);
 
-                program = Translator.Translate(memory, (ulong)position, type);
+                program = Translator.Translate(memory, (ulong)position, config);
             }
 
             string code = program.Code;
 
             if (ShaderDumper.IsDumpEnabled())
             {
+                int shaderDumpIndex = ShaderDumper.DumpIndex;
+
                 code = "//Shader " + shaderDumpIndex + Environment.NewLine + code;
             }
 

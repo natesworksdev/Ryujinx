@@ -10,9 +10,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
     static class GlslGenerator
     {
-        public static GlslProgram Generate(StructuredProgramInfo info, GalShaderType shaderType)
+        public static GlslProgram Generate(StructuredProgramInfo info, ShaderConfig config)
         {
-            CodeGenContext context = new CodeGenContext(shaderType);
+            CodeGenContext context = new CodeGenContext(config);
 
             Declarations.Declare(context, info);
 
@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void PrepareForReturn(CodeGenContext context)
         {
-            if (context.ShaderType == GalShaderType.Vertex)
+            if (context.Config.Type == GalShaderType.Vertex)
             {
                 context.AppendLine("gl_Position.xy *= flip;");
             }

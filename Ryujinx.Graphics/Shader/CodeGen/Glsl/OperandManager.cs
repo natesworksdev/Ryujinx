@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             //slot access.
             AstOperand operand = (AstOperand)slot;
 
-            string ubName = GetUbName(context.ShaderType, operand.Value);
+            string ubName = GetUbName(context.Config.Type, operand.Value);
 
             string index0 = "[" + offsetExpr + " >> 4]";
             string index1 = "[" + offsetExpr + " >> 2 & 3]";
@@ -90,7 +90,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 string name = $"{prefix}{(value >> 4)}";
 
-                if (context.ShaderType == GalShaderType.Geometry && !isOutAttr)
+                if (context.Config.Type == GalShaderType.Geometry && !isOutAttr)
                 {
                     name += "[0]";
                 }
@@ -111,7 +111,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 else if (_builtInAttributes.TryGetValue(value & ~3, out BuiltInAttribute builtInAttr))
                 {
                     //TODO: There must be a better way to handle this...
-                    if (context.ShaderType == GalShaderType.Fragment)
+                    if (context.Config.Type == GalShaderType.Fragment)
                     {
                         switch (value & ~3)
                         {
@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     string name = builtInAttr.Name;
 
-                    if (context.ShaderType == GalShaderType.Geometry && !isOutAttr)
+                    if (context.Config.Type == GalShaderType.Geometry && !isOutAttr)
                     {
                         name = "gl_in[0]." + name;
                     }
