@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             offsetExpr = Enclose(offsetExpr, src1, Instruction.ShiftRightS32, isLhs: true);
 
-            return OperandManager.GetConstantBufferName(context, operation.GetSource(0), offsetExpr);
+            return OperandManager.GetConstantBufferName(operation.GetSource(0), offsetExpr, context.Config.Type);
         }
 
         public static string TextureSample(CodeGenContext context, AstOperation operation)

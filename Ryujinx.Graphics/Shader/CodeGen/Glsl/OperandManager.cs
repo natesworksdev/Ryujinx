@@ -44,7 +44,46 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.FragmentOutputDepth, new BuiltInAttribute("gl_FragDepth",    VariableType.F32)  }
         };
 
-        public static string GetConstantBufferName(GalShaderType shaderType, AstOperand cbuf)
+        private Dictionary<AstOperand, string> _locals;
+
+        public OperandManager()
+        {
+            _locals = new Dictionary<AstOperand, string>();
+        }
+
+        public string DeclareLocal(AstOperand operand)
+        {
+            string name = $"{DefaultNames.LocalNamePrefix}_{_locals.Count}";
+
+            _locals.Add(operand, name);
+
+            return name;
+        }
+
+        public string GetExpression(AstOperand operand, GalShaderType shaderType)
+        {
+            switch (operand.Type)
+            {
+                case OperandType.Attribute:
+                    return GetAttributeName(operand, shaderType);
+
+                case OperandType.Constant:
+                    return NumberFormatter.FormatInt(operand.Value);
+
+                case OperandType.ConstantBuffer:
+                    return GetConstantBufferName(operand, shaderType);
+
+                case OperandType.LocalVariable:
+                    return _locals[operand];
+
+                case OperandType.Undefined:
+                    return DefaultNames.UndefinedName;
+            }
+
+            throw new ArgumentException($"Invalid operand type \"{operand.Type}\".");
+        }
+
+        public static string GetConstantBufferName(AstOperand cbuf, GalShaderType shaderType)
         {
             string ubName = GetUbName(shaderType, cbuf.CbufSlot);
 
@@ -53,14 +92,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return ubName + "." + GetSwizzleMask(cbuf.CbufOffset & 3);
         }
 
-        public static string GetConstantBufferName(CodeGenContext context, IAstNode slot, string offsetExpr)
+        public static string GetConstantBufferName(IAstNode slot, string offsetExpr, GalShaderType shaderType)
         {
             //Non-constant slots are not supported.
             //It is expected that upstream stages are never going to generate non-constant
             //slot access.
             AstOperand operand = (AstOperand)slot;
 
-            string ubName = GetUbName(context.Config.Type, operand.Value);
+            string ubName = GetUbName(shaderType, operand.Value);
 
             string index0 = "[" + offsetExpr + " >> 4]";
             string index1 = "[" + offsetExpr + " >> 2 & 3]";
@@ -68,12 +107,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return ubName + index0 + index1;
         }
 
-        public static string GetOutAttributeName(CodeGenContext context, AstOperand attr)
+        public static string GetOutAttributeName(AstOperand attr, GalShaderType shaderType)
         {
-            return GetAttributeName(context, attr, isOutAttr: true);
+            return GetAttributeName(attr, shaderType, isOutAttr: true);
         }
 
-        public static string GetAttributeName(CodeGenContext context, AstOperand attr, bool isOutAttr = false)
+        private static string GetAttributeName(AstOperand attr, GalShaderType shaderType, bool isOutAttr = false)
         {
             int value = attr.Value;
 
@@ -90,7 +129,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 string name = $"{prefix}{(value >> 4)}";
 
-                if (context.Config.Type == GalShaderType.Geometry && !isOutAttr)
+                if (shaderType == GalShaderType.Geometry && !isOutAttr)
                 {
                     name += "[0]";
                 }
@@ -111,7 +150,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 else if (_builtInAttributes.TryGetValue(value & ~3, out BuiltInAttribute builtInAttr))
                 {
                     //TODO: There must be a better way to handle this...
-                    if (context.Config.Type == GalShaderType.Fragment)
+                    if (shaderType == GalShaderType.Fragment)
                     {
                         switch (value & ~3)
                         {
@@ -124,7 +163,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     string name = builtInAttr.Name;
 
-                    if (context.Config.Type == GalShaderType.Geometry && !isOutAttr)
+                    if (shaderType == GalShaderType.Geometry && !isOutAttr)
                     {
                         name = "gl_in[0]." + name;
                     }

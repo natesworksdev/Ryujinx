@@ -71,7 +71,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             foreach (AstOperand decl in info.Locals)
             {
-                string name = context.DeclareLocal(decl);
+                string name = context.OperandManager.DeclareLocal(decl);
 
                 context.AppendLine(GetVarTypeName(decl.VarType) + " " + name + ";");
             }

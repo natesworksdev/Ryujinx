@@ -17,25 +17,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else if (node is AstOperand operand)
             {
-                switch (operand.Type)
-                {
-                    case OperandType.Attribute:
-                        return OperandManager.GetAttributeName(context, operand);
-
-                    case OperandType.Constant:
-                        return NumberFormatter.FormatInt(operand.Value);
-
-                    case OperandType.ConstantBuffer:
-                        return OperandManager.GetConstantBufferName(context.Config.Type, operand);
-
-                    case OperandType.LocalVariable:
-                        return context.GetLocalName(operand);
-
-                    case OperandType.Undefined:
-                        return DefaultNames.UndefinedName;
-                }
-
-                return DefaultNames.UndefinedName;
+                return context.OperandManager.GetExpression(operand, context.Config.Type);
             }
 
             throw new ArgumentException($"Invalid node type \"{node?.GetType().Name ?? "null"}\".");

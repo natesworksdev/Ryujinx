@@ -1,4 +1,3 @@
-using Ryujinx.Graphics.Shader.StructuredIr;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,9 +12,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public List<CBufferDescriptor> CBufferDescriptors { get; }
         public List<TextureDescriptor> TextureDescriptors { get; }
 
-        private StringBuilder _sb;
+        public OperandManager OperandManager { get; }
 
-        private Dictionary<AstOperand, string> _locals;
+        private StringBuilder _sb;
 
         private int _level;
 
@@ -28,9 +27,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             CBufferDescriptors = new List<CBufferDescriptor>();
             TextureDescriptors = new List<TextureDescriptor>();
 
-            _sb = new StringBuilder();
+            OperandManager = new OperandManager();
 
-            _locals = new Dictionary<AstOperand, string>();
+            _sb = new StringBuilder();
         }
 
         public void AppendLine()
@@ -86,20 +85,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
 
             return identation;
-        }
-
-        public string DeclareLocal(AstOperand operand)
-        {
-            string name = $"temp_{_locals.Count}";
-
-            _locals.Add(operand, name);
-
-            return name;
-        }
-
-        public string GetLocalName(AstOperand operand)
-        {
-            return _locals[operand];
         }
     }
 }
