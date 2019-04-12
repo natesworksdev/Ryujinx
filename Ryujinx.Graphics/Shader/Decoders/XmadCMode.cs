@@ -1,6 +1,6 @@
-namespace Ryujinx.Graphics.Shader.Instructions
+namespace Ryujinx.Graphics.Shader.Decoders
 {
-    enum XmadMode
+    enum XmadCMode
     {
         Cfull = 0,
         Clo   = 1,

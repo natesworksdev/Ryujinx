@@ -222,40 +222,40 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     switch (texsOp.Type)
                     {
-                        case TexsType.Texture1DLodZero:
+                        case TextureScalarType.Texture1DLodZero:
                             sourcesList.Add(Ra());
                             break;
 
-                        case TexsType.Texture2D:
+                        case TextureScalarType.Texture2D:
                             sourcesList.Add(Ra());
                             sourcesList.Add(Rb());
                             break;
 
-                        case TexsType.Texture2DLodZero:
-                            sourcesList.Add(Ra());
-                            sourcesList.Add(Rb());
-                            sourcesList.Add(ConstF(0));
-                            break;
-
-                        case TexsType.Texture2DLodLevel:
-                        case TexsType.Texture2DDepthCompare:
-                        case TexsType.Texture3D:
-                        case TexsType.TextureCube:
-                            sourcesList.Add(Ra());
-                            sourcesList.Add(Ra());
-                            sourcesList.Add(Rb());
-                            break;
-
-                        case TexsType.Texture2DLodZeroDepthCompare:
-                        case TexsType.Texture3DLodZero:
-                            sourcesList.Add(Ra());
+                        case TextureScalarType.Texture2DLodZero:
                             sourcesList.Add(Ra());
                             sourcesList.Add(Rb());
                             sourcesList.Add(ConstF(0));
                             break;
 
-                        case TexsType.Texture2DLodLevelDepthCompare:
-                        case TexsType.TextureCubeLodLevel:
+                        case TextureScalarType.Texture2DLodLevel:
+                        case TextureScalarType.Texture2DDepthCompare:
+                        case TextureScalarType.Texture3D:
+                        case TextureScalarType.TextureCube:
+                            sourcesList.Add(Ra());
+                            sourcesList.Add(Ra());
+                            sourcesList.Add(Rb());
+                            break;
+
+                        case TextureScalarType.Texture2DLodZeroDepthCompare:
+                        case TextureScalarType.Texture3DLodZero:
+                            sourcesList.Add(Ra());
+                            sourcesList.Add(Ra());
+                            sourcesList.Add(Rb());
+                            sourcesList.Add(ConstF(0));
+                            break;
+
+                        case TextureScalarType.Texture2DLodLevelDepthCompare:
+                        case TextureScalarType.TextureCubeLodLevel:
                             sourcesList.Add(Ra());
                             sourcesList.Add(Ra());
                             sourcesList.Add(Rb());
@@ -271,51 +271,51 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 switch (tldsOp.Type)
                 {
-                    case TldsType.Texture1DLodZero:
+                    case TexelLoadScalarType.Texture1DLodZero:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Const(0));
                         break;
 
-                    case TldsType.Texture1DLodLevel:
+                    case TexelLoadScalarType.Texture1DLodLevel:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
                         break;
 
-                    case TldsType.Texture2DLodZero:
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Rb());
-                        sourcesList.Add(Const(0));
-                        break;
-
-                    case TldsType.Texture2DLodZeroOffset:
-                    case TldsType.Texture2DLodZeroMultisample:
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Const(0));
-                        sourcesList.Add(Rb());
-                        break;
-
-                    case TldsType.Texture2DLodLevel:
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Rb());
-                        break;
-
-                    case TldsType.Texture3DLodZero:
-                        sourcesList.Add(Ra());
+                    case TexelLoadScalarType.Texture2DLodZero:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
                         sourcesList.Add(Const(0));
                         break;
 
-                    case TldsType.Texture2DArrayLodZero:
+                    case TexelLoadScalarType.Texture2DLodZeroOffset:
+                    case TexelLoadScalarType.Texture2DLodZeroMultisample:
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Const(0));
+                        sourcesList.Add(Rb());
+                        break;
+
+                    case TexelLoadScalarType.Texture2DLodLevel:
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Rb());
+                        break;
+
+                    case TexelLoadScalarType.Texture3DLodZero:
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Rb());
+                        sourcesList.Add(Const(0));
+                        break;
+
+                    case TexelLoadScalarType.Texture2DArrayLodZero:
                         sourcesList.Add(Rb());
                         sourcesList.Add(Rb());
                         sourcesList.Add(Ra());
                         sourcesList.Add(Const(0));
                         break;
 
-                    case TldsType.Texture2DLodLevelOffset:
+                    case TexelLoadScalarType.Texture2DLodLevelOffset:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
@@ -781,110 +781,110 @@ namespace Ryujinx.Graphics.Shader.Instructions
             throw new ArgumentException($"Invalid texture dimensions \"{dimensions}\".");
         }
 
-        private static TextureType GetTextureType(TexsType type)
+        private static TextureType GetTextureType(TextureScalarType type)
         {
             switch (type)
             {
-                case TexsType.Texture1DLodZero:
+                case TextureScalarType.Texture1DLodZero:
                     return TextureType.Texture1D;
 
-                case TexsType.Texture2D:
-                case TexsType.Texture2DLodZero:
-                case TexsType.Texture2DLodLevel:
+                case TextureScalarType.Texture2D:
+                case TextureScalarType.Texture2DLodZero:
+                case TextureScalarType.Texture2DLodLevel:
                     return TextureType.Texture2D;
 
-                case TexsType.Texture2DDepthCompare:
-                case TexsType.Texture2DLodLevelDepthCompare:
-                case TexsType.Texture2DLodZeroDepthCompare:
+                case TextureScalarType.Texture2DDepthCompare:
+                case TextureScalarType.Texture2DLodLevelDepthCompare:
+                case TextureScalarType.Texture2DLodZeroDepthCompare:
                     return TextureType.Texture2D | TextureType.Shadow;
 
-                case TexsType.Texture2DArray:
-                case TexsType.Texture2DArrayLodZero:
+                case TextureScalarType.Texture2DArray:
+                case TextureScalarType.Texture2DArrayLodZero:
                     return TextureType.Texture2D | TextureType.Array;
 
-                case TexsType.Texture2DArrayLodZeroDepthCompare:
+                case TextureScalarType.Texture2DArrayLodZeroDepthCompare:
                     return TextureType.Texture2D | TextureType.Array | TextureType.Shadow;
 
-                case TexsType.Texture3D:
-                case TexsType.Texture3DLodZero:
+                case TextureScalarType.Texture3D:
+                case TextureScalarType.Texture3DLodZero:
                     return TextureType.Texture3D;
 
-                case TexsType.TextureCube:
-                case TexsType.TextureCubeLodLevel:
+                case TextureScalarType.TextureCube:
+                case TextureScalarType.TextureCubeLodLevel:
                     return TextureType.TextureCube;
             }
 
             throw new ArgumentException($"Invalid texture type \"{type}\".");
         }
 
-        private static TextureType GetTextureType(TldsType type)
+        private static TextureType GetTextureType(TexelLoadScalarType type)
         {
             switch (type)
             {
-                case TldsType.Texture1DLodZero:
-                case TldsType.Texture1DLodLevel:
+                case TexelLoadScalarType.Texture1DLodZero:
+                case TexelLoadScalarType.Texture1DLodLevel:
                     return TextureType.Texture1D;
 
-                case TldsType.Texture2DLodZero:
-                case TldsType.Texture2DLodZeroOffset:
-                case TldsType.Texture2DLodLevel:
-                case TldsType.Texture2DLodLevelOffset:
+                case TexelLoadScalarType.Texture2DLodZero:
+                case TexelLoadScalarType.Texture2DLodZeroOffset:
+                case TexelLoadScalarType.Texture2DLodLevel:
+                case TexelLoadScalarType.Texture2DLodLevelOffset:
                     return TextureType.Texture2D;
 
-                case TldsType.Texture2DLodZeroMultisample:
+                case TexelLoadScalarType.Texture2DLodZeroMultisample:
                     return TextureType.Texture2D | TextureType.Multisample;
 
-                case TldsType.Texture3DLodZero:
+                case TexelLoadScalarType.Texture3DLodZero:
                     return TextureType.Texture3D;
 
-                case TldsType.Texture2DArrayLodZero:
+                case TexelLoadScalarType.Texture2DArrayLodZero:
                     return TextureType.Texture2D | TextureType.Array;
             }
 
             throw new ArgumentException($"Invalid texture type \"{type}\".");
         }
 
-        private static TextureFlags GetTextureFlags(TexsType type)
+        private static TextureFlags GetTextureFlags(TextureScalarType type)
         {
             switch (type)
             {
-                case TexsType.Texture1DLodZero:
-                case TexsType.Texture2DLodZero:
-                case TexsType.Texture2DLodLevel:
-                case TexsType.Texture2DLodLevelDepthCompare:
-                case TexsType.Texture2DLodZeroDepthCompare:
-                case TexsType.Texture2DArrayLodZero:
-                case TexsType.Texture2DArrayLodZeroDepthCompare:
-                case TexsType.Texture3DLodZero:
-                case TexsType.TextureCubeLodLevel:
+                case TextureScalarType.Texture1DLodZero:
+                case TextureScalarType.Texture2DLodZero:
+                case TextureScalarType.Texture2DLodLevel:
+                case TextureScalarType.Texture2DLodLevelDepthCompare:
+                case TextureScalarType.Texture2DLodZeroDepthCompare:
+                case TextureScalarType.Texture2DArrayLodZero:
+                case TextureScalarType.Texture2DArrayLodZeroDepthCompare:
+                case TextureScalarType.Texture3DLodZero:
+                case TextureScalarType.TextureCubeLodLevel:
                     return TextureFlags.LodLevel;
 
-                case TexsType.Texture2D:
-                case TexsType.Texture2DDepthCompare:
-                case TexsType.Texture2DArray:
-                case TexsType.Texture3D:
-                case TexsType.TextureCube:
+                case TextureScalarType.Texture2D:
+                case TextureScalarType.Texture2DDepthCompare:
+                case TextureScalarType.Texture2DArray:
+                case TextureScalarType.Texture3D:
+                case TextureScalarType.TextureCube:
                     return TextureFlags.None;
             }
 
             throw new ArgumentException($"Invalid texture type \"{type}\".");
         }
 
-        private static TextureFlags GetTextureFlags(TldsType type)
+        private static TextureFlags GetTextureFlags(TexelLoadScalarType type)
         {
             switch (type)
             {
-                case TldsType.Texture1DLodZero:
-                case TldsType.Texture1DLodLevel:
-                case TldsType.Texture2DLodZero:
-                case TldsType.Texture2DLodLevel:
-                case TldsType.Texture2DLodZeroMultisample:
-                case TldsType.Texture3DLodZero:
-                case TldsType.Texture2DArrayLodZero:
+                case TexelLoadScalarType.Texture1DLodZero:
+                case TexelLoadScalarType.Texture1DLodLevel:
+                case TexelLoadScalarType.Texture2DLodZero:
+                case TexelLoadScalarType.Texture2DLodLevel:
+                case TexelLoadScalarType.Texture2DLodZeroMultisample:
+                case TexelLoadScalarType.Texture3DLodZero:
+                case TexelLoadScalarType.Texture2DArrayLodZero:
                     return TextureFlags.LodLevel;
 
-                case TldsType.Texture2DLodZeroOffset:
-                case TldsType.Texture2DLodLevelOffset:
+                case TexelLoadScalarType.Texture2DLodZeroOffset:
+                case TexelLoadScalarType.Texture2DLodLevelOffset:
                     return TextureFlags.LodLevel | TextureFlags.Offset;
             }
 

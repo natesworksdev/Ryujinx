@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 {
     class OpCodeTlds : OpCodeTextureScalar
     {
-        public TldsType Type => (TldsType)RawType;
+        public TexelLoadScalarType Type => (TexelLoadScalarType)RawType;
 
         public OpCodeTlds(InstEmitter emitter, ulong address, long opCode) : base(emitter, address, opCode) { }
     }

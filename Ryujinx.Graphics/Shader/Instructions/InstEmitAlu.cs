@@ -75,28 +75,28 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
-            Iadd3Part partC = (Iadd3Part)op.RawOpCode.Extract(31, 2);
-            Iadd3Part partB = (Iadd3Part)op.RawOpCode.Extract(33, 2);
-            Iadd3Part partA = (Iadd3Part)op.RawOpCode.Extract(35, 2);
+            IntegerHalfPart partC = (IntegerHalfPart)op.RawOpCode.Extract(31, 2);
+            IntegerHalfPart partB = (IntegerHalfPart)op.RawOpCode.Extract(33, 2);
+            IntegerHalfPart partA = (IntegerHalfPart)op.RawOpCode.Extract(35, 2);
 
-            Iadd3Mode mode = (Iadd3Mode)op.RawOpCode.Extract(37, 2);
+            IntegerShift mode = (IntegerShift)op.RawOpCode.Extract(37, 2);
 
             bool negateC = op.RawOpCode.Extract(49);
             bool negateB = op.RawOpCode.Extract(50);
             bool negateA = op.RawOpCode.Extract(51);
 
-            Operand Extend(Operand src, Iadd3Part part)
+            Operand Extend(Operand src, IntegerHalfPart part)
             {
-                if (!(op is OpCodeAluReg) || part == Iadd3Part.B32)
+                if (!(op is OpCodeAluReg) || part == IntegerHalfPart.B32)
                 {
                     return src;
                 }
 
-                if (part == Iadd3Part.H0)
+                if (part == IntegerHalfPart.H0)
                 {
                     return context.BitwiseAnd(src, Const(0xffff));
                 }
-                else if (part == Iadd3Part.H1)
+                else if (part == IntegerHalfPart.H1)
                 {
                     return context.ShiftRightU32(src, Const(16));
                 }
@@ -114,13 +114,13 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand res = context.IAdd(srcA, srcB);
 
-            if (op is OpCodeAluReg && mode != Iadd3Mode.NoShift)
+            if (op is OpCodeAluReg && mode != IntegerShift.NoShift)
             {
-                if (mode == Iadd3Mode.ShiftLeft)
+                if (mode == IntegerShift.ShiftLeft)
                 {
                     res = context.ShiftLeft(res, Const(16));
                 }
-                else if (mode == Iadd3Mode.ShiftRight)
+                else if (mode == IntegerShift.ShiftRight)
                 {
                     res = context.ShiftRightU32(res, Const(16));
                 }
@@ -432,17 +432,17 @@ namespace Ryujinx.Graphics.Shader.Instructions
             bool highA   = context.CurrOp.RawOpCode.Extract(53);
             bool highB   = false;
 
-            XmadMode mode;
+            XmadCMode mode;
 
             if (op is OpCodeAluReg)
             {
                 highB = context.CurrOp.RawOpCode.Extract(35);
 
-                mode = (XmadMode)context.CurrOp.RawOpCode.Extract(50, 3);
+                mode = (XmadCMode)context.CurrOp.RawOpCode.Extract(50, 3);
             }
             else
             {
-                mode = (XmadMode)context.CurrOp.RawOpCode.Extract(50, 2);
+                mode = (XmadCMode)context.CurrOp.RawOpCode.Extract(50, 2);
 
                 if (!(op is OpCodeAluImm))
                 {
@@ -512,19 +512,19 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             switch (mode)
             {
-                case XmadMode.Cfull: break;
+                case XmadCMode.Cfull: break;
 
-                case XmadMode.Clo: srcC = Extend16To32(srcC, high: false, signed: false); break;
-                case XmadMode.Chi: srcC = Extend16To32(srcC, high: true,  signed: false); break;
+                case XmadCMode.Clo: srcC = Extend16To32(srcC, high: false, signed: false); break;
+                case XmadCMode.Chi: srcC = Extend16To32(srcC, high: true,  signed: false); break;
 
-                case XmadMode.Cbcc:
+                case XmadCMode.Cbcc:
                 {
                     srcC = context.IAdd(srcC, context.ShiftLeft(GetSrcB(context), Const(16)));
 
                     break;
                 }
 
-                case XmadMode.Csfu:
+                case XmadCMode.Csfu:
                 {
                     Operand signAdjustA = context.ShiftLeft(context.ShiftRightU32(srcA, Const(31)), Const(16));
                     Operand signAdjustB = context.ShiftLeft(context.ShiftRightU32(srcB, Const(31)), Const(16));

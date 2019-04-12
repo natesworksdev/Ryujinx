@@ -1,4 +1,4 @@
-namespace Ryujinx.Graphics.Shader.Instructions
+namespace Ryujinx.Graphics.Shader.Decoders
 {
     enum MufuOperation
     {

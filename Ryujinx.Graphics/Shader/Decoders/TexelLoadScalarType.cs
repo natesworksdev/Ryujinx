@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.Shader.Decoders
 {
-    enum TldsType
+    enum TexelLoadScalarType
     {
         Texture1DLodZero             = 0x0,
         Texture1DLodLevel            = 0x1,

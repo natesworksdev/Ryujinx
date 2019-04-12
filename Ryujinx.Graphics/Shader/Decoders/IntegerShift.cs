@@ -1,6 +1,6 @@
-namespace Ryujinx.Graphics.Shader.Instructions
+namespace Ryujinx.Graphics.Shader.Decoders
 {
-    enum Iadd3Mode
+    enum IntegerShift
     {
         NoShift    = 0,
         ShiftRight = 1,
