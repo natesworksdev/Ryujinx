@@ -61,8 +61,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 ShaderDumper.Dump(memory, position,  type, "a");
                 ShaderDumper.Dump(memory, positionB, type, "b");
 
-                //TODO: Dual vertex programs support.
-                program = Translator.Translate(memory, (ulong)position, type);
+                program = Translator.Translate(memory, (ulong)position, (ulong)positionB, type);
             }
             else
             {

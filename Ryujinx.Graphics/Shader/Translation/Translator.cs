@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Shader.Instructions;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation.Optimizations;
+using System.Collections.Generic;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
@@ -13,6 +14,48 @@ namespace Ryujinx.Graphics.Shader.Translation
     public static class Translator
     {
         public static ShaderProgram Translate(IGalMemory memory, ulong address, GalShaderType shaderType)
+        {
+            return Translate(memory, address, 0, shaderType);
+        }
+
+        public static ShaderProgram Translate(
+            IGalMemory    memory,
+            ulong         address,
+            ulong         addressB,
+            GalShaderType shaderType)
+        {
+            Operation[] shaderOps = DecodeShader(memory, address, shaderType);
+
+            if (addressB != 0)
+            {
+                //Dual vertex shader.
+                Operation[] shaderOpsB = DecodeShader(memory, addressB, shaderType);
+
+                shaderOps = Combine(shaderOps, shaderOpsB);
+            }
+
+            BasicBlock[] irBlocks = ControlFlowGraph.MakeCfg(shaderOps);
+
+            Dominance.FindDominators(irBlocks[0], irBlocks.Length);
+
+            Dominance.FindDominanceFrontiers(irBlocks);
+
+            Ssa.Rename(irBlocks);
+
+            Optimizer.Optimize(irBlocks);
+
+            StructuredProgramInfo sInfo = StructuredProgram.MakeStructuredProgram(irBlocks);
+
+            GlslProgram program = GlslGenerator.Generate(sInfo, shaderType);
+
+            ShaderProgramInfo spInfo = new ShaderProgramInfo(
+                program.CBufferDescriptors,
+                program.TextureDescriptors);
+
+            return new ShaderProgram(spInfo, program.Code);
+        }
+
+        private static Operation[] DecodeShader(IGalMemory memory, ulong address, GalShaderType shaderType)
         {
             ShaderHeader header = new ShaderHeader(memory, address);
 
@@ -88,25 +131,89 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
             }
 
-            BasicBlock[] irBlocks = ControlFlowGraph.MakeCfg(context.GetOperations());
+            return context.GetOperations();
+        }
 
-            Dominance.FindDominators(irBlocks[0], irBlocks.Length);
+        private static Operation[] Combine(Operation[] a, Operation[] b)
+        {
+            //Here we combine two shaders.
+            //For shader A:
+            //- All user attribute stores on shader A are turned into copies to a
+            //temporary variable. It's assumed that shader B will consume them.
+            //- All return instructions are turned into branch instructions, the
+            //branch target being the start of the shader B code.
+            //For shader B:
+            //- All user attribute loads on shader B are turned into copies from a
+            //temporary variable, as long that attribute is written by shader A.
+            List<Operation> output = new List<Operation>(a.Length + b.Length);
 
-            Dominance.FindDominanceFrontiers(irBlocks);
+            Operand[] temps = new Operand[AttributeConsts.UserAttributesCount * 4];
 
-            Ssa.Rename(irBlocks);
+            Operand lblB = Label();
 
-            Optimizer.Optimize(irBlocks);
+            for (int index = 0; index < a.Length; index++)
+            {
+                Operation operation = a[index];
 
-            StructuredProgramInfo sInfo = StructuredProgram.MakeStructuredProgram(irBlocks);
+                if (IsUserAttribute(operation.Dest))
+                {
+                    int tIndex = (operation.Dest.Value - AttributeConsts.UserAttributeBase) / 4;
 
-            GlslProgram program = GlslGenerator.Generate(sInfo, shaderType);
+                    Operand temp = temps[tIndex];
 
-            ShaderProgramInfo spInfo = new ShaderProgramInfo(
-                program.CBufferDescriptors,
-                program.TextureDescriptors);
+                    if (temp == null)
+                    {
+                        temp = Local();
 
-            return new ShaderProgram(spInfo, program.Code);
+                        temps[tIndex] = temp;
+                    }
+
+                    operation.Dest = temp;
+                }
+
+                if (operation.Inst == Instruction.Return)
+                {
+                    output.Add(new Operation(Instruction.Branch, lblB));
+                }
+                else
+                {
+                    output.Add(operation);
+                }
+            }
+
+            output.Add(new Operation(Instruction.MarkLabel, lblB));
+
+            for (int index = 0; index < b.Length; index++)
+            {
+                Operation operation = b[index];
+
+                for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
+                {
+                    Operand src = operation.GetSource(srcIndex);
+
+                    if (IsUserAttribute(src))
+                    {
+                        Operand temp = temps[(src.Value - AttributeConsts.UserAttributeBase) / 4];
+
+                        if (temp != null)
+                        {
+                            operation.SetSource(srcIndex, temp);
+                        }
+                    }
+                }
+
+                output.Add(operation);
+            }
+
+            return output.ToArray();
+        }
+
+        private static bool IsUserAttribute(Operand operand)
+        {
+            return operand != null &&
+                   operand.Type == OperandType.Attribute &&
+                   operand.Value >= AttributeConsts.UserAttributeBase &&
+                   operand.Value <  AttributeConsts.UserAttributeEnd;
         }
     }
 }
