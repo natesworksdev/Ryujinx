@@ -1,5 +1,6 @@
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Graphics.Gal.Shader;
+using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -51,9 +52,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             bool          isDualVp,
             GalShaderType type)
         {
-            GlslProgram program;
-
-            GlslDecompiler decompiler = new GlslDecompiler(OglLimit.MaxUboSize, OglExtension.NvidiaDriver);
+            ShaderProgram program;
 
             int shaderDumpIndex = ShaderDumper.DumpIndex;
 
@@ -62,13 +61,14 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 ShaderDumper.Dump(memory, position,  type, "a");
                 ShaderDumper.Dump(memory, positionB, type, "b");
 
-                program = decompiler.Decompile(memory, position, positionB, type);
+                //TODO: Dual vertex programs support.
+                program = Translator.Translate(memory, (ulong)position, type);
             }
             else
             {
                 ShaderDumper.Dump(memory, position, type);
 
-                program = decompiler.Decompile(memory, position, type);
+                program = Translator.Translate(memory, (ulong)position, type);
             }
 
             string code = program.Code;
@@ -78,27 +78,27 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                 code = "//Shader " + shaderDumpIndex + Environment.NewLine + code;
             }
 
-            return new OglShaderStage(type, code, program.Uniforms, program.Textures);
+            return new OglShaderStage(type, code, program.Info.CBuffers, program.Info.Textures);
         }
 
-        public IEnumerable<ShaderDeclInfo> GetConstBufferUsage(long key)
+        public IEnumerable<CBufferDescriptor> GetConstBufferUsage(long key)
         {
             if (_stages.TryGetValue(key, out OglShaderStage stage))
             {
                 return stage.ConstBufferUsage;
             }
 
-            return Enumerable.Empty<ShaderDeclInfo>();
+            return Enumerable.Empty<CBufferDescriptor>();
         }
 
-        public IEnumerable<ShaderDeclInfo> GetTextureUsage(long key)
+        public IEnumerable<TextureDescriptor> GetTextureUsage(long key)
         {
             if (_stages.TryGetValue(key, out OglShaderStage stage))
             {
                 return stage.TextureUsage;
             }
 
-            return Enumerable.Empty<ShaderDeclInfo>();
+            return Enumerable.Empty<TextureDescriptor>();
         }
 
         public unsafe void SetExtraData(float flipX, float flipY, int instance)
@@ -211,7 +211,7 @@ namespace Ryujinx.Graphics.Gal.OpenGL
 
         private void BindUniformBlocks(int programHandle)
         {
-            int extraBlockindex = GL.GetUniformBlockIndex(programHandle, GlslDecl.ExtraUniformBlockName);
+            int extraBlockindex = GL.GetUniformBlockIndex(programHandle, "Extra");
 
             GL.UniformBlockBinding(programHandle, extraBlockindex, 0);
 
@@ -221,14 +221,19 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 if (stage != null)
                 {
-                    foreach (ShaderDeclInfo declInfo in stage.ConstBufferUsage)
+                    foreach (CBufferDescriptor desc in stage.ConstBufferUsage)
                     {
-                        int blockIndex = GL.GetUniformBlockIndex(programHandle, declInfo.Name);
+                        int blockIndex = GL.GetUniformBlockIndex(programHandle, desc.Name);
 
                         if (blockIndex < 0)
                         {
+                            //This may be fine, the compiler may optimize away unused uniform buffers,
+                            //and in this case the above call would return -1 as the buffer has been
+                            //optimized away.
+                            continue;
+
                             //It is expected that its found, if it's not then driver might be in a malfunction
-                            throw new InvalidOperationException();
+                            //throw new InvalidOperationException();
                         }
 
                         GL.UniformBlockBinding(programHandle, blockIndex, freeBinding);
@@ -253,9 +258,9 @@ namespace Ryujinx.Graphics.Gal.OpenGL
             {
                 if (stage != null)
                 {
-                    foreach (ShaderDeclInfo decl in stage.TextureUsage)
+                    foreach (TextureDescriptor desc in stage.TextureUsage)
                     {
-                        int location = GL.GetUniformLocation(programHandle, decl.Name);
+                        int location = GL.GetUniformLocation(programHandle, desc.Name);
 
                         GL.Uniform1(location, index);
 

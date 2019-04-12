@@ -234,7 +234,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
             else if (operand.Type == OperandType.ConstantBuffer)
             {
-                Info.ConstantBuffers.Add(operand.GetCbufSlot());
+                Info.CBuffers.Add(operand.GetCbufSlot());
             }
 
             return GetOperand(operand);

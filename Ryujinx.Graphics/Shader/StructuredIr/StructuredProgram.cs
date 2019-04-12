@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                         throw new InvalidOperationException("Found LDC with non-constant constant buffer slot.");
                     }
 
-                    context.Info.ConstantBuffers.Add(ldcSource.Value);
+                    context.Info.CBuffers.Add(ldcSource.Value);
                 }
 
                 AstAssignment assignment;

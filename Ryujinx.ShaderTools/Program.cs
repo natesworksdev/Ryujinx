@@ -7,36 +7,28 @@ namespace Ryujinx.ShaderTools
 {
     class Program
     {
-        private static readonly int MaxUboSize = 65536;
-
         static void Main(string[] args)
         {
             if (args.Length == 2)
             {
-                //GlslDecompiler Decompiler = new GlslDecompiler(MaxUboSize);
-
-                GalShaderType ShaderType = GalShaderType.Vertex;
+                GalShaderType type = GalShaderType.Vertex;
 
                 switch (args[0].ToLower())
                 {
-                    case "v":  ShaderType = GalShaderType.Vertex;         break;
-                    case "tc": ShaderType = GalShaderType.TessControl;    break;
-                    case "te": ShaderType = GalShaderType.TessEvaluation; break;
-                    case "g":  ShaderType = GalShaderType.Geometry;       break;
-                    case "f":  ShaderType = GalShaderType.Fragment;       break;
+                    case "v":  type = GalShaderType.Vertex;         break;
+                    case "tc": type = GalShaderType.TessControl;    break;
+                    case "te": type = GalShaderType.TessEvaluation; break;
+                    case "g":  type = GalShaderType.Geometry;       break;
+                    case "f":  type = GalShaderType.Fragment;       break;
                 }
 
-                using (FileStream FS = new FileStream(args[1], FileMode.Open, FileAccess.Read))
+                using (FileStream fs = new FileStream(args[1], FileMode.Open, FileAccess.Read))
                 {
-                    Memory Mem = new Memory(FS);
+                    Memory mem = new Memory(fs);
 
-                    string code = Translator.Translate(Mem, 0, ShaderType);
+                    string code = Translator.Translate(mem, 0, type).Code;
 
                     Console.WriteLine(code);
-
-                    //GlslProgram Program = Decompiler.Decompile(Mem, 0, ShaderType);
-
-                    //Console.WriteLine(Program.Code);
                 }
             }
             else

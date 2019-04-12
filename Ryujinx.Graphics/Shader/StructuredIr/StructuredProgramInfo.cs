@@ -8,12 +8,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public HashSet<AstOperand> Locals { get; }
 
-        public HashSet<int> ConstantBuffers { get; }
+        public HashSet<int> CBuffers { get; }
 
         public HashSet<int> IAttributes { get; }
         public HashSet<int> OAttributes { get; }
-
-        private HashSet<int> _textureHandles;
 
         public HashSet<AstTextureOperation> Samplers { get; }
 
@@ -23,7 +21,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             Locals = new HashSet<AstOperand>();
 
-            ConstantBuffers = new HashSet<int>();
+            CBuffers = new HashSet<int>();
 
             IAttributes = new HashSet<int>();
             OAttributes = new HashSet<int>();

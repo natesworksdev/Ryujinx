@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
     static class Declarations
     {
-        public static void Declare(CodeGenContext context, StructuredProgramInfo prgInfo)
+        public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
             context.AppendLine("#version 420 core");
 
@@ -38,38 +38,38 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             context.AppendLine();
 
-            if (prgInfo.ConstantBuffers.Count != 0)
+            if (info.CBuffers.Count != 0)
             {
-                DeclareUniforms(context, prgInfo);
+                DeclareUniforms(context, info);
 
                 context.AppendLine();
             }
 
-            if (prgInfo.Samplers.Count != 0)
+            if (info.Samplers.Count != 0)
             {
-                DeclareSamplers(context, prgInfo);
+                DeclareSamplers(context, info);
 
                 context.AppendLine();
             }
 
-            if (prgInfo.IAttributes.Count != 0)
+            if (info.IAttributes.Count != 0)
             {
-                DeclareInputAttributes(context, prgInfo);
+                DeclareInputAttributes(context, info);
 
                 context.AppendLine();
             }
 
-            if (prgInfo.OAttributes.Count != 0)
+            if (info.OAttributes.Count != 0)
             {
-                DeclareOutputAttributes(context, prgInfo);
+                DeclareOutputAttributes(context, info);
 
                 context.AppendLine();
             }
         }
 
-        public static void DeclareLocals(CodeGenContext context, StructuredProgramInfo prgInfo)
+        public static void DeclareLocals(CodeGenContext context, StructuredProgramInfo info)
         {
-            foreach (AstOperand decl in prgInfo.Locals)
+            foreach (AstOperand decl in info.Locals)
             {
                 string name = context.DeclareLocal(decl);
 
@@ -90,13 +90,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             throw new ArgumentException($"Invalid variable type \"{type}\".");
         }
 
-        private static void DeclareUniforms(CodeGenContext context, StructuredProgramInfo prgInfo)
+        private static void DeclareUniforms(CodeGenContext context, StructuredProgramInfo info)
         {
-            foreach (int cbufSlot in prgInfo.ConstantBuffers.OrderBy(x => x))
+            foreach (int cbufSlot in info.CBuffers.OrderBy(x => x))
             {
                 string ubName = OperandManager.GetShaderStagePrefix(context.ShaderType);
 
                 ubName += "_" + DefaultNames.UniformNamePrefix + cbufSlot;
+
+                context.CBufferDescriptors.Add(new CBufferDescriptor(ubName, cbufSlot));
 
                 context.AppendLine("layout (std140) uniform " + ubName);
 
@@ -108,15 +110,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        private static void DeclareSamplers(CodeGenContext context, StructuredProgramInfo prgInfo)
+        private static void DeclareSamplers(CodeGenContext context, StructuredProgramInfo info)
         {
-            HashSet<string> samplerNames = new HashSet<string>();
+            Dictionary<string, AstTextureOperation> samplers = new Dictionary<string, AstTextureOperation>();
 
-            foreach (AstTextureOperation texOp in prgInfo.Samplers.OrderBy(x => x.Handle))
+            foreach (AstTextureOperation texOp in info.Samplers.OrderBy(x => x.Handle))
             {
                 string samplerName = OperandManager.GetSamplerName(context.ShaderType, texOp);
 
-                if (!samplerNames.Add(samplerName))
+                if (!samplers.TryAdd(samplerName, texOp))
                 {
                     continue;
                 }
@@ -125,21 +127,43 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 context.AppendLine("uniform " + samplerTypeName + " " + samplerName + ";");
             }
+
+            foreach (KeyValuePair<string, AstTextureOperation> kv in samplers)
+            {
+                string samplerName = kv.Key;
+
+                AstTextureOperation texOp = kv.Value;
+
+                TextureDescriptor desc;
+
+                if ((texOp.Flags & TextureFlags.Bindless) != 0)
+                {
+                    AstOperand operand = texOp.GetSource(0) as AstOperand;
+
+                    desc = new TextureDescriptor(samplerName, operand.CbufSlot, operand.CbufOffset);
+                }
+                else
+                {
+                    desc = new TextureDescriptor(samplerName, texOp.Handle);
+                }
+
+                context.TextureDescriptors.Add(desc);
+            }
         }
 
-        private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo prgInfo)
+        private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
             string suffix = context.ShaderType == GalShaderType.Geometry ? "[]" : string.Empty;
 
-            foreach (int attr in prgInfo.IAttributes.OrderBy(x => x))
+            foreach (int attr in info.IAttributes.OrderBy(x => x))
             {
                 context.AppendLine($"layout (location = {attr}) in vec4 {DefaultNames.IAttributePrefix}{attr}{suffix};");
             }
         }
 
-        private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo prgInfo)
+        private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
-            foreach (int attr in prgInfo.OAttributes.OrderBy(x => x))
+            foreach (int attr in info.OAttributes.OrderBy(x => x))
             {
                 context.AppendLine($"layout (location = {attr}) out vec4 {DefaultNames.OAttributePrefix}{attr};");
             }

@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     public static class Translator
     {
-        public static string Translate(IGalMemory memory, ulong address, GalShaderType shaderType)
+        public static ShaderProgram Translate(IGalMemory memory, ulong address, GalShaderType shaderType)
         {
             ShaderHeader header = new ShaderHeader(memory, address);
 
@@ -98,13 +98,15 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             Optimizer.Optimize(irBlocks);
 
-            StructuredProgramInfo prgInfo = StructuredProgram.MakeStructuredProgram(irBlocks);
+            StructuredProgramInfo sInfo = StructuredProgram.MakeStructuredProgram(irBlocks);
 
-            GlslGenerator generator = new GlslGenerator();
+            GlslProgram program = GlslGenerator.Generate(sInfo, shaderType);
 
-            string glslProgram = generator.Generate(prgInfo, shaderType);
+            ShaderProgramInfo spInfo = new ShaderProgramInfo(
+                program.CBufferDescriptors,
+                program.TextureDescriptors);
 
-            return glslProgram;
+            return new ShaderProgram(spInfo, program.Code);
         }
     }
 }

@@ -8,20 +8,23 @@ using static Ryujinx.Graphics.Shader.CodeGen.Glsl.TypeConversion;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
-    class GlslGenerator
+    static class GlslGenerator
     {
-        public string Generate(StructuredProgramInfo info, GalShaderType shaderType)
+        public static GlslProgram Generate(StructuredProgramInfo info, GalShaderType shaderType)
         {
-            CodeGenContext context = new CodeGenContext(info, shaderType);
+            CodeGenContext context = new CodeGenContext(shaderType);
 
             Declarations.Declare(context, info);
 
             PrintMainBlock(context, info);
 
-            return context.GetCode();
+            return new GlslProgram(
+                context.CBufferDescriptors.ToArray(),
+                context.TextureDescriptors.ToArray(),
+                context.GetCode());
         }
 
-        private void PrintMainBlock(CodeGenContext context, StructuredProgramInfo info)
+        private static void PrintMainBlock(CodeGenContext context, StructuredProgramInfo info)
         {
             context.AppendLine("void main()");
 
@@ -34,7 +37,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.LeaveScope();
         }
 
-        private void PrintBlock(CodeGenContext context, AstBlock block)
+        private static void PrintBlock(CodeGenContext context, AstBlock block)
         {
             AstBlockVisitor visitor = new AstBlockVisitor(block);
 
