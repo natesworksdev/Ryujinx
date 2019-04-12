@@ -1,5 +1,3 @@
-using Ryujinx.Graphics.Shader.Instructions;
-
 namespace Ryujinx.Graphics.Shader.Decoders
 {
     interface IOpCodeHfma : IOpCode
