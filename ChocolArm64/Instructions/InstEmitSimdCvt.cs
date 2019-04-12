@@ -209,7 +209,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Signed(context, RoundMode.ToNearest, isFixed: false, scalar: true);
+                EmitSse41Fcvt_Signed(context, RoundMode.ToNearest, scalar: true);
             }
             else
             {
@@ -221,7 +221,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Signed(context, RoundMode.ToNearest, isFixed: false, scalar: false);
+                EmitSse41Fcvt_Signed(context, RoundMode.ToNearest, scalar: false);
             }
             else
             {
@@ -233,7 +233,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Unsigned(context, RoundMode.ToNearest, isFixed: false, scalar: true);
+                EmitSse41Fcvt_Unsigned(context, RoundMode.ToNearest, scalar: true);
             }
             else
             {
@@ -245,7 +245,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Unsigned(context, RoundMode.ToNearest, isFixed: false, scalar: false);
+                EmitSse41Fcvt_Unsigned(context, RoundMode.ToNearest, scalar: false);
             }
             else
             {
@@ -277,7 +277,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, isFixed: false, scalar: true);
+                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, scalar: true);
             }
             else
             {
@@ -289,7 +289,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, isFixed: false, scalar: false);
+                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, scalar: false);
             }
             else
             {
@@ -301,7 +301,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, isFixed: true, scalar: false);
+                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, scalar: false);
             }
             else
             {
@@ -323,7 +323,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, isFixed: false, scalar: true);
+                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, scalar: true);
             }
             else
             {
@@ -335,7 +335,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, isFixed: false, scalar: false);
+                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, scalar: false);
             }
             else
             {
@@ -347,7 +347,7 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, isFixed: true, scalar: false);
+                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, scalar: false);
             }
             else
             {
@@ -811,7 +811,7 @@ namespace ChocolArm64.Instructions
             }
         }
 
-        private static void EmitSse41Fcvt_Signed(ILEmitterCtx context, RoundMode roundMode, bool isFixed, bool scalar)
+        private static void EmitSse41Fcvt_Signed(ILEmitterCtx context, RoundMode roundMode, bool scalar)
         {
             OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
@@ -833,9 +833,9 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.And), types));
 
-                if (isFixed)
+                if (op is OpCodeSimdShImm64 fixedOp)
                 {
-                    int fBits = GetImmShr((OpCodeSimdShImm64)op);
+                    int fBits = GetImmShr(fixedOp);
 
                     // BitConverter.Int32BitsToSingle(fpScaled) == MathF.Pow(2f, fBits)
                     int fpScaled = 0x40000000 + (fBits - 1) * 0x800000;
@@ -889,9 +889,9 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), types));
 
-                if (isFixed)
+                if (op is OpCodeSimdShImm64 fixedOp)
                 {
-                    int fBits = GetImmShr((OpCodeSimdShImm64)op);
+                    int fBits = GetImmShr(fixedOp);
 
                     // BitConverter.Int64BitsToDouble(fpScaled) == Math.Pow(2d, fBits)
                     long fpScaled = 0x4000000000000000L + (fBits - 1) * 0x10000000000000L;
@@ -944,7 +944,7 @@ namespace ChocolArm64.Instructions
             }
         }
 
-        private static void EmitSse41Fcvt_Unsigned(ILEmitterCtx context, RoundMode roundMode, bool isFixed, bool scalar)
+        private static void EmitSse41Fcvt_Unsigned(ILEmitterCtx context, RoundMode roundMode, bool scalar)
         {
             OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
@@ -967,9 +967,9 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.And), types));
 
-                if (isFixed)
+                if (op is OpCodeSimdShImm64 fixedOp)
                 {
-                    int fBits = GetImmShr((OpCodeSimdShImm64)op);
+                    int fBits = GetImmShr(fixedOp);
 
                     // BitConverter.Int32BitsToSingle(fpScaled) == MathF.Pow(2f, fBits)
                     int fpScaled = 0x40000000 + (fBits - 1) * 0x800000;
@@ -1055,9 +1055,9 @@ namespace ChocolArm64.Instructions
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), types));
 
-                if (isFixed)
+                if (op is OpCodeSimdShImm64 fixedOp)
                 {
-                    int fBits = GetImmShr((OpCodeSimdShImm64)op);
+                    int fBits = GetImmShr(fixedOp);
 
                     // BitConverter.Int64BitsToDouble(fpScaled) == Math.Pow(2d, fBits)
                     long fpScaled = 0x4000000000000000L + (fBits - 1) * 0x10000000000000L;
