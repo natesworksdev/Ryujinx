@@ -316,6 +316,12 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     EncloseSingleInst(stmt, Instruction.LoopContinue);
                 }
 
+                //Modify the do-while condition to allow it to continue.
+                if (!ContainsCondComb(block.Condition, Instruction.LogicalOr, stmt.Condition))
+                {
+                    block.OrCondition(stmt.Condition);
+                }
+
                 return block;
             }
 
