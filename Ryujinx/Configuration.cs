@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Utf8Json;
 using Utf8Json.Resolvers;
+using Ryujinx.HLE.HOS.Services;
 
 namespace Ryujinx
 {
@@ -90,6 +91,11 @@ namespace Ryujinx
         /// Enable or Disable aggressive CPU optimizations
         /// </summary>
         public bool EnableAggressiveCpuOpts { get; private set; }
+
+        /// <summary>
+        /// Enable or disable ignoring missing services
+        /// </summary>
+        public bool IgnoreMissingServices { get; private set; }
 
         /// <summary>
         ///  The primary controller's type
@@ -206,6 +212,8 @@ namespace Ryujinx
             {
                 Optimizations.AssumeStrictAbiCompliance = true;
             }
+
+            ServiceConfiguration.IgnoreMissingServices = Instance.IgnoreMissingServices;
 
             if(Instance.GamepadControls.Enabled)
             {

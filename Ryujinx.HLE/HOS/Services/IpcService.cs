@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Kernel.Ipc;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Security;
 
 namespace Ryujinx.HLE.HOS.Services
 {
@@ -89,13 +90,29 @@ namespace Ryujinx.HLE.HOS.Services
             long sfciMagic =      context.RequestData.ReadInt64();
             int  commandId = (int)context.RequestData.ReadInt64();
 
-            if (service.Commands.TryGetValue(commandId, out ServiceProcessRequest processRequest))
+            bool serviceExists = service.Commands.TryGetValue(commandId, out ServiceProcessRequest processRequest);
+
+            if (ServiceConfiguration.IgnoreMissingServices || serviceExists)
             {
+                long result = 0;
+
                 context.ResponseData.BaseStream.Seek(_isDomain ? 0x20 : 0x10, SeekOrigin.Begin);
 
-                Logger.PrintDebug(LogClass.KernelIpc, $"{service.GetType().Name}: {processRequest.Method.Name}");
+                if (serviceExists)
+                {
+                    Logger.PrintDebug(LogClass.KernelIpc, $"{service.GetType().Name}: {processRequest.Method.Name}");
 
-                long result = processRequest(context);
+                    result = processRequest(context);
+                }
+                else
+                {
+                    string serviceName;
+                    DummyService dummyService = service as DummyService;
+
+                    serviceName = (dummyService == null) ? serviceName = service.GetType().FullName : dummyService.ServiceName;
+
+                    Logger.PrintWarning(LogClass.KernelIpc, $"Missing service {serviceName}: {commandId} ignored");
+                }
 
                 if (_isDomain)
                 {
