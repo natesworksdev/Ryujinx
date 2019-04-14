@@ -64,6 +64,16 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(rbIndex++, RegisterType.Gpr));
             }
 
+            void AddTextureOffset(int coordsCount, int stride, int size)
+            {
+                Operand packedOffs = Rb();
+
+                for (int index = 0; index < coordsCount; index++)
+                {
+                    sourcesList.Add(context.BitfieldExtractS32(packedOffs, Const(index * stride), Const(size)));
+                }
+            }
+
             TextureType  type;
             TextureFlags flags;
 
@@ -161,10 +171,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         break;
 
                     case TexelLoadScalarType.Texture2DLodZeroOffset:
-                    case TexelLoadScalarType.Texture2DLodZeroMultisample:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
                         sourcesList.Add(Const(0));
+                        break;
+
+                    case TexelLoadScalarType.Texture2DLodZeroMultisample:
+                        sourcesList.Add(Ra());
+                        sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
                         break;
 
@@ -192,8 +206,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
-                        sourcesList.Add(Rb());
                         break;
+                }
+
+                if ((flags & TextureFlags.Offset) != 0)
+                {
+                    AddTextureOffset(type.GetCoordsCount(), 4, 4);
                 }
             }
             else if (op is OpCodeTld4s tld4sOp)
@@ -221,12 +239,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 if (tld4sOp.HasOffset)
                 {
-                    Operand packedOffs = Rb();
-
-                    for (int index = 0; index < type.GetCoordsCount(); index++)
-                    {
-                        sourcesList.Add(context.BitfieldExtractS32(packedOffs, Const(index * 8), Const(6)));
-                    }
+                    AddTextureOffset(type.GetCoordsCount(), 8, 6);
 
                     flags |= TextureFlags.Offset;
                 }
@@ -361,6 +374,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             if (op.HasDepthCompare)
             {
                 sourcesList.Add(Rb());
+
+                type |= TextureType.Shadow;
             }
 
             if (op.Offset != TextureGatherOffset.None)
@@ -568,14 +583,16 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand packedOffs = op.HasOffset ? Rb() : null;
 
-            if (op is OpCodeTex texOp && texOp.HasDepthCompare)
+            if (op.HasDepthCompare)
             {
                 sourcesList.Add(Rb());
+
+                type |= TextureType.Shadow;
             }
 
-            if (op.LodMode == TextureLodMode.LodZero  ||
-                op.LodMode == TextureLodMode.LodLevel ||
-                op.LodMode == TextureLodMode.LodLevelA)
+            if ((op.LodMode == TextureLodMode.LodZero  ||
+                 op.LodMode == TextureLodMode.LodLevel ||
+                 op.LodMode == TextureLodMode.LodLevelA) && !op.IsMultisample)
             {
                 sourcesList.Add(lodValue);
 
@@ -600,9 +617,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags |= TextureFlags.LodBias;
             }
 
-            if (op is OpCodeTld tldOp && tldOp.IsMultisample)
+            if (op.IsMultisample)
             {
                 sourcesList.Add(Rb());
+
+                type |= TextureType.Multisample;
             }
 
             Operand[] sources = sourcesList.ToArray();

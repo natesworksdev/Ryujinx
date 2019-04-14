@@ -34,6 +34,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return true;
         }
 
+        public static string FormatFloat(float value)
+        {
+            if (!TryFormatFloat(value, out string formatted))
+            {
+                throw new ArgumentException("Failed to convert float value to string.");
+            }
+
+            return formatted;
+        }
+
         public static bool TryFormatFloat(float value, out string formatted)
         {
             if (float.IsNaN(value) || float.IsInfinity(value))

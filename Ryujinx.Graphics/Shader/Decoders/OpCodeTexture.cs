@@ -16,9 +16,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         public int Immediate { get; }
 
-        public bool HasOffset { get; }
-
         public TextureLodMode LodMode { get; protected set; }
+
+        public bool HasOffset       { get; protected set; }
+        public bool HasDepthCompare { get; protected set; }
+        public bool IsMultisample   { get; protected set; }
 
         public OpCodeTexture(InstEmitter emitter, ulong address, long opCode) : base(emitter, address, opCode)
         {
@@ -33,8 +35,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
             ComponentMask = opCode.Extract(31, 4);
 
             Immediate = opCode.Extract(36, 13);
-
-            HasOffset = opCode.Extract(54);
 
             LodMode = (TextureLodMode)opCode.Extract(55, 3);
         }

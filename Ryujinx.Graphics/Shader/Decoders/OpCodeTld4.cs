@@ -4,8 +4,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
 {
     class OpCodeTld4 : OpCodeTexture
     {
-        public bool HasDepthCompare { get; }
-
         public TextureGatherOffset Offset { get; }
 
         public int GatherCompIndex { get; }

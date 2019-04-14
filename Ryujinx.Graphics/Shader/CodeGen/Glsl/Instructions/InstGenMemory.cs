@@ -34,8 +34,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool isMultisample = (texOp.Type  & TextureType.Multisample) != 0;
             bool isShadow      = (texOp.Type  & TextureType.Shadow)      != 0;
 
-            string samplerName = OperandManager.GetSamplerName(context.Config.Type, texOp);
-
             string texCall = intCoords ? "texelFetch" : "texture";
 
             if (isGather)
@@ -56,6 +54,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += "Offsets";
             }
 
+            string samplerName = OperandManager.GetSamplerName(context.Config.Type, texOp);
+
             texCall += "(" + samplerName;
 
             int coordsCount = texOp.Type.GetCoordsCount();
@@ -67,6 +67,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             if (isArray)
             {
                 arrayIndexElem = pCount++;
+            }
+
+            //The sampler 1D shadow overload expects a
+            //dummy value on the middle of the vector, who knows why...
+            bool hasDummy1DShadowElem = texOp.Type == (TextureType.Texture1D | TextureType.Shadow);
+
+            if (hasDummy1DShadowElem)
+            {
+                pCount++;
             }
 
             if (isShadow && !isGather)
@@ -97,42 +106,46 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += ", " + str;
             }
 
-            string AssembleVector(int count, VariableType type)
+            VariableType coordType = intCoords ? VariableType.S32 : VariableType.F32;
+
+            string AssemblePVector(int count)
             {
                 if (count > 1)
                 {
-                    string[] vecElems = new string[count];
+                    string[] elems = new string[count];
 
                     for (int index = 0; index < count; index++)
                     {
                         if (arrayIndexElem == index)
                         {
-                            arrayIndexElem = -1;
+                            elems[index] = Src(VariableType.S32);
 
-                            vecElems[index] = Src(VariableType.S32);
-
-                            if (type == VariableType.F32)
+                            if (!intCoords)
                             {
-                                vecElems[index] = "float(" + vecElems[index] + ")";
+                                elems[index] = "float(" + elems[index] + ")";
                             }
+                        }
+                        else if (index == 1 && hasDummy1DShadowElem)
+                        {
+                            elems[index] = NumberFormatter.FormatFloat(0);
                         }
                         else
                         {
-                            vecElems[index] = Src(type);
+                            elems[index] = Src(coordType);
                         }
                     }
 
-                    string prefix = type == VariableType.F32 ? string.Empty : "i";
+                    string prefix = intCoords ? "i" : string.Empty;
 
-                    return prefix + "vec" + count + "(" + string.Join(", ", vecElems) + ")";
+                    return prefix + "vec" + count + "(" + string.Join(", ", elems) + ")";
                 }
                 else
                 {
-                    return Src(type);
+                    return Src(coordType);
                 }
             }
 
-            Append(AssembleVector(pCount, intCoords ? VariableType.S32 : VariableType.F32));
+            Append(AssemblePVector(pCount));
 
             if (hasExtraCompareArg)
             {
@@ -143,33 +156,42 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 Append(Src(VariableType.S32));
             }
-
-            if (hasLodLevel)
+            else if (hasLodLevel)
             {
-                Append(Src(intCoords ? VariableType.S32 : VariableType.F32));
+                Append(Src(coordType));
+            }
+
+            string AssembleOffsetVector(int count)
+            {
+                if (count > 1)
+                {
+                    string[] elems = new string[count];
+
+                    for (int index = 0; index < count; index++)
+                    {
+                        elems[index] = Src(VariableType.S32);
+                    }
+
+                    return "ivec" + count + "(" + string.Join(", ", elems) + ")";
+                }
+                else
+                {
+                    return Src(VariableType.S32);
+                }
             }
 
             if (hasOffset)
             {
-                Append(AssembleVector(coordsCount, VariableType.S32));
+                Append(AssembleOffsetVector(coordsCount));
             }
             else if (hasOffsets)
             {
-                const int gatherTexelsCount = 4;
+                texCall += $", ivec{coordsCount}[4](";
 
-                texCall += $", ivec{coordsCount}[{gatherTexelsCount}](";
-
-                for (int index = 0; index < gatherTexelsCount; index++)
-                {
-                    texCall += AssembleVector(coordsCount, VariableType.S32);
-
-                    if (index < gatherTexelsCount - 1)
-                    {
-                        texCall += ", ";
-                    }
-                }
-
-                texCall += ")";
+                texCall += AssembleOffsetVector(coordsCount) + ", ";
+                texCall += AssembleOffsetVector(coordsCount) + ", ";
+                texCall += AssembleOffsetVector(coordsCount) + ", ";
+                texCall += AssembleOffsetVector(coordsCount) + ")";
             }
 
             if (hasLodBias)
