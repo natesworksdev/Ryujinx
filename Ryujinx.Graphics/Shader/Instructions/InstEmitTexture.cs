@@ -177,12 +177,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         break;
 
                     case TexelLoadScalarType.Texture2DLodZeroMultisample:
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Rb());
-                        break;
-
                     case TexelLoadScalarType.Texture2DLodLevel:
+                    case TexelLoadScalarType.Texture2DLodLevelOffset:
                         sourcesList.Add(Ra());
                         sourcesList.Add(Ra());
                         sourcesList.Add(Rb());
@@ -200,12 +196,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         sourcesList.Add(Rb());
                         sourcesList.Add(Ra());
                         sourcesList.Add(Const(0));
-                        break;
-
-                    case TexelLoadScalarType.Texture2DLodLevelOffset:
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Ra());
-                        sourcesList.Add(Rb());
                         break;
                 }
 
