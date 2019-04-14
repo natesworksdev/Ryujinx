@@ -6,7 +6,6 @@ using Ryujinx.HLE.HOS.Kernel.Ipc;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Security;
 
 namespace Ryujinx.HLE.HOS.Services
 {
