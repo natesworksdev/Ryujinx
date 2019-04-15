@@ -4,6 +4,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.SystemState;
+using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.Input;
 using Ryujinx.UI.Input;
 using System;
@@ -11,7 +12,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Utf8Json;
 using Utf8Json.Resolvers;
-using Ryujinx.HLE.HOS.Services;
 
 namespace Ryujinx
 {
