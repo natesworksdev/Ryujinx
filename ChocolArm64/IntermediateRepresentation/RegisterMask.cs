@@ -35,7 +35,7 @@ namespace ChocolArm64.IntermediateRepresentation
 
         public static bool operator !=(RegisterMask x, RegisterMask y)
         {
-            return !(x == y);
+            return !x.Equals(y);
         }
 
         public override bool Equals(object obj)
