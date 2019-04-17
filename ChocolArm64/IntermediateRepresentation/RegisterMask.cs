@@ -43,14 +43,14 @@ namespace ChocolArm64.IntermediateRepresentation
             return obj is RegisterMask regMask && Equals(regMask);
         }
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(IntMask, VecMask);
-        }
-
         public bool Equals(RegisterMask other)
         {
             return IntMask == other.IntMask && VecMask == other.VecMask;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(IntMask, VecMask);
         }
     }
 }
