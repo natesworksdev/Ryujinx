@@ -123,6 +123,7 @@ namespace ChocolArm64.State
             return address & ~((4UL << ErgSizeLog2) - 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool Synchronize()
         {
             //Firing a interrupt frequently is expensive, so we only
