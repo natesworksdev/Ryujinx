@@ -13,8 +13,7 @@ namespace ChocolArm64.IntermediateRepresentation
         public RegisterMask RegInputs  { get; private set; }
         public RegisterMask RegOutputs { get; private set; }
 
-        public bool HasStateLoad  { get; private set; }
-        public bool HasStateStore { get; private set; }
+        public bool HasStateLoad { get; private set; }
 
         private List<Operation> _operations;
 
