@@ -232,9 +232,6 @@ namespace Ryujinx.Graphics.Gal.OpenGL
                             //and in this case the above call would return -1 as the buffer has been
                             //optimized away.
                             continue;
-
-                            //It is expected that its found, if it's not then driver might be in a malfunction
-                            //throw new InvalidOperationException();
                         }
 
                         GL.UniformBlockBinding(programHandle, blockIndex, freeBinding);

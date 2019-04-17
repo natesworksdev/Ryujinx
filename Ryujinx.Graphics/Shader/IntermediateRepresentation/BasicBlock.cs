@@ -9,14 +9,13 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         public LinkedList<INode> Operations { get; }
 
         private BasicBlock _next;
+        private BasicBlock _branch;
 
         public BasicBlock Next
         {
             get => _next;
             set => _next = AddSuccessor(_next, value);
         }
-
-        private BasicBlock _branch;
 
         public BasicBlock Branch
         {
