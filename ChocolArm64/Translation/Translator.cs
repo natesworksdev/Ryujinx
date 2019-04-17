@@ -235,14 +235,14 @@ namespace ChocolArm64.Translation
 
         private static int GetOpsCount(BasicBlock[] blocks)
         {
-            int ilOpCount = 0;
+            int opCount = 0;
 
-            foreach (BasicBlock ilBlock in blocks)
+            foreach (BasicBlock block in blocks)
             {
-                ilOpCount += ilBlock.Count;
+                opCount += block.Count;
             }
 
-            return ilOpCount;
+            return opCount;
         }
 
         private void ForceAheadOfTimeCompilation(TranslatedSub subroutine)
