@@ -243,8 +243,8 @@ namespace Ryujinx
             controller.SendInput(currentButton, leftJoystick, rightJoystick);
 
             // Toggle vsync
-            if ((currentHotkeyButtons & HidHotkeyButtons.ToggleVSync) != 0 &&
-                (_prevHotkeyButtons   & HidHotkeyButtons.ToggleVSync) == 0)
+            if (currentHotkeyButtons.HasFlag(HidHotkeyButtons.ToggleVSync) &&
+                !_prevHotkeyButtons.HasFlag(HidHotkeyButtons.ToggleVSync))
             {
                 _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
             }
