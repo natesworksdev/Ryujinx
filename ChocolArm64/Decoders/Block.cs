@@ -84,7 +84,7 @@ namespace ChocolArm64.Decoders
             }
 
             return middle;
-}
+        }
 
         public OpCode64 GetLastOp()
         {
