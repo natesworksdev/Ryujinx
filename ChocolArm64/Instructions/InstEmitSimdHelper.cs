@@ -872,8 +872,8 @@ namespace ChocolArm64.Instructions
 
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.UnpackLow), types));
 
-                    context.Emit(OpCodes.Dup);
                     context.EmitStvectmp();
+                    context.EmitLdvectmp();
 
                     VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
 
@@ -1367,8 +1367,8 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse)
             {
-                //TODO: Use Sse2.MoveScalar once it is fixed,
-                //as of the time of writing it just crashes the JIT (SDK 2.1.504).
+                // TODO: Use Sse2.MoveScalar once it is fixed (in .NET Core 3.0),
+                // as of the time of writing it just crashes the JIT.
 
                 /*Type[] typesMov = new Type[] { typeof(Vector128<ulong>) };
 

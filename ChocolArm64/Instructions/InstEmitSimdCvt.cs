@@ -35,7 +35,7 @@ namespace ChocolArm64.Instructions
                     //Single -> Double.
                     Type[] typesCvt = new Type[] { typeof(Vector128<double>), typeof(Vector128<float>) };
 
-                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleZero));
+                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
                     context.EmitLdvec(op.Rn);
 
                     context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertScalarToVector128Double), typesCvt));
@@ -207,22 +207,50 @@ namespace ChocolArm64.Instructions
 
         public static void Fcvtns_S(ILEmitterCtx context)
         {
-            EmitFcvtn(context, signed: true, scalar: true);
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Signed(context, RoundMode.ToNearest, scalar: true);
+            }
+            else
+            {
+                EmitFcvtn(context, signed: true, scalar: true);
+            }
         }
 
         public static void Fcvtns_V(ILEmitterCtx context)
         {
-            EmitFcvtn(context, signed: true, scalar: false);
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Signed(context, RoundMode.ToNearest, scalar: false);
+            }
+            else
+            {
+                EmitFcvtn(context, signed: true, scalar: false);
+            }
         }
 
         public static void Fcvtnu_S(ILEmitterCtx context)
         {
-            EmitFcvtn(context, signed: false, scalar: true);
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Unsigned(context, RoundMode.ToNearest, scalar: true);
+            }
+            else
+            {
+                EmitFcvtn(context, signed: false, scalar: true);
+            }
         }
 
         public static void Fcvtnu_V(ILEmitterCtx context)
         {
-            EmitFcvtn(context, signed: false, scalar: false);
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Unsigned(context, RoundMode.ToNearest, scalar: false);
+            }
+            else
+            {
+                EmitFcvtn(context, signed: false, scalar: false);
+            }
         }
 
         public static void Fcvtps_Gp(ILEmitterCtx context)
@@ -247,12 +275,38 @@ namespace ChocolArm64.Instructions
 
         public static void Fcvtzs_S(ILEmitterCtx context)
         {
-            EmitFcvtz(context, signed: true, scalar: true);
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, scalar: true);
+            }
+            else
+            {
+                EmitFcvtz(context, signed: true, scalar: true);
+            }
         }
 
         public static void Fcvtzs_V(ILEmitterCtx context)
         {
-            EmitFcvtz(context, signed: true, scalar: false);
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, scalar: false);
+            }
+            else
+            {
+                EmitFcvtz(context, signed: true, scalar: false);
+            }
+        }
+
+        public static void Fcvtzs_V_Fixed(ILEmitterCtx context)
+        {
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Signed(context, RoundMode.TowardsZero, scalar: false);
+            }
+            else
+            {
+                EmitFcvtz(context, signed: true, scalar: false);
+            }
         }
 
         public static void Fcvtzu_Gp(ILEmitterCtx context)
@@ -267,12 +321,38 @@ namespace ChocolArm64.Instructions
 
         public static void Fcvtzu_S(ILEmitterCtx context)
         {
-            EmitFcvtz(context, signed: false, scalar: true);
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, scalar: true);
+            }
+            else
+            {
+                EmitFcvtz(context, signed: false, scalar: true);
+            }
         }
 
         public static void Fcvtzu_V(ILEmitterCtx context)
         {
-            EmitFcvtz(context, signed: false, scalar: false);
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, scalar: false);
+            }
+            else
+            {
+                EmitFcvtz(context, signed: false, scalar: false);
+            }
+        }
+
+        public static void Fcvtzu_V_Fixed(ILEmitterCtx context)
+        {
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41Fcvt_Unsigned(context, RoundMode.TowardsZero, scalar: false);
+            }
+            else
+            {
+                EmitFcvtz(context, signed: false, scalar: false);
+            }
         }
 
         public static void Scvtf_Gp(ILEmitterCtx context)
@@ -728,6 +808,373 @@ namespace ChocolArm64.Instructions
                 }
 
                 context.Emit(OpCodes.Mul);
+            }
+        }
+
+        private static void EmitSse41Fcvt_Signed(ILEmitterCtx context, RoundMode roundMode, bool scalar)
+        {
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            // sizeF == ((OpCodeSimdShImm64)op).Size - 2
+            int sizeF = op.Size & 1;
+
+            if (sizeF == 0)
+            {
+                Type[] types       = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                Type[] typesRndCvt = new Type[] { typeof(Vector128<float>) };
+                Type[] typesSav    = new Type[] { typeof(int) };
+
+                context.EmitLdvec(op.Rn);
+                context.EmitLdvec(op.Rn);
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareOrdered), types));
+
+                context.EmitLdvec(op.Rn);
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.And), types));
+
+                if (op is OpCodeSimdShImm64 fixedOp)
+                {
+                    int fBits = GetImmShr(fixedOp);
+
+                    // BitConverter.Int32BitsToSingle(fpScaled) == MathF.Pow(2f, fBits)
+                    int fpScaled = 0x40000000 + (fBits - 1) * 0x800000;
+
+                    context.EmitLdc_I4(fpScaled);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), types));
+                }
+
+                context.EmitCall(typeof(Sse41).GetMethod(GetSse41NameRnd(roundMode), typesRndCvt));
+
+                context.EmitStvectmp();
+                context.EmitLdvectmp();
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToVector128Int32), typesRndCvt));
+
+                context.EmitLdvectmp();
+
+                context.EmitLdc_I4(0x4F000000); // 2.14748365E9f (2147483648)
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareGreaterThanOrEqual), types));
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Xor), types));
+
+                context.EmitStvec(op.Rd);
+
+                if (scalar)
+                {
+                    EmitVectorZero32_128(context, op.Rd);
+                }
+                else if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+            else /* if (sizeF == 1) */
+            {
+                Type[] types       = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                Type[] typesRndCvt = new Type[] { typeof(Vector128<double>) };
+                Type[] typesSv     = new Type[] { typeof(long), typeof(long) };
+                Type[] typesSav    = new Type[] { typeof(long) };
+
+                context.EmitLdvec(op.Rn);
+                context.EmitLdvec(op.Rn);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareOrdered), types));
+
+                context.EmitLdvec(op.Rn);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), types));
+
+                if (op is OpCodeSimdShImm64 fixedOp)
+                {
+                    int fBits = GetImmShr(fixedOp);
+
+                    // BitConverter.Int64BitsToDouble(fpScaled) == Math.Pow(2d, fBits)
+                    long fpScaled = 0x4000000000000000L + (fBits - 1) * 0x10000000000000L;
+
+                    context.EmitLdc_I8(fpScaled);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), types));
+                }
+
+                context.EmitCall(typeof(Sse41).GetMethod(GetSse41NameRnd(roundMode), typesRndCvt));
+
+                context.EmitStvectmp();
+
+                if (!scalar)
+                {
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp();
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), types));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToInt64), typesRndCvt));
+                }
+                else
+                {
+                    context.EmitLdc_I8(0L);
+                }
+
+                context.EmitLdvectmp();
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToInt64), typesRndCvt));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSv));
+
+                context.EmitLdvectmp();
+
+                context.EmitLdc_I8(0x43E0000000000000L); // 9.2233720368547760E18d (9223372036854775808)
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareGreaterThanOrEqual), types));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), types));
+
+                context.EmitStvec(op.Rd);
+
+                if (scalar)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+        }
+
+        private static void EmitSse41Fcvt_Unsigned(ILEmitterCtx context, RoundMode roundMode, bool scalar)
+        {
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            // sizeF == ((OpCodeSimdShImm64)op).Size - 2
+            int sizeF = op.Size & 1;
+
+            if (sizeF == 0)
+            {
+                Type[] types       = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
+                Type[] typesAdd    = new Type[] { typeof(Vector128<int>),   typeof(Vector128<int>) };
+                Type[] typesRndCvt = new Type[] { typeof(Vector128<float>) };
+                Type[] typesSav    = new Type[] { typeof(int) };
+
+                context.EmitLdvec(op.Rn);
+                context.EmitLdvec(op.Rn);
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareOrdered), types));
+
+                context.EmitLdvec(op.Rn);
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.And), types));
+
+                if (op is OpCodeSimdShImm64 fixedOp)
+                {
+                    int fBits = GetImmShr(fixedOp);
+
+                    // BitConverter.Int32BitsToSingle(fpScaled) == MathF.Pow(2f, fBits)
+                    int fpScaled = 0x40000000 + (fBits - 1) * 0x800000;
+
+                    context.EmitLdc_I4(fpScaled);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                    context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Multiply), types));
+                }
+
+                context.EmitCall(typeof(Sse41).GetMethod(GetSse41NameRnd(roundMode), typesRndCvt));
+
+                context.Emit(OpCodes.Dup);
+
+                VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareGreaterThan), types));
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.And), types));
+
+                context.EmitStvectmp();
+                context.EmitLdvectmp();
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToVector128Int32), typesRndCvt));
+
+                context.EmitLdvectmp();
+
+                context.EmitLdc_I4(0x4F000000); // 2.14748365E9f (2147483648)
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                context.EmitStvectmp2();
+                context.EmitLdvectmp2();
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Subtract), types));
+
+                context.Emit(OpCodes.Dup);
+
+                VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareGreaterThan), types));
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.And), types));
+
+                context.EmitStvectmp();
+                context.EmitLdvectmp();
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToVector128Int32), typesRndCvt));
+
+                context.EmitLdvectmp();
+                context.EmitLdvectmp2();
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.CompareGreaterThanOrEqual), types));
+
+                context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Xor), types));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add), typesAdd));
+
+                context.EmitStvec(op.Rd);
+
+                if (scalar)
+                {
+                    EmitVectorZero32_128(context, op.Rd);
+                }
+                else if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+            else /* if (sizeF == 1) */
+            {
+                Type[] types       = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
+                Type[] typesAdd    = new Type[] { typeof(Vector128<long>),   typeof(Vector128<long>) };
+                Type[] typesRndCvt = new Type[] { typeof(Vector128<double>) };
+                Type[] typesSv     = new Type[] { typeof(long), typeof(long) };
+                Type[] typesSav    = new Type[] { typeof(long) };
+
+                context.EmitLdvec(op.Rn);
+                context.EmitLdvec(op.Rn);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareOrdered), types));
+
+                context.EmitLdvec(op.Rn);
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), types));
+
+                if (op is OpCodeSimdShImm64 fixedOp)
+                {
+                    int fBits = GetImmShr(fixedOp);
+
+                    // BitConverter.Int64BitsToDouble(fpScaled) == Math.Pow(2d, fBits)
+                    long fpScaled = 0x4000000000000000L + (fBits - 1) * 0x10000000000000L;
+
+                    context.EmitLdc_I8(fpScaled);
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Multiply), types));
+                }
+
+                context.EmitCall(typeof(Sse41).GetMethod(GetSse41NameRnd(roundMode), typesRndCvt));
+
+                context.Emit(OpCodes.Dup);
+
+                VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareGreaterThan), types));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), types));
+
+                context.EmitStvectmp();
+
+                if (!scalar)
+                {
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp();
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), types));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToInt64), typesRndCvt));
+                }
+                else
+                {
+                    context.EmitLdc_I8(0L);
+                }
+
+                context.EmitLdvectmp();
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToInt64), typesRndCvt));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSv));
+
+                context.EmitLdvectmp();
+
+                context.EmitLdc_I8(0x43E0000000000000L); // 9.2233720368547760E18d (9223372036854775808)
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetAllVector128), typesSav));
+
+                context.EmitStvectmp2();
+                context.EmitLdvectmp2();
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Subtract), types));
+
+                context.Emit(OpCodes.Dup);
+
+                VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareGreaterThan), types));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.And), types));
+
+                context.EmitStvectmp();
+
+                if (!scalar)
+                {
+                    context.EmitLdvectmp();
+                    context.EmitLdvectmp();
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), types));
+
+                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToInt64), typesRndCvt));
+                }
+                else
+                {
+                    context.EmitLdc_I8(0L);
+                }
+
+                context.EmitLdvectmp();
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.ConvertToInt64), typesRndCvt));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.SetVector128), typesSv));
+
+                context.EmitLdvectmp();
+                context.EmitLdvectmp2();
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.CompareGreaterThanOrEqual), types));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Xor), types));
+
+                context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.Add), typesAdd));
+
+                context.EmitStvec(op.Rd);
+
+                if (scalar)
+                {
+                    EmitVectorZeroUpper(context, op.Rd);
+                }
+            }
+        }
+
+        private static string GetSse41NameRnd(RoundMode roundMode)
+        {
+            switch (roundMode)
+            {
+                case RoundMode.ToNearest:
+                    return nameof(Sse41.RoundToNearestInteger); // even
+
+                case RoundMode.TowardsMinusInfinity:
+                    return nameof(Sse41.RoundToNegativeInfinity);
+
+                case RoundMode.TowardsPlusInfinity:
+                    return nameof(Sse41.RoundToPositiveInfinity);
+
+                case RoundMode.TowardsZero:
+                    return nameof(Sse41.RoundToZero);
+
+                default: throw new ArgumentException(nameof(roundMode));
             }
         }
     }
