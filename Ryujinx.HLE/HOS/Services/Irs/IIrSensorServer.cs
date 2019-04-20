@@ -47,7 +47,12 @@ namespace Ryujinx.HLE.HOS.Services.Irs
         {
             uint npadId = context.RequestData.ReadUInt32();
 
-            if(npadId > 0x20 || ((1 << (int)npadId) & 0x1000100FF) == 0)
+            if (npadId >= 8 && npadId != 16 && npadId != 32)
+            {
+                return ErrorCode.MakeError(ErrorModule.Hid, 0x2c5);
+            }
+
+            if (((1 << (int)npadId) & 0x1000100FF) == 0)
             {
                 return ErrorCode.MakeError(ErrorModule.Hid, 0x2c5);
             }
@@ -73,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Irs
                 case 7:  return 7;
                 case 32: return 8;
                 case 16: return 9;
-                default: throw new ArgumentOutOfRangeException("npadId", "NpadId out of range");
+                default: throw new ArgumentOutOfRangeException("npadId");
             }
         }
     }
