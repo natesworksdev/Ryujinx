@@ -645,7 +645,7 @@
             "toggle_vsync"
           ],
           "properties": {
-            "button_zr": {
+            "toggle_vsync": {
               "$id": "#/properties/keyboard_controls/properties/hotkeys/properties/toggle_vsync",
               "$ref": "#/definitions/key",
               "title": "Toggle VSync",
