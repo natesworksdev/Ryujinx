@@ -1,4 +1,7 @@
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.HOS.Kernel.Memory;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
 using System.Collections.Generic;
 
@@ -12,7 +15,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         private static readonly DateTime StartupDate = DateTime.UtcNow;
 
-        public IStaticService()
+        private KSharedMemory _timeSharedMem;
+
+        public IStaticService(KSharedMemory timeSharedMem)
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
@@ -21,8 +26,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 { 2,   GetStandardSteadyClock                     },
                 { 3,   GetTimeZoneService                         },
                 { 4,   GetStandardLocalSystemClock                },
+                { 20,  GetSharedMemoryNativeHandle                },
                 { 300, CalculateMonotonicSystemClockBaseTimePoint }
             };
+
+            _timeSharedMem = timeSharedMem;
         }
 
         public long GetStandardUserSystemClock(ServiceCtx context)
@@ -56,6 +64,20 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public long GetStandardLocalSystemClock(ServiceCtx context)
         {
             MakeObject(context, new ISystemClock(SystemClockType.Local));
+
+            return 0;
+        }
+
+        public long GetSharedMemoryNativeHandle(ServiceCtx context)
+        {
+            KHandleTable handleTable = context.Process.HandleTable;
+
+            if (handleTable.GenerateHandle(_timeSharedMem, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
             return 0;
         }

@@ -1,8 +1,8 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
 using System.Collections.Generic;
 
@@ -14,9 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Irs
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        private KSharedMemory _irsSharedMem;
-
-        public IIrSensorServer(KSharedMemory irsSharedMem)
+        public IIrSensorServer()
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
@@ -25,8 +23,6 @@ namespace Ryujinx.HLE.HOS.Services.Irs
                 { 304, GetIrsensorSharedMemoryHandle },
                 { 311, GetNpadIrCameraHandle         }
             };
-
-            _irsSharedMem = irsSharedMem;
         }
 
         // ActivateIrsensor(nn::applet::AppletResourceUserId, pid)
@@ -52,9 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Irs
         // GetIrsensorSharedMemoryHandle(nn::applet::AppletResourceUserId, pid) -> handle<copy>
         public long GetIrsensorSharedMemoryHandle(ServiceCtx context)
         {
-            var handleTable = context.Process.HandleTable;
-
-            if (handleTable.GenerateHandle(_irsSharedMem, out int handle) != KernelResult.Success)
+            if (context.Process.HandleTable.GenerateHandle(context.Device.System.IirsSharedMem, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }

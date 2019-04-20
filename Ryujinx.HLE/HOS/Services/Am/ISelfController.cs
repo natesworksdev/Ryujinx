@@ -17,27 +17,33 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         private int _idleTimeDetectionExtension;
 
+        private int    _suspendedTickValue;
+        private KEvent _suspendedTickChangedEvent;
+
         public ISelfController(Horizon system)
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                { 0,  Exit                                  },
-                { 1,  LockExit                              },
-                { 2,  UnlockExit                            },
-                { 9,  GetLibraryAppletLaunchableEvent       },
-                { 10, SetScreenShotPermission               },
-                { 11, SetOperationModeChangedNotification   },
-                { 12, SetPerformanceModeChangedNotification },
-                { 13, SetFocusHandlingMode                  },
-                { 14, SetRestartMessageEnabled              },
-                { 16, SetOutOfFocusSuspendingEnabled        },
-                { 19, SetScreenShotImageOrientation         },
-                { 50, SetHandlesRequestToDisplay            },
-                { 62, SetIdleTimeDetectionExtension         },
-                { 63, GetIdleTimeDetectionExtension         }
+                { 0,  Exit                                    },
+                { 1,  LockExit                                },
+                { 2,  UnlockExit                              },
+                { 9,  GetLibraryAppletLaunchableEvent         },
+                { 10, SetScreenShotPermission                 },
+                { 11, SetOperationModeChangedNotification     },
+                { 12, SetPerformanceModeChangedNotification   },
+                { 13, SetFocusHandlingMode                    },
+                { 14, SetRestartMessageEnabled                },
+                { 16, SetOutOfFocusSuspendingEnabled          },
+                { 19, SetScreenShotImageOrientation           },
+                { 50, SetHandlesRequestToDisplay              },
+                { 62, SetIdleTimeDetectionExtension           },
+                { 63, GetIdleTimeDetectionExtension           },
+                { 90, GetAccumulatedSuspendedTickValue        },
+                { 91, GetAccumulatedSuspendedTickChangedEvent }
             };
 
-            _launchableEvent = new KEvent(system);
+            _launchableEvent           = new KEvent(system);
+            _suspendedTickChangedEvent = new KEvent(system);
         }
 
         public long Exit(ServiceCtx context)
@@ -167,6 +173,31 @@ namespace Ryujinx.HLE.HOS.Services.Am
             context.ResponseData.Write(_idleTimeDetectionExtension);
 
             Logger.PrintStub(LogClass.ServiceAm, new { _idleTimeDetectionExtension });
+
+            return 0;
+        }
+
+        public long GetAccumulatedSuspendedTickValue(ServiceCtx context)
+        {
+            context.ResponseData.Write(_suspendedTickValue);
+
+            Logger.PrintStub(LogClass.ServiceAm);
+
+            return 0;
+        }
+
+        public long GetAccumulatedSuspendedTickChangedEvent(ServiceCtx context)
+        {
+            _suspendedTickChangedEvent.ReadableEvent.Signal();
+
+            if (context.Process.HandleTable.GenerateHandle(_suspendedTickChangedEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+
+            Logger.PrintStub(LogClass.ServiceAm);
 
             return 0;
         }
