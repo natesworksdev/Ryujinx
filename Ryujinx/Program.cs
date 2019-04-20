@@ -5,11 +5,16 @@ using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
 using System;
 using System.IO;
+using System.Collections;
 
 namespace Ryujinx
 {
     class Program
     {
+        private static DiscordRpc.RichPresence Presence;
+
+        private static DiscordRpc.EventHandlers Handlers;
+
         public static string ApplicationDirectory => AppDomain.CurrentDomain.BaseDirectory;
 
         static void Main(string[] args)
@@ -28,6 +33,42 @@ namespace Ryujinx
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
 
+            void SetPresence(string FileType)
+            {
+                ArrayList RPsupported = new ArrayList
+                    {
+                    "01006a800016e000",
+                    "01009aa000faa000",
+                    "0100a5c00d162000"
+                    }; //temporary array until i make an external one to be read in
+
+                if (File.Exists("./discord-rpc.dll"))
+                {
+                    if (RPsupported.Contains(device.System.TitleID))
+                    {
+                        Presence.largeImageKey = device.System.TitleID;
+                    }
+                    else
+                    {
+                        Presence.largeImageKey = "ryujinx";
+                    }
+                    Presence.details = $"Playing {device.System.TitleName} ({device.System.TitleID})";
+                    Presence.state = "[state]";
+                    Presence.largeImageText = device.System.TitleName;
+                    Presence.startTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                    Presence.smallImageKey = FileType;
+                    Presence.smallImageText = FileType.ToUpper().Replace("-", " ");
+                    DiscordRpc.UpdatePresence(Presence);
+                }
+            }
+
+            if (File.Exists("./discord-rpc.dll"))
+            {
+                Handlers = new DiscordRpc.EventHandlers();
+                Presence = new DiscordRpc.RichPresence();
+                DiscordRpc.Initialize("568815339807309834", ref Handlers, true, null);
+            }
+
             if (args.Length == 1)
             {
                 if (Directory.Exists(args[0]))
@@ -42,14 +83,14 @@ namespace Ryujinx
                     if (romFsFiles.Length > 0)
                     {
                         Logger.PrintInfo(LogClass.Application, "Loading as cart with RomFS.");
-
                         device.LoadCart(args[0], romFsFiles[0]);
+                        SetPresence("cart-with-romfs");
                     }
                     else
                     {
                         Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
-
                         device.LoadCart(args[0]);
+                        SetPresence("cart-without-romfs");
                     }
                 }
                 else if (File.Exists(args[0]))
@@ -59,19 +100,23 @@ namespace Ryujinx
                         case ".xci":
                             Logger.PrintInfo(LogClass.Application, "Loading as XCI.");
                             device.LoadXci(args[0]);
+                            SetPresence("xci");
                             break;
                         case ".nca":
                             Logger.PrintInfo(LogClass.Application, "Loading as NCA.");
                             device.LoadNca(args[0]);
+                            SetPresence("nca");
                             break;
                         case ".nsp":
                         case ".pfs0":
                             Logger.PrintInfo(LogClass.Application, "Loading as NSP.");
                             device.LoadNsp(args[0]);
+                            SetPresence("nsp");
                             break;
                         default:
                             Logger.PrintInfo(LogClass.Application, "Loading as homebrew.");
                             device.LoadProgram(args[0]);
+                            SetPresence("nro-nso");
                             break;
                     }
                 }
