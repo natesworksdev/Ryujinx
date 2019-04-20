@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Irs
                 case 7:  return 7;
                 case 32: return 8;
                 case 16: return 9;
-                default: throw new ArgumentOutOfRangeException("npadId");
+                default: throw new ArgumentOutOfRangeException(nameof(npadId));
             }
         }
     }
