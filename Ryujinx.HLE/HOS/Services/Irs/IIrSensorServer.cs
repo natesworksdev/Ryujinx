@@ -12,8 +12,6 @@ namespace Ryujinx.HLE.HOS.Services.Irs
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        private bool _activated;
-
         public IIrSensorServer()
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
@@ -44,6 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Irs
             return 0;
         }
 
+        // GetNpadIrCameraHandle(u32) -> nn::irsensor::IrCameraHandle
         public long GetNpadIrCameraHandle(ServiceCtx context)
         {
             uint npadId = context.RequestData.ReadUInt32();
@@ -74,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Irs
                 case 7:  return 7;
                 case 32: return 8;
                 case 16: return 9;
-                default: throw new InvalidOperationException("Invalid NpadId");
+                default: throw new ArgumentOutOfRangeException("npadId", "NpadId out of range");
             }
         }
     }
