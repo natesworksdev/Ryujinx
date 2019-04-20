@@ -401,11 +401,11 @@ namespace ChocolArm64.Instructions
             }
             else
             {
-                EmitVectorExtractSx(context, op.Rn, 0, op.Size + 2);
+                EmitVectorExtractSx(context, op.Rn, 0, sizeF + 2);
 
-                EmitFloatCast(context, op.Size);
+                EmitFloatCast(context, sizeF);
 
-                EmitScalarSetF(context, op.Rd, op.Size);
+                EmitScalarSetF(context, op.Rd, sizeF);
             }
         }
 
@@ -492,13 +492,13 @@ namespace ChocolArm64.Instructions
             }
             else
             {
-                EmitVectorExtractZx(context, op.Rn, 0, op.Size + 2);
+                EmitVectorExtractZx(context, op.Rn, 0, sizeF + 2);
 
                 context.Emit(OpCodes.Conv_R_Un);
 
-                EmitFloatCast(context, op.Size);
+                EmitFloatCast(context, sizeF);
 
-                EmitScalarSetF(context, op.Rd, op.Size);
+                EmitScalarSetF(context, op.Rd, sizeF);
             }
         }
 
