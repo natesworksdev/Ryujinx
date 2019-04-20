@@ -25,6 +25,8 @@ namespace Ryujinx.HLE.HOS.Services.Irs
                 { 304, GetIrsensorSharedMemoryHandle },
                 { 311, GetNpadIrCameraHandle         }
             };
+
+            _irsSharedMem = irsSharedMem;
         }
 
         // ActivateIrsensor(nn::applet::AppletResourceUserId, pid)
