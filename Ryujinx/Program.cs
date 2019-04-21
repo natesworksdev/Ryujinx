@@ -5,7 +5,7 @@ using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
 using System;
 using System.IO;
-using System.Collections;
+using System.Linq;
 
 namespace Ryujinx
 {
@@ -35,15 +35,9 @@ namespace Ryujinx
 
             void SetPresence(string FileType)
             {
-                ArrayList RPsupported = new ArrayList
-                    {
-                    "01006a800016e000",
-                    "01009aa000faa000",
-                    "0100a5c00d162000"
-                    }; //temporary array until i make an external one to be read in
-
-                if (File.Exists("./discord-rpc.dll"))
+                if (File.Exists("./discord-rpc.dll")||File.Exists("./discord-rpc.so"))
                 {
+                    string[] RPsupported = File.ReadAllLines("./RPsupported");
                     if (RPsupported.Contains(device.System.TitleID))
                     {
                         Presence.largeImageKey = device.System.TitleID;
@@ -52,8 +46,8 @@ namespace Ryujinx
                     {
                         Presence.largeImageKey = "ryujinx";
                     }
-                    Presence.details = $"Playing {device.System.TitleName} ({device.System.TitleID})";
-                    Presence.state = "[state]";
+                    Presence.details = $"Playing {device.System.TitleName}";
+                    Presence.state = device.System.TitleID.ToUpper();
                     Presence.largeImageText = device.System.TitleName;
                     Presence.startTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
                     Presence.smallImageKey = FileType;
@@ -62,7 +56,7 @@ namespace Ryujinx
                 }
             }
 
-            if (File.Exists("./discord-rpc.dll"))
+            if (File.Exists("./discord-rpc.dll") || File.Exists("./discord-rpc.so"))
             {
                 Handlers = new DiscordRpc.EventHandlers();
                 Presence = new DiscordRpc.RichPresence();
