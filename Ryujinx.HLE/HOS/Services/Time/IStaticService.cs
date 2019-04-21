@@ -15,9 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         private static readonly DateTime StartupDate = DateTime.UtcNow;
 
-        private KSharedMemory _timeSharedMem;
-
-        public IStaticService(KSharedMemory timeSharedMem)
+        public IStaticService()
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
@@ -29,8 +27,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 { 20,  GetSharedMemoryNativeHandle                },
                 { 300, CalculateMonotonicSystemClockBaseTimePoint }
             };
-
-            _timeSharedMem = timeSharedMem;
         }
 
         public long GetStandardUserSystemClock(ServiceCtx context)
@@ -70,9 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public long GetSharedMemoryNativeHandle(ServiceCtx context)
         {
-            KHandleTable handleTable = context.Process.HandleTable;
-
-            if (handleTable.GenerateHandle(_timeSharedMem, out int handle) != KernelResult.Success)
+            if (context.Process.HandleTable.GenerateHandle(context.Device.System.TimeSharedMem, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }
