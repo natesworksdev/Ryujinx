@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Services
                 case "time:a":
                 case "time:s":
                 case "time:u":
-                    return new Time.IStaticService(system.TimeSharedMem);
+                    return new Time.IStaticService();
 
                 case "vi:m":
                     return new IManagerRootService();
