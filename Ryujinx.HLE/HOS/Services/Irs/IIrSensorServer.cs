@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Irs
         public long ActivateIrsensorWithFunctionLevel(ServiceCtx context)
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
-            int  packedFunctionLevel  = context.RequestData.ReadInt32();
+            long packedFunctionLevel  = context.RequestData.ReadInt64();
 
             Logger.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, packedFunctionLevel });
 
