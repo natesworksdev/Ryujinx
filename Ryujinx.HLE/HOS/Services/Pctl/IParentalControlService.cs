@@ -30,12 +30,9 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
             {
                 _initialized = true;
             }
-            else
+            else if (_initialized)
             {
-                if (_initialized)
-                {
-                    Logger.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
-                }
+                Logger.PrintWarning(LogClass.ServicePctl, "Service is already initialized!");
             }
 
             return 0;
