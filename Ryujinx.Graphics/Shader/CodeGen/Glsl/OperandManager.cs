@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             //TODO: Warn about unknown built-in attribute.
 
-            return "// bad_attr0x" + value.ToString("X");
+            return isOutAttr ? "// bad_attr0x" + value.ToString("X") : "0.0";
         }
 
         public static string GetUbName(GalShaderType shaderType, int slot)
