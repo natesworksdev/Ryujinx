@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud
                             Params.SinkCount * 0x148 +
                             Params.SplitterDestinationDataCount * 0x540 +
                             Params.VoiceCount * (Params.SplitterCount * 0x68 + 0x2E0) +
-                            ((Params.VoiceCount + Params.MixCount + Params.EffectCount + Params.SinkCount + 0x65) << 6) + 0x3F8;
+                            ((Params.VoiceCount + Params.MixCount + Params.EffectCount + Params.SinkCount + 0x65) << 6) + 0x3F8 + 0x7E;
                 }
                 else
                 {
