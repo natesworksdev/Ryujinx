@@ -100,7 +100,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud
                                (Params.PerformanceManagerCount + 1) + 0x13F) & ~0x3FL;
                 }
 
-                if (IsVariadicCommandBufferSizeSupported)
+                if (isVariadicCommandBufferSizeSupported)
                 {
                     size += Params.EffectCount * 0x840 + 
                             Params.MixCount * 0x5A38 +
