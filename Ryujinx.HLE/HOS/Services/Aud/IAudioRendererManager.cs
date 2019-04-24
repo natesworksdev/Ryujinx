@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Aud
             if (revision <= Rev)
             {
                 bool isSplitterSupported                  = revision >= 3;
-                bool IsVariadicCommandBufferSizeSupported = revision >= 5;
+                bool isVariadicCommandBufferSizeSupported = revision >= 5;
                 
                 long size;
 
