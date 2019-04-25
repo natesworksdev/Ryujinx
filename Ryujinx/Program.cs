@@ -3,9 +3,9 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
+using Ryujinx.Profiler;
 using System;
 using System.IO;
-using Ryujinx.Profiler;
 
 namespace Ryujinx
 {
