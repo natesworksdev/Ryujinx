@@ -172,11 +172,8 @@ namespace Ryujinx.Profiler
 
         public string GetSession()
         {
-            // Can be called from multiple threads so locked to ensure no duplicate sessions are generated
-            lock (_sessionLock)
-            {
-                return (_sessionCounter++).ToString();
-            }
+            // Can be called from multiple threads so we need to ensure no duplicate sessions are generated
+            return Interlocked.Increment(ref _sessionCounter).ToString();
         }
 
         public List<KeyValuePair<ProfileConfig, TimingInfo>> GetProfilingData()
