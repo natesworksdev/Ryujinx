@@ -15,7 +15,6 @@ namespace Ryujinx.Profiler
         private static InternalProfile  _profileInstance;
         private static ProfilerSettings _settings;
 
-
         [Conditional("USE_PROFILING")]
         public static void Initalize()
         {
