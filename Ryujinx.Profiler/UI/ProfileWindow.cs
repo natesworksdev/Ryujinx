@@ -30,9 +30,10 @@ namespace Ryujinx.Profiler.UI
             ToggleFlags       = 8,
             Step              = 9,
 
-            // Update this when new buttons are added
-            Count             = 10,
-            Autodraw          = 8,
+            // Update this when new buttons are added.
+            // These are indexes to the enum list
+            Autodraw = 8,
+            Count    = 10,
         }
 
         // Font service
