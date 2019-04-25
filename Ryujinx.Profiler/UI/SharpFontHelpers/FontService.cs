@@ -38,7 +38,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
         {
             string fontFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
 
-            // Only uses Arial, add more font here if wanted
+            // Only uses Arial, add more fonts here if wanted
             string path = Path.Combine(fontFolder, "arial.ttf");
             if (File.Exists(path))
             {
