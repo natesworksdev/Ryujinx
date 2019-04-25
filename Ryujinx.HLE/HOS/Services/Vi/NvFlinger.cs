@@ -1,6 +1,7 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvGpuAS;
 using Ryujinx.HLE.HOS.Services.Nv.NvMap;
@@ -356,15 +357,15 @@ namespace Ryujinx.HLE.HOS.Services.Android
             switch (colorFormat)
             {
                 case ColorFormat.A8B8G8R8:
-                    return GalImageFormat.RGBA8  | GalImageFormat.Unorm;
+                    return GalImageFormat.Rgba8  | GalImageFormat.Unorm;
                 case ColorFormat.X8B8G8R8:
-                    return GalImageFormat.RGBX8  | GalImageFormat.Unorm;
+                    return GalImageFormat.Rgbx8  | GalImageFormat.Unorm;
                 case ColorFormat.R5G6B5:
-                    return GalImageFormat.BGR565 | GalImageFormat.Unorm;
+                    return GalImageFormat.Bgr565 | GalImageFormat.Unorm;
                 case ColorFormat.A8R8G8B8:
-                    return GalImageFormat.BGRA8  | GalImageFormat.Unorm;
+                    return GalImageFormat.Bgra8  | GalImageFormat.Unorm;
                 case ColorFormat.A4B4G4R4:
-                    return GalImageFormat.RGBA4  | GalImageFormat.Unorm;
+                    return GalImageFormat.Rgba4  | GalImageFormat.Unorm;
                 default:
                     throw new NotImplementedException($"Color Format \"{colorFormat}\" not implemented!");
             }
@@ -415,9 +416,10 @@ namespace Ryujinx.HLE.HOS.Services.Android
                 {
                     image = new GalImage(
                         fbWidth,
-                        fbHeight, 1, BlockHeight,
+                        fbHeight, 1, 1, 1, BlockHeight, 1,
                         GalMemoryLayout.BlockLinear,
-                        imageFormat);
+                        imageFormat,
+                        GalTextureTarget.TwoD);
                 }
 
                 context.Device.Gpu.ResourceManager.ClearPbCache();

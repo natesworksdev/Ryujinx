@@ -17,7 +17,7 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
-            IGalRenderer renderer = new OGLRenderer();
+            IGalRenderer renderer = new OglRenderer();
 
             IAalOutput audioOut = InitializeAudioEngine();
 
@@ -78,10 +78,14 @@ namespace Ryujinx
                             break;
                     }
                 }
+                else
+                {
+                    Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file");
+                }
             }
             else
             {
-                Logger.PrintInfo(LogClass.Application, "Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
+                Logger.PrintWarning(LogClass.Application, "Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
             }
 
             using (GlScreen screen = new GlScreen(device, renderer))

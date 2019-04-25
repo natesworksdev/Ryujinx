@@ -86,13 +86,13 @@ namespace ChocolArm64.Instructions
         {
             OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
 
-            EmitLdvecWithSignedCast(context, op.Rn, op.Size);
+            context.EmitLdvec(op.Rn);
 
             Type baseType = VectorIntTypesPerSizeLog2[op.Size];
 
             if (op is OpCodeSimdReg64 binOp)
             {
-                EmitLdvecWithSignedCast(context, binOp.Rm, op.Size);
+                context.EmitLdvec(binOp.Rm);
 
                 context.EmitCall(type.GetMethod(name, new Type[] { baseType, baseType }));
             }
@@ -101,86 +101,12 @@ namespace ChocolArm64.Instructions
                 context.EmitCall(type.GetMethod(name, new Type[] { baseType }));
             }
 
-            EmitStvecWithSignedCast(context, op.Rd, op.Size);
+            context.EmitStvec(op.Rd);
 
             if (op.RegisterSize == RegisterSize.Simd64)
             {
                 EmitVectorZeroUpper(context, op.Rd);
             }
-        }
-
-        public static void EmitLdvecWithSignedCast(ILEmitterCtx context, int reg, int size)
-        {
-            context.EmitLdvec(reg);
-
-            switch (size)
-            {
-                case 0: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToSByte)); break;
-                case 1: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToInt16)); break;
-                case 2: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToInt32)); break;
-                case 3: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToInt64)); break;
-
-                default: throw new ArgumentOutOfRangeException(nameof(size));
-            }
-        }
-
-        public static void EmitLdvecWithCastToDouble(ILEmitterCtx context, int reg)
-        {
-            context.EmitLdvec(reg);
-
-            VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToDouble));
-        }
-
-        public static void EmitStvecWithCastFromDouble(ILEmitterCtx context, int reg)
-        {
-            VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleToSingle));
-
-            context.EmitStvec(reg);
-        }
-
-        public static void EmitLdvecWithUnsignedCast(ILEmitterCtx context, int reg, int size)
-        {
-            context.EmitLdvec(reg);
-
-            switch (size)
-            {
-                case 0: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToByte));   break;
-                case 1: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToUInt16)); break;
-                case 2: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToUInt32)); break;
-                case 3: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToUInt64)); break;
-
-                default: throw new ArgumentOutOfRangeException(nameof(size));
-            }
-        }
-
-        public static void EmitStvecWithSignedCast(ILEmitterCtx context, int reg, int size)
-        {
-            switch (size)
-            {
-                case 0: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSByteToSingle)); break;
-                case 1: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorInt16ToSingle)); break;
-                case 2: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorInt32ToSingle)); break;
-                case 3: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorInt64ToSingle)); break;
-
-                default: throw new ArgumentOutOfRangeException(nameof(size));
-            }
-
-            context.EmitStvec(reg);
-        }
-
-        public static void EmitStvecWithUnsignedCast(ILEmitterCtx context, int reg, int size)
-        {
-            switch (size)
-            {
-                case 0: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorByteToSingle));   break;
-                case 1: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorUInt16ToSingle)); break;
-                case 2: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorUInt32ToSingle)); break;
-                case 3: VectorHelper.EmitCall(context, nameof(VectorHelper.VectorUInt64ToSingle)); break;
-
-                default: throw new ArgumentOutOfRangeException(nameof(size));
-            }
-
-            context.EmitStvec(reg);
         }
 
         public static void EmitScalarSseOrSse2OpF(ILEmitterCtx context, string name)
@@ -199,17 +125,7 @@ namespace ChocolArm64.Instructions
 
             int sizeF = op.Size & 1;
 
-            void Ldvec(int reg)
-            {
-                context.EmitLdvec(reg);
-
-                if (sizeF == 1)
-                {
-                    VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleToDouble));
-                }
-            }
-
-            Ldvec(op.Rn);
+            context.EmitLdvec(op.Rn);
 
             Type type;
             Type baseType;
@@ -227,18 +143,13 @@ namespace ChocolArm64.Instructions
 
             if (op is OpCodeSimdReg64 binOp)
             {
-                Ldvec(binOp.Rm);
+                context.EmitLdvec(binOp.Rm);
 
                 context.EmitCall(type.GetMethod(name, new Type[] { baseType, baseType }));
             }
             else
             {
                 context.EmitCall(type.GetMethod(name, new Type[] { baseType }));
-            }
-
-            if (sizeF == 1)
-            {
-                VectorHelper.EmitCall(context, nameof(VectorHelper.VectorDoubleToSingle));
             }
 
             context.EmitStvec(op.Rd);
@@ -681,11 +592,8 @@ namespace ChocolArm64.Instructions
 
                 emit();
 
-                EmitVectorInsertTmp(context, index, op.Size);
+                EmitVectorInsert(context, op.Rd, index, op.Size);
             }
-
-            context.EmitLdvectmp();
-            context.EmitStvec(op.Rd);
 
             if (op.RegisterSize == RegisterSize.Simd64)
             {
@@ -964,8 +872,8 @@ namespace ChocolArm64.Instructions
 
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.UnpackLow), types));
 
-                    context.Emit(OpCodes.Dup);
                     context.EmitStvectmp();
+                    context.EmitLdvectmp();
 
                     VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));
 
@@ -987,20 +895,13 @@ namespace ChocolArm64.Instructions
                     Type[] types    = new Type[] { typeof(Vector128<float>), typeof(Vector128<float>) };
 
                     context.EmitLdvec(op.Rn);
-
-                    context.Emit(OpCodes.Dup);
-                    context.EmitStvectmp();
-
                     context.EmitLdvec(op.Rm);
-
-                    context.Emit(OpCodes.Dup);
-                    context.EmitStvectmp2();
 
                     context.EmitLdc_I4(2 << 6 | 0 << 4 | 2 << 2 | 0 << 0);
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle), typesSfl));
 
-                    context.EmitLdvectmp();
-                    context.EmitLdvectmp2();
+                    context.EmitLdvec(op.Rn);
+                    context.EmitLdvec(op.Rm);
 
                     context.EmitLdc_I4(3 << 6 | 1 << 4 | 3 << 2 | 1 << 0);
                     context.EmitCall(typeof(Sse).GetMethod(nameof(Sse.Shuffle), typesSfl));
@@ -1014,26 +915,19 @@ namespace ChocolArm64.Instructions
             {
                 Type[] types = new Type[] { typeof(Vector128<double>), typeof(Vector128<double>) };
 
-                EmitLdvecWithCastToDouble(context, op.Rn);
-
-                context.Emit(OpCodes.Dup);
-                context.EmitStvectmp();
-
-                EmitLdvecWithCastToDouble(context, op.Rm);
-
-                context.Emit(OpCodes.Dup);
-                context.EmitStvectmp2();
+                context.EmitLdvec(op.Rn);
+                context.EmitLdvec(op.Rm);
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackLow), types));
 
-                context.EmitLdvectmp();
-                context.EmitLdvectmp2();
+                context.EmitLdvec(op.Rn);
+                context.EmitLdvec(op.Rm);
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.UnpackHigh), types));
 
                 context.EmitCall(typeof(Sse2).GetMethod(name, types));
 
-                EmitStvecWithCastFromDouble(context, op.Rd);
+                context.EmitStvec(op.Rd);
             }
         }
 
@@ -1074,11 +968,6 @@ namespace ChocolArm64.Instructions
             int bytes = op.GetBitsCount() >> 3;
             int elems = !scalar ? bytes >> op.Size : 1;
 
-            if (scalar)
-            {
-                EmitVectorZeroLowerTmp(context);
-            }
-
             for (int index = 0; index < elems; index++)
             {
                 EmitVectorExtractSx(context, op.Rn, index, op.Size);
@@ -1094,13 +983,15 @@ namespace ChocolArm64.Instructions
                     EmitUnarySignedSatQAbsOrNeg(context);
                 }
 
-                EmitVectorInsertTmp(context, index, op.Size);
+                if (scalar)
+                {
+                    EmitVectorZeroAll(context, op.Rd);
+                }
+
+                EmitVectorInsert(context, op.Rd, index, op.Size);
             }
 
-            context.EmitLdvectmp();
-            context.EmitStvec(op.Rd);
-
-            if ((op.RegisterSize == RegisterSize.Simd64) || scalar)
+            if (op.RegisterSize == RegisterSize.Simd64)
             {
                 EmitVectorZeroUpper(context, op.Rd);
             }
@@ -1141,11 +1032,6 @@ namespace ChocolArm64.Instructions
             int bytes = op.GetBitsCount() >> 3;
             int elems = !scalar ? bytes >> op.Size : 1;
 
-            if (scalar)
-            {
-                EmitVectorZeroLowerTmp(context);
-            }
-
             if (add || sub)
             {
                 for (int index = 0; index < elems; index++)
@@ -1171,7 +1057,12 @@ namespace ChocolArm64.Instructions
                         }
                     }
 
-                    EmitVectorInsertTmp(context, index, op.Size);
+                    if (scalar)
+                    {
+                        EmitVectorZeroAll(context, op.Rd);
+                    }
+
+                    EmitVectorInsert(context, op.Rd, index, op.Size);
                 }
             }
             else if (accumulate)
@@ -1192,7 +1083,12 @@ namespace ChocolArm64.Instructions
                         EmitBinarySatQAccumulate(context, signed);
                     }
 
-                    EmitVectorInsertTmp(context, index, op.Size);
+                    if (scalar)
+                    {
+                        EmitVectorZeroAll(context, op.Rd);
+                    }
+
+                    EmitVectorInsert(context, op.Rd, index, op.Size);
                 }
             }
             else
@@ -1206,14 +1102,16 @@ namespace ChocolArm64.Instructions
 
                     EmitSatQ(context, op.Size, true, signed);
 
-                    EmitVectorInsertTmp(context, index, op.Size);
+                    if (scalar)
+                    {
+                        EmitVectorZeroAll(context, op.Rd);
+                    }
+
+                    EmitVectorInsert(context, op.Rd, index, op.Size);
                 }
             }
 
-            context.EmitLdvectmp();
-            context.EmitStvec(op.Rd);
-
-            if ((op.RegisterSize == RegisterSize.Simd64) || scalar)
+            if (op.RegisterSize == RegisterSize.Simd64)
             {
                 EmitVectorZeroUpper(context, op.Rd);
             }
@@ -1277,13 +1175,9 @@ namespace ChocolArm64.Instructions
         }
 
         // TSrc (16bit, 32bit, 64bit; signed, unsigned) > TDst (8bit, 16bit, 32bit; signed, unsigned).
-        public static void EmitSatQ(
-            ILEmitterCtx context,
-            int  sizeDst,
-            bool signedSrc,
-            bool signedDst)
+        public static void EmitSatQ(ILEmitterCtx context, int sizeDst, bool signedSrc, bool signedDst)
         {
-            if (sizeDst > 2)
+            if ((uint)sizeDst > 2u)
             {
                 throw new ArgumentOutOfRangeException(nameof(sizeDst));
             }
@@ -1473,16 +1367,16 @@ namespace ChocolArm64.Instructions
         {
             if (Optimizations.UseSse)
             {
-                //TODO: Use Sse2.MoveScalar once it is fixed,
-                //as of the time of writing it just crashes the JIT (SDK 2.1.503).
+                // TODO: Use Sse2.MoveScalar once it is fixed (in .NET Core 3.0),
+                // as of the time of writing it just crashes the JIT.
 
                 /*Type[] typesMov = new Type[] { typeof(Vector128<ulong>) };
 
-                EmitLdvecWithUnsignedCast(context, reg, 3);
+                context.EmitLdvec(reg);
 
                 context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.MoveScalar), typesMov));
 
-                EmitStvecWithUnsignedCast(context, reg, 3);*/
+                context.EmitStvec(reg);*/
 
                 context.EmitLdvec(reg);
                 VectorHelper.EmitCall(context, nameof(VectorHelper.VectorSingleZero));

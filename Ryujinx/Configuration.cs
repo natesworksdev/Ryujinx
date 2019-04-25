@@ -4,6 +4,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.SystemState;
+using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.Input;
 using Ryujinx.UI.Input;
 using System;
@@ -79,12 +80,22 @@ namespace Ryujinx
         /// <summary>
         /// Enables or disables multi-core scheduling of threads
         /// </summary>
-        public bool EnableMultiCoreScheduling { get; private set; }
+        public bool EnableMulticoreScheduling { get; private set; }
 
         /// <summary>
         /// Enables integrity checks on Game content files
         /// </summary>
         public bool EnableFsIntegrityChecks { get; private set; }
+
+        /// <summary>
+        /// Enable or Disable aggressive CPU optimizations
+        /// </summary>
+        public bool EnableAggressiveCpuOpts { get; private set; }
+
+        /// <summary>
+        /// Enable or disable ignoring missing services
+        /// </summary>
+        public bool IgnoreMissingServices { get; private set; }
 
         /// <summary>
         ///  The primary controller's type
@@ -188,7 +199,7 @@ namespace Ryujinx
 
             device.System.State.SetLanguage(Instance.SystemLanguage);
 
-            if (Instance.EnableMultiCoreScheduling)
+            if (Instance.EnableMulticoreScheduling)
             {
                 device.System.EnableMultiCoreScheduling();
             }
@@ -196,6 +207,13 @@ namespace Ryujinx
             device.System.FsIntegrityCheckLevel = Instance.EnableFsIntegrityChecks
                 ? IntegrityCheckLevel.ErrorOnInvalid
                 : IntegrityCheckLevel.None;
+
+            if (Instance.EnableAggressiveCpuOpts)
+            {
+                Optimizations.AssumeStrictAbiCompliance = true;
+            }
+
+            ServiceConfiguration.IgnoreMissingServices = Instance.IgnoreMissingServices;
 
             if(Instance.GamepadControls.Enabled)
             {

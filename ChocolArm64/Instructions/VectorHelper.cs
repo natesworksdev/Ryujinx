@@ -26,8 +26,8 @@ namespace ChocolArm64.Instructions
         {
             if (float.IsNaN(value)) return 0;
 
-            return value > int.MaxValue ? int.MaxValue :
-                   value < int.MinValue ? int.MinValue : (int)value;
+            return value >= int.MaxValue ? int.MaxValue :
+                   value <= int.MinValue ? int.MinValue : (int)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -35,8 +35,8 @@ namespace ChocolArm64.Instructions
         {
             if (float.IsNaN(value)) return 0;
 
-            return value > long.MaxValue ? long.MaxValue :
-                   value < long.MinValue ? long.MinValue : (long)value;
+            return value >= long.MaxValue ? long.MaxValue :
+                   value <= long.MinValue ? long.MinValue : (long)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,8 +44,8 @@ namespace ChocolArm64.Instructions
         {
             if (float.IsNaN(value)) return 0;
 
-            return value > uint.MaxValue ? uint.MaxValue :
-                   value < uint.MinValue ? uint.MinValue : (uint)value;
+            return value >= uint.MaxValue ? uint.MaxValue :
+                   value <= uint.MinValue ? uint.MinValue : (uint)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,8 +53,8 @@ namespace ChocolArm64.Instructions
         {
             if (float.IsNaN(value)) return 0;
 
-            return value > ulong.MaxValue ? ulong.MaxValue :
-                   value < ulong.MinValue ? ulong.MinValue : (ulong)value;
+            return value >= ulong.MaxValue ? ulong.MaxValue :
+                   value <= ulong.MinValue ? ulong.MinValue : (ulong)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,8 +62,8 @@ namespace ChocolArm64.Instructions
         {
             if (double.IsNaN(value)) return 0;
 
-            return value > int.MaxValue ? int.MaxValue :
-                   value < int.MinValue ? int.MinValue : (int)value;
+            return value >= int.MaxValue ? int.MaxValue :
+                   value <= int.MinValue ? int.MinValue : (int)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -71,8 +71,8 @@ namespace ChocolArm64.Instructions
         {
             if (double.IsNaN(value)) return 0;
 
-            return value > long.MaxValue ? long.MaxValue :
-                   value < long.MinValue ? long.MinValue : (long)value;
+            return value >= long.MaxValue ? long.MaxValue :
+                   value <= long.MinValue ? long.MinValue : (long)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,8 +80,8 @@ namespace ChocolArm64.Instructions
         {
             if (double.IsNaN(value)) return 0;
 
-            return value > uint.MaxValue ? uint.MaxValue :
-                   value < uint.MinValue ? uint.MinValue : (uint)value;
+            return value >= uint.MaxValue ? uint.MaxValue :
+                   value <= uint.MinValue ? uint.MinValue : (uint)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,8 +89,8 @@ namespace ChocolArm64.Instructions
         {
             if (double.IsNaN(value)) return 0;
 
-            return value > ulong.MaxValue ? ulong.MaxValue :
-                   value < ulong.MinValue ? ulong.MinValue : (ulong)value;
+            return value >= ulong.MaxValue ? ulong.MaxValue :
+                   value <= ulong.MinValue ? ulong.MinValue : (ulong)value;
         }
 
         public static double Round(double value, CpuThreadState state)
@@ -501,264 +501,11 @@ namespace ChocolArm64.Instructions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<sbyte> VectorSByteZero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Sse2.SetZeroVector128<sbyte>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<short> VectorInt16Zero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Sse2.SetZeroVector128<short>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<int> VectorInt32Zero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Sse2.SetZeroVector128<int>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<long> VectorInt64Zero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Sse2.SetZeroVector128<long>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<float> VectorSingleZero()
         {
             if (Sse.IsSupported)
             {
                 return Sse.SetZeroVector128();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<double> VectorDoubleZero()
-        {
-            if (Sse2.IsSupported)
-            {
-                return Sse2.SetZeroVector128<double>();
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<sbyte> VectorSingleToSByte(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, sbyte>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<short> VectorSingleToInt16(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, short>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<int> VectorSingleToInt32(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, int>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<long> VectorSingleToInt64(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, long>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<byte> VectorSingleToByte(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, byte>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<ushort> VectorSingleToUInt16(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, ushort>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<uint> VectorSingleToUInt32(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, uint>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<ulong> VectorSingleToUInt64(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, ulong>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<double> VectorSingleToDouble(Vector128<float> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<float, double>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorSByteToSingle(Vector128<sbyte> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<sbyte, float>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorInt16ToSingle(Vector128<short> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<short, float>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorInt32ToSingle(Vector128<int> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<int, float>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorInt64ToSingle(Vector128<long> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<long, float>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorByteToSingle(Vector128<byte> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<byte, float>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorUInt16ToSingle(Vector128<ushort> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<ushort, float>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorUInt32ToSingle(Vector128<uint> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<uint, float>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorUInt64ToSingle(Vector128<ulong> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<ulong, float>(vector);
-            }
-
-            throw new PlatformNotSupportedException();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector128<float> VectorDoubleToSingle(Vector128<double> vector)
-        {
-            if (Sse.IsSupported)
-            {
-                return Sse.StaticCast<double, float>(vector);
             }
 
             throw new PlatformNotSupportedException();
