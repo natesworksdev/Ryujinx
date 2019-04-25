@@ -1,5 +1,5 @@
 ﻿{
-  // Enable profiling (Only available on a profiling enabled build)
+  // Enable profiling (Only available on a profiling enabled builds)
   "enabled": true,
 
   // Set profile file dump location, if blank file dumping disabled. (e.g. `ProfileDump.csv`)
