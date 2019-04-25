@@ -14,7 +14,8 @@ namespace Ryujinx.Profiler
         public int    MaxLevel        { get; set; } = 0;
         public int    MaxFlags        { get; set; } = 1000;
 
-        // 19531225 = 5 seconds in ticks
+        // 19531225 = 5 seconds in ticks on most pc's.
+        // It should get set on boot to the time specified in config
         public long History { get; set; } = 19531225;
 
         // Controls
