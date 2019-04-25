@@ -15,9 +15,9 @@ namespace Ryujinx.Profiler
         public int    MaxFlags        { get; set; } = 1000;
 
         // 19531225 = 5 seconds in ticks
-        public long   History { get; set; } = 19531225;
+        public long History { get; set; } = 19531225;
 
         // Controls
-        public NpadDebug Controls;
+        public ProfilerKeyboardHandler Controls;
     }
 }

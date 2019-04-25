@@ -5,18 +5,18 @@ using OpenTK.Input;
 
 namespace Ryujinx.Profiler
 {
-    public struct NpadDebugButtons
+    public struct ProfilerButtons
     {
         public Key ToggleProfiler;
     }
 
-    public class NpadDebug
+    public class ProfilerKeyboardHandler
     {
-        public NpadDebugButtons Buttons;
+        public ProfilerButtons Buttons;
 
         private KeyboardState _prevKeyboard;
 
-        public NpadDebug(NpadDebugButtons buttons)
+        public ProfilerKeyboardHandler(ProfilerButtons buttons)
         {
             Buttons = buttons;
         }

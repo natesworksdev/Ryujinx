@@ -7,9 +7,10 @@ namespace Ryujinx.Profiler
 {
     public static class Profile
     {
-        public static float     UpdateRate    => _settings.UpdateRate;
-        public static long      HistoryLength => _settings.History;
-        public static NpadDebug Controls      => _settings.Controls;
+        public static float UpdateRate    => _settings.UpdateRate;
+        public static long  HistoryLength => _settings.History;
+
+        public static ProfilerKeyboardHandler Controls      => _settings.Controls;
 
         private static InternalProfile  _profileInstance;
         private static ProfilerSettings _settings;

@@ -18,7 +18,7 @@ namespace Ryujinx.Profiler
         public int    MaxFlags   { get; private set; }
         public float  History    { get; private set; }
 
-        public NpadDebug Controls { get; private set; }
+        public ProfilerKeyboardHandler Controls { get; private set; }
 
         /// <summary>
         /// Loads a configuration file from disk
