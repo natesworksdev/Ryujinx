@@ -36,9 +36,9 @@ namespace Ryujinx
 
         private string _newTitle;
 
-        #if USE_PROFILING
+#if USE_PROFILING
         private ProfileWindowManager _profileWindow;
-        #endif
+#endif
 
         public GlScreen(Switch device, IGalRenderer renderer)
             : base(1280, 720,
@@ -53,10 +53,10 @@ namespace Ryujinx
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
             
-            #if USE_PROFILING
+#if USE_PROFILING
             // Start profile window, it will handle itself from there
             _profileWindow = new ProfileWindowManager();
-            #endif
+#endif
         }
 
         private void RenderLoop()
@@ -153,10 +153,10 @@ namespace Ryujinx
             {
                 KeyboardState keyboard = _keyboard.Value;
 
-                #if USE_PROFILING
+#if USE_PROFILING
                 // Profiler input, lets the profiler get access to the main windows keyboard state
                 _profileWindow.UpdateKeyInput(keyboard);
-                #endif
+#endif
 
                 // Normal Input
                 currentButton = Configuration.Instance.KeyboardControls.GetButtons(keyboard);
@@ -283,9 +283,9 @@ namespace Ryujinx
 
         protected override void OnUnload(EventArgs e)
         {
-            #if USE_PROFILING
+#if USE_PROFILING
             _profileWindow.Close();
-            #endif
+#endif
 
             _renderThread.Join();
 

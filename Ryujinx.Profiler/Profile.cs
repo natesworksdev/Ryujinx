@@ -35,7 +35,7 @@ namespace Ryujinx.Profiler
 
         public static bool ProfilingEnabled()
         {
-            #if USE_PROFILING
+#if USE_PROFILING
             if (!_settings.Enabled)
                 return false;
 
@@ -43,9 +43,9 @@ namespace Ryujinx.Profiler
                 _profileInstance = new InternalProfile(_settings.History, _settings.MaxFlags);
 
             return true;
-            #else
+#else
             return false;
-            #endif
+#endif
         }
 
         [Conditional("USE_PROFILING")]
@@ -98,46 +98,46 @@ namespace Ryujinx.Profiler
 
         public static string GetSession()
         {
-            #if USE_PROFILING
+#if USE_PROFILING
             if (!ProfilingEnabled())
                 return null;
             return _profileInstance.GetSession();
-            #else
+#else
             return "";
-            #endif
+#endif
         }
 
         public static List<KeyValuePair<ProfileConfig, TimingInfo>> GetProfilingData()
         {
-            #if USE_PROFILING
+#if USE_PROFILING
             if (!ProfilingEnabled())
                 return new List<KeyValuePair<ProfileConfig, TimingInfo>>();
             return _profileInstance.GetProfilingData();
-            #else
+#else
             return new List<KeyValuePair<ProfileConfig, TimingInfo>>();
-            #endif
+#endif
         }
 
         public static TimingFlag[] GetTimingFlags()
         {
-            #if USE_PROFILING
+#if USE_PROFILING
             if (!ProfilingEnabled())
                 return new TimingFlag[0];
             return _profileInstance.GetTimingFlags();
-            #else
+#else
             return new TimingFlag[0];
-            #endif
+#endif
         }
 
         public static (long[], long[]) GetTimingAveragesAndLast()
         {
-            #if USE_PROFILING
+#if USE_PROFILING
             if (!ProfilingEnabled())
                 return (new long[0], new long[0]);
             return _profileInstance.GetTimingAveragesAndLast();
-            #else
+#else
             return (new long[0], new long[0]);
-            #endif
+#endif
         }
     }
 }

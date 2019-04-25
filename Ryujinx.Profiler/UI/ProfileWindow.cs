@@ -137,7 +137,7 @@ namespace Ryujinx.Profiler.UI
             _profileUpdated = true;
         }
 
-        #region OnLoad
+#region OnLoad
         /// <summary>
         /// Setup OpenGL and load resources
         /// </summary>
@@ -186,9 +186,9 @@ namespace Ryujinx.Profiler.UI
 
             Visible = _visible;
         }
-        #endregion
+#endregion
 
-        #region OnResize
+#region OnResize
         /// <summary>
         /// Respond to resize events
         /// </summary>
@@ -198,9 +198,9 @@ namespace Ryujinx.Profiler.UI
         {
             _viewportUpdated = true;
         }
-        #endregion
+#endregion
 
-        #region OnClose
+#region OnClose
         /// <summary>
         /// Intercept close event and hide instead
         /// </summary>
@@ -215,9 +215,9 @@ namespace Ryujinx.Profiler.UI
 
             base.OnClosing(e);
         }
-        #endregion
+#endregion
 
-        #region OnUpdateFrame
+#region OnUpdateFrame
         /// <summary>
         /// Profile Update Loop
         /// </summary>
@@ -338,9 +338,9 @@ namespace Ryujinx.Profiler.UI
                 _processEventTimer = 0;
             }
         }
-        #endregion
+#endregion
 
-        #region OnRenderFrame
+#region OnRenderFrame
         /// <summary>
         /// Profile Render Loop
         /// </summary>
@@ -411,12 +411,12 @@ namespace Ryujinx.Profiler.UI
             }
             GL.End();
             _maxScroll = (LineHeight + LinePadding) * (_sortedProfileData.Count - 1);
-            #endregion
+#endregion
             
             lock (_profileDataLock)
             {
-                // Display category
-                #region Category
+// Display category
+#region Category
                 verticalIndex = 0;
                 foreach (var entry in _sortedProfileData)
                 {
@@ -441,10 +441,10 @@ namespace Ryujinx.Profiler.UI
                     maxWidth = width;
 
                 xOffset += maxWidth + ColumnSpacing;
-                #endregion
+#endregion
 
-                // Display session group
-                #region Session Group
+// Display session group
+#region Session Group
                 maxWidth      = 0;
                 verticalIndex = 0;
 
@@ -472,10 +472,10 @@ namespace Ryujinx.Profiler.UI
                     maxWidth = width;
 
                 xOffset += maxWidth + ColumnSpacing;
-                #endregion
+#endregion
 
-                // Display session item
-                #region Session Item
+// Display session item
+#region Session Item
                 maxWidth      = 0;
                 verticalIndex = 0;
                 GL.Enable(EnableCap.ScissorTest);
@@ -503,7 +503,7 @@ namespace Ryujinx.Profiler.UI
 
                 xOffset += maxWidth + ColumnSpacing;
                 _buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - TitleFontHeight, 0, (int)xOffset, TitleFontHeight);
-                #endregion
+#endregion
 
                 // Timing data
                 timingWidth    = Width - xOffset - 370;
@@ -529,8 +529,8 @@ namespace Ryujinx.Profiler.UI
 
                 xOffset = Width - 360;
 
-                // Display timestamps
-                #region Timestamps
+// Display timestamps
+#region Timestamps
                 verticalIndex     = 0;
                 long totalInstant = 0;
                 long totalAverage = 0;
@@ -583,10 +583,10 @@ namespace Ryujinx.Profiler.UI
                 _fontService.DrawText($"{GetTimeString(totalInstant)} ({totalCount})", xOffset,       yHeight, textHeight);
                 _fontService.DrawText(GetTimeString(totalAverage),                     150 + xOffset, yHeight, textHeight);
                 _fontService.DrawText(GetTimeString(totalTime),                        260 + xOffset, yHeight, textHeight);
-                #endregion
+#endregion
             }
 
-            #region Bottom bar
+#region Bottom bar
             // Show/Hide Inactive
             float widthShowHideButton = _buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(_showInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
 
@@ -616,7 +616,7 @@ namespace Ryujinx.Profiler.UI
             // Filter bar
             _fontService.DrawText($"{(_regexEnabled ? "Regex " : "Filter")}: {_filterText}", 35 + width, 7, 16);
             _buttons[(int)ButtonIndex.FilterBar].UpdateSize((int)(45 + width), 0, 0, Width, FilterHeight);
-            #endregion
+#endregion
 
             // Draw buttons
             for (int i = 0; i < (int)ButtonIndex.Autodraw; i++)
@@ -624,8 +624,8 @@ namespace Ryujinx.Profiler.UI
                 _buttons[i].Draw();
             }
             
-            // Dividing lines
-            #region Dividing lines
+// Dividing lines
+#region Dividing lines
             GL.Color3(Color.White);
             GL.Begin(PrimitiveType.Lines);
             // Top divider
@@ -670,12 +670,12 @@ namespace Ryujinx.Profiler.UI
             GL.Vertex2(timingWidth + timingDataLeft, FilterHeight);
             GL.Vertex2(timingWidth + timingDataLeft, timingDataTop);
             GL.End();
-            #endregion
+#endregion
 
             _redrawPending = false;
             SwapBuffers();
         }
-        #endregion
+#endregion
 
         private string GetTimeString(long timestamp)
         {
