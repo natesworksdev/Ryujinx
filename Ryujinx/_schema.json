@@ -19,6 +19,7 @@
     "enable_fs_integrity_checks",
     "enable_aggressive_cpu_opts",
     "controller_type",
+    "enable_keyboard",
     "keyboard_controls",
     "gamepad_controls"
   ],
@@ -440,6 +441,17 @@
         "NpadPair",
         "NpadLeft",
         "NpadRight"
+      ]
+    },
+    "enable_keyboard": {
+      "$id": "#/properties/enable_keyboard",
+      "type": "boolean",
+      "title": "Keyboard Enable",
+      "description": "Enables or disables keyboard support",
+      "default": true,
+      "examples": [
+        true,
+        false
       ]
     },
     "keyboard_controls": {

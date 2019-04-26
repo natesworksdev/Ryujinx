@@ -279,12 +279,14 @@ namespace Ryujinx.UI.Input
             foreach (KeyMapping keyMapping in KEY_MAPPING)
             {
                 int value = keyboard[keyMapping.TargetKey] ? 1 : 0;
+
                 hidKeyboard.Keys[keyMapping.Target / 0x20] |= (value << (keyMapping.Target % 0x20));
             }
 
             foreach (KeyMapping keyMapping in KEY_MODIFIER_MAPPING)
             {
                 int value = keyboard[keyMapping.TargetKey] ? 1 : 0;
+
                 hidKeyboard.Modifier |= value << keyMapping.Target;
             }
 

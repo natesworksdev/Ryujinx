@@ -150,8 +150,8 @@ namespace Ryujinx.HLE.Input
             _device.Memory.WriteInt64(keyboardOffset + 0x18, HidEntryCount - 1);
 
             long keyboardEntryOffset = keyboardOffset + HidKeyboardHeaderSize;
-            long lastEntryOffset  = keyboardEntryOffset + lastEntry * HidKeyboardEntrySize;
-            long sampleCounter    = _device.Memory.ReadInt64(lastEntryOffset);
+            long lastEntryOffset     = keyboardEntryOffset + lastEntry * HidKeyboardEntrySize;
+            long sampleCounter       = _device.Memory.ReadInt64(lastEntryOffset);
 
             keyboardEntryOffset += currEntry * HidKeyboardEntrySize;
             _device.Memory.WriteInt64(keyboardEntryOffset + 0x00, sampleCounter + 1);

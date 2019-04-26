@@ -145,7 +145,7 @@ namespace Ryujinx
             HidControllerButtons currentButton = 0;
             HidJoystickPosition  leftJoystick;
             HidJoystickPosition  rightJoystick;
-            HidKeyboard          hidKeyboard;
+            HidKeyboard?         hidKeyboard = null;
 
             int leftJoystickDx  = 0;
             int leftJoystickDy  = 0;
@@ -165,12 +165,17 @@ namespace Ryujinx
                 // Normal Input
                 currentHotkeyButtons = Configuration.Instance.KeyboardControls.GetHotkeyButtons(keyboard);
                 currentButton        = Configuration.Instance.KeyboardControls.GetButtons(keyboard);
-                hidKeyboard          = Configuration.Instance.KeyboardControls.GetKeysDown(keyboard);
+
+                if (Configuration.Instance.EnableKeyboard)
+                {
+                    hidKeyboard = Configuration.Instance.KeyboardControls.GetKeysDown(keyboard);
+                }
 
                 (leftJoystickDx, leftJoystickDy)   = Configuration.Instance.KeyboardControls.GetLeftStick(keyboard);
                 (rightJoystickDx, rightJoystickDy) = Configuration.Instance.KeyboardControls.GetRightStick(keyboard);
             }
-            else
+
+            if (!hidKeyboard.HasValue)
             {
                 hidKeyboard = new HidKeyboard
                 {
@@ -265,7 +270,10 @@ namespace Ryujinx
                 _device.Hid.SetTouchPoints();
             }
 
-            _device.Hid.WriteKeyboard(hidKeyboard);
+            if (Configuration.Instance.EnableKeyboard && hidKeyboard.HasValue)
+            {
+                _device.Hid.WriteKeyboard(hidKeyboard.Value);
+            }
 
             HidControllerBase controller = _device.Hid.PrimaryController;
 
