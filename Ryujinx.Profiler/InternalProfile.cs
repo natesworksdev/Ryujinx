@@ -22,7 +22,6 @@ namespace Ryujinx.Profiler
         private readonly object _timerQueueClearLock = new object();
         private ConcurrentQueue<TimerQueueValue> _timerQueue;
 
-        private readonly object _sessionLock = new object();
         private int _sessionCounter = 0;
 
         // Cleanup thread
