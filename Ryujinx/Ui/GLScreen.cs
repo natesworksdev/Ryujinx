@@ -24,6 +24,8 @@ namespace Ryujinx
 
         private IGalRenderer _renderer;
 
+        private HidHotkeyButtons _prevHotkeyButtons = 0;
+
         private KeyboardState? _keyboard = null;
 
         private MouseState? _mouse = null;
@@ -139,6 +141,7 @@ namespace Ryujinx
 
         private new void UpdateFrame()
         {
+            HidHotkeyButtons     currentHotkeyButtons = 0;
             HidControllerButtons currentButton = 0;
             HidJoystickPosition  leftJoystick;
             HidJoystickPosition  rightJoystick;
@@ -159,10 +162,10 @@ namespace Ryujinx
 #endif
 
                 // Normal Input
-                currentButton = Configuration.Instance.KeyboardControls.GetButtons(keyboard);
+                currentHotkeyButtons = Configuration.Instance.KeyboardControls.GetHotkeyButtons(keyboard);
+                currentButton        = Configuration.Instance.KeyboardControls.GetButtons(keyboard);
 
-                (leftJoystickDx, leftJoystickDy) = Configuration.Instance.KeyboardControls.GetLeftStick(keyboard);
-
+                (leftJoystickDx, leftJoystickDy)   = Configuration.Instance.KeyboardControls.GetLeftStick(keyboard);
                 (rightJoystickDx, rightJoystickDy) = Configuration.Instance.KeyboardControls.GetRightStick(keyboard);
             }
             
@@ -255,6 +258,15 @@ namespace Ryujinx
             HidControllerBase controller = _device.Hid.PrimaryController;
 
             controller.SendInput(currentButton, leftJoystick, rightJoystick);
+
+            // Toggle vsync
+            if (currentHotkeyButtons.HasFlag(HidHotkeyButtons.ToggleVSync) &&
+                !_prevHotkeyButtons.HasFlag(HidHotkeyButtons.ToggleVSync))
+            {
+                _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
+            }
+
+            _prevHotkeyButtons = currentHotkeyButtons;
         }
 
         private new void RenderFrame()
