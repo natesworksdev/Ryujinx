@@ -158,7 +158,8 @@ namespace Ryujinx.HLE.Input
             _device.Memory.WriteInt64(keyboardEntryOffset + 0x08, sampleCounter);
             _device.Memory.WriteInt64(keyboardEntryOffset + 0x10, keyboard.Modifier);
 
-            for (int i = 0; i < keyboard.Keys.Length; i++) {
+            for (int i = 0; i < keyboard.Keys.Length; i++)
+            {
                 _device.Memory.WriteInt32(keyboardEntryOffset + 0x18 + (i * 4), keyboard.Keys[i]);
             }
         }
