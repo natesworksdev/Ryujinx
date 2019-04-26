@@ -224,6 +224,7 @@ namespace Ryujinx
             }
 
             device.Hid.InitilizePrimaryController(Instance.ControllerType);
+            device.Hid.InitilizeKeyboard();
         }
 
         private class ConfigurationEnumFormatter<T> : IJsonFormatter<T>
