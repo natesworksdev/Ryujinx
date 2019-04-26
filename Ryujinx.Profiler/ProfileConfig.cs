@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ryujinx.Profiler
 {
-    public struct ProfileConfig
+    public struct ProfileConfig : IEquatable<ProfileConfig>
     {
         public string Category;
         public string SessionGroup;
@@ -71,18 +69,12 @@ namespace Ryujinx.Profiler
         }
 
         /// <summary>
-        /// This equals overload is vital
         /// The default comparison is far too slow for the number of comparisons needed because it doesn't know what's important to compare
         /// </summary>
         /// <param name="obj">Object to compare to</param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public bool Equals(ProfileConfig cmpObj)
         {
-            if (!(obj is ProfileConfig))
-                return false;
-
-            ProfileConfig cmpObj = (ProfileConfig)obj;
-
             // Order here is important.
             // Multiple entries with the same item is considerable less likely that multiple items with the same group.
             // Likewise for group and category.
