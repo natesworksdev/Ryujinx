@@ -118,12 +118,14 @@ namespace Ryujinx.UI.Input
             return buttons;
         }
 
-        class KeyMapping {
+        class KeyMapping
+        {
             public Key TargetKey;
             public byte Target;
         }
 
-        static KeyMapping[] KEY_MAPPING = new KeyMapping[] {
+        static KeyMapping[] KEY_MAPPING = new KeyMapping[]
+        {
             new KeyMapping { TargetKey = Key.A, Target = 0x4  },
             new KeyMapping { TargetKey = Key.B, Target = 0x5  },
             new KeyMapping { TargetKey = Key.C, Target = 0x6  },
@@ -251,7 +253,8 @@ namespace Ryujinx.UI.Input
             new KeyMapping { TargetKey = Key.WinRight,     Target = 0xE7 },
         };
 
-        static KeyMapping[] KEY_MODIFIER_MAPPING = new KeyMapping[] {
+        static KeyMapping[] KEY_MODIFIER_MAPPING = new KeyMapping[]
+        {
             new KeyMapping { TargetKey = Key.ControlLeft,  Target = 0 },
             new KeyMapping { TargetKey = Key.ShiftLeft,    Target = 1 },
             new KeyMapping { TargetKey = Key.AltLeft,      Target = 2 },

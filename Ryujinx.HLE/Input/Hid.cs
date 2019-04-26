@@ -39,7 +39,8 @@ namespace Ryujinx.HLE.Input
             PrimaryController.Connect(controllerId);
         }
 
-        public void InitilizeKeyboard() {
+        public void InitilizeKeyboard()
+        {
             _device.Memory.FillWithZeros(HidPosition + HidKeyboardOffset, HidKeyboardSize);
         }
 
@@ -136,7 +137,8 @@ namespace Ryujinx.HLE.Input
             }
         }
 
-        public void WriteKeyboard(HidKeyboard keyboard) {
+        public void WriteKeyboard(HidKeyboard keyboard)
+        {
             long keyboardOffset = HidPosition + HidKeyboardOffset;
             long lastEntry      = _device.Memory.ReadInt64(keyboardOffset + 0x10);
             long currEntry      = (lastEntry + 1) % HidEntryCount;
