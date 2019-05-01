@@ -48,7 +48,10 @@ namespace Ryujinx.HLE.HOS.Services.Irs
         // GetIrsensorSharedMemoryHandle(nn::applet::AppletResourceUserId, pid) -> handle<copy>
         public long GetIrsensorSharedMemoryHandle(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(context.Device.System.IirsSharedMem, out int handle) != KernelResult.Success)
+            Horizon      system      = context.Device.System;
+            KHandleTable handleTable = context.Process.HandleTable;
+
+            if (handleTable.GenerateHandle(system.IirsSharedMem, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }
