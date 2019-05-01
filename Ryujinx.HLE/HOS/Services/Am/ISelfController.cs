@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
         {
             context.ResponseData.Write(_accumulatedSuspendedTickValue);
 
-            Logger.PrintStub(LogClass.ServiceAm);
+            Logger.PrintStub(LogClass.ServiceAm, new { _accumulatedSuspendedTickValue });
 
             return 0;
         }
