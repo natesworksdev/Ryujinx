@@ -17,8 +17,8 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         private int _idleTimeDetectionExtension;
 
-        private int    _suspendedTickValue;
-        private KEvent _suspendedTickChangedEvent;
+        private int    _accumulatedSuspendedTickValue;
+        private KEvent _accumulatedSuspendedTickChangedEvent;
 
         public ISelfController(Horizon system)
         {
@@ -42,8 +42,8 @@ namespace Ryujinx.HLE.HOS.Services.Am
                 { 91, GetAccumulatedSuspendedTickChangedEvent }
             };
 
-            _launchableEvent           = new KEvent(system);
-            _suspendedTickChangedEvent = new KEvent(system);
+            _launchableEvent                      = new KEvent(system);
+            _accumulatedSuspendedTickChangedEvent = new KEvent(system);
         }
 
         public long Exit(ServiceCtx context)
@@ -177,20 +177,22 @@ namespace Ryujinx.HLE.HOS.Services.Am
             return 0;
         }
 
+        // GetAccumulatedSuspendedTickValue() -> u64
         public long GetAccumulatedSuspendedTickValue(ServiceCtx context)
         {
-            context.ResponseData.Write(_suspendedTickValue);
+            context.ResponseData.Write(_accumulatedSuspendedTickValue);
 
             Logger.PrintStub(LogClass.ServiceAm);
 
             return 0;
         }
 
+        // GetAccumulatedSuspendedTickChangedEvent() -> handle<copy>
         public long GetAccumulatedSuspendedTickChangedEvent(ServiceCtx context)
         {
-            _suspendedTickChangedEvent.ReadableEvent.Signal();
+            _accumulatedSuspendedTickChangedEvent.ReadableEvent.Signal();
 
-            if (context.Process.HandleTable.GenerateHandle(_suspendedTickChangedEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (context.Process.HandleTable.GenerateHandle(_accumulatedSuspendedTickChangedEvent.ReadableEvent, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }

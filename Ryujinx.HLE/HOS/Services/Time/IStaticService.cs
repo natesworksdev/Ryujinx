@@ -1,7 +1,5 @@
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Memory;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
 using System.Collections.Generic;
 
@@ -64,6 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return 0;
         }
 
+        // GetSharedMemoryNativeHandle() -> handle<copy>
         public long GetSharedMemoryNativeHandle(ServiceCtx context)
         {
             if (context.Process.HandleTable.GenerateHandle(context.Device.System.TimeSharedMem, out int handle) != KernelResult.Success)
@@ -85,6 +84,5 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             return 0;
         }
-
     }
 }
