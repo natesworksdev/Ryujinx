@@ -1,6 +1,7 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,8 @@ namespace Ryujinx.HLE.HOS.Services.Am
                 { 91, GetAccumulatedSuspendedTickChangedEvent }
             };
 
-            _launchableEvent                      = new KEvent(system);
+            _launchableEvent = new KEvent(system);
+
             _accumulatedSuspendedTickChangedEvent = new KEvent(system);
         }
 
@@ -190,9 +192,11 @@ namespace Ryujinx.HLE.HOS.Services.Am
         // GetAccumulatedSuspendedTickChangedEvent() -> handle<copy>
         public long GetAccumulatedSuspendedTickChangedEvent(ServiceCtx context)
         {
+            KHandleTable handleTable = context.Process.HandleTable;
+
             _accumulatedSuspendedTickChangedEvent.ReadableEvent.Signal();
 
-            if (context.Process.HandleTable.GenerateHandle(_accumulatedSuspendedTickChangedEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (handleTable.GenerateHandle(_accumulatedSuspendedTickChangedEvent.ReadableEvent, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }

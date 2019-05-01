@@ -1,5 +1,6 @@
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
 using System.Collections.Generic;
 
@@ -65,7 +66,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetSharedMemoryNativeHandle() -> handle<copy>
         public long GetSharedMemoryNativeHandle(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(context.Device.System.TimeSharedMem, out int handle) != KernelResult.Success)
+            Horizon      system      = context.Device.System;
+            KHandleTable handleTable = context.Process.HandleTable;
+
+            if (handleTable.GenerateHandle(system.TimeSharedMem, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }
