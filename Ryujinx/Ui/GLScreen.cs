@@ -180,7 +180,7 @@ namespace Ryujinx
                 hidKeyboard = new HidKeyboard
                 {
                     Modifier = 0,
-                    Keys = new int[0x8]
+                    Keys     = new int[0x8]
                 };
             }
             
