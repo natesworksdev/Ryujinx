@@ -446,8 +446,8 @@
     "enable_keyboard": {
       "$id": "#/properties/enable_keyboard",
       "type": "boolean",
-      "title": "Keyboard Enable",
-      "description": "Enables or disables keyboard support",
+      "title": "(HID) Keyboard Enable",
+      "description": "Enable or disable direct keyboard access (HID) support (Provides games access to your keyboard as a text entry device).",
       "default": true,
       "examples": [
         true,

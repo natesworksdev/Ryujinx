@@ -51,7 +51,7 @@
     // Supported Values: Handheld, ProController, NpadPair, NpadLeft, NpadRight
     "controller_type": "Handheld",
 
-    // Enable or disable keyboard support (Independent from controllers binding)
+    // Enable or disable "direct keyboard access (HID) support" (Provides games access to your keyboard as a text entry device).
     "enable_keyboard": true,
 
     // Keyboard Controls
