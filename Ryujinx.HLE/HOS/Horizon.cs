@@ -231,8 +231,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
-            TitleID = metaData.Aci0.TitleId.ToString("x16");
+            TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
 
             LoadNso("rtld");
             LoadNso("main");
@@ -430,8 +429,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
-            TitleID = metaData.Aci0.TitleId.ToString("x16");
+            TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
 
             LoadNso("rtld");
             LoadNso("main");
@@ -522,14 +520,12 @@ namespace Ryujinx.HLE.HOS
 
                 Nacp controlData = new Nacp(controlFile.AsStream());
 
-                CurrentTitle = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
-                TitleName = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
-                TitleID = metaData.Aci0.TitleId.ToString("x16");
+                TitleName = CurrentTitle = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
+                TitleID   = metaData.Aci0.TitleId.ToString("x16");
 
                 if (string.IsNullOrWhiteSpace(CurrentTitle))
                 {
-                    CurrentTitle = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
-                    TitleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                    TitleName = CurrentTitle = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
                 }
 
                 return controlData;
@@ -541,8 +537,7 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
-                TitleID = metaData.Aci0.TitleId.ToString("x16");
+                TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
             }
 
             LoadNso("rtld");

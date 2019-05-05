@@ -21,6 +21,19 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
+            if (File.Exists("./discord-rpc.dll") || File.Exists("./discord-rpc.so"))
+            {
+                Handlers = new DiscordRpc.EventHandlers();
+                Presence = new DiscordRpc.RichPresence();
+                DiscordRpc.Initialize("568815339807309834", ref Handlers, true, null);
+                Presence.details        = "Ryujinx Console";
+                Presence.state          = "Reading the console logs...";
+                Presence.startTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                Presence.largeImageKey  = "ryujinx";
+                Presence.largeImageText = "Ryujinx";
+                DiscordRpc.UpdatePresence(Presence);
+            }
+
             IGalRenderer renderer = new OglRenderer();
 
             IAalOutput audioOut = InitializeAudioEngine();
@@ -32,36 +45,6 @@ namespace Ryujinx
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
-
-            void SetPresence(string FileType)
-            {
-                if (File.Exists("./discord-rpc.dll")||File.Exists("./discord-rpc.so"))
-                {
-                    string[] RPsupported = File.ReadAllLines("./RPsupported");
-                    if (RPsupported.Contains(device.System.TitleID))
-                    {
-                        Presence.largeImageKey = device.System.TitleID;
-                    }
-                    else
-                    {
-                        Presence.largeImageKey = "ryujinx";
-                    }
-                    Presence.details = $"Playing {device.System.TitleName}";
-                    Presence.state = device.System.TitleID.ToUpper();
-                    Presence.largeImageText = device.System.TitleName;
-                    Presence.startTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                    Presence.smallImageKey = FileType;
-                    Presence.smallImageText = FileType.ToUpper().Replace("-", " ");
-                    DiscordRpc.UpdatePresence(Presence);
-                }
-            }
-
-            if (File.Exists("./discord-rpc.dll") || File.Exists("./discord-rpc.so"))
-            {
-                Handlers = new DiscordRpc.EventHandlers();
-                Presence = new DiscordRpc.RichPresence();
-                DiscordRpc.Initialize("568815339807309834", ref Handlers, true, null);
-            }
 
             if (args.Length == 1)
             {
@@ -78,13 +61,13 @@ namespace Ryujinx
                     {
                         Logger.PrintInfo(LogClass.Application, "Loading as cart with RomFS.");
                         device.LoadCart(args[0], romFsFiles[0]);
-                        SetPresence("cart-with-romfs");
+                        SetGamePresence(device);
                     }
                     else
                     {
                         Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
                         device.LoadCart(args[0]);
-                        SetPresence("cart-without-romfs");
+                        SetGamePresence(device);
                     }
                 }
                 else if (File.Exists(args[0]))
@@ -94,23 +77,23 @@ namespace Ryujinx
                         case ".xci":
                             Logger.PrintInfo(LogClass.Application, "Loading as XCI.");
                             device.LoadXci(args[0]);
-                            SetPresence("xci");
+                            SetGamePresence(device);
                             break;
                         case ".nca":
                             Logger.PrintInfo(LogClass.Application, "Loading as NCA.");
                             device.LoadNca(args[0]);
-                            SetPresence("nca");
+                            SetGamePresence(device);
                             break;
                         case ".nsp":
                         case ".pfs0":
                             Logger.PrintInfo(LogClass.Application, "Loading as NSP.");
                             device.LoadNsp(args[0]);
-                            SetPresence("nsp");
+                            SetGamePresence(device);
                             break;
                         default:
                             Logger.PrintInfo(LogClass.Application, "Loading as homebrew.");
                             device.LoadProgram(args[0]);
-                            SetPresence("nro-nso");
+                            SetGamePresence(device);
                             break;
                     }
                 }
@@ -150,6 +133,25 @@ namespace Ryujinx
             if (e.IsTerminating)
             {
                 Logger.Shutdown();
+            }
+        }
+
+        private static void SetGamePresence(Switch device)
+        {
+            if (File.Exists("./discord-rpc.dll") || File.Exists("./discord-rpc.so"))
+            {
+                string[] RPsupported = File.ReadAllLines("./RPsupported");
+                if (RPsupported.Contains(device.System.TitleID))
+                {
+                    Presence.largeImageKey  = device.System.TitleID;
+                    Presence.largeImageText = device.System.TitleName;
+                }
+                Presence.details        = $"Playing {device.System.TitleName}";
+                Presence.state          = device.System.TitleID.ToUpper();
+                Presence.smallImageKey  = "ryujinx";
+                Presence.smallImageText = "Ryujinx";
+                Presence.startTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                DiscordRpc.UpdatePresence(Presence);
             }
         }
 
