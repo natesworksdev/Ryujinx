@@ -327,7 +327,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             Nca mainNca    = null;
-            Nca patchNca    = null;
+            Nca patchNca   = null;
             Nca controlNca = null;
 
             foreach (DirectoryEntry fileEntry in nsp.EnumerateEntries("*.nca"))
@@ -478,7 +478,7 @@ namespace Ryujinx.HLE.HOS
                         continue;
                     }
 
-                    Logger.PrintInfo(LogClass.Loader, $"Loading {filename}...");
+                    Logger.PrintInfo(LogClass.Loader, $"Loading {file.Name}...");
 
                     NxStaticObject staticObject = new NxStaticObject(codeFs.OpenFile(file.FullPath, OpenMode.Read).AsStream());
 
