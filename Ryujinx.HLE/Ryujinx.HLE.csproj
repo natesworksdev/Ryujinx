@@ -46,7 +46,7 @@
 
   <ItemGroup>
     <PackageReference Include="Concentus" Version="1.1.7" />
-    <PackageReference Include="LibHac" Version="0.3.2-alpha.74" />
+    <PackageReference Include="LibHac" Version="0.3.2--directory-savedata.78" />
   </ItemGroup>
 
 </Project>

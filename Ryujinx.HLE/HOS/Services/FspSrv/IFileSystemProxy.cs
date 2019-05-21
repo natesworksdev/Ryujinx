@@ -229,7 +229,9 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             string          savePath     = context.Device.FileSystem.GetGameSavePath(saveInfo, context);
             LocalFileSystem fileSystem   = new LocalFileSystem(savePath);
 
-            MakeObject(context, new IFileSystem(fileSystem));
+            DirectorySaveDataFileSystem saveFileSystem = new DirectorySaveDataFileSystem(fileSystem);
+
+            MakeObject(context, new IFileSystem(saveFileSystem));
         }
 
         private long OpenNsp(ServiceCtx context, string pfsPath)
