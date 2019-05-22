@@ -11,9 +11,9 @@ namespace Ryujinx
 {
     class Program
     {
-        private static DiscordRpc.RichPresence Presence;
+        public static DiscordRPC.DiscordRpcClient DiscordClient;
 
-        private static DiscordRpc.EventHandlers Handlers;
+        public static DiscordRPC.RichPresence DiscordPresence;
 
         public static string ApplicationDirectory => AppDomain.CurrentDomain.BaseDirectory;
 
@@ -21,18 +21,18 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
-            if (File.Exists("./discord-rpc.dll") || File.Exists("./discord-rpc.so"))
-            {
-                Handlers = new DiscordRpc.EventHandlers();
-                Presence = new DiscordRpc.RichPresence();
-                DiscordRpc.Initialize("568815339807309834", ref Handlers, true, null);
-                Presence.details        = "Ryujinx Console";
-                Presence.state          = "Reading the console logs...";
-                Presence.startTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                Presence.largeImageKey  = "ryujinx";
-                Presence.largeImageText = "Ryujinx";
-                DiscordRpc.UpdatePresence(Presence);
-            }
+            DiscordClient                           = new DiscordRPC.DiscordRpcClient("568815339807309834");
+            DiscordPresence                         = new DiscordRPC.RichPresence();
+            DiscordPresence.Assets                  = new DiscordRPC.Assets();
+            DiscordPresence.Timestamps              = new DiscordRPC.Timestamps(DateTime.UtcNow);
+
+            DiscordPresence.Details                 = "Ryujinx Console";
+            DiscordPresence.State                   = "Reading the console logs...";
+            DiscordPresence.Assets.LargeImageKey    = "ryujinx";
+            DiscordPresence.Assets.LargeImageText   = "Ryujinx";
+
+            DiscordClient.Initialize();
+            DiscordClient.SetPresence(DiscordPresence);
 
             IGalRenderer renderer = new OglRenderer();
 
@@ -117,11 +117,15 @@ namespace Ryujinx
             audioOut.Dispose();
 
             Logger.Shutdown();
+
+            DiscordClient.Dispose();
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
             Logger.Shutdown();
+
+            DiscordClient.Dispose();
         }
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -133,26 +137,25 @@ namespace Ryujinx
             if (e.IsTerminating)
             {
                 Logger.Shutdown();
+
+                DiscordClient.Dispose();
             }
         }
 
         private static void SetGamePresence(Switch device)
         {
-            if (File.Exists("./discord-rpc.dll") || File.Exists("./discord-rpc.so"))
+            if (File.ReadAllLines("./RPsupported.dat").Contains(device.System.TitleID))
             {
-                string[] RPsupported = File.ReadAllLines("./RPsupported");
-                if (RPsupported.Contains(device.System.TitleID))
-                {
-                    Presence.largeImageKey  = device.System.TitleID;
-                    Presence.largeImageText = device.System.TitleName;
-                }
-                Presence.details        = $"Playing {device.System.TitleName}";
-                Presence.state          = device.System.TitleID.ToUpper();
-                Presence.smallImageKey  = "ryujinx";
-                Presence.smallImageText = "Ryujinx";
-                Presence.startTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                DiscordRpc.UpdatePresence(Presence);
+                DiscordPresence.Assets.LargeImageKey    = device.System.TitleID;
+                DiscordPresence.Assets.LargeImageText   = device.System.TitleName;
             }
+            DiscordPresence.Details                     = $"Playing {device.System.TitleName}";
+            DiscordPresence.State                       = device.System.TitleID.ToUpper();
+            DiscordPresence.Assets.SmallImageKey        = "ryujinx";
+            DiscordPresence.Assets.SmallImageText       = "Ryujinx";
+            DiscordPresence.Timestamps                  = new DiscordRPC.Timestamps(DateTime.UtcNow);
+
+            DiscordClient.SetPresence(DiscordPresence);
         }
 
         /// <summary>
