@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
         {
             string name = ReadUtf8String(context);
 
-            int mode = context.RequestData.ReadInt32();
+            int  mode = context.RequestData.ReadInt32();
             long size = context.RequestData.ReadInt64();
 
             if (name == null)
