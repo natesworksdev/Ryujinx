@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using System;
 using System.Collections.Generic;
 using System.IO;
-
+using Ryujinx.Common.Logging;
 using static Ryujinx.HLE.HOS.ErrorCode;
 using static Ryujinx.HLE.Utilities.StringUtils;
 
@@ -72,10 +72,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 _provider.CreateFile(name, size, (CreateFileOptions)mode);
             }
-            catch (IOException)
+            catch (DirectoryNotFoundException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {name}");
+
+                throw;
             }
 
             return 0;
@@ -100,10 +105,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 _provider.DeleteFile(name);
             }
-            catch (IOException)
+            catch (FileNotFoundException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {name}");
+
+                throw;
             }
 
             return 0;
@@ -133,10 +143,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 _provider.CreateDirectory(name);
             }
-            catch (IOException)
+            catch (DirectoryNotFoundException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {name}");
+
+                throw;
             }
 
             return 0;
@@ -161,10 +176,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 _provider.DeleteDirectory(name);
             }
-            catch (IOException)
+            catch (DirectoryNotFoundException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {name}");
+
+                throw;
             }
 
             return 0;
@@ -189,10 +209,11 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 _provider.DeleteDirectoryRecursively(name);
             }
-            catch (IOException)
+            catch (UnauthorizedAccessException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {name}");
+
+                throw;
             }
 
             return 0;
@@ -223,10 +244,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 _provider.RenameFile(oldName, newName);
             }
-            catch (IOException)
+            catch (FileNotFoundException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {oldName} or {newName}");
+
+                throw;
             }
 
             return 0;
@@ -257,10 +283,15 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 _provider.RenameFile(oldName, newName);
             }
-            catch (IOException)
+            catch (DirectoryNotFoundException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {oldName} or {newName}");
+
+                throw;
             }
 
             return 0;
@@ -312,10 +343,11 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
                 fileInterface = new IFile(file, name);
             }
-            catch (Exception)
+            catch (UnauthorizedAccessException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {name}");
+
+                throw;
             }
 
             fileInterface.Disposed += RemoveFileInUse;
@@ -355,10 +387,11 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
                 dirInterface = new IDirectory(dir);
             }
-            catch (Exception)
+            catch (UnauthorizedAccessException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {name}");
+
+                throw;
             }
 
             dirInterface.Disposed += RemoveDirectoryInUse;
@@ -420,10 +453,11 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 _provider.CleanDirectoryRecursively(name);
             }
-            catch (IOException)
+            catch (UnauthorizedAccessException)
             {
-                // todo Figure out result codes
-                return MakeError(ErrorModule.Fs, 0);
+                Logger.PrintError(LogClass.ServiceFs, $"Unable to access {name}");
+
+                throw;
             }
 
             return 0;
