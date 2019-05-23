@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             };
 
             _baseFile = baseFile;
-            Path = LibHac.Fs.PathTools.Normalize(path);
+            Path      = LibHac.Fs.PathTools.Normalize(path);
         }
 
         // Read(u32, u64 offset, u64 size) -> (u64 out_size, buffer<u8, 0x46, 0> out_buf)

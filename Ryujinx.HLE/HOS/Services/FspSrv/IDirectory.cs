@@ -29,7 +29,8 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
                 { 1, GetEntryCount }
             };
 
-            _provider     = directory;
+            _provider = directory;
+
             Path = directory.FullPath;
 
             _enumerator = directory.Read().GetEnumerator();
@@ -42,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             long bufferLen      = context.Request.ReceiveBuff[0].Size;
 
             int maxReadCount = (int)(bufferLen / DirectoryEntrySize);
-            int readCount = 0;
+            int readCount    = 0;
 
             while (readCount < maxReadCount && _enumerator.MoveNext())
             {
