@@ -144,7 +144,7 @@ namespace Ryujinx
 
         private static void SetGamePresence(Switch device)
         {
-            if (File.ReadAllLines("./RPsupported.dat").Contains(device.System.TitleID))
+            if (File.ReadAllLines(Path.Combine(ApplicationDirectory, "RPsupported.dat")).Contains(device.System.TitleID))
             {
                 DiscordPresence.Assets.LargeImageKey    = device.System.TitleID;
                 DiscordPresence.Assets.LargeImageText   = device.System.TitleName;
