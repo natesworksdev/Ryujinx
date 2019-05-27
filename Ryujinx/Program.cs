@@ -110,7 +110,7 @@ namespace Ryujinx
                 DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
                 DiscordPresence.Assets.LargeImageText = device.System.TitleName;
             }
-            DiscordPresence.Details = $"Playing {device.System.TitleName}";
+            DiscordPresence.Details = string.IsNullOrWhiteSpace(device.System.TitleName) ? $"Playing {device.System.TitleID.ToUpper()}" : $"Playing {device.System.TitleName}";
             DiscordPresence.State = device.System.TitleID.ToUpper();
             DiscordPresence.Assets.SmallImageKey = "ryujinx";
             DiscordPresence.Assets.SmallImageText = "Ryujinx";
