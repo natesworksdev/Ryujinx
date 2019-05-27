@@ -6,14 +6,15 @@ using Ryujinx.HLE;
 using System;
 using System.IO;
 using System.Linq;
+using DiscordRPC;
 
 namespace Ryujinx
 {
     class Program
     {
-        public static DiscordRPC.DiscordRpcClient DiscordClient;
+        public static DiscordRpcClient DiscordClient;
 
-        public static DiscordRPC.RichPresence DiscordPresence;
+        public static RichPresence DiscordPresence;
 
         public static string ApplicationDirectory => AppDomain.CurrentDomain.BaseDirectory;
 
@@ -21,15 +22,18 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
-            DiscordClient                           = new DiscordRPC.DiscordRpcClient("568815339807309834");
-            DiscordPresence                         = new DiscordRPC.RichPresence();
-            DiscordPresence.Assets                  = new DiscordRPC.Assets();
-            DiscordPresence.Timestamps              = new DiscordRPC.Timestamps(DateTime.UtcNow);
-
-            DiscordPresence.Details                 = "Ryujinx Console";
-            DiscordPresence.State                   = "Reading the console logs...";
-            DiscordPresence.Assets.LargeImageKey    = "ryujinx";
-            DiscordPresence.Assets.LargeImageText   = "Ryujinx";
+            DiscordClient = new DiscordRpcClient("568815339807309834");
+            DiscordPresence = new RichPresence
+            {
+                Assets = new Assets
+                {
+                    LargeImageKey = "ryujinx",
+                    LargeImageText = "Ryujinx"
+                },
+                Timestamps = new Timestamps(DateTime.UtcNow),
+                Details = "Ryujinx Console",
+                State = "Reading the console logs..."
+            };
 
             DiscordClient.Initialize();
             DiscordClient.SetPresence(DiscordPresence);
@@ -61,13 +65,11 @@ namespace Ryujinx
                     {
                         Logger.PrintInfo(LogClass.Application, "Loading as cart with RomFS.");
                         device.LoadCart(args[0], romFsFiles[0]);
-                        SetGamePresence(device);
                     }
                     else
                     {
                         Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
                         device.LoadCart(args[0]);
-                        SetGamePresence(device);
                     }
                 }
                 else if (File.Exists(args[0]))
@@ -77,23 +79,19 @@ namespace Ryujinx
                         case ".xci":
                             Logger.PrintInfo(LogClass.Application, "Loading as XCI.");
                             device.LoadXci(args[0]);
-                            SetGamePresence(device);
                             break;
                         case ".nca":
                             Logger.PrintInfo(LogClass.Application, "Loading as NCA.");
                             device.LoadNca(args[0]);
-                            SetGamePresence(device);
                             break;
                         case ".nsp":
                         case ".pfs0":
                             Logger.PrintInfo(LogClass.Application, "Loading as NSP.");
                             device.LoadNsp(args[0]);
-                            SetGamePresence(device);
                             break;
                         default:
                             Logger.PrintInfo(LogClass.Application, "Loading as homebrew.");
                             device.LoadProgram(args[0]);
-                            SetGamePresence(device);
                             break;
                     }
                 }
@@ -106,6 +104,19 @@ namespace Ryujinx
             {
                 Logger.PrintWarning(LogClass.Application, "Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
             }
+
+            if (File.ReadAllLines(Path.Combine(ApplicationDirectory, "RPsupported.dat")).Contains(device.System.TitleID))
+            {
+                DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
+                DiscordPresence.Assets.LargeImageText = device.System.TitleName;
+            }
+            DiscordPresence.Details = $"Playing {device.System.TitleName}";
+            DiscordPresence.State = device.System.TitleID.ToUpper();
+            DiscordPresence.Assets.SmallImageKey = "ryujinx";
+            DiscordPresence.Assets.SmallImageText = "Ryujinx";
+            DiscordPresence.Timestamps = new Timestamps(DateTime.UtcNow);
+
+            DiscordClient.SetPresence(DiscordPresence);
 
             using (GlScreen screen = new GlScreen(device, renderer))
             {
@@ -140,22 +151,6 @@ namespace Ryujinx
 
                 DiscordClient.Dispose();
             }
-        }
-
-        private static void SetGamePresence(Switch device)
-        {
-            if (File.ReadAllLines(Path.Combine(ApplicationDirectory, "RPsupported.dat")).Contains(device.System.TitleID))
-            {
-                DiscordPresence.Assets.LargeImageKey    = device.System.TitleID;
-                DiscordPresence.Assets.LargeImageText   = device.System.TitleName;
-            }
-            DiscordPresence.Details                     = $"Playing {device.System.TitleName}";
-            DiscordPresence.State                       = device.System.TitleID.ToUpper();
-            DiscordPresence.Assets.SmallImageKey        = "ryujinx";
-            DiscordPresence.Assets.SmallImageText       = "Ryujinx";
-            DiscordPresence.Timestamps                  = new DiscordRPC.Timestamps(DateTime.UtcNow);
-
-            DiscordClient.SetPresence(DiscordPresence);
         }
 
         /// <summary>
