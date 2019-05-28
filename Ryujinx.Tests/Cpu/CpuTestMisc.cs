@@ -1,10 +1,8 @@
 #define Misc
 
-using ChocolArm64.State;
+using ARMeilleure.State;
 
 using NUnit.Framework;
-
-using System.Runtime.Intrinsics.X86;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -32,7 +30,7 @@ namespace Ryujinx.Tests.Cpu
             opCmn  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
             opCset |= ((cond & 15) << 12);
 
-            SetThreadState(x0: xn);
+            SetContext(x0: xn);
             Opcode(opCmn);
             Opcode(opCset);
             Opcode(0xD4200000); // BRK #0
@@ -58,7 +56,7 @@ namespace Ryujinx.Tests.Cpu
             opCmn  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
             opCset |= ((cond & 15) << 12);
 
-            SetThreadState(x0: wn);
+            SetContext(x0: wn);
             Opcode(opCmn);
             Opcode(opCset);
             Opcode(0xD4200000); // BRK #0
@@ -84,7 +82,7 @@ namespace Ryujinx.Tests.Cpu
             opCmp  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
             opCset |= ((cond & 15) << 12);
 
-            SetThreadState(x0: xn);
+            SetContext(x0: xn);
             Opcode(opCmp);
             Opcode(opCset);
             Opcode(0xD4200000); // BRK #0
@@ -110,7 +108,7 @@ namespace Ryujinx.Tests.Cpu
             opCmp  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
             opCset |= ((cond & 15) << 12);
 
-            SetThreadState(x0: wn);
+            SetContext(x0: wn);
             Opcode(opCmp);
             Opcode(opCset);
             Opcode(0xD4200000); // BRK #0
@@ -140,7 +138,7 @@ namespace Ryujinx.Tests.Cpu
             RET
             */
 
-            SetThreadState(x0: a);
+            SetContext(x0: a);
             Opcode(0x11000C02);
             Opcode(0x51001401);
             Opcode(0x1B017C42);
@@ -152,7 +150,7 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetThreadState().X0, Is.Zero);
+            Assert.That(GetContext().GetX(0), Is.Zero);
         }
 
         [Explicit]
@@ -189,9 +187,9 @@ namespace Ryujinx.Tests.Cpu
             RET
             */
 
-            SetThreadState(
-                v0: Sse.SetScalarVector128(a),
-                v1: Sse.SetScalarVector128(b));
+            SetContext(
+                v0: MakeVectorScalar(a),
+                v1: MakeVectorScalar(b));
             Opcode(0x1E2E1002);
             Opcode(0x1E201840);
             Opcode(0x1E211841);
@@ -202,7 +200,7 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(Sse41.Extract(GetThreadState().V0, (byte)0), Is.EqualTo(16f));
+            Assert.That(GetVectorE0(GetContext().GetV(0)), Is.EqualTo(16f));
         }
 
         [Explicit]
@@ -239,9 +237,9 @@ namespace Ryujinx.Tests.Cpu
             RET
             */
 
-            SetThreadState(
-                v0: Sse.StaticCast<double, float>(Sse2.SetScalarVector128(a)),
-                v1: Sse.StaticCast<double, float>(Sse2.SetScalarVector128(b)));
+            SetContext(
+                v0: MakeVectorScalar(a),
+                v1: MakeVectorScalar(b));
             Opcode(0x1E6E1002);
             Opcode(0x1E601840);
             Opcode(0x1E611841);
@@ -252,10 +250,10 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(VectorExtractDouble(GetThreadState().V0, (byte)0), Is.EqualTo(16d));
+            Assert.That(GetContext().GetV(0).AsDouble(), Is.EqualTo(16d));
         }
 
-        [Test, Ignore("The Tester supports only one return point.")]
+        [Test]
         public void MiscF([Range(0u, 92u, 1u)] uint a)
         {
             ulong Fn(uint n)
@@ -301,7 +299,7 @@ namespace Ryujinx.Tests.Cpu
             0x0000000000001050: RET
             */
 
-            SetThreadState(x0: a);
+            SetContext(x0: a);
             Opcode(0x2A0003E4);
             Opcode(0x340001C0);
             Opcode(0x7100041F);
@@ -325,7 +323,7 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetThreadState().X0, Is.EqualTo(Fn(a)));
+            Assert.That(GetContext().GetX(0), Is.EqualTo(Fn(a)));
         }
 
         [Explicit]
@@ -349,7 +347,7 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetThreadState().X0, Is.EqualTo(result));
+            Assert.That(GetContext().GetX(0), Is.EqualTo(result));
 
             Reset();
 
@@ -368,7 +366,7 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetThreadState().X0, Is.EqualTo(result));
+            Assert.That(GetContext().GetX(0), Is.EqualTo(result));
         }
 
         [Explicit]
@@ -379,9 +377,9 @@ namespace Ryujinx.Tests.Cpu
         public void SanityCheck(ulong a)
         {
             uint opcode = 0xD503201F; // NOP
-            CpuThreadState threadState = SingleOpcode(opcode, x0: a);
+            ExecutionContext context = SingleOpcode(opcode, x0: a);
 
-            Assert.That(threadState.X0, Is.EqualTo(a));
+            Assert.That(context.GetX(0), Is.EqualTo(a));
         }
 #endif
     }

@@ -1,9 +1,10 @@
 #define SimdFcond
 
+using ARMeilleure.State;
+
 using NUnit.Framework;
 
 using System.Collections.Generic;
-using System.Runtime.Intrinsics;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -152,8 +153,8 @@ namespace Ryujinx.Tests.Cpu
         {
             opcodes |= ((cond & 15) << 12) | ((nzcv & 15) << 0);
 
-            Vector128<float> v1 = MakeVectorE0(a);
-            Vector128<float> v2 = MakeVectorE0(b);
+            V128 v1 = MakeVectorE0(a);
+            V128 v2 = MakeVectorE0(b);
 
             bool v = TestContext.CurrentContext.Random.NextBool();
             bool c = TestContext.CurrentContext.Random.NextBool();
@@ -177,8 +178,8 @@ namespace Ryujinx.Tests.Cpu
         {
             opcodes |= ((cond & 15) << 12) | ((nzcv & 15) << 0);
 
-            Vector128<float> v1 = MakeVectorE0(a);
-            Vector128<float> v2 = MakeVectorE0(b);
+            V128 v1 = MakeVectorE0(a);
+            V128 v2 = MakeVectorE0(b);
 
             bool v = TestContext.CurrentContext.Random.NextBool();
             bool c = TestContext.CurrentContext.Random.NextBool();
