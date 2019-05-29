@@ -23,7 +23,7 @@ namespace Ryujinx.Profiler.UI
                 {
                     maxInstant = Math.Max(maxInstant, kvp.Value.Instant);
                     maxAverage = Math.Max(maxAverage, kvp.Value.AverageTime);
-                    maxTotal = Math.Max(maxTotal, kvp.Value.TotalTime);
+                    maxTotal   = Math.Max(maxTotal,   kvp.Value.TotalTime);
                 }
 
                 GL.Enable(EnableCap.ScissorTest);
@@ -33,8 +33,8 @@ namespace Ryujinx.Profiler.UI
                     // Instant
                     GL.Color3(Color.Blue);
                     float bottom = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
-                    float top = bottom + barHeight;
-                    float right = (float)entry.Value.Instant / maxInstant * width + xOffset;
+                    float top    = bottom + barHeight;
+                    float right  = (float)entry.Value.Instant / maxInstant * width + xOffset;
 
                     // Skip rendering out of bounds bars
                     if (top < 0 || bottom > Height)
@@ -42,17 +42,18 @@ namespace Ryujinx.Profiler.UI
 
                     GL.Vertex2(xOffset, bottom);
                     GL.Vertex2(xOffset, top);
-                    GL.Vertex2(right, top);
+                    GL.Vertex2(right,   top);
 
-                    GL.Vertex2(right, top);
-                    GL.Vertex2(right, bottom);
+                    GL.Vertex2(right,   top);
+                    GL.Vertex2(right,   bottom);
                     GL.Vertex2(xOffset, bottom);
 
                     // Average
                     GL.Color3(Color.Green);
-                    top += barHeight;
+                    top    += barHeight;
                     bottom += barHeight;
-                    right = (float)entry.Value.AverageTime / maxAverage * width + xOffset;
+                    right   = (float)entry.Value.AverageTime / maxAverage * width + xOffset;
+
                     GL.Vertex2(xOffset, bottom);
                     GL.Vertex2(xOffset, top);
                     GL.Vertex2(right, top);
@@ -63,9 +64,10 @@ namespace Ryujinx.Profiler.UI
 
                     // Total
                     GL.Color3(Color.Red);
-                    top += barHeight;
+                    top    += barHeight;
                     bottom += barHeight;
-                    right = (float)entry.Value.TotalTime / maxTotal * width + xOffset;
+                    right   = (float)entry.Value.TotalTime / maxTotal * width + xOffset;
+
                     GL.Vertex2(xOffset, bottom);
                     GL.Vertex2(xOffset, top);
                     GL.Vertex2(right, top);

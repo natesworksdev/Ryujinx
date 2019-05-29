@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using OpenTK;
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using Ryujinx.Common;
@@ -26,11 +27,13 @@ namespace Ryujinx.Profiler.UI
             ChangeDisplay     = 7,
 
             // Don't automatically draw after here
-            Step              = 8,
+            ToggleFlags       = 8,
+            Step              = 9,
 
-            // Update this when new buttons are added
-            Count             = 9,
-            Autodraw          = 8,
+            // Update this when new buttons are added.
+            // These are indexes to the enum list
+            Autodraw = 8,
+            Count    = 10,
         }
 
         // Font service
@@ -40,14 +43,12 @@ namespace Ryujinx.Profiler.UI
         private ProfileButton[] _buttons;
 
         private bool _initComplete    = false;
-
         private bool _visible         = true;
         private bool _visibleChanged  = true;
         private bool _viewportUpdated = true;
         private bool _redrawPending   = true;
-
         private bool _displayGraph    = true;
-
+        private bool _displayFlags    = true;
         private bool _showInactive    = true;
         private bool _paused          = false;
         private bool _doStep          = false;
@@ -64,6 +65,10 @@ namespace Ryujinx.Profiler.UI
         // Sorting
         private List<KeyValuePair<ProfileConfig, TimingInfo>> _unsortedProfileData;
         private IComparer<KeyValuePair<ProfileConfig, TimingInfo>> _sortAction = new ProfileSorters.TagAscending();
+
+        // Flag data
+        private long[] _timingFlagsAverages;
+        private long[] _timingFlagsLast;
 
         // Filtering
         private string _filterText = "";
@@ -83,6 +88,7 @@ namespace Ryujinx.Profiler.UI
         private bool _prevBackspaceDown   = false;
         private double _backspaceDownTime = 0;
 
+        // F35 used as no key
         private Key _graphControlKey = Key.F35;
 
         // Event management
@@ -90,14 +96,14 @@ namespace Ryujinx.Profiler.UI
         private double _processEventTimer;
         private bool   _profileUpdated           = false;
         private readonly object _profileDataLock = new object();
-        
 
         public ProfileWindow()
-            : base(1280, 720)
+                               // Graphigs mode enables 2xAA
+            : base(1280, 720, new GraphicsMode(new ColorFormat(8, 8, 8, 8), 1, 1, 2))
         {
             Title    = "Profiler";
-            Location = new Point(DisplayDevice.Default.Width - 1280,
-                              (DisplayDevice.Default.Height - 720) - 50);
+            Location = new Point(DisplayDevice.Default.Width  - 1280,
+                                (DisplayDevice.Default.Height - 720) - 50);
 
             if (Profile.UpdateRate <= 0)
             {
@@ -132,7 +138,7 @@ namespace Ryujinx.Profiler.UI
             _profileUpdated = true;
         }
 
-        #region OnLoad
+#region OnLoad
         /// <summary>
         /// Setup OpenGL and load resources
         /// </summary>
@@ -148,7 +154,6 @@ namespace Ryujinx.Profiler.UI
             _buttons[(int)ButtonIndex.InstantTitle]  = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.InstantAscending()));
             _buttons[(int)ButtonIndex.AverageTitle]  = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.AverageAscending()));
             _buttons[(int)ButtonIndex.TotalTitle]    = new ProfileButton(_fontService, () => SetSort(new ProfileSorters.TotalAscending()));
-            _buttons[(int)ButtonIndex.ChangeDisplay] = new ProfileButton(_fontService, () => _displayGraph = !_displayGraph);
             _buttons[(int)ButtonIndex.Step]          = new ProfileButton(_fontService, () => _doStep = true);
             _buttons[(int)ButtonIndex.FilterBar]     = new ProfileButton(_fontService, () =>
             {
@@ -168,11 +173,23 @@ namespace Ryujinx.Profiler.UI
                 _paused = !_paused;
             });
 
+            _buttons[(int)ButtonIndex.ToggleFlags] = new ProfileButton(_fontService, () =>
+            {
+                _displayFlags = !_displayFlags;
+                _redrawPending = true;
+            });
+
+            _buttons[(int)ButtonIndex.ChangeDisplay] = new ProfileButton(_fontService, () =>
+            {
+                _displayGraph = !_displayGraph;
+                _redrawPending = true;
+            });
+
             Visible = _visible;
         }
-        #endregion
+#endregion
 
-        #region OnResize
+#region OnResize
         /// <summary>
         /// Respond to resize events
         /// </summary>
@@ -182,9 +199,9 @@ namespace Ryujinx.Profiler.UI
         {
             _viewportUpdated = true;
         }
-        #endregion
+#endregion
 
-        #region OnClose
+#region OnClose
         /// <summary>
         /// Intercept close event and hide instead
         /// </summary>
@@ -199,9 +216,9 @@ namespace Ryujinx.Profiler.UI
 
             base.OnClosing(e);
         }
-        #endregion
+#endregion
 
-        #region OnUpdateFrame
+#region OnUpdateFrame
         /// <summary>
         /// Profile Update Loop
         /// </summary>
@@ -239,12 +256,15 @@ namespace Ryujinx.Profiler.UI
             _updateTimer += e.Time;
             if (_doStep || ((Profile.UpdateRate > 0) && (!_paused && (_updateTimer > Profile.UpdateRate))))
             {
-                _updateTimer         = 0;
-                _unsortedProfileData = Profile.GetProfilingData().ToList();
-                _captureTime         = PerformanceCounter.ElapsedTicks;
-                _timingFlags         = Profile.GetTimingFlags();
-                _profileUpdated      = true;
-                _doStep              = false;
+                _updateTimer    = 0;
+                _captureTime    = PerformanceCounter.ElapsedTicks;
+                _timingFlags    = Profile.GetTimingFlags();
+                _doStep         = false;
+                _profileUpdated = true;
+
+                _unsortedProfileData                     = Profile.GetProfilingData();
+                (_timingFlagsAverages, _timingFlagsLast) = Profile.GetTimingAveragesAndLast();
+                
             }
             
             // Filtering
@@ -319,9 +339,9 @@ namespace Ryujinx.Profiler.UI
                 _processEventTimer = 0;
             }
         }
-        #endregion
+#endregion
 
-        #region OnRenderFrame
+#region OnRenderFrame
         /// <summary>
         /// Profile Render Loop
         /// </summary>
@@ -392,12 +412,12 @@ namespace Ryujinx.Profiler.UI
             }
             GL.End();
             _maxScroll = (LineHeight + LinePadding) * (_sortedProfileData.Count - 1);
-            #endregion
+#endregion
             
             lock (_profileDataLock)
             {
-                // Display category
-                #region Category
+// Display category
+#region Category
                 verticalIndex = 0;
                 foreach (var entry in _sortedProfileData)
                 {
@@ -422,10 +442,10 @@ namespace Ryujinx.Profiler.UI
                     maxWidth = width;
 
                 xOffset += maxWidth + ColumnSpacing;
-                #endregion
+#endregion
 
-                // Display session group
-                #region Session Group
+// Display session group
+#region Session Group
                 maxWidth      = 0;
                 verticalIndex = 0;
 
@@ -453,10 +473,10 @@ namespace Ryujinx.Profiler.UI
                     maxWidth = width;
 
                 xOffset += maxWidth + ColumnSpacing;
-                #endregion
+#endregion
 
-                // Display session item
-                #region Session Item
+// Display session item
+#region Session Item
                 maxWidth      = 0;
                 verticalIndex = 0;
                 GL.Enable(EnableCap.ScissorTest);
@@ -484,7 +504,7 @@ namespace Ryujinx.Profiler.UI
 
                 xOffset += maxWidth + ColumnSpacing;
                 _buttons[(int)ButtonIndex.TagTitle].UpdateSize(0, Height - TitleFontHeight, 0, (int)xOffset, TitleFontHeight);
-                #endregion
+#endregion
 
                 // Timing data
                 timingWidth    = Width - xOffset - 370;
@@ -510,8 +530,8 @@ namespace Ryujinx.Profiler.UI
 
                 xOffset = Width - 360;
 
-                // Display timestamps
-                #region Timestamps
+// Display timestamps
+#region Timestamps
                 verticalIndex     = 0;
                 long totalInstant = 0;
                 long totalAverage = 0;
@@ -523,13 +543,11 @@ namespace Ryujinx.Profiler.UI
                 {
                     float y = GetLineY(yOffset, LineHeight, LinePadding, true, verticalIndex++);
 
-                    float instant = (float)entry.Value.Instant / PerformanceCounter.TicksPerMillisecond;
-                    _fontService.DrawText($"{((instant < 1) ? $"{instant * 1000:F3}us" : $"{instant:F3}ms")} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
+                    _fontService.DrawText($"{GetTimeString(entry.Value.Instant)} ({entry.Value.InstantCount})", xOffset, y, LineHeight);
 
-                    float average = (float)entry.Value.AverageTime / PerformanceCounter.TicksPerMillisecond;
-                    _fontService.DrawText((average < 1) ? $"{average * 1000:F3}us" : $"{average:F3}ms", 150 + xOffset, y, LineHeight);
+                    _fontService.DrawText(GetTimeString(entry.Value.AverageTime), 150 + xOffset, y, LineHeight);
 
-                    _fontService.DrawText($"{(float)entry.Value.TotalTime / PerformanceCounter.TicksPerMillisecond:F3}", 260 + xOffset, y, LineHeight);
+                    _fontService.DrawText(GetTimeString(entry.Value.TotalTime), 260 + xOffset, y, LineHeight);
 
                     totalInstant += entry.Value.Instant;
                     totalAverage += entry.Value.AverageTime;
@@ -550,14 +568,26 @@ namespace Ryujinx.Profiler.UI
                 _buttons[(int)ButtonIndex.TotalTitle].UpdateSize((int)(260 + xOffset), (int)yHeight, 0, Width, TitleFontHeight);
 
                 // Totals
-                yHeight = FilterHeight + 2;
-                _fontService.DrawText($"{totalInstant / PerformanceCounter.TicksPerMillisecond:F3} ({totalCount})", xOffset, yHeight, TitleFontHeight);
-                _fontService.DrawText($"{totalAverage / PerformanceCounter.TicksPerMillisecond:F3}", 150 + xOffset, yHeight, TitleFontHeight);
-                _fontService.DrawText($"{totalTime / PerformanceCounter.TicksPerMillisecond:F3}", 260 + xOffset, yHeight, TitleFontHeight);
-                #endregion
+                yHeight = FilterHeight + 3;
+                int textHeight = LineHeight - 2;
+
+                _fontService.fontColor = new Color(100, 100, 255, 255);
+                float tempWidth = _fontService.DrawText($"Host {GetTimeString(_timingFlagsLast[(int)TimingFlagType.SystemFrame])} " +
+                                                            $"({GetTimeString(_timingFlagsAverages[(int)TimingFlagType.SystemFrame])})", 5, yHeight, textHeight);
+
+                _fontService.fontColor = Color.Red;
+                _fontService.DrawText($"Game {GetTimeString(_timingFlagsLast[(int)TimingFlagType.FrameSwap])} " +
+                                          $"({GetTimeString(_timingFlagsAverages[(int)TimingFlagType.FrameSwap])})", 15 + tempWidth, yHeight, textHeight);
+                _fontService.fontColor = Color.White;
+                
+
+                _fontService.DrawText($"{GetTimeString(totalInstant)} ({totalCount})", xOffset,       yHeight, textHeight);
+                _fontService.DrawText(GetTimeString(totalAverage),                     150 + xOffset, yHeight, textHeight);
+                _fontService.DrawText(GetTimeString(totalTime),                        260 + xOffset, yHeight, textHeight);
+#endregion
             }
 
-            #region Bottom bar
+#region Bottom bar
             // Show/Hide Inactive
             float widthShowHideButton = _buttons[(int)ButtonIndex.ShowHideInactive].UpdateSize($"{(_showInactive ? "Hide" : "Show")} Inactive", 5, 5, 4, 16);
 
@@ -574,12 +604,20 @@ namespace Ryujinx.Profiler.UI
             }
 
             // Change display
-            width = _buttons[(int)ButtonIndex.ChangeDisplay].UpdateSize($"View: {(_displayGraph ? "Graph" : "Bars")}", 25 + (int)widthStepButton, 5, 4, 16) + widthStepButton;
+            float widthChangeDisplay = _buttons[(int)ButtonIndex.ChangeDisplay].UpdateSize($"View: {(_displayGraph ? "Graph" : "Bars")}", 25 + (int)widthStepButton, 5, 4, 16) + widthStepButton;
+
+            width = widthChangeDisplay;
+
+            if (_displayGraph)
+            {
+                width += _buttons[(int) ButtonIndex.ToggleFlags].UpdateSize($"{(_displayFlags ? "Hide" : "Show")} Flags", 35 + (int)widthChangeDisplay, 5, 4, 16) + 10;
+                _buttons[(int)ButtonIndex.ToggleFlags].Draw();
+            }
 
             // Filter bar
             _fontService.DrawText($"{(_regexEnabled ? "Regex " : "Filter")}: {_filterText}", 35 + width, 7, 16);
             _buttons[(int)ButtonIndex.FilterBar].UpdateSize((int)(45 + width), 0, 0, Width, FilterHeight);
-            #endregion
+#endregion
 
             // Draw buttons
             for (int i = 0; i < (int)ButtonIndex.Autodraw; i++)
@@ -587,8 +625,8 @@ namespace Ryujinx.Profiler.UI
                 _buttons[i].Draw();
             }
             
-            // Dividing lines
-            #region Dividing lines
+// Dividing lines
+#region Dividing lines
             GL.Color3(Color.White);
             GL.Begin(PrimitiveType.Lines);
             // Top divider
@@ -615,6 +653,12 @@ namespace Ryujinx.Profiler.UI
                 GL.Vertex2(widthStepButton + 20, FilterHeight);
             }
 
+            if (_displayGraph)
+            {
+                GL.Vertex2(widthChangeDisplay + 30, 0);
+                GL.Vertex2(widthChangeDisplay + 30, FilterHeight);
+            }
+
             GL.Vertex2(width + 30, 0);
             GL.Vertex2(width + 30, FilterHeight);
 
@@ -623,17 +667,22 @@ namespace Ryujinx.Profiler.UI
 
             GL.Vertex2(timingDataLeft, FilterHeight);
             GL.Vertex2(timingDataLeft, timingDataTop);
-
             
             GL.Vertex2(timingWidth + timingDataLeft, FilterHeight);
             GL.Vertex2(timingWidth + timingDataLeft, timingDataTop);
             GL.End();
-            #endregion
+#endregion
 
             _redrawPending = false;
             SwapBuffers();
         }
-        #endregion
+#endregion
+
+        private string GetTimeString(long timestamp)
+        {
+            float time = (float)timestamp / PerformanceCounter.TicksPerMillisecond;
+            return (time < 1) ? $"{time * 1000:F3}us" : $"{time:F3}ms";
+        }
 
         private void FilterBackspace()
         {
@@ -678,6 +727,13 @@ namespace Ryujinx.Profiler.UI
 
         protected override void OnKeyUp(KeyboardKeyEventArgs e)
         {
+            // Can't go into switch as value isn't constant
+            if (e.Key == Profile.Controls.Buttons.ToggleProfiler)
+            {
+                ToggleVisible();
+                return;
+            }
+
             switch (e.Key)
             {
                 case Key.BackSpace:

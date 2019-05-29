@@ -2,6 +2,7 @@
 
 using NUnit.Framework;
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics;
 
@@ -172,6 +173,70 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 
+        private static IEnumerable<ulong> _1S_F_W_()
+        {
+            // int
+            yield return 0x00000000CF000001ul; // -2.1474839E9f  (-2147483904)
+            yield return 0x00000000CF000000ul; // -2.14748365E9f (-2147483648)
+            yield return 0x00000000CEFFFFFFul; // -2.14748352E9f (-2147483520)
+            yield return 0x000000004F000001ul; //  2.1474839E9f  (2147483904)
+            yield return 0x000000004F000000ul; //  2.14748365E9f (2147483648)
+            yield return 0x000000004EFFFFFFul; //  2.14748352E9f (2147483520)
+
+            // uint
+            yield return 0x000000004F800001ul; // 4.2949678E9f  (4294967808)
+            yield return 0x000000004F800000ul; // 4.2949673E9f  (4294967296)
+            yield return 0x000000004F7FFFFFul; // 4.29496704E9f (4294967040)
+
+            yield return 0x00000000FF7FFFFFul; // -Max Normal    (float.MinValue)
+            yield return 0x0000000080800000ul; // -Min Normal
+            yield return 0x00000000807FFFFFul; // -Max Subnormal
+            yield return 0x0000000080000001ul; // -Min Subnormal (-float.Epsilon)
+            yield return 0x000000007F7FFFFFul; // +Max Normal    (float.MaxValue)
+            yield return 0x0000000000800000ul; // +Min Normal
+            yield return 0x00000000007FFFFFul; // +Max Subnormal
+            yield return 0x0000000000000001ul; // +Min Subnormal (float.Epsilon)
+
+            if (!NoZeros)
+            {
+                yield return 0x0000000080000000ul; // -Zero
+                yield return 0x0000000000000000ul; // +Zero
+            }
+
+            if (!NoInfs)
+            {
+                yield return 0x00000000FF800000ul; // -Infinity
+                yield return 0x000000007F800000ul; // +Infinity
+            }
+
+            if (!NoNaNs)
+            {
+                yield return 0x00000000FFC00000ul; // -QNaN (all zeros payload) (float.NaN)
+                yield return 0x00000000FFBFFFFFul; // -SNaN (all ones  payload)
+                yield return 0x000000007FC00000ul; // +QNaN (all zeros payload) (-float.NaN) (DefaultNaN)
+                yield return 0x000000007FBFFFFFul; // +SNaN (all ones  payload)
+            }
+
+            for (int cnt = 1; cnt <= RndCnt; cnt++)
+            {
+                ulong grbg = TestContext.CurrentContext.Random.NextUInt();
+
+                ulong rnd1 = (uint)BitConverter.SingleToInt32Bits(
+                    (float)((int)TestContext.CurrentContext.Random.NextUInt()));
+                ulong rnd2 = (uint)BitConverter.SingleToInt32Bits(
+                    (float)((uint)TestContext.CurrentContext.Random.NextUInt()));
+
+                ulong rnd3 = GenNormalS();
+                ulong rnd4 = GenSubnormalS();
+
+                yield return (grbg << 32) | rnd1;
+                yield return (grbg << 32) | rnd2;
+
+                yield return (grbg << 32) | rnd3;
+                yield return (grbg << 32) | rnd4;
+            }
+        }
+
         private static IEnumerable<ulong> _2S_F_()
         {
             yield return 0xFF7FFFFFFF7FFFFFul; // -Max Normal    (float.MinValue)
@@ -213,6 +278,68 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 
+        private static IEnumerable<ulong> _2S_F_W_()
+        {
+            // int
+            yield return 0xCF000001CF000001ul; // -2.1474839E9f  (-2147483904)
+            yield return 0xCF000000CF000000ul; // -2.14748365E9f (-2147483648)
+            yield return 0xCEFFFFFFCEFFFFFFul; // -2.14748352E9f (-2147483520)
+            yield return 0x4F0000014F000001ul; //  2.1474839E9f  (2147483904)
+            yield return 0x4F0000004F000000ul; //  2.14748365E9f (2147483648)
+            yield return 0x4EFFFFFF4EFFFFFFul; //  2.14748352E9f (2147483520)
+
+            // uint
+            yield return 0x4F8000014F800001ul; // 4.2949678E9f  (4294967808)
+            yield return 0x4F8000004F800000ul; // 4.2949673E9f  (4294967296)
+            yield return 0x4F7FFFFF4F7FFFFFul; // 4.29496704E9f (4294967040)
+
+            yield return 0xFF7FFFFFFF7FFFFFul; // -Max Normal    (float.MinValue)
+            yield return 0x8080000080800000ul; // -Min Normal
+            yield return 0x807FFFFF807FFFFFul; // -Max Subnormal
+            yield return 0x8000000180000001ul; // -Min Subnormal (-float.Epsilon)
+            yield return 0x7F7FFFFF7F7FFFFFul; // +Max Normal    (float.MaxValue)
+            yield return 0x0080000000800000ul; // +Min Normal
+            yield return 0x007FFFFF007FFFFFul; // +Max Subnormal
+            yield return 0x0000000100000001ul; // +Min Subnormal (float.Epsilon)
+
+            if (!NoZeros)
+            {
+                yield return 0x8000000080000000ul; // -Zero
+                yield return 0x0000000000000000ul; // +Zero
+            }
+
+            if (!NoInfs)
+            {
+                yield return 0xFF800000FF800000ul; // -Infinity
+                yield return 0x7F8000007F800000ul; // +Infinity
+            }
+
+            if (!NoNaNs)
+            {
+                yield return 0xFFC00000FFC00000ul; // -QNaN (all zeros payload) (float.NaN)
+                yield return 0xFFBFFFFFFFBFFFFFul; // -SNaN (all ones  payload)
+                yield return 0x7FC000007FC00000ul; // +QNaN (all zeros payload) (-float.NaN) (DefaultNaN)
+                yield return 0x7FBFFFFF7FBFFFFFul; // +SNaN (all ones  payload)
+            }
+
+            for (int cnt = 1; cnt <= RndCnt; cnt++)
+            {
+                ulong rnd1 = (uint)BitConverter.SingleToInt32Bits(
+                    (float)((int)TestContext.CurrentContext.Random.NextUInt()));
+                ulong rnd2 = (uint)BitConverter.SingleToInt32Bits(
+                    (float)((uint)TestContext.CurrentContext.Random.NextUInt()));
+
+                ulong rnd3 = GenNormalS();
+                ulong rnd4 = GenSubnormalS();
+
+                yield return (rnd1 << 32) | rnd1;
+                yield return (rnd2 << 32) | rnd2;
+
+                yield return (rnd3 << 32) | rnd3;
+                yield return (rnd4 << 32) | rnd4;
+            }
+        }
+
         private static IEnumerable<ulong> _1D_F_()
         {
             yield return 0xFFEFFFFFFFFFFFFFul; // -Max Normal    (double.MinValue)
@@ -251,6 +378,68 @@ namespace Ryujinx.Tests.Cpu
 
                 yield return rnd1;
                 yield return rnd2;
+            }
+        }
+
+        private static IEnumerable<ulong> _1D_F_X_()
+        {
+            // long
+            yield return 0xC3E0000000000001ul; // -9.2233720368547780E18d (-9223372036854778000)
+            yield return 0xC3E0000000000000ul; // -9.2233720368547760E18d (-9223372036854776000)
+            yield return 0xC3DFFFFFFFFFFFFFul; // -9.2233720368547750E18d (-9223372036854775000)
+            yield return 0x43E0000000000001ul; //  9.2233720368547780E18d (9223372036854778000)
+            yield return 0x43E0000000000000ul; //  9.2233720368547760E18d (9223372036854776000)
+            yield return 0x43DFFFFFFFFFFFFFul; //  9.2233720368547750E18d (9223372036854775000)
+
+            // ulong
+            yield return 0x43F0000000000001ul; // 1.8446744073709556e19d (18446744073709556000)
+            yield return 0x43F0000000000000ul; // 1.8446744073709552E19d (18446744073709552000)
+            yield return 0x43EFFFFFFFFFFFFFul; // 1.8446744073709550e19d (18446744073709550000)
+
+            yield return 0xFFEFFFFFFFFFFFFFul; // -Max Normal    (double.MinValue)
+            yield return 0x8010000000000000ul; // -Min Normal
+            yield return 0x800FFFFFFFFFFFFFul; // -Max Subnormal
+            yield return 0x8000000000000001ul; // -Min Subnormal (-double.Epsilon)
+            yield return 0x7FEFFFFFFFFFFFFFul; // +Max Normal    (double.MaxValue)
+            yield return 0x0010000000000000ul; // +Min Normal
+            yield return 0x000FFFFFFFFFFFFFul; // +Max Subnormal
+            yield return 0x0000000000000001ul; // +Min Subnormal (double.Epsilon)
+
+            if (!NoZeros)
+            {
+                yield return 0x8000000000000000ul; // -Zero
+                yield return 0x0000000000000000ul; // +Zero
+            }
+
+            if (!NoInfs)
+            {
+                yield return 0xFFF0000000000000ul; // -Infinity
+                yield return 0x7FF0000000000000ul; // +Infinity
+            }
+
+            if (!NoNaNs)
+            {
+                yield return 0xFFF8000000000000ul; // -QNaN (all zeros payload) (double.NaN)
+                yield return 0xFFF7FFFFFFFFFFFFul; // -SNaN (all ones  payload)
+                yield return 0x7FF8000000000000ul; // +QNaN (all zeros payload) (-double.NaN) (DefaultNaN)
+                yield return 0x7FF7FFFFFFFFFFFFul; // +SNaN (all ones  payload)
+            }
+
+            for (int cnt = 1; cnt <= RndCnt; cnt++)
+            {
+                ulong rnd1 = (ulong)BitConverter.DoubleToInt64Bits(
+                    (double)((long)TestContext.CurrentContext.Random.NextULong()));
+                ulong rnd2 = (ulong)BitConverter.DoubleToInt64Bits(
+                    (double)((ulong)TestContext.CurrentContext.Random.NextULong()));
+
+                ulong rnd3 = GenNormalD();
+                ulong rnd4 = GenSubnormalD();
+
+                yield return rnd1;
+                yield return rnd2;
+
+                yield return rnd3;
+                yield return rnd4;
             }
         }
 #endregion
@@ -505,6 +694,90 @@ namespace Ryujinx.Tests.Cpu
             {
                 0x4EE1D800u, // FRECPE  V0.2D, V0.2D
                 0x6EE1D800u  // FRSQRTE V0.2D, V0.2D
+            };
+        }
+
+        private static uint[] _F_Rint_AMNPZ_S_S_()
+        {
+            return new uint[]
+            {
+                0x1E264020u, // FRINTA S0, S1
+                0x1E254020u, // FRINTM S0, S1
+                0x1E244020u, // FRINTN S0, S1
+                0x1E24C020u, // FRINTP S0, S1
+                0x1E25C020u  // FRINTZ S0, S1
+            };
+        }
+
+        private static uint[] _F_Rint_AMNPZ_S_D_()
+        {
+            return new uint[]
+            {
+                0x1E664020u, // FRINTA D0, D1
+                0x1E654020u, // FRINTM D0, D1
+                0x1E644020u, // FRINTN D0, D1
+                0x1E64C020u, // FRINTP D0, D1
+                0x1E65C020u  // FRINTZ D0, D1
+            };
+        }
+
+        private static uint[] _F_Rint_AMNPZ_V_2S_4S_()
+        {
+            return new uint[]
+            {
+                0x2E218800u, // FRINTA V0.2S, V0.2S
+                0x0E219800u, // FRINTM V0.2S, V0.2S
+                0x0E218800u, // FRINTN V0.2S, V0.2S
+                0x0EA18800u, // FRINTP V0.2S, V0.2S
+                0x0EA19800u  // FRINTZ V0.2S, V0.2S
+            };
+        }
+
+        private static uint[] _F_Rint_AMNPZ_V_2D_()
+        {
+            return new uint[]
+            {
+                0x6E618800u, // FRINTA V0.2D, V0.2D
+                0x4E619800u, // FRINTM V0.2D, V0.2D
+                0x4E618800u, // FRINTN V0.2D, V0.2D
+                0x4EE18800u, // FRINTP V0.2D, V0.2D
+                0x4EE19800u  // FRINTZ V0.2D, V0.2D
+            };
+        }
+
+        private static uint[] _F_Rint_IX_S_S_()
+        {
+            return new uint[]
+            {
+                0x1E27C020u, // FRINTI S0, S1
+                0x1E274020u  // FRINTX S0, S1
+            };
+        }
+
+        private static uint[] _F_Rint_IX_S_D_()
+        {
+            return new uint[]
+            {
+                0x1E67C020u, // FRINTI D0, D1
+                0x1E674020u  // FRINTX D0, D1
+            };
+        }
+
+        private static uint[] _F_Rint_IX_V_2S_4S_()
+        {
+            return new uint[]
+            {
+                0x2EA19800u, // FRINTI V0.2S, V0.2S
+                0x2E219800u  // FRINTX V0.2S, V0.2S
+            };
+        }
+
+        private static uint[] _F_Rint_IX_V_2D_()
+        {
+            return new uint[]
+            {
+                0x6EE19800u, // FRINTI V0.2D, V0.2D
+                0x6E619800u  // FRINTX V0.2D, V0.2D
             };
         }
 
@@ -1319,7 +1592,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise] [Explicit]
         public void F_Cvt_NZ_SU_S_S([ValueSource("_F_Cvt_NZ_SU_S_S_")] uint opcodes,
-                                    [ValueSource("_1S_F_")] ulong a)
+                                    [ValueSource("_1S_F_W_")] ulong a)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE0E1(z, z);
@@ -1332,7 +1605,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise] [Explicit]
         public void F_Cvt_NZ_SU_S_D([ValueSource("_F_Cvt_NZ_SU_S_D_")] uint opcodes,
-                                    [ValueSource("_1D_F_")] ulong a)
+                                    [ValueSource("_1D_F_X_")] ulong a)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE1(z);
@@ -1347,8 +1620,8 @@ namespace Ryujinx.Tests.Cpu
         public void F_Cvt_NZ_SU_V_2S_4S([ValueSource("_F_Cvt_NZ_SU_V_2S_4S_")] uint opcodes,
                                         [Values(0u)]     uint rd,
                                         [Values(1u, 0u)] uint rn,
-                                        [ValueSource("_2S_F_")] ulong z,
-                                        [ValueSource("_2S_F_")] ulong a,
+                                        [ValueSource("_2S_F_W_")] ulong z,
+                                        [ValueSource("_2S_F_W_")] ulong a,
                                         [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -1366,8 +1639,8 @@ namespace Ryujinx.Tests.Cpu
         public void F_Cvt_NZ_SU_V_2D([ValueSource("_F_Cvt_NZ_SU_V_2D_")] uint opcodes,
                                      [Values(0u)]     uint rd,
                                      [Values(1u, 0u)] uint rn,
-                                     [ValueSource("_1D_F_")] ulong z,
-                                     [ValueSource("_1D_F_")] ulong a)
+                                     [ValueSource("_1D_F_X_")] ulong z,
+                                     [ValueSource("_1D_F_X_")] ulong a)
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
@@ -1559,6 +1832,142 @@ namespace Ryujinx.Tests.Cpu
             SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
 
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Dzc | Fpsr.Ofc | Fpsr.Ufc | Fpsr.Ixc | Fpsr.Idc);
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Rint_AMNPZ_S_S([ValueSource("_F_Rint_AMNPZ_S_S_")] uint opcodes,
+                                     [ValueSource("_1S_F_")] ulong a)
+        {
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Rint_AMNPZ_S_D([ValueSource("_F_Rint_AMNPZ_S_D_")] uint opcodes,
+                                     [ValueSource("_1D_F_")] ulong a)
+        {
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE1(z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Rint_AMNPZ_V_2S_4S([ValueSource("_F_Rint_AMNPZ_V_2S_4S_")] uint opcodes,
+                                         [Values(0u)]     uint rd,
+                                         [Values(1u, 0u)] uint rn,
+                                         [ValueSource("_2S_F_")] ulong z,
+                                         [ValueSource("_2S_F_")] ulong a,
+                                         [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Rint_AMNPZ_V_2D([ValueSource("_F_Rint_AMNPZ_V_2D_")] uint opcodes,
+                                      [Values(0u)]     uint rd,
+                                      [Values(1u, 0u)] uint rn,
+                                      [ValueSource("_1D_F_")] ulong z,
+                                      [ValueSource("_1D_F_")] ulong a)
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Rint_IX_S_S([ValueSource("_F_Rint_IX_S_S_")] uint opcodes,
+                                  [ValueSource("_1S_F_")] ulong a,
+                                  [Values] RMode rMode)
+        {
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            int fpcr = (int)rMode << (int)Fpcr.RMode;
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Rint_IX_S_D([ValueSource("_F_Rint_IX_S_D_")] uint opcodes,
+                                  [ValueSource("_1D_F_")] ulong a,
+                                  [Values] RMode rMode)
+        {
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE1(z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            int fpcr = (int)rMode << (int)Fpcr.RMode;
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Rint_IX_V_2S_4S([ValueSource("_F_Rint_IX_V_2S_4S_")] uint opcodes,
+                                      [Values(0u)]     uint rd,
+                                      [Values(1u, 0u)] uint rn,
+                                      [ValueSource("_2S_F_")] ulong z,
+                                      [ValueSource("_2S_F_")] ulong a,
+                                      [Values(0b0u, 0b1u)] uint q, // <2S, 4S>
+                                      [Values] RMode rMode)
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a * q);
+
+            int fpcr = (int)rMode << (int)Fpcr.RMode;
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Rint_IX_V_2D([ValueSource("_F_Rint_IX_V_2D_")] uint opcodes,
+                                   [Values(0u)]     uint rd,
+                                   [Values(1u, 0u)] uint rn,
+                                   [ValueSource("_1D_F_")] ulong z,
+                                   [ValueSource("_1D_F_")] ulong a,
+                                   [Values] RMode rMode)
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0E1(a, a);
+
+            int fpcr = (int)rMode << (int)Fpcr.RMode;
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, fpcr: fpcr);
+
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("NEG <V><d>, <V><n>")]
@@ -1893,7 +2302,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcodes, v0: v0, v1: v1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(fpTolerances: FpTolerances.UpToOneUlpsD); // unsigned
         }
 
         [Test, Pairwise] [Explicit]
@@ -1929,7 +2338,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcodes, v0: v0, v1: v1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstUnicorn(fpTolerances: FpTolerances.UpToOneUlpsD); // unsigned
         }
 
         [Test, Pairwise]

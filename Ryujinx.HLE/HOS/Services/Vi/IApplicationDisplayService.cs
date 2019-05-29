@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text;
 
+using static Ryujinx.HLE.HOS.ErrorCode;
 using static Ryujinx.HLE.HOS.Services.Android.Parcel;
 
 namespace Ryujinx.HLE.HOS.Services.Vi
@@ -35,6 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
                 { 2030, CreateStrayLayer                     },
                 { 2031, DestroyStrayLayer                    },
                 { 2101, SetLayerScalingMode                  },
+                { 2102, ConvertScalingMode                   },
                 { 5202, GetDisplayVSyncEvent                 }
             };
 
@@ -59,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
 
         public long GetManagerDisplayService(ServiceCtx context)
         {
-            MakeObject(context, new IManagerDisplayService());
+            MakeObject(context, new IManagerDisplayService(this));
 
             return 0;
         }
@@ -174,6 +176,44 @@ namespace Ryujinx.HLE.HOS.Services.Vi
             long unknown     = context.RequestData.ReadInt64();
 
             return 0;
+        }
+
+        public long ConvertScalingMode(ServiceCtx context)
+        {
+            SrcScalingMode scalingMode = (SrcScalingMode)context.RequestData.ReadInt32();
+
+            DstScalingMode? convertedScalingMode = ConvertScalingMode(scalingMode);
+
+            if (!convertedScalingMode.HasValue)
+            {
+                //Scaling mode out of the range of valid values.
+                return MakeError(ErrorModule.Vi, 1);
+            }
+
+            if (scalingMode != SrcScalingMode.ScaleToWindow &&
+                scalingMode != SrcScalingMode.PreserveAspectRatio)
+            {
+                //Invalid scaling mode specified.
+                return MakeError(ErrorModule.Vi, 6);
+            }
+
+            context.ResponseData.Write((ulong)convertedScalingMode);
+
+            return 0;
+        }
+
+        private DstScalingMode? ConvertScalingMode(SrcScalingMode source)
+        {
+            switch (source)
+            {
+                case SrcScalingMode.None:                return DstScalingMode.None;
+                case SrcScalingMode.Freeze:              return DstScalingMode.Freeze;
+                case SrcScalingMode.ScaleAndCrop:        return DstScalingMode.ScaleAndCrop;
+                case SrcScalingMode.ScaleToWindow:       return DstScalingMode.ScaleToWindow;
+                case SrcScalingMode.PreserveAspectRatio: return DstScalingMode.PreserveAspectRatio;
+            }
+
+            return null;
         }
 
         public long GetDisplayVSyncEvent(ServiceCtx context)

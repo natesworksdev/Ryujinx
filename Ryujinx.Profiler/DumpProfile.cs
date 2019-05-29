@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -11,7 +12,7 @@ namespace Ryujinx.Profiler
         {
             String fileData = "Category,Session Group,Session Item,Count,Average(ms),Total(ms)\r\n";
 
-            foreach (var time in profile.Timers.OrderBy(key => key.Key.Tag))
+            foreach (KeyValuePair<ProfileConfig, TimingInfo> time in profile.Timers.OrderBy(key => key.Key.Tag))
             {
                 fileData += $"{time.Key.Category}," +
                             $"{time.Key.SessionGroup}," +

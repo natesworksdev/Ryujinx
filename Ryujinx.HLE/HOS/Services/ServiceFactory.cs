@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Acc;
 using Ryujinx.HLE.HOS.Services.Am;
 using Ryujinx.HLE.HOS.Services.Apm;
@@ -17,6 +18,7 @@ using Ryujinx.HLE.HOS.Services.Ns;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Pctl;
 using Ryujinx.HLE.HOS.Services.Pl;
+using Ryujinx.HLE.HOS.Services.Pm;
 using Ryujinx.HLE.HOS.Services.Prepo;
 using Ryujinx.HLE.HOS.Services.Psm;
 using Ryujinx.HLE.HOS.Services.Set;
@@ -29,6 +31,11 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services
 {
+    public static class ServiceConfiguration
+    {
+        public static bool IgnoreMissingServices { get; set; }
+    }
+
     static class ServiceFactory
     {
         public static IpcService MakeService(Horizon system, string name)
@@ -105,7 +112,7 @@ namespace Ryujinx.HLE.HOS.Services
                     return new IHidServer(system);
 
                 case "irs":
-                    return new IIrSensorServer();
+                    return new IIrSensorServer(system.IirsSharedMem);
 
                 case "ldr:ro":
                     return new IRoInterface();
@@ -131,6 +138,7 @@ namespace Ryujinx.HLE.HOS.Services
                 case "ns:am":
                     return new IApplicationManagerInterface();
 
+                case "ns:am2":
                 case "ns:ec":
                     return new IServiceGetterInterface();
 
@@ -160,6 +168,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                 case "pl:u":
                     return new ISharedFontManager();
+
+                case "pm:shell":
+                    return new IShellInterface();
 
                 case "prepo:a":
                     return new IPrepoService();
@@ -202,6 +213,12 @@ namespace Ryujinx.HLE.HOS.Services
 
                 case "vi:u":
                     return new IApplicationRootService();
+            }
+
+            if (ServiceConfiguration.IgnoreMissingServices)
+            {
+                Logger.PrintWarning(LogClass.Service, $"Missing service {name} ignored");
+                return new DummyService(name);
             }
 
             throw new NotImplementedException(name);

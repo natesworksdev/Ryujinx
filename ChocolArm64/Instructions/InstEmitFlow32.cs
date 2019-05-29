@@ -19,7 +19,7 @@ namespace ChocolArm64.Instructions
             }
             else
             {
-                context.EmitStoreState();
+                context.EmitStoreContext();
                 context.EmitLdc_I8(op.Imm);
 
                 context.Emit(OpCodes.Ret);
@@ -40,7 +40,7 @@ namespace ChocolArm64.Instructions
         {
             IOpCode32BReg op = (IOpCode32BReg)context.CurrOp;
 
-            context.EmitStoreState();
+            context.EmitStoreContext();
 
             EmitLoadFromRegister(context, op.Rm);
 
@@ -65,7 +65,6 @@ namespace ChocolArm64.Instructions
             }
 
             context.EmitStint(GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr));
-            context.EmitStoreState();
 
             //If x is true, then this is a branch with link and exchange.
             //In this case we need to swap the mode between Arm <-> Thumb.

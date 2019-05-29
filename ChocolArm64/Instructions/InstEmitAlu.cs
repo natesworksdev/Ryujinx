@@ -1,4 +1,5 @@
 using ChocolArm64.Decoders;
+using ChocolArm64.IntermediateRepresentation;
 using ChocolArm64.State;
 using ChocolArm64.Translation;
 using System;
@@ -51,6 +52,8 @@ namespace ChocolArm64.Instructions
 
         public static void Adds(ILEmitterCtx context)
         {
+            context.TryOptMarkCondWithoutCmp();
+
             EmitAluLoadOpers(context);
 
             context.Emit(OpCodes.Add);

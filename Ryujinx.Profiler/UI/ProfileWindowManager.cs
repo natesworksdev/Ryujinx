@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Threading;
 using OpenTK;
+using OpenTK.Input;
 using Ryujinx.Common;
 
 namespace Ryujinx.Profiler.UI
@@ -44,6 +45,15 @@ namespace Ryujinx.Profiler.UI
             }
 
             _window = null;
+        }
+
+        public void UpdateKeyInput(KeyboardState keyboard)
+        {
+            if (Profile.Controls.TogglePressed(keyboard))
+            {
+                ToggleVisible();
+            }
+            Profile.Controls.SetPrevKeyboardState(keyboard);
         }
 
         private void ProfileLoop()

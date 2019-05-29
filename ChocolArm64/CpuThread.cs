@@ -1,5 +1,6 @@
 using ChocolArm64.Memory;
 using ChocolArm64.State;
+using ChocolArm64.Translation;
 using System;
 using System.Threading;
 
@@ -30,8 +31,6 @@ namespace ChocolArm64
             Work = new Thread(delegate()
             {
                 translator.ExecuteSubroutine(this, entrypoint);
-
-                memory.RemoveMonitor(ThreadState.Core);
 
                 WorkFinished?.Invoke(this, EventArgs.Empty);
             });

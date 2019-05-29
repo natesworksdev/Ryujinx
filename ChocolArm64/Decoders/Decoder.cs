@@ -19,124 +19,202 @@ namespace ChocolArm64.Decoders
             _opActivators = new ConcurrentDictionary<Type, OpActivator>();
         }
 
-        public static Block DecodeBasicBlock(MemoryManager memory, long start, ExecutionMode mode)
+        public static Block[] DecodeBasicBlock(MemoryManager memory, ulong address, ExecutionMode mode)
         {
-            Block block = new Block(start);
+            Block block = new Block(address);
 
-            FillBlock(memory, mode, block);
+            FillBlock(memory, mode, block, ulong.MaxValue);
 
-            return block;
-        }
+            OpCode64 lastOp = block.GetLastOp();
 
-        public static Block DecodeSubroutine(
-            TranslatorCache cache,
-            MemoryManager   memory,
-            long            start,
-            ExecutionMode   mode)
-        {
-            Dictionary<long, Block> visited    = new Dictionary<long, Block>();
-            Dictionary<long, Block> visitedEnd = new Dictionary<long, Block>();
-
-            Queue<Block> blocks = new Queue<Block>();
-
-            Block Enqueue(long position)
+            if (IsBranch(lastOp) && !IsCall(lastOp) && lastOp is IOpCodeBImm op)
             {
-                if (!visited.TryGetValue(position, out Block output))
+                //It's possible that the branch on this block lands on the middle of the block.
+                //This is more common on tight loops. In this case, we can improve the codegen
+                //a bit by changing the CFG and either making the branch point to the same block
+                //(which indicates that the block is a loop that jumps back to the start), and the
+                //other possible case is a jump somewhere on the middle of the block, which is
+                //also a loop, but in this case we need to split the block in half.
+                if ((ulong)op.Imm == address)
                 {
-                    output = new Block(position);
-
-                    blocks.Enqueue(output);
-
-                    visited.Add(position, output);
+                    block.Branch = block;
                 }
+                else if ((ulong)op.Imm > address &&
+                         (ulong)op.Imm < block.EndAddress)
+                {
+                    Block rightBlock = new Block((ulong)op.Imm);
 
-                return output;
+                    block.Split(rightBlock);
+
+                    return new Block[] { block, rightBlock };
+                }
             }
 
-            Block entry = Enqueue(start);
-
-            while (blocks.Count > 0)
-            {
-                Block current = blocks.Dequeue();
-
-                FillBlock(memory, mode, current);
-
-                //Set child blocks. "Branch" is the block the branch instruction
-                //points to (when taken), "Next" is the block at the next address,
-                //executed when the branch is not taken. For Unconditional Branches
-                //(except BL/BLR that are sub calls) or end of executable, Next is null.
-                if (current.OpCodes.Count > 0)
-                {
-                    bool hasCachedSub = false;
-
-                    OpCode64 lastOp = current.GetLastOp();
-
-                    if (lastOp is IOpCodeBImm op)
-                    {
-                        if (op.Emitter == InstEmit.Bl)
-                        {
-                            hasCachedSub = cache.HasSubroutine(op.Imm);
-                        }
-                        else
-                        {
-                            current.Branch = Enqueue(op.Imm);
-                        }
-                    }
-
-                    if (!IsUnconditionalBranch(lastOp) || hasCachedSub)
-                    {
-                        current.Next = Enqueue(current.EndPosition);
-                    }
-                }
-
-                //If we have on the graph two blocks with the same end position,
-                //then we need to split the bigger block and have two small blocks,
-                //the end position of the bigger "Current" block should then be == to
-                //the position of the "Smaller" block.
-                while (visitedEnd.TryGetValue(current.EndPosition, out Block smaller))
-                {
-                    if (current.Position > smaller.Position)
-                    {
-                        Block temp = smaller;
-
-                        smaller = current;
-                        current = temp;
-                    }
-
-                    current.EndPosition = smaller.Position;
-                    current.Next        = smaller;
-                    current.Branch      = null;
-
-                    current.OpCodes.RemoveRange(
-                        current.OpCodes.Count - smaller.OpCodes.Count,
-                        smaller.OpCodes.Count);
-
-                    visitedEnd[smaller.EndPosition] = smaller;
-                }
-
-                visitedEnd.Add(current.EndPosition, current);
-            }
-
-            return entry;
+            return new Block[] { block };
         }
 
-        private static void FillBlock(MemoryManager memory, ExecutionMode mode, Block block)
+        public static Block[] DecodeSubroutine(MemoryManager memory, ulong address, ExecutionMode mode)
         {
-            long position = block.Position;
+            List<Block> blocks = new List<Block>();
+
+            Queue<Block> workQueue = new Queue<Block>();
+
+            Dictionary<ulong, Block> visited = new Dictionary<ulong, Block>();
+
+            Block GetBlock(ulong blkAddress)
+            {
+                if (!visited.TryGetValue(blkAddress, out Block block))
+                {
+                    block = new Block(blkAddress);
+
+                    workQueue.Enqueue(block);
+
+                    visited.Add(blkAddress, block);
+                }
+
+                return block;
+            }
+
+            GetBlock(address);
+
+            while (workQueue.TryDequeue(out Block currBlock))
+            {
+                //Check if the current block is inside another block.
+                if (BinarySearch(blocks, currBlock.Address, out int nBlkIndex))
+                {
+                    Block nBlock = blocks[nBlkIndex];
+
+                    if (nBlock.Address == currBlock.Address)
+                    {
+                        throw new InvalidOperationException("Found duplicate block address on the list.");
+                    }
+
+                    nBlock.Split(currBlock);
+
+                    blocks.Insert(nBlkIndex + 1, currBlock);
+
+                    continue;
+                }
+
+                //If we have a block after the current one, set the limit address.
+                ulong limitAddress = ulong.MaxValue;
+
+                if (nBlkIndex != blocks.Count)
+                {
+                    Block nBlock = blocks[nBlkIndex];
+
+                    int nextIndex = nBlkIndex + 1;
+
+                    if (nBlock.Address < currBlock.Address && nextIndex < blocks.Count)
+                    {
+                        limitAddress = blocks[nextIndex].Address;
+                    }
+                    else if (nBlock.Address > currBlock.Address)
+                    {
+                        limitAddress = blocks[nBlkIndex].Address;
+                    }
+                }
+
+                FillBlock(memory, mode, currBlock, limitAddress);
+
+                if (currBlock.OpCodes.Count != 0)
+                {
+                    //Set child blocks. "Branch" is the block the branch instruction
+                    //points to (when taken), "Next" is the block at the next address,
+                    //executed when the branch is not taken. For Unconditional Branches
+                    //(except BL/BLR that are sub calls) or end of executable, Next is null.
+                    OpCode64 lastOp = currBlock.GetLastOp();
+
+                    bool isCall = IsCall(lastOp);
+
+                    if (lastOp is IOpCodeBImm op && !isCall)
+                    {
+                        currBlock.Branch = GetBlock((ulong)op.Imm);
+                    }
+
+                    if (!IsUnconditionalBranch(lastOp) || isCall)
+                    {
+                        currBlock.Next = GetBlock(currBlock.EndAddress);
+                    }
+                }
+
+                //Insert the new block on the list (sorted by address).
+                if (blocks.Count != 0)
+                {
+                    Block nBlock = blocks[nBlkIndex];
+
+                    blocks.Insert(nBlkIndex + (nBlock.Address < currBlock.Address ? 1 : 0), currBlock);
+                }
+                else
+                {
+                    blocks.Add(currBlock);
+                }
+            }
+
+            return blocks.ToArray();
+        }
+
+        private static bool BinarySearch(List<Block> blocks, ulong address, out int index)
+        {
+            index = 0;
+
+            int left  = 0;
+            int right = blocks.Count - 1;
+
+            while (left <= right)
+            {
+                int size = right - left;
+
+                int middle = left + (size >> 1);
+
+                Block block = blocks[middle];
+
+                index = middle;
+
+                if (address >= block.Address && address < block.EndAddress)
+                {
+                    return true;
+                }
+
+                if (address < block.Address)
+                {
+                    right = middle - 1;
+                }
+                else
+                {
+                    left = middle + 1;
+                }
+            }
+
+            return false;
+        }
+
+        private static void FillBlock(
+            MemoryManager memory,
+            ExecutionMode mode,
+            Block         block,
+            ulong         limitAddress)
+        {
+            ulong address = block.Address;
 
             OpCode64 opCode;
 
             do
             {
-                opCode = DecodeOpCode(memory, position, mode);
+                if (address >= limitAddress)
+                {
+                    break;
+                }
+
+                opCode = DecodeOpCode(memory, address, mode);
 
                 block.OpCodes.Add(opCode);
 
-                position += opCode.OpCodeSizeInBytes;
+                address += (ulong)opCode.OpCodeSizeInBytes;
             }
             while (!(IsBranch(opCode) || IsException(opCode)));
 
-            block.EndPosition = position;
+            block.EndAddress = address;
         }
 
         private static bool IsBranch(OpCode64 opCode)
@@ -223,6 +301,13 @@ namespace ChocolArm64.Decoders
                    opCode is IOpCode32BReg;
         }
 
+        private static bool IsCall(OpCode64 opCode)
+        {
+            //TODO (CQ): ARM32 support.
+            return opCode.Emitter == InstEmit.Bl ||
+                   opCode.Emitter == InstEmit.Blr;
+        }
+
         private static bool IsException(OpCode64 opCode)
         {
             return opCode.Emitter == InstEmit.Brk ||
@@ -230,9 +315,9 @@ namespace ChocolArm64.Decoders
                    opCode.Emitter == InstEmit.Und;
         }
 
-        public static OpCode64 DecodeOpCode(MemoryManager memory, long position, ExecutionMode mode)
+        public static OpCode64 DecodeOpCode(MemoryManager memory, ulong address, ExecutionMode mode)
         {
-            int opCode = memory.ReadInt32(position);
+            int opCode = memory.ReadInt32((long)address);
 
             Inst inst;
 
@@ -252,11 +337,11 @@ namespace ChocolArm64.Decoders
                 }
             }
 
-            OpCode64 decodedOpCode = new OpCode64(Inst.Undefined, position, opCode);
+            OpCode64 decodedOpCode = new OpCode64(Inst.Undefined, (long)address, opCode);
 
             if (inst.Type != null)
             {
-                decodedOpCode = MakeOpCode(inst.Type, inst, position, opCode);
+                decodedOpCode = MakeOpCode(inst.Type, inst, (long)address, opCode);
             }
 
             return decodedOpCode;

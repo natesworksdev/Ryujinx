@@ -42,14 +42,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         {
             _commands = new Dictionary<int, ServiceProcessRequest>()
             {
-                { 0,  Open             },
-                { 1,  Ioctl            },
-                { 2,  Close            },
-                { 3,  Initialize       },
-                { 4,  QueryEvent       },
-                { 8,  SetClientPid     },
-                { 11, Ioctl            },
-                { 13, FinishInitialize }
+                { 0,  Open                   },
+                { 1,  Ioctl                  },
+                { 2,  Close                  },
+                { 3,  Initialize             },
+                { 4,  QueryEvent             },
+                { 8,  SetClientPid           },
+                { 9,  DumpGraphicsMemoryInfo },
+                { 11, Ioctl                  },
+                { 13, FinishInitialize       }
             };
 
             _event = new KEvent(system);
@@ -81,13 +82,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             NvFd fdData = Fds.GetData<NvFd>(context.Process, fd);
 
-            int result;
+            int result = 0;
 
             if (_ioctlProcessors.TryGetValue(fdData.Name, out IoctlProcessor process))
             {
                 result = process(context, cmd);
             }
-            else
+            else if (!ServiceConfiguration.IgnoreMissingServices)
             {
                 throw new NotImplementedException($"{fdData.Name} {cmd:x4}");
             }
@@ -144,6 +145,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             long pid = context.RequestData.ReadInt64();
 
             context.ResponseData.Write(0);
+
+            return 0;
+        }
+
+        public long DumpGraphicsMemoryInfo(ServiceCtx context)
+        {
+            Logger.PrintStub(LogClass.ServiceNv);
 
             return 0;
         }

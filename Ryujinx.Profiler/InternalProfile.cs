@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ryujinx.Common;
@@ -21,7 +22,6 @@ namespace Ryujinx.Profiler
         private readonly object _timerQueueClearLock = new object();
         private ConcurrentQueue<TimerQueueValue> _timerQueue;
 
-        private readonly object _sessionLock = new object();
         private int _sessionCounter = 0;
 
         // Cleanup thread
@@ -32,20 +32,27 @@ namespace Ryujinx.Profiler
 
         // Timing flags
         private TimingFlag[] _timingFlags;
+        private long[] _timingFlagAverages;
+        private long[] _timingFlagLast;
+        private long[] _timingFlagLastDelta;
         private int _timingFlagCount;
         private int _timingFlagIndex;
 
-        private const int MaxFlags = 500;
+        private int _maxFlags;
 
         private Action<TimingFlag> _timingFlagCallback;
 
-        public InternalProfile(long history)
+        public InternalProfile(long history, int maxFlags)
         {
-            Timers          = new Dictionary<ProfileConfig, TimingInfo>();
-            _timingFlags    = new TimingFlag[MaxFlags];
-            _timerQueue     = new ConcurrentQueue<TimerQueueValue>();
-            _history        = history;
-            _cleanupRunning = true;
+            _maxFlags            = maxFlags;
+            Timers               = new Dictionary<ProfileConfig, TimingInfo>();
+            _timingFlags         = new TimingFlag[_maxFlags];
+            _timingFlagAverages  = new long[(int)TimingFlagType.Count];
+            _timingFlagLast      = new long[(int)TimingFlagType.Count];
+            _timingFlagLastDelta = new long[(int)TimingFlagType.Count];
+            _timerQueue          = new ConcurrentQueue<TimerQueueValue>();
+            _history             = history;
+            _cleanupRunning      = true;
 
             // Create cleanup thread.
             _cleanupThread = new Thread(CleanupLoop);
@@ -114,20 +121,32 @@ namespace Ryujinx.Profiler
 
         public void FlagTime(TimingFlagType flagType)
         {
+            int flagId = (int)flagType;
+
             _timingFlags[_timingFlagIndex] = new TimingFlag()
             {
                 FlagType  = flagType,
                 Timestamp = PerformanceCounter.ElapsedTicks
             };
 
-            if (++_timingFlagIndex >= MaxFlags)
+            _timingFlagCount = Math.Max(_timingFlagCount + 1, _maxFlags);
+
+            // Work out average
+            if (_timingFlagLast[flagId] != 0)
+            {
+                _timingFlagLastDelta[flagId] = _timingFlags[_timingFlagIndex].Timestamp - _timingFlagLast[flagId];
+                _timingFlagAverages[flagId]  = (_timingFlagAverages[flagId] == 0) ? _timingFlagLastDelta[flagId] :
+                                                                                   (_timingFlagLastDelta[flagId] + _timingFlagAverages[flagId]) >> 1;
+            }
+            _timingFlagLast[flagId] = _timingFlags[_timingFlagIndex].Timestamp;
+
+            // Notify subscribers
+            _timingFlagCallback?.Invoke(_timingFlags[_timingFlagIndex]);
+
+            if (++_timingFlagIndex >= _maxFlags)
             {
                 _timingFlagIndex = 0;
             }
-
-            _timingFlagCount = Math.Max(_timingFlagCount + 1, MaxFlags);
-
-            _timingFlagCallback?.Invoke(_timingFlags[_timingFlagIndex]);
         }
 
         public void BeginProfile(ProfileConfig config)
@@ -152,40 +171,39 @@ namespace Ryujinx.Profiler
 
         public string GetSession()
         {
-            // Can be called from multiple threads so locked to ensure no duplicate sessions are generated
-            lock (_sessionLock)
-            {
-                return (_sessionCounter++).ToString();
-            }
+            // Can be called from multiple threads so we need to ensure no duplicate sessions are generated
+            return Interlocked.Increment(ref _sessionCounter).ToString();
         }
 
-        public Dictionary<ProfileConfig, TimingInfo> GetProfilingData()
+        public List<KeyValuePair<ProfileConfig, TimingInfo>> GetProfilingData()
         {
             _preserve = PerformanceCounter.ElapsedTicks;
 
-            // Skip clearing queue if already clearing
-            if (Monitor.TryEnter(_timerQueueClearLock))
+            lock (_timerQueueClearLock)
             {
                 ClearTimerQueue();
-                Monitor.Exit(_timerQueueClearLock);
+                return Timers.ToList();
             }
-
-            return Timers;
         }
 
         public TimingFlag[] GetTimingFlags()
         {
-            int count = Math.Max(_timingFlagCount, MaxFlags);
+            int count = Math.Max(_timingFlagCount, _maxFlags);
             TimingFlag[] outFlags = new TimingFlag[count];
             
             for (int i = 0, sourceIndex = _timingFlagIndex; i < count; i++, sourceIndex++)
             {
-                if (sourceIndex >= MaxFlags)
+                if (sourceIndex >= _maxFlags)
                     sourceIndex = 0;
                 outFlags[i] = _timingFlags[sourceIndex];
             }
 
             return outFlags;
+        }
+
+        public (long[], long[]) GetTimingAveragesAndLast()
+        {
+            return (_timingFlagAverages, _timingFlagLastDelta);
         }
 
         public void RegisterFlagReciever(Action<TimingFlag> reciever)

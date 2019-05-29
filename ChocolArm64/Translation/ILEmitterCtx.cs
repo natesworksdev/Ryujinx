@@ -1,5 +1,7 @@
 using ChocolArm64.Decoders;
 using ChocolArm64.Instructions;
+using ChocolArm64.IntermediateRepresentation;
+using ChocolArm64.Memory;
 using ChocolArm64.State;
 using System;
 using System.Collections.Generic;
@@ -10,28 +12,46 @@ namespace ChocolArm64.Translation
 {
     class ILEmitterCtx
     {
+        public MemoryManager Memory { get; }
+
         private TranslatorCache _cache;
-
-        private Dictionary<long, ILLabel> _labels;
-
-        private long _subPosition;
-
-        private int _opcIndex;
+        private TranslatorQueue _queue;
 
         private Block _currBlock;
 
-        public Block    CurrBlock => _currBlock;
-        public OpCode64 CurrOp    => _currBlock?.OpCodes[_opcIndex];
+        public Block CurrBlock
+        {
+            get
+            {
+                return _currBlock;
+            }
+            set
+            {
+                _currBlock = value;
+
+                ResetBlockState();
+            }
+        }
+
+        public OpCode64 CurrOp { get; set; }
+
+        public TranslationTier Tier { get; }
 
         public Aarch32Mode Mode { get; } = Aarch32Mode.User; //TODO
 
-        private Dictionary<Block, ILBlock> _visitedBlocks;
+        public bool HasIndirectJump { get; set; }
 
-        private Queue<Block> _branchTargets;
+        public bool HasSlowCall { get; set; }
 
-        private List<ILBlock> _ilBlocks;
+        private Dictionary<long, ILLabel> _labels;
 
-        private ILBlock _ilBlock;
+        private Dictionary<ILLabel, BasicBlock> _irLabels;
+
+        private List<BasicBlock> _irBlocks;
+
+        private BasicBlock _irBlock;
+
+        private bool _needsNewBlock;
 
         private OpCode64 _optOpLastCompare;
         private OpCode64 _optOpLastFlagSet;
@@ -40,116 +60,67 @@ namespace ChocolArm64.Translation
         //values needed by some functions, since IL doesn't have a swap instruction.
         //You can use any value here as long it doesn't conflict with the indices
         //for the other registers. Any value >= 64 or < 0 will do.
-        private const int IntTmpIndex     = -1;
-        private const int RorTmpIndex     = -2;
-        private const int CmpOptTmp1Index = -3;
-        private const int CmpOptTmp2Index = -4;
-        private const int VecTmp1Index    = -5;
-        private const int VecTmp2Index    = -6;
+        private const int ReservedLocalsCount = 64;
 
-        public ILEmitterCtx(TranslatorCache cache, Block graph)
+        private const int RorTmpIndex      = ReservedLocalsCount + 0;
+        private const int CmpOptTmp1Index  = ReservedLocalsCount + 1;
+        private const int CmpOptTmp2Index  = ReservedLocalsCount + 2;
+        private const int IntGpTmp1Index   = ReservedLocalsCount + 3;
+        private const int IntGpTmp2Index   = ReservedLocalsCount + 4;
+        private const int UserIntTempStart = ReservedLocalsCount + 5;
+
+        //Vectors are part of another "set" of locals.
+        private const int VecGpTmp1Index   = ReservedLocalsCount + 0;
+        private const int VecGpTmp2Index   = ReservedLocalsCount + 1;
+        private const int VecGpTmp3Index   = ReservedLocalsCount + 2;
+        private const int UserVecTempStart = ReservedLocalsCount + 3;
+
+        private static int _userIntTempCount;
+        private static int _userVecTempCount;
+
+        public ILEmitterCtx(
+            MemoryManager   memory,
+            TranslatorCache cache,
+            TranslatorQueue queue,
+            TranslationTier tier)
         {
-            _cache     = cache ?? throw new ArgumentNullException(nameof(cache));
-            _currBlock = graph ?? throw new ArgumentNullException(nameof(graph));
+            Memory = memory ?? throw new ArgumentNullException(nameof(memory));
+            _cache = cache  ?? throw new ArgumentNullException(nameof(cache));
+            _queue = queue  ?? throw new ArgumentNullException(nameof(queue));
+
+            Tier = tier;
 
             _labels = new Dictionary<long, ILLabel>();
 
-            _visitedBlocks = new Dictionary<Block, ILBlock>();
+            _irLabels = new Dictionary<ILLabel, BasicBlock>();
 
-            _visitedBlocks.Add(graph, new ILBlock());
+            _irBlocks = new List<BasicBlock>();
 
-            _branchTargets = new Queue<Block>();
+            NewNextBlock();
 
-            _ilBlocks = new List<ILBlock>();
+            EmitSynchronization();
 
-            _subPosition = graph.Position;
-
-            ResetBlockState();
-
-            AdvanceOpCode();
+            EmitLoadContext();
         }
 
-        public ILBlock[] GetILBlocks()
+        public static int GetIntTempIndex()
         {
-            EmitAllOpCodes();
-
-            return _ilBlocks.ToArray();
+            return UserIntTempStart + _userIntTempCount++;
         }
 
-        private void EmitAllOpCodes()
+        public static int GetVecTempIndex()
         {
-            do
-            {
-                EmitOpCode();
-            }
-            while (AdvanceOpCode());
+            return UserVecTempStart + _userVecTempCount++;
         }
 
-        private void EmitOpCode()
+        public BasicBlock[] GetBlocks()
         {
-            if (_currBlock == null)
-            {
-                return;
-            }
-
-            if (_opcIndex == 0)
-            {
-                MarkLabel(GetLabel(_currBlock.Position));
-
-                EmitSynchronization();
-            }
-
-            //On AARCH32 mode, (almost) all instruction can be conditionally
-            //executed, and the required condition is encoded on the opcode.
-            //We handle that here, skipping the instruction if the condition
-            //is not met. We can just ignore it when the condition is "Always",
-            //because in this case the instruction is always going to be executed.
-            //Condition "Never" is also ignored because this is a special encoding
-            //used by some unconditional instructions.
-            ILLabel lblSkip = null;
-
-            if (CurrOp is OpCode32 op && op.Cond < Condition.Al)
-            {
-                lblSkip = new ILLabel();
-
-                EmitCondBranch(lblSkip, GetInverseCond(op.Cond));
-            }
-
-            CurrOp.Emitter(this);
-
-            if (lblSkip != null)
-            {
-                MarkLabel(lblSkip);
-
-                //If this is the last op on the block, and there's no "next" block
-                //after this one, then we have to return right now, with the address
-                //of the next instruction to be executed (in the case that the condition
-                //is false, and the branch was not taken, as all basic blocks should end with
-                //some kind of branch).
-                if (CurrOp == CurrBlock.GetLastOp() && CurrBlock.Next == null)
-                {
-                    EmitStoreState();
-                    EmitLdc_I8(CurrOp.Position + CurrOp.OpCodeSizeInBytes);
-
-                    Emit(OpCodes.Ret);
-                }
-            }
-
-            _ilBlock.Add(new ILBarrier());
+            return _irBlocks.ToArray();
         }
 
-        private Condition GetInverseCond(Condition cond)
-        {
-            //Bit 0 of all conditions is basically a negation bit, so
-            //inverting this bit has the effect of inverting the condition.
-            return (Condition)((int)cond ^ 1);
-        }
-
-        private void EmitSynchronization()
+        public void EmitSynchronization()
         {
             EmitLdarg(TranslatedSub.StateArgIdx);
-
-            EmitLdc_I4(_currBlock.OpCodes.Count);
 
             EmitPrivateCall(typeof(CpuThreadState), nameof(CpuThreadState.Synchronize));
 
@@ -166,118 +137,61 @@ namespace ChocolArm64.Translation
             MarkLabel(lblContinue);
         }
 
-        private bool AdvanceOpCode()
+        public void ResetBlockStateForPredicatedOp()
         {
-            if (_currBlock == null)
+            //Check if this is a predicated instruction that modifies flags,
+            //in this case the value of the flags is unknown as we don't know
+            //in advance if the instruction is going to be executed or not.
+            //So, we reset the block state to prevent an invalid optimization.
+            if (CurrOp == _optOpLastFlagSet)
             {
-                return false;
-            }
-
-            while (++_opcIndex >= _currBlock.OpCodes.Count)
-            {
-                if (!AdvanceBlock())
-                {
-                    return false;
-                }
-
                 ResetBlockState();
             }
-
-            return true;
-        }
-
-        private bool AdvanceBlock()
-        {
-            if (_currBlock.Branch != null)
-            {
-                if (_visitedBlocks.TryAdd(_currBlock.Branch, _ilBlock.Branch))
-                {
-                    _branchTargets.Enqueue(_currBlock.Branch);
-                }
-            }
-
-            if (_currBlock.Next != null)
-            {
-                if (_visitedBlocks.TryAdd(_currBlock.Next, _ilBlock.Next))
-                {
-                    _currBlock = _currBlock.Next;
-
-                    return true;
-                }
-                else
-                {
-                    Emit(OpCodes.Br, GetLabel(_currBlock.Next.Position));
-                }
-            }
-
-            return _branchTargets.TryDequeue(out _currBlock);
         }
 
         private void ResetBlockState()
         {
-            _ilBlock = _visitedBlocks[_currBlock];
-
-            _ilBlocks.Add(_ilBlock);
-
-            _ilBlock.Next   = GetOrCreateILBlock(_currBlock.Next);
-            _ilBlock.Branch = GetOrCreateILBlock(_currBlock.Branch);
-
-            _opcIndex = -1;
-
             _optOpLastFlagSet = null;
             _optOpLastCompare = null;
         }
 
-        private ILBlock GetOrCreateILBlock(Block block)
+        public void TranslateAhead(long position, ExecutionMode mode = ExecutionMode.Aarch64)
         {
-            if (block == null)
+            if (_cache.TryGetSubroutine(position, out TranslatedSub sub) && sub.Tier != TranslationTier.Tier0)
             {
-                return null;
+                return;
             }
 
-            if (_visitedBlocks.TryGetValue(block, out ILBlock ilBlock))
-            {
-                return ilBlock;
-            }
-
-            return new ILBlock();
+            _queue.Enqueue(position, mode, TranslationTier.Tier1, isComplete: true);
         }
 
         public bool TryOptEmitSubroutineCall()
         {
+            //Calls should always have a next block, unless
+            //we're translating a single basic block.
             if (_currBlock.Next == null)
             {
                 return false;
             }
 
-            if (CurrOp.Emitter != InstEmit.Bl)
+            if (!(CurrOp is IOpCodeBImm op))
             {
                 return false;
             }
 
-            if (!_cache.TryGetSubroutine(((OpCodeBImmAl64)CurrOp).Imm, out TranslatedSub subroutine))
+            if (!_cache.TryGetSubroutine(op.Imm, out TranslatedSub sub) || sub.Tier != TranslationTier.Tier0)
             {
                 return false;
             }
+
+            EmitStoreContext();
 
             for (int index = 0; index < TranslatedSub.FixedArgTypes.Length; index++)
             {
                 EmitLdarg(index);
             }
 
-            foreach (Register reg in subroutine.SubArgs)
-            {
-                switch (reg.Type)
-                {
-                    case RegisterType.Flag:   Ldloc(reg.Index, IoType.Flag);   break;
-                    case RegisterType.Int:    Ldloc(reg.Index, IoType.Int);    break;
-                    case RegisterType.Vector: Ldloc(reg.Index, IoType.Vector); break;
-                }
-            }
-
-            EmitCall(subroutine.Method);
-
-            subroutine.AddCaller(_subPosition);
+            EmitCall(sub.Method);
 
             return true;
         }
@@ -288,8 +202,8 @@ namespace ChocolArm64.Translation
 
             InstEmitAluHelper.EmitAluLoadOpers(this);
 
-            Stloc(CmpOptTmp2Index, IoType.Int);
-            Stloc(CmpOptTmp1Index, IoType.Int);
+            Stloc(CmpOptTmp2Index, RegisterType.Int);
+            Stloc(CmpOptTmp1Index, RegisterType.Int);
         }
 
         private Dictionary<Condition, OpCode> _branchOps = new Dictionary<Condition, OpCode>()
@@ -308,19 +222,57 @@ namespace ChocolArm64.Translation
 
         public void EmitCondBranch(ILLabel target, Condition cond)
         {
+            if (_optOpLastCompare != null &&
+                _optOpLastCompare == _optOpLastFlagSet && _branchOps.ContainsKey(cond))
+            {
+                if (_optOpLastCompare.Emitter == InstEmit.Subs)
+                {
+                    Ldloc(CmpOptTmp1Index, RegisterType.Int, _optOpLastCompare.RegisterSize);
+                    Ldloc(CmpOptTmp2Index, RegisterType.Int, _optOpLastCompare.RegisterSize);
+
+                    Emit(_branchOps[cond], target);
+
+                    return;
+                }
+                else if (_optOpLastCompare.Emitter == InstEmit.Adds && cond != Condition.GeUn
+                                                                    && cond != Condition.LtUn
+                                                                    && cond != Condition.GtUn
+                                                                    && cond != Condition.LeUn)
+                {
+                    //There are several limitations that needs to be taken into account for CMN comparisons:
+                    //- The unsigned comparisons are not valid, as they depend on the
+                    //carry flag value, and they will have different values for addition and
+                    //subtraction. For addition, it's carry, and for subtraction, it's borrow.
+                    //So, we need to make sure we're not doing a unsigned compare for the CMN case.
+                    //- We can only do the optimization for the immediate variants,
+                    //because when the second operand value is exactly INT_MIN, we can't
+                    //negate the value as theres no positive counterpart.
+                    //Such invalid values can't be encoded on the immediate encodings.
+                    if (_optOpLastCompare is IOpCodeAluImm64 op)
+                    {
+                        Ldloc(CmpOptTmp1Index, RegisterType.Int, _optOpLastCompare.RegisterSize);
+
+                        if (_optOpLastCompare.RegisterSize == RegisterSize.Int32)
+                        {
+                            EmitLdc_I4((int)-op.Imm);
+                        }
+                        else
+                        {
+                            EmitLdc_I8(-op.Imm);
+                        }
+
+                        Emit(_branchOps[cond], target);
+
+                        return;
+                    }
+                }
+            }
+
             OpCode ilOp;
 
             int intCond = (int)cond;
 
-            if (_optOpLastCompare != null &&
-                _optOpLastCompare == _optOpLastFlagSet && _branchOps.ContainsKey(cond))
-            {
-                Ldloc(CmpOptTmp1Index, IoType.Int, _optOpLastCompare.RegisterSize);
-                Ldloc(CmpOptTmp2Index, IoType.Int, _optOpLastCompare.RegisterSize);
-
-                ilOp = _branchOps[cond];
-            }
-            else if (intCond < 14)
+            if (intCond < 14)
             {
                 int condTrue = intCond >> 1;
 
@@ -356,9 +308,7 @@ namespace ChocolArm64.Translation
                         break;
                 }
 
-                ilOp = (intCond & 1) != 0
-                    ? OpCodes.Brfalse
-                    : OpCodes.Brtrue;
+                ilOp = (intCond & 1) != 0 ? OpCodes.Brfalse : OpCodes.Brtrue;
             }
             else
             {
@@ -384,17 +334,14 @@ namespace ChocolArm64.Translation
 
             bool sz64 = CurrOp.RegisterSize != RegisterSize.Int32;
 
-            if (sz64 == (intType == IntType.UInt64 ||
-                         intType == IntType.Int64))
+            if (sz64 == (intType == IntType.UInt64 || intType == IntType.Int64))
             {
                 return;
             }
 
             if (sz64)
             {
-                Emit(intType >= IntType.Int8
-                    ? OpCodes.Conv_I8
-                    : OpCodes.Conv_U8);
+                Emit(intType >= IntType.Int8 ? OpCodes.Conv_I8 : OpCodes.Conv_U8);
             }
             else
             {
@@ -420,14 +367,14 @@ namespace ChocolArm64.Translation
         {
             if (amount > 0)
             {
-                Stloc(RorTmpIndex, IoType.Int);
-                Ldloc(RorTmpIndex, IoType.Int);
+                Stloc(RorTmpIndex, RegisterType.Int);
+                Ldloc(RorTmpIndex, RegisterType.Int);
 
                 EmitLdc_I4(amount);
 
                 Emit(OpCodes.Shr_Un);
 
-                Ldloc(RorTmpIndex, IoType.Int);
+                Ldloc(RorTmpIndex, RegisterType.Int);
 
                 EmitLdc_I4(CurrOp.GetBitsCount() - amount);
 
@@ -450,27 +397,60 @@ namespace ChocolArm64.Translation
 
         public void MarkLabel(ILLabel label)
         {
-            _ilBlock.Add(label);
+            if (_irLabels.TryGetValue(label, out BasicBlock nextBlock))
+            {
+                nextBlock.Index = _irBlocks.Count;
+
+                _irBlocks.Add(nextBlock);
+
+                NextBlock(nextBlock);
+            }
+            else
+            {
+                NewNextBlock();
+
+                _irLabels.Add(label, _irBlock);
+            }
+
+            AddOperation(Operation.MarkLabel(label));
         }
 
         public void Emit(OpCode ilOp)
         {
-            _ilBlock.Add(new ILOpCode(ilOp));
+            AddOperation(Operation.IL(ilOp));
+
+            if (ilOp == OpCodes.Ret)
+            {
+                NextBlock(null);
+
+                _needsNewBlock = true;
+            }
         }
 
         public void Emit(OpCode ilOp, ILLabel label)
         {
-            _ilBlock.Add(new ILOpCodeBranch(ilOp, label));
+            AddOperation(Operation.ILBranch(ilOp, label));
+
+            _needsNewBlock = true;
+
+            if (!_irLabels.TryGetValue(label, out BasicBlock branchBlock))
+            {
+                branchBlock = new BasicBlock();
+
+                _irLabels.Add(label, branchBlock);
+            }
+
+            _irBlock.Branch = branchBlock;
         }
 
-        public void Emit(string text)
+        public void EmitLdfld(FieldInfo info)
         {
-            _ilBlock.Add(new ILOpCodeLog(text));
+            AddOperation(Operation.LoadField(info));
         }
 
         public void EmitLdarg(int index)
         {
-            _ilBlock.Add(new ILOpCodeLoad(index, IoType.Arg));
+            AddOperation(Operation.LoadArgument(index));
         }
 
         public void EmitLdintzr(int index)
@@ -497,41 +477,44 @@ namespace ChocolArm64.Translation
             }
         }
 
-        public void EmitLoadState()
+        public void EmitLoadContext()
         {
-            if (_ilBlock.Next == null)
-            {
-                throw new InvalidOperationException("Can't load state for next block, because there's no next block.");
-            }
+            _needsNewBlock = true;
 
-            _ilBlock.Add(new ILOpCodeLoadState(_ilBlock.Next));
+            AddOperation(Operation.LoadContext());
         }
 
-        public void EmitStoreState()
+        public void EmitStoreContext()
         {
-            _ilBlock.Add(new ILOpCodeStoreState(_ilBlock));
+            AddOperation(Operation.StoreContext());
         }
 
-        public void EmitLdtmp() => EmitLdint(IntTmpIndex);
-        public void EmitSttmp() => EmitStint(IntTmpIndex);
+        public void EmitLdtmp() => EmitLdint(IntGpTmp1Index);
+        public void EmitSttmp() => EmitStint(IntGpTmp1Index);
 
-        public void EmitLdvectmp() => EmitLdvec(VecTmp1Index);
-        public void EmitStvectmp() => EmitStvec(VecTmp1Index);
+        public void EmitLdtmp2() => EmitLdint(IntGpTmp2Index);
+        public void EmitSttmp2() => EmitStint(IntGpTmp2Index);
 
-        public void EmitLdvectmp2() => EmitLdvec(VecTmp2Index);
-        public void EmitStvectmp2() => EmitStvec(VecTmp2Index);
+        public void EmitLdvectmp() => EmitLdvec(VecGpTmp1Index);
+        public void EmitStvectmp() => EmitStvec(VecGpTmp1Index);
 
-        public void EmitLdint(int index) => Ldloc(index, IoType.Int);
-        public void EmitStint(int index) => Stloc(index, IoType.Int);
+        public void EmitLdvectmp2() => EmitLdvec(VecGpTmp2Index);
+        public void EmitStvectmp2() => EmitStvec(VecGpTmp2Index);
 
-        public void EmitLdvec(int index) => Ldloc(index, IoType.Vector);
-        public void EmitStvec(int index) => Stloc(index, IoType.Vector);
+        public void EmitLdvectmp3() => EmitLdvec(VecGpTmp3Index);
+        public void EmitStvectmp3() => EmitStvec(VecGpTmp3Index);
 
-        public void EmitLdflg(int index) => Ldloc(index, IoType.Flag);
+        public void EmitLdint(int index) => Ldloc(index, RegisterType.Int);
+        public void EmitStint(int index) => Stloc(index, RegisterType.Int);
+
+        public void EmitLdvec(int index) => Ldloc(index, RegisterType.Vector);
+        public void EmitStvec(int index) => Stloc(index, RegisterType.Vector);
+
+        public void EmitLdflg(int index) => Ldloc(index, RegisterType.Flag);
         public void EmitStflg(int index)
         {
             //Set this only if any of the NZCV flag bits were modified.
-            //This is used to ensure that, when emiting a direct IL branch
+            //This is used to ensure that when emiting a direct IL branch
             //instruction for compare + branch sequences, we're not expecting
             //to use comparison values from an old instruction, when in fact
             //the flags were already overwritten by another instruction further along.
@@ -540,52 +523,32 @@ namespace ChocolArm64.Translation
                 _optOpLastFlagSet = CurrOp;
             }
 
-            Stloc(index, IoType.Flag);
+            Stloc(index, RegisterType.Flag);
         }
 
-        private void Ldloc(int index, IoType ioType)
+        private void Ldloc(int index, RegisterType type)
         {
-            _ilBlock.Add(new ILOpCodeLoad(index, ioType, CurrOp.RegisterSize));
+            AddOperation(Operation.LoadLocal(index, type, CurrOp.RegisterSize));
         }
 
-        private void Ldloc(int index, IoType ioType, RegisterSize registerSize)
+        private void Ldloc(int index, RegisterType type, RegisterSize size)
         {
-            _ilBlock.Add(new ILOpCodeLoad(index, ioType, registerSize));
+            AddOperation(Operation.LoadLocal(index, type, size));
         }
 
-        private void Stloc(int index, IoType ioType)
+        private void Stloc(int index, RegisterType type)
         {
-            _ilBlock.Add(new ILOpCodeStore(index, ioType, CurrOp.RegisterSize));
+            AddOperation(Operation.StoreLocal(index, type, CurrOp.RegisterSize));
         }
 
         public void EmitCallPropGet(Type objType, string propName)
         {
-            if (objType == null)
-            {
-                throw new ArgumentNullException(nameof(objType));
-            }
-
-            if (propName == null)
-            {
-                throw new ArgumentNullException(nameof(propName));
-            }
-
-            EmitCall(objType.GetMethod($"get_{propName}"));
+            EmitCall(objType, $"get_{propName}");
         }
 
         public void EmitCallPropSet(Type objType, string propName)
         {
-            if (objType == null)
-            {
-                throw new ArgumentNullException(nameof(objType));
-            }
-
-            if (propName == null)
-            {
-                throw new ArgumentNullException(nameof(propName));
-            }
-
-            EmitCall(objType.GetMethod($"set_{propName}"));
+            EmitCall(objType, $"set_{propName}");
         }
 
         public void EmitCall(Type objType, string mthdName)
@@ -603,6 +566,16 @@ namespace ChocolArm64.Translation
             EmitCall(objType.GetMethod(mthdName));
         }
 
+        public void EmitCallPrivatePropGet(Type objType, string propName)
+        {
+            EmitPrivateCall(objType, $"get_{propName}");
+        }
+
+        public void EmitCallPrivatePropSet(Type objType, string propName)
+        {
+            EmitPrivateCall(objType, $"set_{propName}");
+        }
+
         public void EmitPrivateCall(Type objType, string mthdName)
         {
             if (objType == null)
@@ -618,14 +591,21 @@ namespace ChocolArm64.Translation
             EmitCall(objType.GetMethod(mthdName, BindingFlags.Instance | BindingFlags.NonPublic));
         }
 
-        public void EmitCall(MethodInfo mthdInfo)
+        public void EmitCall(MethodInfo mthdInfo, bool isVirtual = false)
         {
             if (mthdInfo == null)
             {
                 throw new ArgumentNullException(nameof(mthdInfo));
             }
 
-            _ilBlock.Add(new ILOpCodeCall(mthdInfo));
+            if (isVirtual)
+            {
+                AddOperation(Operation.CallVirtual(mthdInfo));
+            }
+            else
+            {
+                AddOperation(Operation.Call(mthdInfo));
+            }
         }
 
         public void EmitLdc_I(long value)
@@ -642,22 +622,22 @@ namespace ChocolArm64.Translation
 
         public void EmitLdc_I4(int value)
         {
-            _ilBlock.Add(new ILOpCodeConst(value));
+            AddOperation(Operation.LoadConstant(value));
         }
 
         public void EmitLdc_I8(long value)
         {
-            _ilBlock.Add(new ILOpCodeConst(value));
+            AddOperation(Operation.LoadConstant(value));
         }
 
         public void EmitLdc_R4(float value)
         {
-            _ilBlock.Add(new ILOpCodeConst(value));
+            AddOperation(Operation.LoadConstant(value));
         }
 
         public void EmitLdc_R8(double value)
         {
-            _ilBlock.Add(new ILOpCodeConst(value));
+            AddOperation(Operation.LoadConstant(value));
         }
 
         public void EmitZnFlagCheck()
@@ -679,6 +659,51 @@ namespace ChocolArm64.Translation
             Emit(ilCmpOp);
 
             EmitStflg(flag);
+        }
+
+        private void AddOperation(Operation operation)
+        {
+            if (_needsNewBlock)
+            {
+                NewNextBlock();
+            }
+
+            _irBlock.Add(operation);
+        }
+
+        private void NewNextBlock()
+        {
+            BasicBlock block = new BasicBlock(_irBlocks.Count);
+
+            _irBlocks.Add(block);
+
+            NextBlock(block);
+        }
+
+        private void NextBlock(BasicBlock nextBlock)
+        {
+            if (_irBlock != null && !EndsWithUnconditional(_irBlock))
+            {
+                _irBlock.Next = nextBlock;
+            }
+
+            _irBlock = nextBlock;
+
+            _needsNewBlock = false;
+        }
+
+        private static bool EndsWithUnconditional(BasicBlock block)
+        {
+            Operation lastOp = block.GetLastOp();
+
+            if (lastOp == null || lastOp.Type != OperationType.ILBranch)
+            {
+                return false;
+            }
+
+            OpCode opCode = lastOp.GetArg<OpCode>(0);
+
+            return opCode == OpCodes.Br || opCode == OpCodes.Br_S;
         }
     }
 }

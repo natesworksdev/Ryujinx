@@ -90,19 +90,35 @@ namespace Ryujinx.HLE.HOS.Services
             long sfciMagic =      context.RequestData.ReadInt64();
             int  commandId = (int)context.RequestData.ReadInt64();
 
-            if (service.Commands.TryGetValue(commandId, out ServiceProcessRequest processRequest))
+            bool serviceExists = service.Commands.TryGetValue(commandId, out ServiceProcessRequest processRequest);
+
+            if (ServiceConfiguration.IgnoreMissingServices || serviceExists)
             {
+                long result = 0;
+
                 context.ResponseData.BaseStream.Seek(_isDomain ? 0x20 : 0x10, SeekOrigin.Begin);
 
-                Logger.PrintDebug(LogClass.KernelIpc, $"{service.GetType().Name}: {processRequest.Method.Name}");
+                if (serviceExists)
+                {
+                    Logger.PrintDebug(LogClass.KernelIpc, $"{service.GetType().Name}: {processRequest.Method.Name}");
 
-                ProfileConfig profile = Profiles.ServiceCall;
-                profile.SessionGroup = service.GetType().Name;
-                profile.SessionItem = processRequest.Method.Name;
+                    ProfileConfig profile = Profiles.ServiceCall;
+                    profile.SessionGroup  = service.GetType().Name;
+                    profile.SessionItem   = processRequest.Method.Name;
 
-                Profile.Begin(profile);
-                long result = processRequest(context);
-                Profile.End(profile);
+                    Profile.Begin(profile);
+                    result = processRequest(context);
+                    Profile.End(profile);
+                }
+                else
+                {
+                    string serviceName;
+                    DummyService dummyService = service as DummyService;
+
+                    serviceName = (dummyService == null) ? service.GetType().FullName : dummyService.ServiceName;
+
+                    Logger.PrintWarning(LogClass.KernelIpc, $"Missing service {serviceName}: {commandId} ignored");
+                }
 
                 if (_isDomain)
                 {

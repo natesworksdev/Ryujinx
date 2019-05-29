@@ -50,7 +50,6 @@ namespace Ryujinx.Profiler
         // Depth of current timer,
         // each begin call increments and each end call decrements
         private int _depth;
-        
 
         public TimingInfo()
         {

@@ -24,6 +24,8 @@ namespace Ryujinx
 
         private IGalRenderer _renderer;
 
+        private HidHotkeyButtons _prevHotkeyButtons = 0;
+
         private KeyboardState? _keyboard = null;
 
         private MouseState? _mouse = null;
@@ -36,9 +38,9 @@ namespace Ryujinx
 
         private string _newTitle;
 
-        #if USE_PROFILING
+#if USE_PROFILING
         private ProfileWindowManager _profileWindow;
-        #endif
+#endif
 
         public GlScreen(Switch device, IGalRenderer renderer)
             : base(1280, 720,
@@ -53,10 +55,10 @@ namespace Ryujinx
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
             
-            #if USE_PROFILING
+#if USE_PROFILING
             // Start profile window, it will handle itself from there
             _profileWindow = new ProfileWindowManager();
-            #endif
+#endif
         }
 
         private void RenderLoop()
@@ -139,9 +141,11 @@ namespace Ryujinx
 
         private new void UpdateFrame()
         {
+            HidHotkeyButtons     currentHotkeyButtons = 0;
             HidControllerButtons currentButton = 0;
             HidJoystickPosition  leftJoystick;
             HidJoystickPosition  rightJoystick;
+            HidKeyboard?         hidKeyboard = null;
 
             int leftJoystickDx  = 0;
             int leftJoystickDy  = 0;
@@ -153,34 +157,44 @@ namespace Ryujinx
             {
                 KeyboardState keyboard = _keyboard.Value;
 
-                #if USE_PROFILING
-                // Debug
-                if (Config.NPadDebug.TogglePressed(keyboard))
-                {
-                    _profileWindow.ToggleVisible();
-                }
-                Config.NPadDebug.SetPrevKeyboardState(keyboard);
-                #endif
+#if USE_PROFILING
+                // Profiler input, lets the profiler get access to the main windows keyboard state
+                _profileWindow.UpdateKeyInput(keyboard);
+#endif
 
                 // Normal Input
-                currentButton = Config.NpadKeyboard.GetButtons(keyboard);
+                currentHotkeyButtons = Configuration.Instance.KeyboardControls.GetHotkeyButtons(keyboard);
+                currentButton        = Configuration.Instance.KeyboardControls.GetButtons(keyboard);
 
-                (leftJoystickDx, leftJoystickDy) = Config.NpadKeyboard.GetLeftStick(keyboard);
+                if (Configuration.Instance.EnableKeyboard)
+                {
+                    hidKeyboard = Configuration.Instance.KeyboardControls.GetKeysDown(keyboard);
+                }
 
-                (rightJoystickDx, rightJoystickDy) = Config.NpadKeyboard.GetRightStick(keyboard);
+                (leftJoystickDx, leftJoystickDy)   = Configuration.Instance.KeyboardControls.GetLeftStick(keyboard);
+                (rightJoystickDx, rightJoystickDy) = Configuration.Instance.KeyboardControls.GetRightStick(keyboard);
+            }
+
+            if (!hidKeyboard.HasValue)
+            {
+                hidKeyboard = new HidKeyboard
+                {
+                    Modifier = 0,
+                    Keys     = new int[0x8]
+                };
             }
             
-            currentButton |= Config.NpadController.GetButtons();
+            currentButton |= Configuration.Instance.GamepadControls.GetButtons();
 
             //Keyboard has priority stick-wise
             if (leftJoystickDx == 0 && leftJoystickDy == 0)
             {
-                (leftJoystickDx, leftJoystickDy) = Config.NpadController.GetLeftStick();
+                (leftJoystickDx, leftJoystickDy) = Configuration.Instance.GamepadControls.GetLeftStick();
             }
 
             if (rightJoystickDx == 0 && rightJoystickDy == 0)
             {
-                (rightJoystickDx, rightJoystickDy) = Config.NpadController.GetRightStick();
+                (rightJoystickDx, rightJoystickDy) = Configuration.Instance.GamepadControls.GetRightStick();
             }
 
             leftJoystick = new HidJoystickPosition
@@ -256,9 +270,23 @@ namespace Ryujinx
                 _device.Hid.SetTouchPoints();
             }
 
+            if (Configuration.Instance.EnableKeyboard && hidKeyboard.HasValue)
+            {
+                _device.Hid.WriteKeyboard(hidKeyboard.Value);
+            }
+
             HidControllerBase controller = _device.Hid.PrimaryController;
 
             controller.SendInput(currentButton, leftJoystick, rightJoystick);
+
+            // Toggle vsync
+            if (currentHotkeyButtons.HasFlag(HidHotkeyButtons.ToggleVSync) &&
+                !_prevHotkeyButtons.HasFlag(HidHotkeyButtons.ToggleVSync))
+            {
+                _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
+            }
+
+            _prevHotkeyButtons = currentHotkeyButtons;
         }
 
         private new void RenderFrame()
@@ -287,9 +315,9 @@ namespace Ryujinx
 
         protected override void OnUnload(EventArgs e)
         {
-            #if USE_PROFILING
+#if USE_PROFILING
             _profileWindow.Close();
-            #endif
+#endif
 
             _renderThread.Join();
 

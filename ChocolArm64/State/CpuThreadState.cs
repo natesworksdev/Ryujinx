@@ -1,4 +1,5 @@
 using ChocolArm64.Events;
+using ChocolArm64.Translation;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -8,10 +9,10 @@ namespace ChocolArm64.State
 {
     public class CpuThreadState
     {
+        private const int MinCountForCheck = 40000;
+
         internal const int ErgSizeLog2 = 4;
         internal const int DczSizeLog2 = 4;
-
-        private const int MinInstForCheck = 4000000;
 
         public ulong X0,  X1,  X2,  X3,  X4,  X5,  X6,  X7,
                      X8,  X9,  X10, X11, X12, X13, X14, X15,
@@ -36,7 +37,6 @@ namespace ChocolArm64.State
         public int ElrHyp;
 
         public bool Running { get; set; }
-        public int  Core    { get; set; }
 
         private bool _interrupted;
 
@@ -82,6 +82,18 @@ namespace ChocolArm64.State
 
         private static double _hostTickFreq;
 
+        internal Translator CurrentTranslator;
+
+        private ulong _exclusiveAddress;
+
+        internal ulong ExclusiveValueLow  { get; set; }
+        internal ulong ExclusiveValueHigh { get; set; }
+
+        public CpuThreadState()
+        {
+            ClearExclusiveAddress();
+        }
+
         static CpuThreadState()
         {
             _hostTickFreq = 1.0 / Stopwatch.Frequency;
@@ -91,24 +103,39 @@ namespace ChocolArm64.State
             _tickCounter.Start();
         }
 
+        internal void SetExclusiveAddress(ulong address)
+        {
+            _exclusiveAddress = GetMaskedExclusiveAddress(address);
+        }
+
+        internal bool CheckExclusiveAddress(ulong address)
+        {
+            return GetMaskedExclusiveAddress(address) == _exclusiveAddress;
+        }
+
+        internal void ClearExclusiveAddress()
+        {
+            _exclusiveAddress = ulong.MaxValue;
+        }
+
+        private ulong GetMaskedExclusiveAddress(ulong address)
+        {
+            return address & ~((4UL << ErgSizeLog2) - 1);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal bool Synchronize(int bbWeight)
+        internal bool Synchronize()
         {
             //Firing a interrupt frequently is expensive, so we only
             //do it after a given number of instructions has executed.
-            _syncCount += bbWeight;
+            _syncCount++;
 
-            if (_syncCount >= MinInstForCheck)
+            if (_syncCount >= MinCountForCheck)
             {
                 CheckInterrupt();
             }
 
             return Running;
-        }
-
-        internal void RequestInterrupt()
-        {
-            _interrupted = true;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -122,6 +149,11 @@ namespace ChocolArm64.State
 
                 Interrupt?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        internal void RequestInterrupt()
+        {
+            _interrupted = true;
         }
 
         internal void OnBreak(long position, int imm)
