@@ -6,7 +6,6 @@ using Ryujinx.HLE;
 using Ryujinx.Profiler;
 using System;
 using System.IO;
-using Ryujinx.Profiler;
 
 namespace Ryujinx
 {
