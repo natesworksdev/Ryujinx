@@ -70,7 +70,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        public RAReport Allocate(ControlFlowGraph cfg, RegisterMasks regMasks)
+        public RAReport RunPass(ControlFlowGraph cfg, RegisterMasks regMasks)
         {
             PhiFunctions.Remove(cfg);
 

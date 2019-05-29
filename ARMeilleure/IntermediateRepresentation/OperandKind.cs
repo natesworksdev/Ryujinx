@@ -7,7 +7,6 @@ namespace ARMeilleure.IntermediateRepresentation
         LocalVariable,
         Memory,
         Register,
-        RegisterNoRename,
         Undefined
     }
 }

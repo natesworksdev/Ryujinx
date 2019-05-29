@@ -2,6 +2,8 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System;
 
+using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+
 namespace ARMeilleure.Translation
 {
     static class RegisterUsage
@@ -238,15 +240,18 @@ namespace ARMeilleure.Translation
             {
                 long mask = 1L << bit;
 
-                if ((inputs & mask) != 0)
+                if ((inputs & mask) == 0)
                 {
-                    Operand dest   = GetRegFromBit(bit, baseType, rename: true);
-                    Operand source = GetRegFromBit(bit, baseType, rename: false);
-
-                    Operation operation = new Operation(Instruction.LoadFromContext, dest, source);
-
-                    block.Operations.AddFirst(operation);
+                    continue;
                 }
+
+                Operand dest = GetRegFromBit(bit, baseType);
+
+                int offset = NativeContext.GetRegisterOffset(dest.GetRegister());
+
+                Operation operation = new Operation(Instruction.LoadFromContext, dest, Const(offset));
+
+                block.Operations.AddFirst(operation);
             }
         }
 
@@ -254,8 +259,7 @@ namespace ARMeilleure.Translation
         {
             if (Optimizations.AssumeStrictAbiCompliance)
             {
-                if (baseType == RegisterType.Integer ||
-                    baseType == RegisterType.Flag)
+                if (baseType == RegisterType.Integer || baseType == RegisterType.Flag)
                 {
                     outputs = ClearCallerSavedIntRegs(outputs);
                 }
@@ -269,32 +273,47 @@ namespace ARMeilleure.Translation
             {
                 long mask = 1L << bit;
 
-                if ((outputs & mask) != 0)
+                if ((outputs & mask) == 0)
                 {
-                    Operand dest   = GetRegFromBit(bit, baseType, rename: false);
-                    Operand source = GetRegFromBit(bit, baseType, rename: true);
-
-                    Operation operation = new Operation(Instruction.StoreToContext, dest, source);
-
-                    block.Append(operation);
+                    continue;
                 }
+
+                Operand source = GetRegFromBit(bit, baseType);
+
+                int offset = NativeContext.GetRegisterOffset(source.GetRegister());
+
+                Operation operation = new Operation(Instruction.StoreToContext, null, Const(offset), source);
+
+                block.Append(operation);
             }
         }
 
-        private static Operand GetRegFromBit(int bit, RegisterType baseType, bool rename)
+        private static Operand GetRegFromBit(int bit, RegisterType baseType)
         {
             if (bit < RegsCount)
             {
-                return new Operand(bit, baseType, OperandType.I64, rename);
+                return new Operand(bit, baseType, GetOperandType(baseType));
             }
             else if (baseType == RegisterType.Integer)
             {
-                return new Operand(bit & RegsMask, RegisterType.Flag, OperandType.I64, rename);
+                return new Operand(bit & RegsMask, RegisterType.Flag, OperandType.I32);
             }
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(bit));
             }
+        }
+
+        private static OperandType GetOperandType(RegisterType type)
+        {
+            switch (type)
+            {
+                case RegisterType.Flag:    return OperandType.I32;
+                case RegisterType.Integer: return OperandType.I64;
+                case RegisterType.Vector:  return OperandType.V128;
+            }
+
+            throw new ArgumentException($"Invalid register type \"{type}\".");
         }
 
         private static bool HasContextStore(BasicBlock block)

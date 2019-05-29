@@ -54,17 +54,9 @@ namespace ARMeilleure.IntermediateRepresentation
             Value = value;
         }
 
-        public Operand(int index, RegisterType regType, OperandType type, bool rename = true) : this()
+        public Operand(int index, RegisterType regType, OperandType type) : this()
         {
-            if (rename)
-            {
-                Kind = OperandKind.Register;
-            }
-            else
-            {
-                Kind = OperandKind.RegisterNoRename;
-            }
-
+            Kind = OperandKind.Register;
             Type = type;
 
             Value = (ulong)((int)regType << 24 | index);

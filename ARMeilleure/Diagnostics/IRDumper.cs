@@ -123,8 +123,7 @@ namespace ARMeilleure.Diagnostics
 
                 name = localName;
             }
-            else if (operand.Kind == OperandKind.Register ||
-                     operand.Kind == OperandKind.RegisterNoRename)
+            else if (operand.Kind == OperandKind.Register)
             {
                 Register reg = operand.GetRegister();
 

@@ -1,6 +1,7 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
+using ARMeilleure.Memory;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
@@ -39,6 +40,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Divide,                  GenerateDivide);
             Add(Instruction.Fill,                    GenerateFill);
             Add(Instruction.Load,                    GenerateLoad);
+            Add(Instruction.LoadFromContext,         GenerateLoadFromContext);
             Add(Instruction.LoadSx16,                GenerateLoadSx16);
             Add(Instruction.LoadSx32,                GenerateLoadSx32);
             Add(Instruction.LoadSx8,                 GenerateLoadSx8);
@@ -58,6 +60,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Store,                   GenerateStore);
             Add(Instruction.Store16,                 GenerateStore16);
             Add(Instruction.Store8,                  GenerateStore8);
+            Add(Instruction.StoreToContext,          GenerateStoreToContext);
             Add(Instruction.Subtract,                GenerateSubtract);
         }
 
@@ -66,9 +69,9 @@ namespace ARMeilleure.CodeGen.X86
             _instTable[(int)inst] = func;
         }
 
-        public static byte[] Generate(ControlFlowGraph cfg)
+        public static byte[] Generate(ControlFlowGraph cfg, MemoryManager memory)
         {
-            //IRAdapter.Adapt(cfg);
+            PreAllocator.RunPass(cfg, memory);
 
             LinearScan regAlloc = new LinearScan();
 
@@ -76,7 +79,7 @@ namespace ARMeilleure.CodeGen.X86
                 CallingConvention.GetIntAvailableRegisters(),
                 CallingConvention.GetIntCalleeSavedRegisters());
 
-            RAReport raReport = regAlloc.Allocate(cfg, regMasks);
+            RAReport raReport = regAlloc.RunPass(cfg, regMasks);
 
             using (MemoryStream stream = new MemoryStream())
             {
@@ -303,6 +306,23 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Mov(operation.Dest, operation.GetSource(0));
         }
 
+        private static void GenerateLoadFromContext(CodeGenContext context, Operation operation)
+        {
+            Operand dest   = operation.Dest;
+            Operand offset = operation.GetSource(0);
+
+            if (offset.Kind != OperandKind.Constant)
+            {
+                throw new InvalidOperationException("LoadFromContext has non-constant context offset.");
+            }
+
+            Operand rbp = Register(X86Register.Rbp);
+
+            X86MemoryOperand memOp = new X86MemoryOperand(dest.Type, rbp, null, Scale.x1, offset.AsInt32());
+
+            context.Assembler.Mov(dest, memOp);
+        }
+
         private static void GenerateLoadSx16(CodeGenContext context, Operation operation)
         {
             context.Assembler.Movsx16(operation.Dest, operation.GetSource(0));
@@ -431,6 +451,23 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateStore8(CodeGenContext context, Operation operation)
         {
             context.Assembler.Mov8(operation.GetSource(0), operation.GetSource(1));
+        }
+
+        private static void GenerateStoreToContext(CodeGenContext context, Operation operation)
+        {
+            Operand offset = operation.GetSource(0);
+            Operand source = operation.GetSource(1);
+
+            if (offset.Kind != OperandKind.Constant)
+            {
+                throw new InvalidOperationException("StoreToContext has non-constant context offset.");
+            }
+
+            Operand rbp = Register(X86Register.Rbp);
+
+            X86MemoryOperand memOp = new X86MemoryOperand(source.Type, rbp, null, Scale.x1, offset.AsInt32());
+
+            context.Assembler.Mov(memOp, source);
         }
 
         private static void GenerateSubtract(CodeGenContext context, Operation operation)

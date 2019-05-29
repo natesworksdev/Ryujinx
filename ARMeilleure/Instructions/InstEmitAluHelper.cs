@@ -11,28 +11,28 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitAluHelper
     {
-        public static void EmitAdcsCCheck(EmitterContext context, Operand n, Operand result)
+        public static void EmitAdcsCCheck(EmitterContext context, Operand n, Operand d)
         {
             //C = (Rd == Rn && CIn) || Rd < Rn
             Operand cIn = GetFlag(PState.CFlag);
 
-            Operand cOut = context.BitwiseAnd(context.ICompareEqual(result, n), cIn);
+            Operand cOut = context.BitwiseAnd(context.ICompareEqual(d, n), cIn);
 
-            cOut = context.BitwiseOr(cOut, context.ICompareLessUI(result, n));
+            cOut = context.BitwiseOr(cOut, context.ICompareLessUI(d, n));
 
             context.Copy(GetFlag(PState.CFlag), cOut);
         }
 
-        public static void EmitAddsCCheck(EmitterContext context, Operand n, Operand result)
+        public static void EmitAddsCCheck(EmitterContext context, Operand n, Operand d)
         {
             //C = Rd < Rn
-            context.Copy(GetFlag(PState.CFlag), context.ICompareLessUI(result, n));
+            context.Copy(GetFlag(PState.CFlag), context.ICompareLessUI(d, n));
         }
 
-        public static void EmitAddsVCheck(EmitterContext context, Operand n, Operand m, Operand result)
+        public static void EmitAddsVCheck(EmitterContext context, Operand n, Operand m, Operand d)
         {
             //V = (Rd ^ Rn) & ~(Rn ^ Rm) < 0
-            Operand vOut = context.BitwiseExclusiveOr(result, n);
+            Operand vOut = context.BitwiseExclusiveOr(d, n);
 
             vOut = context.BitwiseAnd(vOut, context.BitwiseNot(context.BitwiseExclusiveOr(n, m)));
 
@@ -63,10 +63,10 @@ namespace ARMeilleure.Instructions
             EmitterContext context,
             Operand        n,
             Operand        m,
-            Operand        result)
+            Operand        d)
         {
             //V = (Rd ^ Rn) & (Rn ^ Rm) < 0
-            Operand vOut = context.BitwiseExclusiveOr(result, n);
+            Operand vOut = context.BitwiseExclusiveOr(d, n);
 
             vOut = context.BitwiseAnd(vOut, context.BitwiseExclusiveOr(n, m));
 

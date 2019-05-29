@@ -328,8 +328,8 @@ namespace ARMeilleure.Instructions
 
         private static void EmitNZFlagsCheck(EmitterContext context, Operand d)
         {
-            context.Copy(GetFlag(PState.NFlag), context.ICompareLess (d, Const(0)));
-            context.Copy(GetFlag(PState.ZFlag), context.ICompareEqual(d, Const(0)));
+            context.Copy(GetFlag(PState.NFlag), context.ICompareLess (d, Const(d.Type, 0)));
+            context.Copy(GetFlag(PState.ZFlag), context.ICompareEqual(d, Const(d.Type, 0)));
         }
 
         private static void EmitCVFlagsClear(EmitterContext context)

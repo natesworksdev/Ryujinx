@@ -30,8 +30,6 @@ namespace ARMeilleure.Translation
                 TranslatedFunction func = Translate(address, ExecutionMode.Aarch64);
 
                 address = func.Execute(context);
-
-                break;
             }
             while (address != 0);
         }
@@ -58,9 +56,7 @@ namespace ARMeilleure.Translation
 
             logger.EndPass(PassName.SsaConstruction, cfg);
 
-            IRAdapter.Adapt(cfg, _memory);
-
-            byte[] code = CodeGenerator.Generate(cfg);
+            byte[] code = CodeGenerator.Generate(cfg, _memory);
 
             return _cache.CreateFunction(code);
         }

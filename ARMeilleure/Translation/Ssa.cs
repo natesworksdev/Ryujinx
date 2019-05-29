@@ -1,3 +1,4 @@
+using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System.Collections.Generic;
@@ -12,13 +13,13 @@ namespace ARMeilleure.Translation
         {
             private Dictionary<Register, Operand> _map;
 
-            private long[] _phiMasks;
+            private BitMap _phiMasks;
 
             public DefMap()
             {
                 _map = new Dictionary<Register, Operand>();
 
-                _phiMasks = new long[(RegisterConsts.TotalCount + 63) / 64];
+                _phiMasks = new BitMap(RegisterConsts.TotalCount);
             }
 
             public bool TryAddOperand(Register reg, Operand operand)
@@ -33,31 +34,12 @@ namespace ARMeilleure.Translation
 
             public bool AddPhi(Register reg)
             {
-                int key = GetKeyFromRegister(reg);
-
-                int index = key / 64;
-                int bit   = key & 63;
-
-                long mask = 1L << bit;
-
-                if ((_phiMasks[index] & mask) != 0)
-                {
-                    return false;
-                }
-
-                _phiMasks[index] |= mask;
-
-                return true;
+                return _phiMasks.Set(GetIdFromRegister(reg));
             }
 
             public bool HasPhi(Register reg)
             {
-                int key = GetKeyFromRegister(reg);
-
-                int index = key / 64;
-                int bit   = key & 63;
-
-                return (_phiMasks[index] & (1L << bit)) != 0;
+                return _phiMasks.IsSet(GetIdFromRegister(reg));
             }
         }
 
@@ -83,7 +65,7 @@ namespace ARMeilleure.Translation
                 {
                     if (operand != null && operand.Kind == OperandKind.Register)
                     {
-                        Operand local = localDefs[GetKeyFromRegister(operand.GetRegister())];
+                        Operand local = localDefs[GetIdFromRegister(operand.GetRegister())];
 
                         if (local != null && local.Type != operand.Type)
                         {
@@ -117,7 +99,7 @@ namespace ARMeilleure.Translation
                         {
                             Operand local = Local(dest.Type);
 
-                            localDefs[GetKeyFromRegister(dest.GetRegister())] = local;
+                            localDefs[GetIdFromRegister(dest.GetRegister())] = local;
 
                             operation.Dest = local;
                         }
@@ -135,7 +117,7 @@ namespace ARMeilleure.Translation
                         continue;
                     }
 
-                    Register reg = GetRegisterFromKey(index);
+                    Register reg = GetRegisterFromId(index);
 
                     globalDefs[block.Index].TryAddOperand(reg, local);
 
@@ -165,29 +147,29 @@ namespace ARMeilleure.Translation
                 {
                     if (operand != null && operand.Kind == OperandKind.Register)
                     {
-                        int key = GetKeyFromRegister(operand.GetRegister());
+                        int key = GetIdFromRegister(operand.GetRegister());
 
                         Operand local = localDefs[key];
 
-                        if (local != null)
+                        if (local == null)
                         {
-                            if (local.Type != operand.Type)
-                            {
-                                Operand temp = Local(operand.Type);
+                            local = FindDef(globalDefs, block, operand);
 
-                                Operation castOp = new Operation(Instruction.Copy, temp, local);
-
-                                block.Operations.AddBefore(node, castOp);
-
-                                local = temp;
-                            }
-
-                            return local;
+                            localDefs[key] = local;
                         }
 
-                        operand = FindDef(globalDefs, block, operand);
+                        if (local.Kind == OperandKind.LocalVariable && local.Type != operand.Type)
+                        {
+                            Operand temp = Local(operand.Type);
 
-                        localDefs[key] = operand;
+                            Operation castOp = new Operation(Instruction.Copy, temp, local);
+
+                            block.Operations.AddBefore(node, castOp);
+
+                            local = temp;
+                        }
+
+                        operand = local;
                     }
 
                     return operand;
@@ -225,34 +207,30 @@ namespace ARMeilleure.Translation
 
         private static Operand FindDefOnPred(DefMap[] globalDefs, BasicBlock current, Operand operand)
         {
-            foreach (BasicBlock block in SelfAndImmediateDominators(current))
-            {
-                DefMap defMap = globalDefs[block.Index];
+            BasicBlock previous;
 
-                if (defMap.TryGetOperand(operand.GetRegister(), out Operand lastDef))
+            do
+            {
+                DefMap defMap = globalDefs[current.Index];
+
+                Register reg = operand.GetRegister();
+
+                if (defMap.TryGetOperand(reg, out Operand lastDef))
                 {
                     return lastDef;
                 }
 
-                if (defMap.HasPhi(operand.GetRegister()))
+                if (defMap.HasPhi(reg))
                 {
-                    return InsertPhi(globalDefs, block, operand);
+                    return InsertPhi(globalDefs, current, operand);
                 }
+
+                previous = current;
+                current  = current.ImmediateDominator;
             }
+            while (previous != current);
 
             return Undef();
-        }
-
-        private static IEnumerable<BasicBlock> SelfAndImmediateDominators(BasicBlock block)
-        {
-            while (block != block.ImmediateDominator)
-            {
-                yield return block;
-
-                block = block.ImmediateDominator;
-            }
-
-            yield return block;
         }
 
         private static Operand InsertPhi(DefMap[] globalDefs, BasicBlock block, Operand operand)
@@ -302,7 +280,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private static int GetKeyFromRegister(Register reg)
+        private static int GetIdFromRegister(Register reg)
         {
             if (reg.Type == RegisterType.Integer)
             {
@@ -318,19 +296,19 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private static Register GetRegisterFromKey(int key)
+        private static Register GetRegisterFromId(int id)
         {
-            if (key < RegisterConsts.IntRegsCount)
+            if (id < RegisterConsts.IntRegsCount)
             {
-                return new Register(key, RegisterType.Integer);
+                return new Register(id, RegisterType.Integer);
             }
-            else if (key < RegisterConsts.IntAndVecRegsCount)
+            else if (id < RegisterConsts.IntAndVecRegsCount)
             {
-                return new Register(key - RegisterConsts.IntRegsCount, RegisterType.Vector);
+                return new Register(id - RegisterConsts.IntRegsCount, RegisterType.Vector);
             }
             else /* if (key < RegisterConsts.TotalCount) */
             {
-                return new Register(key - RegisterConsts.IntAndVecRegsCount, RegisterType.Flag);
+                return new Register(id - RegisterConsts.IntAndVecRegsCount, RegisterType.Flag);
             }
         }
     }

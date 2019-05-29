@@ -25,6 +25,8 @@ namespace Ryujinx.Tests.Cpu
 
         private ExecutionContext _context;
 
+        private Translator _translator;
+
         private static bool _unicornAvailable;
         private UnicornAArch64 _unicornEmu;
 
@@ -52,7 +54,7 @@ namespace Ryujinx.Tests.Cpu
 
             _context = new ExecutionContext();
 
-            Translator translator = new Translator(_memory);
+            _translator = new Translator(_memory);
 
             if (_unicornAvailable)
             {
@@ -165,9 +167,7 @@ namespace Ryujinx.Tests.Cpu
 
         protected void ExecuteOpcodes()
         {
-            Translator translator = new Translator(_memory);
-
-            translator.Execute(_context, _entryPoint);
+            _translator.Execute(_context, _entryPoint);
 
             if (_unicornAvailable)
             {
