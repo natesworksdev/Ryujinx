@@ -50,6 +50,7 @@ namespace ARMeilleure.CodeGen.X86
             //  Name                                 RM/R      RM/I8     RM/I32    R/I64     R/RM      Opers
             Add(X86Instruction.Add,     new InstInfo(0x000001, 0x000083, 0x000081, BadOp,    0x000003, 2));
             Add(X86Instruction.And,     new InstInfo(0x000021, 0x040083, 0x040081, BadOp,    0x000023, 2));
+            Add(X86Instruction.Bsr,     new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbd, 2));
             Add(X86Instruction.Cmp,     new InstInfo(0x000039, 0x070083, 0x070081, BadOp,    0x00003b, 2));
             Add(X86Instruction.Idiv,    new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0700f7, 1));
             Add(X86Instruction.Imul,    new InstInfo(BadOp,    0x00006b, 0x000069, BadOp,    0x000faf, 2));
@@ -93,6 +94,11 @@ namespace ARMeilleure.CodeGen.X86
         public void And(Operand dest, Operand source)
         {
             WriteInstruction(dest, source, X86Instruction.And);
+        }
+
+        public void Bsr(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Bsr);
         }
 
         public void Cdq()

@@ -4,6 +4,7 @@ namespace ARMeilleure.CodeGen.X86
     {
         Add,
         And,
+        Bsr,
         Cmp,
         Idiv,
         Imul,

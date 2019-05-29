@@ -103,14 +103,19 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetIntOrZR(op, op.Rn);
 
-            ulong mask = ulong.MaxValue >> ((64 - op.GetBitsCount()) + 1);
+            Operand nHigh = context.ShiftRightUI(n, Const(1));
 
-            n = context.BitwiseExclusiveOr(context.BitwiseAnd(n, Const(mask << 1)),
-                                           context.BitwiseAnd(n, Const(mask)));
+            bool is32Bits = op.RegisterSize == RegisterSize.Int32;
 
-            Operand d = context.CountLeadingZeros(n);
+            Operand mask = is32Bits ? Const(int.MaxValue) : Const(long.MaxValue);
 
-            SetAluDOrZR(context, d);
+            Operand nLow = context.BitwiseAnd(n, mask);
+
+            Operand res = context.CountLeadingZeros(context.BitwiseExclusiveOr(nHigh, nLow));
+
+            res = context.ISubtract(res, Const(res.Type, 1));
+
+            SetAluDOrZR(context, res);
         }
 
         public static void Clz(EmitterContext context)

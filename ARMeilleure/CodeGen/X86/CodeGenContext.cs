@@ -1,6 +1,7 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.IntermediateRepresentation;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace ARMeilleure.CodeGen.X86
@@ -60,6 +61,10 @@ namespace ARMeilleure.CodeGen.X86
 
         private List<Jump> _jumps;
 
+        private X86Condition _jNearCondition;
+        private long         _jNearPosition;
+        private int          _jNearLength;
+
         public CodeGenContext(Stream stream, RAReport raReport, int blocksCount)
         {
             _stream = stream;
@@ -92,6 +97,30 @@ namespace ARMeilleure.CodeGen.X86
             _jumps.Add(new Jump(condition, target, _stream.Position));
 
             WritePadding(ReservedBytesForJump);
+        }
+
+        public void JumpToNear(X86Condition condition)
+        {
+            _jNearCondition = condition;
+            _jNearPosition  = _stream.Position;
+            _jNearLength    = Assembler.GetJccLength(0);
+
+            _stream.Seek(_jNearLength, SeekOrigin.Current);
+        }
+
+        public void JumpHere()
+        {
+            long currentPosition = _stream.Position;
+
+            _stream.Seek(_jNearPosition, SeekOrigin.Begin);
+
+            long offset = currentPosition - (_jNearPosition + _jNearLength);
+
+            Debug.Assert(_jNearLength == Assembler.GetJccLength(offset), "Relative offset doesn't fit on near jump.");
+
+            Assembler.Jcc(_jNearCondition, offset);
+
+            _stream.Seek(currentPosition, SeekOrigin.Begin);
         }
 
         private void WritePadding(int size)

@@ -36,6 +36,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.CompareLessUI,           GenerateCompareLessUI);
             Add(Instruction.CompareNotEqual,         GenerateCompareNotEqual);
             Add(Instruction.ConditionalSelect,       GenerateConditionalSelect);
+            Add(Instruction.CountLeadingZeros,       GenerateCountLeadingZeros);
             Add(Instruction.Copy,                    GenerateCopy);
             Add(Instruction.Divide,                  GenerateDivide);
             Add(Instruction.Fill,                    GenerateFill);
@@ -226,6 +227,34 @@ namespace ARMeilleure.CodeGen.X86
         {
             context.Assembler.Test(operation.GetSource(0), operation.GetSource(0));
             context.Assembler.Cmovcc(operation.Dest, operation.GetSource(1), X86Condition.NotEqual);
+        }
+
+        private static void GenerateCountLeadingZeros(CodeGenContext context, Operation operation)
+        {
+            Operand dest = operation.Dest;
+
+            Operand dest32 = Get32BitsRegister(dest.GetRegister());
+
+            context.Assembler.Bsr(dest, operation.GetSource(0));
+
+            int operandSize = dest.Type == OperandType.I32 ? 32 : 64;
+            int operandMask = operandSize - 1;
+
+            //When the input operand is 0, the result is undefined, however the
+            //ZF flag is set. We are supposed to return the operand size on that
+            //case. So, add an additional jump to handle that case, by moving the
+            //operand size constant to the destination register.
+            context.JumpToNear(X86Condition.NotEqual);
+
+            context.Assembler.Mov(dest32, new Operand(operandSize | operandMask));
+
+            context.JumpHere();
+
+            //BSR returns the zero based index of the last bit set on the operand,
+            //starting from the least significant bit. However we are supposed to
+            //return the number of 0 bits on the high end. So, we invert the result
+            //of the BSR using XOR to get the correct value.
+            context.Assembler.Xor(dest32, new Operand(operandMask));
         }
 
         private static void GenerateCopy(CodeGenContext context, Operation operation)
