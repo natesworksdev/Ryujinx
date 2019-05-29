@@ -1,22 +1,45 @@
+using System.Runtime.CompilerServices;
+
 namespace ARMeilleure.Common
 {
     static class BitUtils
     {
+        private const int deBrujinSequence = 0x77cb531;
+
+        private static int[] deBrujinLbsLut;
+
+        static BitUtils()
+        {
+            deBrujinLbsLut = new int[32];
+
+            for (int index = 0; index < deBrujinLbsLut.Length; index++)
+            {
+                uint lutIndex = (uint)(deBrujinSequence * (1 << index)) >> 27;
+
+                deBrujinLbsLut[lutIndex] = index;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int LowestBitSet(int value)
         {
-            for (int bit = 0; bit < 32; bit++)
+            if (value == 0)
             {
-                if (((value >> bit) & 1) != 0)
-                {
-                    return bit;
-                }
+                return -1;
             }
 
-            return -1;
+            int lsb = value & -value;
+
+            return deBrujinLbsLut[(uint)(deBrujinSequence * lsb) >> 27];
         }
 
         public static int HighestBitSet(int value)
         {
+            if (value == 0)
+            {
+                return -1;
+            }
+
             for (int bit = 31; bit >= 0; bit--)
             {
                 if (((value >> bit) & 1) != 0)
@@ -28,9 +51,9 @@ namespace ARMeilleure.Common
             return -1;
         }
 
-        private static readonly sbyte[] HbsNibbleTbl = { -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3 };
+        private static readonly sbyte[] HbsNibbleLut = { -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3 };
 
-        public static int HighestBitSetNibble(int value) => HbsNibbleTbl[value & 0b1111];
+        public static int HighestBitSetNibble(int value) => HbsNibbleLut[value & 0b1111];
 
         public static long Replicate(long bits, int size)
         {
