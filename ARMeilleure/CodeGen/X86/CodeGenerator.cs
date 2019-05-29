@@ -40,6 +40,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Copy,                    GenerateCopy);
             Add(Instruction.CountLeadingZeros,       GenerateCountLeadingZeros);
             Add(Instruction.Divide,                  GenerateDivide);
+            Add(Instruction.DivideUI,                GenerateDivideUI);
             Add(Instruction.Fill,                    GenerateFill);
             Add(Instruction.Load,                    GenerateLoad);
             Add(Instruction.LoadFromContext,         GenerateLoadFromContext);
@@ -321,6 +322,16 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Idiv(divisor);
         }
 
+        private static void GenerateDivideUI(CodeGenContext context, Operation operation)
+        {
+            Operand divisor = operation.GetSource(1);
+
+            Operand rdx = Register(X86Register.Rdx, OperandType.I32);
+
+            context.Assembler.Xor(rdx, rdx);
+            context.Assembler.Div(divisor);
+        }
+
         private static void GenerateFill(CodeGenContext context, Operation operation)
         {
             Operand dest   = operation.Dest;
@@ -587,9 +598,9 @@ namespace ARMeilleure.CodeGen.X86
             return new Operand(reg.Index, reg.Type, OperandType.I32);
         }
 
-        private static Operand Register(X86Register register)
+        private static Operand Register(X86Register register, OperandType type = OperandType.I64)
         {
-            return new Operand((int)register, RegisterType.Integer, OperandType.I64);
+            return new Operand((int)register, RegisterType.Integer, type);
         }
     }
 }

@@ -8,6 +8,7 @@ namespace ARMeilleure.CodeGen.X86
         Bswap,
         Cmovcc,
         Cmp,
+        Div,
         Idiv,
         Imul,
         Mov,

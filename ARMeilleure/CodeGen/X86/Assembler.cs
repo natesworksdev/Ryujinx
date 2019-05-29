@@ -63,6 +63,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Bswap,   new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fc8, InstFlags.RegOnly));
             Add(X86Instruction.Cmovcc,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000f40, InstFlags.None));
             Add(X86Instruction.Cmp,     new InstInfo(0x000039, 0x070083, 0x070081, BadOp,    0x00003b, InstFlags.None));
+            Add(X86Instruction.Div,     new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0600f7, InstFlags.None));
             Add(X86Instruction.Idiv,    new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0700f7, InstFlags.None));
             Add(X86Instruction.Imul,    new InstInfo(BadOp,    0x00006b, 0x000069, BadOp,    0x000faf, InstFlags.None));
             Add(X86Instruction.Mov,     new InstInfo(0x000089, BadOp,    0x0000c7, 0x0000b8, 0x00008b, InstFlags.None));
@@ -139,6 +140,11 @@ namespace ARMeilleure.CodeGen.X86
         {
             WriteByte(0x48);
             WriteByte(0x99);
+        }
+
+        public void Div(Operand source)
+        {
+            WriteInstruction(null, source, X86Instruction.Div);
         }
 
         public void Idiv(Operand source)
@@ -649,9 +655,17 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
-            if (source != null && source.Kind == OperandKind.Register)
+            if (source != null)
             {
-                SetRegisterHighBit(source.GetRegister(), (rrm ? 0 : 2));
+                if (source.Type == OperandType.I64)
+                {
+                    rexPrefix |= 0x48;
+                }
+
+                if (source.Kind == OperandKind.Register)
+                {
+                    SetRegisterHighBit(source.GetRegister(), (rrm ? 0 : 2));
+                }
             }
 
             return rexPrefix;

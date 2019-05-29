@@ -155,7 +155,7 @@ namespace ARMeilleure.Decoders
             SetA64("x1111010000xxxxx000000xxxxxxxxxx", InstName.Sbcs,            InstEmit.Sbcs,            typeof(OpCodeAluRs));
             SetA64("00010011000xxxxx0xxxxxxxxxxxxxxx", InstName.Sbfm,            InstEmit.Sbfm,            typeof(OpCodeBfm));
             SetA64("1001001101xxxxxxxxxxxxxxxxxxxxxx", InstName.Sbfm,            InstEmit.Sbfm,            typeof(OpCodeBfm));
-            SetA64("x0011010110xxxxx000011xxxxxxxxxx", InstName.Sdiv,            InstEmit.Sdiv,            typeof(OpCodeMul));
+            SetA64("x0011010110xxxxx000011xxxxxxxxxx", InstName.Sdiv,            InstEmit.Sdiv,            typeof(OpCodeDiv));
             SetA64("10011011001xxxxx0xxxxxxxxxxxxxxx", InstName.Smaddl,          InstEmit.Smaddl,          typeof(OpCodeMul));
             SetA64("10011011001xxxxx1xxxxxxxxxxxxxxx", InstName.Smsubl,          InstEmit.Smsubl,          typeof(OpCodeMul));
             SetA64("10011011010xxxxx0xxxxxxxxxxxxxxx", InstName.Smulh,           null,                     typeof(OpCodeMul));
@@ -184,7 +184,7 @@ namespace ARMeilleure.Decoders
             SetA64("x0110110xxxxxxxxxxxxxxxxxxxxxxxx", InstName.Tbz,             InstEmit.Tbz,             typeof(OpCodeBImmTest));
             SetA64("01010011000xxxxx0xxxxxxxxxxxxxxx", InstName.Ubfm,            InstEmit.Ubfm,            typeof(OpCodeBfm));
             SetA64("1101001101xxxxxxxxxxxxxxxxxxxxxx", InstName.Ubfm,            InstEmit.Ubfm,            typeof(OpCodeBfm));
-            SetA64("x0011010110xxxxx000010xxxxxxxxxx", InstName.Udiv,            InstEmit.Udiv,            typeof(OpCodeMul));
+            SetA64("x0011010110xxxxx000010xxxxxxxxxx", InstName.Udiv,            InstEmit.Udiv,            typeof(OpCodeDiv));
             SetA64("10011011101xxxxx0xxxxxxxxxxxxxxx", InstName.Umaddl,          InstEmit.Umaddl,          typeof(OpCodeMul));
             SetA64("10011011101xxxxx1xxxxxxxxxxxxxxx", InstName.Umsubl,          InstEmit.Umsubl,          typeof(OpCodeMul));
             SetA64("10011011110xxxxx0xxxxxxxxxxxxxxx", InstName.Umulh,           null,                     typeof(OpCodeMul));

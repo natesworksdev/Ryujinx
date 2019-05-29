@@ -272,13 +272,13 @@ namespace ARMeilleure.Instructions
 
         private static void EmitDiv(EmitterContext context, bool unsigned)
         {
-            OpCodeMul op = (OpCodeMul)context.CurrOp;
+            OpCodeDiv op = (OpCodeDiv)context.CurrOp;
 
             //If Rm == 0, Rd = 0 (division by zero).
             Operand n = GetIntOrZR(op, op.Rn);
             Operand m = GetIntOrZR(op, op.Rm);
 
-            Operand divisorIsZero = context.ICompareEqual(m, Const(op.GetOperandType(), 0));
+            Operand divisorIsZero = context.ICompareEqual(m, Const(m.Type, 0));
 
             Operand lblBadDiv = Label();
             Operand lblEnd    = Label();
@@ -294,7 +294,7 @@ namespace ARMeilleure.Instructions
                 Operand minus1 = is32Bits ? Const(-1)           : Const(-1L);
 
                 Operand nIsIntMin = context.ICompareEqual(n, intMin);
-                Operand mIsMinus1 = context.ICompareEqual(n, minus1);
+                Operand mIsMinus1 = context.ICompareEqual(m, minus1);
 
                 Operand lblGoodDiv = Label();
 
