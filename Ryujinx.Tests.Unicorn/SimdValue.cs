@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Tests.Unicorn
 {
-    public struct SimdValue
+    public struct SimdValue : IEquatable<SimdValue>
     {
         private ulong _e0;
         private ulong _e1;
@@ -75,6 +75,31 @@ namespace Ryujinx.Tests.Unicorn
             }
 
             throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_e0, _e1);
+        }
+
+        public static bool operator ==(SimdValue x, SimdValue y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(SimdValue x, SimdValue y)
+        {
+            return !x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SimdValue simdValue && Equals(simdValue);
+        }
+
+        public bool Equals(SimdValue other)
+        {
+            return other._e0 == _e0 && other._e1 == _e1;
         }
     }
 }

@@ -2,7 +2,7 @@ using System;
 
 namespace ARMeilleure.State
 {
-    public struct V128
+    public struct V128 : IEquatable<V128>
     {
         private ulong _e0;
         private ulong _e1;
@@ -70,6 +70,31 @@ namespace ARMeilleure.State
             }
 
             throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_e0, _e1);
+        }
+
+        public static bool operator ==(V128 x, V128 y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(V128 x, V128 y)
+        {
+            return !x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is V128 vector && Equals(vector);
+        }
+
+        public bool Equals(V128 other)
+        {
+            return other._e0 == _e0 && other._e1 == _e1;
         }
     }
 }

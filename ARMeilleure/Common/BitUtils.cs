@@ -4,19 +4,19 @@ namespace ARMeilleure.Common
 {
     static class BitUtils
     {
-        private const int deBrujinSequence = 0x77cb531;
+        private const int DeBrujinSequence = 0x77cb531;
 
-        private static int[] deBrujinLbsLut;
+        private static int[] DeBrujinLbsLut;
 
         static BitUtils()
         {
-            deBrujinLbsLut = new int[32];
+            DeBrujinLbsLut = new int[32];
 
-            for (int index = 0; index < deBrujinLbsLut.Length; index++)
+            for (int index = 0; index < DeBrujinLbsLut.Length; index++)
             {
-                uint lutIndex = (uint)(deBrujinSequence * (1 << index)) >> 27;
+                uint lutIndex = (uint)(DeBrujinSequence * (1 << index)) >> 27;
 
-                deBrujinLbsLut[lutIndex] = index;
+                DeBrujinLbsLut[lutIndex] = index;
             }
         }
 
@@ -30,7 +30,7 @@ namespace ARMeilleure.Common
 
             int lsb = value & -value;
 
-            return deBrujinLbsLut[(uint)(deBrujinSequence * lsb) >> 27];
+            return DeBrujinLbsLut[(uint)(DeBrujinSequence * lsb) >> 27];
         }
 
         public static int HighestBitSet(int value)
