@@ -25,6 +25,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Branch,                  GenerateBranch);
             Add(Instruction.BranchIfFalse,           GenerateBranchIfFalse);
             Add(Instruction.BranchIfTrue,            GenerateBranchIfTrue);
+            Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.CompareEqual,            GenerateCompareEqual);
             Add(Instruction.CompareGreater,          GenerateCompareGreater);
             Add(Instruction.CompareGreaterOrEqual,   GenerateCompareGreaterOrEqual);
@@ -171,6 +172,11 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Test(operation.GetSource(0), operation.GetSource(0));
 
             context.JumpTo(X86Condition.NotEqual, context.CurrBlock.Branch);
+        }
+
+        private static void GenerateByteSwap(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Bswap(operation.Dest);
         }
 
         private static void GenerateCompareEqual(CodeGenContext context, Operation operation)

@@ -342,6 +342,7 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.BitwiseExclusiveOr:
                 case Instruction.BitwiseNot:
                 case Instruction.BitwiseOr:
+                case Instruction.ByteSwap:
                 case Instruction.Multiply:
                 case Instruction.Negate:
                 case Instruction.RotateRight:

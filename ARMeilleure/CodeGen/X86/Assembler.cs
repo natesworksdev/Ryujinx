@@ -1,6 +1,7 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace ARMeilleure.CodeGen.X86
@@ -13,6 +14,13 @@ namespace ARMeilleure.CodeGen.X86
 
         private const int R16Prefix = 0x66;
 
+        private enum InstFlags
+        {
+            None    = 0,
+            RegOnly = 1 << 0,
+            Reg8    = 1 << 1
+        }
+
         private struct InstInfo
         {
             public int OpRMR     { get; }
@@ -20,22 +28,23 @@ namespace ARMeilleure.CodeGen.X86
             public int OpRMImm32 { get; }
             public int OpRImm64  { get; }
             public int OpRRM     { get; }
-            public int Opers     { get; }
+
+            public InstFlags Flags { get; }
 
             public InstInfo(
-                int opRMR,
-                int opRMImm8,
-                int opRMImm32,
-                int opRImm64,
-                int opRRM,
-                int opers)
+                int       opRMR,
+                int       opRMImm8,
+                int       opRMImm32,
+                int       opRImm64,
+                int       opRRM,
+                InstFlags flags)
             {
                 OpRMR     = opRMR;
                 OpRMImm8  = opRMImm8;
                 OpRMImm32 = opRMImm32;
                 OpRImm64  = opRImm64;
                 OpRRM     = opRRM;
-                Opers     = opers;
+                Flags     = flags;
             }
         }
 
@@ -47,33 +56,36 @@ namespace ARMeilleure.CodeGen.X86
         {
             _instTable = new InstInfo[(int)X86Instruction.Count];
 
-            //  Name                                 RM/R      RM/I8     RM/I32    R/I64     R/RM      Opers
-            Add(X86Instruction.Add,     new InstInfo(0x000001, 0x000083, 0x000081, BadOp,    0x000003, 2));
-            Add(X86Instruction.And,     new InstInfo(0x000021, 0x040083, 0x040081, BadOp,    0x000023, 2));
-            Add(X86Instruction.Bsr,     new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbd, 2));
-            Add(X86Instruction.Cmp,     new InstInfo(0x000039, 0x070083, 0x070081, BadOp,    0x00003b, 2));
-            Add(X86Instruction.Idiv,    new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0700f7, 1));
-            Add(X86Instruction.Imul,    new InstInfo(BadOp,    0x00006b, 0x000069, BadOp,    0x000faf, 2));
-            Add(X86Instruction.Mov,     new InstInfo(0x000089, BadOp,    0x0000c7, 0x0000b8, 0x00008b, 2));
-            Add(X86Instruction.Mov16,   new InstInfo(0x000089, BadOp,    0x0000c7, BadOp,    0x00008b, 2));
-            Add(X86Instruction.Mov8,    new InstInfo(0x000088, 0x0000c6, BadOp,    BadOp,    0x00008a, 2));
-            Add(X86Instruction.Movsx16, new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbf, 2));
-            Add(X86Instruction.Movsx32, new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000063, 2));
-            Add(X86Instruction.Movsx8,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbe, 2));
-            Add(X86Instruction.Movzx16, new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fb7, 2));
-            Add(X86Instruction.Movzx8,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fb6, 2));
-            Add(X86Instruction.Neg,     new InstInfo(0x0300f7, BadOp,    BadOp,    BadOp,    BadOp,    1));
-            Add(X86Instruction.Not,     new InstInfo(0x0200f7, BadOp,    BadOp,    BadOp,    BadOp,    1));
-            Add(X86Instruction.Or,      new InstInfo(0x000009, 0x010083, 0x010081, BadOp,    0x00000b, 2));
-            Add(X86Instruction.Pop,     new InstInfo(0x00008f, BadOp,    BadOp,    BadOp,    BadOp,    1));
-            Add(X86Instruction.Push,    new InstInfo(BadOp,    0x00006a, 0x000068, BadOp,    0x0600ff, 1));
-            Add(X86Instruction.Ror,     new InstInfo(0x0100d3, 0x0100c1, BadOp,    BadOp,    BadOp,    2));
-            Add(X86Instruction.Sar,     new InstInfo(0x0700d3, 0x0700c1, BadOp,    BadOp,    BadOp,    2));
-            Add(X86Instruction.Shl,     new InstInfo(0x0400d3, 0x0400c1, BadOp,    BadOp,    BadOp,    2));
-            Add(X86Instruction.Shr,     new InstInfo(0x0500d3, 0x0500c1, BadOp,    BadOp,    BadOp,    2));
-            Add(X86Instruction.Sub,     new InstInfo(0x000029, 0x050083, 0x050081, BadOp,    0x00002b, 2));
-            Add(X86Instruction.Test,    new InstInfo(0x000085, BadOp,    0x0000f7, BadOp,    BadOp,    2));
-            Add(X86Instruction.Xor,     new InstInfo(0x000031, 0x060083, 0x060081, BadOp,    0x000033, 2));
+            //  Name                                 RM/R      RM/I8     RM/I32    R/I64     R/RM      Flags
+            Add(X86Instruction.Add,     new InstInfo(0x000001, 0x000083, 0x000081, BadOp,    0x000003, InstFlags.None));
+            Add(X86Instruction.And,     new InstInfo(0x000021, 0x040083, 0x040081, BadOp,    0x000023, InstFlags.None));
+            Add(X86Instruction.Bsr,     new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbd, InstFlags.None));
+            Add(X86Instruction.Bswap,   new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fc8, InstFlags.RegOnly));
+            Add(X86Instruction.Cmovcc,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000f40, InstFlags.None));
+            Add(X86Instruction.Cmp,     new InstInfo(0x000039, 0x070083, 0x070081, BadOp,    0x00003b, InstFlags.None));
+            Add(X86Instruction.Idiv,    new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0700f7, InstFlags.None));
+            Add(X86Instruction.Imul,    new InstInfo(BadOp,    0x00006b, 0x000069, BadOp,    0x000faf, InstFlags.None));
+            Add(X86Instruction.Mov,     new InstInfo(0x000089, BadOp,    0x0000c7, 0x0000b8, 0x00008b, InstFlags.None));
+            Add(X86Instruction.Mov16,   new InstInfo(0x000089, BadOp,    0x0000c7, BadOp,    0x00008b, InstFlags.None));
+            Add(X86Instruction.Mov8,    new InstInfo(0x000088, 0x0000c6, BadOp,    BadOp,    0x00008a, InstFlags.None));
+            Add(X86Instruction.Movsx16, new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbf, InstFlags.None));
+            Add(X86Instruction.Movsx32, new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000063, InstFlags.None));
+            Add(X86Instruction.Movsx8,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbe, InstFlags.None));
+            Add(X86Instruction.Movzx16, new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fb7, InstFlags.None));
+            Add(X86Instruction.Movzx8,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fb6, InstFlags.None));
+            Add(X86Instruction.Neg,     new InstInfo(0x0300f7, BadOp,    BadOp,    BadOp,    BadOp,    InstFlags.None));
+            Add(X86Instruction.Not,     new InstInfo(0x0200f7, BadOp,    BadOp,    BadOp,    BadOp,    InstFlags.None));
+            Add(X86Instruction.Or,      new InstInfo(0x000009, 0x010083, 0x010081, BadOp,    0x00000b, InstFlags.None));
+            Add(X86Instruction.Pop,     new InstInfo(0x00008f, BadOp,    BadOp,    BadOp,    BadOp,    InstFlags.None));
+            Add(X86Instruction.Push,    new InstInfo(BadOp,    0x00006a, 0x000068, BadOp,    0x0600ff, InstFlags.None));
+            Add(X86Instruction.Ror,     new InstInfo(0x0100d3, 0x0100c1, BadOp,    BadOp,    BadOp,    InstFlags.None));
+            Add(X86Instruction.Sar,     new InstInfo(0x0700d3, 0x0700c1, BadOp,    BadOp,    BadOp,    InstFlags.None));
+            Add(X86Instruction.Setcc,   new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000f90, InstFlags.Reg8));
+            Add(X86Instruction.Shl,     new InstInfo(0x0400d3, 0x0400c1, BadOp,    BadOp,    BadOp,    InstFlags.None));
+            Add(X86Instruction.Shr,     new InstInfo(0x0500d3, 0x0500c1, BadOp,    BadOp,    BadOp,    InstFlags.None));
+            Add(X86Instruction.Sub,     new InstInfo(0x000029, 0x050083, 0x050081, BadOp,    0x00002b, InstFlags.None));
+            Add(X86Instruction.Test,    new InstInfo(0x000085, BadOp,    0x0000f7, BadOp,    BadOp,    InstFlags.None));
+            Add(X86Instruction.Xor,     new InstInfo(0x000031, 0x060083, 0x060081, BadOp,    0x000033, InstFlags.None));
         }
 
         private static void Add(X86Instruction inst, InstInfo info)
@@ -101,6 +113,11 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Bsr);
         }
 
+        public void Bswap(Operand dest)
+        {
+            WriteInstruction(dest, null, X86Instruction.Bswap);
+        }
+
         public void Cdq()
         {
             WriteByte(0x99);
@@ -108,7 +125,9 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Cmovcc(Operand dest, Operand source, X86Condition condition)
         {
-            WriteRRMOpCode(dest, source, 0x0f40 | (int)condition);
+            InstInfo info = _instTable[(int)X86Instruction.Cmovcc];
+
+            WriteRRMOpCode(dest, source, info.Flags, info.OpRRM | (int)condition);
         }
 
         public void Cmp(Operand src1, Operand src2)
@@ -148,13 +167,13 @@ namespace ARMeilleure.CodeGen.X86
 
             if (IsImm8(src2) && info.OpRMImm8 != BadOp)
             {
-                WriteRRMOpCode(dest, src1, info.OpRMImm8);
+                WriteRRMOpCode(dest, src1, info.Flags, info.OpRMImm8);
 
-                WriteByte(src2.AsInt32());
+                WriteByte(src2.AsByte());
             }
             else if (IsImm32(src2) && info.OpRMImm32 != BadOp)
             {
-                WriteRRMOpCode(dest, src1, info.OpRMImm32);
+                WriteRRMOpCode(dest, src1, info.Flags, info.OpRMImm32);
 
                 WriteInt32(src2.AsInt32());
             }
@@ -168,14 +187,14 @@ namespace ARMeilleure.CodeGen.X86
         {
             if (ConstFitsOnS8(offset))
             {
-                WriteByte(0x70 | (int)condition);
+                WriteByte((byte)(0x70 | (int)condition));
 
                 WriteByte((byte)offset);
             }
             else if (ConstFitsOnS32(offset))
             {
                 WriteByte(0x0f);
-                WriteByte(0x80 | (int)condition);
+                WriteByte((byte)(0x80 | (int)condition));
 
                 WriteInt32((int)offset);
             }
@@ -313,7 +332,9 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Setcc(Operand dest, X86Condition condition)
         {
-            WriteOpCode(dest, null, 0x0f90 | (int)condition, rrm: false, r8h: true);
+            InstInfo info = _instTable[(int)X86Instruction.Setcc];
+
+            WriteOpCode(dest, null, info.Flags, info.OpRRM | (int)condition);
         }
 
         public void Sub(Operand dest, Operand source)
@@ -356,25 +377,25 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     if (inst == X86Instruction.Mov8)
                     {
-                        WriteOpCode(dest, null, info.OpRMImm8);
+                        WriteOpCode(dest, null, info.Flags, info.OpRMImm8);
 
-                        WriteByte(source.AsInt32());
+                        WriteByte(source.AsByte());
                     }
                     else if (inst == X86Instruction.Mov16)
                     {
-                        WriteOpCode(dest, null, info.OpRMImm32);
+                        WriteOpCode(dest, null, info.Flags, info.OpRMImm32);
 
                         WriteInt16(source.AsInt16());
                     }
                     else if (IsImm8(source) && info.OpRMImm8 != BadOp)
                     {
-                        WriteOpCode(dest, null, info.OpRMImm8);
+                        WriteOpCode(dest, null, info.Flags, info.OpRMImm8);
 
-                        WriteByte(source.AsInt32());
+                        WriteByte(source.AsByte());
                     }
                     else if (IsImm32(source) && info.OpRMImm32 != BadOp)
                     {
-                        WriteOpCode(dest, null, info.OpRMImm32);
+                        WriteOpCode(dest, null, info.Flags, info.OpRMImm32);
 
                         WriteInt32(source.AsInt32());
                     }
@@ -384,10 +405,10 @@ namespace ARMeilleure.CodeGen.X86
 
                         if (rexPrefix != 0)
                         {
-                            WriteByte(rexPrefix);
+                            WriteByte((byte)rexPrefix);
                         }
 
-                        WriteByte(info.OpRImm64 + (dest.GetRegister().Index & 0b111));
+                        WriteByte((byte)(info.OpRImm64 + (dest.GetRegister().Index & 0b111)));
 
                         WriteUInt64(source.Value);
                     }
@@ -398,20 +419,24 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else if (source.Kind == OperandKind.Register && info.OpRMR != BadOp)
                 {
-                    WriteOpCode(dest, source, info.OpRMR);
+                    WriteOpCode(dest, source, info.Flags, info.OpRMR);
                 }
                 else if (info.OpRRM != BadOp)
                 {
-                    WriteRRMOpCode(dest, source, info.OpRRM);
+                    WriteRRMOpCode(dest, source, info.Flags, info.OpRRM);
                 }
                 else
                 {
                     throw new ArgumentException($"Invalid source operand kind \"{source.Kind}\".");
                 }
             }
-            else if (info.Opers == 1)
+            else if (info.OpRRM != BadOp)
             {
-                WriteOpCode(dest, source, info.OpRMR);
+                WriteRRMOpCode(dest, source, info.Flags, info.OpRRM);
+            }
+            else if (info.OpRMR != BadOp)
+            {
+                WriteOpCode(dest, source, info.Flags, info.OpRMR);
             }
             else
             {
@@ -419,17 +444,17 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private void WriteRRMOpCode(Operand dest, Operand source, int opCode)
+        private void WriteRRMOpCode(Operand dest, Operand source, InstFlags flags, int opCode)
         {
-            WriteOpCode(dest, source, opCode, rrm: true);
+            WriteOpCode(dest, source, flags, opCode, rrm: true);
         }
 
         private void WriteOpCode(
-            Operand dest,
-            Operand source,
-            int     opCode,
-            bool    rrm = false,
-            bool    r8h = false)
+            Operand   dest,
+            Operand   source,
+            InstFlags flags,
+            int       opCode,
+            bool      rrm = false)
         {
             int rexPrefix = GetRexPrefix(dest, source, rrm);
 
@@ -445,7 +470,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     modRM |= (regIndex & 0b111) << (rrm ? 3 : 0);
 
-                    if (r8h && regIndex >= 4)
+                    if ((flags & InstFlags.Reg8) != 0 && regIndex >= 4)
                     {
                         rexPrefix |= 0x40;
                     }
@@ -552,31 +577,37 @@ namespace ARMeilleure.CodeGen.X86
 
             if (rexPrefix != 0)
             {
-                WriteByte(rexPrefix);
+                WriteByte((byte)rexPrefix);
             }
+
+            Debug.Assert(opCode != BadOp, "Invalid opcode value.");
 
             if ((opCode & 0xff00) != 0)
             {
-                WriteByte(opCode >> 8);
+                WriteByte((byte)(opCode >> 8));
             }
 
-            WriteByte(opCode);
-            WriteByte(modRM);
+            WriteByte((byte)opCode);
 
-            if (needsSibByte)
+            if ((flags & InstFlags.RegOnly) == 0)
             {
-                WriteByte(sib);
-            }
+                WriteByte((byte)modRM);
 
-            if (needsDisplacement)
-            {
-                if (ConstFitsOnS8(memOp.Displacement))
+                if (needsSibByte)
                 {
-                    WriteByte(memOp.Displacement);
+                    WriteByte((byte)sib);
                 }
-                else /* if (ConstFitsOnS32(memOp.Displacement)) */
+
+                if (needsDisplacement)
                 {
-                    WriteInt32(memOp.Displacement);
+                    if (ConstFitsOnS8(memOp.Displacement))
+                    {
+                        WriteByte((byte)memOp.Displacement);
+                    }
+                    else /* if (ConstFitsOnS32(memOp.Displacement)) */
+                    {
+                        WriteInt32(memOp.Displacement);
+                    }
                 }
             }
         }
@@ -590,7 +621,7 @@ namespace ARMeilleure.CodeGen.X86
                 WriteByte(0x41);
             }
 
-            WriteByte(opCode + (regIndex & 0b111));
+            WriteByte((byte)(opCode + (regIndex & 0b111)));
         }
 
         private static int GetRexPrefix(Operand dest, Operand source, bool rrm)
@@ -710,6 +741,11 @@ namespace ARMeilleure.CodeGen.X86
             WriteUInt64((ulong)value);
         }
 
+        private void WriteByte(byte value)
+        {
+            _stream.WriteByte(value);
+        }
+
         private void WriteUInt16(ushort value)
         {
             _stream.WriteByte((byte)(value >> 0));
@@ -734,11 +770,6 @@ namespace ARMeilleure.CodeGen.X86
             _stream.WriteByte((byte)(value >> 40));
             _stream.WriteByte((byte)(value >> 48));
             _stream.WriteByte((byte)(value >> 56));
-        }
-
-        private void WriteByte(int value)
-        {
-            _stream.WriteByte((byte)value);
         }
     }
 }
