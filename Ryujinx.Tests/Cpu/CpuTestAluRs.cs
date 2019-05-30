@@ -954,44 +954,6 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("SDIV <Xd>, <Xn>, <Xm>")]
-        public void Sdiv_64bit([Values(0u, 31u)] uint rd,
-                               [Values(1u, 31u)] uint rn,
-                               [Values(2u, 31u)] uint rm,
-                               [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn,
-                               [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xm)
-        {
-            uint opcode = 0x9AC00C00; // SDIV X0, X0, X0
-            opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
-
-            ulong x31 = TestContext.CurrentContext.Random.NextULong();
-
-            SingleOpcode(opcode, x1: xn, x2: xm, x31: x31);
-
-            CompareAgainstUnicorn();
-        }
-
-        [Test, Pairwise, Description("SDIV <Wd>, <Wn>, <Wm>")]
-        public void Sdiv_32bit([Values(0u, 31u)] uint rd,
-                               [Values(1u, 31u)] uint rn,
-                               [Values(2u, 31u)] uint rm,
-                               [Values(0x00000000u, 0x7FFFFFFFu,
-                                       0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
-                               [Values(0x00000000u, 0x7FFFFFFFu,
-                                       0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wm)
-        {
-            uint opcode = 0x1AC00C00; // SDIV W0, W0, W0
-            opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
-
-            uint w31 = TestContext.CurrentContext.Random.NextUInt();
-
-            SingleOpcode(opcode, x1: wn, x2: wm, x31: w31);
-
-            CompareAgainstUnicorn();
-        }
-
         [Test, Pairwise, Description("SUB <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
         public void Sub_64bit([Values(0u, 31u)] uint rd,
                               [Values(1u, 31u)] uint rn,
@@ -1072,44 +1034,6 @@ namespace Ryujinx.Tests.Cpu
             uint opcode = 0x6B000000; // SUBS W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcode |= ((shift & 3) << 22) | ((amount & 63) << 10);
-
-            uint w31 = TestContext.CurrentContext.Random.NextUInt();
-
-            SingleOpcode(opcode, x1: wn, x2: wm, x31: w31);
-
-            CompareAgainstUnicorn();
-        }
-
-        [Test, Pairwise, Description("UDIV <Xd>, <Xn>, <Xm>")]
-        public void Udiv_64bit([Values(0u, 31u)] uint rd,
-                               [Values(1u, 31u)] uint rn,
-                               [Values(2u, 31u)] uint rm,
-                               [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn,
-                               [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xm)
-        {
-            uint opcode = 0x9AC00800; // UDIV X0, X0, X0
-            opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
-
-            ulong x31 = TestContext.CurrentContext.Random.NextULong();
-
-            SingleOpcode(opcode, x1: xn, x2: xm, x31: x31);
-
-            CompareAgainstUnicorn();
-        }
-
-        [Test, Pairwise, Description("UDIV <Wd>, <Wn>, <Wm>")]
-        public void Udiv_32bit([Values(0u, 31u)] uint rd,
-                               [Values(1u, 31u)] uint rn,
-                               [Values(2u, 31u)] uint rm,
-                               [Values(0x00000000u, 0x7FFFFFFFu,
-                                       0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
-                               [Values(0x00000000u, 0x7FFFFFFFu,
-                                       0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wm)
-        {
-            uint opcode = 0x1AC00800; // UDIV W0, W0, W0
-            opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
 
             uint w31 = TestContext.CurrentContext.Random.NextUInt();
 
