@@ -22,7 +22,14 @@ namespace ARMeilleure.Instructions
 
             Operand d = context.IAdd(n, m);
 
-            d = context.IAdd(d, GetFlag(PState.CFlag));
+            Operand carry = GetFlag(PState.CFlag);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int64)
+            {
+                carry = context.Copy(Local(OperandType.I64), carry);
+            }
+
+            d = context.IAdd(d, carry);
 
             if (setFlags)
             {
@@ -193,6 +200,11 @@ namespace ARMeilleure.Instructions
 
             Operand borrow = context.BitwiseExclusiveOr(GetFlag(PState.CFlag), Const(1));
 
+            if (context.CurrOp.RegisterSize == RegisterSize.Int64)
+            {
+                borrow = context.Copy(Local(OperandType.I64), borrow);
+            }
+
             d = context.ISubtract(d, borrow);
 
             if (setFlags)
@@ -272,6 +284,11 @@ namespace ARMeilleure.Instructions
             IOpCodeAluRs op = (IOpCodeAluRs)context.CurrOp;
 
             Operand m = GetIntOrZR(op, op.Rm);
+
+            if (op.RegisterSize == RegisterSize.Int64)
+            {
+                m = context.Copy(Local(OperandType.I32), m);
+            }
 
             return context.BitwiseAnd(m, Const(context.CurrOp.GetBitsCount() - 1));
         }

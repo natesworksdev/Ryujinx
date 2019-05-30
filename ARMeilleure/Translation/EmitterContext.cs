@@ -91,9 +91,9 @@ namespace ARMeilleure.Translation
             return Add(Instruction.Copy, Local(a.Type), a);
         }
 
-        public void Copy(Operand d, Operand a)
+        public Operand Copy(Operand d, Operand a)
         {
-            Add(Instruction.Copy, d, a);
+            return Add(Instruction.Copy, d, a);
         }
 
         public Operand CountLeadingZeros(Operand a)

@@ -380,6 +380,8 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     throw new ArgumentException($"Invalid shift register \"{shiftReg}\".");
                 }
+
+                source = null;
             }
 
             WriteInstruction(dest, source, inst);
