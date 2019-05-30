@@ -111,6 +111,7 @@ namespace Ryujinx
                 {
                     DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
                 }
+
                 DiscordPresence.Details = $"Playing {device.System.TitleName}";
                 DiscordPresence.State = device.System.TitleID.ToUpper();
                 DiscordPresence.Assets.LargeImageText = device.System.TitleName;
