@@ -31,12 +31,14 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             Path      = LibHac.Fs.PathTools.Normalize(path);
         }
 
-        // Read(u32, u64 offset, u64 size) -> (u64 out_size, buffer<u8, 0x46, 0> out_buf)
+        // Read(u32 readOption, u64 offset, u64 size) -> (u64 out_size, buffer<u8, 0x46, 0> out_buf)
         public long Read(ServiceCtx context)
         {
             long position = context.Request.ReceiveBuff[0].Position;
 
-            long zero   = context.RequestData.ReadInt64();
+            int readOption = context.RequestData.ReadInt32();
+            context.RequestData.BaseStream.Position += 4;
+
             long offset = context.RequestData.ReadInt64();
             long size   = context.RequestData.ReadInt64();
 
@@ -51,12 +53,14 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             return 0;
         }
 
-        // Write(u32, u64 offset, u64 size, buffer<u8, 0x45, 0>)
+        // Write(u32 writeOption, u64 offset, u64 size, buffer<u8, 0x45, 0>)
         public long Write(ServiceCtx context)
         {
             long position = context.Request.SendBuff[0].Position;
 
-            long zero   = context.RequestData.ReadInt64();
+            int writeOption = context.RequestData.ReadInt32();
+            context.RequestData.BaseStream.Position += 4;
+
             long offset = context.RequestData.ReadInt64();
             long size   = context.RequestData.ReadInt64();
 

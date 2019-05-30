@@ -45,12 +45,14 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             _provider = provider;
         }
 
-        // CreateFile(u32 mode, u64 size, buffer<bytes<0x301>, 0x19, 0x301> path)
+        // CreateFile(u32 createOption, u64 size, buffer<bytes<0x301>, 0x19, 0x301> path)
         public long CreateFile(ServiceCtx context)
         {
             string name = ReadUtf8String(context);
 
-            int  mode = context.RequestData.ReadInt32();
+            int createOption = context.RequestData.ReadInt32();
+            context.RequestData.BaseStream.Position += 4;
+
             long size = context.RequestData.ReadInt64();
 
             if (name == null)
@@ -70,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             try
             {
-                _provider.CreateFile(name, size, (CreateFileOptions)mode);
+                _provider.CreateFile(name, size, (CreateFileOptions)createOption);
             }
             catch (DirectoryNotFoundException)
             {
