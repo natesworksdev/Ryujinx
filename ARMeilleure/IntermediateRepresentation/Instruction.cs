@@ -35,6 +35,8 @@ namespace ARMeilleure.IntermediateRepresentation
         LoadZx16,
         LoadZx8,
         Multiply,
+        Multiply64HighSI,
+        Multiply64HighUI,
         Negate,
         Return,
         RotateRight,

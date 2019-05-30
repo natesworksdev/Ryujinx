@@ -193,13 +193,41 @@ namespace ARMeilleure.CodeGen.X86
 
                 operation.SetSource(0, rax);
 
-                Clobber(node, X86Register.Rdx);
+                Operation clobberCopyOp = new Operation(Instruction.Copy, rdx, rdx);
+
+                node.List.AddBefore(node, clobberCopyOp);
 
                 Operation destCopyOp = new Operation(Instruction.Copy, dest, rax);
 
                 node.List.AddAfter(node, destCopyOp);
 
                 operation.Dest = rax;
+            }
+
+            //Handle the many restrictions of the i64 * i64 = i128 multiply instructions:
+            //- The multiplicand is always in RAX.
+            //- The lower 64-bits of the result is always in RAX.
+            //- The higher 64-bits of the result is always in RDX.
+            if (inst == Instruction.Multiply64HighSI || inst == Instruction.Multiply64HighUI)
+            {
+                Operand rax = Gpr(X86Register.Rax, src1.Type);
+                Operand rdx = Gpr(X86Register.Rdx, src1.Type);
+
+                Operation srcCopyOp = new Operation(Instruction.Copy, rax, src1);
+
+                node.List.AddBefore(node, srcCopyOp);
+
+                operation.SetSource(0, rax);
+
+                Operation destCopyOp = new Operation(Instruction.Copy, dest, rdx);
+
+                node.List.AddAfter(node, destCopyOp);
+
+                Operation clobberCopyOp = new Operation(Instruction.Copy, rax, rax);
+
+                node.List.AddAfter(node, clobberCopyOp);
+
+                operation.Dest = rdx;
             }
 
             //The only allowed shift register is CL.
@@ -260,15 +288,6 @@ namespace ARMeilleure.CodeGen.X86
             node.List.AddBefore(node, copyOp);
 
             return temp;
-        }
-
-        private static void Clobber(LinkedListNode<Node> node, X86Register register)
-        {
-            Operand reg = Gpr(register, OperandType.I32);
-
-            Operation copyOp = new Operation(Instruction.Copy, reg, reg);
-
-            node.List.AddBefore(node, copyOp);
         }
 
         private static bool IsLongConst(Operand operand)

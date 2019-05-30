@@ -211,6 +211,16 @@ namespace ARMeilleure.Translation
             return Add(Instruction.LoadZx8, value, address);
         }
 
+        public Operand Multiply64HighSI(Operand a, Operand b)
+        {
+            return Add(Instruction.Multiply64HighSI, Local(OperandType.I64), a, b);
+        }
+
+        public Operand Multiply64HighUI(Operand a, Operand b)
+        {
+            return Add(Instruction.Multiply64HighUI, Local(OperandType.I64), a, b);
+        }
+
         public Operand Return()
         {
             return Add(Instruction.Return);

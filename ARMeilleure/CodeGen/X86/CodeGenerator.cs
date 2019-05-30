@@ -50,6 +50,8 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.LoadZx16,                GenerateLoadZx16);
             Add(Instruction.LoadZx8,                 GenerateLoadZx8);
             Add(Instruction.Multiply,                GenerateMultiply);
+            Add(Instruction.Multiply64HighSI,        GenerateMultiply64HighSI);
+            Add(Instruction.Multiply64HighUI,        GenerateMultiply64HighUI);
             Add(Instruction.Negate,                  GenerateNegate);
             Add(Instruction.Return,                  GenerateReturn);
             Add(Instruction.RotateRight,             GenerateRotateRight);
@@ -408,6 +410,16 @@ namespace ARMeilleure.CodeGen.X86
             {
                 context.Assembler.Imul(dest, src2);
             }
+        }
+
+        private static void GenerateMultiply64HighSI(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Imul(operation.GetSource(1));
+        }
+
+        private static void GenerateMultiply64HighUI(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Mul(operation.GetSource(1));
         }
 
         private static void GenerateNegate(CodeGenContext context, Operation operation)

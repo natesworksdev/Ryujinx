@@ -66,6 +66,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Div,     new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0600f7, InstFlags.None));
             Add(X86Instruction.Idiv,    new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0700f7, InstFlags.None));
             Add(X86Instruction.Imul,    new InstInfo(BadOp,    0x00006b, 0x000069, BadOp,    0x000faf, InstFlags.None));
+            Add(X86Instruction.Imul128, new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0500f7, InstFlags.None));
             Add(X86Instruction.Mov,     new InstInfo(0x000089, BadOp,    0x0000c7, 0x0000b8, 0x00008b, InstFlags.None));
             Add(X86Instruction.Mov16,   new InstInfo(0x000089, BadOp,    0x0000c7, BadOp,    0x00008b, InstFlags.None));
             Add(X86Instruction.Mov8,    new InstInfo(0x000088, 0x0000c6, BadOp,    BadOp,    0x00008a, InstFlags.None));
@@ -74,6 +75,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Movsx8,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbe, InstFlags.None));
             Add(X86Instruction.Movzx16, new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fb7, InstFlags.None));
             Add(X86Instruction.Movzx8,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fb6, InstFlags.None));
+            Add(X86Instruction.Mul128,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0400f7, InstFlags.None));
             Add(X86Instruction.Neg,     new InstInfo(0x0300f7, BadOp,    BadOp,    BadOp,    BadOp,    InstFlags.None));
             Add(X86Instruction.Not,     new InstInfo(0x0200f7, BadOp,    BadOp,    BadOp,    BadOp,    InstFlags.None));
             Add(X86Instruction.Or,      new InstInfo(0x000009, 0x010083, 0x010081, BadOp,    0x00000b, InstFlags.None));
@@ -150,6 +152,11 @@ namespace ARMeilleure.CodeGen.X86
         public void Idiv(Operand source)
         {
             WriteInstruction(null, source, X86Instruction.Idiv);
+        }
+
+        public void Imul(Operand source)
+        {
+            WriteInstruction(null, source, X86Instruction.Imul128);
         }
 
         public void Imul(Operand dest, Operand source)
@@ -270,6 +277,11 @@ namespace ARMeilleure.CodeGen.X86
         public void Movzx8(Operand dest, Operand source)
         {
             WriteInstruction(dest, source, X86Instruction.Movzx8);
+        }
+
+        public void Mul(Operand source)
+        {
+            WriteInstruction(null, source, X86Instruction.Mul128);
         }
 
         public void Neg(Operand dest)

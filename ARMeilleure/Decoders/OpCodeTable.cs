@@ -158,7 +158,7 @@ namespace ARMeilleure.Decoders
             SetA64("x0011010110xxxxx000011xxxxxxxxxx", InstName.Sdiv,            InstEmit.Sdiv,            typeof(OpCodeDiv));
             SetA64("10011011001xxxxx0xxxxxxxxxxxxxxx", InstName.Smaddl,          InstEmit.Smaddl,          typeof(OpCodeMul));
             SetA64("10011011001xxxxx1xxxxxxxxxxxxxxx", InstName.Smsubl,          InstEmit.Smsubl,          typeof(OpCodeMul));
-            SetA64("10011011010xxxxx0xxxxxxxxxxxxxxx", InstName.Smulh,           null,                     typeof(OpCodeMul));
+            SetA64("10011011010xxxxx0xxxxxxxxxxxxxxx", InstName.Smulh,           InstEmit.Smulh,           typeof(OpCodeMul));
             SetA64("xx001000100xxxxx1xxxxxxxxxxxxxxx", InstName.Stlr,            null,                     typeof(OpCodeMemEx));
             SetA64("1x001000001xxxxx1xxxxxxxxxxxxxxx", InstName.Stlxp,           null,                     typeof(OpCodeMemEx));
             SetA64("xx001000000xxxxx1xxxxxxxxxxxxxxx", InstName.Stlxr,           null,                     typeof(OpCodeMemEx));
@@ -187,7 +187,7 @@ namespace ARMeilleure.Decoders
             SetA64("x0011010110xxxxx000010xxxxxxxxxx", InstName.Udiv,            InstEmit.Udiv,            typeof(OpCodeDiv));
             SetA64("10011011101xxxxx0xxxxxxxxxxxxxxx", InstName.Umaddl,          InstEmit.Umaddl,          typeof(OpCodeMul));
             SetA64("10011011101xxxxx1xxxxxxxxxxxxxxx", InstName.Umsubl,          InstEmit.Umsubl,          typeof(OpCodeMul));
-            SetA64("10011011110xxxxx0xxxxxxxxxxxxxxx", InstName.Umulh,           null,                     typeof(OpCodeMul));
+            SetA64("10011011110xxxxx0xxxxxxxxxxxxxxx", InstName.Umulh,           InstEmit.Umulh,           typeof(OpCodeMul));
 
             //FP & SIMD
             SetA64("0101111011100000101110xxxxxxxxxx", InstName.Abs_S,           null,                     typeof(OpCodeSimd));

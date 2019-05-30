@@ -73,5 +73,29 @@ namespace ARMeilleure.Instructions
 
             SetIntOrZR(context, op.Rd, res);
         }
+
+        public static void Smulh(EmitterContext context)
+        {
+            OpCodeMul op = (OpCodeMul)context.CurrOp;
+
+            Operand n = GetIntOrZR(op, op.Rn);
+            Operand m = GetIntOrZR(op, op.Rm);
+
+            Operand d = context.Multiply64HighSI(n, m);
+
+            SetIntOrZR(context, op.Rd, d);
+        }
+
+        public static void Umulh(EmitterContext context)
+        {
+            OpCodeMul op = (OpCodeMul)context.CurrOp;
+
+            Operand n = GetIntOrZR(op, op.Rn);
+            Operand m = GetIntOrZR(op, op.Rm);
+
+            Operand d = context.Multiply64HighUI(n, m);
+
+            SetIntOrZR(context, op.Rd, d);
+        }
     }
 }
