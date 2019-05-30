@@ -32,7 +32,7 @@ namespace ARMeilleure.Instructions
 
             if (cselOp == CselOperation.Increment)
             {
-                m = context.IAdd(m, Const(1));
+                m = context.IAdd(m, Const(m.Type, 1));
             }
             else if (cselOp == CselOperation.Invert)
             {
