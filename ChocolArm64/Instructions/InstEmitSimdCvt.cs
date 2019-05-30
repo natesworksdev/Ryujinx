@@ -82,6 +82,14 @@ namespace ChocolArm64.Instructions
 
                 EmitScalarSetF(context, op.Rd, 0);
             }
+            else if (op.Size == 1 && op.Opc == 3) // Double -> Half.
+            {
+                throw new NotImplementedException("Double-precision to half-precision.");
+            }
+            else if (op.Size == 3 && op.Opc == 1) // Double -> Half.
+            {
+                throw new NotImplementedException("Half-precision to double-precision.");
+            }
             else // Invalid encoding.
             {
                 throw new InvalidOperationException($"type == {op.Size} && opc == {op.Opc}");
