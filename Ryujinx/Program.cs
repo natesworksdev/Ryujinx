@@ -36,12 +36,12 @@ namespace Ryujinx
 
             if (device.System.State.DiscordIntergrationEnabled == true)
             {
-                DiscordClient = new DiscordRpcClient("568815339807309834");
+                DiscordClient   = new DiscordRpcClient("568815339807309834");
                 DiscordPresence = new RichPresence
                 {
                     Assets = new Assets
                     {
-                        LargeImageKey = "ryujinx",
+                        LargeImageKey  = "ryujinx",
                         LargeImageText = "Ryujinx is an emulator for the Nintendo Switch"
                     }
                 };
@@ -112,12 +112,12 @@ namespace Ryujinx
                     DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
                 }
 
-                DiscordPresence.Details = $"Playing {device.System.TitleName}";
-                DiscordPresence.State = device.System.TitleID.ToUpper();
+                DiscordPresence.Details               = $"Playing {device.System.TitleName}";
+                DiscordPresence.State                 = device.System.TitleID.ToUpper();
                 DiscordPresence.Assets.LargeImageText = device.System.TitleName;
-                DiscordPresence.Assets.SmallImageKey = "ryujinx";
+                DiscordPresence.Assets.SmallImageKey  = "ryujinx";
                 DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
-                DiscordPresence.Timestamps = new Timestamps(DateTime.UtcNow);
+                DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
 
                 DiscordClient.SetPresence(DiscordPresence);
             }
