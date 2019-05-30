@@ -70,6 +70,7 @@ namespace Ryujinx.Tests.Cpu
             Marshal.FreeHGlobal(_ramPointer);
             _memory     = null;
             _context    = null;
+            _translator = null;
             _unicornEmu = null;
         }
 
@@ -120,12 +121,12 @@ namespace Ryujinx.Tests.Cpu
 
             _context.SetX(31, x31);
 
-            _context.SetV(0, v0);
-            _context.SetV(1, v1);
-            _context.SetV(2, v2);
-            _context.SetV(3, v3);
-            _context.SetV(4, v4);
-            _context.SetV(5, v5);
+            _context.SetV(0,  v0);
+            _context.SetV(1,  v1);
+            _context.SetV(2,  v2);
+            _context.SetV(3,  v3);
+            _context.SetV(4,  v4);
+            _context.SetV(5,  v5);
             _context.SetV(30, v30);
             _context.SetV(31, v31);
 
@@ -171,7 +172,7 @@ namespace Ryujinx.Tests.Cpu
 
             if (_unicornAvailable)
             {
-                _unicornEmu.RunForCount((ulong)(_currAddress - _entryPoint - 8) / 4);
+                _unicornEmu.RunForCount((ulong)(_currAddress - _entryPoint - 4) / 4);
             }
         }
 
@@ -196,16 +197,7 @@ namespace Ryujinx.Tests.Cpu
                                                 int   fpcr     = 0,
                                                 int   fpsr     = 0)
         {
-            /*using (System.IO.FileStream fs = new System.IO.FileStream("D:\\code.bin", System.IO.FileMode.Create))
-            {
-                System.IO.BinaryWriter bw = new System.IO.BinaryWriter(fs);
-
-                bw.Write(opcode);
-                bw.Write(0xD65F03C0);
-            }*/
-
             Opcode(opcode);
-            Opcode(0xD4200000); // BRK #0
             Opcode(0xD65F03C0); // RET
             SetContext(x0, x1, x2, x3, x31, v0, v1, v2, v3, v4, v5, v30, v31, overflow, carry, zero, negative, fpcr, fpsr);
             ExecuteOpcodes();
