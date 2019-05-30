@@ -83,7 +83,7 @@ namespace ARMeilleure.Translation
 
         public Operand ConditionalSelect(Operand a, Operand b, Operand c)
         {
-            return Add(Instruction.ConditionalSelect, Local(a.Type), a, b, c);
+            return Add(Instruction.ConditionalSelect, Local(b.Type), a, b, c);
         }
 
         public Operand Copy(Operand a)
