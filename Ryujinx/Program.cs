@@ -1,4 +1,5 @@
-﻿using Ryujinx.Audio;
+﻿using DiscordRPC;
+using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
@@ -6,7 +7,6 @@ using Ryujinx.HLE;
 using System;
 using System.IO;
 using System.Linq;
-using DiscordRPC;
 
 namespace Ryujinx
 {
@@ -22,22 +22,6 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
-            DiscordClient = new DiscordRpcClient("568815339807309834");
-            DiscordPresence = new RichPresence
-            {
-                Assets = new Assets
-                {
-                    LargeImageKey = "ryujinx",
-                    LargeImageText = "Ryujinx"
-                },
-                Timestamps = new Timestamps(DateTime.UtcNow),
-                Details = "Ryujinx Console",
-                State = "Reading the console logs..."
-            };
-
-            DiscordClient.Initialize();
-            DiscordClient.SetPresence(DiscordPresence);
-
             IGalRenderer renderer = new OglRenderer();
 
             IAalOutput audioOut = InitializeAudioEngine();
@@ -49,6 +33,22 @@ namespace Ryujinx
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
+
+            if (device.System.State.EnableRichPresence == true)
+            {
+                DiscordClient = new DiscordRpcClient("568815339807309834");
+                DiscordPresence = new RichPresence
+                {
+                    Assets = new Assets
+                    {
+                        LargeImageKey = "ryujinx",
+                        LargeImageText = "Ryujinx is an emulator for the Nintendo Switch"
+                    }
+                };
+
+                DiscordClient.Initialize();
+                DiscordClient.SetPresence(DiscordPresence);
+            }
 
             if (args.Length == 1)
             {
@@ -105,18 +105,21 @@ namespace Ryujinx
                 Logger.PrintWarning(LogClass.Application, "Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
             }
 
-            if (File.ReadAllLines(Path.Combine(ApplicationDirectory, "RPsupported.dat")).Contains(device.System.TitleID))
+            if (device.System.State.EnableRichPresence == true)
             {
-                DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
+                if (File.ReadAllLines(Path.Combine(ApplicationDirectory, "RPsupported.dat")).Contains(device.System.TitleID))
+                {
+                    DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
+                }
+                DiscordPresence.Details = $"Playing {device.System.TitleName}";
+                DiscordPresence.State = device.System.TitleID.ToUpper();
                 DiscordPresence.Assets.LargeImageText = device.System.TitleName;
-            }
-            DiscordPresence.Details = string.IsNullOrWhiteSpace(device.System.TitleName) ? $"Playing {device.System.TitleID.ToUpper()}" : $"Playing {device.System.TitleName}";
-            DiscordPresence.State = device.System.TitleID.ToUpper();
-            DiscordPresence.Assets.SmallImageKey = "ryujinx";
-            DiscordPresence.Assets.SmallImageText = "Ryujinx";
-            DiscordPresence.Timestamps = new Timestamps(DateTime.UtcNow);
+                DiscordPresence.Assets.SmallImageKey = "ryujinx";
+                DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
+                DiscordPresence.Timestamps = new Timestamps(DateTime.UtcNow);
 
-            DiscordClient.SetPresence(DiscordPresence);
+                DiscordClient.SetPresence(DiscordPresence);
+            }
 
             using (GlScreen screen = new GlScreen(device, renderer))
             {

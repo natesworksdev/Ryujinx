@@ -608,6 +608,7 @@ namespace Ryujinx.HLE.HOS
             ContentManager.LoadEntries();
 
             TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
+            TitleName = metaData.TitleName;
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }

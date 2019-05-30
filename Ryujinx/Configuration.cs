@@ -73,6 +73,11 @@ namespace Ryujinx
         public bool DockedMode { get; private set; }
 
         /// <summary>
+        /// Enables or disables Discord Rich Presense
+        /// </summary>
+        public bool EnablePresence { get; private set; }
+
+        /// <summary>
         /// Enables or disables Vertical Sync
         /// </summary>
         public bool EnableVsync { get; private set; }
@@ -192,6 +197,8 @@ namespace Ryujinx
                     Logger.SetEnable(logClass, true);
                 }
             }
+
+            device.System.State.EnableRichPresence = Instance.EnablePresence;
 
             device.EnableDeviceVsync = Instance.EnableVsync;
 
