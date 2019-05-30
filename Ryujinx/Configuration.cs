@@ -75,7 +75,7 @@ namespace Ryujinx
         /// <summary>
         /// Enables or disables Discord Rich Presense
         /// </summary>
-        public bool EnablePresence { get; private set; }
+        public bool EnableDiscordIntergration { get; private set; }
 
         /// <summary>
         /// Enables or disables Vertical Sync
@@ -198,7 +198,7 @@ namespace Ryujinx
                 }
             }
 
-            device.System.State.EnableRichPresence = Instance.EnablePresence;
+            device.System.State.DiscordIntergrationEnabled = Instance.EnableDiscordIntergration;
 
             device.EnableDeviceVsync = Instance.EnableVsync;
 
