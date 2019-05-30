@@ -375,8 +375,8 @@ namespace Ryujinx.HLE.HOS
                 return;
             }
 
-            IStorage dataStorage = null;
-            IFileSystem codeFs = null;
+            IStorage    dataStorage = null;
+            IFileSystem codeFs      = null;
 
             if (patchNca == null)
             {

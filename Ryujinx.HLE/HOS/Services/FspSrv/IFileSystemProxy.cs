@@ -236,8 +236,8 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
         private long OpenNsp(ServiceCtx context, string pfsPath)
         {
-            LocalStorage storage    = new LocalStorage(pfsPath, FileAccess.Read, FileMode.Open);
-            PartitionFileSystem nsp = new PartitionFileSystem(storage);
+            LocalStorage        storage = new LocalStorage(pfsPath, FileAccess.Read, FileMode.Open);
+            PartitionFileSystem nsp     = new PartitionFileSystem(storage);
 
             ImportTitleKeysFromNsp(nsp, context.Device.System.KeySet);
             
