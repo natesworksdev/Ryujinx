@@ -32,7 +32,7 @@
     // Enable or disable Docked Mode
     "docked_mode": false,
 
-	// Enable or disable Discord Rich Presense
+    // Enable or disable Discord Rich Presense
     "enable_discord_intergration": true,
 
     // Enable or disable Game Vsync
