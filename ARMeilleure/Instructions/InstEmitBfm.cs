@@ -25,11 +25,11 @@ namespace ARMeilleure.Instructions
 
                 int width = op.Pos + 1;
 
-                ulong mask = ulong.MaxValue >> (64 - width);
+                long mask = (long)(ulong.MaxValue >> (64 - width));
 
-                res = context.ShiftLeft(context.BitwiseAnd(n, Const(mask)), Const(shift));
+                res = context.ShiftLeft(context.BitwiseAnd(n, Const(n.Type, mask)), Const(shift));
 
-                res = context.BitwiseOr(res, context.BitwiseAnd(d, Const(~(mask << shift))));
+                res = context.BitwiseOr(res, context.BitwiseAnd(d, Const(d.Type, ~(mask << shift))));
             }
             else
             {
@@ -38,14 +38,14 @@ namespace ARMeilleure.Instructions
 
                 int width = op.Pos - shift + 1;
 
-                ulong mask = ulong.MaxValue >> (64 - width);
+                long mask = (long)(ulong.MaxValue >> (64 - width));
 
-                res = context.BitwiseAnd(context.ShiftRightUI(n, Const(shift)), Const(mask));
+                res = context.BitwiseAnd(context.ShiftRightUI(n, Const(shift)), Const(n.Type, mask));
 
-                res = context.BitwiseOr(res, context.BitwiseAnd(d, Const(~mask)));
+                res = context.BitwiseOr(res, context.BitwiseAnd(d, Const(d.Type, ~mask)));
             }
 
-            context.Copy(d, res);
+            SetIntOrZR(context, op.Rd, res);
         }
 
         public static void Sbfm(EmitterContext context)
@@ -86,7 +86,7 @@ namespace ARMeilleure.Instructions
 
                 res = context.ShiftLeft   (res, Const(bitsCount - 1 - op.Pos));
                 res = context.ShiftRightSI(res, Const(bitsCount - 1));
-                res = context.BitwiseAnd  (res, Const(~op.TMask));
+                res = context.BitwiseAnd  (res, Const(res.Type, ~op.TMask));
 
                 Operand n2 = GetBfmN(context);
 
@@ -114,13 +114,13 @@ namespace ARMeilleure.Instructions
             {
                 Operand n = GetIntOrZR(op, op.Rn);
 
-                SetIntOrZR(context, op.Rd, context.BitwiseAnd(n, Const(0xff)));
+                SetIntOrZR(context, op.Rd, context.BitwiseAnd(n, Const(n.Type, 0xff)));
             }
             else if (op.Pos == 15 && op.Shift == 0)
             {
                 Operand n = GetIntOrZR(op, op.Rn);
 
-                SetIntOrZR(context, op.Rd, context.BitwiseAnd(n, Const(0xffff)));
+                SetIntOrZR(context, op.Rd, context.BitwiseAnd(n, Const(n.Type, 0xffff)));
             }
             else
             {
@@ -190,7 +190,7 @@ namespace ARMeilleure.Instructions
 
             long mask = op.WMask & op.TMask;
 
-            return context.BitwiseAnd(context.RotateRight(res, Const(op.Shift)), Const(mask));
+            return context.BitwiseAnd(context.RotateRight(res, Const(op.Shift)), Const(res.Type, mask));
         }
     }
 }
