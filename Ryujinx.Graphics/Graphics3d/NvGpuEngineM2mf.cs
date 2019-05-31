@@ -39,7 +39,8 @@ namespace Ryujinx.Graphics.Graphics3d
             if (_methods.TryGetValue(methCall.Method, out NvGpuMethod method))
             {
                 ProfileConfig profile = Profiles.GPU.EngineM2mf.CallMethod;
-                profile.SessionItem   = method.Method.Name;
+
+                profile.SessionItem = method.Method.Name;
 
                 Profile.Begin(profile);
                 method(vmm, methCall);

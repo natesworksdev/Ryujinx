@@ -91,7 +91,9 @@ namespace Ryujinx.Graphics.Graphics3d
             if (_methods.TryGetValue(methCall.Method, out NvGpuMethod method))
             {
                 ProfileConfig profile = Profiles.GPU.Engine3d.CallMethod;
+
                 profile.SessionItem = method.Method.Name;
+
                 Profile.Begin(profile);
 
                 method(vmm, methCall);
@@ -202,7 +204,9 @@ namespace Ryujinx.Graphics.Graphics3d
         private void SetFrameBuffer(NvGpuVmm vmm, int fbIndex)
         {
             ProfileConfig profile = Profiles.GPU.Engine3d.SetFrameBuffer;
-            profile.SessionItem   = fbIndex.ToString();
+
+            profile.SessionItem = fbIndex.ToString();
+
             Profile.Begin(profile);
 
             long va = MakeInt64From2xInt32(NvGpuEngine3dReg.FrameBufferNAddress + fbIndex * 0x10);

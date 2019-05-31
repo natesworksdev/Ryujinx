@@ -120,7 +120,7 @@ namespace Ryujinx.Profiler
             {
                 public static ProfileConfig CallMethod = new ProfileConfig()
                 {
-                    Category = "GPU.Engine3D",
+                    Category     = "GPU.Engine3D",
                     SessionGroup = "CallMethod",
                 };
 
