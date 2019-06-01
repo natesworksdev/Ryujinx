@@ -218,6 +218,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 _gpu.Renderer.RenderTarget.UnbindColor(fbIndex);
 
                 Profile.End(profile);
+
                 return;
             }
 
@@ -297,6 +298,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 _gpu.Renderer.RenderTarget.UnbindZeta();
 
                 Profile.End(Profiles.GPU.Engine3d.SetZeta);
+
                 return;
             }
 
