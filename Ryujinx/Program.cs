@@ -53,7 +53,11 @@ namespace Ryujinx
                 DiscordClient.SetPresence(DiscordPresence);
             }
 
-            if (args.Length == 1)
+            if (args.Length == 0)
+            {
+                MainMenU.MainMenu(device);
+            }
+            else
             {
                 if (Directory.Exists(args[0]))
                 {
@@ -103,10 +107,6 @@ namespace Ryujinx
                     Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file");
                 }
             }
-            else
-            {
-                Logger.PrintWarning(LogClass.Application, "Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
-            }
 
             if (device.System.State.DiscordIntegrationEnabled == true)
             {
@@ -116,7 +116,7 @@ namespace Ryujinx
                 }
 
                 DiscordPresence.Details               = $"Playing {device.System.TitleName}";
-                DiscordPresence.State                 = device.System.TitleID.ToUpper();
+                DiscordPresence.State                 = string.IsNullOrWhiteSpace(device.System.TitleID) ? string.Empty : device.System.TitleID.ToUpper();
                 DiscordPresence.Assets.LargeImageText = device.System.TitleName;
                 DiscordPresence.Assets.SmallImageKey  = "ryujinx";
                 DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
