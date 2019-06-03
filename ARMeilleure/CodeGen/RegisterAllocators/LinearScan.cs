@@ -70,13 +70,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        public RAReport RunPass(ControlFlowGraph cfg, RegisterMasks regMasks)
+        public AllocationResult RunPass(ControlFlowGraph cfg, RegisterMasks regMasks)
         {
             PhiFunctions.Remove(cfg);
 
             NumberLocals(cfg);
 
-            BuildIntervals(cfg);
+            BuildIntervals(cfg, regMasks, out int maxCallArgs);
 
             //CoalesceCopies(cfg.Blocks);
 
@@ -113,7 +113,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             InsertSplitCopies();
             InsertSplitCopiesAtEdges(cfg);
 
-            return new RAReport(context.UsedRegisters);
+            return new AllocationResult(context.UsedRegisters, context.StackAlloc.TotalSize, maxCallArgs);
         }
 
         private void AllocateInterval(AllocationContext context, LiveInterval current, int cIndex)
@@ -806,8 +806,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             _parentIntervals = _intervals.ToArray();
         }
 
-        private void BuildIntervals(ControlFlowGraph cfg)
+        private void BuildIntervals(ControlFlowGraph cfg, RegisterMasks regMasks, out int maxCallArgs)
         {
+            maxCallArgs = 0;
+
             _blockRanges = new LiveRange[cfg.Blocks.Count];
 
             int mapSize = _intervals.Count + RegistersCount;
@@ -934,6 +936,27 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         interval.SetStart(operationPos);
                         interval.AddUsePosition(operationPos);
+                    }
+
+                    if (node is Operation operation && operation.Inst == Instruction.Call)
+                    {
+                        int callerSavedRegs = regMasks.IntCallerSavedRegisters;
+
+                        while (callerSavedRegs != 0)
+                        {
+                            int callerSavedReg = BitUtils.LowestBitSet(callerSavedRegs);
+
+                            LiveInterval interval = _intervals[callerSavedReg];
+
+                            interval.AddRange(operationPos, operationPos + 1);
+
+                            callerSavedRegs &= ~(1 << callerSavedReg);
+                        }
+
+                        if (maxCallArgs < operation.SourcesCount - 1)
+                        {
+                            maxCallArgs = operation.SourcesCount - 1;
+                        }
                     }
                 }
             }

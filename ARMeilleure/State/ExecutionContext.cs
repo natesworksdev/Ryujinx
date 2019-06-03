@@ -8,6 +8,10 @@ namespace ARMeilleure.State
 
         internal IntPtr NativeContextPtr => _nativeContext.BasePtr;
 
+        public event EventHandler<InstExceptionEventArgs> Break;
+        public event EventHandler<InstExceptionEventArgs> SupervisorCall;
+        public event EventHandler<InstUndefinedEventArgs> Undefined;
+
         public ExecutionContext()
         {
             _nativeContext = new NativeContext();
@@ -21,6 +25,21 @@ namespace ARMeilleure.State
 
         public bool GetPstateFlag(PState flag)             => _nativeContext.GetPstateFlag(flag);
         public void SetPstateFlag(PState flag, bool value) => _nativeContext.SetPstateFlag(flag, value);
+
+        internal void OnBreak(ulong address, int imm)
+        {
+            Break?.Invoke(this, new InstExceptionEventArgs(address, imm));
+        }
+
+        internal void OnSupervisorCall(ulong address, int imm)
+        {
+            SupervisorCall?.Invoke(this, new InstExceptionEventArgs(address, imm));
+        }
+
+        internal void OnUndefined(ulong address, int opCode)
+        {
+            Undefined?.Invoke(this, new InstUndefinedEventArgs(address, opCode));
+        }
 
         public void Dispose()
         {

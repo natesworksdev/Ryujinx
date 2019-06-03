@@ -6,6 +6,7 @@ namespace ARMeilleure.CodeGen.X86
         And,
         Bsr,
         Bswap,
+        Call,
         Cmovcc,
         Cmp,
         Div,

@@ -14,7 +14,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitDiv(EmitterContext context, bool unsigned)
         {
-            OpCodeDiv op = (OpCodeDiv)context.CurrOp;
+            OpCodeAluBinary op = (OpCodeAluBinary)context.CurrOp;
 
             //If Rm == 0, Rd = 0 (division by zero).
             Operand n = GetIntOrZR(op, op.Rn);

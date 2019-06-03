@@ -5,6 +5,7 @@ using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using System;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -25,6 +26,8 @@ namespace ARMeilleure.Translation
 
         public void Execute(ExecutionContext context, ulong address)
         {
+            NativeInterface.RegisterThread(context);
+
             do
             {
                 TranslatedFunction func = Translate(address, ExecutionMode.Aarch64);
@@ -32,6 +35,8 @@ namespace ARMeilleure.Translation
                 address = func.Execute(context);
             }
             while (address != 0);
+
+            NativeInterface.UnregisterThread();
         }
 
         private TranslatedFunction Translate(ulong address, ExecutionMode mode)
@@ -99,7 +104,7 @@ namespace ARMeilleure.Translation
                     }
                     else
                     {
-                        System.Console.WriteLine("unimpl " + opCode.Instruction.Name + " at 0x" + opCode.Address.ToString("X16"));
+                        throw new InvalidOperationException($"Invalid instruction \"{opCode.Instruction.Name}\".");
                     }
 
                     if (lblPredicateSkip != null)

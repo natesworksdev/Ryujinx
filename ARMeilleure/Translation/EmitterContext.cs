@@ -1,7 +1,9 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -79,6 +81,61 @@ namespace ARMeilleure.Translation
         public Operand ByteSwap(Operand a)
         {
             return Add(Instruction.ByteSwap, Local(a.Type), a);
+        }
+
+        public Operand Call(MethodInfo info, params Operand[] callArgs)
+        {
+            long methodPtr = info.MethodHandle.GetFunctionPointer().ToInt64();
+
+            Operand[] args = new Operand[callArgs.Length + 1];
+
+            args[0] = Const(methodPtr);
+
+            Array.Copy(callArgs, 0, args, 1, callArgs.Length);
+
+            if (info.ReturnType != typeof(void))
+            {
+                OperandType returnType = GetOperandType(info.ReturnType);
+
+                return Add(Instruction.Call, Local(returnType), args);
+            }
+            else
+            {
+                return Add(Instruction.Call, null, args);
+            }
+        }
+
+        private static OperandType GetOperandType(Type type)
+        {
+            switch (Type.GetTypeCode(type))
+            {
+                case TypeCode.Boolean:
+                case TypeCode.Char:
+                case TypeCode.Byte:
+                case TypeCode.SByte:
+                case TypeCode.UInt16:
+                case TypeCode.Int16:
+                case TypeCode.UInt32:
+                case TypeCode.Int32:
+                    return OperandType.I32;
+
+                case TypeCode.UInt64:
+                case TypeCode.Int64:
+                    return OperandType.I64;
+
+                case TypeCode.Single:
+                    return OperandType.FP32;
+
+                case TypeCode.Double:
+                    return OperandType.FP64;
+            }
+
+            throw new ArgumentException($"Invalid type \"{type.Name}\".");
+        }
+
+        public Operand Call(OperandType returnType, params Operand[] callArgs)
+        {
+            return Add(Instruction.Call, Local(returnType), callArgs);
         }
 
         public Operand ConditionalSelect(Operand a, Operand b, Operand c)

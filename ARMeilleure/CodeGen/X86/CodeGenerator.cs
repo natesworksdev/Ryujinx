@@ -26,6 +26,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.BranchIfFalse,           GenerateBranchIfFalse);
             Add(Instruction.BranchIfTrue,            GenerateBranchIfTrue);
             Add(Instruction.ByteSwap,                GenerateByteSwap);
+            Add(Instruction.Call,                    GenerateCall);
             Add(Instruction.CompareEqual,            GenerateCompareEqual);
             Add(Instruction.CompareGreater,          GenerateCompareGreater);
             Add(Instruction.CompareGreaterOrEqual,   GenerateCompareGreaterOrEqual);
@@ -62,6 +63,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.SignExtend32,            GenerateSignExtend32);
             Add(Instruction.SignExtend8,             GenerateSignExtend8);
             Add(Instruction.Spill,                   GenerateSpill);
+            Add(Instruction.SpillArg,                GenerateSpillArg);
             Add(Instruction.Store,                   GenerateStore);
             Add(Instruction.Store16,                 GenerateStore16);
             Add(Instruction.Store8,                  GenerateStore8);
@@ -82,13 +84,14 @@ namespace ARMeilleure.CodeGen.X86
 
             RegisterMasks regMasks = new RegisterMasks(
                 CallingConvention.GetIntAvailableRegisters(),
+                CallingConvention.GetIntCallerSavedRegisters(),
                 CallingConvention.GetIntCalleeSavedRegisters());
 
-            RAReport raReport = regAlloc.RunPass(cfg, regMasks);
+            AllocationResult allocResult = regAlloc.RunPass(cfg, regMasks);
 
             using (MemoryStream stream = new MemoryStream())
             {
-                CodeGenContext context = new CodeGenContext(stream, raReport, cfg.Blocks.Count);
+                CodeGenContext context = new CodeGenContext(stream, allocResult, cfg.Blocks.Count);
 
                 WritePrologue(context);
 
@@ -121,7 +124,7 @@ namespace ARMeilleure.CodeGen.X86
             }
             else
             {
-                throw new ArgumentException($"Invalid operation instruction \"{operation.Inst}\".");
+                throw new ArgumentException($"Invalid instruction \"{operation.Inst}\".");
             }
         }
 
@@ -180,6 +183,11 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateByteSwap(CodeGenContext context, Operation operation)
         {
             context.Assembler.Bswap(operation.Dest);
+        }
+
+        private static void GenerateCall(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Call(operation.GetSource(0));
         }
 
         private static void GenerateCompareEqual(CodeGenContext context, Operation operation)
@@ -344,7 +352,9 @@ namespace ARMeilleure.CodeGen.X86
                 throw new InvalidOperationException("Fill has non-constant stack offset.");
             }
 
-            X86MemoryOperand memOp = new X86MemoryOperand(dest.Type, Register(X86Register.Rsp), null, Scale.x1, offset.AsInt32());
+            int offs = offset.AsInt32() + context.CallArgsRegionSize;
+
+            X86MemoryOperand memOp = new X86MemoryOperand(dest.Type, Register(X86Register.Rsp), null, Scale.x1, offs);
 
             context.Assembler.Mov(dest, memOp);
         }
@@ -491,7 +501,26 @@ namespace ARMeilleure.CodeGen.X86
                 throw new InvalidOperationException("Spill has non-constant stack offset.");
             }
 
-            X86MemoryOperand memOp = new X86MemoryOperand(source.Type, Register(X86Register.Rsp), null, Scale.x1, offset.AsInt32());
+            int offs = offset.AsInt32() + context.CallArgsRegionSize;
+
+            X86MemoryOperand memOp = new X86MemoryOperand(source.Type, Register(X86Register.Rsp), null, Scale.x1, offs);
+
+            context.Assembler.Mov(memOp, source);
+        }
+
+        private static void GenerateSpillArg(CodeGenContext context, Operation operation)
+        {
+            Operand offset = operation.GetSource(0);
+            Operand source = operation.GetSource(1);
+
+            if (offset.Kind != OperandKind.Constant)
+            {
+                throw new InvalidOperationException("Spill has non-constant stack offset.");
+            }
+
+            int offs = offset.AsInt32();
+
+            X86MemoryOperand memOp = new X86MemoryOperand(source.Type, Register(X86Register.Rsp), null, Scale.x1, offs);
 
             context.Assembler.Mov(memOp, source);
         }
@@ -575,7 +604,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void WritePrologue(CodeGenContext context)
         {
-            int mask = CallingConvention.GetIntCalleeSavedRegisters() & context.RAReport.UsedRegisters;
+            int mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.UsedRegisters;
 
             mask |= 1 << (int)X86Register.Rbp;
 
@@ -587,13 +616,27 @@ namespace ARMeilleure.CodeGen.X86
 
                 mask &= ~(1 << bit);
             }
+
+            int reservedStackSize = context.CallArgsRegionSize + context.AllocResult.SpillRegionSize;
+
+            if (reservedStackSize != 0)
+            {
+                context.Assembler.Sub(Register(X86Register.Rsp), new Operand(reservedStackSize));
+            }
         }
 
         private static void WriteEpilogue(CodeGenContext context)
         {
-            int mask = CallingConvention.GetIntCalleeSavedRegisters() & context.RAReport.UsedRegisters;
+            int mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.UsedRegisters;
 
             mask |= 1 << (int)X86Register.Rbp;
+
+            int reservedStackSize = context.CallArgsRegionSize + context.AllocResult.SpillRegionSize;
+
+            if (reservedStackSize != 0)
+            {
+                context.Assembler.Add(Register(X86Register.Rsp), new Operand(reservedStackSize));
+            }
 
             while (mask != 0)
             {

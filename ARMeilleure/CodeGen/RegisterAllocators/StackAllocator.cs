@@ -7,6 +7,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 {
     class StackAllocator
     {
+        public int TotalSize { get; private set; }
+
         private List<ulong> _masks;
 
         public StackAllocator()
@@ -44,7 +46,16 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         SetFreeMask(index, free);
 
-                        return -((index * 32 + freeBit) * 4 + sizeInWords * 4);
+                        int offset = (index * 32 + freeBit) * 4;
+
+                        int size = offset + sizeInWords * 4;
+
+                        if (TotalSize < size)
+                        {
+                            TotalSize = size;
+                        }
+
+                        return offset;
                     }
 
                     free &= ~useMask;

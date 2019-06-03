@@ -1,4 +1,5 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
+using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,11 +13,13 @@ namespace ARMeilleure.CodeGen.X86
 
         private Stream _stream;
 
-        public RAReport RAReport { get; }
+        public AllocationResult AllocResult { get; }
 
         public Assembler Assembler { get; }
 
         public BasicBlock CurrBlock { get; private set; }
+
+        public int CallArgsRegionSize { get; }
 
         private struct Jump
         {
@@ -65,17 +68,62 @@ namespace ARMeilleure.CodeGen.X86
         private long         _jNearPosition;
         private int          _jNearLength;
 
-        public CodeGenContext(Stream stream, RAReport raReport, int blocksCount)
+        public CodeGenContext(Stream stream, AllocationResult allocResult, int blocksCount)
         {
             _stream = stream;
 
-            RAReport = raReport;
+            AllocResult = allocResult;
 
             Assembler = new Assembler(stream);
+
+            CallArgsRegionSize = GetCallArgsRegionSize(allocResult);
 
             _blockOffsets = new long[blocksCount];
 
             _jumps = new List<Jump>();
+        }
+
+        private int GetCallArgsRegionSize(AllocationResult allocResult)
+        {
+            //We need to add 8 bytes to the total size, as the call to this
+            //function already pushed 8 bytes (the return address).
+            int mask = CallingConvention.GetIntCalleeSavedRegisters() & allocResult.UsedRegisters;
+
+            mask |= 1 << (int)X86Register.Rbp;
+
+            int calleeSaveRegionSize = CountBits(mask) * 8 + 8;
+
+            int argsCount = allocResult.MaxCallArgs;
+
+            //The ABI mandates that the space for at least 4 arguments
+            //is reserved on the stack (this is called shadow space).
+            if (argsCount < 4)
+            {
+                argsCount = 4;
+            }
+
+            int frameSize = calleeSaveRegionSize + allocResult.SpillRegionSize;
+
+            int callArgsAndFrameSize = frameSize + argsCount * 8;
+
+            //Ensure that the Stack Pointer will be aligned to 16 bytes.
+            callArgsAndFrameSize = (callArgsAndFrameSize + 0xf) & ~0xf;
+
+            return callArgsAndFrameSize - frameSize;
+        }
+
+        private static int CountBits(int mask)
+        {
+            int count = 0;
+
+            while (mask != 0)
+            {
+                mask &= ~(1 << BitUtils.LowestBitSet(mask));
+
+                count++;
+            }
+
+            return count;
         }
 
         public void EnterBlock(BasicBlock block)

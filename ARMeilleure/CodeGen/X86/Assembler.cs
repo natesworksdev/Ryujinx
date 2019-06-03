@@ -61,6 +61,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.And,     new InstInfo(0x000021, 0x040083, 0x040081, BadOp,    0x000023, InstFlags.None));
             Add(X86Instruction.Bsr,     new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fbd, InstFlags.None));
             Add(X86Instruction.Bswap,   new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000fc8, InstFlags.RegOnly));
+            Add(X86Instruction.Call,    new InstInfo(0x0200ff, BadOp,    BadOp,    BadOp,    BadOp,    InstFlags.None));
             Add(X86Instruction.Cmovcc,  new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x000f40, InstFlags.None));
             Add(X86Instruction.Cmp,     new InstInfo(0x000039, 0x070083, 0x070081, BadOp,    0x00003b, InstFlags.None));
             Add(X86Instruction.Div,     new InstInfo(BadOp,    BadOp,    BadOp,    BadOp,    0x0600f7, InstFlags.None));
@@ -119,6 +120,11 @@ namespace ARMeilleure.CodeGen.X86
         public void Bswap(Operand dest)
         {
             WriteInstruction(dest, null, X86Instruction.Bswap);
+        }
+
+        public void Call(Operand dest)
+        {
+            WriteInstruction(dest, null, X86Instruction.Call);
         }
 
         public void Cdq()

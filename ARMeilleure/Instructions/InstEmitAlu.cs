@@ -2,7 +2,6 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
-using System;
 
 using static ARMeilleure.Instructions.InstEmitAluHelper;
 using static ARMeilleure.Instructions.InstEmitHelper;
@@ -253,18 +252,47 @@ namespace ARMeilleure.Instructions
             SetAluD(context, context.BitwiseOr(GetAluN(context), GetAluM(context)));
         }
 
+        public static void Rbit(EmitterContext context) => EmitCall32_64(context,
+            nameof(SoftFallback.ReverseBits32),
+            nameof(SoftFallback.ReverseBits64));
+
+        public static void Rev16(EmitterContext context) => EmitCall32_64(context,
+            nameof(SoftFallback.ReverseBytes16_32),
+            nameof(SoftFallback.ReverseBytes16_64));
+
         public static void Rev32(EmitterContext context)
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
+            Operand n = GetIntOrZR(op, op.Rn);
+
             if (op.RegisterSize == RegisterSize.Int32)
             {
-                SetAluDOrZR(context, context.ByteSwap(GetIntOrZR(op, op.Rn)));
+                SetAluDOrZR(context, context.ByteSwap(n));
             }
             else
             {
-                throw new NotImplementedException();
+                EmitCall32_64(context, null, nameof(SoftFallback.ReverseBytes32_64));
             }
+        }
+
+        private static void EmitCall32_64(EmitterContext context, string name32, string name64)
+        {
+            OpCodeAlu op = (OpCodeAlu)context.CurrOp;
+
+            Operand n = GetIntOrZR(op, op.Rn);
+            Operand d;
+
+            if (op.RegisterSize == RegisterSize.Int32)
+            {
+                d = context.Call(typeof(SoftFallback).GetMethod(name32), n);
+            }
+            else
+            {
+                d = context.Call(typeof(SoftFallback).GetMethod(name64), n);
+            }
+
+            SetAluDOrZR(context, d);
         }
 
         public static void Rev64(EmitterContext context)

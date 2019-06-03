@@ -168,7 +168,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void AddFixedRegisterCopy(LinkedListNode<Node> node, Operation operation)
         {
-            if (operation.Dest == null || operation.SourcesCount == 0)
+            if (operation.SourcesCount == 0)
             {
                 return;
             }
@@ -240,6 +240,59 @@ namespace ARMeilleure.CodeGen.X86
                 node.List.AddBefore(node, copyOp);
 
                 operation.SetSource(1, rcx);
+            }
+
+            //Copy values to registers expected by the function being called,
+            //as mandated by the ABI.
+            if (inst == Instruction.Call)
+            {
+                int argsCount = operation.SourcesCount;
+
+                int maxArgs = CallingConvention.GetIntArgumentsOnRegsCount();
+
+                if (argsCount > maxArgs + 1)
+                {
+                    argsCount = maxArgs + 1;
+                }
+
+                for (int index = 1; index < argsCount; index++)
+                {
+                    Operand source = operation.GetSource(index);
+
+                    Operand argReg = Gpr(CallingConvention.GetIntArgumentRegister(index - 1), source.Type);
+
+                    Operation srcCopyOp = new Operation(Instruction.Copy, argReg, source);
+
+                    node.List.AddBefore(node, srcCopyOp);
+
+                    operation.SetSource(index, argReg);
+                }
+
+                //The remaining arguments (those that are not passed on registers)
+                //should be passed on the stack, we write them to the stack with "SpillArg".
+                for (int index = argsCount; index < operation.SourcesCount; index++)
+                {
+                    Operand source = operation.GetSource(index);
+
+                    Operand offset = new Operand((index - 1) * 8);
+
+                    Operation srcSpillOp = new Operation(Instruction.SpillArg, null, offset, source);
+
+                    node.List.AddBefore(node, srcSpillOp);
+
+                    operation.SetSource(index, new Operand(OperandKind.Undefined));
+                }
+
+                if (dest != null)
+                {
+                    Operand retReg = Gpr(CallingConvention.GetIntReturnRegister(), dest.Type);
+
+                    Operation destCopyOp = new Operation(Instruction.Copy, dest, retReg);
+
+                    node.List.AddAfter(node, destCopyOp);
+
+                    operation.Dest = retReg;
+                }
             }
         }
 
