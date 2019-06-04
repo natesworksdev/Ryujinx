@@ -23,13 +23,13 @@ namespace Ryujinx
             HBox ButtonBox = new HBox(true, 3);
             Alignment BoxAlign = new Alignment(1, 0, 0, 0);
 
-            Button ok = new Button("OK");
-            ok.Pressed += (o, args) => OK_Pressed(o, args, CSWin);
-            ButtonBox.Add(ok);
+            Button Save = new Button("Save");
+            Save.Pressed += (o, args) => Save_Pressed(o, args, CSWin);
+            ButtonBox.Add(Save);
 
-            Button close = new Button("Close");
-            close.Pressed += (o, args) => Close_Pressed(o, args, CSWin);
-            ButtonBox.Add(close);
+            Button Cancel = new Button("Cancel");
+            Cancel.Pressed += (o, args) => Cancel_Pressed(o, args, CSWin);
+            ButtonBox.Add(Cancel);
 
             BoxAlign.SetPadding(0, 5, 0, 7);
             BoxAlign.Add(ButtonBox);
@@ -39,13 +39,13 @@ namespace Ryujinx
             CSWin.ShowAll();
         }
 
-        static void OK_Pressed(object o, EventArgs args, Window window)
+        static void Save_Pressed(object o, EventArgs args, Window window)
         {
             //save settings stuff will go here
             window.Destroy();
         }
 
-        static void Close_Pressed(object o, EventArgs args, Window window)
+        static void Cancel_Pressed(object o, EventArgs args, Window window)
         {
             window.Destroy();
         }

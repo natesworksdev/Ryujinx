@@ -1,21 +1,34 @@
 ﻿using Gtk;
+using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.Common.Logging;
 using System;
 using System.IO;
 
 namespace Ryujinx
 {
-    public class MainMenU
+    public class MainMenu : Window
     {
-        public static void MainMenu(HLE.Switch device)
-        {
-            Application.Init();
+        internal HLE.Switch device { get; private set; }
 
-            Window MainWin = new Window(WindowType.Toplevel);
-            MainWin.Title = "Ryujinx";
-            MainWin.Icon = new Gdk.Pixbuf("./ryujinx.png");
-            MainWin.SetDefaultSize(1280, 745);
-            MainWin.WindowPosition = WindowPosition.Center;
+        internal ListStore TableStore { get; private set; }
+
+        //UI Controls
+        [GUI] MenuBar  MenuBar;
+        [GUI] MenuItem LoadApplicationFile;
+        [GUI] MenuItem LoadApplicationFolder;
+        [GUI] MenuItem Exit;
+        [GUI] MenuItem GeneralSettingsMenu;
+        [GUI] MenuItem ControlSettingsMenu;
+        [GUI] MenuItem NFC;
+        [GUI] MenuItem Debugger;
+        [GUI] MenuItem About;
+        [GUI] TreeView GameTable;
+
+        public MainMenu(HLE.Switch _device) : this(new Builder("Ryujinx.MainMenu.glade"), _device) { }
+
+        private MainMenu(Builder builder, HLE.Switch _device) : base(builder.GetObject("MainWin").Handle)
+        {
+            device = _device;
 
             if (device.System.State.DiscordIntergrationEnabled == true)
             {
@@ -26,78 +39,25 @@ namespace Ryujinx
                 Program.DiscordClient.SetPresence(Program.DiscordPresence);
             }
 
-            VBox box = new VBox();
-            MenuBar MenuBar = new MenuBar();
-            TreeView GameTable = new TreeView();
+            builder.Autoconnect(this);
+            ApplyTheme();
 
-            //Menu Bar
-            MenuItem FileMenu = new MenuItem("File");
-            MenuBar.Append(FileMenu);
-            Menu FileSubmenu = new Menu();
-            FileMenu.Submenu = FileSubmenu;
+            DeleteEvent += Window_Close;
 
-            MenuItem LoadApplicationFile = new MenuItem("Load Application from File");
-            FileSubmenu.Append(LoadApplicationFile);
-            LoadApplicationFile.Activated += (o, args) => Load_Application_File(o, args, MainWin, device);
-
-            MenuItem LoadApplicationFolder = new MenuItem("Load Application from Folder");
-            FileSubmenu.Append(LoadApplicationFolder);
-            LoadApplicationFolder.Activated += (o, args) => Load_Application_Folder(o, args, MainWin, device);
-
-            FileSubmenu.Append(new SeparatorMenuItem());
-
-            MenuItem Exit = new MenuItem("Exit");
-            FileSubmenu.Append(Exit);
-            Exit.Activated += (o, args) => Exit_Pressed(o, args, MainWin);
-
-            MenuItem OptionsMenu = new MenuItem("Options");
-            MenuBar.Append(OptionsMenu);
-            Menu OptionsSubmenu = new Menu();
-            OptionsMenu.Submenu = OptionsSubmenu;
-
-            FileSubmenu.Append(new SeparatorMenuItem());
-
-            MenuItem GeneralSettingsMenu = new MenuItem("General Settings");
-            OptionsSubmenu.Append(GeneralSettingsMenu);
-            GeneralSettingsMenu.Activated += new EventHandler(General_Settings_Pressed);
-
-            MenuItem ControlSettingsMenu = new MenuItem("Control Settings");
-            OptionsSubmenu.Append(ControlSettingsMenu);
-            ControlSettingsMenu.Activated += new EventHandler(Control_Settings_Pressed);
-
-            MenuItem ToolsMenu = new MenuItem("Tools");
-            MenuBar.Append(ToolsMenu);
-            Menu ToolsSubmenu = new Menu();
-            ToolsMenu.Submenu = ToolsSubmenu;
-
-            MenuItem NFC = new MenuItem("Scan NFC Tag from File");
-            ToolsSubmenu.Append(NFC);
-            NFC.Sensitive = false;
-            NFC.Activated += (o, args) => NFC_Pressed(o, args, MainWin);
-
-            MenuItem HelpMenu = new MenuItem("Help");
-            MenuBar.Append(HelpMenu);
-            Menu HelpSubmenu = new Menu();
-            HelpMenu.Submenu = HelpSubmenu;
-
-            MenuItem About = new MenuItem("About");
-            HelpSubmenu.Append(About);
-            About.Activated += new EventHandler(About_Pressed);
-
-            box.PackStart(MenuBar, false, false, 0);
+            //disable some buttons
+            NFC.Sensitive      = false;
+            Debugger.Sensitive = false;
 
             //Games grid thing
-            ListStore TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-            GameTable.RowActivated += (o, args) => Row_Activated(o, args, TableStore, MainWin, device);
+            GameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 0);
+            GameTable.AppendColumn("Game",        new CellRendererText(),   "text"  , 1);
+            GameTable.AppendColumn("Version",     new CellRendererText(),   "text"  , 2);
+            GameTable.AppendColumn("DLC",         new CellRendererText(),   "text"  , 3);
+            GameTable.AppendColumn("Time Played", new CellRendererText(),   "text"  , 4);
+            GameTable.AppendColumn("Last Played", new CellRendererText(),   "text"  , 5);
+            GameTable.AppendColumn("Path",        new CellRendererText(),   "text"  , 6);
 
-            GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
-            GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
-            GameTable.AppendColumn("Version", new CellRendererText(), "text", 2);
-            GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 3);
-            GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 4);
-            GameTable.AppendColumn("Path", new CellRendererText(), "text", 5);
-
-            string dat = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirs.dat");
+            string dat = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirs.dat");
             if (File.Exists(dat) == false) { File.Create(dat).Close(); }
             string[] GameDirs = File.ReadAllLines(dat);
             string[] Games = new string[] { };
@@ -108,34 +68,41 @@ namespace Ryujinx
                 DirectoryInfo GameDirInfo = new DirectoryInfo(GameDir);
                 foreach (var Game in GameDirInfo.GetFiles())
                 {
-                    if ((Path.GetExtension(Game.ToString()) == ".xci") || (Path.GetExtension(Game.ToString()) == ".nca") || (Path.GetExtension(Game.ToString()) == ".nsp") || (Path.GetExtension(Game.ToString()) == ".pfs0") || (Path.GetExtension(Game.ToString()) == ".nro") || (Path.GetExtension(Game.ToString()) == ".nso"))
+                    if ((System.IO.Path.GetExtension(Game.ToString()) == ".xci") || (System.IO.Path.GetExtension(Game.ToString()) == ".nca") || (System.IO.Path.GetExtension(Game.ToString()) == ".nsp") || (System.IO.Path.GetExtension(Game.ToString()) == ".pfs0") || (System.IO.Path.GetExtension(Game.ToString()) == ".nro") || (System.IO.Path.GetExtension(Game.ToString()) == ".nso"))
                     {
                         Array.Resize(ref Games, Games.Length + 1);
                         Games[Games.Length - 1] = Game.ToString();
                     }
                 }
             }
+
+            TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
             foreach (string GamePath in Games)
             {
-                TableStore.AppendValues(new Gdk.Pixbuf("./ryujinx.png", 50, 50), "", "", "", "", GamePath);
+                TableStore.AppendValues(new Gdk.Pixbuf("./ryujinx.png", 50, 50), "", "", "", "", "", GamePath);
             }
 
             GameTable.Model = TableStore;
-            box.PackStart(GameTable, true, true, 0);
-
-            MainWin.DeleteEvent += (obj, args) => Window_Close(obj, args, MainWin);
-            MainWin.Add(box);
-            MainWin.ShowAll();
-
-            Application.Run();
         }
 
-        static void Row_Activated(object obj, RowActivatedArgs args, ListStore TableStore, Window window, HLE.Switch device)
+        public static void ApplyTheme()
+        {
+            var settings = Settings.Default;
+            settings.XftRgba = "rgb";
+            settings.XftHinting = 1;
+            settings.XftHintstyle = "hintfull";
+
+            CssProvider css_provider = new CssProvider();
+            css_provider.LoadFromPath("Theme.css");
+            StyleContext.AddProviderForScreen(Gdk.Screen.Default, css_provider, 800);
+        }
+
+        private void Row_Activated(object obj, RowActivatedArgs args)
         {
             TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
-            string path = (string)TableStore.GetValue(treeiter, 5);
-
-            switch (Path.GetExtension(path).ToLowerInvariant())
+            string path = (string)TableStore.GetValue(treeiter, 6);
+            
+            switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
             {
                 case ".xci":
                     Logger.PrintInfo(LogClass.Application, "Loading as XCI.");
@@ -155,13 +122,13 @@ namespace Ryujinx
                     device.LoadProgram(path);
                     break;
             }
-            window.Destroy();
+            Destroy();
             Application.Quit();
         }
 
-        static void Load_Application_File(object o, EventArgs args, Window window, HLE.Switch device)
+        private void Load_Application_File(object o, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the file to open", window, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserDialog fc = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
             fc.Filter = new FileFilter();
             fc.Filter.AddPattern("*.nsp");
             fc.Filter.AddPattern("*.xci");
@@ -171,7 +138,7 @@ namespace Ryujinx
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
-                switch (Path.GetExtension(fc.Filename).ToLowerInvariant())
+                switch (System.IO.Path.GetExtension(fc.Filename).ToLowerInvariant())
                 {
                     case ".xci":
                         Logger.PrintInfo(LogClass.Application, "Loading as XCI.");
@@ -191,15 +158,15 @@ namespace Ryujinx
                         device.LoadProgram(fc.Filename);
                         break;
                 }
-                window.Destroy();
+                Destroy();
                 Application.Quit();
             }
             fc.Destroy();
         }
 
-        static void Load_Application_Folder(object o, EventArgs args, Window window, HLE.Switch device)
+        private void Load_Application_Folder(object o, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the folder to open", window, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserDialog fc = new FileChooserDialog("Choose the folder to open", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
@@ -220,38 +187,38 @@ namespace Ryujinx
                     Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
                     device.LoadCart(fc.Filename);
                 }
-                window.Destroy();
+                Destroy();
                 Application.Quit();
             }
             fc.Destroy();
         }
 
-        static void Exit_Pressed(object o, EventArgs args, Window window)
+        private void Exit_Pressed(object o, EventArgs args)
         {
-            window.Destroy();
+            Destroy();
             Application.Quit();
         }
 
-        static void Window_Close(object obj, DeleteEventArgs args, Window window)
+        private void Window_Close(object obj, DeleteEventArgs args)
         {
-            window.Destroy();
+            Destroy();
             Application.Quit();
             args.RetVal = true;
         }
 
-        static void General_Settings_Pressed(object o, EventArgs args)
+        private void General_Settings_Pressed(object o, EventArgs args)
         {
             GeneralSettings.GeneralSettingsMenu();
         }
 
-        static void Control_Settings_Pressed(object o, EventArgs args)
+        private void Control_Settings_Pressed(object o, EventArgs args)
         {
             ControlSettings.ControlSettingsMenu();
         }
 
-        static void NFC_Pressed(object o, EventArgs args, Window window)
+        private void NFC_Pressed(object o, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the file to open", window, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserDialog fc = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
             fc.Filter = new FileFilter();
             fc.Filter.AddPattern("*.bin");
 
@@ -262,10 +229,16 @@ namespace Ryujinx
             fc.Destroy();
         }
 
-        static void About_Pressed(object o, EventArgs args)
+        private void Debugger_Pressed(object o, EventArgs args)
+        {
+            //
+        }
+
+        private void About_Pressed(object o, EventArgs args)
         {
             AboutDialog about = new AboutDialog();
             about.ProgramName = "Ryujinx";
+            about.Icon = new Gdk.Pixbuf("ryujinx.png");
             about.Version = "Version x.x.x";
             about.Authors = new string[] { "gdkchan", "Ac_K", "LDj3SNuD", "emmauss", "MerryMage", "MS-DOS1999", "Thog", "jD", "BaronKiko", "Dr.Hacknik", "Lordmau5", "(and Xpl0itR did a bit of work too :D)" };
             about.Copyright = "Unlicense";
