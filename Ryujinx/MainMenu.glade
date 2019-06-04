@@ -8,7 +8,6 @@
     <property name="window_position">center</property>
     <property name="default_width">1280</property>
     <property name="default_height">745</property>
-    <property name="icon">ryujinx.png</property>
     <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
@@ -172,6 +171,7 @@
               <object class="GtkTreeView" id="GameTable">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="headers_clickable">False</property>
                 <signal name="row-activated" handler="Row_Activated" swapped="no"/>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>

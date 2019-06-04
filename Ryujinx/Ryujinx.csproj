@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="MainMenu.glade" />
+    <EmbeddedResource Include="ryujinxIcon.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,9 +43,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="RPsupported.dat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="ryujinx.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Theme.css">

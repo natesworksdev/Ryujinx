@@ -36,16 +36,16 @@ namespace Ryujinx
             Profile.Initialize();
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+            AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
 
             if (device.System.State.DiscordIntegrationEnabled == true)
             {
-                DiscordClient = new DiscordRpcClient("568815339807309834");
+                DiscordClient   = new DiscordRpcClient("568815339807309834");
                 DiscordPresence = new RichPresence
                 {
                     Assets = new Assets
                     {
-                        LargeImageKey = "ryujinx",
+                        LargeImageKey  = "ryujinx",
                         LargeImageText = "Ryujinx is an emulator for the Nintendo Switch"
                     }
                 };
@@ -59,16 +59,16 @@ namespace Ryujinx
                 Gtk.Application.Init();
 
                 var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                var app = new Gtk.Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
+                var app           = new Gtk.Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
+                var win           = new MainMenu(device);
+
                 app.Register(GLib.Cancellable.Current);
-
-                var win = new MainMenu(device);
                 app.AddWindow(win);
-
                 win.Show();
 
                 Gtk.Application.Run();
             }
+
             else
             {
                 if (Directory.Exists(args[0]))
@@ -127,12 +127,12 @@ namespace Ryujinx
                     DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
                 }
 
-                DiscordPresence.Details = $"Playing {device.System.TitleName}";
-                DiscordPresence.State = string.IsNullOrWhiteSpace(device.System.TitleID) ? string.Empty : device.System.TitleID.ToUpper();
+                DiscordPresence.Details               = $"Playing {device.System.TitleName}";
+                DiscordPresence.State                 = device.System.TitleID.ToUpper();
                 DiscordPresence.Assets.LargeImageText = device.System.TitleName;
-                DiscordPresence.Assets.SmallImageKey = "ryujinx";
+                DiscordPresence.Assets.SmallImageKey  = "ryujinx";
                 DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
-                DiscordPresence.Timestamps = new Timestamps(DateTime.UtcNow);
+                DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
 
                 DiscordClient.SetPresence(DiscordPresence);
             }

@@ -1,5 +1,7 @@
 ﻿using Gtk;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace Ryujinx
 {
@@ -7,27 +9,34 @@ namespace Ryujinx
     {
         public static void ControlSettingsMenu()
         {
-            Window CSWin = new Window(WindowType.Toplevel);
-            CSWin.Title = "Control Settings";
-            CSWin.Icon = new Gdk.Pixbuf("./ryujinx.png");
-            CSWin.SetDefaultSize(854, 360);
-            CSWin.Resizable = false;
+            Window CSWin         = new Window(WindowType.Toplevel);
+            CSWin.Title          = "Control Settings";
+            CSWin.Resizable      = false;
             CSWin.WindowPosition = WindowPosition.Center;
+            CSWin.SetDefaultSize(854, 360);
 
             VBox box = new VBox(false, 2);
 
+            //Load Icon
+            using (Stream iconstream   = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.ryujinxIcon.png"))
+            using (StreamReader reader = new StreamReader(iconstream))
+            {
+                Gdk.Pixbuf RyujinxIcon = new Gdk.Pixbuf(iconstream);
+                CSWin.Icon             = RyujinxIcon;
+            }
+
             //settings stuff will replace this block
-            Label myLabel = new Label { Text = "General Settings" };
+            Label myLabel = new Label { Text = "Control Settings" };
             box.PackStart(myLabel, true, true, 3);
 
-            HBox ButtonBox = new HBox(true, 3);
+            HBox ButtonBox     = new HBox(true, 3);
             Alignment BoxAlign = new Alignment(1, 0, 0, 0);
 
-            Button Save = new Button("Save");
+            Button Save   = new Button("Save");
             Save.Pressed += (o, args) => Save_Pressed(o, args, CSWin);
             ButtonBox.Add(Save);
 
-            Button Cancel = new Button("Cancel");
+            Button Cancel   = new Button("Cancel");
             Cancel.Pressed += (o, args) => Cancel_Pressed(o, args, CSWin);
             ButtonBox.Add(Cancel);
 

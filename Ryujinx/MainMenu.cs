@@ -3,6 +3,8 @@ using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.Common.Logging;
 using System;
 using System.IO;
+using System.Reflection;
+using System.Text;
 
 namespace Ryujinx
 {
@@ -12,7 +14,10 @@ namespace Ryujinx
 
         internal ListStore TableStore { get; private set; }
 
+        internal static Gdk.Pixbuf RyujinxIcon { get; private set; }
+
         //UI Controls
+        [GUI] Window   MainWin;
         [GUI] MenuBar  MenuBar;
         [GUI] MenuItem LoadApplicationFile;
         [GUI] MenuItem LoadApplicationFolder;
@@ -32,8 +37,8 @@ namespace Ryujinx
 
             if (device.System.State.DiscordIntergrationEnabled == true)
             {
-                Program.DiscordPresence.Details = "Main Menu";
-                Program.DiscordPresence.State = "Idling";
+                Program.DiscordPresence.Details    = "Main Menu";
+                Program.DiscordPresence.State      = "Idling";
                 Program.DiscordPresence.Timestamps = new DiscordRPC.Timestamps(DateTime.UtcNow);
 
                 Program.DiscordClient.SetPresence(Program.DiscordPresence);
@@ -41,6 +46,14 @@ namespace Ryujinx
 
             builder.Autoconnect(this);
             ApplyTheme();
+
+            //Load Icon
+            using (Stream iconstream   = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.ryujinxIcon.png"))
+            using (StreamReader reader = new StreamReader(iconstream))
+            {
+                RyujinxIcon  = new Gdk.Pixbuf(iconstream);
+                MainWin.Icon = RyujinxIcon;
+            }
 
             DeleteEvent += Window_Close;
 
@@ -58,13 +71,16 @@ namespace Ryujinx
             GameTable.AppendColumn("Path",        new CellRendererText(),   "text"  , 6);
 
             string dat = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirs.dat");
+
             if (File.Exists(dat) == false) { File.Create(dat).Close(); }
+
             string[] GameDirs = File.ReadAllLines(dat);
-            string[] Games = new string[] { };
+            string[] Games    = new string[] { };
 
             foreach (string GameDir in GameDirs)
             {
                 if (Directory.Exists(GameDir) == false) { Logger.PrintError(LogClass.Application, "There is an invalid game directory in \"GameDirs.dat\""); return; }
+
                 DirectoryInfo GameDirInfo = new DirectoryInfo(GameDir);
                 foreach (var Game in GameDirInfo.GetFiles())
                 {
@@ -77,9 +93,11 @@ namespace Ryujinx
             }
 
             TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+
             foreach (string GamePath in Games)
             {
-                TableStore.AppendValues(new Gdk.Pixbuf("./ryujinx.png", 50, 50), "", "", "", "", "", GamePath);
+                Gdk.Pixbuf GameIcon = GetIconData(GamePath);
+                TableStore.AppendValues(GameIcon, "", "", "", "", "", GamePath);
             }
 
             GameTable.Model = TableStore;
@@ -87,9 +105,9 @@ namespace Ryujinx
 
         public static void ApplyTheme()
         {
-            var settings = Settings.Default;
-            settings.XftRgba = "rgb";
-            settings.XftHinting = 1;
+            var settings          = Settings.Default;
+            settings.XftRgba      = "rgb";
+            settings.XftHinting   = 1;
             settings.XftHintstyle = "hintfull";
 
             CssProvider css_provider = new CssProvider();
@@ -97,11 +115,49 @@ namespace Ryujinx
             StyleContext.AddProviderForScreen(Gdk.Screen.Default, css_provider, 800);
         }
 
+        public static Gdk.Pixbuf GetIconData(string filePath)
+        {
+            using (FileStream Input = File.Open(filePath, FileMode.Open, FileAccess.Read))
+            {
+                BinaryReader Reader = new BinaryReader(Input);
+
+                if (System.IO.Path.GetExtension(filePath) == ".nro")
+                {
+                    Input.Seek(24, SeekOrigin.Begin);
+                    int AssetOffset = Reader.ReadInt32();
+
+                    byte[] Read(long Position, int Size)
+                    {
+                        Input.Seek(Position, SeekOrigin.Begin);
+                        return Reader.ReadBytes(Size);
+                    }
+
+                    if (Encoding.ASCII.GetString(Read(AssetOffset, 4)) == "ASET")
+                    {
+                        byte[] IconSectionInfo = Read(AssetOffset + 8, 0x10);
+
+                        long IconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
+                        long IconSize   = BitConverter.ToInt64(IconSectionInfo, 8);
+
+                        byte[] IconData = Read(AssetOffset + IconOffset, (int)IconSize);
+
+                        return new Gdk.Pixbuf(IconData, 50, 50);
+                    }
+                    else { return RyujinxIcon; }
+                }
+                else
+                {
+                    return RyujinxIcon; //temp
+                }
+            }
+        }
+
+        //Events
         private void Row_Activated(object obj, RowActivatedArgs args)
         {
             TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
             string path = (string)TableStore.GetValue(treeiter, 6);
-            
+
             switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
             {
                 case ".xci":
@@ -122,6 +178,7 @@ namespace Ryujinx
                     device.LoadProgram(path);
                     break;
             }
+
             Destroy();
             Application.Quit();
         }
@@ -129,7 +186,7 @@ namespace Ryujinx
         private void Load_Application_File(object o, EventArgs args)
         {
             FileChooserDialog fc = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
-            fc.Filter = new FileFilter();
+            fc.Filter            = new FileFilter();
             fc.Filter.AddPattern("*.nsp");
             fc.Filter.AddPattern("*.xci");
             fc.Filter.AddPattern("*.nca");
@@ -158,9 +215,11 @@ namespace Ryujinx
                         device.LoadProgram(fc.Filename);
                         break;
                 }
+
                 Destroy();
                 Application.Quit();
             }
+
             fc.Destroy();
         }
 
@@ -187,9 +246,11 @@ namespace Ryujinx
                     Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
                     device.LoadCart(fc.Filename);
                 }
+
                 Destroy();
                 Application.Quit();
             }
+
             fc.Destroy();
         }
 
@@ -219,12 +280,12 @@ namespace Ryujinx
         private void NFC_Pressed(object o, EventArgs args)
         {
             FileChooserDialog fc = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
-            fc.Filter = new FileFilter();
+            fc.Filter            = new FileFilter();
             fc.Filter.AddPattern("*.bin");
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
-                Console.WriteLine(fc.Filename);
+                Console.WriteLine(fc.Filename); //temp
             }
             fc.Destroy();
         }
@@ -236,15 +297,15 @@ namespace Ryujinx
 
         private void About_Pressed(object o, EventArgs args)
         {
-            AboutDialog about = new AboutDialog();
-            about.ProgramName = "Ryujinx";
-            about.Icon = new Gdk.Pixbuf("ryujinx.png");
-            about.Version = "Version x.x.x";
-            about.Authors = new string[] { "gdkchan", "Ac_K", "LDj3SNuD", "emmauss", "MerryMage", "MS-DOS1999", "Thog", "jD", "BaronKiko", "Dr.Hacknik", "Lordmau5", "(and Xpl0itR did a bit of work too :D)" };
-            about.Copyright = "Unlicense";
-            about.Comments = "Ryujinx is an emulator for the Nintendo Switch";
-            about.Website = "https://github.com/Ryujinx/Ryujinx";
-            about.Copyright = "Unlicense";
+            AboutDialog about    = new AboutDialog();
+            about.ProgramName    = "Ryujinx";
+            about.Icon           = RyujinxIcon;
+            about.Version        = "Version x.x.x";
+            about.Authors        = new string[] { "gdkchan", "Ac_K", "LDj3SNuD", "emmauss", "MerryMage", "MS-DOS1999", "Thog", "jD", "BaronKiko", "Dr.Hacknik", "Lordmau5", "(and Xpl0itR did a bit of work too :D)" };
+            about.Copyright      = "Unlicense";
+            about.Comments       = "Ryujinx is an emulator for the Nintendo Switch";
+            about.Website        = "https://github.com/Ryujinx/Ryujinx";
+            about.Copyright      = "Unlicense";
             about.WindowPosition = WindowPosition.Center;
             about.Run();
             about.Destroy();
