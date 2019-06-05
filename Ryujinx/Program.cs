@@ -35,6 +35,8 @@ namespace Ryujinx
 
             Profile.Initialize();
 
+            ApplicationLibrary.Init();
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
 
@@ -59,11 +61,11 @@ namespace Ryujinx
                 Gtk.Application.Init();
 
                 var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                var app           = new Gtk.Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
-                var win           = new MainMenu(device);
+                var gtkapp        = new Gtk.Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
+                var win           = new MainMenu(device, gtkapp);
 
-                app.Register(GLib.Cancellable.Current);
-                app.AddWindow(win);
+                gtkapp.Register(GLib.Cancellable.Current);
+                gtkapp.AddWindow(win);
                 win.Show();
 
                 Gtk.Application.Run();

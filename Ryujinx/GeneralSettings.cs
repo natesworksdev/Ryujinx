@@ -1,62 +1,79 @@
 ﻿using Gtk;
+using GUI = Gtk.Builder.ObjectAttribute;
 using System;
 using System.IO;
-using System.Reflection;
 
 namespace Ryujinx
 {
-    public class GeneralSettings
+    public class GeneralSettings : Window
     {
-        public static void GeneralSettingsMenu()
+        internal HLE.Switch device { get; private set; }
+
+        internal static Configuration SwitchConfig { get; private set; }
+
+        //UI Controls
+        [GUI] CheckButton  ErrorLogToggle;
+        [GUI] CheckButton  WarningLogToggle;
+        [GUI] CheckButton  InfoLogToggle;
+        [GUI] CheckButton  StubLogToggle;
+        [GUI] CheckButton  DebugLogToggle;
+        [GUI] CheckButton  FileLogToggle;
+        [GUI] CheckButton  DockedModeToggle;
+        [GUI] CheckButton  DiscordToggle;
+        [GUI] CheckButton  VSyncToggle;
+        [GUI] CheckButton  MultiSchedToggle;
+        [GUI] CheckButton  FSICToggle;
+        [GUI] CheckButton  AggrToggle;
+        [GUI] CheckButton  IgnoreToggle;
+        [GUI] ComboBoxText SystemLanguageSelect;
+        [GUI] TextView     GameDirsBox;
+        [GUI] Button       SaveButton;
+        [GUI] Button       CancelButton;
+
+        public GeneralSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GeneralSettings.glade"), _device) { }
+
+        private GeneralSettings(Builder builder, HLE.Switch _device) : base(builder.GetObject("GSWin").Handle)
         {
-            Window GSWin         = new Window(WindowType.Toplevel);
-            GSWin.Title          = "General Settings";
-            GSWin.Resizable      = false;
-            GSWin.WindowPosition = WindowPosition.Center;
-            GSWin.SetDefaultSize(854, 360);
+            device = _device;
 
-            VBox box = new VBox(false, 2);
+            builder.Autoconnect(this);
 
-            //Load Icon
-            using (Stream iconstream   = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.ryujinxIcon.png"))
-            using (StreamReader reader = new StreamReader(iconstream))
-            {
-                Gdk.Pixbuf RyujinxIcon = new Gdk.Pixbuf(iconstream);
-                GSWin.Icon             = RyujinxIcon;
-            }
+            SaveButton.Activated   += Save_Activated;
+            CancelButton.Activated += Cancel_Activated;
 
-            //settings stuff will replace this block
-            Label myLabel = new Label { Text = "General Settings" };
-            box.PackStart(myLabel, true, true, 3);
+            if (SwitchConfig.LoggingEnableError == true) { ErrorLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableWarn == true) { WarningLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableInfo == true) { InfoLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableStub == true) { StubLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableDebug == true) { DebugLogToggle.Click(); }
+            if (SwitchConfig.EnableFileLog == true) { FileLogToggle.Click(); }
+            if (SwitchConfig.DockedMode == true) { DockedModeToggle.Click(); }
+            if (SwitchConfig.EnableDiscordIntergration == true) { DiscordToggle.Click(); }
+            if (SwitchConfig.EnableVsync == true) { VSyncToggle.Click(); }
+            if (SwitchConfig.EnableMulticoreScheduling == true) { MultiSchedToggle.Click(); }
+            if (SwitchConfig.EnableFsIntegrityChecks == true) { FSICToggle.Click(); }
+            if (SwitchConfig.EnableAggressiveCpuOpts == true) { AggrToggle.Click(); }
+            if (SwitchConfig.IgnoreMissingServices == true) { IgnoreToggle.Click(); }
+            SystemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
 
-            HBox ButtonBox     = new HBox(true, 3);
-            Alignment BoxAlign = new Alignment(1, 0, 0, 0);
-
-            Button Save   = new Button("Save");
-            Save.Pressed += (o, args) => Save_Pressed(o, args, GSWin);
-            ButtonBox.Add(Save);
-
-            Button Cancel   = new Button("Cancel");
-            Cancel.Pressed += (o, args) => Cancel_Pressed(o, args, GSWin);
-            ButtonBox.Add(Cancel);
-
-            BoxAlign.SetPadding(0, 5, 0, 7);
-            BoxAlign.Add(ButtonBox);
-            box.PackStart(BoxAlign, false, false, 3);
-
-            GSWin.Add(box);
-            GSWin.ShowAll();
+            GameDirsBox.Buffer.Text = File.ReadAllText("./GameDirs.dat");
         }
 
-        static void Save_Pressed(object o, EventArgs args, Window window)
+        public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
+
+        //Events
+        private void Save_Activated(object obj, EventArgs args)
         {
-            //save settings stuff will go here
-            window.Destroy();
+            //Saving code is about to make this a BIG boi
+
+            File.WriteAllText("./GameDirs.dat", GameDirsBox.Buffer.Text);
+
+            Destroy();
         }
 
-        static void Cancel_Pressed(object o, EventArgs args, Window window)
+        private void Cancel_Activated(object obj, EventArgs args)
         {
-            window.Destroy();
+            Destroy();
         }
     }
 }

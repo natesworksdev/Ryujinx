@@ -4,7 +4,6 @@ using Ryujinx.Common.Logging;
 using System;
 using System.IO;
 using System.Reflection;
-using System.Text;
 
 namespace Ryujinx
 {
@@ -12,28 +11,22 @@ namespace Ryujinx
     {
         internal HLE.Switch device { get; private set; }
 
-        internal ListStore TableStore { get; private set; }
+        internal Application gtkapp { get; private set; }
 
-        internal static Gdk.Pixbuf RyujinxIcon { get; private set; }
+        internal ListStore TableStore { get; private set; }
 
         //UI Controls
         [GUI] Window   MainWin;
-        [GUI] MenuBar  MenuBar;
-        [GUI] MenuItem LoadApplicationFile;
-        [GUI] MenuItem LoadApplicationFolder;
-        [GUI] MenuItem Exit;
-        [GUI] MenuItem GeneralSettingsMenu;
-        [GUI] MenuItem ControlSettingsMenu;
         [GUI] MenuItem NFC;
         [GUI] MenuItem Debugger;
-        [GUI] MenuItem About;
         [GUI] TreeView GameTable;
 
-        public MainMenu(HLE.Switch _device) : this(new Builder("Ryujinx.MainMenu.glade"), _device) { }
+        public MainMenu(HLE.Switch _device, Application _gtkapp) : this(new Builder("Ryujinx.MainMenu.glade"), _device, _gtkapp) { }
 
-        private MainMenu(Builder builder, HLE.Switch _device) : base(builder.GetObject("MainWin").Handle)
+        private MainMenu(Builder builder, HLE.Switch _device, Application _gtkapp) : base(builder.GetObject("MainWin").Handle)
         {
             device = _device;
+            gtkapp = _gtkapp;
 
             if (device.System.State.DiscordIntergrationEnabled == true)
             {
@@ -47,14 +40,6 @@ namespace Ryujinx
             builder.Autoconnect(this);
             ApplyTheme();
 
-            //Load Icon
-            using (Stream iconstream   = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.ryujinxIcon.png"))
-            using (StreamReader reader = new StreamReader(iconstream))
-            {
-                RyujinxIcon  = new Gdk.Pixbuf(iconstream);
-                MainWin.Icon = RyujinxIcon;
-            }
-
             DeleteEvent += Window_Close;
 
             //disable some buttons
@@ -63,41 +48,18 @@ namespace Ryujinx
 
             //Games grid thing
             GameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 0);
-            GameTable.AppendColumn("Game",        new CellRendererText(),   "text"  , 1);
-            GameTable.AppendColumn("Version",     new CellRendererText(),   "text"  , 2);
-            GameTable.AppendColumn("DLC",         new CellRendererText(),   "text"  , 3);
-            GameTable.AppendColumn("Time Played", new CellRendererText(),   "text"  , 4);
-            GameTable.AppendColumn("Last Played", new CellRendererText(),   "text"  , 5);
-            GameTable.AppendColumn("Path",        new CellRendererText(),   "text"  , 6);
-
-            string dat = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirs.dat");
-
-            if (File.Exists(dat) == false) { File.Create(dat).Close(); }
-
-            string[] GameDirs = File.ReadAllLines(dat);
-            string[] Games    = new string[] { };
-
-            foreach (string GameDir in GameDirs)
-            {
-                if (Directory.Exists(GameDir) == false) { Logger.PrintError(LogClass.Application, "There is an invalid game directory in \"GameDirs.dat\""); return; }
-
-                DirectoryInfo GameDirInfo = new DirectoryInfo(GameDir);
-                foreach (var Game in GameDirInfo.GetFiles())
-                {
-                    if ((System.IO.Path.GetExtension(Game.ToString()) == ".xci") || (System.IO.Path.GetExtension(Game.ToString()) == ".nca") || (System.IO.Path.GetExtension(Game.ToString()) == ".nsp") || (System.IO.Path.GetExtension(Game.ToString()) == ".pfs0") || (System.IO.Path.GetExtension(Game.ToString()) == ".nro") || (System.IO.Path.GetExtension(Game.ToString()) == ".nso"))
-                    {
-                        Array.Resize(ref Games, Games.Length + 1);
-                        Games[Games.Length - 1] = Game.ToString();
-                    }
-                }
-            }
+            GameTable.AppendColumn("Game",        new CellRendererText(),   "text",   1);
+            GameTable.AppendColumn("Version",     new CellRendererText(),   "text",   2);
+            GameTable.AppendColumn("DLC",         new CellRendererText(),   "text",   3);
+            GameTable.AppendColumn("Time Played", new CellRendererText(),   "text",   4);
+            GameTable.AppendColumn("Last Played", new CellRendererText(),   "text",   5);
+            GameTable.AppendColumn("Path",        new CellRendererText(),   "text",   6);
 
             TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
-            foreach (string GamePath in Games)
+            foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                Gdk.Pixbuf GameIcon = GetIconData(GamePath);
-                TableStore.AppendValues(GameIcon, "", "", "", "", "", GamePath);
+                TableStore.AppendValues(AppData.Icon, AppData.Game, AppData.Version, AppData.DLC, AppData.TP, AppData.LP, AppData.Path);
             }
 
             GameTable.Model = TableStore;
@@ -113,43 +75,6 @@ namespace Ryujinx
             CssProvider css_provider = new CssProvider();
             css_provider.LoadFromPath("Theme.css");
             StyleContext.AddProviderForScreen(Gdk.Screen.Default, css_provider, 800);
-        }
-
-        public static Gdk.Pixbuf GetIconData(string filePath)
-        {
-            using (FileStream Input = File.Open(filePath, FileMode.Open, FileAccess.Read))
-            {
-                BinaryReader Reader = new BinaryReader(Input);
-
-                if (System.IO.Path.GetExtension(filePath) == ".nro")
-                {
-                    Input.Seek(24, SeekOrigin.Begin);
-                    int AssetOffset = Reader.ReadInt32();
-
-                    byte[] Read(long Position, int Size)
-                    {
-                        Input.Seek(Position, SeekOrigin.Begin);
-                        return Reader.ReadBytes(Size);
-                    }
-
-                    if (Encoding.ASCII.GetString(Read(AssetOffset, 4)) == "ASET")
-                    {
-                        byte[] IconSectionInfo = Read(AssetOffset + 8, 0x10);
-
-                        long IconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
-                        long IconSize   = BitConverter.ToInt64(IconSectionInfo, 8);
-
-                        byte[] IconData = Read(AssetOffset + IconOffset, (int)IconSize);
-
-                        return new Gdk.Pixbuf(IconData, 50, 50);
-                    }
-                    else { return RyujinxIcon; }
-                }
-                else
-                {
-                    return RyujinxIcon; //temp
-                }
-            }
         }
 
         //Events
@@ -269,7 +194,12 @@ namespace Ryujinx
 
         private void General_Settings_Pressed(object o, EventArgs args)
         {
-            GeneralSettings.GeneralSettingsMenu();
+            var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            var GSWin         = new GeneralSettings(device);
+
+            gtkapp.Register(GLib.Cancellable.Current);
+            gtkapp.AddWindow(GSWin);
+            GSWin.Show();
         }
 
         private void Control_Settings_Pressed(object o, EventArgs args)
@@ -299,7 +229,7 @@ namespace Ryujinx
         {
             AboutDialog about    = new AboutDialog();
             about.ProgramName    = "Ryujinx";
-            about.Icon           = RyujinxIcon;
+            about.Icon           = new Gdk.Pixbuf("./ryujinxIcon");
             about.Version        = "Version x.x.x";
             about.Authors        = new string[] { "gdkchan", "Ac_K", "LDj3SNuD", "emmauss", "MerryMage", "MS-DOS1999", "Thog", "jD", "BaronKiko", "Dr.Hacknik", "Lordmau5", "(and Xpl0itR did a bit of work too :D)" };
             about.Copyright      = "Unlicense";

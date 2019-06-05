@@ -19,8 +19,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="GeneralSettings.glade" />
     <EmbeddedResource Include="MainMenu.glade" />
-    <EmbeddedResource Include="ryujinxIcon.png" />
+    <EmbeddedResource Include="ryujinxROMIcon.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +44,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="RPsupported.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ryujinxIcon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Theme.css">

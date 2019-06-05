@@ -183,6 +183,8 @@ namespace Ryujinx
                 throw new InvalidOperationException("Configuration has not been loaded yet.");
             }
 
+            GeneralSettings.ConfigureSettings(Instance);
+
             GraphicsConfig.ShadersDumpPath = Instance.GraphicsShadersDumpPath;
 
             Logger.AddTarget(new AsyncLogTargetWrapper(
