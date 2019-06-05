@@ -26,6 +26,7 @@ build_script:
     Move-Item -Path "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\publish\" -Destination "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\bin\"
 
     Move-Item -Path "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\bin\Config.jsonc" -Destination "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\Config.jsonc"
+    Move-Item -Path "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\bin\ProfilerConfig.jsonc" -Destination "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\ProfilerConfig.jsonc" -Force -ErrorAction SilentlyContinue
     
     curl -o "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\Ryujinx.exe" "https://github.com/BaronKiko/RyujinxWrapper/releases/download/0/RyujinxWrapper.exe"
 

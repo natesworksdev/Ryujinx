@@ -17,9 +17,9 @@ namespace Ryujinx.Profiler
         private static ProfilerSettings _settings;
 
         [Conditional("USE_PROFILING")]
-        public static void Initalize()
+        public static void Initalize(bool wrappedBuild)
         {
-            var config = ProfilerConfiguration.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ProfilerConfig.jsonc"));
+            var config = ProfilerConfiguration.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (wrappedBuild) ? "..\\ProfilerConfig.jsonc" : "ProfilerConfig.jsonc"));
 
             _settings = new ProfilerSettings()
             {
