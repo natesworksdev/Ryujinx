@@ -160,7 +160,7 @@ namespace Ryujinx
         /// Configures a <see cref="Switch"/> instance
         /// </summary>
         /// <param name="device">The instance to configure</param>
-        public static void Configure(Switch device)
+        public static void Configure(Switch device, bool wrapped_build)
         {
             if (Instance == null)
             {
@@ -178,7 +178,7 @@ namespace Ryujinx
             if (Instance.EnableFileLog)
             {
                 Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(Path.Combine(Program.ApplicationDirectory, "Ryujinx.log")),
+                    new FileLogTarget(Path.Combine(Program.ApplicationDirectory, (wrapped_build) ? "..\\Ryujinx.log" : "Ryujinx.log")),
                     1000,
                     AsyncLogTargetOverflowAction.Block
                 ));

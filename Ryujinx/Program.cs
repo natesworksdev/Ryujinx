@@ -29,8 +29,11 @@ namespace Ryujinx
 
             Switch device = new Switch(renderer, audioOut);
 
-            Configuration.Load(Path.Combine(ApplicationDirectory, "Config.jsonc"));
-            Configuration.Configure(device);
+            bool wrappedBuild = ((args.Length > 0) && (args.Last() == "-WRAPPED_BUILD"));
+
+            Configuration.Load(Path.Combine(ApplicationDirectory, (wrappedBuild) ? "..\\Config.jsonc" : "Config.jsonc"));
+
+            Configuration.Configure(device, wrappedBuild);
 
             Profile.Initalize();
 
@@ -53,7 +56,7 @@ namespace Ryujinx
                 DiscordClient.SetPresence(DiscordPresence);
             }
 
-            if (args.Length == 1)
+            if (args.Length >= 1)
             {
                 if (Directory.Exists(args[0]))
                 {

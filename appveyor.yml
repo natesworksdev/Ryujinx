@@ -20,7 +20,15 @@ build_script:
     
     dotnet publish -c $env:config -r osx-x64
 
-    7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\publish\
+
+    New-Item -Path "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\" -Name "Ryujinx" -ItemType "directory"
+
+    Move-Item -Path "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\publish\" -Destination "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\bin\"
+
+    Move-Item -Path "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\bin\Config.jsonc" -Destination "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\Config.jsonc"
+    
+
+    7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\
 
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\linux-x64\publish\
 
