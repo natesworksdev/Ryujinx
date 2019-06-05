@@ -27,7 +27,7 @@ build_script:
 
     Move-Item -Path "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\bin\Config.jsonc" -Destination "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\Config.jsonc"
     
-    curl -fsS -o "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\Ryujinx.exe" "https://github.com/BaronKiko/RyujinxWrapper/releases/download/0/RyujinxWrapper.exe"
+    curl -f -o "$env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\Ryujinx.exe" "https://github.com/BaronKiko/RyujinxWrapper/releases/download/0/RyujinxWrapper.exe"
 
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp2.1\win-x64\Ryujinx\
 
