@@ -35,7 +35,7 @@ namespace Ryujinx
 
             Configuration.Configure(device, wrappedBuild);
 
-            Profile.Initalize();
+            Profile.Initalize(wrappedBuild);
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
