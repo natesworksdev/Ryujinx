@@ -59,6 +59,12 @@
     // Enable or disable ignoring missing services, this may cause instability
     "ignore_missing_services": false,
 
+    // Enable or disable custom themes in the GUI.
+    "enable_custom_theme": false,
+    
+    // Path to custom GUI theme.
+    "custom_theme_path": "",
+    
     // The primary controller's type
     // Supported Values: Handheld, ProController, NpadPair, NpadLeft, NpadRight
     "controller_type": "Handheld",

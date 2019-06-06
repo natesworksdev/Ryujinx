@@ -120,15 +120,6 @@
                         <signal name="activate" handler="NFC_Pressed" swapped="no"/>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkMenuItem" id="Debugger">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Debugger</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="Debugger_Pressed" swapped="no"/>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

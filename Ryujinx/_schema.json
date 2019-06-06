@@ -494,6 +494,24 @@
         false
       ]
     },
+    "enable_custom_theme": {
+      "$id": "#/properties/enable_custom_theme",
+      "type": "boolean",
+      "title": "Enable custom themes in the GUI",
+      "description": "Enable or disable custom themes in the GUI",
+      "default": false,
+      "examples": [
+        true,
+        false
+      ]
+    },
+    "custom_theme_path": {
+      "$id": "#/properties/custom_theme_path",
+      "type": "string",
+      "title": "Path to custom GUI theme",
+      "description": "Path to custom GUI theme",
+      "default": ""
+    },
     "controller_type": {
       "$id": "#/properties/controller_type",
       "type": "string",

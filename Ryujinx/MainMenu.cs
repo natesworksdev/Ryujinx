@@ -3,7 +3,6 @@ using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.Common.Logging;
 using System;
 using System.IO;
-using System.Reflection;
 
 namespace Ryujinx
 {
@@ -16,9 +15,7 @@ namespace Ryujinx
         internal ListStore TableStore { get; private set; }
 
         //UI Controls
-        [GUI] Window   MainWin;
         [GUI] MenuItem NFC;
-        [GUI] MenuItem Debugger;
         [GUI] TreeView GameTable;
 
         public MainMenu(HLE.Switch _device, Application _gtkapp) : this(new Builder("Ryujinx.MainMenu.glade"), _device, _gtkapp) { }
@@ -44,7 +41,6 @@ namespace Ryujinx
 
             //disable some buttons
             NFC.Sensitive      = false;
-            Debugger.Sensitive = false;
 
             //Games grid thing
             GameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 0);
@@ -69,11 +65,21 @@ namespace Ryujinx
         {
             var settings          = Settings.Default;
             settings.XftRgba      = "rgb";
+            settings.XftDpi = 96;
             settings.XftHinting   = 1;
             settings.XftHintstyle = "hintfull";
 
             CssProvider css_provider = new CssProvider();
-            css_provider.LoadFromPath("Theme.css");
+
+            if (GeneralSettings.SwitchConfig.EnableCustomTheme)
+            {
+                css_provider.LoadFromPath(GeneralSettings.SwitchConfig.CustomThemePath);
+            }
+            else
+            {
+                css_provider.LoadFromPath("Theme.css");
+            }
+
             StyleContext.AddProviderForScreen(Gdk.Screen.Default, css_provider, 800);
         }
 
@@ -181,22 +187,17 @@ namespace Ryujinx
 
         private void Exit_Pressed(object o, EventArgs args)
         {
-            Destroy();
-            Application.Quit();
+            Environment.Exit(0);
         }
 
         private void Window_Close(object obj, DeleteEventArgs args)
         {
-            Destroy();
-            Application.Quit();
-            args.RetVal = true;
+            Environment.Exit(0);
         }
 
         private void General_Settings_Pressed(object o, EventArgs args)
         {
-            var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            var GSWin         = new GeneralSettings(device);
-
+            var GSWin = new GeneralSettings(device);
             gtkapp.Register(GLib.Cancellable.Current);
             gtkapp.AddWindow(GSWin);
             GSWin.Show();
@@ -220,23 +221,20 @@ namespace Ryujinx
             fc.Destroy();
         }
 
-        private void Debugger_Pressed(object o, EventArgs args)
-        {
-            //
-        }
-
         private void About_Pressed(object o, EventArgs args)
         {
-            AboutDialog about    = new AboutDialog();
-            about.ProgramName    = "Ryujinx";
-            about.Icon           = new Gdk.Pixbuf("./ryujinxIcon");
-            about.Version        = "Version x.x.x";
-            about.Authors        = new string[] { "gdkchan", "Ac_K", "LDj3SNuD", "emmauss", "MerryMage", "MS-DOS1999", "Thog", "jD", "BaronKiko", "Dr.Hacknik", "Lordmau5", "(and Xpl0itR did a bit of work too :D)" };
-            about.Copyright      = "Unlicense";
-            about.Comments       = "Ryujinx is an emulator for the Nintendo Switch";
-            about.Website        = "https://github.com/Ryujinx/Ryujinx";
-            about.Copyright      = "Unlicense";
-            about.WindowPosition = WindowPosition.Center;
+            AboutDialog about  = new AboutDialog
+            {
+                ProgramName    = "Ryujinx",
+                Icon           = new Gdk.Pixbuf("./ryujinxIcon.png"),
+                Version        = "Version x.x.x",
+                Authors        = new string[] { "gdkchan", "Ac_K", "LDj3SNuD", "emmauss", "MerryMage", "MS-DOS1999", "Thog", "jD", "BaronKiko", "Dr.Hacknik", "Lordmau5", "(and Xpl0itR did a bit of work too :D)" },
+                Copyright      = "Unlicense",
+                Comments       = "Ryujinx is an emulator for the Nintendo Switch",
+                Website        = "https://github.com/Ryujinx/Ryujinx",
+                WindowPosition = WindowPosition.Center,
+            };
+
             about.Run();
             about.Destroy();
         }

@@ -60,9 +60,8 @@ namespace Ryujinx
             {
                 Gtk.Application.Init();
 
-                var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                var gtkapp        = new Gtk.Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
-                var win           = new MainMenu(device, gtkapp);
+                var gtkapp = new Gtk.Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
+                var win    = new MainMenu(device, gtkapp);
 
                 gtkapp.Register(GLib.Cancellable.Current);
                 gtkapp.AddWindow(win);

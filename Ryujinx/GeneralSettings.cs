@@ -26,9 +26,13 @@ namespace Ryujinx
         [GUI] CheckButton  AggrToggle;
         [GUI] CheckButton  IgnoreToggle;
         [GUI] ComboBoxText SystemLanguageSelect;
+        [GUI] CheckButton  CustThemeToggle;
+        [GUI] Entry        CustThemeDir;
         [GUI] TextView     GameDirsBox;
         [GUI] Button       SaveButton;
         [GUI] Button       CancelButton;
+
+        public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
         public GeneralSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GeneralSettings.glade"), _device) { }
 
@@ -38,31 +42,34 @@ namespace Ryujinx
 
             builder.Autoconnect(this);
 
-            SaveButton.Activated   += Save_Activated;
-            CancelButton.Activated += Cancel_Activated;
+            SaveButton.Activated    += SaveButton_Activated;
+            CancelButton.Activated  += CancelButton_Activated;
+            CustThemeToggle.Clicked += CustThemeToggle_Activated;
 
-            if (SwitchConfig.LoggingEnableError == true) { ErrorLogToggle.Click(); }
-            if (SwitchConfig.LoggingEnableWarn == true) { WarningLogToggle.Click(); }
-            if (SwitchConfig.LoggingEnableInfo == true) { InfoLogToggle.Click(); }
-            if (SwitchConfig.LoggingEnableStub == true) { StubLogToggle.Click(); }
-            if (SwitchConfig.LoggingEnableDebug == true) { DebugLogToggle.Click(); }
-            if (SwitchConfig.EnableFileLog == true) { FileLogToggle.Click(); }
-            if (SwitchConfig.DockedMode == true) { DockedModeToggle.Click(); }
-            if (SwitchConfig.EnableDiscordIntergration == true) { DiscordToggle.Click(); }
-            if (SwitchConfig.EnableVsync == true) { VSyncToggle.Click(); }
-            if (SwitchConfig.EnableMulticoreScheduling == true) { MultiSchedToggle.Click(); }
-            if (SwitchConfig.EnableFsIntegrityChecks == true) { FSICToggle.Click(); }
-            if (SwitchConfig.EnableAggressiveCpuOpts == true) { AggrToggle.Click(); }
-            if (SwitchConfig.IgnoreMissingServices == true) { IgnoreToggle.Click(); }
+            if (SwitchConfig.LoggingEnableError) { ErrorLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableWarn) { WarningLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableInfo) { InfoLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableStub) { StubLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableDebug) { DebugLogToggle.Click(); }
+            if (SwitchConfig.EnableFileLog) { FileLogToggle.Click(); }
+            if (SwitchConfig.DockedMode) { DockedModeToggle.Click(); }
+            if (SwitchConfig.EnableDiscordIntergration) { DiscordToggle.Click(); }
+            if (SwitchConfig.EnableVsync) { VSyncToggle.Click(); }
+            if (SwitchConfig.EnableMulticoreScheduling) { MultiSchedToggle.Click(); }
+            if (SwitchConfig.EnableFsIntegrityChecks) { FSICToggle.Click(); }
+            if (SwitchConfig.EnableAggressiveCpuOpts) { AggrToggle.Click(); }
+            if (SwitchConfig.IgnoreMissingServices) { IgnoreToggle.Click(); }
+            if (SwitchConfig.EnableCustomTheme) { CustThemeToggle.Click(); }
             SystemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
 
             GameDirsBox.Buffer.Text = File.ReadAllText("./GameDirs.dat");
+            CustThemeDir.Buffer.Text = SwitchConfig.CustomThemePath;
+
+            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; }
         }
 
-        public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
-
         //Events
-        private void Save_Activated(object obj, EventArgs args)
+        private void SaveButton_Activated(object obj, EventArgs args)
         {
             //Saving code is about to make this a BIG boi
 
@@ -71,9 +78,14 @@ namespace Ryujinx
             Destroy();
         }
 
-        private void Cancel_Activated(object obj, EventArgs args)
+        private void CancelButton_Activated(object obj, EventArgs args)
         {
             Destroy();
+        }
+
+        private void CustThemeToggle_Activated(object obj, EventArgs args)
+        {
+            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; } else { CustThemeDir.Sensitive = true; }
         }
     }
 }

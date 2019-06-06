@@ -11,19 +11,12 @@ namespace Ryujinx
         {
             Window CSWin         = new Window(WindowType.Toplevel);
             CSWin.Title          = "Control Settings";
+            CSWin.Icon           = new Gdk.Pixbuf("./ryujinxIcon.png");
             CSWin.Resizable      = false;
             CSWin.WindowPosition = WindowPosition.Center;
             CSWin.SetDefaultSize(854, 360);
 
             VBox box = new VBox(false, 2);
-
-            //Load Icon
-            using (Stream iconstream   = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.ryujinxIcon.png"))
-            using (StreamReader reader = new StreamReader(iconstream))
-            {
-                Gdk.Pixbuf RyujinxIcon = new Gdk.Pixbuf(iconstream);
-                CSWin.Icon             = RyujinxIcon;
-            }
 
             //settings stuff will replace this block
             Label myLabel = new Label { Text = "Control Settings" };
