@@ -67,6 +67,11 @@ button {
     color: #F4F6F7;
 }
 
+filechooser #pathbarbox {
+    background-color: #272b2e;
+    border-bottom: 1px solid #595c5f;
+}
+
 scrollbar {
     -GtkScrollbar-has-backward-stepper: false;
     -GtkScrollbar-has-forward-stepper: false;

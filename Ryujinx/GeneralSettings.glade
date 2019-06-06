@@ -404,8 +404,8 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="SaveButton">
-                <property name="label" translatable="yes">Save</property>
+              <object class="GtkToggleButton" id="SaveToggle">
+                <property name="label" translatable="yes">Toggle to Save</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -417,8 +417,8 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="CancelButton">
-                <property name="label" translatable="yes">Cancel</property>
+              <object class="GtkToggleButton" id="CloseToggle">
+                <property name="label" translatable="yes">Toggle to Close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

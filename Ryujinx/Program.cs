@@ -8,7 +8,6 @@ using Ryujinx.Profiler;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Ryujinx
 {
@@ -24,6 +23,8 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
+            Environment.SetEnvironmentVariable("Path", $"{new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent}\\bin;{Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine)}");
+            
             IGalRenderer renderer = new OglRenderer();
 
             IAalOutput audioOut = InitializeAudioEngine();

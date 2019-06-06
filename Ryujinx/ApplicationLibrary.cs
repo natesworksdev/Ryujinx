@@ -94,7 +94,7 @@ namespace Ryujinx
 
                         byte[] IconData = Read(AssetOffset + IconOffset, (int)IconSize);
 
-                        return new Gdk.Pixbuf(IconData, 50, 50);
+                        return new Gdk.Pixbuf(IconData, 75, 75);
                     }
                     else { return RyujinxROMIcon; }
                 }

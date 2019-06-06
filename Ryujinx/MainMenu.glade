@@ -94,7 +94,6 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Control Settings</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="Control_Settings_Pressed" swapped="no"/>
                       </object>
                     </child>
                   </object>

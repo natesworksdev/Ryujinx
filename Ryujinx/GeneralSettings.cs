@@ -29,8 +29,8 @@ namespace Ryujinx
         [GUI] CheckButton  CustThemeToggle;
         [GUI] Entry        CustThemeDir;
         [GUI] TextView     GameDirsBox;
-        [GUI] Button       SaveButton;
-        [GUI] Button       CancelButton;
+        [GUI] ToggleButton SaveToggle;
+        [GUI] ToggleButton CloseToggle;
 
         public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
@@ -42,8 +42,8 @@ namespace Ryujinx
 
             builder.Autoconnect(this);
 
-            SaveButton.Activated    += SaveButton_Activated;
-            CancelButton.Activated  += CancelButton_Activated;
+            SaveToggle.Toggled      += SaveToggle_Activated;
+            CloseToggle.Toggled     += CloseToggle_Activated;
             CustThemeToggle.Clicked += CustThemeToggle_Activated;
 
             if (SwitchConfig.LoggingEnableError) { ErrorLogToggle.Click(); }
@@ -69,23 +69,19 @@ namespace Ryujinx
         }
 
         //Events
-        private void SaveButton_Activated(object obj, EventArgs args)
-        {
-            //Saving code is about to make this a BIG boi
-
-            File.WriteAllText("./GameDirs.dat", GameDirsBox.Buffer.Text);
-
-            Destroy();
-        }
-
-        private void CancelButton_Activated(object obj, EventArgs args)
-        {
-            Destroy();
-        }
-
         private void CustThemeToggle_Activated(object obj, EventArgs args)
         {
             if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; } else { CustThemeDir.Sensitive = true; }
+        }
+
+        private void CloseToggle_Activated(object obj, EventArgs args)
+        {
+            Destroy();
+        }
+
+        private void SaveToggle_Activated(object obj, EventArgs args)
+        {
+            File.WriteAllText("./GameDirs.dat", GameDirsBox.Buffer.Text);
         }
     }
 }

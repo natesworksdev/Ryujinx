@@ -16,6 +16,7 @@ namespace Ryujinx
 
         //UI Controls
         [GUI] MenuItem NFC;
+        [GUI] MenuItem ControlSettingsMenu;
         [GUI] TreeView GameTable;
 
         public MainMenu(HLE.Switch _device, Application _gtkapp) : this(new Builder("Ryujinx.MainMenu.glade"), _device, _gtkapp) { }
@@ -40,7 +41,8 @@ namespace Ryujinx
             DeleteEvent += Window_Close;
 
             //disable some buttons
-            NFC.Sensitive      = false;
+            NFC.Sensitive                 = false;
+            ControlSettingsMenu.Sensitive = false;
 
             //Games grid thing
             GameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 0);
@@ -201,11 +203,6 @@ namespace Ryujinx
             gtkapp.Register(GLib.Cancellable.Current);
             gtkapp.AddWindow(GSWin);
             GSWin.Show();
-        }
-
-        private void Control_Settings_Pressed(object o, EventArgs args)
-        {
-            ControlSettings.ControlSettingsMenu();
         }
 
         private void NFC_Pressed(object o, EventArgs args)
