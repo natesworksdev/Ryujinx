@@ -16,20 +16,19 @@ namespace Ryujinx
         public struct ApplicationData
         {
             public Gdk.Pixbuf Icon;
-            public string Game;
-            public string Version;
-            public string DLC;
-            public string TP;
-            public string LP;
-            public string Path;
+            public string     Game;
+            public string     Version;
+            public string     DLC;
+            public string     TP;
+            public string     LP;
+            public string     Path;
         }
 
         public static void Init()
         {
             using (Stream iconstream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.ryujinxROMIcon.png"))
-            using (StreamReader reader = new StreamReader(iconstream))
             {
-                RyujinxROMIcon = new Gdk.Pixbuf(iconstream);
+                RyujinxROMIcon = new Gdk.Pixbuf(iconstream, 75, 75);
             }
 
             string dat = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirs.dat");
@@ -59,7 +58,7 @@ namespace Ryujinx
                     Icon = GetGameIcon(GamePath),
                     Game = (Path.GetExtension(GamePath) == ".nro") ? "Application" : "",
                     Version = "",
-                    DLC = "",
+                    DLC = (Path.GetExtension(GamePath) == ".nro") ? "N/A" : "",
                     TP = "",
                     LP = "",
                     Path = GamePath

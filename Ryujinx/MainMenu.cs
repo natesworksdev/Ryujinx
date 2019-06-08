@@ -15,9 +15,11 @@ namespace Ryujinx
         internal ListStore TableStore { get; private set; }
 
         //UI Controls
-        [GUI] MenuItem NFC;
-        [GUI] MenuItem ControlSettingsMenu;
-        [GUI] TreeView GameTable;
+        [GUI] MenuItem       NFC;
+        [GUI] MenuItem       ControlSettingsMenu;
+        [GUI] TreeView       GameTable;
+        [GUI] ScrolledWindow GameTableWindow;
+        [GUI] GLArea         GLScreen;
 
         public MainMenu(HLE.Switch _device, Application _gtkapp) : this(new Builder("Ryujinx.MainMenu.glade"), _device, _gtkapp) { }
 
@@ -26,7 +28,7 @@ namespace Ryujinx
             device = _device;
             gtkapp = _gtkapp;
 
-            if (device.System.State.DiscordIntergrationEnabled == true)
+            if (Program.DiscordIntergrationEnabled)
             {
                 Program.DiscordPresence.Details    = "Main Menu";
                 Program.DiscordPresence.State      = "Idling";
@@ -36,6 +38,9 @@ namespace Ryujinx
             }
 
             builder.Autoconnect(this);
+            GameTableWindow.Show();
+            GLScreen.Hide();
+
             ApplyTheme();
 
             DeleteEvent += Window_Close;
@@ -112,6 +117,9 @@ namespace Ryujinx
                     break;
             }
 
+            GameTableWindow.Hide();
+            GLScreen.Show();
+
             Destroy();
             Application.Quit();
         }
@@ -149,6 +157,9 @@ namespace Ryujinx
                         break;
                 }
 
+                GameTableWindow.Hide();
+                GLScreen.Show();
+
                 Destroy();
                 Application.Quit();
             }
@@ -179,6 +190,9 @@ namespace Ryujinx
                     Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
                     device.LoadCart(fc.Filename);
                 }
+
+                GameTableWindow.Hide();
+                GLScreen.Show();
 
                 Destroy();
                 Application.Quit();

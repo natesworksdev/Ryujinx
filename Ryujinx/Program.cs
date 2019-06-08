@@ -17,14 +17,18 @@ namespace Ryujinx
 
         public static RichPresence DiscordPresence;
 
+        public static bool DiscordIntegrationEnabled { get; set; }
+
         public static string ApplicationDirectory => AppDomain.CurrentDomain.BaseDirectory;
 
         static void Main(string[] args)
         {
             Console.Title = "Ryujinx Console";
 
-            Environment.SetEnvironmentVariable("Path", $"{new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent}\\bin;{Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine)}");
-            
+            string parentDir  = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent.ToString();
+            string systemPATH = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
+            Environment.SetEnvironmentVariable("Path", $"{Path.Combine(parentDir, "bin")};{systemPATH}");
+
             IGalRenderer renderer = new OglRenderer();
 
             IAalOutput audioOut = InitializeAudioEngine();
@@ -32,7 +36,7 @@ namespace Ryujinx
             Switch device = new Switch(renderer, audioOut);
 
             Configuration.Load(Path.Combine(ApplicationDirectory, "Config.jsonc"));
-            Configuration.Configure(device);
+            Configuration.InitialConfigure(device);
 
             Profile.Initialize();
 
@@ -41,7 +45,7 @@ namespace Ryujinx
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
 
-            if (device.System.State.DiscordIntegrationEnabled == true)
+            if (DiscordIntegrationEnabled)
             {
                 DiscordClient   = new DiscordRpcClient("568815339807309834");
                 DiscordPresence = new RichPresence
@@ -122,7 +126,7 @@ namespace Ryujinx
                 }
             }
 
-            if (device.System.State.DiscordIntegrationEnabled == true)
+            if (DiscordIntegrationEnabled)
             {
                 if (File.ReadAllLines(Path.Combine(ApplicationDirectory, "RPsupported.dat")).Contains(device.System.TitleID))
                 {
