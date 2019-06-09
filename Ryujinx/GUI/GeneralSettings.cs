@@ -32,8 +32,6 @@ namespace Ryujinx
         [GUI] CheckButton  CustThemeToggle;
         [GUI] Entry        CustThemeDir;
         [GUI] TextView     GameDirsBox;
-        [GUI] ToggleButton SaveToggle;
-        [GUI] ToggleButton CloseToggle;
 
         public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
@@ -46,8 +44,6 @@ namespace Ryujinx
             builder.Autoconnect(this);
 
             GSWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
-
-            CustThemeToggle.Clicked += CustThemeToggle_Activated;
 
             if (SwitchConfig.LoggingEnableError)        { ErrorLogToggle.Click(); }
             if (SwitchConfig.LoggingEnableWarn)         { WarningLogToggle.Click(); }
@@ -102,7 +98,7 @@ namespace Ryujinx
             SwitchConfig.SystemLanguage  = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
             SwitchConfig.CustomThemePath = CustThemeDir.Buffer.Text;
 
-            Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.jsonc"));
+            Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             File.WriteAllText("./GameDirs.dat", GameDirsBox.Buffer.Text);
 
             Configuration.Configure(device, SwitchConfig);

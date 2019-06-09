@@ -26,6 +26,24 @@ separator {
     background: #929394;
 }
 
+notebook {
+    border: none;
+}
+
+    notebook > header {
+        background-color: #2C2F33;
+        border: none;
+    }
+        
+    notebook > header label {
+        color: #F4F6F7;
+    }
+
+notebook > stack:not(:only-child) {
+    background-color: transparent;
+    border-width: 0px;
+}
+
 treeview {
     background-color: #2C2F33;
     color: #F4F6F7;

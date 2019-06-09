@@ -49,7 +49,7 @@ namespace Ryujinx
 
             device = new HLE.Switch(renderer, audioOut);
 
-            Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.jsonc"));
+            Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(device);
 
             gtkapp = _gtkapp;
