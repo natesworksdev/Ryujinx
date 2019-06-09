@@ -9,7 +9,7 @@ namespace Ryujinx
 {
     public class GeneralSettings : Window
     {
-        internal HLE.Switch device { get; private set; }
+        private HLE.Switch device { get; set; }
 
         internal static Configuration SwitchConfig { get; private set; }
 

@@ -221,7 +221,7 @@ namespace Ryujinx
             if (Instance.EnableFileLog)
             {
                 Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(Path.Combine(Program.ApplicationDirectory, "Ryujinx.log")),
+                    new FileLogTarget(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log")),
                     1000,
                     AsyncLogTargetOverflowAction.Block
                 ));
@@ -253,7 +253,7 @@ namespace Ryujinx
                 }
             }
 
-            Program.DiscordIntegrationEnabled = SwitchConfig.EnableDiscordIntegration;
+            MainMenu.DiscordIntegrationEnabled = SwitchConfig.EnableDiscordIntergration;
 
             device.EnableDeviceVsync = SwitchConfig.EnableVsync;
 
