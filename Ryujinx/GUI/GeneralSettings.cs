@@ -3,8 +3,7 @@ using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.IO;
-using Utf8Json;
-using Utf8Json.Resolvers;
+using System.Reflection;
 
 namespace Ryujinx
 {
@@ -15,6 +14,7 @@ namespace Ryujinx
         internal static Configuration SwitchConfig { get; private set; }
 
         //UI Controls
+        [GUI] Window       GSWin;
         [GUI] CheckButton  ErrorLogToggle;
         [GUI] CheckButton  WarningLogToggle;
         [GUI] CheckButton  InfoLogToggle;
@@ -37,7 +37,7 @@ namespace Ryujinx
 
         public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
-        public GeneralSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GeneralSettings.glade"), _device) { }
+        public GeneralSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GUI.GeneralSettings.glade"), _device) { }
 
         private GeneralSettings(Builder builder, HLE.Switch _device) : base(builder.GetObject("GSWin").Handle)
         {
@@ -45,8 +45,8 @@ namespace Ryujinx
 
             builder.Autoconnect(this);
 
-            SaveToggle.Toggled      += SaveToggle_Activated;
-            CloseToggle.Toggled     += CloseToggle_Activated;
+            GSWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
+
             CustThemeToggle.Clicked += CustThemeToggle_Activated;
 
             if (SwitchConfig.LoggingEnableError)        { ErrorLogToggle.Click(); }
@@ -102,6 +102,7 @@ namespace Ryujinx
             SwitchConfig.SystemLanguage  = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
             SwitchConfig.CustomThemePath = CustThemeDir.Buffer.Text;
 
+            Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.jsonc"));
             File.WriteAllText("./GameDirs.dat", GameDirsBox.Buffer.Text);
 
             Configuration.Configure(device, SwitchConfig);

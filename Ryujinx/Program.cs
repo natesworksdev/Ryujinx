@@ -25,7 +25,7 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
-            string parentDir  = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent.ToString();
+            string parentDir  = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).ToString();
             string systemPATH = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
             Environment.SetEnvironmentVariable("Path", $"{Path.Combine(parentDir, "bin")};{systemPATH}");
 

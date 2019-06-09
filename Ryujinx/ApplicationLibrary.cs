@@ -26,10 +26,7 @@ namespace Ryujinx
 
         public static void Init()
         {
-            using (Stream iconstream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.ryujinxROMIcon.png"))
-            {
-                RyujinxROMIcon = new Gdk.Pixbuf(iconstream, 75, 75);
-            }
+            RyujinxROMIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxROMIcon.png", 75, 75);
 
             string dat = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirs.dat");
             if (File.Exists(dat) == false) { File.Create(dat).Close(); }
@@ -38,7 +35,7 @@ namespace Ryujinx
 
             foreach (string GameDir in GameDirs)
             {
-                if (Directory.Exists(GameDir) == false) { Logger.PrintError(LogClass.Application, "There is an invalid game directory in \"GameDirs.dat\""); }
+                if (Directory.Exists(GameDir) == false) { Logger.PrintError(LogClass.Application, $"\"GameDirs.dat\" contains an invalid directory: \"{GameDir}\""); continue; }
 
                 DirectoryInfo GameDirInfo = new DirectoryInfo(GameDir);
                 foreach (var Game in GameDirInfo.GetFiles())
@@ -73,7 +70,13 @@ namespace Ryujinx
             {
                 BinaryReader Reader = new BinaryReader(Input);
 
-                if (Path.GetExtension(filePath) == ".nro")
+                if ((Path.GetExtension(filePath) == ".nsp") || (Path.GetExtension(filePath) == ".pfs0")) { return RyujinxROMIcon; }
+
+                else if (Path.GetExtension(filePath) == ".xci") { return RyujinxROMIcon; }
+
+                else if (Path.GetExtension(filePath) == ".nca") { return RyujinxROMIcon; }
+
+                else if (Path.GetExtension(filePath) == ".nro")
                 {
                     Input.Seek(24, SeekOrigin.Begin);
                     int AssetOffset = Reader.ReadInt32();
@@ -97,10 +100,8 @@ namespace Ryujinx
                     }
                     else { return RyujinxROMIcon; }
                 }
-                else
-                {
-                    return RyujinxROMIcon; //temp
-                }
+
+                else { return RyujinxROMIcon; }
             }
         }
     }

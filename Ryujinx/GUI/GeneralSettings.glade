@@ -6,7 +6,6 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Ryujinx - General Settings (Read-Only)</property>
     <property name="default_height">500</property>
-    <property name="icon">ryujinxIcon.png</property>
     <child>
       <placeholder/>
     </child>
@@ -409,6 +408,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="toggled" handler="SaveToggle_Activated" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -422,6 +422,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="toggled" handler="CloseToggle_Activated" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>

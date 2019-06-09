@@ -10,9 +10,11 @@ using Ryujinx.HLE.Input;
 using Ryujinx.UI.Input;
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Utf8Json;
 using Utf8Json.Resolvers;
+using JsonPrettyPrinterPlus;
 
 namespace Ryujinx
 {
@@ -180,6 +182,21 @@ namespace Ryujinx
             {
                 Instance = await JsonSerializer.DeserializeAsync<Configuration>(stream, resolver);
             }
+        }
+
+        /// <summary>
+        /// Save a configuration file to disk
+        /// </summary>
+        /// <param name="path">The path to the JSON configuration file</param>
+        public static void SaveConfig(Configuration config, string path)
+        {
+            var resolver = CompositeResolver.Create(
+                new[] { new ConfigurationEnumFormatter<Key>() },
+                new[] { StandardResolver.AllowPrivateSnakeCase }
+            );
+
+            var data = JsonSerializer.Serialize(config, resolver);
+            File.WriteAllText(path, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
         }
 
         /// <summary>

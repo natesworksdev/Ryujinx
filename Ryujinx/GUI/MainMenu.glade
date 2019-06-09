@@ -7,8 +7,7 @@
     <property name="title" translatable="yes">Ryujinx</property>
     <property name="window_position">center</property>
     <property name="default_width">1280</property>
-    <property name="default_height">745</property>
-    <property name="icon">ryujinxIcon.png</property>
+    <property name="default_height">750</property>
     <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>

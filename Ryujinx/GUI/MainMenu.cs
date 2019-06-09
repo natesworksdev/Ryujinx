@@ -3,6 +3,7 @@ using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.Common.Logging;
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Ryujinx
 {
@@ -15,13 +16,14 @@ namespace Ryujinx
         internal ListStore TableStore { get; private set; }
 
         //UI Controls
+        [GUI] Window         MainWin;
         [GUI] MenuItem       NFC;
         [GUI] MenuItem       ControlSettingsMenu;
         [GUI] TreeView       GameTable;
         [GUI] ScrolledWindow GameTableWindow;
         [GUI] GLArea         GLScreen;
 
-        public MainMenu(HLE.Switch _device, Application _gtkapp) : this(new Builder("Ryujinx.MainMenu.glade"), _device, _gtkapp) { }
+        public MainMenu(HLE.Switch _device, Application _gtkapp) : this(new Builder("Ryujinx.GUI.MainMenu.glade"), _device, _gtkapp) { }
 
         private MainMenu(Builder builder, HLE.Switch _device, Application _gtkapp) : base(builder.GetObject("MainWin").Handle)
         {
@@ -38,6 +40,7 @@ namespace Ryujinx
             }
 
             builder.Autoconnect(this);
+            MainWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
             GameTableWindow.Show();
             GLScreen.Hide();
 
@@ -84,7 +87,7 @@ namespace Ryujinx
             }
             else
             {
-                css_provider.LoadFromPath("Theme.css");
+                css_provider.LoadFromPath("./GUI/assets/Theme.css");
             }
 
             StyleContext.AddProviderForScreen(Gdk.Screen.Default, css_provider, 800);
@@ -237,7 +240,7 @@ namespace Ryujinx
             AboutDialog about  = new AboutDialog
             {
                 ProgramName    = "Ryujinx",
-                Icon           = new Gdk.Pixbuf("./ryujinxIcon.png"),
+                Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png"),
                 Version        = "Version x.x.x",
                 Authors        = new string[] { "gdkchan", "Ac_K", "LDj3SNuD", "emmauss", "MerryMage", "MS-DOS1999", "Thog", "jD", "BaronKiko", "Dr.Hacknik", "Lordmau5", "(and Xpl0itR did a bit of work too :D)" },
                 Copyright      = "Unlicense",
