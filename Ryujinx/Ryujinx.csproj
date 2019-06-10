@@ -21,6 +21,7 @@
   <ItemGroup>
     <EmbeddedResource Include="GUI\assets\ryujinxIcon.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxROMIcon.png" />
+    <EmbeddedResource Include="GUI\ControlSettings.glade" />
     <EmbeddedResource Include="GUI\GeneralSettings.glade" />
     <EmbeddedResource Include="GUI\MainMenu.glade" />
   </ItemGroup>

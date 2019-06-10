@@ -4,6 +4,7 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkDialog" id="GSWin">
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Ryujinx - General Settings</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
     <child>
@@ -236,6 +237,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">end</property>
                     <property name="label" translatable="yes">System Language:</property>
                   </object>
                   <packing>
@@ -273,10 +275,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkImage">
+                  <object class="GtkCheckButton" id="DirectKeyboardAccess">
+                    <property name="label" translatable="yes">Direct Keyboard Access</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="stock">gtk-discard</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>

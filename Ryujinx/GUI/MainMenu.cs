@@ -31,10 +31,8 @@ namespace Ryujinx
 
         private static ListStore TableStore { get; set; }
 
-        //UI Controls
         [GUI] Window         MainWin;
         [GUI] MenuItem       NFC;
-        [GUI] MenuItem       ControlSettingsMenu;
         [GUI] TreeView       GameTable;
         [GUI] ScrolledWindow GameTableWindow;
         [GUI] GLArea         GLScreen;
@@ -102,7 +100,6 @@ namespace Ryujinx
                 GLScreen.Hide();
 
                 NFC.Sensitive = false;
-                ControlSettingsMenu.Sensitive = false;
 
                 GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
                 GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
@@ -325,6 +322,14 @@ namespace Ryujinx
             gtkapp.Register(GLib.Cancellable.Current);
             gtkapp.AddWindow(GSWin);
             GSWin.Show();
+        }
+
+        private void Control_Settings_Pressed(object o, EventArgs args)
+        {
+            var CSWin = new ControlSettings(device);
+            gtkapp.Register(GLib.Cancellable.Current);
+            gtkapp.AddWindow(CSWin);
+            CSWin.Show();
         }
 
         private void NFC_Pressed(object o, EventArgs args)

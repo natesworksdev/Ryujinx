@@ -13,7 +13,6 @@ namespace Ryujinx
 
         internal static Configuration SwitchConfig { get; private set; }
 
-        //UI Controls
         [GUI] Window       GSWin;
         [GUI] CheckButton  ErrorLogToggle;
         [GUI] CheckButton  WarningLogToggle;
@@ -28,6 +27,7 @@ namespace Ryujinx
         [GUI] CheckButton  FSICToggle;
         [GUI] CheckButton  AggrToggle;
         [GUI] CheckButton  IgnoreToggle;
+        [GUI] CheckButton  DirectKeyboardAccess;
         [GUI] ComboBoxText SystemLanguageSelect;
         [GUI] CheckButton  CustThemeToggle;
         [GUI] Entry        CustThemeDir;
@@ -58,6 +58,7 @@ namespace Ryujinx
             if (SwitchConfig.EnableFsIntegrityChecks)   { FSICToggle.Click(); }
             if (SwitchConfig.EnableAggressiveCpuOpts)   { AggrToggle.Click(); }
             if (SwitchConfig.IgnoreMissingServices)     { IgnoreToggle.Click(); }
+            if (SwitchConfig.EnableKeyboard)            { DirectKeyboardAccess.Click(); }
             if (SwitchConfig.EnableCustomTheme)         { CustThemeToggle.Click(); }
             SystemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
 
@@ -73,27 +74,23 @@ namespace Ryujinx
             if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; } else { CustThemeDir.Sensitive = true; }
         }
 
-        private void CloseToggle_Activated(object obj, EventArgs args)
-        {
-            Destroy();
-        }
-
         private void SaveToggle_Activated(object obj, EventArgs args)
         {
-            if (ErrorLogToggle.Active)   { SwitchConfig.LoggingEnableError        = true; }
-            if (WarningLogToggle.Active) { SwitchConfig.LoggingEnableWarn         = true; }
-            if (InfoLogToggle.Active)    { SwitchConfig.LoggingEnableInfo         = true; }
-            if (StubLogToggle.Active)    { SwitchConfig.LoggingEnableStub         = true; }
-            if (DebugLogToggle.Active)   { SwitchConfig.LoggingEnableDebug        = true; }
-            if (FileLogToggle.Active)    { SwitchConfig.EnableFileLog             = true; }
-            if (DockedModeToggle.Active) { SwitchConfig.DockedMode                = true; }
-            if (DiscordToggle.Active)    { SwitchConfig.EnableDiscordIntergration = true; }
-            if (VSyncToggle.Active)      { SwitchConfig.EnableVsync               = true; }
-            if (MultiSchedToggle.Active) { SwitchConfig.EnableMulticoreScheduling = true; }
-            if (FSICToggle.Active)       { SwitchConfig.EnableFsIntegrityChecks   = true; }
-            if (AggrToggle.Active)       { SwitchConfig.EnableAggressiveCpuOpts   = true; }
-            if (IgnoreToggle.Active)     { SwitchConfig.IgnoreMissingServices     = true; }
-            if (CustThemeToggle.Active)  { SwitchConfig.EnableCustomTheme         = true; }
+            if (ErrorLogToggle.Active)       { SwitchConfig.LoggingEnableError        = true; }
+            if (WarningLogToggle.Active)     { SwitchConfig.LoggingEnableWarn         = true; }
+            if (InfoLogToggle.Active)        { SwitchConfig.LoggingEnableInfo         = true; }
+            if (StubLogToggle.Active)        { SwitchConfig.LoggingEnableStub         = true; }
+            if (DebugLogToggle.Active)       { SwitchConfig.LoggingEnableDebug        = true; }
+            if (FileLogToggle.Active)        { SwitchConfig.EnableFileLog             = true; }
+            if (DockedModeToggle.Active)     { SwitchConfig.DockedMode                = true; }
+            if (DiscordToggle.Active)        { SwitchConfig.EnableDiscordIntergration = true; }
+            if (VSyncToggle.Active)          { SwitchConfig.EnableVsync               = true; }
+            if (MultiSchedToggle.Active)     { SwitchConfig.EnableMulticoreScheduling = true; }
+            if (FSICToggle.Active)           { SwitchConfig.EnableFsIntegrityChecks   = true; }
+            if (AggrToggle.Active)           { SwitchConfig.EnableAggressiveCpuOpts   = true; }
+            if (IgnoreToggle.Active)         { SwitchConfig.IgnoreMissingServices     = true; }
+            if (DirectKeyboardAccess.Active) { SwitchConfig.EnableKeyboard            = true; }
+            if (CustThemeToggle.Active)      { SwitchConfig.EnableCustomTheme         = true; }
 
             SwitchConfig.SystemLanguage  = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
             SwitchConfig.CustomThemePath = CustThemeDir.Buffer.Text;
@@ -103,6 +100,11 @@ namespace Ryujinx
 
             Configuration.Configure(device, SwitchConfig);
 
+            Destroy();
+        }
+
+        private void CloseToggle_Activated(object obj, EventArgs args)
+        {
             Destroy();
         }
     }
