@@ -2,8 +2,9 @@
 using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.UI.Input;
 using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Ryujinx
 {
@@ -14,7 +15,7 @@ namespace Ryujinx
         internal static Configuration SwitchConfig { get; private set; }
 
         [GUI] Window       CSWin;
-        [GUI] CheckButton  EnableKeyboard;
+        [GUI] CheckButton  DirectKeyboardAccess;
         [GUI] Image        ControllerImage;
 
         [GUI] ToggleButton LStickUp1;
@@ -53,7 +54,7 @@ namespace Ryujinx
             builder.Autoconnect(this);
 
             CSWin.Icon             = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
-            ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png", 500, 500);
+            ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.JoyCon.png", 400, 400);
 
             LStickUp1.Toggled     += (o, args) => Button_Pressed(o, args, LStickUp1);
             LStickDown1.Toggled   += (o, args) => Button_Pressed(o, args, LStickDown1);
@@ -80,7 +81,7 @@ namespace Ryujinx
             R1.Toggled            += (o, args) => Button_Pressed(o, args, R1);
             ZR1.Toggled           += (o, args) => Button_Pressed(o, args, ZR1);
 
-            if (SwitchConfig.EnableKeyboard) { EnableKeyboard.Click(); }
+            if (SwitchConfig.EnableKeyboard) { DirectKeyboardAccess.Click(); }
             LStickUp1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.StickUp.ToString();
             LStickDown1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickDown.ToString();
             LStickLeft1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickLeft.ToString();
@@ -116,8 +117,9 @@ namespace Ryujinx
             {
                 string key = KeyPressed.Event.Key.ToString();
 
-                if (GdkToTKInput.ContainsKey(key)) { Button.Label = GdkToTKInput[key]; }
-                else { Button.Label = "A"; }
+                if (Enum.IsDefined(typeof(OpenTK.Input.Key), key.First().ToString().ToUpper() + key.Substring(1))) { Button.Label = key.First().ToString().ToUpper() + key.Substring(1); }
+                else if (GdkToTKInput.ContainsKey(key))                                                            { Button.Label = GdkToTKInput[key]; }
+                else                                                                                               { Button.Label = "Space"; }
 
                 Button.SetStateFlags(0, true);
                 KeyPressEvent -= On_KeyPress;
@@ -126,7 +128,7 @@ namespace Ryujinx
 
         private void SaveToggle_Activated(object obj, EventArgs args)
         {
-            if (EnableKeyboard.Active) { SwitchConfig.EnableKeyboard = true; }
+            if (DirectKeyboardAccess.Active) { SwitchConfig.EnableKeyboard = true; }
 
             SwitchConfig.KeyboardControls.LeftJoycon = new NpadKeyboardLeft()
             {
@@ -173,58 +175,6 @@ namespace Ryujinx
 
         public readonly Dictionary<string, string> GdkToTKInput = new Dictionary<string, string>()
         {
-            {"A", "A"},
-            {"B", "B"},
-            {"C", "C"},
-            {"D", "D"},
-            {"E", "E"},
-            {"F", "F"},
-            {"G", "G"},
-            {"H", "H"},
-            {"I", "I"},
-            {"J", "J"},
-            {"K", "K"},
-            {"L", "L"},
-            {"M", "M"},
-            {"N", "N"},
-            {"O", "O"},
-            {"P", "P"},
-            {"Q", "Q"},
-            {"R", "R"},
-            {"S", "S"},
-            {"T", "T"},
-            {"U", "U"},
-            {"V", "V"},
-            {"W", "W"},
-            {"X", "X"},
-            {"Y", "Y"},
-            {"Z", "Z"},
-            {"a", "A"},
-            {"b", "B"},
-            {"c", "C"},
-            {"d", "D"},
-            {"e", "E"},
-            {"f", "F"},
-            {"g", "G"},
-            {"h", "H"},
-            {"i", "I"},
-            {"j", "J"},
-            {"k", "K"},
-            {"l", "L"},
-            {"m", "M"},
-            {"n", "N"},
-            {"o", "O"},
-            {"p", "P"},
-            {"q", "Q"},
-            {"r", "R"},
-            {"s", "S"},
-            {"t", "T"},
-            {"u", "U"},
-            {"v", "V"},
-            {"w", "W"},
-            {"x", "X"},
-            {"y", "Y"},
-            {"z", "Z"},
             {"Key_0", "Number0"},
             {"Key_1", "Number1"},
             {"Key_2", "Number2"},
@@ -236,11 +186,38 @@ namespace Ryujinx
             {"Key_8", "Number8"},
             {"Key_9", "Number9"},
             {"equal", "Plus"},
-            {"minus", "Minus"},
             {"uparrow", "Up"},
             {"downarrow", "Down"},
             {"leftarrow", "Left"},
             {"rightarrow", "Right"},
+            {"Control_L", "ControlLeft"},
+            {"Control_R", "ControlRight"},
+            {"Shift_L", "ShiftLeft"},
+            {"Shift_R", "ShiftRight"},
+            {"Alt_L", "AltLeft"},
+            {"Alt_R", "AltRight"},
+            {"Page_Up", "PageUp"},
+            {"Page_Down", "PageDown"},
+            {"KP_Enter", "KeypadEnter"},
+            {"KP_Up", "Up"},
+            {"KP_Down", "Down"},
+            {"KP_Left", "Left"},
+            {"KP_Right", "Right"},
+            {"KP_Divide", "KeypadDivide"},
+            {"KP_Multiply", "KeypadMultiply"},
+            {"KP_Subtract", "KeypadSubtract"},
+            {"KP_Add", "KeypadAdd"},
+            {"KP_Decimal", "KeypadDecimal"},
+            {"KP_0", "Keypad0"},
+            {"KP_1", "Keypad1"},
+            {"KP_2", "Keypad2"},
+            {"KP_3", "Keypad3"},
+            {"KP_4", "Keypad4"},
+            {"KP_5", "Keypad5"},
+            {"KP_6", "Keypad6"},
+            {"KP_7", "Keypad7"},
+            {"KP_8", "Keypad8"},
+            {"KP_9", "Keypad9"},
         };
     }
 }
