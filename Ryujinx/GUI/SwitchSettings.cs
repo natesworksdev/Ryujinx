@@ -1,23 +1,46 @@
 ﻿using Gtk;
 using GUI = Gtk.Builder.ObjectAttribute;
+using Ryujinx.HLE.HOS.SystemState;
+using Ryujinx.HLE.Input;
 using Ryujinx.UI.Input;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
 namespace Ryujinx
 {
-    public class ControlSettings : Window
+    public class SwitchSettings : Window
     {
         private HLE.Switch device { get; set; }
 
         internal static Configuration SwitchConfig { get; private set; }
 
-        [GUI] Window       CSWin;
+        [GUI] Window       SettingsWin;
+        [GUI] CheckButton  ErrorLogToggle;
+        [GUI] CheckButton  WarningLogToggle;
+        [GUI] CheckButton  InfoLogToggle;
+        [GUI] CheckButton  StubLogToggle;
+        [GUI] CheckButton  DebugLogToggle;
+        [GUI] CheckButton  FileLogToggle;
+        [GUI] CheckButton  DockedModeToggle;
+        [GUI] CheckButton  DiscordToggle;
+        [GUI] CheckButton  VSyncToggle;
+        [GUI] CheckButton  MultiSchedToggle;
+        [GUI] CheckButton  FSICToggle;
+        [GUI] CheckButton  AggrToggle;
+        [GUI] CheckButton  IgnoreToggle;
         [GUI] CheckButton  DirectKeyboardAccess;
+        [GUI] ComboBoxText SystemLanguageSelect;
+        [GUI] CheckButton  CustThemeToggle;
+        [GUI] Entry        CustThemeDir;
+        [GUI] Label        CustThemeDirLabel;
+        [GUI] TextView     GameDirsBox;
         [GUI] Image        ControllerImage;
 
+
+        [GUI] ComboBoxText Controller1Type;
         [GUI] ToggleButton LStickUp1;
         [GUI] ToggleButton LStickDown1;
         [GUI] ToggleButton LStickLeft1;
@@ -43,19 +66,20 @@ namespace Ryujinx
         [GUI] ToggleButton R1;
         [GUI] ToggleButton ZR1;
 
-        public static void ConfigureControls(Configuration Instance) { SwitchConfig = Instance; }
+        public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
-        public ControlSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GUI.ControlSettings.glade"), _device) { }
+        public SwitchSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GUI.Settings.glade"), _device) { }
 
-        private ControlSettings(Builder builder, HLE.Switch _device) : base(builder.GetObject("CSWin").Handle)
+        private SwitchSettings(Builder builder, HLE.Switch _device) : base(builder.GetObject("SettingsWin").Handle)
         {
             device = _device;
 
             builder.Autoconnect(this);
 
-            CSWin.Icon             = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
-            ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.JoyCon.png", 400, 400);
+            SettingsWin.Icon       = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
+            ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.JoyCon.png", 500, 500);
 
+            //Bind Events
             LStickUp1.Toggled     += (o, args) => Button_Pressed(o, args, LStickUp1);
             LStickDown1.Toggled   += (o, args) => Button_Pressed(o, args, LStickDown1);
             LStickLeft1.Toggled   += (o, args) => Button_Pressed(o, args, LStickLeft1);
@@ -81,7 +105,26 @@ namespace Ryujinx
             R1.Toggled            += (o, args) => Button_Pressed(o, args, R1);
             ZR1.Toggled           += (o, args) => Button_Pressed(o, args, ZR1);
 
-            if (SwitchConfig.EnableKeyboard) { DirectKeyboardAccess.Click(); }
+            //Setup Currents
+            if (SwitchConfig.LoggingEnableError)        { ErrorLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableWarn)         { WarningLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableInfo)         { InfoLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableStub)         { StubLogToggle.Click(); }
+            if (SwitchConfig.LoggingEnableDebug)        { DebugLogToggle.Click(); }
+            if (SwitchConfig.EnableFileLog)             { FileLogToggle.Click(); }
+            if (SwitchConfig.DockedMode)                { DockedModeToggle.Click(); }
+            if (SwitchConfig.EnableDiscordIntergration) { DiscordToggle.Click(); }
+            if (SwitchConfig.EnableVsync)               { VSyncToggle.Click(); }
+            if (SwitchConfig.EnableMulticoreScheduling) { MultiSchedToggle.Click(); }
+            if (SwitchConfig.EnableFsIntegrityChecks)   { FSICToggle.Click(); }
+            if (SwitchConfig.EnableAggressiveCpuOpts)   { AggrToggle.Click(); }
+            if (SwitchConfig.IgnoreMissingServices)     { IgnoreToggle.Click(); }
+            if (SwitchConfig.EnableKeyboard)            { DirectKeyboardAccess.Click(); }
+            if (SwitchConfig.EnableCustomTheme)         { CustThemeToggle.Click(); }
+
+            SystemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
+            Controller1Type     .SetActiveId(SwitchConfig.ControllerType.ToString());
+
             LStickUp1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.StickUp.ToString();
             LStickDown1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickDown.ToString();
             LStickLeft1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickLeft.ToString();
@@ -106,6 +149,11 @@ namespace Ryujinx
             Plus1.Label         = SwitchConfig.KeyboardControls.RightJoycon.ButtonPlus.ToString();
             R1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonR.ToString();
             ZR1.Label           = SwitchConfig.KeyboardControls.RightJoycon.ButtonZr.ToString();
+
+            CustThemeDir.Buffer.Text = SwitchConfig.CustomThemePath;
+            GameDirsBox.Buffer.Text = File.ReadAllText("./GameDirs.dat");
+
+            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; }
         }
 
         //Events
@@ -113,56 +161,81 @@ namespace Ryujinx
         {
             KeyPressEvent += On_KeyPress;
 
-            void On_KeyPress(object obj , KeyPressEventArgs KeyPressed)
+            void On_KeyPress(object obj, KeyPressEventArgs KeyPressed)
             {
                 string key = KeyPressed.Event.Key.ToString();
 
                 if (Enum.IsDefined(typeof(OpenTK.Input.Key), key.First().ToString().ToUpper() + key.Substring(1))) { Button.Label = key.First().ToString().ToUpper() + key.Substring(1); }
-                else if (GdkToTKInput.ContainsKey(key))                                                            { Button.Label = GdkToTKInput[key]; }
-                else                                                                                               { Button.Label = "Space"; }
+                else if (GdkToTKInput.ContainsKey(key)) { Button.Label = GdkToTKInput[key]; }
+                else { Button.Label = "Space"; }
 
                 Button.SetStateFlags(0, true);
                 KeyPressEvent -= On_KeyPress;
             }
         }
 
+        private void CustThemeToggle_Activated(object obj, EventArgs args)
+        {
+            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; } else { CustThemeDir.Sensitive = true; CustThemeDirLabel.Sensitive = true; }
+        }
+
         private void SaveToggle_Activated(object obj, EventArgs args)
         {
-            if (DirectKeyboardAccess.Active) { SwitchConfig.EnableKeyboard = true; }
+            if (ErrorLogToggle.Active)       { SwitchConfig.LoggingEnableError        = true; }
+            if (WarningLogToggle.Active)     { SwitchConfig.LoggingEnableWarn         = true; }
+            if (InfoLogToggle.Active)        { SwitchConfig.LoggingEnableInfo         = true; }
+            if (StubLogToggle.Active)        { SwitchConfig.LoggingEnableStub         = true; }
+            if (DebugLogToggle.Active)       { SwitchConfig.LoggingEnableDebug        = true; }
+            if (FileLogToggle.Active)        { SwitchConfig.EnableFileLog             = true; }
+            if (DockedModeToggle.Active)     { SwitchConfig.DockedMode                = true; }
+            if (DiscordToggle.Active)        { SwitchConfig.EnableDiscordIntergration = true; }
+            if (VSyncToggle.Active)          { SwitchConfig.EnableVsync               = true; }
+            if (MultiSchedToggle.Active)     { SwitchConfig.EnableMulticoreScheduling = true; }
+            if (FSICToggle.Active)           { SwitchConfig.EnableFsIntegrityChecks   = true; }
+            if (AggrToggle.Active)           { SwitchConfig.EnableAggressiveCpuOpts   = true; }
+            if (IgnoreToggle.Active)         { SwitchConfig.IgnoreMissingServices     = true; }
+            if (DirectKeyboardAccess.Active) { SwitchConfig.EnableKeyboard            = true; }
+            if (CustThemeToggle.Active)      { SwitchConfig.EnableCustomTheme         = true; }
 
             SwitchConfig.KeyboardControls.LeftJoycon = new NpadKeyboardLeft()
             {
-                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickUp1.Label),
-                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickDown1.Label),
-                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickLeft1.Label),
-                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickRight1.Label),
+                StickUp = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickUp1.Label),
+                StickDown = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickDown1.Label),
+                StickLeft = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickLeft1.Label),
+                StickRight = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickRight1.Label),
                 StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickButton1.Label),
-                DPadUp      = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadUp1.Label),
-                DPadDown    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadDown1.Label),
-                DPadLeft    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadLeft1.Label),
-                DPadRight   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadRight1.Label),
+                DPadUp = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadUp1.Label),
+                DPadDown = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadDown1.Label),
+                DPadLeft = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadLeft1.Label),
+                DPadRight = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadRight1.Label),
                 ButtonMinus = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Minus1.Label),
-                ButtonL     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), L1.Label),
-                ButtonZl    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZL1.Label),
+                ButtonL = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), L1.Label),
+                ButtonZl = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZL1.Label),
             };
 
             SwitchConfig.KeyboardControls.RightJoycon = new NpadKeyboardRight()
             {
-                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickUp1.Label),
-                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickDown1.Label),
-                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickLeft1.Label),
-                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickRight1.Label),
+                StickUp = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickUp1.Label),
+                StickDown = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickDown1.Label),
+                StickLeft = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickLeft1.Label),
+                StickRight = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickRight1.Label),
                 StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickButton1.Label),
-                ButtonA     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), A1.Label),
-                ButtonB     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), B1.Label),
-                ButtonX     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), X1.Label),
-                ButtonY     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Y1.Label),
-                ButtonPlus  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Plus1.Label),
-                ButtonR     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), R1.Label),
-                ButtonZr    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZR1.Label),
+                ButtonA = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), A1.Label),
+                ButtonB = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), B1.Label),
+                ButtonX = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), X1.Label),
+                ButtonY = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Y1.Label),
+                ButtonPlus = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Plus1.Label),
+                ButtonR = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), R1.Label),
+                ButtonZr = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZR1.Label),
             };
 
+            SwitchConfig.SystemLanguage  = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
+            SwitchConfig.ControllerType  = (HidControllerType)Enum.Parse(typeof(HidControllerType), Controller1Type.ActiveId);
+            SwitchConfig.CustomThemePath = CustThemeDir.Buffer.Text;
+
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
+            File.WriteAllText("./GameDirs.dat", GameDirsBox.Buffer.Text);
+
             Configuration.Configure(device, SwitchConfig);
 
             Destroy();

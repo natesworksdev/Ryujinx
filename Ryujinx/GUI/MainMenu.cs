@@ -102,18 +102,19 @@ namespace Ryujinx
                 NFC.Sensitive = false;
 
                 GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
-                GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
-                GameTable.AppendColumn("Version", new CellRendererText(), "text", 2);
-                GameTable.AppendColumn("DLC", new CellRendererText(), "text", 3);
-                GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 4);
-                GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 5);
-                GameTable.AppendColumn("Path", new CellRendererText(), "text", 6);
+                //GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
+                //GameTable.AppendColumn("Version", new CellRendererText(), "text", 2);
+                //GameTable.AppendColumn("DLC", new CellRendererText(), "text", 3);
+                //GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 4);
+                //GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 5);
+                GameTable.AppendColumn("File Size", new CellRendererText(), "text", 6);
+                GameTable.AppendColumn("Path", new CellRendererText(), "text", 7);
 
-                TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
                 foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
                 {
-                    TableStore.AppendValues(AppData.Icon, AppData.Game, AppData.Version, AppData.DLC, AppData.TP, AppData.LP, AppData.Path);
+                    TableStore.AppendValues(AppData.Icon, AppData.Game, AppData.Version, AppData.DLC, AppData.TP, AppData.LP, AppData.FileSize, AppData.Path);
                 }
 
                 GameTable.Model = TableStore;
@@ -124,15 +125,15 @@ namespace Ryujinx
         {
             var settings          = Settings.Default;
             settings.XftRgba      = "rgb";
-            settings.XftDpi = 96;
+            settings.XftDpi       = 96;
             settings.XftHinting   = 1;
             settings.XftHintstyle = "hintfull";
 
             CssProvider css_provider = new CssProvider();
 
-            if (GeneralSettings.SwitchConfig.EnableCustomTheme)
+            if (SwitchSettings.SwitchConfig.EnableCustomTheme)
             {
-                css_provider.LoadFromPath(GeneralSettings.SwitchConfig.CustomThemePath);
+                css_provider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
             }
             else
             {
@@ -214,7 +215,7 @@ namespace Ryujinx
         private void Row_Activated(object obj, RowActivatedArgs args)
         {
             TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
-            string path = (string)TableStore.GetValue(treeiter, 6);
+            string path = (string)TableStore.GetValue(treeiter, 7);
 
             LoadApplication(path);
 
@@ -316,20 +317,12 @@ namespace Ryujinx
             Environment.Exit(0);
         }
 
-        private void General_Settings_Pressed(object o, EventArgs args)
+        private void Settings_Pressed(object o, EventArgs args)
         {
-            var GSWin = new GeneralSettings(device);
+            var SettingsWin = new SwitchSettings(device);
             gtkapp.Register(GLib.Cancellable.Current);
-            gtkapp.AddWindow(GSWin);
-            GSWin.Show();
-        }
-
-        private void Control_Settings_Pressed(object o, EventArgs args)
-        {
-            var CSWin = new ControlSettings(device);
-            gtkapp.Register(GLib.Cancellable.Current);
-            gtkapp.AddWindow(CSWin);
-            CSWin.Show();
+            gtkapp.AddWindow(SettingsWin);
+            SettingsWin.Show();
         }
 
         private void NFC_Pressed(object o, EventArgs args)

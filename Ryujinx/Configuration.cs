@@ -210,8 +210,7 @@ namespace Ryujinx
                 throw new InvalidOperationException("Configuration has not been loaded yet.");
             }
 
-            GeneralSettings.ConfigureSettings(Instance);
-            ControlSettings.ConfigureControls(Instance);
+            SwitchSettings.ConfigureSettings(Instance);
 
             Logger.AddTarget(new AsyncLogTargetWrapper(
                 new ConsoleLogTarget(),
@@ -254,7 +253,7 @@ namespace Ryujinx
                 }
             }
 
-            MainMenu.DiscordIntegrationEnabled = SwitchConfig.EnableDiscordIntergration;
+            MainMenu.DiscordIntegrationEnabled = SwitchConfig.EnableDiscordIntegration;
 
             device.EnableDeviceVsync = SwitchConfig.EnableVsync;
 

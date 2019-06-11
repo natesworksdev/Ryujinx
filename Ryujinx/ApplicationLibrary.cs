@@ -9,6 +9,11 @@ namespace Ryujinx
 {
     public class ApplicationLibrary
     {
+        public static Gdk.Pixbuf RyujinxNSPIcon { get; private set; }
+        public static Gdk.Pixbuf RyujinxXCIIcon { get; private set; }
+        public static Gdk.Pixbuf RyujinxNCAIcon { get; private set; }
+        public static Gdk.Pixbuf RyujinxNROIcon { get; private set; }
+        public static Gdk.Pixbuf RyujinxNSOIcon { get; private set; }
         public static Gdk.Pixbuf RyujinxROMIcon { get; private set; }
 
         public static List<ApplicationData> ApplicationLibraryData { get; private set; }
@@ -21,11 +26,17 @@ namespace Ryujinx
             public string     DLC;
             public string     TP;
             public string     LP;
+            public string     FileSize;
             public string     Path;
         }
 
         public static void Init()
         {
+            RyujinxNSPIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNSPIcon.png", 75, 75);
+            RyujinxXCIIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxXCIIcon.png", 75, 75);
+            RyujinxNCAIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNCAIcon.png", 75, 75);
+            RyujinxNROIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNROIcon.png", 75, 75);
+            RyujinxNSOIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNSOIcon.png", 75, 75);
             RyujinxROMIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxROMIcon.png", 75, 75);
 
             string dat = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirs.dat");
@@ -50,15 +61,17 @@ namespace Ryujinx
             ApplicationLibraryData = new List<ApplicationData>();
             foreach (string GamePath in Games)
             {
+                double filesize      = new FileInfo(GamePath).Length * 0.000000000931;
                 ApplicationData data = new ApplicationData()
                 {
-                    Icon = GetGameIcon(GamePath),
-                    Game = (Path.GetExtension(GamePath) == ".nro") ? "Application" : "",
-                    Version = "",
-                    DLC = (Path.GetExtension(GamePath) == ".nro") ? "N/A" : "",
-                    TP = "",
-                    LP = "",
-                    Path = GamePath
+                    Icon     = GetGameIcon(GamePath),
+                    Game     = (Path.GetExtension(GamePath) == ".nro") ? "Application" : "",
+                    Version  = "",
+                    DLC      = (Path.GetExtension(GamePath) == ".nro") ? "N/A" : "",
+                    TP       = "",
+                    LP       = "",
+                    FileSize = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
+                    Path     = GamePath,
                 };
                 ApplicationLibraryData.Add(data);
             }
@@ -70,11 +83,13 @@ namespace Ryujinx
             {
                 BinaryReader Reader = new BinaryReader(Input);
 
-                if ((Path.GetExtension(filePath) == ".nsp") || (Path.GetExtension(filePath) == ".pfs0")) { return RyujinxROMIcon; }
+                if ((Path.GetExtension(filePath) == ".nsp") || (Path.GetExtension(filePath) == ".pfs0")) { return RyujinxNSPIcon; }
 
-                else if (Path.GetExtension(filePath) == ".xci") { return RyujinxROMIcon; }
+                else if (Path.GetExtension(filePath) == ".xci") { return RyujinxXCIIcon; }
 
-                else if (Path.GetExtension(filePath) == ".nca") { return RyujinxROMIcon; }
+                else if (Path.GetExtension(filePath) == ".nca") { return RyujinxNCAIcon; }
+
+                else if (Path.GetExtension(filePath) == ".nso") { return RyujinxNSOIcon; }
 
                 else if (Path.GetExtension(filePath) == ".nro")
                 {
@@ -98,7 +113,7 @@ namespace Ryujinx
 
                         return new Gdk.Pixbuf(IconData, 75, 75);
                     }
-                    else { return RyujinxROMIcon; }
+                    else { return RyujinxNROIcon; }
                 }
 
                 else { return RyujinxROMIcon; }

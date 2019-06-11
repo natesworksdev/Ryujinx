@@ -21,10 +21,14 @@
   <ItemGroup>
     <EmbeddedResource Include="GUI\assets\JoyCon.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxIcon.png" />
+    <EmbeddedResource Include="GUI\assets\ryujinxNCAIcon.png" />
+    <EmbeddedResource Include="GUI\assets\ryujinxNROIcon.png" />
+    <EmbeddedResource Include="GUI\assets\ryujinxNSOIcon.png" />
+    <EmbeddedResource Include="GUI\assets\ryujinxNSPIcon.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxROMIcon.png" />
-    <EmbeddedResource Include="GUI\ControlSettings.glade" />
-    <EmbeddedResource Include="GUI\GeneralSettings.glade" />
+    <EmbeddedResource Include="GUI\assets\ryujinxXCIIcon.png" />
     <EmbeddedResource Include="GUI\MainMenu.glade" />
+    <EmbeddedResource Include="GUI\Settings.glade" />
   </ItemGroup>
 
   <ItemGroup>

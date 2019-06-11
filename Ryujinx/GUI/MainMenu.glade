@@ -77,21 +77,12 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="GeneralSettingsMenu">
+                      <object class="GtkMenuItem" id="SettingsMenu">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">General Settings</property>
+                        <property name="label" translatable="yes">Settings</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="General_Settings_Pressed" swapped="no"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkMenuItem" id="ControlSettingsMenu">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Control Settings</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="Control_Settings_Pressed" swapped="no"/>
+                        <signal name="activate" handler="Settings_Pressed" swapped="no"/>
                       </object>
                     </child>
                   </object>
