@@ -87,7 +87,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             //We need to add 8 bytes to the total size, as the call to this
             //function already pushed 8 bytes (the return address).
-            int mask = CallingConvention.GetIntCalleeSavedRegisters() & allocResult.UsedRegisters;
+            int mask = CallingConvention.GetIntCalleeSavedRegisters() & allocResult.IntUsedRegisters;
 
             mask |= 1 << (int)X86Register.Rbp;
 
@@ -97,7 +97,7 @@ namespace ARMeilleure.CodeGen.X86
 
             //The ABI mandates that the space for at least 4 arguments
             //is reserved on the stack (this is called shadow space).
-            if (argsCount < 4)
+            if (argsCount < 4 && argsCount != 0)
             {
                 argsCount = 4;
             }

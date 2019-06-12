@@ -37,6 +37,11 @@ namespace ARMeilleure.Translation
             _needsNewBlock = true;
         }
 
+        public Operand Add(Operand a, Operand b)
+        {
+            return Add(Instruction.Add, Local(a.Type), a, b);
+        }
+
         public Operand BitwiseAnd(Operand a, Operand b)
         {
             return Add(Instruction.BitwiseAnd, Local(a.Type), a, b);
@@ -158,9 +163,14 @@ namespace ARMeilleure.Translation
             return Add(Instruction.CountLeadingZeros, Local(a.Type), a);
         }
 
-        public Operand IAdd(Operand a, Operand b)
+        public Operand Divide(Operand a, Operand b)
         {
-            return Add(Instruction.Add, Local(a.Type), a, b);
+            return Add(Instruction.Divide, Local(a.Type), a, b);
+        }
+
+        public Operand DivideUI(Operand a, Operand b)
+        {
+            return Add(Instruction.DivideUI, Local(a.Type), a, b);
         }
 
         public Operand ICompareEqual(Operand a, Operand b)
@@ -213,31 +223,6 @@ namespace ARMeilleure.Translation
             return Add(Instruction.CompareNotEqual, Local(OperandType.I32), a, b);
         }
 
-        public Operand IDivide(Operand a, Operand b)
-        {
-            return Add(Instruction.Divide, Local(a.Type), a, b);
-        }
-
-        public Operand IDivideUI(Operand a, Operand b)
-        {
-            return Add(Instruction.DivideUI, Local(a.Type), a, b);
-        }
-
-        public Operand IMultiply(Operand a, Operand b)
-        {
-            return Add(Instruction.Multiply, Local(a.Type), a, b);
-        }
-
-        public Operand INegate(Operand a)
-        {
-            return Add(Instruction.Negate, Local(a.Type), a);
-        }
-
-        public Operand ISubtract(Operand a, Operand b)
-        {
-            return Add(Instruction.Subtract, Local(a.Type), a, b);
-        }
-
         public Operand Load(Operand value, Operand address)
         {
             return Add(Instruction.Load, value, address);
@@ -268,6 +253,11 @@ namespace ARMeilleure.Translation
             return Add(Instruction.LoadZx8, value, address);
         }
 
+        public Operand Multiply(Operand a, Operand b)
+        {
+            return Add(Instruction.Multiply, Local(a.Type), a, b);
+        }
+
         public Operand Multiply64HighSI(Operand a, Operand b)
         {
             return Add(Instruction.Multiply64HighSI, Local(OperandType.I64), a, b);
@@ -276,6 +266,11 @@ namespace ARMeilleure.Translation
         public Operand Multiply64HighUI(Operand a, Operand b)
         {
             return Add(Instruction.Multiply64HighUI, Local(OperandType.I64), a, b);
+        }
+
+        public Operand Negate(Operand a)
+        {
+            return Add(Instruction.Negate, Local(a.Type), a);
         }
 
         public Operand Return()
@@ -336,6 +331,61 @@ namespace ARMeilleure.Translation
         public void Store8(Operand address, Operand value)
         {
             Add(Instruction.Store8, null, address, value);
+        }
+
+        public Operand Subtract(Operand a, Operand b)
+        {
+            return Add(Instruction.Subtract, Local(a.Type), a, b);
+        }
+
+        public Operand VectorExtract(Operand vector, Operand value, int index)
+        {
+            return Add(Instruction.VectorExtract, value, vector, Const(index));
+        }
+
+        public Operand VectorExtract16(Operand vector, Operand value, int index)
+        {
+            return Add(Instruction.VectorExtract16, value, vector, Const(index));
+        }
+
+        public Operand VectorExtract8(Operand vector, Operand value, int index)
+        {
+            return Add(Instruction.VectorExtract8, value, vector, Const(index));
+        }
+
+        public Operand VectorInsert(Operand vector, Operand value, int index)
+        {
+            return Add(Instruction.VectorInsert, Local(OperandType.V128), vector, value, Const(index));
+        }
+
+        public Operand VectorInsert16(Operand vector, Operand value, int index)
+        {
+            return Add(Instruction.VectorInsert16, Local(OperandType.V128), vector, value, Const(index));
+        }
+
+        public Operand VectorInsert8(Operand vector, Operand value, int index)
+        {
+            return Add(Instruction.VectorInsert8, Local(OperandType.V128), vector, value, Const(index));
+        }
+
+        public Operand VectorZero()
+        {
+            return Add(Instruction.VectorZero, Local(OperandType.V128));
+        }
+
+        public Operand VectorZeroUpper64(Operand vector)
+        {
+            return Add(Instruction.VectorZeroUpper64, Local(OperandType.V128), vector);
+        }
+
+        public Operand VectorZeroUpper96(Operand vector)
+        {
+            return Add(Instruction.VectorZeroUpper96, Local(OperandType.V128), vector);
+        }
+
+        public Operand AddIntrinsic(Instruction inst, params Operand[] args)
+        {
+            return Add(inst, Local(OperandType.V128), args);
         }
 
         private Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)

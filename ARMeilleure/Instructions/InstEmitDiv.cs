@@ -50,8 +50,8 @@ namespace ARMeilleure.Instructions
             }
 
             Operand d = unsigned
-                ? context.IDivideUI(n, m)
-                : context.IDivide  (n, m);
+                ? context.DivideUI(n, m)
+                : context.Divide  (n, m);
 
             SetAluDOrZR(context, d);
 

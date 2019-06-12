@@ -32,7 +32,7 @@ namespace ARMeilleure.Instructions
 
             if (cselOp == CselOperation.Increment)
             {
-                m = context.IAdd(m, Const(m.Type, 1));
+                m = context.Add(m, Const(m.Type, 1));
             }
             else if (cselOp == CselOperation.Invert)
             {
@@ -40,7 +40,7 @@ namespace ARMeilleure.Instructions
             }
             else if (cselOp == CselOperation.Negate)
             {
-                m = context.INegate(m);
+                m = context.Negate(m);
             }
 
             Operand condTrue = GetCondTrue(context, op.Cond);

@@ -24,6 +24,9 @@ namespace ARMeilleure.Decoders
             RegisterSize = RegisterSize.Int64;
         }
 
+        public int GetPairsCount() => GetBitsCount() / 16;
+        public int GetBytesCount() => GetBitsCount() / 8;
+
         public int GetBitsCount()
         {
             switch (RegisterSize)

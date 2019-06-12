@@ -135,8 +135,8 @@ namespace Ryujinx.Tests.Cpu
             _context.SetPstateFlag(PState.ZFlag, zero);
             _context.SetPstateFlag(PState.NFlag, negative);
 
-            //_thread.ThreadState.Fpcr = fpcr;
-            //_thread.ThreadState.Fpsr = fpsr;
+            _context.Fpcr = (FPCR)fpcr;
+            _context.Fpsr = (FPSR)fpsr;
 
             if (_unicornAvailable)
             {
@@ -361,8 +361,8 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(V128ToSimdValue(_context.GetV(30)), Is.EqualTo(_unicornEmu.Q[30]));
             Assert.That(V128ToSimdValue(_context.GetV(31)), Is.EqualTo(_unicornEmu.Q[31]));
 
-            //Assert.That(_thread.ThreadState.Fpcr,                 Is.EqualTo(_unicornEmu.Fpcr));
-            //Assert.That(_thread.ThreadState.Fpsr & (int)fpsrMask, Is.EqualTo(_unicornEmu.Fpsr & (int)fpsrMask));
+            Assert.That((int)_context.Fpcr,                 Is.EqualTo(_unicornEmu.Fpcr));
+            Assert.That((int)_context.Fpsr & (int)fpsrMask, Is.EqualTo(_unicornEmu.Fpsr & (int)fpsrMask));
 
             Assert.That(_context.GetPstateFlag(PState.VFlag), Is.EqualTo(_unicornEmu.OverflowFlag));
             Assert.That(_context.GetPstateFlag(PState.CFlag), Is.EqualTo(_unicornEmu.CarryFlag));

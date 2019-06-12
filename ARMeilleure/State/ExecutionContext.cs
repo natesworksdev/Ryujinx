@@ -8,6 +8,9 @@ namespace ARMeilleure.State
 
         internal IntPtr NativeContextPtr => _nativeContext.BasePtr;
 
+        public FPCR Fpcr { get; set; }
+        public FPSR Fpsr { get; set; }
+
         public event EventHandler<InstExceptionEventArgs> Break;
         public event EventHandler<InstExceptionEventArgs> SupervisorCall;
         public event EventHandler<InstUndefinedEventArgs> Undefined;

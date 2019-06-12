@@ -4,7 +4,6 @@ using ARMeilleure.Translation;
 using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
 {
@@ -21,9 +20,9 @@ namespace ARMeilleure.Instructions
             Operand n = GetIntOrZR(op, op.Rn);
             Operand m = GetIntOrZR(op, op.Rm);
 
-            Operand res = context.IMultiply(n, m);
+            Operand res = context.Multiply(n, m);
 
-            res = isAdd ? context.IAdd(a, res) : context.ISubtract(a, res);
+            res = isAdd ? context.Add(a, res) : context.Subtract(a, res);
 
             SetIntOrZR(context, op.Rd, res);
         }
@@ -67,9 +66,9 @@ namespace ARMeilleure.Instructions
             Operand n = GetExtendedRegister32(op.Rn);
             Operand m = GetExtendedRegister32(op.Rm);
 
-            Operand res = context.IMultiply(n, m);
+            Operand res = context.Multiply(n, m);
 
-            res = (flags & MullFlags.Add) != 0 ? context.IAdd(a, res) : context.ISubtract(a, res);
+            res = (flags & MullFlags.Add) != 0 ? context.Add(a, res) : context.Subtract(a, res);
 
             SetIntOrZR(context, op.Rd, res);
         }

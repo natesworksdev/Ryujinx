@@ -1,6 +1,6 @@
 using System;
 
-namespace ARMeilleure.State
+namespace ARMeilleure.IntermediateRepresentation
 {
     struct Register : IEquatable<Register>
     {

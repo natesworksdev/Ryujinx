@@ -1,4 +1,4 @@
-namespace ARMeilleure.State
+namespace ARMeilleure.IntermediateRepresentation
 {
     enum RegisterType
     {

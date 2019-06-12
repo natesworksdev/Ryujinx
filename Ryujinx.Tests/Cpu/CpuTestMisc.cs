@@ -190,7 +190,7 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetVectorE0(GetContext().GetV(0)), Is.EqualTo(16f));
+            Assert.That(GetContext().GetV(0).AsFloat(), Is.EqualTo(16f));
         }
 
         [Explicit]

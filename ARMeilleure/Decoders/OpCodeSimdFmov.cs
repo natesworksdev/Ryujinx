@@ -2,9 +2,9 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeSimdFmov : OpCode, IOpCodeSimd
     {
-        public int  Rd   { get; private set; }
-        public long Imm  { get; private set; }
-        public int  Size { get; private set; }
+        public int  Rd        { get; private set; }
+        public long Immediate { get; private set; }
+        public int  Size      { get; private set; }
 
         public OpCodeSimdFmov(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
@@ -25,7 +25,7 @@ namespace ARMeilleure.Decoders
             Rd  = (opCode >>  0) & 0x1f;
             imm = (opCode >> 13) & 0xff;
 
-            Imm = DecoderHelper.DecodeImm8Float(imm, type);
+            Immediate = DecoderHelper.DecodeImm8Float(imm, type);
         }
     }
 }

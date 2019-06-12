@@ -90,7 +90,7 @@ namespace ARMeilleure.Instructions
 
             Operand address = GetAddress(context);
 
-            Operand address2 = context.IAdd(address, Const(1L << op.Size));
+            Operand address2 = context.Add(address, Const(1L << op.Size));
 
             EmitLoad(op.Rt,  address);
             EmitLoad(op.Rt2, address2);
@@ -117,7 +117,7 @@ namespace ARMeilleure.Instructions
 
             Operand address = GetAddress(context);
 
-            Operand address2 = context.IAdd(address, Const(1L << op.Size));
+            Operand address2 = context.Add(address, Const(1L << op.Size));
 
             Operand t  = GetT(context, op.Rt);
             Operand t2 = GetT(context, op.Rt2);
@@ -141,7 +141,7 @@ namespace ARMeilleure.Instructions
                     //Pre-indexing.
                     if (!op.PostIdx)
                     {
-                        address = context.IAdd(address, Const(op.Immediate));
+                        address = context.Add(address, Const(op.Immediate));
                     }
 
                     break;
@@ -158,7 +158,7 @@ namespace ARMeilleure.Instructions
                         m = context.ShiftLeft(m, Const(op.Size));
                     }
 
-                    address = context.IAdd(n, m);
+                    address = context.Add(n, m);
 
                     break;
                 }
@@ -174,7 +174,7 @@ namespace ARMeilleure.Instructions
             {
                 if (op.PostIdx)
                 {
-                    address = context.IAdd(address, Const(op.Immediate));
+                    address = context.Add(address, Const(op.Immediate));
                 }
 
                 context.Copy(GetIntOrSP(op, op.Rn), address);

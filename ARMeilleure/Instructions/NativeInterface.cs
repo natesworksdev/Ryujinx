@@ -39,7 +39,7 @@ namespace ARMeilleure.Instructions
             GetContext().OnUndefined(address, opCode);
         }
 
-        private static ExecutionContext GetContext()
+        public static ExecutionContext GetContext()
         {
             return _contexts[Thread.CurrentThread];
         }

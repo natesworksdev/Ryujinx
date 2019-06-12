@@ -19,7 +19,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
 
-            Operand d = context.IAdd(n, m);
+            Operand d = context.Add(n, m);
 
             Operand carry = GetFlag(PState.CFlag);
 
@@ -28,7 +28,7 @@ namespace ARMeilleure.Instructions
                 carry = context.Copy(Local(OperandType.I64), carry);
             }
 
-            d = context.IAdd(d, carry);
+            d = context.Add(d, carry);
 
             if (setFlags)
             {
@@ -43,7 +43,7 @@ namespace ARMeilleure.Instructions
 
         public static void Add(EmitterContext context)
         {
-            SetAluD(context, context.IAdd(GetAluN(context), GetAluM(context)));
+            SetAluD(context, context.Add(GetAluN(context), GetAluM(context)));
         }
 
         public static void Adds(EmitterContext context)
@@ -51,7 +51,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
 
-            Operand d = context.IAdd(n, m);
+            Operand d = context.Add(n, m);
 
             EmitNZFlagsCheck(context, d);
 
@@ -119,7 +119,7 @@ namespace ARMeilleure.Instructions
 
             Operand res = context.CountLeadingZeros(context.BitwiseExclusiveOr(nHigh, nLow));
 
-            res = context.ISubtract(res, Const(res.Type, 1));
+            res = context.Subtract(res, Const(res.Type, 1));
 
             SetAluDOrZR(context, res);
         }
@@ -195,7 +195,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
 
-            Operand d = context.ISubtract(n, m);
+            Operand d = context.Subtract(n, m);
 
             Operand borrow = context.BitwiseExclusiveOr(GetFlag(PState.CFlag), Const(1));
 
@@ -204,7 +204,7 @@ namespace ARMeilleure.Instructions
                 borrow = context.Copy(Local(OperandType.I64), borrow);
             }
 
-            d = context.ISubtract(d, borrow);
+            d = context.Subtract(d, borrow);
 
             if (setFlags)
             {
@@ -219,7 +219,7 @@ namespace ARMeilleure.Instructions
 
         public static void Sub(EmitterContext context)
         {
-            SetAluD(context, context.ISubtract(GetAluN(context), GetAluM(context)));
+            SetAluD(context, context.Subtract(GetAluN(context), GetAluM(context)));
         }
 
         public static void Subs(EmitterContext context)
@@ -227,7 +227,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
 
-            Operand d = context.ISubtract(n, m);
+            Operand d = context.Subtract(n, m);
 
             EmitNZFlagsCheck(context, d);
 

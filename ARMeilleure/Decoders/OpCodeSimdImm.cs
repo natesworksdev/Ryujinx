@@ -2,9 +2,9 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeSimdImm : OpCode, IOpCodeSimd
     {
-        public int  Rd   { get; private set; }
-        public long Imm  { get; private set; }
-        public int  Size { get; private set; }
+        public int  Rd        { get; private set; }
+        public long Immediate { get; private set; }
+        public int  Size      { get; private set; }
 
         public OpCodeSimdImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
@@ -76,7 +76,7 @@ namespace ARMeilleure.Decoders
                 Size = 0;
             }
 
-            Imm = imm;
+            Immediate = imm;
 
             RegisterSize = ((opCode >> 30) & 1) != 0
                 ? RegisterSize.Simd128

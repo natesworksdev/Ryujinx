@@ -41,8 +41,6 @@ namespace ARMeilleure.Translation
 
         private TranslatedFunction Translate(ulong address, ExecutionMode mode)
         {
-            Logger logger = new Logger();
-
             EmitterContext context = new EmitterContext();
 
             Block[] blocks = Decoder.DecodeFunction(_memory, address, ExecutionMode.Aarch64);
@@ -55,11 +53,11 @@ namespace ARMeilleure.Translation
 
             Dominance.FindDominanceFrontiers(cfg);
 
-            logger.StartPass(PassName.SsaConstruction);
+            Logger.StartPass(PassName.SsaConstruction);
 
             Ssa.Rename(cfg);
 
-            logger.EndPass(PassName.SsaConstruction, cfg);
+            Logger.EndPass(PassName.SsaConstruction, cfg);
 
             byte[] code = CodeGenerator.Generate(cfg, _memory);
 

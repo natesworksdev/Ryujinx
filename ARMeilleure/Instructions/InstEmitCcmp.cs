@@ -38,7 +38,7 @@ namespace ARMeilleure.Instructions
 
             if (isNegated)
             {
-                Operand d = context.IAdd(n, m);
+                Operand d = context.Add(n, m);
 
                 EmitNZFlagsCheck(context, d);
 
@@ -47,7 +47,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                Operand d = context.ISubtract(n, m);
+                Operand d = context.Subtract(n, m);
 
                 EmitNZFlagsCheck(context, d);
 

@@ -3,6 +3,8 @@ namespace ARMeilleure.Diagnostics
     enum PassName
     {
         Translation,
-        SsaConstruction
+        SsaConstruction,
+        PreAllocation,
+        RegisterAllocation
     }
 }

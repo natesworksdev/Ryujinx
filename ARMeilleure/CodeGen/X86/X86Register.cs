@@ -17,6 +17,23 @@ namespace ARMeilleure.CodeGen.X86
         R12 = 12,
         R13 = 13,
         R14 = 14,
-        R15 = 15
+        R15 = 15,
+
+        Xmm0  = 0,
+        Xmm1  = 1,
+        Xmm2  = 2,
+        Xmm3  = 3,
+        Xmm4  = 4,
+        Xmm5  = 5,
+        Xmm6  = 6,
+        Xmm7  = 7,
+        Xmm8  = 8,
+        Xmm9  = 9,
+        Xmm10 = 10,
+        Xmm11 = 11,
+        Xmm12 = 12,
+        Xmm13 = 13,
+        Xmm14 = 14,
+        Xmm15 = 15
     }
 }

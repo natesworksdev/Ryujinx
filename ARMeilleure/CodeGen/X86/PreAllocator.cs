@@ -1,7 +1,6 @@
 using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
-using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System.Collections.Generic;
 
@@ -118,51 +117,93 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void AddConstantCopy(LinkedListNode<Node> node, Operation operation)
         {
-            if (operation.SourcesCount == 0)
+            if (operation.SourcesCount == 0 || HasFixedConst(operation.Inst))
             {
                 return;
             }
 
             Instruction inst = operation.Inst;
 
+            Operand dest = operation.Dest;
             Operand src1 = operation.GetSource(0);
             Operand src2;
 
-            if (src1.Kind == OperandKind.Constant && !HasConstSrc1(inst))
+            if (src1.Type.IsInteger())
             {
-                if (IsComutative(inst))
+                //Handle integer types.
+                //Most ALU instructions accepts a 32-bits immediate on the second operand.
+                //We need to ensure the following:
+                //- If the constant is on operand 1, we need to move it.
+                //-- But first, we try to swap operand 1 and 2 if the instruction is comutative.
+                //-- Doing so may allow us to encode the constant as operand 2 and avoid a copy.
+                //- If the constant is on operand 2, we check if the instruction supports it,
+                //if not, we also add a copy. 64-bits constants are usually not supported.
+                bool isVecCopy = inst == Instruction.Copy && !dest.Type.IsInteger();
+
+                if (src1.Kind == OperandKind.Constant && (!HasConstSrc1(inst) || isVecCopy))
                 {
-                    src2 = operation.GetSource(1);
+                    if (IsComutative(inst))
+                    {
+                        src2 = operation.GetSource(1);
 
-                    Operand temp = src1;
+                        Operand temp = src1;
 
-                    src1 = src2;
-                    src2 = temp;
+                        src1 = src2;
+                        src2 = temp;
 
-                    operation.SetSource(0, src1);
+                        operation.SetSource(0, src1);
+                        operation.SetSource(1, src2);
+                    }
+
+                    if (src1.Kind == OperandKind.Constant)
+                    {
+                        src1 = AddCopy(node, src1);
+
+                        operation.SetSource(0, src1);
+                    }
+                }
+
+                if (operation.SourcesCount < 2)
+                {
+                    return;
+                }
+
+                src2 = operation.GetSource(1);
+
+                if (src2.Kind == OperandKind.Constant && (!HasConstSrc2(inst) || IsLongConst(src2)))
+                {
+                    src2 = AddCopy(node, src2);
+
                     operation.SetSource(1, src2);
                 }
-
-                if (src1.Kind == OperandKind.Constant)
+            }
+            else
+            {
+                //Handle non-integer types (FP32, FP64 and V128).
+                //For instructions without an immediate operand, we do the following:
+                //- Insert a copy with the constant value (as integer) to a GPR.
+                //- Insert a copy from the GPR to a XMM register.
+                //- Replace the constant use with the XMM register.
+                if (src1.Kind == OperandKind.Constant && src1.Type.IsInteger())
                 {
-                    src1 = AddCopy(node, src1);
+                    src1 = AddXmmCopy(node, src1);
 
                     operation.SetSource(0, src1);
                 }
-            }
 
-            if (operation.SourcesCount < 2)
-            {
-                return;
-            }
+                if (operation.SourcesCount < 2)
+                {
+                    return;
+                }
 
-            src2 = operation.GetSource(1);
+                src2 = operation.GetSource(1);
 
-            if (src2.Kind == OperandKind.Constant && (!HasConstSrc2(inst) || IsLongConst(src2)))
-            {
-                src2 = AddCopy(node, src2);
+                if (src2.Kind == OperandKind.Constant && src2.Type.IsInteger())
+                {
+                    src2 = AddXmmCopy(node, src2);
 
-                operation.SetSource(1, src2);
+                    operation.SetSource(1, src2);
+                }
             }
         }
 
@@ -248,7 +289,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 int argsCount = operation.SourcesCount;
 
-                int maxArgs = CallingConvention.GetIntArgumentsOnRegsCount();
+                int maxArgs = CallingConvention.GetArgumentsOnRegsCount();
 
                 if (argsCount > maxArgs + 1)
                 {
@@ -259,7 +300,18 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     Operand source = operation.GetSource(index);
 
-                    Operand argReg = Gpr(CallingConvention.GetIntArgumentRegister(index - 1), source.Type);
+                    RegisterType regType = source.Type.ToRegisterType();
+
+                    Operand argReg;
+
+                    if (regType == RegisterType.Integer)
+                    {
+                        argReg = Gpr(CallingConvention.GetIntArgumentRegister(index - 1), source.Type);
+                    }
+                    else /* if (regType == RegisterType.Vector) */
+                    {
+                        argReg = Xmm(CallingConvention.GetVecArgumentRegister(index - 1), source.Type);
+                    }
 
                     Operation srcCopyOp = new Operation(Instruction.Copy, argReg, source);
 
@@ -285,7 +337,18 @@ namespace ARMeilleure.CodeGen.X86
 
                 if (dest != null)
                 {
-                    Operand retReg = Gpr(CallingConvention.GetIntReturnRegister(), dest.Type);
+                    RegisterType regType = dest.Type.ToRegisterType();
+
+                    Operand retReg;
+
+                    if (regType == RegisterType.Integer)
+                    {
+                        retReg = Gpr(CallingConvention.GetIntReturnRegister(), dest.Type);
+                    }
+                    else /* if (regType == RegisterType.Vector) */
+                    {
+                        retReg = Xmm(CallingConvention.GetVecReturnRegister(), dest.Type);
+                    }
 
                     Operation destCopyOp = new Operation(Instruction.Copy, dest, retReg);
 
@@ -312,7 +375,7 @@ namespace ARMeilleure.CodeGen.X86
             //a three operand form where the second source is a immediate value.
             bool threeOperandForm = inst == Instruction.Multiply && operation.GetSource(1).Kind == OperandKind.Constant;
 
-            if (IsSameOperandDestSrc1(inst) && src1.Kind == OperandKind.LocalVariable && !threeOperandForm)
+            if (IsSameOperandDestSrc1(operation) && src1.Kind == OperandKind.LocalVariable && !threeOperandForm)
             {
                 Operation copyOp = new Operation(Instruction.Copy, dest, src1);
 
@@ -332,6 +395,17 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
+        private static Operand AddXmmCopy(LinkedListNode<Node> node, Operand source)
+        {
+            Operand temp = Local(source.Type);
+
+            Operation copyOp = new Operation(Instruction.Copy, temp, AddCopy(node, GetIntConst(source)));
+
+            node.List.AddBefore(node, copyOp);
+
+            return temp;
+        }
+
         private static Operand AddCopy(LinkedListNode<Node> node, Operand source)
         {
             Operand temp = Local(source.Type);
@@ -341,6 +415,20 @@ namespace ARMeilleure.CodeGen.X86
             node.List.AddBefore(node, copyOp);
 
             return temp;
+        }
+
+        private static Operand GetIntConst(Operand value)
+        {
+            if (value.Type == OperandType.FP32)
+            {
+                return Const(value.AsInt32());
+            }
+            else if (value.Type == OperandType.FP64)
+            {
+                return Const(value.AsInt64());
+            }
+
+            return value;
         }
 
         private static bool IsLongConst(Operand operand)
@@ -405,9 +493,14 @@ namespace ARMeilleure.CodeGen.X86
             return Register((int)register, RegisterType.Integer, type);
         }
 
-        private static bool IsSameOperandDestSrc1(Instruction inst)
+        private static Operand Xmm(X86Register register, OperandType type)
         {
-            switch (inst)
+            return Register((int)register, RegisterType.Vector, type);
+        }
+
+        private static bool IsSameOperandDestSrc1(Operation operation)
+        {
+            switch (operation.Inst)
             {
                 case Instruction.Add:
                 case Instruction.BitwiseAnd:
@@ -423,6 +516,23 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.ShiftRightUI:
                 case Instruction.Subtract:
                     return true;
+
+                case Instruction.VectorInsert:
+                case Instruction.VectorInsert16:
+                case Instruction.VectorInsert8:
+                    return !HardwareCapabilities.SupportsVexEncoding;
+            }
+
+            return IsVexSameOperandDestSrc1(operation);
+        }
+
+        private static bool IsVexSameOperandDestSrc1(Operation operation)
+        {
+            if (IsIntrinsic(operation.Inst))
+            {
+                bool isUnary = operation.SourcesCount < 2;
+
+                return !HardwareCapabilities.SupportsVexEncoding && !isUnary;
             }
 
             return false;
@@ -464,6 +574,9 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.ShiftRightSI:
                 case Instruction.ShiftRightUI:
                 case Instruction.Subtract:
+                case Instruction.VectorExtract:
+                case Instruction.VectorExtract16:
+                case Instruction.VectorExtract8:
                     return true;
             }
 
@@ -485,6 +598,30 @@ namespace ARMeilleure.CodeGen.X86
             }
 
             return false;
+        }
+
+        private static bool HasFixedConst(Instruction inst)
+        {
+            switch (inst)
+            {
+                case Instruction.LoadFromContext:
+                case Instruction.StoreToContext:
+                case Instruction.VectorExtract:
+                case Instruction.VectorExtract16:
+                case Instruction.VectorExtract8:
+                case Instruction.VectorInsert:
+                case Instruction.VectorInsert16:
+                case Instruction.VectorInsert8:
+                    return true;
+            }
+
+            return IsIntrinsic(inst);
+        }
+
+        private static bool IsIntrinsic(Instruction inst)
+        {
+            return inst > Instruction.X86Intrinsic_Start &&
+                   inst < Instruction.X86Intrinsic_End;
         }
     }
 }

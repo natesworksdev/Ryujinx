@@ -1,5 +1,4 @@
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

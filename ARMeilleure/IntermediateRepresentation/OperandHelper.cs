@@ -35,6 +35,11 @@ namespace ARMeilleure.IntermediateRepresentation
             return new Operand(BitConverter.SingleToInt32Bits(value));
         }
 
+        public static Operand ConstF(double value)
+        {
+            return new Operand(BitConverter.DoubleToInt64Bits(value));
+        }
+
         public static Operand Label()
         {
             return new Operand(OperandKind.Label);
