@@ -126,7 +126,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingSigns));
+                    MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingZeros));
 
                     de = context.Call(info, ne, Const(eSize));
                 }
