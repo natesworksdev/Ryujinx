@@ -290,6 +290,7 @@ namespace ARMeilleure.Instructions
         Sadalp_V,
         Saddl_V,
         Saddlp_V,
+        Saddlv_V,
         Saddw_V,
         Scvtf_Gp,
         Scvtf_Gp_Fixed,

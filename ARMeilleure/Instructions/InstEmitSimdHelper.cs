@@ -17,6 +17,7 @@ namespace ARMeilleure.Instructions
 
     static class InstEmitSimdHelper
     {
+#region "X86 SSE Instructions"
         public static readonly Instruction[] X86PaddInstruction = new Instruction[]
         {
             Instruction.X86Paddb,
@@ -91,6 +92,23 @@ namespace ARMeilleure.Instructions
             Instruction.X86Psubq
         };
 
+        public static readonly Instruction[] X86PunpckhInstruction = new Instruction[]
+        {
+            Instruction.X86Punpckhbw,
+            Instruction.X86Punpckhwd,
+            Instruction.X86Punpckhdq,
+            Instruction.X86Punpckhqdq
+        };
+
+        public static readonly Instruction[] X86PunpcklInstruction = new Instruction[]
+        {
+            Instruction.X86Punpcklbw,
+            Instruction.X86Punpcklwd,
+            Instruction.X86Punpckldq,
+            Instruction.X86Punpcklqdq
+        };
+#endregion
+
         public static int GetImmShl(OpCodeSimdShImm op)
         {
             return op.Imm - (8 << op.Size);
@@ -103,16 +121,22 @@ namespace ARMeilleure.Instructions
 
         public static Operand X86GetScalar(EmitterContext context, float value)
         {
-            int imm = BitConverter.SingleToInt32Bits(value);
-
-            return context.Copy(Local(OperandType.V128), Const(imm));
+            return X86GetScalar(context, BitConverter.SingleToInt32Bits(value));
         }
 
         public static Operand X86GetScalar(EmitterContext context, double value)
         {
-            long imm = BitConverter.DoubleToInt64Bits(value);
+            return X86GetScalar(context, BitConverter.DoubleToInt64Bits(value));
+        }
 
-            return context.Copy(Local(OperandType.V128), Const(imm));
+        public static Operand X86GetScalar(EmitterContext context, int value)
+        {
+            return context.Copy(Local(OperandType.V128), Const(value));
+        }
+
+        public static Operand X86GetScalar(EmitterContext context, long value)
+        {
+            return context.Copy(Local(OperandType.V128), Const(value));
         }
 
         public static Operand X86GetAllElements(EmitterContext context, float value)
@@ -570,7 +594,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
 
-                res = EmitVectorInsert(context, res, ne, index, op.Size);
+                res = EmitVectorInsert(context, res, emit(ne), index, op.Size);
             }
 
             context.Copy(GetVec(op.Rd), res);
@@ -627,7 +651,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                res = EmitVectorInsert(context, res, ne, index, op.Size);
+                res = EmitVectorInsert(context, res, emit(ne), index, op.Size);
             }
 
             context.Copy(GetVec(op.Rd), res);
@@ -781,7 +805,7 @@ namespace ARMeilleure.Instructions
             EmitVectorWidenRmBinaryOp(context, emit, signed: false);
         }
 
-        public static void EmitVectorWidenRmBinaryOp(EmitterContext context, Func2I emit, bool signed)
+        private static void EmitVectorWidenRmBinaryOp(EmitterContext context, Func2I emit, bool signed)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -940,7 +964,7 @@ namespace ARMeilleure.Instructions
             EmitVectorPairwiseOp(context, emit, signed: false);
         }
 
-        public static void EmitVectorPairwiseOp(EmitterContext context, Func2I emit, bool signed)
+        private static void EmitVectorPairwiseOp(EmitterContext context, Func2I emit, bool signed)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -967,15 +991,29 @@ namespace ARMeilleure.Instructions
 
         public static void EmitVectorAcrossVectorOpSx(EmitterContext context, Func2I emit)
         {
-            EmitVectorAcrossVectorOp(context, emit, true);
+            EmitVectorAcrossVectorOp(context, emit, signed: true, isLong: false);
         }
 
         public static void EmitVectorAcrossVectorOpZx(EmitterContext context, Func2I emit)
         {
-            EmitVectorAcrossVectorOp(context, emit, false);
+            EmitVectorAcrossVectorOp(context, emit, signed: false, isLong: false);
         }
 
-        public static void EmitVectorAcrossVectorOp(EmitterContext context, Func2I emit, bool signed)
+        public static void EmitVectorLongAcrossVectorOpSx(EmitterContext context, Func2I emit)
+        {
+            EmitVectorAcrossVectorOp(context, emit, signed: true, isLong: true);
+        }
+
+        public static void EmitVectorLongAcrossVectorOpZx(EmitterContext context, Func2I emit)
+        {
+            EmitVectorAcrossVectorOp(context, emit, signed: false, isLong: true);
+        }
+
+        private static void EmitVectorAcrossVectorOp(
+            EmitterContext context,
+            Func2I emit,
+            bool signed,
+            bool isLong)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -990,7 +1028,11 @@ namespace ARMeilleure.Instructions
                 res = emit(res, n);
             }
 
-            context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), res, 0, op.Size));
+            int size = isLong ? op.Size + 1 : op.Size;
+
+            Operand d = EmitVectorInsert(context, context.VectorZero(), res, 0, size);
+
+            context.Copy(GetVec(op.Rd), d);
         }
 
         public static void EmitVectorPairwiseOpF(EmitterContext context, Func2I emit)
@@ -1093,7 +1135,7 @@ namespace ARMeilleure.Instructions
             EmitSaturatingUnaryOpSx(context, emit, SaturatingFlags.VectorSx);
         }
 
-        public static void EmitSaturatingUnaryOpSx(EmitterContext context, Func1I emit, SaturatingFlags flags)
+        private static void EmitSaturatingUnaryOpSx(EmitterContext context, Func1I emit, SaturatingFlags flags)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 

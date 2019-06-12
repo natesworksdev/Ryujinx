@@ -61,154 +61,164 @@ namespace ARMeilleure.CodeGen.X86
         {
             _instTable = new InstInfo[(int)X86Instruction.Count];
 
-            //  Name                                  RM/R        RM/I8       RM/I32      R/I64       R/RM        Flags
-            Add(X86Instruction.Add,      new InstInfo(0x00000001, 0x00000083, 0x00000081, BadOp,      0x00000003, InstFlags.None));
-            Add(X86Instruction.Addpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Addps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstFlags.Vex));
-            Add(X86Instruction.Addsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Addss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.And,      new InstInfo(0x00000021, 0x04000083, 0x04000081, BadOp,      0x00000023, InstFlags.None));
-            Add(X86Instruction.Andnpd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f55, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Andnps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f55, InstFlags.Vex));
-            Add(X86Instruction.Bsr,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fbd, InstFlags.None));
-            Add(X86Instruction.Bswap,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc8, InstFlags.RegOnly));
-            Add(X86Instruction.Call,     new InstInfo(0x020000ff, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Cmovcc,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f40, InstFlags.None));
-            Add(X86Instruction.Cmp,      new InstInfo(0x00000039, 0x07000083, 0x07000081, BadOp,      0x0000003b, InstFlags.None));
-            Add(X86Instruction.Div,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x060000f7, InstFlags.None));
-            Add(X86Instruction.Divpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Divps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex));
-            Add(X86Instruction.Divsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Divss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Haddpd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f7c, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Haddps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f7c, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Idiv,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x070000f7, InstFlags.None));
-            Add(X86Instruction.Imul,     new InstInfo(BadOp,      0x0000006b, 0x00000069, BadOp,      0x00000faf, InstFlags.None));
-            Add(X86Instruction.Imul128,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x050000f7, InstFlags.None));
-            Add(X86Instruction.Insertps, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a21, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Maxpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Maxps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex));
-            Add(X86Instruction.Maxsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Maxss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Minpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Minps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex));
-            Add(X86Instruction.Minsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Minss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Mov,      new InstInfo(0x00000089, BadOp,      0x000000c7, 0x000000b8, 0x0000008b, InstFlags.None));
-            Add(X86Instruction.Mov16,    new InstInfo(0x00000089, BadOp,      0x000000c7, BadOp,      0x0000008b, InstFlags.Prefix66));
-            Add(X86Instruction.Mov8,     new InstInfo(0x00000088, 0x000000c6, BadOp,      BadOp,      0x0000008a, InstFlags.None));
-            Add(X86Instruction.Movd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f6e, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Movdqu,   new InstInfo(0x00000f7f, BadOp,      BadOp,      BadOp,      0x00000f6f, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Movhlps,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f12, InstFlags.Vex));
-            Add(X86Instruction.Movlhps,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f16, InstFlags.Vex));
-            Add(X86Instruction.Movq,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f7e, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Movsd,    new InstInfo(0x00000f11, BadOp,      BadOp,      BadOp,      0x00000f10, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Movss,    new InstInfo(0x00000f11, BadOp,      BadOp,      BadOp,      0x00000f10, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Movsx16,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fbf, InstFlags.None));
-            Add(X86Instruction.Movsx32,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000063, InstFlags.None));
-            Add(X86Instruction.Movsx8,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fbe, InstFlags.None));
-            Add(X86Instruction.Movzx16,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fb7, InstFlags.None));
-            Add(X86Instruction.Movzx8,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fb6, InstFlags.None));
-            Add(X86Instruction.Mul128,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x040000f7, InstFlags.None));
-            Add(X86Instruction.Mulpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f59, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Mulps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f59, InstFlags.Vex));
-            Add(X86Instruction.Mulsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f59, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Mulss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f59, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Neg,      new InstInfo(0x030000f7, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Not,      new InstInfo(0x020000f7, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Or,       new InstInfo(0x00000009, 0x01000083, 0x01000081, BadOp,      0x0000000b, InstFlags.None));
-            Add(X86Instruction.Paddb,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffc, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Paddd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffe, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Paddq,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fd4, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Paddw,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffd, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pand,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fdb, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pandn,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fdf, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pavgb,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe0, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pavgw,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe3, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pblendvb, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a4c, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pcmpeqb,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f74, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pcmpeqd,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f76, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pcmpeqq,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3829, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pcmpeqw,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f75, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pcmpgtb,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f64, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pcmpgtd,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f66, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pcmpgtq,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3837, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pcmpgtw,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f65, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pextrb,   new InstInfo(0x000f3a14, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pextrd,   new InstInfo(0x000f3a16, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pextrw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc5, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pinsrb,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a20, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pinsrd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a22, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pinsrw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc4, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmaxsb,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383c, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmaxsd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383d, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmaxsw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fee, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmaxub,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fde, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmaxud,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383f, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmaxuw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383e, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pminsb,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3838, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pminsd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3839, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pminsw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fea, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pminub,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fda, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pminud,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383b, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pminuw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383a, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmovsxbw, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3820, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmovsxdq, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3825, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmovsxwd, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3823, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmovzxbw, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3830, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmovzxdq, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3835, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmovzxwd, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3833, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmulld,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3840, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pmullw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fd5, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pop,      new InstInfo(0x0000008f, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Popcnt,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fb8, InstFlags.PrefixF3));
-            Add(X86Instruction.Por,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000feb, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Pshufd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f70, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psllw,    new InstInfo(BadOp,      0x06000f71, BadOp,      BadOp,      0x00000ff1, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psrad,    new InstInfo(BadOp,      0x00000f72, BadOp,      BadOp,      0x00000fe2, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psraw,    new InstInfo(BadOp,      0x04000f71, BadOp,      BadOp,      0x00000fe1, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psrld,    new InstInfo(BadOp,      0x02000f72, BadOp,      BadOp,      0x00000fd2, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psrlq,    new InstInfo(BadOp,      0x02000f73, BadOp,      BadOp,      0x00000fd3, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psrldq,   new InstInfo(BadOp,      0x03000f73, BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psrlw,    new InstInfo(BadOp,      0x02000f71, BadOp,      BadOp,      0x00000fd1, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psubb,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ff8, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psubd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffa, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psubq,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffb, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Psubw,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ff9, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Push,     new InstInfo(BadOp,      0x0000006a, 0x00000068, BadOp,      0x060000ff, InstFlags.None));
-            Add(X86Instruction.Pxor,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fef, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Rcpps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f53, InstFlags.Vex));
-            Add(X86Instruction.Rcpss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f53, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Ror,      new InstInfo(0x010000d3, 0x010000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Roundpd,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Roundps,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex));
-            Add(X86Instruction.Roundsd,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Roundss,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Rsqrtps,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f52, InstFlags.Vex));
-            Add(X86Instruction.Rsqrtss,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f52, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Sar,      new InstInfo(0x070000d3, 0x070000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Setcc,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f90, InstFlags.Reg8));
-            Add(X86Instruction.Shl,      new InstInfo(0x040000d3, 0x040000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Shr,      new InstInfo(0x050000d3, 0x050000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Shufpd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Shufps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc6, InstFlags.Vex));
-            Add(X86Instruction.Sqrtpd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Sqrtps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex));
-            Add(X86Instruction.Sqrtsd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Sqrtss,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Sub,      new InstInfo(0x00000029, 0x05000083, 0x05000081, BadOp,      0x0000002b, InstFlags.None));
-            Add(X86Instruction.Subpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Subps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstFlags.Vex));
-            Add(X86Instruction.Subsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Subss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstFlags.Vex | InstFlags.PrefixF3));
-            Add(X86Instruction.Test,     new InstInfo(0x00000085, BadOp,      0x000000f7, BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Unpckhpd, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f15, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Unpckhps, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f15, InstFlags.Vex));
-            Add(X86Instruction.Unpcklpd, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f14, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Unpcklps, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f14, InstFlags.Vex));
-            Add(X86Instruction.Xor,      new InstInfo(0x00000031, 0x06000083, 0x06000081, BadOp,      0x00000033, InstFlags.None));
-            Add(X86Instruction.Xorpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Xorps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstFlags.Vex));
+            //  Name                                    RM/R        RM/I8       RM/I32      R/I64       R/RM        Flags
+            Add(X86Instruction.Add,        new InstInfo(0x00000001, 0x00000083, 0x00000081, BadOp,      0x00000003, InstFlags.None));
+            Add(X86Instruction.Addpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Addps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstFlags.Vex));
+            Add(X86Instruction.Addsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Addss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.And,        new InstInfo(0x00000021, 0x04000083, 0x04000081, BadOp,      0x00000023, InstFlags.None));
+            Add(X86Instruction.Andnpd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f55, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Andnps,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f55, InstFlags.Vex));
+            Add(X86Instruction.Bsr,        new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fbd, InstFlags.None));
+            Add(X86Instruction.Bswap,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc8, InstFlags.RegOnly));
+            Add(X86Instruction.Call,       new InstInfo(0x020000ff, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Cmovcc,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f40, InstFlags.None));
+            Add(X86Instruction.Cmp,        new InstInfo(0x00000039, 0x07000083, 0x07000081, BadOp,      0x0000003b, InstFlags.None));
+            Add(X86Instruction.Div,        new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x060000f7, InstFlags.None));
+            Add(X86Instruction.Divpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Divps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex));
+            Add(X86Instruction.Divsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Divss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Haddpd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f7c, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Haddps,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f7c, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Idiv,       new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x070000f7, InstFlags.None));
+            Add(X86Instruction.Imul,       new InstInfo(BadOp,      0x0000006b, 0x00000069, BadOp,      0x00000faf, InstFlags.None));
+            Add(X86Instruction.Imul128,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x050000f7, InstFlags.None));
+            Add(X86Instruction.Insertps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a21, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Maxpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Maxps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex));
+            Add(X86Instruction.Maxsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Maxss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Minpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Minps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex));
+            Add(X86Instruction.Minsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Minss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Mov,        new InstInfo(0x00000089, BadOp,      0x000000c7, 0x000000b8, 0x0000008b, InstFlags.None));
+            Add(X86Instruction.Mov16,      new InstInfo(0x00000089, BadOp,      0x000000c7, BadOp,      0x0000008b, InstFlags.Prefix66));
+            Add(X86Instruction.Mov8,       new InstInfo(0x00000088, 0x000000c6, BadOp,      BadOp,      0x0000008a, InstFlags.None));
+            Add(X86Instruction.Movd,       new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f6e, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Movdqu,     new InstInfo(0x00000f7f, BadOp,      BadOp,      BadOp,      0x00000f6f, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Movhlps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f12, InstFlags.Vex));
+            Add(X86Instruction.Movlhps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f16, InstFlags.Vex));
+            Add(X86Instruction.Movq,       new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f7e, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Movsd,      new InstInfo(0x00000f11, BadOp,      BadOp,      BadOp,      0x00000f10, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Movss,      new InstInfo(0x00000f11, BadOp,      BadOp,      BadOp,      0x00000f10, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Movsx16,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fbf, InstFlags.None));
+            Add(X86Instruction.Movsx32,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000063, InstFlags.None));
+            Add(X86Instruction.Movsx8,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fbe, InstFlags.None));
+            Add(X86Instruction.Movzx16,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fb7, InstFlags.None));
+            Add(X86Instruction.Movzx8,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fb6, InstFlags.None));
+            Add(X86Instruction.Mul128,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x040000f7, InstFlags.None));
+            Add(X86Instruction.Mulpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f59, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Mulps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f59, InstFlags.Vex));
+            Add(X86Instruction.Mulsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f59, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Mulss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f59, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Neg,        new InstInfo(0x030000f7, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Not,        new InstInfo(0x020000f7, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Or,         new InstInfo(0x00000009, 0x01000083, 0x01000081, BadOp,      0x0000000b, InstFlags.None));
+            Add(X86Instruction.Paddb,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffc, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Paddd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffe, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Paddq,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fd4, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Paddw,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffd, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pand,       new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fdb, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pandn,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fdf, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pavgb,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe0, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pavgw,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe3, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pblendvb,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a4c, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pcmpeqb,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f74, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pcmpeqd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f76, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pcmpeqq,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3829, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pcmpeqw,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f75, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pcmpgtb,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f64, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pcmpgtd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f66, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pcmpgtq,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3837, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pcmpgtw,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f65, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pextrb,     new InstInfo(0x000f3a14, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pextrd,     new InstInfo(0x000f3a16, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pextrw,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc5, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pinsrb,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a20, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pinsrd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a22, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pinsrw,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc4, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmaxsb,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383c, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmaxsd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383d, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmaxsw,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fee, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmaxub,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fde, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmaxud,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383f, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmaxuw,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383e, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pminsb,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3838, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pminsd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3839, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pminsw,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fea, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pminub,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fda, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pminud,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383b, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pminuw,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f383a, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmovsxbw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3820, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmovsxdq,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3825, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmovsxwd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3823, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmovzxbw,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3830, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmovzxdq,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3835, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmovzxwd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3833, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmulld,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3840, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pmullw,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fd5, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pop,        new InstInfo(0x0000008f, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Popcnt,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fb8, InstFlags.PrefixF3));
+            Add(X86Instruction.Por,        new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000feb, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pshufb,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3800, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pshufd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f70, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pslldq,     new InstInfo(BadOp,      0x07000f73, BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psllw,      new InstInfo(BadOp,      0x06000f71, BadOp,      BadOp,      0x00000ff1, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psrad,      new InstInfo(BadOp,      0x00000f72, BadOp,      BadOp,      0x00000fe2, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psraw,      new InstInfo(BadOp,      0x04000f71, BadOp,      BadOp,      0x00000fe1, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psrld,      new InstInfo(BadOp,      0x02000f72, BadOp,      BadOp,      0x00000fd2, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psrlq,      new InstInfo(BadOp,      0x02000f73, BadOp,      BadOp,      0x00000fd3, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psrldq,     new InstInfo(BadOp,      0x03000f73, BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psrlw,      new InstInfo(BadOp,      0x02000f71, BadOp,      BadOp,      0x00000fd1, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psubb,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ff8, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psubd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffa, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psubq,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ffb, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psubw,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000ff9, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Punpckhbw,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f68, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Punpckhdq,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f6a, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Punpckhqdq, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f6d, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Punpckhwd,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f69, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Punpcklbw,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f60, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Punpckldq,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f62, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Punpcklqdq, new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f6c, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Punpcklwd,  new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f61, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Push,       new InstInfo(BadOp,      0x0000006a, 0x00000068, BadOp,      0x060000ff, InstFlags.None));
+            Add(X86Instruction.Pxor,       new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fef, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Rcpps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f53, InstFlags.Vex));
+            Add(X86Instruction.Rcpss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f53, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Ror,        new InstInfo(0x010000d3, 0x010000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Roundpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Roundps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex));
+            Add(X86Instruction.Roundsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Roundss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Rsqrtps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f52, InstFlags.Vex));
+            Add(X86Instruction.Rsqrtss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f52, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Sar,        new InstInfo(0x070000d3, 0x070000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Setcc,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f90, InstFlags.Reg8));
+            Add(X86Instruction.Shl,        new InstInfo(0x040000d3, 0x040000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Shr,        new InstInfo(0x050000d3, 0x050000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Shufpd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Shufps,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc6, InstFlags.Vex));
+            Add(X86Instruction.Sqrtpd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Sqrtps,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex));
+            Add(X86Instruction.Sqrtsd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Sqrtss,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Sub,        new InstInfo(0x00000029, 0x05000083, 0x05000081, BadOp,      0x0000002b, InstFlags.None));
+            Add(X86Instruction.Subpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Subps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstFlags.Vex));
+            Add(X86Instruction.Subsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Subss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Test,       new InstInfo(0x00000085, BadOp,      0x000000f7, BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Unpckhpd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f15, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Unpckhps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f15, InstFlags.Vex));
+            Add(X86Instruction.Unpcklpd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f14, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Unpcklps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f14, InstFlags.Vex));
+            Add(X86Instruction.Xor,        new InstInfo(0x00000031, 0x06000083, 0x06000081, BadOp,      0x00000033, InstFlags.None));
+            Add(X86Instruction.Xorpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Xorps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstFlags.Vex));
         }
 
         private static void Add(X86Instruction inst, InstInfo info)
@@ -836,11 +846,21 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Por, source1);
         }
 
+        public void Pshufb(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Pshufb, source1);
+        }
+
         public void Pshufd(Operand dest, Operand source, byte imm)
         {
             WriteInstruction(dest, source, X86Instruction.Pshufd);
 
             WriteByte(imm);
+        }
+
+        public void Pslldq(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(source1, source, X86Instruction.Pslldq, dest);
         }
 
         public void Psllw(Operand dest, Operand source, Operand source1)
@@ -896,6 +916,46 @@ namespace ARMeilleure.CodeGen.X86
         public void Psubw(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(dest, source, X86Instruction.Psubw, source1);
+        }
+
+        public void Punpckhbw(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Punpckhbw, source1);
+        }
+
+        public void Punpckhdq(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Punpckhdq, source1);
+        }
+
+        public void Punpckhqdq(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Punpckhqdq, source1);
+        }
+
+        public void Punpckhwd(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Punpckhwd, source1);
+        }
+
+        public void Punpcklbw(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Punpcklbw, source1);
+        }
+
+        public void Punpckldq(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Punpckldq, source1);
+        }
+
+        public void Punpcklqdq(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Punpcklqdq, source1);
+        }
+
+        public void Punpcklwd(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Punpcklwd, source1);
         }
 
         public void Push(Operand source)
@@ -1325,6 +1385,8 @@ namespace ARMeilleure.CodeGen.X86
                 modRM |= 0xc0;
             }
 
+            Debug.Assert(opCode != BadOp, "Invalid opcode value.");
+
             if ((flags & InstFlags.Vex) != 0 && HardwareCapabilities.SupportsVexEncoding)
             {
                 int vexByte2 = (int)(flags & InstFlags.PrefixMask) >> (int)InstFlags.PrefixBit;
@@ -1387,8 +1449,6 @@ namespace ARMeilleure.CodeGen.X86
                     WriteByte((byte)rexPrefix);
                 }
             }
-
-            Debug.Assert(opCode != BadOp, "Invalid opcode value.");
 
             if ((opCode & 0xff0000) != 0)
             {

@@ -411,6 +411,73 @@ namespace ARMeilleure.Instructions
         }
 #endregion
 
+#region "Table"
+        public static V128 Tbl1_V64(V128 vector, V128 tb0)
+        {
+            return Tbl(vector, 8, tb0);
+        }
+
+        public static V128 Tbl1_V128(V128 vector, V128 tb0)
+        {
+            return Tbl(vector, 16, tb0);
+        }
+
+        public static V128 Tbl2_V64(V128 vector, V128 tb0, V128 tb1)
+        {
+            return Tbl(vector, 8, tb0, tb1);
+        }
+
+        public static V128 Tbl2_V128(V128 vector, V128 tb0, V128 tb1)
+        {
+            return Tbl(vector, 16, tb0, tb1);
+        }
+
+        public static V128 Tbl3_V64(V128 vector, V128 tb0, V128 tb1, V128 tb2)
+        {
+            return Tbl(vector, 8, tb0, tb1, tb2);
+        }
+
+        public static V128 Tbl3_V128(V128 vector, V128 tb0, V128 tb1, V128 tb2)
+        {
+            return Tbl(vector, 16, tb0, tb1, tb2);
+        }
+
+        public static V128 Tbl4_V64(V128 vector, V128 tb0, V128 tb1, V128 tb2, V128 tb3)
+        {
+            return Tbl(vector, 8, tb0, tb1, tb2, tb3);
+        }
+
+        public static V128 Tbl4_V128(V128 vector, V128 tb0, V128 tb1, V128 tb2, V128 tb3)
+        {
+            return Tbl(vector, 16, tb0, tb1, tb2, tb3);
+        }
+
+        private static V128 Tbl(V128 vector, int bytes, params V128[] tb)
+        {
+            byte[] res   = new byte[16];
+            byte[] table = new byte[tb.Length * 16];
+
+            for (byte index  = 0; index  < tb.Length; index++)
+            {
+                Buffer.BlockCopy(tb[index].ToArray(), 0, table, index * 16, 16);
+            }
+
+            byte[] v = vector.ToArray();
+
+            for (byte index = 0; index < bytes; index++)
+            {
+                byte tblIdx = v[index];
+
+                if (tblIdx < table.Length)
+                {
+                    res[index] = table[tblIdx];
+                }
+            }
+
+            return new V128(res);
+        }
+#endregion
+
 #region "Crc32"
         private const uint Crc32RevPoly  = 0xedb88320;
         private const uint Crc32cRevPoly = 0x82f63b78;

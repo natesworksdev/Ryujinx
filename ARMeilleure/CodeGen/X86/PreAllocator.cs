@@ -117,7 +117,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void AddConstantCopy(LinkedListNode<Node> node, Operation operation)
         {
-            if (operation.SourcesCount == 0 || HasFixedConst(operation.Inst))
+            if (operation.SourcesCount == 0 || IsIntrinsic(operation.Inst))
             {
                 return;
             }
@@ -128,20 +128,31 @@ namespace ARMeilleure.CodeGen.X86
             Operand src1 = operation.GetSource(0);
             Operand src2;
 
-            if (src1.Type.IsInteger())
+            if (src1.Kind == OperandKind.Constant)
             {
-                //Handle integer types.
-                //Most ALU instructions accepts a 32-bits immediate on the second operand.
-                //We need to ensure the following:
-                //- If the constant is on operand 1, we need to move it.
-                //-- But first, we try to swap operand 1 and 2 if the instruction is commutative.
-                //-- Doing so may allow us to encode the constant as operand 2 and avoid a copy.
-                //- If the constant is on operand 2, we check if the instruction supports it,
-                //if not, we also add a copy. 64-bits constants are usually not supported.
                 bool isVecCopy = inst == Instruction.Copy && !dest.Type.IsInteger();
 
-                if (src1.Kind == OperandKind.Constant && (!HasConstSrc1(inst) || isVecCopy))
+                if (!src1.Type.IsInteger())
                 {
+                    //Handle non-integer types (FP32, FP64 and V128).
+                    //For instructions without an immediate operand, we do the following:
+                    //- Insert a copy with the constant value (as integer) to a GPR.
+                    //- Insert a copy from the GPR to a XMM register.
+                    //- Replace the constant use with the XMM register.
+                    src1 = AddXmmCopy(node, src1);
+
+                    operation.SetSource(0, src1);
+                }
+                else if (!HasConstSrc1(inst) || isVecCopy)
+                {
+                    //Handle integer types.
+                    //Most ALU instructions accepts a 32-bits immediate on the second operand.
+                    //We need to ensure the following:
+                    //- If the constant is on operand 1, we need to move it.
+                    //-- But first, we try to swap operand 1 and 2 if the instruction is commutative.
+                    //-- Doing so may allow us to encode the constant as operand 2 and avoid a copy.
+                    //- If the constant is on operand 2, we check if the instruction supports it,
+                    //if not, we also add a copy. 64-bits constants are usually not supported.
                     if (IsCommutative(inst))
                     {
                         src2 = operation.GetSource(1);
@@ -162,45 +173,26 @@ namespace ARMeilleure.CodeGen.X86
                         operation.SetSource(0, src1);
                     }
                 }
+            }
 
-                if (operation.SourcesCount < 2)
+            if (operation.SourcesCount < 2)
+            {
+                return;
+            }
+
+            src2 = operation.GetSource(1);
+
+            if (src2.Kind == OperandKind.Constant)
+            {
+                if (!src2.Type.IsInteger())
                 {
-                    return;
-                }
-
-                src2 = operation.GetSource(1);
-
-                if (src2.Kind == OperandKind.Constant && (!HasConstSrc2(inst) || IsLongConst(src2)))
-                {
-                    src2 = AddCopy(node, src2);
+                    src2 = AddXmmCopy(node, src2);
 
                     operation.SetSource(1, src2);
                 }
-            }
-            else
-            {
-                //Handle non-integer types (FP32, FP64 and V128).
-                //For instructions without an immediate operand, we do the following:
-                //- Insert a copy with the constant value (as integer) to a GPR.
-                //- Insert a copy from the GPR to a XMM register.
-                //- Replace the constant use with the XMM register.
-                if (src1.Kind == OperandKind.Constant && src1.Type.IsInteger())
+                else if (!HasConstSrc2(inst) || IsLongConst(src2))
                 {
-                    src1 = AddXmmCopy(node, src1);
-
-                    operation.SetSource(0, src1);
-                }
-
-                if (operation.SourcesCount < 2)
-                {
-                    return;
-                }
-
-                src2 = operation.GetSource(1);
-
-                if (src2.Kind == OperandKind.Constant && src2.Type.IsInteger())
-                {
-                    src2 = AddXmmCopy(node, src2);
+                    src2 = AddCopy(node, src2);
 
                     operation.SetSource(1, src2);
                 }
@@ -598,24 +590,6 @@ namespace ARMeilleure.CodeGen.X86
             }
 
             return false;
-        }
-
-        private static bool HasFixedConst(Instruction inst)
-        {
-            switch (inst)
-            {
-                case Instruction.LoadFromContext:
-                case Instruction.StoreToContext:
-                case Instruction.VectorExtract:
-                case Instruction.VectorExtract16:
-                case Instruction.VectorExtract8:
-                case Instruction.VectorInsert:
-                case Instruction.VectorInsert16:
-                case Instruction.VectorInsert8:
-                    return true;
-            }
-
-            return IsIntrinsic(inst);
         }
 
         private static bool IsIntrinsic(Instruction inst)

@@ -45,7 +45,14 @@ namespace ARMeilleure.Instructions
 
                 Instruction addInst = X86PaddInstruction[op.Size];
 
-                context.Copy(GetVec(op.Rd), context.AddIntrinsic(addInst, n, m));
+                Operand res = context.AddIntrinsic(addInst, n, m);
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
             }
             else
             {
@@ -1788,6 +1795,11 @@ namespace ARMeilleure.Instructions
             EmitAddLongPairwise(context, signed: true, accumulate: false);
         }
 
+        public static void Saddlv_V(EmitterContext context)
+        {
+            EmitVectorLongAcrossVectorOpSx(context, (op1, op2) => context.Add(op1, op2));
+        }
+
         public static void Saddw_V(EmitterContext context)
         {
             if (Optimizations.UseSse41)
@@ -2295,7 +2307,14 @@ namespace ARMeilleure.Instructions
 
                 Instruction subInst = X86PsubInstruction[op.Size];
 
-                context.Copy(GetVec(op.Rd), context.AddIntrinsic(subInst, n, m));
+                Operand res = context.AddIntrinsic(subInst, n, m);
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
             }
             else
             {
@@ -2429,7 +2448,7 @@ namespace ARMeilleure.Instructions
 
         public static void Uaddlv_V(EmitterContext context)
         {
-            EmitVectorAcrossVectorOpZx(context, (op1, op2) => context.Add(op1, op2));
+            EmitVectorLongAcrossVectorOpZx(context, (op1, op2) => context.Add(op1, op2));
         }
 
         public static void Uaddw_V(EmitterContext context)

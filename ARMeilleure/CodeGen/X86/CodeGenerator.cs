@@ -144,6 +144,8 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.X86Pmullw,               GenerateX86Pmullw);
             Add(Instruction.X86Popcnt,               GenerateX86Popcnt);
             Add(Instruction.X86Por,                  GenerateX86Por);
+            Add(Instruction.X86Pshufb,               GenerateX86Pshufb);
+            Add(Instruction.X86Pslldq,               GenerateX86Pslldq);
             Add(Instruction.X86Psllw,                GenerateX86Psllw);
             Add(Instruction.X86Psrad,                GenerateX86Psrad);
             Add(Instruction.X86Psraw,                GenerateX86Psraw);
@@ -155,6 +157,14 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.X86Psubd,                GenerateX86Psubd);
             Add(Instruction.X86Psubq,                GenerateX86Psubq);
             Add(Instruction.X86Psubw,                GenerateX86Psubw);
+            Add(Instruction.X86Punpckhbw,            GenerateX86Punpckhbw);
+            Add(Instruction.X86Punpckhdq,            GenerateX86Punpckhdq);
+            Add(Instruction.X86Punpckhqdq,           GenerateX86Punpckhqdq);
+            Add(Instruction.X86Punpckhwd,            GenerateX86Punpckhwd);
+            Add(Instruction.X86Punpcklbw,            GenerateX86Punpcklbw);
+            Add(Instruction.X86Punpckldq,            GenerateX86Punpckldq);
+            Add(Instruction.X86Punpcklqdq,           GenerateX86Punpcklqdq);
+            Add(Instruction.X86Punpcklwd,            GenerateX86Punpcklwd);
             Add(Instruction.X86Pxor,                 GenerateX86Pxor);
             Add(Instruction.X86Rcpps,                GenerateX86Rcpps);
             Add(Instruction.X86Rcpss,                GenerateX86Rcpss);
@@ -1249,6 +1259,16 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Por(operation.Dest, operation.GetSource(1), operation.GetSource(0));
         }
 
+        private static void GenerateX86Pshufb(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Pshufb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Pslldq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Pslldq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
         private static void GenerateX86Psllw(CodeGenContext context, Operation operation)
         {
             context.Assembler.Psllw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
@@ -1302,6 +1322,46 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateX86Psubw(CodeGenContext context, Operation operation)
         {
             context.Assembler.Psubw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Punpckhbw(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Punpckhbw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Punpckhdq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Punpckhdq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Punpckhqdq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Punpckhqdq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Punpckhwd(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Punpckhwd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Punpcklbw(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Punpcklbw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Punpckldq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Punpckldq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Punpcklqdq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Punpcklqdq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Punpcklwd(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Punpcklwd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
         }
 
         private static void GenerateX86Pxor(CodeGenContext context, Operation operation)
