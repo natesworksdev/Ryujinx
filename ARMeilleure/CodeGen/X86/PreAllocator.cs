@@ -134,7 +134,7 @@ namespace ARMeilleure.CodeGen.X86
                 //Most ALU instructions accepts a 32-bits immediate on the second operand.
                 //We need to ensure the following:
                 //- If the constant is on operand 1, we need to move it.
-                //-- But first, we try to swap operand 1 and 2 if the instruction is comutative.
+                //-- But first, we try to swap operand 1 and 2 if the instruction is commutative.
                 //-- Doing so may allow us to encode the constant as operand 2 and avoid a copy.
                 //- If the constant is on operand 2, we check if the instruction supports it,
                 //if not, we also add a copy. 64-bits constants are usually not supported.
@@ -142,7 +142,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 if (src1.Kind == OperandKind.Constant && (!HasConstSrc1(inst) || isVecCopy))
                 {
-                    if (IsComutative(inst))
+                    if (IsCommutative(inst))
                     {
                         src2 = operation.GetSource(1);
 
@@ -583,7 +583,7 @@ namespace ARMeilleure.CodeGen.X86
             return false;
         }
 
-        private static bool IsComutative(Instruction inst)
+        private static bool IsCommutative(Instruction inst)
         {
             switch (inst)
             {

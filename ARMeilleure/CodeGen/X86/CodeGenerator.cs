@@ -486,11 +486,11 @@ namespace ARMeilleure.CodeGen.X86
             }
             else if (dest.Type == OperandType.FP32)
             {
-                context.Assembler.Subss(dest, divisor, dividend);
+                context.Assembler.Divss(dest, divisor, dividend);
             }
             else /* if (dest.Type == OperandType.FP64) */
             {
-                context.Assembler.Subsd(dest, divisor, dividend);
+                context.Assembler.Divsd(dest, divisor, dividend);
             }
         }
 
