@@ -1711,7 +1711,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                EmitSse41Sabd(context, op, n, m, op.Size);
+                EmitSse41Sabd(context, op, n, m, isLong: false);
             }
             else
             {
@@ -1744,7 +1744,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                EmitSse41Sabd(context, op, n, m, op.Size + 1);
+                EmitSse41Sabd(context, op, n, m, isLong: true);
             }
             else
             {
@@ -2362,7 +2362,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                EmitSse41Uabd(context, op, n, m, op.Size);
+                EmitSse41Uabd(context, op, n, m, isLong: false);
             }
             else
             {
@@ -2395,7 +2395,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                EmitSse41Uabd(context, op, n, m, op.Size + 1);
+                EmitSse41Uabd(context, op, n, m, isLong: true);
             }
             else
             {
@@ -2805,7 +2805,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorBinaryOpSx(context, (op1, op2) =>
+                EmitVectorBinaryOpZx(context, (op1, op2) =>
                 {
                     Operand res = context.Add(op1, op2);
 
@@ -3106,8 +3106,10 @@ namespace ARMeilleure.Instructions
             OpCodeSimdReg op,
             Operand n,
             Operand m,
-            int size)
+            bool isLong)
         {
+            int size = isLong ? op.Size + 1 : op.Size;
+
             Instruction cmpgtInst = X86PcmpgtInstruction[size];
 
             Operand cmpMask = context.AddIntrinsic(cmpgtInst, n, m);
@@ -3124,7 +3126,7 @@ namespace ARMeilleure.Instructions
 
             res = context.AddIntrinsic(Instruction.X86Por, res, res2);
 
-            if (op.RegisterSize == RegisterSize.Simd64)
+            if (!isLong && op.RegisterSize == RegisterSize.Simd64)
             {
                 res = context.VectorZeroUpper64(res);
             }
@@ -3137,8 +3139,10 @@ namespace ARMeilleure.Instructions
             OpCodeSimdReg op,
             Operand n,
             Operand m,
-            int size)
+            bool isLong)
         {
+            int size = isLong ? op.Size + 1 : op.Size;
+
             Instruction maxInst = X86PmaxuInstruction[size];
 
             Operand max = context.AddIntrinsic(maxInst, m, n);
@@ -3161,7 +3165,7 @@ namespace ARMeilleure.Instructions
 
             res = context.AddIntrinsic(Instruction.X86Por, res, res2);
 
-            if (op.RegisterSize == RegisterSize.Simd64)
+            if (!isLong && op.RegisterSize == RegisterSize.Simd64)
             {
                 res = context.VectorZeroUpper64(res);
             }
