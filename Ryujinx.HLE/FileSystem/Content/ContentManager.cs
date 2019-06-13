@@ -82,13 +82,11 @@ namespace Ryujinx.HLE.FileSystem.Content
                     if (Directory.GetFiles(directoryPath).Length > 0)
                     {
                         string ncaName = new DirectoryInfo(directoryPath).Name.Replace(".nca", string.Empty);
-
                         using (FileStream ncaFile = new FileStream(Directory.GetFiles(directoryPath)[0], FileMode.Open, FileAccess.Read))
                         {
                             Nca nca = new Nca(_device.System.KeySet, ncaFile.AsStorage());
 
-                            string switchPath = Path.Combine(contentPathString + ":",
-                                                              ncaFile.Name.Replace(contentDirectory, string.Empty).TrimStart('\\'));
+                            string switchPath = contentPathString + ":/" + ncaFile.Name.Replace(contentDirectory, string.Empty).TrimStart(Path.DirectorySeparatorChar);
 
                             // Change path format to switch's
                             switchPath = switchPath.Replace('\\', '/');
@@ -115,8 +113,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                         {
                             Nca nca = new Nca(_device.System.KeySet, ncaFile.AsStorage());
 
-                            string switchPath = Path.Combine(contentPathString + ":",
-                                                              filePath.Replace(contentDirectory, string.Empty).TrimStart('\\'));
+                            string switchPath = contentPathString + ":/" + filePath.Replace(contentDirectory, string.Empty).TrimStart(Path.DirectorySeparatorChar);
 
                             // Change path format to switch's
                             switchPath = switchPath.Replace('\\', '/');
