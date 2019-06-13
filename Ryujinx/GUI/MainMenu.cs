@@ -113,7 +113,7 @@ namespace Ryujinx
                 GameTable.AppendColumn("File Size", new CellRendererText(), "text", 6);
                 GameTable.AppendColumn("Path", new CellRendererText(), "text", 7);
 
-                TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                TableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = TableStore;
 
                 UpdateGameTable();

@@ -5,6 +5,7 @@ using Ryujinx.HLE.Input;
 using Ryujinx.UI.Input;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -12,9 +13,13 @@ namespace Ryujinx
 {
     public class SwitchSettings : Window
     {
+        internal static Configuration SwitchConfig { get; private set; }
+
         private HLE.Switch device { get; set; }
 
-        internal static Configuration SwitchConfig { get; private set; }
+        private static ListStore GameDirsBoxStore { get; set; }
+
+        private static bool ListeningForKeypress { get; set; }
 
         [GUI] Window       SettingsWin;
         [GUI] CheckButton  ErrorLogToggle;
@@ -35,7 +40,10 @@ namespace Ryujinx
         [GUI] CheckButton  CustThemeToggle;
         [GUI] Entry        CustThemeDir;
         [GUI] Label        CustThemeDirLabel;
-        [GUI] TextView     GameDirsBox;
+        [GUI] TreeView     GameDirsBox;
+        [GUI] Entry        AddGameDirBox;
+        [GUI] ToggleButton AddDir;
+        [GUI] ToggleButton RemoveDir;
         [GUI] Entry        LogPath;
         [GUI] Image        ControllerImage;
 
@@ -79,30 +87,30 @@ namespace Ryujinx
             ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.JoyCon.png", 500, 500);
 
             //Bind Events
-            LStickUp1.Toggled     += (o, args) => Button_Pressed(o, args, LStickUp1);
-            LStickDown1.Toggled   += (o, args) => Button_Pressed(o, args, LStickDown1);
-            LStickLeft1.Toggled   += (o, args) => Button_Pressed(o, args, LStickLeft1);
-            LStickRight1.Toggled  += (o, args) => Button_Pressed(o, args, LStickRight1);
-            LStickButton1.Toggled += (o, args) => Button_Pressed(o, args, LStickButton1);
-            DpadUp1.Toggled       += (o, args) => Button_Pressed(o, args, DpadUp1);
-            DpadDown1.Toggled     += (o, args) => Button_Pressed(o, args, DpadDown1);
-            DpadLeft1.Toggled     += (o, args) => Button_Pressed(o, args, DpadLeft1);
-            DpadRight1.Toggled    += (o, args) => Button_Pressed(o, args, DpadRight1);
-            Minus1.Toggled        += (o, args) => Button_Pressed(o, args, Minus1);
-            L1.Toggled            += (o, args) => Button_Pressed(o, args, L1);
-            ZL1.Toggled           += (o, args) => Button_Pressed(o, args, ZL1);
-            RStickUp1.Toggled     += (o, args) => Button_Pressed(o, args, RStickUp1);
-            RStickDown1.Toggled   += (o, args) => Button_Pressed(o, args, RStickDown1);
-            RStickLeft1.Toggled   += (o, args) => Button_Pressed(o, args, RStickLeft1);
-            RStickRight1.Toggled  += (o, args) => Button_Pressed(o, args, RStickRight1);
-            RStickButton1.Toggled += (o, args) => Button_Pressed(o, args, RStickButton1);
-            A1.Toggled            += (o, args) => Button_Pressed(o, args, A1);
-            B1.Toggled            += (o, args) => Button_Pressed(o, args, B1);
-            X1.Toggled            += (o, args) => Button_Pressed(o, args, X1);
-            Y1.Toggled            += (o, args) => Button_Pressed(o, args, Y1);
-            Plus1.Toggled         += (o, args) => Button_Pressed(o, args, Plus1);
-            R1.Toggled            += (o, args) => Button_Pressed(o, args, R1);
-            ZR1.Toggled           += (o, args) => Button_Pressed(o, args, ZR1);
+            LStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, LStickUp1);
+            LStickDown1.Clicked   += (o, args) => Button_Pressed(o, args, LStickDown1);
+            LStickLeft1.Clicked   += (o, args) => Button_Pressed(o, args, LStickLeft1);
+            LStickRight1.Clicked  += (o, args) => Button_Pressed(o, args, LStickRight1);
+            LStickButton1.Clicked += (o, args) => Button_Pressed(o, args, LStickButton1);
+            DpadUp1.Clicked       += (o, args) => Button_Pressed(o, args, DpadUp1);
+            DpadDown1.Clicked     += (o, args) => Button_Pressed(o, args, DpadDown1);
+            DpadLeft1.Clicked     += (o, args) => Button_Pressed(o, args, DpadLeft1);
+            DpadRight1.Clicked    += (o, args) => Button_Pressed(o, args, DpadRight1);
+            Minus1.Clicked        += (o, args) => Button_Pressed(o, args, Minus1);
+            L1.Clicked            += (o, args) => Button_Pressed(o, args, L1);
+            ZL1.Clicked           += (o, args) => Button_Pressed(o, args, ZL1);
+            RStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, RStickUp1);
+            RStickDown1.Clicked   += (o, args) => Button_Pressed(o, args, RStickDown1);
+            RStickLeft1.Clicked   += (o, args) => Button_Pressed(o, args, RStickLeft1);
+            RStickRight1.Clicked  += (o, args) => Button_Pressed(o, args, RStickRight1);
+            RStickButton1.Clicked += (o, args) => Button_Pressed(o, args, RStickButton1);
+            A1.Clicked            += (o, args) => Button_Pressed(o, args, A1);
+            B1.Clicked            += (o, args) => Button_Pressed(o, args, B1);
+            X1.Clicked            += (o, args) => Button_Pressed(o, args, X1);
+            Y1.Clicked            += (o, args) => Button_Pressed(o, args, Y1);
+            Plus1.Clicked         += (o, args) => Button_Pressed(o, args, Plus1);
+            R1.Clicked            += (o, args) => Button_Pressed(o, args, R1);
+            ZR1.Clicked           += (o, args) => Button_Pressed(o, args, ZR1);
 
             //Setup Currents
             if (SwitchConfig.LoggingEnableError)        { ErrorLogToggle.Click(); }
@@ -150,29 +158,61 @@ namespace Ryujinx
             ZR1.Label           = SwitchConfig.KeyboardControls.RightJoycon.ButtonZr.ToString();
 
             CustThemeDir.Buffer.Text = SwitchConfig.CustomThemePath;
-            GameDirsBox.Buffer.Text  = String.Join("\r\n", SwitchConfig.GameDirs);
+
+            GameDirsBox.AppendColumn("Game Directories", new CellRendererText(), "text", 0);
+            GameDirsBoxStore  = new ListStore(typeof(string));
+            GameDirsBox.Model = GameDirsBoxStore;
+            foreach (string GameDir in SwitchConfig.GameDirs)
+            {
+                GameDirsBoxStore.AppendValues(GameDir);
+            }
 
             if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; }
 
             LogPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
+
+            ListeningForKeypress = false;
         }
 
         //Events
-        private void Button_Pressed(object button, EventArgs args, ToggleButton Button)
+        private void Button_Pressed(object obj, EventArgs args, ToggleButton Button)
         {
-            KeyPressEvent += On_KeyPress;
-
-            void On_KeyPress(object obj, KeyPressEventArgs KeyPressed)
+            if (ListeningForKeypress == false)
             {
-                string key = KeyPressed.Event.Key.ToString();
+                KeyPressEvent += On_KeyPress;
+                ListeningForKeypress = true;
 
-                if (Enum.IsDefined(typeof(OpenTK.Input.Key), key.First().ToString().ToUpper() + key.Substring(1))) { Button.Label = key.First().ToString().ToUpper() + key.Substring(1); }
-                else if (GdkToTKInput.ContainsKey(key)) { Button.Label = GdkToTKInput[key]; }
-                else { Button.Label = "Space"; }
+                void On_KeyPress(object Obj, KeyPressEventArgs KeyPressed)
+                {
+                    string key = KeyPressed.Event.Key.ToString();
 
-                Button.SetStateFlags(0, true);
-                KeyPressEvent -= On_KeyPress;
+                    if (Enum.IsDefined(typeof(OpenTK.Input.Key), key.First().ToString().ToUpper() + key.Substring(1))) { Button.Label = key.First().ToString().ToUpper() + key.Substring(1); }
+                    else if (GdkToTKInput.ContainsKey(key)) { Button.Label = GdkToTKInput[key]; }
+                    else { Button.Label = "Space"; }
+
+                    Button.SetStateFlags(0, true);
+                    KeyPressEvent -= On_KeyPress;
+                    ListeningForKeypress = false;
+                }
             }
+            else { Button.SetStateFlags(0, true); }
+        }
+
+        private void AddDir_Pressed(object obj, EventArgs args)
+        {
+            if (Directory.Exists(AddGameDirBox.Buffer.Text)) { GameDirsBoxStore.AppendValues(AddGameDirBox.Buffer.Text); }
+
+            AddDir.SetStateFlags(0, true);
+        }
+
+        private void RemoveDir_Pressed(object obj, EventArgs args)
+        {
+            TreeSelection selection = GameDirsBox.Selection;
+
+            selection.GetSelected(out TreeIter treeiter);
+            GameDirsBoxStore.Remove(ref treeiter);
+
+            RemoveDir.SetStateFlags(0, true);
         }
 
         private void CustThemeToggle_Activated(object obj, EventArgs args)
@@ -183,9 +223,15 @@ namespace Ryujinx
         private void SaveToggle_Activated(object obj, EventArgs args)
         {
             List<string> gameDirs = new List<string>();
-            foreach (string line in GameDirsBox.Buffer.Text.Split("\n"))
+
+            GameDirsBoxStore.GetIterFirst(out TreeIter iter);
+            for (int i = 0; i < GameDirsBoxStore.IterNChildren(); i++)
             {
-                gameDirs.Add(line);
+                GameDirsBoxStore.GetValue(iter, i );
+
+                gameDirs.Add((string)GameDirsBoxStore.GetValue(iter, 0));
+
+                GameDirsBoxStore.IterNext(ref iter);
             }
 
             if (ErrorLogToggle.Active)       { SwitchConfig.LoggingEnableError        = true; }
