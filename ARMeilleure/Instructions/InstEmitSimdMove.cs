@@ -567,13 +567,13 @@ namespace ARMeilleure.Instructions
 
             if (Optimizations.UseSsse3)
             {
-                long maskE0 = _masksE0_TrnUzpXtn[op.Size];
-                long maskE1 = _masksE1_TrnUzp   [op.Size];
-
                 Operand mask = null;
 
                 if (op.Size < 3)
                 {
+                    long maskE0 = _masksE0_TrnUzpXtn[op.Size];
+                    long maskE1 = _masksE1_TrnUzp   [op.Size];
+
                     mask = X86GetScalar(context, maskE0);
 
                     mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
@@ -598,6 +598,11 @@ namespace ARMeilleure.Instructions
                     : X86PunpckhInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(punpckInst, n, m);
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
 
                 context.Copy(GetVec(op.Rd), res);
             }

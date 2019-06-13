@@ -3153,7 +3153,7 @@ namespace ARMeilleure.Instructions
 
             Operand onesMask = X86GetAllElements(context, -1L);
 
-            cmpMask = context.AddIntrinsic(Instruction.X86Pand, cmpMask, onesMask);
+            cmpMask = context.AddIntrinsic(Instruction.X86Pandn, cmpMask, onesMask);
 
             Instruction subInst = X86PsubInstruction[size];
 
