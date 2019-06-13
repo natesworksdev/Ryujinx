@@ -48,7 +48,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="sep">
+                      <object class="GtkSeparatorMenuItem">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -77,6 +77,30 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
+                      <object class="GtkCheckMenuItem" id="FullScreen">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Fullscreen</property>
+                        <property name="use_underline">True</property>
+                        <signal name="toggled" handler="FullScreen_Toggled" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="ReturnMain">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Return to Main Menu</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="ReturnMain_Pressed" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkMenuItem" id="SettingsMenu">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -99,6 +123,15 @@
                   <object class="GtkMenu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="Profiler">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Profiler</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="Profiler_Pressed" swapped="no"/>
+                      </object>
+                    </child>
                     <child>
                       <object class="GtkMenuItem" id="NFC">
                         <property name="visible">True</property>

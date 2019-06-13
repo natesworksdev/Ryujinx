@@ -32,6 +32,7 @@ namespace Ryujinx
         private static ListStore TableStore { get; set; }
 
         [GUI] Window         MainWin;
+        [GUI] CheckMenuItem  FullScreen;
         [GUI] MenuItem       NFC;
         [GUI] TreeView       GameTable;
         [GUI] ScrolledWindow GameTableWindow;
@@ -49,6 +50,8 @@ namespace Ryujinx
 
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(device);
+
+            ApplicationLibrary.Init();
 
             gtkapp = _gtkapp;
 
@@ -111,13 +114,20 @@ namespace Ryujinx
                 GameTable.AppendColumn("Path", new CellRendererText(), "text", 7);
 
                 TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-
-                foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
-                {
-                    TableStore.AppendValues(AppData.Icon, AppData.Game, AppData.Version, AppData.DLC, AppData.TP, AppData.LP, AppData.FileSize, AppData.Path);
-                }
-
                 GameTable.Model = TableStore;
+
+                UpdateGameTable();
+            }
+        }
+
+        public static void UpdateGameTable()
+        {
+            TableStore.Clear();
+            ApplicationLibrary.Init();
+
+            foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
+            {
+                TableStore.AppendValues(AppData.Icon, AppData.Game, AppData.Version, AppData.DLC, AppData.TP, AppData.LP, AppData.FileSize, AppData.Path);
             }
         }
 
@@ -317,12 +327,30 @@ namespace Ryujinx
             Environment.Exit(0);
         }
 
+        private void ReturnMain_Pressed(object o, EventArgs args)
+        {
+            GameTableWindow.Show();
+            GLScreen.Hide();
+            //will also have to write logic to kill running game
+        }
+
+        private void FullScreen_Toggled(object o, EventArgs args)
+        {
+            if (FullScreen.Active == true) { Fullscreen(); }
+            else { Unfullscreen(); }
+        }
+
         private void Settings_Pressed(object o, EventArgs args)
         {
             var SettingsWin = new SwitchSettings(device);
             gtkapp.Register(GLib.Cancellable.Current);
             gtkapp.AddWindow(SettingsWin);
             SettingsWin.Show();
+        }
+
+        private void Profiler_Pressed(object o, EventArgs args)
+        {
+            //Soon™
         }
 
         private void NFC_Pressed(object o, EventArgs args)
@@ -333,7 +361,7 @@ namespace Ryujinx
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
-                Console.WriteLine(fc.Filename); //temp
+                //Soon™
             }
             fc.Destroy();
         }

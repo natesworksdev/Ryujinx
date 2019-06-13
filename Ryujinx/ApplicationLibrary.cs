@@ -39,12 +39,9 @@ namespace Ryujinx
             RyujinxNSOIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNSOIcon.png", 75, 75);
             RyujinxROMIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxROMIcon.png", 75, 75);
 
-            string dat = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirs.dat");
-            if (File.Exists(dat) == false) { File.Create(dat).Close(); }
-            string[] GameDirs = File.ReadAllLines(dat);
             List<string> Games = new List<string>();
 
-            foreach (string GameDir in GameDirs)
+            foreach (string GameDir in SwitchSettings.SwitchConfig.GameDirs)
             {
                 if (Directory.Exists(GameDir) == false) { Logger.PrintError(LogClass.Application, $"\"GameDirs.dat\" contains an invalid directory: \"{GameDir}\""); continue; }
 

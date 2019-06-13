@@ -28,7 +28,7 @@
     <EmbeddedResource Include="GUI\assets\ryujinxROMIcon.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxXCIIcon.png" />
     <EmbeddedResource Include="GUI\MainMenu.glade" />
-    <EmbeddedResource Include="GUI\Settings.glade" />
+    <EmbeddedResource Include="GUI\SwitchSettings.glade" />
   </ItemGroup>
 
   <ItemGroup>

@@ -494,6 +494,13 @@
         false
       ]
     },
+    "game_dirs": {
+      "$id": "#/properties/game_dirs",
+      "type": "string list",
+      "title": "List of Game Directories",
+      "description": "A list of directories containing games to be used to load games into the games list",
+      "default": []
+    },
     "enable_custom_theme": {
       "$id": "#/properties/enable_custom_theme",
       "type": "boolean",

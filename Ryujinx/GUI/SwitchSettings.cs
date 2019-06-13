@@ -5,7 +5,6 @@ using Ryujinx.HLE.Input;
 using Ryujinx.UI.Input;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -37,8 +36,8 @@ namespace Ryujinx
         [GUI] Entry        CustThemeDir;
         [GUI] Label        CustThemeDirLabel;
         [GUI] TextView     GameDirsBox;
+        [GUI] Entry        LogPath;
         [GUI] Image        ControllerImage;
-
 
         [GUI] ComboBoxText Controller1Type;
         [GUI] ToggleButton LStickUp1;
@@ -68,7 +67,7 @@ namespace Ryujinx
 
         public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
-        public SwitchSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GUI.Settings.glade"), _device) { }
+        public SwitchSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GUI.SwitchSettings.glade"), _device) { }
 
         private SwitchSettings(Builder builder, HLE.Switch _device) : base(builder.GetObject("SettingsWin").Handle)
         {
@@ -151,9 +150,11 @@ namespace Ryujinx
             ZR1.Label           = SwitchConfig.KeyboardControls.RightJoycon.ButtonZr.ToString();
 
             CustThemeDir.Buffer.Text = SwitchConfig.CustomThemePath;
-            GameDirsBox.Buffer.Text = File.ReadAllText("./GameDirs.dat");
+            GameDirsBox.Buffer.Text  = String.Join("\r\n", SwitchConfig.GameDirs);
 
             if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; }
+
+            LogPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
         }
 
         //Events
@@ -181,6 +182,12 @@ namespace Ryujinx
 
         private void SaveToggle_Activated(object obj, EventArgs args)
         {
+            List<string> gameDirs = new List<string>();
+            foreach (string line in GameDirsBox.Buffer.Text.Split("\n"))
+            {
+                gameDirs.Add(line);
+            }
+
             if (ErrorLogToggle.Active)       { SwitchConfig.LoggingEnableError        = true; }
             if (WarningLogToggle.Active)     { SwitchConfig.LoggingEnableWarn         = true; }
             if (InfoLogToggle.Active)        { SwitchConfig.LoggingEnableInfo         = true; }
@@ -199,44 +206,46 @@ namespace Ryujinx
 
             SwitchConfig.KeyboardControls.LeftJoycon = new NpadKeyboardLeft()
             {
-                StickUp = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickUp1.Label),
-                StickDown = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickDown1.Label),
-                StickLeft = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickLeft1.Label),
-                StickRight = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickRight1.Label),
+                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickUp1.Label),
+                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickDown1.Label),
+                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickLeft1.Label),
+                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickRight1.Label),
                 StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickButton1.Label),
-                DPadUp = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadUp1.Label),
-                DPadDown = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadDown1.Label),
-                DPadLeft = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadLeft1.Label),
-                DPadRight = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadRight1.Label),
+                DPadUp      = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadUp1.Label),
+                DPadDown    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadDown1.Label),
+                DPadLeft    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadLeft1.Label),
+                DPadRight   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadRight1.Label),
                 ButtonMinus = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Minus1.Label),
-                ButtonL = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), L1.Label),
-                ButtonZl = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZL1.Label),
+                ButtonL     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), L1.Label),
+                ButtonZl    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZL1.Label),
             };
 
             SwitchConfig.KeyboardControls.RightJoycon = new NpadKeyboardRight()
             {
-                StickUp = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickUp1.Label),
-                StickDown = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickDown1.Label),
-                StickLeft = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickLeft1.Label),
-                StickRight = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickRight1.Label),
+                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickUp1.Label),
+                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickDown1.Label),
+                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickLeft1.Label),
+                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickRight1.Label),
                 StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickButton1.Label),
-                ButtonA = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), A1.Label),
-                ButtonB = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), B1.Label),
-                ButtonX = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), X1.Label),
-                ButtonY = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Y1.Label),
-                ButtonPlus = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Plus1.Label),
-                ButtonR = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), R1.Label),
-                ButtonZr = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZR1.Label),
+                ButtonA     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), A1.Label),
+                ButtonB     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), B1.Label),
+                ButtonX     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), X1.Label),
+                ButtonY     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Y1.Label),
+                ButtonPlus  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Plus1.Label),
+                ButtonR     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), R1.Label),
+                ButtonZr    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZR1.Label),
             };
 
             SwitchConfig.SystemLanguage  = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
             SwitchConfig.ControllerType  = (HidControllerType)Enum.Parse(typeof(HidControllerType), Controller1Type.ActiveId);
             SwitchConfig.CustomThemePath = CustThemeDir.Buffer.Text;
+            SwitchConfig.GameDirs        = gameDirs;
+            
 
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-            File.WriteAllText("./GameDirs.dat", GameDirsBox.Buffer.Text);
-
             Configuration.Configure(device, SwitchConfig);
+
+            MainMenu.UpdateGameTable();
 
             Destroy();
         }

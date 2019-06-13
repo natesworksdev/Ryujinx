@@ -18,6 +18,7 @@
     "enable_legacy_jit": false,
     "ignore_missing_services": false,
     "controller_type": "Handheld",
+    "game_dirs": [],
     "enable_custom_theme": false,
     "custom_theme_path": "",
     "keyboard_controls": {
