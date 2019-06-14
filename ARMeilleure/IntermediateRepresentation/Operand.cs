@@ -54,6 +54,16 @@ namespace ARMeilleure.IntermediateRepresentation
             Value = value;
         }
 
+        public Operand(float value) : this(OperandKind.Constant, OperandType.FP32)
+        {
+            Value = (ulong)BitConverter.SingleToInt32Bits(value);
+        }
+
+        public Operand(double value) : this(OperandKind.Constant, OperandType.FP64)
+        {
+            Value = (ulong)BitConverter.DoubleToInt64Bits(value);
+        }
+
         public Operand(int index, RegisterType regType, OperandType type) : this()
         {
             Kind = OperandKind.Register;

@@ -39,6 +39,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.CompareLessUI,           GenerateCompareLessUI);
             Add(Instruction.CompareNotEqual,         GenerateCompareNotEqual);
             Add(Instruction.ConditionalSelect,       GenerateConditionalSelect);
+            Add(Instruction.ConvertToFP,             GenerateConvertToFP);
             Add(Instruction.Copy,                    GenerateCopy);
             Add(Instruction.CountLeadingZeros,       GenerateCountLeadingZeros);
             Add(Instruction.Divide,                  GenerateDivide);
@@ -85,6 +86,17 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.X86Addss,                GenerateX86Addss);
             Add(Instruction.X86Andnpd,               GenerateX86Andnpd);
             Add(Instruction.X86Andnps,               GenerateX86Andnps);
+            Add(Instruction.X86Cmppd,                GenerateX86Cmppd);
+            Add(Instruction.X86Cmpps,                GenerateX86Cmpps);
+            Add(Instruction.X86Cvtdq2pd,             GenerateX86Cvtdq2pd);
+            Add(Instruction.X86Cvtdq2ps,             GenerateX86Cvtdq2ps);
+            Add(Instruction.X86Cvtpd2dq,             GenerateX86Cvtpd2dq);
+            Add(Instruction.X86Cvtpd2ps,             GenerateX86Cvtpd2ps);
+            Add(Instruction.X86Cvtps2dq,             GenerateX86Cvtps2dq);
+            Add(Instruction.X86Cvtps2pd,             GenerateX86Cvtps2pd);
+            Add(Instruction.X86Cvtsd2si,             GenerateX86Cvtsd2si);
+            Add(Instruction.X86Cvtsd2ss,             GenerateX86Cvtsd2ss);
+            Add(Instruction.X86Cvtss2sd,             GenerateX86Cvtss2sd);
             Add(Instruction.X86Divpd,                GenerateX86Divpd);
             Add(Instruction.X86Divps,                GenerateX86Divps);
             Add(Instruction.X86Divsd,                GenerateX86Divsd);
@@ -145,6 +157,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.X86Popcnt,               GenerateX86Popcnt);
             Add(Instruction.X86Por,                  GenerateX86Por);
             Add(Instruction.X86Pshufb,               GenerateX86Pshufb);
+            Add(Instruction.X86Pslld,                GenerateX86Pslld);
             Add(Instruction.X86Pslldq,               GenerateX86Pslldq);
             Add(Instruction.X86Psllw,                GenerateX86Psllw);
             Add(Instruction.X86Psrad,                GenerateX86Psrad);
@@ -391,6 +404,91 @@ namespace ARMeilleure.CodeGen.X86
         {
             context.Assembler.Test(operation.GetSource(0), operation.GetSource(0));
             context.Assembler.Cmovcc(operation.Dest, operation.GetSource(1), X86Condition.NotEqual);
+        }
+
+        private static void GenerateConvertToFP(CodeGenContext context, Operation operation)
+        {
+            Operand dest   = operation.Dest;
+            Operand source = operation.GetSource(0);
+
+            Debug.Assert(dest.Type == OperandType.FP32 || dest.Type == OperandType.FP64);
+
+            if (dest.Type == OperandType.FP32)
+            {
+                Debug.Assert(source.Type.IsInteger() || source.Type == OperandType.FP64);
+
+                if (source.Type.IsInteger())
+                {
+                    context.Assembler.Xorps(dest, dest, dest);
+                    context.Assembler.Cvtsi2ss(dest, source, dest);
+                }
+                else /* if (source.Type == OperandType.FP64) */
+                {
+                    context.Assembler.Cvtsd2ss(dest, source, dest);
+
+                    ZeroUpper96(context, dest, dest);
+                }
+            }
+            else /* if (dest.Type == OperandType.FP64) */
+            {
+                Debug.Assert(source.Type.IsInteger() || source.Type == OperandType.FP32);
+
+                if (source.Type.IsInteger())
+                {
+                    context.Assembler.Xorps(dest, dest, dest);
+                    context.Assembler.Cvtsi2sd(dest, source, dest);
+                }
+                else /* if (source.Type == OperandType.FP32) */
+                {
+                    context.Assembler.Cvtss2sd(dest, source, dest);
+
+                    ZeroUpper64(context, dest, dest);
+                }
+            }
+        }
+
+        private static void GenerateConvertToFPUI(CodeGenContext context, Operation operation)
+        {
+            Operand dest   = operation.Dest;
+            Operand source = operation.GetSource(0);
+
+            Debug.Assert(dest.Type == OperandType.FP32 ||
+                         dest.Type == OperandType.FP64);
+
+            if (dest.Type == OperandType.FP32)
+            {
+                Debug.Assert(source.Type == OperandType.I32 ||
+                             source.Type == OperandType.FP64);
+
+                if (source.Type == OperandType.I32)
+                {
+                    context.Assembler.Xorps(dest, dest, dest);
+                    context.Assembler.Cvtsi2ss(dest, source, dest);
+                }
+                else /* if (source.Type == OperandType.FP64) */
+                {
+                    context.Assembler.Cvtsd2ss(dest, source, dest);
+
+                    ZeroUpper96(context, dest, dest);
+                }
+            }
+            else /* if (dest.Type == OperandType.FP64) */
+            {
+                Debug.Assert(source.Type == OperandType.I64 ||
+                             source.Type == OperandType.FP32);
+
+                if (source.Type == OperandType.I64)
+                {
+                    context.Assembler.Xorps(dest, dest, dest);
+                    context.Assembler.Cvtsi2sd(dest, source, dest);
+                }
+                else /* if (source.Type == OperandType.FP32) */
+                {
+                    context.Assembler.Cvtss2sd(dest, source, dest);
+
+                    ZeroUpper64(context, dest, dest);
+                }
+            }
         }
 
         private static void GenerateCopy(CodeGenContext context, Operation operation)
@@ -915,19 +1013,12 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateVectorZeroUpper64(CodeGenContext context, Operation operation)
         {
-            Operand dest = operation.Dest;
-            Operand src1 = operation.GetSource(0);
-
-            context.Assembler.Movq(dest, src1);
+            ZeroUpper64(context, operation.Dest, operation.GetSource(0));
         }
 
         private static void GenerateVectorZeroUpper96(CodeGenContext context, Operation operation)
         {
-            Operand dest = operation.Dest;
-            Operand src1 = operation.GetSource(0);
-
-            context.Assembler.Movq(dest, src1);
-            context.Assembler.Pshufd(dest, dest, 0xfc);
+            ZeroUpper96(context, operation.Dest, operation.GetSource(0));
         }
 
         private static void GenerateX86Addpd(CodeGenContext context, Operation operation)
@@ -958,6 +1049,69 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateX86Andnps(CodeGenContext context, Operation operation)
         {
             context.Assembler.Andnps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cmppd(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cmppd(
+                operation.Dest,
+                operation.GetSource(1),
+                operation.GetSource(0),
+                operation.GetSource(2).AsByte());
+        }
+
+        private static void GenerateX86Cmpps(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cmpps(
+                operation.Dest,
+                operation.GetSource(1),
+                operation.GetSource(0),
+                operation.GetSource(2).AsByte());
+        }
+
+        private static void GenerateX86Cvtdq2pd(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtdq2pd(operation.Dest, operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cvtdq2ps(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtdq2ps(operation.Dest, operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cvtpd2dq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtpd2dq(operation.Dest, operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cvtpd2ps(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtpd2ps(operation.Dest, operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cvtps2dq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtps2dq(operation.Dest, operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cvtps2pd(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtps2pd(operation.Dest, operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cvtsd2si(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtsd2si(operation.Dest, operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cvtsd2ss(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtsd2ss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Cvtss2sd(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cvtss2sd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
         }
 
         private static void GenerateX86Divpd(CodeGenContext context, Operation operation)
@@ -1264,6 +1418,11 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Pshufb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
         }
 
+        private static void GenerateX86Pslld(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Pslld(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
         private static void GenerateX86Pslldq(CodeGenContext context, Operation operation)
         {
             context.Assembler.Pslldq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
@@ -1371,12 +1530,12 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateX86Rcpps(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Rcpps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+            context.Assembler.Rcpps(operation.Dest, operation.GetSource(0));
         }
 
         private static void GenerateX86Rcpss(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Rcpss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+            context.Assembler.Rcpss(operation.Dest, operation.GetSource(0));
         }
 
         private static void GenerateX86Roundpd(CodeGenContext context, Operation operation)
@@ -1579,6 +1738,17 @@ namespace ARMeilleure.CodeGen.X86
 
                 mask &= ~(1 << bit);
             }
+        }
+
+        private static void ZeroUpper64(CodeGenContext context, Operand dest, Operand source)
+        {
+            context.Assembler.Movq(dest, source);
+        }
+
+        private static void ZeroUpper96(CodeGenContext context, Operand dest, Operand source)
+        {
+            context.Assembler.Movq(dest, source);
+            context.Assembler.Pshufd(dest, dest, 0xfc);
         }
 
         private static Operand Get32BitsRegister(Register reg)

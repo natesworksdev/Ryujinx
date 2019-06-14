@@ -369,7 +369,18 @@ namespace ARMeilleure.Instructions
 
             if (Optimizations.FastFP && Optimizations.UseSse3)
             {
-                EmitScalarBinaryOpF(context, Instruction.X86Haddps, Instruction.X86Haddpd);
+                if (sizeF == 0)
+                {
+                    Operand res = context.AddIntrinsic(Instruction.X86Haddps, GetVec(op.Rn), GetVec(op.Rn));
+
+                    context.Copy(GetVec(op.Rd), context.VectorZeroUpper96(res));
+                }
+                else /* if (sizeF == 1) */
+                {
+                    Operand res = context.AddIntrinsic(Instruction.X86Haddpd, GetVec(op.Rn), GetVec(op.Rn));
+
+                    context.Copy(GetVec(op.Rd), context.VectorZeroUpper64(res));
+                }
             }
             else
             {
@@ -1051,9 +1062,7 @@ namespace ARMeilleure.Instructions
 
             if (Optimizations.FastFP && Optimizations.UseSse && sizeF == 0)
             {
-                Operand n = GetVec(op.Rn);
-
-                context.Copy(GetVec(op.Rd), context.AddIntrinsic(Instruction.X86Rcpss, n));
+                EmitScalarUnaryOpF(context, Instruction.X86Rcpss, 0);
             }
             else
             {
@@ -1072,9 +1081,7 @@ namespace ARMeilleure.Instructions
 
             if (Optimizations.FastFP && Optimizations.UseSse && sizeF == 0)
             {
-                Operand n = GetVec(op.Rn);
-
-                context.Copy(GetVec(op.Rd), context.AddIntrinsic(Instruction.X86Rcpps, n));
+                EmitVectorUnaryOpF(context, Instruction.X86Rcpps, 0);
             }
             else
             {
@@ -2990,7 +2997,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitScalarRoundOpF(EmitterContext context, FPRoundingMode roundMode)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
             Operand n = GetVec(op.Rn);
 
@@ -3013,7 +3020,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitVectorRoundOpF(EmitterContext context, FPRoundingMode roundMode)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
             Operand n = GetVec(op.Rn);
 

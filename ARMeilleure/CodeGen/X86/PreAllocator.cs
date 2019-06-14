@@ -3,6 +3,7 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.Translation;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -70,8 +71,12 @@ namespace ARMeilleure.CodeGen.X86
 
             foreach (BasicBlock block in cfg.Blocks)
             {
-                for (LinkedListNode<Node> node = block.Operations.First; node != null; node = node.Next)
+                LinkedListNode<Node> nextNode;
+
+                for (LinkedListNode<Node> node = block.Operations.First; node != null; node = nextNode)
                 {
+                    nextNode = node.Next;
+
                     if (!(node.Value is Operation operation))
                     {
                         continue;
@@ -106,6 +111,22 @@ namespace ARMeilleure.CodeGen.X86
                         Operation copyOp = new Operation(Instruction.Copy, operation.Dest, Const(0));
 
                         block.Operations.AddBefore(node, copyOp);
+                    }
+
+                    //Unsigned integer to FP conversions are not supported on X86.
+                    //We need to turn them into signed integer to FP conversions, and
+                    //adjust the final result.
+                    if (inst == Instruction.ConvertToFPUI)
+                    {
+                        ReplaceConvertToFPUIWithSI(node, operation);
+                    }
+
+                    //There's no SSE FP negate instruction, so we need to transform that into:
+                    //r = 0 - n or
+                    //r = n ^ (1 << (OperandSize - 1))
+                    if (inst == Instruction.Negate && !operation.GetSource(0).Type.IsInteger())
+                    {
+                        ReplaceNegateWithSubtract(node, operation);
                     }
 
                     AddFixedRegisterCopy(node, operation);
@@ -197,6 +218,76 @@ namespace ARMeilleure.CodeGen.X86
                     operation.SetSource(1, src2);
                 }
             }
+        }
+
+        private static void ReplaceConvertToFPUIWithSI(LinkedListNode<Node> node, Operation operation)
+        {
+            Operand dest   = operation.Dest;
+            Operand source = operation.GetSource(0);
+
+            Debug.Assert(source.Type.IsInteger(), $"Invalid source type \"{source.Type}\".");
+
+            LinkedList<Node> nodes = node.List;
+
+            LinkedListNode<Node> temp = node;
+
+            if (source.Type == OperandType.I32)
+            {
+                //For 32-bits integer, we can just zero-extend to 64-bits,
+                //and then use the 64-bits signed conversion instructions.
+                Operand zex = Local(OperandType.I64);
+
+                temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, zex, source));
+
+                temp = nodes.AddAfter(temp, new Operation(Instruction.ConvertToFP, dest, zex));
+            }
+            else /* if (source.Type == OperandType.I64) */
+            {
+                //For 64-bits integer, we need to do the following:
+                //- Ensure that the integer has the most significant bit clear.
+                //-- This can be done by shifting the value right by 1, that is, dividing by 2.
+                //-- The least significant bit is lost in this case though.
+                //- We can then convert the shifted value with a signed integer instruction.
+                //- The result still needs to be corrected after that.
+                //-- First, we need to multiply the result by 2, as we divided it by 2 before.
+                //--- This can be done efficiently by adding the result to itself.
+                //-- Then, we need to add the least significant bit that was shifted out.
+                //--- We can convert the least significant bit to float, and add it to the result.
+                Operand lsb = Local(OperandType.I64);
+
+                Operand lsbF = Local(dest.Type);
+
+                temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, lsb, source));
+
+                temp = nodes.AddAfter(temp, new Operation(Instruction.BitwiseAnd,   lsb,    lsb,    Const(1L)));
+                temp = nodes.AddAfter(temp, new Operation(Instruction.ShiftRightUI, source, source, Const(1)));
+
+                temp = nodes.AddAfter(temp, new Operation(Instruction.ConvertToFP, lsbF, lsb));
+                temp = nodes.AddAfter(temp, new Operation(Instruction.ConvertToFP, dest, source));
+
+                temp = nodes.AddAfter(temp, new Operation(Instruction.Add, dest, dest, dest));
+                temp = nodes.AddAfter(temp, new Operation(Instruction.Add, dest, dest, lsbF));
+            }
+
+            Delete(node, operation);
+        }
+
+        private static void ReplaceNegateWithSubtract(LinkedListNode<Node> node, Operation operation)
+        {
+            Operand dest   = operation.Dest;
+            Operand source = operation.GetSource(0);
+
+            LinkedList<Node> nodes = node.List;
+
+            LinkedListNode<Node> temp = node;
+
+            Operand res = Local(dest.Type);
+
+            temp = nodes.AddAfter(temp, new Operation(Instruction.VectorZero, res));
+            temp = nodes.AddAfter(temp, new Operation(Instruction.Subtract, res, res, source));
+            temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, dest, res));
+
+            Delete(node, operation);
         }
 
         private static void AddFixedRegisterCopy(LinkedListNode<Node> node, Operation operation)
@@ -478,6 +569,18 @@ namespace ARMeilleure.CodeGen.X86
             {
                 memOp.Index.Uses.AddLast(operation);
             }
+        }
+
+        private static void Delete(LinkedListNode<Node> node, Operation operation)
+        {
+            operation.Dest = null;
+
+            for (int index = 0; index < operation.SourcesCount; index++)
+            {
+                operation.SetSource(index, null);
+            }
+
+            node.List.Remove(node);
         }
 
         private static Operand Gpr(X86Register register, OperandType type)

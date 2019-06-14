@@ -75,6 +75,19 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Call,       new InstInfo(0x020000ff, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
             Add(X86Instruction.Cmovcc,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f40, InstFlags.None));
             Add(X86Instruction.Cmp,        new InstInfo(0x00000039, 0x07000083, 0x07000081, BadOp,      0x0000003b, InstFlags.None));
+            Add(X86Instruction.Cmppd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Cmpps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex));
+            Add(X86Instruction.Cvtdq2pd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Cvtdq2ps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5b, InstFlags.Vex));
+            Add(X86Instruction.Cvtpd2dq,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Cvtpd2ps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5a, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Cvtps2dq,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5b, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Cvtps2pd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5a, InstFlags.Vex));
+            Add(X86Instruction.Cvtsd2si,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2c, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Cvtsd2ss,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5a, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Cvtsi2sd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2a, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Cvtsi2ss,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2a, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Cvtss2sd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5a, InstFlags.Vex | InstFlags.PrefixF3));
             Add(X86Instruction.Div,        new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x060000f7, InstFlags.None));
             Add(X86Instruction.Divpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Divps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstFlags.Vex));
@@ -165,6 +178,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Por,        new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000feb, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Pshufb,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3800, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Pshufd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f70, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Pslld,      new InstInfo(BadOp,      0x06000f72, BadOp,      BadOp,      0x00000ff2, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Pslldq,     new InstInfo(BadOp,      0x07000f73, BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Psllw,      new InstInfo(BadOp,      0x06000f71, BadOp,      BadOp,      0x00000ff1, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Psrad,      new InstInfo(BadOp,      0x04000f72, BadOp,      BadOp,      0x00000fe2, InstFlags.Vex | InstFlags.Prefix66));
@@ -190,17 +204,17 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Rcpps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f53, InstFlags.Vex));
             Add(X86Instruction.Rcpss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f53, InstFlags.Vex | InstFlags.PrefixF3));
             Add(X86Instruction.Ror,        new InstInfo(0x010000d3, 0x010000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Roundpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.Prefix66));
-            Add(X86Instruction.Roundps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex));
-            Add(X86Instruction.Roundsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.PrefixF2));
-            Add(X86Instruction.Roundss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f3a, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Roundpd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a09, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Roundps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a08, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Roundsd,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a0b, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Roundss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a0a, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Rsqrtps,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f52, InstFlags.Vex));
             Add(X86Instruction.Rsqrtss,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f52, InstFlags.Vex | InstFlags.PrefixF3));
             Add(X86Instruction.Sar,        new InstInfo(0x070000d3, 0x070000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
             Add(X86Instruction.Setcc,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f90, InstFlags.Reg8));
             Add(X86Instruction.Shl,        new InstInfo(0x040000d3, 0x040000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
             Add(X86Instruction.Shr,        new InstInfo(0x050000d3, 0x050000c1, BadOp,      BadOp,      BadOp,      InstFlags.None));
-            Add(X86Instruction.Shufpd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5d, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Shufpd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc6, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Shufps,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc6, InstFlags.Vex));
             Add(X86Instruction.Sqrtpd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Sqrtps,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstFlags.Vex));
@@ -307,6 +321,75 @@ namespace ARMeilleure.CodeGen.X86
         {
             WriteByte(0x48);
             WriteByte(0x99);
+        }
+
+        public void Cmppd(Operand dest, Operand source, Operand source1, byte imm)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cmppd, source1);
+
+            WriteByte(imm);
+        }
+
+        public void Cmpps(Operand dest, Operand source, Operand source1, byte imm)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cmpps, source1);
+
+            WriteByte(imm);
+        }
+
+        public void Cvtdq2pd(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtdq2pd);
+        }
+
+        public void Cvtdq2ps(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtdq2ps);
+        }
+
+        public void Cvtpd2dq(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtpd2dq);
+        }
+
+        public void Cvtpd2ps(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtpd2ps);
+        }
+
+        public void Cvtps2dq(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtps2dq);
+        }
+
+        public void Cvtps2pd(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtps2pd);
+        }
+
+        public void Cvtsd2si(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtsd2si);
+        }
+
+        public void Cvtsd2ss(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtsd2ss, source1);
+        }
+
+        public void Cvtsi2sd(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtsi2sd, source1);
+        }
+
+        public void Cvtsi2ss(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtsi2ss, source1);
+        }
+
+        public void Cvtss2sd(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cvtss2sd, source1);
         }
 
         public void Div(Operand source)
@@ -858,6 +941,11 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte(imm);
         }
 
+        public void Pslld(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(source1, source, X86Instruction.Pslld, dest);
+        }
+
         public void Pslldq(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(source1, source, X86Instruction.Pslldq, dest);
@@ -975,14 +1063,14 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Pxor, source1);
         }
 
-        public void Rcpps(Operand dest, Operand source, Operand source1)
+        public void Rcpps(Operand dest, Operand source)
         {
-            WriteInstruction(dest, source, X86Instruction.Rcpps, source1);
+            WriteInstruction(dest, source, X86Instruction.Rcpps);
         }
 
-        public void Rcpss(Operand dest, Operand source, Operand source1)
+        public void Rcpss(Operand dest, Operand source)
         {
-            WriteInstruction(dest, source, X86Instruction.Rcpss, source1);
+            WriteInstruction(dest, source, X86Instruction.Rcpss);
         }
 
         public void Return()

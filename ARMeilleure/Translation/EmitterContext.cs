@@ -148,6 +148,16 @@ namespace ARMeilleure.Translation
             return Add(Instruction.ConditionalSelect, Local(b.Type), a, b, c);
         }
 
+        public Operand ConvertToFP(OperandType type, Operand a)
+        {
+            return Add(Instruction.ConvertToFP, Local(type), a);
+        }
+
+        public Operand ConvertToFPUI(OperandType type, Operand a)
+        {
+            return Add(Instruction.ConvertToFPUI, Local(type), a);
+        }
+
         public Operand Copy(Operand a)
         {
             return Add(Instruction.Copy, Local(a.Type), a);
@@ -386,6 +396,16 @@ namespace ARMeilleure.Translation
         public Operand AddIntrinsic(Instruction inst, params Operand[] args)
         {
             return Add(inst, Local(OperandType.V128), args);
+        }
+
+        public Operand AddIntrinsicInt(Instruction inst, params Operand[] args)
+        {
+            return Add(inst, Local(OperandType.I32), args);
+        }
+
+        public Operand AddIntrinsicLong(Instruction inst, params Operand[] args)
+        {
+            return Add(inst, Local(OperandType.I64), args);
         }
 
         private Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)

@@ -32,12 +32,12 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static Operand ConstF(float value)
         {
-            return new Operand(BitConverter.SingleToInt32Bits(value));
+            return new Operand(value);
         }
 
         public static Operand ConstF(double value)
         {
-            return new Operand(BitConverter.DoubleToInt64Bits(value));
+            return new Operand(value);
         }
 
         public static Operand Label()

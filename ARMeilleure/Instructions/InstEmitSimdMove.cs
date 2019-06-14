@@ -53,16 +53,25 @@ namespace ARMeilleure.Instructions
                     case 2: n = ZeroExtend32(context, n); break;
                 }
 
-                Operand vector = context.VectorInsert(context.VectorZero(), n, 0);
+                Operand res = context.VectorInsert(context.VectorZero(), n, 0);
 
                 if (op.Size < 3)
                 {
-                    vector = context.AddIntrinsic(Instruction.X86Shufps, vector, vector, Const(0));
+                    if (op.RegisterSize == RegisterSize.Simd64)
+                    {
+                        res = context.AddIntrinsic(Instruction.X86Shufps, res, res, Const(0xf0));
+                    }
+                    else
+                    {
+                        res = context.AddIntrinsic(Instruction.X86Shufps, res, res, Const(0));
+                    }
                 }
                 else
                 {
-                    vector = context.AddIntrinsic(Instruction.X86Movlhps, vector, vector);
+                    res = context.AddIntrinsic(Instruction.X86Movlhps, res, res);
                 }
+
+                context.Copy(GetVec(op.Rd), res);
             }
             else
             {
@@ -74,6 +83,8 @@ namespace ARMeilleure.Instructions
                 {
                     res = EmitVectorInsert(context, res, n, index, op.Size);
                 }
+
+                context.Copy(GetVec(op.Rd), res);
             }
         }
 
@@ -98,6 +109,7 @@ namespace ARMeilleure.Instructions
                 {
                     res = context.AddIntrinsic(Instruction.X86Psrldq, res, Const(op.DstIndex));
                     res = context.AddIntrinsic(Instruction.X86Punpcklbw, res, res);
+                    res = context.AddIntrinsic(Instruction.X86Punpcklwd, res, res);
                 }
                 else if (op.Size == 1)
                 {
@@ -109,13 +121,18 @@ namespace ARMeilleure.Instructions
                 {
                     res = context.AddIntrinsic(Instruction.X86Shufps, res, res, Const(0));
                 }
-                else if (op.DstIndex == 0)
+                else if (op.DstIndex == 0 && op.RegisterSize != RegisterSize.Simd64)
                 {
                     res = context.AddIntrinsic(Instruction.X86Movlhps, res, res);
                 }
-                else
+                else if (op.DstIndex == 1)
                 {
                     res = context.AddIntrinsic(Instruction.X86Movhlps, res, res);
+                }
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
                 }
 
                 context.Copy(GetVec(op.Rd), res);
@@ -132,6 +149,8 @@ namespace ARMeilleure.Instructions
                 {
                     res = EmitVectorInsert(context, res, ne, index, op.Size);
                 }
+
+                context.Copy(GetVec(op.Rd), res);
             }
         }
 
@@ -376,7 +395,7 @@ namespace ARMeilleure.Instructions
                 {
                     Operand ni = GetVec((op.Rn + index) & 0x1f);
 
-                    Operand indexMask = mask = X86GetAllElements(context, 0x1010101010101010L * index);
+                    Operand indexMask = X86GetAllElements(context, 0x1010101010101010L * index);
 
                     Operand mMinusMask = context.AddIntrinsic(Instruction.X86Psubb, m, indexMask);
 
@@ -531,15 +550,15 @@ namespace ARMeilleure.Instructions
 
             long imm = op.Immediate;
 
-            if (not)
-            {
-                imm = ~imm;
-            }
-
             switch (op.Size)
             {
                 case 0: imm *= 0x01010101; break;
                 case 1: imm *= 0x00010001; break;
+            }
+
+            if (not)
+            {
+                imm = ~imm;
             }
 
             Operand mask;
