@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
         {
             UInt128 userId = new UInt128(context.RequestData.ReadBytes(0x10));
 
-            if (userId.IsNull())
+            if (userId.IsNull)
             {
                 return MakeError(ErrorModule.Account, AccErr.NullArgument);
             }
@@ -136,7 +136,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
             MakeObject(context, new IProfile(userProfile));
 
-            // Don't occur in our case.
+            // Doesn't occur in our case.
             // return MakeError(ErrorModule.Account, AccErr.NullObject);
 
             return 0;
@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
         // IsUserRegistrationRequestPermitted(u64, pid) -> bool
         public long IsUserRegistrationRequestPermitted(ServiceCtx context)
         {
-            // u64 don't seems to be used in RE.
+            // The u64 argument seems to be unused by account.
             context.ResponseData.Write(_userRegistrationRequestPermitted);
 
             return 0;
@@ -166,20 +166,20 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
             if (baasCheck)
             {
-                // It check something related to baas (online) and then return an invalid UserId if the check in baas return an error code.
+                // This checks something related to baas (online), and then return an invalid UserId if the check in baas returns an error code.
                 // In our case, we can just log it for now.
 
                 Logger.PrintStub(LogClass.ServiceAcc, new { baasCheck });
             }
 
-            // Since we return an invalid UserId if there is more than one user, we can return the first one.
+            // As we returned an invalid UserId if there is more than one user earlier, now we can return only the first one.
             context.Device.System.State.Account.GetFirst().UserId.Write(context.ResponseData);
 
             return 0;
         }
 
         // InitializeApplicationInfo(u64, pid)
-        // Both call use the same submethod in 6.0.0+, maybe changes are further, in the arp:r call ?
+        // Both calls (100, 140) use the same submethod, maybe there's something different further along when arp:r is called?
         public long InitializeApplicationInfo(ServiceCtx context)
         {
             if (_applicationLaunchProperty != null)
@@ -187,10 +187,10 @@ namespace Ryujinx.HLE.HOS.Services.Acc
                 return MakeError(ErrorModule.Account, AccErr.ApplicationLaunchPropertyAlreadyInit);
             }
 
-            // u64 don't seems to be used in RE.
+            // The u64 argument seems to be unused by account.
             long unknown = context.RequestData.ReadInt64();
 
-            // TODO: It call nn::arp::detail::IReader::GetApplicationLaunchProperty() with the current pid and return an ApplicationLaunchProperty.
+            // TODO: Account actually call nn::arp::detail::IReader::GetApplicationLaunchProperty() with the current PID and store the result (ApplicationLaunchProperty) internally.
             //       For now we can hardcode values, and fix it when GetApplicationLaunchProperty will be implemented.
 
             /*
@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
         {
             UInt128 userId = new UInt128(context.RequestData.ReadBytes(0x10));
 
-            if (userId.IsNull())
+            if (userId.IsNull)
             {
                 return MakeError(ErrorModule.Account, AccErr.NullArgument);
             }
@@ -240,7 +240,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
             MakeObject(context, new IManagerForApplication(userId, _applicationLaunchProperty));
 
-            // Don't occur in our case.
+            // Doesn't occur in our case.
             // return MakeError(ErrorModule.Account, AccErr.NullObject);
 
             return 0;
@@ -256,7 +256,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
             UInt128 userId = new UInt128(context.RequestData.ReadBytes(0x10));
 
-            if (userId.IsNull())
+            if (userId.IsNull)
             {
                 return MakeError(ErrorModule.Account, AccErr.NullArgument);
             }
@@ -293,7 +293,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
             UInt128 userId = new UInt128(context.RequestData.ReadBytes(0x10));
 
-            if (userId.IsNull())
+            if (userId.IsNull)
             {
                 return MakeError(ErrorModule.Account, AccErr.NullArgument);
             }
@@ -316,8 +316,8 @@ namespace Ryujinx.HLE.HOS.Services.Acc
             }
             */
 
-            // It call nn::arp::detail::IReader::GetApplicationControlProperty() to get the NACP file.
-            // But since we use LibHac and we load one Application at a time. It's not needed.
+            // Account actually call nn::arp::detail::IReader::GetApplicationControlProperty() with the current PID and store the result (NACP File) internally.
+            // But since we use LibHac and we load one Application at a time, it's not necessary.
 
             // TODO : Use "context.Device.System.ControlData.UserAccountSwitchLock" when LibHac is updated.
             context.ResponseData.Write(false);

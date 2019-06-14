@@ -9,6 +9,8 @@ namespace Ryujinx.HLE.Utilities
         public long High { get; private set; }
         public long Low  { get; private set; }
 
+        public bool IsNull => (Low | High) == 0;
+
         public UInt128(long low, long high)
         {
             Low  = low;
@@ -30,16 +32,6 @@ namespace Ryujinx.HLE.Utilities
 
             Low  = Convert.ToInt64(hex.Substring(16), 16);
             High = Convert.ToInt64(hex.Substring(0, 16), 16);
-        }
-
-        public bool IsNull()
-        {
-            if (Low == 0 && High == 0)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public void Write(BinaryWriter binaryWriter)
