@@ -15,6 +15,12 @@ namespace Ryujinx.HLE.Utilities
             High = high;
         }
 
+        public UInt128(byte[] bytes)
+        {
+            Low  = BitConverter.ToInt64(bytes, 0);
+            High = BitConverter.ToInt64(bytes, 8);
+        }
+
         public UInt128(string hex)
         {
             if (hex == null || hex.Length != 32 || !hex.All("0123456789abcdefABCDEF".Contains))
@@ -24,6 +30,16 @@ namespace Ryujinx.HLE.Utilities
 
             Low  = Convert.ToInt64(hex.Substring(16), 16);
             High = Convert.ToInt64(hex.Substring(0, 16), 16);
+        }
+
+        public bool IsNull()
+        {
+            if (Low == 0 && High == 0)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public void Write(BinaryWriter binaryWriter)
