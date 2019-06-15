@@ -440,7 +440,7 @@ namespace Ryujinx.Tests.Cpu
                     {
                         Assert.That   (_context.GetV(0).GetDouble(0),
                             Is.EqualTo(_unicornEmu.Q[0].GetDouble(0)).Within(1).Ulps);
-                        Assert.That   (_context.GetV(1).GetDouble(1),
+                        Assert.That   (_context.GetV(0).GetDouble(1),
                             Is.EqualTo(_unicornEmu.Q[0].GetDouble(1)).Within(1).Ulps);
 
                         Console.WriteLine(fpTolerances);
