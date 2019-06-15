@@ -159,7 +159,7 @@ namespace Ryujinx
 
             CustThemeDir.Buffer.Text = SwitchConfig.CustomThemePath;
 
-            GameDirsBox.AppendColumn("Game Directories", new CellRendererText(), "text", 0);
+            GameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
             GameDirsBoxStore  = new ListStore(typeof(string));
             GameDirsBox.Model = GameDirsBoxStore;
             foreach (string GameDir in SwitchConfig.GameDirs)

@@ -26,6 +26,12 @@ separator {
     background: #929394;
 }
 
+.GameDir {
+    border-color: #929394;
+    border-width: 1px;
+    border-style: solid;
+}
+
 notebook {
     border: none;
 }
