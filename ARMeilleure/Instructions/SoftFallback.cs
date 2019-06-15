@@ -6,11 +6,370 @@ namespace ARMeilleure.Instructions
     static class SoftFallback
     {
 #region "ShlReg"
+        public static long SignedShlReg(long value, long shift, bool round, int size)
+        {
+            int eSize = 8 << size;
 
+            int shiftLsB = (sbyte)shift;
+
+            if (shiftLsB < 0)
+            {
+                return SignedShrReg(value, -shiftLsB, round, eSize);
+            }
+            else if (shiftLsB > 0)
+            {
+                if (shiftLsB >= eSize)
+                {
+                    return 0L;
+                }
+
+                return value << shiftLsB;
+            }
+            else /* if (shiftLsB == 0) */
+            {
+                return value;
+            }
+        }
+
+        public static ulong UnsignedShlReg(ulong value, ulong shift, bool round, int size)
+        {
+            int eSize = 8 << size;
+
+            int shiftLsB = (sbyte)shift;
+
+            if (shiftLsB < 0)
+            {
+                return UnsignedShrReg(value, -shiftLsB, round, eSize);
+            }
+            else if (shiftLsB > 0)
+            {
+                if (shiftLsB >= eSize)
+                {
+                    return 0UL;
+                }
+
+                return value << shiftLsB;
+            }
+            else /* if (shiftLsB == 0) */
+            {
+                return value;
+            }
+        }
+
+        public static long SignedShlRegSatQ(long value, long shift, bool round, int size)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+
+            int eSize = 8 << size;
+
+            int shiftLsB = (sbyte)shift;
+
+            if (shiftLsB < 0)
+            {
+                return SignedShrReg(value, -shiftLsB, round, eSize);
+            }
+            else if (shiftLsB > 0)
+            {
+                if (shiftLsB >= eSize)
+                {
+                    return SignedSignSatQ(value, eSize, context);
+                }
+
+                if (eSize == 64)
+                {
+                    long shl = value << shiftLsB;
+                    long shr = shl   >> shiftLsB;
+
+                    if (shr != value)
+                    {
+                        return SignedSignSatQ(value, eSize, context);
+                    }
+                    else /* if (shr == value) */
+                    {
+                        return shl;
+                    }
+                }
+                else /* if (eSize != 64) */
+                {
+                    return SignedSrcSignedDstSatQ(value << shiftLsB, size);
+                }
+            }
+            else /* if (shiftLsB == 0) */
+            {
+                return value;
+            }
+        }
+
+        public static ulong UnsignedShlRegSatQ(ulong value, ulong shift, bool round, int size)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+
+            int eSize = 8 << size;
+
+            int shiftLsB = (sbyte)shift;
+
+            if (shiftLsB < 0)
+            {
+                return UnsignedShrReg(value, -shiftLsB, round, eSize);
+            }
+            else if (shiftLsB > 0)
+            {
+                if (shiftLsB >= eSize)
+                {
+                    return UnsignedSignSatQ(value, eSize, context);
+                }
+
+                if (eSize == 64)
+                {
+                    ulong shl = value << shiftLsB;
+                    ulong shr = shl   >> shiftLsB;
+
+                    if (shr != value)
+                    {
+                        return UnsignedSignSatQ(value, eSize, context);
+                    }
+                    else /* if (shr == value) */
+                    {
+                        return shl;
+                    }
+                }
+                else /* if (eSize != 64) */
+                {
+                    return UnsignedSrcUnsignedDstSatQ(value << shiftLsB, size);
+                }
+            }
+            else /* if (shiftLsB == 0) */
+            {
+                return value;
+            }
+        }
+
+        private static long SignedShrReg(long value, int shift, bool round, int eSize) // shift := [1, 128]; eSize := {8, 16, 32, 64}.
+        {
+            if (round)
+            {
+                if (shift >= eSize)
+                {
+                    return 0L;
+                }
+
+                long roundConst = 1L << (shift - 1);
+
+                long add = value + roundConst;
+
+                if (eSize == 64)
+                {
+                    if ((~value & (value ^ add)) < 0L)
+                    {
+                        return (long)((ulong)add >> shift);
+                    }
+                    else
+                    {
+                        return add >> shift;
+                    }
+                }
+                else /* if (eSize != 64) */
+                {
+                    return add >> shift;
+                }
+            }
+            else /* if (!round) */
+            {
+                if (shift >= eSize)
+                {
+                    if (value < 0L)
+                    {
+                        return -1L;
+                    }
+                    else /* if (value >= 0L) */
+                    {
+                        return 0L;
+                    }
+                }
+
+                return value >> shift;
+            }
+        }
+
+        private static ulong UnsignedShrReg(ulong value, int shift, bool round, int eSize) // shift := [1, 128]; eSize := {8, 16, 32, 64}.
+        {
+            if (round)
+            {
+                if (shift > 64)
+                {
+                    return 0UL;
+                }
+
+                ulong roundConst = 1UL << (shift - 1);
+
+                ulong add = value + roundConst;
+
+                if (eSize == 64)
+                {
+                    if ((add < value) && (add < roundConst))
+                    {
+                        if (shift == 64)
+                        {
+                            return 1UL;
+                        }
+
+                        return (add >> shift) | (0x8000000000000000UL >> (shift - 1));
+                    }
+                    else
+                    {
+                        if (shift == 64)
+                        {
+                            return 0UL;
+                        }
+
+                        return add >> shift;
+                    }
+                }
+                else /* if (eSize != 64) */
+                {
+                    if (shift == 64)
+                    {
+                        return 0UL;
+                    }
+
+                    return add >> shift;
+                }
+            }
+            else /* if (!round) */
+            {
+                if (shift >= eSize)
+                {
+                    return 0UL;
+                }
+
+                return value >> shift;
+            }
+        }
+
+        private static long SignedSignSatQ(long op, int eSize, ExecutionContext context) // eSize := {8, 16, 32, 64}.
+        {
+            long tMaxValue =  (1L << (eSize - 1)) - 1L;
+            long tMinValue = -(1L << (eSize - 1));
+
+            if (op > 0L)
+            {
+                context.Fpsr |= FPSR.Qc;
+
+                return tMaxValue;
+            }
+            else if (op < 0L)
+            {
+                context.Fpsr |= FPSR.Qc;
+
+                return tMinValue;
+            }
+            else
+            {
+                return 0L;
+            }
+        }
+
+        private static ulong UnsignedSignSatQ(ulong op, int eSize, ExecutionContext context) // eSize := {8, 16, 32, 64}.
+        {
+            ulong tMaxValue = ulong.MaxValue >> (64 - eSize);
+
+            if (op > 0UL)
+            {
+                context.Fpsr |= FPSR.Qc;
+
+                return tMaxValue;
+            }
+            else
+            {
+                return 0UL;
+            }
+        }
 #endregion
 
 #region "ShrImm64"
+        public static long SignedShrImm64(long value, long roundConst, int shift)
+        {
+            if (roundConst == 0L)
+            {
+                if (shift <= 63)
+                {
+                    return value >> shift;
+                }
+                else /* if (shift == 64) */
+                {
+                    if (value < 0L)
+                    {
+                        return -1L;
+                    }
+                    else /* if (value >= 0L) */
+                    {
+                        return 0L;
+                    }
+                }
+            }
+            else /* if (roundConst == 1L << (shift - 1)) */
+            {
+                if (shift <= 63)
+                {
+                    long add = value + roundConst;
 
+                    if ((~value & (value ^ add)) < 0L)
+                    {
+                        return (long)((ulong)add >> shift);
+                    }
+                    else
+                    {
+                        return add >> shift;
+                    }
+                }
+                else /* if (shift == 64) */
+                {
+                    return 0L;
+                }
+            }
+        }
+
+        public static ulong UnsignedShrImm64(ulong value, long roundConst, int shift)
+        {
+            if (roundConst == 0L)
+            {
+                if (shift <= 63)
+                {
+                    return value >> shift;
+                }
+                else /* if (shift == 64) */
+                {
+                    return 0UL;
+                }
+            }
+            else /* if (roundConst == 1L << (shift - 1)) */
+            {
+                ulong add = value + (ulong)roundConst;
+
+                if ((add < value) && (add < (ulong)roundConst))
+                {
+                    if (shift <= 63)
+                    {
+                        return (add >> shift) | (0x8000000000000000UL >> (shift - 1));
+                    }
+                    else /* if (shift == 64) */
+                    {
+                        return 1UL;
+                    }
+                }
+                else
+                {
+                    if (shift <= 63)
+                    {
+                        return add >> shift;
+                    }
+                    else /* if (shift == 64) */
+                    {
+                        return 0UL;
+                    }
+                }
+            }
+        }
 #endregion
 
 #region "Rounding"

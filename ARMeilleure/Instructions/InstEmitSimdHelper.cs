@@ -84,6 +84,29 @@ namespace ARMeilleure.Instructions
             Instruction.X86Pmovzxdq
         };
 
+        public static readonly Instruction[] X86PsllInstruction = new Instruction[]
+        {
+            0,
+            Instruction.X86Psllw,
+            Instruction.X86Pslld,
+            Instruction.X86Psllq
+        };
+
+        public static readonly Instruction[] X86PsraInstruction = new Instruction[]
+        {
+            0,
+            Instruction.X86Psraw,
+            Instruction.X86Psrad
+        };
+
+        public static readonly Instruction[] X86PsrlInstruction = new Instruction[]
+        {
+            0,
+            Instruction.X86Psrlw,
+            Instruction.X86Psrld,
+            Instruction.X86Psrlq
+        };
+
         public static readonly Instruction[] X86PsubInstruction = new Instruction[]
         {
             Instruction.X86Psubb,

@@ -120,6 +120,7 @@ namespace ARMeilleure.CodeGen.X86
         Pshufd,
         Pslld,
         Pslldq,
+        Psllq,
         Psllw,
         Psrad,
         Psraw,

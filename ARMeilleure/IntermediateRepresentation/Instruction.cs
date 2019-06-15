@@ -147,6 +147,7 @@ namespace ARMeilleure.IntermediateRepresentation
         X86Pshufb,
         X86Pslld,
         X86Pslldq,
+        X86Psllq,
         X86Psllw,
         X86Psrad,
         X86Psraw,

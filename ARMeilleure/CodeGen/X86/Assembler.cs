@@ -180,6 +180,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Pshufd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f70, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Pslld,      new InstInfo(BadOp,      0x06000f72, BadOp,      BadOp,      0x00000ff2, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Pslldq,     new InstInfo(BadOp,      0x07000f73, BadOp,      BadOp,      BadOp,      InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Psllq,      new InstInfo(BadOp,      0x06000f73, BadOp,      BadOp,      0x00000ff3, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Psllw,      new InstInfo(BadOp,      0x06000f71, BadOp,      BadOp,      0x00000ff1, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Psrad,      new InstInfo(BadOp,      0x04000f72, BadOp,      BadOp,      0x00000fe2, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Psraw,      new InstInfo(BadOp,      0x04000f71, BadOp,      BadOp,      0x00000fe1, InstFlags.Vex | InstFlags.Prefix66));
@@ -949,6 +950,11 @@ namespace ARMeilleure.CodeGen.X86
         public void Pslldq(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(source1, source, X86Instruction.Pslldq, dest);
+        }
+
+        public void Psllq(Operand dest, Operand source, Operand source1)
+        {
+            WriteInstruction(source1, source, X86Instruction.Psllq, dest);
         }
 
         public void Psllw(Operand dest, Operand source, Operand source1)

@@ -159,6 +159,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.X86Pshufb,               GenerateX86Pshufb);
             Add(Instruction.X86Pslld,                GenerateX86Pslld);
             Add(Instruction.X86Pslldq,               GenerateX86Pslldq);
+            Add(Instruction.X86Psllq,                GenerateX86Psllq);
             Add(Instruction.X86Psllw,                GenerateX86Psllw);
             Add(Instruction.X86Psrad,                GenerateX86Psrad);
             Add(Instruction.X86Psraw,                GenerateX86Psraw);
@@ -434,50 +435,6 @@ namespace ARMeilleure.CodeGen.X86
                 Debug.Assert(source.Type.IsInteger() || source.Type == OperandType.FP32);
 
                 if (source.Type.IsInteger())
-                {
-                    context.Assembler.Xorps(dest, dest, dest);
-                    context.Assembler.Cvtsi2sd(dest, source, dest);
-                }
-                else /* if (source.Type == OperandType.FP32) */
-                {
-                    context.Assembler.Cvtss2sd(dest, source, dest);
-
-                    ZeroUpper64(context, dest, dest);
-                }
-            }
-        }
-
-        private static void GenerateConvertToFPUI(CodeGenContext context, Operation operation)
-        {
-            Operand dest   = operation.Dest;
-            Operand source = operation.GetSource(0);
-
-            Debug.Assert(dest.Type == OperandType.FP32 ||
-                         dest.Type == OperandType.FP64);
-
-            if (dest.Type == OperandType.FP32)
-            {
-                Debug.Assert(source.Type == OperandType.I32 ||
-                             source.Type == OperandType.FP64);
-
-                if (source.Type == OperandType.I32)
-                {
-                    context.Assembler.Xorps(dest, dest, dest);
-                    context.Assembler.Cvtsi2ss(dest, source, dest);
-                }
-                else /* if (source.Type == OperandType.FP64) */
-                {
-                    context.Assembler.Cvtsd2ss(dest, source, dest);
-
-                    ZeroUpper96(context, dest, dest);
-                }
-            }
-            else /* if (dest.Type == OperandType.FP64) */
-            {
-                Debug.Assert(source.Type == OperandType.I64 ||
-                             source.Type == OperandType.FP32);
-
-                if (source.Type == OperandType.I64)
                 {
                     context.Assembler.Xorps(dest, dest, dest);
                     context.Assembler.Cvtsi2sd(dest, source, dest);
@@ -1426,6 +1383,11 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateX86Pslldq(CodeGenContext context, Operation operation)
         {
             context.Assembler.Pslldq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+        }
+
+        private static void GenerateX86Psllq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Psllq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
         }
 
         private static void GenerateX86Psllw(CodeGenContext context, Operation operation)

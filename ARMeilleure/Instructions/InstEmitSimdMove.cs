@@ -107,19 +107,30 @@ namespace ARMeilleure.Instructions
 
                 if (op.Size == 0)
                 {
-                    res = context.AddIntrinsic(Instruction.X86Psrldq, res, Const(op.DstIndex));
+                    if (op.DstIndex != 0)
+                    {
+                        res = context.AddIntrinsic(Instruction.X86Psrldq, res, Const(op.DstIndex));
+                    }
+
                     res = context.AddIntrinsic(Instruction.X86Punpcklbw, res, res);
                     res = context.AddIntrinsic(Instruction.X86Punpcklwd, res, res);
+                    res = context.AddIntrinsic(Instruction.X86Shufps, res, res, Const(0));
                 }
                 else if (op.Size == 1)
                 {
-                    res = context.AddIntrinsic(Instruction.X86Psrldq, res, Const(op.DstIndex * 2));
-                    res = context.AddIntrinsic(Instruction.X86Punpcklwd, res, res);
-                }
+                    if (op.DstIndex != 0)
+                    {
+                        res = context.AddIntrinsic(Instruction.X86Psrldq, res, Const(op.DstIndex * 2));
+                    }
 
-                if (op.Size < 3)
-                {
+                    res = context.AddIntrinsic(Instruction.X86Punpcklwd, res, res);
                     res = context.AddIntrinsic(Instruction.X86Shufps, res, res, Const(0));
+                }
+                else if (op.Size == 2)
+                {
+                    int mask = op.DstIndex * 0b01010101;
+
+                    res = context.AddIntrinsic(Instruction.X86Shufps, res, res, Const(mask));
                 }
                 else if (op.DstIndex == 0 && op.RegisterSize != RegisterSize.Simd64)
                 {
