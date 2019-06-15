@@ -222,7 +222,8 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
         {
             string message = ReadUtf8StringSend(context);
 
-            Logger.PrintInfo(LogClass.ServiceFs, message.TrimEnd('\n'));
+            // FS ends each line with a newline. Remove it because Ryujinx logging adds its own newline
+            Logger.PrintAccessLog(LogClass.ServiceFs, message.TrimEnd('\n'));
 
             return 0;
         }
