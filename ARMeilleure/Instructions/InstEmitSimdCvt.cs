@@ -1099,7 +1099,7 @@ namespace ARMeilleure.Instructions
 
             res = context.AddIntrinsic(Instruction.X86Cvtdq2ps, res);
 
-            Operand mask = X86GetScalar(context, 0x47800000); // 65536.0f (1 << 16)
+            Operand mask = X86GetAllElements(context, 0x47800000); // 65536.0f (1 << 16)
 
             res = context.AddIntrinsic(Instruction.X86Mulps, res, mask);
 
