@@ -190,8 +190,8 @@ namespace Ryujinx.HLE.HOS.Services.Acc
             // The u64 argument seems to be unused by account.
             long unknown = context.RequestData.ReadInt64();
 
-            // TODO: Account actually call nn::arp::detail::IReader::GetApplicationLaunchProperty() with the current PID and store the result (ApplicationLaunchProperty) internally.
-            //       For now we can hardcode values, and fix it when GetApplicationLaunchProperty will be implemented.
+            // TODO: Account actually calls nn::arp::detail::IReader::GetApplicationLaunchProperty() with the current PID and store the result (ApplicationLaunchProperty) internally.
+            //       For now we can hardcode values, and fix it after GetApplicationLaunchProperty is implemented.
 
             /*
             if (nn::arp::detail::IReader::GetApplicationLaunchProperty() == 0xCC9D) // InvalidProcessId
@@ -316,7 +316,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
             }
             */
 
-            // Account actually call nn::arp::detail::IReader::GetApplicationControlProperty() with the current PID and store the result (NACP File) internally.
+            // Account actually calls nn::arp::detail::IReader::GetApplicationControlProperty() with the current PID and store the result (NACP File) internally.
             // But since we use LibHac and we load one Application at a time, it's not necessary.
 
             // TODO : Use "context.Device.System.ControlData.UserAccountSwitchLock" when LibHac is updated.
