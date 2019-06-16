@@ -14,7 +14,9 @@ namespace Ryujinx.HLE.HOS.Services.Am
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
         private KEvent _libraryAppletLaunchableEvent;
+
         private KEvent _accumulatedSuspendedTickChangedEvent;
+        private int    _accumulatedSuspendedTickChangedEventHandle = 0;
 
         private int _idleTimeDetectionExtension;
 
@@ -202,19 +204,19 @@ namespace Ryujinx.HLE.HOS.Services.Am
         // GetAccumulatedSuspendedTickChangedEvent() -> handle<copy>
         public long GetAccumulatedSuspendedTickChangedEvent(ServiceCtx context)
         {
-            if (_accumulatedSuspendedTickChangedEvent == null)
+            if (_accumulatedSuspendedTickChangedEventHandle == 0)
             {
                 _accumulatedSuspendedTickChangedEvent = new KEvent(context.Device.System);
 
                 _accumulatedSuspendedTickChangedEvent.ReadableEvent.Signal();
+
+                if (context.Process.HandleTable.GenerateHandle(_accumulatedSuspendedTickChangedEvent.ReadableEvent, out _accumulatedSuspendedTickChangedEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            if (context.Process.HandleTable.GenerateHandle(_accumulatedSuspendedTickChangedEvent.ReadableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_accumulatedSuspendedTickChangedEventHandle);
 
             return 0;
         }
