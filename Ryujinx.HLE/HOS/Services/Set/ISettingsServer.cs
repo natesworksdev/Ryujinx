@@ -16,9 +16,14 @@ namespace Ryujinx.HLE.HOS.Services.Set
             {
                 { 0, GetLanguageCode                },
                 { 1, GetAvailableLanguageCodes      },
+              //{ 2, MakeLanguageCode               }, // 4.0.0+
                 { 3, GetAvailableLanguageCodeCount  },
+              //{ 4, GetRegionCode                  },
                 { 5, GetAvailableLanguageCodes2     },
                 { 6, GetAvailableLanguageCodeCount2 },
+              //{ 7, GetKeyCodeMap                  }, // 4.0.0+
+              //{ 8, GetQuestFlag                   }, // 5.0.0+
+              //{ 9, GetKeyCodeMap2                 }, // 6.0.0+
             };
         }
 
