@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.SystemState;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Set
                 { 5, GetAvailableLanguageCodes2     },
                 { 6, GetAvailableLanguageCodeCount2 },
               //{ 7, GetKeyCodeMap                  }, // 4.0.0+
-              //{ 8, GetQuestFlag                   }, // 5.0.0+
+                { 8, GetQuestFlag                   }, // 5.0.0+
               //{ 9, GetKeyCodeMap2                 }, // 6.0.0+
             };
         }
@@ -84,6 +85,16 @@ namespace Ryujinx.HLE.HOS.Services.Set
         public static long GetAvailableLanguageCodeCount2(ServiceCtx context)
         {
             context.ResponseData.Write(SystemStateMgr.LanguageCodes.Length);
+
+            return 0;
+        }
+
+        // GetQuestFlag() -> bool
+        public static long GetQuestFlag(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.PrintStub(LogClass.ServiceSet);
 
             return 0;
         }
