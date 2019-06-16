@@ -14,13 +14,15 @@ namespace Ryujinx.HLE.HOS.Services.Set
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                { 0, GetLanguageCode               },
-                { 1, GetAvailableLanguageCodes     },
-                { 3, GetAvailableLanguageCodeCount },
-                { 5, GetAvailableLanguageCodes2    }
+                { 0, GetLanguageCode                },
+                { 1, GetAvailableLanguageCodes      },
+                { 3, GetAvailableLanguageCodeCount  },
+                { 5, GetAvailableLanguageCodes2     },
+                { 6, GetAvailableLanguageCodeCount2 },
             };
         }
 
+        // GetLanguageCode() -> nn::settings::LanguageCode
         public static long GetLanguageCode(ServiceCtx context)
         {
             context.ResponseData.Write(context.Device.System.State.DesiredLanguageCode);
@@ -28,40 +30,49 @@ namespace Ryujinx.HLE.HOS.Services.Set
             return 0;
         }
 
+        // GetAvailableLanguageCodes() -> (u32, buffer<nn::settings::LanguageCode, 0xa>)
         public static long GetAvailableLanguageCodes(ServiceCtx context)
         {
-            GetAvailableLanguagesCodesImpl(
-                context,
-                context.Request.RecvListBuff[0].Position,
-                context.Request.RecvListBuff[0].Size);
+            return GetAvailableLanguagesCodesImpl(
+                    context,
+                    context.Request.RecvListBuff[0].Position,
+                    context.Request.RecvListBuff[0].Size,
+                    0xF);
+        }
+
+        // GetAvailableLanguageCodeCount() -> u32
+        public static long GetAvailableLanguageCodeCount(ServiceCtx context)
+        {
+            context.ResponseData.Write(System.Math.Min(SystemStateMgr.LanguageCodes.Length, 0xF));
 
             return 0;
         }
 
-        public static long GetAvailableLanguageCodeCount(ServiceCtx context)
+        // GetAvailableLanguageCodes2() -> (u32, buffer<nn::settings::LanguageCode, 6>)
+        public static long GetAvailableLanguageCodes2(ServiceCtx context)
+        {
+            return GetAvailableLanguagesCodesImpl(
+                    context,
+                    context.Request.ReceiveBuff[0].Position,
+                    context.Request.ReceiveBuff[0].Size,
+                    SystemStateMgr.LanguageCodes.Length);
+        }
+
+        // GetAvailableLanguageCodeCount2() -> u32
+        public static long GetAvailableLanguageCodeCount2(ServiceCtx context)
         {
             context.ResponseData.Write(SystemStateMgr.LanguageCodes.Length);
 
             return 0;
         }
 
-        public static long GetAvailableLanguageCodes2(ServiceCtx context)
-        {
-            GetAvailableLanguagesCodesImpl(
-                context,
-                context.Request.ReceiveBuff[0].Position,
-                context.Request.ReceiveBuff[0].Size);
-
-            return 0;
-        }
-
-        public static long GetAvailableLanguagesCodesImpl(ServiceCtx context, long position, long size)
+        public static long GetAvailableLanguagesCodesImpl(ServiceCtx context, long position, long size, int maxSize)
         {
             int count = (int)(size / 8);
 
-            if (count > SystemStateMgr.LanguageCodes.Length)
+            if (count > maxSize)
             {
-                count = SystemStateMgr.LanguageCodes.Length;
+                count = maxSize;
             }
 
             for (int index = 0; index < count; index++)
