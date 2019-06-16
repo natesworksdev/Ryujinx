@@ -19,7 +19,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="GUI\assets\DiscordLogo.png" />
+    <None Remove="GUI\assets\GitHubLogo.png" />
+    <None Remove="GUI\assets\PatreonLogo.png" />
+    <None Remove="GUI\assets\TwitterLogo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="GUI\AboutWindow.glade" />
+    <EmbeddedResource Include="GUI\assets\DiscordLogo.png" />
+    <EmbeddedResource Include="GUI\assets\GitHubLogo.png" />
     <EmbeddedResource Include="GUI\assets\JoyCon.png" />
+    <EmbeddedResource Include="GUI\assets\PatreonLogo.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxIcon.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxNCAIcon.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxNROIcon.png" />
@@ -27,6 +38,7 @@
     <EmbeddedResource Include="GUI\assets\ryujinxNSPIcon.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxROMIcon.png" />
     <EmbeddedResource Include="GUI\assets\ryujinxXCIIcon.png" />
+    <EmbeddedResource Include="GUI\assets\TwitterLogo.png" />
     <EmbeddedResource Include="GUI\MainMenu.glade" />
     <EmbeddedResource Include="GUI\SwitchSettings.glade" />
   </ItemGroup>

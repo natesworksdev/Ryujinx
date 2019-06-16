@@ -39,10 +39,12 @@ namespace Ryujinx
         [GUI] ComboBoxText SystemLanguageSelect;
         [GUI] CheckButton  CustThemeToggle;
         [GUI] Entry        CustThemeDir;
+        [GUI] ToggleButton BrowseThemeDir;
         [GUI] Label        CustThemeDirLabel;
         [GUI] TreeView     GameDirsBox;
         [GUI] Entry        AddGameDirBox;
         [GUI] ToggleButton AddDir;
+        [GUI] ToggleButton BrowseDir;
         [GUI] ToggleButton RemoveDir;
         [GUI] Entry        LogPath;
         [GUI] Image        ControllerImage;
@@ -167,7 +169,7 @@ namespace Ryujinx
                 GameDirsBoxStore.AppendValues(GameDir);
             }
 
-            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; }
+            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; BrowseThemeDir.Sensitive = false; }
 
             LogPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
 
@@ -205,6 +207,20 @@ namespace Ryujinx
             AddDir.SetStateFlags(0, true);
         }
 
+        private void BrowseDir_Pressed(object obj, EventArgs args)
+        {
+            FileChooserDialog fc = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+
+            if (fc.Run() == (int)ResponseType.Accept)
+            {
+                GameDirsBoxStore.AppendValues(fc.Filename);
+            }
+
+            fc.Destroy();
+
+            BrowseDir.SetStateFlags(0, true);
+        }
+
         private void RemoveDir_Pressed(object obj, EventArgs args)
         {
             TreeSelection selection = GameDirsBox.Selection;
@@ -217,7 +233,23 @@ namespace Ryujinx
 
         private void CustThemeToggle_Activated(object obj, EventArgs args)
         {
-            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; } else { CustThemeDir.Sensitive = true; CustThemeDirLabel.Sensitive = true; }
+            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; BrowseThemeDir.Sensitive = false; } else { CustThemeDir.Sensitive = true; CustThemeDirLabel.Sensitive = true; BrowseThemeDir.Sensitive = true; }
+        }
+
+        private void BrowseThemeDir_Pressed(object obj, EventArgs args)
+        {
+            FileChooserDialog fc = new FileChooserDialog("Choose the theme to load", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            fc.Filter = new FileFilter();
+            fc.Filter.AddPattern("*.css");
+
+            if (fc.Run() == (int)ResponseType.Accept)
+            {
+                CustThemeDir.Buffer.Text = fc.Filename;
+            }
+
+            fc.Destroy();
+
+            BrowseThemeDir.SetStateFlags(0, true);
         }
 
         private void SaveToggle_Activated(object obj, EventArgs args)

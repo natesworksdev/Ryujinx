@@ -375,20 +375,10 @@ namespace Ryujinx
 
         private void About_Pressed(object o, EventArgs args)
         {
-            AboutDialog about  = new AboutDialog
-            {
-                ProgramName    = "Ryujinx",
-                Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png"),
-                Version        = "Version x.x.x",
-                Authors        = new string[] { "gdkchan", "Ac_K", "LDj3SNuD", "emmauss", "MerryMage", "MS-DOS1999", "Thog", "jD", "BaronKiko", "Dr.Hacknik", "Lordmau5", "(and Xpl0itR did a bit of work too :D)" },
-                Copyright      = "Unlicense",
-                Comments       = "Ryujinx is an emulator for the Nintendo Switch",
-                Website        = "https://github.com/Ryujinx/Ryujinx",
-                WindowPosition = WindowPosition.Center,
-            };
-
-            about.Run();
-            about.Destroy();
+            var AboutWin = new AboutWindow();
+            gtkapp.Register(GLib.Cancellable.Current);
+            gtkapp.AddWindow(AboutWin);
+            AboutWin.Show();
         }
 
         /// <summary>
