@@ -237,7 +237,9 @@ namespace ChocolArm64.Instructions
         {
             IOpCodeSimd64 op = (IOpCodeSimd64)context.CurrOp;
 
-            Type type = (op.Size & 1) == 0
+            int sizeF = op.Size & 1;
+
+            Type type = sizeF == 0
                 ? typeof(SoftFloat32)
                 : typeof(SoftFloat64);
 
@@ -817,6 +819,35 @@ namespace ChocolArm64.Instructions
             {
                 EmitVectorZeroUpper(context, op.Rd);
             }
+        }
+
+        public static void EmitVectorAcrossVectorOpSx(ILEmitterCtx context, Action emit)
+        {
+            EmitVectorAcrossVectorOp(context, emit, true);
+        }
+
+        public static void EmitVectorAcrossVectorOpZx(ILEmitterCtx context, Action emit)
+        {
+            EmitVectorAcrossVectorOp(context, emit, false);
+        }
+
+        public static void EmitVectorAcrossVectorOp(ILEmitterCtx context, Action emit, bool signed)
+        {
+            OpCodeSimd64 op = (OpCodeSimd64)context.CurrOp;
+
+            int bytes = op.GetBitsCount() >> 3;
+            int elems = bytes >> op.Size;
+
+            EmitVectorExtract(context, op.Rn, 0, op.Size, signed);
+
+            for (int index = 1; index < elems; index++)
+            {
+                EmitVectorExtract(context, op.Rn, index, op.Size, signed);
+
+                emit();
+            }
+
+            EmitScalarSet(context, op.Rd, op.Size);
         }
 
         public static void EmitVectorPairwiseOpF(ILEmitterCtx context, Action emit)

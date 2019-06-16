@@ -4,6 +4,8 @@ using OpenTK.Input;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
+using Ryujinx.Profiler;
+using Ryujinx.Profiler.UI;
 using System;
 using System.Threading;
 
@@ -22,6 +24,8 @@ namespace Ryujinx
 
         private IGalRenderer _renderer;
 
+        private HidHotkeyButtons _prevHotkeyButtons = 0;
+
         private KeyboardState? _keyboard = null;
 
         private MouseState? _mouse = null;
@@ -33,6 +37,10 @@ namespace Ryujinx
         private bool _titleEvent;
 
         private string _newTitle;
+
+#if USE_PROFILING
+        private ProfileWindowManager _profileWindow;
+#endif
 
         public GlScreen(Switch device, IGalRenderer renderer)
             : base(1280, 720,
@@ -46,6 +54,11 @@ namespace Ryujinx
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
+            
+#if USE_PROFILING
+            // Start profile window, it will handle itself from there
+            _profileWindow = new ProfileWindowManager();
+#endif
         }
 
         private void RenderLoop()
@@ -128,9 +141,11 @@ namespace Ryujinx
 
         private new void UpdateFrame()
         {
+            HidHotkeyButtons     currentHotkeyButtons = 0;
             HidControllerButtons currentButton = 0;
             HidJoystickPosition  leftJoystick;
             HidJoystickPosition  rightJoystick;
+            HidKeyboard?         hidKeyboard = null;
 
             int leftJoystickDx  = 0;
             int leftJoystickDy  = 0;
@@ -142,11 +157,31 @@ namespace Ryujinx
             {
                 KeyboardState keyboard = _keyboard.Value;
 
-                currentButton = Configuration.Instance.KeyboardControls.GetButtons(keyboard);
+#if USE_PROFILING
+                // Profiler input, lets the profiler get access to the main windows keyboard state
+                _profileWindow.UpdateKeyInput(keyboard);
+#endif
 
-                (leftJoystickDx, leftJoystickDy) = Configuration.Instance.KeyboardControls.GetLeftStick(keyboard);
+                // Normal Input
+                currentHotkeyButtons = Configuration.Instance.KeyboardControls.GetHotkeyButtons(keyboard);
+                currentButton        = Configuration.Instance.KeyboardControls.GetButtons(keyboard);
 
+                if (Configuration.Instance.EnableKeyboard)
+                {
+                    hidKeyboard = Configuration.Instance.KeyboardControls.GetKeysDown(keyboard);
+                }
+
+                (leftJoystickDx, leftJoystickDy)   = Configuration.Instance.KeyboardControls.GetLeftStick(keyboard);
                 (rightJoystickDx, rightJoystickDy) = Configuration.Instance.KeyboardControls.GetRightStick(keyboard);
+            }
+
+            if (!hidKeyboard.HasValue)
+            {
+                hidKeyboard = new HidKeyboard
+                {
+                    Modifier = 0,
+                    Keys     = new int[0x8]
+                };
             }
             
             currentButton |= Configuration.Instance.GamepadControls.GetButtons();
@@ -235,9 +270,23 @@ namespace Ryujinx
                 _device.Hid.SetTouchPoints();
             }
 
+            if (Configuration.Instance.EnableKeyboard && hidKeyboard.HasValue)
+            {
+                _device.Hid.WriteKeyboard(hidKeyboard.Value);
+            }
+
             HidControllerBase controller = _device.Hid.PrimaryController;
 
             controller.SendInput(currentButton, leftJoystick, rightJoystick);
+
+            // Toggle vsync
+            if (currentHotkeyButtons.HasFlag(HidHotkeyButtons.ToggleVSync) &&
+                !_prevHotkeyButtons.HasFlag(HidHotkeyButtons.ToggleVSync))
+            {
+                _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
+            }
+
+            _prevHotkeyButtons = currentHotkeyButtons;
         }
 
         private new void RenderFrame()
@@ -266,6 +315,10 @@ namespace Ryujinx
 
         protected override void OnUnload(EventArgs e)
         {
+#if USE_PROFILING
+            _profileWindow.Close();
+#endif
+
             _renderThread.Join();
 
             base.OnUnload(e);

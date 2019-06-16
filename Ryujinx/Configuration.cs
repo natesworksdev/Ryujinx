@@ -1,4 +1,4 @@
-using LibHac.IO;
+using LibHac.Fs;
 using OpenTK.Input;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
@@ -53,6 +53,16 @@ namespace Ryujinx
         public bool LoggingEnableError { get; private set; }
 
         /// <summary>
+        /// Enables printing guest log messages
+        /// </summary>
+        public bool LoggingEnableGuest { get; private set; }
+
+        /// <summary>
+        /// Enables printing FS access log messages
+        /// </summary>
+        public bool LoggingEnableFsAccessLog { get; private set; }
+
+        /// <summary>
         /// Controls which log messages are written to the log targets
         /// </summary>
         public LogClass[] LoggingFilteredClasses { get; private set; }
@@ -73,6 +83,11 @@ namespace Ryujinx
         public bool DockedMode { get; private set; }
 
         /// <summary>
+        /// Enables or disables Discord Rich Presense
+        /// </summary>
+        public bool EnableDiscordIntergration { get; private set; }
+
+        /// <summary>
         /// Enables or disables Vertical Sync
         /// </summary>
         public bool EnableVsync { get; private set; }
@@ -88,6 +103,11 @@ namespace Ryujinx
         public bool EnableFsIntegrityChecks { get; private set; }
 
         /// <summary>
+        /// Enables FS access log output to the console. Possible modes are 0-3
+        /// </summary>
+        public int FsGlobalAccessLogMode { get; private set; }
+
+        /// <summary>
         /// Enable or Disable aggressive CPU optimizations
         /// </summary>
         public bool EnableAggressiveCpuOpts { get; private set; }
@@ -101,6 +121,11 @@ namespace Ryujinx
         ///  The primary controller's type
         /// </summary>
         public HidControllerType ControllerType { get; private set; }
+
+        /// <summary>
+        /// Enable or disable keyboard support (Independent from controllers binding)
+        /// </summary>
+        public bool EnableKeyboard { get; private set; }
 
         /// <summary>
         /// Keyboard control bindings
@@ -174,11 +199,13 @@ namespace Ryujinx
                 ));
             }
 
-            Logger.SetEnable(LogLevel.Debug,   Instance.LoggingEnableDebug);
-            Logger.SetEnable(LogLevel.Stub,    Instance.LoggingEnableStub);
-            Logger.SetEnable(LogLevel.Info,    Instance.LoggingEnableInfo);
-            Logger.SetEnable(LogLevel.Warning, Instance.LoggingEnableWarn);
-            Logger.SetEnable(LogLevel.Error,   Instance.LoggingEnableError);
+            Logger.SetEnable(LogLevel.Debug,     Instance.LoggingEnableDebug);
+            Logger.SetEnable(LogLevel.Stub,      Instance.LoggingEnableStub);
+            Logger.SetEnable(LogLevel.Info,      Instance.LoggingEnableInfo);
+            Logger.SetEnable(LogLevel.Warning,   Instance.LoggingEnableWarn);
+            Logger.SetEnable(LogLevel.Error,     Instance.LoggingEnableError);
+            Logger.SetEnable(LogLevel.Guest,     Instance.LoggingEnableGuest);
+            Logger.SetEnable(LogLevel.AccessLog, Instance.LoggingEnableFsAccessLog);
 
             if (Instance.LoggingFilteredClasses.Length > 0)
             {
@@ -192,6 +219,8 @@ namespace Ryujinx
                     Logger.SetEnable(logClass, true);
                 }
             }
+
+            device.System.State.DiscordIntergrationEnabled = Instance.EnableDiscordIntergration;
 
             device.EnableDeviceVsync = Instance.EnableVsync;
 
@@ -207,6 +236,8 @@ namespace Ryujinx
             device.System.FsIntegrityCheckLevel = Instance.EnableFsIntegrityChecks
                 ? IntegrityCheckLevel.ErrorOnInvalid
                 : IntegrityCheckLevel.None;
+
+            device.System.GlobalAccessLogMode = Instance.FsGlobalAccessLogMode;
 
             if (Instance.EnableAggressiveCpuOpts)
             {
@@ -224,6 +255,7 @@ namespace Ryujinx
             }
 
             device.Hid.InitilizePrimaryController(Instance.ControllerType);
+            device.Hid.InitilizeKeyboard();
         }
 
         private class ConfigurationEnumFormatter<T> : IJsonFormatter<T>

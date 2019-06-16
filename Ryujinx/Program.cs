@@ -1,15 +1,22 @@
-﻿using Ryujinx.Audio;
+﻿using DiscordRPC;
+using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
+using Ryujinx.Profiler;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Ryujinx
 {
     class Program
     {
+        public static DiscordRpcClient DiscordClient;
+
+        public static RichPresence DiscordPresence;
+
         public static string ApplicationDirectory => AppDomain.CurrentDomain.BaseDirectory;
 
         static void Main(string[] args)
@@ -25,8 +32,26 @@ namespace Ryujinx
             Configuration.Load(Path.Combine(ApplicationDirectory, "Config.jsonc"));
             Configuration.Configure(device);
 
+            Profile.Initalize();
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
+
+            if (device.System.State.DiscordIntergrationEnabled == true)
+            {
+                DiscordClient   = new DiscordRpcClient("568815339807309834");
+                DiscordPresence = new RichPresence
+                {
+                    Assets = new Assets
+                    {
+                        LargeImageKey  = "ryujinx",
+                        LargeImageText = "Ryujinx is an emulator for the Nintendo Switch"
+                    }
+                };
+
+                DiscordClient.Initialize();
+                DiscordClient.SetPresence(DiscordPresence);
+            }
 
             if (args.Length == 1)
             {
@@ -42,13 +67,11 @@ namespace Ryujinx
                     if (romFsFiles.Length > 0)
                     {
                         Logger.PrintInfo(LogClass.Application, "Loading as cart with RomFS.");
-
                         device.LoadCart(args[0], romFsFiles[0]);
                     }
                     else
                     {
                         Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
-
                         device.LoadCart(args[0]);
                     }
                 }
@@ -85,9 +108,28 @@ namespace Ryujinx
                 Logger.PrintWarning(LogClass.Application, "Please specify the folder with the NSOs/IStorage or a NSO/NRO.");
             }
 
+            if (device.System.State.DiscordIntergrationEnabled == true)
+            {
+                if (File.ReadAllLines(Path.Combine(ApplicationDirectory, "RPsupported.dat")).Contains(device.System.TitleID))
+                {
+                    DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
+                }
+
+                DiscordPresence.Details               = $"Playing {device.System.TitleName}";
+                DiscordPresence.State                 = device.System.TitleID.ToUpper();
+                DiscordPresence.Assets.LargeImageText = device.System.TitleName;
+                DiscordPresence.Assets.SmallImageKey  = "ryujinx";
+                DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
+                DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
+
+                DiscordClient.SetPresence(DiscordPresence);
+            }
+
             using (GlScreen screen = new GlScreen(device, renderer))
             {
                 screen.MainLoop();
+
+                Profile.FinishProfiling();
 
                 device.Dispose();
             }
@@ -95,11 +137,15 @@ namespace Ryujinx
             audioOut.Dispose();
 
             Logger.Shutdown();
+
+            DiscordClient.Dispose();
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
             Logger.Shutdown();
+
+            DiscordClient.Dispose();
         }
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -111,6 +157,8 @@ namespace Ryujinx
             if (e.IsTerminating)
             {
                 Logger.Shutdown();
+
+                DiscordClient.Dispose();
             }
         }
 

@@ -17,6 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 { 10101, GetFriendList                 },
+                { 10600, DeclareOpenOnlinePlaySession  },
                 { 10601, DeclareCloseOnlinePlaySession },
                 { 10610, UpdateUserPresence            }
             };
@@ -61,6 +62,23 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             return 0;
         }
 
+        // DeclareOpenOnlinePlaySession(nn::account::Uid)
+        public long DeclareOpenOnlinePlaySession(ServiceCtx context)
+        {
+            UInt128 uuid = new UInt128(
+                context.RequestData.ReadInt64(),
+                context.RequestData.ReadInt64());
+
+            if (context.Device.System.State.Account.TryGetUser(uuid, out UserProfile profile))
+            {
+                profile.OnlinePlayState = AccountState.Open;
+            }
+
+            Logger.PrintStub(LogClass.ServiceFriend, new { UserId = uuid.ToString(), profile.OnlinePlayState });
+
+            return 0;
+        }
+
         // DeclareCloseOnlinePlaySession(nn::account::Uid)
         public long DeclareCloseOnlinePlaySession(ServiceCtx context)
         {
@@ -68,9 +86,9 @@ namespace Ryujinx.HLE.HOS.Services.Friend
                 context.RequestData.ReadInt64(),
                 context.RequestData.ReadInt64());
 
-            if (context.Device.System.State.TryGetUser(uuid, out UserProfile profile))
+            if (context.Device.System.State.Account.TryGetUser(uuid, out UserProfile profile))
             {
-                profile.OnlinePlayState = OpenCloseState.Closed;
+                profile.OnlinePlayState = AccountState.Closed;
             }
 
             Logger.PrintStub(LogClass.ServiceFriend, new { UserId = uuid.ToString(), profile.OnlinePlayState });
