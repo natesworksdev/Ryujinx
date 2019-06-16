@@ -1,6 +1,7 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.SystemState;
+using System;
 using System.Collections.Generic;
 
 using static Ryujinx.HLE.HOS.ErrorCode;
@@ -53,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Set
         {
             int languageIndex = context.RequestData.ReadInt32();
 
-            if (languageIndex < 0 || languageIndex >= SystemStateMgr.LanguageCodes.Length)
+            if ((uint)languageIndex >= (uint)SystemStateMgr.LanguageCodes.Length)
             {
                 return MakeError(ErrorModule.Settings, SettingsError.LanguageOutOfRange);
             }
@@ -66,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Set
         // GetAvailableLanguageCodeCount() -> u32
         public static long GetAvailableLanguageCodeCount(ServiceCtx context)
         {
-            context.ResponseData.Write(System.Math.Min(SystemStateMgr.LanguageCodes.Length, 0xF));
+            context.ResponseData.Write(Math.Min(SystemStateMgr.LanguageCodes.Length, 0xF));
 
             return 0;
         }
