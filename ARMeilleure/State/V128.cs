@@ -7,9 +7,9 @@ namespace ARMeilleure.State
         private ulong _e0;
         private ulong _e1;
 
-        public V128(float value) : this(value, value, value, value) { }
+        public V128(float value) : this(value, 0, 0, 0) { }
 
-        public V128(double value) : this(value, value) { }
+        public V128(double value) : this(value, 0) { }
 
         public V128(float e0, float e1, float e2, float e3)
         {
@@ -84,12 +84,15 @@ namespace ARMeilleure.State
 
         public uint GetUInt32(int index)
         {
-            if ((uint)index > 3)
+            switch (index)
             {
-                throw new ArgumentOutOfRangeException(nameof(index));
+                case 0: return (uint)(_e0 >> 0);
+                case 1: return (uint)(_e0 >> 32);
+                case 2: return (uint)(_e1 >> 0);
+                case 3: return (uint)(_e1 >> 32);
             }
 
-            return (uint)(GetUInt64(index >> 1) >> (index & 1));
+            throw new ArgumentOutOfRangeException(nameof(index));
         }
 
         public ulong GetUInt64(int index)

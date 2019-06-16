@@ -106,7 +106,7 @@ namespace ARMeilleure.CodeGen.X86
                     //Comparison instructions uses CMOVcc, which does not zero the
                     //upper bits of the register (since it's R8), we need to ensure it
                     //is zero by zeroing it beforehand.
-                    if (inst.IsComparison())
+                    if (inst.IsComparison() || IsComparisonIntrinsic(inst))
                     {
                         Operation copyOp = new Operation(Instruction.Copy, operation.Dest, Const(0));
 
@@ -121,12 +121,12 @@ namespace ARMeilleure.CodeGen.X86
                         ReplaceConvertToFPUIWithSI(node, operation);
                     }
 
-                    //There's no SSE FP negate instruction, so we need to transform that into:
-                    //r = 0 - n or
-                    //r = n ^ (1 << (OperandSize - 1))
+                    //There's no SSE FP negate instruction, so we need to transform that into
+                    //a XOR of the value to be negated with a mask with the highest bit set.
+                    //This also produces -0 for a negation of the value 0.
                     if (inst == Instruction.Negate && !operation.GetSource(0).Type.IsInteger())
                     {
-                        ReplaceNegateWithSubtract(node, operation);
+                        ReplaceNegateWithXor(node, operation);
                     }
 
                     AddFixedRegisterCopy(node, operation);
@@ -272,10 +272,13 @@ namespace ARMeilleure.CodeGen.X86
             Delete(node, operation);
         }
 
-        private static void ReplaceNegateWithSubtract(LinkedListNode<Node> node, Operation operation)
+        private static void ReplaceNegateWithXor(LinkedListNode<Node> node, Operation operation)
         {
             Operand dest   = operation.Dest;
             Operand source = operation.GetSource(0);
+
+            Debug.Assert(dest.Type == OperandType.FP32 ||
+                         dest.Type == OperandType.FP64, $"Invalid destination type \"{dest.Type}\".");
 
             LinkedList<Node> nodes = node.List;
 
@@ -283,8 +286,18 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand res = Local(dest.Type);
 
-            temp = nodes.AddAfter(temp, new Operation(Instruction.VectorZero, res));
-            temp = nodes.AddAfter(temp, new Operation(Instruction.Subtract, res, res, source));
+            temp = nodes.AddAfter(temp, new Operation(Instruction.X86Pcmpeqw, res, res, res));
+
+            if (dest.Type == OperandType.FP32)
+            {
+                temp = nodes.AddAfter(temp, new Operation(Instruction.X86Pslld, res, res, Const(31)));
+            }
+            else /* if (dest.Type == OperandType.FP64) */
+            {
+                temp = nodes.AddAfter(temp, new Operation(Instruction.X86Psllq, res, res, Const(63)));
+            }
+
+            temp = nodes.AddAfter(temp, new Operation(Instruction.X86Xorps, res, res, source));
             temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, dest, res));
 
             Delete(node, operation);
@@ -699,6 +712,22 @@ namespace ARMeilleure.CodeGen.X86
         {
             return inst > Instruction.X86Intrinsic_Start &&
                    inst < Instruction.X86Intrinsic_End;
+        }
+
+        private static bool IsComparisonIntrinsic(Instruction inst)
+        {
+            switch (inst)
+            {
+                case Instruction.X86Comisdeq:
+                case Instruction.X86Comisdge:
+                case Instruction.X86Comisdlt:
+                case Instruction.X86Comisseq:
+                case Instruction.X86Comissge:
+                case Instruction.X86Comisslt:
+                    return true;
+            }
+
+            return false;
         }
     }
 }

@@ -10,6 +10,11 @@ namespace ARMeilleure.IntermediateRepresentation
             return type == OperandType.I32 ? new Operand((int)value) : new Operand(value);
         }
 
+        public static Operand Const(bool value)
+        {
+            return new Operand(value ? 1 : 0);
+        }
+
         public static Operand Const(int value)
         {
             return new Operand(value);

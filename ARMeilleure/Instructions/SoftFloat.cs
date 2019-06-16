@@ -669,8 +669,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static int FPCompare(float value1, float value2, bool signalNaNs, ExecutionContext context)
+        public static int FPCompare(float value1, float value2, bool signalNaNs)
         {
+            ExecutionContext context = NativeInterface.GetContext();
+
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out _, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out _, context);
 
@@ -1730,8 +1732,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static int FPCompare(double value1, double value2, bool signalNaNs, ExecutionContext context)
+        public static int FPCompare(double value1, double value2, bool signalNaNs)
         {
+            ExecutionContext context = NativeInterface.GetContext();
+
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out _, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out _, context);
 

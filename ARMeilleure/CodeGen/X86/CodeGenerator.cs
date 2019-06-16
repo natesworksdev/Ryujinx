@@ -88,6 +88,14 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.X86Andnps,               GenerateX86Andnps);
             Add(Instruction.X86Cmppd,                GenerateX86Cmppd);
             Add(Instruction.X86Cmpps,                GenerateX86Cmpps);
+            Add(Instruction.X86Cmpsd,                GenerateX86Cmpsd);
+            Add(Instruction.X86Cmpss,                GenerateX86Cmpss);
+            Add(Instruction.X86Comisdeq,             GenerateX86Comisdeq);
+            Add(Instruction.X86Comisdge,             GenerateX86Comisdge);
+            Add(Instruction.X86Comisdlt,             GenerateX86Comisdlt);
+            Add(Instruction.X86Comisseq,             GenerateX86Comisseq);
+            Add(Instruction.X86Comissge,             GenerateX86Comissge);
+            Add(Instruction.X86Comisslt,             GenerateX86Comisslt);
             Add(Instruction.X86Cvtdq2pd,             GenerateX86Cvtdq2pd);
             Add(Instruction.X86Cvtdq2ps,             GenerateX86Cvtdq2ps);
             Add(Instruction.X86Cvtpd2dq,             GenerateX86Cvtpd2dq);
@@ -1024,6 +1032,60 @@ namespace ARMeilleure.CodeGen.X86
                 operation.GetSource(1),
                 operation.GetSource(0),
                 operation.GetSource(2).AsByte());
+        }
+
+        private static void GenerateX86Cmpsd(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cmpsd(
+                operation.Dest,
+                operation.GetSource(1),
+                operation.GetSource(0),
+                operation.GetSource(2).AsByte());
+        }
+
+        private static void GenerateX86Cmpss(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cmpss(
+                operation.Dest,
+                operation.GetSource(1),
+                operation.GetSource(0),
+                operation.GetSource(2).AsByte());
+        }
+
+        private static void GenerateX86Comisdeq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
+            context.Assembler.Setcc(operation.Dest, X86Condition.Equal);
+        }
+
+        private static void GenerateX86Comisdge(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
+            context.Assembler.Setcc(operation.Dest, X86Condition.AboveOrEqual);
+        }
+
+        private static void GenerateX86Comisdlt(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
+            context.Assembler.Setcc(operation.Dest, X86Condition.Below);
+        }
+
+        private static void GenerateX86Comisseq(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
+            context.Assembler.Setcc(operation.Dest, X86Condition.Equal);
+        }
+
+        private static void GenerateX86Comissge(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
+            context.Assembler.Setcc(operation.Dest, X86Condition.AboveOrEqual);
+        }
+
+        private static void GenerateX86Comisslt(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
+            context.Assembler.Setcc(operation.Dest, X86Condition.Below);
         }
 
         private static void GenerateX86Cvtdq2pd(CodeGenContext context, Operation operation)

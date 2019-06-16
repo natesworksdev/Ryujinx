@@ -59,11 +59,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetFlag(PState.CFlag), context.ICompareGreaterOrEqualUI(n, m));
         }
 
-        public static void EmitSubsVCheck(
-            EmitterContext context,
-            Operand        n,
-            Operand        m,
-            Operand        d)
+        public static void EmitSubsVCheck(EmitterContext context, Operand n, Operand m, Operand d)
         {
             //V = (Rd ^ Rn) & (Rn ^ Rm) < 0
             Operand vOut = context.BitwiseExclusiveOr(d, n);
@@ -156,23 +152,6 @@ namespace ARMeilleure.Instructions
 
                 default: throw InvalidOpCodeType(context.CurrOp);
             }
-        }
-
-        public static void EmitSetNzcv(EmitterContext context, Operand nzcv)
-        {
-            Operand Extract(Operand value, int bit)
-            {
-                value = context.ShiftRightUI(value, Const(bit));
-
-                value = context.BitwiseAnd(value, Const(1));
-
-                return value;
-            }
-
-            context.Copy(GetFlag(PState.VFlag), Extract(nzcv, 0));
-            context.Copy(GetFlag(PState.CFlag), Extract(nzcv, 1));
-            context.Copy(GetFlag(PState.ZFlag), Extract(nzcv, 2));
-            context.Copy(GetFlag(PState.NFlag), Extract(nzcv, 3));
         }
 
         private static Exception InvalidOpCodeType(OpCode opCode)

@@ -77,6 +77,10 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Cmp,        new InstInfo(0x00000039, 0x07000083, 0x07000081, BadOp,      0x0000003b, InstFlags.None));
             Add(X86Instruction.Cmppd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Cmpps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex));
+            Add(X86Instruction.Cmpsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.PrefixF2));
+            Add(X86Instruction.Cmpss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.PrefixF3));
+            Add(X86Instruction.Comisd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Comiss,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstFlags.Vex));
             Add(X86Instruction.Cvtdq2pd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstFlags.Vex | InstFlags.PrefixF3));
             Add(X86Instruction.Cvtdq2ps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5b, InstFlags.Vex));
             Add(X86Instruction.Cvtpd2dq,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstFlags.Vex | InstFlags.PrefixF2));
@@ -313,9 +317,9 @@ namespace ARMeilleure.CodeGen.X86
             WriteRRMOpCode(dest, source, info.Flags, info.OpRRM | (int)condition);
         }
 
-        public void Cmp(Operand src1, Operand src2)
+        public void Cmp(Operand source1, Operand source2)
         {
-            WriteInstruction(src1, src2, X86Instruction.Cmp);
+            WriteInstruction(source1, source2, X86Instruction.Cmp);
         }
 
         public void Cqo()
@@ -336,6 +340,30 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Cmpps, source1);
 
             WriteByte(imm);
+        }
+
+        public void Cmpsd(Operand dest, Operand source, Operand source1, byte imm)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cmpsd, source1);
+
+            WriteByte(imm);
+        }
+
+        public void Cmpss(Operand dest, Operand source, Operand source1, byte imm)
+        {
+            WriteInstruction(dest, source, X86Instruction.Cmpss, source1);
+
+            WriteByte(imm);
+        }
+
+        public void Comisd(Operand source1, Operand source2)
+        {
+            WriteInstruction(source1, source2, X86Instruction.Comisd);
+        }
+
+        public void Comiss(Operand source1, Operand source2)
+        {
+            WriteInstruction(source1, source2, X86Instruction.Comiss);
         }
 
         public void Cvtdq2pd(Operand dest, Operand source)
