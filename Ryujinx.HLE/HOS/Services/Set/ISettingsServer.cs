@@ -2,6 +2,8 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.SystemState;
 using System.Collections.Generic;
 
+using static Ryujinx.HLE.HOS.ErrorCode;
+
 namespace Ryujinx.HLE.HOS.Services.Set
 {
     class ISettingsServer : IpcService
@@ -16,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Set
             {
                 { 0, GetLanguageCode                },
                 { 1, GetAvailableLanguageCodes      },
-              //{ 2, MakeLanguageCode               }, // 4.0.0+
+                { 2, MakeLanguageCode               }, // 4.0.0+
                 { 3, GetAvailableLanguageCodeCount  },
               //{ 4, GetRegionCode                  },
                 { 5, GetAvailableLanguageCodes2     },
@@ -43,6 +45,21 @@ namespace Ryujinx.HLE.HOS.Services.Set
                     context.Request.RecvListBuff[0].Position,
                     context.Request.RecvListBuff[0].Size,
                     0xF);
+        }
+
+        // MakeLanguageCode(nn::settings::Language language_index) -> nn::settings::LanguageCode
+        public static long MakeLanguageCode(ServiceCtx context)
+        {
+            int languageIndex = context.RequestData.ReadInt32();
+
+            if (languageIndex < 0 || languageIndex >= SystemStateMgr.LanguageCodes.Length)
+            {
+                return MakeError(ErrorModule.Settings, SettingsError.LanguageOutOfRange);
+            }
+
+            context.ResponseData.Write(SystemStateMgr.GetLanguageCode(languageIndex));
+
+            return 0;
         }
 
         // GetAvailableLanguageCodeCount() -> u32
