@@ -113,21 +113,21 @@ namespace Ryujinx
             ZR1.Clicked           += (o, args) => Button_Pressed(o, args, ZR1);
 
             //Setup Currents
-            if (SwitchConfig.LoggingEnableError)        { ErrorLogToggle.Click(); }
-            if (SwitchConfig.LoggingEnableWarn)         { WarningLogToggle.Click(); }
-            if (SwitchConfig.LoggingEnableInfo)         { InfoLogToggle.Click(); }
-            if (SwitchConfig.LoggingEnableStub)         { StubLogToggle.Click(); }
-            if (SwitchConfig.LoggingEnableDebug)        { DebugLogToggle.Click(); }
-            if (SwitchConfig.EnableFileLog)             { FileLogToggle.Click(); }
-            if (SwitchConfig.DockedMode)                { DockedModeToggle.Click(); }
-            if (SwitchConfig.EnableDiscordIntergration) { DiscordToggle.Click(); }
-            if (SwitchConfig.EnableVsync)               { VSyncToggle.Click(); }
-            if (SwitchConfig.EnableMulticoreScheduling) { MultiSchedToggle.Click(); }
-            if (SwitchConfig.EnableFsIntegrityChecks)   { FSICToggle.Click(); }
-            if (SwitchConfig.EnableAggressiveCpuOpts)   { AggrToggle.Click(); }
-            if (SwitchConfig.IgnoreMissingServices)     { IgnoreToggle.Click(); }
+            if (SwitchConfig.LoggingEnableError)        { ErrorLogToggle.Click();       }
+            if (SwitchConfig.LoggingEnableWarn)         { WarningLogToggle.Click();     }
+            if (SwitchConfig.LoggingEnableInfo)         { InfoLogToggle.Click();        }
+            if (SwitchConfig.LoggingEnableStub)         { StubLogToggle.Click();        }
+            if (SwitchConfig.LoggingEnableDebug)        { DebugLogToggle.Click();       }
+            if (SwitchConfig.EnableFileLog)             { FileLogToggle.Click();        }
+            if (SwitchConfig.DockedMode)                { DockedModeToggle.Click();     }
+            if (SwitchConfig.EnableDiscordIntergration) { DiscordToggle.Click();        }
+            if (SwitchConfig.EnableVsync)               { VSyncToggle.Click();          }
+            if (SwitchConfig.EnableMulticoreScheduling) { MultiSchedToggle.Click();     }
+            if (SwitchConfig.EnableFsIntegrityChecks)   { FSICToggle.Click();           }
+            if (SwitchConfig.EnableAggressiveCpuOpts)   { AggrToggle.Click();           }
+            if (SwitchConfig.IgnoreMissingServices)     { IgnoreToggle.Click();         }
             if (SwitchConfig.EnableKeyboard)            { DirectKeyboardAccess.Click(); }
-            if (SwitchConfig.EnableCustomTheme)         { CustThemeToggle.Click(); }
+            if (SwitchConfig.EnableCustomTheme)         { CustThemeToggle.Click();      }
 
             SystemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
             Controller1Type     .SetActiveId(SwitchConfig.ControllerType.ToString());
@@ -234,21 +234,37 @@ namespace Ryujinx
                 GameDirsBoxStore.IterNext(ref iter);
             }
 
-            if (ErrorLogToggle.Active)       { SwitchConfig.LoggingEnableError        = true; }
-            if (WarningLogToggle.Active)     { SwitchConfig.LoggingEnableWarn         = true; }
-            if (InfoLogToggle.Active)        { SwitchConfig.LoggingEnableInfo         = true; }
-            if (StubLogToggle.Active)        { SwitchConfig.LoggingEnableStub         = true; }
-            if (DebugLogToggle.Active)       { SwitchConfig.LoggingEnableDebug        = true; }
-            if (FileLogToggle.Active)        { SwitchConfig.EnableFileLog             = true; }
-            if (DockedModeToggle.Active)     { SwitchConfig.DockedMode                = true; }
-            if (DiscordToggle.Active)        { SwitchConfig.EnableDiscordIntergration = true; }
-            if (VSyncToggle.Active)          { SwitchConfig.EnableVsync               = true; }
-            if (MultiSchedToggle.Active)     { SwitchConfig.EnableMulticoreScheduling = true; }
-            if (FSICToggle.Active)           { SwitchConfig.EnableFsIntegrityChecks   = true; }
-            if (AggrToggle.Active)           { SwitchConfig.EnableAggressiveCpuOpts   = true; }
-            if (IgnoreToggle.Active)         { SwitchConfig.IgnoreMissingServices     = true; }
-            if (DirectKeyboardAccess.Active) { SwitchConfig.EnableKeyboard            = true; }
-            if (CustThemeToggle.Active)      { SwitchConfig.EnableCustomTheme         = true; }
+            if (ErrorLogToggle.Active)                { SwitchConfig.LoggingEnableError        = true;  }
+            if (WarningLogToggle.Active)              { SwitchConfig.LoggingEnableWarn         = true;  }
+            if (InfoLogToggle.Active)                 { SwitchConfig.LoggingEnableInfo         = true;  }
+            if (StubLogToggle.Active)                 { SwitchConfig.LoggingEnableStub         = true;  }
+            if (DebugLogToggle.Active)                { SwitchConfig.LoggingEnableDebug        = true;  }
+            if (FileLogToggle.Active)                 { SwitchConfig.EnableFileLog             = true;  }
+            if (DockedModeToggle.Active)              { SwitchConfig.DockedMode                = true;  }
+            if (DiscordToggle.Active)                 { SwitchConfig.EnableDiscordIntergration = true;  }
+            if (VSyncToggle.Active)                   { SwitchConfig.EnableVsync               = true;  }
+            if (MultiSchedToggle.Active)              { SwitchConfig.EnableMulticoreScheduling = true;  }
+            if (FSICToggle.Active)                    { SwitchConfig.EnableFsIntegrityChecks   = true;  }
+            if (AggrToggle.Active)                    { SwitchConfig.EnableAggressiveCpuOpts   = true;  }
+            if (IgnoreToggle.Active)                  { SwitchConfig.IgnoreMissingServices     = true;  }
+            if (DirectKeyboardAccess.Active)          { SwitchConfig.EnableKeyboard            = true;  }
+            if (CustThemeToggle.Active)               { SwitchConfig.EnableCustomTheme         = true;  }
+
+            if (ErrorLogToggle.Active       == false) { SwitchConfig.LoggingEnableError        = false; }
+            if (WarningLogToggle.Active     == false) { SwitchConfig.LoggingEnableWarn         = false; }
+            if (InfoLogToggle.Active        == false) { SwitchConfig.LoggingEnableInfo         = false; }
+            if (StubLogToggle.Active        == false) { SwitchConfig.LoggingEnableStub         = false; }
+            if (DebugLogToggle.Active       == false) { SwitchConfig.LoggingEnableDebug        = false; }
+            if (FileLogToggle.Active        == false) { SwitchConfig.EnableFileLog             = false; }
+            if (DockedModeToggle.Active     == false) { SwitchConfig.DockedMode                = false; }
+            if (DiscordToggle.Active        == false) { SwitchConfig.EnableDiscordIntergration = false; }
+            if (VSyncToggle.Active          == false) { SwitchConfig.EnableVsync               = false; }
+            if (MultiSchedToggle.Active     == false) { SwitchConfig.EnableMulticoreScheduling = false; }
+            if (FSICToggle.Active           == false) { SwitchConfig.EnableFsIntegrityChecks   = false; }
+            if (AggrToggle.Active           == false) { SwitchConfig.EnableAggressiveCpuOpts   = false; }
+            if (IgnoreToggle.Active         == false) { SwitchConfig.IgnoreMissingServices     = false; }
+            if (DirectKeyboardAccess.Active == false) { SwitchConfig.EnableKeyboard            = false; }
+            if (CustThemeToggle.Active      == false) { SwitchConfig.EnableCustomTheme         = false; }
 
             SwitchConfig.KeyboardControls.LeftJoycon = new NpadKeyboardLeft()
             {
@@ -290,7 +306,7 @@ namespace Ryujinx
 
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.Configure(device, SwitchConfig);
-
+            MainMenu.ApplyTheme();
             MainMenu.UpdateGameTable();
 
             Destroy();
@@ -303,49 +319,49 @@ namespace Ryujinx
 
         public readonly Dictionary<string, string> GdkToTKInput = new Dictionary<string, string>()
         {
-            {"Key_0", "Number0"},
-            {"Key_1", "Number1"},
-            {"Key_2", "Number2"},
-            {"Key_3", "Number3"},
-            {"Key_4", "Number4"},
-            {"Key_5", "Number5"},
-            {"Key_6", "Number6"},
-            {"Key_7", "Number7"},
-            {"Key_8", "Number8"},
-            {"Key_9", "Number9"},
-            {"equal", "Plus"},
-            {"uparrow", "Up"},
-            {"downarrow", "Down"},
-            {"leftarrow", "Left"},
-            {"rightarrow", "Right"},
-            {"Control_L", "ControlLeft"},
-            {"Control_R", "ControlRight"},
-            {"Shift_L", "ShiftLeft"},
-            {"Shift_R", "ShiftRight"},
-            {"Alt_L", "AltLeft"},
-            {"Alt_R", "AltRight"},
-            {"Page_Up", "PageUp"},
-            {"Page_Down", "PageDown"},
-            {"KP_Enter", "KeypadEnter"},
-            {"KP_Up", "Up"},
-            {"KP_Down", "Down"},
-            {"KP_Left", "Left"},
-            {"KP_Right", "Right"},
-            {"KP_Divide", "KeypadDivide"},
-            {"KP_Multiply", "KeypadMultiply"},
-            {"KP_Subtract", "KeypadSubtract"},
-            {"KP_Add", "KeypadAdd"},
-            {"KP_Decimal", "KeypadDecimal"},
-            {"KP_0", "Keypad0"},
-            {"KP_1", "Keypad1"},
-            {"KP_2", "Keypad2"},
-            {"KP_3", "Keypad3"},
-            {"KP_4", "Keypad4"},
-            {"KP_5", "Keypad5"},
-            {"KP_6", "Keypad6"},
-            {"KP_7", "Keypad7"},
-            {"KP_8", "Keypad8"},
-            {"KP_9", "Keypad9"},
+            { "Key_0"      , "Number0"         },
+            { "Key_1"      , "Number1"         },
+            { "Key_2"      , "Number2"         },
+            { "Key_3"      , "Number3"         },
+            { "Key_4"      , "Number4"         },
+            { "Key_5"      , "Number5"         },
+            { "Key_6"      , "Number6"         },
+            { "Key_7"      , "Number7"         },
+            { "Key_8"      , "Number8"         },
+            { "Key_9"      , "Number9"         },
+            { "equal"      , "Plus"            },
+            { "uparrow"    , "Up"              },
+            { "downarrow"  , "Down"            },
+            { "leftarrow"  , "Left"            },
+            { "rightarrow" , "Right"           },
+            { "Control_L"  , "ControlLeft"     },
+            { "Control_R"  , "ControlRight"    },
+            { "Shift_L"    , "ShiftLeft"       },
+            { "Shift_R"    , "ShiftRight"      },
+            { "Alt_L"      , "AltLeft"         },
+            { "Alt_R"      , "AltRight"        },
+            { "Page_Up"    , "PageUp"          },
+            { "Page_Down"  , "PageDown"        },
+            { "KP_Enter"   , "KeypadEnter"     },
+            { "KP_Up"      , "Up"              },
+            { "KP_Down"    , "Down"            },
+            { "KP_Left"    , "Left"            },
+            { "KP_Right"   , "Right"           },
+            { "KP_Divide"  , "KeypadDivide"    },
+            { "KP_Multiply", "KeypadMultiply"  },
+            { "KP_Subtract", "KeypadSubtract"  },
+            { "KP_Add"     , "KeypadAdd"       },
+            { "KP_Decimal" , "KeypadDecimal"   },
+            { "KP_0"       , "Keypad0"         },
+            { "KP_1"       , "Keypad1"         },
+            { "KP_2"       , "Keypad2"         },
+            { "KP_3"       , "Keypad3"         },
+            { "KP_4"       , "Keypad4"         },
+            { "KP_5"       , "Keypad5"         },
+            { "KP_6"       , "Keypad6"         },
+            { "KP_7"       , "Keypad7"         },
+            { "KP_8"       , "Keypad8"         },
+            { "KP_9"       , "Keypad9"         },
         };
     }
 }

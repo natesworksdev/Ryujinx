@@ -16,7 +16,7 @@ namespace Ryujinx
             Environment.SetEnvironmentVariable("Path", $"{Path.Combine(parentDir, "bin")};{systemPATH}");
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+            AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
 
             Profile.Initialize();
 

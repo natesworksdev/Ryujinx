@@ -46,7 +46,7 @@ namespace Ryujinx
 
             audioOut = InitializeAudioEngine();
 
-            device = new HLE.Switch(renderer, audioOut);
+            device   = new HLE.Switch(renderer, audioOut);
 
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(device);
@@ -143,7 +143,14 @@ namespace Ryujinx
 
             if (SwitchSettings.SwitchConfig.EnableCustomTheme)
             {
-                css_provider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
+                if (File.Exists(SwitchSettings.SwitchConfig.CustomThemePath) && (System.IO.Path.GetExtension(SwitchSettings.SwitchConfig.CustomThemePath) == ".css"))
+                {
+                    css_provider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
+                }
+                else
+                {
+                    Logger.PrintError(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\"");
+                }
             }
             else
             {
@@ -210,12 +217,12 @@ namespace Ryujinx
                     DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
                 }
 
-                DiscordPresence.Details = $"Playing {device.System.TitleName}";
-                DiscordPresence.State = device.System.TitleID.ToUpper();
+                DiscordPresence.Details               = $"Playing {device.System.TitleName}";
+                DiscordPresence.State                 = string.IsNullOrWhiteSpace(device.System.TitleID) ? string.Empty : device.System.TitleID.ToUpper();
                 DiscordPresence.Assets.LargeImageText = device.System.TitleName;
-                DiscordPresence.Assets.SmallImageKey = "ryujinx";
+                DiscordPresence.Assets.SmallImageKey  = "ryujinx";
                 DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
-                DiscordPresence.Timestamps = new Timestamps(DateTime.UtcNow);
+                DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
 
                 DiscordClient.SetPresence(DiscordPresence);
             }

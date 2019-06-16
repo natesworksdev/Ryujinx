@@ -69,7 +69,7 @@ namespace Ryujinx
         /// <summary>
         /// Controls which log messages are written to the log targets
         /// </summary>
-        public LogClass[] LoggingFilteredClasses { get; set; }
+        public LogClass[] LoggingFilteredClasses { get; private set; }
 
         /// <summary>
         /// Enables or disables logging to a file on disk

@@ -43,7 +43,7 @@ namespace Ryujinx
 
             foreach (string GameDir in SwitchSettings.SwitchConfig.GameDirs)
             {
-                if (Directory.Exists(GameDir) == false) { Logger.PrintError(LogClass.Application, $"\"GameDirs.dat\" contains an invalid directory: \"{GameDir}\""); continue; }
+                if (Directory.Exists(GameDir) == false) { Logger.PrintError(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{GameDir}\""); continue; }
 
                 DirectoryInfo GameDirInfo = new DirectoryInfo(GameDir);
                 foreach (var Game in GameDirInfo.GetFiles())
