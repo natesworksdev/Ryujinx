@@ -73,13 +73,19 @@ textview text {
 
 entry {
     background-color: #23272A;
-    border-color: #23272A;
+    border: none;
     color: #F4F6F7;
 }
 
     entry:disabled {
         color: #929394;
     }
+
+spinbutton {
+    background-color: #23272A;
+    border: none;
+    color: #F4F6F7;
+}
 
 scrolledwindow {
     border-color: #2C2F33;

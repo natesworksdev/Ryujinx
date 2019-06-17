@@ -2,6 +2,11 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkAdjustment" id="FGALMSpinAdjustment">
+    <property name="upper">3</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkDialog" id="SettingsWin">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Ryujinx - Settings</property>
@@ -113,6 +118,7 @@
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Change System Language</property>
                                 <property name="halign">end</property>
                                 <property name="label" translatable="yes">System Language:</property>
                               </object>
@@ -126,6 +132,7 @@
                               <object class="GtkComboBoxText" id="SystemLanguageSelect">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Change System Language</property>
                                 <property name="margin_left">5</property>
                                 <items>
                                   <item id="AmericanEnglish" translatable="yes">American English</item>
@@ -166,6 +173,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables or disables Discord Rich Presense</property>
                             <property name="halign">start</property>
                             <property name="margin_left">5</property>
                             <property name="draw_indicator">True</property>
@@ -282,6 +290,7 @@
                               <object class="GtkEntry" id="AddGameDirBox">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <property name="tooltip_text" translatable="yes">Enter a game directroy to add to the list</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -296,6 +305,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip_text" translatable="yes"> Add a game directory to the list</property>
                                 <property name="margin_left">5</property>
                                 <signal name="toggled" handler="AddDir_Pressed" swapped="no"/>
                               </object>
@@ -312,6 +322,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip_text" translatable="yes">Browse for a game directory</property>
                                 <property name="margin_left">5</property>
                                 <signal name="toggled" handler="BrowseDir_Pressed" swapped="no"/>
                               </object>
@@ -328,6 +339,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip_text" translatable="yes">Remove selected game directory</property>
                                 <property name="margin_left">5</property>
                                 <signal name="toggled" handler="RemoveDir_Pressed" swapped="no"/>
                               </object>
@@ -410,6 +422,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enable or disable custom themes in the GUI</property>
                             <property name="halign">start</property>
                             <property name="draw_indicator">True</property>
                             <signal name="toggled" handler="CustThemeToggle_Activated" swapped="no"/>
@@ -429,7 +442,8 @@
                               <object class="GtkLabel" id="CustThemeDirLabel">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Custom Theme Dir:</property>
+                                <property name="tooltip_text" translatable="yes">Path to custom GUI theme</property>
+                                <property name="label" translatable="yes">Custom Theme Path:</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -442,6 +456,7 @@
                               <object class="GtkEntry" id="CustThemeDir">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <property name="tooltip_text" translatable="yes">Path to custom GUI theme</property>
                                 <property name="valign">center</property>
                               </object>
                               <packing>
@@ -457,6 +472,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip_text" translatable="yes">Browse for a custom GUI theme</property>
                                 <property name="margin_left">5</property>
                                 <signal name="toggled" handler="BrowseThemeDir_Pressed" swapped="no"/>
                               </object>
@@ -1431,6 +1447,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables or disables Vertical Sync</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1448,6 +1465,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables or disables multi-core scheduling of threads</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1465,6 +1483,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1482,6 +1501,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables integrity checks on Game content files</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1559,6 +1579,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables or disables logging to a file on disk</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1580,6 +1601,7 @@
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Location of the log file</property>
                                 <property name="label" translatable="yes">Log File Location:</property>
                               </object>
                               <packing>
@@ -1593,6 +1615,7 @@
                               <object class="GtkEntry" id="LogPath">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <property name="tooltip_text" translatable="yes">Location of the log file</property>
                                 <property name="valign">center</property>
                                 <property name="editable">False</property>
                                 <property name="caps_lock_warning">False</property>
@@ -1617,6 +1640,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables printing debug log messages</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1634,6 +1658,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables printing stub log messages</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1651,6 +1676,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables printing info log messages</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1668,6 +1694,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables printing warning log messages</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1685,6 +1712,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables printing error log messages</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>
@@ -1694,6 +1722,81 @@
                             <property name="expand">False</property>
                             <property name="fill">True</property>
                             <property name="position">6</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="GuestLogToggle">
+                            <property name="label" translatable="yes">Enable Guest Logs</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables printing guest log messages</property>
+                            <property name="halign">start</property>
+                            <property name="margin_top">5</property>
+                            <property name="margin_bottom">5</property>
+                            <property name="draw_indicator">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">7</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="FsAccessLogToggle">
+                            <property name="label" translatable="yes">Enable Fs Access Logs</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables printing fs access log messages</property>
+                            <property name="halign">start</property>
+                            <property name="margin_top">5</property>
+                            <property name="margin_bottom">5</property>
+                            <property name="draw_indicator">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">8</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
+                                <property name="label" translatable="yes">Fs Global Access Log Mode:</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="padding">5</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSpinButton">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="tooltip_text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
+                                <property name="adjustment">FGALMSpinAdjustment</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="padding">5</property>
+                            <property name="position">9</property>
                           </packing>
                         </child>
                       </object>
@@ -1787,6 +1890,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enable or disable ignoring missing services</property>
                             <property name="halign">start</property>
                             <property name="margin_top">5</property>
                             <property name="margin_bottom">5</property>

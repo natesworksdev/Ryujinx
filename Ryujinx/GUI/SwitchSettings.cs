@@ -28,6 +28,9 @@ namespace Ryujinx
         [GUI] CheckButton  StubLogToggle;
         [GUI] CheckButton  DebugLogToggle;
         [GUI] CheckButton  FileLogToggle;
+        [GUI] CheckButton  GuestLogToggle;
+        [GUI] CheckButton  FsAccessLogToggle;
+        [GUI] Adjustment   FGALMSpinAdjustment;
         [GUI] CheckButton  DockedModeToggle;
         [GUI] CheckButton  DiscordToggle;
         [GUI] CheckButton  VSyncToggle;
@@ -159,7 +162,8 @@ namespace Ryujinx
             R1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonR.ToString();
             ZR1.Label           = SwitchConfig.KeyboardControls.RightJoycon.ButtonZr.ToString();
 
-            CustThemeDir.Buffer.Text = SwitchConfig.CustomThemePath;
+            CustThemeDir.Buffer.Text  = SwitchConfig.CustomThemePath;
+            FGALMSpinAdjustment.Value = SwitchConfig.FsGlobalAccessLogMode;
 
             GameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
             GameDirsBoxStore  = new ListStore(typeof(string));
@@ -209,7 +213,7 @@ namespace Ryujinx
 
         private void BrowseDir_Pressed(object obj, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserDialog fc = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
@@ -238,7 +242,7 @@ namespace Ryujinx
 
         private void BrowseThemeDir_Pressed(object obj, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the theme to load", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserDialog fc = new FileChooserDialog("Choose the theme to load", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Select", ResponseType.Accept);
             fc.Filter = new FileFilter();
             fc.Filter.AddPattern("*.css");
 
@@ -271,6 +275,11 @@ namespace Ryujinx
             if (InfoLogToggle.Active)                 { SwitchConfig.LoggingEnableInfo         = true;  }
             if (StubLogToggle.Active)                 { SwitchConfig.LoggingEnableStub         = true;  }
             if (DebugLogToggle.Active)                { SwitchConfig.LoggingEnableDebug        = true;  }
+<<<<<<< HEAD
+=======
+            if (GuestLogToggle.Active)                { SwitchConfig.LoggingEnableGuest        = true;  }
+            if (FsAccessLogToggle.Active)             { SwitchConfig.LoggingEnableFsAccessLog  = true;  }
+>>>>>>> added spin button for new option and tooltips to settings
             if (FileLogToggle.Active)                 { SwitchConfig.EnableFileLog             = true;  }
             if (DockedModeToggle.Active)              { SwitchConfig.DockedMode                = true;  }
             if (DiscordToggle.Active)                 { SwitchConfig.EnableDiscordIntergration = true;  }
@@ -330,11 +339,12 @@ namespace Ryujinx
                 ButtonZr    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZR1.Label),
             };
 
-            SwitchConfig.SystemLanguage  = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
-            SwitchConfig.ControllerType  = (HidControllerType)Enum.Parse(typeof(HidControllerType), Controller1Type.ActiveId);
-            SwitchConfig.CustomThemePath = CustThemeDir.Buffer.Text;
-            SwitchConfig.GameDirs        = gameDirs;
-            
+            SwitchConfig.SystemLanguage        = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
+            SwitchConfig.ControllerType        = (HidControllerType)Enum.Parse(typeof(HidControllerType), Controller1Type.ActiveId);
+            SwitchConfig.CustomThemePath       = CustThemeDir.Buffer.Text;
+            SwitchConfig.GameDirs              = gameDirs;
+            SwitchConfig.FsGlobalAccessLogMode = (int)FGALMSpinAdjustment.Value;
+
 
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.Configure(device, SwitchConfig);

@@ -109,7 +109,7 @@ namespace Ryujinx
         /// <summary>
         /// Enables FS access log output to the console. Possible modes are 0-3
         /// </summary>
-        public int FsGlobalAccessLogMode { get; private set; }
+        public int FsGlobalAccessLogMode { get; set; }
 
         /// <summary>
         /// Use old ChocolArm64 ARM emulator
