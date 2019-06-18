@@ -187,7 +187,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static string GetUbName(GalShaderType shaderType, int slot)
         {
-            string ubName = OperandManager.GetShaderStagePrefix(shaderType);
+            string ubName = GetShaderStagePrefix(shaderType);
 
             ubName += "_" + DefaultNames.UniformNamePrefix + slot;
 

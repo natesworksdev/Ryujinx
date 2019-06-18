@@ -32,7 +32,7 @@ namespace ChocolArm64.Translation
 
         public TranslatedSub(DynamicMethod method, TranslationTier tier, bool rejit)
         {
-            Method = method ?? throw new ArgumentNullException(nameof(method));;
+            Method = method ?? throw new ArgumentNullException(nameof(method));
             Tier   = tier;
             _rejit = rejit;
         }
