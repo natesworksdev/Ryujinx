@@ -204,7 +204,7 @@ namespace Ryujinx.Graphics.Graphics3d
                 dstBlitX + dstBlitW,
                 dstBlitY + dstBlitH);
 
-            //Do a guest side copy aswell. This is necessary when
+            //Do a guest side copy as well. This is necessary when
             //the texture is modified by the guest, however it doesn't
             //work when resources that the gpu can write to are copied,
             //like framebuffers.

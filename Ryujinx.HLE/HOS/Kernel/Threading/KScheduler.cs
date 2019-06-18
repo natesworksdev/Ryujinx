@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     continue;
                 }
 
-                //All candiates are already selected, choose the best one
+                //All candidates are already selected, choose the best one
                 //(the first one that doesn't make the source core idle if moved).
                 for (int index = 0; index < srcCoresHighestPrioThreadsCount; index++)
                 {

@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             {
                 case Instruction.Add:
                 case Instruction.BitwiseExclusiveOr:
-                    TryEliminateBinaryOpComutative(operation, 0);
+                    TryEliminateBinaryOpCommutative(operation, 0);
                     break;
 
                 case Instruction.BitwiseAnd:
@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     break;
 
                 case Instruction.Multiply:
-                    TryEliminateBinaryOpComutative(operation, 1);
+                    TryEliminateBinaryOpCommutative(operation, 1);
                     break;
 
                 case Instruction.ShiftLeft:
@@ -101,7 +101,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
         }
 
-        private static void TryEliminateBinaryOpComutative(Operation operation, int comparand)
+        private static void TryEliminateBinaryOpCommutative(Operation operation, int comparand)
         {
             Operand x = operation.GetSource(0);
             Operand y = operation.GetSource(1);

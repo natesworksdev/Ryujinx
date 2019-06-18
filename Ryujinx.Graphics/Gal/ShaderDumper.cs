@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Gal
 
                     instruction = word0 | (ulong)word1 << 32;
 
-                    //Zero instructions (other kind of NOP) stop immediatly,
+                    //Zero instructions (other kind of NOP) stop immediately,
                     //this is to avoid two rows of zeroes
                     if (instruction == 0)
                     {
@@ -59,7 +59,7 @@ namespace Ryujinx.Graphics.Gal
                     offset += 8;
                 }
 
-                //Align to meet nvdisasm requeriments
+                //Align to meet nvdisasm requirements
                 while (offset % 0x20 != 0)
                 {
                     fullWriter.Write(0);

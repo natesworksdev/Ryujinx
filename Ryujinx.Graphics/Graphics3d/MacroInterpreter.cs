@@ -171,7 +171,7 @@ namespace Ryujinx.Graphics.Graphics3d
                         break;
                     }
 
-                    //Move result and use as Method Address, then fetch and send paramter.
+                    //Move result and use as Method Address, then fetch and send parameter.
                     case AssignmentOperation.MoveAndSetMaddrThenFetchAndSend:
                     {
                         SetDstGpr(result);

@@ -245,7 +245,7 @@ namespace ChocolArm64.Decoders
         private static bool IsAarch32Branch(OpCode64 opCode)
         {
             //Note: On ARM32, most ALU operations can write to R15 (PC),
-            //so we must consider such operations as a branch in potential aswell.
+            //so we must consider such operations as a branch in potential as well.
             if (opCode is IOpCode32Alu opAlu && opAlu.Rd == RegisterAlias.Aarch32Pc)
             {
                 return true;

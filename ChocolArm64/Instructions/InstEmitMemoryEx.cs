@@ -229,7 +229,7 @@ namespace ChocolArm64.Instructions
 
                 context.Emit(OpCodes.Br, lblEnd);
 
-                //Address check passsed.
+                //Address check passed.
                 context.MarkLabel(lblEx);
 
                 context.EmitLdarg(TranslatedSub.MemoryArgIdx);

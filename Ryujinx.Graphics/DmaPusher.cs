@@ -104,9 +104,9 @@ namespace Ryujinx.Graphics
                 }
                 else
                 {
-                    int sumissionMode = (word >> 29) & 7;
+                    int submissionMode = (word >> 29) & 7;
 
-                    switch (sumissionMode)
+                    switch (submissionMode)
                     {
                         case 1:
                             //Incrementing.

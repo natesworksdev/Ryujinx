@@ -1980,9 +1980,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 for (int unit = MappingUnitSizes.Length - 1; unit >= 0 && va == 0; unit--)
                 {
-                    int alignemnt = MappingUnitSizes[unit];
+                    int alignment = MappingUnitSizes[unit];
 
-                    va = AllocateVa(AliasRegionStart, regionPagesCount, neededPagesCount, alignemnt);
+                    va = AllocateVa(AliasRegionStart, regionPagesCount, neededPagesCount, alignment);
                 }
 
                 if (va == 0)
@@ -2451,7 +2451,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     newNode.Value.SetState(newPermission, newState, newAttribute);
 
-                    MergeEqualStateNeighbours(newNode);
+                    MergeEqualStateNeighbors(newNode);
                 }
 
                 if (currEndAddr - 1 >= endAddr - 1)
@@ -2472,7 +2472,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             MemoryPermission permission = MemoryPermission.None,
             MemoryAttribute  attribute  = MemoryAttribute.None)
         {
-            //Inserts new block at the list, replacing and spliting
+            //Inserts new block at the list, replacing and splitting
             //existing blocks as needed.
             int oldCount = _blocks.Count;
 
@@ -2505,7 +2505,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     newNode.Value.SetState(permission, state, attribute);
 
-                    MergeEqualStateNeighbours(newNode);
+                    MergeEqualStateNeighbors(newNode);
                 }
 
                 if (currEndAddr - 1 >= endAddr - 1)
@@ -2537,7 +2537,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             BlockMutator     blockMutate,
             MemoryPermission permission = MemoryPermission.None)
         {
-            //Inserts new block at the list, replacing and spliting
+            //Inserts new block at the list, replacing and splitting
             //existing blocks as needed, then calling the callback
             //function on the new block.
             int oldCount = _blocks.Count;
@@ -2573,7 +2573,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     blockMutate(newBlock, permission);
 
-                    MergeEqualStateNeighbours(newNode);
+                    MergeEqualStateNeighbors(newNode);
                 }
 
                 if (currEndAddr - 1 >= endAddr - 1)
@@ -2587,7 +2587,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _blockAllocator.Count += _blocks.Count - oldCount;
         }
 
-        private void MergeEqualStateNeighbours(LinkedListNode<KMemoryBlock> node)
+        private void MergeEqualStateNeighbors(LinkedListNode<KMemoryBlock> node)
         {
             KMemoryBlock block = node.Value;
 

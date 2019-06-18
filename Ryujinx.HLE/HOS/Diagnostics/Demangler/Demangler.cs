@@ -2909,7 +2909,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                     }
                 } while (!ConsumeIf("E"));
             }
-            // ::= sr <unresolved-type> [tempate-args] <base-unresolved-name>     # T::x / decltype(p)::x
+            // ::= sr <unresolved-type> [template-args] <base-unresolved-name>     # T::x / decltype(p)::x
             else
             {
                 result = ParseUnresolvedType();

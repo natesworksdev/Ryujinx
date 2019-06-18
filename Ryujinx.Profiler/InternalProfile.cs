@@ -80,7 +80,7 @@ namespace Ryujinx.Profiler
                     Monitor.Exit(_timerQueueClearLock);
                 }
 
-                // Only sleep if queue was sucessfully cleared
+                // Only sleep if queue was successfully cleared
                 if (queueCleared)
                 {
                     Thread.Sleep(5);
@@ -206,9 +206,9 @@ namespace Ryujinx.Profiler
             return (_timingFlagAverages, _timingFlagLastDelta);
         }
 
-        public void RegisterFlagReciever(Action<TimingFlag> reciever)
+        public void RegisterFlagReceiver(Action<TimingFlag> receiver)
         {
-            _timingFlagCallback = reciever;
+            _timingFlagCallback = receiver;
         }
 
         public void Dispose()
