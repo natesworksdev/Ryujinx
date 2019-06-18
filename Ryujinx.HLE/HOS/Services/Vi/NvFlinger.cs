@@ -212,7 +212,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
         private long GbpDequeueBuffer(ServiceCtx context, BinaryReader parcelReader)
         {
-            //TODO: Errors.
+            // TODO: Errors.
             int format        = parcelReader.ReadInt32();
             int width         = parcelReader.ReadInt32();
             int height        = parcelReader.ReadInt32();
@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
         {
             context.Device.Statistics.RecordGameFrameTime();
 
-            //TODO: Errors.
+            // TODO: Errors.
             int slot            = parcelReader.ReadInt32();
 
             long Position = parcelReader.BaseStream.Position;
@@ -259,7 +259,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
         private long GbpCancelBuffer(ServiceCtx context, BinaryReader parcelReader)
         {
-            //TODO: Errors.
+            // TODO: Errors.
             int slot = parcelReader.ReadInt32();
 
             MultiFence fence = ReadFlattenedObject<MultiFence>(parcelReader);
@@ -400,7 +400,7 @@ namespace Ryujinx.HLE.HOS.Services.Android
 
             int BlockHeight = 1 << _bufferQueue[slot].Data.Buffer.Surfaces[0].BlockHeightLog2;
 
-            //Note: Rotation is being ignored.
+            // Note: Rotation is being ignored.
 
             int top    = crop.Top;
             int left   = crop.Left;

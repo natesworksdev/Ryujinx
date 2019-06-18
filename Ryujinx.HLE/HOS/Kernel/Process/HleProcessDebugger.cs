@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 }
             }
 
-            //TODO: ARM32.
+            // TODO: ARM32.
             long framePointer = (long)threadState.X29;
 
             trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
@@ -87,8 +87,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     break;
                 }
 
-                //Note: This is the return address, we need to subtract one instruction
-                //worth of bytes to get the branch instruction address.
+                // Note: This is the return address, we need to subtract one instruction
+                // worth of bytes to get the branch instruction address.
                 AppendTrace(_owner.CpuMemory.ReadInt64(framePointer + 8) - 4);
 
                 framePointer = _owner.CpuMemory.ReadInt64(framePointer);
@@ -243,7 +243,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             long ehHdrEndOffset   = memory.ReadInt32(mod0Offset + 0x14) + mod0Offset;
             long modObjOffset     = memory.ReadInt32(mod0Offset + 0x18) + mod0Offset;
 
-            //TODO: Elf32.
+            // TODO: Elf32.
             while (true)
             {
                 long tagVal = memory.ReadInt64(dynamicOffset + 0);

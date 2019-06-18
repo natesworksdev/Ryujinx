@@ -1014,7 +1014,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 context.Request.PtrBuff[1].Position,
                 context.Request.PtrBuff[1].Size);
 
-            //Todo: Read all handles and values from buffer.
+            // Todo: Read all handles and values from buffer.
 
             Logger.PrintStub(LogClass.ServiceHid, new {
                 appletResourceUserId,
