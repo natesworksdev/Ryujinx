@@ -1,3 +1,4 @@
+using Ryujinx.Tests.Unicorn.Native;
 using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.Intrinsics;
