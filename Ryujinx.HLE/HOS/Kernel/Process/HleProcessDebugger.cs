@@ -1,10 +1,8 @@
 using ChocolArm64.Memory;
 using ChocolArm64.State;
-using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.Loaders.Elf;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
