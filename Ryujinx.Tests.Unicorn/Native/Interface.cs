@@ -23,7 +23,7 @@ namespace Ryujinx.Tests.Unicorn.Native
                 IntPtr item = new IntPtr(input.ToInt64() + i * size);
                 output[i] = Marshal.PtrToStructure<T>(item);
             }
-         }
+        }
 
         [DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
         public static extern uint uc_version(out uint major, out uint minor);

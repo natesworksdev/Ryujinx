@@ -74,7 +74,7 @@ namespace ChocolArm64.Translation
 
         public bool Rejit()
         {
-           if (!_rejit)
+            if (!_rejit)
             {
                 return false;
             }
