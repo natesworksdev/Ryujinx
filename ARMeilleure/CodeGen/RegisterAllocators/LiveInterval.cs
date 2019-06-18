@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    class LiveInterval
+    class LiveInterval : IComparable<LiveInterval>
     {
         private const int NotFound = -1;
 
@@ -16,14 +16,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public int UsesCount => _usePositions.Count;
 
-        private List<LiveRange>    _ranges;
-        private List<LiveInterval> _childs;
+        private List<LiveRange> _ranges;
+
+        private SortedList<int, LiveInterval> _childs;
 
         public bool IsSplit => _childs.Count != 0;
 
         public Operand Local { get; }
-
-        public LiveInterval Representative { get; private set; }
 
         private Register _register;
 
@@ -43,16 +42,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        public int SpillOffset { get; set; }
+        public int SpillOffset { get; private set; }
 
         public bool IsSpilled => SpillOffset != -1;
-
         public bool IsFixed { get; }
 
         public bool IsEmpty => _ranges.Count == 0;
-
-        public int Start => _ranges[0].Start;
-        public int End   => _ranges[_ranges.Count - 1].End;
 
         public LiveInterval(Operand local = null, LiveInterval parent = null)
         {
@@ -62,9 +57,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             _usePositions = new SortedSet<int>();
 
             _ranges = new List<LiveRange>();
-            _childs = new List<LiveInterval>();
 
-            Representative = this;
+            _childs = new SortedList<int, LiveInterval>();
 
             SpillOffset = -1;
         }
@@ -87,9 +81,31 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
+        public int GetStart()
+        {
+            if (_ranges.Count == 0)
+            {
+                throw new InvalidOperationException("Empty interval.");
+            }
+
+            return _ranges[0].Start;
+        }
+
+        public int GetEnd()
+        {
+            if (_ranges.Count == 0)
+            {
+                throw new InvalidOperationException("Empty interval.");
+            }
+
+            return _ranges[_ranges.Count - 1].End;
+        }
+
         public void AddRange(int start, int end)
         {
-            if (BinarySearch(new LiveRange(start, end), out int index))
+            int index = _ranges.BinarySearch(new LiveRange(start, end));
+
+            if (index >= 0)
             {
                 //New range insersects with an existing range, we need to remove
                 //all the intersecting ranges before adding the new one.
@@ -122,13 +138,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 InsertRange(lIndex, start, end);
             }
-            else if (index < _ranges.Count && _ranges[index].Start < start)
-            {
-                InsertRange(index + 1, start, end);
-            }
             else
             {
-                InsertRange(index, start, end);
+                InsertRange(~index, start, end);
             }
         }
 
@@ -182,19 +194,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public bool Overlaps(int position)
         {
-            if (BinarySearch(new LiveRange(position, position + 1), out _))
-            {
-                return true;
-            }
-
-            return false;
+            return _ranges.BinarySearch(new LiveRange(position, position + 1)) >= 0;
         }
 
         public bool Overlaps(LiveInterval other)
         {
             foreach (LiveRange range in other._ranges)
             {
-                if (BinarySearch(range, out _))
+                if (_ranges.BinarySearch(range) >= 0)
                 {
                     return true;
                 }
@@ -205,7 +212,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public IEnumerable<LiveInterval> SplitChilds()
         {
-            return _childs;
+            return _childs.Values;
         }
 
         public IEnumerable<int> UsePositions()
@@ -240,7 +247,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             foreach (LiveRange range in other._ranges)
             {
-                if (BinarySearch(range, out int overlapIndex))
+                int overlapIndex = _ranges.BinarySearch(range);
+
+                if (overlapIndex >= 0)
                 {
                     LiveRange overlappingRange = _ranges[overlapIndex];
 
@@ -256,18 +265,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
 
             return NotFound;
-        }
-
-        public void Join(LiveInterval other)
-        {
-            foreach (LiveRange range in _ranges)
-            {
-                other.AddRange(range.Start, range.End);
-            }
-
-            Representative = other;
-
-            _ranges.Clear();
         }
 
         public LiveInterval Split(int position)
@@ -322,46 +319,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return right;
         }
 
-        private bool BinarySearch(LiveRange comparand, out int index)
-        {
-            index = 0;
-
-            int left  = 0;
-            int right = _ranges.Count - 1;
-
-            while (left <= right)
-            {
-                int size = right - left;
-
-                int middle = left + (size >> 1);
-
-                LiveRange range = _ranges[middle];
-
-                index = middle;
-
-                if (range.Start < comparand.End && comparand.Start < range.End)
-                {
-                    return true;
-                }
-
-                if (comparand.Start < range.Start)
-                {
-                    right = middle - 1;
-                }
-                else
-                {
-                    left = middle + 1;
-                }
-            }
-
-            return false;
-        }
-
         private void AddSplitChild(LiveInterval child)
         {
             Debug.Assert(!child.IsEmpty, "Trying to insert a empty interval.");
 
-            child.InsertSorted(_parent._childs);
+            _parent._childs.Add(child.GetStart(), child);
         }
 
         public LiveInterval GetSplitChild(int position)
@@ -374,15 +336,15 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             //as they are sorted by start/end position, and there are no overlaps.
             for (int index = _childs.Count - 1; index >= 0; index--)
             {
-                LiveInterval splitChild = _childs[index];
+                LiveInterval splitChild = _childs.Values[index];
 
-                if (position >= splitChild.Start && position <= splitChild.End)
+                if (position >= splitChild.GetStart() && position <= splitChild.GetEnd())
                 {
                     return splitChild;
                 }
             }
 
-            if (position >= Start && position <= End)
+            if (position >= GetStart() && position <= GetEnd())
             {
                 return this;
             }
@@ -392,11 +354,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public bool TrySpillWithSiblingOffset()
         {
-            foreach (LiveInterval splitChild in _parent._childs)
+            foreach (LiveInterval splitChild in _parent._childs.Values)
             {
                 if (splitChild.IsSpilled)
                 {
-                    SpillOffset = splitChild.SpillOffset;
+                    Spill(splitChild.SpillOffset);
 
                     return true;
                 }
@@ -405,47 +367,19 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return false;
         }
 
-        public void InsertSorted(List<LiveInterval> list)
+        public void Spill(int offset)
         {
-            int insertIndex = 0;
+            SpillOffset = offset;
+        }
 
-            int left  = 0;
-            int right = list.Count - 1;
-
-            while (left <= right)
+        public int CompareTo(LiveInterval other)
+        {
+            if (_ranges.Count == 0 || other._ranges.Count == 0)
             {
-                int size = right - left;
-
-                int middle = left + (size >> 1);
-
-                LiveInterval current = list[middle];
-
-                insertIndex = middle;
-
-                if (Start == current.Start)
-                {
-                    break;
-                }
-
-                if (Start < current.Start)
-                {
-                    right = middle - 1;
-                }
-                else
-                {
-                    left = middle + 1;
-                }
+                return _ranges.Count.CompareTo(other._ranges.Count);
             }
 
-            //If we have multiple intervals with the same start position, then the new one should
-            //always be inserted after all the existing interval with the same position, in order
-            //to ensure they will be processed (it works like a queue in this case).
-            while (insertIndex < list.Count && list[insertIndex].Start <= Start)
-            {
-                insertIndex++;
-            }
-
-            list.Insert(insertIndex, this);
+            return _ranges[0].Start.CompareTo(other._ranges[0].Start);
         }
 
         public override string ToString()

@@ -65,8 +65,9 @@ namespace ARMeilleure.CodeGen.X86
         private List<Jump> _jumps;
 
         private X86Condition _jNearCondition;
-        private long         _jNearPosition;
-        private int          _jNearLength;
+
+        private long _jNearPosition;
+        private int  _jNearLength;
 
         public CodeGenContext(Stream stream, AllocationResult allocResult, int blocksCount)
         {

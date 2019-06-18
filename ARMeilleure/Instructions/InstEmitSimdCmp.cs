@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -31,7 +30,7 @@ namespace ARMeilleure.Instructions
 
                 if (op is OpCodeSimdReg binOp)
                 {
-                    m = GetVec(op.Rn);
+                    m = GetVec(binOp.Rm);
                 }
                 else
                 {
@@ -71,7 +70,7 @@ namespace ARMeilleure.Instructions
 
                 if (op is OpCodeSimdReg binOp)
                 {
-                    m = GetVec(op.Rn);
+                    m = GetVec(binOp.Rm);
                 }
                 else
                 {
@@ -80,7 +79,7 @@ namespace ARMeilleure.Instructions
 
                 Instruction cmpInst = X86PcmpgtInstruction[op.Size];
 
-                Operand res = context.AddIntrinsic(cmpInst, n, m);
+                Operand res = context.AddIntrinsic(cmpInst, m, n);
 
                 Operand mask = X86GetAllElements(context, -1L);
 
@@ -115,7 +114,7 @@ namespace ARMeilleure.Instructions
 
                 if (op is OpCodeSimdReg binOp)
                 {
-                    m = GetVec(op.Rn);
+                    m = GetVec(binOp.Rm);
                 }
                 else
                 {

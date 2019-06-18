@@ -132,7 +132,7 @@ namespace ARMeilleure.Instructions
 
                 Instruction sllInst = X86PsllInstruction[op.Size + 1];
 
-                res = context.AddIntrinsic(sllInst, res);
+                res = context.AddIntrinsic(sllInst, res, Const(shift));
 
                 context.Copy(GetVec(op.Rd), res);
             }
@@ -615,7 +615,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlRegSatQ));
+                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlReg));
 
                 Operand e = context.Call(info, ne, me, Const(1), Const(op.Size));
 

@@ -383,55 +383,114 @@ namespace ARMeilleure.CodeGen.X86
             //as mandated by the ABI.
             if (inst == Instruction.Call)
             {
-                int argsCount = operation.SourcesCount;
+                HandleCallWindowsAbi(node, operation);
+            }
+        }
 
-                int maxArgs = CallingConvention.GetArgumentsOnRegsCount();
+        private static void HandleCallWindowsAbi(LinkedListNode<Node> node, Operation operation)
+        {
+            Operand dest = operation.Dest;
 
-                if (argsCount > maxArgs + 1)
+            //Handle struct arguments.
+            int retArgs = 0;
+
+            Operand retValueAddr = null;
+
+            if (dest.Type == OperandType.V128)
+            {
+                retValueAddr = Local(OperandType.I64);
+
+                Operation allocOp = new Operation(Instruction.StackAlloc, retValueAddr, Const(dest.Type.GetSizeInBytes()));
+
+                node.List.AddBefore(node, allocOp);
+
+                Operand arg0Reg = Gpr(CallingConvention.GetIntArgumentRegister(0), OperandType.I64);
+
+                Operation copyOp = new Operation(Instruction.Copy, arg0Reg, retValueAddr);
+
+                node.List.AddBefore(node, copyOp);
+
+                retArgs = 1;
+            }
+
+            for (int index = 1; index < operation.SourcesCount; index++)
+            {
+                Operand source = operation.GetSource(index);
+
+                if (source.Type == OperandType.V128)
                 {
-                    argsCount = maxArgs + 1;
+                    Operand stackAddr = Local(OperandType.I64);
+
+                    Operation allocOp = new Operation(Instruction.StackAlloc, stackAddr, Const(source.Type.GetSizeInBytes()));
+
+                    node.List.AddBefore(node, allocOp);
+
+                    X86MemoryOperand memOp = new X86MemoryOperand(source.Type, stackAddr, null, Scale.x1, 0);
+
+                    Operation storeOp = new Operation(Instruction.Store, null, memOp, source);
+
+                    AddMemoryOperandUse(memOp, storeOp);
+
+                    node.List.AddBefore(node, storeOp);
+
+                    operation.SetSource(index, stackAddr);
+                }
+            }
+
+            //Handle arguments passed on registers.
+            int argsCount = operation.SourcesCount - 1;
+
+            int maxArgs = CallingConvention.GetArgumentsOnRegsCount() - retArgs;
+
+            if (argsCount > maxArgs)
+            {
+                argsCount = maxArgs;
+            }
+
+            for (int index = 0; index < argsCount; index++)
+            {
+                Operand source = operation.GetSource(index + 1);
+
+                RegisterType regType = source.Type.ToRegisterType();
+
+                Operand argReg;
+
+                int argIndex = index + retArgs;
+
+                if (regType == RegisterType.Integer)
+                {
+                    argReg = Gpr(CallingConvention.GetIntArgumentRegister(argIndex), source.Type);
+                }
+                else /* if (regType == RegisterType.Vector) */
+                {
+                    argReg = Xmm(CallingConvention.GetVecArgumentRegister(argIndex), source.Type);
                 }
 
-                for (int index = 1; index < argsCount; index++)
-                {
-                    Operand source = operation.GetSource(index);
+                Operation srcCopyOp = new Operation(Instruction.Copy, argReg, source);
 
-                    RegisterType regType = source.Type.ToRegisterType();
+                node.List.AddBefore(node, srcCopyOp);
 
-                    Operand argReg;
+                operation.SetSource(index + 1, argReg);
+            }
 
-                    if (regType == RegisterType.Integer)
-                    {
-                        argReg = Gpr(CallingConvention.GetIntArgumentRegister(index - 1), source.Type);
-                    }
-                    else /* if (regType == RegisterType.Vector) */
-                    {
-                        argReg = Xmm(CallingConvention.GetVecArgumentRegister(index - 1), source.Type);
-                    }
+            //The remaining arguments (those that are not passed on registers)
+            //should be passed on the stack, we write them to the stack with "SpillArg".
+            for (int index = argsCount; index < operation.SourcesCount - 1; index++)
+            {
+                Operand source = operation.GetSource(index + 1);
 
-                    Operation srcCopyOp = new Operation(Instruction.Copy, argReg, source);
+                Operand offset = new Operand(index * 8);
 
-                    node.List.AddBefore(node, srcCopyOp);
+                Operation spillOp = new Operation(Instruction.SpillArg, null, offset, source);
 
-                    operation.SetSource(index, argReg);
-                }
+                node.List.AddBefore(node, spillOp);
 
-                //The remaining arguments (those that are not passed on registers)
-                //should be passed on the stack, we write them to the stack with "SpillArg".
-                for (int index = argsCount; index < operation.SourcesCount; index++)
-                {
-                    Operand source = operation.GetSource(index);
+                operation.SetSource(index + 1, new Operand(OperandKind.Undefined));
+            }
 
-                    Operand offset = new Operand((index - 1) * 8);
-
-                    Operation srcSpillOp = new Operation(Instruction.SpillArg, null, offset, source);
-
-                    node.List.AddBefore(node, srcSpillOp);
-
-                    operation.SetSource(index, new Operand(OperandKind.Undefined));
-                }
-
-                if (dest != null)
+            if (dest != null)
+            {
+                if (retValueAddr == null)
                 {
                     RegisterType regType = dest.Type.ToRegisterType();
 
@@ -451,6 +510,18 @@ namespace ARMeilleure.CodeGen.X86
                     node.List.AddAfter(node, destCopyOp);
 
                     operation.Dest = retReg;
+                }
+                else
+                {
+                    X86MemoryOperand memOp = new X86MemoryOperand(dest.Type, retValueAddr, null, Scale.x1, 0);
+
+                    Operation loadOp = new Operation(Instruction.Load, dest, memOp);
+
+                    AddMemoryOperandUse(memOp, loadOp);
+
+                    node.List.AddAfter(node, loadOp);
+
+                    operation.Dest = null;
                 }
             }
         }

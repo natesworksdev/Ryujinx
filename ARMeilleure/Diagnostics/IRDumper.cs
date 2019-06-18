@@ -1,5 +1,4 @@
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Collections.Generic;
@@ -140,7 +139,7 @@ namespace ARMeilleure.Diagnostics
             }
             else
             {
-                name = operand.ToString().ToLower();
+                name = operand.Kind.ToString().ToLower();
             }
 
             return GetTypeName(operand.Type) + " " + name;

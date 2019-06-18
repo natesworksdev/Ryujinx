@@ -76,22 +76,22 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             NumberLocals(cfg);
 
-            BuildIntervals(cfg, regMasks, out int maxCallArgs);
-
-            //CoalesceCopies(cfg.Blocks);
-
             AllocationContext context = new AllocationContext(regMasks, _intervals.Count);
+
+            BuildIntervals(cfg, context, out int maxCallArgs);
 
             for (int index = 0; index < _intervals.Count; index++)
             {
-                LiveInterval current = GetInterval(index);
+                LiveInterval current = _intervals[index];
+
+                if (current.IsEmpty)
+                {
+                    continue;
+                }
 
                 if (current.IsFixed)
                 {
-                    if (!current.IsEmpty)
-                    {
-                        context.Active.Set(index);
-                    }
+                    context.Active.Set(index);
 
                     continue;
                 }
@@ -125,13 +125,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             //Check active intervals that already ended.
             foreach (int iIndex in context.Active)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
-                if (interval.End < current.Start)
+                if (interval.GetEnd() < current.GetStart())
                 {
                     context.Active.Clear(iIndex);
                 }
-                else if (!interval.Overlaps(current.Start))
+                else if (!interval.Overlaps(current.GetStart()))
                 {
                     context.MoveActiveToInactive(iIndex);
                 }
@@ -140,13 +140,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             //Check inactive intervals that already ended or were reactivated.
             foreach (int iIndex in context.Inactive)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
-                if (interval.End < current.Start)
+                if (interval.GetEnd() < current.GetStart())
                 {
                     context.Inactive.Clear(iIndex);
                 }
-                else if (interval.Overlaps(current.Start))
+                else if (interval.Overlaps(current.GetStart()))
                 {
                     context.MoveInactiveToActive(iIndex);
                 }
@@ -176,7 +176,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             foreach (int iIndex in context.Active)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
                 if (interval.Register.Type == regType)
                 {
@@ -186,7 +186,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             foreach (int iIndex in context.Inactive)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
                 if (interval.Register.Type == regType && interval.Overlaps(current))
                 {
@@ -203,21 +203,21 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             int selectedNextUse = freePositions[selectedReg];
 
-            if (GetSplitPosition(selectedNextUse) <= current.Start)
+            if (GetSplitPosition(selectedNextUse) <= current.GetStart())
             {
                 return false;
             }
-            else if (selectedNextUse < current.End)
+            else if (selectedNextUse < current.GetEnd())
             {
                 int splitPosition = GetSplitPosition(selectedNextUse);
 
-                Debug.Assert(splitPosition > current.Start, "Trying to split interval at the start.");
+                Debug.Assert(splitPosition > current.GetStart(), "Trying to split interval at the start.");
 
                 LiveInterval splitChild = current.Split(splitPosition);
 
                 if (splitChild.UsesCount != 0)
                 {
-                    Debug.Assert(splitChild.Start > current.Start, "Split interval has an invalid start position.");
+                    Debug.Assert(splitChild.GetStart() > current.GetStart(), "Split interval has an invalid start position.");
 
                     InsertInterval(splitChild);
                 }
@@ -277,11 +277,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             foreach (int iIndex in context.Active)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
                 if (!interval.IsFixed && interval.Register.Type == regType)
                 {
-                    int nextUse = interval.NextUseAfter(current.Start);
+                    int nextUse = interval.NextUseAfter(current.GetStart());
 
                     if (nextUse != -1)
                     {
@@ -292,11 +292,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             foreach (int iIndex in context.Inactive)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
                 if (!interval.IsFixed && interval.Register.Type == regType && interval.Overlaps(current))
                 {
-                    int nextUse = interval.NextUseAfter(current.Start);
+                    int nextUse = interval.NextUseAfter(current.GetStart());
 
                     if (nextUse != -1)
                     {
@@ -307,7 +307,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             foreach (int iIndex in context.Active)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
                 if (interval.IsFixed && interval.Register.Type == regType)
                 {
@@ -317,7 +317,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             foreach (int iIndex in context.Inactive)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
                 if (interval.IsFixed && interval.Register.Type == regType && interval.Overlaps(current))
                 {
@@ -335,17 +335,17 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 //All intervals on inactive and active are being used before current,
                 //so spill the current interval.
-                Debug.Assert(currentFirstUse > current.Start, "Trying to spill a interval currently being used.");
+                Debug.Assert(currentFirstUse > current.GetStart(), "Trying to spill a interval currently being used.");
 
                 LiveInterval splitChild = current.Split(GetSplitPosition(currentFirstUse));
 
-                Debug.Assert(splitChild.Start > current.Start, "Split interval has an invalid start position.");
+                Debug.Assert(splitChild.GetStart() > current.GetStart(), "Split interval has an invalid start position.");
 
                 InsertInterval(splitChild);
 
                 Spill(context, current);
             }
-            else if (blockedPositions[selectedReg] > current.End)
+            else if (blockedPositions[selectedReg] > current.GetEnd())
             {
                 //Spill made the register available for the entire current lifetime,
                 //so we only need to split the intervals using the selected register.
@@ -366,7 +366,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (splitChild.UsesCount != 0)
                 {
-                    Debug.Assert(splitChild.Start > current.Start, "Split interval has an invalid start position.");
+                    Debug.Assert(splitChild.GetStart() > current.GetStart(), "Split interval has an invalid start position.");
 
                     InsertInterval(splitChild);
                 }
@@ -416,7 +416,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             foreach (int iIndex in context.Active)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
                 if (!interval.IsFixed && interval.Register == current.Register)
                 {
@@ -428,7 +428,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             foreach (int iIndex in context.Inactive)
             {
-                LiveInterval interval = GetInterval(iIndex);
+                LiveInterval interval = _intervals[iIndex];
 
                 if (!interval.IsFixed && interval.Register == current.Register && interval.Overlaps(current))
                 {
@@ -448,13 +448,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             //we need to split the spilled interval twice, and re-insert it
             //on the "pending" list to ensure that it will get a new register
             //on that use position.
-            int nextUse = interval.NextUseAfter(current.Start);
+            int nextUse = interval.NextUseAfter(current.GetStart());
 
             LiveInterval splitChild;
 
-            if (interval.Start < current.Start)
+            if (interval.GetStart() < current.GetStart())
             {
-                splitChild = interval.Split(GetSplitPosition(current.Start));
+                splitChild = interval.Split(GetSplitPosition(current.GetStart()));
             }
             else
             {
@@ -463,26 +463,26 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             if (nextUse != -1)
             {
-                Debug.Assert(nextUse > current.Start, "Trying to spill a interval currently being used.");
+                Debug.Assert(nextUse > current.GetStart(), "Trying to spill a interval currently being used.");
 
-                if (GetSplitPosition(nextUse) > splitChild.Start)
+                if (GetSplitPosition(nextUse) > splitChild.GetStart())
                 {
                     LiveInterval right = splitChild.Split(GetSplitPosition(nextUse));
 
                     Spill(context, splitChild);
 
-                    Debug.Assert(right.Start > current.Start, "Split interval has an invalid start position.");
+                    Debug.Assert(right.GetStart() > current.GetStart(), "Split interval has an invalid start position.");
 
                     InsertInterval(right);
                 }
                 else
                 {
-                    if (nextUse == splitChild.Start)
+                    if (nextUse == splitChild.GetStart())
                     {
                         splitChild.SetStart(GetSplitPosition(nextUse));
                     }
 
-                    Debug.Assert(splitChild.Start > current.Start, "Split interval has an invalid start position.");
+                    Debug.Assert(splitChild.GetStart() > current.GetStart(), "Split interval has an invalid start position.");
 
                     InsertInterval(splitChild);
                 }
@@ -491,6 +491,22 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 Spill(context, splitChild);
             }
+        }
+
+        private void InsertInterval(LiveInterval interval)
+        {
+            Debug.Assert(interval.UsesCount != 0, "Trying to insert a interval without uses.");
+            Debug.Assert(!interval.IsEmpty,       "Trying to insert a empty interval.");
+            Debug.Assert(!interval.IsSpilled,     "Trying to insert a spilled interval.");
+
+            int insertIndex = _intervals.BinarySearch(interval);
+
+            if (insertIndex < 0)
+            {
+                insertIndex = ~insertIndex;
+            }
+
+            _intervals.Insert(insertIndex, interval);
         }
 
         private void Spill(AllocationContext context, LiveInterval interval)
@@ -503,7 +519,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             //This prevents stack-to-stack copies being necessary for a split interval.
             if (!interval.TrySpillWithSiblingOffset())
             {
-                interval.SpillOffset = context.StackAlloc.Allocate(interval.Local.Type);
+                interval.Spill(context.StackAlloc.Allocate(interval.Local.Type));
             }
         }
 
@@ -529,11 +545,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 foreach (LiveInterval splitChild in interval.SplitChilds())
                 {
-                    int splitPosition = splitChild.Start;
+                    int splitPosition = splitChild.GetStart();
 
                     int alignedSplitPosition = GetAlignedSplitPosition(splitPosition);
 
-                    if (!_blockEdges.Contains(alignedSplitPosition) && previous.End == splitPosition)
+                    if (!_blockEdges.Contains(alignedSplitPosition) && previous.GetEnd() == splitPosition)
                     {
                         GetCopyResolver(splitPosition).AddSplit(previous, splitChild);
                     }
@@ -659,53 +675,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        private void InsertInterval(LiveInterval interval)
-        {
-            Debug.Assert(interval.UsesCount != 0, "Trying to insert a interval without uses.");
-            Debug.Assert(!interval.IsEmpty,       "Trying to insert a empty interval.");
-            Debug.Assert(!interval.IsSpilled,     "Trying to insert a spilled interval.");
-
-            int insertIndex = 0;
-
-            int left  = RegistersCount;
-            int right = _intervals.Count - 1;
-
-            while (left <= right)
-            {
-                int size = right - left;
-
-                int middle = left + (size >> 1);
-
-                LiveInterval current = _intervals[middle];
-
-                insertIndex = middle;
-
-                if (interval.Start == current.Start)
-                {
-                    break;
-                }
-
-                if (interval.Start < current.Start)
-                {
-                    right = middle - 1;
-                }
-                else
-                {
-                    left = middle + 1;
-                }
-            }
-
-            //If we have multiple intervals with the same start position, then the new one should
-            //always be inserted after all the existing interval with the same position, in order
-            //to ensure they will be processed (it works like a queue in this case).
-            while (insertIndex < _intervals.Count && _intervals[insertIndex].Start <= interval.Start)
-            {
-                insertIndex++;
-            }
-
-            _intervals.Insert(insertIndex, interval);
-        }
-
         private void ReplaceLocalWithRegister(LiveInterval current)
         {
             Operand register = GetRegister(current);
@@ -813,7 +782,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             _parentIntervals = _intervals.ToArray();
         }
 
-        private void BuildIntervals(ControlFlowGraph cfg, RegisterMasks regMasks, out int maxCallArgs)
+        private void BuildIntervals(ControlFlowGraph cfg, AllocationContext context, out int maxCallArgs)
         {
             maxCallArgs = 0;
 
@@ -945,14 +914,27 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         interval.AddUsePosition(operationPos);
                     }
 
-                    if (node is Operation operation && operation.Inst == Instruction.Call)
+                    if (node is Operation operation)
                     {
-                        AddIntervalCallerSavedReg(regMasks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
-                        AddIntervalCallerSavedReg(regMasks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);
-
-                        if (maxCallArgs < operation.SourcesCount - 1)
+                        if (operation.Inst == Instruction.Call)
                         {
-                            maxCallArgs = operation.SourcesCount - 1;
+                            AddIntervalCallerSavedReg(context.Masks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
+                            AddIntervalCallerSavedReg(context.Masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);
+
+                            if (maxCallArgs < operation.SourcesCount - 1)
+                            {
+                                maxCallArgs = operation.SourcesCount - 1;
+                            }
+                        }
+                        else if (operation.Inst == Instruction.StackAlloc)
+                        {
+                            Operand offset = operation.GetSource(0);
+
+                            Debug.Assert(offset.Kind == OperandKind.Constant, "StackAlloc has non-constant size.");
+
+                            int spillOffset = context.StackAlloc.Allocate(offset.AsInt32());
+
+                            operation.SetSource(0, new Operand(spillOffset));
                         }
                     }
                 }
@@ -996,76 +978,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private static int GetRegisterId(Register register)
         {
             return (register.Index << 1) | (register.Type == RegisterType.Vector ? 1 : 0);
-        }
-
-        private void CoalesceCopies(BasicBlock[] blocks)
-        {
-            foreach (BasicBlock block in blocks)
-            {
-                for (LinkedListNode<Node> node = block.Operations.First; node != null;)
-                {
-                    LinkedListNode<Node> nextNode = node.Next;
-
-                    Node operation = node.Value;
-
-                    if (!IsCopyOp(operation))
-                    {
-                        node = nextNode;
-
-                        continue;
-                    }
-
-                    Operand dest   = operation.Dest;
-                    Operand source = operation.GetSource(0);
-
-                    if (TryCoalesce(dest, source))
-                    {
-                        operation.SetSource(0, null);
-                        operation.Dest = null;
-
-                        block.Operations.Remove(node);
-                    }
-
-                    node = nextNode;
-                }
-            }
-        }
-
-        private static bool IsCopyOp(Node node)
-        {
-            return node is Operation operation && operation.Inst == Instruction.Copy;
-        }
-
-        private bool TryCoalesce(Operand x, Operand y)
-        {
-            if (x.Kind != OperandKind.LocalVariable || y.Kind != OperandKind.LocalVariable)
-            {
-                return false;
-            }
-
-            LiveInterval intervalX = GetInterval(x.AsInt32());
-            LiveInterval intervalY = GetInterval(y.AsInt32());
-
-            if (intervalX == intervalY || intervalX.Overlaps(intervalY))
-            {
-                return false;
-            }
-
-            intervalY.Join(intervalX);
-
-            return true;
-        }
-
-        private LiveInterval GetInterval(int index)
-        {
-            LiveInterval interval = _intervals[index];
-
-            while (interval != interval.Representative)
-            {
-                interval = interval.Representative;
-            }
-
-            return interval;
         }
 
         private static IEnumerable<BasicBlock> Successors(BasicBlock block)

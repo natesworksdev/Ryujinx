@@ -17,7 +17,8 @@ namespace ARMeilleure.CodeGen.X86
             None    = 0,
             RegOnly = 1 << 0,
             Reg8    = 1 << 1,
-            Vex     = 1 << 2,
+            NoRexW  = 1 << 2,
+            Vex     = 1 << 3,
 
             PrefixBit  = 16,
             PrefixMask = 3 << PrefixBit,
@@ -72,7 +73,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Andnps,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f55, InstFlags.Vex));
             Add(X86Instruction.Bsr,        new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fbd, InstFlags.None));
             Add(X86Instruction.Bswap,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc8, InstFlags.RegOnly));
-            Add(X86Instruction.Call,       new InstInfo(0x020000ff, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.None));
+            Add(X86Instruction.Call,       new InstInfo(0x020000ff, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.NoRexW));
             Add(X86Instruction.Cmovcc,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f40, InstFlags.None));
             Add(X86Instruction.Cmp,        new InstInfo(0x00000039, 0x07000083, 0x07000081, BadOp,      0x0000003b, InstFlags.None));
             Add(X86Instruction.Cmppd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.Prefix66));
@@ -103,6 +104,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Imul,       new InstInfo(BadOp,      0x0000006b, 0x00000069, BadOp,      0x00000faf, InstFlags.None));
             Add(X86Instruction.Imul128,    new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x050000f7, InstFlags.None));
             Add(X86Instruction.Insertps,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a21, InstFlags.Vex | InstFlags.Prefix66));
+            Add(X86Instruction.Lea,        new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x0000008d, InstFlags.None));
             Add(X86Instruction.Maxpd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex | InstFlags.Prefix66));
             Add(X86Instruction.Maxps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex));
             Add(X86Instruction.Maxsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstFlags.Vex | InstFlags.PrefixF2));
@@ -549,6 +551,11 @@ namespace ARMeilleure.CodeGen.X86
             {
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }
+        }
+
+        public void Lea(Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, X86Instruction.Lea);
         }
 
         public void Maxpd(Operand dest, Operand source, Operand source1)
@@ -1327,7 +1334,7 @@ namespace ARMeilleure.CodeGen.X86
                     }
                     else if (dest != null && IsR64(dest) && info.OpRImm64 != BadOp)
                     {
-                        int rexPrefix = GetRexPrefix(dest, source, rrm: false);
+                        int rexPrefix = GetRexPrefix(dest, source, rexW: true, rrm: false);
 
                         if (rexPrefix != 0)
                         {
@@ -1388,7 +1395,9 @@ namespace ARMeilleure.CodeGen.X86
             Operand   source1 = null,
             bool      rrm     = false)
         {
-            int rexPrefix = GetRexPrefix(dest, source, rrm);
+            bool rexW = (flags & InstFlags.NoRexW) == 0;
+
+            int rexPrefix = GetRexPrefix(dest, source, rexW, rrm);
 
             int modRM = (opCode >> OpModRMBits) << 3;
 
@@ -1462,13 +1471,13 @@ namespace ARMeilleure.CodeGen.X86
                     }
                 }
 
+                if (baseReg.Index >= 8)
+                {
+                    rexPrefix |= 0x40 | (baseReg.Index >> 3);
+                }
+
                 if (needsSibByte)
                 {
-                    if (baseReg.Index >= 8)
-                    {
-                        rexPrefix |= 0x40 | (baseReg.Index >> 3);
-                    }
-
                     sib = (int)baseRegLow;
 
                     if (memOp.Index != null)
@@ -1619,7 +1628,7 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte((byte)(opCode + (regIndex & 0b111)));
         }
 
-        private static int GetRexPrefix(Operand dest, Operand source, bool rrm)
+        private static int GetRexPrefix(Operand dest, Operand source, bool rexW, bool rrm)
         {
             int rexPrefix = 0;
 
@@ -1633,7 +1642,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest != null)
             {
-                if (dest.Type == OperandType.I64)
+                if (dest.Type == OperandType.I64 && rexW)
                 {
                     rexPrefix = 0x48;
                 }
@@ -1646,7 +1655,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (source != null)
             {
-                if (source.Type == OperandType.I64)
+                if (source.Type == OperandType.I64 && rexW)
                 {
                     rexPrefix |= 0x48;
                 }

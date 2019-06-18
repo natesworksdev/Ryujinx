@@ -59,6 +59,30 @@ namespace ARMeilleure.State
             _e1 = (ulong)BitConverter.ToInt64(data, 8);
         }
 
+        public void Insert(int index, uint value)
+        {
+            switch (index)
+            {
+                case 0: _e0 = (_e0 & 0xffffffff00000000) | ((ulong)value << 0);  break;
+                case 1: _e0 = (_e0 & 0x00000000ffffffff) | ((ulong)value << 32); break;
+                case 2: _e1 = (_e1 & 0xffffffff00000000) | ((ulong)value << 0);  break;
+                case 3: _e1 = (_e1 & 0x00000000ffffffff) | ((ulong)value << 32); break;
+
+                default: throw new ArgumentOutOfRangeException(nameof(index));
+            }
+        }
+
+        public void Insert(int index, ulong value)
+        {
+            switch (index)
+            {
+                case 0: _e0 = value; break;
+                case 1: _e1 = value; break;
+
+                default: throw new ArgumentOutOfRangeException(nameof(index));
+            }
+        }
+
         public float AsFloat()
         {
             return GetFloat(0);
@@ -142,6 +166,20 @@ namespace ARMeilleure.State
         public static V128 operator ^(V128 x, V128 y)
         {
             return new V128(x._e0 ^ y._e0, x._e1 ^ y._e1);
+        }
+
+        public static V128 operator <<(V128 x, int shift)
+        {
+            ulong shiftOut = x._e0 >> (64 - shift);
+
+            return new V128(x._e0 << shift, (x._e1 << shift) | shiftOut);
+        }
+
+        public static V128 operator >>(V128 x, int shift)
+        {
+            ulong shiftOut = x._e1 & ((1UL << shift) - 1);
+
+            return new V128((x._e0 >> shift) | (shiftOut << (64 - shift)), x._e1 >> shift);
         }
 
         public static bool operator ==(V128 x, V128 y)

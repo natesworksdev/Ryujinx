@@ -124,7 +124,7 @@ namespace ARMeilleure.Instructions
                     res = n;
                 }
 
-                res = context.AddIntrinsic(Instruction.X86Cvtps2pd, n);
+                res = context.AddIntrinsic(Instruction.X86Cvtps2pd, res);
 
                 context.Copy(GetVec(op.Rd), res);
             }
@@ -146,7 +146,7 @@ namespace ARMeilleure.Instructions
 
                         Operand e = context.Call(info, ne);
 
-                        res = context.VectorInsert(res, e, part + index);
+                        res = context.VectorInsert(res, e, index);
                     }
                     else /* if (sizeF == 1) */
                     {
@@ -154,7 +154,7 @@ namespace ARMeilleure.Instructions
 
                         Operand e = context.ConvertToFP(OperandType.FP64, ne);
 
-                        res = context.VectorInsert(res, e, part + index);
+                        res = context.VectorInsert(res, e, index);
                     }
                 }
 
@@ -298,7 +298,7 @@ namespace ARMeilleure.Instructions
 
         public static void Fcvtzs_Gp_Fixed(EmitterContext context)
         {
-            EmitFcvt_s_Gp(context, (op1) => op1);
+            EmitFcvtzs_Gp_Fixed(context);
         }
 
         public static void Fcvtzs_S(EmitterContext context)
@@ -344,7 +344,7 @@ namespace ARMeilleure.Instructions
 
         public static void Fcvtzu_Gp_Fixed(EmitterContext context)
         {
-            EmitFcvt_u_Gp(context, (op1) => op1);
+            EmitFcvtzu_Gp_Fixed(context);
         }
 
         public static void Fcvtzu_S(EmitterContext context)
@@ -658,8 +658,38 @@ namespace ARMeilleure.Instructions
             Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
 
             Operand res = signed
-                ? EmitScalarFcvts(context, emit(ne), op.FBits)
-                : EmitScalarFcvtu(context, emit(ne), op.FBits);
+                ? EmitScalarFcvts(context, emit(ne), 0)
+                : EmitScalarFcvtu(context, emit(ne), 0);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                res = context.Copy(Local(OperandType.I64), res);
+            }
+
+            SetIntOrZR(context, op.Rd, res);
+        }
+
+        private static void EmitFcvtzs_Gp_Fixed(EmitterContext context)
+        {
+            EmitFcvtz__Gp_Fixed(context, signed: true);
+        }
+
+        private static void EmitFcvtzu_Gp_Fixed(EmitterContext context)
+        {
+            EmitFcvtz__Gp_Fixed(context, signed: false);
+        }
+
+        private static void EmitFcvtz__Gp_Fixed(EmitterContext context, bool signed)
+        {
+            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+
+            OperandType type = op.Size == 0 ? OperandType.FP32 : OperandType.FP64;
+
+            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
+
+            Operand res = signed
+                ? EmitScalarFcvts(context, ne, op.FBits)
+                : EmitScalarFcvtu(context, ne, op.FBits);
 
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {

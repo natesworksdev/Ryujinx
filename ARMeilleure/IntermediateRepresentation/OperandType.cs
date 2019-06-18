@@ -33,5 +33,19 @@ namespace ARMeilleure.IntermediateRepresentation
 
             throw new InvalidOperationException($"Invalid operand type \"{type}\".");
         }
+
+        public static int GetSizeInBytes(this OperandType type)
+        {
+            switch (type)
+            {
+                case OperandType.FP32: return 4;
+                case OperandType.FP64: return 8;
+                case OperandType.I32:  return 4;
+                case OperandType.I64:  return 8;
+                case OperandType.V128: return 16;
+            }
+
+            throw new InvalidOperationException($"Invalid operand type \"{type}\".");
+        }
     }
 }

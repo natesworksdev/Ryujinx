@@ -135,6 +135,11 @@ namespace ARMeilleure.Translation
                     return OperandType.FP64;
             }
 
+            if (type == typeof(V128))
+            {
+                return OperandType.V128;
+            }
+
             throw new ArgumentException($"Invalid type \"{type.Name}\".");
         }
 

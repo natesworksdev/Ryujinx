@@ -987,11 +987,252 @@ namespace ARMeilleure.Instructions
 #endregion
 
 #region "Sha1"
+        public static V128 HashChoose(V128 hash_abcd, uint hash_e, V128 wk)
+        {
+            for (int e = 0; e <= 3; e++)
+            {
+                uint t = ShaChoose(hash_abcd.GetUInt32(1),
+                                   hash_abcd.GetUInt32(2),
+                                   hash_abcd.GetUInt32(3));
 
+                hash_e += Rol(hash_abcd.GetUInt32(0), 5) + t + wk.GetUInt32(e);
+
+                t = Rol(hash_abcd.GetUInt32(1), 30);
+
+                hash_abcd.Insert(1, t);
+
+                Rol32_160(ref hash_e, ref hash_abcd);
+            }
+
+            return hash_abcd;
+        }
+
+        public static uint FixedRotate(uint hash_e)
+        {
+            return hash_e.Rol(30);
+        }
+
+        public static V128 HashMajority(V128 hash_abcd, uint hash_e, V128 wk)
+        {
+            for (int e = 0; e <= 3; e++)
+            {
+                uint t = ShaMajority(hash_abcd.GetUInt32(1),
+                                     hash_abcd.GetUInt32(2),
+                                     hash_abcd.GetUInt32(3));
+
+                hash_e += Rol(hash_abcd.GetUInt32(0), 5) + t + wk.GetUInt32(e);
+
+                t = Rol(hash_abcd.GetUInt32(1), 30);
+
+                hash_abcd.Insert(1, t);
+
+                Rol32_160(ref hash_e, ref hash_abcd);
+            }
+
+            return hash_abcd;
+        }
+
+        public static V128 HashParity(V128 hash_abcd, uint hash_e, V128 wk)
+        {
+            for (int e = 0; e <= 3; e++)
+            {
+                uint t = ShaParity(hash_abcd.GetUInt32(1),
+                                   hash_abcd.GetUInt32(2),
+                                   hash_abcd.GetUInt32(3));
+
+                hash_e += Rol(hash_abcd.GetUInt32(0), 5) + t + wk.GetUInt32(e);
+
+                t = Rol(hash_abcd.GetUInt32(1), 30);
+
+                hash_abcd.Insert(1, t);
+
+                Rol32_160(ref hash_e, ref hash_abcd);
+            }
+
+            return hash_abcd;
+        }
+
+        public static V128 Sha1SchedulePart1(V128 w0_3, V128 w4_7, V128 w8_11)
+        {
+            ulong t2 = w4_7.GetUInt64(0);
+            ulong t1 = w0_3.GetUInt64(1);
+
+            V128 result = new V128(t1, t2);
+
+            return result ^ (w0_3 ^ w8_11);
+        }
+
+        public static V128 Sha1SchedulePart2(V128 tw0_3, V128 w12_15)
+        {
+            V128 t = tw0_3 ^ (w12_15 >> 32);
+
+            uint tE0 = t.GetUInt32(0);
+            uint tE1 = t.GetUInt32(1);
+            uint tE2 = t.GetUInt32(2);
+            uint tE3 = t.GetUInt32(3);
+
+            return new V128(tE0.Rol(1), tE1.Rol(1), tE2.Rol(1), tE3.Rol(1) ^ tE0.Rol(2));
+        }
+
+        private static void Rol32_160(ref uint y, ref V128 x)
+        {
+            uint xE3 = x.GetUInt32(3);
+
+            x <<= 32;
+            x.Insert(0, y);
+
+            y = xE3;
+        }
+
+        private static uint ShaChoose(uint x, uint y, uint z)
+        {
+            return ((y ^ z) & x) ^ z;
+        }
+
+        private static uint ShaMajority(uint x, uint y, uint z)
+        {
+            return (x & y) | ((x | y) & z);
+        }
+
+        private static uint ShaParity(uint x, uint y, uint z)
+        {
+            return x ^ y ^ z;
+        }
+
+        private static uint Rol(this uint value, int count)
+        {
+            return (value << count) | (value >> (32 - count));
+        }
 #endregion
 
 #region "Sha256"
+        public static V128 HashLower(V128 hash_abcd, V128 hash_efgh, V128 wk)
+        {
+            return Sha256Hash(hash_abcd, hash_efgh, wk, part1: true);
+        }
 
+        public static V128 HashUpper(V128 hash_efgh, V128 hash_abcd, V128 wk)
+        {
+            return Sha256Hash(hash_abcd, hash_efgh, wk, part1: false);
+        }
+
+        public static V128 Sha256SchedulePart1(V128 w0_3, V128 w4_7)
+        {
+            V128 result = new V128();
+
+            for (int e = 0; e <= 3; e++)
+            {
+                uint elt = (e <= 2 ? w0_3 : w4_7).GetUInt32(e <= 2 ? e + 1 : 0);
+
+                elt = elt.Ror(7) ^ elt.Ror(18) ^ elt.Lsr(3);
+
+                elt += w0_3.GetUInt32(e);
+
+                result.Insert(e, elt);
+            }
+
+            return result;
+        }
+
+        public static V128 Sha256SchedulePart2(V128 w0_3, V128 w8_11, V128 w12_15)
+        {
+            V128 result = new V128();
+
+            ulong t1 = w12_15.GetUInt64(1);
+
+            for (int e = 0; e <= 1; e++)
+            {
+                uint elt = t1.ULongPart(e);
+
+                elt = elt.Ror(17) ^ elt.Ror(19) ^ elt.Lsr(10);
+
+                elt += w0_3.GetUInt32(e) + w8_11.GetUInt32(e + 1);
+
+                result.Insert(e, elt);
+            }
+
+            t1 = result.GetUInt64(0);
+
+            for (int e = 2; e <= 3; e++)
+            {
+                uint elt = t1.ULongPart(e - 2);
+
+                elt = elt.Ror(17) ^ elt.Ror(19) ^ elt.Lsr(10);
+
+                elt += w0_3.GetUInt32(e) + (e == 2 ? w8_11 : w12_15).GetUInt32(e == 2 ? 3 : 0);
+
+                result.Insert(e, elt);
+            }
+
+            return result;
+        }
+
+        private static V128 Sha256Hash(V128 x, V128 y, V128 w, bool part1)
+        {
+            for (int e = 0; e <= 3; e++)
+            {
+                uint chs = ShaChoose(y.GetUInt32(0),
+                                     y.GetUInt32(1),
+                                     y.GetUInt32(2));
+
+                uint maj = ShaMajority(x.GetUInt32(0),
+                                       x.GetUInt32(1),
+                                       x.GetUInt32(2));
+
+                uint t1 = y.GetUInt32(3) + ShaHashSigma1(y.GetUInt32(0)) + chs + w.GetUInt32(e);
+
+                uint t2 = t1 + x.GetUInt32(3);
+
+                x.Insert(3, t2);
+
+                t2 = t1 + ShaHashSigma0(x.GetUInt32(0)) + maj;
+
+                y.Insert(3, t2);
+
+                Rol32_256(ref y, ref x);
+            }
+
+            return part1 ? x : y;
+        }
+
+        private static void Rol32_256(ref V128 y, ref V128 x)
+        {
+            uint yE3 = y.GetUInt32(3);
+            uint xE3 = x.GetUInt32(3);
+
+            y <<= 32;
+            x <<= 32;
+
+            y.Insert(0, xE3);
+            x.Insert(0, yE3);
+        }
+
+        private static uint ShaHashSigma0(uint x)
+        {
+            return x.Ror(2) ^ x.Ror(13) ^ x.Ror(22);
+        }
+
+        private static uint ShaHashSigma1(uint x)
+        {
+            return x.Ror(6) ^ x.Ror(11) ^ x.Ror(25);
+        }
+
+        private static uint Ror(this uint value, int count)
+        {
+            return (value >> count) | (value << (32 - count));
+        }
+
+        private static uint Lsr(this uint value, int count)
+        {
+            return value >> count;
+        }
+
+        private static uint ULongPart(this ulong value, int part)
+        {
+            return part == 0
+                ? (uint)(value & 0xFFFFFFFFUL)
+                : (uint)(value >> 32);
+        }
 #endregion
 
 #region "Reverse"

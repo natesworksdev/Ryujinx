@@ -51,6 +51,7 @@ namespace ARMeilleure.IntermediateRepresentation
         SignExtend32,
         Spill,
         SpillArg,
+        StackAlloc,
         Store,
         Store16,
         Store8,

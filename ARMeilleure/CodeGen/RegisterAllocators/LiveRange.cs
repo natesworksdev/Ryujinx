@@ -1,6 +1,8 @@
+using System;
+
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    struct LiveRange
+    struct LiveRange : IComparable<LiveRange>
     {
         public int Start { get; }
         public int End   { get; }
@@ -9,6 +11,16 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Start = start;
             End   = end;
+        }
+
+        public int CompareTo(LiveRange other)
+        {
+            if (Start < other.End && other.Start < End)
+            {
+                return 0;
+            }
+
+            return Start.CompareTo(other.Start);
         }
 
         public override string ToString()

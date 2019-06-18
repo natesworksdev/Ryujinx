@@ -66,6 +66,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.SignExtend8,             GenerateSignExtend8);
             Add(Instruction.Spill,                   GenerateSpill);
             Add(Instruction.SpillArg,                GenerateSpillArg);
+            Add(Instruction.StackAlloc,              GenerateStackAlloc);
             Add(Instruction.Store,                   GenerateStore);
             Add(Instruction.Store16,                 GenerateStore16);
             Add(Instruction.Store8,                  GenerateStore8);
@@ -225,7 +226,7 @@ namespace ARMeilleure.CodeGen.X86
 
             PreAllocator.RunPass(cfg, memory);
 
-            Logger.EndPass(PassName.PreAllocation);
+            Logger.EndPass(PassName.PreAllocation, cfg);
 
             Logger.StartPass(PassName.RegisterAllocation);
 
@@ -596,7 +597,17 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateLoad(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Mov(operation.Dest, operation.GetSource(0));
+            Operand value   = operation.Dest;
+            Operand address = operation.GetSource(0);
+
+            if (value.GetRegister().Type == RegisterType.Integer)
+            {
+                context.Assembler.Mov(value, address);
+            }
+            else
+            {
+                context.Assembler.Movdqu(value, address);
+            }
         }
 
         private static void GenerateLoadFromContext(CodeGenContext context, Operation operation)
@@ -746,41 +757,41 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateSpill(CodeGenContext context, Operation operation)
         {
-            Operand offset = operation.GetSource(0);
-            Operand source = operation.GetSource(1);
-
-            if (offset.Kind != OperandKind.Constant)
-            {
-                throw new InvalidOperationException("Spill has non-constant stack offset.");
-            }
-
-            int offs = offset.AsInt32() + context.CallArgsRegionSize;
-
-            X86MemoryOperand memOp = new X86MemoryOperand(source.Type, Register(X86Register.Rsp), null, Scale.x1, offs);
-
-            context.Assembler.Mov(memOp, source);
+            GenerateSpill(context, operation, context.CallArgsRegionSize);
         }
 
         private static void GenerateSpillArg(CodeGenContext context, Operation operation)
         {
+            GenerateSpill(context, operation, 0);
+        }
+
+        private static void GenerateStackAlloc(CodeGenContext context, Operation operation)
+        {
+            Operand dest   = operation.Dest;
             Operand offset = operation.GetSource(0);
-            Operand source = operation.GetSource(1);
 
-            if (offset.Kind != OperandKind.Constant)
-            {
-                throw new InvalidOperationException("Spill has non-constant stack offset.");
-            }
+            Debug.Assert(offset.Kind == OperandKind.Constant, "StackAlloc has non-constant stack offset.");
 
-            int offs = offset.AsInt32();
+            int offs = offset.AsInt32() + context.CallArgsRegionSize;
 
-            X86MemoryOperand memOp = new X86MemoryOperand(source.Type, Register(X86Register.Rsp), null, Scale.x1, offs);
+            X86MemoryOperand memOp = new X86MemoryOperand(OperandType.I64, Register(X86Register.Rsp), null, Scale.x1, offs);
 
-            context.Assembler.Mov(memOp, source);
+            context.Assembler.Lea(dest, memOp);
         }
 
         private static void GenerateStore(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Mov(operation.GetSource(0), operation.GetSource(1));
+            Operand address = operation.GetSource(0);
+            Operand value   = operation.GetSource(1);
+
+            if (value.GetRegister().Type == RegisterType.Integer)
+            {
+                context.Assembler.Mov(address, value);
+            }
+            else
+            {
+                context.Assembler.Movdqu(address, value);
+            }
         }
 
         private static void GenerateStore16(CodeGenContext context, Operation operation)
@@ -1684,6 +1695,27 @@ namespace ARMeilleure.CodeGen.X86
         {
             context.Assembler.Cmp(operation.GetSource(0), operation.GetSource(1));
             context.Assembler.Setcc(operation.Dest, condition);
+        }
+
+        private static void GenerateSpill(CodeGenContext context, Operation operation, int baseOffset)
+        {
+            Operand offset = operation.GetSource(0);
+            Operand source = operation.GetSource(1);
+
+            Debug.Assert(offset.Kind == OperandKind.Constant, "Spill has non-constant stack offset.");
+
+            int offs = offset.AsInt32() + baseOffset;
+
+            X86MemoryOperand memOp = new X86MemoryOperand(source.Type, Register(X86Register.Rsp), null, Scale.x1, offs);
+
+            if (source.GetRegister().Type == RegisterType.Integer)
+            {
+                context.Assembler.Mov(memOp, source);
+            }
+            else
+            {
+                context.Assembler.Movdqu(memOp, source);
+            }
         }
 
         private static void ValidateDestSrc1(Operation operation)

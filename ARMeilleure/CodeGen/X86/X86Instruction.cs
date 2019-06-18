@@ -43,6 +43,7 @@ namespace ARMeilleure.CodeGen.X86
         Imul,
         Imul128,
         Insertps,
+        Lea,
         Maxpd,
         Maxps,
         Maxsd,
