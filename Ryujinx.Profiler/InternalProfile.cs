@@ -92,9 +92,9 @@ namespace Ryujinx.Profiler
         {
             int count = 0;
 
-            while (_timerQueue.TryDequeue(out var item))
+            while (_timerQueue.TryDequeue(out TimerQueueValue item))
             {
-                if (!Timers.TryGetValue(item.Config, out var value))
+                if (!Timers.TryGetValue(item.Config, out TimingInfo value))
                 {
                     value = new TimingInfo();
                     Timers.Add(item.Config, value);

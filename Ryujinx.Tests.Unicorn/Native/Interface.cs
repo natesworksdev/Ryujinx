@@ -15,7 +15,7 @@ namespace Ryujinx.Tests.Unicorn.Native
 
         public static void MarshalArrayOf<T>(IntPtr input, int length, out T[] output)
         {
-            var size = Marshal.SizeOf(typeof(T));
+            int size = Marshal.SizeOf(typeof(T));
             output = new T[length];
 
             for (int i = 0; i < length; i++)

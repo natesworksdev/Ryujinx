@@ -55,7 +55,7 @@ namespace Ryujinx.Profiler
                     return default(T);
                 }
 
-                var enumName = formatterResolver.GetFormatterWithVerify<string>()
+                string enumName = formatterResolver.GetFormatterWithVerify<string>()
                     .Deserialize(ref reader, formatterResolver);
 
                 if (Enum.TryParse<T>(enumName, out T result))

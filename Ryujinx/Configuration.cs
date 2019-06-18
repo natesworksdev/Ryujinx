@@ -274,8 +274,8 @@ namespace Ryujinx
                     return default(T);
                 }
 
-                var enumName = formatterResolver.GetFormatterWithVerify<string>()
-                                                .Deserialize(ref reader, formatterResolver);
+                string enumName = formatterResolver.GetFormatterWithVerify<string>()
+                                                   .Deserialize(ref reader, formatterResolver);
 
                 if(Enum.TryParse<T>(enumName, out T result))
                 {

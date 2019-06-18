@@ -206,7 +206,7 @@ namespace Ryujinx.Audio
                 return defaultAudioDevice;
             }
 
-            for(var i = 0; i < audioContext.BackendCount; i++)
+            for(int i = 0; i < audioContext.BackendCount; i++)
             {
                 SoundIODevice audioDevice = audioContext.GetOutputDevice(i);
 

@@ -66,7 +66,7 @@ namespace Ryujinx.Profiler.UI.SharpFontHelpers
             // Update raw data for each character
             for (int i = 0; i < 94; i++)
             {
-                var surface = RenderSurface((char)(i + 33), font, out var xBearing, out var yBearing, out var advance);
+                var surface = RenderSurface((char)(i + 33), font, out float xBearing, out float yBearing, out float advance);
 
                 characters[i] = UpdateTexture(surface, ref rawCharacterSheet, ref x, ref y, ref lineOffset);
                 characters[i].BearingX = xBearing;
