@@ -71,7 +71,7 @@ namespace ARMeilleure.CodeGen.X86
         private long _jNearPosition;
         private int  _jNearLength;
 
-        public CodeGenContext(Stream stream, AllocationResult allocResult, int blocksCount)
+        public CodeGenContext(Stream stream, AllocationResult allocResult, int maxCallArgs, int blocksCount)
         {
             _stream = stream;
 
@@ -79,7 +79,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Assembler = new Assembler(stream);
 
-            CallArgsRegionSize = GetCallArgsRegionSize(allocResult, out int vecCalleeSaveSize);
+            CallArgsRegionSize = GetCallArgsRegionSize(allocResult, maxCallArgs, out int vecCalleeSaveSize);
 
             VecCalleeSaveSize = vecCalleeSaveSize;
 
@@ -88,7 +88,7 @@ namespace ARMeilleure.CodeGen.X86
             _jumps = new List<Jump>();
         }
 
-        private int GetCallArgsRegionSize(AllocationResult allocResult, out int vecCalleeSaveSize)
+        private int GetCallArgsRegionSize(AllocationResult allocResult, int maxCallArgs, out int vecCalleeSaveSize)
         {
             //We need to add 8 bytes to the total size, as the call to this
             //function already pushed 8 bytes (the return address).
@@ -101,7 +101,7 @@ namespace ARMeilleure.CodeGen.X86
 
             int calleeSaveRegionSize = BitUtils.CountBits(intMask) * 8 + vecCalleeSaveSize + 8;
 
-            int argsCount = allocResult.MaxCallArgs;
+            int argsCount = maxCallArgs;
 
             //The ABI mandates that the space for at least 4 arguments
             //is reserved on the stack (this is called shadow space).

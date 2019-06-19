@@ -10,8 +10,10 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class PreAllocator
     {
-        public static void RunPass(ControlFlowGraph cfg, MemoryManager memory)
+        public static void RunPass(ControlFlowGraph cfg, MemoryManager memory, out int maxCallArgs)
         {
+            maxCallArgs = 0;
+
             foreach (BasicBlock block in cfg.Blocks)
             {
                 LinkedListNode<Node> nextNode;
@@ -53,6 +55,24 @@ namespace ARMeilleure.CodeGen.X86
                     if (inst == Instruction.Negate && !operation.GetSource(0).Type.IsInteger())
                     {
                         ReplaceNegateWithXor(node, operation);
+                    }
+
+                    //Get the maximum number of arguments used on a call. On windows,
+                    //when a struct is returned from the call, we also need to pass
+                    //the pointer where the struct should be written on the first argument.
+                    if (inst == Instruction.Call)
+                    {
+                        int argsCount = operation.SourcesCount - 1;
+
+                        if (operation.Dest != null && operation.Dest.Type == OperandType.V128)
+                        {
+                            argsCount++;
+                        }
+
+                        if (maxCallArgs < argsCount)
+                        {
+                            maxCallArgs = argsCount;
+                        }
                     }
 
                     HandleFixedRegisterCopy(node, operation);
@@ -597,6 +617,8 @@ namespace ARMeilleure.CodeGen.X86
             {
                 case Instruction.Copy:
                 case Instruction.LoadFromContext:
+                case Instruction.Spill:
+                case Instruction.SpillArg:
                 case Instruction.StoreToContext:
                     return true;
             }

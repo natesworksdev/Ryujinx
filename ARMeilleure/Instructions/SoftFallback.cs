@@ -882,7 +882,7 @@ namespace ARMeilleure.Instructions
             byte[] res   = new byte[16];
             byte[] table = new byte[tb.Length * 16];
 
-            for (byte index  = 0; index  < tb.Length; index++)
+            for (byte index = 0; index < tb.Length; index++)
             {
                 Buffer.BlockCopy(tb[index].ToArray(), 0, table, index * 16, 16);
             }
@@ -891,11 +891,11 @@ namespace ARMeilleure.Instructions
 
             for (byte index = 0; index < bytes; index++)
             {
-                byte tblIdx = v[index];
+                byte tblIndex = v[index];
 
-                if (tblIdx < table.Length)
+                if (tblIndex < table.Length)
                 {
-                    res[index] = table[tblIdx];
+                    res[index] = table[tblIndex];
                 }
             }
 

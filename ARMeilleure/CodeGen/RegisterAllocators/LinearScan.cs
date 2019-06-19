@@ -77,7 +77,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             AllocationContext context = new AllocationContext(regMasks, _intervals.Count);
 
-            BuildIntervals(cfg, context, out int maxCallArgs);
+            BuildIntervals(cfg, context);
 
             for (int index = 0; index < _intervals.Count; index++)
             {
@@ -115,8 +115,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return new AllocationResult(
                 context.IntUsedRegisters,
                 context.VecUsedRegisters,
-                context.StackAlloc.TotalSize,
-                maxCallArgs);
+                context.StackAlloc.TotalSize);
         }
 
         private void AllocateInterval(AllocationContext context, LiveInterval current, int cIndex)
@@ -774,10 +773,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             _parentIntervals = _intervals.ToArray();
         }
 
-        private void BuildIntervals(ControlFlowGraph cfg, AllocationContext context, out int maxCallArgs)
+        private void BuildIntervals(ControlFlowGraph cfg, AllocationContext context)
         {
-            maxCallArgs = 0;
-
             _blockRanges = new LiveRange[cfg.Blocks.Count];
 
             int mapSize = _intervals.Count;
@@ -912,11 +909,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             AddIntervalCallerSavedReg(context.Masks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
                             AddIntervalCallerSavedReg(context.Masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);
-
-                            if (maxCallArgs < operation.SourcesCount - 1)
-                            {
-                                maxCallArgs = operation.SourcesCount - 1;
-                            }
                         }
                         else if (operation.Inst == Instruction.StackAlloc)
                         {

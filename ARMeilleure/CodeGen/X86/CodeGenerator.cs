@@ -231,7 +231,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Logger.StartPass(PassName.PreAllocation);
 
-            PreAllocator.RunPass(cfg, memory);
+            PreAllocator.RunPass(cfg, memory, out int maxCallArgs);
 
             Logger.EndPass(PassName.PreAllocation, cfg);
 
@@ -253,7 +253,7 @@ namespace ARMeilleure.CodeGen.X86
 
             using (MemoryStream stream = new MemoryStream())
             {
-                CodeGenContext context = new CodeGenContext(stream, allocResult, cfg.Blocks.Count);
+                CodeGenContext context = new CodeGenContext(stream, allocResult, maxCallArgs, cfg.Blocks.Count);
 
                 WritePrologue(context);
 
