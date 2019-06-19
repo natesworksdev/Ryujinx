@@ -706,8 +706,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static float FPCompareEQ(float value1, float value2, ExecutionContext context)
+        public static float FPCompareEQ(float value1, float value2)
         {
+            ExecutionContext context = NativeInterface.GetContext();
+
             value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
             value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
 
@@ -730,8 +732,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static float FPCompareGE(float value1, float value2, ExecutionContext context)
+        public static float FPCompareGE(float value1, float value2)
         {
+            ExecutionContext context = NativeInterface.GetContext();
+
             value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
             value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
 
@@ -751,8 +755,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static float FPCompareGT(float value1, float value2, ExecutionContext context)
+        public static float FPCompareGT(float value1, float value2)
         {
+            ExecutionContext context = NativeInterface.GetContext();
+
             value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
             value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
 
@@ -772,14 +778,14 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static float FPCompareLE(float value1, float value2, ExecutionContext context)
+        public static float FPCompareLE(float value1, float value2)
         {
-            return FPCompareGE(value2, value1, context);
+            return FPCompareGE(value2, value1);
         }
 
-        public static float FPCompareLT(float value1, float value2, ExecutionContext context)
+        public static float FPCompareLT(float value1, float value2)
         {
-            return FPCompareGT(value2, value1, context);
+            return FPCompareGT(value2, value1);
         }
 
         public static float FPDiv(float value1, float value2)
@@ -1769,8 +1775,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static double FPCompareEQ(double value1, double value2, ExecutionContext context)
+        public static double FPCompareEQ(double value1, double value2)
         {
+            ExecutionContext context = NativeInterface.GetContext();
+
             value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
             value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
 
@@ -1793,8 +1801,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static double FPCompareGE(double value1, double value2, ExecutionContext context)
+        public static double FPCompareGE(double value1, double value2)
         {
+            ExecutionContext context = NativeInterface.GetContext();
+
             value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
             value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
 
@@ -1814,8 +1824,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static double FPCompareGT(double value1, double value2, ExecutionContext context)
+        public static double FPCompareGT(double value1, double value2)
         {
+            ExecutionContext context = NativeInterface.GetContext();
+
             value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
             value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
 
@@ -1835,14 +1847,14 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static double FPCompareLE(double value1, double value2, ExecutionContext context)
+        public static double FPCompareLE(double value1, double value2)
         {
-            return FPCompareGE(value2, value1, context);
+            return FPCompareGE(value2, value1);
         }
 
-        public static double FPCompareLT(double value1, double value2, ExecutionContext context)
+        public static double FPCompareLT(double value1, double value2)
         {
-            return FPCompareGT(value2, value1, context);
+            return FPCompareGT(value2, value1);
         }
 
         public static double FPDiv(double value1, double value2)

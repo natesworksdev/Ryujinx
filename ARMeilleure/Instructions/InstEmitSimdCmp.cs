@@ -470,9 +470,9 @@ namespace ARMeilleure.Instructions
 
                     context.BranchIfFalse(lblNaN, isOrdered);
 
-                    Operand cf =  context.AddIntrinsicInt(Instruction.X86Comissge, n, m);
-                    Operand zf =  context.AddIntrinsicInt(Instruction.X86Comisseq, n, m);
-                    Operand nf =  context.AddIntrinsicInt(Instruction.X86Comisslt, n, m);
+                    Operand cf = context.AddIntrinsicInt(Instruction.X86Comissge, n, m);
+                    Operand zf = context.AddIntrinsicInt(Instruction.X86Comisseq, n, m);
+                    Operand nf = context.AddIntrinsicInt(Instruction.X86Comisslt, n, m);
 
                     context.Copy(GetFlag(PState.VFlag), Const(0));
                     context.Copy(GetFlag(PState.CFlag), cf);
@@ -487,9 +487,9 @@ namespace ARMeilleure.Instructions
 
                     context.BranchIfFalse(lblNaN, isOrdered);
 
-                    Operand cf =  context.AddIntrinsicInt(Instruction.X86Comisdge, n, m);
-                    Operand zf =  context.AddIntrinsicInt(Instruction.X86Comisdeq, n, m);
-                    Operand nf =  context.AddIntrinsicInt(Instruction.X86Comisdlt, n, m);
+                    Operand cf = context.AddIntrinsicInt(Instruction.X86Comisdge, n, m);
+                    Operand zf = context.AddIntrinsicInt(Instruction.X86Comisdeq, n, m);
+                    Operand nf = context.AddIntrinsicInt(Instruction.X86Comisdlt, n, m);
 
                     context.Copy(GetFlag(PState.VFlag), Const(0));
                     context.Copy(GetFlag(PState.CFlag), cf);

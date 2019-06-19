@@ -13,7 +13,7 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitMemoryHelper
     {
-        private static bool ForceFallback = false;
+        private static bool ForceFallback = true;
 
         private enum Extension
         {
@@ -87,6 +87,8 @@ namespace ARMeilleure.Instructions
                         case 2: value = context.SignExtend32(value); break;
                     }
                 }
+
+                context.Copy(GetT(context, rt), value);
             }
         }
 

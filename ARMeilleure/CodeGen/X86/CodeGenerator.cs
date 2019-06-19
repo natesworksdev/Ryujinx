@@ -1793,7 +1793,26 @@ namespace ARMeilleure.CodeGen.X86
                 mask &= ~(1 << bit);
             }
 
+            mask = CallingConvention.GetVecCalleeSavedRegisters() & context.AllocResult.VecUsedRegisters;
+
+            int offset = 0;
+
+            while (mask != 0)
+            {
+                int bit = BitUtils.LowestBitSet(mask);
+
+                offset -= 16;
+
+                X86MemoryOperand memOp = new X86MemoryOperand(OperandType.V128, Register(X86Register.Rsp), null, Scale.x1, offset);
+
+                context.Assembler.Movdqu(memOp, Xmm((X86Register)bit));
+
+                mask &= ~(1 << bit);
+            }
+
             int reservedStackSize = context.CallArgsRegionSize + context.AllocResult.SpillRegionSize;
+
+            reservedStackSize += context.VecCalleeSaveSize;
 
             if (reservedStackSize != 0)
             {
@@ -1803,16 +1822,35 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void WriteEpilogue(CodeGenContext context)
         {
-            int mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.IntUsedRegisters;
-
-            mask |= 1 << (int)X86Register.Rbp;
-
             int reservedStackSize = context.CallArgsRegionSize + context.AllocResult.SpillRegionSize;
+
+            reservedStackSize += context.VecCalleeSaveSize;
 
             if (reservedStackSize != 0)
             {
                 context.Assembler.Add(Register(X86Register.Rsp), new Operand(reservedStackSize));
             }
+
+            int mask = CallingConvention.GetVecCalleeSavedRegisters() & context.AllocResult.VecUsedRegisters;
+
+            int offset = 0;
+
+            while (mask != 0)
+            {
+                int bit = BitUtils.LowestBitSet(mask);
+
+                offset -= 16;
+
+                X86MemoryOperand memOp = new X86MemoryOperand(OperandType.V128, Register(X86Register.Rsp), null, Scale.x1, offset);
+
+                context.Assembler.Movdqu(Xmm((X86Register)bit), memOp);
+
+                mask &= ~(1 << bit);
+            }
+
+            mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.IntUsedRegisters;
+
+            mask |= 1 << (int)X86Register.Rbp;
 
             while (mask != 0)
             {
@@ -1848,6 +1886,11 @@ namespace ARMeilleure.CodeGen.X86
         private static Operand Register(X86Register register, OperandType type = OperandType.I64)
         {
             return new Operand((int)register, RegisterType.Integer, type);
+        }
+
+        private static Operand Xmm(X86Register register)
+        {
+            return new Operand((int)register, RegisterType.Vector, OperandType.V128);
         }
     }
 }

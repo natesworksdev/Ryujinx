@@ -27,7 +27,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     Instruction inst = operation.Inst;
 
-                    AddConstantCopy(node, operation);
+                    HandleConstantCopy(node, operation);
 
                     //Comparison instructions uses CMOVcc, which does not zero the
                     //upper bits of the register (since it's R8), we need to ensure it
@@ -55,14 +55,14 @@ namespace ARMeilleure.CodeGen.X86
                         ReplaceNegateWithXor(node, operation);
                     }
 
-                    AddFixedRegisterCopy(node, operation);
+                    HandleFixedRegisterCopy(node, operation);
 
-                    AddSameDestSrc1Copy(node, operation);
+                    HandleSameDestSrc1Copy(node, operation);
                 }
             }
         }
 
-        private static void AddConstantCopy(LinkedListNode<Node> node, Operation operation)
+        private static void HandleConstantCopy(LinkedListNode<Node> node, Operation operation)
         {
             if (operation.SourcesCount == 0 || IsIntrinsic(operation.Inst))
             {
@@ -229,7 +229,7 @@ namespace ARMeilleure.CodeGen.X86
             Delete(node, operation);
         }
 
-        private static void AddFixedRegisterCopy(LinkedListNode<Node> node, Operation operation)
+        private static void HandleFixedRegisterCopy(LinkedListNode<Node> node, Operation operation)
         {
             if (operation.SourcesCount == 0)
             {
@@ -353,7 +353,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation storeOp = new Operation(Instruction.Store, null, stackAddr, source);
 
-                    node.List.AddBefore(node, storeOp);
+                    HandleConstantCopy(node.List.AddBefore(node, storeOp), storeOp);
 
                     operation.SetSource(index, stackAddr);
                 }
@@ -390,7 +390,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation srcCopyOp = new Operation(Instruction.Copy, argReg, source);
 
-                node.List.AddBefore(node, srcCopyOp);
+                HandleConstantCopy(node.List.AddBefore(node, srcCopyOp), srcCopyOp);
 
                 operation.SetSource(index + 1, argReg);
             }
@@ -405,7 +405,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation spillOp = new Operation(Instruction.SpillArg, null, offset, source);
 
-                node.List.AddBefore(node, spillOp);
+                HandleConstantCopy(node.List.AddBefore(node, spillOp), spillOp);
 
                 operation.SetSource(index + 1, new Operand(OperandKind.Undefined));
             }
@@ -444,7 +444,7 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static void AddSameDestSrc1Copy(LinkedListNode<Node> node, Operation operation)
+        private static void HandleSameDestSrc1Copy(LinkedListNode<Node> node, Operation operation)
         {
             if (operation.Dest == null || operation.SourcesCount == 0)
             {

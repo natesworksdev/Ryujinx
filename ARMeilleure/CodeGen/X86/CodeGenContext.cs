@@ -21,6 +21,8 @@ namespace ARMeilleure.CodeGen.X86
 
         public int CallArgsRegionSize { get; }
 
+        public int VecCalleeSaveSize { get; }
+
         private struct Jump
         {
             public bool IsConditional { get; }
@@ -77,22 +79,27 @@ namespace ARMeilleure.CodeGen.X86
 
             Assembler = new Assembler(stream);
 
-            CallArgsRegionSize = GetCallArgsRegionSize(allocResult);
+            CallArgsRegionSize = GetCallArgsRegionSize(allocResult, out int vecCalleeSaveSize);
+
+            VecCalleeSaveSize = vecCalleeSaveSize;
 
             _blockOffsets = new long[blocksCount];
 
             _jumps = new List<Jump>();
         }
 
-        private int GetCallArgsRegionSize(AllocationResult allocResult)
+        private int GetCallArgsRegionSize(AllocationResult allocResult, out int vecCalleeSaveSize)
         {
             //We need to add 8 bytes to the total size, as the call to this
             //function already pushed 8 bytes (the return address).
-            int mask = CallingConvention.GetIntCalleeSavedRegisters() & allocResult.IntUsedRegisters;
+            int intMask = CallingConvention.GetIntCalleeSavedRegisters() & allocResult.IntUsedRegisters;
+            int vecMask = CallingConvention.GetVecCalleeSavedRegisters() & allocResult.VecUsedRegisters;
 
-            mask |= 1 << (int)X86Register.Rbp;
+            vecCalleeSaveSize = BitUtils.CountBits(vecMask) * 16;
 
-            int calleeSaveRegionSize = CountBits(mask) * 8 + 8;
+            intMask |= 1 << (int)X86Register.Rbp;
+
+            int calleeSaveRegionSize = BitUtils.CountBits(intMask) * 8 + vecCalleeSaveSize + 8;
 
             int argsCount = allocResult.MaxCallArgs;
 
@@ -111,20 +118,6 @@ namespace ARMeilleure.CodeGen.X86
             callArgsAndFrameSize = (callArgsAndFrameSize + 0xf) & ~0xf;
 
             return callArgsAndFrameSize - frameSize;
-        }
-
-        private static int CountBits(int mask)
-        {
-            int count = 0;
-
-            while (mask != 0)
-            {
-                mask &= ~(1 << BitUtils.LowestBitSet(mask));
-
-                count++;
-            }
-
-            return count;
         }
 
         public void EnterBlock(BasicBlock block)
