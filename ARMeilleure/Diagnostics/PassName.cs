@@ -4,6 +4,7 @@ namespace ARMeilleure.Diagnostics
     {
         Translation,
         SsaConstruction,
+        Optimization,
         PreAllocation,
         RegisterAllocation
     }

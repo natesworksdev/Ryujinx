@@ -35,15 +35,17 @@ namespace ARMeilleure.Instructions
 
             Operand address = GetAddress(context);
 
-            Operand value = GetT(context, op.Rt);
-
-            if (signed)
+            if (signed && op.Extend64)
             {
-                value = EmitLoadSx(context, value, address, op.Size);
+                EmitLoadSx64(context, address, op.Rt, op.Size);
+            }
+            else if (signed)
+            {
+                EmitLoadSx32(context, address, op.Rt, op.Size);
             }
             else
             {
-                value = EmitLoadZx(context, value, address, op.Size);
+                EmitLoadZx(context, address, op.Rt, op.Size);
             }
 
             EmitWBackIfNeeded(context, address);
@@ -58,15 +60,13 @@ namespace ARMeilleure.Instructions
                 return;
             }
 
-            Operand value = GetT(context, op.Rt);
-
             if (op.Signed)
             {
-                value = EmitLoadSx(context, value, Const(op.Immediate), op.Size);
+                EmitLoadSx64(context, Const(op.Immediate), op.Rt, op.Size);
             }
             else
             {
-                value = EmitLoadZx(context, value, Const(op.Immediate), op.Size);
+                EmitLoadZx(context, Const(op.Immediate), op.Rt, op.Size);
             }
         }
 
@@ -76,15 +76,13 @@ namespace ARMeilleure.Instructions
 
             void EmitLoad(int rt, Operand ldAddr)
             {
-                Operand value = GetT(context, rt);
-
                 if (op.Extend64)
                 {
-                    value = EmitLoadSx(context, value, ldAddr, op.Size);
+                    EmitLoadSx64(context, ldAddr, rt, op.Size);
                 }
                 else
                 {
-                    value = EmitLoadZx(context, value, ldAddr, op.Size);
+                    EmitLoadZx(context, ldAddr, rt, op.Size);
                 }
             }
 
@@ -104,9 +102,7 @@ namespace ARMeilleure.Instructions
 
             Operand address = GetAddress(context);
 
-            Operand t = GetT(context, op.Rt);
-
-            EmitStore(context, address, t, op.Size);
+            EmitStore(context, address, op.Rt, op.Size);
 
             EmitWBackIfNeeded(context, address);
         }
@@ -119,11 +115,8 @@ namespace ARMeilleure.Instructions
 
             Operand address2 = context.Add(address, Const(1L << op.Size));
 
-            Operand t  = GetT(context, op.Rt);
-            Operand t2 = GetT(context, op.Rt2);
-
-            EmitStore(context, address,  t,  op.Size);
-            EmitStore(context, address2, t2, op.Size);
+            EmitStore(context, address,  op.Rt,  op.Size);
+            EmitStore(context, address2, op.Rt2, op.Size);
 
             EmitWBackIfNeeded(context, address);
         }

@@ -1,3 +1,4 @@
+using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.Common;
 using ARMeilleure.Diagnostics;
@@ -222,6 +223,12 @@ namespace ARMeilleure.CodeGen.X86
 
         public static byte[] Generate(ControlFlowGraph cfg, MemoryManager memory)
         {
+            Logger.StartPass(PassName.Optimization);
+
+            Optimizer.RunPass(cfg);
+
+            Logger.EndPass(PassName.Optimization);
+
             Logger.StartPass(PassName.PreAllocation);
 
             PreAllocator.RunPass(cfg, memory);
@@ -598,7 +605,7 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateLoad(CodeGenContext context, Operation operation)
         {
             Operand value   = operation.Dest;
-            Operand address = operation.GetSource(0);
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
 
             if (value.GetRegister().Type == RegisterType.Integer)
             {
@@ -636,27 +643,42 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateLoadSx16(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Movsx16(operation.Dest, operation.GetSource(0));
+            Operand value   = operation.Dest;
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
+
+            context.Assembler.Movsx16(operation.Dest, address);
         }
 
         private static void GenerateLoadSx32(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Movsx32(operation.Dest, operation.GetSource(0));
+            Operand value   = operation.Dest;
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
+
+            context.Assembler.Movsx32(operation.Dest, address);
         }
 
         private static void GenerateLoadSx8(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Movsx8(operation.Dest, operation.GetSource(0));
+            Operand value   = operation.Dest;
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
+
+            context.Assembler.Movsx8(operation.Dest, address);
         }
 
         private static void GenerateLoadZx16(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Movzx16(operation.Dest, operation.GetSource(0));
+            Operand value   = operation.Dest;
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
+
+            context.Assembler.Movzx16(operation.Dest, address);
         }
 
         private static void GenerateLoadZx8(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Movzx8(operation.Dest, operation.GetSource(0));
+            Operand value   = operation.Dest;
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
+
+            context.Assembler.Movzx8(operation.Dest, address);
         }
 
         private static void GenerateMultiply(CodeGenContext context, Operation operation)
@@ -781,8 +803,8 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateStore(CodeGenContext context, Operation operation)
         {
-            Operand address = operation.GetSource(0);
             Operand value   = operation.GetSource(1);
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
 
             if (value.GetRegister().Type == RegisterType.Integer)
             {
@@ -796,12 +818,18 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateStore16(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Mov16(operation.GetSource(0), operation.GetSource(1));
+            Operand value   = operation.GetSource(1);
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
+
+            context.Assembler.Mov16(address, value);
         }
 
         private static void GenerateStore8(CodeGenContext context, Operation operation)
         {
-            context.Assembler.Mov8(operation.GetSource(0), operation.GetSource(1));
+            Operand value   = operation.GetSource(1);
+            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
+
+            context.Assembler.Mov8(address, value);
         }
 
         private static void GenerateStoreToContext(CodeGenContext context, Operation operation)
@@ -1805,6 +1833,11 @@ namespace ARMeilleure.CodeGen.X86
         {
             context.Assembler.Movq(dest, source);
             context.Assembler.Pshufd(dest, dest, 0xfc);
+        }
+
+        private static X86MemoryOperand GetMemoryOperand(Operand operand, OperandType type)
+        {
+            return new X86MemoryOperand(type, operand, null, Scale.x1, 0);
         }
 
         private static Operand Get32BitsRegister(Register reg)

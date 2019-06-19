@@ -1,4 +1,3 @@
-using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
@@ -188,13 +187,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 LiveInterval interval = _intervals[iIndex];
 
-                if (interval.Register.Type == regType && interval.Overlaps(current))
+                if (interval.Register.Type == regType)
                 {
-                    int nextOverlap = interval.NextOverlap(current);
+                    int overlapPosition = interval.GetOverlapPosition(current);
 
-                    if (freePositions[interval.Register.Index] > nextOverlap && nextOverlap != -1)
+                    if (overlapPosition != LiveInterval.NotFound && freePositions[interval.Register.Index] > overlapPosition)
                     {
-                        freePositions[interval.Register.Index] = nextOverlap;
+                        freePositions[interval.Register.Index] = overlapPosition;
                     }
                 }
             }
@@ -319,9 +318,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 LiveInterval interval = _intervals[iIndex];
 
-                if (interval.IsFixed && interval.Register.Type == regType && interval.Overlaps(current))
+                if (interval.IsFixed && interval.Register.Type == regType)
                 {
-                    SetBlockedPosition(interval.Register.Index, interval.NextOverlap(current));
+                    int overlapPosition = interval.GetOverlapPosition(current);
+
+                    if (overlapPosition != LiveInterval.NotFound)
+                    {
+                        SetBlockedPosition(interval.Register.Index, overlapPosition);
+                    }
                 }
             }
 
@@ -691,18 +695,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     {
                         operation.SetSource(srcIndex, register);
                     }
-                    else if (source is X86MemoryOperand memOp)
-                    {
-                        if (memOp.BaseAddress == current.Local)
-                        {
-                            memOp.BaseAddress = register;
-                        }
-
-                        if (memOp.Index == current.Local)
-                        {
-                            memOp.Index = register;
-                        }
-                    }
                 }
 
                 if (operation.Dest == current.Local)
@@ -1014,18 +1006,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 if (IsLocalOrRegister(source.Kind))
                 {
                     yield return source;
-                }
-                else if (source is X86MemoryOperand memOp)
-                {
-                    if (IsLocalOrRegister(memOp.BaseAddress.Kind))
-                    {
-                        yield return memOp.BaseAddress;
-                    }
-
-                    if (memOp.Index != null && IsLocalOrRegister(memOp.Index.Kind))
-                    {
-                        yield return memOp.Index;
-                    }
                 }
             }
         }

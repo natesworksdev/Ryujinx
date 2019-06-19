@@ -7,7 +7,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 {
     static class ConstantFolding
     {
-        public static void Fold(Operation operation)
+        public static void RunPass(Operation operation)
         {
             if (operation.Dest == null || operation.SourcesCount == 0)
             {
@@ -184,7 +184,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                     }
                     else if (type == OperandType.I64)
                     {
-                        EvaluateUnaryI64(operation, (x) => (long)x);
+                        EvaluateUnaryI64(operation, (x) => (int)x);
                     }
                     break;
 

@@ -26,7 +26,7 @@ namespace ARMeilleure.Translation
 
         public void Execute(ExecutionContext context, ulong address)
         {
-            NativeInterface.RegisterThread(context);
+            NativeInterface.RegisterThread(context, _memory);
 
             do
             {
@@ -42,6 +42,8 @@ namespace ARMeilleure.Translation
         private TranslatedFunction Translate(ulong address, ExecutionMode mode)
         {
             EmitterContext context = new EmitterContext();
+
+            context.Memory = _memory;
 
             Block[] blocks = Decoder.DecodeFunction(_memory, address, ExecutionMode.Aarch64);
 

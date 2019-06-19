@@ -8,7 +8,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 {
     class LiveInterval : IComparable<LiveInterval>
     {
-        private const int NotFound = -1;
+        public const int NotFound = -1;
 
         private LiveInterval _parent;
 
@@ -210,6 +210,31 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return false;
         }
 
+        public int GetOverlapPosition(LiveInterval other)
+        {
+            foreach (LiveRange range in other._ranges)
+            {
+                int overlapIndex = _ranges.BinarySearch(range);
+
+                if (overlapIndex >= 0)
+                {
+                    //It's possible that we have multiple overlaps within a single interval,
+                    //in this case, we pick the one with the lowest start position, since
+                    //we return the first overlap position.
+                    while (overlapIndex > 0 && _ranges[overlapIndex - 1].End > range.Start)
+                    {
+                        overlapIndex--;
+                    }
+
+                    LiveRange overlappingRange = _ranges[overlapIndex];
+
+                    return overlappingRange.Start;
+                }
+            }
+
+            return NotFound;
+        }
+
         public IEnumerable<LiveInterval> SplitChilds()
         {
             return _childs.Values;
@@ -237,30 +262,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 if (usePosition >= position)
                 {
                     return usePosition;
-                }
-            }
-
-            return NotFound;
-        }
-
-        public int NextOverlap(LiveInterval other)
-        {
-            foreach (LiveRange range in other._ranges)
-            {
-                int overlapIndex = _ranges.BinarySearch(range);
-
-                if (overlapIndex >= 0)
-                {
-                    LiveRange overlappingRange = _ranges[overlapIndex];
-
-                    if (range.Start > overlappingRange.Start)
-                    {
-                        return Math.Min(range.End, overlappingRange.End);
-                    }
-                    else
-                    {
-                        return overlappingRange.Start;
-                    }
                 }
             }
 

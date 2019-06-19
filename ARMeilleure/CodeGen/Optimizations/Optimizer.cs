@@ -7,7 +7,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 {
     static class Optimizer
     {
-        public static void Optimize(ControlFlowGraph cfg)
+        public static void RunPass(ControlFlowGraph cfg)
         {
             bool modified;
 
@@ -25,7 +25,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                         bool isUnused = IsUnused(node.Value);
 
-                        if (!(node.Value is Operation operation) || (isUnused && !IsMemoryStore(operation.Inst)))
+                        if (!(node.Value is Operation operation) || isUnused)
                         {
                             if (isUnused)
                             {
@@ -39,9 +39,9 @@ namespace ARMeilleure.CodeGen.Optimizations
                             continue;
                         }
 
-                        ConstantFolding.Fold(operation);
+                        ConstantFolding.RunPass(operation);
 
-                        Simplification.Simplify(operation);
+                        Simplification.RunPass(operation);
 
                         if (DestIsLocalVar(operation) && IsPropagableCopy(operation))
                         {
@@ -130,19 +130,6 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
 
             return operation.Dest.Type == operation.GetSource(0).Type;
-        }
-
-        private static bool IsMemoryStore(Instruction inst)
-        {
-            switch (inst)
-            {
-                case Instruction.Store:
-                case Instruction.Store16:
-                case Instruction.Store8:
-                    return true;
-            }
-
-            return false;
         }
     }
 }

@@ -1,4 +1,3 @@
-using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.Translation;
@@ -11,64 +10,8 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class PreAllocator
     {
-        private class IRModContext
-        {
-            private BasicBlock           _block;
-            private LinkedListNode<Node> _node;
-
-            public IRModContext(BasicBlock block, LinkedListNode<Node> node)
-            {
-                _block = block;
-                _node  = node.Previous;
-            }
-
-            public Operand Append(Instruction inst, Operand src1, Operand src2)
-            {
-                Operand destSrc = AppendCopy(src1);
-
-                Operation operation = new Operation(inst, destSrc, destSrc, src2);
-
-                if (src2 is X86MemoryOperand memOp)
-                {
-                    AddMemoryOperandUse(memOp, operation);
-                }
-
-                Append(operation);
-
-                return destSrc;
-            }
-
-            public Operand AppendCopy(Operand src)
-            {
-                Operation operation = new Operation(Instruction.Copy, Local(OperandType.I64), src);
-
-                if (src is X86MemoryOperand memOp)
-                {
-                    AddMemoryOperandUse(memOp, operation);
-                }
-
-                Append(operation);
-
-                return operation.Dest;
-            }
-
-            private void Append(Operation operation)
-            {
-                if (_node != null)
-                {
-                    _node = _block.Operations.AddAfter(_node, operation);
-                }
-                else
-                {
-                    _node = _block.Operations.AddFirst(operation);
-                }
-            }
-        }
-
         public static void RunPass(ControlFlowGraph cfg, MemoryManager memory)
         {
-            Optimizer.Optimize(cfg);
-
             foreach (BasicBlock block in cfg.Blocks)
             {
                 LinkedListNode<Node> nextNode;
@@ -83,23 +26,6 @@ namespace ARMeilleure.CodeGen.X86
                     }
 
                     Instruction inst = operation.Inst;
-
-                    if (inst.IsMemory())
-                    {
-                        IRModContext context = new IRModContext(block, node);
-
-                        Operand va = operation.GetSource(0);
-
-                        OperandType valueType = inst == Instruction.Store   ||
-                                                inst == Instruction.Store16 ||
-                                                inst == Instruction.Store8 ? operation.GetSource(1).Type : operation.Dest.Type;
-
-                        X86MemoryOperand hostAddr = GuestToHostAddress(context, memory, valueType, va);
-
-                        operation.SetSource(0, hostAddr);
-
-                        AddMemoryOperandUse(hostAddr, operation);
-                    }
 
                     AddConstantCopy(node, operation);
 
@@ -233,7 +159,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (source.Type == OperandType.I32)
             {
-                //For 32-bits integer, we can just zero-extend to 64-bits,
+                //For 32-bits integers, we can just zero-extend to 64-bits,
                 //and then use the 64-bits signed conversion instructions.
                 Operand zex = Local(OperandType.I64);
 
@@ -243,7 +169,7 @@ namespace ARMeilleure.CodeGen.X86
             }
             else /* if (source.Type == OperandType.I64) */
             {
-                //For 64-bits integer, we need to do the following:
+                //For 64-bits integers, we need to do the following:
                 //- Ensure that the integer has the most significant bit clear.
                 //-- This can be done by shifting the value right by 1, that is, dividing by 2.
                 //-- The least significant bit is lost in this case though.
@@ -396,7 +322,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand retValueAddr = null;
 
-            if (dest.Type == OperandType.V128)
+            if (dest != null && dest.Type == OperandType.V128)
             {
                 retValueAddr = Local(OperandType.I64);
 
@@ -425,11 +351,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     node.List.AddBefore(node, allocOp);
 
-                    X86MemoryOperand memOp = new X86MemoryOperand(source.Type, stackAddr, null, Scale.x1, 0);
-
-                    Operation storeOp = new Operation(Instruction.Store, null, memOp, source);
-
-                    AddMemoryOperandUse(memOp, storeOp);
+                    Operation storeOp = new Operation(Instruction.Store, null, stackAddr, source);
 
                     node.List.AddBefore(node, storeOp);
 
@@ -479,7 +401,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Operand source = operation.GetSource(index + 1);
 
-                Operand offset = new Operand(index * 8);
+                Operand offset = new Operand((index + retArgs) * 8);
 
                 Operation spillOp = new Operation(Instruction.SpillArg, null, offset, source);
 
@@ -513,11 +435,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else
                 {
-                    X86MemoryOperand memOp = new X86MemoryOperand(dest.Type, retValueAddr, null, Scale.x1, 0);
-
-                    Operation loadOp = new Operation(Instruction.Load, dest, memOp);
-
-                    AddMemoryOperandUse(memOp, loadOp);
+                    Operation loadOp = new Operation(Instruction.Load, dest, retValueAddr);
 
                     node.List.AddAfter(node, loadOp);
 
@@ -609,50 +527,6 @@ namespace ARMeilleure.CodeGen.X86
         private static bool ConstFitsOnS32(long value)
         {
             return value == (int)value;
-        }
-
-        private static X86MemoryOperand GuestToHostAddress(
-            IRModContext  context,
-            MemoryManager memory,
-            OperandType   valueType,
-            Operand       va)
-        {
-            Operand vaPageOffs = context.Append(Instruction.BitwiseAnd, va, Const((ulong)MemoryManager.PageMask));
-
-            Operand ptBaseAddr = context.AppendCopy(Const(memory.PageTable.ToInt64()));
-
-            int bit = MemoryManager.PageBits;
-
-            do
-            {
-                va = context.Append(Instruction.ShiftRightUI, va, Const(bit));
-
-                Operand ptOffs = va;
-
-                bit += memory.PtLevelBits;
-
-                if (bit < memory.AddressSpaceBits)
-                {
-                    ptOffs = context.Append(Instruction.BitwiseAnd, va, Const((ulong)memory.PtLevelMask));
-                }
-
-                X86MemoryOperand memOp = new X86MemoryOperand(OperandType.I64, ptBaseAddr, ptOffs, Scale.x8, 0);
-
-                ptBaseAddr = context.AppendCopy(memOp);
-            }
-            while (bit < memory.AddressSpaceBits);
-
-            return new X86MemoryOperand(valueType, ptBaseAddr, vaPageOffs, Scale.x1, 0);
-        }
-
-        private static void AddMemoryOperandUse(X86MemoryOperand memOp, Operation operation)
-        {
-            memOp.BaseAddress.Uses.AddLast(operation);
-
-            if (memOp.Index != null)
-            {
-                memOp.Index.Uses.AddLast(operation);
-            }
         }
 
         private static void Delete(LinkedListNode<Node> node, Operation operation)
@@ -749,6 +623,7 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.CompareLessUI:
                 case Instruction.CompareNotEqual:
                 case Instruction.Multiply:
+                case Instruction.RotateRight:
                 case Instruction.ShiftLeft:
                 case Instruction.ShiftRightSI:
                 case Instruction.ShiftRightUI:

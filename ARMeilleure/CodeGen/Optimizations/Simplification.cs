@@ -7,7 +7,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 {
     static class Simplification
     {
-        public static void Simplify(Operation operation)
+        public static void RunPass(Operation operation)
         {
             switch (operation.Inst)
             {

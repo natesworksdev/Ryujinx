@@ -228,25 +228,6 @@ namespace ARMeilleure.IntermediateRepresentation
             return false;
         }
 
-        public static bool IsMemory(this Instruction inst)
-        {
-            switch (inst)
-            {
-                case Instruction.Load:
-                case Instruction.LoadSx16:
-                case Instruction.LoadSx32:
-                case Instruction.LoadSx8:
-                case Instruction.LoadZx16:
-                case Instruction.LoadZx8:
-                case Instruction.Store:
-                case Instruction.Store16:
-                case Instruction.Store8:
-                    return true;
-            }
-
-            return false;
-        }
-
         public static bool IsShift(this Instruction inst)
         {
             switch (inst)

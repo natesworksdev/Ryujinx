@@ -1,5 +1,6 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
+using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,8 @@ namespace ARMeilleure.Translation
         public OpCode CurrOp    { get; set; }
 
         public Aarch32Mode Mode { get; }
+
+        public MemoryManager Memory { get; set; }
 
         private Dictionary<ulong, Operand> _labels;
 
