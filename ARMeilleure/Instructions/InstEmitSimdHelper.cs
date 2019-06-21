@@ -1440,8 +1440,7 @@ namespace ARMeilleure.Instructions
         {
             ThrowIfInvalid(index, size);
 
-            Operand res = Local(size == 3 ? OperandType.I64
-                                          : OperandType.I32);
+            Operand res = Local(size == 3 ? OperandType.I64 : OperandType.I32);
 
             switch (size)
             {

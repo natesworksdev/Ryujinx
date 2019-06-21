@@ -160,7 +160,7 @@ namespace ARMeilleure.Instructions
 
                 if (Optimizations.UsePopCnt)
                 {
-                    de = context.AddIntrinsic(Instruction.X86Popcnt, ne);
+                    de = context.AddIntrinsicLong(Instruction.X86Popcnt, ne);
                 }
                 else
                 {

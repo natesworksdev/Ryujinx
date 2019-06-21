@@ -599,7 +599,14 @@ namespace ARMeilleure.CodeGen.X86
 
             X86MemoryOperand memOp = new X86MemoryOperand(dest.Type, Register(X86Register.Rsp), null, Scale.x1, offs);
 
-            context.Assembler.Mov(dest, memOp);
+            if (dest.GetRegister().Type == RegisterType.Integer)
+            {
+                context.Assembler.Mov(dest, memOp);
+            }
+            else
+            {
+                context.Assembler.Movdqu(dest, memOp);
+            }
         }
 
         private static void GenerateLoad(CodeGenContext context, Operation operation)

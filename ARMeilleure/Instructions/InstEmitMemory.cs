@@ -102,7 +102,7 @@ namespace ARMeilleure.Instructions
 
             Operand address = GetAddress(context);
 
-            EmitStore(context, address, op.Rt, op.Size);
+            InstEmitMemoryHelper.EmitStore(context, address, op.Rt, op.Size);
 
             EmitWBackIfNeeded(context, address);
         }
@@ -115,8 +115,8 @@ namespace ARMeilleure.Instructions
 
             Operand address2 = context.Add(address, Const(1L << op.Size));
 
-            EmitStore(context, address,  op.Rt,  op.Size);
-            EmitStore(context, address2, op.Rt2, op.Size);
+            InstEmitMemoryHelper.EmitStore(context, address,  op.Rt,  op.Size);
+            InstEmitMemoryHelper.EmitStore(context, address2, op.Rt2, op.Size);
 
             EmitWBackIfNeeded(context, address);
         }
@@ -129,7 +129,7 @@ namespace ARMeilleure.Instructions
             {
                 case OpCodeMemImm op:
                 {
-                    address = GetIntOrSP(op, op.Rn);
+                    address = context.Copy(GetIntOrSP(op, op.Rn));
 
                     //Pre-indexing.
                     if (!op.PostIdx)

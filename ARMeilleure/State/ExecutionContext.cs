@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace ARMeilleure.State
 {
@@ -8,12 +9,42 @@ namespace ARMeilleure.State
 
         internal IntPtr NativeContextPtr => _nativeContext.BasePtr;
 
+        private static Stopwatch _tickCounter;
+
+        private static double _hostTickFreq;
+
+        public uint CtrEl0   => 0x8444c004;
+        public uint DczidEl0 => 0x00000004;
+
+        public ulong CntfrqEl0 { get; set; }
+        public ulong CntpctEl0
+        {
+            get
+            {
+                double ticks = _tickCounter.ElapsedTicks * _hostTickFreq;
+
+                return (ulong)(ticks * CntfrqEl0);
+            }
+        }
+
+        public long TpidrEl0 { get; set; }
+        public long Tpidr    { get; set; }
+
         public FPCR Fpcr { get; set; }
         public FPSR Fpsr { get; set; }
 
         public event EventHandler<InstExceptionEventArgs> Break;
         public event EventHandler<InstExceptionEventArgs> SupervisorCall;
         public event EventHandler<InstUndefinedEventArgs> Undefined;
+
+        static ExecutionContext()
+        {
+            _hostTickFreq = 1.0 / Stopwatch.Frequency;
+
+            _tickCounter = new Stopwatch();
+
+            _tickCounter.Start();
+        }
 
         public ExecutionContext()
         {

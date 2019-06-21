@@ -50,11 +50,11 @@ namespace ARMeilleure.Instructions
             {
                 if (ForceFallback || !Optimizations.UseSse2 || size < 2)
                 {
-                    EmitReadVectorFallback(context, address, rt, size);
+                    EmitReadVectorFallback(context, address, context.VectorZero(), rt, 0, size);
                 }
                 else
                 {
-                    EmitReadVector(context, address, rt, size);
+                    EmitReadVector(context, address, context.VectorZero(), rt, 0, size);
                 }
             }
             else
@@ -92,6 +92,24 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void EmitLoadSimd(
+            EmitterContext context,
+            Operand address,
+            Operand vector,
+            int rt,
+            int elem,
+            int size)
+        {
+            if (ForceFallback || !Optimizations.UseSse2 || size < 2)
+            {
+                EmitReadVectorFallback(context, address, vector, rt, elem, size);
+            }
+            else
+            {
+                EmitReadVector(context, address, vector, rt, elem, size);
+            }
+        }
+
         public static void EmitStore(EmitterContext context, Operand address, int rt, int size)
         {
             bool isSimd = IsSimd(context);
@@ -105,11 +123,11 @@ namespace ARMeilleure.Instructions
             {
                 if (ForceFallback || !Optimizations.UseSse2 || size < 2)
                 {
-                    EmitWriteVectorFallback(context, address, rt, size);
+                    EmitWriteVectorFallback(context, address, rt, 0, size);
                 }
                 else
                 {
-                    EmitWriteVector(context, address, rt, size);
+                    EmitWriteVector(context, address, rt, 0, size);
                 }
             }
             else
@@ -122,6 +140,23 @@ namespace ARMeilleure.Instructions
                 {
                     EmitWriteInt(context, address, rt, size);
                 }
+            }
+        }
+
+        public static void EmitStoreSimd(
+            EmitterContext context,
+            Operand address,
+            int rt,
+            int elem,
+            int size)
+        {
+            if (ForceFallback || !Optimizations.UseSse2 || size < 2)
+            {
+                EmitWriteVectorFallback(context, address, rt, elem, size);
+            }
+            else
+            {
+                EmitWriteVector(context, address, rt, elem, size);
             }
         }
 
@@ -167,7 +202,13 @@ namespace ARMeilleure.Instructions
             context.MarkLabel(lblEnd);
         }
 
-        private static void EmitReadVector(EmitterContext context, Operand address, int rt, int size)
+        private static void EmitReadVector(
+            EmitterContext context,
+            Operand address,
+            Operand vector,
+            int rt,
+            int elem,
+            int size)
         {
             Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
 
@@ -179,7 +220,7 @@ namespace ARMeilleure.Instructions
 
             context.MarkLabel(lblSlowPath);
 
-            EmitReadVectorFallback(context, address, rt, size);
+            EmitReadVectorFallback(context, address, vector, rt, elem, size);
 
             context.Branch(lblEnd);
 
@@ -250,7 +291,12 @@ namespace ARMeilleure.Instructions
             context.MarkLabel(lblEnd);
         }
 
-        private static void EmitWriteVector(EmitterContext context, Operand address, int rt, int size)
+        private static void EmitWriteVector(
+            EmitterContext context,
+            Operand address,
+            int rt,
+            int elem,
+            int size)
         {
             Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
 
@@ -262,7 +308,7 @@ namespace ARMeilleure.Instructions
 
             context.MarkLabel(lblSlowPath);
 
-            EmitWriteVectorFallback(context, address, rt, size);
+            EmitWriteVectorFallback(context, address, rt, elem, size);
 
             context.Branch(lblEnd);
 
@@ -346,35 +392,46 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
 
-            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
-            {
-                address = context.Copy(Local(OperandType.I64), address);
-            }
-
             context.Copy(GetT(context, rt), context.Call(info, address));
         }
 
-        private static void EmitReadVectorFallback(EmitterContext context, Operand address, int rt, int size)
+        private static void EmitReadVectorFallback(
+            EmitterContext context,
+            Operand address,
+            Operand vector,
+            int rt,
+            int elem,
+            int size)
         {
             string fallbackMethodName = null;
 
             switch (size)
             {
-                case 0: fallbackMethodName = nameof(NativeInterface.ReadVector8);   break;
-                case 1: fallbackMethodName = nameof(NativeInterface.ReadVector16);  break;
-                case 2: fallbackMethodName = nameof(NativeInterface.ReadVector32);  break;
-                case 3: fallbackMethodName = nameof(NativeInterface.ReadVector64);  break;
+                case 0: fallbackMethodName = nameof(NativeInterface.ReadByte);      break;
+                case 1: fallbackMethodName = nameof(NativeInterface.ReadUInt16);    break;
+                case 2: fallbackMethodName = nameof(NativeInterface.ReadUInt32);    break;
+                case 3: fallbackMethodName = nameof(NativeInterface.ReadUInt64);    break;
                 case 4: fallbackMethodName = nameof(NativeInterface.ReadVector128); break;
             }
 
             MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
 
-            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            Operand value = context.Call(info, address);
+
+            if (size < 3)
             {
-                address = context.Copy(Local(OperandType.I64), address);
+                value = context.Copy(Local(OperandType.I32), value);
             }
 
-            context.Copy(GetVec(rt), context.Call(info, address));
+            switch (size)
+            {
+                case 0: value = context.VectorInsert8 (vector, value, elem); break;
+                case 1: value = context.VectorInsert16(vector, value, elem); break;
+                case 2: value = context.VectorInsert  (vector, value, elem); break;
+                case 3: value = context.VectorInsert  (vector, value, elem); break;
+            }
+
+            context.Copy(GetVec(rt), value);
         }
 
         private static void EmitWriteIntFallback(EmitterContext context, Operand address, int rt, int size)
@@ -391,11 +448,6 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
 
-            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
-            {
-                address = context.Copy(Local(OperandType.I64), address);
-            }
-
             Operand value = GetT(context, rt);
 
             if (size < 3)
@@ -406,27 +458,44 @@ namespace ARMeilleure.Instructions
             context.Call(info, address, value);
         }
 
-        private static void EmitWriteVectorFallback(EmitterContext context, Operand address, int rt, int size)
+        private static void EmitWriteVectorFallback(
+            EmitterContext context,
+            Operand address,
+            int rt,
+            int elem,
+            int size)
         {
             string fallbackMethodName = null;
 
             switch (size)
             {
-                case 0: fallbackMethodName = nameof(NativeInterface.WriteVector8);   break;
-                case 1: fallbackMethodName = nameof(NativeInterface.WriteVector16);  break;
-                case 2: fallbackMethodName = nameof(NativeInterface.WriteVector32);  break;
-                case 3: fallbackMethodName = nameof(NativeInterface.WriteVector64);  break;
+                case 0: fallbackMethodName = nameof(NativeInterface.WriteByte);      break;
+                case 1: fallbackMethodName = nameof(NativeInterface.WriteUInt16);    break;
+                case 2: fallbackMethodName = nameof(NativeInterface.WriteUInt32);    break;
+                case 3: fallbackMethodName = nameof(NativeInterface.WriteUInt64);    break;
                 case 4: fallbackMethodName = nameof(NativeInterface.WriteVector128); break;
             }
 
             MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
 
-            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
-            {
-                address = context.Copy(Local(OperandType.I64), address);
-            }
+            Operand value;
 
-            Operand value = GetVec(rt);
+            if (size < 4)
+            {
+                value = Local(size == 3 ? OperandType.I64 : OperandType.I32);
+
+                switch (size)
+                {
+                    case 0: context.VectorExtract8 (GetVec(rt), value, elem); break;
+                    case 1: context.VectorExtract16(GetVec(rt), value, elem); break;
+                    case 2: context.VectorExtract  (GetVec(rt), value, elem); break;
+                    case 3: context.VectorExtract  (GetVec(rt), value, elem); break;
+                }
+            }
+            else
+            {
+                value = GetVec(rt);
+            }
 
             context.Call(info, address, value);
         }

@@ -1,3 +1,4 @@
+using ARMeilleure.State;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -466,6 +467,23 @@ namespace ARMeilleure.Memory
             return Interlocked.CompareExchange(ref *ptr, desired, expected) == expected;
         }
 
+        internal bool AtomicCompareExchangeInt128(
+            long  position,
+            ulong expectedLow,
+            ulong expectedHigh,
+            ulong desiredLow,
+            ulong desiredHigh)
+        {
+            if ((position & 0xf) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
+
+            IntPtr ptr = TranslateWrite(position);
+
+            throw new NotImplementedException();
+        }
+
         public int AtomicIncrementInt32(long position)
         {
             if ((position & 3) != 0)
@@ -558,6 +576,11 @@ namespace ARMeilleure.Memory
                 return (ulong)ReadUInt32(position + 0) << 0 |
                        (ulong)ReadUInt32(position + 4) << 32;
             }
+        }
+
+        public V128 ReadVector128(long position)
+        {
+            return new V128(ReadUInt64(position), ReadUInt64(position + 8));
         }
 
         public byte[] ReadBytes(long position, long size)
@@ -695,6 +718,12 @@ namespace ARMeilleure.Memory
                 WriteUInt32(position + 0, (uint)(value >> 0));
                 WriteUInt32(position + 4, (uint)(value >> 32));
             }
+        }
+
+        public void WriteVector128(long position, V128 value)
+        {
+            WriteUInt64(position + 0, value.GetUInt64(0));
+            WriteUInt64(position + 8, value.GetUInt64(1));
         }
 
         public void WriteBytes(long position, byte[] data)
