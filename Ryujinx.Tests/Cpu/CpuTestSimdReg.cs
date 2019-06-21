@@ -202,7 +202,7 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Opcodes)"
-        private static uint[] _F_Add_Div_Mul_Mulx_Sub_S_S_()
+        private static uint[] _F_Abd_Add_Div_Mul_Mulx_Sub_S_S_()
         {
             return new uint[]
             {
@@ -215,7 +215,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-        private static uint[] _F_Add_Div_Mul_Mulx_Sub_S_D_()
+        private static uint[] _F_Abd_Add_Div_Mul_Mulx_Sub_S_D_()
         {
             return new uint[]
             {
@@ -228,7 +228,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-        private static uint[] _F_Add_Div_Mul_Mulx_Sub_P_V_2S_4S_()
+        private static uint[] _F_Abd_Add_Div_Mul_Mulx_Sub_P_V_2S_4S_()
         {
             return new uint[]
             {
@@ -242,7 +242,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-        private static uint[] _F_Add_Div_Mul_Mulx_Sub_P_V_2D_()
+        private static uint[] _F_Abd_Add_Div_Mul_Mulx_Sub_P_V_2D_()
         {
             return new uint[]
             {
@@ -1311,9 +1311,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Add_Div_Mul_Mulx_Sub_S_S([ValueSource("_F_Add_Div_Mul_Mulx_Sub_S_S_")] uint opcodes,
-                                               [ValueSource("_1S_F_")] ulong a,
-                                               [ValueSource("_1S_F_")] ulong b)
+        public void F_Abd_Add_Div_Mul_Mulx_Sub_S_S([ValueSource("_F_Abd_Add_Div_Mul_Mulx_Sub_S_S_")] uint opcodes,
+                                                   [ValueSource("_1S_F_")] ulong a,
+                                                   [ValueSource("_1S_F_")] ulong b)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE0E1(z, z);
@@ -1331,9 +1331,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Add_Div_Mul_Mulx_Sub_S_D([ValueSource("_F_Add_Div_Mul_Mulx_Sub_S_D_")] uint opcodes,
-                                               [ValueSource("_1D_F_")] ulong a,
-                                               [ValueSource("_1D_F_")] ulong b)
+        public void F_Abd_Add_Div_Mul_Mulx_Sub_S_D([ValueSource("_F_Abd_Add_Div_Mul_Mulx_Sub_S_D_")] uint opcodes,
+                                                   [ValueSource("_1D_F_")] ulong a,
+                                                   [ValueSource("_1D_F_")] ulong b)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE1(z);
@@ -1351,14 +1351,14 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Add_Div_Mul_Mulx_Sub_P_V_2S_4S([ValueSource("_F_Add_Div_Mul_Mulx_Sub_P_V_2S_4S_")] uint opcodes,
-                                                     [Values(0u)]     uint rd,
-                                                     [Values(1u, 0u)] uint rn,
-                                                     [Values(2u, 0u)] uint rm,
-                                                     [ValueSource("_2S_F_")] ulong z,
-                                                     [ValueSource("_2S_F_")] ulong a,
-                                                     [ValueSource("_2S_F_")] ulong b,
-                                                     [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
+        public void F_Abd_Add_Div_Mul_Mulx_Sub_P_V_2S_4S([ValueSource("_F_Abd_Add_Div_Mul_Mulx_Sub_P_V_2S_4S_")] uint opcodes,
+                                                         [Values(0u)]     uint rd,
+                                                         [Values(1u, 0u)] uint rn,
+                                                         [Values(2u, 0u)] uint rm,
+                                                         [ValueSource("_2S_F_")] ulong z,
+                                                         [ValueSource("_2S_F_")] ulong a,
+                                                         [ValueSource("_2S_F_")] ulong b,
+                                                         [Values(0b0u, 0b1u)] uint q) // <2S, 4S>
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);
@@ -1378,13 +1378,13 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Add_Div_Mul_Mulx_Sub_P_V_2D([ValueSource("_F_Add_Div_Mul_Mulx_Sub_P_V_2D_")] uint opcodes,
-                                                  [Values(0u)]     uint rd,
-                                                  [Values(1u, 0u)] uint rn,
-                                                  [Values(2u, 0u)] uint rm,
-                                                  [ValueSource("_1D_F_")] ulong z,
-                                                  [ValueSource("_1D_F_")] ulong a,
-                                                  [ValueSource("_1D_F_")] ulong b)
+        public void F_Abd_Add_Div_Mul_Mulx_Sub_P_V_2D([ValueSource("_F_Abd_Add_Div_Mul_Mulx_Sub_P_V_2D_")] uint opcodes,
+                                                      [Values(0u)]     uint rd,
+                                                      [Values(1u, 0u)] uint rn,
+                                                      [Values(2u, 0u)] uint rm,
+                                                      [ValueSource("_1D_F_")] ulong z,
+                                                      [ValueSource("_1D_F_")] ulong a,
+                                                      [ValueSource("_1D_F_")] ulong b)
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
 
