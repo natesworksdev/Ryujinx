@@ -1,7 +1,11 @@
-﻿using Ryujinx.Common.Logging;
+﻿using LibHac;
+using LibHac.Fs;
+using LibHac.Fs.NcaUtils;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -22,8 +26,6 @@ namespace Ryujinx
         {
             public Gdk.Pixbuf Icon;
             public string     Game;
-            public string     Version;
-            public string     DLC;
             public string     TP;
             public string     LP;
             public string     FileSize;
@@ -37,7 +39,6 @@ namespace Ryujinx
             RyujinxNCAIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNCAIcon.png", 75, 75);
             RyujinxNROIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNROIcon.png", 75, 75);
             RyujinxNSOIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNSOIcon.png", 75, 75);
-            RyujinxROMIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxROMIcon.png", 75, 75);
 
             List<string> Games = new List<string>();
 
@@ -58,62 +59,129 @@ namespace Ryujinx
             ApplicationLibraryData = new List<ApplicationData>();
             foreach (string GamePath in Games)
             {
-                double filesize      = new FileInfo(GamePath).Length * 0.000000000931;
-                ApplicationData data = new ApplicationData()
+                double filesize = new FileInfo(GamePath).Length * 0.000000000931;
+
+                using (FileStream file = new FileStream(GamePath, FileMode.Open, FileAccess.Read))
                 {
-                    Icon     = GetGameIcon(GamePath),
-                    Game     = (Path.GetExtension(GamePath) == ".nro") ? "Application" : "",
-                    Version  = "",
-                    DLC      = (Path.GetExtension(GamePath) == ".nro") ? "N/A" : "",
-                    TP       = "",
-                    LP       = "",
-                    FileSize = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
-                    Path     = GamePath,
-                };
-                ApplicationLibraryData.Add(data);
-            }
-        }
+                    Nca controlNca          = null;
+                    PartitionFileSystem PFS = null;
+                    IFileSystem ControlFs   = null;
+                    string TitleName        = null;
+                    Gdk.Pixbuf GameIcon     = null;
 
-        internal static Gdk.Pixbuf GetGameIcon(string filePath)
-        {
-            using (FileStream Input = File.Open(filePath, FileMode.Open, FileAccess.Read))
-            {
-                BinaryReader Reader = new BinaryReader(Input);
-
-                if ((Path.GetExtension(filePath) == ".nsp") || (Path.GetExtension(filePath) == ".pfs0")) { return RyujinxNSPIcon; }
-
-                else if (Path.GetExtension(filePath) == ".xci") { return RyujinxXCIIcon; }
-
-                else if (Path.GetExtension(filePath) == ".nca") { return RyujinxNCAIcon; }
-
-                else if (Path.GetExtension(filePath) == ".nso") { return RyujinxNSOIcon; }
-
-                else if (Path.GetExtension(filePath) == ".nro")
-                {
-                    Input.Seek(24, SeekOrigin.Begin);
-                    int AssetOffset = Reader.ReadInt32();
-
-                    byte[] Read(long Position, int Size)
+                    if ((Path.GetExtension(GamePath) == ".nsp") || (Path.GetExtension(GamePath) == ".pfs0"))
                     {
-                        Input.Seek(Position, SeekOrigin.Begin);
-                        return Reader.ReadBytes(Size);
+                        PFS = new PartitionFileSystem(file.AsStorage());
                     }
 
-                    if (Encoding.ASCII.GetString(Read(AssetOffset, 4)) == "ASET")
+                    else if (Path.GetExtension(GamePath) == ".xci")
                     {
-                        byte[] IconSectionInfo = Read(AssetOffset + 8, 0x10);
-
-                        long IconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
-                        long IconSize = BitConverter.ToInt64(IconSectionInfo, 8);
-
-                        byte[] IconData = Read(AssetOffset + IconOffset, (int)IconSize);
-
-                        return new Gdk.Pixbuf(IconData, 75, 75);
+                        Xci xci = new Xci(MainMenu.device.System.KeySet, file.AsStorage());
+                        PFS = xci.OpenPartition(XciPartitionType.Secure);
                     }
-                    else { return RyujinxNROIcon; }
+
+                    if (PFS != null)
+                    { 
+                        foreach (DirectoryEntry ticketEntry in PFS.EnumerateEntries("*.tik"))
+                        {
+                            Ticket ticket = new Ticket(PFS.OpenFile(ticketEntry.FullPath, OpenMode.Read).AsStream());
+
+                            if (!MainMenu.device.System.KeySet.TitleKeys.ContainsKey(ticket.RightsId))
+                            {
+                                MainMenu.device.System.KeySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(MainMenu.device.System.KeySet));
+                            }
+                        }
+
+                        foreach (DirectoryEntry fileEntry in PFS.EnumerateEntries("*.nca"))
+                        {
+                            Nca nca = new Nca(MainMenu.device.System.KeySet, PFS.OpenFile(fileEntry.FullPath, OpenMode.Read).AsStorage());
+                            if (nca.Header.ContentType == ContentType.Control)
+                            {
+                                controlNca = nca;
+                            }
+                        }
+
+                        ControlFs = controlNca.OpenFileSystem(NcaSectionType.Data, MainMenu.device.System.FsIntegrityCheckLevel);
+                    }
+
+                    if ((Path.GetExtension(GamePath) == ".nca") || (Path.GetExtension(GamePath) == ".nro") || (Path.GetExtension(GamePath) == ".nso")) { TitleName = Path.GetFileName(GamePath); }
+                    else
+                    {
+                        IFile controlFile = ControlFs.OpenFile("/control.nacp", OpenMode.Read);
+                        Nacp ControlData = new Nacp(controlFile.AsStream());
+
+                        TitleName = ControlData.Descriptions[(int)MainMenu.device.System.State.DesiredTitleLanguage].Title;
+                        if (string.IsNullOrWhiteSpace(TitleName))
+                        {
+                            TitleName = ControlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                        }
+                    }
+
+                    if (Path.GetExtension(GamePath) == ".nca") { GameIcon = RyujinxNCAIcon; }
+
+                    else if ((Path.GetExtension(GamePath) == ".xci") || (Path.GetExtension(GamePath) == ".nsp") || (Path.GetExtension(GamePath) == ".pfs0"))
+                    {
+                        try
+                        {
+                            IFile logo = ControlFs.OpenFile($"/icon_{MainMenu.device.System.State.DesiredTitleLanguage}.dat", OpenMode.Read);
+                            GameIcon = new Gdk.Pixbuf(logo.AsStream(), 75, 75);
+                        }
+                        catch(FileNotFoundException)
+                        {
+                            try
+                            {
+                                IFile logo = ControlFs.OpenFile($"/icon_AmericanEnglish.dat", OpenMode.Read);
+                                GameIcon = new Gdk.Pixbuf(logo.AsStream(), 75, 75);
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                if (Path.GetExtension(GamePath) == ".xci") { GameIcon = RyujinxXCIIcon; }
+                                else { GameIcon = RyujinxNSPIcon; }
+                            }
+                        }
+                    }
+
+                    else if (Path.GetExtension(GamePath) == ".nso") { GameIcon = RyujinxNSOIcon; }
+
+                    else if (Path.GetExtension(GamePath) == ".nro")
+                    {
+                        BinaryReader Reader = new BinaryReader(file);
+
+                        file.Seek(24, SeekOrigin.Begin);
+                        int AssetOffset = Reader.ReadInt32();
+
+                        byte[] Read(long Position, int Size)
+                        {
+                            file.Seek(Position, SeekOrigin.Begin);
+                            return Reader.ReadBytes(Size);
+                        }
+
+                        if (Encoding.ASCII.GetString(Read(AssetOffset, 4)) == "ASET")
+                        {
+                            byte[] IconSectionInfo = Read(AssetOffset + 8, 0x10);
+
+                            long IconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
+                            long IconSize = BitConverter.ToInt64(IconSectionInfo, 8);
+
+                            byte[] IconData = Read(AssetOffset + IconOffset, (int)IconSize);
+
+                            GameIcon = new Gdk.Pixbuf(IconData, 75, 75);
+                        }
+                        else { GameIcon = RyujinxNROIcon; }
+                    }
+
+                    ApplicationData data = new ApplicationData()
+                    {
+                        Icon     = GameIcon,
+                        Game     = TitleName,
+                        TP       = "",
+                        LP       = "",
+                        FileSize = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
+                        Path     = GamePath,
+                    };
+
+                    ApplicationLibraryData.Add(data);
                 }
-
-                else { return RyujinxROMIcon; }
             }
         }
     }

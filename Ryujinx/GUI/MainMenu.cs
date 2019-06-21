@@ -25,7 +25,7 @@ namespace Ryujinx
 
         private static IAalOutput audioOut;
 
-        private static HLE.Switch device { get; set; }
+        internal static HLE.Switch device { get; set; }
 
         private static Application gtkapp { get; set; }
 
@@ -61,16 +61,16 @@ namespace Ryujinx
 
             if (DiscordIntegrationEnabled)
             {
-                DiscordClient = new DiscordRpcClient("568815339807309834");
+                DiscordClient   = new DiscordRpcClient("568815339807309834");
                 DiscordPresence = new RichPresence
                 {
                     Assets = new Assets
                     {
-                        LargeImageKey = "ryujinx",
+                        LargeImageKey  = "ryujinx",
                         LargeImageText = "Ryujinx is an emulator for the Nintendo Switch"
                     },
-                    Details = "Main Menu",
-                    State = "Idling",
+                    Details    = "Main Menu",
+                    State      = "Idling",
                     Timestamps = new Timestamps(DateTime.UtcNow)
                 };
 
@@ -105,15 +105,13 @@ namespace Ryujinx
                 NFC.Sensitive = false;
 
                 GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
-                //GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
-                //GameTable.AppendColumn("Version", new CellRendererText(), "text", 2);
-                //GameTable.AppendColumn("DLC", new CellRendererText(), "text", 3);
-                //GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 4);
-                //GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 5);
-                GameTable.AppendColumn("File Size", new CellRendererText(), "text", 6);
-                GameTable.AppendColumn("Path", new CellRendererText(), "text", 7);
+                GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
+                //GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 2);
+                //GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 3);
+                GameTable.AppendColumn("File Size", new CellRendererText(), "text", 4);
+                GameTable.AppendColumn("Path", new CellRendererText(), "text", 5);
 
-                TableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                TableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = TableStore;
 
                 UpdateGameTable();
@@ -127,13 +125,13 @@ namespace Ryujinx
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                TableStore.AppendValues(AppData.Icon, AppData.Game, AppData.Version, AppData.DLC, AppData.TP, AppData.LP, AppData.FileSize, AppData.Path);
+                TableStore.AppendValues(AppData.Icon, AppData.Game, AppData.TP, AppData.LP, AppData.FileSize, AppData.Path);
             }
         }
 
         public static void ApplyTheme()
         {
-            var settings          = Settings.Default;
+            Settings settings     = Settings.Default;
             settings.XftRgba      = "rgb";
             settings.XftDpi       = 96;
             settings.XftHinting   = 1;
@@ -232,7 +230,7 @@ namespace Ryujinx
         private void Row_Activated(object obj, RowActivatedArgs args)
         {
             TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
-            string path = (string)TableStore.GetValue(treeiter, 7);
+            string path = (string)TableStore.GetValue(treeiter, 5);
 
             LoadApplication(path);
 
@@ -349,7 +347,7 @@ namespace Ryujinx
 
         private void Settings_Pressed(object o, EventArgs args)
         {
-            var SettingsWin = new SwitchSettings(device);
+            SwitchSettings SettingsWin = new SwitchSettings(device);
             gtkapp.Register(GLib.Cancellable.Current);
             gtkapp.AddWindow(SettingsWin);
             SettingsWin.Show();
@@ -375,7 +373,7 @@ namespace Ryujinx
 
         private void About_Pressed(object o, EventArgs args)
         {
-            var AboutWin = new AboutWindow();
+            AboutWindow AboutWin = new AboutWindow();
             gtkapp.Register(GLib.Cancellable.Current);
             gtkapp.AddWindow(AboutWin);
             AboutWin.Show();

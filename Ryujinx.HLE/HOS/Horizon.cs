@@ -94,7 +94,7 @@ namespace Ryujinx.HLE.HOS
 
         internal KEvent VsyncEvent { get; private set; }
 
-        internal Keyset KeySet { get; private set; }
+        public Keyset KeySet { get; private set; }
 
         private bool _hasStarted;
 
@@ -454,8 +454,6 @@ namespace Ryujinx.HLE.HOS
 
                 TitleName = CurrentTitle = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
                 TitleID = metaData.Aci0.TitleId.ToString("x16");
-
-                CurrentTitle = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
 
                 if (string.IsNullOrWhiteSpace(CurrentTitle))
                 {

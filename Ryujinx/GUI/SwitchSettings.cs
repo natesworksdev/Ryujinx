@@ -13,9 +13,9 @@ namespace Ryujinx
 {
     public class SwitchSettings : Window
     {
-        internal static Configuration SwitchConfig { get; private set; }
+        internal static Configuration SwitchConfig { get; set; }
 
-        private HLE.Switch device { get; set; }
+        internal HLE.Switch device { get; set; }
 
         private static ListStore GameDirsBoxStore { get; set; }
 

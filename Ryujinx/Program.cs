@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Logging;
+﻿using Gtk;
+using Ryujinx.Common.Logging;
 using Ryujinx.Profiler;
 using System;
 using System.IO;
@@ -11,9 +12,8 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
-            string parentDir  = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).ToString();
             string systemPATH = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
-            Environment.SetEnvironmentVariable("Path", $"{Path.Combine(parentDir, "bin")};{systemPATH}");
+            Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPATH}");
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
@@ -22,16 +22,16 @@ namespace Ryujinx
 
             ApplicationLibrary.Init();
 
-            Gtk.Application.Init();
+            Application.Init();
 
-            var gtkapp = new Gtk.Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
-            var win = new MainMenu(args, gtkapp);
+            Application gtkapp = new Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
+            MainMenu win       = new MainMenu(args, gtkapp);
 
             gtkapp.Register(GLib.Cancellable.Current);
             gtkapp.AddWindow(win);
             win.Show();
 
-            Gtk.Application.Run();
+            Application.Run();
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)

@@ -9,7 +9,7 @@
     "logging_enable_fs_access_log": false,
     "logging_filtered_classes": [ ],
     "enable_file_log": true,
-    "system_language": "BritishEnglish",
+    "system_language": "AmericanEnglish",
     "docked_mode": false,
     "enable_discord_integration": true,
     "enable_vsync": true,
