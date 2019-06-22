@@ -38,6 +38,7 @@
   <ItemGroup>
     <PackageReference Include="DiscordRichPresence" Version="1.0.108" />
     <PackageReference Include="GtkSharp" Version="3.22.24.37" />
+    <PackageReference Include="GtkSharp.Dependencies" Version="1.0.0" />
     <PackageReference Include="JsonPrettyPrinter" Version="1.0.1.1" />
     <PackageReference Include="OpenTK.NetStandard" Version="1.0.4" />
   </ItemGroup>

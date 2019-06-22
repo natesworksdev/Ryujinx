@@ -77,7 +77,7 @@ namespace Ryujinx
                     else if (Path.GetExtension(GamePath) == ".xci")
                     {
                         Xci xci = new Xci(MainMenu.device.System.KeySet, file.AsStorage());
-                        PFS = xci.OpenPartition(XciPartitionType.Secure);
+                        PFS     = xci.OpenPartition(XciPartitionType.Secure);
                     }
 
                     if (PFS != null)
@@ -108,7 +108,7 @@ namespace Ryujinx
                     else
                     {
                         IFile controlFile = ControlFs.OpenFile("/control.nacp", OpenMode.Read);
-                        Nacp ControlData = new Nacp(controlFile.AsStream());
+                        Nacp ControlData  = new Nacp(controlFile.AsStream());
 
                         TitleName = ControlData.Descriptions[(int)MainMenu.device.System.State.DesiredTitleLanguage].Title;
                         if (string.IsNullOrWhiteSpace(TitleName))
@@ -161,7 +161,7 @@ namespace Ryujinx
                             byte[] IconSectionInfo = Read(AssetOffset + 8, 0x10);
 
                             long IconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
-                            long IconSize = BitConverter.ToInt64(IconSectionInfo, 8);
+                            long IconSize   = BitConverter.ToInt64(IconSectionInfo, 8);
 
                             byte[] IconData = Read(AssetOffset + IconOffset, (int)IconSize);
 
