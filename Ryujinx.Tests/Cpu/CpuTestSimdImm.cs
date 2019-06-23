@@ -47,6 +47,18 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Types)"
+        private static ulong[] _2S_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x7FFFFFFF7FFFFFFFul,
+                                 0x8000000080000000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
+
+        private static ulong[] _4H_()
+        {
+            return new ulong[] { 0x0000000000000000ul, 0x7FFF7FFF7FFF7FFFul,
+                                 0x8000800080008000ul, 0xFFFFFFFFFFFFFFFFul };
+        }
+
         private static IEnumerable<byte> _8BIT_IMM_()
         {
             yield return 0x00;
@@ -79,6 +91,24 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Opcodes)"
+        private static uint[] _Bic_Orr_Vi_16bit_()
+        {
+            return new uint[]
+            {
+                0x2F009400u, // BIC V0.4H, #0
+                0x0F009400u  // ORR V0.4H, #0
+            };
+        }
+
+        private static uint[] _Bic_Orr_Vi_32bit_()
+        {
+            return new uint[]
+            {
+                0x2F001400u, // BIC V0.2S, #0
+                0x0F001400u  // ORR V0.2S, #0
+            };
+        }
+
         private static uint[] _Movi_V_8bit_()
         {
             return new uint[]
@@ -131,8 +161,55 @@ namespace Ryujinx.Tests.Cpu
         }
 #endregion
 
+        private const int RndCnt      = 2;
         private const int RndCntImm8  = 2;
         private const int RndCntImm64 = 2;
+
+        [Test, Pairwise]
+        public void Bic_Orr_Vi_16bit([ValueSource("_Bic_Orr_Vi_16bit_")] uint opcodes,
+                                     [Values(0u)] uint rd,
+                                     [ValueSource("_4H_")] [Random(RndCnt)] ulong z,
+                                     [ValueSource("_8BIT_IMM_")] byte imm8,
+                                     [Values(0b0u, 0b1u)] uint amount, // <0, 8>
+                                     [Values(0b0u, 0b1u)] uint q)      // <4H, 8H>
+        {
+            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint defgh = (imm8 & 0x1Fu);
+
+            opcodes |= ((rd & 31) << 0);
+            opcodes |= (abc << 16) | (defgh << 5);
+            opcodes |= ((amount & 1) << 13);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+
+            SingleOpcode(opcodes, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Bic_Orr_Vi_32bit([ValueSource("_Bic_Orr_Vi_32bit_")] uint opcodes,
+                                     [Values(0u)] uint rd,
+                                     [ValueSource("_2S_")] [Random(RndCnt)] ulong z,
+                                     [ValueSource("_8BIT_IMM_")] byte imm8,
+                                     [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint amount, // <0, 8, 16, 24>
+                                     [Values(0b0u, 0b1u)] uint q)                      // <2S, 4S>
+        {
+            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint defgh = (imm8 & 0x1Fu);
+
+            opcodes |= ((rd & 31) << 0);
+            opcodes |= (abc << 16) | (defgh << 5);
+            opcodes |= ((amount & 3) << 13);
+            opcodes |= ((q & 1) << 30);
+
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+
+            SingleOpcode(opcodes, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
 
         [Test, Pairwise]
         public void Movi_V_8bit([ValueSource("_Movi_V_8bit_")] uint opcodes,
