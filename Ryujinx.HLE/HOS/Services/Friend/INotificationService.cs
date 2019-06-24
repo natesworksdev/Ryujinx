@@ -22,9 +22,9 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                  { 0, GetEvent }, // 2.0.0+
-                //{ 1, Pop      }, // 2.0.0+
-                //{ 2, Clear    }, // 2.0.0+
+                { 0, GetEvent }, // 2.0.0+
+              //{ 1, Pop      }, // 2.0.0+
+              //{ 2, Clear    }, // 2.0.0+
             };
 
             _userId = userId;
