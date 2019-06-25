@@ -202,7 +202,7 @@ namespace Ryujinx.Tests.Cpu
 #endregion
 
 #region "ValueSource (Opcodes)"
-        private static uint[] _F_Abd_Add_Div_Mul_Mulx_Sub_S_S_()
+        private static uint[] _F_Abd_Add_Div_Mul_Mulx_Nmul_Sub_S_S_()
         {
             return new uint[]
             {
@@ -211,11 +211,12 @@ namespace Ryujinx.Tests.Cpu
                 0x1E221820u, // FDIV  S0, S1, S2
                 0x1E220820u, // FMUL  S0, S1, S2
                 0x5E22DC20u, // FMULX S0, S1, S2
+                0x1E228820u, // FNMUL S0, S1, S2
                 0x1E223820u  // FSUB  S0, S1, S2
             };
         }
 
-        private static uint[] _F_Abd_Add_Div_Mul_Mulx_Sub_S_D_()
+        private static uint[] _F_Abd_Add_Div_Mul_Mulx_Nmul_Sub_S_D_()
         {
             return new uint[]
             {
@@ -224,6 +225,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1E621820u, // FDIV  D0, D1, D2
                 0x1E620820u, // FMUL  D0, D1, D2
                 0x5E62DC20u, // FMULX D0, D1, D2
+                0x1E628820u, // FNMUL D0, D1, D2
                 0x1E623820u  // FSUB  D0, D1, D2
             };
         }
@@ -314,21 +316,25 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-        private static uint[] _F_Madd_Msub_S_S_()
+        private static uint[] _F_Madd_Msub_Nmadd_Nmsub_S_S_()
         {
             return new uint[]
             {
-                0x1F020C20u, // FMADD S0, S1, S2, S3
-                0x1F028C20u  // FMSUB S0, S1, S2, S3
+                0x1F020C20u, // FMADD  S0, S1, S2, S3
+                0x1F028C20u, // FMSUB  S0, S1, S2, S3
+                0x1F220C20u, // FNMADD S0, S1, S2, S3
+                0x1F228C20u  // FNMSUB S0, S1, S2, S3
             };
         }
 
-        private static uint[] _F_Madd_Msub_S_D_()
+        private static uint[] _F_Madd_Msub_Nmadd_Nmsub_S_D_()
         {
             return new uint[]
             {
-                0x1F420C20u, // FMADD D0, D1, D2, D3
-                0x1F428C20u  // FMSUB D0, D1, D2, D3
+                0x1F420C20u, // FMADD  D0, D1, D2, D3
+                0x1F428C20u, // FMSUB  D0, D1, D2, D3
+                0x1F620C20u, // FNMADD D0, D1, D2, D3
+                0x1F628C20u  // FNMSUB D0, D1, D2, D3
             };
         }
 
@@ -1330,9 +1336,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Abd_Add_Div_Mul_Mulx_Sub_S_S([ValueSource("_F_Abd_Add_Div_Mul_Mulx_Sub_S_S_")] uint opcodes,
-                                                   [ValueSource("_1S_F_")] ulong a,
-                                                   [ValueSource("_1S_F_")] ulong b)
+        public void F_Abd_Add_Div_Mul_Mulx_Nmul_Sub_S_S([ValueSource("_F_Abd_Add_Div_Mul_Mulx_Nmul_Sub_S_S_")] uint opcodes,
+                                                        [ValueSource("_1S_F_")] ulong a,
+                                                        [ValueSource("_1S_F_")] ulong b)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE0E1(z, z);
@@ -1350,9 +1356,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit]
-        public void F_Abd_Add_Div_Mul_Mulx_Sub_S_D([ValueSource("_F_Abd_Add_Div_Mul_Mulx_Sub_S_D_")] uint opcodes,
-                                                   [ValueSource("_1D_F_")] ulong a,
-                                                   [ValueSource("_1D_F_")] ulong b)
+        public void F_Abd_Add_Div_Mul_Mulx_Nmul_Sub_S_D([ValueSource("_F_Abd_Add_Div_Mul_Mulx_Nmul_Sub_S_D_")] uint opcodes,
+                                                        [ValueSource("_1D_F_")] ulong a,
+                                                        [ValueSource("_1D_F_")] ulong b)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE1(z);
@@ -1546,10 +1552,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit] // Fused.
-        public void F_Madd_Msub_S_S([ValueSource("_F_Madd_Msub_S_S_")] uint opcodes,
-                                    [ValueSource("_1S_F_")] ulong a,
-                                    [ValueSource("_1S_F_")] ulong b,
-                                    [ValueSource("_1S_F_")] ulong c)
+        public void F_Madd_Msub_Nmadd_Nmsub_S_S([ValueSource("_F_Madd_Msub_Nmadd_Nmsub_S_S_")] uint opcodes,
+                                                [ValueSource("_1S_F_")] ulong a,
+                                                [ValueSource("_1S_F_")] ulong b,
+                                                [ValueSource("_1S_F_")] ulong c)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE0E1(z, z);
@@ -1568,10 +1574,10 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise] [Explicit] // Fused.
-        public void F_Madd_Msub_S_D([ValueSource("_F_Madd_Msub_S_D_")] uint opcodes,
-                                    [ValueSource("_1D_F_")] ulong a,
-                                    [ValueSource("_1D_F_")] ulong b,
-                                    [ValueSource("_1D_F_")] ulong c)
+        public void F_Madd_Msub_Nmadd_Nmsub_S_D([ValueSource("_F_Madd_Msub_Nmadd_Nmsub_S_D_")] uint opcodes,
+                                                [ValueSource("_1D_F_")] ulong a,
+                                                [ValueSource("_1D_F_")] ulong b,
+                                                [ValueSource("_1D_F_")] ulong c)
         {
             ulong z = TestContext.CurrentContext.Random.NextULong();
             Vector128<float> v0 = MakeVectorE1(z);
