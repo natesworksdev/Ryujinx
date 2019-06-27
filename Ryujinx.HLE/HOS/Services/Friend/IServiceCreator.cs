@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             if (userId.IsNull)
             {
-                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+                return MakeError(ErrorModule.Friends, FriendError.InvalidArgument);
             }
 
             MakeObject(context, new INotificationService(userId, _permissionLevel));

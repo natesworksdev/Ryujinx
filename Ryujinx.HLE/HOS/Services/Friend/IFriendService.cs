@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             if (uuid.IsNull)
             {
-                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+                return MakeError(ErrorModule.Friends, FriendError.InvalidArgument);
             }
 
             // There are no friends online, so we return 0 because the nn::account::NetworkServiceAccountId array is empty.
@@ -155,7 +155,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             if (uuid.IsNull)
             {
-                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+                return MakeError(ErrorModule.Friends, FriendError.InvalidArgument);
             }
 
             // There are no friends online, so we return 0 because the nn::account::NetworkServiceAccountId array is empty.
@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             if (uuid.IsNull)
             {
-                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+                return MakeError(ErrorModule.Friends, FriendError.InvalidArgument);
             }
 
             if (context.Device.System.State.Account.TryGetUser(uuid, out UserProfile profile))
@@ -202,7 +202,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             if (uuid.IsNull)
             {
-                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+                return MakeError(ErrorModule.Friends, FriendError.InvalidArgument);
             }
 
             if (context.Device.System.State.Account.TryGetUser(uuid, out UserProfile profile))
@@ -230,7 +230,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             if (uuid.IsNull)
             {
-                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+                return MakeError(ErrorModule.Friends, FriendError.InvalidArgument);
             }
 
             int elementCount = bufferContent.Length / Marshal.SizeOf<UserPresence>();
