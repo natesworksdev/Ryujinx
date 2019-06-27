@@ -7,14 +7,18 @@ namespace Ryujinx.HLE.HOS.Services.Friend
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 
+        private FriendServicePermissionLevel PermissionLevel;
+
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        public IDaemonSuspendSessionService()
+        public IDaemonSuspendSessionService(FriendServicePermissionLevel permissionLevel)
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
                 // ...
             };
+
+            PermissionLevel = permissionLevel;
         }
     }
 }

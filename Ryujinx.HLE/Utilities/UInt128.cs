@@ -1,13 +1,15 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.Utilities
 {
+    [StructLayout(LayoutKind.Sequential)]
     public struct UInt128
     {
-        public long High { get; private set; }
         public long Low  { get; private set; }
+        public long High { get; private set; }
 
         public bool IsNull => (Low | High) == 0;
 

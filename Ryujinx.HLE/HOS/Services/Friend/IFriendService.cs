@@ -1,8 +1,12 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices;
+using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Friend
 {
@@ -10,64 +14,108 @@ namespace Ryujinx.HLE.HOS.Services.Friend
     {
         private Dictionary<int, ServiceProcessRequest> _commands;
 
+        private FriendServicePermissionLevel _permissionLevel;
+
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        public IFriendService()
+        public IFriendService(FriendServicePermissionLevel permissionLevel)
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
+                { 10100, GetFriendListIds              },
                 { 10101, GetFriendList                 },
                 { 10600, DeclareOpenOnlinePlaySession  },
                 { 10601, DeclareCloseOnlinePlaySession },
                 { 10610, UpdateUserPresence            }
             };
+
+            _permissionLevel = permissionLevel;
         }
 
-        // nn::friends::GetFriendListGetFriendListIds(nn::account::Uid, int Unknown0, nn::friends::detail::ipc::SizedFriendFilter, ulong Unknown1) -> int CounterIds,  array<nn::account::NetworkServiceAccountId>
-        public long GetFriendList(ServiceCtx context)
+        // nn::friends::GetFriendListIds(int offset, nn::account::Uid userUUID, nn::friends::detail::ipc::SizedFriendFilter friendFilter, ulong pidPlaceHolder, pid) -> int outCount, array<nn::account::NetworkServiceAccountId, 0xa>
+        public long GetFriendListIds(ServiceCtx context)
         {
-            UInt128 uuid = new UInt128(
-                context.RequestData.ReadInt64(),
-                context.RequestData.ReadInt64());
+            int offset = context.RequestData.ReadInt32();
 
-            int unknown0 = context.RequestData.ReadInt32();
+            // Padding
+            context.RequestData.ReadInt32();
 
-            FriendFilter filter = new FriendFilter
+            UInt128 uuid = context.RequestData.ReadStruct<UInt128>();
+
+            FriendFilter filter = context.RequestData.ReadStruct<FriendFilter>();
+
+            // Pid placeholder
+            context.RequestData.ReadInt64();
+
+            if (uuid.IsNull)
             {
-                PresenceStatus           = (PresenceStatusFilter)context.RequestData.ReadInt32(),
-                IsFavoriteOnly           = context.RequestData.ReadBoolean(),
-                IsSameAppPresenceOnly    = context.RequestData.ReadBoolean(),
-                IsSameAppPlayedOnly      = context.RequestData.ReadBoolean(),
-                IsArbitraryAppPlayedOnly = context.RequestData.ReadBoolean(),
-                PresenceGroupId          = context.RequestData.ReadInt64()
-            };
-
-            long unknown1 = context.RequestData.ReadInt64();
+                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+            }
 
             // There are no friends online, so we return 0 because the nn::account::NetworkServiceAccountId array is empty.
             context.ResponseData.Write(0);
 
-            Logger.PrintStub(LogClass.ServiceFriend, new {
+            Logger.PrintStub(LogClass.ServiceFriend, new
+            {
                 UserId = uuid.ToString(),
-                unknown0,
+                offset,
                 filter.PresenceStatus,
                 filter.IsFavoriteOnly,
                 filter.IsSameAppPresenceOnly,
                 filter.IsSameAppPlayedOnly,
                 filter.IsArbitraryAppPlayedOnly,
                 filter.PresenceGroupId,
-                unknown1
             });
 
             return 0;
         }
 
-        // DeclareOpenOnlinePlaySession(nn::account::Uid)
+        // nn::friends::GetFriendList(int offset, nn::account::Uid userUUID, nn::friends::detail::ipc::SizedFriendFilter friendFilter, ulong pidPlaceHolder, pid) -> int outCount, array<nn::account::NetworkServiceAccountId, 0x6>
+        public long GetFriendList(ServiceCtx context)
+        {
+            int offset = context.RequestData.ReadInt32();
+
+            // Padding
+            context.RequestData.ReadInt32();
+
+            UInt128 uuid = context.RequestData.ReadStruct<UInt128>();
+
+            FriendFilter filter = context.RequestData.ReadStruct<FriendFilter>();
+
+            // Pid placeholder
+            context.RequestData.ReadInt64();
+
+            if (uuid.IsNull)
+            {
+                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+            }
+
+            // There are no friends online, so we return 0 because the nn::account::NetworkServiceAccountId array is empty.
+            context.ResponseData.Write(0);
+
+            Logger.PrintStub(LogClass.ServiceFriend, new {
+                UserId = uuid.ToString(),
+                offset,
+                filter.PresenceStatus,
+                filter.IsFavoriteOnly,
+                filter.IsSameAppPresenceOnly,
+                filter.IsSameAppPlayedOnly,
+                filter.IsArbitraryAppPlayedOnly,
+                filter.PresenceGroupId,
+            });
+
+            return 0;
+        }
+
+        // nn::friends::DeclareOpenOnlinePlaySession(nn::account::Uid)
         public long DeclareOpenOnlinePlaySession(ServiceCtx context)
         {
-            UInt128 uuid = new UInt128(
-                context.RequestData.ReadInt64(),
-                context.RequestData.ReadInt64());
+            UInt128 uuid = context.RequestData.ReadStruct<UInt128>();
+
+            if (uuid.IsNull)
+            {
+                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+            }
 
             if (context.Device.System.State.Account.TryGetUser(uuid, out UserProfile profile))
             {
@@ -79,12 +127,15 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             return 0;
         }
 
-        // DeclareCloseOnlinePlaySession(nn::account::Uid)
+        // nn::friends::DeclareCloseOnlinePlaySession(nn::account::Uid)
         public long DeclareCloseOnlinePlaySession(ServiceCtx context)
         {
-            UInt128 uuid = new UInt128(
-                context.RequestData.ReadInt64(),
-                context.RequestData.ReadInt64());
+            UInt128 uuid = context.RequestData.ReadStruct<UInt128>();
+
+            if (uuid.IsNull)
+            {
+                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+            }
 
             if (context.Device.System.State.Account.TryGetUser(uuid, out UserProfile profile))
             {
@@ -96,21 +147,31 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             return 0;
         }
 
-        // UpdateUserPresence(nn::account::Uid, ulong Unknown0) -> buffer<Unknown1, type: 0x19, size: 0xe0>
+        // nn::friends::UpdateUserPresence(nn::account::Uid, u64, pid, buffer<nn::friends::detail::UserPresenceImpl, 0x19>)
         public long UpdateUserPresence(ServiceCtx context)
         {
-            UInt128 uuid = new UInt128(
-                context.RequestData.ReadInt64(),
-                context.RequestData.ReadInt64());
+            UInt128 uuid = context.RequestData.ReadStruct<UInt128>();
 
-            long unknown0 = context.RequestData.ReadInt64();
+            // Pid placeholder
+            context.RequestData.ReadInt64();
 
             long position = context.Request.PtrBuff[0].Position;
             long size     = context.Request.PtrBuff[0].Size;
 
-            // TODO: Write the buffer content.
+            byte[] bufferContent = context.Memory.ReadBytes(position, size);
 
-            Logger.PrintStub(LogClass.ServiceFriend, new { UserId = uuid.ToString(), unknown0 });
+            if (uuid.IsNull)
+            {
+                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
+            }
+
+            int elementCount = bufferContent.Length / Marshal.SizeOf<UserPresence>();
+
+            using (BinaryReader bufferReader = new BinaryReader(new MemoryStream(bufferContent)))
+            {
+                UserPresence[] userPresenceInputArray = bufferReader.ReadStructArray<UserPresence>(elementCount);
+                Logger.PrintStub(LogClass.ServiceFriend, new { UserId = uuid.ToString(), userPresenceInputArray });
+            }
 
             return 0;
         }

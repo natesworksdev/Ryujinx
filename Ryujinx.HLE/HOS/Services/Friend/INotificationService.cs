@@ -14,11 +14,13 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         private KEvent _notificationEvent;
         private int    _notificationEventHandle = 0;
 
+        private FriendServicePermissionLevel _permissionLevel;
+
         private Dictionary<int, ServiceProcessRequest> _commands;
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        public INotificationService(UInt128 userId)
+        public INotificationService(UInt128 userId, FriendServicePermissionLevel permissionLevel)
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
@@ -28,6 +30,8 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             };
 
             _userId = userId;
+
+            _permissionLevel = permissionLevel;
         }
 
         public long GetEvent(ServiceCtx context)
