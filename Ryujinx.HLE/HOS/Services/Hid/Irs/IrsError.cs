@@ -2,6 +2,7 @@
 {
     static class IrsError
     {
-        public const int NpadIdOutOfRange = 709;
+        public const int HandlePointerIsNull = 212;
+        public const int NpadIdOutOfRange    = 709;
     }
 }

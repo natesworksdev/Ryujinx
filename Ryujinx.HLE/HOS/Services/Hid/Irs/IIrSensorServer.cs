@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.Input;
 using System;
 using System.Collections.Generic;
 
@@ -78,21 +79,19 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
         // GetNpadIrCameraHandle(u32) -> nn::irsensor::IrCameraHandle
         public long GetNpadIrCameraHandle(ServiceCtx context)
         {
-            uint npadId = context.RequestData.ReadUInt32();
+            NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadUInt32();
 
-            if (npadId >= 8 && npadId != 16 && npadId != 32)
+            if (npadIdType >= NpadIdType.Player8 && npadIdType != NpadIdType.Unknown && npadIdType != NpadIdType.Handheld)
             {
-                return ErrorCode.MakeError(ErrorModule.Hid, IrsError.NpadIdOutOfRange);
+                return ErrorCode.MakeError(ErrorModule.Irsensor, IrsError.NpadIdOutOfRange);
             }
 
-            if (((1 << (int)npadId) & 0x1000100FF) == 0)
-            {
-                return ErrorCode.MakeError(ErrorModule.Hid, IrsError.NpadIdOutOfRange);
-            }
+            HidControllerId irCameraHandle = HidUtils.GetIndexFromNpadIdType(npadIdType);
 
-            int npadTypeId = HidUtils.GetNpadTypeId(npadId);
+            context.ResponseData.Write((int)irCameraHandle);
 
-            context.ResponseData.Write(npadTypeId);
+            // NOTE: If the irCameraHandle pointer is null this error is returned, Doesn't occur in our case. 
+            //       return ErrorCode.MakeError(ErrorModule.Irsensor, IrsError.HandlePointerIsNull);
 
             return 0;
         }

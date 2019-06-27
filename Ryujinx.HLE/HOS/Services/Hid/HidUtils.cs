@@ -1,24 +1,26 @@
-﻿using System;
+﻿using Ryujinx.HLE.Input;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
     static class HidUtils
     {
-        public static int GetNpadTypeId(uint npadId)
+        public static HidControllerId GetIndexFromNpadIdType(NpadIdType npadIdType)
         {
-            switch (npadId)
+            switch (npadIdType)
             {
-                case 0:  return 0;
-                case 1:  return 1;
-                case 2:  return 2;
-                case 3:  return 3;
-                case 4:  return 4;
-                case 5:  return 5;
-                case 6:  return 6;
-                case 7:  return 7;
-                case 32: return 8;
-                case 16: return 9;
-                default: throw new ArgumentOutOfRangeException(nameof(npadId));
+                case NpadIdType.Player1:  return HidControllerId.ControllerPlayer1;
+                case NpadIdType.Player2:  return HidControllerId.ControllerPlayer2;
+                case NpadIdType.Player3:  return HidControllerId.ControllerPlayer3;
+                case NpadIdType.Player4:  return HidControllerId.ControllerPlayer4;
+                case NpadIdType.Player5:  return HidControllerId.ControllerPlayer5;
+                case NpadIdType.Player6:  return HidControllerId.ControllerPlayer6;
+                case NpadIdType.Player7:  return HidControllerId.ControllerPlayer7;
+                case NpadIdType.Player8:  return HidControllerId.ControllerPlayer8;
+                case NpadIdType.Handheld: return HidControllerId.ControllerHandheld;
+                case NpadIdType.Unknown:  return HidControllerId.ControllerUnknown;
+
+                default: throw new ArgumentOutOfRangeException(nameof(npadIdType));
             }
         }
     }
