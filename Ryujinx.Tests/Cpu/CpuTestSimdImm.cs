@@ -109,6 +109,30 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
+        private static uint[] _F_Mov_Vi_2S_()
+        {
+            return new uint[]
+            {
+                0x0F00F400u // FMOV V0.2S, #2.0
+            };
+        }
+
+        private static uint[] _F_Mov_Vi_4S_()
+        {
+            return new uint[]
+            {
+                0x4F00F400u // FMOV V0.4S, #2.0
+            };
+        }
+
+        private static uint[] _F_Mov_Vi_2D_()
+        {
+            return new uint[]
+            {
+                0x6F00F400u // FMOV V0.2D, #2.0
+            };
+        }
+
         private static uint[] _Movi_V_8bit_()
         {
             return new uint[]
@@ -207,6 +231,51 @@ namespace Ryujinx.Tests.Cpu
             Vector128<float> v0 = MakeVectorE0E1(z, z);
 
             SingleOpcode(opcodes, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Mov_Vi_2S([ValueSource("_F_Mov_Vi_2S_")] uint opcodes,
+                                [Range(0u, 255u, 1u)] uint abcdefgh)
+        {
+            uint abc   = (abcdefgh & 0xE0u) >> 5;
+            uint defgh = (abcdefgh & 0x1Fu);
+
+            opcodes |= (abc << 16) | (defgh << 5);
+
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE1(z);
+
+            SingleOpcode(opcodes, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Mov_Vi_4S([ValueSource("_F_Mov_Vi_4S_")] uint opcodes,
+                                [Range(0u, 255u, 1u)] uint abcdefgh)
+        {
+            uint abc   = (abcdefgh & 0xE0u) >> 5;
+            uint defgh = (abcdefgh & 0x1Fu);
+
+            opcodes |= (abc << 16) | (defgh << 5);
+
+            SingleOpcode(opcodes);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Mov_Vi_2D([ValueSource("_F_Mov_Vi_2D_")] uint opcodes,
+                                [Range(0u, 255u, 1u)] uint abcdefgh)
+        {
+            uint abc   = (abcdefgh & 0xE0u) >> 5;
+            uint defgh = (abcdefgh & 0x1Fu);
+
+            opcodes |= (abc << 16) | (defgh << 5);
+
+            SingleOpcode(opcodes);
 
             CompareAgainstUnicorn();
         }
