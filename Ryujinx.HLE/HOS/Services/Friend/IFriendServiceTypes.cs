@@ -84,4 +84,22 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         [MarshalAs(UnmanagedType.I1)]
         public bool IsValid;
     }
+
+    enum NotificationEventType : uint
+    {
+        Invalid          = 0x0,
+        FriendListUpdate = 0x1,
+        NewFriendRequest = 0x65,
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 0x8, Size = 0x10)]
+    struct NotificationInfo
+    {
+        public NotificationEventType type;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x4)]
+        char[] padding;
+
+        public long NetworkUserIdPlaceholder;
+    }
 }

@@ -51,5 +51,10 @@ namespace Ryujinx.HLE.Utilities
         {
             return (Low | High) == 0;
         }
+
+        public bool Equals(UInt128 cmpObj)
+        {
+            return Low == cmpObj.Low && High == cmpObj.High;
+        }
     }
 }
