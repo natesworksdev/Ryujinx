@@ -280,7 +280,7 @@ namespace ChocolArm64.Instructions
             EmitScalarSet(context, op.Rd, op.Size + 2);
         }
 
-        public static void Fmov_V(ILEmitterCtx context)
+        public static void Fmov_Vi(ILEmitterCtx context)
         {
             OpCodeSimdImm64 op = (OpCodeSimdImm64)context.CurrOp;
 
