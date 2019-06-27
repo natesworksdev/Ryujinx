@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             return 0;
         }
 
-        // nn::friends::GetFriendList(int offset, nn::account::Uid userUUID, nn::friends::detail::ipc::SizedFriendFilter friendFilter, ulong pidPlaceHolder, pid) -> int outCount, array<nn::account::NetworkServiceAccountId, 0x6>
+        // nn::friends::GetFriendList(int offset, nn::account::Uid userUUID, nn::friends::detail::ipc::SizedFriendFilter friendFilter, ulong pidPlaceHolder, pid) -> int outCount, array<nn::friends::detail::FriendImpl, 0x6>
         public long GetFriendList(ServiceCtx context)
         {
             int offset = context.RequestData.ReadInt32();
