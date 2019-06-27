@@ -2,6 +2,6 @@
 {
     static class FriendErr
     {
-        public const int InvalidUuid = 2;
+        public const int InvalidArgument = 2;
     }
 }
