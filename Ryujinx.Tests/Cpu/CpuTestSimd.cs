@@ -877,6 +877,22 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
+        private static uint[] _F_Mov_S_S_()
+        {
+            return new uint[]
+            {
+                0x1E204020u // FMOV S0, S1
+            };
+        }
+
+        private static uint[] _F_Mov_S_D_()
+        {
+            return new uint[]
+            {
+                0x1E604020u // FMOV D0, D1
+            };
+        }
+
         private static uint[] _F_Recpe_Rsqrte_S_S_()
         {
             return new uint[]
@@ -2036,6 +2052,32 @@ namespace Ryujinx.Tests.Cpu
 
             Vector128<float> v0 = MakeVectorE0E1(z, z);
             Vector128<float> v1 = MakeVectorE0E1(a, a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Mov_S_S([ValueSource("_F_Mov_S_S_")] uint opcodes,
+                              [ValueSource("_1S_F_")] ulong a)
+        {
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE0E1(z, z);
+            Vector128<float> v1 = MakeVectorE0(a);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise] [Explicit]
+        public void F_Mov_S_D([ValueSource("_F_Mov_S_D_")] uint opcodes,
+                              [ValueSource("_1D_F_")] ulong a)
+        {
+            ulong z = TestContext.CurrentContext.Random.NextULong();
+            Vector128<float> v0 = MakeVectorE1(z);
+            Vector128<float> v1 = MakeVectorE0(a);
 
             SingleOpcode(opcodes, v0: v0, v1: v1);
 
