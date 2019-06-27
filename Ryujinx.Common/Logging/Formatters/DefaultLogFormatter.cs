@@ -33,7 +33,7 @@ namespace Ryujinx.Common.Logging
                         sb.Append(prop.Name);
                         sb.Append(": ");
 
-                        if(typeof(Array).IsAssignableFrom(prop.PropertyType))
+                        if (typeof(Array).IsAssignableFrom(prop.PropertyType))
                         {
                             Array enumerable = (Array)prop.GetValue(args.Data);
                             foreach (var item in enumerable)
