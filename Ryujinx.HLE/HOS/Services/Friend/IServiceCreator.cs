@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
             if (userId.IsNull)
             {
-                return MakeError(ErrorModule.Friends, FriendErr.InvalidUuid);
+                return MakeError(ErrorModule.Friends, FriendErr.InvalidArgument);
             }
 
             MakeObject(context, new INotificationService(userId));
