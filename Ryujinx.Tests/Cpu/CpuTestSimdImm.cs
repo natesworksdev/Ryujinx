@@ -191,7 +191,6 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Bic_Orr_Vi_16bit([ValueSource("_Bic_Orr_Vi_16bit_")] uint opcodes,
-                                     [Values(0u)] uint rd,
                                      [ValueSource("_4H_")] [Random(RndCnt)] ulong z,
                                      [ValueSource("_8BIT_IMM_")] byte imm8,
                                      [Values(0b0u, 0b1u)] uint amount, // <0, 8>
@@ -200,7 +199,6 @@ namespace Ryujinx.Tests.Cpu
             uint abc   = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
-            opcodes |= ((rd & 31) << 0);
             opcodes |= (abc << 16) | (defgh << 5);
             opcodes |= ((amount & 1) << 13);
             opcodes |= ((q & 1) << 30);
@@ -214,7 +212,6 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Bic_Orr_Vi_32bit([ValueSource("_Bic_Orr_Vi_32bit_")] uint opcodes,
-                                     [Values(0u)] uint rd,
                                      [ValueSource("_2S_")] [Random(RndCnt)] ulong z,
                                      [ValueSource("_8BIT_IMM_")] byte imm8,
                                      [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint amount, // <0, 8, 16, 24>
@@ -223,7 +220,6 @@ namespace Ryujinx.Tests.Cpu
             uint abc   = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
-            opcodes |= ((rd & 31) << 0);
             opcodes |= (abc << 16) | (defgh << 5);
             opcodes |= ((amount & 3) << 13);
             opcodes |= ((q & 1) << 30);
@@ -282,14 +278,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Movi_V_8bit([ValueSource("_Movi_V_8bit_")] uint opcodes,
-                                [Values(0u)] uint rd,
                                 [ValueSource("_8BIT_IMM_")] byte imm8,
                                 [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
             uint abc   = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
-            opcodes |= ((rd & 31) << 0);
             opcodes |= (abc << 16) | (defgh << 5);
             opcodes |= ((q & 1) << 30);
 
@@ -303,7 +297,6 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Movi_Mvni_V_16bit_shifted_imm([ValueSource("_Movi_Mvni_V_16bit_shifted_imm_")] uint opcodes,
-                                                  [Values(0u)] uint rd,
                                                   [ValueSource("_8BIT_IMM_")] byte imm8,
                                                   [Values(0b0u, 0b1u)] uint amount, // <0, 8>
                                                   [Values(0b0u, 0b1u)] uint q)      // <4H, 8H>
@@ -311,7 +304,6 @@ namespace Ryujinx.Tests.Cpu
             uint abc   = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
-            opcodes |= ((rd & 31) << 0);
             opcodes |= (abc << 16) | (defgh << 5);
             opcodes |= ((amount & 1) << 13);
             opcodes |= ((q & 1) << 30);
@@ -326,7 +318,6 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Movi_Mvni_V_32bit_shifted_imm([ValueSource("_Movi_Mvni_V_32bit_shifted_imm_")] uint opcodes,
-                                                  [Values(0u)] uint rd,
                                                   [ValueSource("_8BIT_IMM_")] byte imm8,
                                                   [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint amount, // <0, 8, 16, 24>
                                                   [Values(0b0u, 0b1u)] uint q)                      // <2S, 4S>
@@ -334,7 +325,6 @@ namespace Ryujinx.Tests.Cpu
             uint abc   = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
-            opcodes |= ((rd & 31) << 0);
             opcodes |= (abc << 16) | (defgh << 5);
             opcodes |= ((amount & 3) << 13);
             opcodes |= ((q & 1) << 30);
@@ -349,7 +339,6 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Movi_Mvni_V_32bit_shifting_ones([ValueSource("_Movi_Mvni_V_32bit_shifting_ones_")] uint opcodes,
-                                                    [Values(0u)] uint rd,
                                                     [ValueSource("_8BIT_IMM_")] byte imm8,
                                                     [Values(0b0u, 0b1u)] uint amount, // <8, 16>
                                                     [Values(0b0u, 0b1u)] uint q)      // <2S, 4S>
@@ -357,7 +346,6 @@ namespace Ryujinx.Tests.Cpu
             uint abc   = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
-            opcodes |= ((rd & 31) << 0);
             opcodes |= (abc << 16) | (defgh << 5);
             opcodes |= ((amount & 1) << 12);
             opcodes |= ((q & 1) << 30);
@@ -372,7 +360,6 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Movi_V_64bit_scalar([ValueSource("_Movi_V_64bit_scalar_")] uint opcodes,
-                                        [Values(0u)] uint rd,
                                         [ValueSource("_64BIT_IMM_")] ulong imm)
         {
             byte imm8 = ShrinkImm64(imm);
@@ -380,7 +367,6 @@ namespace Ryujinx.Tests.Cpu
             uint abc   = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
-            opcodes |= ((rd & 31) << 0);
             opcodes |= (abc << 16) | (defgh << 5);
 
             ulong z = TestContext.CurrentContext.Random.NextULong();
@@ -393,7 +379,6 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         public void Movi_V_64bit_vector([ValueSource("_Movi_V_64bit_vector_")] uint opcodes,
-                                        [Values(0u)] uint rd,
                                         [ValueSource("_64BIT_IMM_")] ulong imm)
         {
             byte imm8 = ShrinkImm64(imm);
@@ -401,7 +386,6 @@ namespace Ryujinx.Tests.Cpu
             uint abc   = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
-            opcodes |= ((rd & 31) << 0);
             opcodes |= (abc << 16) | (defgh << 5);
 
             SingleOpcode(opcodes);
