@@ -12,10 +12,10 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
     {
         private State _state = State.NonInitialized;
 
-        private List<Device> _devices = new List<Device>();
-
         private KEvent _availabilityChangeEvent;
         private int    _availabilityChangeEventHandle = 0;
+
+        private List<Device> _devices = new List<Device>();
 
         private Dictionary<int, ServiceProcessRequest> _commands;
 
