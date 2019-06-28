@@ -345,10 +345,12 @@ namespace ChocolArm64
             SetA64("000111100x1xxxxxxxx10000000xxxxx", InstEmit.Fmov_Si,         typeof(OpCodeSimdFmov64));
             SetA64("0x00111100000xxx111101xxxxxxxxxx", InstEmit.Fmov_Vi,         typeof(OpCodeSimdImm64));
             SetA64("0110111100000xxx111101xxxxxxxxxx", InstEmit.Fmov_Vi,         typeof(OpCodeSimdImm64));
-            SetA64("x00111100x100110000000xxxxxxxxxx", InstEmit.Fmov_Ftoi,       typeof(OpCodeSimdCvt64));
-            SetA64("x00111100x100111000000xxxxxxxxxx", InstEmit.Fmov_Itof,       typeof(OpCodeSimdCvt64));
-            SetA64("1001111010101110000000xxxxxxxxxx", InstEmit.Fmov_Ftoi1,      typeof(OpCodeSimdCvt64));
-            SetA64("1001111010101111000000xxxxxxxxxx", InstEmit.Fmov_Itof1,      typeof(OpCodeSimdCvt64));
+            SetA64("0001111000100110000000xxxxxxxxxx", InstEmit.Fmov_Ftoi,       typeof(OpCodeSimd64));
+            SetA64("1001111001100110000000xxxxxxxxxx", InstEmit.Fmov_Ftoi,       typeof(OpCodeSimd64));
+            SetA64("0001111000100111000000xxxxxxxxxx", InstEmit.Fmov_Itof,       typeof(OpCodeSimd64));
+            SetA64("1001111001100111000000xxxxxxxxxx", InstEmit.Fmov_Itof,       typeof(OpCodeSimd64));
+            SetA64("1001111010101110000000xxxxxxxxxx", InstEmit.Fmov_Ftoi1,      typeof(OpCodeSimd64));
+            SetA64("1001111010101111000000xxxxxxxxxx", InstEmit.Fmov_Itof1,      typeof(OpCodeSimd64));
             SetA64("000111110x0xxxxx1xxxxxxxxxxxxxxx", InstEmit.Fmsub_S,         typeof(OpCodeSimdReg64));
             SetA64("000111100x1xxxxx000010xxxxxxxxxx", InstEmit.Fmul_S,          typeof(OpCodeSimdReg64));
             SetA64("010111111xxxxxxx1001x0xxxxxxxxxx", InstEmit.Fmul_Se,         typeof(OpCodeSimdRegElemF64));
