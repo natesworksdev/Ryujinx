@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
@@ -28,28 +29,28 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 { 0,  Initialize                    },
                 { 1,  Finalize                      },
                 { 2,  ListDevices                   },
-              //{ 3,  StartDetection                },
-              //{ 4,  StopDetection                 },
-              //{ 5,  Mount                         },
-              //{ 6,  Unmount                       },
-              //{ 7,  OpenApplicationArea           },
-              //{ 8,  GetApplicationArea            },
-              //{ 9,  SetApplicationArea            },
-              //{ 10, Flush                         },
-              //{ 11, Restore                       },
-              //{ 12, CreateApplicationArea         },
-              //{ 13, GetTagInfo                    },
-              //{ 14, GetRegisterInfo               },
-              //{ 15, GetCommonInfo                 },
-              //{ 16, GetModelInfo                  },
+                { 3,  StartDetection                },
+                { 4,  StopDetection                 },
+                { 5,  Mount                         },
+                { 6,  Unmount                       },
+                { 7,  OpenApplicationArea           },
+                { 8,  GetApplicationArea            },
+                { 9,  SetApplicationArea            },
+                { 10, Flush                         },
+                { 11, Restore                       },
+                { 12, CreateApplicationArea         },
+                { 13, GetTagInfo                    },
+                { 14, GetRegisterInfo               },
+                { 15, GetCommonInfo                 },
+                { 16, GetModelInfo                  },
                 { 17, AttachActivateEvent           },
                 { 18, AttachDeactivateEvent         },
                 { 19, GetState                      },
                 { 20, GetDeviceState                },
                 { 21, GetNpadId                     },
-              //{ 22, GetApplicationAreaSize        },
+                { 22, GetApplicationAreaSize        },
                 { 23, AttachAvailabilityChangeEvent }, // 3.0.0+
-              //{ 24, RecreateApplicationArea       }, // 3.0.0+
+                { 24, RecreateApplicationArea       }, // 3.0.0+
             };
         }
 
@@ -72,14 +73,14 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             //       Add an instance of nn::nfc::server::SaveData when it will be implemented.
 
             // TODO: When we will be able to add multiple controllers add one entry by controller here.
-            Device Device1 = new Device
+            Device device1 = new Device
             {
                 NpadIdType = NpadIdType.Player1,
                 Handle     = HidUtils.GetIndexFromNpadIdType(NpadIdType.Player1),
                 State      = DeviceState.Initialized
             };
 
-            _devices.Add(Device1);
+            _devices.Add(device1);
 
             _state = State.Initialized;
 
@@ -126,14 +127,98 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             return 0;
         }
 
+        // StartDetection(bytes<8, 4>)
+        public long StartDetection(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // StopDetection(bytes<8, 4>)
+        public long StopDetection(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // Mount(bytes<8, 4>, u32, u32)
+        public long Mount(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // Unmount(bytes<8, 4>)
+        public long Unmount(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // OpenApplicationArea(bytes<8, 4>, u32)
+        public long OpenApplicationArea(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // GetApplicationArea(bytes<8, 4>) -> (u32, buffer<unknown, 6>)
+        public long GetApplicationArea(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // SetApplicationArea(bytes<8, 4>, buffer<unknown, 5>)
+        public long SetApplicationArea(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // Flush(bytes<8, 4>)
+        public long Flush(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // Restore(bytes<8, 4>)
+        public long Restore(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // CreateApplicationArea(bytes<8, 4>, u32, buffer<unknown, 5>)
+        public long CreateApplicationArea(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // GetTagInfo(bytes<8, 4>) -> buffer<unknown<0x58>, 0x1a>
+        public long GetTagInfo(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // GetRegisterInfo(bytes<8, 4>) -> buffer<unknown<0x100>, 0x1a>
+        public long GetRegisterInfo(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // GetCommonInfo(bytes<8, 4>) -> buffer<unknown<0x40>, 0x1a>
+        public long GetCommonInfo(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
+        // GetModelInfo(bytes<8, 4>) -> buffer<unknown<0x40>, 0x1a>
+        public long GetModelInfo(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
+        }
+
         // AttachActivateEvent(bytes<8, 4>) -> handle<copy>
         public long AttachActivateEvent(ServiceCtx context)
         {
-            uint DeviceHandle = context.RequestData.ReadUInt32();
+            uint deviceHandle = context.RequestData.ReadUInt32();
 
             for (int i = 0; i < _devices.Count; i++)
             {
-                if ((uint)_devices[i].Handle == DeviceHandle)
+                if ((uint)_devices[i].Handle == deviceHandle)
                 {
                     if (_devices[i].ActivateEventHandle == 0)
                     {
@@ -157,11 +242,11 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         // AttachDeactivateEvent(bytes<8, 4>) -> handle<copy>
         public long AttachDeactivateEvent(ServiceCtx context)
         {
-            uint DeviceHandle = context.RequestData.ReadUInt32();
+            uint deviceHandle = context.RequestData.ReadUInt32();
 
             for (int i = 0; i < _devices.Count; i++)
             {
-                if ((uint)_devices[i].Handle == DeviceHandle)
+                if ((uint)_devices[i].Handle == deviceHandle)
                 {
                     if (_devices[i].DeactivateEventHandle == 0)
                     {
@@ -193,11 +278,11 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         // GetDeviceState(bytes<8, 4>) -> u32
         public long GetDeviceState(ServiceCtx context)
         {
-            uint DeviceHandle = context.RequestData.ReadUInt32();
+            uint deviceHandle = context.RequestData.ReadUInt32();
 
             for (int i = 0; i < _devices.Count; i++)
             {
-                if ((uint)_devices[i].Handle == DeviceHandle)
+                if ((uint)_devices[i].Handle == deviceHandle)
                 {
                     context.ResponseData.Write((uint)_devices[i].State);
 
@@ -213,11 +298,11 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         // GetNpadId(bytes<8, 4>) -> u32
         public long GetNpadId(ServiceCtx context)
         {
-            uint DeviceHandle = context.RequestData.ReadUInt32();
+            uint deviceHandle = context.RequestData.ReadUInt32();
 
             for (int i = 0; i < _devices.Count; i++)
             {
-                if ((uint)_devices[i].Handle == DeviceHandle)
+                if ((uint)_devices[i].Handle == deviceHandle)
                 {
                     context.ResponseData.Write((uint)HidUtils.GetNpadIdTypeFromIndex(_devices[i].Handle));
 
@@ -226,6 +311,12 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             }
 
             return ErrorCode.MakeError(ErrorModule.Nfp, NfpError.DeviceNotFound);
+        }
+
+        // GetApplicationAreaSize(bytes<8, 4>) -> u32
+        public long GetApplicationAreaSize(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
         }
 
         // AttachAvailabilityChangeEvent() -> handle<copy>
@@ -244,6 +335,12 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_availabilityChangeEventHandle);
 
             return 0;
+        }
+
+        // RecreateApplicationArea(bytes<8, 4>, u32, buffer<unknown, 5>)
+        public long RecreateApplicationArea(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(context);
         }
     }
 }

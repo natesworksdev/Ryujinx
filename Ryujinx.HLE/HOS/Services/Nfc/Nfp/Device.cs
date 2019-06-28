@@ -7,10 +7,10 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
     class Device
     {
         public KEvent ActivateEvent;
-        public int    ActivateEventHandle = 0;
+        public int    ActivateEventHandle;
 
         public KEvent DeactivateEvent;
-        public int    DeactivateEventHandle = 0;
+        public int    DeactivateEventHandle;
 
         public DeviceState State = DeviceState.Unavailable;
 

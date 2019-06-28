@@ -24,9 +24,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        public static NpadIdType GetNpadIdTypeFromIndex(HidControllerId Index)
+        public static NpadIdType GetNpadIdTypeFromIndex(HidControllerId index)
         {
-            switch (Index)
+            switch (index)
             {
                 case HidControllerId.ControllerPlayer1:  return NpadIdType.Player1;
                 case HidControllerId.ControllerPlayer2:  return NpadIdType.Player2;
@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 case HidControllerId.ControllerHandheld: return NpadIdType.Handheld;
                 case HidControllerId.ControllerUnknown:  return NpadIdType.Unknown;
 
-                default: throw new ArgumentOutOfRangeException(nameof(Index));
+                default: throw new ArgumentOutOfRangeException(nameof(index));
             }
         }
     }
