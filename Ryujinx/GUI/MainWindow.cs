@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace Ryujinx
 {
@@ -49,7 +50,7 @@ namespace Ryujinx
 
             _audioOut = InitializeAudioEngine();
 
-            _device    = new HLE.Switch(_renderer, _audioOut);
+            _device   = new HLE.Switch(_renderer, _audioOut);
 
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(_device);
@@ -86,18 +87,11 @@ namespace Ryujinx
 
             if (args.Length == 1)
             {
-                Box.Remove(GameTableWindow);
+                //Box.Remove(GameTableWindow);
 
                 LoadApplication(args[0]);
 
-                using (GlScreen screen = new GlScreen(_device, _renderer))
-                {
-                    screen.MainLoop();
-
-                    Profile.FinishProfiling();
-
-                    _device.Dispose();
-                }
+                new Thread(new ThreadStart(CreateGameWindow)).Start();
             }
             else
             {
@@ -112,7 +106,7 @@ namespace Ryujinx
                 GameTable.AppendColumn("File Size", new CellRendererText(), "text", 4);
                 GameTable.AppendColumn("Path", new CellRendererText(), "text", 5);
 
-                _TableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = _TableStore;
 
                 UpdateGameTable();
@@ -226,6 +220,22 @@ namespace Ryujinx
                 DiscordClient.SetPresence(DiscordPresence);
             }
         }
+
+        private void CreateGameWindow()
+        {
+            using (GlScreen screen = new GlScreen(_device, _renderer))
+            {
+                screen.MainLoop();
+
+                Profile.FinishProfiling();
+
+                _device.Dispose();
+
+                _audioOut.Dispose();
+
+                Logger.Shutdown();
+            }
+        }
         
         //Events
         private void Row_Activated(object obj, RowActivatedArgs args)
@@ -235,22 +245,10 @@ namespace Ryujinx
 
             LoadApplication(path);
 
-            Box.Remove(GameTableWindow);
-            Box.Add(GlScreen);
+            //Box.Remove(GameTableWindow);
+            //Box.Add(GlScreen);
 
-            Destroy();
-
-            using (GlScreen screen = new GlScreen(_device, _renderer))
-            {
-                screen.MainLoop();
-
-                Profile.FinishProfiling();
-
-                _device.Dispose();
-            }
-
-            _audioOut.Dispose();
-            Logger.Shutdown();
+            new Thread(new ThreadStart(CreateGameWindow)).Start();
         }
 
         private void Load_Application_File(object o, EventArgs args)
@@ -267,22 +265,10 @@ namespace Ryujinx
             {
                 LoadApplication(fc.Filename);
 
-                Box.Remove(GameTableWindow);
-                Box.Add(GlScreen);
+                //Box.Remove(GameTableWindow);
+                //Box.Add(GlScreen);
 
-                Destroy();
-
-                using (GlScreen screen = new GlScreen(_device, _renderer))
-                {
-                    screen.MainLoop();
-
-                    Profile.FinishProfiling();
-
-                    _device.Dispose();
-                }
-
-                _audioOut.Dispose();
-                Logger.Shutdown();
+                new Thread(new ThreadStart(CreateGameWindow)).Start();
             }
 
             fc.Destroy();
@@ -296,22 +282,10 @@ namespace Ryujinx
             {
                 LoadApplication(fc.Filename);
 
-                Box.Remove(GameTableWindow);
-                Box.Add(GlScreen);
+                //Box.Remove(GameTableWindow);
+                //Box.Add(GlScreen);
 
-                Destroy();
-
-                using (GlScreen screen = new GlScreen(_device, _renderer))
-                {
-                    screen.MainLoop();
-
-                    Profile.FinishProfiling();
-
-                    _device.Dispose();
-                }
-
-                _audioOut.Dispose();
-                Logger.Shutdown();
+                new Thread(new ThreadStart(CreateGameWindow)).Start();
             }
 
             fc.Destroy();
