@@ -32,6 +32,8 @@ namespace Ryujinx
 
         private static ListStore _TableStore;
 
+        private static bool _GameLoaded = false;
+
 #pragma warning disable 649
         [GUI] Window         MainWin;
         [GUI] CheckMenuItem  FullScreen;
@@ -90,8 +92,6 @@ namespace Ryujinx
                 //Box.Remove(GameTableWindow);
 
                 LoadApplication(args[0]);
-
-                new Thread(new ThreadStart(CreateGameWindow)).Start();
             }
             else
             {
@@ -155,7 +155,18 @@ namespace Ryujinx
 
         private static void LoadApplication(string path)
         {
-            if (Directory.Exists(path))
+            if (_GameLoaded)
+            {
+                MessageDialog eRrOr = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded, please close the game and try again");
+                eRrOr.SetSizeRequest(100, 20);
+                eRrOr.Title = "Ryujinx - Error";
+                eRrOr.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
+                eRrOr.WindowPosition = WindowPosition.Center;
+                eRrOr.Run();
+                eRrOr.Destroy();
+            }
+
+            else if (Directory.Exists(path))
             {
                 string[] romFsFiles = Directory.GetFiles(path, "*.istorage");
 
@@ -174,7 +185,12 @@ namespace Ryujinx
                     Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
                     _device.LoadCart(path);
                 }
+
+                new Thread(new ThreadStart(CreateGameWindow)).Start();
+
+                _GameLoaded = true;
             }
+
             else if (File.Exists(path))
             {
                 switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
@@ -197,6 +213,10 @@ namespace Ryujinx
                         _device.LoadProgram(path);
                         break;
                 }
+
+                new Thread(new ThreadStart(CreateGameWindow)).Start();
+
+                _GameLoaded = true;
             }
             else
             {
@@ -221,7 +241,7 @@ namespace Ryujinx
             }
         }
 
-        private void CreateGameWindow()
+        private static void CreateGameWindow()
         {
             using (GlScreen screen = new GlScreen(_device, _renderer))
             {
@@ -232,8 +252,6 @@ namespace Ryujinx
                 _device.Dispose();
 
                 _audioOut.Dispose();
-
-                Logger.Shutdown();
             }
         }
         
@@ -247,8 +265,6 @@ namespace Ryujinx
 
             //Box.Remove(GameTableWindow);
             //Box.Add(GlScreen);
-
-            new Thread(new ThreadStart(CreateGameWindow)).Start();
         }
 
         private void Load_Application_File(object o, EventArgs args)
@@ -267,8 +283,6 @@ namespace Ryujinx
 
                 //Box.Remove(GameTableWindow);
                 //Box.Add(GlScreen);
-
-                new Thread(new ThreadStart(CreateGameWindow)).Start();
             }
 
             fc.Destroy();
@@ -284,8 +298,6 @@ namespace Ryujinx
 
                 //Box.Remove(GameTableWindow);
                 //Box.Add(GlScreen);
-
-                new Thread(new ThreadStart(CreateGameWindow)).Start();
             }
 
             fc.Destroy();
