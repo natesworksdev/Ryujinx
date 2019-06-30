@@ -203,9 +203,9 @@ namespace Ryujinx.Tests.Cpu
             opcodes |= ((cond & 15) << 12);
 
             ulong z = TestContext.CurrentContext.Random.NextULong();
-            Vector128<float> v0 = MakeVectorE0E1(z, z);
-            Vector128<float> v1 = MakeVectorE0(a);
-            Vector128<float> v2 = MakeVectorE0(b);
+            V128 v0 = MakeVectorE0E1(z, z);
+            V128 v1 = MakeVectorE0(a);
+            V128 v2 = MakeVectorE0(b);
 
             SingleOpcode(opcodes, v0: v0, v1: v1, v2: v2);
 
@@ -224,9 +224,9 @@ namespace Ryujinx.Tests.Cpu
             opcodes |= ((cond & 15) << 12);
 
             ulong z = TestContext.CurrentContext.Random.NextULong();
-            Vector128<float> v0 = MakeVectorE1(z);
-            Vector128<float> v1 = MakeVectorE0(a);
-            Vector128<float> v2 = MakeVectorE0(b);
+            V128 v0 = MakeVectorE1(z);
+            V128 v1 = MakeVectorE0(a);
+            V128 v2 = MakeVectorE0(b);
 
             SingleOpcode(opcodes, v0: v0, v1: v1, v2: v2);
 
