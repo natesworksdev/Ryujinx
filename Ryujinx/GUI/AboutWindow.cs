@@ -9,12 +9,14 @@ namespace Ryujinx
 {
     public class AboutWindow : Window
     {
+#pragma warning disable 649
         [GUI] Window AboutWin;
         [GUI] Image  RyujinxLogo;
         [GUI] Image  PatreonLogo;
         [GUI] Image  GitHubLogo;
         [GUI] Image  DiscordLogo;
         [GUI] Image  TwitterLogo;
+#pragma warning restore 649
 
         public AboutWindow() : this(new Builder("Ryujinx.GUI.AboutWindow.glade")) { }
 

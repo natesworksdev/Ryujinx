@@ -13,7 +13,7 @@ using System.Reflection;
 
 namespace Ryujinx
 {
-    public class MainMenu : Window
+    public class MainWindow : Window
     {
         public static bool DiscordIntegrationEnabled { get; set; }
 
@@ -21,39 +21,42 @@ namespace Ryujinx
 
         public static RichPresence DiscordPresence;
 
-        private static IGalRenderer renderer;
+        private static IGalRenderer _renderer;
 
-        private static IAalOutput audioOut;
+        private static IAalOutput _audioOut;
 
-        internal static HLE.Switch device { get; set; }
+        internal static HLE.Switch _device;
 
-        private static Application gtkapp { get; set; }
+        private static Application _gtkapp;
 
-        private static ListStore TableStore { get; set; }
+        private static ListStore _TableStore;
 
+#pragma warning disable 649
         [GUI] Window         MainWin;
         [GUI] CheckMenuItem  FullScreen;
-        [GUI] MenuItem       NFC;
-        [GUI] TreeView       GameTable;
+        [GUI] MenuItem       Nfc;
+        [GUI] Box            Box;
         [GUI] ScrolledWindow GameTableWindow;
-        [GUI] GLArea         GLScreen;
+        [GUI] TreeView       GameTable;
+        [GUI] GLArea         GlScreen;
+#pragma warning restore 649
 
-        public MainMenu(string[] args, Application _gtkapp) : this(new Builder("Ryujinx.GUI.MainMenu.glade"), args, _gtkapp) { }
+        public MainWindow(string[] args, Application gtkapp) : this(new Builder("Ryujinx.GUI.MainWindow.glade"), args, gtkapp) { }
 
-        private MainMenu(Builder builder, string[] args, Application _gtkapp) : base(builder.GetObject("MainWin").Handle)
+        private MainWindow(Builder builder, string[] args, Application gtkapp) : base(builder.GetObject("MainWin").Handle)
         {
-            renderer = new OglRenderer();
+            _renderer = new OglRenderer();
 
-            audioOut = InitializeAudioEngine();
+            _audioOut = InitializeAudioEngine();
 
-            device   = new HLE.Switch(renderer, audioOut);
+            _device    = new HLE.Switch(_renderer, _audioOut);
 
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-            Configuration.InitialConfigure(device);
+            Configuration.InitialConfigure(_device);
 
             ApplicationLibrary.Init();
 
-            gtkapp = _gtkapp;
+            _gtkapp = gtkapp;
 
             ApplyTheme();
 
@@ -83,26 +86,24 @@ namespace Ryujinx
 
             if (args.Length == 1)
             {
-                GameTableWindow.Hide();
-                GLScreen.Show();
+                Box.Remove(GameTableWindow);
 
                 LoadApplication(args[0]);
 
-                using (GlScreen screen = new GlScreen(device, renderer))
+                using (GlScreen screen = new GlScreen(_device, _renderer))
                 {
                     screen.MainLoop();
 
                     Profile.FinishProfiling();
 
-                    device.Dispose();
+                    _device.Dispose();
                 }
             }
             else
             {
-                GameTableWindow.Show();
-                GLScreen.Hide();
+                Box.Remove(GlScreen);
 
-                NFC.Sensitive = false;
+                Nfc.Sensitive = false;
 
                 GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
                 GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
@@ -111,8 +112,8 @@ namespace Ryujinx
                 GameTable.AppendColumn("File Size", new CellRendererText(), "text", 4);
                 GameTable.AppendColumn("Path", new CellRendererText(), "text", 5);
 
-                TableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-                GameTable.Model = TableStore;
+                _TableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                GameTable.Model = _TableStore;
 
                 UpdateGameTable();
             }
@@ -120,12 +121,12 @@ namespace Ryujinx
 
         public static void UpdateGameTable()
         {
-            TableStore.Clear();
+            _TableStore.Clear();
             ApplicationLibrary.Init();
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                TableStore.AppendValues(AppData.Icon, AppData.Game, AppData.TP, AppData.LP, AppData.FileSize, AppData.Path);
+                _TableStore.AppendValues(AppData.Icon, AppData.GameName, AppData.TimePlayed, AppData.LastPlayed, AppData.FileSize, AppData.Path);
             }
         }
 
@@ -137,13 +138,13 @@ namespace Ryujinx
             settings.XftHinting   = 1;
             settings.XftHintstyle = "hintfull";
 
-            CssProvider css_provider = new CssProvider();
+            CssProvider cssProvider = new CssProvider();
 
             if (SwitchSettings.SwitchConfig.EnableCustomTheme)
             {
                 if (File.Exists(SwitchSettings.SwitchConfig.CustomThemePath) && (System.IO.Path.GetExtension(SwitchSettings.SwitchConfig.CustomThemePath) == ".css"))
                 {
-                    css_provider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
+                    cssProvider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
                 }
                 else
                 {
@@ -152,10 +153,10 @@ namespace Ryujinx
             }
             else
             {
-                css_provider.LoadFromPath("./GUI/assets/Theme.css");
+                cssProvider.LoadFromPath("./GUI/assets/Theme.css");
             }
 
-            StyleContext.AddProviderForScreen(Gdk.Screen.Default, css_provider, 800);
+            StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
         }
 
         private static void LoadApplication(string path)
@@ -172,12 +173,12 @@ namespace Ryujinx
                 if (romFsFiles.Length > 0)
                 {
                     Logger.PrintInfo(LogClass.Application, "Loading as cart with RomFS.");
-                    device.LoadCart(path, romFsFiles[0]);
+                    _device.LoadCart(path, romFsFiles[0]);
                 }
                 else
                 {
                     Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
-                    device.LoadCart(path);
+                    _device.LoadCart(path);
                 }
             }
             else if (File.Exists(path))
@@ -186,20 +187,20 @@ namespace Ryujinx
                 {
                     case ".xci":
                         Logger.PrintInfo(LogClass.Application, "Loading as XCI.");
-                        device.LoadXci(path);
+                        _device.LoadXci(path);
                         break;
                     case ".nca":
                         Logger.PrintInfo(LogClass.Application, "Loading as NCA.");
-                        device.LoadNca(path);
+                        _device.LoadNca(path);
                         break;
                     case ".nsp":
                     case ".pfs0":
                         Logger.PrintInfo(LogClass.Application, "Loading as NSP.");
-                        device.LoadNsp(path);
+                        _device.LoadNsp(path);
                         break;
                     default:
                         Logger.PrintInfo(LogClass.Application, "Loading as homebrew.");
-                        device.LoadProgram(path);
+                        _device.LoadProgram(path);
                         break;
                 }
             }
@@ -210,14 +211,14 @@ namespace Ryujinx
 
             if (DiscordIntegrationEnabled)
             {
-                if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(device.System.TitleID))
+                if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(_device.System.TitleID))
                 {
-                    DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
+                    DiscordPresence.Assets.LargeImageKey = _device.System.TitleID;
                 }
 
-                DiscordPresence.Details               = $"Playing {device.System.TitleName}";
-                DiscordPresence.State                 = string.IsNullOrWhiteSpace(device.System.TitleID) ? string.Empty : device.System.TitleID.ToUpper();
-                DiscordPresence.Assets.LargeImageText = device.System.TitleName;
+                DiscordPresence.Details               = $"Playing {_device.System.TitleName}";
+                DiscordPresence.State                 = string.IsNullOrWhiteSpace(_device.System.TitleID) ? string.Empty : _device.System.TitleID.ToUpper();
+                DiscordPresence.Assets.LargeImageText = _device.System.TitleName;
                 DiscordPresence.Assets.SmallImageKey  = "ryujinx";
                 DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
                 DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
@@ -229,26 +230,26 @@ namespace Ryujinx
         //Events
         private void Row_Activated(object obj, RowActivatedArgs args)
         {
-            TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
-            string path = (string)TableStore.GetValue(treeiter, 5);
+            _TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
+            string path = (string)_TableStore.GetValue(treeiter, 5);
 
             LoadApplication(path);
 
-            GameTableWindow.Hide();
-            GLScreen.Show();
+            Box.Remove(GameTableWindow);
+            Box.Add(GlScreen);
 
             Destroy();
 
-            using (GlScreen screen = new GlScreen(device, renderer))
+            using (GlScreen screen = new GlScreen(_device, _renderer))
             {
                 screen.MainLoop();
 
                 Profile.FinishProfiling();
 
-                device.Dispose();
+                _device.Dispose();
             }
 
-            audioOut.Dispose();
+            _audioOut.Dispose();
             Logger.Shutdown();
         }
 
@@ -266,21 +267,21 @@ namespace Ryujinx
             {
                 LoadApplication(fc.Filename);
 
-                GameTableWindow.Hide();
-                GLScreen.Show();
+                Box.Remove(GameTableWindow);
+                Box.Add(GlScreen);
 
                 Destroy();
 
-                using (GlScreen screen = new GlScreen(device, renderer))
+                using (GlScreen screen = new GlScreen(_device, _renderer))
                 {
                     screen.MainLoop();
 
                     Profile.FinishProfiling();
 
-                    device.Dispose();
+                    _device.Dispose();
                 }
 
-                audioOut.Dispose();
+                _audioOut.Dispose();
                 Logger.Shutdown();
             }
 
@@ -295,21 +296,21 @@ namespace Ryujinx
             {
                 LoadApplication(fc.Filename);
 
-                GameTableWindow.Hide();
-                GLScreen.Show();
+                Box.Remove(GameTableWindow);
+                Box.Add(GlScreen);
 
                 Destroy();
 
-                using (GlScreen screen = new GlScreen(device, renderer))
+                using (GlScreen screen = new GlScreen(_device, _renderer))
                 {
                     screen.MainLoop();
 
                     Profile.FinishProfiling();
 
-                    device.Dispose();
+                    _device.Dispose();
                 }
 
-                audioOut.Dispose();
+                _audioOut.Dispose();
                 Logger.Shutdown();
             }
 
@@ -318,7 +319,7 @@ namespace Ryujinx
 
         private void Exit_Pressed(object o, EventArgs args)
         {
-            audioOut.Dispose();
+            _audioOut.Dispose();
             DiscordClient.Dispose();
             Logger.Shutdown();
             Environment.Exit(0);
@@ -326,7 +327,7 @@ namespace Ryujinx
 
         private void Window_Close(object obj, DeleteEventArgs args)
         {
-            audioOut.Dispose();
+            _audioOut.Dispose();
             DiscordClient.Dispose();
             Logger.Shutdown();
             Environment.Exit(0);
@@ -334,8 +335,8 @@ namespace Ryujinx
 
         private void ReturnMain_Pressed(object o, EventArgs args)
         {
-            GameTableWindow.Show();
-            GLScreen.Hide();
+            Box.Remove(GlScreen);
+            Box.Add(GameTableWindow);
             //will also have to write logic to kill running game
         }
 
@@ -347,18 +348,13 @@ namespace Ryujinx
 
         private void Settings_Pressed(object o, EventArgs args)
         {
-            SwitchSettings SettingsWin = new SwitchSettings(device);
-            gtkapp.Register(GLib.Cancellable.Current);
-            gtkapp.AddWindow(SettingsWin);
+            SwitchSettings SettingsWin = new SwitchSettings(_device);
+            _gtkapp.Register(GLib.Cancellable.Current);
+            _gtkapp.AddWindow(SettingsWin);
             SettingsWin.Show();
         }
 
-        private void Profiler_Pressed(object o, EventArgs args)
-        {
-            //Soon™
-        }
-
-        private void NFC_Pressed(object o, EventArgs args)
+        private void Nfc_Pressed(object o, EventArgs args)
         {
             FileChooserDialog fc = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
             fc.Filter            = new FileFilter();
@@ -374,8 +370,8 @@ namespace Ryujinx
         private void About_Pressed(object o, EventArgs args)
         {
             AboutWindow AboutWin = new AboutWindow();
-            gtkapp.Register(GLib.Cancellable.Current);
-            gtkapp.AddWindow(AboutWin);
+            _gtkapp.Register(GLib.Cancellable.Current);
+            _gtkapp.AddWindow(AboutWin);
             AboutWin.Show();
         }
 

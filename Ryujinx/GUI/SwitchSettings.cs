@@ -15,12 +15,13 @@ namespace Ryujinx
     {
         internal static Configuration SwitchConfig { get; set; }
 
-        internal HLE.Switch device { get; set; }
+        internal HLE.Switch Device { get; set; }
 
-        private static ListStore GameDirsBoxStore { get; set; }
+        private static ListStore _GameDirsBoxStore;
 
-        private static bool ListeningForKeypress { get; set; }
+        private static bool _ListeningForKeypress;
 
+#pragma warning disable 649
         [GUI] Window       SettingsWin;
         [GUI] CheckButton  ErrorLogToggle;
         [GUI] CheckButton  WarningLogToggle;
@@ -77,14 +78,15 @@ namespace Ryujinx
         [GUI] ToggleButton Plus1;
         [GUI] ToggleButton R1;
         [GUI] ToggleButton ZR1;
+#pragma warning restore 649
 
         public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
-        public SwitchSettings(HLE.Switch _device) : this(new Builder("Ryujinx.GUI.SwitchSettings.glade"), _device) { }
+        public SwitchSettings(HLE.Switch device) : this(new Builder("Ryujinx.GUI.SwitchSettings.glade"), device) { }
 
-        private SwitchSettings(Builder builder, HLE.Switch _device) : base(builder.GetObject("SettingsWin").Handle)
+        private SwitchSettings(Builder builder, HLE.Switch device) : base(builder.GetObject("SettingsWin").Handle)
         {
-            device = _device;
+            Device = device;
 
             builder.Autoconnect(this);
 
@@ -166,27 +168,27 @@ namespace Ryujinx
             FGALMSpinAdjustment.Value = SwitchConfig.FsGlobalAccessLogMode;
 
             GameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
-            GameDirsBoxStore  = new ListStore(typeof(string));
-            GameDirsBox.Model = GameDirsBoxStore;
+            _GameDirsBoxStore  = new ListStore(typeof(string));
+            GameDirsBox.Model = _GameDirsBoxStore;
             foreach (string GameDir in SwitchConfig.GameDirs)
             {
-                GameDirsBoxStore.AppendValues(GameDir);
+                _GameDirsBoxStore.AppendValues(GameDir);
             }
 
             if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; BrowseThemeDir.Sensitive = false; }
 
             LogPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
 
-            ListeningForKeypress = false;
+            _ListeningForKeypress = false;
         }
 
         //Events
         private void Button_Pressed(object obj, EventArgs args, ToggleButton Button)
         {
-            if (ListeningForKeypress == false)
+            if (_ListeningForKeypress == false)
             {
                 KeyPressEvent += On_KeyPress;
-                ListeningForKeypress = true;
+                _ListeningForKeypress = true;
 
                 void On_KeyPress(object Obj, KeyPressEventArgs KeyPressed)
                 {
@@ -198,7 +200,7 @@ namespace Ryujinx
 
                     Button.SetStateFlags(0, true);
                     KeyPressEvent -= On_KeyPress;
-                    ListeningForKeypress = false;
+                    _ListeningForKeypress = false;
                 }
             }
             else { Button.SetStateFlags(0, true); }
@@ -206,7 +208,7 @@ namespace Ryujinx
 
         private void AddDir_Pressed(object obj, EventArgs args)
         {
-            if (Directory.Exists(AddGameDirBox.Buffer.Text)) { GameDirsBoxStore.AppendValues(AddGameDirBox.Buffer.Text); }
+            if (Directory.Exists(AddGameDirBox.Buffer.Text)) { _GameDirsBoxStore.AppendValues(AddGameDirBox.Buffer.Text); }
 
             AddDir.SetStateFlags(0, true);
         }
@@ -217,7 +219,7 @@ namespace Ryujinx
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
-                GameDirsBoxStore.AppendValues(fc.Filename);
+                _GameDirsBoxStore.AppendValues(fc.Filename);
             }
 
             fc.Destroy();
@@ -230,7 +232,7 @@ namespace Ryujinx
             TreeSelection selection = GameDirsBox.Selection;
 
             selection.GetSelected(out TreeIter treeiter);
-            GameDirsBoxStore.Remove(ref treeiter);
+            _GameDirsBoxStore.Remove(ref treeiter);
 
             RemoveDir.SetStateFlags(0, true);
         }
@@ -260,14 +262,14 @@ namespace Ryujinx
         {
             List<string> gameDirs = new List<string>();
 
-            GameDirsBoxStore.GetIterFirst(out TreeIter iter);
-            for (int i = 0; i < GameDirsBoxStore.IterNChildren(); i++)
+            _GameDirsBoxStore.GetIterFirst(out TreeIter iter);
+            for (int i = 0; i < _GameDirsBoxStore.IterNChildren(); i++)
             {
-                GameDirsBoxStore.GetValue(iter, i );
+                _GameDirsBoxStore.GetValue(iter, i );
 
-                gameDirs.Add((string)GameDirsBoxStore.GetValue(iter, 0));
+                gameDirs.Add((string)_GameDirsBoxStore.GetValue(iter, 0));
 
-                GameDirsBoxStore.IterNext(ref iter);
+                _GameDirsBoxStore.IterNext(ref iter);
             }
 
             if (ErrorLogToggle.Active)                { SwitchConfig.LoggingEnableError        = true;  }
@@ -347,9 +349,9 @@ namespace Ryujinx
 
 
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-            Configuration.Configure(device, SwitchConfig);
-            MainMenu.ApplyTheme();
-            MainMenu.UpdateGameTable();
+            Configuration.Configure(Device, SwitchConfig);
+            MainWindow.ApplyTheme();
+            MainWindow.UpdateGameTable();
 
             Destroy();
         }

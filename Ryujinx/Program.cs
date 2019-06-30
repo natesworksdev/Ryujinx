@@ -25,7 +25,7 @@ namespace Ryujinx
             Application.Init();
 
             Application gtkapp = new Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
-            MainMenu win       = new MainMenu(args, gtkapp);
+            MainWindow win     = new MainWindow(args, gtkapp);
 
             gtkapp.Register(GLib.Cancellable.Current);
             gtkapp.AddWindow(win);

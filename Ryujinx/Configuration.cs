@@ -259,7 +259,7 @@ namespace Ryujinx
                 }
             }
 
-            MainMenu.DiscordIntegrationEnabled = SwitchConfig.EnableDiscordIntegration;
+            MainWindow.DiscordIntegrationEnabled = SwitchConfig.EnableDiscordIntegration;
 
             device.EnableDeviceVsync = SwitchConfig.EnableVsync;
 
