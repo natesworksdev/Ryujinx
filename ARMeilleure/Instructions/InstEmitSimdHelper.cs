@@ -1402,30 +1402,6 @@ namespace ARMeilleure.Instructions
             return context.Call(typeof(SoftFallback).GetMethod(name), op1, op2);
         }
 
-        public static Operand EmitVectorExtractSx32(EmitterContext context, int reg, int index, int size)
-        {
-            ThrowIfInvalid(index, size);
-
-            Operand res = Local(OperandType.I32);
-
-            switch (size)
-            {
-                case 0: context.VectorExtract8 (GetVec(reg), res, index); break;
-                case 1: context.VectorExtract16(GetVec(reg), res, index); break;
-                case 2: context.VectorExtract  (GetVec(reg), res, index); break;
-                case 3: context.VectorExtract  (GetVec(reg), res, index); break;
-            }
-
-            switch (size)
-            {
-                case 0: res = context.SignExtend8 (res); break;
-                case 1: res = context.SignExtend16(res); break;
-                case 2: res = context.SignExtend32(res); break;
-            }
-
-            return res;
-        }
-
         public static Operand EmitVectorExtractSx(EmitterContext context, int reg, int index, int size)
         {
             return EmitVectorExtract(context, reg, index, size, true);
@@ -1450,15 +1426,22 @@ namespace ARMeilleure.Instructions
                 case 3: context.VectorExtract  (GetVec(reg), res, index); break;
             }
 
-            res = context.Copy(Local(OperandType.I64), res);
-
             if (signed)
             {
                 switch (size)
                 {
-                    case 0: res = context.SignExtend8 (res); break;
-                    case 1: res = context.SignExtend16(res); break;
-                    case 2: res = context.SignExtend32(res); break;
+                    case 0: res = context.SignExtend8 (OperandType.I64, res); break;
+                    case 1: res = context.SignExtend16(OperandType.I64, res); break;
+                    case 2: res = context.SignExtend32(OperandType.I64, res); break;
+                }
+            }
+            else
+            {
+                switch (size)
+                {
+                    case 0: res = context.ZeroExtend8 (OperandType.I64, res); break;
+                    case 1: res = context.ZeroExtend16(OperandType.I64, res); break;
+                    case 2: res = context.ZeroExtend32(OperandType.I64, res); break;
                 }
             }
 
@@ -1471,7 +1454,7 @@ namespace ARMeilleure.Instructions
 
             if (size < 3)
             {
-                value = context.Copy(Local(OperandType.I32), value);
+                value = context.ConvertI64ToI32(value);
             }
 
             switch (size)

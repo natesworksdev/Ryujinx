@@ -59,7 +59,7 @@ namespace ARMeilleure.Instructions
                 EmitBarrier(context);
             }
 
-            Operand address = context.Copy(GetIntOrSP(op, op.Rn));
+            Operand address = context.Copy(GetIntOrSP(context, op.Rn));
 
             if (pair)
             {
@@ -71,9 +71,9 @@ namespace ARMeilleure.Instructions
                 {
                     Operand value = EmitLoad(context, address, exclusive, 3);
 
-                    Operand valueLow = context.Copy(Local(OperandType.I32), value);
+                    Operand valueLow = context.ConvertI64ToI32(value);
 
-                    valueLow = context.Copy(Local(OperandType.I64), valueLow);
+                    valueLow = context.ZeroExtend32(OperandType.I64, valueLow);
 
                     Operand valueHigh = context.ShiftRightUI(value, Const(32));
 
@@ -173,9 +173,9 @@ namespace ARMeilleure.Instructions
                 EmitBarrier(context);
             }
 
-            Operand address = context.Copy(GetIntOrSP(op, op.Rn));
+            Operand address = context.Copy(GetIntOrSP(context, op.Rn));
 
-            Operand t = GetIntOrZR(op, op.Rt);
+            Operand t = GetIntOrZR(context, op.Rt);
 
             Operand s = null;
 
@@ -183,7 +183,7 @@ namespace ARMeilleure.Instructions
             {
                 Debug.Assert(op.Size == 2 || op.Size == 3, "Invalid size for pairwise store.");
 
-                Operand t2 = GetIntOrZR(op, op.Rt2);
+                Operand t2 = GetIntOrZR(context, op.Rt2);
 
                 Operand value;
 
@@ -221,7 +221,7 @@ namespace ARMeilleure.Instructions
         {
             if (size < 3)
             {
-                value = context.Copy(Local(OperandType.I32), value);
+                value = context.ConvertI64ToI32(value);
             }
 
             string fallbackMethodName = null;
@@ -253,6 +253,8 @@ namespace ARMeilleure.Instructions
                 }
 
                 MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
+
+                context.Call(info, address, value);
 
                 return null;
             }

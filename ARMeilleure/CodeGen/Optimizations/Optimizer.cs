@@ -1,6 +1,7 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ARMeilleure.CodeGen.Optimizations
@@ -61,8 +62,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static void PropagateCopy(Operation copyOp)
         {
-            //Propagate copy source operand to all uses of
-            //the destination operand.
+            //Propagate copy source operand to all uses of the destination operand.
             Operand dest   = copyOp.Dest;
             Operand source = copyOp.GetSource(0);
 
@@ -86,40 +86,31 @@ namespace ARMeilleure.CodeGen.Optimizations
             //from all the use lists on the operands that this node uses.
             block.Operations.Remove(llNode);
 
-            Queue<Node> nodes = new Queue<Node>();
+            Node node = llNode.Value;
 
-            nodes.Enqueue(llNode.Value);
-
-            while (nodes.TryDequeue(out Node node))
+            for (int index = 0; index < node.SourcesCount; index++)
             {
-                for (int index = 0; index < node.SourcesCount; index++)
-                {
-                    Operand src = node.GetSource(index);
-
-                    if (src.Kind != OperandKind.LocalVariable)
-                    {
-                        continue;
-                    }
-
-                    if (src.Uses.Remove(node) && src.Uses.Count == 0)
-                    {
-                        foreach (Node assignment in src.Assignments)
-                        {
-                            nodes.Enqueue(assignment);
-                        }
-                    }
-                }
+                node.SetSource(index, null);
             }
+
+            Debug.Assert(node.Dest == null || node.Dest.Uses.Count == 0);
+
+            node.Dest = null;
         }
 
         private static bool IsUnused(Node node)
         {
-            return DestIsLocalVar(node) && node.Dest.Uses.Count == 0;
+            return DestIsLocalVar(node) && node.Dest.Uses.Count == 0 && !HasSideEffects(node);
         }
 
         private static bool DestIsLocalVar(Node node)
         {
             return node.Dest != null && node.Dest.Kind == OperandKind.LocalVariable;
+        }
+
+        private static bool HasSideEffects(Node node)
+        {
+            return (node is Operation operation) && operation.Inst == Instruction.Call;
         }
 
         private static bool IsPropagableCopy(Operation operation)

@@ -36,7 +36,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBImmAl op = (OpCodeBImmAl)context.CurrOp;
 
-            context.Copy(GetIntOrZR(op, RegisterAlias.Lr), Const(op.Address + 4));
+            context.Copy(GetIntOrZR(context, RegisterAlias.Lr), Const(op.Address + 4));
 
             EmitCall(context, (ulong)op.Immediate);
         }
@@ -45,9 +45,9 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBReg op = (OpCodeBReg)context.CurrOp;
 
-            Operand n = context.Copy(GetIntOrZR(op, op.Rn));
+            Operand n = context.Copy(GetIntOrZR(context, op.Rn));
 
-            context.Copy(GetIntOrZR(op, RegisterAlias.Lr), Const(op.Address + 4));
+            context.Copy(GetIntOrZR(context, RegisterAlias.Lr), Const(op.Address + 4));
 
             EmitVirtualCall(context, n);
         }
@@ -56,7 +56,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBReg op = (OpCodeBReg)context.CurrOp;
 
-            EmitVirtualJump(context, GetIntOrZR(op, op.Rn));
+            EmitVirtualJump(context, GetIntOrZR(context, op.Rn));
         }
 
         public static void Cbnz(EmitterContext context) => EmitCb(context, onNotZero: true);
@@ -66,12 +66,12 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBImmCmp op = (OpCodeBImmCmp)context.CurrOp;
 
-            EmitBranch(context, GetIntOrZR(op, op.Rt), onNotZero);
+            EmitBranch(context, GetIntOrZR(context, op.Rt), onNotZero);
         }
 
         public static void Ret(EmitterContext context)
         {
-            context.Return(GetIntOrZR(context.CurrOp, RegisterAlias.Lr));
+            context.Return(GetIntOrZR(context, RegisterAlias.Lr));
         }
 
         public static void Tbnz(EmitterContext context) => EmitTb(context, onNotZero: true);
@@ -81,7 +81,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBImmTest op = (OpCodeBImmTest)context.CurrOp;
 
-            Operand value = context.BitwiseAnd(GetIntOrZR(op, op.Rt), Const(1L << op.Bit));
+            Operand value = context.BitwiseAnd(GetIntOrZR(context, op.Rt), Const(1L << op.Bit));
 
             EmitBranch(context, value, onNotZero);
         }

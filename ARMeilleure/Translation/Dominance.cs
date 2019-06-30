@@ -1,4 +1,5 @@
 using ARMeilleure.IntermediateRepresentation;
+using System.Diagnostics;
 
 namespace ARMeilleure.Translation
 {
@@ -27,6 +28,8 @@ namespace ARMeilleure.Translation
             }
 
             cfg.Entry.ImmediateDominator = cfg.Entry;
+
+            Debug.Assert(cfg.Entry == cfg.PostOrderBlocks[cfg.PostOrderBlocks.Length - 1]);
 
             bool modified;
 

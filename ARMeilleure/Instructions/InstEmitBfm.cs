@@ -13,8 +13,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
-            Operand d = GetIntOrZR(op, op.Rd);
-            Operand n = GetIntOrZR(op, op.Rn);
+            Operand d = GetIntOrZR(context, op.Rd);
+            Operand n = GetIntOrZR(context, op.Rn);
 
             Operand res;
 
@@ -64,25 +64,25 @@ namespace ARMeilleure.Instructions
             }
             else if (op.Pos == 7 && op.Shift == 0)
             {
-                Operand n = GetIntOrZR(op, op.Rn);
+                Operand n = GetIntOrZR(context, op.Rn);
 
-                SetIntOrZR(context, op.Rd, context.SignExtend8(n));
+                SetIntOrZR(context, op.Rd, context.SignExtend8(n.Type, n));
             }
             else if (op.Pos == 15 && op.Shift == 0)
             {
-                Operand n = GetIntOrZR(op, op.Rn);
+                Operand n = GetIntOrZR(context, op.Rn);
 
-                SetIntOrZR(context, op.Rd, context.SignExtend16(n));
+                SetIntOrZR(context, op.Rd, context.SignExtend16(n.Type, n));
             }
             else if (op.Pos == 31 && op.Shift == 0)
             {
-                Operand n = GetIntOrZR(op, op.Rn);
+                Operand n = GetIntOrZR(context, op.Rn);
 
-                SetIntOrZR(context, op.Rd, context.SignExtend32(n));
+                SetIntOrZR(context, op.Rd, context.SignExtend32(n.Type, n));
             }
             else
             {
-                Operand res = GetIntOrZR(op, op.Rn);
+                Operand res = GetIntOrZR(context, op.Rn);
 
                 res = context.ShiftLeft   (res, Const(bitsCount - 1 - op.Pos));
                 res = context.ShiftRightSI(res, Const(bitsCount - 1));
@@ -112,13 +112,13 @@ namespace ARMeilleure.Instructions
             }
             else if (op.Pos == 7 && op.Shift == 0)
             {
-                Operand n = GetIntOrZR(op, op.Rn);
+                Operand n = GetIntOrZR(context, op.Rn);
 
                 SetIntOrZR(context, op.Rd, context.BitwiseAnd(n, Const(n.Type, 0xff)));
             }
             else if (op.Pos == 15 && op.Shift == 0)
             {
-                Operand n = GetIntOrZR(op, op.Rn);
+                Operand n = GetIntOrZR(context, op.Rn);
 
                 SetIntOrZR(context, op.Rd, context.BitwiseAnd(n, Const(n.Type, 0xffff)));
             }
@@ -137,7 +137,7 @@ namespace ARMeilleure.Instructions
 
             int width = op.Pos + 1;
 
-            Operand res = GetIntOrZR(op, op.Rn);
+            Operand res = GetIntOrZR(context, op.Rn);
 
             res = context.ShiftLeft(res, Const(op.GetBitsCount() - width));
 
@@ -162,7 +162,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
-            Operand res = GetIntOrZR(op, op.Rn);
+            Operand res = GetIntOrZR(context, op.Rn);
 
             res = signed
                 ? context.ShiftRightSI(res, Const(op.Shift))
@@ -175,7 +175,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
-            Operand res = GetIntOrZR(op, op.Rn);
+            Operand res = GetIntOrZR(context, op.Rn);
 
             int shift = op.GetBitsCount() - op.Shift;
 
@@ -186,7 +186,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
-            Operand res = GetIntOrZR(op, op.Rn);
+            Operand res = GetIntOrZR(context, op.Rn);
 
             long mask = op.WMask & op.TMask;
 

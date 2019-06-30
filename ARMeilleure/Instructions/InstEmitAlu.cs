@@ -25,7 +25,7 @@ namespace ARMeilleure.Instructions
 
             if (context.CurrOp.RegisterSize == RegisterSize.Int64)
             {
-                carry = context.Copy(Local(OperandType.I64), carry);
+                carry = context.ZeroExtend32(OperandType.I64, carry);
             }
 
             d = context.Add(d, carry);
@@ -107,7 +107,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
+            Operand n = GetIntOrZR(context, op.Rn);
 
             Operand nHigh = context.ShiftRightUI(n, Const(1));
 
@@ -128,7 +128,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
+            Operand n = GetIntOrZR(context, op.Rn);
 
             Operand d = context.CountLeadingZeros(n);
 
@@ -154,7 +154,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAluRs op = (OpCodeAluRs)context.CurrOp;
 
-            Operand res = GetIntOrZR(op, op.Rm);
+            Operand res = GetIntOrZR(context, op.Rm);
 
             if (op.Shift != 0)
             {
@@ -166,7 +166,7 @@ namespace ARMeilleure.Instructions
                 {
                     res = context.ShiftRightUI(res, Const(op.Shift));
 
-                    Operand n = GetIntOrZR(op, op.Rn);
+                    Operand n = GetIntOrZR(context, op.Rn);
 
                     int invShift = op.GetBitsCount() - op.Shift;
 
@@ -201,7 +201,7 @@ namespace ARMeilleure.Instructions
 
             if (context.CurrOp.RegisterSize == RegisterSize.Int64)
             {
-                borrow = context.Copy(Local(OperandType.I64), borrow);
+                borrow = context.ZeroExtend32(OperandType.I64, borrow);
             }
 
             d = context.Subtract(d, borrow);
@@ -264,7 +264,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
+            Operand n = GetIntOrZR(context, op.Rn);
 
             if (op.RegisterSize == RegisterSize.Int32)
             {
@@ -280,7 +280,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
+            Operand n = GetIntOrZR(context, op.Rn);
             Operand d;
 
             if (op.RegisterSize == RegisterSize.Int32)
@@ -299,7 +299,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
-            SetAluDOrZR(context, context.ByteSwap(GetIntOrZR(op, op.Rn)));
+            SetAluDOrZR(context, context.ByteSwap(GetIntOrZR(context, op.Rn)));
         }
 
         public static void Rorv(EmitterContext context)
@@ -311,11 +311,11 @@ namespace ARMeilleure.Instructions
         {
             IOpCodeAluRs op = (IOpCodeAluRs)context.CurrOp;
 
-            Operand m = GetIntOrZR(op, op.Rm);
+            Operand m = GetIntOrZR(context, op.Rm);
 
             if (op.RegisterSize == RegisterSize.Int64)
             {
-                m = context.Copy(Local(OperandType.I32), m);
+                m = context.ConvertI64ToI32(m);
             }
 
             return context.BitwiseAnd(m, Const(context.CurrOp.GetBitsCount() - 1));
@@ -352,7 +352,7 @@ namespace ARMeilleure.Instructions
                 return;
             }
 
-            context.Copy(GetIntOrSP(op, op.Rd), d);
+            SetIntOrSP(context, op.Rd, d);
         }
     }
 }

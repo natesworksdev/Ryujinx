@@ -38,6 +38,8 @@ namespace ARMeilleure.IntermediateRepresentation
             Predecessors = new List<BasicBlock>();
 
             DominanceFrontiers = new HashSet<BasicBlock>();
+
+            Index = -1;
         }
 
         public BasicBlock(int index) : this()

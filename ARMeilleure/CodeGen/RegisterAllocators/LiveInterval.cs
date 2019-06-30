@@ -73,11 +73,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             if (_ranges.Count != 0)
             {
+                Debug.Assert(position != _ranges[0].End);
+
                 _ranges[0] = new LiveRange(position, _ranges[0].End);
             }
             else
             {
-                _ranges.Add(new LiveRange(position, position));
+                _ranges.Add(new LiveRange(position, position + 1));
             }
         }
 
@@ -103,6 +105,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public void AddRange(int start, int end)
         {
+            if (start >= end)
+            {
+                throw new ArgumentException("Invalid range start position " + start + ", " + end);
+            }
+
             int index = _ranges.BinarySearch(new LiveRange(start, end));
 
             if (index >= 0)
@@ -329,25 +336,17 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public LiveInterval GetSplitChild(int position)
         {
-            //Try to find the interval among the split intervals that
-            //contains the given position. The end is technically exclusive,
-            //so if we have a interval where position == start, and other
-            //where position == end, we should prefer the former.
-            //To achieve that, we can just check the split childs backwards,
-            //as they are sorted by start/end position, and there are no overlaps.
-            for (int index = _childs.Count - 1; index >= 0; index--)
+            if (Overlaps(position))
             {
-                LiveInterval splitChild = _childs.Values[index];
+                return this;
+            }
 
-                if (position >= splitChild.GetStart() && position <= splitChild.GetEnd())
+            foreach (LiveInterval splitChild in _childs.Values)
+            {
+                if (splitChild.Overlaps(position))
                 {
                     return splitChild;
                 }
-            }
-
-            if (position >= GetStart() && position <= GetEnd())
-            {
-                return this;
             }
 
             return null;

@@ -1,6 +1,7 @@
 using ARMeilleure.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ARMeilleure.Translation
 {
@@ -68,6 +69,8 @@ namespace ARMeilleure.Translation
 
             while (workQueue.TryDequeue(out BasicBlock block))
             {
+                Debug.Assert(block.Index != -1, "Invalid block index.");
+
                 if (block.Next != null && visited.Add(block.Next))
                 {
                     workQueue.Enqueue(block.Next);

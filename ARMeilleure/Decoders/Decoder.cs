@@ -19,6 +19,15 @@ namespace ARMeilleure.Decoders
             _opActivators = new ConcurrentDictionary<Type, MakeOp>();
         }
 
+        public static Block[] DecodeBasicBlock(MemoryManager memory, ulong address, ExecutionMode mode)
+        {
+            Block block = new Block(address);
+
+            FillBlock(memory, mode, block, ulong.MaxValue);
+
+            return new Block[] { block };
+        }
+
         public static Block[] DecodeFunction(MemoryManager memory, ulong address, ExecutionMode mode)
         {
             List<Block> blocks = new List<Block>();

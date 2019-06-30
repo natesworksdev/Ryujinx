@@ -65,7 +65,7 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(NativeInterface).GetMethod(name);
 
-            context.Call(info, GetIntOrZR(op, op.Rt));
+            context.Call(info, GetIntOrZR(context, op.Rt));
         }
 
         public static void Nop(EmitterContext context)
@@ -85,7 +85,7 @@ namespace ARMeilleure.Instructions
                 case 0b11_011_0111_0100_001:
                 {
                     //DC ZVA
-                    Operand t = GetIntOrZR(op, op.Rt);
+                    Operand t = GetIntOrZR(context, op.Rt);
 
                     MethodInfo info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt64));
 

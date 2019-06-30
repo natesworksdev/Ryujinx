@@ -3,6 +3,7 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
+using System.Reflection;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -17,35 +18,20 @@ namespace ARMeilleure.Instructions
 
         public static Operand GetExtendedM(EmitterContext context, int rm, IntType type)
         {
-            Operand value = GetIntOrZR(context.CurrOp, rm);
+            Operand value = GetIntOrZR(context, rm);
 
             switch (type)
             {
-                case IntType.UInt8:  value = ZeroExtend8 (context, value); break;
-                case IntType.UInt16: value = ZeroExtend16(context, value); break;
-                case IntType.UInt32: value = ZeroExtend32(context, value); break;
+                case IntType.UInt8:  value = context.ZeroExtend8 (value.Type, value); break;
+                case IntType.UInt16: value = context.ZeroExtend16(value.Type, value); break;
+                case IntType.UInt32: value = context.ZeroExtend32(value.Type, value); break;
 
-                case IntType.Int8:  value = context.SignExtend8 (value); break;
-                case IntType.Int16: value = context.SignExtend16(value); break;
-                case IntType.Int32: value = context.SignExtend32(value); break;
+                case IntType.Int8:  value = context.SignExtend8 (value.Type, value); break;
+                case IntType.Int16: value = context.SignExtend16(value.Type, value); break;
+                case IntType.Int32: value = context.SignExtend32(value.Type, value); break;
             }
 
             return value;
-        }
-
-        public static Operand ZeroExtend8(EmitterContext context, Operand value)
-        {
-            return context.BitwiseAnd(value, Const(value.Type, 0xff));
-        }
-
-        public static Operand ZeroExtend16(EmitterContext context, Operand value)
-        {
-            return context.BitwiseAnd(value, Const(value.Type, 0xffff));
-        }
-
-        public static Operand ZeroExtend32(EmitterContext context, Operand value)
-        {
-            return context.BitwiseAnd(value, Const(value.Type, 0xffffffff));
         }
 
         public static Operand GetIntA32(EmitterContext context, int register)
@@ -58,7 +44,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                return GetIntOrSP(context.CurrOp, GetRegisterAlias(context.Mode, register));
+                return GetIntOrSP(context, GetRegisterAlias(context.Mode, register));
             }
         }
 
@@ -146,19 +132,21 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand GetIntOrZR(IOpCode op, int regIndex)
+        public static Operand GetIntOrZR(EmitterContext context, int regIndex)
         {
-            OperandType type = op.GetOperandType();
-
             if (regIndex == RegisterConsts.ZeroIndex)
             {
+                OperandType type = context.CurrOp.GetOperandType();
+
                 return type == OperandType.I32 ? Const(0) : Const(0L);
             }
             else
             {
-                return Register(regIndex, RegisterType.Integer, type);
+                return GetIntOrSP(context, regIndex);
             }
         }
+
+        public static bool FullDebug = false;
 
         public static void SetIntOrZR(EmitterContext context, int regIndex, Operand value)
         {
@@ -167,12 +155,31 @@ namespace ARMeilleure.Instructions
                 return;
             }
 
-            context.Copy(GetIntOrSP(context.CurrOp, regIndex), value);
+            SetIntOrSP(context, regIndex, value);
         }
 
-        public static Operand GetIntOrSP(IOpCode op, int regIndex)
+        public static Operand GetIntOrSP(EmitterContext context, int regIndex)
         {
-            return Register(regIndex, RegisterType.Integer, op.GetOperandType());
+            Operand value = Register(regIndex, RegisterType.Integer, OperandType.I64);
+
+            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
+            {
+                value = context.ConvertI64ToI32(value);
+            }
+
+            return value;
+        }
+
+        public static void SetIntOrSP(EmitterContext context, int regIndex, Operand value)
+        {
+            Operand reg = Register(regIndex, RegisterType.Integer, OperandType.I64);
+
+            if (value.Type == OperandType.I32)
+            {
+                value = context.ZeroExtend32(OperandType.I64, value);
+            }
+
+            context.Copy(reg, value);
         }
 
         public static Operand GetVec(int regIndex)

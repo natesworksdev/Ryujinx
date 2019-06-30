@@ -7,13 +7,14 @@ namespace ARMeilleure.State
 {
     class NativeContext : IDisposable
     {
-        private const int IntSize  = 8;
-        private const int VecSize  = 16;
-        private const int FlagSize = 4;
+        private const int IntSize   = 8;
+        private const int VecSize   = 16;
+        private const int FlagSize  = 4;
+        private const int ExtraSize = 4;
 
-        private const int TotalSize = RegisterConsts.IntRegsCount * IntSize +
-                                      RegisterConsts.VecRegsCount * VecSize +
-                                      RegisterConsts.FlagsCount   * FlagSize;
+        private const int TotalSize = RegisterConsts.IntRegsCount * IntSize  +
+                                      RegisterConsts.VecRegsCount * VecSize  +
+                                      RegisterConsts.FlagsCount   * FlagSize + ExtraSize;
 
         public IntPtr BasePtr { get; }
 
@@ -99,6 +100,16 @@ namespace ARMeilleure.State
             Marshal.WriteInt32(BasePtr, offset, value ? 1 : 0);
         }
 
+        public int GetCounter()
+        {
+            return Marshal.ReadInt32(BasePtr, GetCounterOffset());
+        }
+
+        public void SetCounter(int value)
+        {
+            Marshal.WriteInt32(BasePtr, GetCounterOffset(), value);
+        }
+
         public static int GetRegisterOffset(Register reg)
         {
             if (reg.Type == RegisterType.Integer)
@@ -114,6 +125,13 @@ namespace ARMeilleure.State
                 return RegisterConsts.IntRegsCount * IntSize +
                        RegisterConsts.VecRegsCount * VecSize + reg.Index * FlagSize;
             }
+        }
+
+        public static int GetCounterOffset()
+        {
+            return RegisterConsts.IntRegsCount * IntSize +
+                   RegisterConsts.VecRegsCount * VecSize +
+                   RegisterConsts.FlagsCount   * FlagSize;
         }
 
         public void Dispose()

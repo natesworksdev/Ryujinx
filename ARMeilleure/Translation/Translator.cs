@@ -6,6 +6,8 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
+using System.Collections.Concurrent;
+using System.Reflection;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -17,11 +19,15 @@ namespace ARMeilleure.Translation
 
         private TranslatedCache _cache;
 
+        private ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
+
         public Translator(MemoryManager memory)
         {
             _memory = memory;
 
             _cache = new TranslatedCache();
+
+            _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
         }
 
         public void Execute(ExecutionContext context, ulong address)
@@ -30,13 +36,35 @@ namespace ARMeilleure.Translation
 
             do
             {
-                TranslatedFunction func = Translate(address, ExecutionMode.Aarch64);
-
-                address = func.Execute(context);
+                address = ExecuteSingle(context, address);
             }
-            while (address != 0);
+            while (context.Running && address != 0);
 
             NativeInterface.UnregisterThread();
+        }
+
+        public void SelfRegister(ExecutionContext context)
+        {
+            NativeInterface.RegisterThread(context, _memory);
+        }
+
+        public ulong ExecuteSingle(ExecutionContext context, ulong address)
+        {
+            TranslatedFunction func = GetOrTranslate(address, ExecutionMode.Aarch64);
+
+            return func.Execute(context);
+        }
+
+        private TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
+        {
+            if (!_funcs.TryGetValue(address, out TranslatedFunction func))
+            {
+                func = Translate(address, mode);
+
+                _funcs.TryAdd(address, func);
+            }
+
+            return func;
         }
 
         private TranslatedFunction Translate(ulong address, ExecutionMode mode)
@@ -47,9 +75,16 @@ namespace ARMeilleure.Translation
 
             Block[] blocks = Decoder.DecodeFunction(_memory, address, ExecutionMode.Aarch64);
 
+            EmitSynchronization(context);
+
+            if (blocks[0].Address != address)
+            {
+                context.Branch(context.GetLabel(address));
+            }
+
             ControlFlowGraph cfg = EmitAndGetCFG(context, blocks);
 
-            RegisterUsage.InsertContext(cfg);
+            RegisterUsage.RunPass(cfg);
 
             Dominance.FindDominators(cfg);
 
@@ -86,7 +121,7 @@ namespace ARMeilleure.Translation
 
                     if (isLastOp && block.Branch != null && block.Branch.Address <= block.Address)
                     {
-                        context.Synchronize();
+                        EmitSynchronization(context);
                     }
 
                     Operand lblPredicateSkip = null;
@@ -125,6 +160,27 @@ namespace ARMeilleure.Translation
             }
 
             return context.GetControlFlowGraph();
+        }
+
+        private static void EmitSynchronization(EmitterContext context)
+        {
+            int cntOffset = NativeContext.GetCounterOffset();
+
+            Operand count = context.LoadFromContext(cntOffset);
+
+            Operand lblNonZero = Label();
+
+            context.BranchIfTrue(lblNonZero, count);
+
+            MethodInfo info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization));
+
+            context.Call(info);
+
+            context.MarkLabel(lblNonZero);
+
+            count = context.Subtract(count, Const(1));
+
+            context.StoreToContext(cntOffset, count);
         }
     }
 }

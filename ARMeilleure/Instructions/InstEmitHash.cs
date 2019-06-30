@@ -55,8 +55,8 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(SoftFallback).GetMethod(name);
 
-            Operand n = GetIntOrZR(op, op.Rn);
-            Operand m = GetIntOrZR(op, op.Rm);
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand m = GetIntOrZR(context, op.Rm);
 
             Operand d = context.Call(info, n, m);
 

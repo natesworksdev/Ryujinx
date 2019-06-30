@@ -42,15 +42,15 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
+            Operand n = GetIntOrZR(context, op.Rn);
 
             if (Optimizations.UseSse2)
             {
                 switch (op.Size)
                 {
-                    case 0: n = ZeroExtend8 (context, n); n = context.Multiply(n, Const(0x01010101)); break;
-                    case 1: n = ZeroExtend16(context, n); n = context.Multiply(n, Const(0x00010001)); break;
-                    case 2: n = ZeroExtend32(context, n); break;
+                    case 0: n = context.ZeroExtend8 (n.Type, n); n = context.Multiply(n, Const(0x01010101)); break;
+                    case 1: n = context.ZeroExtend16(n.Type, n); n = context.Multiply(n, Const(0x00010001)); break;
+                    case 2: n = context.ZeroExtend32(n.Type, n); break;
                 }
 
                 Operand res = context.VectorInsert(context.VectorZero(), n, 0);
@@ -225,10 +225,9 @@ namespace ARMeilleure.Instructions
 
             Operand isTrue = InstEmitFlowHelper.GetCondTrue(context, op.Cond);
 
-            context.BranchIfTrue(isTrue, lblTrue);
+            context.BranchIfTrue(lblTrue, isTrue);
 
-            OperandType type = op.Size != 0 ? OperandType.FP32
-                                            : OperandType.FP64;
+            OperandType type = op.Size == 0 ? OperandType.FP32 : OperandType.FP64;
 
             Operand me = context.VectorExtract(GetVec(op.Rm), Local(type), 0);
 
@@ -247,46 +246,45 @@ namespace ARMeilleure.Instructions
 
         public static void Fmov_Ftoi(EmitterContext context)
         {
-            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            Operand ne = EmitVectorExtractZx(context, op.Rn, 0, 3);
+            Operand ne = EmitVectorExtractZx(context, op.Rn, 0, op.Size + 2);
 
-            SetIntOrZR(context, op.Rd, EmitIntZeroUpperIfNeeded(context, ne));
+            SetIntOrZR(context, op.Rd, ne);
         }
 
         public static void Fmov_Ftoi1(EmitterContext context)
         {
-            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
             Operand ne = EmitVectorExtractZx(context, op.Rn, 1, 3);
 
-            SetIntOrZR(context, op.Rd, EmitIntZeroUpperIfNeeded(context, ne));
+            SetIntOrZR(context, op.Rd, ne);
         }
 
         public static void Fmov_Itof(EmitterContext context)
         {
-            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            Operand n = EmitIntZeroUpperIfNeeded(context, GetIntOrZR(op, op.Rn));
+            Operand n = GetIntOrZR(context, op.Rn);
 
-            context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), n, 0, 3));
+            context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), n, 0, op.Size + 2));
         }
 
         public static void Fmov_Itof1(EmitterContext context)
         {
-            OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            Operand n = EmitIntZeroUpperIfNeeded(context, GetIntOrZR(op, op.Rn));
+            Operand n = GetIntOrZR(context, op.Rn);
 
-            context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), n, 1, 3));
+            context.Copy(GetVec(op.Rd), EmitVectorInsert(context, GetVec(op.Rd), n, 1, 3));
         }
 
         public static void Fmov_S(EmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            OperandType type = op.Size != 0 ? OperandType.FP32
-                                            : OperandType.FP64;
+            OperandType type = op.Size == 0 ? OperandType.FP32 : OperandType.FP64;
 
             Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
 
@@ -307,20 +305,11 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fmov_V(EmitterContext context)
+        public static void Fmov_Vi(EmitterContext context)
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
-            Operand e;
-
-            if (op.Size == 0)
-            {
-                e = Const((int)op.Immediate);
-            }
-            else
-            {
-                e = Const(op.Immediate);
-            }
+            Operand e = Const(op.Immediate);
 
             Operand res = context.VectorZero();
 
@@ -331,25 +320,27 @@ namespace ARMeilleure.Instructions
                 res = EmitVectorInsert(context, res, e, index, op.Size + 2);
             }
 
-            context.Copy(GetVec(op.Rd), e);
+            context.Copy(GetVec(op.Rd), res);
         }
 
         public static void Ins_Gp(EmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
+            Operand d = GetVec(op.Rd);
+            Operand n = GetIntOrZR(context, op.Rn);
 
-            context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), n, op.DstIndex, op.Size));
+            context.Copy(d, EmitVectorInsert(context, d, n, op.DstIndex, op.Size));
         }
 
         public static void Ins_V(EmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
+            Operand d  = GetVec(op.Rd);
             Operand ne = EmitVectorExtractZx(context, op.Rn, op.SrcIndex, op.Size);
 
-            context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), ne, op.DstIndex, op.Size));
+            context.Copy(d, EmitVectorInsert(context, d, ne, op.DstIndex, op.Size));
         }
 
         public static void Movi_V(EmitterContext context)
@@ -382,7 +373,12 @@ namespace ARMeilleure.Instructions
 
             Operand ne = EmitVectorExtractSx(context, op.Rn, op.DstIndex, op.Size);
 
-            SetIntOrZR(context, op.Rd, EmitIntZeroUpperIfNeeded(context, ne));
+            if (op.RegisterSize == RegisterSize.Simd64)
+            {
+                ne = context.ZeroExtend32(OperandType.I64, ne);
+            }
+
+            SetIntOrZR(context, op.Rd, ne);
         }
 
         public static void Tbl_V(EmitterContext context)
@@ -542,17 +538,6 @@ namespace ARMeilleure.Instructions
         public static void Zip2_V(EmitterContext context)
         {
             EmitVectorZip(context, part: 1);
-        }
-
-        private static Operand EmitIntZeroUpperIfNeeded(EmitterContext context, Operand value)
-        {
-            if (context.CurrOp.RegisterSize == RegisterSize.Int32 ||
-                context.CurrOp.RegisterSize == RegisterSize.Simd64)
-            {
-                return ZeroExtend32(context, value);
-            }
-
-            return value;
         }
 
         private static void EmitMoviMvni(EmitterContext context, bool not)
@@ -761,7 +746,11 @@ namespace ARMeilleure.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    Operand res = context.AddIntrinsic(X86PunpcklInstruction[op.Size], n, m);
+                    Instruction punpckInst = part == 0
+                        ? X86PunpcklInstruction[op.Size]
+                        : X86PunpckhInstruction[op.Size];
+
+                    Operand res = context.AddIntrinsic(punpckInst, n, m);
 
                     context.Copy(GetVec(op.Rd), res);
                 }

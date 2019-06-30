@@ -5,9 +5,13 @@ namespace ARMeilleure.State
 {
     public class ExecutionContext : IDisposable
     {
+        private const int MinCountForCheck = 40000;
+
         private NativeContext _nativeContext;
 
         internal IntPtr NativeContextPtr => _nativeContext.BasePtr;
+
+        private bool _interrupted;
 
         private static Stopwatch _tickCounter;
 
@@ -33,6 +37,9 @@ namespace ARMeilleure.State
         public FPCR Fpcr { get; set; }
         public FPSR Fpsr { get; set; }
 
+        public bool Running { get; set; }
+
+        public event EventHandler<EventArgs>              Interrupt;
         public event EventHandler<InstExceptionEventArgs> Break;
         public event EventHandler<InstExceptionEventArgs> SupervisorCall;
         public event EventHandler<InstUndefinedEventArgs> Undefined;
@@ -49,6 +56,10 @@ namespace ARMeilleure.State
         public ExecutionContext()
         {
             _nativeContext = new NativeContext();
+
+            Running = true;
+
+            _nativeContext.SetCounter(MinCountForCheck);
         }
 
         public ulong GetX(int index)              => _nativeContext.GetX(index);
@@ -59,6 +70,23 @@ namespace ARMeilleure.State
 
         public bool GetPstateFlag(PState flag)             => _nativeContext.GetPstateFlag(flag);
         public void SetPstateFlag(PState flag, bool value) => _nativeContext.SetPstateFlag(flag, value);
+
+        public void CheckInterrupt()
+        {
+            if (_interrupted)
+            {
+                _interrupted = false;
+
+                Interrupt?.Invoke(this, EventArgs.Empty);
+            }
+
+            _nativeContext.SetCounter(MinCountForCheck);
+        }
+
+        public void RequestInterrupt()
+        {
+            _interrupted = true;
+        }
 
         internal void OnBreak(ulong address, int imm)
         {

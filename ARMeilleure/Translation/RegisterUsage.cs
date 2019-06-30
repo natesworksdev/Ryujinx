@@ -68,7 +68,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public static void InsertContext(ControlFlowGraph cfg)
+        public static void RunPass(ControlFlowGraph cfg)
         {
             //Computer local register inputs and outputs used inside blocks.
             RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Count];
@@ -120,7 +120,7 @@ namespace ARMeilleure.Translation
                 {
                     BasicBlock block = cfg.PostOrderBlocks[index];
 
-                    if (block.Predecessors.Count != 0)
+                    if (block.Predecessors.Count != 0 && !HasContextLoad(block))
                     {
                         BasicBlock predecessor = block.Predecessors[0];
 
@@ -194,20 +194,64 @@ namespace ARMeilleure.Translation
             //Insert load and store context instructions where needed.
             foreach (BasicBlock block in cfg.Blocks)
             {
+                bool hasContextLoad = HasContextLoad(block);
+
+                if (hasContextLoad)
+                {
+                    block.Operations.RemoveFirst();
+                }
+
                 //The only block without any predecessor should be the entry block.
                 //It always needs a context load as it is the first block to run.
-                if (block.Predecessors.Count == 0)
+                if (block.Predecessors.Count == 0 || hasContextLoad)
                 {
                     LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector);
                     LoadLocals(block, globalInputs[block.Index].IntMask, RegisterType.Integer);
                 }
 
-                if (HasContextStore(block))
+                bool hasContextStore = HasContextStore(block);
+
+                if (hasContextStore)
+                {
+                    block.Operations.RemoveLast();
+                }
+
+                if (EndsWithReturn(block) || hasContextStore)
                 {
                     StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer);
                     StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector);
                 }
             }
+        }
+
+        private static bool HasContextLoad(BasicBlock block)
+        {
+            return StartsWith(block, Instruction.LoadFromContext) && block.Operations.First.Value.SourcesCount == 0;
+        }
+
+        private static bool HasContextStore(BasicBlock block)
+        {
+            return EndsWith(block, Instruction.StoreToContext) && block.GetLastOp().SourcesCount == 0;
+        }
+
+        private static bool StartsWith(BasicBlock block, Instruction inst)
+        {
+            if (block.Operations.Count == 0)
+            {
+                return false;
+            }
+
+            return block.Operations.First.Value is Operation operation && operation.Inst == inst;
+        }
+
+        private static bool EndsWith(BasicBlock block, Instruction inst)
+        {
+            if (block.Operations.Count == 0)
+            {
+                return false;
+            }
+
+            return block.Operations.Last.Value is Operation operation && operation.Inst == inst;
         }
 
         private static RegisterMask GetMask(Register register)
@@ -316,7 +360,7 @@ namespace ARMeilleure.Translation
             throw new ArgumentException($"Invalid register type \"{type}\".");
         }
 
-        private static bool HasContextStore(BasicBlock block)
+        private static bool EndsWithReturn(BasicBlock block)
         {
             if (!(block.GetLastOp() is Operation operation))
             {

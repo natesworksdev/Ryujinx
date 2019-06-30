@@ -212,7 +212,7 @@ namespace ARMeilleure.Instructions
         Fmls_Ve,
         Fmov_S,
         Fmov_Si,
-        Fmov_V,
+        Fmov_Vi,
         Fmov_Ftoi,
         Fmov_Itof,
         Fmov_Ftoi1,

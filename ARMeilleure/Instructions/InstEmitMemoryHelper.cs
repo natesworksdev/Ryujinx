@@ -13,8 +13,6 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitMemoryHelper
     {
-        private static bool ForceFallback = true;
-
         private enum Extension
         {
             Zx,
@@ -48,47 +46,30 @@ namespace ARMeilleure.Instructions
 
             if (isSimd)
             {
-                if (ForceFallback || !Optimizations.UseSse2 || size < 2)
-                {
-                    EmitReadVectorFallback(context, address, context.VectorZero(), rt, 0, size);
-                }
-                else
-                {
-                    EmitReadVector(context, address, context.VectorZero(), rt, 0, size);
-                }
+                EmitReadVector(context, address, context.VectorZero(), rt, 0, size);
             }
             else
             {
-                if (ForceFallback)
-                {
-                    EmitReadIntFallback(context, address, rt, size);
-                }
-                else
-                {
-                    EmitReadInt(context, address, rt, size);
-                }
+                EmitReadInt(context, address, rt, size);
             }
 
             if (!isSimd)
             {
-                Operand value = GetT(context, rt);
-
-                if (ext == Extension.Sx64)
-                {
-                    value = context.Copy(Local(OperandType.I64), value);
-                }
+                Operand value = GetIntOrZR(context, rt);
 
                 if (ext == Extension.Sx32 || ext == Extension.Sx64)
                 {
+                    OperandType destType = ext == Extension.Sx64 ? OperandType.I64 : OperandType.I32;
+
                     switch (size)
                     {
-                        case 0: value = context.SignExtend8 (value); break;
-                        case 1: value = context.SignExtend16(value); break;
-                        case 2: value = context.SignExtend32(value); break;
+                        case 0: value = context.SignExtend8 (destType, value); break;
+                        case 1: value = context.SignExtend16(destType, value); break;
+                        case 2: value = context.SignExtend32(destType, value); break;
                     }
                 }
 
-                context.Copy(GetT(context, rt), value);
+                SetIntOrZR(context, rt, value);
             }
         }
 
@@ -100,14 +81,7 @@ namespace ARMeilleure.Instructions
             int elem,
             int size)
         {
-            if (ForceFallback || !Optimizations.UseSse2 || size < 2)
-            {
-                EmitReadVectorFallback(context, address, vector, rt, elem, size);
-            }
-            else
-            {
-                EmitReadVector(context, address, vector, rt, elem, size);
-            }
+            EmitReadVector(context, address, vector, rt, elem, size);
         }
 
         public static void EmitStore(EmitterContext context, Operand address, int rt, int size)
@@ -121,25 +95,11 @@ namespace ARMeilleure.Instructions
 
             if (isSimd)
             {
-                if (ForceFallback || !Optimizations.UseSse2 || size < 2)
-                {
-                    EmitWriteVectorFallback(context, address, rt, 0, size);
-                }
-                else
-                {
-                    EmitWriteVector(context, address, rt, 0, size);
-                }
+                EmitWriteVector(context, address, rt, 0, size);
             }
             else
             {
-                if (ForceFallback)
-                {
-                    EmitWriteIntFallback(context, address, rt, size);
-                }
-                else
-                {
-                    EmitWriteInt(context, address, rt, size);
-                }
+                EmitWriteInt(context, address, rt, size);
             }
         }
 
@@ -150,14 +110,7 @@ namespace ARMeilleure.Instructions
             int elem,
             int size)
         {
-            if (ForceFallback || !Optimizations.UseSse2 || size < 2)
-            {
-                EmitWriteVectorFallback(context, address, rt, elem, size);
-            }
-            else
-            {
-                EmitWriteVector(context, address, rt, elem, size);
-            }
+            EmitWriteVector(context, address, rt, elem, size);
         }
 
         private static bool IsSimd(EmitterContext context)
@@ -197,7 +150,7 @@ namespace ARMeilleure.Instructions
                 case 3: value = context.Load    (Local(OperandType.I64), physAddr); break;
             }
 
-            context.Copy(GetT(context, rt), value);
+            SetIntOrZR(context, rt, value);
 
             context.MarkLabel(lblEnd);
         }
@@ -230,27 +183,37 @@ namespace ARMeilleure.Instructions
 
             Operand value = null;
 
-            /*switch (size)
+            switch (size)
             {
-                case 2: context.EmitCall(typeof(Sse), nameof(Sse.LoadScalarVector128));  break;
+                case 0:
+                    value = context.VectorInsert8(vector, context.LoadZx8(Local(OperandType.I32), physAddr), elem);
+                    break;
+
+                case 1:
+                    value = context.VectorInsert16(vector, context.LoadZx16(Local(OperandType.I32), physAddr), elem);
+                    break;
+
+                case 2:
+                    value = context.VectorInsert(vector, context.Load(Local(OperandType.I32), physAddr), elem);
+                    break;
 
                 case 3:
-                {
-                    Type[] types = new Type[] { typeof(double*) };
-
-                    context.EmitCall(typeof(Sse2).GetMethod(nameof(Sse2.LoadScalarVector128), types));
-
+                    value = context.VectorInsert(vector, context.Load(Local(OperandType.I64), physAddr), elem);
                     break;
-                }
 
-                case 4: context.EmitCall(typeof(Sse), nameof(Sse.LoadAlignedVector128)); break;
-
-                throw new InvalidOperationException($"Invalid vector load size of {1 << size} bytes.");
-            }*/
+                case 4:
+                    value = context.Load(Local(OperandType.V128), physAddr);
+                    break;
+            }
 
             context.Copy(GetVec(rt), value);
 
             context.MarkLabel(lblEnd);
+        }
+
+        private static Operand VectorCreate(EmitterContext context, Operand value)
+        {
+            return context.VectorInsert(context.VectorZero(), value, 0);
         }
 
         private static void EmitWriteInt(EmitterContext context, Operand address, int rt, int size)
@@ -273,11 +236,11 @@ namespace ARMeilleure.Instructions
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath);
 
-            Operand value = GetT(context, rt);
+            Operand value = GetIntOrZR(context, rt);
 
             if (size < 3)
             {
-                value = context.Copy(Local(OperandType.I32), value);
+                value = context.ConvertI64ToI32(value);
             }
 
             switch (size)
@@ -318,14 +281,28 @@ namespace ARMeilleure.Instructions
 
             Operand value = GetVec(rt);
 
-            /*switch (size)
+            switch (size)
             {
-                case 2: context.EmitCall(typeof(Sse),  nameof(Sse.StoreScalar));  break;
-                case 3: context.EmitCall(typeof(Sse2), nameof(Sse2.StoreScalar)); break;
-                case 4: context.EmitCall(typeof(Sse),  nameof(Sse.StoreAligned)); break;
+                case 0:
+                    context.Store8(physAddr, context.VectorExtract8(value, Local(OperandType.I32), elem));
+                    break;
 
-                default: throw new InvalidOperationException($"Invalid vector store size of {1 << size} bytes.");
-            }*/
+                case 1:
+                    context.Store16(physAddr, context.VectorExtract16(value, Local(OperandType.I32), elem));
+                    break;
+
+                case 2:
+                    context.Store(physAddr, context.VectorExtract(value, Local(OperandType.FP32), elem));
+                    break;
+
+                case 3:
+                    context.Store(physAddr, context.VectorExtract(value, Local(OperandType.FP64), elem));
+                    break;
+
+                case 4:
+                    context.Store(physAddr, value);
+                    break;
+            }
 
             context.MarkLabel(lblEnd);
         }
@@ -392,7 +369,7 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
 
-            context.Copy(GetT(context, rt), context.Call(info, address));
+            SetIntOrZR(context, rt, context.Call(info, address));
         }
 
         private static void EmitReadVectorFallback(
@@ -420,7 +397,7 @@ namespace ARMeilleure.Instructions
 
             if (size < 3)
             {
-                value = context.Copy(Local(OperandType.I32), value);
+                value = context.ConvertI64ToI32(value);
             }
 
             switch (size)
@@ -448,11 +425,11 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
 
-            Operand value = GetT(context, rt);
+            Operand value = GetIntOrZR(context, rt);
 
             if (size < 3)
             {
-                value = context.Copy(Local(OperandType.I32), value);
+                value = context.ConvertI64ToI32(value);
             }
 
             context.Call(info, address, value);
@@ -498,33 +475,6 @@ namespace ARMeilleure.Instructions
             }
 
             context.Call(info, address, value);
-        }
-
-        private static Operand GetT(EmitterContext context, int rt)
-        {
-            OpCode op = context.CurrOp;
-
-            if (op is IOpCodeSimd)
-            {
-                return GetVec(rt);
-            }
-            else if (op is OpCodeMem opMem)
-            {
-                bool is32Bits = opMem.Size < 3 && !opMem.Extend64;
-
-                OperandType type = is32Bits ? OperandType.I32 : OperandType.I64;
-
-                if (rt == RegisterConsts.ZeroIndex)
-                {
-                    return Const(type, 0);
-                }
-
-                return Register(rt, RegisterType.Integer, type);
-            }
-            else
-            {
-                return GetIntOrZR(context.CurrOp, rt);
-            }
         }
     }
 }

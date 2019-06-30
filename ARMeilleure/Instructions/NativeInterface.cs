@@ -249,8 +249,8 @@ namespace ARMeilleure.Instructions
             {
                 success = context.Memory.AtomicCompareExchangeByte(
                     (long)address,
-                    (byte)value,
-                    (byte)context.ExclusiveValueLow);
+                    (byte)context.ExclusiveValueLow,
+                    (byte)value);
 
                 if (success)
                 {
@@ -271,8 +271,8 @@ namespace ARMeilleure.Instructions
             {
                 success = context.Memory.AtomicCompareExchangeInt16(
                     (long)address,
-                    (short)value,
-                    (short)context.ExclusiveValueLow);
+                    (short)context.ExclusiveValueLow,
+                    (short)value);
 
                 if (success)
                 {
@@ -293,8 +293,8 @@ namespace ARMeilleure.Instructions
             {
                 success = context.Memory.AtomicCompareExchangeInt32(
                     (long)address,
-                    (int)value,
-                    (int)context.ExclusiveValueLow);
+                    (int)context.ExclusiveValueLow,
+                    (int)value);
 
                 if (success)
                 {
@@ -315,8 +315,8 @@ namespace ARMeilleure.Instructions
             {
                 success = context.Memory.AtomicCompareExchangeInt64(
                     (long)address,
-                    (long)value,
-                    (long)context.ExclusiveValueLow);
+                    (long)context.ExclusiveValueLow,
+                    (long)value);
 
                 if (success)
                 {
@@ -337,10 +337,10 @@ namespace ARMeilleure.Instructions
             {
                 success = context.Memory.AtomicCompareExchangeInt128(
                     (long)address,
-                    value.GetUInt64(0),
-                    value.GetUInt64(1),
                     context.ExclusiveValueLow,
-                    context.ExclusiveValueHigh);
+                    context.ExclusiveValueHigh,
+                    value.GetUInt64(0),
+                    value.GetUInt64(1));
 
                 if (success)
                 {
@@ -360,6 +360,11 @@ namespace ARMeilleure.Instructions
         public static void ClearExclusive()
         {
             GetCurrentContext().ExclusiveAddress = ulong.MaxValue;
+        }
+
+        public static void CheckSynchronization()
+        {
+            GetContext().CheckInterrupt();
         }
 
         private static ThreadContext GetCurrentContext()

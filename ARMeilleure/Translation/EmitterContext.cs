@@ -5,6 +5,7 @@ using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -93,6 +94,8 @@ namespace ARMeilleure.Translation
 
         public Operand Call(MethodInfo info, params Operand[] callArgs)
         {
+            RuntimeHelpers.PrepareMethod(info.MethodHandle);
+
             long methodPtr = info.MethodHandle.GetFunctionPointer().ToInt64();
 
             Operand[] args = new Operand[callArgs.Length + 1];
@@ -154,6 +157,11 @@ namespace ARMeilleure.Translation
         public Operand ConditionalSelect(Operand a, Operand b, Operand c)
         {
             return Add(Instruction.ConditionalSelect, Local(b.Type), a, b, c);
+        }
+
+        public Operand ConvertI64ToI32(Operand a)
+        {
+            return Add(Instruction.ConvertI64ToI32, Local(OperandType.I32), a);
         }
 
         public Operand ConvertToFP(OperandType type, Operand a)
@@ -246,6 +254,30 @@ namespace ARMeilleure.Translation
             return Add(Instruction.Load, value, address);
         }
 
+        public Operand LoadFromContext(int offset)
+        {
+            return Add(Instruction.LoadFromContext, Local(OperandType.I32), Const(offset));
+        }
+
+        public void LoadFromContext()
+        {
+            _needsNewBlock = true;
+
+            Add(Instruction.LoadFromContext);
+        }
+
+        public void StoreToContext(int offset, Operand value)
+        {
+            Add(Instruction.StoreToContext, null, Const(offset), value);
+        }
+
+        public void StoreToContext()
+        {
+            Add(Instruction.StoreToContext);
+
+            _needsNewBlock = true;
+        }
+
         public Operand LoadSx16(Operand value, Operand address)
         {
             return Add(Instruction.LoadSx16, value, address);
@@ -293,12 +325,20 @@ namespace ARMeilleure.Translation
 
         public Operand Return()
         {
-            return Add(Instruction.Return);
+            Operand returnValue = Add(Instruction.Return);
+
+            _needsNewBlock = true;
+
+            return returnValue;
         }
 
         public Operand Return(Operand a)
         {
-            return Add(Instruction.Return, null, a);
+            Operand returnValue = Add(Instruction.Return, null, a);
+
+            _needsNewBlock = true;
+
+            return returnValue;
         }
 
         public Operand RotateRight(Operand a, Operand b)
@@ -321,19 +361,19 @@ namespace ARMeilleure.Translation
             return Add(Instruction.ShiftRightUI, Local(a.Type), a, b);
         }
 
-        public Operand SignExtend8(Operand a)
+        public Operand SignExtend16(OperandType type, Operand a)
         {
-            return Add(Instruction.SignExtend8, Local(a.Type), a);
+            return Add(Instruction.SignExtend16, Local(type), a);
         }
 
-        public Operand SignExtend16(Operand a)
+        public Operand SignExtend32(OperandType type, Operand a)
         {
-            return Add(Instruction.SignExtend16, Local(a.Type), a);
+            return Add(Instruction.SignExtend32, Local(type), a);
         }
 
-        public Operand SignExtend32(Operand a)
+        public Operand SignExtend8(OperandType type, Operand a)
         {
-            return Add(Instruction.SignExtend32, Local(a.Type), a);
+            return Add(Instruction.SignExtend8, Local(type), a);
         }
 
         public void Store(Operand address, Operand value)
@@ -401,6 +441,21 @@ namespace ARMeilleure.Translation
             return Add(Instruction.VectorZeroUpper96, Local(OperandType.V128), vector);
         }
 
+        public Operand ZeroExtend16(OperandType type, Operand a)
+        {
+            return Add(Instruction.ZeroExtend16, Local(type), a);
+        }
+
+        public Operand ZeroExtend32(OperandType type, Operand a)
+        {
+            return Add(Instruction.ZeroExtend32, Local(type), a);
+        }
+
+        public Operand ZeroExtend8(OperandType type, Operand a)
+        {
+            return Add(Instruction.ZeroExtend8, Local(type), a);
+        }
+
         public Operand AddIntrinsic(Instruction inst, params Operand[] args)
         {
             return Add(inst, Local(OperandType.V128), args);
@@ -442,11 +497,6 @@ namespace ARMeilleure.Translation
             _irBlock.Branch = branchBlock;
 
             _needsNewBlock = true;
-        }
-
-        public void Synchronize()
-        {
-
         }
 
         public void MarkLabel(Operand label)

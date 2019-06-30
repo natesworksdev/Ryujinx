@@ -24,7 +24,11 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(NativeInterface).GetMethod(mthdName);
 
+            context.StoreToContext();
+
             context.Call(info, Const(op.Address), Const(op.Id));
+
+            context.LoadFromContext();
 
             if (context.CurrBlock.Next == null)
             {
@@ -38,7 +42,11 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.Undefined));
 
+            context.StoreToContext();
+
             context.Call(info, Const(op.Address), Const(op.RawOpCode));
+
+            context.LoadFromContext();
 
             if (context.CurrBlock.Next == null)
             {

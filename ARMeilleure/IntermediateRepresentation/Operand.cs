@@ -1,10 +1,9 @@
-using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class Operand //: IEquatable<Operand>
+    class Operand
     {
         public OperandKind Kind { get; }
 
@@ -27,11 +26,6 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             Kind = kind;
             Type = type;
-        }
-
-        public Operand(OperandType type, int offset) : this(OperandKind.Memory, type)
-        {
-            Value = (uint)offset;
         }
 
         public Operand(int value) : this(OperandKind.Constant, OperandType.I32)
@@ -107,7 +101,7 @@ namespace ARMeilleure.IntermediateRepresentation
             return BitConverter.Int64BitsToDouble((long)Value);
         }
 
-        public void NumberLocal(int number)
+        internal void NumberLocal(int number)
         {
             if (Kind != OperandKind.LocalVariable)
             {

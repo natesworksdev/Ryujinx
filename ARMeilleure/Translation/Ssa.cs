@@ -67,17 +67,6 @@ namespace ARMeilleure.Translation
                     {
                         Operand local = localDefs[GetIdFromRegister(operand.GetRegister())];
 
-                        if (local != null && local.Type != operand.Type)
-                        {
-                            Operand temp = Local(operand.Type);
-
-                            Operation castOp = new Operation(Instruction.Copy, temp, local);
-
-                            block.Operations.AddBefore(node, castOp);
-
-                            local = temp;
-                        }
-
                         operand = local ?? operand;
                     }
 
@@ -156,17 +145,6 @@ namespace ARMeilleure.Translation
                             local = FindDef(globalDefs, block, operand);
 
                             localDefs[key] = local;
-                        }
-
-                        if (local.Kind == OperandKind.LocalVariable && local.Type != operand.Type)
-                        {
-                            Operand temp = Local(operand.Type);
-
-                            Operation castOp = new Operation(Instruction.Copy, temp, local);
-
-                            block.Operations.AddBefore(node, castOp);
-
-                            local = temp;
                         }
 
                         operand = local;

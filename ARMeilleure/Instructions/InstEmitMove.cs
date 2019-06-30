@@ -15,7 +15,7 @@ namespace ARMeilleure.Instructions
 
             OperandType type = op.GetOperandType();
 
-            Operand res = GetIntOrZR(op, op.Rd);
+            Operand res = GetIntOrZR(context, op.Rd);
 
             res = context.BitwiseAnd(res, Const(type, ~(0xffffL << op.Bit)));
 

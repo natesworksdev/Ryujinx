@@ -16,9 +16,9 @@ namespace ARMeilleure.Instructions
         {
             OpCodeMul op = (OpCodeMul)context.CurrOp;
 
-            Operand a = GetIntOrZR(op, op.Ra);
-            Operand n = GetIntOrZR(op, op.Rn);
-            Operand m = GetIntOrZR(op, op.Rm);
+            Operand a = GetIntOrZR(context, op.Ra);
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand m = GetIntOrZR(context, op.Rm);
 
             Operand res = context.Multiply(n, m);
 
@@ -49,19 +49,19 @@ namespace ARMeilleure.Instructions
 
             Operand GetExtendedRegister32(int index)
             {
-                Operand value = GetIntOrZR(op, index);
+                Operand value = GetIntOrZR(context, index);
 
                 if ((flags & MullFlags.Signed) != 0)
                 {
-                    return context.SignExtend32(value);
+                    return context.SignExtend32(value.Type, value);
                 }
                 else
                 {
-                    return ZeroExtend32(context, value);
+                    return context.ZeroExtend32(value.Type, value);
                 }
             }
 
-            Operand a = GetIntOrZR(op, op.Ra);
+            Operand a = GetIntOrZR(context, op.Ra);
 
             Operand n = GetExtendedRegister32(op.Rn);
             Operand m = GetExtendedRegister32(op.Rm);
@@ -77,8 +77,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeMul op = (OpCodeMul)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
-            Operand m = GetIntOrZR(op, op.Rm);
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand m = GetIntOrZR(context, op.Rm);
 
             Operand d = context.Multiply64HighSI(n, m);
 
@@ -89,8 +89,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeMul op = (OpCodeMul)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
-            Operand m = GetIntOrZR(op, op.Rm);
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand m = GetIntOrZR(context, op.Rm);
 
             Operand d = context.Multiply64HighUI(n, m);
 

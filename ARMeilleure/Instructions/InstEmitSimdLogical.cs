@@ -293,13 +293,13 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, 0);
 
-                ne = context.Copy(Local(OperandType.I32), ne);
+                ne = context.ConvertI64ToI32(ne);
 
                 MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.ReverseBits8));
 
                 Operand de = context.Call(info, ne);
 
-                de = context.Copy(Local(OperandType.I64), de);
+                de = context.ZeroExtend32(OperandType.I64, de);
 
                 res = EmitVectorInsert(context, res, de, index, 0);
             }

@@ -1,5 +1,4 @@
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 
@@ -99,6 +98,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     if (copyDest != copySource)
                     {
                         OperandType type = types[copyDest];
+
+                        type = type.IsInteger() ? OperandType.I64 : OperandType.V128;
 
                         EmitXorSwap(sequence, GetRegister(copyDest, type), GetRegister(copySource, type));
 

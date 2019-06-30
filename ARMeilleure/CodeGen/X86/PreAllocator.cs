@@ -12,7 +12,7 @@ namespace ARMeilleure.CodeGen.X86
     {
         public static void RunPass(ControlFlowGraph cfg, MemoryManager memory, out int maxCallArgs)
         {
-            maxCallArgs = 0;
+            maxCallArgs = -1;
 
             foreach (BasicBlock block in cfg.Blocks)
             {
@@ -199,17 +199,19 @@ namespace ARMeilleure.CodeGen.X86
                 //--- This can be done efficiently by adding the result to itself.
                 //-- Then, we need to add the least significant bit that was shifted out.
                 //--- We can convert the least significant bit to float, and add it to the result.
-                Operand lsb = Local(OperandType.I64);
+                Operand lsb  = Local(OperandType.I64);
+                Operand half = Local(OperandType.I64);
 
                 Operand lsbF = Local(dest.Type);
 
-                temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, lsb, source));
+                temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, lsb,  source));
+                temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, half, source));
 
-                temp = nodes.AddAfter(temp, new Operation(Instruction.BitwiseAnd,   lsb,    lsb,    Const(1L)));
-                temp = nodes.AddAfter(temp, new Operation(Instruction.ShiftRightUI, source, source, Const(1)));
+                temp = nodes.AddAfter(temp, new Operation(Instruction.BitwiseAnd,   lsb,  lsb,  Const(1L)));
+                temp = nodes.AddAfter(temp, new Operation(Instruction.ShiftRightUI, half, half, Const(1)));
 
                 temp = nodes.AddAfter(temp, new Operation(Instruction.ConvertToFP, lsbF, lsb));
-                temp = nodes.AddAfter(temp, new Operation(Instruction.ConvertToFP, dest, source));
+                temp = nodes.AddAfter(temp, new Operation(Instruction.ConvertToFP, dest, half));
 
                 temp = nodes.AddAfter(temp, new Operation(Instruction.Add, dest, dest, dest));
                 temp = nodes.AddAfter(temp, new Operation(Instruction.Add, dest, dest, lsbF));
@@ -232,7 +234,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand res = Local(dest.Type);
 
-            temp = nodes.AddAfter(temp, new Operation(Instruction.X86Pcmpeqw, res, res, res));
+            temp = nodes.AddAfter(temp, new Operation(Instruction.VectorOne, res));
 
             if (dest.Type == OperandType.FP32)
             {

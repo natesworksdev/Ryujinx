@@ -40,6 +40,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.CompareLessUI,           GenerateCompareLessUI);
             Add(Instruction.CompareNotEqual,         GenerateCompareNotEqual);
             Add(Instruction.ConditionalSelect,       GenerateConditionalSelect);
+            Add(Instruction.ConvertI64ToI32,         GenerateConvertI64ToI32);
             Add(Instruction.ConvertToFP,             GenerateConvertToFP);
             Add(Instruction.Copy,                    GenerateCopy);
             Add(Instruction.CountLeadingZeros,       GenerateCountLeadingZeros);
@@ -79,9 +80,13 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.VectorInsert,            GenerateVectorInsert);
             Add(Instruction.VectorInsert16,          GenerateVectorInsert16);
             Add(Instruction.VectorInsert8,           GenerateVectorInsert8);
+            Add(Instruction.VectorOne,               GenerateVectorOne);
             Add(Instruction.VectorZero,              GenerateVectorZero);
             Add(Instruction.VectorZeroUpper64,       GenerateVectorZeroUpper64);
             Add(Instruction.VectorZeroUpper96,       GenerateVectorZeroUpper96);
+            Add(Instruction.ZeroExtend16,            GenerateZeroExtend16);
+            Add(Instruction.ZeroExtend32,            GenerateZeroExtend32);
+            Add(Instruction.ZeroExtend8,             GenerateZeroExtend8);
             Add(Instruction.X86Addpd,                GenerateX86Addpd);
             Add(Instruction.X86Addps,                GenerateX86Addps);
             Add(Instruction.X86Addsd,                GenerateX86Addsd);
@@ -227,7 +232,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Optimizer.RunPass(cfg);
 
-            Logger.EndPass(PassName.Optimization);
+            Logger.EndPass(PassName.Optimization, cfg);
 
             Logger.StartPass(PassName.PreAllocation);
 
@@ -323,7 +328,14 @@ namespace ARMeilleure.CodeGen.X86
         {
             ValidateDestSrc1(operation);
 
-            context.Assembler.Xor(operation.Dest, operation.GetSource(1));
+            if (operation.Dest.Type.IsInteger())
+            {
+                context.Assembler.Xor(operation.Dest, operation.GetSource(1));
+            }
+            else
+            {
+                context.Assembler.Xorps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
+            }
         }
 
         private static void GenerateBitwiseNot(CodeGenContext context, Operation operation)
@@ -423,6 +435,14 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Cmovcc(operation.Dest, operation.GetSource(1), X86Condition.NotEqual);
         }
 
+        private static void GenerateConvertI64ToI32(CodeGenContext context, Operation operation)
+        {
+            Operand dest   = operation.Dest;
+            Operand source = operation.GetSource(0);
+
+            context.Assembler.Mov(dest, Get32BitsRegister(source.GetRegister()));
+        }
+
         private static void GenerateConvertToFP(CodeGenContext context, Operation operation)
         {
             Operand dest   = operation.Dest;
@@ -486,31 +506,20 @@ namespace ARMeilleure.CodeGen.X86
 
                 context.Assembler.Xor(dest, dest);
             }
-            else if (dest.Type == OperandType.I64 && source.Type == OperandType.I32)
-            {
-                //I32 -> I64 zero-extension.
-                if (dest.Kind == OperandKind.Register && source.Kind == OperandKind.Register)
-                {
-                    dest = Get32BitsRegister(dest.GetRegister());
-                }
-                else if (source.Kind == OperandKind.Constant)
-                {
-                    source = new Operand(source.Value);
-                }
-
-                context.Assembler.Mov(dest, source);
-            }
             else if (dest.GetRegister().Type == RegisterType.Vector)
             {
                 if (source.GetRegister().Type == RegisterType.Integer)
                 {
-                    //FIXME.
                     context.Assembler.Movd(dest, source);
                 }
                 else
                 {
                     context.Assembler.Movdqu(dest, source);
                 }
+            }
+            else if (dest.Type == OperandType.I32 && source.Kind == OperandKind.Register)
+            {
+                context.Assembler.Mov(dest, Get32BitsRegister(source.GetRegister()));
             }
             else
             {
@@ -614,13 +623,25 @@ namespace ARMeilleure.CodeGen.X86
             Operand value   = operation.Dest;
             Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
 
-            if (value.GetRegister().Type == RegisterType.Integer)
+            switch (value.Type)
             {
-                context.Assembler.Mov(value, address);
-            }
-            else
-            {
-                context.Assembler.Movdqu(value, address);
+                case OperandType.I32:
+                case OperandType.I64:
+                    context.Assembler.Mov(value, address);
+                    break;
+
+                case OperandType.FP32:
+                case OperandType.FP64:
+                    context.Assembler.Movd(value, address);
+                    break;
+
+                case OperandType.V128:
+                    context.Assembler.Movdqu(value, address);
+                    break;
+
+                default:
+                    Debug.Assert(false);
+                    break;
             }
         }
 
@@ -813,13 +834,25 @@ namespace ARMeilleure.CodeGen.X86
             Operand value   = operation.GetSource(1);
             Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
 
-            if (value.GetRegister().Type == RegisterType.Integer)
+            switch (value.Type)
             {
-                context.Assembler.Mov(address, value);
-            }
-            else
-            {
-                context.Assembler.Movdqu(address, value);
+                case OperandType.I32:
+                case OperandType.I64:
+                    context.Assembler.Mov(address, value);
+                    break;
+
+                case OperandType.FP32:
+                case OperandType.FP64:
+                    context.Assembler.Movd(address, value);
+                    break;
+
+                case OperandType.V128:
+                    context.Assembler.Movdqu(address, value);
+                    break;
+
+                default:
+                    Debug.Assert(false);
+                    break;
             }
         }
 
@@ -1017,6 +1050,11 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Pinsrb(dest, src2, src1, index);
         }
 
+        private static void GenerateVectorOne(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Pcmpeqw(operation.Dest, operation.Dest, operation.Dest);
+        }
+
         private static void GenerateVectorZero(CodeGenContext context, Operation operation)
         {
             context.Assembler.Xorps(operation.Dest, operation.Dest, operation.Dest);
@@ -1030,6 +1068,23 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateVectorZeroUpper96(CodeGenContext context, Operation operation)
         {
             ZeroUpper96(context, operation.Dest, operation.GetSource(0));
+        }
+
+        private static void GenerateZeroExtend16(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Movzx16(operation.Dest, Get32BitsRegister(operation.GetSource(0).GetRegister()));
+        }
+
+        private static void GenerateZeroExtend32(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Mov(
+                Get32BitsRegister(operation.Dest.GetRegister()),
+                Get32BitsRegister(operation.GetSource(0).GetRegister()));
+        }
+
+        private static void GenerateZeroExtend8(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Movzx8(operation.Dest, Get32BitsRegister(operation.GetSource(0).GetRegister()));
         }
 
         private static void GenerateX86Addpd(CodeGenContext context, Operation operation)

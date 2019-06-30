@@ -36,7 +36,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdMemMs op = (OpCodeSimdMemMs)context.CurrOp;
 
-            Operand n = GetIntOrSP(op, op.Rn);
+            Operand n = GetIntOrSP(context, op.Rn);
 
             long offset = 0;
 
@@ -77,7 +77,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdMemSs op = (OpCodeSimdMemSs)context.CurrOp;
 
-            Operand n = GetIntOrSP(op, op.Rn);
+            Operand n = GetIntOrSP(context, op.Rn);
 
             long offset = 0;
 
@@ -142,12 +142,12 @@ namespace ARMeilleure.Instructions
         {
             OpCodeMemReg op = (OpCodeMemReg)context.CurrOp;
 
-            Operand n = GetIntOrSP(op, op.Rn);
+            Operand n = GetIntOrSP(context, op.Rn);
             Operand m;
 
             if (op.Rm != RegisterAlias.Zr)
             {
-                m = GetIntOrZR(op, op.Rm);
+                m = GetIntOrZR(context, op.Rm);
             }
             else
             {

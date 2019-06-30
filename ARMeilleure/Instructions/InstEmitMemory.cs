@@ -129,7 +129,7 @@ namespace ARMeilleure.Instructions
             {
                 case OpCodeMemImm op:
                 {
-                    address = context.Copy(GetIntOrSP(op, op.Rn));
+                    address = context.Copy(GetIntOrSP(context, op.Rn));
 
                     //Pre-indexing.
                     if (!op.PostIdx)
@@ -142,7 +142,7 @@ namespace ARMeilleure.Instructions
 
                 case OpCodeMemReg op:
                 {
-                    Operand n = GetIntOrSP(op, op.Rn);
+                    Operand n = GetIntOrSP(context, op.Rn);
 
                     Operand m = GetExtendedM(context, op.Rm, op.IntType);
 
@@ -170,7 +170,7 @@ namespace ARMeilleure.Instructions
                     address = context.Add(address, Const(op.Immediate));
                 }
 
-                context.Copy(GetIntOrSP(op, op.Rn), address);
+                SetIntOrSP(context, op.Rn, address);
             }
         }
     }

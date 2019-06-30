@@ -27,8 +27,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeCsel op = (OpCodeCsel)context.CurrOp;
 
-            Operand n = GetIntOrZR(op, op.Rn);
-            Operand m = GetIntOrZR(op, op.Rm);
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand m = GetIntOrZR(context, op.Rm);
 
             if (cselOp == CselOperation.Increment)
             {

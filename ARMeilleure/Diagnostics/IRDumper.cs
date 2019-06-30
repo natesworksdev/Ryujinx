@@ -109,6 +109,11 @@ namespace ARMeilleure.Diagnostics
 
         private static string GetOperandName(Operand operand, Dictionary<Operand, string> localNames)
         {
+            if (operand == null)
+            {
+                return "<NULL>";
+            }
+
             string name = string.Empty;
 
             if (operand.Kind == OperandKind.LocalVariable)

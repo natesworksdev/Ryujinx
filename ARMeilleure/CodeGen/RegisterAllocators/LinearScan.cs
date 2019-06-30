@@ -201,17 +201,28 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             int selectedNextUse = freePositions[selectedReg];
 
-            if (GetSplitPosition(selectedNextUse) <= current.GetStart())
+            //Intervals starts and ends at odd positions, unless they span an entire
+            //block, in this case they will have ranges at even position.
+            //When a interval is loaded from the stack to a register, we can only
+            //do the split at a odd position, because otherwise the split interval
+            //that is inserted on the list to be processed may clobber a register
+            //used by the instruction at the same position as the split.
+            //The problem only happens when a interval ends exactly at this instruction,
+            //because otherwise they would interfere, and the register wouldn't be selected.
+            //When the interval is aligned and the above happens, there's no problem as
+            //the instruction that is actually with the last use is the one
+            //before that position.
+            selectedNextUse &= ~InstructionGapMask;
+
+            if (selectedNextUse <= current.GetStart())
             {
                 return false;
             }
             else if (selectedNextUse < current.GetEnd())
             {
-                int splitPosition = GetSplitPosition(selectedNextUse);
+                Debug.Assert(selectedNextUse > current.GetStart(), "Trying to split interval at the start.");
 
-                Debug.Assert(splitPosition > current.GetStart(), "Trying to split interval at the start.");
-
-                LiveInterval splitChild = current.Split(splitPosition);
+                LiveInterval splitChild = current.Split(selectedNextUse);
 
                 if (splitChild.UsesCount != 0)
                 {
@@ -340,7 +351,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 //so spill the current interval.
                 Debug.Assert(currentFirstUse > current.GetStart(), "Trying to spill a interval currently being used.");
 
-                LiveInterval splitChild = current.Split(GetSplitPosition(currentFirstUse));
+                LiveInterval splitChild = current.Split(currentFirstUse);
 
                 Debug.Assert(splitChild.GetStart() > current.GetStart(), "Split interval has an invalid start position.");
 
@@ -365,7 +376,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 //the first fixed register use.
                 current.Register = new Register(selectedReg, regType);
 
-                LiveInterval splitChild = current.Split(GetSplitPosition(blockedPositions[selectedReg]));
+                int splitPosition = blockedPositions[selectedReg] & ~InstructionGapMask;
+
+                Debug.Assert(splitPosition > current.GetStart(), "Trying to split a interval at a invalid position.");
+
+                LiveInterval splitChild = current.Split(splitPosition);
 
                 if (splitChild.UsesCount != 0)
                 {
@@ -457,7 +472,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             if (interval.GetStart() < current.GetStart())
             {
-                splitChild = interval.Split(GetSplitPosition(current.GetStart()));
+                splitChild = interval.Split(current.GetStart());
             }
             else
             {
@@ -468,27 +483,16 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 Debug.Assert(nextUse > current.GetStart(), "Trying to spill a interval currently being used.");
 
-                if (GetSplitPosition(nextUse) > splitChild.GetStart())
+                if (nextUse > splitChild.GetStart())
                 {
-                    LiveInterval right = splitChild.Split(GetSplitPosition(nextUse));
+                    LiveInterval right = splitChild.Split(nextUse);
 
                     Spill(context, splitChild);
 
-                    Debug.Assert(right.GetStart() > current.GetStart(), "Split interval has an invalid start position.");
-
-                    InsertInterval(right);
+                    splitChild = right;
                 }
-                else
-                {
-                    if (nextUse == splitChild.GetStart())
-                    {
-                        splitChild.SetStart(GetSplitPosition(nextUse));
-                    }
 
-                    Debug.Assert(splitChild.GetStart() > current.GetStart(), "Split interval has an invalid start position.");
-
-                    InsertInterval(splitChild);
-                }
+                InsertInterval(splitChild);
             }
             else
             {
@@ -502,7 +506,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             Debug.Assert(!interval.IsEmpty,       "Trying to insert a empty interval.");
             Debug.Assert(!interval.IsSpilled,     "Trying to insert a spilled interval.");
 
-            int insertIndex = _intervals.BinarySearch(interval);
+            int startIndex = RegistersCount * 2;
+
+            int insertIndex = _intervals.BinarySearch(startIndex, _intervals.Count - startIndex, interval, null);
 
             if (insertIndex < 0)
             {
@@ -550,9 +556,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     int splitPosition = splitChild.GetStart();
 
-                    int alignedSplitPosition = GetAlignedSplitPosition(splitPosition);
-
-                    if (!_blockEdges.Contains(alignedSplitPosition) && previous.GetEnd() == splitPosition)
+                    if (!_blockEdges.Contains(splitPosition) && previous.GetEnd() == splitPosition)
                     {
                         GetCopyResolver(splitPosition).AddSplit(previous, splitChild);
                     }
@@ -576,7 +580,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 Operation[] sequence = copyResolver.Sequence();
 
-                node = node.List.AddAfter(node, sequence[0]);
+                node = node.List.AddBefore(node, sequence[0]);
 
                 for (int index = 1; index < sequence.Length; index++)
                 {
@@ -627,13 +631,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             continue;
                         }
 
-                        int lEnd   = _blockRanges[block.Index].End - InstructionGap;
+                        int lEnd   = _blockRanges[block.Index].End - 1;
                         int rStart = _blockRanges[succIndex].Start;
 
                         LiveInterval left  = interval.GetSplitChild(lEnd);
                         LiveInterval right = interval.GetSplitChild(rStart);
 
-                        if (left != right)
+                        if (left != null && right != null && left != right)
                         {
                             copyResolver.AddSplit(left, right);
                         }
@@ -705,25 +709,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private static Operand GetRegister(LiveInterval interval)
         {
-            if (interval.IsSpilled)
-            {
-                throw new ArgumentException("Spilled intervals are not allowed.");
-            }
+            Debug.Assert(!interval.IsSpilled, "Spilled intervals are not allowed.");
 
             return new Operand(
                 interval.Register.Index,
                 interval.Register.Type,
                 interval.Local.Type);
-        }
-
-        private static int GetSplitPosition(int position)
-        {
-            return (position & InstructionGapMask) == 0 ? position - 1 : position;
-        }
-
-        private static int GetAlignedSplitPosition(int position)
-        {
-            return (position + InstructionGapMask) & ~InstructionGapMask;
         }
 
         private LinkedListNode<Node> GetOperationNode(int position)
@@ -768,6 +759,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 }
 
                 _operationsCount += block.Operations.Count * InstructionGap;
+
+                if (block.Operations.Count == 0)
+                {
+                    //Pretend we have a dummy instruction on the empty block.
+                    _operationNodes.Add(null);
+
+                    _operationsCount += InstructionGap;
+                }
             }
 
             _parentIntervals = _intervals.ToArray();
@@ -860,14 +859,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
 
-                if (block.Operations.Count == 0)
-                {
-                    _blockRanges[block.Index] = new LiveRange(operationPos, operationPos + InstructionGap);
+                //We handle empty blocks by pretending they have a dummy instruction,
+                //because otherwise the block would have the same start and end position,
+                //and this is not valid.
+                int instCount = Math.Max(block.Operations.Count, 1);
 
-                    continue;
-                }
-
-                int blockStart = operationPos - block.Operations.Count * InstructionGap;
+                int blockStart = operationPos - instCount * InstructionGap;
                 int blockEnd   = operationPos;
 
                 _blockRanges[block.Index] = new LiveRange(blockStart, blockEnd);
@@ -881,17 +878,16 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     _intervals[id].AddRange(blockStart, blockEnd);
                 }
 
-                foreach (Node node in BottomOperations(block))
+                if (block.Operations.Count == 0)
                 {
                     operationPos -= InstructionGap;
 
-                    foreach (Operand source in Operands(node))
-                    {
-                        LiveInterval interval = _intervals[GetOperandId(source)];
+                    continue;
+                }
 
-                        interval.AddRange(blockStart, operationPos);
-                        interval.AddUsePosition(operationPos);
-                    }
+                foreach (Node node in BottomOperations(block))
+                {
+                    operationPos -= InstructionGap;
 
                     Operand dest = node.Dest;
 
@@ -899,7 +895,15 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     {
                         LiveInterval interval = _intervals[GetOperandId(dest)];
 
-                        interval.SetStart(operationPos);
+                        interval.SetStart(operationPos + 1);
+                        interval.AddUsePosition(operationPos + 1);
+                    }
+
+                    foreach (Operand source in Operands(node))
+                    {
+                        LiveInterval interval = _intervals[GetOperandId(source)];
+
+                        interval.AddRange(blockStart, operationPos + 1);
                         interval.AddUsePosition(operationPos);
                     }
 
@@ -937,7 +941,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 LiveInterval interval = _intervals[GetRegisterId(callerSavedReg)];
 
-                interval.AddRange(operationPos, operationPos + 1);
+                interval.AddRange(operationPos + 1, operationPos + InstructionGap);
 
                 mask &= ~(1 << regIndex);
             }

@@ -17,8 +17,8 @@ namespace ARMeilleure.Instructions
             OpCodeAluBinary op = (OpCodeAluBinary)context.CurrOp;
 
             //If Rm == 0, Rd = 0 (division by zero).
-            Operand n = GetIntOrZR(op, op.Rn);
-            Operand m = GetIntOrZR(op, op.Rm);
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand m = GetIntOrZR(context, op.Rm);
 
             Operand divisorIsZero = context.ICompareEqual(m, Const(m.Type, 0));
 

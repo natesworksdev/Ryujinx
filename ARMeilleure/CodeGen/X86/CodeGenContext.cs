@@ -105,7 +105,7 @@ namespace ARMeilleure.CodeGen.X86
 
             //The ABI mandates that the space for at least 4 arguments
             //is reserved on the stack (this is called shadow space).
-            if (argsCount < 4 && argsCount != 0)
+            if (argsCount < 4 && maxCallArgs != -1)
             {
                 argsCount = 4;
             }

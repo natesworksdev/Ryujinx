@@ -77,11 +77,11 @@ namespace ARMeilleure.Instructions
             {
                 if (op.DataOp == DataOp.Logical || op is IOpCodeAluRs)
                 {
-                    return GetIntOrZR(op, op.Rn);
+                    return GetIntOrZR(context, op.Rn);
                 }
                 else
                 {
-                    return GetIntOrSP(op, op.Rn);
+                    return GetIntOrSP(context, op.Rn);
                 }
             }
             else if (context.CurrOp is IOpCode32Alu op32)
@@ -128,7 +128,7 @@ namespace ARMeilleure.Instructions
 
                 case IOpCodeAluRs op:
                 {
-                    Operand value = GetIntOrZR(op, op.Rm);
+                    Operand value = GetIntOrZR(context, op.Rm);
 
                     switch (op.ShiftType)
                     {

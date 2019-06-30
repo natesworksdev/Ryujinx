@@ -66,7 +66,7 @@ namespace ARMeilleure.Instructions
 
                 Operand res = context.Call(info, ne);
 
-                res = context.Copy(Local(OperandType.I64), res);
+                res = context.ZeroExtend16(OperandType.I64, res);
 
                 context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), res, 0, 1));
             }
@@ -217,7 +217,7 @@ namespace ARMeilleure.Instructions
 
                         Operand e = context.Call(info, ne);
 
-                        e = context.Copy(Local(OperandType.I64), e);
+                        e = context.ZeroExtend16(OperandType.I64, e);
 
                         res = EmitVectorInsert(context, res, e, part + index, 1);
                     }
@@ -387,7 +387,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
-            Operand res = GetIntOrZR(op, op.Rn);
+            Operand res = GetIntOrZR(context, op.Rn);
 
             res = EmitFPConvert(context, res, op.Size, signed: true);
 
@@ -398,7 +398,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
-            Operand res = GetIntOrZR(op, op.Rn);
+            Operand res = GetIntOrZR(context, op.Rn);
 
             res = EmitFPConvert(context, res, op.Size, signed: true);
 
@@ -464,7 +464,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
-            Operand res = GetIntOrZR(op, op.Rn);
+            Operand res = GetIntOrZR(context, op.Rn);
 
             res = EmitFPConvert(context, res, op.Size, signed: false);
 
@@ -475,7 +475,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
-            Operand res = GetIntOrZR(op, op.Rn);
+            Operand res = GetIntOrZR(context, op.Rn);
 
             res = EmitFPConvert(context, res, op.Size, signed: false);
 
@@ -568,7 +568,7 @@ namespace ARMeilleure.Instructions
 
                     e = context.Call(info, e);
 
-                    e = context.Copy(Local(OperandType.I64), e);
+                    e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
@@ -620,7 +620,7 @@ namespace ARMeilleure.Instructions
 
                     e = context.Call(info, e);
 
-                    e = context.Copy(Local(OperandType.I64), e);
+                    e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
@@ -661,11 +661,6 @@ namespace ARMeilleure.Instructions
                 ? EmitScalarFcvts(context, emit(ne), 0)
                 : EmitScalarFcvtu(context, emit(ne), 0);
 
-            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
-            {
-                res = context.Copy(Local(OperandType.I64), res);
-            }
-
             SetIntOrZR(context, op.Rd, res);
         }
 
@@ -690,11 +685,6 @@ namespace ARMeilleure.Instructions
             Operand res = signed
                 ? EmitScalarFcvts(context, ne, op.FBits)
                 : EmitScalarFcvtu(context, ne, op.FBits);
-
-            if (context.CurrOp.RegisterSize == RegisterSize.Int32)
-            {
-                res = context.Copy(Local(OperandType.I64), res);
-            }
 
             SetIntOrZR(context, op.Rd, res);
         }
