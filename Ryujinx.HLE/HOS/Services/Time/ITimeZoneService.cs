@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using System;
@@ -22,18 +23,21 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
-                { 0,   GetDeviceLocationName     },
-                { 1,   SetDeviceLocationName     },
-                { 2,   GetTotalLocationNameCount },
-                { 3,   LoadLocationNameList      },
-                { 4,   LoadTimeZoneRule          },
-                { 100, ToCalendarTime            },
-                { 101, ToCalendarTimeWithMyRule  },
-                { 201, ToPosixTime               },
-                { 202, ToPosixTimeWithMyRule     }
+                { 0,   GetDeviceLocationName               },
+                { 1,   SetDeviceLocationName               },
+                { 2,   GetTotalLocationNameCount           },
+                { 3,   LoadLocationNameList                },
+                { 4,   LoadTimeZoneRule                    },
+              //{ 5,   GetTimeZoneRuleVersion              }, // 2.0.0+
+              //{ 6,   GetDeviceLocationNameAndUpdatedTime }, // 5.0.0+
+                { 100, ToCalendarTime                      },
+                { 101, ToCalendarTimeWithMyRule            },
+                { 201, ToPosixTime                         },
+                { 202, ToPosixTimeWithMyRule               }
             };
         }
 
+        // GetDeviceLocationName() -> nn::time::LocationName
         public long GetDeviceLocationName(ServiceCtx context)
         {
             char[] tzName = _timeZone.Id.ToCharArray();
@@ -50,6 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return 0;
         }
 
+        // SetDeviceLocationName(nn::time::LocationName)
         public long SetDeviceLocationName(ServiceCtx context)
         {
             byte[] locationName = context.RequestData.ReadBytes(0x24);
@@ -64,12 +69,13 @@ namespace Ryujinx.HLE.HOS.Services.Time
             }
             catch (TimeZoneNotFoundException)
             {
-                resultCode = MakeError(ErrorModule.Time, 0x3dd);
+                resultCode = MakeError(ErrorModule.Time, TimeError.TimeZoneNotFound);
             }
 
             return resultCode;
         }
 
+        // GetTotalLocationNameCount() -> u32
         public long GetTotalLocationNameCount(ServiceCtx context)
         {
             context.ResponseData.Write(TimeZoneInfo.GetSystemTimeZones().Count);
@@ -77,8 +83,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return 0;
         }
 
+        // LoadLocationNameList(u32 index) -> (u32 outCount, buffer<nn::time::LocationName, 6>)
         public long LoadLocationNameList(ServiceCtx context)
         {
+            // TODO: fix logic to use index
+            uint index          = context.RequestData.ReadUInt32();
             long bufferPosition = context.Response.SendBuff[0].Position;
             long bufferSize     = context.Response.SendBuff[0].Size;
 
@@ -92,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
                 int padding = 0x24 - tzData.Length;
 
-                for (int index = 0; index < padding; index++)
+                for (int i = 0; i < padding; i++)
                 {
                     context.ResponseData.Write((byte)0);
                 }
@@ -103,6 +112,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return 0;
         }
 
+        // LoadTimeZoneRule(nn::time::LocationName locationName) -> buffer<nn::time::TimeZoneRule, 0x16>
         public long LoadTimeZoneRule(ServiceCtx context)
         {
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
@@ -134,34 +144,13 @@ namespace Ryujinx.HLE.HOS.Services.Time
             {
                 Logger.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {tzId} (len: {tzId.Length})");
 
-                resultCode = MakeError(ErrorModule.Time, 0x3dd);
+                resultCode = MakeError(ErrorModule.Time, TimeError.TimeZoneNotFound);
             }
 
             return resultCode;
         }
 
-        private long ToCalendarTimeWithTz(ServiceCtx context, long posixTime, TimeZoneInfo info)
-        {
-            DateTime currentTime = Epoch.AddSeconds(posixTime);
-
-            currentTime = TimeZoneInfo.ConvertTimeFromUtc(currentTime, info);
-
-            context.ResponseData.Write((ushort)currentTime.Year);
-            context.ResponseData.Write((byte)currentTime.Month);
-            context.ResponseData.Write((byte)currentTime.Day);
-            context.ResponseData.Write((byte)currentTime.Hour);
-            context.ResponseData.Write((byte)currentTime.Minute);
-            context.ResponseData.Write((byte)currentTime.Second);
-            context.ResponseData.Write((byte)0); //MilliSecond ?
-            context.ResponseData.Write((int)currentTime.DayOfWeek);
-            context.ResponseData.Write(currentTime.DayOfYear - 1);
-            context.ResponseData.Write(new byte[8]); //TODO: Find out the names used.
-            context.ResponseData.Write((byte)(currentTime.IsDaylightSavingTime() ? 1 : 0));
-            context.ResponseData.Write((int)info.GetUtcOffset(currentTime).TotalSeconds);
-
-            return 0;
-        }
-
+        // ToCalendarTime(nn::time::PosixTime time, buffer<nn::time::TimeZoneRule, 0x15> rules) -> (nn::time::CalendarTime, nn::time::sf::CalendarAdditionalInfo)
         public long ToCalendarTime(ServiceCtx context)
         {
             long posixTime      = context.RequestData.ReadInt64();
@@ -178,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             string tzId = Encoding.ASCII.GetString(tzData).TrimEnd('\0');
 
-            long resultCode = 0;
+            long resultCode;
 
             // Check if the Time Zone exists, otherwise error out.
             try
@@ -191,12 +180,13 @@ namespace Ryujinx.HLE.HOS.Services.Time
             {
                 Logger.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {tzId} (len: {tzId.Length})");
 
-                resultCode = MakeError(ErrorModule.Time, 0x3dd);
+                resultCode = MakeError(ErrorModule.Time, TimeError.TimeZoneNotFound);
             }
 
             return resultCode;
         }
 
+        // ToCalendarTimeWithMyRule(nn::time::PosixTime) -> (nn::time::CalendarTime, nn::time::sf::CalendarAdditionalInfo)
         public long ToCalendarTimeWithMyRule(ServiceCtx context)
         {
             long posixTime = context.RequestData.ReadInt64();
@@ -204,19 +194,15 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return ToCalendarTimeWithTz(context, posixTime, _timeZone);
         }
 
+        // ToPosixTime(nn::time::CalendarTime calendarTime, buffer<nn::time::TimeZoneRule, 0x15> rules) -> (u32 outCount, buffer<nn::time::PosixTime, 0xa>)
         public long ToPosixTime(ServiceCtx context)
         {
             long bufferPosition = context.Request.SendBuff[0].Position;
             long bufferSize     = context.Request.SendBuff[0].Size;
 
-            ushort year   = context.RequestData.ReadUInt16();
-            byte   month  = context.RequestData.ReadByte();
-            byte   day    = context.RequestData.ReadByte();
-            byte   hour   = context.RequestData.ReadByte();
-            byte   minute = context.RequestData.ReadByte();
-            byte   second = context.RequestData.ReadByte();
+            CalendarTime calendarTime = context.RequestData.ReadStruct<CalendarTime>();
 
-            DateTime calendarTime = new DateTime(year, month, day, hour, minute, second);
+            DateTime dateTime = new DateTime(calendarTime.year, calendarTime.month, calendarTime.day, calendarTime.hour, calendarTime.minute, calendarTime.second, DateTimeKind.Local);
 
             if (bufferSize != 0x4000)
             {
@@ -235,30 +221,26 @@ namespace Ryujinx.HLE.HOS.Services.Time
             {
                 TimeZoneInfo info = TimeZoneInfo.FindSystemTimeZoneById(tzId);
 
-                return ToPosixTimeWithTz(context, calendarTime, info);
+                return ToPosixTimeWithTz(context, dateTime, info);
             }
             catch (TimeZoneNotFoundException)
             {
                 Logger.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {tzId} (len: {tzId.Length})");
 
-                resultCode = MakeError(ErrorModule.Time, 0x3dd);
+                resultCode = MakeError(ErrorModule.Time, TimeError.TimeZoneNotFound);
             }
 
             return resultCode;
         }
 
+        // ToPosixTimeWithMyRule(nn::time::CalendarTime calendarTime) -> (u32 outCount, buffer<nn::time::PosixTime, 0xa>)
         public long ToPosixTimeWithMyRule(ServiceCtx context)
         {
-            ushort year   = context.RequestData.ReadUInt16();
-            byte   month  = context.RequestData.ReadByte();
-            byte   day    = context.RequestData.ReadByte();
-            byte   hour   = context.RequestData.ReadByte();
-            byte   minute = context.RequestData.ReadByte();
-            byte   second = context.RequestData.ReadByte();
+            CalendarTime calendarTime = context.RequestData.ReadStruct<CalendarTime>();
 
-            DateTime calendarTime = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Local);
+            DateTime dateTime = new DateTime(calendarTime.year, calendarTime.month, calendarTime.day, calendarTime.hour, calendarTime.minute, calendarTime.second, DateTimeKind.Local);
 
-            return ToPosixTimeWithTz(context, calendarTime, _timeZone);
+            return ToPosixTimeWithTz(context, dateTime, _timeZone);
         }
 
         private long ToPosixTimeWithTz(ServiceCtx context, DateTime calendarTime, TimeZoneInfo info)
@@ -273,6 +255,38 @@ namespace Ryujinx.HLE.HOS.Services.Time
             context.Memory.WriteInt64(position, posixTime);
 
             context.ResponseData.Write(1);
+
+            return 0;
+        }
+
+        private long ToCalendarTimeWithTz(ServiceCtx context, long posixTime, TimeZoneInfo info)
+        {
+            DateTime currentTime = Epoch.AddSeconds(posixTime);
+
+            currentTime = TimeZoneInfo.ConvertTimeFromUtc(currentTime, info);
+
+            CalendarInfo calendar = new CalendarInfo()
+            {
+                time = new CalendarTime()
+                {
+                    year = (short)currentTime.Year,
+                    month = (sbyte)currentTime.Month,
+                    day = (sbyte)currentTime.Day,
+                    hour = (sbyte)currentTime.Hour,
+                    minute = (sbyte)currentTime.Minute,
+                    second = (sbyte)currentTime.Second,
+                },
+                additionalInfo = new CalendarAdditionalInfo()
+                {
+                    dayOfWeek = (uint)currentTime.DayOfWeek,
+                    dayOfYear = (uint)(currentTime.DayOfYear - 1),
+                    isDaySavingTime = currentTime.IsDaylightSavingTime(),
+                    gmtOffset = info.GetUtcOffset(currentTime).Seconds,
+                }
+
+            };
+
+            context.ResponseData.WriteStruct(calendar);
 
             return 0;
         }
