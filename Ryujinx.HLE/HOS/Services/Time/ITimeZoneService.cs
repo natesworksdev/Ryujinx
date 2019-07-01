@@ -1,6 +1,8 @@
+using ChocolArm64.Memory;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -120,31 +122,20 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             if (bufferSize != 0x4000)
             {
-                Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+                // TODO: find error code here
+                Logger.PrintError(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+                throw new InvalidOperationException();
             }
 
-            long resultCode = 0;
 
-            byte[] locationName = context.RequestData.ReadBytes(0x24);
+            string locationName = Encoding.ASCII.GetString(context.RequestData.ReadBytes(0x24)).TrimEnd('\0');
 
-            string tzId = Encoding.ASCII.GetString(locationName).TrimEnd('\0');
-
-            // Check if the Time Zone exists, otherwise error out.
-            try
+            long resultCode = TimeZoneManager.Instance.LoadTimeZoneRules(out TimeZoneRule rules, locationName);
+            
+            // Write TimeZoneRule if success
+            if (resultCode == 0)
             {
-                TimeZoneInfo info = TimeZoneInfo.FindSystemTimeZoneById(tzId);
-
-                byte[] tzData = Encoding.ASCII.GetBytes(info.Id);
-
-                // FIXME: This is not in ANY cases accurate, but the games don't care about the content of the buffer, they only pass it.
-                // TODO: Reverse the TZif2 conversion in PCV to make this match with real hardware.
-                context.Memory.WriteBytes(bufferPosition, tzData);
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                Logger.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {tzId} (len: {tzId.Length})");
-
-                resultCode = MakeError(ErrorModule.Time, TimeError.TimeZoneNotFound);
+                MemoryHelper.Write(context.Memory, bufferPosition, rules);
             }
 
             return resultCode;
@@ -159,28 +150,18 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             if (bufferSize != 0x4000)
             {
-                Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+                // TODO: find error code here
+                Logger.PrintError(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+                throw new InvalidOperationException();
             }
 
-            // TODO: Reverse the TZif2 conversion in PCV to make this match with real hardware.
-            byte[] tzData = context.Memory.ReadBytes(bufferPosition, 0x24);
+            TimeZoneRule rules = MemoryHelper.Read<TimeZoneRule>(context.Memory, bufferPosition);
 
-            string tzId = Encoding.ASCII.GetString(tzData).TrimEnd('\0');
+            long resultCode = TimeZoneManager.ToCalendarTime(rules, posixTime, out CalendarInfo calendar);
 
-            long resultCode;
-
-            // Check if the Time Zone exists, otherwise error out.
-            try
+            if (resultCode == 0)
             {
-                TimeZoneInfo info = TimeZoneInfo.FindSystemTimeZoneById(tzId);
-
-                resultCode = ToCalendarTimeWithTz(context, posixTime, info);
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                Logger.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {tzId} (len: {tzId.Length})");
-
-                resultCode = MakeError(ErrorModule.Time, TimeError.TimeZoneNotFound);
+                context.ResponseData.WriteStruct(calendar);
             }
 
             return resultCode;
@@ -191,43 +172,42 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             long posixTime = context.RequestData.ReadInt64();
 
-            return ToCalendarTimeWithTz(context, posixTime, _timeZone);
+            long resultCode = TimeZoneManager.Instance.ToCalendarTimeWithMyRules(posixTime, out CalendarInfo calendar);
+
+            if (resultCode == 0)
+            {
+                context.ResponseData.WriteStruct(calendar);
+            }
+
+            return resultCode;
         }
 
         // ToPosixTime(nn::time::CalendarTime calendarTime, buffer<nn::time::TimeZoneRule, 0x15> rules) -> (u32 outCount, buffer<nn::time::PosixTime, 0xa>)
         public long ToPosixTime(ServiceCtx context)
         {
-            long bufferPosition = context.Request.SendBuff[0].Position;
-            long bufferSize     = context.Request.SendBuff[0].Size;
+            long inBufferPosition = context.Request.SendBuff[0].Position;
+            long inBufferSize     = context.Request.SendBuff[0].Size;
 
             CalendarTime calendarTime = context.RequestData.ReadStruct<CalendarTime>();
 
-            DateTime dateTime = new DateTime(calendarTime.year, calendarTime.month, calendarTime.day, calendarTime.hour, calendarTime.minute, calendarTime.second, DateTimeKind.Local);
-
-            if (bufferSize != 0x4000)
+            if (inBufferSize != 0x4000)
             {
-                Logger.PrintWarning(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+                // TODO: find error code here
+                Logger.PrintError(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{inBufferSize:x} (expected 0x4000)");
+                throw new InvalidOperationException();
             }
 
-            // TODO: Reverse the TZif2 conversion in PCV to make this match with real hardware.
-            byte[] tzData = context.Memory.ReadBytes(bufferPosition, 0x24);
+            TimeZoneRule rules = MemoryHelper.Read<TimeZoneRule>(context.Memory, inBufferPosition);
 
-            string tzId = Encoding.ASCII.GetString(tzData).TrimEnd('\0');
+            long resultCode = TimeZoneManager.ToPosixTime(rules, calendarTime, out long posixTime);
 
-            long resultCode = 0;
-
-            // Check if the Time Zone exists, otherwise error out.
-            try
+            if (resultCode == 0)
             {
-                TimeZoneInfo info = TimeZoneInfo.FindSystemTimeZoneById(tzId);
+                long outBufferPosition = context.Request.RecvListBuff[0].Position;
+                long outBufferSize     = context.Request.RecvListBuff[0].Size;
 
-                return ToPosixTimeWithTz(context, dateTime, info);
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                Logger.PrintWarning(LogClass.ServiceTime, $"Timezone not found for string: {tzId} (len: {tzId.Length})");
-
-                resultCode = MakeError(ErrorModule.Time, TimeError.TimeZoneNotFound);
+                context.Memory.WriteInt64(outBufferPosition, posixTime);
+                context.ResponseData.Write(1);
             }
 
             return resultCode;
@@ -238,57 +218,18 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             CalendarTime calendarTime = context.RequestData.ReadStruct<CalendarTime>();
 
-            DateTime dateTime = new DateTime(calendarTime.year, calendarTime.month, calendarTime.day, calendarTime.hour, calendarTime.minute, calendarTime.second, DateTimeKind.Local);
+            long resultCode = TimeZoneManager.Instance.ToPosixTimeWithMyRules(calendarTime, out long posixTime);
 
-            return ToPosixTimeWithTz(context, dateTime, _timeZone);
-        }
-
-        private long ToPosixTimeWithTz(ServiceCtx context, DateTime calendarTime, TimeZoneInfo info)
-        {
-            DateTime calenderTimeUtc = TimeZoneInfo.ConvertTimeToUtc(calendarTime, info);
-
-            long posixTime = ((DateTimeOffset)calenderTimeUtc).ToUnixTimeSeconds();
-
-            long position = context.Request.RecvListBuff[0].Position;
-            long size     = context.Request.RecvListBuff[0].Size;
-
-            context.Memory.WriteInt64(position, posixTime);
-
-            context.ResponseData.Write(1);
-
-            return 0;
-        }
-
-        private long ToCalendarTimeWithTz(ServiceCtx context, long posixTime, TimeZoneInfo info)
-        {
-            DateTime currentTime = Epoch.AddSeconds(posixTime);
-
-            currentTime = TimeZoneInfo.ConvertTimeFromUtc(currentTime, info);
-
-            CalendarInfo calendar = new CalendarInfo()
+            if (resultCode == 0)
             {
-                time = new CalendarTime()
-                {
-                    year = (short)currentTime.Year,
-                    month = (sbyte)currentTime.Month,
-                    day = (sbyte)currentTime.Day,
-                    hour = (sbyte)currentTime.Hour,
-                    minute = (sbyte)currentTime.Minute,
-                    second = (sbyte)currentTime.Second,
-                },
-                additionalInfo = new CalendarAdditionalInfo()
-                {
-                    dayOfWeek = (uint)currentTime.DayOfWeek,
-                    dayOfYear = (uint)(currentTime.DayOfYear - 1),
-                    isDaySavingTime = currentTime.IsDaylightSavingTime(),
-                    gmtOffset = info.GetUtcOffset(currentTime).Seconds,
-                }
+                long outBufferPosition = context.Request.RecvListBuff[0].Position;
+                long outBufferSize     = context.Request.RecvListBuff[0].Size;
 
-            };
+                context.Memory.WriteInt64(outBufferPosition, posixTime);
+                context.ResponseData.Write(1);
+            }
 
-            context.ResponseData.WriteStruct(calendar);
-
-            return 0;
+            return resultCode;
         }
     }
 }
