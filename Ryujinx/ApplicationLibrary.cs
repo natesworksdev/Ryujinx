@@ -2,6 +2,7 @@
 using LibHac.Fs;
 using LibHac.Fs.NcaUtils;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.Loaders.Npdm;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,6 +26,7 @@ namespace Ryujinx
         {
             public Gdk.Pixbuf Icon;
             public string     GameName;
+            public string     GameId;
             public string     TimePlayed;
             public string     LastPlayed;
             public string     FileSize;
@@ -72,10 +74,14 @@ namespace Ryujinx
 
                 using (FileStream file = new FileStream(GamePath, FileMode.Open, FileAccess.Read))
                 {
+                    Nca mainNca             = null;
+                    Nca patchNca            = null;
                     Nca controlNca          = null;
                     PartitionFileSystem pfs = null;
                     IFileSystem controlFs   = null;
+                    Npdm metaData           = null;
                     string TitleName        = null;
+                    string TitleId          = "010000000000100D";
                     Gdk.Pixbuf GameIcon     = null;
 
                     if ((Path.GetExtension(GamePath) == ".nsp") || (Path.GetExtension(GamePath) == ".pfs0"))
@@ -104,13 +110,45 @@ namespace Ryujinx
                         foreach (DirectoryEntry fileEntry in pfs.EnumerateEntries("*.nca"))
                         {
                             Nca nca = new Nca(MainWindow._device.System.KeySet, pfs.OpenFile(fileEntry.FullPath, OpenMode.Read).AsStorage());
-                            if (nca.Header.ContentType == ContentType.Control)
+                            if (nca.Header.ContentType == ContentType.Program)
+                            {
+                                int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, ContentType.Program);
+
+                                if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
+                                {
+                                    patchNca = nca;
+                                }
+                                else
+                                {
+                                    mainNca = nca;
+                                }
+                            }
+                            else if (nca.Header.ContentType == ContentType.Control)
                             {
                                 controlNca = nca;
                             }
                         }
 
                         controlFs = controlNca.OpenFileSystem(NcaSectionType.Data, MainWindow._device.System.FsIntegrityCheckLevel);
+
+                        if (patchNca == null)
+                        {
+                            if (mainNca.CanOpenSection(NcaSectionType.Code))
+                            {
+                                IFileSystem codeFs = mainNca.OpenFileSystem(NcaSectionType.Code, MainWindow._device.System.FsIntegrityCheckLevel);
+                                metaData = new Npdm(codeFs.OpenFile("/main.npdm", OpenMode.Read).AsStream());
+                                TitleId = metaData.Aci0.TitleId.ToString("x16");
+                            }
+                        }
+                        else
+                        {
+                            if (patchNca.CanOpenSection(NcaSectionType.Code))
+                            {
+                                IFileSystem codeFs = mainNca.OpenFileSystemWithPatch(patchNca, NcaSectionType.Code, MainWindow._device.System.FsIntegrityCheckLevel);
+                                metaData = new Npdm(codeFs.OpenFile("/main.npdm", OpenMode.Read).AsStream());
+                                TitleId = metaData.Aci0.TitleId.ToString("x16");
+                            }
+                        }
                     }
 
                     if ((Path.GetExtension(GamePath) == ".nca") || (Path.GetExtension(GamePath) == ".nro") || (Path.GetExtension(GamePath) == ".nso")) { TitleName = Path.GetFileName(GamePath); }
@@ -183,8 +221,9 @@ namespace Ryujinx
                     {
                         Icon       = GameIcon,
                         GameName   = TitleName,
-                        TimePlayed = "",
-                        LastPlayed = "",
+                        GameId     = TitleId,
+                        TimePlayed = GetPlayedData(TitleId)[0],
+                        LastPlayed = GetPlayedData(TitleId)[1],
                         FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
                         Path       = GamePath,
                     };
@@ -192,6 +231,46 @@ namespace Ryujinx
                     ApplicationLibraryData.Add(data);
                 }
             }
+        }
+
+        private static string[] GetPlayedData(string TitleId)
+        {
+            string[] playedData = new string[2];
+            string appdataPath  = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string savePath     = Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", TitleId);
+
+            if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
+            {
+                Directory.CreateDirectory(savePath);
+                using (FileStream file = File.OpenWrite(Path.Combine(savePath, "TimePlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("0")); }
+            }
+            using (FileStream fs = File.OpenRead(Path.Combine(savePath, "TimePlayed.dat")))
+            {
+                using (StreamReader sr = new StreamReader(fs))
+                {
+                    float timePlayed = float.Parse(sr.ReadLine());
+
+                    if     (timePlayed <= 60.0)    { playedData[0] = $"{timePlayed}s"; }
+                    else if(timePlayed <= 3600.0)  { playedData[0] = $"{Math.Round(timePlayed / 60   , 2, MidpointRounding.AwayFromZero)}mins"; }
+                    else if(timePlayed <= 86400.0) { playedData[0] = $"{Math.Round(timePlayed / 3600 , 2, MidpointRounding.AwayFromZero)}hrs"; }
+                    else                           { playedData[0] = $"{Math.Round(timePlayed / 86400, 2, MidpointRounding.AwayFromZero)}days"; }
+                }
+            }
+
+            if (File.Exists(Path.Combine(savePath, "LastPlayed.dat")) == false)
+            {
+                Directory.CreateDirectory(savePath);
+                using (FileStream file = File.OpenWrite(Path.Combine(savePath, "LastPlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("Never")); }
+            }
+            using (FileStream fs = File.OpenRead(Path.Combine(savePath, "LastPlayed.dat")))
+            {
+                using (StreamReader sr = new StreamReader(fs))
+                {
+                    playedData[1] = sr.ReadLine();
+                }
+            }
+
+            return playedData;
         }
     }
 }

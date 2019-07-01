@@ -99,12 +99,12 @@ namespace Ryujinx
 
                 Nfc.Sensitive = false;
 
-                GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
-                GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
-                //GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 2);
-                //GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 3);
-                GameTable.AppendColumn("File Size", new CellRendererText(), "text", 4);
-                GameTable.AppendColumn("Path", new CellRendererText(), "text", 5);
+                GameTable.AppendColumn("Icon"       , new CellRendererPixbuf(), "pixbuf", 0);
+                GameTable.AppendColumn("Game"       , new CellRendererText()  , "text"  , 1);
+                GameTable.AppendColumn("Time Played", new CellRendererText()  , "text"  , 2);
+                GameTable.AppendColumn("Last Played", new CellRendererText()  , "text"  , 3);
+                GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 4);
+                GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 5);
 
                 _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = _TableStore;
@@ -120,7 +120,7 @@ namespace Ryujinx
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                _TableStore.AppendValues(AppData.Icon, AppData.GameName, AppData.TimePlayed, AppData.LastPlayed, AppData.FileSize, AppData.Path);
+                _TableStore.AppendValues(AppData.Icon, $"{AppData.GameName}\n{AppData.GameId.ToUpper()}", AppData.TimePlayed, AppData.LastPlayed, AppData.FileSize, AppData.Path);
             }
         }
 
@@ -157,7 +157,7 @@ namespace Ryujinx
         {
             if (_GameLoaded)
             {
-                MessageDialog eRrOr = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded, please close the game and try again");
+                MessageDialog eRrOr = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded, please unload the game and try again");
                 eRrOr.SetSizeRequest(100, 20);
                 eRrOr.Title = "Ryujinx - Error";
                 eRrOr.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
@@ -235,9 +235,19 @@ namespace Ryujinx
                 DiscordPresence.Assets.LargeImageText = _device.System.TitleName;
                 DiscordPresence.Assets.SmallImageKey  = "ryujinx";
                 DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
-                DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
+                DiscordPresence.Timestamps            = new Timestamps(DateTime.UnixEpoch);
 
                 DiscordClient.SetPresence(DiscordPresence);
+            }
+
+            string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
+            using (FileStream fs = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+            {
+                using (StreamWriter sr = new StreamWriter(fs))
+                {
+                   sr.WriteLine(DateTime.UtcNow);
+                }
             }
         }
 
@@ -253,6 +263,42 @@ namespace Ryujinx
 
                 _audioOut.Dispose();
             }
+        }
+
+        private static void End()
+        {
+            string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
+            double currentPlayTime = 0;
+
+            using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+            {
+                using (StreamReader sr = new StreamReader(fs))
+                {
+                    DateTime startTime = DateTime.Parse(sr.ReadLine());
+
+                    using (FileStream lpfs = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+                    {
+                        using (StreamReader lpsr = new StreamReader(lpfs))
+                        {
+                            currentPlayTime = double.Parse(lpsr.ReadLine());
+                        }
+                    }
+
+                    using (FileStream tpfs = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+                    {
+                        using (StreamWriter tpsr = new StreamWriter(tpfs))
+                        {
+                            tpsr.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
+                        }
+                    }
+                }
+            }
+
+            _audioOut.Dispose();
+            DiscordClient.Dispose();
+            Logger.Shutdown();
+            Environment.Exit(0);
         }
         
         //Events
@@ -303,21 +349,9 @@ namespace Ryujinx
             fc.Destroy();
         }
 
-        private void Exit_Pressed(object o, EventArgs args)
-        {
-            _audioOut.Dispose();
-            DiscordClient.Dispose();
-            Logger.Shutdown();
-            Environment.Exit(0);
-        }
+        private void Exit_Pressed(object o, EventArgs args) { End(); }
 
-        private void Window_Close(object obj, DeleteEventArgs args)
-        {
-            _audioOut.Dispose();
-            DiscordClient.Dispose();
-            Logger.Shutdown();
-            Environment.Exit(0);
-        }
+        private void Window_Close(object obj, DeleteEventArgs args) { End(); }
 
         private void ReturnMain_Pressed(object o, EventArgs args)
         {
