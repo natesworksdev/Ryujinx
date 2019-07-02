@@ -246,7 +246,7 @@ namespace Ryujinx
 
             ServiceConfiguration.IgnoreMissingServices = Instance.IgnoreMissingServices;
 
-            if(Instance.GamepadControls.Enabled)
+            if (Instance.GamepadControls.Enabled)
             {
                 if (GamePad.GetName(Instance.GamepadControls.Index) == "Unmapped Controller")
                 {
@@ -277,7 +277,7 @@ namespace Ryujinx
                 string enumName = formatterResolver.GetFormatterWithVerify<string>()
                                                    .Deserialize(ref reader, formatterResolver);
 
-                if(Enum.TryParse<T>(enumName, out T result))
+                if (Enum.TryParse<T>(enumName, out T result))
                 {
                     return result;
                 }

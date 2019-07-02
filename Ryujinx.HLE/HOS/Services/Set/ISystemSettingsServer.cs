@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Services.Set
             long   titleId     = 0x0100000000000809;
             string contentPath = device.System.ContentManager.GetInstalledContentPath(titleId, StorageId.NandSystem, ContentType.Data);
 
-            if(string.IsNullOrWhiteSpace(contentPath))
+            if (string.IsNullOrWhiteSpace(contentPath))
             {
                 return null;
             }
