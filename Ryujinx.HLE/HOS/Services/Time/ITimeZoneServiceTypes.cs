@@ -28,12 +28,12 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0x4000, CharSet = CharSet.Ansi)]
     public struct TimeZoneRule
     {
-        public const int TZ_MAX_TYPES = 128;
-        public const int TZ_MAX_CHARS = 50;
-        public const int TZ_MAX_LEAPS = 50;
-        public const int TZ_MAX_TIMES = 1000;
-        public const int TZNAME_MAX   = 255;
-        public const int TZ_NAME_MAX  = 2 * (TZNAME_MAX + 1);
+        public const int TzMaxTypes        = 128;
+        public const int TzMaxChars        = 50;
+        public const int TzMaxLeaps        = 50;
+        public const int TzMaxTimes        = 1000;
+        public const int TzNameMax         = 255;
+        public const int TzCharsArraySize  = 2 * (TzNameMax + 1);
 
         public int timeCount;
         public int typeCount;
@@ -45,16 +45,16 @@ namespace Ryujinx.HLE.HOS.Services.Time
         [MarshalAs(UnmanagedType.I1)]
         public bool goAhead;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = TZ_MAX_TIMES)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = TzMaxTimes)]
         public long[] ats;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = TZ_MAX_TIMES)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = TzMaxTimes)]
         public byte[] types;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = TZ_MAX_TYPES)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = TzMaxTypes)]
         public TimeTypeInfo[] ttis;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = TZ_NAME_MAX)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = TzCharsArraySize)]
         public char[] chars;
 
         public int defaultType;

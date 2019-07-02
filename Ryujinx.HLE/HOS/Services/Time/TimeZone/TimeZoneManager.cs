@@ -35,10 +35,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             // Empty rules (UTC)
             _myRules = new TimeZoneRule
             {
-                ats   = new long[TZ_MAX_TIMES],
-                types = new byte[TZ_MAX_TIMES],
-                ttis  = new TimeTypeInfo[TZ_MAX_TYPES],
-                chars = new char[TZ_NAME_MAX]
+                ats   = new long[TzMaxTimes],
+                types = new byte[TzMaxTimes],
+                ttis  = new TimeTypeInfo[TzMaxTypes],
+                chars = new char[TzCharsArraySize]
             };
 
             _deviceLocationName = "UTC";
@@ -184,10 +184,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             outRules = new TimeZoneRule
             {
-                ats   = new long[TZ_MAX_TIMES],
-                types = new byte[TZ_MAX_TIMES],
-                ttis  = new TimeTypeInfo[TZ_MAX_TYPES],
-                chars = new char[TZ_NAME_MAX]
+                ats   = new long[TzMaxTimes],
+                types = new byte[TzMaxTimes],
+                ttis  = new TimeTypeInfo[TzMaxTypes],
+                chars = new char[TzCharsArraySize]
             };
 
             if (!IsLocationNameValid(locationName))
