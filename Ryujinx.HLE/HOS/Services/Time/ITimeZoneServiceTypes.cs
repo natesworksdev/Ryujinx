@@ -5,24 +5,24 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [StructLayout(LayoutKind.Sequential, Size = 0x10, Pack = 4)]
     public struct TimeTypeInfo
     {
-        public int gmtOffset;
+        public int GmtOffset;
 
         [MarshalAs(UnmanagedType.I1)]
-        public bool isDaySavingTime;
+        public bool IsDaySavingTime;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        char[] padding1;
+        char[] Padding1;
 
-        public int abbreviationListIndex;
-
-        [MarshalAs(UnmanagedType.I1)]
-        public bool isStandardTimeDaylight;
+        public int AbbreviationListIndex;
 
         [MarshalAs(UnmanagedType.I1)]
-        public bool isGMT;
+        public bool IsStandardTimeDaylight;
+
+        [MarshalAs(UnmanagedType.I1)]
+        public bool IsGMT;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        char[] padding2;
+        char[] Padding2;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0x4000, CharSet = CharSet.Ansi)]
@@ -35,94 +35,94 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public const int TzNameMax         = 255;
         public const int TzCharsArraySize  = 2 * (TzNameMax + 1);
 
-        public int timeCount;
-        public int typeCount;
-        public int charCount;
+        public int TimeCount;
+        public int TypeCount;
+        public int CharCount;
 
         [MarshalAs(UnmanagedType.I1)]
-        public bool goBack;
+        public bool GoBack;
 
         [MarshalAs(UnmanagedType.I1)]
-        public bool goAhead;
+        public bool GoAhead;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = TzMaxTimes)]
-        public long[] ats;
+        public long[] Ats;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = TzMaxTimes)]
-        public byte[] types;
+        public byte[] Types;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = TzMaxTypes)]
-        public TimeTypeInfo[] ttis;
+        public TimeTypeInfo[] Ttis;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = TzCharsArraySize)]
-        public char[] chars;
+        public char[] Chars;
 
-        public int defaultType;
+        public int DefaultType;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x2C)]
     public struct TzifHeader
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public char[] magic;
+        public char[] Magic;
 
-        public char version;
+        public char Version;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 15)]
-        public byte[] reserved;
+        public byte[] Reserved;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] ttisGMTCount;
+        public byte[] TtisGMTCount;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] ttisSTDCount;
+        public byte[] TtisSTDCount;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] leapCount;
+        public byte[] LeapCount;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] timeCount;
+        public byte[] TimeCount;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] typeCount;
+        public byte[] TypeCount;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] charCount;
+        public byte[] CharCount;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x8)]
     public struct CalendarTime
     {
-        public short year;
-        public sbyte month;
-        public sbyte day;
-        public sbyte hour;
-        public sbyte minute;
-        public sbyte second;
+        public short Year;
+        public sbyte Month;
+        public sbyte Day;
+        public sbyte Hour;
+        public sbyte Minute;
+        public sbyte Second;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x18, CharSet = CharSet.Ansi)]
     public struct CalendarAdditionalInfo
     {
-        public uint dayOfWeek;
-        public uint dayOfYear;
+        public uint DayOfWeek;
+        public uint DayOfYear;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        public char[] timezoneName;
+        public char[] TimezoneName;
 
         [MarshalAs(UnmanagedType.I1)]
-        public bool isDaySavingTime;
+        public bool IsDaySavingTime;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        char[] padding;
+        char[] Padding;
 
-        public int gmtOffset;
+        public int GmtOffset;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x20, CharSet = CharSet.Ansi)]
     public struct CalendarInfo
     {
-        public CalendarTime           time;
-        public CalendarAdditionalInfo additionalInfo;
+        public CalendarTime           Time;
+        public CalendarAdditionalInfo AdditionalInfo;
     }
 }

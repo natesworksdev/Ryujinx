@@ -18,10 +18,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
     {
         private const long TimeZoneBinaryTitleId = 0x010000000000080E;
 
-        private static TimeZoneManager instance = null;
+        private static TimeZoneManager instance;
 
         private static object instanceLock = new object();
-
 
         private Switch         _device;
         private TimeZoneRule   _myRules;
@@ -35,10 +34,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             // Empty rules (UTC)
             _myRules = new TimeZoneRule
             {
-                ats   = new long[TzMaxTimes],
-                types = new byte[TzMaxTimes],
-                ttis  = new TimeTypeInfo[TzMaxTypes],
-                chars = new char[TzCharsArraySize]
+                Ats   = new long[TzMaxTimes],
+                Types = new byte[TzMaxTimes],
+                Ttis  = new TimeTypeInfo[TzMaxTypes],
+                Chars = new char[TzCharsArraySize]
             };
 
             _deviceLocationName = "UTC";
@@ -57,8 +56,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             {
                 using (IStorage ncaFileStream = new LocalStorage(_device.FileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open))
                 {
-                    Nca nca = new Nca(_device.System.KeySet, ncaFileStream);
-                    IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
+                    Nca nca                 = new Nca(_device.System.KeySet, ncaFileStream);
+                    IFileSystem romfs       = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
                     Stream binaryListStream = romfs.OpenFile("binaryList.txt", OpenMode.Read).AsStream();
 
                     StreamReader reader = new StreamReader(binaryListStream);
@@ -155,6 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 if (locationName.Length > 0x24)
                 {
                     outLocationNameArray = new string[0];
+
                     return MakeError(ErrorModule.Time, TimeError.LocationNameTooLong);
                 }
 
@@ -162,6 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             }
 
             outLocationNameArray = locationNameList.ToArray();
+
             return 0;
         }
 
@@ -184,10 +185,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             outRules = new TimeZoneRule
             {
-                ats   = new long[TzMaxTimes],
-                types = new byte[TzMaxTimes],
-                ttis  = new TimeTypeInfo[TzMaxTypes],
-                chars = new char[TzCharsArraySize]
+                Ats   = new long[TzMaxTimes],
+                Types = new byte[TzMaxTimes],
+                Ttis  = new TimeTypeInfo[TzMaxTypes],
+                Chars = new char[TzCharsArraySize]
             };
 
             if (!IsLocationNameValid(locationName))
@@ -202,8 +203,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 Logger.PrintWarning(LogClass.ServiceTime, "TimeZoneBinary system archive not found! Time conversions will not be accurate!");
                 try
                 {
-                    TimeZoneInfo info = TZConvert.GetTimeZoneInfo(locationName);
-                    string posixRule  = PosixTimeZone.FromTimeZoneInfo(info);
+                    TimeZoneInfo info      = TZConvert.GetTimeZoneInfo(locationName);
+                    string       posixRule = PosixTimeZone.FromTimeZoneInfo(info);
 
                     if (!TimeZone.ParsePosixName(posixRule, out outRules))
                     {
@@ -225,8 +226,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 {
                     Nca nca = new Nca(_device.System.KeySet, ncaFileStream);
 
-                    IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
-                    Stream tzIfStream = romfs.OpenFile($"zoneinfo/{locationName}", OpenMode.Read).AsStream();
+                    IFileSystem romfs      = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
+                    Stream      tzIfStream = romfs.OpenFile($"zoneinfo/{locationName}", OpenMode.Read).AsStream();
 
                     if (!TimeZone.LoadTimeZoneRules(out outRules, tzIfStream))
                     {

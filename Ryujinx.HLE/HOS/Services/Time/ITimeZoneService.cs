@@ -61,6 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public long SetDeviceLocationName(ServiceCtx context)
         {
             string locationName = Encoding.ASCII.GetString(context.RequestData.ReadBytes(0x24)).TrimEnd('\0');
+
             return TimeZoneManager.Instance.SetDeviceLocationName(locationName);
         }
 
@@ -97,6 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
                     context.Memory.WriteBytes(bufferPosition + offset, Encoding.ASCII.GetBytes(locationName));
                     MemoryHelper.FillWithZeros(context.Memory, bufferPosition + offset + locationName.Length, padding);
+
                     offset += 0x24;
                 }
 
@@ -116,6 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             {
                 // TODO: find error code here
                 Logger.PrintError(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+
                 throw new InvalidOperationException();
             }
 
@@ -144,6 +147,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             {
                 // TODO: find error code here
                 Logger.PrintError(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
+
                 throw new InvalidOperationException();
             }
 
@@ -186,6 +190,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             {
                 // TODO: find error code here
                 Logger.PrintError(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{inBufferSize:x} (expected 0x4000)");
+
                 throw new InvalidOperationException();
             }
 
@@ -218,6 +223,8 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 long outBufferSize     = context.Request.RecvListBuff[0].Size;
 
                 context.Memory.WriteInt64(outBufferPosition, posixTime);
+
+                // There could be only one result on one calendar as leap seconds aren't supported.
                 context.ResponseData.Write(1);
             }
 
