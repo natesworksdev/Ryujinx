@@ -17,10 +17,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
-
         public ITimeZoneService()
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
@@ -42,11 +38,16 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetDeviceLocationName() -> nn::time::LocationName
         public long GetDeviceLocationName(ServiceCtx context)
         {
-            char[] tzName = _timeZone.Id.ToCharArray();
-
-            context.ResponseData.Write(tzName);
+            char[] tzName = TimeZoneManager.Instance.GetDeviceLocationName().ToCharArray();
 
             int padding = 0x24 - tzName.Length;
+
+            if (padding < 0)
+            {
+                return MakeError(ErrorModule.Time, TimeError.LocationNameTooLong);
+            }
+
+            context.ResponseData.Write(tzName);
 
             for (int index = 0; index < padding; index++)
             {
@@ -59,28 +60,14 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // SetDeviceLocationName(nn::time::LocationName)
         public long SetDeviceLocationName(ServiceCtx context)
         {
-            byte[] locationName = context.RequestData.ReadBytes(0x24);
-
-            string tzId = Encoding.ASCII.GetString(locationName).TrimEnd('\0');
-
-            long resultCode = 0;
-
-            try
-            {
-                _timeZone = TimeZoneInfo.FindSystemTimeZoneById(tzId);
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                resultCode = MakeError(ErrorModule.Time, TimeError.TimeZoneNotFound);
-            }
-
-            return resultCode;
+            string locationName = Encoding.ASCII.GetString(context.RequestData.ReadBytes(0x24)).TrimEnd('\0');
+            return TimeZoneManager.Instance.SetDeviceLocationName(locationName);
         }
 
         // GetTotalLocationNameCount() -> u32
         public long GetTotalLocationNameCount(ServiceCtx context)
         {
-            context.ResponseData.Write(TimeZoneInfo.GetSystemTimeZones().Count);
+            context.ResponseData.Write(TimeZoneManager.Instance.GetTotalLocationNameCount());
 
             return 0;
         }
@@ -90,28 +77,33 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             // TODO: fix logic to use index
             uint index          = context.RequestData.ReadUInt32();
-            long bufferPosition = context.Response.SendBuff[0].Position;
-            long bufferSize     = context.Response.SendBuff[0].Size;
+            long bufferPosition = context.Request.ReceiveBuff[0].Position;
+            long bufferSize     = context.Request.ReceiveBuff[0].Size;
 
-            int offset = 0;
+            uint errorCode = TimeZoneManager.Instance.LoadLocationNameList(index, out string[] locationNameArray, (uint)bufferSize / 0x24);
 
-            foreach (TimeZoneInfo info in TimeZoneInfo.GetSystemTimeZones())
+            if (errorCode == 0)
             {
-                byte[] tzData = Encoding.ASCII.GetBytes(info.Id);
+                uint offset = 0;
 
-                context.Memory.WriteBytes(bufferPosition + offset, tzData);
-
-                int padding = 0x24 - tzData.Length;
-
-                for (int i = 0; i < padding; i++)
+                foreach (string locationName in locationNameArray)
                 {
-                    context.ResponseData.Write((byte)0);
+                    int padding = 0x24 - locationName.Length;
+
+                    if (padding < 0)
+                    {
+                        return MakeError(ErrorModule.Time, TimeError.LocationNameTooLong);
+                    }
+
+                    context.Memory.WriteBytes(bufferPosition + offset, Encoding.ASCII.GetBytes(locationName));
+                    MemoryHelper.FillWithZeros(context.Memory, bufferPosition + offset + locationName.Length, padding);
+                    offset += 0x24;
                 }
 
-                offset += 0x24;
+                context.ResponseData.Write((uint)locationNameArray.Length);
             }
 
-            return 0;
+            return errorCode;
         }
 
         // LoadTimeZoneRule(nn::time::LocationName locationName) -> buffer<nn::time::TimeZoneRule, 0x16>

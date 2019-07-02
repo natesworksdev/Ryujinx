@@ -880,6 +880,17 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             }
         }
 
+        public static bool ParsePosixName(string name, out TimeZoneRule outRules)
+        {
+            unsafe
+            {
+                fixed (char *namePtr = name.ToCharArray())
+                {
+                    return ParsePosixName(namePtr, out outRules, false);
+                }
+            }
+        }
+
         public static unsafe bool LoadTimeZoneRules(out TimeZoneRule outRules, Stream inputData)
         {
             outRules = new TimeZoneRule

@@ -9,7 +9,6 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Sm;
-using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
@@ -196,8 +195,6 @@ namespace Ryujinx.HLE.HOS
             LoadKeySet();
 
             ContentManager = new ContentManager(device);
-
-            TimeZoneManager.Instance.Initialize(ContentManager);
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
