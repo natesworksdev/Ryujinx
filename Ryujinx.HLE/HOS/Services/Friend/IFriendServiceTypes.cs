@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         public long PresenceGroupId;
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 0x8)]
+    [StructLayout(LayoutKind.Sequential, Pack = 0x8, CharSet = CharSet.Ansi)]
     struct UserPresence
     {
         public UInt128        UserId;
@@ -60,14 +60,14 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 0x8, Size = 0x200)]
+    [StructLayout(LayoutKind.Sequential, Pack = 0x8, Size = 0x200, CharSet = CharSet.Ansi)]
     struct Friend
     {
         public UInt128 UserId;
         public long    NetworkUserId;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x21)]
-        public char[] Nickname;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x21)]
+        public string Nickname;
 
         public UserPresence presence;
 
