@@ -49,11 +49,10 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         public bool SamePresenceGroupApplication;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x3)]
-        char[] unknown;
+        char[] Unknown;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0xC0)]
         public char[] AppKeyValueStorage;
-
 
         public override string ToString()
         {
@@ -79,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         public bool IsNew;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x6)]
-        char[] unknown;
+        char[] Unknown;
 
         [MarshalAs(UnmanagedType.I1)]
         public bool IsValid;
@@ -95,10 +94,10 @@ namespace Ryujinx.HLE.HOS.Services.Friend
     [StructLayout(LayoutKind.Sequential, Pack = 0x8, Size = 0x10)]
     struct NotificationInfo
     {
-        public NotificationEventType type;
+        public NotificationEventType Type;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x4)]
-        char[] padding;
+        char[] Padding;
 
         public long NetworkUserIdPlaceholder;
     }

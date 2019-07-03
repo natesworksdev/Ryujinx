@@ -5,6 +5,7 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
+
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Friend
@@ -88,16 +89,17 @@ namespace Ryujinx.HLE.HOS.Services.Friend
                     NotificationInfo notificationInfo = _notifications.First.Value;
                     _notifications.RemoveFirst();
 
-                    if (notificationInfo.type == NotificationEventType.FriendListUpdate)
+                    if (notificationInfo.Type == NotificationEventType.FriendListUpdate)
                     {
                         _hasFriendListUpdate = false;
                     }
-                    else if (notificationInfo.type == NotificationEventType.NewFriendRequest)
+                    else if (notificationInfo.Type == NotificationEventType.NewFriendRequest)
                     {
                         _hasNewFriendRequest = false;
                     }
 
                     context.ResponseData.WriteStruct(notificationInfo);
+
                     return 0;
                 }
             }
@@ -121,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
                             _notifications.RemoveFirst();
                         }
 
-                        friendListNotification.type = NotificationEventType.FriendListUpdate;
+                        friendListNotification.Type = NotificationEventType.FriendListUpdate;
                         _hasFriendListUpdate = true;
 
                         if (_hasNewFriendRequest)
@@ -134,7 +136,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
                                 _notifications.RemoveFirst();
                             }
 
-                            newFriendRequestNotification.type = NotificationEventType.NewFriendRequest;
+                            newFriendRequestNotification.Type = NotificationEventType.NewFriendRequest;
                             _notifications.AddFirst(newFriendRequestNotification);
                         }
 
@@ -162,7 +164,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
                         NotificationInfo newFriendRequestNotification = new NotificationInfo
                         {
-                            type = NotificationEventType.NewFriendRequest
+                            Type = NotificationEventType.NewFriendRequest
                         };
 
                         _notifications.AddLast(newFriendRequestNotification);

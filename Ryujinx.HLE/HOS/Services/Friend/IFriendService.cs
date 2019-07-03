@@ -6,6 +6,7 @@ using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+
 using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Friend
@@ -108,8 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             // Padding
             context.RequestData.ReadInt32();
 
-            UInt128 uuid = context.RequestData.ReadStruct<UInt128>();
-
+            UInt128      uuid   = context.RequestData.ReadStruct<UInt128>();
             FriendFilter filter = context.RequestData.ReadStruct<FriendFilter>();
 
             // Pid placeholder
@@ -146,8 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             // Padding
             context.RequestData.ReadInt32();
 
-            UInt128 uuid = context.RequestData.ReadStruct<UInt128>();
-
+            UInt128      uuid   = context.RequestData.ReadStruct<UInt128>();
             FriendFilter filter = context.RequestData.ReadStruct<FriendFilter>();
 
             // Pid placeholder
@@ -238,6 +237,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             using (BinaryReader bufferReader = new BinaryReader(new MemoryStream(bufferContent)))
             {
                 UserPresence[] userPresenceInputArray = bufferReader.ReadStructArray<UserPresence>(elementCount);
+
                 Logger.PrintStub(LogClass.ServiceFriend, new { UserId = uuid.ToString(), userPresenceInputArray });
             }
 

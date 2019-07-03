@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 {
     public sealed class NotificationEventHandler
     {
-        private static NotificationEventHandler instance     = null;
+        private static NotificationEventHandler instance;
         private static object                   instanceLock = new object();
 
         private INotificationService[] _registry;

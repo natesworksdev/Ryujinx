@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Friend
 {
@@ -15,10 +13,10 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
     enum FriendServicePermissionLevel
     {
-        Admin        = -1,
-        User         = FriendServicePermissionLevelMask.User,
-        Overlay      = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.Overlay,
-        Manager      = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.Overlay | FriendServicePermissionLevelMask.Manager,
-        System       = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.System
+        Admin   = -1,
+        User    = FriendServicePermissionLevelMask.User,
+        Overlay = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.Overlay,
+        Manager = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.Overlay | FriendServicePermissionLevelMask.Manager,
+        System  = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.System
     }
 }
