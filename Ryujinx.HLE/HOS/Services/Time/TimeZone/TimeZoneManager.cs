@@ -222,8 +222,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             {
                 using (IStorage ncaFileStream = new LocalStorage(_device.FileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open))
                 {
-                    Nca nca = new Nca(_device.System.KeySet, ncaFileStream);
-
+                    Nca         nca        = new Nca(_device.System.KeySet, ncaFileStream);
                     IFileSystem romfs      = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
                     Stream      tzIfStream = romfs.OpenFile($"zoneinfo/{locationName}", OpenMode.Read).AsStream();
 
