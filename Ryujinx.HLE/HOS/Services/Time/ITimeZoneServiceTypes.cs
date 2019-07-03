@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services.Time
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x10, Pack = 4)]
-    public struct TimeTypeInfo
+    struct TimeTypeInfo
     {
         public int GmtOffset;
 
@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0x4000, CharSet = CharSet.Ansi)]
-    public struct TimeZoneRule
+    struct TimeZoneRule
     {
         public const int TzMaxTypes        = 128;
         public const int TzMaxChars        = 50;
@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x2C)]
-    public struct TzifHeader
+    struct TzifHeader
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public char[] Magic;
@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x8)]
-    public struct CalendarTime
+    struct CalendarTime
     {
         public short Year;
         public sbyte Month;
@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x18, CharSet = CharSet.Ansi)]
-    public struct CalendarAdditionalInfo
+    struct CalendarAdditionalInfo
     {
         public uint DayOfWeek;
         public uint DayOfYear;
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x20, CharSet = CharSet.Ansi)]
-    public struct CalendarInfo
+    struct CalendarInfo
     {
         public CalendarTime           Time;
         public CalendarAdditionalInfo AdditionalInfo;

@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Ryujinx.Common;
-
+using Ryujinx.HLE.Utilities;
 using static Ryujinx.HLE.HOS.Services.Time.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
@@ -158,43 +158,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             fixed (char* chars = outRules.Chars)
             {
-                return a.GmtOffset == b.GmtOffset && a.IsDaySavingTime == b.IsDaySavingTime && a.IsStandardTimeDaylight == b.IsStandardTimeDaylight && a.IsGMT == b.IsGMT && CompareCStr(chars + a.AbbreviationListIndex, chars + b.AbbreviationListIndex) == 0;
+                return a.GmtOffset              == b.GmtOffset &&
+                       a.IsDaySavingTime        == b.IsDaySavingTime &&
+                       a.IsStandardTimeDaylight == b.IsStandardTimeDaylight &&
+                       a.IsGMT                  == b.IsGMT &&
+                       StringUtils.CompareCStr(chars + a.AbbreviationListIndex, chars + b.AbbreviationListIndex) == 0;
             }
-        }
-
-        private static byte[] StreamToBytes(Stream input)
-        {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                input.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
-
-        private static unsafe int CompareCStr(char* s1, char* s2)
-        {
-            int s1Index = 0;
-            int s2Index = 0;
-
-            while (s1[s1Index] != 0 && s2[s2Index] != 0 && s1[s1Index] == s2[s2Index])
-            {
-                s1Index += 1;
-                s2Index += 1;
-            }
-
-            return s2[s2Index] - s1[s1Index];
-        }
-
-        private static unsafe int LengthCstr(char* s)
-        {
-            int i = 0;
-
-            while (s[i] != '\0')
-            {
-                i++;
-            }
-
-            return i;
         }
 
         private static int GetQZName(char[] name, int namePosition, char delimiter)
@@ -897,12 +866,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             }
         }
 
-        public static bool ParsePosixName(string name, out TimeZoneRule outRules)
+        internal static bool ParsePosixName(string name, out TimeZoneRule outRules)
         {
             return ParsePosixName(name.ToCharArray(), out outRules, false);
         }
 
-        public static unsafe bool LoadTimeZoneRules(out TimeZoneRule outRules, Stream inputData)
+        internal static unsafe bool LoadTimeZoneRules(out TimeZoneRule outRules, Stream inputData)
         {
             outRules = new TimeZoneRule
             {
@@ -962,7 +931,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             outRules.TypeCount = typeCount;
             outRules.CharCount = charCount;
 
-            byte[] workBuffer = StreamToBytes(inputData);
+            byte[] workBuffer = StreamUtils.StreamToBytes(inputData);
 
             timeCount = 0;
 
@@ -1117,7 +1086,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                                     for (j = 0; j < charCount; j++)
                                     {
-                                        if (CompareCStr(chars + j, tempAbbreviation) == 0)
+                                        if (StringUtils.CompareCStr(chars + j, tempAbbreviation) == 0)
                                         {
                                             tempRules.Ttis[i].AbbreviationListIndex = j;
                                             abbreviationCount++;
@@ -1127,7 +1096,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                                     if (j >= charCount)
                                     {
-                                        int abbreviationLength = LengthCstr(tempAbbreviation);
+                                        int abbreviationLength = StringUtils.LengthCstr(tempAbbreviation);
                                         if (j + abbreviationLength < TzMaxChars)
                                         {
                                             for (int x = 0; x < abbreviationLength; x++)
@@ -1472,7 +1441,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 {
                     fixed (char* timeZoneAbbreviation = &rules.Chars[rules.Ttis[ttiIndex].AbbreviationListIndex])
                     {
-                        int timeZoneSize = Math.Min(LengthCstr(timeZoneAbbreviation), 8);
+                        int timeZoneSize = Math.Min(StringUtils.LengthCstr(timeZoneAbbreviation), 8);
                         for (int i = 0; i < timeZoneSize; i++)
                         {
                             calendarAdditionalInfo.TimezoneName[i] = timeZoneAbbreviation[i];
@@ -1699,7 +1668,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             return 0;
         }
 
-        public static int ToCalendarTime(TimeZoneRule rules, long time, out CalendarInfo calendar)
+        internal static int ToCalendarTime(TimeZoneRule rules, long time, out CalendarInfo calendar)
         {
             int result = ToCalendarTimeInternal(rules, time, out CalendarTimeInternal calendarTime, out CalendarAdditionalInfo calendarAdditionalInfo);
 
@@ -1720,7 +1689,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             return result;
         }
 
-        public static int ToPosixTime(TimeZoneRule rules, CalendarTime calendarTime, out long posixTime)
+        internal static int ToPosixTime(TimeZoneRule rules, CalendarTime calendarTime, out long posixTime)
         {
             CalendarTimeInternal calendarTimeInternal = new CalendarTimeInternal()
             {

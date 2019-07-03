@@ -27,6 +27,22 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private string       _deviceLocationName;
         private string[]     _locationNameCache;
 
+        public static TimeZoneManager Instance
+        {
+            get
+            {
+                lock (instanceLock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new TimeZoneManager();
+                    }
+
+                    return instance;
+                }
+            }
+        }
+
         TimeZoneManager()
         {
             // Empty rules (UTC)
@@ -179,7 +195,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             return !string.IsNullOrEmpty(GetTimeZoneBinaryTitleContentPath());
         }
 
-        public uint LoadTimeZoneRules(out TimeZoneRule outRules, string locationName)
+        internal uint LoadTimeZoneRules(out TimeZoneRule outRules, string locationName)
         {
             outRules = new TimeZoneRule
             {
@@ -236,12 +252,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             }
         }
 
-        public uint ToCalendarTimeWithMyRules(long time, out CalendarInfo calendar)
+        internal uint ToCalendarTimeWithMyRules(long time, out CalendarInfo calendar)
         {
             return ToCalendarTime(_myRules, time, out calendar);
         }
 
-        public static uint ToCalendarTime(TimeZoneRule rules, long time, out CalendarInfo calendar)
+        internal static uint ToCalendarTime(TimeZoneRule rules, long time, out CalendarInfo calendar)
         {
             int error = TimeZone.ToCalendarTime(rules, time, out calendar);
 
@@ -253,12 +269,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             return 0;
         }
 
-        public uint ToPosixTimeWithMyRules(CalendarTime calendarTime, out long posixTime)
+        internal uint ToPosixTimeWithMyRules(CalendarTime calendarTime, out long posixTime)
         {
             return ToPosixTime(_myRules, calendarTime, out posixTime);
         }
 
-        public static uint ToPosixTime(TimeZoneRule rules, CalendarTime calendarTime, out long posixTime)
+        internal static uint ToPosixTime(TimeZoneRule rules, CalendarTime calendarTime, out long posixTime)
         {
             int error = TimeZone.ToPosixTime(rules, calendarTime, out posixTime);
 
@@ -268,22 +284,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             }
 
             return 0;
-        }
-
-        public static TimeZoneManager Instance
-        {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        instance = new TimeZoneManager();
-                    }
-
-                    return instance;
-                }
-            }
         }
     }
 }
