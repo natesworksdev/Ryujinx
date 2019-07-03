@@ -22,15 +22,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         private static object instanceLock = new object();
 
-        private Switch         _device;
-        private TimeZoneRule   _myRules;
-        private string        _deviceLocationName;
-        private string[]      _locationNameCache;
+        private Switch       _device;
+        private TimeZoneRule _myRules;
+        private string       _deviceLocationName;
+        private string[]     _locationNameCache;
 
         TimeZoneManager()
         {
-            _device = null;
-
             // Empty rules (UTC)
             _myRules = new TimeZoneRule
             {
@@ -56,9 +54,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             {
                 using (IStorage ncaFileStream = new LocalStorage(_device.FileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open))
                 {
-                    Nca nca                 = new Nca(_device.System.KeySet, ncaFileStream);
-                    IFileSystem romfs       = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
-                    Stream binaryListStream = romfs.OpenFile("binaryList.txt", OpenMode.Read).AsStream();
+                    Nca         nca              = new Nca(_device.System.KeySet, ncaFileStream);
+                    IFileSystem romfs            = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
+                    Stream      binaryListStream = romfs.OpenFile("binaryList.txt", OpenMode.Read).AsStream();
 
                     StreamReader reader = new StreamReader(binaryListStream);
 
@@ -96,8 +94,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                 // As we aren't using the system archive, "UTC" might not exist on the host system.
                 // Load from C# TimeZone APIs UTC id.
-                string utcId = TimeZoneInfo.Utc.Id;
-                bool utcNeedConversion = TZConvert.TryWindowsToIana(utcId, out string utcConvertedName);
+                string utcId             = TimeZoneInfo.Utc.Id;
+                bool   utcNeedConversion = TZConvert.TryWindowsToIana(utcId, out string utcConvertedName);
                 if (utcNeedConversion)
                 {
                     utcId = utcConvertedName;

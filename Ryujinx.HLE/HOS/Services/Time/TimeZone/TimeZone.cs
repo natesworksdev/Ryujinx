@@ -412,12 +412,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 Chars = new char[TzCharsArraySize]
             };
 
-            int stdLen;
-
-            int namePosition    = 0;
-
-            Span<char> stdName = name;
-            int stdOffset = 0;
+            int        stdLen;
+            Span<char> stdName      = name;
+            int        namePosition = 0;
+            int        stdOffset    = 0;
 
             if (lastDitch)
             {
@@ -462,7 +460,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 }
             }
 
-            int charCount = (int)stdLen + 1;
+            int charCount = stdLen + 1;
             int destLen   = 0;
             int dstOffset = 0;
 
@@ -572,10 +570,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                     outRules.DefaultType = 0;
 
-                    int timeCount    = 0;
-                    long janFirst    = 0;
-                    int janOffset    = 0;
-                    int yearBegining = EpochYear;
+                    int  timeCount    = 0;
+                    long janFirst     = 0;
+                    int  janOffset    = 0;
+                    int  yearBegining = EpochYear;
 
                     do
                     {
@@ -1079,29 +1077,29 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 }
 
                 long position = (p - workBufferPtrStart);
-                long nread    = streamLength - position;
+                long nRead    = streamLength - position;
 
-                if (nread < 0)
+                if (nRead < 0)
                 {
                     return false;
                 }
 
                 // Nintendo abort in case of a TzIf file with a POSIX TZ Name too long to fit inside a TimeZoneRule.
                 // As it's impossible in normal usage to achive this, we also force a crash.
-                if (nread > (TzNameMax + 1))
+                if (nRead > (TzNameMax + 1))
                 {
                     throw new InvalidOperationException();
                 }
 
                 char[] tempName = new char[TzNameMax + 1];
-                Array.Copy(workBuffer, position, tempName, 0, nread);
+                Array.Copy(workBuffer, position, tempName, 0, nRead);
 
-                if (nread > 2 && tempName[0] == '\n' && tempName[nread - 1] == '\n' && outRules.TypeCount + 2 <= TzMaxTypes)
+                if (nRead > 2 && tempName[0] == '\n' && tempName[nRead - 1] == '\n' && outRules.TypeCount + 2 <= TzMaxTypes)
                 {
-                    tempName[nread - 1] = '\0';
+                    tempName[nRead - 1] = '\0';
 
                     char[] name = new char[TzNameMax];
-                    Array.Copy(tempName, 1, name, 0, nread - 1);
+                    Array.Copy(tempName, 1, name, 0, nRead - 1);
 
                     if (ParsePosixName(name, out TimeZoneRule tempRules, false))
                     {
@@ -1381,7 +1379,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 TimezoneName = new char[8]
             };
 
-            int result = 0;
+            int result;
 
             if ((rules.GoAhead && time < rules.Ats[0]) || (rules.GoBack && time > rules.Ats[rules.TimeCount - 1]))
             {
