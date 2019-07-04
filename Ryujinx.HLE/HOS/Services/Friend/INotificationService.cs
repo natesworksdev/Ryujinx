@@ -22,8 +22,9 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
 
         private LinkedList<NotificationInfo> _notifications;
-        private bool                         _hasNewFriendRequest;
-        private bool                         _hasFriendListUpdate;
+
+        private bool _hasNewFriendRequest;
+        private bool _hasFriendListUpdate;
 
         private Dictionary<int, ServiceProcessRequest> _commands;
 
@@ -111,7 +112,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         {
             lock (_lock)
             {
-                if (_userId.Equals(targetId))
+                if (_userId == targetId)
                 {
                     if (!_hasFriendListUpdate)
                     {
@@ -153,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
         {
             lock (_lock)
             {
-                if (((int)_permissionLevel & (int)FriendServicePermissionLevelMask.Overlay) != 0 && _userId.Equals(targetId))
+                if ((_permissionLevel & FriendServicePermissionLevel.OverlayMask) != 0 && _userId == targetId)
                 {
                     if (!_hasNewFriendRequest)
                     {
@@ -178,15 +179,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                NotificationEventHandler.Instance.UnregisterNotificationService(this);
-            }
+            NotificationEventHandler.Instance.UnregisterNotificationService(this);
         }
     }
 }

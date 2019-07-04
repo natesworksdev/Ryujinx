@@ -9,6 +9,22 @@ namespace Ryujinx.HLE.HOS.Services.Friend
 
         private INotificationService[] _registry;
 
+        public static NotificationEventHandler Instance
+        {
+            get
+            {
+                lock (instanceLock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new NotificationEventHandler();
+                    }
+
+                    return instance;
+                }
+            }
+        }
+
         NotificationEventHandler()
         {
             _registry = new INotificationService[0x20];
@@ -60,22 +76,6 @@ namespace Ryujinx.HLE.HOS.Services.Friend
                 if (_registry[i] != null)
                 {
                     _registry[i].SignalNewFriendRequest(targetId);
-                }
-            }
-        }
-
-        public static NotificationEventHandler Instance
-        {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        instance = new NotificationEventHandler();
-                    }
-
-                    return instance;
                 }
             }
         }

@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.Utilities
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct UInt128
+    public struct UInt128 : IEquatable<UInt128>
     {
-        public long Low  { get; private set; }
-        public long High { get; private set; }
+        public readonly long Low;
+        public readonly long High;
 
         public bool IsNull => (Low | High) == 0;
 
@@ -47,14 +47,29 @@ namespace Ryujinx.HLE.Utilities
             return High.ToString("x16") + Low.ToString("x16");
         }
 
-        public bool IsZero()
+        public static bool operator ==(UInt128 x, UInt128 y)
         {
-            return (Low | High) == 0;
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(UInt128 x, UInt128 y)
+        {
+            return !x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is UInt128 uint128 && Equals(uint128);
         }
 
         public bool Equals(UInt128 cmpObj)
         {
             return Low == cmpObj.Low && High == cmpObj.High;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Low, High);
         }
     }
 }

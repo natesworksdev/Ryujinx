@@ -3,20 +3,17 @@
 namespace Ryujinx.HLE.HOS.Services.Friend
 {
     [Flags]
-    enum FriendServicePermissionLevelMask
-    {
-        User    = 1,
-        Overlay = 2,
-        Manager = 4,
-        System  = 8
-    }
-
     enum FriendServicePermissionLevel
     {
+        UserMask    = 1,
+        OverlayMask = 2,
+        ManagerMask = 4,
+        SystemMask  = 8,
+
         Admin   = -1,
-        User    = FriendServicePermissionLevelMask.User,
-        Overlay = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.Overlay,
-        Manager = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.Overlay | FriendServicePermissionLevelMask.Manager,
-        System  = FriendServicePermissionLevelMask.User | FriendServicePermissionLevelMask.System
+        User    = UserMask,
+        Overlay = UserMask | OverlayMask,
+        Manager = UserMask | OverlayMask | ManagerMask,
+        System  = UserMask | SystemMask
     }
 }
