@@ -92,6 +92,21 @@ namespace Ryujinx
             {
                 //Box.Remove(GameTableWindow);
 
+                //Temporary code section start, remove this section and uncomment above line when game is rendered to the glarea in the gui
+                Box.Remove(GlScreen);
+                Nfc.Sensitive = false;
+                ReturnMain.Sensitive = false;
+                GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
+                GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
+                GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 2);
+                GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 3);
+                GameTable.AppendColumn("File Size", new CellRendererText(), "text", 4);
+                GameTable.AppendColumn("Path", new CellRendererText(), "text", 5);
+                _TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                GameTable.Model = _TableStore;
+                UpdateGameTable();
+                //Temporary code section end
+
                 LoadApplication(args[0]);
             }
             else
@@ -168,86 +183,89 @@ namespace Ryujinx
                 eRrOr.Destroy();
             }
 
-            else if (Directory.Exists(path))
+            else
             {
-                string[] romFsFiles = Directory.GetFiles(path, "*.istorage");
-
-                if (romFsFiles.Length == 0)
+                if (Directory.Exists(path))
                 {
-                    romFsFiles = Directory.GetFiles(path, "*.romfs");
+                    string[] romFsFiles = Directory.GetFiles(path, "*.istorage");
+
+                    if (romFsFiles.Length == 0)
+                    {
+                        romFsFiles = Directory.GetFiles(path, "*.romfs");
+                    }
+
+                    if (romFsFiles.Length > 0)
+                    {
+                        Logger.PrintInfo(LogClass.Application, "Loading as cart with RomFS.");
+                        _device.LoadCart(path, romFsFiles[0]);
+                    }
+                    else
+                    {
+                        Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
+                        _device.LoadCart(path);
+                    }
                 }
 
-                if (romFsFiles.Length > 0)
+                else if (File.Exists(path))
                 {
-                    Logger.PrintInfo(LogClass.Application, "Loading as cart with RomFS.");
-                    _device.LoadCart(path, romFsFiles[0]);
+                    switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
+                    {
+                        case ".xci":
+                            Logger.PrintInfo(LogClass.Application, "Loading as XCI.");
+                            _device.LoadXci(path);
+                            break;
+                        case ".nca":
+                            Logger.PrintInfo(LogClass.Application, "Loading as NCA.");
+                            _device.LoadNca(path);
+                            break;
+                        case ".nsp":
+                        case ".pfs0":
+                            Logger.PrintInfo(LogClass.Application, "Loading as NSP.");
+                            _device.LoadNsp(path);
+                            break;
+                        default:
+                            Logger.PrintInfo(LogClass.Application, "Loading as homebrew.");
+                            _device.LoadProgram(path);
+                            break;
+                    }
                 }
                 else
                 {
-                    Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
-                    _device.LoadCart(path);
+                    Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file");
+                    End();
                 }
-            }
 
-            else if (File.Exists(path))
-            {
-                switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
+                new Thread(new ThreadStart(CreateGameWindow)).Start();
+
+                _GameLoaded          = true;
+                ReturnMain.Sensitive = true;
+
+                if (DiscordIntegrationEnabled)
                 {
-                    case ".xci":
-                        Logger.PrintInfo(LogClass.Application, "Loading as XCI.");
-                        _device.LoadXci(path);
-                        break;
-                    case ".nca":
-                        Logger.PrintInfo(LogClass.Application, "Loading as NCA.");
-                        _device.LoadNca(path);
-                        break;
-                    case ".nsp":
-                    case ".pfs0":
-                        Logger.PrintInfo(LogClass.Application, "Loading as NSP.");
-                        _device.LoadNsp(path);
-                        break;
-                    default:
-                        Logger.PrintInfo(LogClass.Application, "Loading as homebrew.");
-                        _device.LoadProgram(path);
-                        break;
-                }
-            }
-            else
-            {
-                Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file");
-                End();
-            }
-
-            new Thread(new ThreadStart(CreateGameWindow)).Start();
-
-            _GameLoaded          = true;
-            ReturnMain.Sensitive = true;
-
-            if (DiscordIntegrationEnabled)
-            {
-                if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(_device.System.TitleID))
-                {
-                    DiscordPresence.Assets.LargeImageKey = _device.System.TitleID;
-                }
-                DiscordPresence.Details               = $"Playing {_device.System.TitleName}";
-                DiscordPresence.State                 = string.IsNullOrWhiteSpace(_device.System.TitleID) ? string.Empty : _device.System.TitleID.ToUpper();
-                DiscordPresence.Assets.LargeImageText = _device.System.TitleName;
-                DiscordPresence.Assets.SmallImageKey  = "ryujinx";
-                DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
-                DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
-
-                DiscordClient.SetPresence(DiscordPresence);
-            }
-
-            if (_device.System.TitleID != null)
-            {
-                string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
-                using (FileStream fs = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
-                {
-                    using (StreamWriter sr = new StreamWriter(fs))
+                    if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(_device.System.TitleID))
                     {
-                        sr.WriteLine(DateTime.UtcNow);
+                        DiscordPresence.Assets.LargeImageKey = _device.System.TitleID;
+                    }
+                    DiscordPresence.Details               = $"Playing {_device.System.TitleName}";
+                    DiscordPresence.State                 = string.IsNullOrWhiteSpace(_device.System.TitleID) ? string.Empty : _device.System.TitleID.ToUpper();
+                    DiscordPresence.Assets.LargeImageText = _device.System.TitleName;
+                    DiscordPresence.Assets.SmallImageKey  = "ryujinx";
+                    DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
+                    DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
+
+                    DiscordClient.SetPresence(DiscordPresence);
+                }
+
+                if (_device.System.TitleID != null)
+                {
+                    string appdataPath   = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    string savePath      = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
+                    using (FileStream fs = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                    {
+                        using (StreamWriter sr = new StreamWriter(fs))
+                        {
+                            sr.WriteLine(DateTime.UtcNow);
+                        }
                     }
                 }
             }
