@@ -685,7 +685,7 @@ namespace Ryujinx.HLE.HOS
                 // It's only safe to release resources once all threads
                 // have exited.
                 ThreadCounter.Signal();
-                ThreadCounter.Wait();
+                //ThreadCounter.Wait();
 
                 Scheduler.Dispose();
 

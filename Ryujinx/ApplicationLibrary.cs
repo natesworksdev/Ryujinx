@@ -251,9 +251,9 @@ namespace Ryujinx
                     float timePlayed = float.Parse(sr.ReadLine());
 
                     if     (timePlayed <= 60.0)    { playedData[0] = $"{timePlayed}s"; }
-                    else if(timePlayed <= 3600.0)  { playedData[0] = $"{Math.Round(timePlayed / 60   , 2, MidpointRounding.AwayFromZero)}mins"; }
-                    else if(timePlayed <= 86400.0) { playedData[0] = $"{Math.Round(timePlayed / 3600 , 2, MidpointRounding.AwayFromZero)}hrs"; }
-                    else                           { playedData[0] = $"{Math.Round(timePlayed / 86400, 2, MidpointRounding.AwayFromZero)}days"; }
+                    else if(timePlayed <= 3600.0)  { playedData[0] = $"{Math.Round(timePlayed / 60   , 2, MidpointRounding.AwayFromZero)} mins"; }
+                    else if(timePlayed <= 86400.0) { playedData[0] = $"{Math.Round(timePlayed / 3600 , 2, MidpointRounding.AwayFromZero)} hrs"; }
+                    else                           { playedData[0] = $"{Math.Round(timePlayed / 86400, 2, MidpointRounding.AwayFromZero)} days"; }
                 }
             }
 

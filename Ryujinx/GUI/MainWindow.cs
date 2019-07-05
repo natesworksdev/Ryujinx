@@ -37,6 +37,7 @@ namespace Ryujinx
 #pragma warning disable 649
         [GUI] Window         MainWin;
         [GUI] CheckMenuItem  FullScreen;
+        [GUI] MenuItem       ReturnMain;
         [GUI] MenuItem       Nfc;
         [GUI] Box            Box;
         [GUI] ScrolledWindow GameTableWindow;
@@ -97,7 +98,8 @@ namespace Ryujinx
             {
                 Box.Remove(GlScreen);
 
-                Nfc.Sensitive = false;
+                Nfc.Sensitive        = false;
+                ReturnMain.Sensitive = false;
 
                 GameTable.AppendColumn("Icon"       , new CellRendererPixbuf(), "pixbuf", 0);
                 GameTable.AppendColumn("Game"       , new CellRendererText()  , "text"  , 1);
@@ -153,7 +155,7 @@ namespace Ryujinx
             StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
         }
 
-        private static void LoadApplication(string path)
+        private void LoadApplication(string path)
         {
             if (_GameLoaded)
             {
@@ -185,10 +187,6 @@ namespace Ryujinx
                     Logger.PrintInfo(LogClass.Application, "Loading as cart WITHOUT RomFS.");
                     _device.LoadCart(path);
                 }
-
-                new Thread(new ThreadStart(CreateGameWindow)).Start();
-
-                _GameLoaded = true;
             }
 
             else if (File.Exists(path))
@@ -213,15 +211,17 @@ namespace Ryujinx
                         _device.LoadProgram(path);
                         break;
                 }
-
-                new Thread(new ThreadStart(CreateGameWindow)).Start();
-
-                _GameLoaded = true;
             }
             else
             {
                 Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file");
+                End();
             }
+
+            new Thread(new ThreadStart(CreateGameWindow)).Start();
+
+            _GameLoaded          = true;
+            ReturnMain.Sensitive = true;
 
             if (DiscordIntegrationEnabled)
             {
@@ -229,24 +229,26 @@ namespace Ryujinx
                 {
                     DiscordPresence.Assets.LargeImageKey = _device.System.TitleID;
                 }
-
                 DiscordPresence.Details               = $"Playing {_device.System.TitleName}";
                 DiscordPresence.State                 = string.IsNullOrWhiteSpace(_device.System.TitleID) ? string.Empty : _device.System.TitleID.ToUpper();
                 DiscordPresence.Assets.LargeImageText = _device.System.TitleName;
                 DiscordPresence.Assets.SmallImageKey  = "ryujinx";
                 DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
-                DiscordPresence.Timestamps            = new Timestamps(DateTime.UnixEpoch);
+                DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
 
                 DiscordClient.SetPresence(DiscordPresence);
             }
 
-            string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
-            using (FileStream fs = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+            if (_device.System.TitleID != null)
             {
-                using (StreamWriter sr = new StreamWriter(fs))
+                string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
+                using (FileStream fs = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
                 {
-                   sr.WriteLine(DateTime.UtcNow);
+                    using (StreamWriter sr = new StreamWriter(fs))
+                    {
+                        sr.WriteLine(DateTime.UtcNow);
+                    }
                 }
             }
         }
@@ -256,45 +258,44 @@ namespace Ryujinx
             using (GlScreen screen = new GlScreen(_device, _renderer))
             {
                 screen.MainLoop();
-
-                Profile.FinishProfiling();
-
-                _device.Dispose();
-
-                _audioOut.Dispose();
             }
         }
 
         private static void End()
         {
-            string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
-            double currentPlayTime = 0;
-
-            using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+            if (_device.System.TitleID != null)
             {
-                using (StreamReader sr = new StreamReader(fs))
+                string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
+                double currentPlayTime = 0;
+
+                using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
                 {
-                    DateTime startTime = DateTime.Parse(sr.ReadLine());
-
-                    using (FileStream lpfs = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+                    using (StreamReader sr = new StreamReader(fs))
                     {
-                        using (StreamReader lpsr = new StreamReader(lpfs))
+                        DateTime startTime = DateTime.Parse(sr.ReadLine());
+
+                        using (FileStream lpfs = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
                         {
-                            currentPlayTime = double.Parse(lpsr.ReadLine());
+                            using (StreamReader lpsr = new StreamReader(lpfs))
+                            {
+                                currentPlayTime = double.Parse(lpsr.ReadLine());
+                            }
                         }
-                    }
 
-                    using (FileStream tpfs = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                    {
-                        using (StreamWriter tpsr = new StreamWriter(tpfs))
+                        using (FileStream tpfs = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
                         {
-                            tpsr.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
+                            using (StreamWriter tpsr = new StreamWriter(tpfs))
+                            {
+                                tpsr.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
+                            }
                         }
                     }
                 }
             }
 
+            Profile.FinishProfiling();
+            _device.Dispose();
             _audioOut.Dispose();
             DiscordClient.Dispose();
             Logger.Shutdown();
@@ -351,7 +352,7 @@ namespace Ryujinx
 
         private void Exit_Pressed(object o, EventArgs args) { End(); }
 
-        private void Window_Close(object obj, DeleteEventArgs args) { End(); }
+        private void Window_Close(object o, DeleteEventArgs args) { End(); }
 
         private void ReturnMain_Pressed(object o, EventArgs args)
         {
