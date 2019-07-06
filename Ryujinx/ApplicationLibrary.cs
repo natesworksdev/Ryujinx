@@ -151,7 +151,14 @@ namespace Ryujinx
                         }
                     }
 
-                    if ((Path.GetExtension(GamePath) == ".nca") || (Path.GetExtension(GamePath) == ".nro") || (Path.GetExtension(GamePath) == ".nso")) { TitleName = Path.GetFileName(GamePath); }
+                    if ((Path.GetExtension(GamePath) == ".nca") || (Path.GetExtension(GamePath) == ".nro") || (Path.GetExtension(GamePath) == ".nso"))
+                    {
+                        StringBuilder titleName = new StringBuilder();
+                        titleName.Append(Path.GetFileName(GamePath));
+                        titleName.Remove(Path.GetFileName(GamePath).Length - Path.GetExtension(GamePath).Length, Path.GetExtension(GamePath).Length);
+
+                        TitleName = titleName.ToString();
+                    }
                     else
                     {
                         IFile controlFile = controlFs.OpenFile("/control.nacp", OpenMode.Read);

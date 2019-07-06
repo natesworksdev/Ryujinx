@@ -225,7 +225,8 @@ namespace Ryujinx
                             break;
                         default:
                             Logger.PrintInfo(LogClass.Application, "Loading as homebrew.");
-                            _device.LoadProgram(path);
+                            try { _device.LoadProgram(path); }
+                            catch (ArgumentOutOfRangeException) { Logger.PrintError(LogClass.Application, $"The file which you have specified is unsupported by Ryujinx"); }
                             break;
                     }
                 }
