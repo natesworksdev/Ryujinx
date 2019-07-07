@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 
 namespace Ryujinx
@@ -58,7 +59,7 @@ namespace Ryujinx
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(_device);
 
-            ApplicationLibrary.Init();
+            ApplicationLibrary.Init(_device.System.KeySet, _device.System.State.DesiredTitleLanguage);
 
             _gtkapp = gtkapp;
 
@@ -97,12 +98,14 @@ namespace Ryujinx
                 Nfc.Sensitive = false;
                 ReturnMain.Sensitive = false;
                 GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
-                GameTable.AppendColumn("Game", new CellRendererText(), "text", 1);
-                GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 2);
-                GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 3);
-                GameTable.AppendColumn("File Size", new CellRendererText(), "text", 4);
-                GameTable.AppendColumn("Path", new CellRendererText(), "text", 5);
-                _TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                GameTable.AppendColumn("Application", new CellRendererText(), "text", 1);
+                GameTable.AppendColumn("Developer", new CellRendererText(), "text", 2);
+                GameTable.AppendColumn("Version", new CellRendererText(), "text", 3);
+                GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 4);
+                GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 5);
+                GameTable.AppendColumn("File Size", new CellRendererText(), "text", 6);
+                GameTable.AppendColumn("Path", new CellRendererText(), "text", 7);
+                _TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = _TableStore;
                 UpdateGameTable();
                 //Temporary code section end
@@ -117,13 +120,15 @@ namespace Ryujinx
                 ReturnMain.Sensitive = false;
 
                 GameTable.AppendColumn("Icon"       , new CellRendererPixbuf(), "pixbuf", 0);
-                GameTable.AppendColumn("Game"       , new CellRendererText()  , "text"  , 1);
-                GameTable.AppendColumn("Time Played", new CellRendererText()  , "text"  , 2);
-                GameTable.AppendColumn("Last Played", new CellRendererText()  , "text"  , 3);
-                GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 4);
-                GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 5);
+                GameTable.AppendColumn("Application", new CellRendererText()  , "text"  , 1);
+                GameTable.AppendColumn("Developer"  , new CellRendererText()  , "text"  , 2);
+                GameTable.AppendColumn("Version"    , new CellRendererText()  , "text"  , 3);
+                GameTable.AppendColumn("Time Played", new CellRendererText()  , "text"  , 4);
+                GameTable.AppendColumn("Last Played", new CellRendererText()  , "text"  , 5);
+                GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 6);
+                GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 7);
 
-                _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = _TableStore;
 
                 UpdateGameTable();
@@ -133,11 +138,11 @@ namespace Ryujinx
         public static void UpdateGameTable()
         {
             _TableStore.Clear();
-            ApplicationLibrary.Init();
+            ApplicationLibrary.Init(_device.System.KeySet, _device.System.State.DesiredTitleLanguage);
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                _TableStore.AppendValues(AppData.Icon, $"{AppData.GameName}\n{AppData.GameId.ToUpper()}", AppData.TimePlayed, AppData.LastPlayed, AppData.FileSize, AppData.Path);
+                _TableStore.AppendValues(new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileSize, AppData.Path);
             }
         }
 
@@ -259,13 +264,23 @@ namespace Ryujinx
 
                 if (_device.System.TitleID != null)
                 {
-                    string appdataPath   = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    string savePath      = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
-                    using (FileStream fs = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                    string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
+
+                    if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
                     {
-                        using (StreamWriter sr = new StreamWriter(fs))
+                        Directory.CreateDirectory(savePath);
+                        using (FileStream file = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("0")); }
+                    }
+                    if (File.Exists(System.IO.Path.Combine(savePath, "LastPlayed.dat")) == false)
+                    {
+                        Directory.CreateDirectory(savePath);
+                        using (FileStream file = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
                         {
-                            sr.WriteLine(DateTime.UtcNow);
+                            using (StreamWriter sr = new StreamWriter(file))
+                            {
+                                sr.WriteLine(DateTime.UtcNow);
+                            }
                         }
                     }
                 }
@@ -325,7 +340,7 @@ namespace Ryujinx
         private void Row_Activated(object obj, RowActivatedArgs args)
         {
             _TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
-            string path = (string)_TableStore.GetValue(treeiter, 5);
+            string path = (string)_TableStore.GetValue(treeiter, 7);
 
             LoadApplication(path);
 

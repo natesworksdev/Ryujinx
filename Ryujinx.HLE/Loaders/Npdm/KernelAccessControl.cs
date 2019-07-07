@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    public class KernelAccessControl
+    class KernelAccessControl
     {
         public int[] Capabilities { get; private set; }
 

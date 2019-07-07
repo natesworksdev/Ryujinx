@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    public class FsAccessHeader
+    class FsAccessHeader
     {
         public int   Version            { get; private set; }
         public ulong PermissionsBitmask { get; private set; }

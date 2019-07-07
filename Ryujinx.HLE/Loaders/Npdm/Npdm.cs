@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
     //https://github.com/SciresM/hactool/blob/master/npdm.c
     //https://github.com/SciresM/hactool/blob/master/npdm.h
     //http://switchbrew.org/index.php?title=NPDM
-    public class Npdm
+    class Npdm
     {
         private const int MetaMagic = 'M' << 0 | 'E' << 8 | 'T' << 16 | 'A' << 24;
 
@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public int    PersonalMmHeapSize  { get; private set; }
         public int    ProcessCategory     { get; private set; }
         public int    MainThreadStackSize { get; private set; }
-        public string TitleName           { get; private set; }
+        public string TitleName           { get; set; }
         public byte[] ProductCode         { get; private set; }
 
         public Aci0 Aci0 { get; private set; }

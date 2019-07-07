@@ -2,7 +2,6 @@
 using LibHac.Fs;
 using LibHac.Fs.NcaUtils;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.Loaders.Npdm;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,45 +13,68 @@ namespace Ryujinx
 {
     public class ApplicationLibrary
     {
-        public static Gdk.Pixbuf RyujinxNspIcon { get; private set; }
-        public static Gdk.Pixbuf RyujinxXciIcon { get; private set; }
-        public static Gdk.Pixbuf RyujinxNcaIcon { get; private set; }
-        public static Gdk.Pixbuf RyujinxNroIcon { get; private set; }
-        public static Gdk.Pixbuf RyujinxNsoIcon { get; private set; }
+        private static Keyset KeySet;
+
+        public static byte[] RyujinxNspIcon { get; private set; }
+        public static byte[] RyujinxXciIcon { get; private set; }
+        public static byte[] RyujinxNcaIcon { get; private set; }
+        public static byte[] RyujinxNroIcon { get; private set; }
+        public static byte[] RyujinxNsoIcon { get; private set; }
 
         public static List<ApplicationData> ApplicationLibraryData { get; private set; }
 
         public struct ApplicationData
         {
-            public Gdk.Pixbuf Icon;
-            public string     GameName;
-            public string     GameId;
-            public string     TimePlayed;
-            public string     LastPlayed;
-            public string     FileSize;
-            public string     Path;
+            public byte[] Icon;
+            public string TitleName;
+            public string TitleId;
+            public string Developer;
+            public string Version;
+            public string TimePlayed;
+            public string LastPlayed;
+            public string FileSize;
+            public string Path;
         }
 
-        public static void Init()
+        public static void Init(Keyset keySet, HLE.HOS.SystemState.TitleLanguage DesiredTitleLanguage)
         {
-            RyujinxNspIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNSPIcon.png", 75, 75);
-            RyujinxXciIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxXCIIcon.png", 75, 75);
-            RyujinxNcaIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNCAIcon.png", 75, 75);
-            RyujinxNroIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNROIcon.png", 75, 75);
-            RyujinxNsoIcon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxNSOIcon.png", 75, 75);
+            // Load keyset
+            KeySet = keySet;
 
-            List<string> Games = new List<string>();
-
-            foreach (string GameDir in SwitchSettings.SwitchConfig.GameDirs)
+            // Loads the default application Icons
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxNSPIcon.png"))
             {
-                if (Directory.Exists(GameDir) == false)
+                using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNspIcon = ms.ToArray(); }
+            }
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxXCIIcon.png"))
+            {
+                using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxXciIcon = ms.ToArray(); }
+            }
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxNCAIcon.png"))
+            {
+                using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNcaIcon = ms.ToArray(); }
+            }
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxNROIcon.png"))
+            {
+                using(MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNroIcon = ms.ToArray(); }
+            }
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxNSOIcon.png"))
+            {
+                using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNsoIcon = ms.ToArray(); }
+            }
+
+            // Builds the applications list with paths to found applications
+            List<string> applications = new List<string>();
+            foreach (string gameDir in SwitchSettings.SwitchConfig.GameDirs)
+            {
+                if (Directory.Exists(gameDir) == false)
                 {
-                    Logger.PrintError(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{GameDir}\"");
+                    Logger.PrintError(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{gameDir}\"");
 
                     continue;
                 }
 
-                DirectoryInfo GameDirInfo = new DirectoryInfo(GameDir);
+                DirectoryInfo GameDirInfo = new DirectoryInfo(gameDir);
                 foreach (var Game in GameDirInfo.GetFiles())
                 {
                     if ((Path.GetExtension(Game.ToString()) == ".xci")  ||
@@ -62,147 +84,91 @@ namespace Ryujinx
                         (Path.GetExtension(Game.ToString()) == ".nro")  ||
                         (Path.GetExtension(Game.ToString()) == ".nso"))
                     {
-                        Games.Add(Game.ToString());
+                        applications.Add(Game.ToString());
                     }
                 }
             }
 
+            // Loops through applications list, creating a struct for each application and then adding the struct to a list of structs
             ApplicationLibraryData = new List<ApplicationData>();
-            foreach (string GamePath in Games)
+            foreach (string applicationPath in applications)
             {
-                double filesize = new FileInfo(GamePath).Length * 0.000000000931;
+                double filesize         = new FileInfo(applicationPath).Length * 0.000000000931;
+                string titleName        = null;
+                string titleId          = null;
+                string developer        = null;
+                string version          = null;
+                byte[] applicationIcon  = null;
 
-                using (FileStream file = new FileStream(GamePath, FileMode.Open, FileAccess.Read))
+                using (FileStream file = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
                 {
-                    Nca mainNca             = null;
-                    Nca patchNca            = null;
-                    Nca controlNca          = null;
-                    PartitionFileSystem pfs = null;
-                    IFileSystem controlFs   = null;
-                    Npdm metaData           = null;
-                    string TitleName        = null;
-                    string TitleId          = "010000000000100D";
-                    Gdk.Pixbuf GameIcon     = null;
-
-                    if ((Path.GetExtension(GamePath) == ".nsp") || (Path.GetExtension(GamePath) == ".pfs0"))
+                    if ((Path.GetExtension(applicationPath) == ".nsp") || (Path.GetExtension(applicationPath) == ".pfs0") || (Path.GetExtension(applicationPath) == ".xci"))
                     {
-                        pfs = new PartitionFileSystem(file.AsStorage());
-                    }
+                        IFileSystem controlFs = null;
 
-                    else if (Path.GetExtension(GamePath) == ".xci")
-                    {
-                        Xci xci = new Xci(MainWindow._device.System.KeySet, file.AsStorage());
-                        pfs     = xci.OpenPartition(XciPartitionType.Secure);
-                    }
-
-                    if (pfs != null)
-                    { 
-                        foreach (DirectoryEntry ticketEntry in pfs.EnumerateEntries("*.tik"))
+                        // Store the ControlFS in variable called controlFs
+                        if (Path.GetExtension(applicationPath) == ".xci")
                         {
-                            Ticket ticket = new Ticket(pfs.OpenFile(ticketEntry.FullPath, OpenMode.Read).AsStream());
-
-                            if (!MainWindow._device.System.KeySet.TitleKeys.ContainsKey(ticket.RightsId))
-                            {
-                                MainWindow._device.System.KeySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(MainWindow._device.System.KeySet));
-                            }
+                            Xci xci = new Xci(MainWindow._device.System.KeySet, file.AsStorage());
+                            controlFs = GetControlFs(xci.OpenPartition(XciPartitionType.Secure));
                         }
+                        else { controlFs = GetControlFs(new PartitionFileSystem(file.AsStorage())); }
 
-                        foreach (DirectoryEntry fileEntry in pfs.EnumerateEntries("*.nca"))
-                        {
-                            Nca nca = new Nca(MainWindow._device.System.KeySet, pfs.OpenFile(fileEntry.FullPath, OpenMode.Read).AsStorage());
-                            if (nca.Header.ContentType == ContentType.Program)
-                            {
-                                int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, ContentType.Program);
-
-                                if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
-                                {
-                                    patchNca = nca;
-                                }
-                                else
-                                {
-                                    mainNca = nca;
-                                }
-                            }
-                            else if (nca.Header.ContentType == ContentType.Control)
-                            {
-                                controlNca = nca;
-                            }
-                        }
-
-                        controlFs = controlNca.OpenFileSystem(NcaSectionType.Data, MainWindow._device.System.FsIntegrityCheckLevel);
-
-                        if (patchNca == null)
-                        {
-                            if (mainNca.CanOpenSection(NcaSectionType.Code))
-                            {
-                                IFileSystem codeFs = mainNca.OpenFileSystem(NcaSectionType.Code, MainWindow._device.System.FsIntegrityCheckLevel);
-                                metaData = new Npdm(codeFs.OpenFile("/main.npdm", OpenMode.Read).AsStream());
-                                TitleId = metaData.Aci0.TitleId.ToString("x16");
-                            }
-                        }
-                        else
-                        {
-                            if (patchNca.CanOpenSection(NcaSectionType.Code))
-                            {
-                                IFileSystem codeFs = mainNca.OpenFileSystemWithPatch(patchNca, NcaSectionType.Code, MainWindow._device.System.FsIntegrityCheckLevel);
-                                metaData = new Npdm(codeFs.OpenFile("/main.npdm", OpenMode.Read).AsStream());
-                                TitleId = metaData.Aci0.TitleId.ToString("x16");
-                            }
-                        }
-                    }
-
-                    if ((Path.GetExtension(GamePath) == ".nca") || (Path.GetExtension(GamePath) == ".nro") || (Path.GetExtension(GamePath) == ".nso"))
-                    {
-                        StringBuilder titleName = new StringBuilder();
-                        titleName.Append(Path.GetFileName(GamePath));
-                        titleName.Remove(Path.GetFileName(GamePath).Length - Path.GetExtension(GamePath).Length, Path.GetExtension(GamePath).Length);
-
-                        TitleName = titleName.ToString();
-                    }
-                    else
-                    {
+                        // Creates NACP class from the NACP file
                         IFile controlFile = controlFs.OpenFile("/control.nacp", OpenMode.Read);
                         Nacp  controlData = new Nacp(controlFile.AsStream());
 
-                        TitleName = controlData.Descriptions[(int)MainWindow._device.System.State.DesiredTitleLanguage].Title;
-                        if (string.IsNullOrWhiteSpace(TitleName))
+                        // Get the title name, title ID, developer name and version number from the NACP
+                        version = controlData.DisplayVersion;
+
+                        titleName = controlData.Descriptions[(int)MainWindow._device.System.State.DesiredTitleLanguage].Title;
+                        if (string.IsNullOrWhiteSpace(titleName))
                         {
-                            TitleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                            titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
                         }
-                    }
 
-                    if (Path.GetExtension(GamePath) == ".nca") { GameIcon = RyujinxNcaIcon; }
+                        titleId = controlData.PresenceGroupId.ToString("X16");
+                        if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("X16"); }
+                        if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("X16"); }
 
-                    else if ((Path.GetExtension(GamePath) == ".xci") || (Path.GetExtension(GamePath) == ".nsp") || (Path.GetExtension(GamePath) == ".pfs0"))
-                    {
+                        developer = controlData.Descriptions[(int)MainWindow._device.System.State.DesiredTitleLanguage].Developer;
+                        if (string.IsNullOrWhiteSpace(developer))
+                        {
+                            developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
+                        }
+
+                        // Read the icon from the ControlFS and store it as a byte array
                         try
                         {
-                            IFile logo = controlFs.OpenFile($"/icon_{MainWindow._device.System.State.DesiredTitleLanguage}.dat", OpenMode.Read);
-                            GameIcon = new Gdk.Pixbuf(logo.AsStream(), 75, 75);
+                            IFile logo = controlFs.OpenFile($"/icon_{DesiredTitleLanguage}.dat", OpenMode.Read);
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                logo.AsStream().CopyTo(ms);
+                                applicationIcon = ms.ToArray();
+                            }
                         }
-                        catch(FileNotFoundException)
+                        catch (FileNotFoundException)
                         {
                             try
                             {
                                 IFile logo = controlFs.OpenFile($"/icon_AmericanEnglish.dat", OpenMode.Read);
-                                GameIcon = new Gdk.Pixbuf(logo.AsStream(), 75, 75);
+                                using (MemoryStream ms = new MemoryStream())
+                                {
+                                    logo.AsStream().CopyTo(ms);
+                                    applicationIcon = ms.ToArray();
+                                }
                             }
                             catch (FileNotFoundException)
                             {
-                                if (Path.GetExtension(GamePath) == ".xci") { GameIcon = RyujinxXciIcon; }
-                                else { GameIcon = RyujinxNspIcon; }
+                                if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
+                                else { applicationIcon = RyujinxNspIcon; }
                             }
                         }
                     }
 
-                    else if (Path.GetExtension(GamePath) == ".nso") { GameIcon = RyujinxNsoIcon; }
-
-                    else if (Path.GetExtension(GamePath) == ".nro")
+                    else if (Path.GetExtension(applicationPath) == ".nro")
                     {
                         BinaryReader reader = new BinaryReader(file);
-
-                        file.Seek(24, SeekOrigin.Begin);
-                        int AssetOffset = reader.ReadInt32();
 
                         byte[] Read(long Position, int Size)
                         {
@@ -210,34 +176,112 @@ namespace Ryujinx
                             return reader.ReadBytes(Size);
                         }
 
+                        file.Seek(24, SeekOrigin.Begin);
+                        int AssetOffset = reader.ReadInt32();
+
                         if (Encoding.ASCII.GetString(Read(AssetOffset, 4)) == "ASET")
                         {
                             byte[] IconSectionInfo = Read(AssetOffset + 8, 0x10);
 
-                            long IconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
-                            long IconSize   = BitConverter.ToInt64(IconSectionInfo, 8);
+                            long iconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
+                            long iconSize   = BitConverter.ToInt64(IconSectionInfo, 8);
 
-                            byte[] IconData = Read(AssetOffset + IconOffset, (int)IconSize);
+                            ulong nacpOffset = reader.ReadUInt64();
+                            ulong nacpSize   = reader.ReadUInt64();
 
-                            GameIcon = new Gdk.Pixbuf(IconData, 75, 75);
+                            // Reads and stores game icon as byte array
+                            applicationIcon = Read(AssetOffset + iconOffset, (int)iconSize);
+
+                            // Creates memory stream out of byte array which is the NACP
+                            using (MemoryStream stream = new MemoryStream(Read(AssetOffset + (int)nacpOffset, (int)nacpSize)))
+                            {
+                                // Creates NACP class from the memory stream
+                                Nacp controlData = new Nacp(stream);
+
+                                // Get the title name, title ID, developer name and version number from the NACP
+                                version = controlData.DisplayVersion;
+
+                                titleName = controlData.Descriptions[(int)DesiredTitleLanguage].Title;
+                                if (string.IsNullOrWhiteSpace(titleName))
+                                {
+                                    titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                                }
+
+                                titleId = controlData.PresenceGroupId.ToString("X16");
+                                if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("X16"); }
+                                if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("X16"); }
+
+                                developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
+                                if (string.IsNullOrWhiteSpace(developer))
+                                {
+                                    developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
+                                }
+                            }
                         }
-                        else { GameIcon = RyujinxNroIcon; }
+                        else { applicationIcon = RyujinxNroIcon; titleName = "Application"; titleId = "0000000000000000"; developer = "Unknown"; version = "?"; }
                     }
 
-                    ApplicationData data = new ApplicationData()
+                    // If its an NCA or NSO we just set defaults
+                    else if ((Path.GetExtension(applicationPath) == ".nca") || (Path.GetExtension(applicationPath) == ".nso"))
                     {
-                        Icon       = GameIcon,
-                        GameName   = TitleName,
-                        GameId     = TitleId,
-                        TimePlayed = GetPlayedData(TitleId)[0],
-                        LastPlayed = GetPlayedData(TitleId)[1],
-                        FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
-                        Path       = GamePath,
-                    };
+                             if (Path.GetExtension(applicationPath) == ".nca") { applicationIcon = RyujinxNcaIcon; }
+                        else if (Path.GetExtension(applicationPath) == ".nso") { applicationIcon = RyujinxNsoIcon; }
 
-                    ApplicationLibraryData.Add(data);
+                        StringBuilder titlename = new StringBuilder();
+                        titlename.Append(Path.GetFileName(applicationPath));
+                        titlename.Remove(Path.GetFileName(applicationPath).Length - Path.GetExtension(applicationPath).Length, Path.GetExtension(applicationPath).Length);
+
+                        titleName = titlename.ToString();
+                        titleId = "0000000000000000";
+                        version = "?";
+                        developer = "Unknown";
+                    }
+                }
+
+                ApplicationData data = new ApplicationData()
+                {
+                    Icon       = applicationIcon,
+                    TitleName  = titleName,
+                    TitleId    = titleId,
+                    Developer  = developer,
+                    Version    = version,
+                    TimePlayed = GetPlayedData(titleId)[0],
+                    LastPlayed = GetPlayedData(titleId)[1],
+                    FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
+                    Path       = applicationPath,
+                };
+
+                ApplicationLibraryData.Add(data);
+            }
+        }
+
+        private static IFileSystem GetControlFs(PartitionFileSystem Pfs)
+        {
+            Nca controlNca = null;
+
+            // Add keys to keyset if needed
+            foreach (DirectoryEntry ticketEntry in Pfs.EnumerateEntries("*.tik"))
+            {
+                Ticket ticket = new Ticket(Pfs.OpenFile(ticketEntry.FullPath, OpenMode.Read).AsStream());
+
+                if (!KeySet.TitleKeys.ContainsKey(ticket.RightsId))
+                {
+                    KeySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(MainWindow._device.System.KeySet));
                 }
             }
+
+            // Find the Control NCA and store it in variable called controlNca
+            foreach (DirectoryEntry fileEntry in Pfs.EnumerateEntries("*.nca"))
+            {
+                Nca nca = new Nca(MainWindow._device.System.KeySet, Pfs.OpenFile(fileEntry.FullPath, OpenMode.Read).AsStorage());
+                if (nca.Header.ContentType == ContentType.Control)
+                {
+                    controlNca = nca;
+                }
+            }
+
+            // Return the ControlFS
+            return controlNca.OpenFileSystem(NcaSectionType.Data, MainWindow._device.System.FsIntegrityCheckLevel);
         }
 
         private static string[] GetPlayedData(string TitleId)

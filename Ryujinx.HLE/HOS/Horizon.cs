@@ -549,17 +549,34 @@ namespace Ryujinx.HLE.HOS
                         if (asetVersion == 0)
                         {
                             ulong iconOffset = reader.ReadUInt64();
-                            ulong iconSize = reader.ReadUInt64();
+                            ulong iconSize   = reader.ReadUInt64();
 
                             ulong nacpOffset = reader.ReadUInt64();
-                            ulong nacpSize = reader.ReadUInt64();
+                            ulong nacpSize   = reader.ReadUInt64();
 
                             ulong romfsOffset = reader.ReadUInt64();
-                            ulong romfsSize = reader.ReadUInt64();
+                            ulong romfsSize   = reader.ReadUInt64();
 
                             if (romfsSize != 0)
                             {
                                 Device.FileSystem.SetRomFs(new HomebrewRomFsStream(input, obj.FileSize + (long)romfsOffset));
+                            }
+
+                            if (nacpSize != 0)
+                            {
+                                input.Seek(obj.FileSize + (long)nacpOffset, SeekOrigin.Begin);
+                                using (MemoryStream stream = new MemoryStream(reader.ReadBytes((int)nacpSize))) { ControlData = new Nacp(stream); }
+
+                                metaData.TitleName = ControlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
+                                if (string.IsNullOrWhiteSpace(metaData.TitleName))
+                                {
+                                    metaData.TitleName = ControlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                                }
+
+                                metaData.Aci0.TitleId = ControlData.PresenceGroupId;
+                                if (metaData.Aci0.TitleId == 0) { metaData.Aci0.TitleId = ControlData.SaveDataOwnerId; }
+                                if (metaData.Aci0.TitleId == 0) { metaData.Aci0.TitleId = ControlData.AddOnContentBaseId - 0x1000; }
+                                if (metaData.Aci0.TitleId.ToString("x16") == "fffffffffffff000") { metaData.Aci0.TitleId = 0000000000000000; }
                             }
                         }
                         else
@@ -574,10 +591,10 @@ namespace Ryujinx.HLE.HOS
                 staticObject = new NxStaticObject(input);
             }
 
-            ContentManager.LoadEntries();
+            TitleName = CurrentTitle = metaData.TitleName;
+            TitleID   = metaData.Aci0.TitleId.ToString("x16");
 
-            TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
-            TitleName = metaData.TitleName;
+            ContentManager.LoadEntries();
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }
