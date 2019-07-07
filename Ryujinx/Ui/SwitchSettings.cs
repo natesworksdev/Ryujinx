@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Ryujinx
+namespace Ryujinx.UI
 {
     public class SwitchSettings : Window
     {
@@ -82,7 +82,7 @@ namespace Ryujinx
 
         public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
-        public SwitchSettings(HLE.Switch device) : this(new Builder("Ryujinx.GUI.SwitchSettings.glade"), device) { }
+        public SwitchSettings(HLE.Switch device) : this(new Builder("Ryujinx.Ui.SwitchSettings.glade"), device) { }
 
         private SwitchSettings(Builder builder, HLE.Switch device) : base(builder.GetObject("SettingsWin").Handle)
         {
@@ -90,8 +90,8 @@ namespace Ryujinx
 
             builder.Autoconnect(this);
 
-            SettingsWin.Icon       = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
-            ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.JoyCon.png", 500, 500);
+            SettingsWin.Icon       = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
+            ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
 
             //Bind Events
             LStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, LStickUp1);

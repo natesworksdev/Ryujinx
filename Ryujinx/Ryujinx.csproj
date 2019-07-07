@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configurations>Debug;Release;Profile Debug;Profile Release</Configurations>
+    <ApplicationIcon>ryujinx.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile Release|AnyCPU'">
@@ -19,20 +20,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="GUI\AboutWindow.glade" />
-    <EmbeddedResource Include="GUI\assets\DiscordLogo.png" />
-    <EmbeddedResource Include="GUI\assets\GitHubLogo.png" />
-    <EmbeddedResource Include="GUI\assets\JoyCon.png" />
-    <EmbeddedResource Include="GUI\assets\PatreonLogo.png" />
-    <EmbeddedResource Include="GUI\assets\ryujinxIcon.png" />
-    <EmbeddedResource Include="GUI\assets\ryujinxNCAIcon.png" />
-    <EmbeddedResource Include="GUI\assets\ryujinxNROIcon.png" />
-    <EmbeddedResource Include="GUI\assets\ryujinxNSOIcon.png" />
-    <EmbeddedResource Include="GUI\assets\ryujinxNSPIcon.png" />
-    <EmbeddedResource Include="GUI\assets\ryujinxXCIIcon.png" />
-    <EmbeddedResource Include="GUI\assets\TwitterLogo.png" />
-    <EmbeddedResource Include="GUI\MainWindow.glade" />
-    <EmbeddedResource Include="GUI\SwitchSettings.glade" />
+    <EmbeddedResource Include="Ui\AboutWindow.glade" />
+    <EmbeddedResource Include="Ui\assets\DiscordLogo.png" />
+    <EmbeddedResource Include="Ui\assets\GitHubLogo.png" />
+    <EmbeddedResource Include="Ui\assets\JoyCon.png" />
+    <EmbeddedResource Include="Ui\assets\PatreonLogo.png" />
+    <EmbeddedResource Include="Ui\assets\ryujinxIcon.png" />
+    <EmbeddedResource Include="Ui\assets\TwitterLogo.png" />
+    <EmbeddedResource Include="Ui\MainWindow.glade" />
+    <EmbeddedResource Include="Ui\SwitchSettings.glade" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,7 +52,7 @@
     <None Update="Config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="GUI\assets\Theme.css">
+    <None Update="Theme.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="RPsupported.dat">

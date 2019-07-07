@@ -8,6 +8,7 @@ using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.Input;
+using Ryujinx.UI;
 using Ryujinx.UI.Input;
 using System;
 using System.Collections.Generic;

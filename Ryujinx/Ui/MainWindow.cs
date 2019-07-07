@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 
-namespace Ryujinx
+namespace Ryujinx.UI
 {
     public class MainWindow : Window
     {
@@ -46,7 +46,7 @@ namespace Ryujinx
         [GUI] GLArea         GlScreen;
 #pragma warning restore 649
 
-        public MainWindow(string[] args, Application gtkapp) : this(new Builder("Ryujinx.GUI.MainWindow.glade"), args, gtkapp) { }
+        public MainWindow(string[] args, Application gtkapp) : this(new Builder("Ryujinx.Ui.MainWindow.glade"), args, gtkapp) { }
 
         private MainWindow(Builder builder, string[] args, Application gtkapp) : base(builder.GetObject("MainWin").Handle)
         {
@@ -59,7 +59,7 @@ namespace Ryujinx
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(_device);
 
-            ApplicationLibrary.Init(_device.System.KeySet, _device.System.State.DesiredTitleLanguage);
+            ApplicationLibrary.Init(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage);
 
             _gtkapp = gtkapp;
 
@@ -87,7 +87,7 @@ namespace Ryujinx
             }
 
             builder.Autoconnect(this);
-            MainWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
+            MainWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
 
             if (args.Length == 1)
             {
@@ -138,7 +138,7 @@ namespace Ryujinx
         public static void UpdateGameTable()
         {
             _TableStore.Clear();
-            ApplicationLibrary.Init(_device.System.KeySet, _device.System.State.DesiredTitleLanguage);
+            ApplicationLibrary.Init(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage);
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
@@ -169,7 +169,7 @@ namespace Ryujinx
             }
             else
             {
-                cssProvider.LoadFromPath("./GUI/assets/Theme.css");
+                cssProvider.LoadFromPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Theme.css"));
             }
 
             StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);

@@ -1,6 +1,7 @@
 ﻿using Gtk;
 using Ryujinx.Common.Logging;
 using Ryujinx.Profiler;
+using Ryujinx.UI;
 using System;
 using System.IO;
 

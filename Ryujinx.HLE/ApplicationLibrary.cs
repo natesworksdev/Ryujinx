@@ -14,6 +14,7 @@ namespace Ryujinx
     public class ApplicationLibrary
     {
         private static Keyset KeySet;
+        private static HLE.HOS.SystemState.TitleLanguage DesiredTitleLanguage;
 
         public static byte[] RyujinxNspIcon { get; private set; }
         public static byte[] RyujinxXciIcon { get; private set; }
@@ -36,55 +37,56 @@ namespace Ryujinx
             public string Path;
         }
 
-        public static void Init(Keyset keySet, HLE.HOS.SystemState.TitleLanguage DesiredTitleLanguage)
+        public static void Init(List<string> AppDirs, Keyset keySet, HLE.HOS.SystemState.TitleLanguage desiredTitleLanguage)
         {
-            // Load keyset
-            KeySet = keySet;
+            // Load Variables
+            KeySet                = keySet;
+            DesiredTitleLanguage  = desiredTitleLanguage;
 
             // Loads the default application Icons
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxNSPIcon.png"))
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNSPIcon.png"))
             {
                 using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNspIcon = ms.ToArray(); }
             }
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxXCIIcon.png"))
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxXCIIcon.png"))
             {
                 using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxXciIcon = ms.ToArray(); }
             }
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxNCAIcon.png"))
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNCAIcon.png"))
             {
                 using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNcaIcon = ms.ToArray(); }
             }
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxNROIcon.png"))
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNROIcon.png"))
             {
                 using(MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNroIcon = ms.ToArray(); }
             }
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.GUI.assets.ryujinxNSOIcon.png"))
+            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNSOIcon.png"))
             {
                 using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNsoIcon = ms.ToArray(); }
             }
 
             // Builds the applications list with paths to found applications
             List<string> applications = new List<string>();
-            foreach (string gameDir in SwitchSettings.SwitchConfig.GameDirs)
+            foreach (string appDir in AppDirs)
             {
-                if (Directory.Exists(gameDir) == false)
+                if (Directory.Exists(appDir) == false)
                 {
-                    Logger.PrintError(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{gameDir}\"");
+                    Logger.PrintError(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{appDir}\"");
 
                     continue;
                 }
 
-                DirectoryInfo GameDirInfo = new DirectoryInfo(gameDir);
-                foreach (var Game in GameDirInfo.GetFiles())
+                DirectoryInfo AppDirInfo = new DirectoryInfo(appDir);
+                foreach (var App in AppDirInfo.GetFiles())
                 {
-                    if ((Path.GetExtension(Game.ToString()) == ".xci")  ||
-                        (Path.GetExtension(Game.ToString()) == ".nca")  ||
-                        (Path.GetExtension(Game.ToString()) == ".nsp")  ||
-                        (Path.GetExtension(Game.ToString()) == ".pfs0") ||
-                        (Path.GetExtension(Game.ToString()) == ".nro")  ||
-                        (Path.GetExtension(Game.ToString()) == ".nso"))
+                    if ((Path.GetExtension(App.ToString()) == ".xci")  ||
+                        (Path.GetExtension(App.ToString()) == ".nca")  ||
+                        (Path.GetExtension(App.ToString()) == ".nsp")  ||
+                        (Path.GetExtension(App.ToString()) == ".pfs0") ||
+                        (Path.GetExtension(App.ToString()) == ".nro")  ||
+                        (Path.GetExtension(App.ToString()) == ".nso"))
                     {
-                        applications.Add(Game.ToString());
+                        applications.Add(App.ToString());
                     }
                 }
             }
@@ -109,7 +111,7 @@ namespace Ryujinx
                         // Store the ControlFS in variable called controlFs
                         if (Path.GetExtension(applicationPath) == ".xci")
                         {
-                            Xci xci = new Xci(MainWindow._device.System.KeySet, file.AsStorage());
+                            Xci xci = new Xci(KeySet, file.AsStorage());
                             controlFs = GetControlFs(xci.OpenPartition(XciPartitionType.Secure));
                         }
                         else { controlFs = GetControlFs(new PartitionFileSystem(file.AsStorage())); }
@@ -121,7 +123,7 @@ namespace Ryujinx
                         // Get the title name, title ID, developer name and version number from the NACP
                         version = controlData.DisplayVersion;
 
-                        titleName = controlData.Descriptions[(int)MainWindow._device.System.State.DesiredTitleLanguage].Title;
+                        titleName = controlData.Descriptions[(int)DesiredTitleLanguage].Title;
                         if (string.IsNullOrWhiteSpace(titleName))
                         {
                             titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
@@ -131,7 +133,7 @@ namespace Ryujinx
                         if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("X16"); }
                         if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("X16"); }
 
-                        developer = controlData.Descriptions[(int)MainWindow._device.System.State.DesiredTitleLanguage].Developer;
+                        developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
                         if (string.IsNullOrWhiteSpace(developer))
                         {
                             developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
@@ -140,10 +142,10 @@ namespace Ryujinx
                         // Read the icon from the ControlFS and store it as a byte array
                         try
                         {
-                            IFile logo = controlFs.OpenFile($"/icon_{DesiredTitleLanguage}.dat", OpenMode.Read);
+                            IFile icon = controlFs.OpenFile($"/icon_{DesiredTitleLanguage}.dat", OpenMode.Read);
                             using (MemoryStream ms = new MemoryStream())
                             {
-                                logo.AsStream().CopyTo(ms);
+                                icon.AsStream().CopyTo(ms);
                                 applicationIcon = ms.ToArray();
                             }
                         }
@@ -151,10 +153,10 @@ namespace Ryujinx
                         {
                             try
                             {
-                                IFile logo = controlFs.OpenFile($"/icon_AmericanEnglish.dat", OpenMode.Read);
+                                IFile icon = controlFs.OpenFile($"/icon_AmericanEnglish.dat", OpenMode.Read);
                                 using (MemoryStream ms = new MemoryStream())
                                 {
-                                    logo.AsStream().CopyTo(ms);
+                                    icon.AsStream().CopyTo(ms);
                                     applicationIcon = ms.ToArray();
                                 }
                             }
@@ -266,14 +268,14 @@ namespace Ryujinx
 
                 if (!KeySet.TitleKeys.ContainsKey(ticket.RightsId))
                 {
-                    KeySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(MainWindow._device.System.KeySet));
+                    KeySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(KeySet));
                 }
             }
 
             // Find the Control NCA and store it in variable called controlNca
             foreach (DirectoryEntry fileEntry in Pfs.EnumerateEntries("*.nca"))
             {
-                Nca nca = new Nca(MainWindow._device.System.KeySet, Pfs.OpenFile(fileEntry.FullPath, OpenMode.Read).AsStorage());
+                Nca nca = new Nca(KeySet, Pfs.OpenFile(fileEntry.FullPath, OpenMode.Read).AsStorage());
                 if (nca.Header.ContentType == ContentType.Control)
                 {
                     controlNca = nca;
@@ -281,7 +283,7 @@ namespace Ryujinx
             }
 
             // Return the ControlFS
-            return controlNca.OpenFileSystem(NcaSectionType.Data, MainWindow._device.System.FsIntegrityCheckLevel);
+            return controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
         }
 
         private static string[] GetPlayedData(string TitleId)
