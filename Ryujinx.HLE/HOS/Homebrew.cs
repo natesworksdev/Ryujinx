@@ -1,4 +1,4 @@
-﻿using ChocolArm64.Memory;
+﻿using ARMeilleure.Memory;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS

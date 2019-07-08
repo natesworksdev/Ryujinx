@@ -1,5 +1,4 @@
-using ChocolArm64;
-using ChocolArm64.Memory;
+using ARMeilleure.Memory;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
@@ -7,12 +6,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KThread : KSynchronizationObject, IKFutureSchedulerObject
     {
-        public CpuThread Context { get; private set; }
+        private int _hostThreadRunning;
+
+        public Thread HostThread { get; private set; }
+
+        public ARMeilleure.State.ExecutionContext Context { get; private set; }
 
         public long AffinityMask { get; set; }
 
@@ -152,29 +156,27 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 is64Bits = true;
             }
 
-            Context = new CpuThread(owner.Translator, owner.CpuMemory, (long)entrypoint);
+            HostThread = new Thread(() => ThreadStart(entrypoint));
+
+            Context = new ARMeilleure.State.ExecutionContext();
 
             bool isAarch32 = (Owner.MmuFlags & 1) == 0;
 
-            Context.ThreadState.Aarch32 = isAarch32;
-
-            Context.ThreadState.X0  = argsPtr;
+            Context.SetX(0, argsPtr);
 
             if (isAarch32)
             {
-                Context.ThreadState.X13 = (uint)stackTop;
+                Context.SetX(13, (uint)stackTop);
             }
             else
             {
-                Context.ThreadState.X31 = stackTop;
+                Context.SetX(31, stackTop);
             }
 
-            Context.ThreadState.CntfrqEl0 = 19200000;
-            Context.ThreadState.Tpidr     = (long)_tlsAddress;
+            Context.CntfrqEl0 = 19200000;
+            Context.Tpidr     = (long)_tlsAddress;
 
             owner.SubscribeThreadEventHandlers(Context);
-
-            Context.WorkFinished += ThreadFinishedHandler;
 
             ThreadUid = System.GetThreadUid();
 
@@ -1002,8 +1004,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public void SetEntryArguments(long argsPtr, int threadHandle)
         {
-            Context.ThreadState.X0 = (ulong)argsPtr;
-            Context.ThreadState.X1 = (ulong)threadHandle;
+            Context.SetX(0, (ulong)argsPtr);
+            Context.SetX(1, (ulong)threadHandle);
         }
 
         public void TimeUp()
@@ -1013,7 +1015,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public string GetGuestStackTrace()
         {
-            return Owner.Debugger.GetGuestStackTrace(Context.ThreadState);
+            return Owner.Debugger.GetGuestStackTrace(Context);
         }
 
         public void PrintGuestStackTrace()
@@ -1026,10 +1028,30 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             Logger.PrintInfo(LogClass.Cpu, trace.ToString());
         }
 
-        private void ThreadFinishedHandler(object sender, EventArgs e)
+        public void Execute()
+        {
+            if (Interlocked.CompareExchange(ref _hostThreadRunning, 1, 0) == 0)
+            {
+                HostThread.Start();
+            }
+        }
+
+        private void ThreadStart(ulong entrypoint)
+        {
+            Owner.Translator.Execute(Context, entrypoint);
+
+            ThreadExit();
+        }
+
+        private void ThreadExit()
         {
             System.Scheduler.ExitThread(this);
             System.Scheduler.RemoveThread(this);
+        }
+
+        public bool IsCurrentHostThread()
+        {
+            return Thread.CurrentThread == HostThread;
         }
 
         public override bool IsSignaled()

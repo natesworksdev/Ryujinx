@@ -38,16 +38,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChocolArm64\ChocolArm64.csproj" />
     <ProjectReference Include="..\Ryujinx.Audio\Ryujinx.Audio.csproj" />
     <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics\Ryujinx.Graphics.csproj" />
     <ProjectReference Include="..\Ryujinx.Profiler\Ryujinx.Profiler.csproj" />
+    <ProjectReference Include="..\ARMeilleure\ARMeilleure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Concentus" Version="1.1.7" />
     <PackageReference Include="LibHac" Version="0.5.0" />
+    <PackageReference Include="System.Runtime.Intrinsics.Experimental" Version="4.5.0-rc1" />
     <PackageReference Include="TimeZoneConverter.Posix" Version="2.1.0" />
   </ItemGroup>
 

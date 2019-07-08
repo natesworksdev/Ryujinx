@@ -1,9 +1,7 @@
-using ChocolArm64;
-using ChocolArm64.Events;
-using ChocolArm64.Memory;
-using ChocolArm64.Translation;
+using ARMeilleure.Memory;
+using ARMeilleure.State;
+using ARMeilleure.Translation;
 using Ryujinx.Common;
-using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -793,11 +791,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        public void SubscribeThreadEventHandlers(CpuThread context)
+        public void SubscribeThreadEventHandlers(ARMeilleure.State.ExecutionContext context)
         {
-            context.ThreadState.Interrupt += InterruptHandler;
-            context.ThreadState.SvcCall   += _svcHandler.SvcCall;
-            context.ThreadState.Undefined += UndefinedInstructionHandler;
+            context.Interrupt      += InterruptHandler;
+            context.SupervisorCall += _svcHandler.SvcCall;
+            context.Undefined      += UndefinedInstructionHandler;
         }
 
         private void InterruptHandler(object sender, EventArgs e)
@@ -1001,9 +999,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             {
                 foreach (KThread thread in _threads)
                 {
-                    thread.Context.StopExecution();
+                    thread.Context.Running = false;
 
-                    System.Scheduler.CoreManager.Set(thread.Context.Work);
+                    System.Scheduler.CoreManager.Set(thread.HostThread);
                 }
             }
         }
@@ -1029,8 +1027,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             MemoryManager = new KMemoryManager(_system, CpuMemory);
 
             Translator = new Translator(CpuMemory);
-
-            Translator.CpuTrace += CpuTraceHandler;
         }
 
         public void PrintCurrentThreadStackTrace()
@@ -1038,14 +1034,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             System.Scheduler.GetCurrentThread().PrintGuestStackTrace();
         }
 
-        private void CpuTraceHandler(object sender, CpuTraceEventArgs e)
-        {
-            Logger.PrintInfo(LogClass.Cpu, $"Executing at 0x{e.Position:X16}.");
-        }
-
         private void UndefinedInstructionHandler(object sender, InstUndefinedEventArgs e)
         {
-            throw new UndefinedInstructionException(e.Position, e.RawOpCode);
+            throw new UndefinedInstructionException(e.Address, e.OpCode);
         }
     }
 }

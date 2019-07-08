@@ -1,5 +1,4 @@
-using ChocolArm64.Memory;
-using ChocolArm64.State;
+using ARMeilleure.Memory;
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.Loaders.Elf;
@@ -40,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _images = new List<Image>();
         }
 
-        public string GetGuestStackTrace(CpuThreadState threadState)
+        public string GetGuestStackTrace(ARMeilleure.State.ExecutionContext context)
         {
             EnsureLoaded();
 
@@ -74,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
 
             // TODO: ARM32.
-            long framePointer = (long)threadState.X29;
+            long framePointer = (long)context.GetX(29);
 
             trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
 

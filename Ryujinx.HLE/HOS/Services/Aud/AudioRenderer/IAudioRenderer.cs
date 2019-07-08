@@ -1,4 +1,4 @@
-using ChocolArm64.Memory;
+using ARMeilleure.Memory;
 using Ryujinx.Audio;
 using Ryujinx.Audio.Adpcm;
 using Ryujinx.Common.Logging;
