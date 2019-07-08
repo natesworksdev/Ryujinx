@@ -24,23 +24,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public Operand Local { get; }
 
-        private Register _register;
-
-        public bool HasRegister { get; private set; }
-
-        public Register Register
-        {
-            get
-            {
-                return _register;
-            }
-            set
-            {
-                _register = value;
-
-                HasRegister = true;
-            }
-        }
+        public Register Register { get; set; }
 
         public int SpillOffset { get; private set; }
 
@@ -93,6 +77,22 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return _ranges[0].Start;
         }
 
+        public void SetEnd(int position)
+        {
+            if (_ranges.Count != 0)
+            {
+                int lastIdx = _ranges.Count - 1;
+
+                Debug.Assert(position != _ranges[lastIdx].Start);
+
+                _ranges[lastIdx] = new LiveRange(_ranges[lastIdx].Start, position);
+            }
+            else
+            {
+                _ranges.Add(new LiveRange(position, position + 1));
+            }
+        }
+
         public int GetEnd()
         {
             if (_ranges.Count == 0)
@@ -101,6 +101,35 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
 
             return _ranges[_ranges.Count - 1].End;
+        }
+
+        public void Expand(int position)
+        {
+            Expand(position, position + 1);
+
+            _usePositions.Add(position);
+        }
+
+        public void Expand(int start, int end)
+        {
+            if (_ranges.Count == 0)
+            {
+                _ranges.Add(new LiveRange(start, end));
+
+                return;
+            }
+
+            int lastIdx = _ranges.Count - 1;
+
+            if (_ranges[0].Start > start)
+            {
+                _ranges[0] = new LiveRange(start, _ranges[0].End);
+            }
+
+            if (_ranges[lastIdx].End < end)
+            {
+                _ranges[lastIdx] = new LiveRange(_ranges[lastIdx].Start, end);
+            }
         }
 
         public void AddRange(int start, int end)

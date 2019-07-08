@@ -201,7 +201,7 @@ namespace ARMeilleure.Instructions
         {
             ThreadContext context = GetCurrentContext();
 
-            V128 value = context.Memory.ReadVector128((long)address);
+            V128 value = context.Memory.AtomicLoadInt128((long)address);
 
             context.ExclusiveAddress   = GetMaskedExclusiveAddress(address);
             context.ExclusiveValueLow  = value.GetUInt64(0);
@@ -335,12 +335,9 @@ namespace ARMeilleure.Instructions
 
             if (success)
             {
-                success = context.Memory.AtomicCompareExchangeInt128(
-                    (long)address,
-                    context.ExclusiveValueLow,
-                    context.ExclusiveValueHigh,
-                    value.GetUInt64(0),
-                    value.GetUInt64(1));
+                V128 expected = new V128(context.ExclusiveValueLow, context.ExclusiveValueHigh);
+
+                success = context.Memory.AtomicCompareExchangeInt128((long)address, expected, value);
 
                 if (success)
                 {

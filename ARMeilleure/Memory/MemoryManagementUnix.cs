@@ -41,11 +41,12 @@ namespace ARMeilleure.Memory
         {
             switch (protection)
             {
-                case Memory.MemoryProtection.None:           return MmapProts.PROT_NONE;
-                case Memory.MemoryProtection.Read:           return MmapProts.PROT_READ;
-                case Memory.MemoryProtection.ReadAndWrite:   return MmapProts.PROT_READ | MmapProts.PROT_WRITE;
-                case Memory.MemoryProtection.ReadAndExecute: return MmapProts.PROT_READ | MmapProts.PROT_EXEC;
-                case Memory.MemoryProtection.Execute:        return MmapProts.PROT_EXEC;
+                case Memory.MemoryProtection.None:             return MmapProts.PROT_NONE;
+                case Memory.MemoryProtection.Read:             return MmapProts.PROT_READ;
+                case Memory.MemoryProtection.ReadAndWrite:     return MmapProts.PROT_READ | MmapProts.PROT_WRITE;
+                case Memory.MemoryProtection.ReadAndExecute:   return MmapProts.PROT_READ | MmapProts.PROT_EXEC;
+                case Memory.MemoryProtection.ReadWriteExecute: return MmapProts.PROT_READ | MmapProts.PROT_WRITE | MmapProts.PROT_EXEC;
+                case Memory.MemoryProtection.Execute:          return MmapProts.PROT_EXEC;
 
                 default: throw new ArgumentException($"Invalid permission \"{protection}\".");
             }

@@ -32,7 +32,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    Operand ne = context.VectorExtract(GetVec(op.Rn), Local(OperandType.FP32), 0);
+                    Operand ne = context.VectorExtract(OperandType.FP32, GetVec(op.Rn), 0);
 
                     Operand res = context.ConvertToFP(OperandType.FP64, ne);
 
@@ -51,7 +51,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    Operand ne = context.VectorExtract(GetVec(op.Rn), Local(OperandType.FP64), 0);
+                    Operand ne = context.VectorExtract(OperandType.FP64, GetVec(op.Rn), 0);
 
                     Operand res = context.ConvertToFP(OperandType.FP32, ne);
 
@@ -60,7 +60,7 @@ namespace ARMeilleure.Instructions
             }
             else if (op.Size == 0 && op.Opc == 3) // Single -> Half.
             {
-                Operand ne = context.VectorExtract(GetVec(op.Rn), Local(OperandType.FP32), 0);
+                Operand ne = context.VectorExtract(OperandType.FP32, GetVec(op.Rn), 0);
 
                 MethodInfo info = typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert));
 
@@ -150,7 +150,7 @@ namespace ARMeilleure.Instructions
                     }
                     else /* if (sizeF == 1) */
                     {
-                        Operand ne = context.VectorExtract(GetVec(op.Rn), Local(OperandType.FP32), part + index);
+                        Operand ne = context.VectorExtract(OperandType.FP32, GetVec(op.Rn), part + index);
 
                         Operand e = context.ConvertToFP(OperandType.FP64, ne);
 
@@ -209,7 +209,7 @@ namespace ARMeilleure.Instructions
 
                 for (int index = 0; index < elems; index++)
                 {
-                    Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
+                    Operand ne = context.VectorExtract(type, GetVec(op.Rn), 0);
 
                     if (sizeF == 0)
                     {
@@ -389,6 +389,11 @@ namespace ARMeilleure.Instructions
 
             Operand res = GetIntOrZR(context, op.Rn);
 
+            if (op.RegisterSize == RegisterSize.Int32)
+            {
+                res = context.SignExtend32(OperandType.I64, res);
+            }
+
             res = EmitFPConvert(context, res, op.Size, signed: true);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
@@ -399,6 +404,11 @@ namespace ARMeilleure.Instructions
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
             Operand res = GetIntOrZR(context, op.Rn);
+
+            if (op.RegisterSize == RegisterSize.Int32)
+            {
+                res = context.SignExtend32(OperandType.I64, res);
+            }
 
             res = EmitFPConvert(context, res, op.Size, signed: true);
 
@@ -554,7 +564,7 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(n, Local(type), index);
+                Operand ne = context.VectorExtract(type, n, index);
 
                 Operand e = EmitRoundMathCall(context, MidpointRounding.ToEven, ne);
 
@@ -606,7 +616,7 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(n, Local(type), index);
+                Operand ne = context.VectorExtract(type, n, index);
 
                 Operand e = EmitF2iFBitsMul(context, ne, fBits);
 
@@ -655,7 +665,7 @@ namespace ARMeilleure.Instructions
 
             OperandType type = op.Size == 0 ? OperandType.FP32 : OperandType.FP64;
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
+            Operand ne = context.VectorExtract(type, GetVec(op.Rn), 0);
 
             Operand res = signed
                 ? EmitScalarFcvts(context, emit(ne), 0)
@@ -680,7 +690,7 @@ namespace ARMeilleure.Instructions
 
             OperandType type = op.Size == 0 ? OperandType.FP32 : OperandType.FP64;
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
+            Operand ne = context.VectorExtract(type, GetVec(op.Rn), 0);
 
             Operand res = signed
                 ? EmitScalarFcvts(context, ne, op.FBits)
@@ -1156,9 +1166,9 @@ namespace ARMeilleure.Instructions
 
         private static Operand EmitVectorLongExtract(EmitterContext context, int reg, int index, int size)
         {
-            Operand res = Local(size == 3 ? OperandType.I64 : OperandType.I32);
+            OperandType type = size == 3 ? OperandType.I64 : OperandType.I32;
 
-            return context.VectorExtract(GetVec(reg), res, index);
+            return context.VectorExtract(type, GetVec(reg), index);
         }
 
         private static Operand EmitVectorLongCreate(EmitterContext context, Operand low, Operand high)

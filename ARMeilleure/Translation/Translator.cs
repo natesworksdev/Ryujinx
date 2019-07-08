@@ -1,4 +1,3 @@
-using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Decoders;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.Instructions;
@@ -17,15 +16,11 @@ namespace ARMeilleure.Translation
     {
         private MemoryManager _memory;
 
-        private TranslatedCache _cache;
-
         private ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
 
         public Translator(MemoryManager memory)
         {
             _memory = memory;
-
-            _cache = new TranslatedCache();
 
             _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
         }
@@ -73,7 +68,13 @@ namespace ARMeilleure.Translation
 
             context.Memory = _memory;
 
+            Logger.StartPass(PassName.Decoding);
+
             Block[] blocks = Decoder.DecodeFunction(_memory, address, ExecutionMode.Aarch64);
+
+            Logger.EndPass(PassName.Decoding);
+
+            Logger.StartPass(PassName.Translation);
 
             EmitSynchronization(context);
 
@@ -84,21 +85,17 @@ namespace ARMeilleure.Translation
 
             ControlFlowGraph cfg = EmitAndGetCFG(context, blocks);
 
+            Logger.EndPass(PassName.Translation);
+
+            Logger.StartPass(PassName.RegisterUsage);
+
             RegisterUsage.RunPass(cfg);
 
-            Dominance.FindDominators(cfg);
+            Logger.EndPass(PassName.RegisterUsage);
 
-            Dominance.FindDominanceFrontiers(cfg);
+            GuestFunction func = Compiler.Compile<GuestFunction>(cfg, OperandType.I64);
 
-            Logger.StartPass(PassName.SsaConstruction);
-
-            Ssa.Rename(cfg);
-
-            Logger.EndPass(PassName.SsaConstruction, cfg);
-
-            byte[] code = CodeGenerator.Generate(cfg, _memory);
-
-            return _cache.CreateFunction(code);
+            return new TranslatedFunction(func);
         }
 
         private static ControlFlowGraph EmitAndGetCFG(EmitterContext context, Block[] blocks)
@@ -164,11 +161,14 @@ namespace ARMeilleure.Translation
 
         private static void EmitSynchronization(EmitterContext context)
         {
-            int cntOffset = NativeContext.GetCounterOffset();
+            long countOffs = NativeContext.GetCounterOffset();
 
-            Operand count = context.LoadFromContext(cntOffset);
+            Operand countAddr = context.Add(context.LoadArgument(OperandType.I64, 0), Const(countOffs));
+
+            Operand count = context.Load(OperandType.I32, countAddr);
 
             Operand lblNonZero = Label();
+            Operand lblExit    = Label();
 
             context.BranchIfTrue(lblNonZero, count);
 
@@ -176,11 +176,15 @@ namespace ARMeilleure.Translation
 
             context.Call(info);
 
+            context.Branch(lblExit);
+
             context.MarkLabel(lblNonZero);
 
             count = context.Subtract(count, Const(1));
 
-            context.StoreToContext(cntOffset, count);
+            context.Store(countAddr, count);
+
+            context.MarkLabel(lblExit);
         }
     }
 }

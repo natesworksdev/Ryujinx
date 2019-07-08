@@ -1,11 +1,12 @@
 using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.CodeGen.RegisterAllocators;
+using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.Common;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Memory;
 using ARMeilleure.Translation;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -29,6 +30,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.BranchIfTrue,            GenerateBranchIfTrue);
             Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.Call,                    GenerateCall);
+            Add(Instruction.CompareAndSwap128,       GenerateCompareAndSwap128);
             Add(Instruction.CompareEqual,            GenerateCompareEqual);
             Add(Instruction.CompareGreater,          GenerateCompareGreater);
             Add(Instruction.CompareGreaterOrEqual,   GenerateCompareGreaterOrEqual);
@@ -48,12 +50,8 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.DivideUI,                GenerateDivideUI);
             Add(Instruction.Fill,                    GenerateFill);
             Add(Instruction.Load,                    GenerateLoad);
-            Add(Instruction.LoadFromContext,         GenerateLoadFromContext);
-            Add(Instruction.LoadSx16,                GenerateLoadSx16);
-            Add(Instruction.LoadSx32,                GenerateLoadSx32);
-            Add(Instruction.LoadSx8,                 GenerateLoadSx8);
-            Add(Instruction.LoadZx16,                GenerateLoadZx16);
-            Add(Instruction.LoadZx8,                 GenerateLoadZx8);
+            Add(Instruction.Load16,                  GenerateLoad16);
+            Add(Instruction.Load8,                   GenerateLoad8);
             Add(Instruction.Multiply,                GenerateMultiply);
             Add(Instruction.Multiply64HighSI,        GenerateMultiply64HighSI);
             Add(Instruction.Multiply64HighUI,        GenerateMultiply64HighUI);
@@ -72,7 +70,6 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Store,                   GenerateStore);
             Add(Instruction.Store16,                 GenerateStore16);
             Add(Instruction.Store8,                  GenerateStore8);
-            Add(Instruction.StoreToContext,          GenerateStoreToContext);
             Add(Instruction.Subtract,                GenerateSubtract);
             Add(Instruction.VectorExtract,           GenerateVectorExtract);
             Add(Instruction.VectorExtract16,         GenerateVectorExtract16);
@@ -226,8 +223,10 @@ namespace ARMeilleure.CodeGen.X86
             _instTable[(int)inst] = func;
         }
 
-        public static byte[] Generate(ControlFlowGraph cfg, MemoryManager memory)
+        public static CompiledFunction Generate(CompilerContext cctx)
         {
+            ControlFlowGraph cfg = cctx.Cfg;
+
             Logger.StartPass(PassName.Optimization);
 
             Optimizer.RunPass(cfg);
@@ -236,13 +235,15 @@ namespace ARMeilleure.CodeGen.X86
 
             Logger.StartPass(PassName.PreAllocation);
 
-            PreAllocator.RunPass(cfg, memory, out int maxCallArgs);
+            StackAllocator stackAlloc = new StackAllocator();
+
+            PreAllocator.RunPass(cctx, stackAlloc, out int maxCallArgs);
 
             Logger.EndPass(PassName.PreAllocation, cfg);
 
             Logger.StartPass(PassName.RegisterAllocation);
 
-            LinearScan regAlloc = new LinearScan();
+            FastLinearScan regAlloc = new FastLinearScan();
 
             RegisterMasks regMasks = new RegisterMasks(
                 CallingConvention.GetIntAvailableRegisters(),
@@ -252,17 +253,17 @@ namespace ARMeilleure.CodeGen.X86
                 CallingConvention.GetIntCalleeSavedRegisters(),
                 CallingConvention.GetVecCalleeSavedRegisters());
 
-            AllocationResult allocResult = regAlloc.RunPass(cfg, regMasks);
+            AllocationResult allocResult = regAlloc.RunPass(cfg, stackAlloc, regMasks);
 
             Logger.EndPass(PassName.RegisterAllocation, cfg);
+
+            Logger.StartPass(PassName.CodeGeneration);
 
             using (MemoryStream stream = new MemoryStream())
             {
                 CodeGenContext context = new CodeGenContext(stream, allocResult, maxCallArgs, cfg.Blocks.Count);
 
-                WritePrologue(context);
-
-                context.Assembler.Mov(Register(X86Register.Rbp), Register(X86Register.Rcx));
+                UnwindInfo unwindInfo = WritePrologue(context);
 
                 foreach (BasicBlock block in cfg.Blocks)
                 {
@@ -277,7 +278,9 @@ namespace ARMeilleure.CodeGen.X86
                     }
                 }
 
-                return context.GetCode();
+                Logger.EndPass(PassName.CodeGeneration);
+
+                return new CompiledFunction(context.GetCode(), unwindInfo);
             }
         }
 
@@ -377,6 +380,16 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateCall(CodeGenContext context, Operation operation)
         {
             context.Assembler.Call(operation.GetSource(0));
+        }
+
+        private static void GenerateCompareAndSwap128(CodeGenContext context, Operation operation)
+        {
+            Operand dest = operation.Dest;
+            Operand src1 = operation.GetSource(0);
+
+            X86MemoryOperand memOp = new X86MemoryOperand(OperandType.I64, src1, null, Scale.x1, 0);
+
+            context.Assembler.Cmpxchg16b(memOp);
         }
 
         private static void GenerateCompareEqual(CodeGenContext context, Operation operation)
@@ -645,55 +658,7 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static void GenerateLoadFromContext(CodeGenContext context, Operation operation)
-        {
-            Operand dest   = operation.Dest;
-            Operand offset = operation.GetSource(0);
-
-            if (offset.Kind != OperandKind.Constant)
-            {
-                throw new InvalidOperationException("LoadFromContext has non-constant context offset.");
-            }
-
-            Operand rbp = Register(X86Register.Rbp);
-
-            X86MemoryOperand memOp = new X86MemoryOperand(dest.Type, rbp, null, Scale.x1, offset.AsInt32());
-
-            if (dest.GetRegister().Type == RegisterType.Vector)
-            {
-                context.Assembler.Movdqu(dest, memOp);
-            }
-            else
-            {
-                context.Assembler.Mov(dest, memOp);
-            }
-        }
-
-        private static void GenerateLoadSx16(CodeGenContext context, Operation operation)
-        {
-            Operand value   = operation.Dest;
-            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
-
-            context.Assembler.Movsx16(operation.Dest, address);
-        }
-
-        private static void GenerateLoadSx32(CodeGenContext context, Operation operation)
-        {
-            Operand value   = operation.Dest;
-            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
-
-            context.Assembler.Movsx32(operation.Dest, address);
-        }
-
-        private static void GenerateLoadSx8(CodeGenContext context, Operation operation)
-        {
-            Operand value   = operation.Dest;
-            Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
-
-            context.Assembler.Movsx8(operation.Dest, address);
-        }
-
-        private static void GenerateLoadZx16(CodeGenContext context, Operation operation)
+        private static void GenerateLoad16(CodeGenContext context, Operation operation)
         {
             Operand value   = operation.Dest;
             Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
@@ -701,7 +666,7 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Movzx16(operation.Dest, address);
         }
 
-        private static void GenerateLoadZx8(CodeGenContext context, Operation operation)
+        private static void GenerateLoad8(CodeGenContext context, Operation operation)
         {
             Operand value   = operation.Dest;
             Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
@@ -753,18 +718,6 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateReturn(CodeGenContext context, Operation operation)
         {
-            if (operation.SourcesCount != 0)
-            {
-                Operand returnReg = Register(CallingConvention.GetIntReturnRegister());
-
-                Operand sourceReg = operation.GetSource(0);
-
-                if (returnReg.GetRegister() != sourceReg.GetRegister())
-                {
-                    context.Assembler.Mov(returnReg, sourceReg);
-                }
-            }
-
             WriteEpilogue(context);
 
             context.Assembler.Return();
@@ -870,30 +823,6 @@ namespace ARMeilleure.CodeGen.X86
             Operand address = GetMemoryOperand(operation.GetSource(0), value.Type);
 
             context.Assembler.Mov8(address, value);
-        }
-
-        private static void GenerateStoreToContext(CodeGenContext context, Operation operation)
-        {
-            Operand offset = operation.GetSource(0);
-            Operand source = operation.GetSource(1);
-
-            if (offset.Kind != OperandKind.Constant)
-            {
-                throw new InvalidOperationException("StoreToContext has non-constant context offset.");
-            }
-
-            Operand rbp = Register(X86Register.Rbp);
-
-            X86MemoryOperand memOp = new X86MemoryOperand(source.Type, rbp, null, Scale.x1, offset.AsInt32());
-
-            if (source.GetRegister().Type == RegisterType.Vector)
-            {
-                context.Assembler.Movdqu(memOp, source);
-            }
-            else
-            {
-                context.Assembler.Mov(memOp, source);
-            }
         }
 
         private static void GenerateSubtract(CodeGenContext context, Operation operation)
@@ -1157,36 +1086,42 @@ namespace ARMeilleure.CodeGen.X86
         {
             context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
             context.Assembler.Setcc(operation.Dest, X86Condition.Equal);
+            context.Assembler.Movzx8(operation.Dest, operation.Dest);
         }
 
         private static void GenerateX86Comisdge(CodeGenContext context, Operation operation)
         {
             context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
             context.Assembler.Setcc(operation.Dest, X86Condition.AboveOrEqual);
+            context.Assembler.Movzx8(operation.Dest, operation.Dest);
         }
 
         private static void GenerateX86Comisdlt(CodeGenContext context, Operation operation)
         {
             context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
             context.Assembler.Setcc(operation.Dest, X86Condition.Below);
+            context.Assembler.Movzx8(operation.Dest, operation.Dest);
         }
 
         private static void GenerateX86Comisseq(CodeGenContext context, Operation operation)
         {
             context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
             context.Assembler.Setcc(operation.Dest, X86Condition.Equal);
+            context.Assembler.Movzx8(operation.Dest, operation.Dest);
         }
 
         private static void GenerateX86Comissge(CodeGenContext context, Operation operation)
         {
             context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
             context.Assembler.Setcc(operation.Dest, X86Condition.AboveOrEqual);
+            context.Assembler.Movzx8(operation.Dest, operation.Dest);
         }
 
         private static void GenerateX86Comisslt(CodeGenContext context, Operation operation)
         {
             context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
             context.Assembler.Setcc(operation.Dest, X86Condition.Below);
+            context.Assembler.Movzx8(operation.Dest, operation.Dest);
         }
 
         private static void GenerateX86Cvtdq2pd(CodeGenContext context, Operation operation)
@@ -1785,6 +1720,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             context.Assembler.Cmp(operation.GetSource(0), operation.GetSource(1));
             context.Assembler.Setcc(operation.Dest, condition);
+            context.Assembler.Movzx8(operation.Dest, operation.Dest);
         }
 
         private static void GenerateSpill(CodeGenContext context, Operation operation, int baseOffset)
@@ -1840,17 +1776,19 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static void WritePrologue(CodeGenContext context)
+        private static UnwindInfo WritePrologue(CodeGenContext context)
         {
-            int mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.IntUsedRegisters;
+            List<UnwindPushEntry> pushEntries = new List<UnwindPushEntry>();
 
-            mask |= 1 << (int)X86Register.Rbp;
+            int mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.IntUsedRegisters;
 
             while (mask != 0)
             {
                 int bit = BitUtils.LowestBitSet(mask);
 
                 context.Assembler.Push(Register((X86Register)bit));
+
+                pushEntries.Add(new UnwindPushEntry(bit, RegisterType.Integer, context.StreamOffset));
 
                 mask &= ~(1 << bit);
             }
@@ -1869,6 +1807,8 @@ namespace ARMeilleure.CodeGen.X86
 
                 context.Assembler.Movdqu(memOp, Xmm((X86Register)bit));
 
+                pushEntries.Add(new UnwindPushEntry(bit, RegisterType.Vector, context.StreamOffset));
+
                 mask &= ~(1 << bit);
             }
 
@@ -1880,6 +1820,8 @@ namespace ARMeilleure.CodeGen.X86
             {
                 context.Assembler.Sub(Register(X86Register.Rsp), new Operand(reservedStackSize));
             }
+
+            return new UnwindInfo(pushEntries.ToArray(), context.StreamOffset, reservedStackSize);
         }
 
         private static void WriteEpilogue(CodeGenContext context)
@@ -1911,8 +1853,6 @@ namespace ARMeilleure.CodeGen.X86
             }
 
             mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.IntUsedRegisters;
-
-            mask |= 1 << (int)X86Register.Rbp;
 
             while (mask != 0)
             {

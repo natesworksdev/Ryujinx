@@ -466,7 +466,7 @@ namespace ARMeilleure.Instructions
                 {
                     Operand ordMask = context.AddIntrinsic(Instruction.X86Cmpss, n, m, Const(cmpOrdered));
 
-                    Operand isOrdered = context.VectorExtract16(ordMask, Local(OperandType.I32), 0);
+                    Operand isOrdered = context.VectorExtract16(ordMask, 0);
 
                     context.BranchIfFalse(lblNaN, isOrdered);
 
@@ -483,7 +483,7 @@ namespace ARMeilleure.Instructions
                 {
                     Operand ordMask = context.AddIntrinsic(Instruction.X86Cmpsd, n, m, Const(cmpOrdered));
 
-                    Operand isOrdered = context.VectorExtract16(ordMask, Local(OperandType.I32), 0);
+                    Operand isOrdered = context.VectorExtract16(ordMask, 0);
 
                     context.BranchIfFalse(lblNaN, isOrdered);
 
@@ -512,7 +512,7 @@ namespace ARMeilleure.Instructions
             {
                 OperandType type = op.Size != 0 ? OperandType.FP64 : OperandType.FP32;
 
-                Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
+                Operand ne = context.VectorExtract(type, GetVec(op.Rn), 0);
                 Operand me;
 
                 if (cmpWithZero)
@@ -521,7 +521,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    me = context.VectorExtract(GetVec(op.Rm), Local(type), 0);
+                    me = context.VectorExtract(type, GetVec(op.Rm), 0);
                 }
 
                 Operand nzcv = EmitSoftFloatCall(context, nameof(SoftFloat32.FPCompare), ne, me, Const(signalNaNs));
@@ -625,12 +625,12 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), index);
+                Operand ne = context.VectorExtract(type, GetVec(op.Rn), index);
                 Operand me;
 
                 if (op is OpCodeSimdReg binOp)
                 {
-                    me = context.VectorExtract(GetVec(binOp.Rm), Local(type), index);
+                    me = context.VectorExtract(type, GetVec(binOp.Rm), index);
                 }
                 else
                 {

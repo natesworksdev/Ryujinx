@@ -115,11 +115,12 @@ namespace ARMeilleure.Memory
         {
             switch (protection)
             {
-                case Memory.MemoryProtection.None:           return MemoryProtection.NoAccess;
-                case Memory.MemoryProtection.Read:           return MemoryProtection.ReadOnly;
-                case Memory.MemoryProtection.ReadAndWrite:   return MemoryProtection.ReadWrite;
-                case Memory.MemoryProtection.ReadAndExecute: return MemoryProtection.ExecuteRead;
-                case Memory.MemoryProtection.Execute:        return MemoryProtection.Execute;
+                case Memory.MemoryProtection.None:             return MemoryProtection.NoAccess;
+                case Memory.MemoryProtection.Read:             return MemoryProtection.ReadOnly;
+                case Memory.MemoryProtection.ReadAndWrite:     return MemoryProtection.ReadWrite;
+                case Memory.MemoryProtection.ReadAndExecute:   return MemoryProtection.ExecuteRead;
+                case Memory.MemoryProtection.ReadWriteExecute: return MemoryProtection.ExecuteReadWrite;
+                case Memory.MemoryProtection.Execute:          return MemoryProtection.Execute;
 
                 default: throw new ArgumentException($"Invalid permission \"{protection}\".");
             }

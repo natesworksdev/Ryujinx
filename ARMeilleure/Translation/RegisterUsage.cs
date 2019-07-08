@@ -280,6 +280,8 @@ namespace ARMeilleure.Translation
 
         private static void LoadLocals(BasicBlock block, long inputs, RegisterType baseType)
         {
+            Operand arg0 = Local(OperandType.I64);
+
             for (int bit = 63; bit >= 0; bit--)
             {
                 long mask = 1L << bit;
@@ -291,12 +293,22 @@ namespace ARMeilleure.Translation
 
                 Operand dest = GetRegFromBit(bit, baseType);
 
-                int offset = NativeContext.GetRegisterOffset(dest.GetRegister());
+                long offset = NativeContext.GetRegisterOffset(dest.GetRegister());
 
-                Operation operation = new Operation(Instruction.LoadFromContext, dest, Const(offset));
+                Operand addr = Local(OperandType.I64);
 
-                block.Operations.AddFirst(operation);
+                Operation loadOp = new Operation(Instruction.Load, dest, addr);
+
+                block.Operations.AddFirst(loadOp);
+
+                Operation calcOffsOp = new Operation(Instruction.Add, addr, arg0, Const(offset));
+
+                block.Operations.AddFirst(calcOffsOp);
             }
+
+            Operation loadArg0 = new Operation(Instruction.LoadArgument, arg0, Const(0));
+
+            block.Operations.AddFirst(loadArg0);
         }
 
         private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType)
@@ -313,6 +325,12 @@ namespace ARMeilleure.Translation
                 }
             }
 
+            Operand arg0 = Local(OperandType.I64);
+
+            Operation loadArg0 = new Operation(Instruction.LoadArgument, arg0, Const(0));
+
+            block.Append(loadArg0);
+
             for (int bit = 0; bit < 64; bit++)
             {
                 long mask = 1L << bit;
@@ -324,11 +342,17 @@ namespace ARMeilleure.Translation
 
                 Operand source = GetRegFromBit(bit, baseType);
 
-                int offset = NativeContext.GetRegisterOffset(source.GetRegister());
+                long offset = NativeContext.GetRegisterOffset(source.GetRegister());
 
-                Operation operation = new Operation(Instruction.StoreToContext, null, Const(offset), source);
+                Operand addr = Local(OperandType.I64);
 
-                block.Append(operation);
+                Operation calcOffsOp = new Operation(Instruction.Add, addr, arg0, Const(offset));
+
+                block.Append(calcOffsOp);
+
+                Operation storeOp = new Operation(Instruction.Store, null, addr, source);
+
+                block.Append(storeOp);
             }
         }
 

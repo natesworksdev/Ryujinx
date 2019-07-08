@@ -41,11 +41,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             public int IntUsedRegisters { get; set; }
             public int VecUsedRegisters { get; set; }
 
-            public AllocationContext(RegisterMasks masks, int intervalsCount)
+            public AllocationContext(StackAllocator stackAlloc, RegisterMasks masks, int intervalsCount)
             {
-                Masks = masks;
-
-                StackAlloc = new StackAllocator();
+                StackAlloc = stackAlloc;
+                Masks      = masks;
 
                 Active   = new BitMap(intervalsCount);
                 Inactive = new BitMap(intervalsCount);
@@ -69,13 +68,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        public AllocationResult RunPass(ControlFlowGraph cfg, RegisterMasks regMasks)
+        public AllocationResult RunPass(ControlFlowGraph cfg, StackAllocator stackAlloc, RegisterMasks regMasks)
         {
             PhiFunctions.Remove(cfg);
 
             NumberLocals(cfg);
 
-            AllocationContext context = new AllocationContext(regMasks, _intervals.Count);
+            AllocationContext context = new AllocationContext(stackAlloc, regMasks, _intervals.Count);
 
             BuildIntervals(cfg, context);
 
@@ -95,10 +94,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     continue;
                 }
 
-                if (!current.HasRegister)
-                {
-                    AllocateInterval(context, current, index);
-                }
+                AllocateInterval(context, current, index);
             }
 
             for (int index = RegistersCount * 2; index < _intervals.Count; index++)
@@ -202,7 +198,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             int selectedNextUse = freePositions[selectedReg];
 
             //Intervals starts and ends at odd positions, unless they span an entire
-            //block, in this case they will have ranges at even position.
+            //block, in this case they will have ranges at a even position.
             //When a interval is loaded from the stack to a register, we can only
             //do the split at a odd position, because otherwise the split interval
             //that is inserted on the list to be processed may clobber a register
@@ -907,23 +903,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         interval.AddUsePosition(operationPos);
                     }
 
-                    if (node is Operation operation)
+                    if (node is Operation operation && operation.Inst == Instruction.Call)
                     {
-                        if (operation.Inst == Instruction.Call)
-                        {
-                            AddIntervalCallerSavedReg(context.Masks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
-                            AddIntervalCallerSavedReg(context.Masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);
-                        }
-                        else if (operation.Inst == Instruction.StackAlloc)
-                        {
-                            Operand offset = operation.GetSource(0);
-
-                            Debug.Assert(offset.Kind == OperandKind.Constant, "StackAlloc has non-constant size.");
-
-                            int spillOffset = context.StackAlloc.Allocate(offset.AsInt32());
-
-                            operation.SetSource(0, new Operand(spillOffset));
-                        }
+                        AddIntervalCallerSavedReg(context.Masks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
+                        AddIntervalCallerSavedReg(context.Masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);
                     }
                 }
             }
@@ -934,8 +917,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             while (mask != 0)
             {
                 int regIndex = BitUtils.LowestBitSet(mask);
-
-                Debug.Assert(regIndex < RegistersCount, "Invalid register index.");
 
                 Register callerSavedReg = new Register(regIndex, regType);
 

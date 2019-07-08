@@ -398,23 +398,19 @@ namespace ARMeilleure.Memory
             return (ulong)position < (ulong)AddressSpaceSize;
         }
 
-        internal bool AtomicCompareExchange2xInt32(
-            long position,
-            int  expectedLow,
-            int  expectedHigh,
-            int  desiredLow,
-            int  desiredHigh)
+        internal V128 AtomicLoadInt128(long position)
         {
-            long expected = (uint)expectedLow;
-            long desired  = (uint)desiredLow;
+            if ((position & 0xf) != 0)
+            {
+                AbortWithAlignmentFault(position);
+            }
 
-            expected |= (long)expectedHigh << 32;
-            desired  |= (long)desiredHigh  << 32;
+            IntPtr ptr = TranslateWrite(position);
 
-            return AtomicCompareExchangeInt64(position, expected, desired);
+            return MemoryManagerPal.AtomicLoad128(ptr);
         }
 
-        public bool AtomicCompareExchangeByte(long position, byte expected, byte desired)
+        internal bool AtomicCompareExchangeByte(long position, byte expected, byte desired)
         {
             int* ptr = (int*)Translate(position);
 
@@ -426,7 +422,7 @@ namespace ARMeilleure.Memory
             return Interlocked.CompareExchange(ref *ptr, desired32, expected32) == expected32;
         }
 
-        public bool AtomicCompareExchangeInt16(long position, short expected, short desired)
+        internal bool AtomicCompareExchangeInt16(long position, short expected, short desired)
         {
             if ((position & 1) != 0)
             {
@@ -455,7 +451,7 @@ namespace ARMeilleure.Memory
             return Interlocked.CompareExchange(ref *ptr, desired, expected) == expected;
         }
 
-        public bool AtomicCompareExchangeInt64(long position, long expected, long desired)
+        internal bool AtomicCompareExchangeInt64(long position, long expected, long desired)
         {
             if ((position & 7) != 0)
             {
@@ -467,12 +463,7 @@ namespace ARMeilleure.Memory
             return Interlocked.CompareExchange(ref *ptr, desired, expected) == expected;
         }
 
-        internal bool AtomicCompareExchangeInt128(
-            long  position,
-            ulong expectedLow,
-            ulong expectedHigh,
-            ulong desiredLow,
-            ulong desiredHigh)
+        internal bool AtomicCompareExchangeInt128(long position, V128 expected, V128 desired)
         {
             if ((position & 0xf) != 0)
             {
@@ -481,7 +472,7 @@ namespace ARMeilleure.Memory
 
             IntPtr ptr = TranslateWrite(position);
 
-            throw new NotImplementedException();
+            return MemoryManagerPal.CompareAndSwap128(ptr, expected, desired) == expected;
         }
 
         public int AtomicIncrementInt32(long position)

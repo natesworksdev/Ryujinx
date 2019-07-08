@@ -387,8 +387,8 @@ namespace ARMeilleure.Instructions
                 OperandType type = sizeF != 0 ? OperandType.FP64
                                               : OperandType.FP32;
 
-                Operand ne0 = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
-                Operand ne1 = context.VectorExtract(GetVec(op.Rn), Local(type), 1);
+                Operand ne0 = context.VectorExtract(type, GetVec(op.Rn), 0);
+                Operand ne1 = context.VectorExtract(type, GetVec(op.Rn), 1);
 
                 Operand res = EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd), ne0, ne1);
 
@@ -1022,9 +1022,9 @@ namespace ARMeilleure.Instructions
             OperandType type = sizeF != 0 ? OperandType.FP64
                                           : OperandType.FP32;
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
-            Operand me = context.VectorExtract(GetVec(op.Rm), Local(type), 0);
-            Operand ae = context.VectorExtract(GetVec(op.Ra), Local(type), 0);
+            Operand ne = context.VectorExtract(type, GetVec(op.Rn), 0);
+            Operand me = context.VectorExtract(type, GetVec(op.Rm), 0);
+            Operand ae = context.VectorExtract(type, GetVec(op.Ra), 0);
 
             Operand res = context.Subtract(context.Multiply(context.Negate(ne), me), ae);
 
@@ -1040,9 +1040,9 @@ namespace ARMeilleure.Instructions
             OperandType type = sizeF != 0 ? OperandType.FP64
                                           : OperandType.FP32;
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
-            Operand me = context.VectorExtract(GetVec(op.Rm), Local(type), 0);
-            Operand ae = context.VectorExtract(GetVec(op.Ra), Local(type), 0);
+            Operand ne = context.VectorExtract(type, GetVec(op.Rn), 0);
+            Operand me = context.VectorExtract(type, GetVec(op.Rm), 0);
+            Operand ae = context.VectorExtract(type, GetVec(op.Ra), 0);
 
             Operand res = context.Subtract(context.Multiply(ne, me), ae);
 

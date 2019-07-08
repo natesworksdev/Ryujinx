@@ -12,6 +12,7 @@ namespace ARMeilleure.IntermediateRepresentation
         BranchIfTrue,
         ByteSwap,
         Call,
+        CompareAndSwap128,
         CompareEqual,
         CompareGreater,
         CompareGreaterOrEqual,
@@ -32,12 +33,10 @@ namespace ARMeilleure.IntermediateRepresentation
         DivideUI,
         Fill,
         Load,
+        Load16,
+        Load8,
+        LoadArgument,
         LoadFromContext,
-        LoadSx16,
-        LoadSx32,
-        LoadSx8,
-        LoadZx16,
-        LoadZx8,
         Multiply,
         Multiply64HighSI,
         Multiply64HighUI,
@@ -213,26 +212,6 @@ namespace ARMeilleure.IntermediateRepresentation
 
     static class InstructionExtensions
     {
-        public static bool IsComparison(this Instruction inst)
-        {
-            switch (inst)
-            {
-                case Instruction.CompareEqual:
-                case Instruction.CompareGreater:
-                case Instruction.CompareGreaterOrEqual:
-                case Instruction.CompareGreaterOrEqualUI:
-                case Instruction.CompareGreaterUI:
-                case Instruction.CompareLess:
-                case Instruction.CompareLessOrEqual:
-                case Instruction.CompareLessOrEqualUI:
-                case Instruction.CompareLessUI:
-                case Instruction.CompareNotEqual:
-                    return true;
-            }
-
-            return false;
-        }
-
         public static bool IsShift(this Instruction inst)
         {
             switch (inst)

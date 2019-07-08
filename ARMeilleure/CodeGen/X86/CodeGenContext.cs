@@ -13,6 +13,8 @@ namespace ARMeilleure.CodeGen.X86
 
         private Stream _stream;
 
+        public int StreamOffset => (int)_stream.Length;
+
         public AllocationResult AllocResult { get; }
 
         public Assembler Assembler { get; }
@@ -22,6 +24,8 @@ namespace ARMeilleure.CodeGen.X86
         public int CallArgsRegionSize { get; }
 
         public int VecCalleeSaveSize { get; }
+
+        private long[] _blockOffsets;
 
         private struct Jump
         {
@@ -62,8 +66,6 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private long[] _blockOffsets;
-
         private List<Jump> _jumps;
 
         private X86Condition _jNearCondition;
@@ -97,16 +99,20 @@ namespace ARMeilleure.CodeGen.X86
 
             vecCalleeSaveSize = BitUtils.CountBits(vecMask) * 16;
 
-            intMask |= 1 << (int)X86Register.Rbp;
-
             int calleeSaveRegionSize = BitUtils.CountBits(intMask) * 8 + vecCalleeSaveSize + 8;
 
             int argsCount = maxCallArgs;
 
-            //The ABI mandates that the space for at least 4 arguments
-            //is reserved on the stack (this is called shadow space).
-            if (argsCount < 4 && maxCallArgs != -1)
+            if (argsCount < 0)
             {
+                //When the function has no calls, argsCount is -1.
+                //In this case, we don't need to allocate the shadow space.
+                argsCount = 0;
+            }
+            else if (argsCount < 4)
+            {
+                //The ABI mandates that the space for at least 4 arguments
+                //is reserved on the stack (this is called shadow space).
                 argsCount = 4;
             }
 

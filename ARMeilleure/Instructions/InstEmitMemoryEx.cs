@@ -84,8 +84,8 @@ namespace ARMeilleure.Instructions
                 {
                     Operand value = EmitLoad(context, address, exclusive, 4);
 
-                    Operand valueLow  = context.VectorExtract(value, Local(OperandType.I64), 0);
-                    Operand valueHigh = context.VectorExtract(value, Local(OperandType.I64), 1);
+                    Operand valueLow  = context.VectorExtract(OperandType.I64, value, 0);
+                    Operand valueHigh = context.VectorExtract(OperandType.I64, value, 1);
 
                     SetIntOrZR(context, op.Rt,  valueLow);
                     SetIntOrZR(context, op.Rt2, valueHigh);

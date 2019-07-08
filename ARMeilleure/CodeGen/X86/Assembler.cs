@@ -11,6 +11,8 @@ namespace ARMeilleure.CodeGen.X86
 
         private const int OpModRMBits = 24;
 
+        private const byte LockPrefix = 0xf0;
+
         [Flags]
         private enum InstFlags
         {
@@ -82,6 +84,8 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Cmpps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.NoRexW));
             Add(X86Instruction.Cmpsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.NoRexW | InstFlags.PrefixF2));
             Add(X86Instruction.Cmpss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.NoRexW | InstFlags.PrefixF3));
+            Add(X86Instruction.Cmpxchg8b,  new InstInfo(0x01000fc7, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.NoRexW));
+            Add(X86Instruction.Cmpxchg16b, new InstInfo(0x01000fc7, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.RexW));
             Add(X86Instruction.Comisd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstFlags.Vex | InstFlags.NoRexW | InstFlags.Prefix66));
             Add(X86Instruction.Comiss,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstFlags.Vex | InstFlags.NoRexW));
             Add(X86Instruction.Cvtdq2pd,   new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstFlags.Vex | InstFlags.NoRexW | InstFlags.PrefixF3));
@@ -358,6 +362,20 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Cmpss, source1);
 
             WriteByte(imm);
+        }
+
+        public void Cmpxchg16b(X86MemoryOperand memOp)
+        {
+            WriteByte(LockPrefix);
+
+            WriteInstruction(memOp, null, X86Instruction.Cmpxchg16b);
+        }
+
+        public void Cmpxchg8b(X86MemoryOperand memOp)
+        {
+            WriteByte(LockPrefix);
+
+            WriteInstruction(memOp, null, X86Instruction.Cmpxchg8b);
         }
 
         public void Comisd(Operand source1, Operand source2)

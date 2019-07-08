@@ -144,10 +144,21 @@ namespace ARMeilleure.Instructions
 
             switch (size)
             {
-                case 0: value = context.LoadZx8 (Local(OperandType.I32), physAddr); break;
-                case 1: value = context.LoadZx16(Local(OperandType.I32), physAddr); break;
-                case 2: value = context.Load    (Local(OperandType.I32), physAddr); break;
-                case 3: value = context.Load    (Local(OperandType.I64), physAddr); break;
+                case 0:
+                    value = context.Load8(physAddr);
+                    break;
+
+                case 1:
+                    value = context.Load16(physAddr);
+                    break;
+
+                case 2:
+                    value = context.Load(OperandType.I32, physAddr);
+                    break;
+
+                case 3:
+                    value = context.Load(OperandType.I64, physAddr);
+                    break;
             }
 
             SetIntOrZR(context, rt, value);
@@ -186,23 +197,23 @@ namespace ARMeilleure.Instructions
             switch (size)
             {
                 case 0:
-                    value = context.VectorInsert8(vector, context.LoadZx8(Local(OperandType.I32), physAddr), elem);
+                    value = context.VectorInsert8(vector, context.Load8(physAddr), elem);
                     break;
 
                 case 1:
-                    value = context.VectorInsert16(vector, context.LoadZx16(Local(OperandType.I32), physAddr), elem);
+                    value = context.VectorInsert16(vector, context.Load16(physAddr), elem);
                     break;
 
                 case 2:
-                    value = context.VectorInsert(vector, context.Load(Local(OperandType.I32), physAddr), elem);
+                    value = context.VectorInsert(vector, context.Load(OperandType.I32, physAddr), elem);
                     break;
 
                 case 3:
-                    value = context.VectorInsert(vector, context.Load(Local(OperandType.I64), physAddr), elem);
+                    value = context.VectorInsert(vector, context.Load(OperandType.I64, physAddr), elem);
                     break;
 
                 case 4:
-                    value = context.Load(Local(OperandType.V128), physAddr);
+                    value = context.Load(OperandType.V128, physAddr);
                     break;
             }
 
@@ -284,19 +295,19 @@ namespace ARMeilleure.Instructions
             switch (size)
             {
                 case 0:
-                    context.Store8(physAddr, context.VectorExtract8(value, Local(OperandType.I32), elem));
+                    context.Store8(physAddr, context.VectorExtract8(value, elem));
                     break;
 
                 case 1:
-                    context.Store16(physAddr, context.VectorExtract16(value, Local(OperandType.I32), elem));
+                    context.Store16(physAddr, context.VectorExtract16(value, elem));
                     break;
 
                 case 2:
-                    context.Store(physAddr, context.VectorExtract(value, Local(OperandType.FP32), elem));
+                    context.Store(physAddr, context.VectorExtract(OperandType.FP32, value, elem));
                     break;
 
                 case 3:
-                    context.Store(physAddr, context.VectorExtract(value, Local(OperandType.FP64), elem));
+                    context.Store(physAddr, context.VectorExtract(OperandType.FP64, value, elem));
                     break;
 
                 case 4:
@@ -337,7 +348,7 @@ namespace ARMeilleure.Instructions
 
                 Operand pteAddress = context.Add(pte, pteOffset);
 
-                pte = context.Load(Local(OperandType.I64), pteAddress);
+                pte = context.Load(OperandType.I64, pteAddress);
             }
             while (bit < context.Memory.AddressSpaceBits);
 
@@ -455,18 +466,27 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
 
-            Operand value;
+            Operand value = null;
 
             if (size < 4)
             {
-                value = Local(size == 3 ? OperandType.I64 : OperandType.I32);
-
                 switch (size)
                 {
-                    case 0: context.VectorExtract8 (GetVec(rt), value, elem); break;
-                    case 1: context.VectorExtract16(GetVec(rt), value, elem); break;
-                    case 2: context.VectorExtract  (GetVec(rt), value, elem); break;
-                    case 3: context.VectorExtract  (GetVec(rt), value, elem); break;
+                    case 0:
+                        value = context.VectorExtract8(GetVec(rt), elem);
+                        break;
+
+                    case 1:
+                        value = context.VectorExtract16(GetVec(rt), elem);
+                        break;
+
+                    case 2:
+                        value = context.VectorExtract(OperandType.I32, GetVec(rt), elem);
+                        break;
+
+                    case 3:
+                        value = context.VectorExtract(OperandType.I64, GetVec(rt), elem);
+                        break;
                 }
             }
             else

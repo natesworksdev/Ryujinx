@@ -229,7 +229,7 @@ namespace ARMeilleure.Instructions
 
             OperandType type = op.Size == 0 ? OperandType.FP32 : OperandType.FP64;
 
-            Operand me = context.VectorExtract(GetVec(op.Rm), Local(type), 0);
+            Operand me = context.VectorExtract(type, GetVec(op.Rm), 0);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), me, 0));
 
@@ -237,7 +237,7 @@ namespace ARMeilleure.Instructions
 
             context.MarkLabel(lblTrue);
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
+            Operand ne = context.VectorExtract(type, GetVec(op.Rn), 0);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), ne, 0));
 
@@ -286,7 +286,7 @@ namespace ARMeilleure.Instructions
 
             OperandType type = op.Size == 0 ? OperandType.FP32 : OperandType.FP64;
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
+            Operand ne = context.VectorExtract(type, GetVec(op.Rn), 0);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), ne, 0));
         }

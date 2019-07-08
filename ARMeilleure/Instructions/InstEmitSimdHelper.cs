@@ -375,8 +375,8 @@ namespace ARMeilleure.Instructions
 
             OperandType type = (op.Size & 1) != 0 ? OperandType.FP64 : OperandType.FP32;
 
-            Operand n = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
-            Operand m = context.VectorExtract(GetVec(op.Rm), Local(type), op.Index);
+            Operand n = context.VectorExtract(type, GetVec(op.Rn), 0);
+            Operand m = context.VectorExtract(type, GetVec(op.Rm), op.Index);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), emit(n, m), 0));
         }
@@ -387,9 +387,9 @@ namespace ARMeilleure.Instructions
 
             OperandType type = (op.Size & 1) != 0 ? OperandType.FP64 : OperandType.FP32;
 
-            Operand d = context.VectorExtract(GetVec(op.Rd), Local(type), 0);
-            Operand n = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
-            Operand m = context.VectorExtract(GetVec(op.Rm), Local(type), op.Index);
+            Operand d = context.VectorExtract(type, GetVec(op.Rd), 0);
+            Operand n = context.VectorExtract(type, GetVec(op.Rn), 0);
+            Operand m = context.VectorExtract(type, GetVec(op.Rm), op.Index);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), emit(d, n, m), 0));
         }
@@ -459,7 +459,7 @@ namespace ARMeilleure.Instructions
 
             OperandType type = (op.Size & 1) != 0 ? OperandType.FP64 : OperandType.FP32;
 
-            Operand n = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
+            Operand n = context.VectorExtract(type, GetVec(op.Rn), 0);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), emit(n), 0));
         }
@@ -470,8 +470,8 @@ namespace ARMeilleure.Instructions
 
             OperandType type = (op.Size & 1) != 0 ? OperandType.FP64 : OperandType.FP32;
 
-            Operand n = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
-            Operand m = context.VectorExtract(GetVec(op.Rm), Local(type), 0);
+            Operand n = context.VectorExtract(type, GetVec(op.Rn), 0);
+            Operand m = context.VectorExtract(type, GetVec(op.Rm), 0);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), emit(n, m), 0));
         }
@@ -482,9 +482,9 @@ namespace ARMeilleure.Instructions
 
             OperandType type = (op.Size & 1) != 0 ? OperandType.FP64 : OperandType.FP32;
 
-            Operand a = context.VectorExtract(GetVec(op.Ra), Local(type), 0);
-            Operand n = context.VectorExtract(GetVec(op.Rn), Local(type), 0);
-            Operand m = context.VectorExtract(GetVec(op.Rm), Local(type), 0);
+            Operand a = context.VectorExtract(type, GetVec(op.Ra), 0);
+            Operand n = context.VectorExtract(type, GetVec(op.Rn), 0);
+            Operand m = context.VectorExtract(type, GetVec(op.Rm), 0);
 
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), emit(a, n, m), 0));
         }
@@ -503,7 +503,7 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), index);
+                Operand ne = context.VectorExtract(type, GetVec(op.Rn), index);
 
                 res = context.VectorInsert(res, emit(ne), index);
             }
@@ -525,8 +525,8 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), index);
-                Operand me = context.VectorExtract(GetVec(op.Rm), Local(type), index);
+                Operand ne = context.VectorExtract(type, GetVec(op.Rn), index);
+                Operand me = context.VectorExtract(type, GetVec(op.Rm), index);
 
                 res = context.VectorInsert(res, emit(ne, me), index);
             }
@@ -548,9 +548,9 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand de = context.VectorExtract(GetVec(op.Rd), Local(type), index);
-                Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), index);
-                Operand me = context.VectorExtract(GetVec(op.Rm), Local(type), index);
+                Operand de = context.VectorExtract(type, GetVec(op.Rd), index);
+                Operand ne = context.VectorExtract(type, GetVec(op.Rn), index);
+                Operand me = context.VectorExtract(type, GetVec(op.Rm), index);
 
                 res = context.VectorInsert(res, emit(de, ne, me), index);
             }
@@ -572,8 +572,8 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), index);
-                Operand me = context.VectorExtract(GetVec(op.Rm), Local(type), op.Index);
+                Operand ne = context.VectorExtract(type, GetVec(op.Rn), index);
+                Operand me = context.VectorExtract(type, GetVec(op.Rm), op.Index);
 
                 res = context.VectorInsert(res, emit(ne, me), index);
             }
@@ -595,9 +595,9 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand de = context.VectorExtract(GetVec(op.Rd), Local(type), index);
-                Operand ne = context.VectorExtract(GetVec(op.Rn), Local(type), index);
-                Operand me = context.VectorExtract(GetVec(op.Rm), Local(type), op.Index);
+                Operand de = context.VectorExtract(type, GetVec(op.Rd), index);
+                Operand ne = context.VectorExtract(type, GetVec(op.Rn), index);
+                Operand me = context.VectorExtract(type, GetVec(op.Rm), op.Index);
 
                 res = context.VectorInsert(res, emit(de, ne, me), index);
             }
@@ -1074,11 +1074,11 @@ namespace ARMeilleure.Instructions
             {
                 int pairIndex = index << 1;
 
-                Operand n0 = context.VectorExtract(GetVec(op.Rn), Local(type), pairIndex);
-                Operand n1 = context.VectorExtract(GetVec(op.Rn), Local(type), pairIndex + 1);
+                Operand n0 = context.VectorExtract(type, GetVec(op.Rn), pairIndex);
+                Operand n1 = context.VectorExtract(type, GetVec(op.Rn), pairIndex + 1);
 
-                Operand m0 = context.VectorExtract(GetVec(op.Rm), Local(type), pairIndex);
-                Operand m1 = context.VectorExtract(GetVec(op.Rm), Local(type), pairIndex + 1);
+                Operand m0 = context.VectorExtract(type, GetVec(op.Rm), pairIndex);
+                Operand m1 = context.VectorExtract(type, GetVec(op.Rm), pairIndex + 1);
 
                 res = context.VectorInsert(res, emit(n0, n1),         index);
                 res = context.VectorInsert(res, emit(m0, m1), pairs + index);
@@ -1416,14 +1416,25 @@ namespace ARMeilleure.Instructions
         {
             ThrowIfInvalid(index, size);
 
-            Operand res = Local(size == 3 ? OperandType.I64 : OperandType.I32);
+            Operand res = null;
 
             switch (size)
             {
-                case 0: context.VectorExtract8 (GetVec(reg), res, index); break;
-                case 1: context.VectorExtract16(GetVec(reg), res, index); break;
-                case 2: context.VectorExtract  (GetVec(reg), res, index); break;
-                case 3: context.VectorExtract  (GetVec(reg), res, index); break;
+                case 0:
+                    res = context.VectorExtract8(GetVec(reg), index);
+                    break;
+
+                case 1:
+                    res = context.VectorExtract16(GetVec(reg), index);
+                    break;
+
+                case 2:
+                    res = context.VectorExtract(OperandType.I32, GetVec(reg), index);
+                    break;
+
+                case 3:
+                    res = context.VectorExtract(OperandType.I64, GetVec(reg), index);
+                    break;
             }
 
             if (signed)

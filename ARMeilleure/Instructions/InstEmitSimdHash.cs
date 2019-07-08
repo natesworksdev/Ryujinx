@@ -17,7 +17,7 @@ namespace ARMeilleure.Instructions
 
             Operand d = GetVec(op.Rd);
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(OperandType.I32), 0);
+            Operand ne = context.VectorExtract(OperandType.I32, GetVec(op.Rn), 0);
 
             Operand m = GetVec(op.Rm);
 
@@ -32,7 +32,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(OperandType.I32), 0);
+            Operand ne = context.VectorExtract(OperandType.I32, GetVec(op.Rn), 0);
 
             MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.FixedRotate));
 
@@ -47,7 +47,7 @@ namespace ARMeilleure.Instructions
 
             Operand d = GetVec(op.Rd);
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(OperandType.I32), 0);
+            Operand ne = context.VectorExtract(OperandType.I32, GetVec(op.Rn), 0);
 
             Operand m = GetVec(op.Rm);
 
@@ -64,7 +64,7 @@ namespace ARMeilleure.Instructions
 
             Operand d = GetVec(op.Rd);
 
-            Operand ne = context.VectorExtract(GetVec(op.Rn), Local(OperandType.I32), 0);
+            Operand ne = context.VectorExtract(OperandType.I32, GetVec(op.Rn), 0);
 
             Operand m = GetVec(op.Rm);
 

@@ -8,12 +8,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public static int GetIntAvailableRegisters()
         {
-            int mask = RegistersMask;
-
-            mask &= ~(1 << (int)X86Register.Rbp);
-            mask &= ~(1 << (int)X86Register.Rsp);
-
-            return mask;
+            return RegistersMask & ~(1 << (int)X86Register.Rsp);
         }
 
         public static int GetVecAvailableRegisters()

@@ -10,7 +10,8 @@ namespace ARMeilleure.Memory
         Write   = 1 << 1,
         Execute = 1 << 2,
 
-        ReadAndWrite   = Read | Write,
-        ReadAndExecute = Read | Execute
+        ReadAndWrite     = Read | Write,
+        ReadAndExecute   = Read | Execute,
+        ReadWriteExecute = Read | Write | Execute
     }
 }

@@ -1,5 +1,5 @@
+using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Memory;
 using ARMeilleure.Translation;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,11 +10,13 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class PreAllocator
     {
-        public static void RunPass(ControlFlowGraph cfg, MemoryManager memory, out int maxCallArgs)
+        public static void RunPass(CompilerContext cctx, StackAllocator stackAlloc, out int maxCallArgs)
         {
             maxCallArgs = -1;
 
-            foreach (BasicBlock block in cfg.Blocks)
+            Operand[] preservedArgs = new Operand[CallingConvention.GetArgumentsOnRegsCount()];
+
+            foreach (BasicBlock block in cctx.Cfg.Blocks)
             {
                 LinkedListNode<Node> nextNode;
 
@@ -31,15 +33,9 @@ namespace ARMeilleure.CodeGen.X86
 
                     HandleConstantCopy(node, operation);
 
-                    //Comparison instructions uses CMOVcc, which does not zero the
-                    //upper bits of the register (since it's R8), we need to ensure it
-                    //is zero by zeroing it beforehand.
-                    if (inst.IsComparison() || IsComparisonIntrinsic(inst))
-                    {
-                        Operation copyOp = new Operation(Instruction.Copy, operation.Dest, Const(0));
+                    HandleFixedRegisterCopy(node, operation);
 
-                        block.Operations.AddBefore(node, copyOp);
-                    }
+                    HandleSameDestSrc1Copy(node, operation);
 
                     //Unsigned integer to FP conversions are not supported on X86.
                     //We need to turn them into signed integer to FP conversions, and
@@ -73,11 +69,19 @@ namespace ARMeilleure.CodeGen.X86
                         {
                             maxCallArgs = argsCount;
                         }
+
+                        //Copy values to registers expected by the function being called,
+                        //as mandated by the ABI.
+                        HandleCallWindowsAbi(stackAlloc, node, operation);
                     }
-
-                    HandleFixedRegisterCopy(node, operation);
-
-                    HandleSameDestSrc1Copy(node, operation);
+                    else if (inst == Instruction.Return)
+                    {
+                        HandleReturnWindowsAbi(cctx, node, preservedArgs, operation);
+                    }
+                    else if (inst == Instruction.LoadArgument)
+                    {
+                        HandleLoadArgumentWindowsAbi(cctx, node, preservedArgs, operation);
+                    }
                 }
             }
         }
@@ -184,7 +188,6 @@ namespace ARMeilleure.CodeGen.X86
                 Operand zex = Local(OperandType.I64);
 
                 temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, zex, source));
-
                 temp = nodes.AddAfter(temp, new Operation(Instruction.ConvertToFP, dest, zex));
             }
             else /* if (source.Type == OperandType.I64) */
@@ -315,7 +318,44 @@ namespace ARMeilleure.CodeGen.X86
                 operation.Dest = rdx;
             }
 
-            //The only allowed shift register is CL.
+            //Handle the many restrictions of the compare and exchange (16 bytes) instruction:
+            //- The expected value should be in RDX:RAX.
+            //- The new value to be written should be in RCX:RBX.
+            //- The value at the memory location is loaded to RDX:RAX.
+            if (inst == Instruction.CompareAndSwap128)
+            {
+                void SplitOperand(Operand source, X86Register lowReg, X86Register highReg)
+                {
+                    Operand lr = Gpr(lowReg,  OperandType.I64);
+                    Operand hr = Gpr(highReg, OperandType.I64);
+
+                    Operation extrL = new Operation(Instruction.VectorExtract, lr, source, Const(0));
+                    Operation extrH = new Operation(Instruction.VectorExtract, hr, source, Const(1));
+
+                    node.List.AddBefore(node, extrL);
+                    node.List.AddBefore(node, extrH);
+                }
+
+                Operand src2 = operation.GetSource(1);
+                Operand src3 = operation.GetSource(2);
+
+                SplitOperand(src2, X86Register.Rax, X86Register.Rdx);
+                SplitOperand(src3, X86Register.Rbx, X86Register.Rcx);
+
+                Operand rax = Gpr(X86Register.Rax, OperandType.I64);
+                Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
+
+                Operation insL = new Operation(Instruction.Copy,         dest, rax);
+                Operation insH = new Operation(Instruction.VectorInsert, dest, dest, rdx, Const(1));
+
+                node.List.AddAfter(node, insH);
+                node.List.AddAfter(node, insL);
+
+                operation.SetSource(1, Undef());
+                operation.SetSource(2, Undef());
+            }
+
+            //The shift register is always implied to be CL (low 8-bits of RCX or ECX).
             if (inst.IsShift() && operation.GetSource(1).Kind == OperandKind.LocalVariable)
             {
                 Operand rcx = Gpr(X86Register.Rcx, OperandType.I32);
@@ -326,16 +366,12 @@ namespace ARMeilleure.CodeGen.X86
 
                 operation.SetSource(1, rcx);
             }
-
-            //Copy values to registers expected by the function being called,
-            //as mandated by the ABI.
-            if (inst == Instruction.Call)
-            {
-                HandleCallWindowsAbi(node, operation);
-            }
         }
 
-        private static void HandleCallWindowsAbi(LinkedListNode<Node> node, Operation operation)
+        private static void HandleCallWindowsAbi(
+            StackAllocator stackAlloc,
+            LinkedListNode<Node> node,
+            Operation operation)
         {
             Operand dest = operation.Dest;
 
@@ -344,11 +380,33 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand retValueAddr = null;
 
+            int stackAllocOffset = 0;
+
+            int AllocateOnStack(int size)
+            {
+                //We assume that the stack allocator is initially empty (TotalSize = 0).
+                //Taking that into account, we can reuse the space allocated for other
+                //calls by keeping track of our own allocated size (stackAllocOffset).
+                //If the space allocated is not big enough, then we just expand it.
+                int offset = stackAllocOffset;
+
+                if (stackAllocOffset + size > stackAlloc.TotalSize)
+                {
+                    stackAlloc.Allocate((stackAllocOffset + size) - stackAlloc.TotalSize);
+                }
+
+                stackAllocOffset += size;
+
+                return offset;
+            }
+
             if (dest != null && dest.Type == OperandType.V128)
             {
                 retValueAddr = Local(OperandType.I64);
 
-                Operation allocOp = new Operation(Instruction.StackAlloc, retValueAddr, Const(dest.Type.GetSizeInBytes()));
+                int stackOffset = AllocateOnStack(dest.Type.GetSizeInBytes());
+
+                Operation allocOp = new Operation(Instruction.StackAlloc, retValueAddr, Const(stackOffset));
 
                 node.List.AddBefore(node, allocOp);
 
@@ -369,7 +427,9 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     Operand stackAddr = Local(OperandType.I64);
 
-                    Operation allocOp = new Operation(Instruction.StackAlloc, stackAddr, Const(source.Type.GetSizeInBytes()));
+                    int stackOffset = AllocateOnStack(source.Type.GetSizeInBytes());
+
+                    Operation allocOp = new Operation(Instruction.StackAlloc, stackAddr, Const(stackOffset));
 
                     node.List.AddBefore(node, allocOp);
 
@@ -463,6 +523,121 @@ namespace ARMeilleure.CodeGen.X86
 
                     operation.Dest = null;
                 }
+            }
+        }
+
+        private static void HandleReturnWindowsAbi(
+            CompilerContext cctx,
+            LinkedListNode<Node> node,
+            Operand[] preservedArgs,
+            Operation operation)
+        {
+            if (operation.SourcesCount == 0)
+            {
+                return;
+            }
+
+            Operand source = operation.GetSource(0);
+
+            Operand retReg;
+
+            if (source.Type.IsInteger())
+            {
+                retReg = Gpr(CallingConvention.GetIntReturnRegister(), source.Type);
+            }
+            else if (source.Type == OperandType.V128)
+            {
+                if (preservedArgs[0] == null)
+                {
+                    Operand preservedArg = Local(OperandType.I64);
+
+                    Operand arg0 = Gpr(CallingConvention.GetIntArgumentRegister(0), OperandType.I64);
+
+                    Operation copyOp = new Operation(Instruction.Copy, preservedArg, arg0);
+
+                    cctx.Cfg.Entry.Operations.AddFirst(copyOp);
+
+                    preservedArgs[0] = preservedArg;
+                }
+
+                retReg = preservedArgs[0];
+            }
+            else /* if (regType == RegisterType.Vector) */
+            {
+                retReg = Xmm(CallingConvention.GetVecReturnRegister(), source.Type);
+            }
+
+            if (source.Type == OperandType.V128)
+            {
+                Operation retStoreOp = new Operation(Instruction.Store, null, retReg, source);
+
+                node.List.AddBefore(node, retStoreOp);
+            }
+            else
+            {
+                Operation retCopyOp = new Operation(Instruction.Copy, retReg, source);
+
+                node.List.AddBefore(node, retCopyOp);
+            }
+        }
+
+        private static void HandleLoadArgumentWindowsAbi(
+            CompilerContext cctx,
+            LinkedListNode<Node> node,
+            Operand[] preservedArgs,
+            Operation operation)
+        {
+            Operand source = operation.GetSource(0);
+
+            Debug.Assert(source.Kind == OperandKind.Constant, "Non-constant LoadArgument source kind.");
+
+            int retArgs = cctx.FuncReturnType == OperandType.V128 ? 1 : 0;
+
+            int index = source.AsInt32() + retArgs;
+
+            if (index < CallingConvention.GetArgumentsOnRegsCount())
+            {
+                Operand dest = operation.Dest;
+
+                if (preservedArgs[index] == null)
+                {
+                    Operand preservedArg;
+
+                    Operand argReg;
+
+                    if (dest.Type.IsInteger())
+                    {
+                        argReg = Gpr(CallingConvention.GetIntArgumentRegister(index), dest.Type);
+
+                        preservedArg = Local(dest.Type);
+                    }
+                    else if (dest.Type == OperandType.V128)
+                    {
+                        argReg = Gpr(CallingConvention.GetIntArgumentRegister(index), OperandType.I64);
+
+                        preservedArg = Local(OperandType.I64);
+                    }
+                    else /* if (regType == RegisterType.Vector) */
+                    {
+                        argReg = Xmm(CallingConvention.GetVecArgumentRegister(index), dest.Type);
+
+                        preservedArg = Local(dest.Type);
+                    }
+
+                    Operation copyOp = new Operation(Instruction.Copy, preservedArg, argReg);
+
+                    cctx.Cfg.Entry.Operations.AddFirst(copyOp);
+
+                    preservedArgs[index] = preservedArg;
+                }
+
+                Operation loadArgOp = new Operation(dest.Type == OperandType.V128
+                    ? Instruction.Load
+                    : Instruction.Copy, dest, preservedArgs[index]);
+
+                node.List.AddBefore(node, loadArgOp);
+
+                Delete(node, operation);
             }
         }
 
@@ -618,6 +793,7 @@ namespace ARMeilleure.CodeGen.X86
             switch (inst)
             {
                 case Instruction.Copy:
+                case Instruction.LoadArgument:
                 case Instruction.LoadFromContext:
                 case Instruction.Spill:
                 case Instruction.SpillArg:
@@ -682,22 +858,6 @@ namespace ARMeilleure.CodeGen.X86
         {
             return inst > Instruction.X86Intrinsic_Start &&
                    inst < Instruction.X86Intrinsic_End;
-        }
-
-        private static bool IsComparisonIntrinsic(Instruction inst)
-        {
-            switch (inst)
-            {
-                case Instruction.X86Comisdeq:
-                case Instruction.X86Comisdge:
-                case Instruction.X86Comisdlt:
-                case Instruction.X86Comisseq:
-                case Instruction.X86Comissge:
-                case Instruction.X86Comisslt:
-                    return true;
-            }
-
-            return false;
         }
     }
 }
