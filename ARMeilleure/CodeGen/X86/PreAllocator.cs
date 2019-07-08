@@ -275,9 +275,7 @@ namespace ARMeilleure.CodeGen.X86
                 Operand rax = Gpr(X86Register.Rax, src1.Type);
                 Operand rdx = Gpr(X86Register.Rdx, src1.Type);
 
-                Operation srcCopyOp = new Operation(Instruction.Copy, rax, src1);
-
-                node.List.AddBefore(node, srcCopyOp);
+                node.List.AddBefore(node, new Operation(Instruction.Copy, rax, src1));
 
                 operation.SetSource(0, rax);
 
@@ -285,9 +283,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 node.List.AddBefore(node, clobberCopyOp);
 
-                Operation destCopyOp = new Operation(Instruction.Copy, dest, rax);
-
-                node.List.AddAfter(node, destCopyOp);
+                node.List.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
 
                 operation.Dest = rax;
             }
@@ -301,19 +297,11 @@ namespace ARMeilleure.CodeGen.X86
                 Operand rax = Gpr(X86Register.Rax, src1.Type);
                 Operand rdx = Gpr(X86Register.Rdx, src1.Type);
 
-                Operation srcCopyOp = new Operation(Instruction.Copy, rax, src1);
-
-                node.List.AddBefore(node, srcCopyOp);
+                node.List.AddBefore(node, new Operation(Instruction.Copy, rax, src1));
 
                 operation.SetSource(0, rax);
 
-                Operation destCopyOp = new Operation(Instruction.Copy, dest, rdx);
-
-                node.List.AddAfter(node, destCopyOp);
-
-                Operation clobberCopyOp = new Operation(Instruction.Copy, rax, rax);
-
-                node.List.AddAfter(node, clobberCopyOp);
+                node.List.AddAfter(node, new Operation(Instruction.Copy, dest, rdx));
 
                 operation.Dest = rdx;
             }
@@ -329,11 +317,8 @@ namespace ARMeilleure.CodeGen.X86
                     Operand lr = Gpr(lowReg,  OperandType.I64);
                     Operand hr = Gpr(highReg, OperandType.I64);
 
-                    Operation extrL = new Operation(Instruction.VectorExtract, lr, source, Const(0));
-                    Operation extrH = new Operation(Instruction.VectorExtract, hr, source, Const(1));
-
-                    node.List.AddBefore(node, extrL);
-                    node.List.AddBefore(node, extrH);
+                    node.List.AddBefore(node, new Operation(Instruction.VectorExtract, lr, source, Const(0)));
+                    node.List.AddBefore(node, new Operation(Instruction.VectorExtract, hr, source, Const(1)));
                 }
 
                 Operand src2 = operation.GetSource(1);
@@ -345,11 +330,8 @@ namespace ARMeilleure.CodeGen.X86
                 Operand rax = Gpr(X86Register.Rax, OperandType.I64);
                 Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
 
-                Operation insL = new Operation(Instruction.Copy,         dest, rax);
-                Operation insH = new Operation(Instruction.VectorInsert, dest, dest, rdx, Const(1));
-
-                node.List.AddAfter(node, insH);
-                node.List.AddAfter(node, insL);
+                node.List.AddAfter(node, new Operation(Instruction.VectorInsert, dest, dest, rdx, Const(1)));
+                node.List.AddAfter(node, new Operation(Instruction.Copy,         dest, rax));
 
                 operation.SetSource(1, Undef());
                 operation.SetSource(2, Undef());
@@ -360,9 +342,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Operand rcx = Gpr(X86Register.Rcx, OperandType.I32);
 
-                Operation copyOp = new Operation(Instruction.Copy, rcx, operation.GetSource(1));
-
-                node.List.AddBefore(node, copyOp);
+                node.List.AddBefore(node, new Operation(Instruction.Copy, rcx, operation.GetSource(1)));
 
                 operation.SetSource(1, rcx);
             }
@@ -377,8 +357,6 @@ namespace ARMeilleure.CodeGen.X86
 
             //Handle struct arguments.
             int retArgs = 0;
-
-            Operand retValueAddr = null;
 
             int stackAllocOffset = 0;
 
@@ -402,19 +380,13 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest != null && dest.Type == OperandType.V128)
             {
-                retValueAddr = Local(OperandType.I64);
-
                 int stackOffset = AllocateOnStack(dest.Type.GetSizeInBytes());
-
-                Operation allocOp = new Operation(Instruction.StackAlloc, retValueAddr, Const(stackOffset));
-
-                node.List.AddBefore(node, allocOp);
 
                 Operand arg0Reg = Gpr(CallingConvention.GetIntArgumentRegister(0), OperandType.I64);
 
-                Operation copyOp = new Operation(Instruction.Copy, arg0Reg, retValueAddr);
+                Operation allocOp = new Operation(Instruction.StackAlloc, arg0Reg, Const(stackOffset));
 
-                node.List.AddBefore(node, copyOp);
+                node.List.AddBefore(node, allocOp);
 
                 retArgs = 1;
             }
@@ -494,7 +466,23 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest != null)
             {
-                if (retValueAddr == null)
+                if (dest.Type == OperandType.V128)
+                {
+                    Operand retValueAddr = Local(OperandType.I64);
+
+                    Operand arg0Reg = Gpr(CallingConvention.GetIntArgumentRegister(0), OperandType.I64);
+
+                    Operation copyOp = new Operation(Instruction.Copy, retValueAddr, arg0Reg);
+
+                    node.List.AddBefore(node, copyOp);
+
+                    Operation loadOp = new Operation(Instruction.Load, dest, retValueAddr);
+
+                    node.List.AddAfter(node, loadOp);
+
+                    operation.Dest = null;
+                }
+                else
                 {
                     RegisterType regType = dest.Type.ToRegisterType();
 
@@ -514,14 +502,6 @@ namespace ARMeilleure.CodeGen.X86
                     node.List.AddAfter(node, destCopyOp);
 
                     operation.Dest = retReg;
-                }
-                else
-                {
-                    Operation loadOp = new Operation(Instruction.Load, dest, retValueAddr);
-
-                    node.List.AddAfter(node, loadOp);
-
-                    operation.Dest = null;
                 }
             }
         }

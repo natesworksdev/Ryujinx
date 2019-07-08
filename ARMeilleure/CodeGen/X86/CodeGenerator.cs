@@ -530,10 +530,6 @@ namespace ARMeilleure.CodeGen.X86
                     context.Assembler.Movdqu(dest, source);
                 }
             }
-            else if (dest.Type == OperandType.I32 && source.Kind == OperandKind.Register)
-            {
-                context.Assembler.Mov(dest, Get32BitsRegister(source.GetRegister()));
-            }
             else
             {
                 context.Assembler.Mov(dest, source);

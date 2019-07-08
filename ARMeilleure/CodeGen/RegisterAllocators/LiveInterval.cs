@@ -103,35 +103,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return _ranges[_ranges.Count - 1].End;
         }
 
-        public void Expand(int position)
-        {
-            Expand(position, position + 1);
-
-            _usePositions.Add(position);
-        }
-
-        public void Expand(int start, int end)
-        {
-            if (_ranges.Count == 0)
-            {
-                _ranges.Add(new LiveRange(start, end));
-
-                return;
-            }
-
-            int lastIdx = _ranges.Count - 1;
-
-            if (_ranges[0].Start > start)
-            {
-                _ranges[0] = new LiveRange(start, _ranges[0].End);
-            }
-
-            if (_ranges[lastIdx].End < end)
-            {
-                _ranges[lastIdx] = new LiveRange(_ranges[lastIdx].Start, end);
-            }
-        }
-
         public void AddRange(int start, int end)
         {
             if (start >= end)
