@@ -7,6 +7,7 @@ using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.Profiler;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -182,7 +183,7 @@ namespace Ryujinx.UI
                 MessageDialog eRrOr = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded, please unload the game and try again");
                 eRrOr.SetSizeRequest(100, 20);
                 eRrOr.Title = "Ryujinx - Error";
-                eRrOr.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.GUI.assets.ryujinxIcon.png");
+                eRrOr.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
                 eRrOr.WindowPosition = WindowPosition.Center;
                 eRrOr.Run();
                 eRrOr.Destroy();
@@ -262,10 +263,11 @@ namespace Ryujinx.UI
                     DiscordClient.SetPresence(DiscordPresence);
                 }
 
-                if (_device.System.TitleID != null)
+                string userId = "00000000000000000000000000000001";
+                try
                 {
                     string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
+                    string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
 
                     if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
                     {
@@ -275,14 +277,19 @@ namespace Ryujinx.UI
                     if (File.Exists(System.IO.Path.Combine(savePath, "LastPlayed.dat")) == false)
                     {
                         Directory.CreateDirectory(savePath);
-                        using (FileStream file = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                        using (FileStream file = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("Never")); }
+                    }
+                    using (FileStream fs = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                    {
+                        using (StreamWriter sr = new StreamWriter(fs))
                         {
-                            using (StreamWriter sr = new StreamWriter(file))
-                            {
-                                sr.WriteLine(DateTime.UtcNow);
-                            }
+                            sr.WriteLine(DateTime.UtcNow);
                         }
                     }
+                }
+                catch (ArgumentNullException exception)
+                {
+                    Logger.PrintError(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {userId}, TitleID: {_device.System.TitleID}\nException: {exception}");
                 }
             }
         }
@@ -297,10 +304,11 @@ namespace Ryujinx.UI
 
         private static void End()
         {
-            if (_device.System.TitleID != null)
+            string userId = "00000000000000000000000000000001";
+            try
             {
                 string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", _device.System.TitleID);
+                string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
                 double currentPlayTime = 0;
 
                 using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
@@ -327,6 +335,10 @@ namespace Ryujinx.UI
                     }
                 }
             }
+            catch (ArgumentNullException exception)
+            {
+                Logger.PrintError(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {userId}, TitleID: {_device.System.TitleID}\nException: {exception}");
+            }
 
             Profile.FinishProfiling();
             _device.Dispose();
@@ -337,7 +349,7 @@ namespace Ryujinx.UI
         }
         
         //Events
-        private void Row_Activated(object obj, RowActivatedArgs args)
+        private void Row_Activated(object o, RowActivatedArgs args)
         {
             _TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
             string path = (string)_TableStore.GetValue(treeiter, 7);
@@ -382,6 +394,16 @@ namespace Ryujinx.UI
             }
 
             fc.Destroy();
+        }
+
+        private void Open_Ryu_Folder(object o, EventArgs args)
+        {
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs"),
+                UseShellExecute = true,
+                Verb = "open"
+            });
         }
 
         private void Exit_Pressed(object o, EventArgs args) { End(); }

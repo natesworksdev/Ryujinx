@@ -39,7 +39,6 @@ namespace Ryujinx
 
         public static void Init(List<string> AppDirs, Keyset keySet, HLE.HOS.SystemState.TitleLanguage desiredTitleLanguage)
         {
-            // Load Variables
             KeySet                = keySet;
             DesiredTitleLanguage  = desiredTitleLanguage;
 
@@ -129,9 +128,9 @@ namespace Ryujinx
                             titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
                         }
 
-                        titleId = controlData.PresenceGroupId.ToString("X16");
-                        if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("X16"); }
-                        if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("X16"); }
+                        titleId = controlData.PresenceGroupId.ToString("x16");
+                        if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("x16"); }
+                        if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16"); }
 
                         developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
                         if (string.IsNullOrWhiteSpace(developer))
@@ -209,9 +208,9 @@ namespace Ryujinx
                                     titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
                                 }
 
-                                titleId = controlData.PresenceGroupId.ToString("X16");
-                                if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("X16"); }
-                                if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("X16"); }
+                                titleId = controlData.PresenceGroupId.ToString("x16");
+                                if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("x16"); }
+                                if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16"); }
 
                                 developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
                                 if (string.IsNullOrWhiteSpace(developer))
@@ -240,6 +239,8 @@ namespace Ryujinx
                     }
                 }
 
+                string[] playedData = GetPlayedData(titleId, "00000000000000000000000000000001");
+
                 ApplicationData data = new ApplicationData()
                 {
                     Icon       = applicationIcon,
@@ -247,8 +248,8 @@ namespace Ryujinx
                     TitleId    = titleId,
                     Developer  = developer,
                     Version    = version,
-                    TimePlayed = GetPlayedData(titleId)[0],
-                    LastPlayed = GetPlayedData(titleId)[1],
+                    TimePlayed = playedData[0],
+                    LastPlayed = playedData[1],
                     FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
                     Path       = applicationPath,
                 };
@@ -286,11 +287,11 @@ namespace Ryujinx
             return controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
         }
 
-        private static string[] GetPlayedData(string TitleId)
+        private static string[] GetPlayedData(string TitleId, string UserId)
         {
             string[] playedData = new string[2];
             string appdataPath  = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string savePath     = Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", "savecommon", TitleId);
+            string savePath     = Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", UserId, TitleId);
 
             if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
             {
