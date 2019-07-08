@@ -1,4 +1,4 @@
-﻿using ChocolArm64.Memory;
+﻿using ARMeilleure.Memory;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Memory;

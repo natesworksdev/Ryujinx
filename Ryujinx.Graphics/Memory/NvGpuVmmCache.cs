@@ -1,4 +1,4 @@
-using ChocolArm64.Memory;
+using ARMeilleure.Memory;
 using System.Collections.Concurrent;
 
 namespace Ryujinx.Graphics.Memory
