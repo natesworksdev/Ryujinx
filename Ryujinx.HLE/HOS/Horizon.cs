@@ -591,10 +591,10 @@ namespace Ryujinx.HLE.HOS
                 staticObject = new NxStaticObject(input);
             }
 
+            ContentManager.LoadEntries();
+
             TitleName = CurrentTitle = metaData.TitleName;
             TitleID   = metaData.Aci0.TitleId.ToString("x16");
-
-            ContentManager.LoadEntries();
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }

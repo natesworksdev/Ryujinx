@@ -60,17 +60,17 @@ namespace Ryujinx
         /// <summary>
         /// Enables printing guest log messages
         /// </summary>
-        public bool LoggingEnableGuest { get; private set; }
+        public bool LoggingEnableGuest { get; set; }
 
         /// <summary>
         /// Enables printing FS access log messages
         /// </summary>
-        public bool LoggingEnableFsAccessLog { get; private set; }
+        public bool LoggingEnableFsAccessLog { get; set; }
 
         /// <summary>
         /// Controls which log messages are written to the log targets
         /// </summary>
-        public LogClass[] LoggingFilteredClasses { get; private set; }
+        public LogClass[] LoggingFilteredClasses { get; set; }
 
         /// <summary>
         /// Enables or disables logging to a file on disk
@@ -125,7 +125,12 @@ namespace Ryujinx
         /// <summary>
         ///  The primary controller's type
         /// </summary>
-        public ControllerStatus ControllerType { get; private set; }
+        public ControllerStatus ControllerType { get; set; }
+
+        /// <summary>
+        /// Used to toggle columns in the GUI
+        /// </summary>
+        public List<bool> GuiColumns { get; set; }
 
         /// <summary>
         /// A list of directories containing games to be used to load games into the games list

@@ -23,6 +23,15 @@ namespace Ryujinx.UI
 
 #pragma warning disable 649
         [GUI] Window       SettingsWin;
+        [GUI] CheckButton  IconToggle;
+        [GUI] CheckButton  TitleToggle;
+        [GUI] CheckButton  DeveloperToggle;
+        [GUI] CheckButton  VersionToggle;
+        [GUI] CheckButton  TimePlayedToggle;
+        [GUI] CheckButton  LastPlayedToggle;
+        [GUI] CheckButton  FileExtToggle;
+        [GUI] CheckButton  FileSizeToggle;
+        [GUI] CheckButton  PathToggle;
         [GUI] CheckButton  ErrorLogToggle;
         [GUI] CheckButton  WarningLogToggle;
         [GUI] CheckButton  InfoLogToggle;
@@ -120,6 +129,16 @@ namespace Ryujinx.UI
             ZR1.Clicked           += (o, args) => Button_Pressed(o, args, ZR1);
 
             //Setup Currents
+            if (SwitchConfig.GuiColumns[0])             { IconToggle.Click();           }
+            if (SwitchConfig.GuiColumns[1])             { TitleToggle.Click();          }
+            if (SwitchConfig.GuiColumns[2])             { DeveloperToggle.Click();      }
+            if (SwitchConfig.GuiColumns[3])             { VersionToggle.Click();        }
+            if (SwitchConfig.GuiColumns[4])             { TimePlayedToggle.Click();     }
+            if (SwitchConfig.GuiColumns[5])             { LastPlayedToggle.Click();     }
+            if (SwitchConfig.GuiColumns[6])             { FileExtToggle.Click();        }
+            if (SwitchConfig.GuiColumns[7])             { FileSizeToggle.Click();       }
+            if (SwitchConfig.GuiColumns[8])             { PathToggle.Click();           }
+            if (SwitchConfig.EnableFileLog)             { FileLogToggle.Click();        }
             if (SwitchConfig.LoggingEnableError)        { ErrorLogToggle.Click();       }
             if (SwitchConfig.LoggingEnableWarn)         { WarningLogToggle.Click();     }
             if (SwitchConfig.LoggingEnableInfo)         { InfoLogToggle.Click();        }
@@ -127,7 +146,7 @@ namespace Ryujinx.UI
             if (SwitchConfig.LoggingEnableDebug)        { DebugLogToggle.Click();       }
             if (SwitchConfig.EnableFileLog)             { FileLogToggle.Click();        }
             if (SwitchConfig.DockedMode)                { DockedModeToggle.Click();     }
-            if (SwitchConfig.EnableDiscordIntergration) { DiscordToggle.Click();        }
+            if (SwitchConfig.EnableDiscordIntegration)  { DiscordToggle.Click();        }
             if (SwitchConfig.EnableVsync)               { VSyncToggle.Click();          }
             if (SwitchConfig.EnableMulticoreScheduling) { MultiSchedToggle.Click();     }
             if (SwitchConfig.EnableFsIntegrityChecks)   { FSICToggle.Click();           }
@@ -272,19 +291,25 @@ namespace Ryujinx.UI
                 _GameDirsBoxStore.IterNext(ref iter);
             }
 
+            if (IconToggle.Active)                    { SwitchConfig.GuiColumns[0]             = true;  }
+            if (TitleToggle.Active)                   { SwitchConfig.GuiColumns[1]             = true;  }
+            if (DeveloperToggle.Active)               { SwitchConfig.GuiColumns[2]             = true;  }
+            if (VersionToggle.Active)                 { SwitchConfig.GuiColumns[3]             = true;  }
+            if (TimePlayedToggle.Active)              { SwitchConfig.GuiColumns[4]             = true;  }
+            if (LastPlayedToggle.Active)              { SwitchConfig.GuiColumns[5]             = true;  }
+            if (FileExtToggle.Active)                 { SwitchConfig.GuiColumns[6]             = true;  }
+            if (FileSizeToggle.Active)                { SwitchConfig.GuiColumns[7]             = true;  }
+            if (PathToggle.Active)                    { SwitchConfig.GuiColumns[8]             = true;  }
             if (ErrorLogToggle.Active)                { SwitchConfig.LoggingEnableError        = true;  }
             if (WarningLogToggle.Active)              { SwitchConfig.LoggingEnableWarn         = true;  }
             if (InfoLogToggle.Active)                 { SwitchConfig.LoggingEnableInfo         = true;  }
             if (StubLogToggle.Active)                 { SwitchConfig.LoggingEnableStub         = true;  }
             if (DebugLogToggle.Active)                { SwitchConfig.LoggingEnableDebug        = true;  }
-<<<<<<< HEAD
-=======
             if (GuestLogToggle.Active)                { SwitchConfig.LoggingEnableGuest        = true;  }
             if (FsAccessLogToggle.Active)             { SwitchConfig.LoggingEnableFsAccessLog  = true;  }
->>>>>>> added spin button for new option and tooltips to settings
             if (FileLogToggle.Active)                 { SwitchConfig.EnableFileLog             = true;  }
             if (DockedModeToggle.Active)              { SwitchConfig.DockedMode                = true;  }
-            if (DiscordToggle.Active)                 { SwitchConfig.EnableDiscordIntergration = true;  }
+            if (DiscordToggle.Active)                 { SwitchConfig.EnableDiscordIntegration  = true;  }
             if (VSyncToggle.Active)                   { SwitchConfig.EnableVsync               = true;  }
             if (MultiSchedToggle.Active)              { SwitchConfig.EnableMulticoreScheduling = true;  }
             if (FSICToggle.Active)                    { SwitchConfig.EnableFsIntegrityChecks   = true;  }
@@ -293,6 +318,15 @@ namespace Ryujinx.UI
             if (DirectKeyboardAccess.Active)          { SwitchConfig.EnableKeyboard            = true;  }
             if (CustThemeToggle.Active)               { SwitchConfig.EnableCustomTheme         = true;  }
 
+            if (IconToggle.Active           == false) { SwitchConfig.GuiColumns[0]             = false; }
+            if (TitleToggle.Active          == false) { SwitchConfig.GuiColumns[1]             = false; }
+            if (DeveloperToggle.Active      == false) { SwitchConfig.GuiColumns[2]             = false; }
+            if (VersionToggle.Active        == false) { SwitchConfig.GuiColumns[3]             = false; }
+            if (TimePlayedToggle.Active     == false) { SwitchConfig.GuiColumns[4]             = false; }
+            if (LastPlayedToggle.Active     == false) { SwitchConfig.GuiColumns[5]             = false; }
+            if (FileExtToggle.Active        == false) { SwitchConfig.GuiColumns[6]             = false; }
+            if (FileSizeToggle.Active       == false) { SwitchConfig.GuiColumns[7]             = false; }
+            if (PathToggle.Active           == false) { SwitchConfig.GuiColumns[8]             = false; }
             if (ErrorLogToggle.Active       == false) { SwitchConfig.LoggingEnableError        = false; }
             if (WarningLogToggle.Active     == false) { SwitchConfig.LoggingEnableWarn         = false; }
             if (InfoLogToggle.Active        == false) { SwitchConfig.LoggingEnableInfo         = false; }
@@ -300,7 +334,7 @@ namespace Ryujinx.UI
             if (DebugLogToggle.Active       == false) { SwitchConfig.LoggingEnableDebug        = false; }
             if (FileLogToggle.Active        == false) { SwitchConfig.EnableFileLog             = false; }
             if (DockedModeToggle.Active     == false) { SwitchConfig.DockedMode                = false; }
-            if (DiscordToggle.Active        == false) { SwitchConfig.EnableDiscordIntergration = false; }
+            if (DiscordToggle.Active        == false) { SwitchConfig.EnableDiscordIntegration  = false; }
             if (VSyncToggle.Active          == false) { SwitchConfig.EnableVsync               = false; }
             if (MultiSchedToggle.Active     == false) { SwitchConfig.EnableMulticoreScheduling = false; }
             if (FSICToggle.Active           == false) { SwitchConfig.EnableFsIntegrityChecks   = false; }
@@ -342,7 +376,7 @@ namespace Ryujinx.UI
             };
 
             SwitchConfig.SystemLanguage        = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
-            SwitchConfig.ControllerType        = (HidControllerType)Enum.Parse(typeof(HidControllerType), Controller1Type.ActiveId);
+            SwitchConfig.ControllerType        = (ControllerStatus)Enum.Parse(typeof(ControllerStatus), Controller1Type.ActiveId);
             SwitchConfig.CustomThemePath       = CustThemeDir.Buffer.Text;
             SwitchConfig.GameDirs              = gameDirs;
             SwitchConfig.FsGlobalAccessLogMode = (int)FGALMSpinAdjustment.Value;

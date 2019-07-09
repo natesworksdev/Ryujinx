@@ -501,6 +501,13 @@
       "description": "A list of directories containing games to be used to load games into the games list",
       "default": []
     },
+    "gui_columns": {
+      "$id": "#/properties/gui_columns",
+      "type": "bool list",
+      "title": "Used to toggle columns in the GUI",
+      "description": "Used to toggle columns in the GUI",
+      "default": [ true, true, true, true, true, true, true, true, true ]
+    },
     "enable_custom_theme": {
       "$id": "#/properties/enable_custom_theme",
       "type": "boolean",

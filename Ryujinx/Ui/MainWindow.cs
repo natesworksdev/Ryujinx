@@ -96,17 +96,18 @@ namespace Ryujinx.UI
 
                 //Temporary code section start, remove this section and uncomment above line when game is rendered to the glarea in the gui
                 Box.Remove(GlScreen);
-                Nfc.Sensitive = false;
+                Nfc.Sensitive        = false;
                 ReturnMain.Sensitive = false;
-                GameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0);
-                GameTable.AppendColumn("Application", new CellRendererText(), "text", 1);
-                GameTable.AppendColumn("Developer", new CellRendererText(), "text", 2);
-                GameTable.AppendColumn("Version", new CellRendererText(), "text", 3);
-                GameTable.AppendColumn("Time Played", new CellRendererText(), "text", 4);
-                GameTable.AppendColumn("Last Played", new CellRendererText(), "text", 5);
-                GameTable.AppendColumn("File Size", new CellRendererText(), "text", 6);
-                GameTable.AppendColumn("Path", new CellRendererText(), "text", 7);
-                _TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                if (SwitchSettings.SwitchConfig.GuiColumns[0]) { GameTable.AppendColumn("Icon"       , new CellRendererPixbuf(), "pixbuf", 0); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[1]) { GameTable.AppendColumn("Application", new CellRendererText()  , "text"  , 1); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[2]) { GameTable.AppendColumn("Developer"  , new CellRendererText()  , "text"  , 2); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[3]) { GameTable.AppendColumn("Version"    , new CellRendererText()  , "text"  , 3); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[4]) { GameTable.AppendColumn("Time Played", new CellRendererText()  , "text"  , 4); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[5]) { GameTable.AppendColumn("Last Played", new CellRendererText()  , "text"  , 5); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[6]) { GameTable.AppendColumn("File Ext"   , new CellRendererText()  , "text"  , 6); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[7]) { GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 7); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[8]) { GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 8); }
+                _TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = _TableStore;
                 UpdateGameTable();
                 //Temporary code section end
@@ -120,16 +121,17 @@ namespace Ryujinx.UI
                 Nfc.Sensitive        = false;
                 ReturnMain.Sensitive = false;
 
-                GameTable.AppendColumn("Icon"       , new CellRendererPixbuf(), "pixbuf", 0);
-                GameTable.AppendColumn("Application", new CellRendererText()  , "text"  , 1);
-                GameTable.AppendColumn("Developer"  , new CellRendererText()  , "text"  , 2);
-                GameTable.AppendColumn("Version"    , new CellRendererText()  , "text"  , 3);
-                GameTable.AppendColumn("Time Played", new CellRendererText()  , "text"  , 4);
-                GameTable.AppendColumn("Last Played", new CellRendererText()  , "text"  , 5);
-                GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 6);
-                GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 7);
+                if (SwitchSettings.SwitchConfig.GuiColumns[0]) { GameTable.AppendColumn("Icon"       , new CellRendererPixbuf(), "pixbuf", 0); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[1]) { GameTable.AppendColumn("Application", new CellRendererText()  , "text"  , 1); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[2]) { GameTable.AppendColumn("Developer"  , new CellRendererText()  , "text"  , 2); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[3]) { GameTable.AppendColumn("Version"    , new CellRendererText()  , "text"  , 3); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[4]) { GameTable.AppendColumn("Time Played", new CellRendererText()  , "text"  , 4); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[5]) { GameTable.AppendColumn("Last Played", new CellRendererText()  , "text"  , 5); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[6]) { GameTable.AppendColumn("File Ext"   , new CellRendererText()  , "text"  , 6); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[7]) { GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 7); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[8]) { GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 8); }
 
-                _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = _TableStore;
 
                 UpdateGameTable();
@@ -143,7 +145,7 @@ namespace Ryujinx.UI
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                _TableStore.AppendValues(new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileSize, AppData.Path);
+                _TableStore.AppendValues(new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExt, AppData.FileSize, AppData.Path);
             }
         }
 
@@ -180,7 +182,7 @@ namespace Ryujinx.UI
         {
             if (_GameLoaded)
             {
-                MessageDialog eRrOr = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded, please unload the game and try again");
+                MessageDialog eRrOr = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded. Please close the emulator and try again");
                 eRrOr.SetSizeRequest(100, 20);
                 eRrOr.Title = "Ryujinx - Error";
                 eRrOr.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
@@ -352,7 +354,7 @@ namespace Ryujinx.UI
         private void Row_Activated(object o, RowActivatedArgs args)
         {
             _TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
-            string path = (string)_TableStore.GetValue(treeiter, 7);
+            string path = (string)_TableStore.GetValue(treeiter, 8);
 
             LoadApplication(path);
 

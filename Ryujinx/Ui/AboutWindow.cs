@@ -11,6 +11,7 @@ namespace Ryujinx.UI
     {
 #pragma warning disable 649
         [GUI] Window AboutWin;
+        [GUI] Label  VersionText;
         [GUI] Image  RyujinxLogo;
         [GUI] Image  PatreonLogo;
         [GUI] Image  GitHubLogo;
@@ -23,12 +24,15 @@ namespace Ryujinx.UI
         private AboutWindow(Builder builder) : base(builder.GetObject("AboutWin").Handle)
         {
             builder.Autoconnect(this);
+
             AboutWin.Icon      = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
-            RyujinxLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png", 220, 220);
+            RyujinxLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png", 100, 100);
             PatreonLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.PatreonLogo.png", 30 , 30 );
             GitHubLogo.Pixbuf  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.GitHubLogo.png" , 30 , 30 );
             DiscordLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.DiscordLogo.png", 30 , 30 );
             TwitterLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.TwitterLogo.png", 30 , 30 );
+
+            VersionText.Text = "Version x.x.x (Commit Number)";
         }
 
         public void OpenUrl(string url)

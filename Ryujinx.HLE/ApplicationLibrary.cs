@@ -33,6 +33,7 @@ namespace Ryujinx
             public string Version;
             public string TimePlayed;
             public string LastPlayed;
+            public string FileExt;
             public string FileSize;
             public string Path;
         }
@@ -105,54 +106,45 @@ namespace Ryujinx
                 {
                     if ((Path.GetExtension(applicationPath) == ".nsp") || (Path.GetExtension(applicationPath) == ".pfs0") || (Path.GetExtension(applicationPath) == ".xci"))
                     {
-                        IFileSystem controlFs = null;
-
-                        // Store the ControlFS in variable called controlFs
-                        if (Path.GetExtension(applicationPath) == ".xci")
-                        {
-                            Xci xci = new Xci(KeySet, file.AsStorage());
-                            controlFs = GetControlFs(xci.OpenPartition(XciPartitionType.Secure));
-                        }
-                        else { controlFs = GetControlFs(new PartitionFileSystem(file.AsStorage())); }
-
-                        // Creates NACP class from the NACP file
-                        IFile controlFile = controlFs.OpenFile("/control.nacp", OpenMode.Read);
-                        Nacp  controlData = new Nacp(controlFile.AsStream());
-
-                        // Get the title name, title ID, developer name and version number from the NACP
-                        version = controlData.DisplayVersion;
-
-                        titleName = controlData.Descriptions[(int)DesiredTitleLanguage].Title;
-                        if (string.IsNullOrWhiteSpace(titleName))
-                        {
-                            titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
-                        }
-
-                        titleId = controlData.PresenceGroupId.ToString("x16");
-                        if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("x16"); }
-                        if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16"); }
-
-                        developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
-                        if (string.IsNullOrWhiteSpace(developer))
-                        {
-                            developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
-                        }
-
-                        // Read the icon from the ControlFS and store it as a byte array
                         try
                         {
-                            IFile icon = controlFs.OpenFile($"/icon_{DesiredTitleLanguage}.dat", OpenMode.Read);
-                            using (MemoryStream ms = new MemoryStream())
+                            IFileSystem controlFs = null;
+
+                            // Store the ControlFS in variable called controlFs
+                            if (Path.GetExtension(applicationPath) == ".xci")
                             {
-                                icon.AsStream().CopyTo(ms);
-                                applicationIcon = ms.ToArray();
+                                Xci xci = new Xci(KeySet, file.AsStorage());
+                                controlFs = GetControlFs(xci.OpenPartition(XciPartitionType.Secure));
                             }
-                        }
-                        catch (FileNotFoundException)
-                        {
+                            else { controlFs = GetControlFs(new PartitionFileSystem(file.AsStorage())); }
+
+                            // Creates NACP class from the NACP file
+                            IFile controlNacp = controlFs.OpenFile("/control.nacp", OpenMode.Read);
+                            Nacp controlData  = new Nacp(controlNacp.AsStream());
+
+                            // Get the title name, title ID, developer name and version number from the NACP
+                            version = controlData.DisplayVersion;
+
+                            titleName = controlData.Descriptions[(int)DesiredTitleLanguage].Title;
+                            if (string.IsNullOrWhiteSpace(titleName))
+                            {
+                                titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                            }
+
+                            titleId = controlData.PresenceGroupId.ToString("x16");
+                            if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("x16"); }
+                            if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16"); }
+
+                            developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
+                            if (string.IsNullOrWhiteSpace(developer))
+                            {
+                                developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
+                            }
+
+                            // Read the icon from the ControlFS and store it as a byte array
                             try
                             {
-                                IFile icon = controlFs.OpenFile($"/icon_AmericanEnglish.dat", OpenMode.Read);
+                                IFile icon = controlFs.OpenFile($"/icon_{DesiredTitleLanguage}.dat", OpenMode.Read);
                                 using (MemoryStream ms = new MemoryStream())
                                 {
                                     icon.AsStream().CopyTo(ms);
@@ -161,9 +153,51 @@ namespace Ryujinx
                             }
                             catch (FileNotFoundException)
                             {
-                                if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
-                                else { applicationIcon = RyujinxNspIcon; }
+                                IDirectory controlDir = controlFs.OpenDirectory("./", OpenDirectoryMode.All);
+                                foreach (DirectoryEntry entry in controlDir.Read())
+                                {
+                                    if (entry.Name == "control.nacp") { continue; }
+
+                                    IFile icon = controlFs.OpenFile(entry.FullPath, OpenMode.Read);
+                                    using (MemoryStream ms = new MemoryStream())
+                                    {
+                                        icon.AsStream().CopyTo(ms);
+                                        applicationIcon = ms.ToArray();
+                                    }
+
+                                    if (applicationIcon != null) { break; }
+                                }
+
+                                if (applicationIcon == null)
+                                {
+                                    if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
+                                    else { applicationIcon = RyujinxNspIcon; }
+                                }
                             }
+                        }
+                        catch (MissingKeyException exception)
+                        {
+                            titleName = "Unknown";
+                            titleId   = "Unknown";
+                            developer = "Unknown";
+                            version   = "?";
+
+                            if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
+                            else { applicationIcon = RyujinxNspIcon; }
+
+                            Logger.PrintError(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
+                        }
+                        catch (InvalidDataException)
+                        {
+                            titleName = "Unknown";
+                            titleId   = "Unknown";
+                            developer = "Unknown";
+                            version   = "?";
+
+                            if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
+                            else { applicationIcon = RyujinxNspIcon; }
+
+                            Logger.PrintError(LogClass.Application, $"Unable to decrypt NCA header. The header key must be incorrect. File: {applicationPath}");
                         }
                     }
 
@@ -250,6 +284,7 @@ namespace Ryujinx
                     Version    = version,
                     TimePlayed = playedData[0],
                     LastPlayed = playedData[1],
+                    FileExt    = Path.GetExtension(applicationPath).ToUpper().Remove(0 ,1),
                     FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
                     Path       = applicationPath,
                 };
@@ -289,42 +324,46 @@ namespace Ryujinx
 
         private static string[] GetPlayedData(string TitleId, string UserId)
         {
-            string[] playedData = new string[2];
-            string appdataPath  = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string savePath     = Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", UserId, TitleId);
+            try
+            {
+                string[] playedData = new string[2];
+                string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string savePath = Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", UserId, TitleId);
 
-            if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
-            {
-                Directory.CreateDirectory(savePath);
-                using (FileStream file = File.OpenWrite(Path.Combine(savePath, "TimePlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("0")); }
-            }
-            using (FileStream fs = File.OpenRead(Path.Combine(savePath, "TimePlayed.dat")))
-            {
-                using (StreamReader sr = new StreamReader(fs))
+                if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
                 {
-                    float timePlayed = float.Parse(sr.ReadLine());
-
-                    if     (timePlayed <= 60.0)    { playedData[0] = $"{timePlayed}s"; }
-                    else if(timePlayed <= 3600.0)  { playedData[0] = $"{Math.Round(timePlayed / 60   , 2, MidpointRounding.AwayFromZero)} mins"; }
-                    else if(timePlayed <= 86400.0) { playedData[0] = $"{Math.Round(timePlayed / 3600 , 2, MidpointRounding.AwayFromZero)} hrs"; }
-                    else                           { playedData[0] = $"{Math.Round(timePlayed / 86400, 2, MidpointRounding.AwayFromZero)} days"; }
+                    Directory.CreateDirectory(savePath);
+                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "TimePlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("0")); }
                 }
-            }
-
-            if (File.Exists(Path.Combine(savePath, "LastPlayed.dat")) == false)
-            {
-                Directory.CreateDirectory(savePath);
-                using (FileStream file = File.OpenWrite(Path.Combine(savePath, "LastPlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("Never")); }
-            }
-            using (FileStream fs = File.OpenRead(Path.Combine(savePath, "LastPlayed.dat")))
-            {
-                using (StreamReader sr = new StreamReader(fs))
+                using (FileStream fs = File.OpenRead(Path.Combine(savePath, "TimePlayed.dat")))
                 {
-                    playedData[1] = sr.ReadLine();
-                }
-            }
+                    using (StreamReader sr = new StreamReader(fs))
+                    {
+                        float timePlayed = float.Parse(sr.ReadLine());
 
-            return playedData;
+                        if      (timePlayed <= 60.0)    { playedData[0] = $"{timePlayed}s"; }
+                        else if (timePlayed <= 3600.0)  { playedData[0] = $"{Math.Round(timePlayed / 60   , 2, MidpointRounding.AwayFromZero)} mins"; }
+                        else if (timePlayed <= 86400.0) { playedData[0] = $"{Math.Round(timePlayed / 3600 , 2, MidpointRounding.AwayFromZero)} hrs";  }
+                        else                            { playedData[0] = $"{Math.Round(timePlayed / 86400, 2, MidpointRounding.AwayFromZero)} days"; }
+                    }
+                }
+
+                if (File.Exists(Path.Combine(savePath, "LastPlayed.dat")) == false)
+                {
+                    Directory.CreateDirectory(savePath);
+                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "LastPlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("Never")); }
+                }
+                using (FileStream fs = File.OpenRead(Path.Combine(savePath, "LastPlayed.dat")))
+                {
+                    using (StreamReader sr = new StreamReader(fs))
+                    {
+                        playedData[1] = sr.ReadLine();
+                    }
+                }
+
+                return playedData;
+            }
+            catch { return new string[] { "Unknown", "Unknown" }; }
         }
     }
 }

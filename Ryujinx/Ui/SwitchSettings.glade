@@ -103,24 +103,64 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="box1">
+                      <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_left">10</property>
-                        <property name="margin_right">5</property>
-                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkBox">
+                          <object class="GtkBox" id="box1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_left">5</property>
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkLabel">
+                              <object class="GtkBox">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Change System Language</property>
-                                <property name="halign">end</property>
-                                <property name="label" translatable="yes">System Language:</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">Change System Language</property>
+                                    <property name="halign">end</property>
+                                    <property name="label" translatable="yes">System Language:</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkComboBoxText" id="SystemLanguageSelect">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">Change System Language</property>
+                                    <property name="margin_left">10</property>
+                                    <items>
+                                      <item id="AmericanEnglish" translatable="yes">American English</item>
+                                      <item id="BritishEnglish" translatable="yes">British English</item>
+                                      <item id="CanadianFrench" translatable="yes">Canadian French</item>
+                                      <item id="Chinese" translatable="yes">Chinese</item>
+                                      <item id="Dutch" translatable="yes">Dutch</item>
+                                      <item id="French" translatable="yes">French</item>
+                                      <item id="German" translatable="yes">German</item>
+                                      <item id="Italian" translatable="yes">Italian</item>
+                                      <item id="Japanese" translatable="yes">Japanese</item>
+                                      <item id="Korean" translatable="yes">Korean</item>
+                                      <item id="LatinAmericanSpanish" translatable="yes">Latin American Spanish</item>
+                                      <item id="Portuguese" translatable="yes">Portuguese</item>
+                                      <item id="Russian" translatable="yes">Russian</item>
+                                      <item id="SimplifiedChinese" translatable="yes">Simplified Chinese</item>
+                                      <item id="Spanish" translatable="yes">Spanish</item>
+                                      <item id="Taiwanese" translatable="yes">Taiwanese</item>
+                                      <item id="TraditionalChinese" translatable="yes">Traditional Chinese</item>
+                                    </items>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -129,65 +169,241 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBoxText" id="SystemLanguageSelect">
+                              <object class="GtkCheckButton" id="DiscordToggle">
+                                <property name="label" translatable="yes">Enable Discord Integration</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Change System Language</property>
-                                <property name="margin_left">5</property>
-                                <items>
-                                  <item id="AmericanEnglish" translatable="yes">American English</item>
-                                  <item id="BritishEnglish" translatable="yes">British English</item>
-                                  <item id="CanadianFrench" translatable="yes">Canadian French</item>
-                                  <item id="Chinese" translatable="yes">Chinese</item>
-                                  <item id="Dutch" translatable="yes">Dutch</item>
-                                  <item id="French" translatable="yes">French</item>
-                                  <item id="German" translatable="yes">German</item>
-                                  <item id="Italian" translatable="yes">Italian</item>
-                                  <item id="Japanese" translatable="yes">Japanese</item>
-                                  <item id="Korean" translatable="yes">Korean</item>
-                                  <item id="LatinAmericanSpanish" translatable="yes">Latin American Spanish</item>
-                                  <item id="Portuguese" translatable="yes">Portuguese</item>
-                                  <item id="Russian" translatable="yes">Russian</item>
-                                  <item id="SimplifiedChinese" translatable="yes">Simplified Chinese</item>
-                                  <item id="Spanish" translatable="yes">Spanish</item>
-                                  <item id="Taiwanese" translatable="yes">Taiwanese</item>
-                                  <item id="TraditionalChinese" translatable="yes">Traditional Chinese</item>
-                                </items>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="tooltip_text" translatable="yes">Enables or disables Discord Rich Presense</property>
+                                <property name="halign">start</property>
+                                <property name="draw_indicator">True</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">True</property>
+                                <property name="padding">5</property>
                                 <property name="position">1</property>
                               </packing>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
+                            <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="DiscordToggle">
-                            <property name="label" translatable="yes">Enable Discord Integration</property>
+                          <object class="GtkBox">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="tooltip_text" translatable="yes">Enables or disables Discord Rich Presense</property>
-                            <property name="halign">start</property>
-                            <property name="margin_left">5</property>
-                            <property name="draw_indicator">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkCheckButton" id="IconToggle">
+                                    <property name="label" translatable="yes">Enable Icon Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="DeveloperToggle">
+                                    <property name="label" translatable="yes">Enable Developer Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="TimePlayedToggle">
+                                    <property name="label" translatable="yes">Enable Time Played Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkCheckButton" id="TitleToggle">
+                                    <property name="label" translatable="yes">Enable Title Name/ID Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="VersionToggle">
+                                    <property name="label" translatable="yes">Enable Version Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="LastPlayedToggle">
+                                    <property name="label" translatable="yes">Enable Last Played Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkCheckButton" id="FileExtToggle">
+                                    <property name="label" translatable="yes">Enable File Ext Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="FileSizeToggle">
+                                    <property name="label" translatable="yes">Enable File Size Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="PathToggle">
+                                    <property name="label" translatable="yes">Enable Path Column</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
+                            <property name="expand">True</property>
                             <property name="fill">True</property>
-                            <property name="padding">5</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>

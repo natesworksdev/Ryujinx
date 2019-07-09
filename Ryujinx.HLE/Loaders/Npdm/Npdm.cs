@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    // https://github.com/SciresM/hactool/blob/master/npdm.c	
-    // https://github.com/SciresM/hactool/blob/master/npdm.h	
+    // https://github.com/SciresM/hactool/blob/master/npdm.c
+    // https://github.com/SciresM/hactool/blob/master/npdm.h
     // http://switchbrew.org/index.php?title=NPDM
     class Npdm
     {
@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public int    PersonalMmHeapSize  { get; private set; }
         public int    ProcessCategory     { get; private set; }
         public int    MainThreadStackSize { get; private set; }
-        public string TitleName           { get; set; }
+        public string TitleName           { get;         set; }
         public byte[] ProductCode         { get; private set; }
 
         public Aci0 Aci0 { get; private set; }
