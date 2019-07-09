@@ -3,6 +3,7 @@ using LibHac.Fs;
 using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
 
+using static Ryujinx.HLE.HOS.ErrorCode;
 using static Ryujinx.HLE.Utilities.StringUtils;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
@@ -174,7 +175,14 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 DirectoryEntryType entryType = _fileSystem.GetEntryType(name);
 
-                context.ResponseData.Write((int)entryType);
+                if (entryType == DirectoryEntryType.Directory || entryType == DirectoryEntryType.File)
+                {
+                    context.ResponseData.Write((int)entryType);
+                }
+                else
+                {
+                    return MakeError(ErrorModule.Fs, FsErr.PathDoesNotExist);
+                }
             }
             catch (HorizonResultException ex)
             {
