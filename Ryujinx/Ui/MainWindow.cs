@@ -5,6 +5,7 @@ using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
+using Ryujinx.HLE;
 using Ryujinx.Profiler;
 using System;
 using System.Diagnostics;
@@ -55,7 +56,7 @@ namespace Ryujinx.UI
 
             _audioOut = InitializeAudioEngine();
 
-            _device   = new HLE.Switch(_renderer, _audioOut);
+            _device = new HLE.Switch(_renderer, _audioOut);
 
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(_device);
@@ -92,9 +93,7 @@ namespace Ryujinx.UI
 
             if (args.Length == 1)
             {
-                //Box.Remove(GameTableWindow);
-
-                //Temporary code section start, remove this section and uncomment above line when game is rendered to the glarea in the gui
+                // Temporary code section start, remove this section when game is rendered to the GLArea in the GUI
                 Box.Remove(GlScreen);
                 Nfc.Sensitive        = false;
                 ReturnMain.Sensitive = false;
@@ -110,7 +109,7 @@ namespace Ryujinx.UI
                 _TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = _TableStore;
                 UpdateGameTable();
-                //Temporary code section end
+                // Temporary code section end
 
                 LoadApplication(args[0]);
             }
@@ -182,15 +181,14 @@ namespace Ryujinx.UI
         {
             if (_GameLoaded)
             {
-                MessageDialog eRrOr = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded. Please close the emulator and try again");
-                eRrOr.SetSizeRequest(100, 20);
-                eRrOr.Title = "Ryujinx - Error";
-                eRrOr.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
-                eRrOr.WindowPosition = WindowPosition.Center;
-                eRrOr.Run();
-                eRrOr.Destroy();
+                MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded. Please close the emulator and try again");
+                errorDialog.SetSizeRequest(100, 20);
+                errorDialog.Title = "Ryujinx - Error";
+                errorDialog.Icon  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
+                errorDialog.WindowPosition = WindowPosition.Center;
+                errorDialog.Run();
+                errorDialog.Destroy();
             }
-
             else
             {
                 if (Directory.Exists(path))
@@ -310,7 +308,7 @@ namespace Ryujinx.UI
             try
             {
                 string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
+                string savePath    = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
                 double currentPlayTime = 0;
 
                 using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
@@ -357,27 +355,22 @@ namespace Ryujinx.UI
             string path = (string)_TableStore.GetValue(treeiter, 8);
 
             LoadApplication(path);
-
-            //Box.Remove(GameTableWindow);
-            //Box.Add(GlScreen);
         }
 
         private void Load_Application_File(object o, EventArgs args)
         {
             FileChooserDialog fc = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
             fc.Filter            = new FileFilter();
-            fc.Filter.AddPattern("*.nsp");
-            fc.Filter.AddPattern("*.xci");
-            fc.Filter.AddPattern("*.nca");
-            fc.Filter.AddPattern("*.nro");
-            fc.Filter.AddPattern("*.nso");
+            fc.Filter.AddPattern("*.nsp" );
+            fc.Filter.AddPattern("*.pfs0");
+            fc.Filter.AddPattern("*.xci" );
+            fc.Filter.AddPattern("*.nca" );
+            fc.Filter.AddPattern("*.nro" );
+            fc.Filter.AddPattern("*.nso" );
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
                 LoadApplication(fc.Filename);
-
-                //Box.Remove(GameTableWindow);
-                //Box.Add(GlScreen);
             }
 
             fc.Destroy();
@@ -390,9 +383,6 @@ namespace Ryujinx.UI
             if (fc.Run() == (int)ResponseType.Accept)
             {
                 LoadApplication(fc.Filename);
-
-                //Box.Remove(GameTableWindow);
-                //Box.Add(GlScreen);
             }
 
             fc.Destroy();
@@ -414,9 +404,7 @@ namespace Ryujinx.UI
 
         private void ReturnMain_Pressed(object o, EventArgs args)
         {
-            Box.Remove(GlScreen);
-            Box.Add(GameTableWindow);
-            //will also have to write logic to kill running game
+            //TODO: Write logic to kill running game
         }
 
         private void FullScreen_Toggled(object o, EventArgs args)
@@ -441,7 +429,7 @@ namespace Ryujinx.UI
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
-                //Soon™
+                //TODO: Write logic to emulate reading an NFC tag
             }
             fc.Destroy();
         }

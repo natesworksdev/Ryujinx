@@ -188,7 +188,7 @@ namespace Ryujinx.UI
 
             GameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
             _GameDirsBoxStore  = new ListStore(typeof(string));
-            GameDirsBox.Model = _GameDirsBoxStore;
+            GameDirsBox.Model  = _GameDirsBoxStore;
             foreach (string GameDir in SwitchConfig.GameDirs)
             {
                 _GameDirsBoxStore.AppendValues(GameDir);

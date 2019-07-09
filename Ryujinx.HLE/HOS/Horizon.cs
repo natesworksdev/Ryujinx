@@ -453,7 +453,7 @@ namespace Ryujinx.HLE.HOS
                 Nacp controlData = new Nacp(controlFile.AsStream());
 
                 TitleName = CurrentTitle = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
-                TitleID = metaData.Aci0.TitleId.ToString("x16");
+                TitleID   = metaData.Aci0.TitleId.ToString("x16");
 
                 if (string.IsNullOrWhiteSpace(CurrentTitle))
                 {

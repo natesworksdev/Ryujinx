@@ -9,12 +9,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Ryujinx
+namespace Ryujinx.HLE
 {
     public class ApplicationLibrary
     {
         private static Keyset KeySet;
-        private static HLE.HOS.SystemState.TitleLanguage DesiredTitleLanguage;
+        private static HOS.SystemState.TitleLanguage DesiredTitleLanguage;
 
         public static byte[] RyujinxNspIcon { get; private set; }
         public static byte[] RyujinxXciIcon { get; private set; }
@@ -38,7 +38,7 @@ namespace Ryujinx
             public string Path;
         }
 
-        public static void Init(List<string> AppDirs, Keyset keySet, HLE.HOS.SystemState.TitleLanguage desiredTitleLanguage)
+        public static void Init(List<string> AppDirs, Keyset keySet, HOS.SystemState.TitleLanguage desiredTitleLanguage)
         {
             KeySet                = keySet;
             DesiredTitleLanguage  = desiredTitleLanguage;
@@ -104,7 +104,9 @@ namespace Ryujinx
 
                 using (FileStream file = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
                 {
-                    if ((Path.GetExtension(applicationPath) == ".nsp") || (Path.GetExtension(applicationPath) == ".pfs0") || (Path.GetExtension(applicationPath) == ".xci"))
+                    if ((Path.GetExtension(applicationPath) == ".nsp")  ||
+                        (Path.GetExtension(applicationPath) == ".pfs0") ||
+                        (Path.GetExtension(applicationPath) == ".xci"))
                     {
                         try
                         {
@@ -120,7 +122,7 @@ namespace Ryujinx
 
                             // Creates NACP class from the NACP file
                             IFile controlNacp = controlFs.OpenFile("/control.nacp", OpenMode.Read);
-                            Nacp controlData  = new Nacp(controlNacp.AsStream());
+                            Nacp  controlData = new Nacp(controlNacp.AsStream());
 
                             // Get the title name, title ID, developer name and version number from the NACP
                             version = controlData.DisplayVersion;
@@ -262,13 +264,15 @@ namespace Ryujinx
                              if (Path.GetExtension(applicationPath) == ".nca") { applicationIcon = RyujinxNcaIcon; }
                         else if (Path.GetExtension(applicationPath) == ".nso") { applicationIcon = RyujinxNsoIcon; }
 
+                        string fileName = Path.GetFileName(applicationPath);
+                        string fileExt  = Path.GetExtension(applicationPath);
                         StringBuilder titlename = new StringBuilder();
-                        titlename.Append(Path.GetFileName(applicationPath));
-                        titlename.Remove(Path.GetFileName(applicationPath).Length - Path.GetExtension(applicationPath).Length, Path.GetExtension(applicationPath).Length);
+                        titlename.Append(fileName);
+                        titlename.Remove(fileName.Length - fileExt.Length, fileExt.Length);
 
                         titleName = titlename.ToString();
-                        titleId = "0000000000000000";
-                        version = "?";
+                        titleId   = "0000000000000000";
+                        version   = "?";
                         developer = "Unknown";
                     }
                 }
