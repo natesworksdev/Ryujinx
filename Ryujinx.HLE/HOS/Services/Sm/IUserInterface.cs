@@ -36,11 +36,10 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             _registeredServices = new ConcurrentDictionary<string, KPort>();
 
-            _services = AppDomain.CurrentDomain.GetAssemblies()
-                                               .SelectMany(type => type.GetTypes())
-                                               .SelectMany(type => type.GetCustomAttributes(typeof(ServiceAttribute), true)
-                                               .Select(service => (((ServiceAttribute)service).Name, type)))
-                                               .ToDictionary(service => service.Name, service => service.type);
+            _services = Assembly.GetExecutingAssembly().GetTypes()
+                .SelectMany(type => type.GetCustomAttributes(typeof(ServiceAttribute), true)
+                .Select(service => (((ServiceAttribute)service).Name, type)))
+                .ToDictionary(service => service.Name, service => service.type);
         }
 
         public static void InitializePort(Horizon system)
@@ -88,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             {
                 if (_services.TryGetValue(name, out Type type))
                 {
-                    ServiceAttribute serviceAttribute = (ServiceAttribute)type.GetCustomAttributes().First(service => ((ServiceAttribute)service).Name == name);
+                    ServiceAttribute serviceAttribute = (ServiceAttribute)type.GetCustomAttributes(typeof(ServiceAttribute)).First(service => ((ServiceAttribute)service).Name == name);
 
                     session.ClientSession.Service = serviceAttribute.Parameter != null ? (IpcService)Activator.CreateInstance(type, context, serviceAttribute.Parameter)
                                                                                        : (IpcService)Activator.CreateInstance(type, context);
