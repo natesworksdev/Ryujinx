@@ -37,10 +37,10 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             _registeredServices = new ConcurrentDictionary<string, KPort>();
 
             _services = AppDomain.CurrentDomain.GetAssemblies()
-                                 .SelectMany(type => type.GetTypes())
-                                 .SelectMany(type => type.GetCustomAttributes(typeof(ServiceAttribute), true)
-                                 .Select(service => (((ServiceAttribute)service).Name, type)))
-                                 .ToDictionary(service => service.Name, service => service.type);
+                                               .SelectMany(type => type.GetTypes())
+                                               .SelectMany(type => type.GetCustomAttributes(typeof(ServiceAttribute), true)
+                                               .Select(service => (((ServiceAttribute)service).Name, type)))
+                                               .ToDictionary(service => service.Name, service => service.type);
         }
 
         public static void InitializePort(Horizon system)
