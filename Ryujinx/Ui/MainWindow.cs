@@ -43,7 +43,6 @@ namespace Ryujinx.UI
         [GUI] MenuItem       ReturnMain;
         [GUI] MenuItem       Nfc;
         [GUI] Box            Box;
-        [GUI] ScrolledWindow GameTableWindow;
         [GUI] TreeView       GameTable;
         [GUI] GLArea         GlScreen;
 #pragma warning restore 649
@@ -106,7 +105,7 @@ namespace Ryujinx.UI
                 if (SwitchSettings.SwitchConfig.GuiColumns[6]) { GameTable.AppendColumn("File Ext"   , new CellRendererText()  , "text"  , 6); }
                 if (SwitchSettings.SwitchConfig.GuiColumns[7]) { GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 7); }
                 if (SwitchSettings.SwitchConfig.GuiColumns[8]) { GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 8); }
-                _TableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 GameTable.Model = _TableStore;
                 UpdateGameTable();
                 // Temporary code section end
@@ -287,9 +286,9 @@ namespace Ryujinx.UI
                         }
                     }
                 }
-                catch (ArgumentNullException exception)
+                catch (ArgumentNullException)
                 {
-                    Logger.PrintError(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {userId}, TitleID: {_device.System.TitleID}\nException: {exception}");
+                    Logger.PrintError(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {userId}, TitleID: {_device.System.TitleID}");
                 }
             }
         }
@@ -299,45 +298,50 @@ namespace Ryujinx.UI
             using (GlScreen screen = new GlScreen(_device, _renderer))
             {
                 screen.MainLoop();
+
+                End();
             }
         }
 
         private static void End()
         {
             string userId = "00000000000000000000000000000001";
-            try
+            if (_GameLoaded)
             {
-                string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string savePath    = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
-                double currentPlayTime = 0;
-
-                using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                try
                 {
-                    using (StreamReader sr = new StreamReader(fs))
+                    string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
+                    double currentPlayTime = 0;
+
+                    using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
                     {
-                        DateTime startTime = DateTime.Parse(sr.ReadLine());
-
-                        using (FileStream lpfs = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+                        using (StreamReader sr = new StreamReader(fs))
                         {
-                            using (StreamReader lpsr = new StreamReader(lpfs))
+                            DateTime startTime = DateTime.Parse(sr.ReadLine());
+
+                            using (FileStream lpfs = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
                             {
-                                currentPlayTime = double.Parse(lpsr.ReadLine());
+                                using (StreamReader lpsr = new StreamReader(lpfs))
+                                {
+                                    currentPlayTime = double.Parse(lpsr.ReadLine());
+                                }
                             }
-                        }
 
-                        using (FileStream tpfs = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                        {
-                            using (StreamWriter tpsr = new StreamWriter(tpfs))
+                            using (FileStream tpfs = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
                             {
-                                tpsr.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
+                                using (StreamWriter tpsr = new StreamWriter(tpfs))
+                                {
+                                    tpsr.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
+                                }
                             }
                         }
                     }
                 }
-            }
-            catch (ArgumentNullException exception)
-            {
-                Logger.PrintError(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {userId}, TitleID: {_device.System.TitleID}\nException: {exception}");
+                catch (ArgumentNullException)
+                {
+                    Logger.PrintError(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {userId}, TitleID: {_device.System.TitleID}");
+                }
             }
 
             Profile.FinishProfiling();
@@ -404,7 +408,7 @@ namespace Ryujinx.UI
 
         private void ReturnMain_Pressed(object o, EventArgs args)
         {
-            //TODO: Write logic to kill running game
+            // TODO: Write logic to kill running game
         }
 
         private void FullScreen_Toggled(object o, EventArgs args)
@@ -429,7 +433,7 @@ namespace Ryujinx.UI
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
-                //TODO: Write logic to emulate reading an NFC tag
+                // TODO: Write logic to emulate reading an NFC tag
             }
             fc.Destroy();
         }

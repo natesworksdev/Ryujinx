@@ -60,6 +60,7 @@ namespace Ryujinx.UI
         [GUI] ToggleButton BrowseDir;
         [GUI] ToggleButton RemoveDir;
         [GUI] Entry        LogPath;
+        [GUI] Entry        GraphicsShadersDumpPath;
         [GUI] Image        ControllerImage;
 
         [GUI] ComboBoxText Controller1Type;
@@ -183,8 +184,9 @@ namespace Ryujinx.UI
             R1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonR.ToString();
             ZR1.Label           = SwitchConfig.KeyboardControls.RightJoycon.ButtonZr.ToString();
 
-            CustThemeDir.Buffer.Text  = SwitchConfig.CustomThemePath;
-            FGALMSpinAdjustment.Value = SwitchConfig.FsGlobalAccessLogMode;
+            CustThemeDir.Buffer.Text            = SwitchConfig.CustomThemePath;
+            GraphicsShadersDumpPath.Buffer.Text = SwitchConfig.GraphicsShadersDumpPath;
+            FGALMSpinAdjustment.Value           = SwitchConfig.FsGlobalAccessLogMode;
 
             GameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
             _GameDirsBoxStore  = new ListStore(typeof(string));
@@ -375,12 +377,12 @@ namespace Ryujinx.UI
                 ButtonZr    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZR1.Label),
             };
 
-            SwitchConfig.SystemLanguage        = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
-            SwitchConfig.ControllerType        = (ControllerStatus)Enum.Parse(typeof(ControllerStatus), Controller1Type.ActiveId);
-            SwitchConfig.CustomThemePath       = CustThemeDir.Buffer.Text;
-            SwitchConfig.GameDirs              = gameDirs;
-            SwitchConfig.FsGlobalAccessLogMode = (int)FGALMSpinAdjustment.Value;
-
+            SwitchConfig.SystemLanguage          = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
+            SwitchConfig.ControllerType          = (ControllerStatus)Enum.Parse(typeof(ControllerStatus), Controller1Type.ActiveId);
+            SwitchConfig.CustomThemePath         = CustThemeDir.Buffer.Text;
+            SwitchConfig.GraphicsShadersDumpPath = GraphicsShadersDumpPath.Buffer.Text;
+            SwitchConfig.GameDirs                = gameDirs;
+            SwitchConfig.FsGlobalAccessLogMode   = (int)FGALMSpinAdjustment.Value;
 
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.Configure(Device, SwitchConfig);

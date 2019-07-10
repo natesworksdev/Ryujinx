@@ -30,7 +30,7 @@ namespace Ryujinx
         /// <summary>
         /// Dumps shaders in this local directory
         /// </summary>
-        public string GraphicsShadersDumpPath { get; private set; }
+        public string GraphicsShadersDumpPath { get; set; }
 
         /// <summary>
         /// Enables printing debug log messages
@@ -246,11 +246,13 @@ namespace Ryujinx
         {
             GraphicsConfig.ShadersDumpPath = SwitchConfig.GraphicsShadersDumpPath;
 
-            Logger.SetEnable(LogLevel.Debug  , SwitchConfig.LoggingEnableDebug);
-            Logger.SetEnable(LogLevel.Stub   , SwitchConfig.LoggingEnableStub );
-            Logger.SetEnable(LogLevel.Info   , SwitchConfig.LoggingEnableInfo );
-            Logger.SetEnable(LogLevel.Warning, SwitchConfig.LoggingEnableWarn );
-            Logger.SetEnable(LogLevel.Error  , SwitchConfig.LoggingEnableError);
+            Logger.SetEnable(LogLevel.Debug    , SwitchConfig.LoggingEnableDebug      );
+            Logger.SetEnable(LogLevel.Stub     , SwitchConfig.LoggingEnableStub       );
+            Logger.SetEnable(LogLevel.Info     , SwitchConfig.LoggingEnableInfo       );
+            Logger.SetEnable(LogLevel.Warning  , SwitchConfig.LoggingEnableWarn       );
+            Logger.SetEnable(LogLevel.Error    , SwitchConfig.LoggingEnableError      );
+            Logger.SetEnable(LogLevel.Guest    , SwitchConfig.LoggingEnableGuest      );
+            Logger.SetEnable(LogLevel.AccessLog, SwitchConfig.LoggingEnableFsAccessLog);
 
             if (SwitchConfig.LoggingFilteredClasses.Length > 0)
             {

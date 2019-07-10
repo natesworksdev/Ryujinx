@@ -40,8 +40,8 @@ namespace Ryujinx.HLE
 
         public static void Init(List<string> AppDirs, Keyset keySet, HOS.SystemState.TitleLanguage desiredTitleLanguage)
         {
-            KeySet                = keySet;
-            DesiredTitleLanguage  = desiredTitleLanguage;
+            KeySet               = keySet;
+            DesiredTitleLanguage = desiredTitleLanguage;
 
             // Loads the default application Icons
             using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNSPIcon.png"))
@@ -199,7 +199,7 @@ namespace Ryujinx.HLE
                             if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
                             else { applicationIcon = RyujinxNspIcon; }
 
-                            Logger.PrintError(LogClass.Application, $"Unable to decrypt NCA header. The header key must be incorrect. File: {applicationPath}");
+                            Logger.PrintError(LogClass.Application, $"The file is not an NCA file or the header key is incorrect. Errored File: {applicationPath}");
                         }
                     }
 
