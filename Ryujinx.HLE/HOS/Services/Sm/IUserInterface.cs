@@ -90,8 +90,8 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 {
                     ServiceAttribute serviceAttribute = (ServiceAttribute)type.GetCustomAttributes().First(service => ((ServiceAttribute)service).Name == name);
 
-                    session.ClientSession.Service = serviceAttribute.UsePermission ? (IpcService)Activator.CreateInstance(type, context, serviceAttribute.Permission)
-                                                                                   : (IpcService)Activator.CreateInstance(type, context);
+                    session.ClientSession.Service = serviceAttribute.Parameter != null ? (IpcService)Activator.CreateInstance(type, context, serviceAttribute.Parameter)
+                                                                                       : (IpcService)Activator.CreateInstance(type, context);
                 }
                 else
                 {

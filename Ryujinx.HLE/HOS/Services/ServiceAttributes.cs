@@ -6,14 +6,12 @@ namespace Ryujinx.HLE.HOS.Services
     public class ServiceAttribute : Attribute
     {
         public readonly string Name;
-        public readonly bool   UsePermission;
-        public readonly int    Permission;
+        public readonly object Parameter;
 
-        public ServiceAttribute(string name, bool usePermission = false, int permission = 0)
+        public ServiceAttribute(string name, object parameter = null)
         {
-            Name          = name;
-            UsePermission = usePermission;
-            Permission    = permission;
+            Name      = name;
+            Parameter = parameter;
         }
     }
 }
