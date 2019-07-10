@@ -7,15 +7,20 @@ using static Ryujinx.HLE.HOS.ErrorCode;
 
 namespace Ryujinx.HLE.HOS.Services.Friend
 {
+    [Service("friend:a", true, (int)FriendServicePermissionLevel.Admin)]
+    [Service("friend:m", true, (int)FriendServicePermissionLevel.Manager)]
+    [Service("friend:s", true, (int)FriendServicePermissionLevel.System)]
+    [Service("friend:u", true, (int)FriendServicePermissionLevel.User)]
+    [Service("friend:v", true, (int)FriendServicePermissionLevel.Overlay)]
     class IServiceCreator : IpcService
     {
-        private Dictionary<int, ServiceProcessRequest> _commands;
-
         private FriendServicePermissionLevel _permissionLevel;
+
+        private Dictionary<int, ServiceProcessRequest> _commands;
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        public IServiceCreator(FriendServicePermissionLevel permissionLevel)
+        public IServiceCreator(ServiceCtx context, int permission)
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
@@ -24,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
                 { 2, CreateDaemonSuspendSessionService }, // 4.0.0+
             };
 
-            _permissionLevel = permissionLevel;
+            _permissionLevel = (FriendServicePermissionLevel)permission;
         }
 
         // CreateFriendService() -> object<nn::friends::detail::ipc::IFriendService>

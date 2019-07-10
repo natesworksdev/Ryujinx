@@ -8,9 +8,10 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Bsd
 {
+    [Service("bsd:s", true, (int)BsdServicePermissionLevel.System)]
+    [Service("bsd:u", true, (int)BsdServicePermissionLevel.User)]
     class IClient : IpcService
     {
-
         private static Dictionary<WsaError, LinuxError> _errorMap = new Dictionary<WsaError, LinuxError>
         {
             // WSAEINTR
@@ -95,15 +96,15 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
             {0, 0}
         };
 
+        private BsdServicePermissionLevel _permissionLevel;
+
+        private List<BsdSocket> _sockets = new List<BsdSocket>();
+
         private Dictionary<int, ServiceProcessRequest> _commands;
 
         public override IReadOnlyDictionary<int, ServiceProcessRequest> Commands => _commands;
 
-        private bool _isPrivileged;
-
-        private List<BsdSocket> _sockets = new List<BsdSocket>();
-
-        public IClient(bool isPrivileged)
+        public IClient(ServiceCtx context, int permission)
         {
             _commands = new Dictionary<int, ServiceProcessRequest>
             {
@@ -137,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
                 { 27, DuplicateSocket    }
             };
 
-            _isPrivileged = isPrivileged;
+            _permissionLevel = (BsdServicePermissionLevel)permission;
         }
 
         private LinuxError ConvertError(WsaError errorCode)
@@ -206,7 +207,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
             {
                 return WriteBsdResult(context, -1, LinuxError.EPROTONOSUPPORT);
             }
-            else if ((type == SocketType.Seqpacket || type == SocketType.Raw) && !_isPrivileged)
+            else if ((type == SocketType.Seqpacket || type == SocketType.Raw) && _permissionLevel == BsdServicePermissionLevel.User)
             {
                 if (domain != AddressFamily.InterNetwork || type != SocketType.Raw || protocol != ProtocolType.Icmp)
                 {
@@ -1172,7 +1173,7 @@ namespace Ryujinx.HLE.HOS.Services.Bsd
             LinuxError errno     = LinuxError.ENOENT;
             int        newSockFd = -1;
 
-            if (_isPrivileged)
+            if (_permissionLevel == BsdServicePermissionLevel.System)
             {
                 errno = LinuxError.EBADF;
 
