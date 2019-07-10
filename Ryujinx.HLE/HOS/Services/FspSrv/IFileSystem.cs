@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 return ex.ResultValue.Value;
             }
-            
+
             return 0;
         }
 

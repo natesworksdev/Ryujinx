@@ -1,6 +1,6 @@
+using LibHac;
 using Ryujinx.HLE.HOS.Ipc;
 using System.Collections.Generic;
-using LibHac;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {

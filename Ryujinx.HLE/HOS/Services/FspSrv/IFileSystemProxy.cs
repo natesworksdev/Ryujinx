@@ -247,8 +247,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             try
             {
-                LocalFileSystem fileSystem = new LocalFileSystem(savePath);
-
+                LocalFileSystem             fileSystem     = new LocalFileSystem(savePath);
                 DirectorySaveDataFileSystem saveFileSystem = new DirectorySaveDataFileSystem(fileSystem);
 
                 MakeObject(context, new IFileSystem(saveFileSystem));
