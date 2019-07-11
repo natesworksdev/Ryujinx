@@ -52,6 +52,15 @@ namespace Ryujinx.HLE.HOS.Services.Acc
         }
 
         [Command(10)]
+        // GetImageSize() -> u32
+        private long GetImageSize(ServiceCtx context)
+        {
+            context.ResponseData.Write(_profilePictureStream.Length);
+
+            return 0;
+        }
+
+        [Command(11)]
         // LoadImage() -> (u32, buffer<bytes, 6>)
         private long LoadImage(ServiceCtx context)
         {
@@ -64,15 +73,6 @@ namespace Ryujinx.HLE.HOS.Services.Acc
 
             context.Memory.WriteBytes(bufferPosition, profilePictureData);
 
-            context.ResponseData.Write(_profilePictureStream.Length);
-
-            return 0;
-        }
-
-        [Command(11)]
-        // GetImageSize() -> u32
-        private long GetImageSize(ServiceCtx context)
-        {
             context.ResponseData.Write(_profilePictureStream.Length);
 
             return 0;
