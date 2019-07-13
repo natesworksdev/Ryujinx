@@ -13,8 +13,8 @@ namespace Ryujinx
         {
             Console.Title = "Ryujinx Console";
 
-            string systemPATH = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
-            Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPATH}");
+            string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
+            Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPath}");
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;

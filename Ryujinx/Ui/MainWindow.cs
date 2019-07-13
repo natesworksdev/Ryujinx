@@ -6,6 +6,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE;
+using Ryujinx.HLE.FileSystem;
 using Ryujinx.Profiler;
 using System;
 using System.Diagnostics;
@@ -33,14 +34,14 @@ namespace Ryujinx.UI
 
         private static Application _gtkapp;
 
-        private static ListStore _TableStore;
+        private static ListStore _tableStore;
 
-        private static bool _GameLoaded = false;
+        private static bool _gameLoaded = false;
 
 #pragma warning disable 649
         [GUI] Window         MainWin;
         [GUI] CheckMenuItem  FullScreen;
-        [GUI] MenuItem       ReturnMain;
+        [GUI] MenuItem       StopEmulation;
         [GUI] MenuItem       Nfc;
         [GUI] Box            Box;
         [GUI] TreeView       GameTable;
@@ -88,14 +89,14 @@ namespace Ryujinx.UI
             }
 
             builder.Autoconnect(this);
-            MainWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
+            MainWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
 
             if (args.Length == 1)
             {
                 // Temporary code section start, remove this section when game is rendered to the GLArea in the GUI
                 Box.Remove(GlScreen);
-                Nfc.Sensitive        = false;
-                ReturnMain.Sensitive = false;
+                Nfc.Sensitive           = false;
+                StopEmulation.Sensitive = false;
                 if (SwitchSettings.SwitchConfig.GuiColumns[0]) { GameTable.AppendColumn("Icon"       , new CellRendererPixbuf(), "pixbuf", 0); }
                 if (SwitchSettings.SwitchConfig.GuiColumns[1]) { GameTable.AppendColumn("Application", new CellRendererText()  , "text"  , 1); }
                 if (SwitchSettings.SwitchConfig.GuiColumns[2]) { GameTable.AppendColumn("Developer"  , new CellRendererText()  , "text"  , 2); }
@@ -105,8 +106,8 @@ namespace Ryujinx.UI
                 if (SwitchSettings.SwitchConfig.GuiColumns[6]) { GameTable.AppendColumn("File Ext"   , new CellRendererText()  , "text"  , 6); }
                 if (SwitchSettings.SwitchConfig.GuiColumns[7]) { GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 7); }
                 if (SwitchSettings.SwitchConfig.GuiColumns[8]) { GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 8); }
-                _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-                GameTable.Model = _TableStore;
+                _tableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                GameTable.Model = _tableStore;
                 UpdateGameTable();
                 // Temporary code section end
 
@@ -116,8 +117,8 @@ namespace Ryujinx.UI
             {
                 Box.Remove(GlScreen);
 
-                Nfc.Sensitive        = false;
-                ReturnMain.Sensitive = false;
+                Nfc.Sensitive           = false;
+                StopEmulation.Sensitive = false;
 
                 if (SwitchSettings.SwitchConfig.GuiColumns[0]) { GameTable.AppendColumn("Icon"       , new CellRendererPixbuf(), "pixbuf", 0); }
                 if (SwitchSettings.SwitchConfig.GuiColumns[1]) { GameTable.AppendColumn("Application", new CellRendererText()  , "text"  , 1); }
@@ -129,21 +130,32 @@ namespace Ryujinx.UI
                 if (SwitchSettings.SwitchConfig.GuiColumns[7]) { GameTable.AppendColumn("File Size"  , new CellRendererText()  , "text"  , 7); }
                 if (SwitchSettings.SwitchConfig.GuiColumns[8]) { GameTable.AppendColumn("Path"       , new CellRendererText()  , "text"  , 8); }
 
-                _TableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-                GameTable.Model = _TableStore;
+                _tableStore     = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                GameTable.Model = _tableStore;
 
                 UpdateGameTable();
             }
         }
 
+        public static void CreateErrorDialog(string errorMessage)
+        {
+            MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, errorMessage);
+            errorDialog.SetSizeRequest(100, 20);
+            errorDialog.Title = "Ryujinx - Error";
+            errorDialog.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
+            errorDialog.WindowPosition = WindowPosition.Center;
+            errorDialog.Run();
+            errorDialog.Destroy();
+        }
+
         public static void UpdateGameTable()
         {
-            _TableStore.Clear();
+            _tableStore.Clear();
             ApplicationLibrary.Init(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage);
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                _TableStore.AppendValues(new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExt, AppData.FileSize, AppData.Path);
+                _tableStore.AppendValues(new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExt, AppData.FileSize, AppData.Path);
             }
         }
 
@@ -178,15 +190,9 @@ namespace Ryujinx.UI
 
         private void LoadApplication(string path)
         {
-            if (_GameLoaded)
+            if (_gameLoaded)
             {
-                MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "A game has already been loaded. Please close the emulator and try again");
-                errorDialog.SetSizeRequest(100, 20);
-                errorDialog.Title = "Ryujinx - Error";
-                errorDialog.Icon  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
-                errorDialog.WindowPosition = WindowPosition.Center;
-                errorDialog.Run();
-                errorDialog.Destroy();
+                CreateErrorDialog("A game has already been loaded. Please close the emulator and try again");
             }
             else
             {
@@ -243,8 +249,8 @@ namespace Ryujinx.UI
 
                 new Thread(new ThreadStart(CreateGameWindow)).Start();
 
-                _GameLoaded          = true;
-                ReturnMain.Sensitive = true;
+                _gameLoaded             = true;
+                StopEmulation.Sensitive = true;
 
                 if (DiscordIntegrationEnabled)
                 {
@@ -265,8 +271,7 @@ namespace Ryujinx.UI
                 string userId = "00000000000000000000000000000001";
                 try
                 {
-                    string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
+                    string savePath = System.IO.Path.Combine(VirtualFileSystem.UserNandPath, "save", "0000000000000000", userId, _device.System.TitleID);
 
                     if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
                     {
@@ -306,12 +311,11 @@ namespace Ryujinx.UI
         private static void End()
         {
             string userId = "00000000000000000000000000000001";
-            if (_GameLoaded)
+            if (_gameLoaded)
             {
                 try
                 {
-                    string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    string savePath = System.IO.Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
+                    string savePath = System.IO.Path.Combine(VirtualFileSystem.UserNandPath, "save", "0000000000000000", userId, _device.System.TitleID);
                     double currentPlayTime = 0;
 
                     using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
@@ -351,12 +355,32 @@ namespace Ryujinx.UI
             Logger.Shutdown();
             Environment.Exit(0);
         }
-        
+
+        /// <summary>
+        /// Picks an <see cref="IAalOutput"/> audio output renderer supported on this machine
+        /// </summary>
+        /// <returns>An <see cref="IAalOutput"/> supported by this machine</returns>
+        private static IAalOutput InitializeAudioEngine()
+        {
+            if (SoundIoAudioOut.IsSupported)
+            {
+                return new SoundIoAudioOut();
+            }
+            else if (OpenALAudioOut.IsSupported)
+            {
+                return new OpenALAudioOut();
+            }
+            else
+            {
+                return new DummyAudioOut();
+            }
+        }
+
         //Events
         private void Row_Activated(object o, RowActivatedArgs args)
         {
-            _TableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
-            string path = (string)_TableStore.GetValue(treeiter, 8);
+            _tableStore.GetIter(out TreeIter treeiter, new TreePath(args.Path.ToString()));
+            string path = (string)_tableStore.GetValue(treeiter, 8);
 
             LoadApplication(path);
         }
@@ -406,7 +430,7 @@ namespace Ryujinx.UI
 
         private void Window_Close(object o, DeleteEventArgs args) { End(); }
 
-        private void ReturnMain_Pressed(object o, EventArgs args)
+        private void StopEmulation_Pressed(object o, EventArgs args)
         {
             // TODO: Write logic to kill running game
         }
@@ -444,26 +468,6 @@ namespace Ryujinx.UI
             _gtkapp.Register(GLib.Cancellable.Current);
             _gtkapp.AddWindow(AboutWin);
             AboutWin.Show();
-        }
-
-        /// <summary>
-        /// Picks an <see cref="IAalOutput"/> audio output renderer supported on this machine
-        /// </summary>
-        /// <returns>An <see cref="IAalOutput"/> supported by this machine</returns>
-        private static IAalOutput InitializeAudioEngine()
-        {
-            if (SoundIoAudioOut.IsSupported)
-            {
-                return new SoundIoAudioOut();
-            }
-            else if (OpenALAudioOut.IsSupported)
-            {
-                return new OpenALAudioOut();
-            }
-            else
-            {
-                return new DummyAudioOut();
-            }
         }
     }
 }

@@ -101,12 +101,12 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="ReturnMain">
+                      <object class="GtkMenuItem" id="StopEmulation">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Return to Main Menu</property>
+                        <property name="label" translatable="yes">Stop Emulation</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="ReturnMain_Pressed" swapped="no"/>
+                        <signal name="activate" handler="StopEmulation_Pressed" swapped="no"/>
                       </object>
                     </child>
                     <child>

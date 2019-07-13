@@ -17,9 +17,9 @@ namespace Ryujinx.UI
 
         internal HLE.Switch Device { get; set; }
 
-        private static ListStore _GameDirsBoxStore;
+        private static ListStore _gameDirsBoxStore;
 
-        private static bool _ListeningForKeypress;
+        private static bool _listeningForKeypress;
 
 #pragma warning disable 649
         [GUI] Window       SettingsWin;
@@ -40,7 +40,7 @@ namespace Ryujinx.UI
         [GUI] CheckButton  FileLogToggle;
         [GUI] CheckButton  GuestLogToggle;
         [GUI] CheckButton  FsAccessLogToggle;
-        [GUI] Adjustment   FGALMSpinAdjustment;
+        [GUI] Adjustment   FsLogSpinAdjustment;
         [GUI] CheckButton  DockedModeToggle;
         [GUI] CheckButton  DiscordToggle;
         [GUI] CheckButton  VSyncToggle;
@@ -100,7 +100,7 @@ namespace Ryujinx.UI
 
             builder.Autoconnect(this);
 
-            SettingsWin.Icon       = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
+            SettingsWin.Icon       = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
             ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
 
             //Bind Events
@@ -186,42 +186,48 @@ namespace Ryujinx.UI
 
             CustThemeDir.Buffer.Text            = SwitchConfig.CustomThemePath;
             GraphicsShadersDumpPath.Buffer.Text = SwitchConfig.GraphicsShadersDumpPath;
-            FGALMSpinAdjustment.Value           = SwitchConfig.FsGlobalAccessLogMode;
+            FsLogSpinAdjustment.Value           = SwitchConfig.FsGlobalAccessLogMode;
 
             GameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
-            _GameDirsBoxStore  = new ListStore(typeof(string));
-            GameDirsBox.Model  = _GameDirsBoxStore;
-            foreach (string GameDir in SwitchConfig.GameDirs)
+            _gameDirsBoxStore  = new ListStore(typeof(string));
+            GameDirsBox.Model  = _gameDirsBoxStore;
+            foreach (string gameDir in SwitchConfig.GameDirs)
             {
-                _GameDirsBoxStore.AppendValues(GameDir);
+                _gameDirsBoxStore.AppendValues(gameDir);
             }
 
-            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; BrowseThemeDir.Sensitive = false; }
+            if (CustThemeToggle.Active == false)
+            {
+                CustThemeDir.Sensitive      = false;
+                CustThemeDirLabel.Sensitive = false;
+                BrowseThemeDir.Sensitive    = false;
+            }
 
             LogPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
 
-            _ListeningForKeypress = false;
+            _listeningForKeypress = false;
         }
 
         //Events
         private void Button_Pressed(object obj, EventArgs args, ToggleButton Button)
         {
-            if (_ListeningForKeypress == false)
+            if (_listeningForKeypress == false)
             {
                 KeyPressEvent += On_KeyPress;
-                _ListeningForKeypress = true;
+                _listeningForKeypress = true;
 
                 void On_KeyPress(object Obj, KeyPressEventArgs KeyPressed)
                 {
-                    string key = KeyPressed.Event.Key.ToString();
+                    string key    = KeyPressed.Event.Key.ToString();
+                    string capKey = key.First().ToString().ToUpper() + key.Substring(1);
 
-                    if (Enum.IsDefined(typeof(OpenTK.Input.Key), key.First().ToString().ToUpper() + key.Substring(1))) { Button.Label = key.First().ToString().ToUpper() + key.Substring(1); }
-                    else if (GdkToTKInput.ContainsKey(key)) { Button.Label = GdkToTKInput[key]; }
-                    else { Button.Label = "Space"; }
+                    if (Enum.IsDefined(typeof(OpenTK.Input.Key), capKey)) { Button.Label = capKey;                }
+                    else if (GdkToOpenTKInput.ContainsKey(key))           { Button.Label = GdkToOpenTKInput[key]; }
+                    else                                                  { Button.Label = "Space";               }
 
                     Button.SetStateFlags(0, true);
                     KeyPressEvent -= On_KeyPress;
-                    _ListeningForKeypress = false;
+                    _listeningForKeypress = false;
                 }
             }
             else { Button.SetStateFlags(0, true); }
@@ -229,7 +235,7 @@ namespace Ryujinx.UI
 
         private void AddDir_Pressed(object obj, EventArgs args)
         {
-            if (Directory.Exists(AddGameDirBox.Buffer.Text)) { _GameDirsBoxStore.AppendValues(AddGameDirBox.Buffer.Text); }
+            if (Directory.Exists(AddGameDirBox.Buffer.Text)) { _gameDirsBoxStore.AppendValues(AddGameDirBox.Buffer.Text); }
 
             AddDir.SetStateFlags(0, true);
         }
@@ -240,7 +246,7 @@ namespace Ryujinx.UI
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
-                _GameDirsBoxStore.AppendValues(fc.Filename);
+                _gameDirsBoxStore.AppendValues(fc.Filename);
             }
 
             fc.Destroy();
@@ -253,14 +259,25 @@ namespace Ryujinx.UI
             TreeSelection selection = GameDirsBox.Selection;
 
             selection.GetSelected(out TreeIter treeiter);
-            _GameDirsBoxStore.Remove(ref treeiter);
+            _gameDirsBoxStore.Remove(ref treeiter);
 
             RemoveDir.SetStateFlags(0, true);
         }
 
         private void CustThemeToggle_Activated(object obj, EventArgs args)
         {
-            if (CustThemeToggle.Active == false) { CustThemeDir.Sensitive = false; CustThemeDirLabel.Sensitive = false; BrowseThemeDir.Sensitive = false; } else { CustThemeDir.Sensitive = true; CustThemeDirLabel.Sensitive = true; BrowseThemeDir.Sensitive = true; }
+            if (CustThemeToggle.Active == false)
+            {
+                CustThemeDir.Sensitive      = false;
+                CustThemeDirLabel.Sensitive = false;
+                BrowseThemeDir.Sensitive    = false;
+            }
+            else
+            {
+                CustThemeDir.Sensitive      = true;
+                CustThemeDirLabel.Sensitive = true;
+                BrowseThemeDir.Sensitive    = true;
+            }
         }
 
         private void BrowseThemeDir_Pressed(object obj, EventArgs args)
@@ -283,67 +300,69 @@ namespace Ryujinx.UI
         {
             List<string> gameDirs = new List<string>();
 
-            _GameDirsBoxStore.GetIterFirst(out TreeIter iter);
-            for (int i = 0; i < _GameDirsBoxStore.IterNChildren(); i++)
+            _gameDirsBoxStore.GetIterFirst(out TreeIter iter);
+            for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
             {
-                _GameDirsBoxStore.GetValue(iter, i );
+                _gameDirsBoxStore.GetValue(iter, i );
 
-                gameDirs.Add((string)_GameDirsBoxStore.GetValue(iter, 0));
+                gameDirs.Add((string)_gameDirsBoxStore.GetValue(iter, 0));
 
-                _GameDirsBoxStore.IterNext(ref iter);
+                _gameDirsBoxStore.IterNext(ref iter);
             }
 
-            if (IconToggle.Active)                    { SwitchConfig.GuiColumns[0]             = true;  }
-            if (TitleToggle.Active)                   { SwitchConfig.GuiColumns[1]             = true;  }
-            if (DeveloperToggle.Active)               { SwitchConfig.GuiColumns[2]             = true;  }
-            if (VersionToggle.Active)                 { SwitchConfig.GuiColumns[3]             = true;  }
-            if (TimePlayedToggle.Active)              { SwitchConfig.GuiColumns[4]             = true;  }
-            if (LastPlayedToggle.Active)              { SwitchConfig.GuiColumns[5]             = true;  }
-            if (FileExtToggle.Active)                 { SwitchConfig.GuiColumns[6]             = true;  }
-            if (FileSizeToggle.Active)                { SwitchConfig.GuiColumns[7]             = true;  }
-            if (PathToggle.Active)                    { SwitchConfig.GuiColumns[8]             = true;  }
-            if (ErrorLogToggle.Active)                { SwitchConfig.LoggingEnableError        = true;  }
-            if (WarningLogToggle.Active)              { SwitchConfig.LoggingEnableWarn         = true;  }
-            if (InfoLogToggle.Active)                 { SwitchConfig.LoggingEnableInfo         = true;  }
-            if (StubLogToggle.Active)                 { SwitchConfig.LoggingEnableStub         = true;  }
-            if (DebugLogToggle.Active)                { SwitchConfig.LoggingEnableDebug        = true;  }
-            if (GuestLogToggle.Active)                { SwitchConfig.LoggingEnableGuest        = true;  }
-            if (FsAccessLogToggle.Active)             { SwitchConfig.LoggingEnableFsAccessLog  = true;  }
-            if (FileLogToggle.Active)                 { SwitchConfig.EnableFileLog             = true;  }
-            if (DockedModeToggle.Active)              { SwitchConfig.DockedMode                = true;  }
-            if (DiscordToggle.Active)                 { SwitchConfig.EnableDiscordIntegration  = true;  }
-            if (VSyncToggle.Active)                   { SwitchConfig.EnableVsync               = true;  }
-            if (MultiSchedToggle.Active)              { SwitchConfig.EnableMulticoreScheduling = true;  }
-            if (FSICToggle.Active)                    { SwitchConfig.EnableFsIntegrityChecks   = true;  }
-            if (AggrToggle.Active)                    { SwitchConfig.EnableAggressiveCpuOpts   = true;  }
-            if (IgnoreToggle.Active)                  { SwitchConfig.IgnoreMissingServices     = true;  }
-            if (DirectKeyboardAccess.Active)          { SwitchConfig.EnableKeyboard            = true;  }
-            if (CustThemeToggle.Active)               { SwitchConfig.EnableCustomTheme         = true;  }
+            if (IconToggle.Active)            SwitchConfig.GuiColumns[0]             = true;
+            if (TitleToggle.Active)           SwitchConfig.GuiColumns[1]             = true;
+            if (DeveloperToggle.Active)       SwitchConfig.GuiColumns[2]             = true;
+            if (VersionToggle.Active)         SwitchConfig.GuiColumns[3]             = true;
+            if (TimePlayedToggle.Active)      SwitchConfig.GuiColumns[4]             = true;
+            if (LastPlayedToggle.Active)      SwitchConfig.GuiColumns[5]             = true;
+            if (FileExtToggle.Active)         SwitchConfig.GuiColumns[6]             = true;
+            if (FileSizeToggle.Active)        SwitchConfig.GuiColumns[7]             = true;
+            if (PathToggle.Active)            SwitchConfig.GuiColumns[8]             = true;
+            if (ErrorLogToggle.Active)        SwitchConfig.LoggingEnableError        = true;
+            if (WarningLogToggle.Active)      SwitchConfig.LoggingEnableWarn         = true;
+            if (InfoLogToggle.Active)         SwitchConfig.LoggingEnableInfo         = true;
+            if (StubLogToggle.Active)         SwitchConfig.LoggingEnableStub         = true;
+            if (DebugLogToggle.Active)        SwitchConfig.LoggingEnableDebug        = true;
+            if (GuestLogToggle.Active)        SwitchConfig.LoggingEnableGuest        = true;
+            if (FsAccessLogToggle.Active)     SwitchConfig.LoggingEnableFsAccessLog  = true;
+            if (FileLogToggle.Active)         SwitchConfig.EnableFileLog             = true;
+            if (DockedModeToggle.Active)      SwitchConfig.DockedMode                = true;
+            if (DiscordToggle.Active)         SwitchConfig.EnableDiscordIntegration  = true;
+            if (VSyncToggle.Active)           SwitchConfig.EnableVsync               = true;
+            if (MultiSchedToggle.Active)      SwitchConfig.EnableMulticoreScheduling = true;
+            if (FSICToggle.Active)            SwitchConfig.EnableFsIntegrityChecks   = true;
+            if (AggrToggle.Active)            SwitchConfig.EnableAggressiveCpuOpts   = true;
+            if (IgnoreToggle.Active)          SwitchConfig.IgnoreMissingServices     = true;
+            if (DirectKeyboardAccess.Active)  SwitchConfig.EnableKeyboard            = true;
+            if (CustThemeToggle.Active)       SwitchConfig.EnableCustomTheme         = true;
 
-            if (IconToggle.Active           == false) { SwitchConfig.GuiColumns[0]             = false; }
-            if (TitleToggle.Active          == false) { SwitchConfig.GuiColumns[1]             = false; }
-            if (DeveloperToggle.Active      == false) { SwitchConfig.GuiColumns[2]             = false; }
-            if (VersionToggle.Active        == false) { SwitchConfig.GuiColumns[3]             = false; }
-            if (TimePlayedToggle.Active     == false) { SwitchConfig.GuiColumns[4]             = false; }
-            if (LastPlayedToggle.Active     == false) { SwitchConfig.GuiColumns[5]             = false; }
-            if (FileExtToggle.Active        == false) { SwitchConfig.GuiColumns[6]             = false; }
-            if (FileSizeToggle.Active       == false) { SwitchConfig.GuiColumns[7]             = false; }
-            if (PathToggle.Active           == false) { SwitchConfig.GuiColumns[8]             = false; }
-            if (ErrorLogToggle.Active       == false) { SwitchConfig.LoggingEnableError        = false; }
-            if (WarningLogToggle.Active     == false) { SwitchConfig.LoggingEnableWarn         = false; }
-            if (InfoLogToggle.Active        == false) { SwitchConfig.LoggingEnableInfo         = false; }
-            if (StubLogToggle.Active        == false) { SwitchConfig.LoggingEnableStub         = false; }
-            if (DebugLogToggle.Active       == false) { SwitchConfig.LoggingEnableDebug        = false; }
-            if (FileLogToggle.Active        == false) { SwitchConfig.EnableFileLog             = false; }
-            if (DockedModeToggle.Active     == false) { SwitchConfig.DockedMode                = false; }
-            if (DiscordToggle.Active        == false) { SwitchConfig.EnableDiscordIntegration  = false; }
-            if (VSyncToggle.Active          == false) { SwitchConfig.EnableVsync               = false; }
-            if (MultiSchedToggle.Active     == false) { SwitchConfig.EnableMulticoreScheduling = false; }
-            if (FSICToggle.Active           == false) { SwitchConfig.EnableFsIntegrityChecks   = false; }
-            if (AggrToggle.Active           == false) { SwitchConfig.EnableAggressiveCpuOpts   = false; }
-            if (IgnoreToggle.Active         == false) { SwitchConfig.IgnoreMissingServices     = false; }
-            if (DirectKeyboardAccess.Active == false) { SwitchConfig.EnableKeyboard            = false; }
-            if (CustThemeToggle.Active      == false) { SwitchConfig.EnableCustomTheme         = false; }
+            if (!IconToggle.Active)           SwitchConfig.GuiColumns[0]             = false;
+            if (!TitleToggle.Active)          SwitchConfig.GuiColumns[1]             = false;
+            if (!DeveloperToggle.Active)      SwitchConfig.GuiColumns[2]             = false;
+            if (!VersionToggle.Active)        SwitchConfig.GuiColumns[3]             = false;
+            if (!TimePlayedToggle.Active)     SwitchConfig.GuiColumns[4]             = false;
+            if (!LastPlayedToggle.Active)     SwitchConfig.GuiColumns[5]             = false;
+            if (!FileExtToggle.Active)        SwitchConfig.GuiColumns[6]             = false;
+            if (!FileSizeToggle.Active)       SwitchConfig.GuiColumns[7]             = false;
+            if (!PathToggle.Active)           SwitchConfig.GuiColumns[8]             = false;
+            if (!ErrorLogToggle.Active)       SwitchConfig.LoggingEnableError        = false;
+            if (!WarningLogToggle.Active)     SwitchConfig.LoggingEnableWarn         = false;
+            if (!InfoLogToggle.Active)        SwitchConfig.LoggingEnableInfo         = false;
+            if (!StubLogToggle.Active )       SwitchConfig.LoggingEnableStub         = false;
+            if (!DebugLogToggle.Active)       SwitchConfig.LoggingEnableDebug        = false;
+            if (!GuestLogToggle.Active)       SwitchConfig.LoggingEnableGuest        = false;
+            if (!FsAccessLogToggle.Active)    SwitchConfig.LoggingEnableFsAccessLog  = false;
+            if (!FileLogToggle.Active)        SwitchConfig.EnableFileLog             = false;
+            if (!DockedModeToggle.Active)     SwitchConfig.DockedMode                = false;
+            if (!DiscordToggle.Active)        SwitchConfig.EnableDiscordIntegration  = false;
+            if (!VSyncToggle.Active)          SwitchConfig.EnableVsync               = false;
+            if (!MultiSchedToggle.Active)     SwitchConfig.EnableMulticoreScheduling = false;
+            if (!FSICToggle.Active)           SwitchConfig.EnableFsIntegrityChecks   = false;
+            if (!AggrToggle.Active)           SwitchConfig.EnableAggressiveCpuOpts   = false;
+            if (!IgnoreToggle.Active)         SwitchConfig.IgnoreMissingServices     = false;
+            if (!DirectKeyboardAccess.Active) SwitchConfig.EnableKeyboard            = false;
+            if (!CustThemeToggle.Active)      SwitchConfig.EnableCustomTheme         = false;
 
             SwitchConfig.KeyboardControls.LeftJoycon = new NpadKeyboardLeft()
             {
@@ -382,7 +401,7 @@ namespace Ryujinx.UI
             SwitchConfig.CustomThemePath         = CustThemeDir.Buffer.Text;
             SwitchConfig.GraphicsShadersDumpPath = GraphicsShadersDumpPath.Buffer.Text;
             SwitchConfig.GameDirs                = gameDirs;
-            SwitchConfig.FsGlobalAccessLogMode   = (int)FGALMSpinAdjustment.Value;
+            SwitchConfig.FsGlobalAccessLogMode   = (int)FsLogSpinAdjustment.Value;
 
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.Configure(Device, SwitchConfig);
@@ -397,7 +416,7 @@ namespace Ryujinx.UI
             Destroy();
         }
 
-        public readonly Dictionary<string, string> GdkToTKInput = new Dictionary<string, string>()
+        public readonly Dictionary<string, string> GdkToOpenTKInput = new Dictionary<string, string>()
         {
             { "Key_0"      , "Number0"         },
             { "Key_1"      , "Number1"         },

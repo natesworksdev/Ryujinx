@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkAdjustment" id="FGALMSpinAdjustment">
+  <object class="GtkAdjustment" id="FsLogSpinAdjustment">
     <property name="upper">3</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
@@ -2039,7 +2039,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="tooltip_text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
-                                <property name="adjustment">FGALMSpinAdjustment</property>
+                                <property name="adjustment">FsLogSpinAdjustment</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>

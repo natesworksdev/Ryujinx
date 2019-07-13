@@ -2,6 +2,7 @@
 using LibHac.Fs;
 using LibHac.Fs.NcaUtils;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +16,10 @@ namespace Ryujinx.HLE
     {
         private static Keyset KeySet;
         private static HOS.SystemState.TitleLanguage DesiredTitleLanguage;
+
+        private const double SecondsPerMinute = 60.0;
+        private const double SecondsPerHour = SecondsPerMinute * 60;
+        private const double SecondsPerDay = SecondsPerHour * 24;
 
         public static byte[] RyujinxNspIcon { get; private set; }
         public static byte[] RyujinxXciIcon { get; private set; }
@@ -44,26 +49,11 @@ namespace Ryujinx.HLE
             DesiredTitleLanguage = desiredTitleLanguage;
 
             // Loads the default application Icons
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNSPIcon.png"))
-            {
-                using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNspIcon = ms.ToArray(); }
-            }
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxXCIIcon.png"))
-            {
-                using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxXciIcon = ms.ToArray(); }
-            }
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNCAIcon.png"))
-            {
-                using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNcaIcon = ms.ToArray(); }
-            }
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNROIcon.png"))
-            {
-                using(MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNroIcon = ms.ToArray(); }
-            }
-            using (Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.HLE.ryujinxNSOIcon.png"))
-            {
-                using (MemoryStream ms = new MemoryStream()) { resourceStream.CopyTo(ms); RyujinxNsoIcon = ms.ToArray(); }
-            }
+            RyujinxNspIcon = GetResourceBytes("Ryujinx.HLE.ryujinxNSPIcon.png");
+            RyujinxXciIcon = GetResourceBytes("Ryujinx.HLE.ryujinxXCIIcon.png");
+            RyujinxNcaIcon = GetResourceBytes("Ryujinx.HLE.ryujinxNCAIcon.png");
+            RyujinxNroIcon = GetResourceBytes("Ryujinx.HLE.ryujinxNROIcon.png");
+            RyujinxNsoIcon = GetResourceBytes("Ryujinx.HLE.ryujinxNSOIcon.png");
 
             // Builds the applications list with paths to found applications
             List<string> applications = new List<string>();
@@ -297,6 +287,16 @@ namespace Ryujinx.HLE
             }
         }
 
+        private static byte[] GetResourceBytes(string resourceName)
+        {
+            Stream resourceStream    = Assembly.GetCallingAssembly().GetManifestResourceStream(resourceName);
+            byte[] resourceByteArray = new byte[resourceStream.Length];
+
+            resourceStream.Read(resourceByteArray);
+
+            return resourceByteArray;
+        }
+
         private static IFileSystem GetControlFs(PartitionFileSystem Pfs)
         {
             Nca controlNca = null;
@@ -331,8 +331,7 @@ namespace Ryujinx.HLE
             try
             {
                 string[] playedData = new string[2];
-                string appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string savePath = Path.Combine(appdataPath, "RyuFs", "nand", "user", "save", "0000000000000000", UserId, TitleId);
+                string savePath = Path.Combine(VirtualFileSystem.UserNandPath, "save", "0000000000000000", UserId, TitleId);
 
                 if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
                 {
@@ -345,17 +344,20 @@ namespace Ryujinx.HLE
                     {
                         float timePlayed = float.Parse(sr.ReadLine());
 
-                        if      (timePlayed <= 60.0)    { playedData[0] = $"{timePlayed}s"; }
-                        else if (timePlayed <= 3600.0)  { playedData[0] = $"{Math.Round(timePlayed / 60   , 2, MidpointRounding.AwayFromZero)} mins"; }
-                        else if (timePlayed <= 86400.0) { playedData[0] = $"{Math.Round(timePlayed / 3600 , 2, MidpointRounding.AwayFromZero)} hrs";  }
-                        else                            { playedData[0] = $"{Math.Round(timePlayed / 86400, 2, MidpointRounding.AwayFromZero)} days"; }
+                             if (timePlayed < SecondsPerMinute) { playedData[0] = $"{timePlayed}s"; }
+                        else if (timePlayed < SecondsPerHour)   { playedData[0] = $"{Math.Round(timePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins"; }
+                        else if (timePlayed < SecondsPerDay)    { playedData[0] = $"{Math.Round(timePlayed / SecondsPerHour  , 2, MidpointRounding.AwayFromZero)} hrs";  }
+                        else                                    { playedData[0] = $"{Math.Round(timePlayed / SecondsPerDay   , 2, MidpointRounding.AwayFromZero)} days"; }
                     }
                 }
 
                 if (File.Exists(Path.Combine(savePath, "LastPlayed.dat")) == false)
                 {
                     Directory.CreateDirectory(savePath);
-                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "LastPlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("Never")); }
+                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "LastPlayed.dat")))
+                    {
+                        file.Write(Encoding.ASCII.GetBytes("Never"));
+                    }
                 }
                 using (FileStream fs = File.OpenRead(Path.Combine(savePath, "LastPlayed.dat")))
                 {
