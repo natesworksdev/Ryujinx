@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 
             Logger.PrintWarning(LogClass.ServiceNv, $"Unsupported Ioctl command 0x{cmd:x8}!");
 
-            return NvError.NotSupported;
+            return NvResult.NotSupported;
         }
 
         private static int Create(ServiceCtx context)
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid size 0x{args.Size:x8}!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             int size = IntUtils.AlignUp(args.Size, NvGpuVmm.PageSize);
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int FromId(ServiceCtx context)
@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{args.Handle:x8}!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             map.IncrementRefCount();
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int Alloc(ServiceCtx context)
@@ -98,14 +98,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{args.Handle:x8}!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             if ((args.Align & (args.Align - 1)) != 0)
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid alignment 0x{args.Align:x8}!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             if ((uint)args.Align < NvGpuVmm.PageSize)
@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
                 args.Align = NvGpuVmm.PageSize;
             }
 
-            int result = NvError.Success;
+            int result = NvResult.Success;
 
             if (!map.Allocated)
             {
@@ -131,10 +131,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
                     // When the address is zero, we need to allocate
                     // our own backing memory for the NvMap.
                     // TODO: Is this allocation inside the transfer memory?
-                    result = NvError.OutOfMemory;
+                    result = NvResult.OutOfMemory;
                 }
 
-                if (result == NvError.Success)
+                if (result == NvResult.Success)
                 {
                     map.Size    = size;
                     map.Address = address;
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{args.Handle:x8}!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             if (map.DecrementRefCount() <= 0)
@@ -181,7 +181,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int Param(ServiceCtx context)
@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{args.Handle:x8}!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             switch ((NvMapHandleParam)args.Param)
@@ -210,12 +210,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
 
                 // Note: Base is not supported and returns an error.
                 // Any other value also returns an error.
-                default: return NvError.InvalidInput;
+                default: return NvResult.InvalidInput;
             }
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int GetId(ServiceCtx context)
@@ -231,14 +231,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvMap
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{args.Handle:x8}!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             args.Id = args.Handle;
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int AddNvMap(ServiceCtx context, NvMapHandle map)

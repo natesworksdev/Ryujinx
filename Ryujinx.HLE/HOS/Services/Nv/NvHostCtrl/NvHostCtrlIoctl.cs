@@ -55,12 +55,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             if ((uint)id >= NvHostSyncpt.SyncptsCount)
             {
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             GetUserCtx(context).Syncpt.Increment(id);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int SyncptWait(ServiceCtx context)
@@ -122,10 +122,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                     Logger.PrintDebug(LogClass.ServiceNv, $"Got setting {domain}!{name}");
                 }
 
-                return NvError.Success;
+                return NvResult.Success;
             }
 
-            return NvError.NotAvailableInProduction;
+            return NvResult.NotAvailableInProduction;
         }
 
         private static int EventWait(ServiceCtx context)
@@ -147,7 +147,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int SyncptReadMinOrMax(ServiceCtx context, bool max)
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             if ((uint)args.Id >= NvHostSyncpt.SyncptsCount)
             {
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             if (max)
@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int SyncptWait(ServiceCtx context, bool extended)
@@ -187,18 +187,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             if ((uint)args.Id >= NvHostSyncpt.SyncptsCount)
             {
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             int result;
 
             if (syncpt.MinCompare(args.Id, args.Thresh))
             {
-                result = NvError.Success;
+                result = NvResult.Success;
             }
             else if (args.Timeout == 0)
             {
-                result = NvError.TryAgain;
+                result = NvResult.TryAgain;
             }
             else
             {
@@ -221,15 +221,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
                     {
                         waitEvent.WaitOne();
 
-                        result = NvError.Success;
+                        result = NvResult.Success;
                     }
                     else if (waitEvent.WaitOne(timeout))
                     {
-                        result = NvError.Success;
+                        result = NvResult.Success;
                     }
                     else
                     {
-                        result = NvError.TimedOut;
+                        result = NvResult.TimedOut;
                     }
                 }
 
@@ -253,7 +253,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
             if ((uint)args.Id >= NvHostSyncpt.SyncptsCount)
             {
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             void WriteArgs()
@@ -269,7 +269,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
                 WriteArgs();
 
-                return NvError.Success;
+                return NvResult.Success;
             }
 
             if (!async)
@@ -281,7 +281,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
             {
                 WriteArgs();
 
-                return NvError.TryAgain;
+                return NvResult.TryAgain;
             }
 
             NvHostEvent Event;
@@ -294,7 +294,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
                 if ((uint)eventIndex >= NvHostCtrlUserCtx.EventsCount)
                 {
-                    return NvError.InvalidInput;
+                    return NvResult.InvalidInput;
                 }
 
                 Event = GetUserCtx(context).Events[eventIndex];
@@ -324,11 +324,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostCtrl
 
                 args.Value |= eventIndex;
 
-                result = NvError.TryAgain;
+                result = NvResult.TryAgain;
             }
             else
             {
-                result = NvError.InvalidInput;
+                result = NvResult.InvalidInput;
             }
 
             WriteArgs();

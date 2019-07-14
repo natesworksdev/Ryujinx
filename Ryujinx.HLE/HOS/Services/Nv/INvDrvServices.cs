@@ -197,14 +197,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             {
                 Logger.PrintError(LogClass.ServiceNv, "Input buffer is null!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             if (CmdOut(cmd) && context.Request.GetBufferType0x22().Position == 0)
             {
                 Logger.PrintError(LogClass.ServiceNv, "Output buffer is null!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             return processor(context, cmd);

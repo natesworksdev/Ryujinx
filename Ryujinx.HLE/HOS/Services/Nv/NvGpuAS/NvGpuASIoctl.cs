@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int AllocSpace(ServiceCtx context)
@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
             ulong size = (ulong)args.Pages *
                          (ulong)args.PageSize;
 
-            int result = NvError.Success;
+            int result = NvResult.Success;
 
             lock (asCtx)
             {
@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
                     Logger.PrintWarning(LogClass.ServiceNv, $"Failed to allocate size {size:x16}!");
 
-                    result = NvError.OutOfMemory;
+                    result = NvResult.OutOfMemory;
                 }
                 else
                 {
@@ -103,7 +103,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
             NvGpuASCtx asCtx = GetASCtx(context);
 
-            int result = NvError.Success;
+            int result = NvResult.Success;
 
             lock (asCtx)
             {
@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                     Logger.PrintWarning(LogClass.ServiceNv,
                         $"Failed to free offset 0x{args.Offset:x16} size 0x{size:x16}!");
 
-                    result = NvError.InvalidInput;
+                    result = NvResult.InvalidInput;
                 }
             }
 
@@ -150,7 +150,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                 }
             }
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int MapBufferEx(ServiceCtx context)
@@ -170,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{args.NvMapHandle:x8}!");
 
-                return NvError.InvalidInput;
+                return NvResult.InvalidInput;
             }
 
             long pa;
@@ -191,16 +191,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
                             Logger.PrintWarning(LogClass.ServiceNv, msg);
 
-                            return NvError.InvalidInput;
+                            return NvResult.InvalidInput;
                         }
 
-                        return NvError.Success;
+                        return NvResult.Success;
                     }
                     else
                     {
                         Logger.PrintWarning(LogClass.ServiceNv, $"Address 0x{args.Offset:x16} not mapped!");
 
-                        return NvError.InvalidInput;
+                        return NvResult.InvalidInput;
                     }
                 }
             }
@@ -214,7 +214,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                 size = (uint)map.Size;
             }
 
-            int result = NvError.Success;
+            int result = NvResult.Success;
 
             lock (asCtx)
             {
@@ -234,7 +234,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
                         Logger.PrintWarning(LogClass.ServiceNv, msg);
 
-                        result = NvError.InvalidInput;
+                        result = NvResult.InvalidInput;
                     }
                 }
                 else
@@ -248,7 +248,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
                     Logger.PrintWarning(LogClass.ServiceNv, $"Failed to map size 0x{size:x16}!");
 
-                    result = NvError.InvalidInput;
+                    result = NvResult.InvalidInput;
                 }
                 else
                 {
@@ -268,7 +268,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int InitializeEx(ServiceCtx context)
@@ -278,7 +278,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         private static int Remap(ServiceCtx context, int cmd)
@@ -299,7 +299,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                 {
                     Logger.PrintWarning(LogClass.ServiceNv, $"Invalid NvMap handle 0x{args.NvMapHandle:x8}!");
 
-                    return NvError.InvalidInput;
+                    return NvResult.InvalidInput;
                 }
 
                 long result = vmm.Map(map.Address, (long)(uint)args.Offset << 16,
@@ -310,11 +310,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuAS
                     Logger.PrintWarning(LogClass.ServiceNv,
                         $"Page 0x{args.Offset:x16} size 0x{args.Pages:x16} not allocated!");
 
-                    return NvError.InvalidInput;
+                    return NvResult.InvalidInput;
                 }
             }
 
-            return NvError.Success;
+            return NvResult.Success;
         }
 
         public static NvGpuASCtx GetASCtx(ServiceCtx context)
